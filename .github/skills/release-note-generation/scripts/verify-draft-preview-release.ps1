@@ -4,15 +4,16 @@
 
 .DESCRIPTION
     Asserts immutable target identity, draft/prerelease flags, managed body
-    markers, and exact asset names and sizes. This script performs no writes to
-    GitHub.
+    markers, source-branch-specific title, and exact asset names and sizes.
+    This script performs no writes to GitHub.
 
 .EXAMPLE
-    .\verify-draft-preview-release.ps1 -Tag v0.101.2181.0 -TargetCommit 0123... -AssetsDirectory .\assets -OutputPath .\final-review.md
+    .\verify-draft-preview-release.ps1 -Tag v0.101.2181 -SourceBranch refs/heads/main -TargetCommit 0123... -AssetsDirectory .\assets -OutputPath .\final-review.md
 #>
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][string]$Tag,
+    [Parameter(Mandatory)][ValidatePattern('^v[0-9]+\.[0-9]+\.[0-9]+$')][string]$Tag,
+    [Parameter(Mandatory)][ValidateSet("refs/heads/main", "refs/heads/stable")][string]$SourceBranch,
     [Parameter(Mandatory)][string]$TargetCommit,
     [Parameter(Mandatory)][string]$AssetsDirectory,
     [string]$Repo = "microsoft/PowerToys",
@@ -29,6 +30,19 @@ $ErrorActionPreference = "Stop"
 
 . (Join-Path $PSScriptRoot "preview-release-assets.ps1")
 . (Join-Path $PSScriptRoot "github-tag-target.ps1")
+. (Join-Path $PSScriptRoot "release-title.ps1")
+
+$context = if ($ContextPath) {
+    Get-Content -LiteralPath $ContextPath -Raw | ConvertFrom-Json
+}
+else {
+    $null
+}
+if ($context -and [string]$context.sourceBranch -ne $SourceBranch) {
+    throw "SourceBranch '$SourceBranch' does not match build context '$($context.sourceBranch)'."
+}
+
+$releaseTitle = Get-PowerToysReleaseTitle -Tag $Tag -SourceBranch $SourceBranch -Prerelease
 
 if ($TargetCommit -notmatch "^[0-9a-fA-F]{40}$") {
     throw "TargetCommit must be a full immutable commit SHA."
@@ -46,7 +60,7 @@ $release = if ($DryRun) {
         targetCommitish = $TargetCommit
         url = $null
         body = Get-Content -LiteralPath $BodyPath -Raw
-        name = "Preview $Tag"
+        name = $releaseTitle
     }
 }
 else {
@@ -75,8 +89,8 @@ if (-not $DryRun) {
     $tagCommit = Get-GitHubTagCommit -Repo $Repo -Tag $Tag
     Assert-GitHubTagTarget -Tag $Tag -ResolvedCommit $tagCommit -TargetCommit $TargetCommit
 }
-if ([string]$release.name -ne "Preview $Tag") {
-    throw "Release title '$($release.name)' does not match 'Preview $Tag'."
+if ([string]$release.name -cne $releaseTitle) {
+    throw "Release title '$($release.name)' does not match '$releaseTitle'."
 }
 if ([string]$release.body -notmatch "<!-- BEGIN POWERTOYS PREVIEW AGENT -->" -or
     [string]$release.body -notmatch "<!-- END POWERTOYS PREVIEW AGENT -->") {
@@ -141,12 +155,6 @@ else {
     }
 }
 
-$context = if ($ContextPath) {
-    Get-Content -LiteralPath $ContextPath -Raw | ConvertFrom-Json
-}
-else {
-    $null
-}
 $baseline = if ($PreviousReleasePath) {
     Get-Content -LiteralPath $PreviousReleasePath -Raw | ConvertFrom-Json
 }

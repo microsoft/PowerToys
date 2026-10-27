@@ -261,7 +261,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             return;
         }
 
-        // UpdateSettings always writes the file, so skip it when every fallback is already known.
+        // Skip the update when every fallback and the provider connection are already known.
         var current = settingsService.Settings;
         if (ReferenceEquals(current.GetProviderSettings(this).Model, current))
         {
@@ -458,7 +458,9 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         TopLevelViewModel? topLevelViewModel = null;
         try
         {
-            topLevelViewModel = new(commandItemViewModel, type, ExtensionHost, providerContext, providerSettings, serviceProvider, item, contextMenuFactory);
+            topLevelViewModel = type == TopLevelType.Fallback
+                ? new TopLevelFallbackViewModel(commandItemViewModel, ExtensionHost, providerContext, providerSettings, serviceProvider, item as IFallbackCommandItem, contextMenuFactory)
+                : new TopLevelViewModel(commandItemViewModel, type, ExtensionHost, providerContext, providerSettings, serviceProvider, contextMenuFactory);
             topLevelViewModel.InitializeProperties();
             return topLevelViewModel;
         }

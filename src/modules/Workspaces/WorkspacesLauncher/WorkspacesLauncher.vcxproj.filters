@@ -36,6 +36,9 @@
     <ClInclude Include="Launcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LaunchSessionHost.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -44,19 +47,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AppLauncher.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RegistryUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LauncherUIHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WindowArrangerHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Launcher.cpp">
+    <ClCompile Include="LaunchSessionHost.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

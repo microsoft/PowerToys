@@ -438,12 +438,9 @@ namespace WorkspacesEditor.ViewModels
         {
             Process process = new Process();
 
-            var exeDir = Path.GetDirectoryName(Environment.ProcessPath);
-            var snapshotUtilsPath = Path.Combine(exeDir, "PowerToys.WorkspacesSnapshotTool.exe");
-
-            process.StartInfo = new ProcessStartInfo(snapshotUtilsPath);
-            process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.Arguments = isExistingProjectLaunched ? $"{(int)InvokePoint.LaunchAndEdit}" : string.Empty;
+            process.StartInfo = ModuleProcess.CreateStartInfo(
+                "PowerToys.WorkspacesSnapshotTool.exe",
+                isExistingProjectLaunched ? $"{(int)InvokePoint.LaunchAndEdit}" : string.Empty);
 
             try
             {
@@ -459,8 +456,7 @@ namespace WorkspacesEditor.ViewModels
         private void RunLauncher(string projectId, InvokePoint invokePoint)
         {
             Process process = new Process();
-            process.StartInfo = new ProcessStartInfo(@".\PowerToys.WorkspacesLauncher.exe", $"{projectId} {(int)invokePoint}");
-            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo = ModuleProcess.CreateStartInfo("PowerToys.WorkspacesLauncher.exe", $"{projectId} {(int)invokePoint}");
 
             try
             {

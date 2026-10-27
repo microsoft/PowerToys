@@ -29,6 +29,6 @@ namespace AppLauncher
         std::wstring message;
     };
 
-    LaunchResult Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList& launchErrors, const ApprovalCallback& requestApproval, const std::function<bool()>& isCanceled);
+    LaunchResult Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList& launchErrors, const ApprovalCallback& requestApproval, const std::function<bool()>& isCanceled, DWORD* nativeError = nullptr);
     Result<SHELLEXECUTEINFO, LaunchError> LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated);
 }

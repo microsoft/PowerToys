@@ -128,6 +128,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public ICommandProviderContext ProviderContext { get; protected set; }
 
+    public DockCommandRoute? DockRoute { get; internal set; }
+
     public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost, ICommandProviderContext providerContext)
         : base(scheduler)
     {
@@ -146,7 +148,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     private void UpdateHasStatusMessage()
     {
-        if (ExtensionHost.StatusMessages.Any())
+        if (ExtensionHost.StatusMessages.Count > 0)
         {
             var last = ExtensionHost.StatusMessages.Last();
             MostRecentStatusMessage = last;
