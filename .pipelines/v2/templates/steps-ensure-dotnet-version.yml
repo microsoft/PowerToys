@@ -1,7 +1,7 @@
 parameters:
 - name: version
   type: string
-  default: ""
+  default: " "
 - name: sdk
   type: boolean
   default: false
@@ -25,7 +25,7 @@ steps:
     $Params = @{
       InstallDir = $NEW_DOTNET_ROOT;
     }
-    If ([String]::IsNullOrEmpty($Version)) {
+    If ([String]::IsNullOrWhitespace($Version)) {
       $Params.JsonFile = "global.json"
     } Else {
       $Params.Channel = $Version
@@ -34,7 +34,7 @@ steps:
     Write-Host "##vso[task.setvariable variable=DOTNET_ROOT]${NEW_DOTNET_ROOT}"
     Write-Host "##vso[task.prependpath]${NEW_DOTNET_ROOT}"
     Remove-Item dotnet-install.ps1 -ErrorAction:Ignore
-  ${{ if eq(parameters.version, "") }}:
+  ${{ if eq(parameters.version, " ") }}:
     displayName: "Install .NET SDK (global.json)"
   ${{ else }}:
     displayName: "Install .NET SDK (${{parameters.version}})"
