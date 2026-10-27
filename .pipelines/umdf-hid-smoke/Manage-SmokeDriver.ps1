@@ -35,6 +35,17 @@ function Save-State {
     $state | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $StatePath
 }
 
+function Test-MachineCertificate {
+    param([ValidateSet('Root', 'TrustedPublisher')][string]$Store, [string]$Thumbprint)
+    $machineStore = [Security.Cryptography.X509Certificates.X509Store]::new(
+        $Store, [Security.Cryptography.X509Certificates.StoreLocation]::LocalMachine)
+    try {
+        $machineStore.Open([Security.Cryptography.X509Certificates.OpenFlags]::ReadOnly -bor [Security.Cryptography.X509Certificates.OpenFlags]::OpenExistingOnly)
+        $machineStore.Certificates.Thumbprint -contains $Thumbprint
+    }
+    finally { $machineStore.Close() }
+}
+
 function Write-TrustDiagnostics {
     param([string]$FailedStore, [string]$Failure)
     $command = Get-Command Import-Certificate
@@ -74,7 +85,7 @@ function Write-TrustDiagnostics {
         $context.Stores += [pscustomobject]@{
             Name = $name
             ReadWriteOpenError = $openError
-            CertificatePresent = Test-Path "Cert:\LocalMachine\$name\$($certificate.Thumbprint)"
+            CertificatePresent = Test-MachineCertificate -Store $name -Thumbprint $certificate.Thumbprint
         }
     }
     foreach ($path in @(
@@ -213,14 +224,14 @@ $currentStore = $null
 try {
     Write-TrustDiagnostics
     foreach ($store in @('Root', 'TrustedPublisher')) {
-        if (-not (Test-Path "Cert:\LocalMachine\$store\$($certificate.Thumbprint)")) {
+        if (-not (Test-MachineCertificate -Store $store -Thumbprint $certificate.Thumbprint)) {
             $currentStore = $store
             $state.ImportedStores += $store
             Save-State
             Write-Output "Importing test certificate into Cert:\LocalMachine\$store with certutil"
             & (Join-Path $env:WINDIR 'System32\certutil.exe') -f -addstore $store (Join-Path $driver 'PtHidProbe.cer')
             if ($LASTEXITCODE -ne 0) { throw "Machine certificate import failed: store=$store, exit=$LASTEXITCODE." }
-            if (-not (Test-Path "Cert:\LocalMachine\$store\$($certificate.Thumbprint)")) {
+            if (-not (Test-MachineCertificate -Store $store -Thumbprint $certificate.Thumbprint)) {
                 throw "The approved test certificate was not persisted in the requested machine store: $store"
             }
             Write-Output "Imported test certificate into Cert:\LocalMachine\$store"
