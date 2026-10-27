@@ -35,6 +35,65 @@ function Save-State {
     $state | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $StatePath
 }
 
+function Write-TrustDiagnostics {
+    param([string]$FailedStore, [string]$Failure)
+    $command = Get-Command Import-Certificate
+    $currentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    try {
+        $context = [ordered]@{
+            PSVersion = $PSVersionTable.PSVersion.ToString()
+            PSEdition = $PSVersionTable.PSEdition
+            ProcessArchitecture = [Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString()
+            OsArchitecture = [Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
+            IsSystem = $currentIdentity.IsSystem
+            IsAdmin = ([Security.Principal.WindowsPrincipal]::new($currentIdentity)).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+            ImpersonationLevel = $currentIdentity.ImpersonationLevel.ToString()
+            SessionId = (Get-Process -Id $PID).SessionId
+            ImportCommandType = $command.CommandType.ToString()
+            ImportModule = $command.Module.Path
+            FailedStore = $FailedStore
+            Failure = $Failure
+            Stores = @()
+            Policies = @()
+        }
+    }
+    finally { $currentIdentity.Dispose() }
+    foreach ($name in @('Root', 'TrustedPublisher')) {
+        $store = [Security.Cryptography.X509Certificates.X509Store]::new($name, [Security.Cryptography.X509Certificates.StoreLocation]::LocalMachine)
+        $openError = $null
+        try {
+            $store.Open([Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite -bor [Security.Cryptography.X509Certificates.OpenFlags]::OpenExistingOnly)
+        }
+        catch {
+            $openError = $_.Exception.ToString()
+        }
+        finally { $store.Close() }
+        $context.Stores += [pscustomobject]@{
+            Name = $name
+            ReadWriteOpenError = $openError
+            CertificatePresent = Test-Path "Cert:\LocalMachine\$name\$($certificate.Thumbprint)"
+        }
+    }
+    foreach ($path in @(
+        'HKLM:\SOFTWARE\Policies\Microsoft\SystemCertificates',
+        'HKLM:\SOFTWARE\Policies\Microsoft\SystemCertificates\TrustedPublisher',
+        'HKLM:\SOFTWARE\Policies\Microsoft\SystemCertificates\Root',
+        'HKLM:\SOFTWARE\Microsoft\SystemCertificates\Root\ProtectedRoots'
+    )) {
+        if (Test-Path $path) {
+            try {
+                $values = Get-ItemProperty $path | Select-Object Flags, SaferFlags, AuthRootAutoUpdateFlags, DisableRootAutoUpdate
+                $context.Policies += [pscustomobject]@{ Path = $path; Values = $values }
+            }
+            catch {
+                Write-Warning "Could not read certificate policy '$path': $_"
+                $context.Policies += [pscustomobject]@{ Path = $path; ReadError = $_.Exception.ToString() }
+            }
+        }
+    }
+    $context | ConvertTo-Json -Depth 7 | Tee-Object -FilePath (Join-Path $ResultsDirectory 'trust-diagnostics.json')
+}
+
 if ($Action -eq 'Cleanup') {
     if (-not (Test-Path -LiteralPath $StatePath)) {
         Write-Output 'No UMDF smoke state was created.'
@@ -103,14 +162,20 @@ $state = [pscustomobject]@{
 Save-State
 $before = @(Get-ChildItem (Join-Path $env:WINDIR 'INF') -Filter 'oem*.inf' -File | Select-Object -ExpandProperty Name)
 $started = Get-Date
+$currentStore = $null
 try {
+    Write-TrustDiagnostics
     foreach ($store in @('Root', 'TrustedPublisher')) {
         if (-not (Test-Path "Cert:\LocalMachine\$store\$($certificate.Thumbprint)")) {
+            $currentStore = $store
             $state.ImportedStores += $store
             Save-State
-            Import-Certificate -FilePath (Join-Path $driver 'PtHidProbe.cer') -CertStoreLocation "Cert:\LocalMachine\$store" | Out-Null
+            Write-Output "Importing test certificate into Cert:\LocalMachine\$store"
+            Import-Certificate -FilePath (Join-Path $driver 'PtHidProbe.cer') -CertStoreLocation "Cert:\LocalMachine\$store" -Confirm:$false | Out-Null
+            Write-Output "Imported test certificate into Cert:\LocalMachine\$store"
         }
     }
+    $currentStore = $null
     foreach ($file in @('VhidminiUm.dll', 'PtHidProbe.cat')) {
         $signature = Get-AuthenticodeSignature (Join-Path $driver $file)
         if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Thumbprint -ne $certificate.Thumbprint) {
@@ -153,11 +218,13 @@ try {
     }
 }
 catch {
+    $failure = $_
     $state.InfNames = @(Get-ChildItem (Join-Path $env:WINDIR 'INF') -Filter 'oem*.inf' -File |
         Where-Object { $_.Name -notin $before -and (Select-String -LiteralPath $_.FullName -SimpleMatch $hardwareId -Quiet) } |
         Select-Object -ExpandProperty Name)
     Save-State
     try {
+        Write-TrustDiagnostics -FailedStore $currentStore -Failure $failure.Exception.ToString()
         Get-Content (Join-Path $env:WINDIR 'INF\setupapi.dev.log') -Tail 220 |
             Set-Content (Join-Path $ResultsDirectory 'setupapi-tail.log')
         Get-WinEvent -FilterHashtable @{ LogName = 'Microsoft-Windows-Kernel-PnP/Configuration'; StartTime = $started } |
