@@ -34,8 +34,8 @@ steps:
     Write-Host "##vso[task.setvariable variable=DOTNET_ROOT]${NEW_DOTNET_ROOT}"
     Write-Host "##vso[task.prependpath]${NEW_DOTNET_ROOT}"
     Remove-Item dotnet-install.ps1 -ErrorAction:Ignore
-  ${{ if eq(parameters.sdk, true) }}:
-    displayName: "Install .NET ${{parameters.version}} SDK"
+  ${{ if eq(parameters.version, "") }}:
+    displayName: "Install .NET SDK (global.json)"
   ${{ else }}:
-    displayName: "Install .NET ${{parameters.version}}"
+    displayName: "Install .NET SDK (${{parameters.version}})"
   retryCountOnTaskFailure: 3

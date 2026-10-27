@@ -183,9 +183,6 @@ jobs:
           artifactName: $(TestArtifactsName)
 
   - template: steps-ensure-dotnet-version.yml
-    parameters:
-      sdk: true
-      version: '10.0'
 
   - pwsh: |-
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
