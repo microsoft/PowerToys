@@ -1,0 +1,49 @@
+# .pipelines/v2/codeql.yml
+# Scheduled CodeQL scan of main. The CI pipelines turn CodeQL off (pipeline-ci-build.yml)
+# because tracing roughly doubles their build time. This pipeline traces one x64 Release
+# build of the product, without tests, installers, or published apps.
+
+trigger: none
+pr: none
+
+schedules:
+  - cron: "0 10 * * *"   # 10:00 UTC daily
+    displayName: Nightly CodeQL scan (main)
+    branches:
+      include:
+        - main
+    always: true
+
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+variables:
+  - name: runCodesignValidationInjectionBG
+    value: false
+  - name: EnablePipelineCache
+    value: true
+  - name: Codeql.Enabled
+    value: true
+  # Scan on every scheduled run; the schedule sets the cadence.
+  - name: Codeql.Cadence
+    value: 0
+
+jobs:
+  - template: templates/job-build-project.yml
+    parameters:
+      jobName: CodeQL
+      pool:
+        ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+          name: SHINE-INT-L
+        ${{ else }}:
+          name: SHINE-OSS-L
+        demands: ImageOverride -equals SHINE-VS18-Latest
+      buildPlatforms:
+        - x64
+      buildConfigurations: [Release]
+      enablePackageCaching: true
+      runTests: false
+      buildTests: false
+      buildInstallers: false
+      publishArtifacts: false
+      csProjectsToPublish: []
+      timeoutInMinutes: 180
