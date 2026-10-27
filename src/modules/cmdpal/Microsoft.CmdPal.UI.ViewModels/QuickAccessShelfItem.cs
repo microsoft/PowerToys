@@ -108,7 +108,7 @@ public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
     public IListItem GetContextMenuItem() =>
         IsPinned || _item is RecentCommandListItem ? _item : new RecentCommandListItem(_item, CommandId);
 
-    public PerformCommandMessage GetPerformCommandMessage()
+    public PerformCommandMessage GetPerformCommandMessage(PageViewModel sourcePage)
     {
         if (_item is TopLevelViewModel topLevel)
         {
@@ -116,8 +116,10 @@ public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
         }
 
         var command = _item.Command ?? throw new InvalidOperationException("Quick-access items must have a command");
+        var commandViewModel = new CommandViewModel(command, new(sourcePage));
+        commandViewModel.FastInitializeProperties();
         return new PerformCommandMessage(
-            new ExtensionObject<ICommand>(command),
+            commandViewModel,
             new ExtensionObject<IListItem>(_item));
     }
 

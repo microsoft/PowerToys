@@ -174,7 +174,7 @@
                     </controls:SettingsCard>
 
                     <!--  Backdrop Style  -->
-                    <controls:SettingsCard
+                    <controls:SettingsExpander
                         x:Uid="DockAppearance_Backdrop_SettingsCard"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF5EF;}"
                         local:SettingsPageTarget.Id="backdrop">
@@ -184,13 +184,32 @@
                             SelectedIndex="{x:Bind ViewModel.DockAppearance.BackdropIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="DockAppearance_Backdrop_Transparent" />
                             <ComboBoxItem x:Uid="DockAppearance_Backdrop_Acrylic" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_BackdropStyle_Mica" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_BackdropStyle_MicaAlt" />
                         </ComboBox>
-                    </controls:SettingsCard>
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard
+                                x:Uid="Settings_GeneralPage_MicaBackdrop_SettingsCard"
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Vertical"
+                                Visibility="{x:Bind ViewModel.DockAppearance.IsMicaBackdrop, Mode=OneWay}">
+                                <TextBlock
+                                    x:Uid="Settings_GeneralPage_MicaBackdrop_DescriptionTextBlock"
+                                    Margin="24"
+                                    HorizontalAlignment="Stretch"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    HorizontalTextAlignment="Center"
+                                    TextAlignment="Center"
+                                    TextWrapping="WrapWholeWords" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
 
                     <!--  Background / Colorization Section  -->
                     <controls:SettingsExpander
                         x:Uid="DockAppearance_Background_SettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
+                        IsEnabled="{x:Bind ViewModel.DockAppearance.SupportsColorization, Mode=OneWay}"
                         IsExpanded="{x:Bind ViewModel.DockAppearance.IsColorizationDetailsExpanded, Mode=TwoWay}"
                         local:SettingsPageTarget.Id="background">
                         <ComboBox

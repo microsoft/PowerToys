@@ -279,7 +279,6 @@ public partial class DockItemViewModelTests
             context.ProviderContext,
             new ProviderSettings(),
             services.Object,
-            item,
             DefaultContextMenuFactory.Instance);
         topLevel.InitializeProperties();
 

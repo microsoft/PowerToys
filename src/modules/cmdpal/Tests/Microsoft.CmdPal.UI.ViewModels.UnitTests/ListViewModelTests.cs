@@ -446,7 +446,7 @@ public partial class ListViewModelTests
         var messages = InvokeItemAndCaptureMessages(item);
 
         Assert.AreEqual(1, messages.Count);
-        Assert.AreSame(command, messages[0].Command.Unsafe);
+        Assert.AreSame(command, messages[0].Command.Model.Unsafe);
         Assert.AreSame(item, messages[0].CommandContext);
     }
 
@@ -459,7 +459,7 @@ public partial class ListViewModelTests
         var messages = InvokeItemAndCaptureMessages(item);
 
         Assert.AreEqual(1, messages.Count);
-        Assert.AreSame(command, messages[0].Command.Unsafe);
+        Assert.AreSame(command, messages[0].Command.Model.Unsafe);
         Assert.AreSame(item, messages[0].CommandContext);
     }
 
