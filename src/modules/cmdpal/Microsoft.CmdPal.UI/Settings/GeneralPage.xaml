@@ -62,13 +62,18 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True"
                         local:SettingsPageTarget.Id="activation-key">
-                        <ptControls:ShortcutControl AutomationProperties.AutomationId="CmdPal_GeneralPage_HotkeyShortcut" HotkeySettings="{x:Bind viewModel.Hotkey, Mode=TwoWay}" />
+                        <ptControls:ShortcutControl
+                            AllowWindowsKey="{x:Bind viewModel.IsWindowsKeyHotkeyAvailable}"
+                            AutomationProperties.AutomationId="CmdPal_GeneralPage_HotkeyShortcut"
+                            HotkeySettings="{x:Bind viewModel.Hotkey, Mode=TwoWay}"
+                            UseWindowsKey="{x:Bind viewModel.UseWindowsKey, Mode=TwoWay}" />
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard ContentAlignment="Left">
                                 <ptcontrols:CheckBoxWithDescriptionControl
                                     x:Uid="Settings_GeneralPage_LowLevelHook_SettingsCard"
                                     AutomationProperties.AutomationId="CmdPal_GeneralPage_LowLevelHook"
-                                    IsChecked="{x:Bind viewModel.UseLowLevelGlobalHotkey, Mode=TwoWay}" />
+                                    IsChecked="{x:Bind viewModel.UseLowLevelGlobalHotkey, Mode=TwoWay}"
+                                    IsEnabled="{x:Bind viewModel.CanEditLowLevelGlobalHotkey, Mode=OneWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard ContentAlignment="Left">
                                 <ptcontrols:CheckBoxWithDescriptionControl

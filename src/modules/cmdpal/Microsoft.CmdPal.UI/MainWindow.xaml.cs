@@ -628,6 +628,7 @@ public sealed partial class MainWindow : WindowEx,
             }
 
             return x.UseLowLevelGlobalHotkey == y.UseLowLevelGlobalHotkey
+                && x.UseWindowsKey == y.UseWindowsKey
                 && x.ShowSystemTrayIcon == y.ShowSystemTrayIcon
                 && x.IgnoreShortcutWhenFullscreen == y.IgnoreShortcutWhenFullscreen
                 && x.IgnoreShortcutWhenBusy == y.IgnoreShortcutWhenBusy
@@ -672,6 +673,7 @@ public sealed partial class MainWindow : WindowEx,
         {
             var hash = default(HashCode);
             hash.Add(obj.UseLowLevelGlobalHotkey);
+            hash.Add(obj.UseWindowsKey);
             hash.Add(obj.ShowSystemTrayIcon);
             hash.Add(obj.IgnoreShortcutWhenFullscreen);
             hash.Add(obj.IgnoreShortcutWhenBusy);
@@ -1726,7 +1728,14 @@ public sealed partial class MainWindow : WindowEx,
     {
         UnregisterHotkeys();
 
-        RegisterHotkey(settings, settings.Hotkey, string.Empty);
+        if (settings.IsWindowsKeyHotkeyActive)
+        {
+            _keyboardListener.SetWindowsKeyAction(string.Empty);
+        }
+        else
+        {
+            RegisterHotkey(settings, settings.Hotkey, string.Empty);
+        }
 
         // The dock shortcut rides the same registration path as command hotkeys. HandleSummon
         // peels it back off so nothing tries to summon a command with a dock ID. Skip it when

@@ -26,6 +26,8 @@ public record SettingsModel
     internal const int MaxRecentCommandsDisplayLimit = 10;
     internal const int DefaultRecentCommandsDisplayLimit = 5;
 
+    public static readonly bool IsWindowsKeyHotkeyFeatureEnabled = GetWindowsKeyHotkeyFeatureFlag();
+
     public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
 
     /// <summary>
@@ -69,6 +71,11 @@ public record SettingsModel
     public bool DockRememberLastFocusedItem { get; init; } = true;
 
     public bool UseLowLevelGlobalHotkey { get; init; }
+
+    public bool UseWindowsKey { get; init; }
+
+    [JsonIgnore]
+    public bool IsWindowsKeyHotkeyActive => IsWindowsKeyHotkeyFeatureEnabled && UseWindowsKey;
 
     public bool ShowAppDetails { get; init; }
 
@@ -315,6 +322,9 @@ public record SettingsModel
     public SettingsModel()
     {
     }
+
+    private static bool GetWindowsKeyHotkeyFeatureFlag() =>
+        Environment.GetEnvironmentVariable("CMDPAL_ENABLE_WIN_HOTKEY") == "1";
 
     public (SettingsModel Model, ProviderSettings Settings) GetProviderSettings(CommandProviderWrapper provider)
     {

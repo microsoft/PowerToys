@@ -53,9 +53,8 @@ namespace interop_auth
         std::function<void(const AuthResult&)> logReject;
     };
 
-    // Per-server verification cache. Header-only (all members inline) so it introduces NO out-of-line
-    // symbols: the common transport header is also compiled by the Workspaces duplicate transport, which
-    // does not link the auth translation unit, so an out-of-line ctor/dtor here would break its link.
+    // Per-policy verification cache. Header-only so transports can embed it without introducing
+    // out-of-line constructor/destructor dependencies.
     // Each pipe server owns one instance, so cached verdicts are physically partitioned by policy and the
     // key is simply (pid, process-creation-time). Thread-safe.
     class VerificationCache
@@ -141,6 +140,8 @@ namespace interop_auth
     // Authenticates the client connected on `pipe` against `policy`, using `cache` (owned by the caller,
     // typically one per pipe server) to avoid re-verifying every message. Never throws.
     AuthResult AuthenticateClient(HANDLE pipe, const CallerPolicy& policy, VerificationCache& cache);
+    // Uses the same image/version/signature policy for the server of a connected client-side pipe.
+    AuthResult AuthenticateServer(HANDLE pipe, const CallerPolicy& policy, VerificationCache& cache);
 
     // File version packed as (VersionMS << 32) | VersionLS. Returns 0 on failure.
     unsigned long long GetModuleVersion(const std::wstring& path);
