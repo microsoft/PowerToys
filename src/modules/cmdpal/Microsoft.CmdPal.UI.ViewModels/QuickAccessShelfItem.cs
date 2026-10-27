@@ -125,7 +125,7 @@ public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
 
     public bool Equals(QuickAccessShelfItem? other) =>
         other is not null &&
-        ReferenceEquals(_item.Safe, other._item.Safe) &&
+        _item.Equals(other._item) &&
         ReferenceEquals(_sourceIcon, other._sourceIcon) &&
         string.Equals(Title, other.Title, StringComparison.Ordinal) &&
         _shortcutIndex == other._shortcutIndex &&
@@ -147,7 +147,7 @@ public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
         bool isPinned,
         bool canPin,
         DataPackageView? dataPackage) =>
-        ReferenceEquals(_item.Safe, item.Safe) &&
+        _item.Equals(item) &&
         ReferenceEquals(_sourceIcon, sourceIcon) &&
         string.Equals(Title, title, StringComparison.Ordinal) &&
         _shortcutIndex == shortcutIndex &&

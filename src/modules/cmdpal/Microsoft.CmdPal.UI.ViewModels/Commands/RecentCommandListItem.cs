@@ -65,7 +65,7 @@ public sealed partial class RecentCommandListItem : IListItem, IExtendedAttribut
             foreach (var existingItem in existingItems)
             {
                 if (existingItem.Safe is RecentCommandListItem recentItem &&
-                    ReferenceEquals(recentItem.Source.Safe, source.Safe) &&
+                    recentItem.Source.Equals(source) &&
                     string.Equals(recentItem.CommandId, commandId, StringComparison.Ordinal))
                 {
                     return recentItem;

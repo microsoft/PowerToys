@@ -224,7 +224,7 @@ internal sealed partial class MainListPageSearchTelemetry : IDisposable
         {
             foreach (var scored in packedResults)
             {
-                if (ReferenceEquals(scored.Item.Safe, invoked.Safe))
+                if (scored.Item.Equals(invoked))
                 {
                     return MainListRanker.TierOf(scored.Score);
                 }
@@ -235,7 +235,7 @@ internal sealed partial class MainListPageSearchTelemetry : IDisposable
         {
             foreach (var scored in fallbackResults)
             {
-                if (ReferenceEquals(scored.Item.Safe, invoked.Safe))
+                if (scored.Item.Equals(invoked))
                 {
                     return RankTier.FallbackFloor;
                 }

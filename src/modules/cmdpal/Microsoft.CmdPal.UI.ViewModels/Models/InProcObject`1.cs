@@ -12,8 +12,12 @@ namespace Microsoft.CmdPal.UI.ViewModels.Models;
 /// This does not validate ownership or make an out-of-process object safe to access.
 /// Use a nullable type argument when the value can be null.
 /// </summary>
-public class InProcObject<T>(T value) : IEquatable<InProcObject<T>>
-    where T : class
+/// <remarks>
+/// Two wrappers are equal when they hold the same managed reference or are both empty.
+/// Equality and hashing never call into the wrapped object.
+/// </remarks>
+public sealed class InProcObject<T>(T value) : IEquatable<InProcObject<T>>
+    where T : class?
 {
     /// <summary>
     /// Gets the wrapped object, which is an extension object owned by this process,
@@ -35,5 +39,5 @@ public class InProcObject<T>(T value) : IEquatable<InProcObject<T>>
     public override bool Equals(object? obj) => Equals(obj as InProcObject<T>);
 
     /// <inheritdoc/>
-    public override int GetHashCode() => Safe?.GetHashCode() ?? base.GetHashCode();
+    public override int GetHashCode() => RuntimeHelpers.GetHashCode(Safe);
 }
