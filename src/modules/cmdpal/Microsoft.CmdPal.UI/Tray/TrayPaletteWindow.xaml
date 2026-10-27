@@ -127,7 +127,7 @@
                     AutomationProperties.AutomationId="TrayPalette_OpenPalette"
                     Click="OpenPalette_Click"
                     Style="{StaticResource TrayFooterButtonStyle}">
-                    <FontIcon FontSize="16" Glyph="&#xE721;" />
+                    <ImageIcon Width="16" Height="16" Source="ms-appx:///Assets/icon.svg" />
                 </Button>
                 <Button
                     x:Uid="TrayPalette_OpenSettings"
