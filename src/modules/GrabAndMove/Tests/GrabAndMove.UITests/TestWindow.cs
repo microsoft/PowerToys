@@ -12,6 +12,8 @@ internal sealed class TestWindow : IDisposable
     private readonly TaskCompletionSource<IntPtr> ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly Thread windowThread;
     private System.Windows.Forms.Form? fixtureForm;
+    private Point lastClientClick;
+    private int clientClickCount;
     private int stopRequested;
     private bool disposed;
 
@@ -59,22 +61,27 @@ internal sealed class TestWindow : IDisposable
         var bounds = Bounds;
         var x = bounds.Left + (bounds.Width / 2);
         var y = bounds.Top + (bounds.Height / 2);
-        var point = WaitHelper.WaitForStable(
-            () => WindowControl.IsPointOwnedByWindow(Handle, x, y),
-            owned => owned,
-            5_000,
-            requiredConsecutiveMatches: 3,
-            recover: _ => RaiseFixture());
-        if (!point.Succeeded)
+        if (!WindowControl.WaitForForeground(Handle, 5_000, requiredConsecutiveMatches: 3))
         {
             throw new InvalidOperationException(
-                $"The fixture HWND {Handle} did not own ({x}, {y}); bounds={Bounds}, DPI={fixtureForm!.DeviceDpi}. " +
+                $"The fixture HWND {Handle} could not own foreground; bounds={Bounds}, DPI={fixtureForm!.DeviceDpi}. " +
                 $"Foreground: {WindowControl.GetForegroundWindowInfo()}.");
         }
 
-        MouseHelper.MoveTo(x, y);
-        MouseHelper.LeftDown();
-        MouseHelper.LeftUp();
+        var previousClicks = Volatile.Read(ref clientClickCount);
+        MouseHelper.LeftClickAt(x, y);
+        var delivered = WaitHelper.WaitForStable(
+            () => Volatile.Read(ref clientClickCount),
+            count => count > previousClicks && lastClientClick == new Point(x, y),
+            5_000,
+            requiredConsecutiveMatches: 3);
+        if (!delivered.Succeeded)
+        {
+            throw new InvalidOperationException(
+                $"The foreground fixture HWND {Handle} did not receive the real client click at ({x}, {y}); " +
+                $"last click={lastClientClick}, count={delivered.LastObservation}, previous={previousClicks}.");
+        }
+
         if (!WindowControl.WaitForForeground(Handle, 5_000, requiredConsecutiveMatches: 3))
         {
             throw new InvalidOperationException($"The fixture could not own foreground after a real client-area click: {WindowControl.GetForegroundWindowInfo()}.");
@@ -126,6 +133,14 @@ internal sealed class TestWindow : IDisposable
                     Math.Min(400, workArea.Height / 3)),
             };
             fixtureForm = form;
+            form.MouseDown += (_, args) =>
+            {
+                if (args.Button == System.Windows.Forms.MouseButtons.Left)
+                {
+                    lastClientClick = form.PointToScreen(args.Location);
+                    Interlocked.Increment(ref clientClickCount);
+                }
+            };
             form.Shown += (_, _) =>
             {
                 ready.TrySetResult(form.Handle);

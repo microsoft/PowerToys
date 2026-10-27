@@ -383,18 +383,18 @@ public sealed class GrabAndMoveTests : UITestBase
                 MouseHelper.LeftDown();
             }
 
-            // Pending activation has no visible acknowledgement until movement; match MouseHelper.Drag's down pacing.
-            Thread.Sleep(100);
             for (var step = 1; step <= 16; step++)
             {
                 MouseHelper.MoveTo(start.X + (DeltaX * step / 16), start.Y + (DeltaY * step / 16));
                 Thread.Sleep(30);
             }
 
-            if (expectedChange)
-            {
-                AssertBounds(expected);
-            }
+            var endpoint = WaitHelper.WaitForStable(
+                MouseHelper.GetMousePosition,
+                position => position == (start.X + DeltaX, start.Y + DeltaY),
+                5_000,
+                requiredConsecutiveMatches: 3);
+            Assert.IsTrue(endpoint.Succeeded, $"The gesture cursor did not reach its endpoint: {endpoint.LastObservation}.");
 
             duringDrag?.Invoke();
         }
