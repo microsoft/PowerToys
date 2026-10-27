@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -628,6 +629,63 @@ public partial class ShellViewModelTests
         }
 
         void OnPageNavigationRequested(object? sender, PageNavigationRequestedEventArgs e) => events.Add("navigate");
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task PerformCommand_FailuresAreLoggedWithExceptionAndCallSite(bool throwDuringInvoke)
+    {
+        var originalLogger = CoreLogger.Instance;
+        var logger = new Mock<ILogger>();
+        var exception = new InvalidOperationException("Command failed", new ArgumentException("Inner failure"));
+        var logged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        logger.Setup(log => log.LogError(It.IsAny<string>(), exception, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
+            .Callback(() => logged.TrySetResult());
+        CoreLogger.InitializeLogger(logger.Object);
+
+        try
+        {
+            var rootPage = new Mock<IRootPageService>();
+            if (!throwDuringInvoke)
+            {
+                rootPage.Setup(page => page.OnPerformCommand(It.IsAny<object?>(), It.IsAny<bool>(), It.IsAny<AppExtensionHost?>()))
+                    .Throws(exception);
+            }
+
+            using var shell = new ShellViewModel(
+                TaskScheduler.Default,
+                rootPage.Object,
+                Mock.Of<IPageViewModelFactoryService>(),
+                CreateAppHostService(new TestAppExtensionHost()).Object);
+            var command = new TestCommand(CommandResult.KeepOpen(), () => throw exception);
+            shell.Receive(new PerformCommandMessage(CreateCommandViewModel(command, shell.CurrentPage)));
+
+            await logged.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            var invocation = (Task?)typeof(ShellViewModel)
+                .GetField("_handleInvokeTask", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .GetValue(shell);
+            if (invocation is not null)
+            {
+                await invocation.WaitAsync(TimeSpan.FromSeconds(5));
+            }
+
+            var expectedMessage = throwDuringInvoke ? "Failed to invoke command" : "Failed to perform command";
+            var expectedMember = throwDuringInvoke ? "SafeHandleInvokeCommandSynchronous" : "PerformCommand";
+            logger.Verify(
+                log => log.LogError(
+                    expectedMessage,
+                    exception,
+                    expectedMember,
+                    It.Is<string>(path => path.EndsWith("ShellViewModel.cs", StringComparison.Ordinal)),
+                    It.Is<int>(line => line > 0)),
+                Times.Once);
+            Assert.IsNotNull(exception.StackTrace);
+        }
+        finally
+        {
+            CoreLogger.InitializeLogger(originalLogger!);
+        }
     }
 
     private static ShellViewModel CreateViewModel()
