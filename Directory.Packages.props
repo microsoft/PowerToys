@@ -66,7 +66,6 @@
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.4022.49" />
     <!-- Kept at the .NET runtime version to match the shared framework copy; some projects use ExcludeAssets=runtime. -->
-    <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="Microsoft.WindowsPackageManager.ComInterop" Version="1.10.340" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.269" />
     <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->
@@ -105,29 +104,19 @@
     <PackageVersion Include="StreamJsonRpc" Version="2.21.69" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <!-- Kept at the .NET runtime version to match the shared framework copy; some projects use ExcludeAssets=runtime. -->
-    <PackageVersion Include="System.CodeDom" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.CommandLine" Version="2.0.1" />
-    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(DotNetRuntimePackageVersion)" />
-    <PackageVersion Include="System.Data.OleDb" Version="$(DotNetRuntimePackageVersion)" />
     <!-- Kept at the .NET runtime version to match the shared framework copy; some projects use ExcludeAssets=runtime. -->
-    <PackageVersion Include="System.Diagnostics.EventLog" Version="$(DotNetRuntimePackageVersion)" />
     <!-- Kept at the .NET runtime version to match the shared framework copy; some projects use ExcludeAssets=runtime. -->
-    <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.ClientModel" Version="1.8.1" />
     <PackageVersion Include="System.Drawing.Common" Version="10.0.10" />
     <PackageVersion Include="System.IO.Abstractions" Version="22.0.13" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="22.0.13" />
-    <PackageVersion Include="System.Management" Version="$(DotNetRuntimePackageVersion)" />
     <!-- Security pin (CVE-2018-8292): UI tests pull 4.3.0 via Appium -> Castle.Core when package pruning is off (VS 2022). -->
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
     <PackageVersion Include="System.Numerics.Tensors" Version="10.0.2" />
     <!-- Security pin (CVE-2019-0657, CVE-2019-0980, CVE-2019-0981): UI tests pull 4.3.0 via Appium -> Castle.Core when package pruning is off (VS 2022). -->
     <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
-    <PackageVersion Include="System.Runtime.Caching" Version="$(DotNetRuntimePackageVersion)" />
-    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="$(DotNetRuntimePackageVersion)" />
-    <PackageVersion Include="System.Text.Encoding.CodePages" Version="$(DotNetRuntimePackageVersion)" />
-    <PackageVersion Include="System.Text.Json" Version="$(DotNetRuntimePackageVersion)" />
     <!-- Security pin (CVE-2019-0820): UI tests pull 4.3.0 via Appium -> Castle.Core when package pruning is off (VS 2022). -->
     <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
     <PackageVersion Include="ToolGood.Words.Pinyin" Version="3.1.0.3" />
