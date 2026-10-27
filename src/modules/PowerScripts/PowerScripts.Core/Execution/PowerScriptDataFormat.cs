@@ -5,11 +5,13 @@
 namespace PowerScripts.Core.Execution;
 
 /// <summary>
-/// The data shapes a script consumes or produces. Media and HTML documents are files.
+/// The data shapes a script consumes or produces. Video remains file-backed.
 /// </summary>
 public enum PowerScriptDataFormat
 {
     None,
     Text,
+    Image = 3,
+    Audio = 4,
     Files = 6,
 }

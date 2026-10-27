@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static readonly JsonSerializerOptions WriteJsonOptions = new() { WriteIndented = true };
 
-        private static readonly string[] CatalogueIoTokens = { string.Empty, "none", "files", "text" };
+        private static readonly string[] CatalogueIoTokens = { string.Empty, "none", "files", "text", "image", "audio" };
 
         private readonly ISettingsRepository<GeneralSettings> _generalSettingsRepository;
         private readonly Func<string, int> _sendConfigMsg;
@@ -768,6 +768,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _pythonModeIndex = 0;
             _pythonInterpreterPath = string.Empty;
             _wslDistribution = string.Empty;
+            _linuxContainerImage = string.Empty;
 
             try
             {
@@ -784,6 +785,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     _pythonInterpreterPath = python["windows"]?["interpreterPath"]?.GetValue<string>() ?? string.Empty;
                     _wslDistribution = python["wsl"]?["distribution"]?.GetValue<string>() ?? string.Empty;
+                    _linuxContainerImage = python["wsl"]?["containerImage"]?.GetValue<string>() ?? _linuxContainerImage;
                 }
             }
             catch (Exception)
@@ -818,7 +820,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             python["mode"] = mode;
             python["windows"] = new JsonObject { ["interpreterPath"] = _pythonInterpreterPath ?? string.Empty };
-            python["wsl"] = new JsonObject { ["distribution"] = _wslDistribution ?? string.Empty };
+            python["wsl"] = new JsonObject
+            {
+                ["distribution"] = _wslDistribution ?? string.Empty,
+                ["containerImage"] = _linuxContainerImage,
+            };
             python["timeoutSeconds"] = existingTimeout;
 
             WriteConfigNode(config);

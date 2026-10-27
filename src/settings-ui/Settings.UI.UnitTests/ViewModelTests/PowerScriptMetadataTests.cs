@@ -14,6 +14,28 @@ namespace ViewModelTests;
 public class PowerScriptMetadataTests
 {
     [TestMethod]
+    public void MediaDetailsShowMimeTypesCollectionBoundsAndBothDirections()
+    {
+        var descriptor = JsonNode.Parse("""
+            {
+              "inputSchema":{"properties":{"image":{"type":"array","minItems":1,"maxItems":2,
+                "items":{"type":"object","properties":{"mimeType":{"enum":["image/png","image/jpeg"]}}}}}},
+              "outputSchema":{"properties":{"audio":{"type":"object",
+                "properties":{"mimeType":{"enum":["audio/wav"]}}}}}
+            }
+            """)!.AsObject();
+        var rows = PowerScriptMetadataDetails.Create(descriptor, key => key).SelectMany(section => section.Rows).ToDictionary(row => row.Key);
+        Assert.AreEqual("PowerScripts_DetailsImage", rows["Input"].Value);
+        Assert.AreEqual("PowerScripts_DetailsAudio", rows["Output"].Value);
+        StringAssert.Contains(rows["InputMediaTypes"].Value, "image/png");
+        StringAssert.Contains(rows["InputMediaTypes"].Value, "image/jpeg");
+        Assert.AreEqual("PowerScripts_DetailsYes", rows["InputMediaCollection"].Value);
+        Assert.AreEqual("2", rows["InputMediaMaximum"].Value);
+        Assert.AreEqual("PowerScripts_DetailsNo", rows["OutputMediaCollection"].Value);
+        Assert.AreEqual("audio/wav", rows["OutputMediaTypes"].Value);
+    }
+
+    [TestMethod]
     public void ReadableDefaultsKeepZeroFalseEmptyAndNullDistinctFromMissing()
     {
         var descriptor = JsonNode.Parse("""

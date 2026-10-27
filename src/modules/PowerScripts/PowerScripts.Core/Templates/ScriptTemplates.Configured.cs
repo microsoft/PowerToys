@@ -4,6 +4,8 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text;
+using PowerScripts.Core.Manifest;
 
 namespace PowerScripts.Core.Templates;
 
@@ -13,10 +15,10 @@ public static partial class ScriptTemplates
     {
         ArgumentNullException.ThrowIfNull(options);
         if (options.Runtime is not ("powershell" or "python") ||
-            options.Input is not ("none" or "text" or "files") ||
-            options.Output is not ("none" or "text" or "files"))
+            options.Input is not ("none" or "text" or "files" or "image" or "audio") ||
+            options.Output is not ("none" or "text" or "files" or "image" or "audio"))
         {
-            throw new ArgumentException("Choose PowerShell or Python and an input and output type of none, text or files.", nameof(options));
+            throw new ArgumentException("Choose PowerShell or Python and an input and output type of none, text, files, image, or audio. Video uses files.", nameof(options));
         }
 
         if (options.Input == "files")
@@ -84,6 +86,31 @@ public static partial class ScriptTemplates
             properties["files"] = files;
             required.Add("files");
         }
+        else if (shape is "image" or "audio")
+        {
+            properties[shape] = new JsonObject
+            {
+                ["type"] = "object",
+                ["additionalProperties"] = false,
+                ["properties"] = new JsonObject
+                {
+                    ["mimeType"] = new JsonObject
+                    {
+                        ["type"] = "string",
+                        ["enum"] = JsonSerializer.SerializeToNode(shape == "image" ? ScriptMedia.ImageMimeTypes : ScriptMedia.AudioMimeTypes),
+                    },
+                    ["data"] = new JsonObject
+                    {
+                        ["type"] = "string",
+                        ["contentEncoding"] = "base64",
+                        ["minLength"] = 1,
+                        ["maxLength"] = ScriptMedia.MaxEncodedLength,
+                    },
+                },
+                ["required"] = new JsonArray("mimeType", "data"),
+            };
+            required.Add(shape);
+        }
 
         return new JsonObject
         {
@@ -100,6 +127,8 @@ public static partial class ScriptTemplates
         {
             "text" => "param([string]$Text = '')\n",
             "files" => "param([string[]]$Files)\n",
+            "image" => "param([object]$Image)\n",
+            "audio" => "param([object]$Audio)\n",
             _ => string.Empty,
         };
         var input = options.Input switch
@@ -114,6 +143,12 @@ public static partial class ScriptTemplates
                     '{0} ({1} bytes)' -f $file.Name, $file.Length
                 }) -join [Environment]::NewLine
                 """,
+            "image" or "audio" => $$"""
+                $media = ${{(options.Input == "image" ? "Image" : "Audio")}}
+                $content = (@($media) | ForEach-Object {
+                    '{0} ({1} bytes)' -f $_.mimeType, ([Convert]::FromBase64String($_.data)).Length
+                }) -join [Environment]::NewLine
+                """,
             _ => "$content = 'Hello from your new PowerScript.'",
         };
         var output = options.Output switch
@@ -123,6 +158,11 @@ public static partial class ScriptTemplates
                 $path = Join-Path $env:TEMP ('powerscript-' + [Guid]::NewGuid().ToString('N') + '.txt')
                 Set-Content -LiteralPath $path -Value $content -Encoding UTF8
                 @{ files = @($path) } | ConvertTo-Json -Compress
+                """,
+            "image" or "audio" => $$"""
+                # Replace this example with your media processing; matching media input is passed through.
+                $media = {{(options.Input == options.Output ? "$" + (options.Input == "image" ? "Image" : "Audio") : "ConvertFrom-Json '" + SampleMedia(options.Output).ToJsonString() + "'")}}
+                @{ {{options.Output}} = $media } | ConvertTo-Json -Depth 8 -Compress
                 """,
             _ => "# Add work here; send diagnostics to stderr.",
         };
@@ -144,6 +184,11 @@ public static partial class ScriptTemplates
         {
             "text" => "content = request['text']",
             "files" => "content = '\\n'.join(f'{Path(path).name} ({Path(path).stat().st_size} bytes)' for path in request['files'])",
+            "image" or "audio" => $$"""
+                media = request['{{options.Input}}']
+                items = media if isinstance(media, list) else [media]
+                content = '\n'.join(f"{item['mimeType']} ({len(base64.b64decode(item['data'], validate=True))} bytes)" for item in items)
+                """,
             _ => "content = 'Hello from your new PowerScript.'",
         };
         var output = options.Output switch
@@ -154,11 +199,17 @@ public static partial class ScriptTemplates
                     output.write(content)
                 print(json.dumps({'files': [output.name]}))
                 """,
+            "image" or "audio" => $$"""
+                # Replace this example with your media processing; matching media input is passed through.
+                media = {{(options.Input == options.Output ? "request['" + options.Input + "']" : SampleMedia(options.Output).ToJsonString())}}
+                print(json.dumps({'{{options.Output}}': media}))
+                """,
             _ => "# Add work here; send diagnostics to stderr with print(..., file=sys.stderr).",
         };
         return $"""
             # Read the schema-validated request; no entry function is required.
             import json
+            import base64
             import sys
             from pathlib import Path
             import tempfile
@@ -171,6 +222,38 @@ public static partial class ScriptTemplates
             """;
     }
 
+    private static JsonObject SampleMedia(string category)
+    {
+        if (category == "image")
+        {
+            return new JsonObject
+            {
+                ["mimeType"] = "image/png",
+                ["data"] = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=",
+            };
+        }
+
+        using var buffer = new MemoryStream();
+        using (var writer = new BinaryWriter(buffer, Encoding.ASCII, leaveOpen: true))
+        {
+            writer.Write("RIFF"u8);
+            writer.Write(36 + 1600);
+            writer.Write("WAVEfmt "u8);
+            writer.Write(16);
+            writer.Write((short)1);
+            writer.Write((short)1);
+            writer.Write(8000);
+            writer.Write(16000);
+            writer.Write((short)2);
+            writer.Write((short)16);
+            writer.Write("data"u8);
+            writer.Write(1600);
+            writer.Write(new byte[1600]);
+        }
+
+        return new JsonObject { ["mimeType"] = "audio/wav", ["data"] = Convert.ToBase64String(buffer.ToArray()) };
+    }
+
     private static string CreateGuide(ScriptTemplateOptions options, string entryName) => $$"""
         # Your PowerScript
 
@@ -181,7 +264,7 @@ public static partial class ScriptTemplates
         ## Schemas
 
         Both `inputSchema` and `outputSchema` are required closed JSON Schema objects.
-        Declare one required `text` string or `files` array of path strings, or neither for no primary data.
+        Declare one required primary field: `text`, `files`, `image`, or `audio`, or neither for no primary data.
         Add named options in `inputSchema.properties.parameters`, an object with its own `properties`,
         `required` list and `additionalProperties: false`. Supported options are string, integer and boolean.
         String options support `enum`, `minLength`, `maxLength` and `pattern`; integers support
@@ -200,7 +283,19 @@ public static partial class ScriptTemplates
         Parameters retain JSON boolean and integer types; Python does not receive keyword arguments.
         Text output is literal stdout. File output is a JSON object `{"files": ["absolute path"]}`.
         No-output scripts emit no result; send diagnostics to stderr.
-        Rich HTML and media use files, not text.
+        Image/audio values contain `mimeType` and base64 `data`, never a file path.
+        Python reads `request["image"]` / `request["audio"]`; PowerShell receives `$Image` / `$Audio`.
+        Both directions support PNG, JPEG, static WebP, WAV, MP3 and FLAC according to the MIME enum.
+        There is no implicit conversion, streaming, or codec installation. Matching media templates
+        pass input through; other media-output templates create a one-pixel PNG or 0.1-second silent WAV.
+        Replace those examples with your own processing.
+        For collections, wrap the media object schema in `{"type":"array","minItems":1,"items":...}`,
+        optionally set `maxItems`, and return an array even for one item.
+        Limits: 64 items, 16 MiB decoded per item, 32 MiB decoded total per request/result.
+        Host checks base64, MIME declarations and format headers; scripts still handle codec errors.
+        Animated images, SVG, multipage images, video, and large assets use file contracts.
+        For video, select files with extensions such as `.mp4, .webm, .mov, .mkv`.
+        HTML markup uses text; HTML documents use files.
 
         ## Metadata and isolation
 

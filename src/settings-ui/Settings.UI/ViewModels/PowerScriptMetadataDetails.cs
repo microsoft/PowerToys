@@ -14,6 +14,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels;
 /// <summary>Read-only presentation of authoritative metadata; never generates settings overrides.</summary>
 public static class PowerScriptMetadataDetails
 {
+    private static readonly string[] PrimaryFields = { "files", "text", "image", "audio" };
+
     public static IReadOnlyList<PowerScriptMetadataSection> Create(JsonObject descriptor, Func<string, string> getString, string entryExtension = null)
     {
         string Text(string key) => getString("PowerScripts_Details" + key);
@@ -33,8 +35,8 @@ public static class PowerScriptMetadataDetails
         string Optional(JsonNode node) => node is null ? Text("NotSpecified") : Value(node);
         string Token(JsonNode node) => node is JsonValue value && value.TryGetValue<string>(out var text) ? text : string.Empty;
         string Shape(JsonNode node) => node?["properties"] is JsonObject properties
-            ? properties.ContainsKey("files") ? "files" : properties.ContainsKey("text") ? "text" : "none" : "none";
-        string Io(string shape) => Text(shape switch { "files" => "Files", "text" => "Text", _ => "None" });
+            ? PrimaryFields.FirstOrDefault(properties.ContainsKey) ?? "none" : "none";
+        string Io(string shape) => Text(shape switch { "files" => "Files", "text" => "Text", "image" => "Image", "audio" => "Audio", _ => "None" });
         PowerScriptMetadataRow Row(string key, string label, string value) => new(key, Text(label), value);
         var sections = new List<PowerScriptMetadataSection>();
         var general = new List<PowerScriptMetadataRow>
@@ -68,6 +70,29 @@ public static class PowerScriptMetadataDetails
             io.Add(Row("Extensions", "Extensions", acceptedExtensions));
             io.Add(Row("MinFiles", "MinFiles", files["minItems"] is null ? "0" : Value(files["minItems"])));
             io.Add(Row("MaxFiles", "MaxFiles", maximumFiles));
+        }
+
+        foreach (var direction in new[] { "inputSchema", "outputSchema" })
+        {
+            var shape = Shape(descriptor[direction]);
+            if (shape is not ("image" or "audio"))
+            {
+                continue;
+            }
+
+            var primary = descriptor[direction]?["properties"]?[shape];
+            var collection = Token(primary?["type"]) == "array";
+            var item = collection ? primary?["items"] : primary;
+            var prefix = direction == "inputSchema" ? "Input" : "Output";
+            io.Add(Row(prefix + "MediaTypes", prefix + "MediaTypes", Optional(item?["properties"]?["mimeType"]?["enum"])));
+            io.Add(Row(prefix + "MediaCollection", "MediaCollection", Text(collection ? "Yes" : "No")));
+            if (collection)
+            {
+                io.Add(Row(prefix + "MediaMinimum", "MediaMinimum", Optional(primary?["minItems"])));
+                io.Add(Row(prefix + "MediaMaximum", "MediaMaximum", primary?["maxItems"] is { } maximum ? Value(maximum) : "64"));
+            }
+
+            io.Add(Row(prefix + "MediaLimits", "MediaLimits", Text("MediaLimitsValue")));
         }
 
         sections.Add(new("Io", Text("Io"), io));

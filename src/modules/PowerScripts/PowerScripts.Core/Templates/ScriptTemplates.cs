@@ -31,12 +31,26 @@ public static partial class ScriptTemplates
         new ScriptTemplate("greeting", "Greeting with parameters", "No primary input → text. Learn identity, typed parameters, defaults and discovery. Runs with all MXC restrictions enabled."),
         new ScriptTemplate("report", "Create a text file", "No primary input → files. Learn file output, UTF-8 and fileWrite capabilities. Writes only to the isolated temporary workspace; no policy relaxation."),
         new ScriptTemplate("file-info", "Describe selected files", "Files → text. Choose which file extensions to accept and return each selected file's name and size. No policy relaxation.", AcceptsFiles: true),
+        new ScriptTemplate("image-echo", "Pass through an image", "Image → image. Learn MIME types and base64 media without temporary input files. No codec dependencies or policy relaxation."),
+        new ScriptTemplate("audio-echo", "Pass through audio", "Audio → audio. Learn bounded inline audio with MIME types and base64 data. No codec dependencies or policy relaxation."),
+        new ScriptTemplate("video-info", "Describe video files", "Video files → text. Video stays file-backed; inspect selected MP4, WebM, MOV or MKV files.", AcceptsFiles: true),
     });
 
     public static CreatedScriptTemplate Create(string id, string scriptsRoot, ScriptTemplateOptions? options = null)
     {
         var template = All.SingleOrDefault(item => string.Equals(item.Id, id, StringComparison.Ordinal))
             ?? throw new ArgumentException("Unknown script template.", nameof(id));
+        if (id is "image-echo" or "audio-echo" or "video-info")
+        {
+            var shape = id == "image-echo" ? "image" : id == "audio-echo" ? "audio" : "files";
+            return Create(scriptsRoot, new ScriptTemplateOptions(
+                options?.ProjectName ?? template.Name,
+                options?.Description ?? template.Description,
+                id == "video-info" ? options?.FileExtensions ?? ".mp4,.webm,.mov,.mkv" : options?.FileExtensions,
+                Input: shape,
+                Output: id == "video-info" ? "text" : shape));
+        }
+
         var descriptor = JsonNode.Parse(ReadAsset(template.Id, "script.ps1.tool.json"))!.AsObject();
         if (template.AcceptsFiles)
         {

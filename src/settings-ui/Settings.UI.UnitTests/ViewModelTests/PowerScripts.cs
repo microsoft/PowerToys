@@ -16,6 +16,17 @@ namespace ViewModelTests
         private static readonly string[] DisabledNetworkPolicy = { PowerScriptListItem.NetworkPolicy };
         private static readonly string[] UnknownPolicy = { "futurePolicy" };
 
+        [TestMethod]
+        public void CatalogueFiltersImageAndAudioIndependentlyInBothDirections()
+        {
+            var image = new PowerScriptListItem { Id = "image", Io = new PowerScriptIo { Input = "image", Output = "audio" } };
+            var audio = new PowerScriptListItem { Id = "audio", Io = new PowerScriptIo { Input = "audio", Output = "image" } };
+            var scripts = new[] { image, audio };
+            Assert.AreSame(image, PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 4, 5).Single());
+            Assert.AreSame(audio, PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 5, 4).Single());
+            Assert.AreEqual(0, PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 4, 4).Count);
+        }
+
         [DataTestMethod]
         [DataRow("Python")]
         [DataRow("python")]

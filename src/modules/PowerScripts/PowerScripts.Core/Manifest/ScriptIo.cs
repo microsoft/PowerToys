@@ -10,7 +10,8 @@ namespace PowerScripts.Core.Manifest;
 public static class ScriptIo
 {
     public static bool IsSupported(PowerScriptDataFormat format) =>
-        format is PowerScriptDataFormat.None or PowerScriptDataFormat.Text or PowerScriptDataFormat.Files;
+        format is PowerScriptDataFormat.None or PowerScriptDataFormat.Text or PowerScriptDataFormat.Files
+            or PowerScriptDataFormat.Image or PowerScriptDataFormat.Audio;
 
     public static (PowerScriptDataFormat Input, PowerScriptDataFormat Output) Resolve(PowerScriptManifest manifest) =>
         (manifest.InputFormat, manifest.OutputFormat);
@@ -22,6 +23,8 @@ public static class ScriptIo
         "none" => PowerScriptDataFormat.None,
         "text" => PowerScriptDataFormat.Text,
         "files" => PowerScriptDataFormat.Files,
+        "image" => PowerScriptDataFormat.Image,
+        "audio" => PowerScriptDataFormat.Audio,
         _ => null,
     };
 }

@@ -86,6 +86,8 @@
                         <ComboBoxItem x:Uid="PowerScripts_TemplateNone" Tag="none" />
                         <ComboBoxItem x:Uid="PowerScripts_FilterText" Tag="text" />
                         <ComboBoxItem x:Uid="PowerScripts_FilterFiles" Tag="files" />
+                        <ComboBoxItem x:Uid="PowerScripts_FilterImage" Tag="image" />
+                        <ComboBoxItem x:Uid="PowerScripts_FilterAudio" Tag="audio" />
                     </ComboBox>
                     <StackPanel
                         x:Name="FileInputOptions"
@@ -130,6 +132,8 @@
                         <ComboBoxItem x:Uid="PowerScripts_TemplateNone" Tag="none" />
                         <ComboBoxItem x:Uid="PowerScripts_FilterText" Tag="text" />
                         <ComboBoxItem x:Uid="PowerScripts_FilterFiles" Tag="files" />
+                        <ComboBoxItem x:Uid="PowerScripts_FilterImage" Tag="image" />
+                        <ComboBoxItem x:Uid="PowerScripts_FilterAudio" Tag="audio" />
                     </ComboBox>
                     <TextBlock x:Uid="PowerScripts_TemplateSetupHelp" TextWrapping="Wrap" />
                     <InfoBar

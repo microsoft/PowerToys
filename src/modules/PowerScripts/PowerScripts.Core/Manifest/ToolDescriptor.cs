@@ -133,6 +133,12 @@ public sealed class JsonSchemaProperty : JsonSchemaObject
     [JsonPropertyName("pattern")]
     public string? Pattern { get; set; }
 
+    [JsonPropertyName("contentEncoding")]
+    public string? ContentEncoding { get; set; }
+
+    [JsonPropertyName("contentMediaType")]
+    public string? ContentMediaType { get; set; }
+
     /// <summary>True when this is a scalar file-path parameter rendered with a consumer-owned picker.</summary>
     [JsonIgnore]
     public bool IsFileParameter => string.Equals(Format, FilePathFormat, StringComparison.OrdinalIgnoreCase);

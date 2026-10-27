@@ -166,7 +166,7 @@ public class ScriptTemplateTests
     [DataTestMethod]
     [DataRow("missing", "none", "text", null, 1, 0)]
     [DataRow("powershell", "html", "text", null, 1, 0)]
-    [DataRow("python", "none", "image", null, 1, 0)]
+    [DataRow("python", "none", "video", null, 1, 0)]
     [DataRow("powershell", "none", "text", ".txt", 1, 0)]
     [DataRow("python", "text", "text", null, 2, 0)]
     [DataRow("powershell", "files", "text", "../txt", 1, 0)]

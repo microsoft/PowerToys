@@ -23,13 +23,21 @@ public sealed class PythonTransformInput
     [JsonPropertyName("files")]
     public List<string>? FilePaths { get; set; }
 
+    [JsonPropertyName("image")]
+    public JsonElement? Image { get; set; }
+
+    [JsonPropertyName("audio")]
+    public JsonElement? Audio { get; set; }
+
     [JsonPropertyName("parameters")]
     public Dictionary<string, string>? Params { get; set; }
 
     public JsonObject CreateRequest(PowerScriptManifest manifest, bool validate = true)
     {
         if ((manifest.InputFormat != PowerScriptDataFormat.Files && FilePaths is { Count: > 0 }) ||
-            (manifest.InputFormat != PowerScriptDataFormat.Text && Text is not null))
+            (manifest.InputFormat != PowerScriptDataFormat.Text && Text is not null) ||
+            (manifest.InputFormat != PowerScriptDataFormat.Image && Image is not null) ||
+            (manifest.InputFormat != PowerScriptDataFormat.Audio && Audio is not null))
         {
             throw new InvalidDataException("The supplied primary data does not match inputSchema.");
         }
@@ -42,6 +50,14 @@ public sealed class PythonTransformInput
         else if (manifest.InputFormat == PowerScriptDataFormat.Text)
         {
             request["text"] = Text ?? string.Empty;
+        }
+        else if (manifest.InputFormat is PowerScriptDataFormat.Image or PowerScriptDataFormat.Audio)
+        {
+            var value = manifest.InputFormat == PowerScriptDataFormat.Image ? Image : Audio;
+            if (value is { } media)
+            {
+                request[ScriptIo.ToToken(manifest.InputFormat)] = JsonNode.Parse(media.GetRawText());
+            }
         }
 
         if (manifest.InputSchema.Properties?.ContainsKey("parameters") == true)
@@ -76,6 +92,11 @@ public sealed class PythonTransformInput
 
     public static PythonTransformInput Parse(PowerScriptManifest manifest, string json)
     {
+        if (manifest.InputFormat is PowerScriptDataFormat.Image or PowerScriptDataFormat.Audio && json.Length > ScriptMedia.MaxRequestCharacters)
+        {
+            throw new InvalidDataException("Inline media request exceeds the bounded payload size.");
+        }
+
         var request = JsonNode.Parse(json) as JsonObject
             ?? throw new InvalidDataException("Input must be an object.");
         if (manifest.InputSchema.Properties?.ContainsKey("parameters") == true && !request.ContainsKey("parameters"))
@@ -90,6 +111,8 @@ public sealed class PythonTransformInput
         {
             Text = request["text"]?.GetValue<string>(),
             FilePaths = request["files"]?.Deserialize<List<string>>(),
+            Image = request["image"]?.Deserialize<JsonElement>(),
+            Audio = request["audio"]?.Deserialize<JsonElement>(),
             Params = request["parameters"]?.AsObject().ToDictionary(
                 pair => pair.Key,
                 pair => pair.Value is JsonValue scalar && scalar.TryGetValue<string>(out var text) ? text : pair.Value!.ToJsonString(),
@@ -108,6 +131,12 @@ public sealed class PythonTransformResult
     [JsonPropertyName("files")]
     public List<string>? FilePaths { get; set; }
 
+    [JsonPropertyName("image")]
+    public JsonElement? Image { get; set; }
+
+    [JsonPropertyName("audio")]
+    public JsonElement? Audio { get; set; }
+
     [JsonIgnore]
     public int ExitCode { get; set; }
 
@@ -118,21 +147,36 @@ public sealed class PythonTransformResult
     public bool Succeeded => ExitCode == 0;
 
     /// <summary>Reads an output object and checks that it matches the descriptor, without guessing paths from text.</summary>
-    public static PythonTransformResult Parse(string json, PowerScriptDataFormat format)
+    public static PythonTransformResult Parse(string json, PowerScriptDataFormat format, JsonSchemaObject? schema = null)
     {
+        if (format is PowerScriptDataFormat.Image or PowerScriptDataFormat.Audio && json.Length > ScriptMedia.MaxRequestCharacters)
+        {
+            throw new InvalidDataException("Inline media result exceeds the bounded payload size.");
+        }
+
+        if (schema is not null)
+        {
+            using var document = JsonDocument.Parse(json);
+            ScriptSchema.Validate(schema, document.RootElement, "output");
+        }
+
         var result = JsonSerializer.Deserialize<PythonTransformResult>(json)
             ?? throw new JsonException("Expected an output object.");
+        var populated = (result.Text is not null ? 1 : 0) + (result.FilePaths is not null ? 1 : 0) +
+            (result.Image is not null ? 1 : 0) + (result.Audio is not null ? 1 : 0);
         var valid = format switch
         {
-            PowerScriptDataFormat.None => result.Text is null && result.FilePaths is null,
-            PowerScriptDataFormat.Text => result.Text is not null && result.FilePaths is null,
-            PowerScriptDataFormat.Files => result.Text is null && result.FilePaths is not null &&
+            PowerScriptDataFormat.None => populated == 0,
+            PowerScriptDataFormat.Text => populated == 1 && result.Text is not null,
+            PowerScriptDataFormat.Image => populated == 1 && result.Image is { ValueKind: JsonValueKind.Object or JsonValueKind.Array },
+            PowerScriptDataFormat.Audio => populated == 1 && result.Audio is { ValueKind: JsonValueKind.Object or JsonValueKind.Array },
+            PowerScriptDataFormat.Files => populated == 1 && result.FilePaths is not null &&
                 result.FilePaths.All(path => !string.IsNullOrWhiteSpace(path)),
             _ => false,
         };
         if (!valid)
         {
-            throw new JsonException($"Output does not match '{ScriptIo.ToToken(format)}'. Return {{}} for none, {{\"text\":\"...\"}} for text, or {{\"files\":[\"...\"]}} for files.");
+            throw new JsonException($"Output does not match '{ScriptIo.ToToken(format)}'. Return one declared primary field: text, files, image, or audio; return {{}} for none.");
         }
 
         return result;
@@ -184,12 +228,12 @@ public sealed class PythonRuntime
         var inputFormat = ScriptIo.Resolve(manifest).Input;
         if (!ScriptIo.IsSupported(inputFormat))
         {
-            return new PythonTransformResult { ExitCode = 2, StdErr = "Unsupported primary input. Use none, text, or files." };
+            return new PythonTransformResult { ExitCode = 2, StdErr = "Unsupported primary input. Use none, text, files, image, or audio." };
         }
 
         if (!ScriptIo.IsSupported(ScriptIo.Resolve(manifest).Output))
         {
-            return new PythonTransformResult { ExitCode = 2, StdErr = "Unsupported output. Use none, text, or files." };
+            return new PythonTransformResult { ExitCode = 2, StdErr = "Unsupported output. Use none, text, files, image, or audio." };
         }
 
         var scriptPath = manifest.EntryFullPath;
@@ -221,6 +265,8 @@ public sealed class PythonRuntime
             var translated = new PythonTransformInput
             {
                 Text = input.Text,
+                Image = input.Image,
+                Audio = input.Audio,
                 FilePaths = input.FilePaths?.Select(path => MxcLinuxProcessRunner.ToContainerPath(path)).ToList(),
                 Params = TranslateWslFileParameters(manifest, input.Params),
             };
@@ -232,7 +278,7 @@ public sealed class PythonRuntime
                 {
                     var policy = MxcPolicyResolver.Resolve(settings);
                     return MxcLinuxProcessRunner.Run(
-                        scriptPath, payload, ScriptIo.Resolve(manifest).Output, context, policy, settings, timeout);
+                        scriptPath, payload, ScriptIo.Resolve(manifest).Output, context, policy, settings, _settings.Wsl.ContainerImage, timeout);
                 },
                 translateResultPaths: false);
         }
@@ -305,6 +351,8 @@ public sealed class PythonRuntime
         var wslInput = new PythonTransformInput
         {
             Text = input.Text,
+            Image = input.Image,
+            Audio = input.Audio,
             FilePaths = input.FilePaths?.Select(p => ToWslPath(p)!).ToList(),
             Params = wslParameters,
         };
@@ -410,7 +458,8 @@ public sealed class PythonRuntime
                 {
                     PowerScriptDataFormat.None => new PythonTransformResult(),
                     PowerScriptDataFormat.Text => new PythonTransformResult { Text = stdout },
-                    _ => PythonTransformResult.Parse(stdout, ScriptIo.Resolve(manifest).Output),
+                    _ => PythonTransformResult.Parse(stdout, ScriptIo.Resolve(manifest).Output,
+                        translateResultPaths && manifest.OutputFormat == PowerScriptDataFormat.Files ? null : manifest.OutputSchema),
                 };
                 if (translateResultPaths)
                 {

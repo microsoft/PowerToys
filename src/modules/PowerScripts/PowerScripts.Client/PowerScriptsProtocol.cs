@@ -8,7 +8,7 @@ namespace PowerScripts.Client;
 /// The data shapes a PowerScript can consume or produce. A script declares only its own I/O; a
 /// consuming module discovers the scripts it can use by filtering on these (see the filter methods on
 /// <see cref="PowerScriptsClient"/>). These names match the host's <c>io</c> block exactly.
-/// Both inputs and outputs use None, Text, or Files. Media and HTML documents are files.
+/// Inputs and outputs use None, Text, Files, Image, or Audio. Video remains file-backed.
 /// </summary>
 public enum PowerScriptIO
 {
@@ -17,6 +17,12 @@ public enum PowerScriptIO
 
     /// <summary>String input (including inline HTML), or plain-text output.</summary>
     Text,
+
+    /// <summary>Inline image content.</summary>
+    Image = 3,
+
+    /// <summary>Inline audio content.</summary>
+    Audio = 4,
 
     /// <summary>One or more files (for a <c>file</c> script, see <see cref="PowerScriptInfo.InputExtensions"/>).</summary>
     // Preserve the value used by previously compiled consumers.
@@ -43,8 +49,10 @@ public static class PowerScriptsProtocol
     {
         "text" => PowerScriptIO.Text,
         "file" or "files" => PowerScriptIO.Files,
+        "image" => PowerScriptIO.Image,
+        "audio" => PowerScriptIO.Audio,
         null or "" or "none" => PowerScriptIO.None,
-        _ => throw new System.Text.Json.JsonException($"Unsupported PowerScripts I/O type '{token}'. Use none, text, or files."),
+        _ => throw new System.Text.Json.JsonException($"Unsupported PowerScripts I/O type '{token}'. Use none, text, files, image, or audio."),
     };
 
     /// <summary>The exit codes the host returns. Consumers should branch on these rather than guessing.</summary>

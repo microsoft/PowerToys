@@ -49,7 +49,9 @@ public sealed class ScriptExecutor
         PowerScriptManifest manifest,
         IReadOnlyList<string>? files = null,
         IReadOnlyDictionary<string, string?>? parameters = null,
-        string? text = null)
+        string? text = null,
+        JsonElement? image = null,
+        JsonElement? audio = null)
     {
         if (!ScriptParameterResolver.TryResolve(manifest, parameters ?? new Dictionary<string, string?>(), out var resolved, out var error))
         {
@@ -60,6 +62,8 @@ public sealed class ScriptExecutor
         var input = new PythonTransformInput
         {
             Text = text,
+            Image = image,
+            Audio = audio,
             FilePaths = files?.ToList(),
             Params = parameters?.ToDictionary(pair => pair.Key, pair => pair.Value ?? string.Empty),
         };
@@ -68,7 +72,7 @@ public sealed class ScriptExecutor
         // through the language-agnostic descriptor executor, regardless of runtime.
         if (manifest.Execute is not null)
         {
-            return ValidateOutput(manifest, DescriptorExecutor.Run(manifest, files, parameters, mxcSettings: _mxcSettings, text: text));
+            return ValidateOutput(manifest, DescriptorExecutor.Run(manifest, files, parameters, mxcSettings: _mxcSettings, text: text, image: image, audio: audio));
         }
 
         if (manifest.Runtime == ScriptRuntime.Python)
@@ -115,6 +119,8 @@ public sealed class ScriptExecutor
             }
             if ($request.PSObject.Properties['text']) { $arguments['Text'] = $request.text }
             if ($request.PSObject.Properties['files']) { $arguments['Files'] = [string[]]$request.files }
+            if ($request.PSObject.Properties['image']) { $arguments['Image'] = $request.image }
+            if ($request.PSObject.Properties['audio']) { $arguments['Audio'] = $request.audio }
             """ + Environment.NewLine + $"& '{manifest.EntryFullPath.Replace("'", "''")}' @arguments";
         psi.ArgumentList.Add("-EncodedCommand");
         psi.ArgumentList.Add(Convert.ToBase64String(Encoding.Unicode.GetBytes(command)));
@@ -146,6 +152,15 @@ public sealed class ScriptExecutor
         PythonTransformInput input)
     {
         var result = new PythonRuntime(mxcSettings: _mxcSettings).Run(manifest, input);
+        if (result.Succeeded && manifest.OutputFormat is PowerScriptDataFormat.Image or PowerScriptDataFormat.Audio)
+        {
+            return new ScriptExecutionResult
+            {
+                ExitCode = result.ExitCode,
+                StdOut = JsonSerializer.Serialize(result, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull }),
+                StdErr = result.StdErr,
+            };
+        }
 
         var stdoutParts = new List<string>();
         if (!string.IsNullOrEmpty(result.Text))
@@ -179,7 +194,7 @@ public sealed class ScriptExecutor
             {
                 PowerScriptDataFormat.None => new PythonTransformResult(),
                 PowerScriptDataFormat.Text => new PythonTransformResult { Text = result.StdOut },
-                _ => PythonTransformResult.Parse(result.StdOut, PowerScriptDataFormat.Files),
+                _ => PythonTransformResult.Parse(result.StdOut, manifest.OutputFormat, manifest.OutputSchema),
             };
             ScriptSchema.Validate(manifest.OutputSchema, JsonSerializer.SerializeToElement(output, new JsonSerializerOptions
             {

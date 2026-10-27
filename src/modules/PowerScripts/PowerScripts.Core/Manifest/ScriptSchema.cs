@@ -71,6 +71,13 @@ public static class ScriptSchema
 
         if (schema is JsonSchemaProperty property)
         {
+            if ((property.ContentEncoding is not null && (property.Type != "string" || property.ContentEncoding != "base64")) ||
+                (property.ContentMediaType is not null && (property.ContentEncoding != "base64" ||
+                    !ScriptMedia.ImageMimeTypes.Concat(ScriptMedia.AudioMimeTypes).Contains(property.ContentMediaType, StringComparer.Ordinal))))
+            {
+                throw new InvalidDataException($"'{path}' supports only base64 content with a supported image or audio MIME type.");
+            }
+
             if (property.MinLength < 0 || property.MaxLength < 0 || property.MaxLength < property.MinLength ||
                 property.Maximum < property.Minimum)
             {
@@ -154,6 +161,15 @@ public static class ScriptSchema
                     throw new InvalidDataException($"Unknown property '{path}.{property.Name}'.");
                 }
             }
+
+            foreach (var category in new[] { "image", "audio" })
+            {
+                if (schema.Properties?.TryGetValue(category, out var declaration) == true &&
+                    declaration.Type is "object" or "array" && value.TryGetProperty(category, out var media))
+                {
+                    ScriptMedia.Validate(media, category, path + "." + category);
+                }
+            }
         }
         else if (schema.Type == "array")
         {
@@ -188,7 +204,16 @@ public static class ScriptSchema
             if (value.ValueKind == JsonValueKind.String)
             {
                 var text = value.GetString()!;
-                var length = text.EnumerateRunes().Count();
+                if (node.ContentEncoding == "base64")
+                {
+                    var decoded = ScriptMedia.Decode(text, path);
+                    if (node.ContentMediaType is { } mime)
+                    {
+                        ScriptMedia.ValidateFormat(decoded, mime, path);
+                    }
+                }
+
+                var length = node.ContentEncoding == "base64" ? text.Length : text.EnumerateRunes().Count();
                 if ((node.MinLength is { } minLength && length < minLength) ||
                     (node.MaxLength is { } maxLength && length > maxLength) ||
                     (node.Pattern is { } pattern && !Regex.IsMatch(text, pattern, RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1))))

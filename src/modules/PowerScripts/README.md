@@ -61,7 +61,8 @@ The runtime is inferred from `.ps1` or `.py`.
 ### Schema profile
 
 Each envelope is a closed object (`additionalProperties: false`) with at most
-one required primary field: `text` (string) or `files` (array of path strings).
+one required primary field: `text` (string), `files` (array of path strings),
+`image`, or `audio` (inline media objects or explicitly declared arrays).
 No primary field means no primary input/output. An empty closed output object
 declares no result. Only input may also contain a `parameters` object.
 
@@ -81,6 +82,65 @@ Omitted extensions or `["*"]` accept all extensions. Scalar file parameters
 use the same annotation. Extension matching is case-insensitive; it does not
 validate file contents or grant filesystem permissions.
 The Host enforces schema constraints on input and output, not just discovery.
+
+### Inline image and audio
+
+Media objects require `mimeType` and `data`. The MIME field is a string enum
+listing formats the script accepts; `data` is a string with
+`contentEncoding: "base64"`. Both input and output use the same representation:
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mimeType": { "type": "string", "enum": ["image/png", "image/jpeg"] },
+        "data": { "type": "string", "contentEncoding": "base64", "minLength": 1 }
+      },
+      "required": ["mimeType", "data"]
+    }
+  },
+  "required": ["image"]
+}
+```
+
+The corresponding request/result is
+`{"image":{"mimeType":"image/png","data":"<base64 PNG bytes>"}}`.
+Audio uses the primary field `audio` and an audio MIME enum.
+Optional `contentMediaType` on `data` is supported when the enum names exactly
+that one MIME type. These are JSON Schema objects/strings, not new primitive types.
+
+| Category | Supported MIME types |
+| --- | --- |
+| Image | `image/png`, `image/jpeg`, `image/webp` (static images only) |
+| Audio | `audio/wav`, `audio/mpeg` (MP3), `audio/flac` |
+
+For collections, wrap the media item schema in
+`{"type":"array","minItems":1,"maxItems":2,"items":{...}}` under the same primary
+field. Array shape is preserved even for one item. Omitted `maxItems` permits up
+to the global 64-item limit. Each item may use any of the declared MIME types.
+Limits apply separately to input and output: **16 MiB decoded per item, 32 MiB
+decoded total, at most 64 items**, with a bounded JSON media envelope.
+Base64 must be nonempty and contain no whitespace. The Host checks the MIME enum,
+base64, format headers, and PNG/WebP animation markers; it does not fully decode
+codecs or guarantee that arbitrary media is safe to render. Scripts/consumers
+must handle decoding errors. No transcoding or codec installation occurs.
+Animated images, SVG, multipage images, video, and large assets remain file-based.
+For video scripts, use `files` with `.mp4`, `.webm`, `.mov`, or `.mkv` filters.
+There is no document category or streaming transport.
+
+Consumers normalize their source: a clipboard bitmap, capture, or selected image
+file can supply image bytes. A file path is not a valid `image.data` value.
+Consumer adapters own reading/encoding and any explicit format conversion.
+The shared .NET client accepts raw bytes through `PowerScriptMediaItem` and
+`PowerScriptMedia`; it base64-encodes only at the JSON boundary.
+`PowerScriptInfo.InputSchema`/`OutputSchema` expose MIME choices and scalar/array
+shape. Integrations choose compatible contracts; adding media to the shared
+engine does not automatically add media pickers or clipboard handling to them.
 
 This is not a complete JSON Schema implementation. Supported node types are
 object, array, string, integer, and boolean; arbitrary nested option objects,
@@ -111,10 +171,10 @@ print("\n".join(request["files"][:options["count"]]))
 ```
 
 There is no named entry function, import wrapper, or keyword-argument runner.
-Input is one UTF-8 JSON object with the declared `text` or `files`, plus typed
+Input is one UTF-8 JSON object with the declared `text`, `files`, `image`, or `audio`, plus typed
 `parameters`. Python receives real booleans and integers.
 
-PowerShell uses ordinary `param(...)`: `$Text` or `$Files` for primary data,
+PowerShell uses ordinary `param(...)`: `$Text`, `$Files`, `$Image`, or `$Audio` for primary data,
 plus named options. The Host uses JSON and native splatting to preserve booleans,
 empty strings, and complete path arrays in PowerShell 7 and Windows PowerShell 5.1.
 `POWERSCRIPTS_FILES` also contains the newline-separated selection.
@@ -126,31 +186,37 @@ Set `[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)` in scripts.
 | No primary field | Diagnostics only | `{}` |
 | Required `text` string | Literal text | `{"text":"..."}` |
 | Required `files` array | `{"files":["absolute path"]}` | The validated object |
+| Required `image` or `audio` | A JSON object with the declared media primary | The validated object |
 
 These rules are identical for Python, PowerShell, and explicit recipes. Text is
 never guessed to be a file path. For file output, stdout must contain only the
 result JSON; send diagnostics to stderr. A single file remains an array.
 Use temporary workspace files for output, not the installed package.
 Consumers own presentation and result lifetime, including deferred clipboard reads.
-Images, audio, video, and rich documents are files; inline markup is text.
+Inline images/audio use media objects; video and large assets use files.
+Inline markup is text.
 
 Optional `x-execute` is an advanced escape hatch for another interpreter or language.
 `command` names the executable and fixed arguments; a sibling script token is
 resolved to its absolute path. With `stdin: "json"`, the whole schema-shaped
-request goes to stdin. Otherwise, named options use `argMap` or `--name`,
+request goes to stdin. Inline media requires this JSON transport.
+Otherwise, named options use `argMap` or `--name`,
 primary text uses the mapped `text` flag or `--text`, and files are positional.
 `exitCodes` supplies nonzero-exit descriptions. Explicit recipes bypass built-in
 Python environment selection, not shared trust or isolation.
 
 ## Settings and templates
 
-**Create Script** generates editable packages for all 18 runtime/input/output
+**Create Script** generates editable packages for all 50 runtime/input/output
 combinations. Creation never runs code, grants trust, or changes isolation.
 The form's maximum-file value 0 means unlimited and generates an *omitted*
 `maxItems`; it is not serialized as `maxItems: 0`.
 The CLI equivalent is `template create --configure`, reading creation options
 such as `{"projectName":"My script","runtime":"python","input":"files","output":"text"}`.
-`template list` and `template create <id>` expose the three educational templates.
+`template list` and `template create <id>` expose six educational templates,
+including image/audio round trips and file-backed video inspection.
+Media outputs pass through matching input; otherwise their starters produce a
+one-pixel PNG or 0.1-second silent WAV. They do not perform a real conversion.
 
 The catalogue supports name search, sorting, and independent input/output filters.
 Details are read-only descriptor metadata and global effective execution policy.
@@ -166,6 +232,13 @@ client/Host. Text and file results support copying or saving separate copies;
 returned files are never moved/deleted. Cancellation and a 60-second limit apply.
 
 ## Global isolation
+
+Settings presents isolation as **Run scripts in sandbox environment**, with a
+parent On/Off switch and restriction children shown only when on. Turning it off
+preserves the saved restriction choices. **Protect desktop interaction** and
+**Limit process privileges** are marked **Windows only**. Managed Linux requires
+explicitly accepted global exceptions for both; those exceptions also reduce
+protection for Windows scripts.
 
 All scripts use the global `mxc` configuration:
 
@@ -218,10 +291,29 @@ returned mounted-drive paths are translated back before output validation.
 For file-output scripts, the Host supplies a Windows-backed `TMPDIR`, so Python
 temporary files remain accessible to Windows consumers after WSL execution.
 
-Managed Linux uses a separate `python:3.12-alpine` image and MXC WSLC, not the user's
-distribution. **Prepare environment** (`linux-container-setup`) explicitly downloads
-the image; **Check status** (`linux-container-status`) only probes. Neither changes
-trust or accepts risk. WSL 3.0.3 has been verified; setup never upgrades WSL.
+Managed Linux uses a user-provided container image and MXC WSLC, not the user's
+distribution. Enter **Linux container image** in Settings, persisted as
+`python.wsl.containerImage` in the module's `config.json`. There are no curated
+Python versions, Linux-base presets, or automatic default image. An absent or empty
+reference requires user configuration; it never selects another image as a fallback.
+Existing saved references, including previously selected presets, are preserved.
+Choose a trusted Linux image with `/bin/sh` and `python3` on the runtime PATH
+(`/usr/local/bin:/usr/bin:/bin`). Use a tag for a chosen release or a digest to pin
+the exact image; third-party dependencies must be included in the image or script
+package. Changing this global setting invalidates the displayed readiness and does
+not download anything or select a different image as a fallback.
+**Download image** (`linux-container-setup`) explicitly downloads and caches
+the image, then checks Python. **Check Python** (`linux-container-status`) starts
+a temporary container using the cached image and checks that `python3` runs;
+it never downloads an image or tests scripts and their dependencies. Neither changes
+trust or accepts risk. Setup, checks, and script execution use the same configured
+reference. Cached images are reused without automatic updates. Windows Python and
+user-distribution WSL execution ignore this setting. WSL 3.0.3 has been verified;
+setup never upgrades WSL.
+PowerToys does not install Python or dependencies. Prepare the runtime image
+before supplying its reference. Scripts and inputs are mounted at execution time,
+not copied into an image build. Every execution uses a fresh container; changes
+or package installations inside that container do not persist to later runs.
 
 Managed Linux requires global MXC and filesystem protection. Unsupported Windows
 UI/least-privilege policies require acknowledged global exceptions; Python runs

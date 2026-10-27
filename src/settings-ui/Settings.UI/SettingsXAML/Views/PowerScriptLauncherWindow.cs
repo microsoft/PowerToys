@@ -535,6 +535,37 @@ public sealed class PowerScriptLauncherWindow : WindowEx
                 ShowMessage(result.StdErr, InfoBarSeverity.Informational);
             }
         }
+        else if (result.Succeeded && (result.Image ?? result.Audio) is { } media)
+        {
+            var items = Id(new ListView { SelectionMode = ListViewSelectionMode.None }, "Media");
+            foreach (var item in media.Items)
+            {
+                var row = new Grid { ColumnSpacing = 12, Padding = new Thickness(8) };
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                row.Children.Add(new TextBlock
+                {
+                    Text = $"{item.MimeType} ({item.Data.Length.ToString("N0", CultureInfo.CurrentCulture)} bytes)",
+                    TextWrapping = TextWrapping.Wrap,
+                    IsTextSelectionEnabled = true,
+                    VerticalAlignment = VerticalAlignment.Center,
+                });
+                var save = Button("SaveAs", "SaveMedia_" + items.Items.Count);
+                save.Click += async (_, _) => await SaveMediaAsync(item, save);
+                Grid.SetColumn(save, 1);
+                row.Children.Add(save);
+                items.Items.Add(row);
+            }
+
+            output = items;
+            var help = new TextBlock { Text = Text("MediaHelp"), TextWrapping = TextWrapping.Wrap };
+            Grid.SetRow(help, 2);
+            content.Children.Add(help);
+            if (!string.IsNullOrWhiteSpace(result.StdErr))
+            {
+                ShowMessage(result.StdErr, InfoBarSeverity.Informational);
+            }
+        }
         else
         {
             var text = result.Succeeded
@@ -573,6 +604,49 @@ public sealed class PowerScriptLauncherWindow : WindowEx
         Grid.SetRow(output, 1);
         content.Children.Add(output);
         _body.Content = content;
+    }
+
+    private async Task SaveMediaAsync(PowerScriptMediaItem item, Button button)
+    {
+        button.IsEnabled = false;
+        try
+        {
+            var extension = item.MimeType switch
+            {
+                "image/png" => ".png",
+                "image/jpeg" => ".jpg",
+                "image/webp" => ".webp",
+                "audio/wav" => ".wav",
+                "audio/mpeg" => ".mp3",
+                "audio/flac" => ".flac",
+                _ => throw new InvalidDataException("Unsupported media MIME type: " + item.MimeType),
+            };
+            var picker = new FileSavePicker { SuggestedFileName = "powerscript-output" + extension };
+            picker.FileTypeChoices.Add(item.MimeType, new List<string> { extension });
+            InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(this));
+            var destination = await picker.PickSaveFileAsync();
+            if (destination is null || _closed)
+            {
+                return;
+            }
+
+            await FileIO.WriteBytesAsync(destination, item.Data);
+            if (!_closed)
+            {
+                ShowMessage(string.Format(CultureInfo.CurrentCulture, SavedFormat, destination.Path), InfoBarSeverity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            ReportError(ex);
+        }
+        finally
+        {
+            if (!_closed)
+            {
+                button.IsEnabled = true;
+            }
+        }
     }
 
     private async Task SaveFileAsync(string path, Button button)

@@ -167,13 +167,25 @@ public class ClientTests
 
     [DataTestMethod]
     [DataRow("html")]
-    [DataRow("image")]
-    [DataRow("audio")]
     [DataRow("video")]
     public void ParseList_RejectsRemovedOutputTypesInsteadOfTreatingThemAsNone(string format)
     {
         Assert.ThrowsException<JsonException>(() => PowerScriptInfo.ParseList(
             $$$"""[{"id":"legacy","io":{"input":"none","output":"{{{format}}}"}}]"""));
+    }
+
+    [TestMethod]
+    public void ParseListPreservesMediaTypesAndSchemasForConsumerAdaptation()
+    {
+        var scripts = PowerScriptInfo.ParseList("""
+            [{"id":"media","io":{"input":"image","output":"audio"},
+              "inputSchema":{"type":"object","properties":{"image":{"type":"object"}}},
+              "outputSchema":{"type":"object","properties":{"audio":{"type":"array"}}}}]
+            """);
+        Assert.AreEqual(PowerScriptIO.Image, scripts[0].Input);
+        Assert.AreEqual(PowerScriptIO.Audio, scripts[0].Output);
+        Assert.AreEqual("object", scripts[0].InputSchema!.Value.GetProperty("properties").GetProperty("image").GetProperty("type").GetString());
+        Assert.AreEqual("array", scripts[0].OutputSchema!.Value.GetProperty("properties").GetProperty("audio").GetProperty("type").GetString());
     }
 
     [TestMethod]

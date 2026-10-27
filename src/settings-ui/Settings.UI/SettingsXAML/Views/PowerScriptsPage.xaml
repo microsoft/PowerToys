@@ -67,34 +67,29 @@
                     </StackPanel>
                 </tkcontrols:SettingsCard>
 
-                <controls:SettingsGroup x:Uid="PowerScripts_MxcGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcEnabled" HeaderIcon="{ui:FontIcon Glyph=&#xE72E;}">
-                        <ToggleSwitch
-                            x:Uid="PowerScripts_MxcEnabledToggle"
-                            AutomationProperties.AutomationId="PowerScriptsMxcEnabledToggle"
-                            IsEnabled="{x:Bind ViewModel.CanChangeMxcEnabled, Mode=OneWay}"
-                            IsOn="{x:Bind ViewModel.IsMxcEnabled, Mode=OneWay}"
-                            Toggled="MxcEnabledToggle_Toggled" />
-                    </tkcontrols:SettingsCard>
-
-                    <InfoBar
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.IsMxcSupported, Mode=OneWay}"
-                        Message="{x:Bind ViewModel.MxcSupportMessage, Mode=OneWay}"
-                        Severity="Informational" />
-                    <InfoBar
-                        x:Uid="PowerScripts_MxcUnavailable"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.IsMxcUnsupported, Mode=OneWay}"
-                        Message="{x:Bind ViewModel.MxcSupportMessage, Mode=OneWay}"
-                        Severity="Warning" />
-
+                <controls:SettingsGroup IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
-                        x:Uid="PowerScripts_MxcRestrictions"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE7BA;}"
-                        IsEnabled="{x:Bind ViewModel.IsMxcEnabled, Mode=OneWay}">
+                        x:Uid="PowerScripts_MxcEnabled"
+                        AutomationProperties.AutomationId="PowerScriptsSandboxExpander"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE72E;}"
+                        IsExpanded="{x:Bind ViewModel.IsMxcEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander.Content>
+                            <ToggleSwitch
+                                x:Uid="PowerScripts_MxcEnabledToggle"
+                                AutomationProperties.AutomationId="PowerScriptsMxcEnabledToggle"
+                                IsEnabled="{x:Bind ViewModel.CanChangeMxcEnabled, Mode=OneWay}"
+                                IsOn="{x:Bind ViewModel.IsMxcEnabled, Mode=OneWay}"
+                                ToolTipService.ToolTip="{x:Bind ViewModel.MxcSupportMessage, Mode=OneWay}"
+                                Toggled="MxcEnabledToggle_Toggled" />
+                        </tkcontrols:SettingsExpander.Content>
+                        <tkcontrols:SettingsExpander.ItemsHeader>
+                            <TextBlock
+                                x:Uid="PowerScripts_SandboxRestrictionsHelp"
+                                TextWrapping="Wrap"
+                                Visibility="{x:Bind views:PowerScriptsPage.BoolToVisibility(ViewModel.IsMxcEnabled), Mode=OneWay}" />
+                        </tkcontrols:SettingsExpander.ItemsHeader>
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcFilesystem">
+                            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcFilesystem" Visibility="{x:Bind views:PowerScriptsPage.BoolToVisibility(ViewModel.IsMxcEnabled), Mode=OneWay}">
                                 <ToggleSwitch
                                     x:Uid="PowerScripts_MxcFilesystemToggle"
                                     AutomationProperties.AutomationId="PowerScriptsMxcFilesystemToggle"
@@ -102,7 +97,7 @@
                                     Tag="filesystem"
                                     Toggled="GlobalMxcPolicyToggle_Toggled" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcNetwork">
+                            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcNetwork" Visibility="{x:Bind views:PowerScriptsPage.BoolToVisibility(ViewModel.IsMxcEnabled), Mode=OneWay}">
                                 <ToggleSwitch
                                     x:Uid="PowerScripts_MxcNetworkToggle"
                                     AutomationProperties.AutomationId="PowerScriptsMxcNetworkToggle"
@@ -110,7 +105,7 @@
                                     Tag="network"
                                     Toggled="GlobalMxcPolicyToggle_Toggled" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcUi">
+                            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcUi" Visibility="{x:Bind views:PowerScriptsPage.BoolToVisibility(ViewModel.IsMxcEnabled), Mode=OneWay}">
                                 <ToggleSwitch
                                     x:Uid="PowerScripts_MxcUiToggle"
                                     AutomationProperties.AutomationId="PowerScriptsMxcUiToggle"
@@ -118,7 +113,7 @@
                                     Tag="ui"
                                     Toggled="GlobalMxcPolicyToggle_Toggled" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcLeastPrivilege">
+                            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcLeastPrivilege" Visibility="{x:Bind views:PowerScriptsPage.BoolToVisibility(ViewModel.IsMxcEnabled), Mode=OneWay}">
                                 <ToggleSwitch
                                     x:Uid="PowerScripts_MxcLeastPrivilegeToggle"
                                     AutomationProperties.AutomationId="PowerScriptsMxcLeastPrivilegeToggle"
@@ -128,6 +123,12 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+                    <InfoBar
+                        x:Uid="PowerScripts_MxcUnavailable"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsMxcUnsupported, Mode=OneWay}"
+                        Message="{x:Bind ViewModel.MxcSupportMessage, Mode=OneWay}"
+                        Severity="Warning" />
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="PowerScripts_PythonEnvironmentGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -187,38 +188,90 @@
                             ItemsSource="{x:Bind ViewModel.WslDistributions, Mode=OneWay}"
                             Text="{x:Bind ViewModel.WslDistribution, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                     </tkcontrols:SettingsCard>
-                    <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.IsManagedLinuxMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <tkcontrols:SettingsCard x:Uid="PowerScripts_LinuxControls" ContentAlignment="Vertical">
-                            <TextBlock
-                                x:Uid="PowerScripts_LinuxControlsText"
-                                AutomationProperties.AutomationId="PowerScriptsLinuxControls"
-                                TextWrapping="Wrap" />
-                        </tkcontrols:SettingsCard>
-                        <tkcontrols:SettingsCard
-                            x:Uid="PowerScripts_LinuxStatus"
-                            HorizontalContentAlignment="Stretch"
-                            ContentAlignment="Vertical">
-                            <StackPanel Spacing="8">
+                    <tkcontrols:SettingsCard
+                        x:Uid="PowerScripts_LinuxImage"
+                        HorizontalContentAlignment="Stretch"
+                        AutomationProperties.AutomationId="PowerScriptsLinuxImageCard"
+                        ContentAlignment="Vertical"
+                        Visibility="{x:Bind ViewModel.IsManagedLinuxMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Spacing="8">
+                            <TextBox
+                                x:Uid="PowerScripts_LinuxImageInput"
+                                MinWidth="200"
+                                AutomationProperties.AutomationId="PowerScriptsLinuxImage"
+                                IsEnabled="{x:Bind ViewModel.CanEditLinuxContainerImage, Mode=OneWay}"
+                                Text="{x:Bind ViewModel.LinuxContainerImage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <InfoBar
+                                AutomationProperties.AutomationId="PowerScriptsLinuxStatusBanner"
+                                IsClosable="False"
+                                IsOpen="True"
+                                Severity="{x:Bind ViewModel.LinuxContainerStatusSeverity, Mode=OneWay}"
+                                Title="{x:Bind ViewModel.LinuxContainerStatusTitle, Mode=OneWay}">
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <ProgressRing
+                                        x:Uid="PowerScripts_LinuxImageProgress"
+                                        Width="20"
+                                        Height="20"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.AutomationId="PowerScriptsLinuxProgress"
+                                        IsActive="{x:Bind ViewModel.IsLinuxContainerBusy, Mode=OneWay}"
+                                        Visibility="{x:Bind views:PowerScriptsPage.BoolToVisibility(ViewModel.IsLinuxContainerBusy), Mode=OneWay}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        AutomationProperties.AutomationId="PowerScriptsLinuxStatus"
+                                        IsTextSelectionEnabled="True"
+                                        Text="{x:Bind ViewModel.LinuxContainerStatus, Mode=OneWay}"
+                                        TextWrapping="Wrap" />
+                                </Grid>
+                            </InfoBar>
+                            <Grid ColumnSpacing="12" RowSpacing="8">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
                                 <TextBlock
-                                    AutomationProperties.AutomationId="PowerScriptsLinuxStatus"
-                                    IsTextSelectionEnabled="True"
-                                    Text="{x:Bind ViewModel.LinuxContainerStatus, Mode=OneWay}"
+                                    x:Name="LinuxDownloadDescription"
+                                    x:Uid="PowerScripts_LinuxDownloadDescription"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     TextWrapping="Wrap" />
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button
-                                        x:Uid="PowerScripts_LinuxCheck"
-                                        AutomationProperties.AutomationId="PowerScriptsLinuxCheck"
-                                        Click="CheckLinuxContainer_Click"
-                                        IsEnabled="{x:Bind ViewModel.CanPrepareLinuxContainer, Mode=OneWay}" />
-                                    <Button
-                                        x:Uid="PowerScripts_LinuxSetup"
-                                        AutomationProperties.AutomationId="PowerScriptsLinuxSetup"
-                                        Click="SetupLinuxContainer_Click"
-                                        IsEnabled="{x:Bind ViewModel.CanPrepareLinuxContainer, Mode=OneWay}" />
-                                </StackPanel>
-                            </StackPanel>
-                        </tkcontrols:SettingsCard>
-                    </StackPanel>
+                                <Button
+                                    x:Uid="PowerScripts_LinuxSetup"
+                                    Grid.Column="1"
+                                    AutomationProperties.AutomationId="PowerScriptsLinuxSetup"
+                                    AutomationProperties.HelpText="{x:Bind LinuxDownloadDescription.Text, Mode=OneWay}"
+                                    Click="SetupLinuxContainer_Click"
+                                    IsEnabled="{x:Bind ViewModel.CanPrepareLinuxContainer, Mode=OneWay}" />
+                                <TextBlock
+                                    x:Name="LinuxCheckDescription"
+                                    x:Uid="PowerScripts_LinuxCheckDescription"
+                                    Grid.Row="1"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    TextWrapping="Wrap" />
+                                <Button
+                                    x:Uid="PowerScripts_LinuxCheck"
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    AutomationProperties.AutomationId="PowerScriptsLinuxCheck"
+                                    AutomationProperties.HelpText="{x:Bind LinuxCheckDescription.Text, Mode=OneWay}"
+                                    Click="CheckLinuxContainer_Click"
+                                    IsEnabled="{x:Bind ViewModel.CanPrepareLinuxContainer, Mode=OneWay}" />
+                            </Grid>
+                            <TextBlock
+                                x:Uid="PowerScripts_LinuxImagePreparation"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup Header="Installed scripts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -269,6 +322,8 @@
                             <ComboBoxItem x:Uid="PowerScripts_FilterNone" />
                             <ComboBoxItem x:Uid="PowerScripts_FilterFiles" />
                             <ComboBoxItem x:Uid="PowerScripts_FilterText" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterImage" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterAudio" />
                         </ComboBox>
                         <ComboBox
                             x:Uid="PowerScripts_CatalogueOutputFilter"
@@ -281,6 +336,8 @@
                             <ComboBoxItem x:Uid="PowerScripts_OutputFilterNone" />
                             <ComboBoxItem x:Uid="PowerScripts_FilterFiles" />
                             <ComboBoxItem x:Uid="PowerScripts_FilterText" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterImage" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterAudio" />
                         </ComboBox>
                         <ComboBox
                             x:Uid="PowerScripts_CatalogueSort"

@@ -6213,29 +6213,23 @@ Text uses the current drawing color.</value>
   <data name="PowerScripts_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="PowerScripts_MxcGroup.Header" xml:space="preserve">
-    <value>Global script isolation</value>
-  </data>
   <data name="PowerScripts_MxcEnabled.Header" xml:space="preserve">
-    <value>Use MXC</value>
+    <value>Run scripts in sandbox environment</value>
   </data>
   <data name="PowerScripts_MxcEnabled.Description" xml:space="preserve">
-    <value>Global isolation for scripts. Managed Linux requires MXC and filesystem protection. Turning this off requires accepting the reduced-isolation risk.</value>
+    <value>Limit what scripts can change or access. These settings apply globally, not per script.</value>
   </data>
   <data name="PowerScripts_MxcEnabledToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Use MXC</value>
+    <value>Run scripts in sandbox environment</value>
   </data>
   <data name="PowerScripts_MxcUnavailable.Title" xml:space="preserve">
-    <value>MXC is unavailable; PowerScripts run without MXC by default.</value>
+    <value>Script sandbox is unavailable on this PC.</value>
   </data>
-  <data name="PowerScripts_MxcRestrictions.Header" xml:space="preserve">
-    <value>MXC restrictions</value>
-  </data>
-  <data name="PowerScripts_MxcRestrictions.Description" xml:space="preserve">
-    <value>All restrictions are enabled by default. Turning one off requires accepting the reduced-isolation risk.</value>
+  <data name="PowerScripts_SandboxRestrictionsHelp.Text" xml:space="preserve">
+    <value>Restrictions are on by default. Turning one off requires accepting reduced protection for every script that supports it. Turning the sandbox off keeps your restriction choices for next time.</value>
   </data>
   <data name="PowerScripts_MxcFilesystem.Header" xml:space="preserve">
-    <value>Filesystem</value>
+    <value>Protect files</value>
   </data>
   <data name="PowerScripts_MxcFilesystem.Description" xml:space="preserve">
     <value>Keep the script package and selected inputs read-only; allow writes only in the per-run workspace.</value>
@@ -6244,7 +6238,7 @@ Text uses the current drawing color.</value>
     <value>Restrict filesystem access</value>
   </data>
   <data name="PowerScripts_MxcNetwork.Header" xml:space="preserve">
-    <value>Network</value>
+    <value>Block network access</value>
   </data>
   <data name="PowerScripts_MxcNetwork.Description" xml:space="preserve">
     <value>Deny outbound, inbound, and host-loopback network access.</value>
@@ -6253,37 +6247,37 @@ Text uses the current drawing color.</value>
     <value>Block network access</value>
   </data>
   <data name="PowerScripts_MxcUi.Header" xml:space="preserve">
-    <value>UI isolation</value>
+    <value>Protect desktop interaction (Windows only)</value>
   </data>
   <data name="PowerScripts_MxcUi.Description" xml:space="preserve">
-    <value>Isolate desktop UI, clipboard, input injection, and system-control access.</value>
+    <value>Restrict clipboard access, simulated input, and desktop control for Windows scripts. Not available in the Linux sandbox.</value>
   </data>
   <data name="PowerScripts_MxcUiToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Isolate desktop interaction</value>
+    <value>Protect desktop interaction (Windows only)</value>
   </data>
   <data name="PowerScripts_MxcLeastPrivilege.Header" xml:space="preserve">
-    <value>Least privilege</value>
+    <value>Limit process privileges (Windows only)</value>
   </data>
   <data name="PowerScripts_MxcLeastPrivilege.Description" xml:space="preserve">
-    <value>Run in ProcessContainer least-privilege mode.</value>
+    <value>Run Windows scripts with reduced process privileges. Not available in the Linux sandbox, where Python runs as guest root, not as a Windows administrator.</value>
   </data>
   <data name="PowerScripts_MxcLeastPrivilegeToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Use least-privilege mode</value>
+    <value>Limit process privileges (Windows only)</value>
   </data>
   <data name="PowerScripts_MxcEffective.Header" xml:space="preserve">
     <value>Effective isolation</value>
   </data>
   <data name="PowerScripts_MxcEffective.Description" xml:space="preserve">
-    <value>All scripts use the global MXC policy. Change it on the main PowerScripts page.</value>
+    <value>All scripts use the global sandbox settings. Change them on the main PowerScripts page.</value>
   </data>
   <data name="PowerScripts_MxcEffectiveDisabled" xml:space="preserve">
-    <value>Runs without MXC.</value>
+    <value>Runs without sandbox protection.</value>
   </data>
   <data name="PowerScripts_MxcEffectiveAll" xml:space="preserve">
-    <value>MXC required with all restrictions.</value>
+    <value>Sandbox required with all restrictions.</value>
   </data>
   <data name="PowerScripts_MxcEffectiveReduced" xml:space="preserve">
-    <value>MXC enabled; disabled restrictions: {0}.</value>
+    <value>Sandbox on; disabled restrictions: {0}.</value>
   </data>
   <data name="PowerScripts_MxcPolicy_Filesystem_DisplayName" xml:space="preserve">
     <value>Filesystem</value>
@@ -6292,10 +6286,10 @@ Text uses the current drawing color.</value>
     <value>Network</value>
   </data>
   <data name="PowerScripts_MxcPolicy_Ui_DisplayName" xml:space="preserve">
-    <value>UI isolation</value>
+    <value>Desktop interaction (Windows only)</value>
   </data>
   <data name="PowerScripts_MxcPolicy_LeastPrivilege_DisplayName" xml:space="preserve">
-    <value>Least privilege</value>
+    <value>Process privileges (Windows only)</value>
   </data>
   <data name="PowerScripts_MxcAccess_Filesystem" xml:space="preserve">
     <value>broader file access</value>
@@ -6310,31 +6304,31 @@ Text uses the current drawing color.</value>
     <value>standard process privileges</value>
   </data>
   <data name="PowerScripts_MxcSupportChecking" xml:space="preserve">
-    <value>Checking MXC support...</value>
+    <value>Checking sandbox support...</value>
   </data>
   <data name="PowerScripts_MxcSupportHostMissing" xml:space="preserve">
-    <value>PowerScripts.Host.exe was not found, so MXC support could not be verified.</value>
+    <value>PowerScripts.Host.exe was not found, so sandbox support could not be verified.</value>
   </data>
   <data name="PowerScripts_MxcSupportProbeStartFailed" xml:space="preserve">
-    <value>The MXC support probe could not be started.</value>
+    <value>The sandbox support check could not be started.</value>
   </data>
   <data name="PowerScripts_MxcSupportProbeFailed" xml:space="preserve">
-    <value>The MXC support probe did not complete successfully.</value>
+    <value>The sandbox support check did not complete successfully.</value>
   </data>
   <data name="PowerScripts_MxcSupportProbeNoResult" xml:space="preserve">
-    <value>The MXC support probe returned no result.</value>
+    <value>The sandbox support check returned no result.</value>
   </data>
   <data name="PowerScripts_MxcSupportUnknown" xml:space="preserve">
-    <value>MXC support could not be verified on this machine.</value>
+    <value>Sandbox support could not be verified on this PC.</value>
   </data>
   <data name="PowerScripts_MxcDisableWarning" xml:space="preserve">
-    <value>Turning off MXC allows all PowerScripts to run without execution isolation.</value>
+    <value>Turning off the script sandbox allows all PowerScripts to run without sandbox protection. Linux Python will use your WSL distribution instead of a separate managed container.</value>
   </data>
   <data name="PowerScripts_MxcDisablePolicyWarning" xml:space="preserve">
     <value>Turning off the {0} restriction weakens isolation for all PowerScripts.</value>
   </data>
   <data name="PowerScripts_MxcRiskDialogTitle" xml:space="preserve">
-    <value>Accept reduced PowerScript isolation?</value>
+    <value>Reduce script sandbox protection?</value>
   </data>
   <data name="PowerScripts_MxcRiskDialogContent" xml:space="preserve">
     <value>{0}
@@ -6377,6 +6371,22 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_FilterText.Content" xml:space="preserve">
     <value>Text</value>
   </data>
+  <data name="PowerScripts_FilterImage.Content" xml:space="preserve"><value>Image</value></data>
+  <data name="PowerScripts_FilterAudio.Content" xml:space="preserve"><value>Audio</value></data>
+  <data name="PowerScripts_IoImage" xml:space="preserve"><value>Image</value></data>
+  <data name="PowerScripts_IoAudio" xml:space="preserve"><value>Audio</value></data>
+  <data name="PowerScripts_DetailsImage" xml:space="preserve"><value>Image</value></data>
+  <data name="PowerScripts_DetailsAudio" xml:space="preserve"><value>Audio</value></data>
+  <data name="PowerScripts_DetailsInputMediaTypes" xml:space="preserve"><value>Accepted input media types</value></data>
+  <data name="PowerScripts_DetailsOutputMediaTypes" xml:space="preserve"><value>Allowed output media types</value></data>
+  <data name="PowerScripts_DetailsMediaCollection" xml:space="preserve"><value>Media collection</value></data>
+  <data name="PowerScripts_DetailsMediaMinimum" xml:space="preserve"><value>Minimum media items</value></data>
+  <data name="PowerScripts_DetailsMediaMaximum" xml:space="preserve"><value>Maximum media items</value></data>
+  <data name="PowerScripts_DetailsMediaLimits" xml:space="preserve"><value>Inline media limits</value></data>
+  <data name="PowerScripts_DetailsMediaLimitsValue" xml:space="preserve"><value>16 MiB decoded per item; 32 MiB total; at most 64 items. Format headers are checked; no automatic conversion.</value></data>
+  <data name="PowerScripts_LauncherOutputImage" xml:space="preserve"><value>Image</value></data>
+  <data name="PowerScripts_LauncherOutputAudio" xml:space="preserve"><value>Audio</value></data>
+  <data name="PowerScripts_LauncherMediaHelp" xml:space="preserve"><value>Save a copy of each returned media item. Image and audio bytes are not automatically placed on the clipboard.</value></data>
   <data name="PowerScripts_SortNameAscending.Content" xml:space="preserve">
     <value>Name (A–Z)</value>
   </data>
@@ -6499,11 +6509,11 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_LauncherSaved" xml:space="preserve"><value>Saved a copy to {0}</value></data>
   <data name="PowerScripts_LauncherFileHelp" xml:space="preserve"><value>Save a copy of a file, or copy these files and paste them into Explorer. Original returned files are not moved or deleted.</value></data>
   <data name="AdvancedPaste_PowerScriptsEmpty.Message" xml:space="preserve"><value>No compatible PowerScripts found. Manage script packages in PowerScripts settings.</value></data>
-  <data name="PowerScripts_MetadataHelp.Text" xml:space="preserve"><value>These properties come from the script's .tool.json file. Edit metadata or script in an external editor, then select Refresh to see your changes. Edits require trust review before the script runs again. All scripts use the global MXC settings.</value></data>
+  <data name="PowerScripts_MetadataHelp.Text" xml:space="preserve"><value>These properties come from the script's .tool.json file. Edit metadata or script in an external editor, then select Refresh to see your changes. Edits require trust review before the script runs again. All scripts use the global sandbox settings.</value></data>
   <data name="PowerScripts_EditMetadata.Label" xml:space="preserve"><value>Edit metadata</value></data>
   <data name="PowerScripts_ShowInExplorer.Label" xml:space="preserve"><value>Show in File Explorer</value></data>
   <data name="PowerScripts_ShowInExplorer.ToolTipService.ToolTip" xml:space="preserve"><value>Open the containing folder and select the script file.</value></data>
-  <data name="PowerScripts_ScriptIsolation.Header" xml:space="preserve"><value>Execution isolation (MXC)</value></data>
+  <data name="PowerScripts_ScriptIsolation.Header" xml:space="preserve"><value>Script sandbox</value></data>
   <data name="PowerScripts_EditMetadata.ToolTipService.ToolTip" xml:space="preserve"><value>Open the .tool.json file using Windows' Edit action. If no editor is registered, use Notepad.</value></data>
   <data name="PowerScripts_EditScript.Label" xml:space="preserve"><value>Edit script</value></data>
   <data name="PowerScripts_EditScript.ToolTipService.ToolTip" xml:space="preserve"><value>Open the script using Windows' Edit action, never its Run/Open action. If no editor is registered, use Notepad.</value></data>
@@ -6597,8 +6607,8 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_TemplateProjectNameHelp.Text" xml:space="preserve"><value>Shown as the script title. A unique folder and action ID are derived automatically, so existing projects are never overwritten.</value></data>
   <data name="PowerScripts_TemplateDescription.Header" xml:space="preserve"><value>Description</value></data>
   <data name="PowerScripts_TemplateFileExtensions.Header" xml:space="preserve"><value>Allowed input file extensions (optional)</value></data>
-  <data name="PowerScripts_TemplateFileExtensionsHelp.Text" xml:space="preserve"><value>For example: .txt, .md or *.png. Separate types with commas, spaces or semicolons. Leave blank for all file types, or use * alone. For compound names such as archive.tar.gz, use .gz. This filters selected files; it does not grant filesystem access.</value></data>
-  <data name="PowerScripts_TemplateSetupHelp.Text" xml:space="preserve"><value>Your choices are written directly into the new .tool.json descriptor. The starter inspects supplied files or echoes text; file output creates a text file in the temporary workspace. Replace the example code after creation. Creation does not run code, approve trust or change MXC isolation.</value></data>
+  <data name="PowerScripts_TemplateFileExtensionsHelp.Text" xml:space="preserve"><value>For example: .txt, .md or *.png. Video stays file-based: use .mp4, .webm, .mov or .mkv. Separate types with commas, spaces or semicolons. Leave blank for all file types, or use * alone. For compound names such as archive.tar.gz, use .gz. This filters selected files; it does not grant filesystem access.</value></data>
+  <data name="PowerScripts_TemplateSetupHelp.Text" xml:space="preserve"><value>Your choices are written into the .tool.json descriptor. Image/audio input uses MIME type and base64 data; matching media output passes it through. Otherwise, media output creates a sample one-pixel PNG or silent WAV; file output creates a text file. Supported formats: PNG, JPEG, static WebP, WAV, MP3 and FLAC. Video uses files. Inline limits: 16 MiB per item, 32 MiB total. Replace the example processing after creation. Creation does not run code, approve trust or change sandbox protection.</value></data>
   <data name="PowerScripts_TemplateCancel.Content" xml:space="preserve"><value>Cancel</value></data>
   <data name="PowerScripts_TemplateCreated" xml:space="preserve"><value>Created. Read README.md in the new folder, then edit the script and descriptor. Refresh after edits; review trust before running from a consumer.</value></data>
   <data name="PowerScripts_TemplateRuntime.Header" xml:space="preserve"><value>Runtime</value></data>
@@ -6629,52 +6639,79 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>Python scripts are disabled. PowerShell scripts are unaffected.</value>
   </data>
   <data name="PowerScripts_EnvironmentWindowsHelp" xml:space="preserve">
-    <value>Use Python installed on Windows, with Windows script isolation.</value>
+    <value>Use Python installed on Windows. The global script sandbox settings apply.</value>
   </data>
   <data name="PowerScripts_EnvironmentWslHelp" xml:space="preserve">
-    <value>MXC is off: use Python and packages in your WSL distribution. Enabling global MXC switches Linux execution to a separate WSLC container.</value>
+    <value>Sandbox off: use Python and packages in your WSL distribution. Turning the script sandbox on switches Linux execution to a separate managed container.</value>
   </data>
   <data name="PowerScripts_EnvironmentLinuxHelp" xml:space="preserve">
-    <value>MXC is on: use a separate Python 3.12 WSLC container, not your WSL distribution. Disabling global MXC switches Linux execution to your WSL distribution.</value>
+    <value>Sandbox on: use the configured Linux image in a separate managed container, not your WSL distribution. Turning the script sandbox off switches Linux execution to your WSL distribution.</value>
   </data>
-  <data name="PowerScripts_LinuxControls.Header" xml:space="preserve">
-    <value>Managed Linux isolation</value>
+  <data name="PowerScripts_LinuxImage.Header" xml:space="preserve">
+    <value>Linux container image</value>
   </data>
-  <data name="PowerScripts_LinuxControlsText.Text" xml:space="preserve">
-    <value>Required: MXC and restricted Windows file access. Script packages and selected inputs are read-only; only the output workspace is writable on Windows.
-Available: block or allow all networking through global policy.
-Unsupported: Windows UI and least-privilege policies. Python runs as root inside the Linux container, not as a Windows administrator.
-Global policy requires explicit acceptance of these two unsupported-policy exceptions. There is no direct or existing-WSL fallback.</value>
+  <data name="PowerScripts_LinuxImage.Description" xml:space="preserve">
+    <value>Provide a trusted Linux image for this PC's architecture with /bin/sh, python3 on PATH (/usr/local/bin:/usr/bin:/bin), and your script dependencies. PowerToys mounts scripts and inputs at runtime; it does not install packages.</value>
   </data>
-  <data name="PowerScripts_LinuxStatus.Header" xml:space="preserve">
-    <value>Environment status</value>
+  <data name="PowerScripts_LinuxImageInput.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Linux container image reference</value>
   </data>
-  <data name="PowerScripts_LinuxStatus.Description" xml:space="preserve">
-    <value>Requires a compatible WSL runtime. Checking status never downloads an image. Preparing the environment downloads and caches python:3.12-alpine; it does not trust scripts or accept isolation exceptions.</value>
+  <data name="PowerScripts_LinuxImageInput.PlaceholderText" xml:space="preserve">
+    <value>registry/repository:tag or registry/repository@sha256:digest</value>
+  </data>
+  <data name="PowerScripts_LinuxImageRequired" xml:space="preserve">
+    <value>Enter a Linux container image reference before checking Python or downloading the image.</value>
+  </data>
+  <data name="PowerScripts_LinuxImagePreparation.Text" xml:space="preserve">
+    <value>Requires a compatible WSL runtime. The cached image is reused. Each run uses a fresh container; changes inside it are discarded.</value>
+  </data>
+  <data name="PowerScripts_LinuxDownloadDescription.Text" xml:space="preserve">
+    <value>Download and cache the image from its registry, then check Python. Requires network access; does not install Python or packages.</value>
+  </data>
+  <data name="PowerScripts_LinuxCheckDescription.Text" xml:space="preserve">
+    <value>Check that python3 runs in a temporary container using the cached image. No image download; your scripts and their dependencies are not tested.</value>
   </data>
   <data name="PowerScripts_LinuxCheck.Content" xml:space="preserve">
-    <value>Check status</value>
+    <value>Check Python</value>
   </data>
   <data name="PowerScripts_LinuxSetup.Content" xml:space="preserve">
-    <value>Prepare environment</value>
+    <value>Download image</value>
   </data>
   <data name="PowerScripts_LinuxNotChecked" xml:space="preserve">
     <value>Environment has not been checked.</value>
   </data>
+  <data name="PowerScripts_LinuxImageReady" xml:space="preserve">
+    <value>Image ready</value>
+  </data>
+  <data name="PowerScripts_LinuxImageNotReady" xml:space="preserve">
+    <value>Image not ready</value>
+  </data>
+  <data name="PowerScripts_LinuxImageStatusTitle" xml:space="preserve">
+    <value>Image status</value>
+  </data>
+  <data name="PowerScripts_LinuxImageCheckingTitle" xml:space="preserve">
+    <value>Checking Python</value>
+  </data>
+  <data name="PowerScripts_LinuxImagePreparingTitle" xml:space="preserve">
+    <value>Downloading and checking image</value>
+  </data>
+  <data name="PowerScripts_LinuxImageProgress.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Downloading the image or checking Python</value>
+  </data>
   <data name="PowerScripts_LinuxPreparing" xml:space="preserve">
-    <value>Downloading and preparing the managed Python environment...</value>
+    <value>Downloading and caching the Linux image, then checking Python...</value>
   </data>
   <data name="PowerScripts_LinuxChecking" xml:space="preserve">
-    <value>Checking the managed Python environment...</value>
+    <value>Checking Python in a temporary container using the cached image...</value>
   </data>
   <data name="PowerScripts_LinuxSetupTitle" xml:space="preserve">
-    <value>Prepare the managed Linux environment?</value>
+    <value>Download the Linux image?</value>
   </data>
   <data name="PowerScripts_LinuxSetupHelp" xml:space="preserve">
-    <value>This downloads the python:3.12-alpine image from its container registry into the PowerScripts cache. Preparation needs network access, independently of script network permissions. Your existing WSL distributions are not changed. No script is trusted and no isolation exception is accepted.</value>
+    <value>Download {0} from its container registry into the PowerScripts cache, then check Python in a temporary container. The image must already contain Python and your dependencies; PowerToys does not install them. Only use an image you trust. Downloading requires network access, independently of script network permissions. Your WSL distributions, script trust, and sandbox permissions are not changed.</value>
   </data>
   <data name="PowerScripts_LinuxSetupConfirm" xml:space="preserve">
-    <value>Download environment</value>
+    <value>Download and check</value>
   </data>
   <data name="PowerScripts_ExecutionEnvironment.Header" xml:space="preserve">
     <value>Execution environment</value>
@@ -6683,7 +6720,7 @@ Global policy requires explicit acceptance of these two unsupported-policy excep
     <value>This script supplies its own launch command in the descriptor. Python environment selection does not change that command.</value>
   </data>
   <data name="PowerScripts_ExecutionDescriptorPolicy" xml:space="preserve">
-    <value>The requested MXC policy is evaluated against the descriptor's executable. Windows isolation cannot host wsl.exe; explicitly required MXC is refused for that target.</value>
+    <value>Sandbox settings are evaluated against the script's launch command. Sandboxing for Windows scripts cannot host wsl.exe; execution is blocked when sandbox protection is required for that command.</value>
   </data>
   <data name="PowerScripts_ExecutionWindowsPython" xml:space="preserve">
     <value>Python on Windows, using the configured Windows interpreter.</value>
@@ -6692,16 +6729,16 @@ Global policy requires explicit acceptance of these two unsupported-policy excep
     <value>PowerShell on Windows. Python environment selection does not affect this script.</value>
   </data>
   <data name="PowerScripts_ExecutionWsl" xml:space="preserve">
-    <value>Python in your existing WSL distribution: {0}. No MXC isolation.</value>
+    <value>Python in your existing WSL distribution: {0}. No sandbox protection.</value>
   </data>
   <data name="PowerScripts_WslDefaultDistribution" xml:space="preserve">
     <value>WSL default distribution</value>
   </data>
   <data name="PowerScripts_ExecutionLinux" xml:space="preserve">
-    <value>Python 3.12 in a separate managed Linux container. MXC required; your WSL distribution and packages are not used.</value>
+    <value>Python in a separate managed Linux container using {0}. Sandbox required; your WSL distribution and packages are not used.</value>
   </data>
   <data name="PowerScripts_ExecutionLinuxControls" xml:space="preserve">
-    <value>Windows files restricted; networking {0}. Windows UI and least-privilege policies are not enforced. Python runs as guest root.</value>
+    <value>Windows files protected; networking {0}. Windows-only desktop and process-privilege restrictions are not enforced. Python runs as guest root.</value>
   </data>
   <data name="PowerScripts_LinuxNetworkBlocked" xml:space="preserve">
     <value>blocked</value>
@@ -6710,19 +6747,19 @@ Global policy requires explicit acceptance of these two unsupported-policy excep
     <value>allowed</value>
   </data>
   <data name="PowerScripts_ExecutionLinuxBlocked" xml:space="preserve">
-    <value>Blocked by global isolation policy. Managed Linux requires MXC and filesystem protection, with explicitly accepted global exceptions for unsupported Windows UI and least-privilege policies.</value>
+    <value>Blocked by global sandbox settings. Managed Linux requires sandbox and file protection, with explicitly accepted global exceptions for the Windows-only desktop and process-privilege restrictions.</value>
   </data>
   <data name="PowerScripts_ExecutionLinuxSetupRequired" xml:space="preserve">
-    <value>The managed Linux environment is not ready or has not been checked. Check or prepare it in PowerScripts settings.</value>
+    <value>The managed Linux environment is not ready or has not been checked. Use Check Python in PowerScripts settings, or Download image if it is not cached.</value>
   </data>
   <data name="PowerScripts_ExecutionBlocked" xml:space="preserve">
     <value>Execution blocked. No direct-execution fallback is permitted.</value>
   </data>
   <data name="PowerScripts_LinuxPolicyHelp.Title" xml:space="preserve">
-    <value>Review global policies for managed Linux</value>
+    <value>Review sandbox restrictions for Linux</value>
   </data>
   <data name="PowerScripts_LinuxPolicyHelp.Message" xml:space="preserve">
-    <value>MXC and restricted Windows file access are mandatory. Windows UI and least-privilege policies are unsupported; Python runs as guest root. Use the supported Linux policies below, review networking, and explicitly accept the risk before applying. Choosing the preset alone saves nothing.</value>
+    <value>Sandbox and file protection are required. Desktop and process-privilege restrictions are Windows only; Python runs as guest root. Use the supported Linux policies below, review networking, and explicitly accept the risk before applying. The exceptions also reduce protection for Windows scripts. Choosing the preset alone saves nothing.</value>
   </data>
   <data name="PowerScripts_LinuxUseSupported.Content" xml:space="preserve">
     <value>Use supported Linux policies</value>

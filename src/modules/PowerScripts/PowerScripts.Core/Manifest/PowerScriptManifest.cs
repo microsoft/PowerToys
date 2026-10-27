@@ -151,7 +151,7 @@ public sealed class PowerScriptManifest
     public List<ScriptParameter> Parameters { get; set; } = new();
 
     /// <summary>
-    /// The primary input shape derived from inputSchema. HTML markup is text; media/documents are files.
+    /// The primary input shape derived from inputSchema. Video remains file-backed.
     /// </summary>
     public PowerScriptDataFormat InputFormat { get; set; }
 

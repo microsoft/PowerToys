@@ -226,6 +226,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             null or "" or "none" => GetResourceString("PowerScripts_IoNone"),
             "files" => GetResourceString("PowerScripts_IoFiles"),
             "text" => GetResourceString("PowerScripts_IoText"),
+            "image" => GetResourceString("PowerScripts_IoImage"),
+            "audio" => GetResourceString("PowerScripts_IoAudio"),
             _ => value,
         };
 

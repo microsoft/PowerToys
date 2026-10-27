@@ -7,8 +7,8 @@ namespace PowerScripts.Client;
 /// <summary>
 /// The data-plane input for <c>transform &lt;id&gt;</c>: written as JSON to the host's stdin. Every field
 /// is optional — set only the ones your script consumes. Fields map to the schema's
-/// JSON (<c>text</c>, <c>files</c>, <c>parameters</c>). Inline HTML uses text; media and HTML
-/// documents use file paths, matched by extension and selection count regardless of their source.
+/// JSON (<c>text</c>, <c>files</c>, <c>image</c>, <c>audio</c>, <c>parameters</c>).
+/// Video and large assets remain file-backed.
 /// </summary>
 public sealed class PowerScriptTransformInput
 {
@@ -17,6 +17,12 @@ public sealed class PowerScriptTransformInput
 
     /// <summary>Paths to input files.</summary>
     public IReadOnlyList<string>? FilePaths { get; set; }
+
+    /// <summary>Inline image bytes with MIME types; a scalar or explicit collection.</summary>
+    public PowerScriptMedia? Image { get; set; }
+
+    /// <summary>Inline audio bytes with MIME types; a scalar or explicit collection.</summary>
+    public PowerScriptMedia? Audio { get; set; }
 
     /// <summary>Extra named parameters passed to the script.</summary>
     public IReadOnlyDictionary<string, System.Text.Json.JsonElement>? Parameters { get; set; }
@@ -33,6 +39,12 @@ public sealed class PowerScriptTransformResult
 
     /// <summary>Paths to produced files, including HTML documents and media. A single file is still a list.</summary>
     public IReadOnlyList<string>? FilePaths { get; init; }
+
+    /// <summary>Returned inline images.</summary>
+    public PowerScriptMedia? Image { get; init; }
+
+    /// <summary>Returned inline audio.</summary>
+    public PowerScriptMedia? Audio { get; init; }
 
     /// <summary>The host process exit code (see <see cref="PowerScriptsProtocol.ExitCode"/>).</summary>
     public int ExitCode { get; init; }

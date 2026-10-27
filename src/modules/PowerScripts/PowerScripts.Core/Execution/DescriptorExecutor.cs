@@ -29,7 +29,9 @@ public static class DescriptorExecutor
         IReadOnlyDictionary<string, string?>? parameters,
         int timeoutMs = 0,
         MxcSettings? mxcSettings = null,
-        string? text = null)
+        string? text = null,
+        JsonElement? image = null,
+        JsonElement? audio = null)
     {
         var execute = manifest.Execute
             ?? throw new InvalidOperationException($"Script '{manifest.Id}' has no x-execute recipe.");
@@ -95,6 +97,8 @@ public static class DescriptorExecutor
         var standardInput = usesJsonStdin ? new PythonTransformInput
         {
             Text = text,
+            Image = image,
+            Audio = audio,
             FilePaths = files.ToList(),
             Params = parameters?.ToDictionary(pair => pair.Key, pair => pair.Value ?? string.Empty),
         }.CreateRequest(manifest).ToJsonString() : null;

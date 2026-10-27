@@ -14,8 +14,6 @@ namespace PowerScripts.Core.Security;
 /// <summary>Runs Python in an MXC-managed Linux image without changing the user's WSL distribution.</summary>
 public static class MxcLinuxProcessRunner
 {
-    public const string Image = "python:3.12-alpine";
-
     public static string ImageStorePath => Path.Combine(PowerScriptsPaths.ModuleDirectory, "linux-container-images");
 
     /// <summary>Rejects unsupported requests before any script or executor is started.</summary>
@@ -47,6 +45,7 @@ public static class MxcLinuxProcessRunner
         ProcessExecutionContext context,
         MxcEffectivePolicy policy,
         MxcSettings settings,
+        string image,
         int timeoutMs,
         IProcessLauncher? launcher = null,
         Func<string>? runDirectoryFactory = null)
@@ -55,6 +54,11 @@ public static class MxcLinuxProcessRunner
         if (policyError is not null)
         {
             return new ProcessRunResult(ProcessRunner.UnsupportedIsolationExitCode, string.Empty, policyError);
+        }
+
+        if (GetImageError(image) is { } imageError)
+        {
+            return new ProcessRunResult(2, string.Empty, imageError);
         }
 
         launcher ??= ProcessRunner.SecureLauncher;
@@ -82,7 +86,7 @@ public static class MxcLinuxProcessRunner
                 $"TMPDIR={Quote(ToContainerPath(workspace))} " +
                 $"{MxcProcessRunner.WorkspaceEnvironmentVariable}={Quote(ToContainerPath(workspace))} " +
                 $"python3 -X utf8 {Quote(ToContainerPath(scriptPath))} < {Quote(ToContainerPath(inputPath))}";
-            var config = BuildConfiguration(command, workspace, readonlyPaths, policy.IsEnabled(MxcPolicies.Network), timeoutMs);
+            var config = BuildConfiguration(image, command, workspace, readonlyPaths, policy.IsEnabled(MxcPolicies.Network), timeoutMs);
             var result = Execute(config, directory, settings, launcher, timeoutMs);
             if (result.ExitCode != 0 || outputFormat != PowerScriptDataFormat.Files)
             {
@@ -109,20 +113,30 @@ public static class MxcLinuxProcessRunner
     }
 
     /// <summary>Checks a constant Python command with networking disabled; never pulls an image.</summary>
-    public static ProcessRunResult Probe(MxcSettings? settings = null)
+    public static ProcessRunResult Probe(
+        string image,
+        MxcSettings? settings = null,
+        IProcessLauncher? launcher = null,
+        Func<string>? runDirectoryFactory = null)
     {
-        var directory = MxcProcessRunner.CreateRunDirectory();
+        if (GetImageError(image) is { } imageError)
+        {
+            return new ProcessRunResult(2, string.Empty, imageError);
+        }
+
+        var directory = (runDirectoryFactory ?? MxcProcessRunner.CreateRunDirectory)();
         try
         {
             var workspace = Path.Combine(directory, "workspace");
             Directory.CreateDirectory(workspace);
             var config = BuildConfiguration(
+                image,
                 "python3 -I -c 'import platform; print(\"Python \" + platform.python_version() + \" (managed Linux container)\")'",
                 workspace,
                 Array.Empty<string>(),
                 restrictNetwork: true,
                 timeoutMs: 30000);
-            return Execute(config, directory, settings ?? MxcSettings.Load(), ProcessRunner.SecureLauncher, 45000);
+            return Execute(config, directory, settings ?? MxcSettings.Load(), launcher ?? ProcessRunner.SecureLauncher, 45000);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception or InvalidOperationException)
         {
@@ -135,8 +149,13 @@ public static class MxcLinuxProcessRunner
     }
 
     /// <summary>Explicit user-initiated image preparation, outside any script's network policy.</summary>
-    public static ProcessRunResult Setup(MxcSettings? settings = null)
+    public static ProcessRunResult Setup(string image, MxcSettings? settings = null, IProcessLauncher? launcher = null)
     {
+        if (GetImageError(image) is { } imageError)
+        {
+            return new ProcessRunResult(2, string.Empty, imageError);
+        }
+
         var executor = MxcProcessRunner.ResolveExecutor(settings ?? MxcSettings.Load());
         if (executor is null || !File.Exists(Path.Combine(Path.GetDirectoryName(executor)!, "wslcsdk.dll")))
         {
@@ -144,15 +163,21 @@ public static class MxcLinuxProcessRunner
         }
 
         var start = NewExecutor(executor);
-        foreach (var argument in new[] { "--setup-wslc", "--image", Image, "--storage-path", ImageStorePath })
+        foreach (var argument in new[] { "--setup-wslc", "--image", image, "--storage-path", ImageStorePath })
         {
             start.ArgumentList.Add(argument);
         }
 
-        return ProcessRunner.SecureLauncher.Run(start, null, 600000);
+        return (launcher ?? ProcessRunner.SecureLauncher).Run(start, null, 600000);
     }
 
+    private static string? GetImageError(string image) =>
+        string.IsNullOrWhiteSpace(image) || image.StartsWith('-') || image.Any(character => char.IsWhiteSpace(character) || char.IsControl(character))
+            ? "A managed Linux container image reference is required, without whitespace or command-line options."
+            : null;
+
     internal static string BuildConfiguration(
+        string image,
         string command,
         string workspace,
         IEnumerable<string> readonlyPaths,
@@ -167,7 +192,7 @@ public static class MxcLinuxProcessRunner
             filesystem = new { readonlyPaths, readwritePaths = new[] { Path.GetFullPath(workspace) } },
             network = new { defaultPolicy = restrictNetwork ? "block" : "allow" },
             lifecycle = new { destroyOnExit = true, preservePolicy = false },
-            experimental = new { wslc = new { image = Image, storagePath = ImageStorePath } },
+            experimental = new { wslc = new { image, storagePath = ImageStorePath } },
         });
 
     internal static string ToContainerPath(string path)

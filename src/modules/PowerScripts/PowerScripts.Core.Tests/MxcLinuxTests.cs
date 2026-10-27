@@ -50,7 +50,7 @@ public class MxcLinuxTests
 
         var result = MxcLinuxProcessRunner.Run(
             "missing-script.py", "{}", PowerScriptDataFormat.Text,
-            context, policy, settings, 1000, launcher);
+            context, policy, settings, new PythonWslSettings().ContainerImage, 1000, launcher);
 
         Assert.AreEqual(125, result.ExitCode);
         Assert.AreEqual(0, launcher.Calls);
@@ -83,7 +83,7 @@ public class MxcLinuxTests
         var launcher = new RecordingLauncher(_ => throw new AssertFailedException("Unsupported policy must not execute."));
         var result = MxcLinuxProcessRunner.Run(
             "missing.py", "{}", PowerScriptDataFormat.Text,
-            Context(), policy, new MxcSettings(), 1000, launcher);
+            Context(), policy, new MxcSettings(), new PythonWslSettings().ContainerImage, 1000, launcher);
         Assert.AreEqual(125, result.ExitCode);
         Assert.AreEqual(0, launcher.Calls);
     }
@@ -116,6 +116,8 @@ public class MxcLinuxTests
                 new[] { scriptDirectory, Path.Combine(runDirectory, "request"), selected },
                 filesystem.GetProperty("readonlyPaths").EnumerateArray().Select(path => path.GetString()!).ToArray());
             Assert.AreEqual("block", config.RootElement.GetProperty("network").GetProperty("defaultPolicy").GetString());
+            Assert.AreEqual("registry.example:5000/team/python:3.13-slim",
+                config.RootElement.GetProperty("experimental").GetProperty("wslc").GetProperty("image").GetString());
             StringAssert.StartsWith(config.RootElement.GetProperty("process").GetProperty("commandLine").GetString()!, "cd '");
             Assert.IsFalse(config.RootElement.TryGetProperty("ui", out _));
             Assert.IsFalse(start.RedirectStandardInput);
@@ -127,7 +129,7 @@ public class MxcLinuxTests
 
         var result = MxcLinuxProcessRunner.Run(
             script, "{\"text\":\"input\"}", PowerScriptDataFormat.Files, context, policy,
-            new MxcSettings { ExecutorPath = executor }, 1000, launcher,
+            new MxcSettings { ExecutorPath = executor }, "registry.example:5000/team/python:3.13-slim", 1000, launcher,
             () => Directory.CreateDirectory(runDirectory).FullName);
 
         Assert.AreEqual(0, result.ExitCode, result.StdErr);
@@ -137,6 +139,99 @@ public class MxcLinuxTests
         Assert.AreEqual("produced", File.ReadAllText(path));
         Assert.IsFalse(Directory.Exists(Path.Combine(runDirectory, "request")));
         Assert.IsFalse(File.Exists(Path.Combine(runDirectory, "mxc-config.json")));
+    }
+
+    [TestMethod]
+    [DataRow("registry.example:5000/team/python:3.13-slim")]
+    [DataRow("registry.example/team/python@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")]
+    public void Setup_And_Probe_Use_The_Configured_Image_Without_Changing_It(string image)
+    {
+        var executor = Path.Combine(_root, "wxc-exec.exe");
+        File.WriteAllText(executor, "test executor");
+        File.WriteAllText(Path.Combine(_root, "wslcsdk.dll"), "test SDK");
+        var settings = new MxcSettings { ExecutorPath = executor };
+        var setup = new RecordingLauncher(start =>
+        {
+            CollectionAssert.AreEqual(
+                new[] { "--setup-wslc", "--image", image, "--storage-path", MxcLinuxProcessRunner.ImageStorePath },
+                start.ArgumentList.ToArray());
+            return new ProcessRunResult(0, string.Empty, string.Empty);
+        });
+        Assert.AreEqual(0, MxcLinuxProcessRunner.Setup(image, settings, setup).ExitCode);
+        Assert.AreEqual(1, setup.Calls);
+
+        var probe = new RecordingLauncher(start =>
+        {
+            Assert.AreEqual("--experimental", start.ArgumentList[0]);
+            using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
+            Assert.AreEqual(image, config.RootElement.GetProperty("experimental").GetProperty("wslc").GetProperty("image").GetString());
+            return new ProcessRunResult(0, "Python available", string.Empty);
+        });
+        var runDirectory = Path.Combine(_root, "probe");
+        Assert.AreEqual(0, MxcLinuxProcessRunner.Probe(image, settings, probe,
+            () => Directory.CreateDirectory(runDirectory).FullName).ExitCode);
+        Assert.AreEqual(1, probe.Calls);
+        Assert.IsFalse(Directory.Exists(runDirectory));
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow(" ")]
+    [DataRow("--help")]
+    [DataRow("python:3.13 alpine")]
+    [DataRow("python:3.13\nalpine")]
+    public void Invalid_Image_Is_Refused_By_Setup_Probe_And_Execution_Without_Fallback(string image)
+    {
+        var launcher = new RecordingLauncher(_ => throw new AssertFailedException("Invalid images must not execute."));
+        var settings = new MxcSettings
+        {
+            Enabled = true,
+            RiskAccepted = true,
+            DisabledPolicies = new() { MxcPolicies.Ui, MxcPolicies.LeastPrivilege },
+        };
+        var results = new[]
+        {
+            MxcLinuxProcessRunner.Setup(image, settings, launcher),
+            MxcLinuxProcessRunner.Probe(image, settings, launcher),
+            MxcLinuxProcessRunner.Run("missing.py", "{}", PowerScriptDataFormat.Text, Context(),
+                MxcPolicyResolver.Resolve(settings), settings, image, 1000, launcher),
+        };
+        foreach (var result in results)
+        {
+            Assert.AreEqual(2, result.ExitCode);
+            StringAssert.Contains(result.StdErr, "image reference");
+        }
+
+        Assert.AreEqual(0, launcher.Calls);
+    }
+
+    [TestMethod]
+    [DataRow("{}")]
+    [DataRow("""{"python":{"mode":"wsl","wsl":{"distribution":"Ubuntu"}}}""")]
+    [DataRow("""{"python":{"mode":"managedLinux"}}""")]
+    [DoNotParallelize]
+    public void Missing_Image_Requires_User_Configuration_Instead_Of_Selecting_A_Default(string configuration)
+    {
+        var previous = SettingsStore.Current;
+        try
+        {
+            SettingsStore.Current = new FileSettingsStore(_root);
+            SettingsStore.Current.WriteBlob(PowerScriptsPaths.ConfigFileName, configuration);
+            var settings = PythonSettings.Load();
+            var launcher = new RecordingLauncher(_ => throw new AssertFailedException("No image was supplied."));
+
+            var result = MxcLinuxProcessRunner.Setup(settings.Wsl.ContainerImage, launcher: launcher);
+
+            Assert.AreEqual(2, result.ExitCode);
+            StringAssert.Contains(result.StdErr, "image reference");
+            Assert.AreEqual(0, launcher.Calls);
+            settings.Save();
+            Assert.AreEqual(string.Empty, PythonSettings.Load().Wsl.ContainerImage);
+        }
+        finally
+        {
+            SettingsStore.Current = previous;
+        }
     }
 
     [TestMethod]
@@ -199,13 +294,14 @@ public class MxcLinuxTests
                 {
                     mode,
                     windows = new { interpreterPath = @"C:\Python\python.exe" },
-                    wsl = new { distribution = "Ubuntu" },
+                    wsl = new { distribution = "Ubuntu", containerImage = "python:3.13-slim" },
                     timeoutSeconds = 47,
                 },
             }));
             var loaded = PythonSettings.Load();
             Assert.AreEqual(PythonRuntimeMode.Wsl, loaded.Mode);
             Assert.AreEqual("Ubuntu", loaded.Wsl.Distribution);
+            Assert.AreEqual("python:3.13-slim", loaded.Wsl.ContainerImage);
             Assert.AreEqual(@"C:\Python\python.exe", loaded.Windows.InterpreterPath);
             Assert.AreEqual(47, loaded.TimeoutSeconds);
             loaded.Save();
@@ -213,6 +309,8 @@ public class MxcLinuxTests
             Assert.AreEqual("Wsl", config.RootElement.GetProperty("python").GetProperty("mode").GetString());
             Assert.IsTrue(config.RootElement.GetProperty("mxc").GetProperty("enabled").GetBoolean());
             Assert.AreEqual(@"C:\scripts", config.RootElement.GetProperty("scriptsRoot").GetString());
+            Assert.AreEqual("python:3.13-slim",
+                config.RootElement.GetProperty("python").GetProperty("wsl").GetProperty("containerImage").GetString());
         }
         finally
         {

@@ -58,6 +58,12 @@ public sealed class PowerScriptInfo
     /// <summary>The data shape this script produces.</summary>
     public PowerScriptIO Output { get; init; } = PowerScriptIO.None;
 
+    /// <summary>Authoritative input schema, including accepted media MIME types and scalar/array shape.</summary>
+    public JsonElement? InputSchema { get; init; }
+
+    /// <summary>Authoritative output schema.</summary>
+    public JsonElement? OutputSchema { get; init; }
+
     /// <summary>The capabilities the script declares (e.g. <c>fileRead</c>, <c>network</c>).</summary>
     public IReadOnlyList<string> Capabilities { get; init; } = [];
 
@@ -158,6 +164,8 @@ public sealed class PowerScriptInfo
                 IconWarning = GetNullableString(element, "iconWarning"),
                 Input = GetIO(element, "input"),
                 Output = GetIO(element, "output"),
+                InputSchema = element.TryGetProperty("inputSchema", out var inputSchema) ? inputSchema.Clone() : null,
+                OutputSchema = element.TryGetProperty("outputSchema", out var outputSchema) ? outputSchema.Clone() : null,
                 Capabilities = GetStringArray(element, "capabilities"),
                 Consumers = GetStringArray(element, "consumers"),
                 InputExtensions = GetInputExtensions(element),

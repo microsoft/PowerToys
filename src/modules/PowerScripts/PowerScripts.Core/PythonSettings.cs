@@ -36,6 +36,10 @@ public sealed class PythonWslSettings
     /// <summary>The WSL distribution to run scripts in; empty means the default distribution.</summary>
     [JsonPropertyName("distribution")]
     public string Distribution { get; set; } = string.Empty;
+
+    /// <summary>The user-provided managed Linux image; required when MXC is enabled.</summary>
+    [JsonPropertyName("containerImage")]
+    public string ContainerImage { get; set; } = string.Empty;
 }
 
 /// <summary>

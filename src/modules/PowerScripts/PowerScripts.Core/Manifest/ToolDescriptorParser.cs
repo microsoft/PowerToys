@@ -53,6 +53,12 @@ public static class ToolDescriptorParser
         ScriptSchema.ValidateDefinition(descriptor.OutputSchema, "outputSchema");
         var input = ResolveShape(descriptor.InputSchema!, isInput: true);
         var output = ResolveShape(descriptor.OutputSchema!, isInput: false);
+        if (input is PowerScriptDataFormat.Image or PowerScriptDataFormat.Audio &&
+            descriptor.Execute is { UsesJsonStdin: false })
+        {
+            throw new InvalidDataException("Inline media requires 'x-execute.stdin': 'json' when using an explicit launch recipe.");
+        }
+
         var extension = descriptor.PowerScript;
         var manifest = new PowerScriptManifest
         {
@@ -93,8 +99,7 @@ public static class ToolDescriptorParser
 
             foreach (var (name, schema) in parameters.Properties ?? new())
             {
-                if ((input == PowerScriptDataFormat.Text && name.Equals("Text", StringComparison.OrdinalIgnoreCase)) ||
-                    (input == PowerScriptDataFormat.Files && name.Equals("Files", StringComparison.OrdinalIgnoreCase)))
+                if (input != PowerScriptDataFormat.None && name.Equals(ScriptIo.ToToken(input), StringComparison.OrdinalIgnoreCase))
                 {
                     throw new InvalidDataException($"Parameter '{name}' conflicts with the primary input binding.");
                 }
@@ -135,9 +140,9 @@ public static class ToolDescriptorParser
 
         var properties = schema.Properties ?? new();
         var primary = properties.Keys.Where(name => !isInput || name != "parameters").ToList();
-        if (primary.Count > 1 || primary.Any(name => name is not ("files" or "text")))
+        if (primary.Count > 1 || primary.Any(name => name is not ("files" or "text" or "image" or "audio")))
         {
-            throw new InvalidDataException("Declare at most one primary property, 'files' or 'text'; named options belong in input 'parameters'.");
+            throw new InvalidDataException("Declare at most one primary property: 'files', 'text', 'image', or 'audio'; named options belong in input 'parameters'.");
         }
 
         if (primary.Count == 0)
@@ -154,7 +159,12 @@ public static class ToolDescriptorParser
             throw new InvalidDataException("Primary 'text' must be a required string; primary 'files' must be a required array of strings.");
         }
 
-        return name == "files" ? PowerScriptDataFormat.Files : PowerScriptDataFormat.Text;
+        if (name is "image" or "audio")
+        {
+            ScriptMedia.ValidateDefinition(property, name);
+        }
+
+        return ScriptIo.TryParse(name)!.Value;
     }
 
     private static string? FirstNonEmpty(params string?[] values) =>

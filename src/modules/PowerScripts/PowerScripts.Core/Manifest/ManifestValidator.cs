@@ -49,12 +49,12 @@ public static class ManifestValidator
 
         if (manifest.InputFormat is { } inputFormat && !ScriptIo.IsSupported(inputFormat))
         {
-            errors.Add("'inputSchema' must describe none, text, or files.");
+            errors.Add("'inputSchema' must describe none, text, files, image, or audio.");
         }
 
         if (manifest.OutputFormat is { } outputFormat && !ScriptIo.IsSupported(outputFormat))
         {
-            errors.Add("'outputSchema' must describe none, text, or files.");
+            errors.Add("'outputSchema' must describe none, text, files, image, or audio.");
         }
 
         if (manifest.Input is not null)

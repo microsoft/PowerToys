@@ -302,12 +302,13 @@ public sealed class PowerScriptsClient
 
         AppendRoot(psi);
 
+        var payload = SerializeInput(input);
         using var process = Process.Start(psi)
             ?? throw new InvalidOperationException("Failed to start the PowerScripts host.");
 
         try
         {
-            await process.StandardInput.WriteAsync(SerializeInput(input).AsMemory(), cancellationToken);
+            await process.StandardInput.WriteAsync(payload.AsMemory(), cancellationToken);
             process.StandardInput.Close();
 
             // Drain stdout and stderr concurrently: the host writes all of stderr before any stdout, so
@@ -408,11 +409,29 @@ public sealed class PowerScriptsClient
 
     private static string SerializeInput(PowerScriptTransformInput input)
     {
+        var primaryCount = (input.Text is not null ? 1 : 0) + (input.FilePaths is not null ? 1 : 0) +
+            (input.Image is not null ? 1 : 0) + (input.Audio is not null ? 1 : 0);
+        if (primaryCount > 1)
+        {
+            throw new JsonException("Supply only one primary input: text, files, image, or audio.");
+        }
+
         using var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer))
         {
             writer.WriteStartObject();
             WriteString(writer, "text", input.Text);
+            if (input.Image is { } image)
+            {
+                writer.WritePropertyName("image");
+                image.Write(writer, "image");
+            }
+
+            if (input.Audio is { } audio)
+            {
+                writer.WritePropertyName("audio");
+                audio.Write(writer, "audio");
+            }
 
             if (input.FilePaths is not null)
             {
@@ -469,23 +488,28 @@ public sealed class PowerScriptsClient
 
             foreach (var property in root.EnumerateObject())
             {
-                if (property.Name is not ("text" or "files"))
+                if (property.Name is not ("text" or "files" or "image" or "audio"))
                 {
-                    throw new JsonException($"Unsupported output field '{property.Name}'. Use text or files.");
+                    throw new JsonException($"Unsupported output field '{property.Name}'. Use text, files, image, or audio.");
                 }
             }
 
             var text = ReadString(root, "text");
             var files = ReadStringArray(root, "files");
-            if (text is not null && files is not null)
+            var image = root.TryGetProperty("image", out var imageValue) ? PowerScriptMedia.Read(imageValue, "image") : null;
+            var audio = root.TryGetProperty("audio", out var audioValue) ? PowerScriptMedia.Read(audioValue, "audio") : null;
+            if ((text is not null ? 1 : 0) + (files is not null ? 1 : 0) +
+                (image is not null ? 1 : 0) + (audio is not null ? 1 : 0) > 1)
             {
-                throw new JsonException("An output must contain text or files, not both.");
+                throw new JsonException("An output must contain at most one primary field.");
             }
 
             return new PowerScriptTransformResult
             {
                 Text = text,
                 FilePaths = files,
+                Image = image,
+                Audio = audio,
                 ExitCode = exitCode,
                 StdErr = stdErr,
             };

@@ -136,6 +136,44 @@ public class HostCliTests
     }
 
     [TestMethod]
+    [DataRow("""{"python":{"mode":"wsl","wsl":{"containerImage":"--invalid-image"}}}""", "--invalid-image", "linux-container-status")]
+    [DataRow("""{"python":{"mode":"wsl"}}""", "", "linux-container-status")]
+    [DataRow("""{"python":{"mode":"wsl"}}""", "", "linux-container-setup")]
+    [DoNotParallelize]
+    public void LinuxEnvironmentCommandsReportTheConfiguredImageAndDoNotFallback(string configuration, string image, string command)
+    {
+        var previous = SettingsStore.Current;
+        var previousError = Console.Error;
+        using var error = new StringWriter(System.Globalization.CultureInfo.InvariantCulture);
+        try
+        {
+            SettingsStore.Current = new FileSettingsStore(Path.Combine(_root, "settings"));
+            SettingsStore.Current.WriteBlob(PowerScriptsPaths.ConfigFileName, configuration);
+            Console.SetError(error);
+            var (exit, stdout) = RunHostInProcess(command);
+            if (command == "linux-container-setup")
+            {
+                Assert.AreEqual(2, exit);
+                Assert.AreEqual(string.Empty, stdout);
+                StringAssert.Contains(error.ToString(), "image reference");
+            }
+            else
+            {
+                Assert.AreEqual(0, exit);
+                using var status = JsonDocument.Parse(stdout);
+                Assert.IsFalse(status.RootElement.GetProperty("isReady").GetBoolean());
+                Assert.AreEqual(image, status.RootElement.GetProperty("image").GetString());
+                StringAssert.Contains(status.RootElement.GetProperty("message").GetString()!, "image reference");
+            }
+        }
+        finally
+        {
+            Console.SetError(previousError);
+            SettingsStore.Current = previous;
+        }
+    }
+
+    [TestMethod]
     public void CatalogueDistinguishesDescriptorLaunchCommandsFromBuiltInPython()
     {
         Write("recipe.py", "print('custom interpreter')");
@@ -430,8 +468,6 @@ public class HostCliTests
     [DataTestMethod]
     [DataRow("bogus")]
     [DataRow("html")]
-    [DataRow("image")]
-    [DataRow("audio")]
     [DataRow("video")]
     public void List_UnsupportedInputFilter_FailsWithUsageError(string input)
     {
@@ -441,11 +477,24 @@ public class HostCliTests
         StringAssert.Contains(stderr, "none, text, files");
     }
 
+    [TestMethod]
+    [DataRow("image")]
+    [DataRow("audio")]
+    public void MediaDiscoveryFiltersUseTheDeclaredSchemas(string category)
+    {
+        var created = PowerScripts.Core.Templates.ScriptTemplates.Create(_root,
+            new PowerScripts.Core.Templates.ScriptTemplateOptions("Media discovery", Input: category, Output: category));
+        var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
+        var input = PowerScriptInfo.ParseList(RunHostOk("list", "--json", "--input", category, "--root", _root));
+        Assert.AreEqual(1, input.Count);
+        Assert.AreEqual(manifest.Id, input[0].Id);
+        var output = PowerScriptInfo.ParseList(RunHostOk("list", "--json", "--output", category, "--root", _root));
+        Assert.AreEqual(manifest.Id, output.Single().Id);
+    }
+
     [DataTestMethod]
     [DataRow("bogus")]
     [DataRow("html")]
-    [DataRow("image")]
-    [DataRow("audio")]
     [DataRow("video")]
     public void List_UnsupportedOutputFilter_FailsWithUsageError(string output)
     {

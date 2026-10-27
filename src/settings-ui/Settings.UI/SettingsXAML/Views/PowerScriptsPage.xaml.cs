@@ -106,7 +106,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 XamlRoot = XamlRoot,
                 Title = resources.GetString("PowerScripts_LinuxSetupTitle"),
-                Content = resources.GetString("PowerScripts_LinuxSetupHelp"),
+                Content = resources.GetString("PowerScripts_LinuxSetupHelp")
+                    .Replace("{0}", ViewModel.LinuxContainerImage, StringComparison.Ordinal),
                 PrimaryButtonText = resources.GetString("PowerScripts_LinuxSetupConfirm"),
                 CloseButtonText = resources.GetString("PowerScripts_Cancel"),
                 DefaultButton = ContentDialogButton.Close,

@@ -91,9 +91,10 @@ internal static class Program
                     return 1;
                 }
 
+                var image = PythonSettings.Load().Wsl.ContainerImage;
                 if (args[0].Equals("linux-container-setup", StringComparison.OrdinalIgnoreCase))
                 {
-                    var setup = MxcLinuxProcessRunner.Setup();
+                    var setup = MxcLinuxProcessRunner.Setup(image);
                     if (setup.ExitCode != 0)
                     {
                         Console.Error.WriteLine(setup.StdErr);
@@ -101,11 +102,11 @@ internal static class Program
                     }
                 }
 
-                var check = MxcLinuxProcessRunner.Probe();
+                var check = MxcLinuxProcessRunner.Probe(image);
                 Console.WriteLine(JsonSerializer.Serialize(new
                 {
                     isReady = check.ExitCode == 0,
-                    image = MxcLinuxProcessRunner.Image,
+                    image,
                     message = check.ExitCode == 0 ? check.StdOut.Trim() : check.StdErr.Trim(),
                 }));
                 return 0;
@@ -473,10 +474,24 @@ internal static class Program
         }
 
         using var stdinReader = new StreamReader(Console.OpenStandardInput(), Encoding.UTF8);
-        var stdin = stdinReader.ReadToEnd();
         PythonTransformInput input;
         try
         {
+            var builder = new StringBuilder();
+            var buffer = new char[8192];
+            int count;
+            while ((count = stdinReader.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                if (manifest.InputFormat is PowerScriptDataFormat.Image or PowerScriptDataFormat.Audio &&
+                    builder.Length + count > ScriptMedia.MaxRequestCharacters)
+                {
+                    throw new InvalidDataException("Input exceeds the bounded transform request size. Use a file-based contract for large media.");
+                }
+
+                builder.Append(buffer, 0, count);
+            }
+
+            var stdin = builder.ToString();
             input = PythonTransformInput.Parse(manifest, string.IsNullOrWhiteSpace(stdin) ? "{}" : stdin);
         }
         catch (Exception ex) when (ex is JsonException or InvalidDataException)
@@ -524,7 +539,7 @@ internal static class Program
         // PowerShell transform and descriptor-authored scripts: hand text in as a parameter plus
         // any files. File outputs use the same explicit JSON object as Python; text stays literal.
         var parameters = new Dictionary<string, string?>(resolvedParameters, StringComparer.OrdinalIgnoreCase);
-        var psResult = new ScriptExecutor().Execute(manifest, input.FilePaths, parameters, input.Text);
+        var psResult = new ScriptExecutor().Execute(manifest, input.FilePaths, parameters, input.Text, input.Image, input.Audio);
         if (!string.IsNullOrEmpty(psResult.StdErr))
         {
             Console.Error.Write(psResult.StdErr);
@@ -543,7 +558,7 @@ internal static class Program
             {
                 PowerScriptDataFormat.None => new PythonTransformResult(),
                 PowerScriptDataFormat.Text => new PythonTransformResult { Text = psResult.StdOut },
-                _ => PythonTransformResult.Parse(psResult.StdOut, ScriptIo.Resolve(manifest).Output),
+                _ => PythonTransformResult.Parse(psResult.StdOut, ScriptIo.Resolve(manifest).Output, manifest.OutputSchema),
             };
             ScriptSchema.Validate(manifest.OutputSchema, JsonSerializer.SerializeToElement(output, TransformJsonOptions), "output");
         }
@@ -686,7 +701,7 @@ internal static class Program
         var parsed = ScriptIo.TryParse(token);
         if (parsed is null)
         {
-            Console.Error.WriteLine($"list: unknown {flag} '{token}'. Use one of: none, text, files.");
+            Console.Error.WriteLine($"list: unknown {flag} '{token}'. Use one of: none, text, files, image, audio.");
             return false;
         }
 

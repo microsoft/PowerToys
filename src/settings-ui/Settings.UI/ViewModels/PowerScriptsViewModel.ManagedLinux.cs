@@ -5,6 +5,7 @@
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels;
 
@@ -13,8 +14,41 @@ public partial class PowerScriptsViewModel
     private bool _isLinuxContainerBusy;
     private bool _isLinuxContainerReady;
     private string _linuxContainerStatus = GetResourceString("PowerScripts_LinuxNotChecked");
+    private string _linuxContainerImage;
 
-    public bool CanPrepareLinuxContainer => !_isLinuxContainerBusy;
+    public bool CanEditLinuxContainerImage => !_isLinuxContainerBusy;
+
+    public bool CanPrepareLinuxContainer => !_isLinuxContainerBusy && !string.IsNullOrWhiteSpace(LinuxContainerImage);
+
+    public bool IsLinuxContainerBusy => _isLinuxContainerBusy;
+
+    public string LinuxContainerStatusTitle { get; private set; } = GetResourceString("PowerScripts_LinuxImageStatusTitle");
+
+    public InfoBarSeverity LinuxContainerStatusSeverity { get; private set; } = InfoBarSeverity.Informational;
+
+    public string LinuxContainerImage
+    {
+        get => _linuxContainerImage;
+        set
+        {
+            var image = value ?? string.Empty;
+            if (_linuxContainerImage == image)
+            {
+                return;
+            }
+
+            _linuxContainerImage = image;
+            SavePythonSettings();
+            _isLinuxContainerReady = false;
+            _linuxContainerStatus = GetResourceString(string.IsNullOrWhiteSpace(image)
+                ? "PowerScripts_LinuxImageRequired"
+                : "PowerScripts_LinuxNotChecked");
+            LinuxContainerStatusTitle = GetResourceString("PowerScripts_LinuxImageStatusTitle");
+            LinuxContainerStatusSeverity = InfoBarSeverity.Informational;
+            OnPropertyChanged();
+            NotifyLinuxState();
+        }
+    }
 
     public bool IsLinuxContainerReady => _isLinuxContainerReady;
 
@@ -27,9 +61,22 @@ public partial class PowerScriptsViewModel
             return;
         }
 
+        var image = LinuxContainerImage;
+        if (string.IsNullOrWhiteSpace(image))
+        {
+            _isLinuxContainerReady = false;
+            _linuxContainerStatus = GetResourceString("PowerScripts_LinuxImageRequired");
+            LinuxContainerStatusTitle = GetResourceString("PowerScripts_LinuxImageStatusTitle");
+            LinuxContainerStatusSeverity = InfoBarSeverity.Informational;
+            NotifyLinuxState();
+            return;
+        }
+
         _isLinuxContainerBusy = true;
         _isLinuxContainerReady = false;
         _linuxContainerStatus = GetResourceString(prepare ? "PowerScripts_LinuxPreparing" : "PowerScripts_LinuxChecking");
+        LinuxContainerStatusTitle = GetResourceString(prepare ? "PowerScripts_LinuxImagePreparingTitle" : "PowerScripts_LinuxImageCheckingTitle");
+        LinuxContainerStatusSeverity = InfoBarSeverity.Informational;
         NotifyLinuxState();
         try
         {
@@ -43,12 +90,26 @@ public partial class PowerScriptsViewModel
                 throw new InvalidOperationException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
             }
 
+            if (!string.Equals(image, LinuxContainerImage, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (!string.Equals(image, status.Image, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
+            }
+
             _isLinuxContainerReady = status.IsReady;
             _linuxContainerStatus = status.Message;
+            LinuxContainerStatusTitle = GetResourceString(status.IsReady ? "PowerScripts_LinuxImageReady" : "PowerScripts_LinuxImageNotReady");
+            LinuxContainerStatusSeverity = status.IsReady ? InfoBarSeverity.Success : InfoBarSeverity.Error;
         }
         catch (Exception ex)
         {
             _linuxContainerStatus = ex.Message;
+            LinuxContainerStatusTitle = GetResourceString("PowerScripts_LinuxImageNotReady");
+            LinuxContainerStatusSeverity = InfoBarSeverity.Error;
             ManagedCommon.Logger.LogError("Unable to prepare or check the PowerScripts Linux environment.", ex);
         }
         finally
@@ -61,8 +122,12 @@ public partial class PowerScriptsViewModel
     private void NotifyLinuxState()
     {
         OnPropertyChanged(nameof(CanPrepareLinuxContainer));
+        OnPropertyChanged(nameof(CanEditLinuxContainerImage));
         OnPropertyChanged(nameof(IsLinuxContainerReady));
+        OnPropertyChanged(nameof(IsLinuxContainerBusy));
         OnPropertyChanged(nameof(LinuxContainerStatus));
+        OnPropertyChanged(nameof(LinuxContainerStatusTitle));
+        OnPropertyChanged(nameof(LinuxContainerStatusSeverity));
         RefreshScriptMxcStates();
     }
 
@@ -100,7 +165,10 @@ public partial class PowerScriptsViewModel
             var network = GetResourceString(script.IsNetworkRestrictionEffective
                 ? "PowerScripts_LinuxNetworkBlocked"
                 : "PowerScripts_LinuxNetworkAllowed");
-            summary = GetResourceString("PowerScripts_ExecutionLinux");
+            summary = string.IsNullOrWhiteSpace(LinuxContainerImage)
+                ? GetResourceString("PowerScripts_LinuxImageRequired")
+                : GetResourceString("PowerScripts_ExecutionLinux")
+                    .Replace("{0}", LinuxContainerImage, StringComparison.Ordinal);
             isolation = GetResourceString("PowerScripts_ExecutionLinuxControls")
                 .Replace("{0}", network, StringComparison.Ordinal);
             if (!script.IsMxcEffectivelyEnabled || !script.IsFilesystemRestrictionEffective ||
@@ -108,6 +176,10 @@ public partial class PowerScriptsViewModel
                 !_mxcRiskAccepted)
             {
                 blocked = GetResourceString("PowerScripts_ExecutionLinuxBlocked");
+            }
+            else if (string.IsNullOrWhiteSpace(LinuxContainerImage))
+            {
+                blocked = GetResourceString("PowerScripts_LinuxImageRequired");
             }
             else if (!IsLinuxContainerReady)
             {
@@ -132,6 +204,8 @@ public partial class PowerScriptsViewModel
     private sealed class LinuxContainerSnapshot
     {
         public required bool IsReady { get; set; }
+
+        public required string Image { get; set; }
 
         public required string Message { get; set; }
     }
