@@ -111,10 +111,11 @@ public class AllAppsCommandProviderTests : AppsTestBase
         var provider = new AllAppsCommandProvider(Page);
         await WaitForPageInitializationAsync();
 
-        var result = provider.GetCommandItem(AllAppsCommandProvider.AppUserModelIdPrefix + app.UserModelId.ToUpperInvariant());
+        var result = provider.GetCommandItem(app.UserModelId);
 
         Assert.IsNotNull(result);
         Assert.AreEqual("Localized Snipping Tool", result.Title);
+        Assert.AreEqual(app.UserModelId, result.Command.Id);
         Assert.AreSame(result, provider.GetCommandItem(result.Command.Id));
     }
 
@@ -124,7 +125,19 @@ public class AllAppsCommandProviderTests : AppsTestBase
         var provider = new AllAppsCommandProvider(Page);
         await WaitForPageInitializationAsync();
 
-        Assert.IsNull(provider.GetCommandItem("aumid:Microsoft.ScreenSketch_8wekyb3d8bbwe!App"));
+        Assert.IsNull(provider.GetCommandItem("Microsoft.ScreenSketch_8wekyb3d8bbwe!App"));
+    }
+
+    [TestMethod]
+    public async Task UnpackagedAppCanBeResolvedByCommandId()
+    {
+        MockCache.AddWin32Program(TestDataHelper.CreateTestWin32Program("TestApp", "C:\\TestApp.exe"));
+        var provider = new AllAppsCommandProvider(Page);
+        await WaitForPageInitializationAsync();
+
+        var item = Page.GetItems().Single();
+
+        Assert.AreSame(item, provider.GetCommandItem(item.Command.Id));
     }
 
     [TestMethod]

@@ -358,12 +358,6 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
     private void AddPinToTrayCommand(string itemId, string providerId, List<IContextItem> items, CommandItemViewModel commandItem)
     {
-        // Packaged apps use a language-independent ID, including the default Snipping Tool pin.
-        if (commandItem.Model.Unsafe is AppListItem { App.IsPackaged: true } appItem)
-        {
-            itemId = AllAppsCommandProvider.AppUserModelIdPrefix + appItem.App.UserModelId;
-        }
-
         var pinned = _settingsService.Settings.TrayPalette.Commands.Contains(new(providerId, itemId));
         items.Add(new PinToContextItem(
             new PinToCommand(itemId, providerId, !pinned, PinLocation.Tray, _settingsService, _topLevelCommandManager),
