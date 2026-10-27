@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
@@ -10,6 +11,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
@@ -23,14 +25,22 @@ public partial class TrayPaletteViewModelTests
             Id = id;
         }
 
-        public ICommandItem Item { get; } = new CommandItem(new AnonymousCommand(() => { }) { Id = "command" })
+        public ICommandItem Item { get; init; } = new CommandItem(new AnonymousCommand(() => { }) { Id = "command" })
         {
             Title = "Quick action",
         };
 
-        public override ICommandItem[] TopLevelCommands() => [];
+        public bool IncludeTopLevelCommand { get; init; }
 
-        public override ICommandItem? GetCommandItem(string id) => id == "command" ? Item : null;
+        public int LookupCount { get; private set; }
+
+        public override ICommandItem[] TopLevelCommands() => IncludeTopLevelCommand ? [Item] : [];
+
+        public override ICommandItem? GetCommandItem(string id)
+        {
+            LookupCount++;
+            return id == "command" ? Item : null;
+        }
     }
 
     [TestMethod]
@@ -125,4 +135,131 @@ public partial class TrayPaletteViewModelTests
         Assert.IsFalse(model.HasLoadError);
         Assert.HasCount(1, settings.TrayPalette.Commands);
     }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task ReleasesOwnedResolutionButPreservesBorrowedTopLevelItem(bool includeTopLevelCommand)
+    {
+        using var cleanupFinished = new SemaphoreSlim(0);
+        var item = new Mock<ICommandItem>();
+        item.SetupGet(i => i.Command).Returns(new NoOpCommand { Id = "command", Name = "Quick action" });
+        item.SetupRemove(i => i.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>())
+            .Callback<TypedEventHandler<object, IPropChangedEventArgs>>(_ => cleanupFinished.Release());
+        var provider = new TestProvider("provider") { Item = item.Object, IncludeTopLevelCommand = includeTopLevelCommand };
+        var settings = new SettingsModel { TrayPalette = new() { Commands = [new("provider", "command")] } };
+        var service = new Mock<ISettingsService>();
+        service.SetupGet(s => s.Settings).Returns(settings);
+        using var services = CreateServices(service.Object);
+        using var manager = new TopLevelCommandManager(services, [new BuiltInExtensionService([provider], TaskScheduler.Default)]);
+        await manager.LoadBuiltInProvidersAsync();
+        using var model = new TrayPaletteViewModel(service.Object, manager, DefaultContextMenuFactory.Instance);
+
+        await model.RefreshAsync();
+
+        Assert.HasCount(1, model.Items);
+        Assert.AreEqual(includeTopLevelCommand ? 0 : 1, provider.LookupCount);
+        var trayItem = model.Items[0];
+        var topLevel = manager.LookupCommand("provider", "command");
+        if (includeTopLevelCommand)
+        {
+            Assert.IsNotNull(topLevel);
+            Assert.AreNotSame(topLevel.ItemViewModel, trayItem.Item);
+            Assert.AreNotSame(topLevel.ItemViewModel.Command, trayItem.Item.Command);
+        }
+
+        model.Dispose();
+
+        Assert.IsTrue(await cleanupFinished.WaitAsync(TimeSpan.FromSeconds(2)), "The Tray presentation must be cleaned up.");
+        if (includeTopLevelCommand)
+        {
+            item.VerifyRemove(i => i.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>(), Times.Once);
+            Assert.AreSame(topLevel, manager.LookupCommand("provider", "command"));
+            Assert.AreEqual("Quick action", topLevel!.ItemViewModel.Title);
+        }
+        else
+        {
+            Assert.IsTrue(await cleanupFinished.WaitAsync(TimeSpan.FromSeconds(2)), "The owned resolution must also be cleaned up.");
+            item.VerifyRemove(i => i.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>(), Times.Exactly(2));
+        }
+    }
+
+    [TestMethod]
+    public async Task ResolvesGeneratedTopLevelIdWithoutProviderLookup()
+    {
+        var provider = new TestProvider("provider")
+        {
+            IncludeTopLevelCommand = true,
+            Item = new CommandItem(new NoOpCommand { Name = "Generated identity" }),
+        };
+        var settings = new SettingsModel();
+        var service = new Mock<ISettingsService>();
+        service.SetupGet(s => s.Settings).Returns(() => settings);
+        using var services = CreateServices(service.Object);
+        using var manager = new TopLevelCommandManager(services, [new BuiltInExtensionService([provider], TaskScheduler.Default)]);
+        await manager.LoadBuiltInProvidersAsync();
+        var command = manager.TopLevelCommands[0];
+        settings = settings with { TrayPalette = new() { Commands = [new("provider", command.Id)] } };
+        using var model = new TrayPaletteViewModel(service.Object, manager, DefaultContextMenuFactory.Instance);
+
+        await model.RefreshAsync();
+
+        Assert.HasCount(1, model.Items);
+        Assert.AreEqual(command.Id, model.Items[0].Pin.CommandId);
+        Assert.AreEqual(0, provider.LookupCount);
+        Assert.IsFalse(model.HasLoadError);
+    }
+
+    [TestMethod]
+    public async Task RejectsMismatchedProviderResult()
+    {
+        var provider = new TestProvider("provider")
+        {
+            Item = new CommandItem(new NoOpCommand { Id = "different-command", Name = "Wrong command" }),
+        };
+        var settings = new SettingsModel { TrayPalette = new() { Commands = [new("provider", "command")] } };
+        var service = new Mock<ISettingsService>();
+        service.SetupGet(s => s.Settings).Returns(settings);
+        using var services = CreateServices(service.Object);
+        using var manager = new TopLevelCommandManager(services, [new BuiltInExtensionService([provider], TaskScheduler.Default)]);
+        await manager.LoadBuiltInProvidersAsync();
+        using var model = new TrayPaletteViewModel(service.Object, manager, DefaultContextMenuFactory.Instance);
+
+        await model.RefreshAsync();
+
+        Assert.IsEmpty(model.Items);
+        Assert.AreEqual(1, provider.LookupCount);
+        Assert.HasCount(1, settings.TrayPalette.Commands);
+    }
+
+    [TestMethod]
+    public async Task DisablingLoadedProviderInvalidatesCachedTiles()
+    {
+        var provider = new TestProvider("provider");
+        var settings = new SettingsModel { TrayPalette = new() { Commands = [new("provider", "command")] } };
+        var service = new Mock<ISettingsService>();
+        service.SetupGet(s => s.Settings).Returns(() => settings);
+        using var services = CreateServices(service.Object);
+        using var manager = new TopLevelCommandManager(services, [new BuiltInExtensionService([provider], TaskScheduler.Default)]);
+        await manager.LoadBuiltInProvidersAsync();
+        using var model = new TrayPaletteViewModel(service.Object, manager, DefaultContextMenuFactory.Instance);
+        await model.RefreshAsync();
+        Assert.HasCount(1, model.Items);
+
+        settings = settings with
+        {
+            ProviderSettings = settings.ProviderSettings.SetItem("provider", new() { IsEnabled = false }),
+        };
+        await model.RefreshAsync();
+
+        Assert.IsEmpty(model.Items);
+        Assert.AreEqual(1, provider.LookupCount, "A disabled provider must not be queried again.");
+        Assert.IsFalse(model.HasLoadError);
+    }
+
+    private static ServiceProvider CreateServices(ISettingsService settingsService) => new ServiceCollection()
+        .AddSingleton(settingsService)
+        .AddSingleton(TaskScheduler.Default)
+        .AddSingleton<IContextMenuFactory>(DefaultContextMenuFactory.Instance)
+        .BuildServiceProvider();
 }

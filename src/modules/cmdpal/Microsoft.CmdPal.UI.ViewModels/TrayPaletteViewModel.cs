@@ -7,7 +7,6 @@ using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Services;
-using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -17,7 +16,7 @@ public sealed partial class TrayPaletteViewModel : ObservableObject, IDisposable
     private readonly TopLevelCommandManager _commandManager;
     private readonly IContextMenuFactory _contextMenuFactory;
     private PinnedCommandSettings[]? _loadedPins;
-    private (CommandProviderWrapper Provider, bool IsActive)[] _loadedProviders = [];
+    private (CommandProviderWrapper Provider, bool IsActive, bool IsEnabled)[] _loadedProviders = [];
     private int _contentVersion;
     private int _loadedContentVersion;
     private int _refreshVersion;
@@ -68,7 +67,9 @@ public sealed partial class TrayPaletteViewModel : ObservableObject, IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         var pins = _settingsService.Settings.TrayPalette.Commands;
-        var providers = _commandManager.CommandProviders.Select(provider => (provider, provider.IsActive)).ToArray();
+        var providers = _commandManager.CommandProviders
+            .Select(provider => (provider, provider.IsActive, _commandManager.IsProviderEnabled(provider.ProviderId)))
+            .ToArray();
         var contentVersion = Volatile.Read(ref _contentVersion);
         if (_loadedPins is not null &&
             !IsLoading &&
@@ -85,32 +86,33 @@ public sealed partial class TrayPaletteViewModel : ObservableObject, IDisposable
         HasLoadError = false;
         OnPropertyChanged(nameof(IsEmpty));
 
-        var loaded = await Task.Run(() =>
+        var loaded = await Task.Run(async () =>
         {
             List<TrayPaletteItemViewModel> items = [];
             var failed = false;
             foreach (var pin in pins.Distinct())
             {
-                CommandItemViewModel? item = null;
+                CommandResolution? resolution = null;
                 try
                 {
-                    var provider = _commandManager.LookupProvider(pin.ProviderId);
-                    var model = provider?.ResolveCommandItem(pin.CommandId);
-                    if (provider is null || model?.Command is not (IInvokableCommand or IPage))
+                    resolution = await _commandManager.ResolveCommandAsync(pin.ProviderId, pin.CommandId);
+                    if (resolution is null ||
+                        !(resolution.Command.CommandViewModel.IsInvokableCommand || resolution.Command.CommandViewModel.IsPage))
                     {
                         continue;
                     }
 
-                    var context = new TrayPaletteItemPageContext(pin, provider);
-                    item = new(new(model), new(context), _contextMenuFactory);
-                    item.InitializeProperties();
-                    items.Add(new(pin, item, provider, context));
+                    items.Add(new(pin, resolution, _contextMenuFactory));
+                    resolution = null;
                 }
                 catch (Exception ex)
                 {
-                    item?.SafeCleanup();
                     failed = true;
                     Logger.LogError($"Failed to load tray command '{pin.ProviderId}/{pin.CommandId}'.", ex);
+                }
+                finally
+                {
+                    resolution?.Dispose();
                 }
             }
 
@@ -142,7 +144,7 @@ public sealed partial class TrayPaletteViewModel : ObservableObject, IDisposable
     {
         foreach (var item in items)
         {
-            item.Item.SafeCleanup();
+            item.Dispose();
         }
     }
 
