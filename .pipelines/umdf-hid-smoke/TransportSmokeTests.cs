@@ -29,6 +29,7 @@ public sealed class TransportSmokeTests : IDisposable
         TestContext.WriteLine($"OS architecture={RuntimeInformation.OSArchitecture}; process architecture={RuntimeInformation.ProcessArchitecture}; session={process.SessionId}.");
         var (x, y) = MouseHelper.GetMousePosition();
         originalPointer = new Point(x, y);
+        KeyboardHelper.SendKey(Key.Esc);
         fixture = new TestWindow();
         fixture.Focus();
         using var trace = new InputTrace();
