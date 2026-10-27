@@ -116,13 +116,40 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
-    public bool UseLowLevelGlobalHotkey
+    public bool IsWindowsKeyHotkeyAvailable => SettingsModel.IsWindowsKeyHotkeyFeatureEnabled;
+
+    public bool UseWindowsKey
     {
-        get => _settingsService.Settings.UseLowLevelGlobalHotkey;
+        get => _settingsService.Settings.IsWindowsKeyHotkeyActive;
         set
         {
+            if (!IsWindowsKeyHotkeyAvailable || value == UseWindowsKey)
+            {
+                return;
+            }
+
+            _settingsService.UpdateSettings(s => s with { UseWindowsKey = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseWindowsKey)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseLowLevelGlobalHotkey)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanEditLowLevelGlobalHotkey)));
+        }
+    }
+
+    public bool CanEditLowLevelGlobalHotkey => !UseWindowsKey;
+
+    public bool UseLowLevelGlobalHotkey
+    {
+        get => UseWindowsKey || _settingsService.Settings.UseLowLevelGlobalHotkey;
+        set
+        {
+            // A two-way binding can write the forced checked state back to the source.
+            if (!CanEditLowLevelGlobalHotkey || value == UseLowLevelGlobalHotkey)
+            {
+                return;
+            }
+
             _settingsService.UpdateSettings(s => s with { UseLowLevelGlobalHotkey = value });
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseLowLevelGlobalHotkey)));
         }
     }
 
@@ -733,6 +760,10 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommandPaletteOpeningModeIndex)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowQuickAccessShelf)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanConfigureQuickAccessShelf)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseWindowsKey)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseLowLevelGlobalHotkey)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanEditLowLevelGlobalHotkey)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
             },
             CancellationToken.None,
             TaskCreationOptions.None,
