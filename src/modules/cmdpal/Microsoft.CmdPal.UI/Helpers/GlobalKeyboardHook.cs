@@ -84,21 +84,40 @@ internal sealed class GlobalKeyboardHook : IGlobalKeyboardHook
     /// <inheritdoc/>
     public unsafe void SendDummyKeyUp()
     {
-        INPUT input = new()
-        {
-            type = INPUT_TYPE.INPUT_KEYBOARD,
-            Anonymous = new()
-            {
-                ki = new()
-                {
-                    wVk = (VIRTUAL_KEY)0xFF,
-                    dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP,
-                },
-            },
-        };
+        var input = CreateKeyUpInput((VIRTUAL_KEY)0xFF);
         _ = PInvoke.SendInput(1, &input, sizeof(INPUT));
     }
 
     /// <inheritdoc/>
     public LRESULT CallNext(int code, WPARAM wParam, LPARAM lParam) => PInvoke.CallNextHookEx(null, code, wParam, lParam);
+
+    /// <inheritdoc/>
+    public unsafe void SendWindowsKeyUp(VIRTUAL_KEY key)
+    {
+        // Replace the physical release with a masked release. Swallowing it alone
+        // would leave Windows believing the modifier is still held.
+        INPUT* inputs = stackalloc INPUT[2]
+        {
+            CreateKeyUpInput((VIRTUAL_KEY)0xFF),
+            CreateKeyUpInput(key),
+        };
+        if (PInvoke.SendInput(2, inputs, sizeof(INPUT)) != 2)
+        {
+            throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
+    }
+
+    internal static INPUT CreateKeyUpInput(VIRTUAL_KEY key) => new()
+    {
+        type = INPUT_TYPE.INPUT_KEYBOARD,
+        Anonymous = new()
+        {
+            ki = new()
+            {
+                wVk = key,
+                dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP |
+                    (key is VIRTUAL_KEY.VK_LWIN or VIRTUAL_KEY.VK_RWIN ? KEYBD_EVENT_FLAGS.KEYEVENTF_EXTENDEDKEY : 0),
+            },
+        },
+    };
 }

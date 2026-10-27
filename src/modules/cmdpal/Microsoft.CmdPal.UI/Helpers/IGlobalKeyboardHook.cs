@@ -32,6 +32,10 @@ internal interface IGlobalKeyboardHook
     /// <remarks>Required for every matched shortcut, regardless of its modifiers.</remarks>
     void SendDummyKeyUp();
 
+    /// <summary>Injects a masked Windows-key release so the modifier is released without opening Start.</summary>
+    /// <param name="key">The left or right Windows key to release.</param>
+    void SendWindowsKeyUp(VIRTUAL_KEY key);
+
     /// <summary>Forwards an unhandled event to the next hook.</summary>
     /// <param name="code">Hook code supplied by Windows.</param>
     /// <param name="wParam">Keyboard message identifier.</param>

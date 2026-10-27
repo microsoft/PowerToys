@@ -39,6 +39,10 @@ not on a working machine.
 - Exit an existing PowerToys instance before a host-desktop run. The harness owns the runner and
   module lifecycle.
 
+The `.Next` value-setting wrappers pass target options before `--`, followed by the literal
+selector and value. Keep this boundary when adding wrappers: application arguments such as
+`--payload "text"` and negative numeric values must not be parsed as winapp options.
+
 ### Legacy tests
 
 - Install Windows Application Driver v1.2.1 from https://github.com/microsoft/WinAppDriver/releases/tag/v1.2.1 to the default directory (`C:\Program Files (x86)\Windows Application Driver`)
@@ -146,14 +150,21 @@ desktop, PowerShell Direct, payload, shell-extension signing, and evidence failu
 
 The PowerToys UI test pipeline provides flexible options for building and testing:
 
+Full builds with test compilation enabled and UI-tests-only builds first run the
+MWB/shared winapp CLI PowerShell infrastructure tests using Pester 3.4.0 under
+PowerShell 7. The build publishes NUnit results and fails if any selected test is
+missing, skipped or failed. Optional `NativeCompiler` integration tests require
+explicit tool/runtime paths and are excluded from this fast gate.
+
 ### Pipeline Options
 
 - **buildSource**: Select the build type for testing:
-  - `latestMainOfficialBuild`: Downloads and uses the latest official PowerToys build from main branch
+  - `latestMainOfficialBuild`: Downloads and uses the latest official PowerToys build from main branch; does not support Mouse Without Borders Sandbox tests
   - `buildNow`: Builds PowerToys from current source code and uses it for testing
-  - `specificBuildId`: Downloads a specific PowerToys build using the build ID specified in `specificBuildId` parameter
+  - `buildNowSlim`: Builds the same current-source product, but downloads and installs its installer rather than the whole artifact
+  - `specificBuildId`: Downloads a specific PowerToys build using the build ID specified in `specificBuildId` parameter; does not support Mouse Without Borders Sandbox tests
 
-  **Default value**: `latestMainOfficialBuild`
+  **Default value**: `buildNow`
 
 - **specificBuildId**: When `buildSource` is set to `specificBuildId`, specify the exact PowerToys build ID to download and test against.
 
@@ -173,6 +184,26 @@ The PowerToys UI test pipeline provides flexible options for building and testin
   - Leave empty to build and run all UI test modules
 
   **Important**: The `uiTestModules` parameter values must match both the test project names (for `.csproj` selection during build) and the test assembly names (for `.dll` execution during testing).
+
+  **Mouse Without Borders**: Selecting `MouseWithoutBorders.UITests` automatically
+  prepares its current-source x64 Release runtime bundle and runs the dedicated
+  Sandbox suite; there is no separate enable/disable switch. Empty all-modules
+  selections include it on `buildNow` and `buildNowSlim`. An explicit MWB selection
+  with an official build is blocked; an empty all-modules official selection skips
+  MWB with a warning and still runs the other suites. ARM64 Sandbox execution is
+  skipped independently of the other ARM64 suites. PR builds prepare the bundle
+  only when the affected-project resolver selects MWB. To omit MWB, select the
+  other desired modules explicitly.
+
+  MWB executes inside **Run UI Tests** and shares **Publish UI Test Results** with
+  the other suites. Its isolated setup/standard-user execution preserves the
+  existing timeouts and privilege boundaries. **Restore UI-test prerequisites**
+  always attempts recovery and cleanup, even after failure or cancellation.
+  Selection/skip reasons are logged; no separate selection artifact is uploaded.
+  Allowlisted prerequisite reports are published as **UI-test diagnostics** only
+  for failed, canceled or incomplete runs, including setup failures without TRX.
+  Successful runs retain their normal test-result attachments without an extra
+  prerequisite artifact.
 
 ### Build Modes
 
@@ -275,6 +306,31 @@ public void TestEmptyView()
     VisualAssert.AreEqual(this.TestContext, this.Find("Entries"), "NonEmptyView");
 }
 ```
+
+### Visual assertions in UITestAutomation.Next
+
+The `.Next` harness compares complete, equal-sized window captures using local
+structural similarity (SSIM), with a default threshold of **95%**. It does not
+resize images, crop their frames, or mask pixels. The existing embedded baseline
+images are used unchanged, and capture retries remain bounded to 15 seconds.
+The legacy harness shown above retains its original comparison behavior.
+
+The score is the pixel-weighted mean of non-overlapping 8-by-8 blocks, including
+partial blocks at the image edges. Each RGB channel uses local mean, variance
+and covariance with the standard 8-bit SSIM stabilizers `(0.01 * 255)^2` and
+`(0.03 * 255)^2`. Alpha is compared independently; the lower of the RGB and alpha
+scores is used, so an opaque capture cannot pass by becoming transparent.
+Dimension mismatches are retried during settling and reported explicitly if they
+persist.
+
+This replaces the `.Next` harness's former 64-bit average hash. That hash's
+1.5625-percentage-point steps were not percentages of matching pixels: a small
+frame-color change could alter the global average and flip unrelated hash bits,
+while uniform black and white images could have identical hashes. Local SSIM
+keeps changes local and detects missing preview structure. Regression tests cover
+blank images, removed content, inverted structure, color and alpha changes,
+dimension mismatches, and partial edge blocks. Peek PNG uses the same 95%
+threshold as the other previews; there is no architecture-specific exception.
 
 ## Extra tools and information
 

@@ -7,7 +7,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.Workspaces.UITests</RootNamespace>
     <AssemblyName>Workspaces.UITests.Next</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>

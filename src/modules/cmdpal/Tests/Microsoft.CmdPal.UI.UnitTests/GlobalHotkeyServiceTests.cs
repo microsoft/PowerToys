@@ -14,6 +14,69 @@ namespace Microsoft.CmdPal.UI.UnitTests;
 public partial class GlobalHotkeyServiceTests
 {
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void WindowsKeyModeStartsListenerWithoutOtherShortcuts(bool useLowLevel)
+    {
+        using var harness = new Harness();
+        Assert.IsTrue(harness.Service.Configure(useLowLevel, [], useWindowsKey: true));
+
+        Assert.IsTrue(harness.Listener.Running);
+        Assert.AreEqual(string.Empty, harness.Listener.WindowsKeyCommand);
+        Assert.AreEqual(0, harness.Standard.Count);
+        Assert.IsFalse(harness.Service.Configure(useLowLevel, [], useWindowsKey: true));
+        Assert.AreEqual(1, harness.Listener.Starts);
+    }
+
+    [TestMethod]
+    public void ChangingWindowsKeyModeUpdatesListenerAndPreservesCommandShortcuts()
+    {
+        using var harness = new Harness();
+        TopLevelHotkey[] hotkeys = [Shortcut("command")];
+        harness.Service.Configure(false, hotkeys, useWindowsKey: true);
+
+        Assert.AreEqual("command", harness.Listener.Hotkeys.Single().CommandId);
+        Assert.AreEqual(string.Empty, harness.Listener.WindowsKeyCommand);
+        Assert.IsTrue(harness.Service.Configure(true, hotkeys));
+        Assert.IsNull(harness.Listener.WindowsKeyCommand);
+        Assert.IsTrue(harness.Listener.Running);
+        Assert.AreEqual("command", harness.Listener.Hotkeys.Single().CommandId);
+
+        Assert.IsTrue(harness.Service.Configure(false, hotkeys));
+        Assert.IsFalse(harness.Listener.Running);
+        Assert.AreEqual("command", harness.Standard.Single().CommandId);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void WindowsKeyHookFailureReportsUnavailableSummonAndFallsBackForCommands(bool runtimeFailure)
+    {
+        using var harness = new Harness();
+        var error = new Win32Exception(5);
+        TopLevelHotkey[] hotkeys = [Shortcut("command")];
+        if (!runtimeFailure)
+        {
+            harness.Listener.Error = error;
+        }
+
+        harness.Service.Configure(false, hotkeys, useWindowsKey: true);
+        if (runtimeFailure)
+        {
+            harness.Service.HandleHookFailure(error);
+        }
+
+        Assert.IsFalse(harness.Listener.Running);
+        Assert.IsTrue(harness.Service.IsUsingFallback);
+        Assert.IsTrue(harness.Service.IsSummonHotkeyUnavailable);
+        Assert.IsTrue(harness.Notifications.Single());
+        Assert.AreEqual("command", harness.Standard.Single().CommandId);
+        Assert.IsFalse(harness.Service.Configure(false, hotkeys, useWindowsKey: true));
+        Assert.AreEqual(1, harness.Listener.Starts);
+        Assert.AreEqual(1, harness.Notifications.Count);
+    }
+
+    [TestMethod]
     public void DisabledLowLevelModeNeverInstallsHook()
     {
         using var harness = new Harness();
@@ -572,6 +635,8 @@ public partial class GlobalHotkeyServiceTests
 
         public List<TopLevelHotkey> Hotkeys { get; private set; } = [];
 
+        public string? WindowsKeyCommand { get; private set; }
+
         public bool Start(out Exception? error)
         {
             _calls.Add("start");
@@ -595,12 +660,13 @@ public partial class GlobalHotkeyServiceTests
             Running = false;
         }
 
-        public void SetHotkeys(IEnumerable<TopLevelHotkey> hotkeys)
+        public void SetHotkeys(IEnumerable<TopLevelHotkey> hotkeys, string? windowsKeyCommand = null)
         {
             _calls.Add("set-hotkeys");
             ObjectDisposedException.ThrowIf(Disposed, this);
             Configurations++;
             Hotkeys = [.. hotkeys];
+            WindowsKeyCommand = windowsKeyCommand;
         }
 
         public void Dispose()

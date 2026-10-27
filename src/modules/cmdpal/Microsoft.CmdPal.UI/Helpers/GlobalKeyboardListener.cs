@@ -29,8 +29,11 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
     private readonly HOOKPROC _hookProc; // Keep the callback alive until the hook thread exits.
     private readonly ManualResetEvent _stop = new(false);
 
-    private string?[]?[] _hotkeys = new string?[256][];
-    private string?[]?[]? _activeHotkeys;
+    private HotkeySnapshot _hotkeys = new(new string?[256][], null);
+    private HotkeySnapshot? _activeHotkeys;
+    private HotkeySnapshot? _windowsKeySnapshot;
+    private int _windowsKeysDown;
+    private uint _pendingWindowsKey;
     private Thread? _thread;
     private Exception? _startupError;
     private bool _disposed;
@@ -77,7 +80,7 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
         _stop.Reset();
         _startupError = null;
         using var ready = new ManualResetEventSlim();
-        _hotkeys = (string?[]?[])_hotkeys.Clone();
+        _hotkeys = _hotkeys with { };
         _thread = new Thread(() => Run(ready))
         {
             IsBackground = true,
@@ -123,7 +126,7 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
     }
 
     /// <inheritdoc/>
-    public void SetHotkeys(IEnumerable<TopLevelHotkey> hotkeys)
+    public void SetHotkeys(IEnumerable<TopLevelHotkey> hotkeys, string? windowsKeyCommand = null)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         string?[]?[] snapshot = new string?[256][];
@@ -135,12 +138,12 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
             commands[modifiers] ??= registration.CommandId; // First registration wins.
         }
 
-        if (!HasSameHotkeys(snapshot))
+        if (!HasSameHotkeys(snapshot, windowsKeyCommand))
         {
-            _hotkeys = snapshot;
+            _hotkeys = new(snapshot, windowsKeyCommand);
             if (Volatile.Read(ref _activeHotkeys) is { } previous)
             {
-                Interlocked.CompareExchange(ref _activeHotkeys, snapshot, previous);
+                Interlocked.CompareExchange(ref _activeHotkeys, _hotkeys, previous);
             }
         }
     }
@@ -186,24 +189,85 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
         }
     }
 
-    private bool HasSameHotkeys(string?[]?[] snapshot)
+    private bool HasSameHotkeys(string?[]?[] snapshot, string? windowsKeyCommand)
     {
+        if (_hotkeys.WindowsKeyCommand != windowsKeyCommand)
+        {
+            return false;
+        }
+
         for (var key = 0; key < snapshot.Length; key++)
         {
             if (snapshot[key] is { } commands)
             {
-                if (_hotkeys[key] is not { } previous || !commands.AsSpan().SequenceEqual(previous))
+                if (_hotkeys.Commands[key] is not { } previous || !commands.AsSpan().SequenceEqual(previous))
                 {
                     return false;
                 }
             }
-            else if (_hotkeys[key] is not null)
+            else if (_hotkeys.Commands[key] is not null)
             {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private string? GetWindowsKeyCommand(HotkeySnapshot snapshot, uint key, bool isDown)
+    {
+        if (!ReferenceEquals(snapshot, _windowsKeySnapshot))
+        {
+            _windowsKeySnapshot = snapshot;
+            _windowsKeysDown = 0;
+            _pendingWindowsKey = 0;
+        }
+
+        if (snapshot.WindowsKeyCommand is null)
+        {
+            return null;
+        }
+
+        if (key is not ((uint)VIRTUAL_KEY.VK_LWIN or (uint)VIRTUAL_KEY.VK_RWIN))
+        {
+            if (isDown && key != 0xFF)
+            {
+                _pendingWindowsKey = 0;
+            }
+
+            return null;
+        }
+
+        var mask = key == (uint)VIRTUAL_KEY.VK_LWIN ? 1 : 2;
+        if (isDown)
+        {
+            if ((_windowsKeysDown & mask) == 0)
+            {
+                _pendingWindowsKey = _windowsKeysDown == 0 && !IsOtherKeyDown(key) ? key : 0;
+                _windowsKeysDown |= mask;
+            }
+
+            return null;
+        }
+
+        _windowsKeysDown &= ~mask;
+        var activate = _pendingWindowsKey == key && !IsOtherKeyDown(key);
+        _pendingWindowsKey = 0;
+        return activate ? snapshot.WindowsKeyCommand : null;
+    }
+
+    private bool IsOtherKeyDown(uint windowsKey)
+    {
+        // Include keys held before the hook saw the Windows-key press.
+        for (var key = (int)VIRTUAL_KEY.VK_BACK; key < 0xFF; key++)
+        {
+            if (key != windowsKey && _hook.IsKeyDown((VIRTUAL_KEY)key))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void Run(ManualResetEventSlim ready)
@@ -285,11 +349,19 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
         try
         {
             var snapshot = Volatile.Read(ref _activeHotkeys);
-            if (snapshot is not null && nCode >= 0 &&
-                wParam.Value is PInvoke.WM_KEYDOWN or PInvoke.WM_SYSKEYDOWN)
+            var isDown = wParam.Value is PInvoke.WM_KEYDOWN or PInvoke.WM_SYSKEYDOWN;
+            var isUp = wParam.Value is PInvoke.WM_KEYUP or PInvoke.WM_SYSKEYUP;
+            if (snapshot is not null && nCode >= 0 && (isDown || isUp))
             {
                 var key = ((KBDLLHOOKSTRUCT*)lParam.Value)->vkCode;
-                if (key < snapshot.Length && snapshot[key] is { } commands)
+                if (GetWindowsKeyCommand(snapshot, key, isDown) is { } windowsCommandId)
+                {
+                    var timestamp = _getTimestamp();
+                    _hook.SendWindowsKeyUp((VIRTUAL_KEY)key);
+                    matched = true;
+                    EnqueueCommand(windowsCommandId, timestamp, snapshot);
+                }
+                else if (isDown && key < snapshot.Commands.Length && snapshot.Commands[key] is { } commands)
                 {
                     var win = _hook.IsKeyDown(VIRTUAL_KEY.VK_LWIN) || _hook.IsKeyDown(VIRTUAL_KEY.VK_RWIN);
                     var modifiers = GetModifiers(
@@ -318,12 +390,12 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
         return matched ? (LRESULT)1 : _hook.CallNext(nCode, wParam, lParam);
     }
 
-    private void EnqueueCommand(string commandId, long timestamp, string?[]?[] snapshot)
+    private void EnqueueCommand(string commandId, long timestamp, HotkeySnapshot snapshot)
     {
         _tryEnqueue(() => ProcessCommand(commandId, timestamp, snapshot));
     }
 
-    private void ProcessCommand(string commandId, long timestamp, string?[]?[] snapshot)
+    private void ProcessCommand(string commandId, long timestamp, HotkeySnapshot snapshot)
     {
         if (!ReferenceEquals(snapshot, Volatile.Read(ref _activeHotkeys)))
         {
@@ -364,4 +436,6 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
     {
         return (win ? 8 : 0) | (ctrl ? 4 : 0) | (shift ? 2 : 0) | (alt ? 1 : 0);
     }
+
+    private sealed record HotkeySnapshot(string?[]?[] Commands, string? WindowsKeyCommand);
 }

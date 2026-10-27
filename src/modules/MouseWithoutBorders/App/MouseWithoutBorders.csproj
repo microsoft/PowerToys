@@ -27,6 +27,23 @@
     <NoWarn />
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(MwbUiTestBuild)' == 'true'">
+    <DefineConstants>$(DefineConstants);MWB_UI_TEST</DefineConstants>
+    <OutputPath>$(RepoRoot)artifacts\mwb-ui-test\$(Platform)\$(Configuration)\bin\</OutputPath>
+    <OutDir>$(OutputPath)</OutDir>
+    <IntermediateOutputPath>$(RepoRoot)artifacts\mwb-ui-test\$(Platform)\$(Configuration)\obj\</IntermediateOutputPath>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(MwbUiTestBuild)' == 'true'">
+    <AssemblyMetadata Include="PowerToys.MwbUiTestBuild" Value="true" />
+    <AssemblyMetadata Include="PowerToys.MwbUiTestSourceRevision" Value="$(MwbUiTestSourceRevision)" />
+  </ItemGroup>
+  <Target Name="ValidateMwbUiTestBuild" BeforeTargets="CoreCompile" Condition="'$(MwbUiTestBuild)' == 'true'">
+    <Error Condition="'$(Configuration)' != 'Release' Or '$(BuildProjectReferences)' != 'false'"
+           Text="Build the ordinary Release product first, then build the isolated MWB UI-test variant with BuildProjectReferences=false." />
+    <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(MwbUiTestSourceRevision)', '^[0-9a-fA-F]{40}$'))"
+           Text="The MWB UI-test variant requires MwbUiTestSourceRevision identifying the source checkout." />
+  </Target>
+
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
   <PropertyGroup>
     <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>

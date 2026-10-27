@@ -19,6 +19,235 @@ namespace Microsoft.CmdPal.UI.UnitTests;
 public partial class GlobalKeyboardListenerTests
 {
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void QueuedWindowsKeyCommandPreservesReleaseTimestampAndChecksCurrentMappings(bool keepWindowsKey)
+    {
+        using var harness = new Harness();
+        harness.StartWindowsKey();
+        harness.Hook.Key(0x5B);
+        harness.Timestamp = 123;
+        Assert.AreEqual(1, harness.Hook.Key(0x5B, message: 0x0101));
+        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.AreNotEqual(Environment.CurrentManagedThreadId, harness.Hook.CallbackThread);
+
+        harness.Listener.SetHotkeys([], keepWindowsKey ? string.Empty : null);
+        harness.Timestamp = 456;
+        harness.Drain();
+
+        Assert.AreEqual(keepWindowsKey ? 1 : 0, harness.Commands.Count);
+        if (keepWindowsKey)
+        {
+            Assert.AreEqual((string.Empty, 123L), harness.Commands.Single());
+        }
+    }
+
+    [TestMethod]
+    [DataRow(0x5B, true)]
+    [DataRow(0x5C, true)]
+    [DataRow(0xFF, false)]
+    public void InjectedWindowsKeyReleaseUsesExtendedKeyFlag(int key, bool extended)
+    {
+        var input = GlobalKeyboardHook.CreateKeyUpInput((VIRTUAL_KEY)key);
+        Assert.AreEqual(INPUT_TYPE.INPUT_KEYBOARD, input.type);
+        Assert.AreEqual((VIRTUAL_KEY)key, input.Anonymous.ki.wVk);
+        Assert.AreEqual(
+            KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP | (extended ? KEYBD_EVENT_FLAGS.KEYEVENTF_EXTENDEDKEY : 0),
+            input.Anonymous.ki.dwFlags);
+    }
+
+    [TestMethod]
+    [DataRow(0x5B, 0x0100, 0x0101)]
+    [DataRow(0x5C, 0x0104, 0x0105)]
+    public void WindowsKeyAloneActivatesOnlyOnRelease(int key, int down, int up)
+    {
+        using var harness = new Harness();
+        harness.StartWindowsKey();
+
+        Assert.AreEqual(42, harness.Hook.Key((uint)key, message: (uint)down));
+        Assert.AreEqual(42, harness.Hook.Key((uint)key, message: (uint)down));
+        harness.Drain();
+        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.AreEqual(1, harness.Hook.Key((uint)key, message: (uint)up));
+        harness.Drain();
+        CollectionAssert.AreEqual(new[] { (string.Empty, 0L) }, harness.Commands);
+        CollectionAssert.AreEqual(new[] { (VIRTUAL_KEY)key }, harness.Hook.WindowsKeyReleases);
+        Assert.IsFalse(harness.Hook.IsKeyDown((VIRTUAL_KEY)key));
+
+        // A second press must work after the injected release re-enters the hook.
+        Assert.AreEqual(42, harness.Hook.Key((uint)key));
+        Assert.AreEqual(1, harness.Hook.Key((uint)key, message: (uint)up));
+        harness.Drain();
+        Assert.AreEqual(2, harness.Commands.Count);
+    }
+
+    [TestMethod]
+    [DataRow(0x5B)]
+    [DataRow(0x5C)]
+    public void WindowsKeyIsUnchangedByDefault(int key)
+    {
+        using var harness = new Harness();
+        harness.Start();
+        Assert.AreEqual(42, harness.Hook.Key((uint)key));
+        Assert.AreEqual(42, harness.Hook.Key((uint)key, message: 0x0101));
+        harness.Drain();
+        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.AreEqual(0, harness.Hook.WindowsKeyReleases.Count);
+    }
+
+    [TestMethod]
+    [DataRow(0x45, false)]
+    [DataRow(0x4C, false)]
+    [DataRow(0x52, false)]
+    [DataRow(0x09, false)]
+    [DataRow(0x10, false)]
+    [DataRow(0x11, false)]
+    [DataRow(0x12, false)]
+    [DataRow(0x45, true)]
+    public void WindowsKeyCombinationsAreForwardedWithoutActivating(int otherKey, bool releaseWindowsFirst)
+    {
+        using var harness = new Harness();
+        harness.StartWindowsKey();
+
+        Assert.AreEqual(42, harness.Hook.Key(0x5B));
+        Assert.AreEqual(42, harness.Hook.Key((uint)otherKey));
+        var first = releaseWindowsFirst ? 0x5BU : (uint)otherKey;
+        var second = releaseWindowsFirst ? (uint)otherKey : 0x5BU;
+        Assert.AreEqual(42, harness.Hook.Key(first, message: 0x0101));
+        Assert.AreEqual(42, harness.Hook.Key(second, message: 0x0101));
+        harness.Drain();
+        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.AreEqual(0, harness.Hook.WindowsKeyReleases.Count);
+    }
+
+    [TestMethod]
+    [DataRow(0x41)]
+    [DataRow(0x10)]
+    [DataRow(0x11)]
+    [DataRow(0x12)]
+    public void KeyHeldBeforeWindowsKeyPreventsActivationEvenIfReleasedFirst(int otherKey)
+    {
+        using var harness = new Harness();
+        harness.StartWindowsKey();
+        harness.Hook.Key((uint)otherKey);
+        harness.Hook.Key(0x5B);
+        harness.Hook.Key((uint)otherKey, message: 0x0101);
+        harness.Hook.Key(0x5B, message: 0x0101);
+
+        harness.Drain();
+        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.AreEqual(0, harness.Hook.WindowsKeyReleases.Count);
+    }
+
+    [TestMethod]
+    public void BothWindowsKeysTogetherDoNotActivate()
+    {
+        using var harness = new Harness();
+        harness.StartWindowsKey();
+        harness.Hook.Key(0x5B);
+        harness.Hook.Key(0x5C);
+        harness.Hook.Key(0x5B, message: 0x0101);
+        harness.Hook.Key(0x5C); // Auto-repeat must not re-arm activation.
+        harness.Hook.Key(0x5C, message: 0x0101);
+
+        harness.Drain();
+        Assert.AreEqual(0, harness.Commands.Count);
+    }
+
+    [TestMethod]
+    public void InjectedWindowsKeyUsesSameStandaloneBehavior()
+    {
+        using var harness = new Harness();
+        harness.StartWindowsKey();
+        Assert.AreEqual(42, harness.Hook.Key(0x5B, injected: true));
+        Assert.AreEqual(1, harness.Hook.Key(0x5B, message: 0x0101, injected: true));
+        harness.Drain();
+        Assert.AreEqual(1, harness.Commands.Count);
+        Assert.AreEqual(1, harness.Hook.WindowsKeyReleases.Count);
+    }
+
+    [TestMethod]
+    public void InjectedCombinationCancelsPendingWindowsKeyActivation()
+    {
+        using var harness = new Harness();
+        harness.StartWindowsKey();
+        harness.Hook.Key(0x5B);
+        harness.Hook.Key(0x45, injected: true);
+        harness.Hook.Key(0x45, message: 0x0101, injected: true);
+        Assert.AreEqual(42, harness.Hook.Key(0x5B, message: 0x0101));
+        harness.Drain();
+        Assert.AreEqual(0, harness.Commands.Count);
+    }
+
+    [TestMethod]
+    public void WindowsKeyModePreservesRegisteredCommandShortcuts()
+    {
+        using var harness = new Harness();
+        harness.StartWindowsKey();
+        harness.Listener.SetHotkeys([Shortcut(true, false, false, false, 0x4B, "command")], string.Empty);
+        Assert.AreEqual(42, harness.Hook.Key(0x5B));
+        Assert.AreEqual(1, harness.Hook.Key(0x4B));
+        harness.Hook.Key(0x4B, message: 0x0101);
+        Assert.AreEqual(42, harness.Hook.Key(0x5B, message: 0x0101));
+        harness.Drain();
+        Assert.AreEqual(1, harness.Commands.Count);
+        Assert.AreEqual("command", harness.Commands[0].CommandId);
+        Assert.AreEqual(0, harness.Hook.WindowsKeyReleases.Count);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ClearingOrStoppingResetsPendingWindowsKey(bool stop)
+    {
+        using var harness = new Harness();
+        harness.StartWindowsKey();
+        harness.Hook.Key(0x5B);
+        if (stop)
+        {
+            harness.Listener.Stop();
+            Assert.IsTrue(harness.Listener.Start(out _));
+        }
+        else
+        {
+            harness.Listener.SetHotkeys([]);
+            harness.StartWindowsKey();
+        }
+
+        Assert.AreEqual(42, harness.Hook.Key(0x5B, message: 0x0101));
+        harness.Drain();
+        Assert.AreEqual(0, harness.Commands.Count);
+    }
+
+    [TestMethod]
+    public async Task FailedWindowsKeyReleaseForwardsPhysicalReleaseAndReportsError()
+    {
+        using var harness = new Harness();
+        harness.StartWindowsKey();
+        harness.Hook.Key(0x5B);
+        harness.Hook.ThrowOnDummyKey = true;
+
+        Assert.AreEqual(42, harness.Hook.Key(0x5B, message: 0x0101));
+        harness.Drain();
+        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.IsInstanceOfType<InvalidOperationException>(await harness.ReportedError.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+    }
+
+    [TestMethod]
+    public async Task WindowsKeyCommandExceptionStillReleasesModifier()
+    {
+        using var harness = new Harness((_, _) => throw new InvalidOperationException("Command failed"));
+        harness.StartWindowsKey();
+        harness.Hook.Key(0x5B);
+
+        Assert.AreEqual(1, harness.Hook.Key(0x5B, message: 0x0101));
+        Assert.IsFalse(harness.Hook.IsKeyDown(VIRTUAL_KEY.VK_LWIN));
+        Assert.AreEqual(1, harness.Hook.WindowsKeyReleases.Count);
+        harness.Drain();
+        Assert.IsInstanceOfType<InvalidOperationException>(await harness.ReportedError.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+    }
+
+    [TestMethod]
     [DataRow(false, true, false, true, 0x4B, true)]
     [DataRow(true, true, false, true, 0x4B, false)]
     [DataRow(false, false, false, true, 0x4B, false)]
@@ -732,6 +961,12 @@ public partial class GlobalKeyboardListenerTests
             Assert.IsTrue(Listener.Start(out var error), error?.ToString());
         }
 
+        public void StartWindowsKey(params TopLevelHotkey[] hotkeys)
+        {
+            Listener.SetHotkeys(hotkeys, string.Empty);
+            Assert.IsTrue(Listener.Start(out var error), error?.ToString());
+        }
+
         public void Drain()
         {
             while (UiWork.TryDequeue(out var action))
@@ -784,6 +1019,8 @@ public partial class GlobalKeyboardListenerTests
         public int Forwarded { get; private set; }
 
         public long CallbackAllocatedBytes { get; private set; }
+
+        public List<VIRTUAL_KEY> WindowsKeyReleases { get; } = [];
 
         public IDisposable Install(HOOKPROC callback)
         {
@@ -858,26 +1095,56 @@ public partial class GlobalKeyboardListenerTests
             }
         }
 
+        public void SendWindowsKeyUp(VIRTUAL_KEY key)
+        {
+            SendDummyKeyUp();
+            WindowsKeyReleases.Add(key);
+            Key(0xFF, message: 0x0101, injected: true);
+            Key((uint)key, message: 0x0101, injected: true);
+        }
+
         public LRESULT CallNext(int code, WPARAM wParam, LPARAM lParam)
         {
             Forwarded++;
             return (LRESULT)42;
         }
 
-        public unsafe int Key(uint key, int code = 0, uint message = 0x0100)
+        public unsafe int Key(uint key, int code = 0, uint message = 0x0100, bool injected = false)
         {
+            if (Environment.CurrentManagedThreadId == InstallThread)
+            {
+                return InvokeCallback(key, code, message, injected);
+            }
+
             var completion = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             _work.Enqueue(() =>
             {
-                CallbackThread = Environment.CurrentManagedThreadId;
-                KBDLLHOOKSTRUCT data = new() { vkCode = key };
-                var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
-                var result = _callback(code, (WPARAM)message, (LPARAM)(nint)(&data));
-                CallbackAllocatedBytes = GC.GetAllocatedBytesForCurrentThread() - allocatedBefore;
-                completion.SetResult((int)result.Value);
+                completion.SetResult(InvokeCallback(key, code, message, injected));
             });
             _workReady.Set();
             return completion.Task.WaitAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+        }
+
+        private unsafe int InvokeCallback(uint key, int code, uint message, bool injected)
+        {
+            CallbackThread = Environment.CurrentManagedThreadId;
+            KBDLLHOOKSTRUCT data = new() { vkCode = key, flags = injected ? KBDLLHOOKSTRUCT_FLAGS.LLKHF_INJECTED : 0 };
+            var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
+            var result = (int)_callback(code, (WPARAM)message, (LPARAM)(nint)(&data)).Value;
+            CallbackAllocatedBytes = GC.GetAllocatedBytesForCurrentThread() - allocatedBefore;
+            if (code >= 0 && result == 42)
+            {
+                if (message is 0x0100 or 0x0104)
+                {
+                    _modifiers.Add((VIRTUAL_KEY)key);
+                }
+                else if (message is 0x0101 or 0x0105)
+                {
+                    _modifiers.Remove((VIRTUAL_KEY)key);
+                }
+            }
+
+            return result;
         }
 
         public void FailMessageLoop()

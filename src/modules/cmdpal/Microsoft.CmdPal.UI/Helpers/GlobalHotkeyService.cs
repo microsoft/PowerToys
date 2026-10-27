@@ -23,6 +23,7 @@ internal sealed partial class GlobalHotkeyService : IDisposable
     private TopLevelHotkey[] _hotkeys = [];
     private bool _configured;
     private bool _useLowLevel;
+    private bool _useWindowsKey;
     private bool _lowLevelFailed;
     private bool _failureReported;
     private bool _summonFailureReported;
@@ -52,23 +53,26 @@ internal sealed partial class GlobalHotkeyService : IDisposable
     public bool IsUsingFallback => _configured && _useLowLevel && _lowLevelFailed;
 
     /// <summary>Gets whether fallback also failed to register the palette's summon shortcut.</summary>
-    public bool IsSummonHotkeyUnavailable => IsUsingFallback && _failedStandardHotkeys.Any(hotkey => string.IsNullOrEmpty(hotkey.CommandId));
+    public bool IsSummonHotkeyUnavailable => IsUsingFallback && (_useWindowsKey || _failedStandardHotkeys.Any(hotkey => string.IsNullOrEmpty(hotkey.CommandId)));
 
     /// <summary>Applies shortcut settings and retries any failed standard registrations.</summary>
     /// <param name="useLowLevel">Whether to prefer the low-level hook over standard registration.</param>
     /// <param name="hotkeys">Requested shortcuts; invalid entries are skipped and the first duplicate wins.</param>
+    /// <param name="useWindowsKey">Whether a standalone Windows key summons the palette, requiring the low-level hook.</param>
     /// <returns>Whether the configuration changed or a previously failed standard registration succeeded.</returns>
-    public bool Configure(bool useLowLevel, IEnumerable<TopLevelHotkey> hotkeys)
+    public bool Configure(bool useLowLevel, IEnumerable<TopLevelHotkey> hotkeys, bool useWindowsKey = false)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        useLowLevel |= useWindowsKey;
         var snapshot = Normalize(hotkeys);
-        if (_configured && _useLowLevel == useLowLevel && _hotkeys.SequenceEqual(snapshot))
+        if (_configured && _useLowLevel == useLowLevel && _useWindowsKey == useWindowsKey && _hotkeys.SequenceEqual(snapshot))
         {
             return RetryStandardHotkeys();
         }
 
         _configured = false;
         _useLowLevel = useLowLevel;
+        _useWindowsKey = useWindowsKey;
         _hotkeys = snapshot;
         if (!useLowLevel)
         {
@@ -78,9 +82,9 @@ internal sealed partial class GlobalHotkeyService : IDisposable
         UnregisterHotkeys();
         _failedStandardHotkeys.Clear();
         Exception? error = null;
-        if (useLowLevel && !_lowLevelFailed && snapshot.Length > 0)
+        if (useLowLevel && !_lowLevelFailed && (snapshot.Length > 0 || useWindowsKey))
         {
-            _listener.SetHotkeys(snapshot);
+            _listener.SetHotkeys(snapshot, useWindowsKey ? string.Empty : null);
             if (_listener.Start(out error))
             {
                 _configured = true;

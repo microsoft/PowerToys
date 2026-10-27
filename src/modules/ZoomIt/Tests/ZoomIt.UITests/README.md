@@ -113,6 +113,10 @@ bitmaps; full-screen scan timings are recorded without imposing a machine-speed 
 Successful screenshots, clipboard images, recordings, decoded frames, and microphone
 inventories are stored beside MSTest's deployment directory so they survive successful-run
 cleanup. Failure media is captured before teardown.
+Tray-icon readiness failures retain the last mismatch even if a later observation matches,
+and report the final consecutive-match count and any last transient Shell error.
+The tray wait parks the cursor away from the taskbar after opening the overflow, so the
+Windows 10 News and Interests hover feed cannot cover the overflow icons.
 
 For delivery, run the complete suite on Windows 10 and Windows 11 with both default and
 constrained VM profiles, then validate `[ZoomIt.UITests]` in UI Test Automation CI.

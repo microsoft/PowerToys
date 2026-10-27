@@ -27,6 +27,7 @@ internal interface IGlobalKeyboardListener : IDisposable
 
     /// <summary>Replaces the shortcuts handled by the listener.</summary>
     /// <param name="hotkeys">Registrations validated by <see cref="GlobalHotkeyService"/>, with non-null keys and codes from 1 through 255.</param>
+    /// <param name="windowsKeyCommand">Command for a standalone Windows-key release, or <see langword="null"/> for normal Windows-key behavior.</param>
     /// <remarks>Unchanged mappings preserve queued commands. Changed mappings cancel them. The first duplicate wins.</remarks>
-    void SetHotkeys(IEnumerable<TopLevelHotkey> hotkeys);
+    void SetHotkeys(IEnumerable<TopLevelHotkey> hotkeys, string? windowsKeyCommand = null);
 }
