@@ -434,43 +434,7 @@ internal sealed partial class PreviewWindow : Window
                 }
 
                 var hWnd = (HWND)WinRT.Interop.WindowNative.GetWindowHandle(this);
-
-                // use raw Win32 calls instead of WinUI3's AppWindow.Show()/Activate()/Focus()
-                // because WinUI3's activation sequence intermittently fails to transfer keyboard
-                // focus, which causes the Window.Activated "Deactivated" event to never fire
-                // when the user clicks away, leaving the preview window stuck open.
-                _ = PInvoke.ShowWindow(hWnd, SHOW_WINDOW_CMD.SW_SHOW);
-
-                var setForegroundResult = PInvoke.SetForegroundWindow(hWnd);
-                ResultHandler.HandleResult(
-                    result: (int)setForegroundResult,
-                    success: (bool)setForegroundResult,
-                    getLastError: false,
-                    nameof(PInvoke.SetForegroundWindow));
-
-                PInvoke.SetLastError(0);
-                var setFocusResult = PInvoke.SetFocus(hWnd);
-                if (setFocusResult.IsNull)
-                {
-                    var lastError = Marshal.GetLastPInvokeError();
-                    ResultHandler.HandleResult(
-                        result: setFocusResult,
-                        success: lastError == 0,
-                        lastError: lastError,
-                        nameof(PInvoke.SetFocus));
-                }
-
-                PInvoke.SetLastError(0);
-                var setActiveResult = PInvoke.SetActiveWindow(hWnd);
-                if (setActiveResult.IsNull)
-                {
-                    var lastError = Marshal.GetLastPInvokeError();
-                    ResultHandler.HandleResult(
-                        result: setActiveResult,
-                        success: lastError == 0,
-                        lastError: lastError,
-                        nameof(PInvoke.SetActiveWindow));
-                }
+                ForegroundHelper.ShowAndActivate(hWnd);
             }).ConfigureAwait(false);
     }
 

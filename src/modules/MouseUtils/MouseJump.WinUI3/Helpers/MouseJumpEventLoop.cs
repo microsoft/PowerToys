@@ -49,12 +49,12 @@ internal static class MouseJumpEventLoop
                     }
                     catch (Exception ex)
                     {
-                        // if something went wrong the application could be in an unstable state.
-                        // the main MouseJump module will restart the background process the next
-                        // time the hotkey is invoked, so just rethrow the exception here.
+                        // log and keep waiting for the next event. rethrowing here would be
+                        // unhandled on this background thread and terminate the process, and
+                        // the main MouseJump module can drop the hotkey activation that relaunches
+                        // it if the new process's window isn't ready yet.
                         Logger.LogDebug($"[{eventName}] - error occurred");
                         Logger.LogError(ex.ToString());
-                        throw;
                     }
                 }
                 else
@@ -126,12 +126,12 @@ internal static class MouseJumpEventLoop
                     }
                     catch (Exception ex)
                     {
-                        // if something went wrong the application could be in an unstable state.
-                        // the main MouseJump module will restart the background process the next
-                        // time the hotkey is invoked, so just rethrow the exception here.
+                        // log and keep waiting for the next event. rethrowing here would be
+                        // unhandled on this background thread and terminate the process, and
+                        // the main MouseJump module can drop the hotkey activation that relaunches
+                        // it if the new process's window isn't ready yet.
                         Logger.LogDebug($"[{eventName}] - error occurred");
                         Logger.LogError(ex.ToString());
-                        throw;
                     }
                 }
                 else
