@@ -77,7 +77,7 @@
       This is present due to a bug in CsWinRT where WPF projects cause the analyzer to fail.
 	-->
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
-    <PackageVersion Include="Microsoft.Windows.ImplementationLibrary" Version="1.0.250325.1" />
+    <PackageVersion Include="Microsoft.Windows.ImplementationLibrary" Version="1.0.260126.7" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6901" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.2.0" />
     <PackageVersion Include="Microsoft.WindowsAppSDK.Foundation" Version="2.1.0" />
