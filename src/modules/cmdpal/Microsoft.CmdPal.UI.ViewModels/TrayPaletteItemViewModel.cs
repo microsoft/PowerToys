@@ -21,7 +21,7 @@ public sealed class TrayPaletteItemViewModel(
 
     public bool IsPage { get; } = item.Command.Model.Unsafe is IPage;
 
-    public PerformCommandMessage CreateMessage() => new(Item.Command.Model, Item.Model)
+    public PerformCommandMessage CreateMessage() => new(Item.Command, Item.Model)
     {
         Context = new SourceContext(provider.ExtensionHost, provider.GetProviderContext()),
     };

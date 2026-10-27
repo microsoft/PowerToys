@@ -2152,16 +2152,22 @@ Home: highest position. End: lowest position.</value>
   <data name="TrayPalette_Title" xml:space="preserve">
     <value>Tray Palette</value>
   </data>
-  <data name="TrayPalette_Heading.Text" xml:space="preserve">
-    <value>Quick actions</value>
-  </data>
   <data name="TrayPalette_Empty.Text" xml:space="preserve">
     <value>Pin commands from Command Palette to add quick actions here.</value>
   </data>
   <data name="TrayPalette_LoadError.Text" xml:space="preserve">
     <value>Some quick actions could not be loaded or saved. Try opening Tray Palette again.</value>
   </data>
-  <data name="TrayPalette_OpenPalette.Content" xml:space="preserve">
-    <value>Open command palette</value>
+  <data name="TrayPalette_OpenPalette.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Open Command Palette</value>
+  </data>
+  <data name="TrayPalette_OpenPalette.AutomationProperties.Name" xml:space="preserve">
+    <value>Open Command Palette</value>
+  </data>
+  <data name="TrayPalette_OpenSettings.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Command Palette settings</value>
+  </data>
+  <data name="TrayPalette_OpenSettings.AutomationProperties.Name" xml:space="preserve">
+    <value>Command Palette settings</value>
   </data>
 </root>

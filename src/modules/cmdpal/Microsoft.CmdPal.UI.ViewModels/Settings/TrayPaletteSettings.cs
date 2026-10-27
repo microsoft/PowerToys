@@ -10,9 +10,8 @@ public sealed record TrayPaletteSettings
 {
     private ImmutableList<PinnedCommandSettings> _commands =
     [
-        new("com.microsoft.cmdpal.builtin.windowssettings", "ms-settings:network"),
-        new("com.microsoft.cmdpal.builtin.windowssettings", "ms-settings:bluetooth"),
-        new("AllApps", "aumid:Microsoft.ScreenSketch_8wekyb3d8bbwe!App"),
+        new("Windows.ClipboardHistory", "com.microsoft.cmdpal.clipboardHistory"),
+        new("com.microsoft.cmdpal.builtin.core", "com.microsoft.cmdpal.opengallerysettings"), /* #no-spell-check-line */
     ];
 
     public ImmutableList<PinnedCommandSettings> Commands
