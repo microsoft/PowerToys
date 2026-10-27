@@ -475,6 +475,8 @@ public enum DockBackdrop
 {
     Transparent,
     Acrylic,
+    Mica,
+    MicaAlt,
 }
 
 #pragma warning restore SA1402 // File may only contain a single type

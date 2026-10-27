@@ -235,7 +235,6 @@ public sealed class MainListPageCacheTests
             providerContext,
             new ProviderSettings(),
             services,
-            model,
             DefaultContextMenuFactory.Instance);
         return topLevel;
     }

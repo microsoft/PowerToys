@@ -9,7 +9,6 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <IsPackable>false</IsPackable>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.AlwaysOnTop.UITests</RootNamespace>
     <AssemblyName>AlwaysOnTop.UITests</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
