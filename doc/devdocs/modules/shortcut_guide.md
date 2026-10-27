@@ -45,6 +45,71 @@ The hold duration accepts values from 100 through 5,000 milliseconds and default
 > [!NOTE]
 > When run in debug mode, the window behaves differently than in release mode. It will not automatically close when loosing focus, it will be displayed on top of all other windows, and it is not hidden from the taskbar. 
 
+### Automated UI tests
+
+`src\modules\ShortcutGuide\Tests\ShortcutGuide.UITests` uses the winappcli-based
+`UITestAutomation.Next` framework. Build it with:
+
+```powershell
+tools\build\build.cmd -Path src\modules\ShortcutGuide\Tests\ShortcutGuide.UITests -Platform x64 -Configuration Release
+```
+
+The suite covers Settings navigation and shortcut readout, the enable/disable process lifecycle,
+and shortcut activation, Escape dismissal, disabled-shortcut suppression, and reactivation.
+Shortcut Guide keeps its listener process alive while the overlay is hidden: overlay assertions
+must check visible windows, not process presence. Activation also waits for the search control
+before sending input, because a visible host window can precede initialized content.
+
+#### Prepare and run locally
+
+Use a disposable Windows test VM with an unlocked English-language, **en-US keyboard-layout**
+standard-user desktop, .NET 10 Desktop Runtime, and the repository-pinned winappcli build.
+The suite checks the keyboard-layout prerequisite explicitly because the configured shortcut's
+displayed OEM-key label depends on that layout. The default shortcut is **Win + Shift + /**.
+
+Building only the test project does not produce the runtime it launches. First build a complete
+PowerToys Release runtime for the same architecture, including ShortcutGuide.Ui,
+ShortcutGuideModuleInterface, Runner, and Settings.
+
+Release Settings IPC requires trusted signatures on `PowerToys.exe` and
+`WinUI3Apps\PowerToys.Settings.exe`; otherwise the Runner rejects Settings with
+`not-microsoft-signed`. Use the existing
+[prepared-runtime signing instructions](cropandlock.md#prepare-signing-on-the-execution-machine)
+with `.pipelines\signSparsePackages.ps1 -RequiredAuthenticodeFile PowerToys.exe,PowerToys.Settings.exe`.
+Shortcut Guide does not require the Crop and Lock fixture package: omit that recipe's
+`RequiredPackage` argument and use `-Include PowerToys.exe,PowerToys.Settings.exe`.
+Use a marker dedicated to this run, and follow
+[temporary-trust cleanup](cropandlock.md#remove-temporary-trust) afterward. Repeat signing
+whenever rebuilding replaces either executable.
+
+For the preferred host-build/guest-execution workflow, use the
+[host-signing and guest-trust guidance](cropandlock.md#build-on-the-host-and-execute-in-a-local-vm):
+sign a staged copy with `-SkipLocalTrust` and export only the public certificate for the guest.
+Do not install this test trust on the build host. Remove only this run's guest trust and
+disposable signing key afterward.
+
+Inside the prepared guest, run without elevation (these paths assume the matching runtime
+and test payloads were staged as described in the local VM guide):
+
+```powershell
+$env:POWERTOYS_INSTALL_DIR = 'C:\PowerToysUiTestRun\PowerToys'
+$tests = 'C:\PowerToysUiTestRun\Tests'
+& (Join-Path $tests 'ShortcutGuide.UITests.exe') `
+    --report-trx --report-trx-filename ShortcutGuide.trx `
+    --results-directory (Join-Path $env:TEMP 'ShortcutGuideTestResults')
+```
+
+Expect **3 executed, 3 passed, zero skipped**. Do not replace failed Settings lifecycle assertions
+with settings-file edits or a Runner restart.
+
+Use the [local VM guide](../../../.github/skills/ui-tests-local-vm/references/agentic-loop.md)
+for payload staging and the Windows 10/11 Default and Constrained matrix. Set
+`-TestExecutable ShortcutGuide.UITests.exe` and the matching `-Platform x64Win10`,
+`x64Win11`, or `ARM64`. The `ui-tests-pipeline-ci` skill covers scoped CI
+(`[ShortcutGuide.UITests]`) and is **Microsoft FTE-only**; external contributors complete local
+validation and request maintainer CI. The suite participates in the shared Runner/Settings
+companion-signing setup so enable/disable assertions exercise the real Release Settings IPC path.
+
 ## Project Structure
 
 The Shortcut Guide module consists of the following 4 projects:

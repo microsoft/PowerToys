@@ -82,6 +82,15 @@ stages:
             msBuildCacheIsReadOnly: ${{ parameters.msBuildCacheIsReadOnly }}
             runTests: ${{ parameters.runTests }}
             buildTests: true
+            prepareMwbRuntime: ${{ and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}
+            ${{ if and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}:
+              dependsOn:
+                - Resolve
+              # Resolve is skipped outside PR builds; the ordinary build must still run.
+              condition: and(not(failed()), not(canceled()))
+              variables:
+                MwbSandboxSelected: $[ dependencies.Resolve.outputs['resolve.hasMwbUiTests'] ]
+              mwbRuntimeCondition: and(succeeded(), eq(variables['MwbSandboxSelected'], 'true'))
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
             ${{ if eq(parameters.useLatestWinAppSDK, true) }}:

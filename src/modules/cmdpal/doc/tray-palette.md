@@ -17,6 +17,7 @@ Quick actions show three buttons per row, with the command title below each icon
 Long titles end with an ellipsis.
 Hover over a button to see its full title.
 Additional pins create additional rows.
+The footer has buttons that open Command Palette and Command Palette settings.
 When the window reaches the monitor's available height, the grid scrolls.
 
 Select a command button to run it.
@@ -34,8 +35,8 @@ The same unpin action remains available in Command Palette.
 
 ## Default pins and persistence
 
-The default pins are Network, Bluetooth, and Snipping Tool.
-If Snipping Tool is unavailable, its button does not appear.
+The default pins are the Clipboard History page and the command that finds and installs extensions.
+If a pinned command is unavailable, its button does not appear.
 Unavailable commands remain in the saved list and can appear when their providers become available.
 An empty saved list stays empty.
 
@@ -58,7 +59,7 @@ It preserves the saved positions of unavailable commands.
 ## Manual checks
 
 1. Open quick actions with the default pins.
-2. Invoke Network, Bluetooth, and Snipping Tool when available.
+2. Open Clipboard History and the extension gallery from their buttons.
 3. Pin a fourth command and confirm that it starts a new row.
 4. Pin a page, open it, and use Back to return to quick actions.
 5. Open a nested page and confirm that Back first returns to its parent.

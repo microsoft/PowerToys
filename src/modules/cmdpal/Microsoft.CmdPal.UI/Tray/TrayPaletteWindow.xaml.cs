@@ -33,6 +33,10 @@ namespace Microsoft.CmdPal.UI.Tray;
 
 public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShowPaletteAtMessage>, IDisposable
 {
+    // Tile rows + content padding (12 top/bottom) + divider + footer; must match TrayPaletteWindow.xaml.
+    private const int TileRowHeight = 100;
+    private const int QuickActionsChromeHeight = 12 + 12 + 1 + 48;
+
     private readonly IThemeService _themeService;
     private readonly ISettingsService _settingsService;
     private readonly HiddenOwnerWindowBehavior _hiddenOwner = new();
@@ -140,7 +144,7 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
         var scale = FlyoutWindowHelper.GetDpiScale(display);
         var work = display.WorkArea;
         var rows = Math.Max(1, (ViewModel.Items.Count + 2) / 3);
-        var heightDip = _pageHost.IsOpen ? 560 : (rows * 100) + 104;
+        var heightDip = _pageHost.IsOpen ? 560 : (rows * TileRowHeight) + QuickActionsChromeHeight + (ViewModel.HasLoadError ? 40 : 0);
 
         // Leave the full tile grid in the client area, including on a different-DPI monitor.
         var currentScale = Root.XamlRoot?.RasterizationScale ?? scale;
@@ -173,7 +177,7 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
 
     private bool PrepareCommand(PerformCommandMessage message)
     {
-        if (message.Command.Unsafe is IPage)
+        if (message.Command.IsPage)
         {
             _pageController.OpenPage(message, Root, new Point(0, 0));
             return false;
@@ -290,6 +294,12 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
     {
         Dismiss();
         ShowPalette();
+    }
+
+    private void OpenSettings_Click(object sender, RoutedEventArgs e)
+    {
+        Dismiss();
+        WeakReferenceMessenger.Default.Send(new OpenSettingsMessage());
     }
 
     private static void ShowPalette() =>

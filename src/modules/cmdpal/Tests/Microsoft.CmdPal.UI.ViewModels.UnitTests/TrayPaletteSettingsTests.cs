@@ -18,10 +18,11 @@ public class TrayPaletteSettingsTests
     {
         var settings = JsonSerializer.Deserialize("{}", JsonSerializationContext.Default.SettingsModel)!;
         Assert.AreEqual(TrayIconClickAction.OpenQuickActions, settings.TrayIconClickAction);
-        Assert.AreEqual(3, settings.TrayPalette.Commands.Count);
-        Assert.AreEqual("ms-settings:network", settings.TrayPalette.Commands[0].CommandId);
-        Assert.AreEqual("ms-settings:bluetooth", settings.TrayPalette.Commands[1].CommandId);
-        Assert.AreEqual("aumid:Microsoft.ScreenSketch_8wekyb3d8bbwe!App", settings.TrayPalette.Commands[2].CommandId);
+        Assert.AreEqual(2, settings.TrayPalette.Commands.Count);
+        Assert.AreEqual("Windows.ClipboardHistory", settings.TrayPalette.Commands[0].ProviderId);
+        Assert.AreEqual("com.microsoft.cmdpal.clipboardHistory", settings.TrayPalette.Commands[0].CommandId);
+        Assert.AreEqual("com.microsoft.cmdpal.builtin.core", settings.TrayPalette.Commands[1].ProviderId);
+        Assert.AreEqual("com.microsoft.cmdpal.opengallerysettings", settings.TrayPalette.Commands[1].CommandId); /* #no-spell-check-line */
     }
 
     [TestMethod]
