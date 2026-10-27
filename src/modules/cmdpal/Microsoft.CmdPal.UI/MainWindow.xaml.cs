@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -39,7 +38,6 @@ using Windows.System;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
-using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
@@ -70,8 +68,9 @@ public sealed partial class MainWindow : WindowEx,
     private readonly DispatcherTimer _autoGoHomeTimer;
     private readonly WNDPROC? _hotkeyWndProc;
     private readonly WNDPROC? _originalWndProc;
-    private readonly List<TopLevelHotkey> _hotkeys = [];
     private readonly GlobalKeyboardListener _keyboardListener;
+    private readonly HotkeyRegistrar _hotkeyRegistrar;
+    private readonly HotkeyManager _hotkeyManager;
     private readonly LocalKeyboardListener _localKeyboardListener = new();
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private readonly CopilotKeyRegistration? _copilotKeyRegistration;
@@ -156,6 +155,7 @@ public sealed partial class MainWindow : WindowEx,
 
         ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
         _shellViewModel = App.Current.Services.GetRequiredService<ShellViewModel>();
+        _hotkeyManager = App.Current.Services.GetRequiredService<HotkeyManager>();
         _shellViewModel.PageNavigationRequested += ShellViewModel_PageNavigationRequested;
         ShellContent.DragStateChanged += ShellContent_DragStateChanged;
 
@@ -187,6 +187,11 @@ public sealed partial class MainWindow : WindowEx,
         _keyboardListener = new GlobalKeyboardListener(
             HandleSummon,
             static error => Logger.LogError("Failed when invoking global keyboard hook", error));
+        _hotkeyRegistrar = new HotkeyRegistrar(
+            RegisterNativeHotkey,
+            id => PInvoke.UnregisterHotKey(_hwnd, id),
+            (key, commandId) => _keyboardListener.SetHotkeyAction(key.Win, key.Ctrl, key.Shift, key.Alt, (byte)key.Code, commandId),
+            key => _keyboardListener.RemoveHotkeyAction(key.Win, key.Ctrl, key.Shift, key.Alt, (byte)key.Code));
         StartKeyboardListener();
 
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
@@ -235,6 +240,7 @@ public sealed partial class MainWindow : WindowEx,
         RootElement.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootElement_PointerPressed), true);
 
         // Load our settings, and then also wire up a settings changed handler
+        _hotkeyManager.PropertyChanged += HotkeyManager_PropertyChanged;
         HotReloadSettings();
         App.Current.Services.GetRequiredService<ISettingsService>().SettingsChanged += SettingsChangedHandler;
 
@@ -331,6 +337,14 @@ public sealed partial class MainWindow : WindowEx,
         }
 
         DispatcherQueue.TryEnqueue(HotReloadSettings);
+    }
+
+    private void HotkeyManager_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(HotkeyManager.ActiveCommandHotkeys))
+        {
+            RunOnUiThread(() => SetupHotkey(App.Current.Services.GetRequiredService<ISettingsService>().Settings));
+        }
     }
 
     private void RootElementLoaded(object sender, RoutedEventArgs e)
@@ -608,6 +622,7 @@ public sealed partial class MainWindow : WindowEx,
     /// Keep this in sync with the settings read by <see cref="HotReloadSettings"/>,
     /// <see cref="SetupHotkey"/>, <see cref="ShouldShowHwndFrame"/>, and
     /// <see cref="HandleExpandCompactOnUiThread"/>.
+    /// Command hotkeys are refreshed separately by <see cref="HotkeyManager"/>.
     /// </remarks>
     private sealed class MainWindowSettingsComparer : IEqualityComparer<SettingsModel>
     {
@@ -637,32 +652,7 @@ public sealed partial class MainWindow : WindowEx,
                 && x.Hotkey == y.Hotkey // HotkeySettings is a record (value equality)
                 && x.DockFocusHotkey == y.DockFocusHotkey
                 && x.EnableDock == y.EnableDock
-                && CommandHotkeysEqual(x.CommandHotkeys, y.CommandHotkeys);
-        }
-
-        // TopLevelHotkey is a record (value equality); compare element-wise. ImmutableList
-        // itself only implements reference equality, so we can't rely on ==.
-        private static bool CommandHotkeysEqual(ImmutableList<TopLevelHotkey> x, ImmutableList<TopLevelHotkey> y)
-        {
-            if (ReferenceEquals(x, y))
-            {
-                return true;
-            }
-
-            if (x.Count != y.Count)
-            {
-                return false;
-            }
-
-            for (var i = 0; i < x.Count; i++)
-            {
-                if (x[i] != y[i])
-                {
-                    return false;
-                }
-            }
-
-            return true;
+                && true; // Command hotkeys are refreshed separately by HotkeyManager
         }
 
         public int GetHashCode(SettingsModel obj)
@@ -680,7 +670,6 @@ public sealed partial class MainWindow : WindowEx,
             hash.Add(obj.Hotkey);
             hash.Add(obj.DockFocusHotkey);
             hash.Add(obj.EnableDock);
-            hash.Add(obj.CommandHotkeys.Count);
             return hash.ToHashCode();
         }
     }
@@ -1678,17 +1667,6 @@ public sealed partial class MainWindow : WindowEx,
         // know till the message is being handled.
         WeakReferenceMessenger.Default.Send<HotkeySummonMessage>(new(commandId, _hwnd));
 
-    private void UnregisterHotkeys()
-    {
-        _keyboardListener.ClearHotkeys();
-
-        while (_hotkeys.Count > 0)
-        {
-            PInvoke.UnregisterHotKey(_hwnd, _hotkeys.Count - 1);
-            _hotkeys.RemoveAt(_hotkeys.Count - 1);
-        }
-    }
-
     private void StartKeyboardListener()
     {
         if (_keyboardListener.Start(out var error))
@@ -1704,60 +1682,18 @@ public sealed partial class MainWindow : WindowEx,
 
     private void SetupHotkey(SettingsModel settings)
     {
-        UnregisterHotkeys();
-
-        if (settings.IsWindowsKeyHotkeyActive)
-        {
-            _keyboardListener.SetWindowsKeyAction(string.Empty);
-        }
-        else
-        {
-            RegisterHotkey(settings, settings.Hotkey, string.Empty);
-        }
-
-        // The dock shortcut rides the same registration path as command hotkeys. HandleSummon
-        // peels it back off so nothing tries to summon a command with a dock ID. Skip it when
-        // the dock is off so we don't hold a global shortcut that does nothing.
-        if (settings.EnableDock)
-        {
-            RegisterHotkey(settings, settings.DockFocusHotkey, DockHotkeyIds.FocusDock);
-        }
-
-        foreach (var commandHotkey in settings.CommandHotkeys)
-        {
-            RegisterHotkey(settings, commandHotkey.Hotkey, commandHotkey.CommandId);
-        }
+        _keyboardListener.SetWindowsKeyAction(settings.IsWindowsKeyHotkeyActive ? string.Empty : null);
+        _hotkeyRegistrar.Update(new HotkeyRegistration(settings, _hotkeyManager.ActiveCommandHotkeys));
     }
 
-    private void RegisterHotkey(SettingsModel settings, HotkeySettings? key, string commandId)
+    private (bool Success, int ErrorCode) RegisterNativeHotkey(int hotkeyId, HotkeySettings key)
     {
-        if (key is null)
+        if (PInvoke.RegisterHotKey(_hwnd, hotkeyId, HotkeyWindowMessageHelper.GetModifiers(key), (uint)key.Code))
         {
-            return;
+            return (true, 0);
         }
 
-        if (settings.UseLowLevelGlobalHotkey)
-        {
-            _keyboardListener.SetHotkeyAction(key.Win, key.Ctrl, key.Shift, key.Alt, (byte)key.Code, commandId);
-            _hotkeys.Add(new(key, commandId));
-            return;
-        }
-
-        var modifiers =
-            (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
-            (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
-            (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
-            (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0);
-
-        if (PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)key.Code))
-        {
-            _hotkeys.Add(new(key, commandId));
-        }
-        else
-        {
-            // Usually means another app (or Windows itself) already owns this combo.
-            Logger.LogWarning($"Failed to register hotkey {key} for '{commandId}'. Error: {Marshal.GetLastWin32Error()}.");
-        }
+        return (false, Marshal.GetLastWin32Error());
     }
 
     private void HandleSummon(string commandId)
@@ -1959,11 +1895,9 @@ public sealed partial class MainWindow : WindowEx,
 
             case PInvoke.WM_HOTKEY:
                 {
-                    var hotkeyIndex = (int)wParam.Value;
-                    if (hotkeyIndex < _hotkeys.Count)
+                    if (_hotkeyRegistrar.GetCommand((int)wParam.Value, lParam.Value) is { } commandId)
                     {
-                        var hotkey = _hotkeys[hotkeyIndex];
-                        HandleSummon(hotkey.CommandId);
+                        HandleSummon(commandId);
                     }
 
                     return (LRESULT)IntPtr.Zero;
@@ -2121,6 +2055,7 @@ public sealed partial class MainWindow : WindowEx,
         _copilotKeyRegistration?.Dispose();
         _themeService.ThemeChanged -= ThemeServiceOnThemeChanged;
         App.Current.Services.GetRequiredService<ISettingsService>().SettingsChanged -= SettingsChangedHandler;
+        _hotkeyManager.PropertyChanged -= HotkeyManager_PropertyChanged;
 
         _shellIconCacheInvalidator?.Dispose();
         _shellIconCacheInvalidator = null;
