@@ -1,0 +1,171 @@
+# Copyright (c) Microsoft Corporation
+# The Microsoft Corporation licenses this file to you under the MIT license.
+# See the LICENSE file in the project root for more information.
+
+#requires -Version 7.0
+param(
+    [Parameter(Mandatory)][ValidateSet('Install', 'Cleanup')][string]$Action,
+    [Parameter(Mandatory)][string]$StatePath,
+    [Parameter(Mandatory)][string]$ResultsDirectory,
+    [string]$ArtifactDirectory
+)
+$ErrorActionPreference = 'Stop'
+$PSNativeCommandUseErrorActionPreference = $false
+$hardwareId = 'ROOT\PtUmdfHidPrototype'
+$subject = 'CN=PowerToys Isolated UMDF CI Smoke'
+New-Item $ResultsDirectory, (Split-Path $StatePath -Parent) -ItemType Directory -Force | Out-Null
+$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+try {
+    if (-not ([Security.Principal.WindowsPrincipal]::new($identity)).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        throw 'Driver provisioning requires an already elevated agent; no UAC is attempted.'
+    }
+}
+finally {
+    $identity.Dispose()
+}
+
+function Get-OwnedDevices {
+    @(Get-PnpDevice -ErrorAction Stop | Where-Object InstanceId -Like 'ROOT\HIDCLASS\*' | Where-Object {
+        $ids = (Get-PnpDeviceProperty -InstanceId $_.InstanceId -KeyName DEVPKEY_Device_HardwareIds -ErrorAction Stop).Data
+        $hardwareId -in $ids
+    })
+}
+
+function Save-State {
+    $state | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $StatePath
+}
+
+if ($Action -eq 'Cleanup') {
+    if (-not (Test-Path -LiteralPath $StatePath)) {
+        Write-Output 'No UMDF smoke state was created.'
+        return
+    }
+    $state = Get-Content -LiteralPath $StatePath -Raw | ConvertFrom-Json
+    if ($state.HardwareId -ne $hardwareId -or $state.Subject -ne $subject -or $state.Thumbprint -notmatch '^[A-Fa-f0-9]{40}$') {
+        throw 'Invalid UMDF smoke cleanup journal.'
+    }
+    $errors = [Collections.Generic.List[string]]::new()
+    $ownedDevices = @(Get-OwnedDevices)
+    foreach ($name in $state.InfNames) {
+        if ($name -notmatch '^oem[0-9]+\.inf$') { throw 'Invalid published driver filename in cleanup journal.' }
+        $inf = Join-Path $env:WINDIR "INF\$name"
+        if (Test-Path -LiteralPath $inf) {
+            if (-not (Select-String -LiteralPath $inf -SimpleMatch $hardwareId -Quiet)) {
+                throw "Refusing to remove unrelated driver package: $name"
+            }
+            & pnputil.exe /delete-driver $name /uninstall /force
+            if ($LASTEXITCODE -notin @(0, 3010)) { $errors.Add("Package removal failed: $name, exit $LASTEXITCODE") }
+            if (Test-Path -LiteralPath $inf) { $errors.Add("Published driver remains after removal: $name") }
+        }
+    }
+    # HID keyboard/mouse roots can reject removal while their driver is active.
+    foreach ($device in $ownedDevices) {
+        & pnputil.exe /remove-device $device.InstanceId
+        if ($LASTEXITCODE -notin @(0, 3010)) { $errors.Add("Device removal failed: $($device.InstanceId), exit $LASTEXITCODE") }
+    }
+    foreach ($store in $state.ImportedStores) {
+        if ($store -notin @('Root', 'TrustedPublisher')) { throw 'Unexpected certificate store in cleanup journal.' }
+        $path = "Cert:\LocalMachine\$store\$($state.Thumbprint)"
+        if (Test-Path $path) {
+            if ((Get-Item $path).Subject -ne $subject) { throw 'Refusing to remove an unrelated certificate.' }
+            Remove-Item $path
+        }
+    }
+    $remaining = @(Get-OwnedDevices | Where-Object Status -ne 'Unknown')
+    if ($remaining.Count) { $errors.Add('An owned UMDF device remains after cleanup.') }
+    [pscustomobject]@{ Removed = $errors.Count -eq 0; Errors = @($errors) } |
+        ConvertTo-Json -Depth 4 | Set-Content (Join-Path $ResultsDirectory 'driver-cleanup.json')
+    if ($errors.Count) { throw ($errors -join '; ') }
+    Remove-Item -LiteralPath $StatePath
+    return
+}
+
+if ([string]::IsNullOrWhiteSpace($ArtifactDirectory)) { throw 'Install requires the staged platform artifact directory.' }
+if (Test-Path -LiteralPath $StatePath) { throw 'An earlier UMDF smoke journal requires cleanup before installation.' }
+if (@(Get-OwnedDevices).Count) { throw 'A pre-existing prototype device is present; refusing to overwrite it.' }
+$artifact = (Resolve-Path $ArtifactDirectory).Path
+$driver = Join-Path $artifact 'driver'
+foreach ($file in Get-Content (Join-Path $artifact 'driver-hashes.json') -Raw | ConvertFrom-Json) {
+    $name = Split-Path $file.Path -Leaf
+    if ((Get-FileHash (Join-Path $driver $name) -Algorithm SHA256).Hash -ne $file.Hash) {
+        throw "Staged driver hash mismatch: $name"
+    }
+}
+$certificate = [Security.Cryptography.X509Certificates.X509Certificate2]::new((Join-Path $driver 'PtHidProbe.cer'))
+if ($certificate.Subject -ne $subject) { throw 'Unexpected test certificate subject.' }
+$state = [pscustomobject]@{
+    HardwareId = $hardwareId
+    Subject = $subject
+    Thumbprint = $certificate.Thumbprint
+    ImportedStores = @()
+    InfNames = @()
+}
+Save-State
+$before = @(Get-ChildItem (Join-Path $env:WINDIR 'INF') -Filter 'oem*.inf' -File | Select-Object -ExpandProperty Name)
+$started = Get-Date
+try {
+    foreach ($store in @('Root', 'TrustedPublisher')) {
+        if (-not (Test-Path "Cert:\LocalMachine\$store\$($certificate.Thumbprint)")) {
+            $state.ImportedStores += $store
+            Save-State
+            Import-Certificate -FilePath (Join-Path $driver 'PtHidProbe.cer') -CertStoreLocation "Cert:\LocalMachine\$store" | Out-Null
+        }
+    }
+    foreach ($file in @('VhidminiUm.dll', 'PtHidProbe.cat')) {
+        $signature = Get-AuthenticodeSignature (Join-Path $driver $file)
+        if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Thumbprint -ne $certificate.Thumbprint) {
+            throw "Driver signature validation failed: $file, $($signature.Status)"
+        }
+    }
+    & (Join-Path $driver 'devcon.exe') install (Join-Path $driver 'PtHidProbe.inf') $hardwareId
+    $installExit = $LASTEXITCODE
+    $state.InfNames = @(Get-ChildItem (Join-Path $env:WINDIR 'INF') -Filter 'oem*.inf' -File |
+        Where-Object { $_.Name -notin $before -and (Select-String -LiteralPath $_.FullName -SimpleMatch $hardwareId -Quiet) } |
+        Select-Object -ExpandProperty Name)
+    Save-State
+    $deadline = (Get-Date).AddSeconds(60)
+    do {
+        $devices = @(Get-OwnedDevices)
+        $device = if ($devices.Count -eq 1) { $devices[0] } else { $null }
+        $problem = if ($device) { (Get-PnpDeviceProperty -InstanceId $device.InstanceId -KeyName DEVPKEY_Device_ProblemCode).Data } else { $null }
+        $children = if ($device) { @((Get-PnpDeviceProperty -InstanceId $device.InstanceId -KeyName DEVPKEY_Device_Children).Data | Where-Object { $_ }) } else { @() }
+        if ($device -and $device.Status -eq 'OK' -and $problem -eq 0 -and $children.Count -eq 3) { break }
+        Start-Sleep -Milliseconds 500
+    } while ((Get-Date) -lt $deadline)
+    $secureBoot = try { Confirm-SecureBootUEFI } catch { Write-Warning $_; "Unavailable: $($_.Exception.Message)" }
+    $problemStatus = if ($device) { (Get-PnpDeviceProperty -InstanceId $device.InstanceId -KeyName DEVPKEY_Device_ProblemStatus).Data } else { $null }
+    [pscustomobject]@{
+        InstallExitCode = $installExit
+        OsArchitecture = [Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
+        ProcessArchitecture = [Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString()
+        OsVersion = [Environment]::OSVersion.Version.ToString()
+        SecureBoot = $secureBoot
+        BootConfiguration = (& bcdedit /enum '{current}') -join "`n"
+        InstanceId = $device.InstanceId
+        Status = $device.Status
+        ProblemCode = $problem
+        ProblemStatus = $problemStatus
+        Children = $children
+        InfNames = $state.InfNames
+    } | ConvertTo-Json -Depth 4 | Tee-Object -FilePath (Join-Path $ResultsDirectory 'driver-install.json')
+    if ($installExit -ne 0 -or -not $device -or $device.Status -ne 'OK' -or $problem -ne 0 -or $children.Count -ne 3) {
+        throw "UMDF smoke driver did not load: install=$installExit, status=$($device.Status), problem=$problem, NTSTATUS=$problemStatus."
+    }
+}
+catch {
+    $state.InfNames = @(Get-ChildItem (Join-Path $env:WINDIR 'INF') -Filter 'oem*.inf' -File |
+        Where-Object { $_.Name -notin $before -and (Select-String -LiteralPath $_.FullName -SimpleMatch $hardwareId -Quiet) } |
+        Select-Object -ExpandProperty Name)
+    Save-State
+    try {
+        Get-Content (Join-Path $env:WINDIR 'INF\setupapi.dev.log') -Tail 220 |
+            Set-Content (Join-Path $ResultsDirectory 'setupapi-tail.log')
+        Get-WinEvent -FilterHashtable @{ LogName = 'Microsoft-Windows-Kernel-PnP/Configuration'; StartTime = $started } |
+            Where-Object Message -Match 'HIDCLASS|Vhidmini|PtUmdf' | Select-Object Id, TimeCreated, Message |
+            ConvertTo-Json -Depth 3 | Set-Content (Join-Path $ResultsDirectory 'pnp-events.json')
+    }
+    catch {
+        Write-Warning "Could not capture additional driver diagnostics: $_"
+    }
+    throw
+}

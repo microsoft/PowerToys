@@ -280,6 +280,7 @@ jobs:
         'ColorPicker.UITests',
         'CropAndLock.UITests',
         'FileLocksmith.UITests',
+        'GrabAndMove.UITests',
         'HostsEditor.UITests',
         'Hosts.UITests.Next',
         'ImageResizer.UITests',
@@ -450,7 +451,7 @@ jobs:
       $resultsDir = "$(Common.TestResultsDirectory)"
       New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
 
-      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'Workspaces.UITests.Next')
+      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'Workspaces.UITests.Next')
       . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
       $locationStatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\LightSwitchLocation.json"
       $failed = 0
