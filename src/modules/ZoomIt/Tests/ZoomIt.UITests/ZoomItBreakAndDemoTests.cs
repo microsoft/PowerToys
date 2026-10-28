@@ -122,7 +122,10 @@ public sealed partial class ZoomItTests
         ui.Step("Choosing Courier New through the native font dialog");
         var dialog = ui.OpenDialog<ComboBox>("ZoomItTypeTextFont", "1136");
         Assert.IsTrue(WindowControl.WaitForForeground(new IntPtr(dialog.WindowHandle), 10_000), "The font picker did not acquire foreground.");
-        dialog.Find<ComboBox>(By.AccessibilityId("1136")).Focus();
+        var fontNameComboBox = dialog.Find<ComboBox>(By.AccessibilityId("1136"));
+        var fontNameTextBox = dialog.FindAll<TextBox>(By.AccessibilityId("1001"))
+            .Single(textBox => textBox.Name == fontNameComboBox.Name);
+        fontNameTextBox.Focus();
         Assert.IsTrue(ClipboardHelper.SetText("Courier New"), "Could not prepare the font name.");
         KeyboardHelper.SendChord(Key.Ctrl, Key.A);
         KeyboardHelper.SendChord(Key.Ctrl, Key.V);

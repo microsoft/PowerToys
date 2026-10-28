@@ -345,7 +345,6 @@ DWORD GetClipboardSequence()
     DWORD sequence;
     if( !OpenClipboard( nullptr ) )
     {
-        CloseClipboard();
         return 0;
     }
     sequence = GetClipboardSequenceNumber();
@@ -360,40 +359,39 @@ DWORD GetClipboardSequence()
 //----------------------------------------------------------------------------
 std::unique_ptr<wchar_t[]> GetClipboard()
 {
-    // Confirm clipboard accessibility and data format
-    if( !OpenClipboard( nullptr ) && !IsClipboardFormatAvailable( CF_UNICODETEXT ) )
+    if( !OpenClipboard( nullptr ) )
     {
-        CloseClipboard();
+        return nullptr;
+    }
+    auto closeClipboard = wil::scope_exit( [] { CloseClipboard(); } );
+    if( !IsClipboardFormatAvailable( CF_UNICODETEXT ) )
+    {
         return nullptr;
     }
     HANDLE hData = GetClipboardData( CF_UNICODETEXT );
     if( hData == nullptr )
     {
-        CloseClipboard();
         return nullptr;
     }
 
     // Confirm clipboard size doesn't exceed MAX_INPUT_SIZE
     size_t size = GlobalSize( hData );
-    if( size <= 0 || size > MAX_INPUT_SIZE )
+    if( size < sizeof(wchar_t) || size > MAX_INPUT_SIZE )
     {
-        GlobalUnlock( hData );
-        CloseClipboard();
         return nullptr;
     }
 
     const wchar_t* pData = static_cast<wchar_t*>(GlobalLock( hData ));
     if( pData == nullptr )
     {
-        GlobalUnlock( hData );
-        CloseClipboard();
         return nullptr;
     }
+    auto unlockData = wil::scope_exit( [hData] { GlobalUnlock( hData ); } );
 
-    auto data = std::make_unique<wchar_t[]>( size / sizeof(wchar_t) );
-    wcscpy( data.get(), pData );
-    GlobalUnlock( hData );
-    CloseClipboard();
+    const size_t textLen = wcsnlen_s( pData, size / sizeof(wchar_t) );
+    auto data = std::make_unique<wchar_t[]>( textLen + 1 );
+    memcpy( data.get(), pData, textLen * sizeof(wchar_t) );
+    data[textLen] = L'\0';
     return data;
 }
 
@@ -1198,7 +1196,7 @@ void ResetDemoTypeClipboard()
 //----------------------------------------------------------------------------
 bool GetDemoTypeClipboard()
 {
-    const int safetyPrefixLen = 7;
+    const size_t safetyPrefixLen = 7;
     const wchar_t safetyPrefix[] = L"[start]";
 
     // Check if we can reuse the clipboard cache
@@ -1211,21 +1209,14 @@ bool GetDemoTypeClipboard()
 
     g_ClipboardCache = GetClipboard();
 
-    // Confirm clipboard data begins with the safety prefix
-    if( g_ClipboardCache == nullptr || g_ClipboardCache[0] != g_ClipboardCache[0] || g_ClipboardCache[safetyPrefixLen] == '\0' )
+    // Preserve the existing prefix match, which ignores its first character.
+    if( g_ClipboardCache == nullptr
+     || wcsnlen_s( g_ClipboardCache.get(), safetyPrefixLen + 1 ) <= safetyPrefixLen
+     || wcsncmp( g_ClipboardCache.get() + 1, safetyPrefix + 1, safetyPrefixLen - 1 ) != 0 )
     {
         ResetDemoTypeClipboard();
         return false;
     }
-    for( int i = 1; i < safetyPrefixLen; i++ )
-    {
-        if( g_ClipboardCache[i] != safetyPrefix[i] || g_ClipboardCache[i] == '\0' )
-        {
-            ResetDemoTypeClipboard();
-            return false;
-        }
-    }
-    
     g_Text.assign( g_ClipboardCache.get() + safetyPrefixLen );
     g_Clipboard = true;
     g_Index = 0;
