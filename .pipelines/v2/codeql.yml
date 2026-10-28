@@ -38,7 +38,5 @@ jobs:
       buildConfigurations: [Release]
       enablePackageCaching: true
       runTests: false
-      # Build the test projects without running them; buildTests: true would also run them (/t:Build;Test).
-      buildTests: false
-      additionalBuildOptions: /p:BuildTests=true
+      buildTests: true
       publishArtifacts: false
