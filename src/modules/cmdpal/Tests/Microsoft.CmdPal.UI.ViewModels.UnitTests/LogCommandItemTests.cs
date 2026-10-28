@@ -14,37 +14,23 @@ using Moq;
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 [TestClass]
-public sealed class FallbackLogItemTests
+public sealed class LogCommandItemTests
 {
     [TestMethod]
-    [DataRow("log")]
-    [DataRow("Log")]
-    [DataRow("LOG")]
-    [DataRow("l")]
-    [DataRow("L")]
-    public void LogFallback_MatchesCaseInsensitivelyAndPreservesIdentity(string query)
+    public void LogCommand_HasPermanentTitleAndPreservesIdentityAndContextCommand()
     {
         var applicationInfo = Mock.Of<IApplicationInfoService>(info => info.LogDirectory == @"C:\Logs");
-        var item = new FallbackLogItem(applicationInfo);
+        var item = new LogCommandItem(applicationInfo);
 
         Assert.IsInstanceOfType<OpenFileCommand>(item.Command);
-        Assert.AreEqual("com.microsoft.cmdpal.log", item.Id);
-        Assert.AreEqual(item.Id, item.Command.Id);
-        Assert.AreEqual(Resources.builtin_log_folder_command_name, item.DisplayTitle);
-        Assert.AreEqual(Resources.builtin_log_folder_command_name, item.Subtitle);
+        Assert.AreEqual("com.microsoft.cmdpal.log", item.Command.Id);
+        Assert.AreEqual(Resources.builtin_log_folder_command_name, item.Title);
+        Assert.AreEqual(item.Title, item.Command.Name);
         Assert.AreEqual(1, item.MoreCommands.Length);
         var openLogFileItem = item.MoreCommands[0] as CommandContextItem;
         Assert.IsNotNull(openLogFileItem);
         Assert.IsInstanceOfType<InvokableCommand>(openLogFileItem.Command);
         Assert.AreEqual(Resources.builtin_log_file_command_name, openLogFileItem.Command.Name);
-
-        item.UpdateQuery(query);
-        Assert.AreEqual(Resources.builtin_log_folder_command_name, item.Title);
-        Assert.AreEqual(item.Title, item.Command.Name);
-
-        item.UpdateQuery("settings");
-        Assert.AreEqual(string.Empty, item.Title);
-        Assert.AreEqual(string.Empty, item.Command.Name);
     }
 
     [TestMethod]
@@ -57,7 +43,7 @@ public sealed class FallbackLogItemTests
             .Returns(string.Empty)
             .Returns(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "missing.log"));
 
-        var item = new FallbackLogItem(applicationInfo.Object);
+        var item = new LogCommandItem(applicationInfo.Object);
         var openLogFileItem = item.MoreCommands[0] as CommandContextItem;
         Assert.IsNotNull(openLogFileItem);
         var command = openLogFileItem.Command as InvokableCommand;

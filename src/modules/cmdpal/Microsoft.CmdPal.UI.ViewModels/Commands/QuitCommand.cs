@@ -9,11 +9,12 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 
-public partial class QuitCommand : InvokableCommand, IFallbackHandler
+public partial class QuitCommand : InvokableCommand
 {
     public QuitCommand()
     {
         Id = "com.microsoft.cmdpal.quit";
+        Name = Properties.Resources.builtin_quit_name;
         Icon = new IconInfo("\uE711");
     }
 
@@ -22,7 +23,4 @@ public partial class QuitCommand : InvokableCommand, IFallbackHandler
         WeakReferenceMessenger.Default.Send<QuitMessage>();
         return CommandResult.KeepOpen();
     }
-
-    // this sneaky hidden behavior, I'm not event gonna try to localize this.
-    public void UpdateQuery(string query) => Name = query.StartsWith('q') ? "Quit" : string.Empty;
 }

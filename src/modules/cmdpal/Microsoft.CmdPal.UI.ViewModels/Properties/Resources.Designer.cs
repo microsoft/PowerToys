@@ -322,20 +322,20 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to {0}, {1} command.
-        /// </summary>
-        public static string builtin_extension_subtext_singular {
-            get {
-                return ResourceManager.GetString("builtin_extension_subtext_singular", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to {0}, {1}.
         /// </summary>
         public static string builtin_extension_subtext_disabled {
             get {
                 return ResourceManager.GetString("builtin_extension_subtext_disabled", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0}, {1} command.
+        /// </summary>
+        public static string builtin_extension_subtext_singular {
+            get {
+                return ResourceManager.GetString("builtin_extension_subtext_singular", resourceCulture);
             }
         }
 
@@ -441,9 +441,18 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Exit Command Palette.
         /// </summary>
-        public static string builtin_quit_subtitle {
+        public static string builtin_quit_name {
             get {
-                return ResourceManager.GetString("builtin_quit_subtitle", resourceCulture);
+                return ResourceManager.GetString("builtin_quit_name", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Exit Command Palette.
+        /// </summary>
+        public static string builtin_quit_title {
+            get {
+                return ResourceManager.GetString("builtin_quit_title", resourceCulture);
             }
         }
 
@@ -468,9 +477,9 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Reload Command Palette extensions.
         /// </summary>
-        public static string builtin_reload_subtitle {
+        public static string builtin_reload_title {
             get {
-                return ResourceManager.GetString("builtin_reload_subtitle", resourceCulture);
+                return ResourceManager.GetString("builtin_reload_title", resourceCulture);
             }
         }
 
@@ -1168,6 +1177,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Hide details.
+        /// </summary>
+        public static string HideDetailsCommand {
+            get {
+                return ResourceManager.GetString("HideDetailsCommand", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Commands.
         /// </summary>
         public static string home_sections_commands_title {
@@ -1186,20 +1204,29 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to The requested filter is no longer available..
-        /// </summary>
-        public static string list_page_requested_filter_unavailable {
-            get {
-                return ResourceManager.GetString("list_page_requested_filter_unavailable", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to Recent.
         /// </summary>
         public static string home_sections_recent_title {
             get {
                 return ResourceManager.GetString("home_sections_recent_title", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Windows display language.
+        /// </summary>
+        public static string Language_Default {
+            get {
+                return ResourceManager.GetString("Language_Default", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The requested filter is no longer available..
+        /// </summary>
+        public static string list_page_requested_filter_unavailable {
+            get {
+                return ResourceManager.GetString("list_page_requested_filter_unavailable", resourceCulture);
             }
         }
 
@@ -1222,29 +1249,11 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Windows display language.
-        /// </summary>
-        public static string Language_Default {
-            get {
-                return ResourceManager.GetString("Language_Default", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to Show details.
         /// </summary>
         public static string ShowDetailsCommand {
             get {
                 return ResourceManager.GetString("ShowDetailsCommand", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Hide details.
-        /// </summary>
-        public static string HideDetailsCommand {
-            get {
-                return ResourceManager.GetString("HideDetailsCommand", resourceCulture);
             }
         }
 

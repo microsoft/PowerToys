@@ -120,7 +120,10 @@
   <data name="builtin_new_extension_subtitle" xml:space="preserve">
     <value>Generate a new Command Palette extension project</value>
   </data>
-  <data name="builtin_quit_subtitle" xml:space="preserve">
+  <data name="builtin_quit_name" xml:space="preserve">
+    <value>Exit Command Palette</value>
+  </data>
+  <data name="builtin_quit_title" xml:space="preserve">
     <value>Exit Command Palette</value>
   </data>
   <data name="builtin_display_name" xml:space="preserve">
@@ -162,9 +165,6 @@
   </data>
   <data name="builtin_log_folder_command_name" xml:space="preserve">
     <value>View log folder</value>
-  </data>
-  <data name="builtin_reload_subtitle" xml:space="preserve">
-    <value>Reload Command Palette extensions</value>
   </data>
   <data name="builtin_reload_name" xml:space="preserve">
     <value>Reload</value>
@@ -616,5 +616,8 @@
   </data>
   <data name="Language_Default" xml:space="preserve">
     <value>Windows display language</value>
+  </data>
+  <data name="builtin_reload_title" xml:space="preserve">
+    <value>Reload Command Palette extensions</value>
   </data>
 </root>

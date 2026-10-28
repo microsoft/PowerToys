@@ -13,6 +13,8 @@ public partial class ReloadExtensionsCommand : InvokableCommand
 {
     public ReloadExtensionsCommand()
     {
+        Id = "com.microsoft.cmdpal.reload";
+        Name = Properties.Resources.builtin_reload_name;
         Icon = new IconInfo("\uE72C"); // Refresh icon
     }
 
