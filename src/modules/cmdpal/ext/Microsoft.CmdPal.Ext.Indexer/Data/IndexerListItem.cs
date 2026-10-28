@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -117,7 +118,7 @@ internal sealed partial class IndexerListItem : ListItem
         commands.Add(new CommandContextItem(new OpenInConsoleCommand(fullPath)) { RequestedShortcut = KeyChords.OpenInConsole });
         commands.Add(new CommandContextItem(new OpenPropertiesCommand(fullPath)));
 
-        if (IsActionsFeatureEnabled && ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
+        if (IsActionsFeatureEnabled && OperatingSystem.IsWindowsVersionAtLeast(10, 0, 26100) && ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
         {
             var actionsListContextItem = new ActionsListContextItem(fullPath);
             if (actionsListContextItem.AnyActions())

@@ -423,7 +423,7 @@ namespace ImageResizer.Models
                 {
                     try
                     {
-                        var properties = await source.GetPropertiesAsync([propertyName]);
+                        var properties = await source.GetPropertiesAsync(new[] { propertyName });
                         if (properties.TryGetValue(propertyName, out var value))
                         {
                             result[propertyName] = value;

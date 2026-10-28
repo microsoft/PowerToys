@@ -160,11 +160,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 // build the display info used to generate the preview image in the settings dialog
                 // (keep the values in sync with the layout of "Images\MouseJump-Desktop.png")
-                var displayInfo = new DisplayInfo([
+                var displayInfo = new DisplayInfo(new DeviceInfo[]
+                {
                     new DeviceInfo(
                         hostname: "FakeDisplay1",
                         localhost: true,
-                        screens: [
+                        screens: new ScreenInfo[]
+                        {
                             /*
                                 these magic numbers are the pixel dimensions of the individual screens on the
                                 fake desktop image - "Images\MouseJump-Desktop.png" - used to generate the
@@ -181,8 +183,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                                 primary: true,
                                 displayArea: new RectangleInfo(0, 0, 635, 339),
                                 workingArea: new RectangleInfo(0, 0, 635, 339)),
-                        ]),
-                ]);
+                        }),
+                });
 
                 var desktopSize = LayoutHelper.GetCombinedScreenBounds(
                         displayInfo.Devices[0].Screens
