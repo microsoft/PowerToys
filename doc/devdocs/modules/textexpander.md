@@ -19,6 +19,7 @@ textexpander/
 ├── TextExpander.Storage/         # Coordinated module-settings persistence
 ├── TextExpander.Editor/          # Standalone WinUI snippet-management app
 ├── TextExpander.Editor.UnitTests/# Editor, storage, and ownership tests
+├── TextExpander.FuzzTests/       # OneFuzz targets for the snippet file and expansion
 └── TextExpander.UnitTests/       # Engine and shared-rule unit tests
 ```
 
@@ -67,10 +68,13 @@ A self-contained .NET process. Its keyboard hook, matching and injection use no 
 - Matches triggers against the snippet file (`PowerToysTextExpanderSnippets.txt`, or `snippets.txt` from earlier versions), optionally ignoring capitalization and, by default, waiting for a space or punctuation before expanding. An explicitly saved disabled value keeps immediate expansion.
 - Replaces the trigger by pasting (the user's clipboard is saved and restored) or by typing with `SendInput`, depending on the Insertion method setting and snippet length.
 - Expands variables (`{{date}}`, `{{time}}`, `{{datetime}}`, `{{isodate}}`, `{{date:<format>}}`, `{{clipboard}}`, `{{prompt:<question>}}`, `{{prompt?:<question>}}`) and places the cursor at `$|$`. Only the snippet's own text is read for `\n`, `\t`, `{{clipboard}}` and `$|$`: a prompt answer, the clipboard and a formatted date are inserted exactly as they are, so a `$|$` or `\n` in them stays literal.
-- Supports undo: pressing Ctrl+Z immediately after an expansion restores the typed trigger. Modifier key-downs on the way to Ctrl+Z do not cancel the pending undo, but any other key does; Ctrl+Shift+Z is left to the app as redo. The undo waits up to one second for modifiers to be released, and is abandoned otherwise, so its Backspaces are never sent as Ctrl+Backspace.
+- Supports undo: pressing Ctrl+Z immediately after an expansion restores exactly what was typed, in the capitalization it was typed in, even when matching ignores case. If the snippet's `$|$` left the caret inside the expansion, the undo first presses Right as many times as the insertion pressed Left, so it erases from the end of the expansion. Modifier key-downs on the way to Ctrl+Z do not cancel the pending undo, but any other key does; Ctrl+Shift+Z is left to the app as redo. The undo waits up to one second for modifiers to be released, and is abandoned otherwise, so its Backspaces are never sent as Ctrl+Backspace.
+- Drops a queued expansion or undo, instead of applying it where the caret is now, when a key other than a modifier is pressed or the mouse is clicked after the trigger matched. The worker compares the hook's input generation before it starts (before any prompt) and again right before the first Backspace. The keystroke the hook swallowed to complete the trigger is not typed back. A foreground change alone doesn't cancel the work, because focus returns to the target after a prompt; typing still checks that the target window is in front. Backspace with Ctrl, Alt or Win clears the rolling buffer instead of removing one character.
 - Ignores its own injected input and, optionally, input injected by Keyboard Manager remaps.
 - Runs at the desktop user's integrity level and refuses synthetic input to elevated windows. This preserves expansion in ordinary desktop apps when PowerToys itself is elevated, while preventing user-controlled settings and snippet files from authorizing elevated input or being read by an elevated engine.
 - Checks its actual integrity level before loading host settings or snippets and exits if the check fails or the process is above medium integrity.
+- Exits at startup, before taking its single-instance mutex, loading settings or snippets, or installing hooks, when the `ConfigureEnabledUtilityTextExpander` group policy turns Text Expander off, so starting `PowerToys.TextExpander.exe` directly doesn't get around it.
+- Runs one engine per signed-in session: its single-instance mutex is `Local\PowerToys.TextExpander.SingleInstance` plus the `--instance:` suffix, like the runner's instance mutex and the exit event.
 - Clears its rolling input buffer and one-step undo state while focus is in a detectable standard Windows password box: an `Edit` or `RichEdit` control, or a WinForms `WindowsForms10.EDIT.*` text box, with the `ES_PASSWORD` style. Detection uses only the focused window's class name and style, and sends no messages to other processes. Password fields on websites (Chromium, Firefox), and WPF and WinUI `PasswordBox` controls, don't expose that style and aren't detected, which the **Good to know** note says.
 - Does not retain undo entries for snippets using `{{prompt:...}}` or `{{clipboard}}`, because those expansions contain user-supplied values. Clipboard snapshot and temporary paste buffers are zeroed after restoration or publication.
 - Watches `settings.json` and the snippet file and reloads them without a restart.
@@ -113,8 +117,9 @@ earlier version would then lose its file. Both use the constants
 shared folder operation: a per-folder cross-process claim serializes engine and
 editor creators, both names are resolved again while it is held and after the
 atomic move, and the current name is published only when neither exists. An engine
-test checks the shared file-name contract. Bug reports leave out
-both names in the PowerToys folder and in the configured folder, plus a configured
+test checks the shared file-name contract. Bug reports leave out both names, and the
+copies Text Expander makes of them, anywhere in the PowerToys `TextExpander` folder
+(including earlier snippet folders there) and in the configured folder, plus a configured
 file whatever its name (`TextExpanderPrivacy.h`); both paths are masked in the
 report's copy of `settings.json`.
 
@@ -162,7 +167,9 @@ Search matches triggers and replacement text without changing file order. The
 count shows matching and total snippets ("Showing 1 of 1 snippet" for a library of
 one); **Clear search** restores the full list.
 Select a row to edit it; each row ends with a pencil (tooltip "Edit") instead of a
-chevron. **More options** has **Edit**, **Duplicate** and **Delete**.
+chevron. **More options** has **Edit**, **Duplicate** and **Delete**. If the snippet
+file reloads while the delete confirmation is open, the delete is refused and the
+list shows the reloaded file, because the row it named may now be another snippet.
 **Duplicate** opens the copy in the editor, unsaved, with a trigger that can fire
 (`!mysig` → `!2mysig`; `!mysig2` would never fire, because typing it completes
 `!mysig` first).
@@ -378,8 +385,10 @@ storage* above.
 ### Trigger capitalization
 
 **Match trigger capitalization** is on by default, preserving exact matching. When
-it is off, the engine builds its suffix trie with invariant case normalization and
-uses an ordinal-ignore-case replacement map. Triggers that differ only by case are
+it is off, the engine's suffix trie compares characters with
+`StringComparer.OrdinalIgnoreCase`, the same comparer as its replacement map, and
+steps over a surrogate pair as one character, so supplementary-plane letters match
+in either case. Triggers that differ only by case are
 therefore duplicates and the last file row wins, matching the existing duplicate
 rule. The editor applies the same comparison to validation, copy suggestions and
 reachability warnings.
