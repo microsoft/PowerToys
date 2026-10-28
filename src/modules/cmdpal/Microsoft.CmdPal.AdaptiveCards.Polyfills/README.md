@@ -1,5 +1,8 @@
 # Adaptive Cards polyfills
 
+> [!WARNING]
+> This code is mostly maintained by LLMs.
+
 The WinUI 3 Adaptive Cards renderer doesn't support everything in the current Adaptive Cards schema. This library fills the gaps until it does:
 
 - The `Chart.Line` element.
