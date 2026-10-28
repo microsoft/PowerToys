@@ -22,9 +22,12 @@ public sealed partial class ContentFormControl : UserControl
 {
     private readonly IncrementalAdaptiveCardUpdater _cardUpdater;
     private readonly AdaptiveCardRenderer _renderer;
+    private readonly AdaptiveInputValueTracker _inputValues = new();
     private static bool _customElementParsersRegistered;
     private ContentFormViewModel? _viewModel;
     private AdaptiveHostConfig _hostConfig;
+    private bool _hostConfigRefreshQueued;
+    private Dictionary<string, string>? _pendingInputValues;
 
     // LOAD-BEARING: if you don't hang onto a reference to the RenderedAdaptiveCard
     // then the GC might clean it up sometime, even while the card is in the UI
@@ -63,6 +66,14 @@ public sealed partial class ContentFormControl : UserControl
         RegisterRenderer<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementRenderer>(renderer);
         RegisterRenderer<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementRenderer>(renderer);
         RegisterRenderer<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementRenderer>(renderer);
+        _inputValues.Attach(
+            renderer,
+            [
+                AdaptiveStringListInputElement.CustomInputType,
+                AdaptiveFilePathListInputElement.CustomInputType,
+                AdaptiveKeyValueListInputElement.CustomInputType,
+                AdaptiveFilePathInputElement.CustomInputType,
+            ]);
         _cardUpdater = new IncrementalAdaptiveCardUpdater(
             renderer,
             CardHost,
@@ -71,7 +82,32 @@ public sealed partial class ContentFormControl : UserControl
 
         // The theme can differ once the control joins a window with its own requested theme.
         Loaded += (_, _) => RefreshHostConfig();
-        ActualThemeChanged += (_, _) => RefreshHostConfig();
+        ActualThemeChanged += (_, _) => QueueHostConfigRefresh();
+    }
+
+    /// <summary>
+    /// Refreshes once the theme settles. Command Palette applies a theme by switching to dark, then
+    /// light, then the target theme, so a refresh per change would re-render while the previous
+    /// re-render is still in progress.
+    /// </summary>
+    private void QueueHostConfigRefresh()
+    {
+        if (_hostConfigRefreshQueued)
+        {
+            return;
+        }
+
+        _hostConfigRefreshQueued = DispatcherQueue.TryEnqueue(
+            Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+            () =>
+            {
+                _hostConfigRefreshQueued = false;
+                RefreshHostConfig();
+            });
+        if (!_hostConfigRefreshQueued)
+        {
+            RefreshHostConfig();
+        }
     }
 
     /// <summary>Re-renders the card for the current theme, since host config colors are baked into it.</summary>
@@ -85,12 +121,56 @@ public sealed partial class ContentFormControl : UserControl
 
         _hostConfig = hostConfig;
         _renderer.HostConfig = hostConfig;
-        var card = _viewModel?.Card;
+        var card = _viewModel?.Card?.AdaptiveCard;
+
+        // While an earlier re-render is in progress there's no rendered card, so keep its values.
+        var inputValues = _cardUpdater.RenderedCard is null && _pendingInputValues is not null
+            ? _pendingInputValues
+            : _inputValues.GetCurrentValues(_cardUpdater.RenderedCard);
         ResetCard();
         if (card is not null)
         {
-            RequestDisplayCard(card);
+            _pendingInputValues = inputValues;
+            _ = DisplayCardWithInputValuesAsync(WithInputValues(card, inputValues), inputValues);
         }
+    }
+
+    private async Task DisplayCardWithInputValuesAsync(AdaptiveCard card, Dictionary<string, string> inputValues)
+    {
+        await DisplayCardAsync(card);
+        if (ReferenceEquals(_pendingInputValues, inputValues) && _cardUpdater.RenderedCard is not null)
+        {
+            _pendingInputValues = null;
+        }
+    }
+
+    /// <summary>Returns a copy of <paramref name="card"/> with the values the user entered, so a re-render doesn't discard them.</summary>
+    private static AdaptiveCard WithInputValues(AdaptiveCard card, Dictionary<string, string> inputValues)
+    {
+        if (inputValues.Count == 0)
+        {
+            return card;
+        }
+
+        try
+        {
+            var json = card.ToJson();
+            AdaptiveCardInputValues.Apply(json, inputValues);
+            var result = AdaptiveCard.FromJsonString(
+                json.Stringify(),
+                AdaptiveCardParserRegistrations.ElementParsers,
+                AdaptiveCardParserRegistrations.ActionParsers);
+            if (result.AdaptiveCard is AdaptiveCard cardWithValues)
+            {
+                return cardWithValues;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to keep Adaptive Card input values", ex);
+        }
+
+        return card;
     }
 
     private static void RegisterParser<TElement, TParser>()
@@ -115,6 +195,7 @@ public sealed partial class ContentFormControl : UserControl
         }
 
         ResetCard();
+        _pendingInputValues = null;
 
         _viewModel = vm;
 
@@ -139,6 +220,7 @@ public sealed partial class ContentFormControl : UserControl
 
         if (e.PropertyName == nameof(ViewModel.Card))
         {
+            _pendingInputValues = null;
             var c = ViewModel.Card;
             if (c is not null)
             {
@@ -158,6 +240,7 @@ public sealed partial class ContentFormControl : UserControl
         {
             await _cardUpdater.UpdateAsync(card);
             AttachRenderedCard(_cardUpdater.RenderedCard);
+            _inputValues.Retain(_cardUpdater.RenderedCard);
         }
         catch (Exception ex)
         {
