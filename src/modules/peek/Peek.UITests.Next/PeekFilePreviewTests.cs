@@ -27,8 +27,10 @@ public class PeekFilePreviewTests : UITestBase
     private const int MaxHotkeyAttempts = 3;
     private const int MaxNavigationAttempts = 3;
     private static readonly IDisposable PeekSettings;
+    private static readonly string[] PeekModules = { "Peek" };
 
     private long explorerWindowHandle;
+    private string? singleFilePreviewDirectory;
     private IReadOnlyList<string> expectedExplorerSelection = Array.Empty<string>();
     private string? expectedExplorerFocusedPath;
 
@@ -38,7 +40,7 @@ public class PeekFilePreviewTests : UITestBase
     private static bool restoreAppsUseLightTheme;
 
     public PeekFilePreviewTests()
-        : base(PowerToysModule.PowerToysSettings, WindowSize.Small_Vertical, enableModules: new[] { "Peek" })
+        : base(PowerToysModule.PowerToysSettings, WindowSize.Small_Vertical, enableModules: PeekModules)
     {
     }
 
@@ -136,7 +138,12 @@ public class PeekFilePreviewTests : UITestBase
     public async Task CleanupPeekTest()
     {
         await CaptureFailureArtifactsBeforeCleanupAsync(TimeSpan.FromSeconds(2));
-        CloseTestWindows();
+        CloseTestWindows(preservePeekProcess: singleFilePreviewDirectory is null);
+        if (singleFilePreviewDirectory is not null)
+        {
+            Directory.Delete(singleFilePreviewDirectory, recursive: true);
+            singleFilePreviewDirectory = null;
+        }
     }
 
     [TestMethod("Peek.FilePreview.Folder")]
@@ -326,7 +333,7 @@ public class PeekFilePreviewTests : UITestBase
 
         var peekWindow = SendPeekHotkeyWithRetry(selectedFiles[2]);
         EnsurePeekWindowInteractive(peekWindow);
-        var expectedNames = selectedFiles.Select(Path.GetFileNameWithoutExtension).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var expectedNames = selectedFiles.Select(path => Path.GetFileNameWithoutExtension(path)).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var visitedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             FileNameFromTitle(peekWindow.WindowTitle, expectedNames),
@@ -422,6 +429,7 @@ public class PeekFilePreviewTests : UITestBase
             }
 
             var expectedExplorerTitle = Path.GetFileName(Path.GetDirectoryName(normalizedPath));
+            Assert.IsNotNull(expectedExplorerTitle, $"Test asset '{normalizedPath}' has no parent folder for Explorer to open.");
             if (!WaitForExplorerWindowTitle(explorerWindow.WindowHandle, expectedExplorerTitle, ExplorerOpenTimeoutMS))
             {
                 TestContext.WriteLine(
@@ -524,7 +532,8 @@ public class PeekFilePreviewTests : UITestBase
     {
         for (var attempt = 1; attempt <= MaxHotkeyAttempts; attempt++)
         {
-            var visiblePeekWindow = WindowsFinder.ListByApp(PeekProcessName).FirstOrDefault();
+            var visiblePeekWindows = WindowsFinder.ListByApp(PeekProcessName);
+            var visiblePeekWindow = visiblePeekWindows.Count > 0 ? visiblePeekWindows[0] : null;
             if (visiblePeekWindow is not null)
             {
                 return WaitForInitializedPeekWindow(
@@ -868,7 +877,13 @@ public class PeekFilePreviewTests : UITestBase
 
     private void TestSingleFilePreview(string filePath, string expectedFileName)
     {
-        var previewWindow = OpenPeekWindow(filePath);
+        // A single Explorer selection can still include neighboring files in Peek's title counter.
+        singleFilePreviewDirectory = Path.Combine(Path.GetTempPath(), "PowerToys.Peek.UITests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(singleFilePreviewDirectory);
+        var isolatedFilePath = Path.Combine(singleFilePreviewDirectory, Path.GetFileName(filePath));
+        File.Copy(filePath, isolatedFilePath);
+
+        var previewWindow = OpenPeekWindow(isolatedFilePath);
         VisualAssert.AreEqual(TestContext, previewWindow, expectedFileName);
     }
 
@@ -999,5 +1014,4 @@ public class PeekFilePreviewTests : UITestBase
     {
         public (int X, int Y) Center => (Left + (Width / 2), Top + (Height / 2));
     }
-
 }

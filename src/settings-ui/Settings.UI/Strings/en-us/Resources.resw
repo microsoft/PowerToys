@@ -314,6 +314,12 @@
   <data name="MouseWithoutBorders_SecurityKey.Description" xml:space="preserve">
     <value>To set up, generate the key on one machine, and enter it manually on other machines</value>
   </data>
+  <data name="MouseWithoutBorders_PairingRequiresAdministrator.Title" xml:space="preserve">
+    <value>Run PowerToys as administrator to view or change the pairing key.</value>
+  </data>
+  <data name="MouseWithoutBorders_PairingSetupRequired.Title" xml:space="preserve">
+    <value>The saved pairing key cannot be used in the current mode. Generate a new key or connect using a key from another computer.</value>
+  </data>
   <data name="MouseWithoutBorders_NewKey.Content" xml:space="preserve">
     <value>New key</value>
   </data>
@@ -331,6 +337,14 @@
   </data>
   <data name="MouseWithoutBorders_Connect.Content" xml:space="preserve">
     <value>Connect</value>
+  </data>
+  <data name="MouseWithoutBorders_SettingsSyncErrorInfoBar.Title" xml:space="preserve">
+    <value>Couldn't complete the Mouse Without Borders request</value>
+    <comment>"Mouse Without Borders" is a product name</comment>
+  </data>
+  <data name="MouseWithoutBorders_SettingsSyncErrorInfoBar.Message" xml:space="preserve">
+    <value>Make sure Mouse Without Borders is enabled and running, then try again.</value>
+    <comment>"Mouse Without Borders" is a product name</comment>
   </data>
   <data name="MouseWithoutBorders_UninstallService.Header" xml:space="preserve">
     <value>Uninstall service</value>
@@ -359,6 +373,10 @@
   </data>
   <data name="MouseWithoutBorders_ServiceSettings.Header" xml:space="preserve">
     <value>Service</value>
+  </data>
+  <data name="MouseWithoutBorders_ServiceModeChangeFailed.Message" xml:space="preserve">
+    <value>Mouse Without Borders could not switch service mode. Restart PowerToys and try again.</value>
+    <comment>"Mouse Without Borders" and "PowerToys" are product names.</comment>
   </data>
   <data name="MouseWithoutBorders_Toggle_Enable.Header" xml:space="preserve">
     <value>Mouse Without Borders</value>
@@ -5410,7 +5428,7 @@ The break timer font matches the text font.</value>
     <value>Capture system audio</value>
   </data>
   <data name="ZoomIt_Record_CaptureAudio.Content" xml:space="preserve">
-    <value>Capture audio input</value>
+    <value>Include microphone in recording</value>
   </data>
   <data name="ZoomIt_Record_NoiseCancellation.Content" xml:space="preserve">
     <value>Noise cancellation</value>
@@ -5419,7 +5437,7 @@ The break timer font matches the text font.</value>
     <value>Mono</value>
   </data>
   <data name="ZoomIt_Record_Microphone.Header" xml:space="preserve">
-    <value>Microphone</value>
+    <value>Microphone for recording and dictation</value>
   </data>
   <data name="ZoomIt_Record_Microphones_Default_Name" xml:space="preserve">
     <value>Default</value>
@@ -5546,6 +5564,12 @@ The break timer font matches the text font.</value>
   </data>
   <data name="ZoomIt_Panorama_Shortcut.Description" xml:space="preserve">
     <value>Select an area, then slowly scroll through the content without rewinding, and press the hotkey again to copy the screenshot to your clipboard</value>
+  </data>
+  <data name="ZoomIt_SnipDictate.Header" xml:space="preserve">
+    <value>Snip with dictation</value>
+  </data>
+  <data name="ZoomIt_SnipDictate.Description" xml:space="preserve">
+    <value>Press Space while you drag out the snip to start dictating. The transcription and the image are both placed on the clipboard, so a single paste delivers the screenshot together with your annotation. Dictation uses the microphone selected under Record.</value>
   </data>
   <data name="Oobe_ZoomIt.Description" xml:space="preserve">
     <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to copy screenshots to the clipboard or to a file.</value>
@@ -6915,5 +6939,8 @@ Text uses the current drawing color.</value>
   <data name="GrabAndMove_ExcludeAppsForModifier_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: game.exe</value>
     <comment>{Locked="game.exe"}</comment>
+  </data>
+  <data name="MouseWithoutBorders_PairingUpdateFailed.Message" xml:space="preserve">
+    <value>Pairing could not be loaded or updated. Try again.</value>
   </data>
 </root>

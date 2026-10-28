@@ -238,6 +238,7 @@
 
             "PowerToys.WorkspacesSnapshotTool.exe",
             "PowerToys.WorkspacesLauncher.exe",
+            "PowerToys.WorkspacesCLI.exe",
             "PowerToys.WorkspacesWindowArranger.exe",
             "PowerToys.WorkspacesEditor.exe",
             "PowerToys.WorkspacesEditor.dll",
@@ -271,7 +272,6 @@
             "WinUI3Apps\\PowerToys.Settings.Cli.exe",
 
             "PowerToys.CmdPalModuleInterface.dll",
-            "CmdPalKeyboardService.dll",
             "PowerToys.ModuleContracts.dll",
             "Awake.ModuleServices.dll",
             "ColorPicker.ModuleServices.dll",

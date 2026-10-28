@@ -42,14 +42,27 @@ namespace Microsoft.PowerToys.Settings.UI
             OpenMainWindowCallback = implementation;
         }
 
+        /// <summary>
+        /// Gets or sets the callback that selects the OOBE page of a module, by its navigation tag.
+        /// </summary>
+        public static Action<string> NavigateToModuleCallback { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Welcome intro animation already played in this OOBE window.
+        /// </summary>
+        public static bool WelcomeIntroPlayed { get; set; }
+
         public OobeWindow()
         {
             App.ThemeService.ThemeChanged += OnThemeChanged;
             App.ThemeService.ApplyTheme();
 
+            WelcomeIntroPlayed = false;
+
             this.InitializeComponent();
 
             SetTitleBar();
+            this.SetIcon("Assets\\Settings\\icon.ico");
 
             RootGrid.DataContext = ViewModel;
 
@@ -67,6 +80,20 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 App.OpenSettingsWindow(type);
             });
+
+            NavigateToModuleCallback = NavigateToModule;
+        }
+
+        private void NavigateToModule(string tag)
+        {
+            foreach (var item in navigationView.MenuItems)
+            {
+                if (item is NavigationViewItem navigationItem && navigationItem.Tag is string itemTag && itemTag == tag)
+                {
+                    navigationView.SelectedItem = navigationItem;
+                    return;
+                }
+            }
         }
 
         private void SetTitleBar()
@@ -143,12 +170,6 @@ namespace Microsoft.PowerToys.Settings.UI
             ((App)App.Current)!.OpenScoobe();
         }
 
-        private void Window_Activated(object sender, WindowActivatedEventArgs args)
-        {
-            // Set window icon
-            this.SetIcon("Assets\\Settings\\icon.ico");
-        }
-
         private void Window_Closed(object sender, WindowEventArgs args)
         {
             if (navigationView.SelectedItem is NavigationViewItem selectedItem && selectedItem.Tag is string tag)
@@ -162,6 +183,11 @@ namespace Microsoft.PowerToys.Settings.UI
             }
 
             App.ThemeService.ThemeChanged -= OnThemeChanged;
+
+            if (NavigateToModuleCallback == NavigateToModule)
+            {
+                NavigateToModuleCallback = null;
+            }
         }
 
         private void OnThemeChanged(object sender, ElementTheme theme)

@@ -268,6 +268,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="ClipboardPayload.cpp" />
+    <ClCompile Include="PasteChaperone.cpp" />
+    <ClCompile Include="DictationBadge.cpp" />
+    <ClCompile Include="DictationSession.cpp" />
     <ClCompile Include="rnnoise\celt_lpc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -390,6 +394,54 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="WhisperRecognizer.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="third_party\whisper\ggml.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <EnablePREfast>false</EnablePREfast>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <EnableEnhancedInstructionSet Condition="'$(Platform)'=='x64'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <ClCompile Include="third_party\whisper\ggml-alloc.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <EnablePREfast>false</EnablePREfast>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <EnableEnhancedInstructionSet Condition="'$(Platform)'=='x64'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <ClCompile Include="third_party\whisper\ggml-backend.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <EnablePREfast>false</EnablePREfast>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <EnableEnhancedInstructionSet Condition="'$(Platform)'=='x64'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <ClCompile Include="third_party\whisper\ggml-quants.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <EnablePREfast>false</EnablePREfast>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <EnableEnhancedInstructionSet Condition="'$(Platform)'=='x64'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <ClCompile Include="third_party\whisper\whisper.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <EnablePREfast>false</EnablePREfast>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <EnableEnhancedInstructionSet Condition="'$(Platform)'=='x64'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
     <ClCompile Include="SelectRectangle.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Use</PrecompiledHeader>
@@ -479,6 +531,20 @@
     <ClInclude Include="AudioSampleGenerator.h" />
     <ClInclude Include="AudioSamplePacer.h" />
     <ClInclude Include="AudioQueueLimits.h" />
+    <ClInclude Include="ClipboardPayload.h" />
+    <ClInclude Include="PasteChaperone.h" />
+    <ClInclude Include="DictationBadge.h" />
+    <ClInclude Include="DictationFinalization.h" />
+    <ClInclude Include="DictationSession.h" />
+    <ClInclude Include="WhisperRecognizer.h" />
+    <ClInclude Include="third_party\whisper\ggml.h" />
+    <ClInclude Include="third_party\whisper\ggml-alloc.h" />
+    <ClInclude Include="third_party\whisper\ggml-backend.h" />
+    <ClInclude Include="third_party\whisper\ggml-backend-impl.h" />
+    <ClInclude Include="third_party\whisper\ggml-common.h" />
+    <ClInclude Include="third_party\whisper\ggml-impl.h" />
+    <ClInclude Include="third_party\whisper\ggml-quants.h" />
+    <ClInclude Include="third_party\whisper\whisper.h" />
     <ClInclude Include="LoopbackCapture.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\common\sysinternals\Eula\Eula.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\ZoomItModuleInterface\Trace.h" />
@@ -531,6 +597,11 @@
     <None Include="cursor1.cur" />
     <None Include="hand.cur" />
     <None Include="packages.config" />
+    <None Include="third_party\whisper\LICENSE" />
+    <None Include="third_party\whisper\README.zoomit.md" />
+    <None Include="third_party\whisper\model\ggml-base-q5_1.part0.bin" />
+    <None Include="third_party\whisper\model\ggml-base-q5_1.part1.bin" />
+    <None Include="third_party\whisper\model\ggml-base-q5_1.part2.bin" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="binres.rc">
