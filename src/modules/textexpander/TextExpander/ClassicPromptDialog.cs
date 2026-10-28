@@ -7,8 +7,7 @@ using System.Runtime.InteropServices;
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// The minimal Win32 input box {{prompt:Label}} used before the prompt window. Kept as the fallback
-/// for when the Windows App SDK can't start, so a snippet that asks for something still works.
+/// The minimal Win32 input box for {{prompt:Label}}, the fallback when the Windows App SDK can't start.
 /// </summary>
 internal static class ClassicPromptDialog
 {
@@ -28,8 +27,7 @@ internal static class ClassicPromptDialog
     /// <summary>Shows the dialog modally. Returns null when cancelled.</summary>
     public static string? Show(PromptRequest request)
     {
-        // It is laid out in fixed pixels, so let Windows scale it, as it did before the engine
-        // became DPI aware for the prompt window.
+        // Laid out in fixed pixels, so let Windows scale it.
         IntPtr previous = Native.SetThreadDpiAwarenessContext(Native.DPI_AWARENESS_CONTEXT_UNAWARE);
         try
         {

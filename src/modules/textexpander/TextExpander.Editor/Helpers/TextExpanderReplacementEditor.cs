@@ -20,15 +20,9 @@ using Windows.UI.Core;
 namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 {
     /// <summary>
-    /// Makes a <see cref="RichEditBox"/> a plain-text box for a snippet's replacement, with its
-    /// variables colored and each one handled as a unit.
-    ///
-    /// <para>
-    /// The box only ever holds plain text: paste drops formatting, formatting shortcuts are off,
-    /// and the colors are reapplied after every change. The text it reports uses \n line breaks,
-    /// like the plain text box it replaces, so saving writes the same bytes. Undo comes from
-    /// <see cref="TextExpanderEditHistory"/> rather than RichEdit, which would also undo colors.
-    /// </para>
+    /// Makes a <see cref="RichEditBox"/> a plain-text box for a snippet's replacement, with its variables colored
+    /// and each handled as a unit. It reports \n line breaks, and undo comes from
+    /// <see cref="TextExpanderEditHistory"/> because RichEdit's would also undo colors.
     /// </summary>
     internal sealed class TextExpanderReplacementEditor
     {
@@ -102,15 +96,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         public (int Start, int End) Selection => GetSelection();
 
         /// <summary>
-        /// Colors the text: everything in the box's own text color, then each variable in accent
-        /// colors, or underlined in high contrast. Call after the theme or high contrast changes.
-        ///
-        /// <para>
-        /// Ordinary text is colored explicitly rather than left "automatic": in a RichEditBox the
-        /// automatic color is the Win32 window text color, black even in dark mode, and typed text
-        /// takes the color of the character before it, so text typed after a variable would
-        /// otherwise come out in the variable's accent color.
-        /// </para>
+        /// Colors the text: everything in the box's own text color, then each variable in accent colors, or
+        /// underlined in high contrast. Ordinary text is colored explicitly because RichEdit's automatic color is
+        /// black even in dark mode, and typed text inherits the color of the character before it.
         /// </summary>
         public void Recolor()
         {
@@ -189,9 +177,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             InsertVariableAt(variable, selectionStart, selectionEnd, selectEditablePart);
         }
 
-        /// <summary>
-        /// Inserts a variable at a selection captured before another control took focus.
-        /// </summary>
+        /// <summary>Inserts a variable at a selection captured before another control took focus.</summary>
         public void InsertVariableAt(string variable, int selectionStart, int selectionEnd, bool selectEditablePart = true)
         {
             OnContentChanged();

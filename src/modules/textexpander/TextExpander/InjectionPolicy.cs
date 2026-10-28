@@ -17,11 +17,7 @@ internal enum InjectionBackend
     Typing,
 }
 
-/// <summary>
-/// Decides how a given replacement should be injected. Deliberately free of Win32 so the rule
-/// itself can be tested, which is the only part of injection a test can reach: everything below
-/// this is SendInput into whatever window happens to be focused.
-/// </summary>
+/// <summary>Decides how a given replacement should be injected; free of Win32 so the rule can be tested.</summary>
 internal static class InjectionPolicy
 {
     /// <summary>
@@ -31,9 +27,7 @@ internal static class InjectionPolicy
     public const int DefaultClipboardThresholdChars = 5;
 
     /// <summary>
-    /// Escape hatch for applications that refuse a synthetic Ctrl+V — some remote-desktop and
-    /// terminal clients swallow it, and a few security-hardened apps ignore WM_PASTE outright.
-    /// Set to <c>type</c> to force the per-character path, or <c>clipboard</c> to always paste.
+    /// Escape hatch for apps that refuse a synthetic Ctrl+V: <c>type</c> forces typing, <c>clipboard</c> always pastes.
     /// </summary>
     public const string BackendVariable = "POWERTOYS_TEXT_EXPANDER_INJECTION_BACKEND";
 
@@ -41,10 +35,7 @@ internal static class InjectionPolicy
     public const string ThresholdVariable = "POWERTOYS_TEXT_EXPANDER_CLIPBOARD_THRESHOLD";
 
     /// <summary>
-    /// Set to <c>1</c> to stop treating PowerToys Keyboard Manager remaps as typing, so a remapped
-    /// key can never form part of a trigger. Off by default — see
-    /// <see cref="HostInputTags.AcceptRemappedInput"/> for why accepting them is the better
-    /// default, and why the choice is nonetheless debatable enough to expose.
+    /// Set to <c>1</c> to stop treating Keyboard Manager remaps as typing (see <see cref="HostInputTags.AcceptRemappedInput"/>).
     /// </summary>
     public const string IgnoreRemappedVariable = "POWERTOYS_TEXT_EXPANDER_IGNORE_REMAPPED_INPUT";
 
@@ -55,16 +46,12 @@ internal static class InjectionPolicy
     public const string RequireWordBoundaryVariable = "POWERTOYS_TEXT_EXPANDER_REQUIRE_WORD_BOUNDARY";
 
     /// <summary>
-    /// Whether the terminator that released a trigger is handed back. On by default; set to
-    /// 0 for the email-address and code cases where a trailing space is wrong rather than
-    /// merely untidy. Only meaningful with the word-boundary mode on.
+    /// Whether the terminator that released a trigger is handed back (on by default). Only meaningful with
+    /// the word-boundary mode on.
     /// </summary>
     public const string WordBoundaryKeepSpaceVariable = "POWERTOYS_TEXT_EXPANDER_WORD_BOUNDARY_KEEP_SPACE";
 
-    /// <summary>
-    /// Reads a boolean escape hatch. Anything unrecognised means "leave the default alone": an
-    /// override nobody can spell correctly should not quietly change how input is read.
-    /// </summary>
+    /// <summary>Reads a boolean escape hatch; anything unrecognized leaves the default alone.</summary>
     public static bool ParseFlag(string? value, bool fallback)
         => value?.Trim().ToLowerInvariant() switch
         {
@@ -74,9 +61,8 @@ internal static class InjectionPolicy
         };
 
     /// <summary>
-    /// True when <paramref name="text"/> should go via the clipboard. Multi-line text always
-    /// does: typing it means synthesising Return presses, which auto-indent and auto-complete
-    /// turn into something other than what the snippet said.
+    /// True when <paramref name="text"/> should go via the clipboard. Multi-line text always does: synthesized
+    /// Return presses trigger auto-indent and auto-complete.
     /// </summary>
     public static bool ShouldUseClipboard(string text, int thresholdChars, InjectionBackend backend)
     {
@@ -95,10 +81,7 @@ internal static class InjectionPolicy
         return text.Contains('\n') || text.Length >= Math.Max(1, thresholdChars);
     }
 
-    /// <summary>
-    /// Reads a backend name, falling back rather than refusing to start on a typo: an unusable
-    /// override should degrade to the default behaviour, not leave the user with no expansion.
-    /// </summary>
+    /// <summary>Reads a backend name, falling back to <paramref name="fallback"/> on a typo rather than refusing to start.</summary>
     public static InjectionBackend ParseBackend(string? value, InjectionBackend fallback)
     {
         if (string.IsNullOrWhiteSpace(value))

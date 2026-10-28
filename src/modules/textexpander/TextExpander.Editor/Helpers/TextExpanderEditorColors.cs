@@ -17,14 +17,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         internal const double VariableBackgroundTint = 0.14;
 
         /// <summary>
-        /// Gets the color for text that isn't a variable: the text color XAML gave the box for its
-        /// current theme and state, which it keeps as the document's default format.
-        ///
-        /// <para>
-        /// Never RichEdit's "automatic" color. In the box that means the Win32 window text color,
-        /// which is black even in dark mode. Typed text takes the color of the character before it,
-        /// so once a variable is colored, the text after it needs an explicit color too.
-        /// </para>
+        /// Gets the color for text that isn't a variable: the text color XAML gave the box for its current theme
+        /// and state, never RichEdit's "automatic" color, which is black even in dark mode.
         /// </summary>
         /// <param name="documentDefault">The document's default text color.</param>
         /// <param name="automatic">RichEdit's automatic color, <c>TextConstants.AutoColor</c>.</param>

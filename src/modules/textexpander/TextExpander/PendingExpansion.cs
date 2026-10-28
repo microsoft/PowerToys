@@ -5,18 +5,12 @@
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// A trigger match handed from the keyboard hook to the expansion worker.
-///
-/// The replacement is captured at match time rather than looked up later, because the snippet file
-/// hot-reloads and the trigger may no longer exist by the time the worker runs — which would
-/// silently eat the keystroke the hook already swallowed. The target window is captured for the
-/// same reason: injection is deliberately slow, and focus can move before it starts.
+/// A trigger match handed from the keyboard hook to the expansion worker. The replacement and target
+/// window are captured at match time: the snippet file can reload and focus can move before the worker runs.
 /// </summary>
 /// <param name="Trigger">The matched trigger.</param>
 /// <param name="TypedPrefix">
-/// The part of the trigger that actually reached the target application. The hook swallows the
-/// final keystroke, so this is the trigger minus its last character, and it is what must be
-/// erased before the replacement is typed.
+/// The part of the trigger that reached the target (the hook swallows the final keystroke); erased first.
 /// </param>
 /// <param name="Replacement">The raw replacement text from the snapshot that matched.</param>
 /// <param name="TargetWindow">The foreground window at the moment the trigger matched.</param>

@@ -7,10 +7,8 @@ using Microsoft.Windows.ApplicationModel.Resources;
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// The engine's words, from its resources (<c>Strings\en-us\Resources.resw</c>, built into
-/// PowerToys.TextExpander.pri), so they can be translated. Each comes with its English, which is
-/// used when the resources can't be read, so a missing file never stops the prompt or an error
-/// message from showing. Never used on the keyboard hook's thread.
+/// The engine's localizable words, from <c>Strings\en-us\Resources.resw</c>. Each call carries its English,
+/// used when the resources can't be read. Never used on the keyboard hook's thread.
 /// </summary>
 internal static class EngineText
 {

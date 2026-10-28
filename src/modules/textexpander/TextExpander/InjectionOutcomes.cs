@@ -14,10 +14,8 @@ internal enum ClipboardOpen
     Owned,
 
     /// <summary>
-    /// Opened without an owner. Readable, but it must never be written: EmptyClipboard assigns
-    /// ownership to the window that has the clipboard open, so on an unowned handle it leaves
-    /// the clipboard ownerless and every SetClipboardData that follows fails. Emptying first and
-    /// discovering that second is how a user's clipboard gets destroyed instead of borrowed.
+    /// Opened without an owner: readable, but never written, because EmptyClipboard on an unowned handle
+    /// leaves the clipboard ownerless and every following SetClipboardData fails.
     /// </summary>
     Unowned,
 }
@@ -44,10 +42,7 @@ internal enum PasteOutcome
     /// <summary>Nothing was sent and the trigger is still on screen. Type it instead.</summary>
     RefusedBeforeErase,
 
-    /// <summary>
-    /// Focus left the window the trigger was typed into. Nothing was sent, and nothing more
-    /// may be: the expansion belongs to a window that is no longer listening.
-    /// </summary>
+    /// <summary>Focus left the window the trigger was typed into; nothing was or may be sent.</summary>
     TargetLost,
 
     /// <summary>
@@ -57,9 +52,7 @@ internal enum PasteOutcome
     FailedAfterErase,
 
     /// <summary>
-    /// No paste was attempted, because the replacement was short enough to type or the typing
-    /// backend was selected. Never returned by the paste path; recorded by the diagnostics so
-    /// an ordinary short expansion is not mistaken for a refusal.
+    /// No paste was attempted (short text or the typing backend). Recorded only by the diagnostics.
     /// </summary>
     NotAttempted,
 }

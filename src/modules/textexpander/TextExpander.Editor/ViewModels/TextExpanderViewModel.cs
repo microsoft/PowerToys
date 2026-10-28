@@ -134,19 +134,12 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             _storageEnvironment = storageEnvironment ?? new TextExpanderStorageEnvironment();
             _openFile = openFile ?? OpenFileWithDefaultApplication;
 
-            // Deliberately not wrapped in a catch-all. GetSettingsOrDefault already handles the
-            // cases a user can cause — a missing file, or one corrupted into invalid JSON — by
-            // returning defaults. Anything else is a programming error on our side, and the one
-            // that actually happened was exactly that: TextExpanderSettings was missing from
-            // SettingsSerializationContext, so every load threw InvalidOperationException,
-            // which GetSettingsOrDefault does not catch. A catch-all here swallowed it and the
-            // page silently showed defaults while the engine ran on the real file. Failing
-            // loudly is worth far more than a page that loads and lies.
+            // Not wrapped in a catch-all: GetSettingsOrDefault already handles a missing or corrupt file, and
+            // anything else is a bug that must fail loudly rather than show defaults.
             _settings = _settingsUtils.GetSettingsOrDefault<TextExpanderSettings>(TextExpanderSettings.ModuleName);
 
-            // "Keep the space you typed" is no longer exposed; the typed delimiter is always kept.
-            // The engine still honors a false saved by earlier builds, and this is the one place
-            // that clears it.
+            // "Keep the space you typed" is no longer exposed; this is the one place that clears a false
+            // saved by earlier builds, which the engine still honors.
             if (!_settings.Properties.WordBoundaryKeepsSpace)
             {
                 Save(properties => properties.WordBoundaryKeepsSpace = true);
@@ -609,13 +602,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         }
 
         /// <summary>
-        /// Gets the variables the engine can expand, for the Insert variable menu.
-        ///
-        /// <para>
-        /// Deliberately only the ones <c>Variables.Expand</c> actually implements, so the UI does not advertise variables the engine would ignore.
-        /// The sample is what the value looks like now, so the menu answers "what will I get?"
-        /// rather than only naming a token.
-        /// </para>
+        /// Gets the variables the engine can expand, for the Insert variable menu: only those
+        /// <c>Variables.Expand</c> implements, each with a sample of what it gives now.
         /// </summary>
         public IReadOnlyList<TextExpanderVariable> Variables => _variables ??=
         [
@@ -630,9 +618,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         ];
 
         /// <summary>
-        /// Gets <paramref name="variable"/>'s Insert variable menu text, with what it gives at
-        /// <paramref name="now"/>. The page asks again each time the menu opens, so the time
-        /// and date it shows are never left over from when the page opened.
+        /// Gets <paramref name="variable"/>'s Insert variable menu text, with what it gives at <paramref name="now"/>.
+        /// The page asks each time the menu opens, so the sample is never stale.
         /// </summary>
         public string VariableMenuText(TextExpanderVariable variable, DateTime now)
         {
@@ -643,14 +630,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         }
 
         /// <summary>
-        /// Resolves the snippet file the engine is using, with the selection rule both share
-        /// (<see cref="SnippetPathResolution.FromConfiguredPath"/>).
-        ///
-        /// <para>
-        /// An unset or unusable value means the engine's host default, which is this module's own
-        /// settings folder. That is why the engine derives its default from the settings path the
-        /// shim passes it: both sides compute the same answer without a second setting to disagree on.
-        /// </para>
+        /// Resolves the snippet file the engine is using, with the rule both share
+        /// (<see cref="SnippetPathResolution.FromConfiguredPath"/>); an unset or unusable value means this
+        /// module's settings folder, the engine's host default.
         /// </summary>
         private string ResolveSnippetsFile()
             => ResolveSnippetsFileInfo().FilePath;
@@ -721,11 +703,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                     TextExpanderStarter.TryCreateFile(path);
                 }
 
-                // Read the raw bytes so the file's own conventions survive a save. Reading only
-                // decoded lines would silently re-encode it: an existing BOM would be dropped and
-                // LF endings rewritten to CRLF, which is whole-file churn for anyone keeping their
-                // snippets in git. The encoding is the one the engine reads it with, so a UTF-16
-                // file is shown, and saved, as UTF-16.
+                // Read the raw bytes so a save keeps the file's BOM, line endings and encoding (the one the
+                // engine reads it with).
                 _loadedPath = path;
                 _loadedBytes = ReadAllBytesShared(path);
                 string text = TextExpanderSnippetEncoding.Decode(_loadedBytes, out _encoding);
@@ -930,8 +909,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 return DescribeProblem(problem);
             }
 
-            // A block body cannot contain its own terminator, and there is no escape for it, so
-            // this really is unrepresentable rather than merely awkward.
             if (!SnippetFile.IsValidReplacement(replacement, out SnippetProblem replacementProblem))
             {
                 return DescribeProblem(replacementProblem);
@@ -1009,15 +986,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         }
 
         /// <summary>
-        /// Suggests a trigger for a copy of the snippet with <paramref name="id"/>, which the editor
-        /// opens with. Null while elevated or when the snippet is gone.
-        ///
-        /// <para>
-        /// Not the trigger plus "2": typing <c>!mysig2</c> completes <c>!mysig</c> first, and the
-        /// engine expands as soon as the typed text ends with a trigger, so unless Wait for the whole
-        /// word is on, that copy could never fire. The number goes after any leading symbols
-        /// instead, as in <c>!2mysig</c>, and is checked by the engine's rules in the current mode.
-        /// </para>
+        /// Suggests a trigger for a copy of the snippet with <paramref name="id"/>, which the editor opens with;
+        /// null while elevated or when the snippet is gone. See <see cref="SuggestCopyTrigger"/>.
         /// </summary>
         public string SuggestDuplicateTrigger(int id)
         {
@@ -1031,12 +1001,10 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         }
 
         /// <summary>
-        /// Gets a numbered copy of <paramref name="trigger"/> that isn't taken and that, by the
-        /// engine's rules in the current mode, can fire and doesn't keep a longer trigger from
-        /// firing. The number goes after any leading symbols, and a trigger that is already a copy
-        /// counts on: <c>!mysig</c> gives <c>!2mysig</c>, and <c>!2mysig</c> gives <c>!3mysig</c>.
-        /// Empty when no number up to 999 works, such as when another trigger fires inside the part
-        /// every copy shares.
+        /// Gets a numbered copy of <paramref name="trigger"/> that isn't taken and, by the engine's rules in the
+        /// current mode, can fire without blocking a longer trigger. The number goes after any leading symbols
+        /// (<c>!mysig</c> gives <c>!2mysig</c>, not <c>!mysig2</c>, which typing <c>!mysig</c> would fire first).
+        /// Empty when no number up to 999 works.
         /// </summary>
         internal static string SuggestCopyTrigger(string trigger, IEnumerable<string> triggers, bool wordMode, bool caseSensitive = true)
         {
@@ -1204,11 +1172,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
 
                 byte[] payload = TextExpanderSnippetEncoding.Encode(text, _encoding);
 
-                // Write a temp file and swap it in, so a reader can never observe the truncated
-                // window that File.WriteAllText leaves between truncate and write. The engine
-                // watches this file and reads it with permissive sharing, and a partial read
-                // parses perfectly well - it just yields fewer snippets, with nothing to signal
-                // that anything went wrong.
+                // Write a temp file and swap it in, so the engine's watcher never reads a truncated file
+                // (a partial read parses fine and silently yields fewer snippets).
                 string temp = path + ".tmp-" + Guid.NewGuid().ToString("N")[..8];
                 File.WriteAllBytes(temp, payload);
 
@@ -1248,9 +1213,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         }
 
         /// <summary>
-        /// Splits on CRLF, LF and lone CR, matching what StreamReader.ReadLine would produce.
-        /// A lone CR really is a line break on read, which is why the model refuses to emit one
-        /// inside a single-line entry.
+        /// Splits on CRLF, LF and lone CR, matching StreamReader.ReadLine.
         /// </summary>
         internal static string[] SplitLines(string text)
         {

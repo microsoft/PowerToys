@@ -25,13 +25,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         public string Token { get; }
 
         /// <summary>
-        /// Gets what this resolves to at <paramref name="now"/>, or empty when it cannot be known
-        /// ahead of time.
-        ///
-        /// <para>
-        /// Clipboard and prompt deliberately show nothing rather than a placeholder: inventing a
-        /// sample would preview a result the user is never going to see.
-        /// </para>
+        /// Gets what this resolves to at <paramref name="now"/>, or empty when it can't be known ahead of time
+        /// (clipboard and prompt show nothing rather than an invented sample).
         /// </summary>
         public string SampleAt(DateTime now) => _dateFormat == null
             ? string.Empty

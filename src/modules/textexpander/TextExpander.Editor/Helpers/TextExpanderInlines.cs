@@ -8,9 +8,8 @@ using System.Collections.Generic;
 namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 {
     /// <summary>
-    /// Plans how <c>TextExpanderBubbleText</c> draws a snippet's text: values as bubbles, or, for a
-    /// line that's trimmed, everything as text. WinUI draws an element that falls past a trimmed
-    /// line's ellipsis at the start of the line, over the text, so such a line holds none.
+    /// Plans how <c>TextExpanderBubbleText</c> draws a snippet's text: values as bubbles, or everything as text
+    /// for a trimmed line (see <see cref="TextExpanderTrimFallback"/>).
     /// </summary>
     internal static class TextExpanderInlines
     {

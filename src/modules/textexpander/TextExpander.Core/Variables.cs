@@ -17,10 +17,7 @@ public static partial class Variables
     /// <summary>Marks where the caret ends up after the snippet is inserted.</summary>
     public const string CursorMarker = "$|$";
 
-    /// <summary>
-    /// Expands <paramref name="text"/>, keeping the snippet's cursor marker in place. See
-    /// <see cref="ExpandWithCursor"/>.
-    /// </summary>
+    /// <summary>Expands <paramref name="text"/> like <see cref="ExpandWithCursor"/>, keeping the cursor marker in place.</summary>
     public static string Expand(string text, Func<string, string?> prompt, Func<string?>? clipboard = null)
     {
         ArgumentNullException.ThrowIfNull(prompt);
@@ -29,16 +26,13 @@ public static partial class Variables
     }
 
     /// <summary>
-    /// Expands <paramref name="text"/>. <paramref name="prompt"/> is invoked for each
-    /// {{prompt:Label}} occurrence, in order, and may return null when the user cancels, which
-    /// leaves that spot blank. Answers are inserted exactly as typed.
-    /// <paramref name="clipboard"/> supplies {{clipboard}}; when it is null or returns null the
-    /// placeholder expands to nothing rather than being typed out literally.
+    /// Expands <paramref name="text"/>. <paramref name="prompt"/> is invoked for each {{prompt:Label}}, in order,
+    /// and may return null (cancelled) to leave that spot blank. A null <paramref name="clipboard"/> or result
+    /// expands {{clipboard}} to nothing.
     /// </summary>
     /// <returns>
-    /// The text without the snippet's first cursor marker, and where that marker was, or -1.
-    /// Only the snippet's own text can place the cursor: a "$|$" in an answer, the clipboard or a
-    /// formatted date stays as typed.
+    /// The text without the snippet's first cursor marker, and where that marker was, or -1. A "$|$" in an
+    /// answer, the clipboard or a formatted date stays literal.
     /// </returns>
     public static (string Text, int Cursor) ExpandWithCursor(string text, Func<string, string?> prompt, Func<string?>? clipboard = null)
     {
@@ -112,9 +106,7 @@ public static partial class Variables
     }
 
     /// <summary>
-    /// Formats a date for {{date:FORMAT}}. Accepts .NET format strings ("MM/dd/yyyy") and also
-    /// the strftime specifiers ("%m/%d/%Y"), because formats arrive both hand-written and copied
-    /// straight out of a YAML snippet library by the migration.
+    /// Formats a date for {{date:FORMAT}}, accepting .NET format strings ("MM/dd/yyyy") and strftime ("%m/%d/%Y").
     /// </summary>
     internal static string FormatDate(DateTime value, string format)
     {
@@ -123,9 +115,8 @@ public static partial class Variables
             return string.Empty;
         }
 
-        // A '%' is unambiguous: it is not a .NET custom format specifier on its own, and every
-        // strftime format has one. Anything else is handed to .NET, which is the only way to
-        // reach formats strftime cannot spell, such as a bare "dddd".
+        // A '%' means strftime (it is not a .NET custom specifier on its own); anything else goes to .NET,
+        // which also reaches formats strftime can't spell, such as "dddd".
         if (format.Contains('%', StringComparison.Ordinal))
         {
             return FormatStrftime(value, format);
@@ -133,11 +124,8 @@ public static partial class Variables
 
         try
         {
-            // A one-character format string is read by .NET as a *standard* specifier, so a bare
-            // "d" would be a whole short date rather than the day of the month, and "s" a whole
-            // sortable timestamp. {{date:d}} plainly asks for a field, so say so explicitly.
-            // This cannot collide with the strftime branch above, which has already claimed
-            // everything containing a '%'.
+            // A one-character format is a .NET *standard* specifier ("d" is a short date), so {{date:d}} is made
+            // a custom field explicitly. Strings containing '%' were already handled above.
             string resolved = format.Length == 1 ? "%" + format : format;
             return value.ToString(resolved, CultureInfo.InvariantCulture);
         }
@@ -150,11 +138,8 @@ public static partial class Variables
     }
 
     /// <summary>
-    /// Expands strftime specifiers, formatting each one as it is read.
-    ///
-    /// Deliberately not translated into a .NET format string and handed to ToString: literal
-    /// text between specifiers would then have to be escaped, and missing one turns "%Y sure"
-    /// into a year followed by the seconds and the universal-time pattern instead of the word.
+    /// Expands strftime specifiers one by one, rather than translating to a .NET format string that would
+    /// need every literal escaped.
     /// </summary>
     internal static string FormatStrftime(DateTime value, string format)
     {

@@ -7,20 +7,14 @@ using Microsoft.PowerToys.TextExpander.Storage;
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// Loads and watches the snippet file using the same grammar as the Settings editor.
+/// Loads and watches the snippet file using the same grammar as the snippet editor.
 /// </summary>
 internal sealed class SnippetStore : IDisposable
 {
-    /// <summary>
-    /// The name a new snippet file gets. Settings has the same name in
-    /// <c>TextExpanderSnippetFileNames.Current</c>, and a test checks that they match.
-    /// </summary>
+    /// <summary>The name a new snippet file gets.</summary>
     internal const string FileName = TextExpanderSnippetFileNames.Current;
 
-    /// <summary>
-    /// The name earlier versions used. It is still read, and never renamed: a folder sync service
-    /// could propagate the rename while another PC still runs an earlier version.
-    /// </summary>
+    /// <summary>The name earlier versions used; still read, never renamed.</summary>
     internal const string LegacyFileName = TextExpanderSnippetFileNames.Legacy;
 
     /// <summary>Immutable snapshot so the keyboard hook can read without locking.</summary>
@@ -28,11 +22,7 @@ internal sealed class SnippetStore : IDisposable
     {
         public required Dictionary<string, string> Map { get; init; }
 
-        /// <summary>
-        /// Gets suffix index over the triggers. Replaces the old longest-first array, which the hook
-        /// had to scan in full on every keystroke; see <see cref="TriggerIndex"/> for why that
-        /// was a correctness problem and not only a slow one.
-        /// </summary>
+        /// <summary>Gets the suffix index over the triggers.</summary>
         public required TriggerIndex Triggers { get; init; }
 
         public required int MaxTriggerLength { get; init; }
@@ -302,29 +292,16 @@ internal sealed class SnippetStore : IDisposable
     // ── Path resolution ──────────────────────────────────────
 
     /// <summary>
-    /// Resolves the snippet file for a configured folder or file, or falls back to
-    /// <see cref="ResolveDefaultPath"/> when nothing was configured or the value is unusable.
-    /// The selection rule is the one the editor uses too, <see cref="SnippetPathResolution.FromConfiguredPath"/>.
-    ///
-    /// <para>
-    /// A path that cannot be resolved falls back silently: the alternative is an
-    /// engine that refuses to expand anything because a setting has a typo in it.
-    /// </para>
+    /// Resolves the snippet file for a configured folder or file with
+    /// <see cref="SnippetPathResolution.FromConfiguredPath"/>, falling back silently to
+    /// <see cref="ResolveDefaultPath"/> when nothing usable was configured.
     /// </summary>
     public static string ResolveConfiguredPath(string? configuredFolder)
         => ResolveConfiguredPath(configuredFolder, hostDataFolder: null);
 
     /// <summary>
-    /// As above, but falls back to <paramref name="hostDataFolder"/> instead of
-    /// <see cref="ResolveDefaultPath"/> when nothing is configured.
-    ///
-    /// <para>
-    /// Under a host such as PowerToys the default must not be "beside the executable". That
-    /// directory belongs to the host's installer: on a per-machine install it is not writable,
-    /// and on a per-user one the file would be destroyed by the next upgrade. It is also not
-    /// somewhere the host's own settings UI can predict, and a snippet editor that cannot find
-    /// the file it is editing is no editor at all.
-    /// </para>
+    /// As above, but falls back to <paramref name="hostDataFolder"/> when nothing is configured: under a host,
+    /// the folder beside the executable belongs to its installer.
     /// </summary>
     public static string ResolveConfiguredPath(string? configuredFolder, string? hostDataFolder)
         => ResolveConfiguredPathInfo(configuredFolder, hostDataFolder).FilePath;
@@ -383,10 +360,8 @@ internal sealed class SnippetStore : IDisposable
     }
 
     /// <summary>
-    /// Returns the snippet file in <paramref name="folder"/>: <see cref="FileName"/> if it exists,
-    /// otherwise <see cref="LegacyFileName"/> if that exists, otherwise <see cref="FileName"/>.
-    /// The legacy file wins when both exist only if the current file is the untouched starter,
-    /// recovering a non-participating publication race. The editor uses the same rule.
+    /// Returns the snippet file in <paramref name="folder"/> by the rule shared with the editor
+    /// (<see cref="TextExpanderSnippetFileNames"/>).
     /// </summary>
     internal static string ResolveInFolder(string folder)
         => TextExpanderSnippetFileNames.ResolveInFolder(folder, File.Exists);
@@ -554,9 +529,8 @@ internal sealed class SnippetStore : IDisposable
                 return result;
             }
 
-            // A supported file can arrive after folder resolution and before the watcher becomes
-            // active. Re-resolve and read once more under the same generation before publishing
-            // either the candidate state or its watcher.
+            // A supported file can arrive after folder resolution and before the watcher is active, so
+            // re-resolve and read once more under the same generation before publishing.
             result = TryStageStateLocked(target, out StoreState? handoffCandidate);
             if (!result.Succeeded || handoffCandidate is null)
             {
@@ -740,11 +714,8 @@ internal sealed class SnippetStore : IDisposable
     // ── Matching ─────────────────────────────────────────────
 
     /// <summary>
-    /// Returns the longest trigger that is a suffix of <paramref name="tail"/>, or null.
-    ///
-    /// Runs inside the low-level keyboard hook on every keystroke, so it must not depend on how
-    /// many snippets exist: the index makes this a walk of at most <c>MaxTriggerLength</c> steps
-    /// whether the user has ten triggers or ten thousand.
+    /// Returns the longest trigger that is a suffix of <paramref name="tail"/>, or null. Runs in the keyboard
+    /// hook, so it costs at most <c>MaxTriggerLength</c> steps however many snippets exist.
     /// </summary>
     public string? Match(ReadOnlySpan<char> tail) => _published.State.Snapshot.Triggers.MatchLongestSuffix(tail);
 
@@ -789,20 +760,9 @@ internal sealed class SnippetStore : IDisposable
     }
 
     /// <summary>
-    /// Points this store at a different snippet file, reloading and re-watching.
-    ///
-    /// <para>
-    /// Deliberately mutates this instance rather than handing back a new one: the keyboard hook
-    /// captures the store at construction, so replacing the object would leave the hook reading
-    /// the old file forever. The transition stages the parsed state, candidate watcher, and
-    /// handoff re-read before one published-state swap, so consumers see either the complete old
-    /// path/snapshot/watcher or the complete new set.
-    /// </para>
-    ///
-    /// <para>
-    /// The result distinguishes success, no change, failure, and a transition superseded by a
-    /// newer request. Failure leaves the old state live while bounded retries retain this target.
-    /// </para>
+    /// Points this store at a different snippet file, reloading and re-watching. Mutates this instance because
+    /// the keyboard hook captured it; consumers see either the complete old path/snapshot/watcher or the
+    /// complete new set. Failure leaves the old state live while bounded retries retain this target.
     /// </summary>
     public TransitionResult Repoint(string newPath, bool resolveFolderNames = false)
     {
@@ -859,10 +819,8 @@ internal sealed class SnippetStore : IDisposable
 
             fileWatcher = new FileSystemWatcher(dir)
             {
-                // Watch the directory rather than the file: many editors save by writing a
-                // temporary file and renaming over the original, which destroys a file-level watch.
-                // A folder setting watches both supported names, so a later preferred file can
-                // replace a legacy one without Settings and the engine splitting onto two files.
+                // Watch the directory: editors that save by renaming a temporary file over the original
+                // destroy a file-level watch. A folder setting watches both supported names.
                 Filter = state.ResolveFolderNames ? "*" : Path.GetFileName(state.FilePath),
                 NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Size,
                 IncludeSubdirectories = false,

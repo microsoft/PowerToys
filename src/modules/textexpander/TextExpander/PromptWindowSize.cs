@@ -5,10 +5,8 @@
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// The prompt window's size math, apart from the window so it can be tested. The window's content
-/// reaches into the title bar, so its XAML gets the whole client area, title bar included. Sizing
-/// the client with Windows' own rules would add room for a system caption that isn't drawn, and that
-/// room showed up as an empty band below the buttons.
+/// The prompt window's size math, apart from the window so it can be tested. The content extends into the
+/// title bar, so sizing the client by Windows' rules would leave an empty band for a caption that isn't drawn.
 /// </summary>
 internal static class PromptWindowSize
 {

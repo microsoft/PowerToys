@@ -7,12 +7,8 @@ using System;
 namespace Microsoft.PowerToys.TextExpander
 {
     /// <summary>
-    /// Works out whether typing a trigger can ever reach it, by the engine's own rules.
-    ///
-    /// <para>
-    /// Uses the runtime's longest-suffix matcher and word-boundary rules to find a trigger that
-    /// expands before the user finishes typing another trigger.
-    /// </para>
+    /// Works out whether typing a trigger can ever reach it, using the runtime's longest-suffix matcher and
+    /// word-boundary rules.
     /// </summary>
     internal static class TextExpanderTriggerReach
     {

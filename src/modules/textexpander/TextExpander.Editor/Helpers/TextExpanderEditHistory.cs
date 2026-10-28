@@ -8,13 +8,8 @@ using System.Collections.Generic;
 namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 {
     /// <summary>
-    /// Undo and redo for the snippet editor's replacement box, kept as whole texts.
-    ///
-    /// <para>
-    /// The box colors its variables by formatting the text, and RichEdit's own undo would record
-    /// every recoloring as a step, so Ctrl+Z would mostly undo colors. This history only sees the
-    /// text. Typing and deleting are grouped about a word at a time, as in other Windows editors.
-    /// </para>
+    /// Undo and redo for the replacement box, kept as whole texts so recoloring (which RichEdit's own undo
+    /// would record) is never a step. Typing and deleting are grouped about a word at a time.
     /// </summary>
     internal sealed class TextExpanderEditHistory
     {

@@ -10,12 +10,9 @@ using System.ComponentModel;
 namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
 {
     /// <summary>
-    /// A list of rows that is brought in line with a new list in one step. One row added, changed
-    /// or removed, as after a save, is one notification, so the rows around it stay as they are.
-    /// Anything bigger, such as a search or a reload, is a single reset rather than a notification
-    /// for every row.
+    /// A list of rows brought in line with a new list in one step: one changed row is one notification, and
+    /// anything bigger (a search or reload) is a single reset. Rows are matched by reference.
     /// </summary>
-    /// <remarks>Rows are matched by reference.</remarks>
     public sealed class TextExpanderRowCollection : ObservableCollection<TextExpanderSnippetViewModel>
     {
         /// <summary>Makes this list hold <paramref name="target"/>, in its order.</summary>

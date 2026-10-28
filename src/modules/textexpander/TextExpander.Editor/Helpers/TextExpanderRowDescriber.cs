@@ -13,15 +13,8 @@ using Microsoft.PowerToys.TextExpander;
 namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 {
     /// <summary>
-    /// Describes a snippet for its row in the list: a plain sentence for a dynamic snippet, with
-    /// its variables in the editor's bubbles, the saved text, and why it never expands.
-    ///
-    /// <para>
-    /// Sentences come from whole localized templates rather than pieced-together fragments, and
-    /// only for shapes that are recognized with certainty. A template's placeholders become slots
-    /// for text or bubbles, so a translation can order them as its language needs. Anything else
-    /// shows the saved text, because a wrong sentence is worse than none.
-    /// </para>
+    /// Describes a snippet for its row in the list: a plain sentence for a dynamic snippet (from whole
+    /// localized templates, only for shapes recognized with certainty), the saved text, and why it never expands.
     /// </summary>
     internal static partial class TextExpanderRowDescriber
     {

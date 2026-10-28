@@ -17,18 +17,12 @@ namespace Microsoft.PowerToys.TextExpander;
 internal readonly record struct SnippetPathResolution(string FilePath, bool ResolveFolderNames)
 {
     /// <summary>
-    /// Selects the snippet file for the configured snippets path, by the rule the engine and editor
-    /// share: trim spaces and quotes, expand environment variables, and accept only a fully qualified
-    /// path. An existing file is used as it is, whatever its name; anything else is a folder, resolved
-    /// by <see cref="InFolder"/>. Returns null when the value is blank or not fully qualified, so the
-    /// caller falls back to its default folder.
+    /// Selects the snippet file for the configured snippets path, by the rule the engine and editor share:
+    /// trim spaces and quotes, expand environment variables, and accept only a fully qualified path. An
+    /// existing file is used whatever its name; anything else is a folder resolved by <see cref="InFolder"/>.
+    /// Returns null for a blank or not fully qualified value (the processes share no working directory), so the
+    /// caller uses its default folder. Exceptions propagate; each caller keeps its own side effects.
     /// </summary>
-    /// <remarks>
-    /// A relative path is not rebased: the engine and editor run in different processes, so "snips",
-    /// <c>C:snips</c> or <c>\snips</c> would name different folders in each. Exceptions from the
-    /// path APIs and adapters propagate; each caller treats its own list as an unusable value and
-    /// keeps its own side effects, such as the engine creating the folder.
-    /// </remarks>
     public static SnippetPathResolution? FromConfiguredPath(string? configured, Func<string, string> expandEnvironmentVariables, Func<string, bool> fileExists)
     {
         if (string.IsNullOrWhiteSpace(configured))

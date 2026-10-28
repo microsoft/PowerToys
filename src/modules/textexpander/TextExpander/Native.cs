@@ -20,9 +20,8 @@ internal static class Native
     public const int WM_KEYDOWN = 0x0100;
     public const int WM_SYSKEYDOWN = 0x0104;
 
-    // Low-level mouse button-down messages. A click repositions the caret without changing the
-    // foreground window, so the typed-character buffer must be cleared on any of these. Only
-    // button-down messages are listed: wheel and WM_MOUSEMOVE do not move the caret.
+    // Low-level mouse button-downs: a click moves the caret without a foreground change, so the typed-character
+    // buffer must be cleared. Wheel and WM_MOUSEMOVE don't move the caret.
     public const int WM_LBUTTONDOWN = 0x0201;
     public const int WM_RBUTTONDOWN = 0x0204;
     public const int WM_MBUTTONDOWN = 0x0207;
@@ -130,11 +129,7 @@ internal static class Native
     [DllImport("user32.dll")]
     public static extern short GetKeyState(int nVirtKey);
 
-    /// <summary>
-    /// Pointer-based on purpose. This is called for every keystroke the machine sees, inside the
-    /// low-level hook callback; an array-marshalling signature forces a 256-byte and an 8-char
-    /// managed allocation per key, which the caller now supplies from the stack instead.
-    /// </summary>
+    /// <summary>Pointer-based so the per-keystroke hook call can pass stack buffers instead of allocating.</summary>
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     public static extern unsafe int ToUnicodeEx(uint wVirtKey, uint wScanCode, byte* lpKeyState, char* pwszBuff, int cchBuff, uint wFlags, IntPtr dwhkl);
 
@@ -425,9 +420,6 @@ internal static class Native
     public static extern int MessageBoxW(IntPtr hWnd, string lpText, string lpCaption, uint uType);
 
     // ── Clipboard ────────────────────────────────────────────
-    //
-    // The CF_* format numbers and the rule for which of them a snapshot can reproduce live in
-    // ClipboardFormats, which is kept free of P/Invoke so the rule can be tested.
     public const uint GMEM_MOVEABLE = 0x0002;
 
     public const int ERROR_SUCCESS = 0;
@@ -482,27 +474,18 @@ internal static class Native
     public static extern uint RegisterClipboardFormatW(string lpszFormat);
 
     /// <summary>
-    /// Increments on every clipboard change by any process. Comparing it across a borrow is the
-    /// only way to tell "the clipboard still holds what we put there" from "someone copied
-    /// something while we were waiting" — which is the difference between restoring the user's
-    /// data and destroying it. Readable without opening the clipboard.
+    /// Increments on every clipboard change by any process; comparing it across a borrow tells our data from
+    /// someone else's. Readable without opening the clipboard.
     /// </summary>
     [DllImport("user32.dll")]
     public static extern uint GetClipboardSequenceNumber();
 
-    /// <summary>
-    /// The window that currently has the clipboard open, or zero when nobody does. Watching this
-    /// is how the paste path notices the target has actually read the clipboard, instead of
-    /// sleeping a fixed interval long enough to cover the slowest case.
-    /// </summary>
+    /// <summary>The window that currently has the clipboard open, or zero when nobody does.</summary>
     [DllImport("user32.dll")]
     public static extern IntPtr GetOpenClipboardWindow();
 
     // ── Process integrity (UIPI) ─────────────────────────────
-    //
-    // SendInput cannot report that UIPI discarded its events: "neither GetLastError nor the
-    // return value will indicate the failure was caused by UIPI blocking". The only way to know
-    // is to ask, before sending, whether the target is reachable at all.
+    // SendInput can't report UIPI blocking, so whether the target is reachable is asked before sending.
     public const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
 
     /// <summary>Least access that permits waiting on a process handle (see <see cref="HostLink"/>).</summary>

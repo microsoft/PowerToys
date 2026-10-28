@@ -5,20 +5,14 @@
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// Puts a replacement into the focused window, either by pasting it or by typing it.
-///
-/// Typed text is sent as KEYEVENTF_UNICODE so it is layout-independent — no need to map
-/// characters back to virtual keys.
+/// Puts a replacement into the focused window by pasting it or by typing it as layout-independent
+/// KEYEVENTF_UNICODE input.
 /// </summary>
 internal static class Injector
 {
     /// <summary>
-    /// Gets or sets which injection path to use. See <see cref="InjectionPolicy"/>.
-    ///
-    /// <para>
-    /// Volatile-backed: written from the settings-watcher thread when a host reloads its settings,
-    /// read from the expansion worker.
-    /// </para>
+    /// Gets or sets which injection path to use (<see cref="InjectionPolicy"/>). Volatile: written by the
+    /// settings watcher, read by the expansion worker.
     /// </summary>
     public static InjectionBackend Backend
     {
@@ -29,10 +23,7 @@ internal static class Injector
     private static volatile int _backend = (int)InjectionBackend.Auto;
 
     /// <summary>
-    /// Gets or sets length at which a replacement is pasted instead of typed. See
-    /// <see cref="InjectionPolicy.DefaultClipboardThresholdChars"/> for why it is this low.
-    ///
-    /// <para>Volatile-backed, for the same reason as <see cref="Backend"/>.</para>
+    /// Gets or sets the length at which a replacement is pasted instead of typed. Volatile, like <see cref="Backend"/>.
     /// </summary>
     public static int ClipboardThresholdChars
     {
@@ -44,14 +35,8 @@ internal static class Injector
         InjectionPolicy.DefaultClipboardThresholdChars;
 
     /// <summary>
-    /// Gets or sets upper bound on how long to let the target consume the paste before the clipboard is
-    /// restored. Reached only when the target's read is never observed.
-    ///
-    /// Measured too short at a flat 120ms: under load the restore landed before the target had
-    /// read the clipboard, so the *previous* clipboard contents were pasted instead of the
-    /// snippet. Rather than pay the safe 350ms every single time, the wait now watches for the
-    /// target actually opening the clipboard (see <see cref="WaitForPasteToSettle"/>) and this
-    /// value is the ceiling for when that never happens.
+    /// Gets or sets the upper bound on how long to let the target consume the paste before the clipboard is
+    /// restored. Reached only when the target's read is never observed (see <see cref="WaitForPasteToSettle"/>).
     /// </summary>
     public static int PasteSettleMs { get; set; } = 350;
 
@@ -59,9 +44,8 @@ internal static class Injector
     public static int PasteSettlePollMs { get; set; } = 5;
 
     /// <summary>
-    /// Gets or sets shortest the settle may be cut to, however quickly the target's read is observed. Keeps a
-    /// margin over the 120 ms that was measured too short as an unconditional sleep, so an early
-    /// exit is never faster than a figure already known to be marginal.
+    /// Gets or sets the shortest the settle may be cut to, however quickly the target's read is observed;
+    /// a flat 120 ms proved too short.
     /// </summary>
     public static int PasteSettleFloorMs { get; set; } = 60;
 
@@ -78,26 +62,20 @@ internal static class Injector
     public static int ModifierSettleMs { get; set; } = 30;
 
     /// <summary>
-    /// Gets or sets delay between injected characters on the typing path, which now only handles replacements
-    /// shorter than <see cref="ClipboardThresholdChars"/> plus anything the paste path refused.
-    /// Generous on purpose: at four characters or fewer the total cost is still under a tenth of
-    /// a second, and Windows 11 Notepad drops and smears characters when synthetic input arrives
-    /// faster (".com" arriving as ".mmm"). Set POWERTOYS_TEXT_EXPANDER_INJECTION_BACKEND=clipboard to stop typing altogether.
+    /// Gets or sets the delay between injected characters on the typing path. Generous on purpose:
+    /// Windows 11 Notepad drops and smears characters when synthetic input arrives faster.
     /// </summary>
     public static int KeyDelayMs { get; set; } = 25;
 
     /// <summary>
-    /// Gets or sets additional pause after sentence-ending characters. Corruption is not uniformly
-    /// distributed: it clusters immediately after '.', '!', '?' and newlines, where the editor
-    /// does extra work (autocorrect, capitalisation, spell check). Paying a larger delay only at
-    /// those few positions is far cheaper than raising the delay for every character.
+    /// Gets or sets the additional pause after sentence-ending characters, where editors do extra work
+    /// (autocorrect, capitalization) and dropped characters cluster.
     /// </summary>
     public static int SentenceBoundaryDelayMs { get; set; } = 25;
 
     /// <summary>
-    /// Gets or sets grace period before backspacing. The hook sees a keystroke before the target application
-    /// has finished processing the preceding ones, so erasing immediately can race ahead of the
-    /// text actually appearing on screen.
+    /// Gets or sets the grace period before backspacing, so the erase doesn't race ahead of the target
+    /// still processing the trigger's last keystrokes.
     /// </summary>
     public static int PreBackspaceDelayMs { get; set; } = 15;
 
@@ -117,23 +95,17 @@ internal static class Injector
     public static int RestoreRetryDelayMs { get; set; } = 40;
 
     /// <summary>
-    /// Gets or sets invoked when the user's clipboard could not be handed back. Losing someone's clipboard
-    /// silently is not acceptable — by that point it has already been emptied, so the user is
-    /// worse off than if the expansion had never run and deserves to be told why.
+    /// Gets or sets the callback invoked when the user's clipboard could not be handed back, so the loss is never silent.
     /// </summary>
     public static Action<string>? ClipboardRestoreFailed { get; set; }
 
     /// <summary>
-    /// Erases the text the user actually typed, then inserts <paramref name="text"/>.
-    ///
-    /// The backspace count is derived from text elements, not UTF-16 code units. A trigger
-    /// containing an emoji or a combining sequence occupies several chars in a C# string but is
-    /// deleted as a single unit by editors, so using string.Length would over-delete and eat the
-    /// character before the trigger.
+    /// Erases the text the user actually typed, then inserts <paramref name="text"/>. Backspaces are
+    /// counted in text elements, not UTF-16 units, so an emoji or combining sequence isn't over-deleted.
     /// </summary>
     /// <param name="targetWindow">
-    /// The window the trigger was typed into, re-checked before anything is inserted. Pass
-    /// <see cref="IntPtr.Zero"/> when it is not known.
+    /// The window the trigger was typed into, re-checked before anything is inserted, or
+    /// <see cref="IntPtr.Zero"/> when unknown.
     /// </param>
     public static bool ReplaceTyped(string typedPrefix, string text, IntPtr targetWindow = default, int cursorLeftUnits = 0)
         => Replace(CountDeletableUnits(typedPrefix), text, targetWindow, cursorLeftUnits);
@@ -187,9 +159,7 @@ internal static class Injector
             return false;
         }
 
-        // A paste is one event, so there is no per-character race to lose. Typing stays as the
-        // fallback for everything the paste path cannot do: a clipboard we could not borrow, a
-        // clipboard we could not safely put back, or a target we are not allowed to drive.
+        // Typing stays the fallback whenever the paste path refuses.
         if (text.Length > 0 && InjectionPolicy.ShouldUseClipboard(text, ClipboardThresholdChars, Backend))
         {
             PasteOutcome outcome = tryPaste(backspaceCount, text, targetWindow, cursorLeftUnits);
@@ -200,15 +170,12 @@ internal static class Injector
                 case PasteOutcome.Pasted:
                     return true;
 
-                // Focus moved while the clipboard was being borrowed. Typing instead would
-                // erase and insert into whatever window the user switched to, destroying text
-                // they did type — so the expansion is abandoned rather than misdelivered.
+                // Focus moved while the clipboard was borrowed; typing now would reach the wrong window, so abandon.
                 case PasteOutcome.TargetLost:
                     return false;
 
-                // The trigger has already gone and SendInput did not complete. Retrying with
-                // typing could compound a partial paste or a stuck key, and reporting success
-                // would retain an undo entry for text that may not be there.
+                // The trigger is gone and SendInput did not complete: typing could compound a partial paste,
+                // and reporting success would keep an undo entry for text that may not be there.
                 case PasteOutcome.FailedAfterErase:
                     return false;
             }
@@ -218,8 +185,7 @@ internal static class Injector
             InjectionDiagnostics.RecordOutcome(PasteOutcome.NotAttempted);
         }
 
-        // Clipboard failures normally fall back to typing. Re-check authorization before that
-        // fallback so a paste refusal can never turn into an unguarded injection route.
+        // Re-authorize before falling back so a paste refusal never becomes an unguarded injection route.
         if (!IsAuthorizedTarget(targetWindow, canDrive, getForegroundWindow))
         {
             return false;
@@ -227,8 +193,7 @@ internal static class Injector
 
         if (!erase(backspaceCount, targetWindow))
         {
-            // Focus moved during the pre-backspace grace period. Typing the replacement now
-            // would put it in the wrong window, so the expansion is abandoned instead.
+            // Focus moved during the pre-backspace grace period; abandon rather than type into the wrong window.
             InjectionDiagnostics.RecordTypingAbandoned();
             return false;
         }
@@ -273,9 +238,8 @@ internal static class Injector
     }
 
     /// <summary>
-    /// Erases the trigger. Returns false when focus moved while waiting to do so and nothing was
-    /// sent, which the caller must treat as a reason to abandon the whole expansion: the erase
-    /// and the insertion have to land in the same window or they destroy text between them.
+    /// Erases the trigger. Returns false, having sent nothing, when focus moved while waiting; the caller
+    /// must then abandon the expansion because erase and insertion have to land in the same window.
     /// </summary>
     private static bool Erase(int backspaceCount, IntPtr targetWindow)
     {
@@ -289,9 +253,7 @@ internal static class Injector
             Thread.Sleep(PreBackspaceDelayMs);
         }
 
-        // Re-checked after the delay, not before it. Backspaces are the destructive half of an
-        // expansion, and sending them into whatever window is focused *now* deletes text the user
-        // typed there rather than the trigger they typed here.
+        // Re-checked after the delay: backspaces sent to a newly focused window would delete the user's text.
         if (!IsAuthorizedTarget(targetWindow, InputTarget.CanDrive))
         {
             return false;
@@ -322,12 +284,8 @@ internal static class Injector
     }
 
     /// <summary>
-    /// Pastes via the clipboard, restoring whatever the user had there.
-    ///
-    /// Ordered so that nothing destructive happens until the paste is known to be possible: the
-    /// target is checked, the clipboard is borrowed and the takeover verified, and only then is
-    /// the trigger erased. A refusal at any point up to that leaves the user's screen and
-    /// clipboard exactly as they were.
+    /// Pastes via the clipboard, restoring whatever the user had there. Nothing destructive happens until
+    /// the target is checked and the clipboard takeover verified; only then is the trigger erased.
     /// </summary>
     private static PasteOutcome TryPaste(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits)
     {
@@ -337,8 +295,7 @@ internal static class Injector
             return refusal.Value;
         }
 
-        // Taken before anything is overwritten. A null snapshot means the clipboard could not be
-        // read, holds more than we are willing to copy, or holds something we could not put back.
+        // Null when the clipboard can't be read, is too large to copy, or holds something we couldn't put back.
         using ClipboardSnapshot? saved = Clipboard.Snapshot();
         if (saved is null)
         {
@@ -351,14 +308,11 @@ internal static class Injector
             return PasteOutcome.RefusedBeforeErase; // clipboard untouched; nothing to put back
         }
 
-        // Taken straight after our own write, so anything that moves it from here on was somebody
-        // else. Restoring over a newer owner's data destroys whatever the user copied during the
-        // settle — which is a window of hundreds of milliseconds in which they are still working.
+        // Taken right after our own write: any later change is someone else's, and restoring over it
+        // would destroy what the user copied during the settle.
         var loan = new ClipboardLoan(Clipboard.SequenceNumber);
 
-        // Verified rather than assumed: SetClipboardData can report success and still leave the
-        // clipboard holding something else, and a Ctrl+V sent on that assumption pastes whatever
-        // is actually there — the user's previous clipboard — into their document.
+        // Verified, not assumed: SetClipboardData can succeed and still leave other data on the clipboard.
         if (write == ClipboardWrite.Failed || !Clipboard.HoldsText(text))
         {
             RestoreClipboard(saved, loan);
@@ -367,19 +321,14 @@ internal static class Injector
 
         try
         {
-            // Borrowing the clipboard is slow — retried opens, and formats whose owners render
-            // them synchronously — so focus is re-checked here rather than trusted from before
-            // it. Erasing into whatever window is focused *now* would destroy text the user
-            // never typed, and a single Ctrl+V lands wherever focus is.
+            // Borrowing the clipboard can be slow, so focus is re-checked before anything is erased.
             refusal = CheckTarget(targetWindow);
             if (refusal is not null)
             {
                 return refusal.Value;
             }
 
-            // A skipped erase means focus moved in the grace period. Sending Ctrl+V anyway would
-            // paste the expansion into whatever the user switched to, so the paste is abandoned
-            // with the trigger left intact. The clipboard is still handed back by the finally.
+            // Focus moved in the grace period: abandon with the trigger intact (the finally restores the clipboard).
             if (!Erase(backspaceCount, targetWindow))
             {
                 return PasteOutcome.TargetLost;
@@ -395,13 +344,10 @@ internal static class Injector
                 return PasteOutcome.FailedAfterErase;
             }
 
-            // Queued straight behind Ctrl+V rather than after the settle wait below: the target
-            // handles its input in order, so the caret still moves after the paste lands, but
-            // the user no longer watches it sit at the end for up to PasteSettleMs first.
+            // Queued behind Ctrl+V (input is processed in order) instead of after the settle wait.
             bool cursorMoved = SendLeft(cursorLeftUnits, targetWindow);
 
-            // The target reads the clipboard asynchronously, so restoring immediately would
-            // race the paste and insert the previous contents instead.
+            // The target reads the clipboard asynchronously; restoring now would paste the previous contents.
             WaitForPasteToSettle(targetWindow);
             return cursorMoved ? PasteOutcome.Pasted : PasteOutcome.FailedAfterErase;
         }
@@ -412,23 +358,9 @@ internal static class Injector
     }
 
     /// <summary>
-    /// Waits for the target to take the paste, rather than sleeping long enough to cover the
-    /// slowest imaginable case.
-    ///
-    /// <para>
-    /// Reading a paste means calling <c>OpenClipboard</c>, so watching for the target's own
-    /// process holding the clipboard open — and then letting go of it — is direct evidence the
-    /// paste has been consumed. When that is observed the wait ends in a few tens of
-    /// milliseconds instead of a flat 350 ms.
-    /// </para>
-    ///
-    /// <para>
-    /// Every uncertainty resolves back to the old behaviour rather than to a shorter wait. An
-    /// open that cannot be attributed to the target is ignored; a read too brief to fall in a poll
-    /// is never seen; a target that reads lazily is never seen either. All three simply pay
-    /// <see cref="PasteSettleMs"/>, so the worst case is exactly what it was before and only the
-    /// common case gets faster.
-    /// </para>
+    /// Waits for the target to take the paste: its process opening and then closing the clipboard is direct
+    /// evidence the paste was consumed. Anything not attributable to the target falls back to waiting
+    /// <see cref="PasteSettleMs"/>.
     /// </summary>
     private static void WaitForPasteToSettle(IntPtr targetWindow)
     {
@@ -475,8 +407,7 @@ internal static class Injector
             case TargetState.Moved:
                 return PasteOutcome.TargetLost;
 
-            // Typing will not reach an elevated window either, but it is the documented
-            // fallback and it costs nothing; what matters is that the clipboard is left alone.
+            // Typing won't reach it either, but it's the documented fallback; the clipboard is left alone.
             case TargetState.Unreachable:
                 return PasteOutcome.RefusedBeforeErase;
 
@@ -497,16 +428,8 @@ internal static class Injector
     }
 
     /// <summary>
-    /// Hands the user's clipboard back, retrying because the usual reason a restore fails is
-    /// that another process held the clipboard for a moment. Reports a failure rather than
-    /// swallowing it: the clipboard has already been emptied by this point.
-    ///
-    /// <para>
-    /// Refuses outright when somebody else has written to the clipboard since our own write. What
-    /// they put there is newer than the snapshot, and republishing the snapshot over it would
-    /// silently destroy something the user copied moments ago — the expansion's own text going
-    /// unrestored is the lesser harm.
-    /// </para>
+    /// Hands the user's clipboard back, retrying while another process holds it, and reports a failure.
+    /// Refuses when someone else wrote to the clipboard after our own write: their newer data wins.
     /// </summary>
     private static void RestoreClipboard(ClipboardSnapshot saved, ClipboardLoan loan)
     {
@@ -523,9 +446,8 @@ internal static class Injector
                 return;
             }
 
-            // A failed restore can still have emptied the clipboard before failing to republish,
-            // which moves the sequence number. Re-arming against our own change keeps the retry
-            // from mistaking that for somebody else taking ownership.
+            // A failed restore may have emptied the clipboard, moving the sequence number; re-arm so the
+            // retry doesn't mistake our own change for a new owner.
             loan.Rearm(Clipboard.SequenceNumber);
 
             if (attempt + 1 < RestoreAttempts && RestoreRetryDelayMs > 0)
@@ -534,8 +456,7 @@ internal static class Injector
             }
         }
 
-        // Nothing was lost if there was nothing there: the clipboard was empty and now holds the
-        // replacement, which is untidy but not the user's data going missing.
+        // Nothing was lost if the clipboard was empty.
         if (saved.IsEmpty)
         {
             return;
@@ -549,15 +470,9 @@ internal static class Injector
     }
 
     /// <summary>
-    /// Sends Ctrl+V, staggered rather than as one batch: a single SendInput carrying the whole
-    /// chord occasionally had the target process V before it had registered Ctrl going down,
-    /// which inserts a literal "v" instead of pasting.
-    ///
-    /// Returns false unless every key event was accepted. A partial V pair may already have
-    /// triggered a paste, so <paramref name="pasteMayHaveBeenSent"/> tells the caller to wait for
-    /// the target to consume the clipboard before restoring it. It deliberately says nothing
-    /// about UIPI — SendInput cannot report that, which is why <see cref="InputTarget"/> is asked
-    /// before we get here.
+    /// Sends Ctrl+V staggered rather than as one batch, so the target registers Ctrl before V. Returns false
+    /// unless every key event was accepted; <paramref name="pasteMayHaveBeenSent"/> says whether a partial
+    /// V pair may already have pasted. SendInput can't report UIPI, so <see cref="InputTarget"/> is asked first.
     /// </summary>
     internal static bool SendPasteChord(
         IntPtr targetWindow,
@@ -644,12 +559,8 @@ internal static class Injector
     }
 
     /// <summary>
-    /// Releases modifiers the user is still physically holding. A trigger can end on a key that
-    /// needed Shift or AltGr, and a leftover modifier turns our Ctrl+V into Ctrl+Shift+V or
-    /// Ctrl+Alt+V — "paste special" in several editors, and nothing at all in others.
-    ///
-    /// Released but never re-pressed: the user's own key-up still arrives, whereas synthesising
-    /// a key-down for a key they have since let go of would leave that modifier stuck on.
+    /// Releases modifiers the user is still holding (a trigger ending in Shift or AltGr would turn Ctrl+V
+    /// into "paste special"). Never re-pressed: the user's own key-up still arrives.
     /// </summary>
     private static bool ReleaseHeldModifiers(
         Func<Native.INPUT[], uint> dispatch,
@@ -719,10 +630,7 @@ internal static class Injector
 
         for (int i = 0; i < text.Length; i++)
         {
-            // Typing a long replacement one character at a time takes as long as the replacement
-            // is — seconds, for the fallbacks that reach here. Focus is re-checked as we go rather
-            // than once at the start, because a user who switches window mid-expansion would
-            // otherwise have the remainder typed into whatever they switched to.
+            // Typing a long fallback takes seconds, so focus is re-checked as we go.
             if ((i & 7) == 0 && !IsAuthorizedTarget(targetWindow, canDrive, getForegroundWindow))
             {
                 InjectionDiagnostics.RecordTypingAbandoned();

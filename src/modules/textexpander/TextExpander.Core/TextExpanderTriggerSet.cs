@@ -9,9 +9,7 @@ using System.Linq;
 namespace Microsoft.PowerToys.TextExpander
 {
     /// <summary>
-    /// The triggers <see cref="TextExpanderTriggerReach"/> looks for. They are looked up by span,
-    /// so checking the text being typed allocates nothing, and by length, so only lengths that
-    /// some trigger has are tried.
+    /// The triggers <see cref="TextExpanderTriggerReach"/> looks for, looked up by span (no allocation) and by length.
     /// </summary>
     internal sealed class TextExpanderTriggerSet
     {

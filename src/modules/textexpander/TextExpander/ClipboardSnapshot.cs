@@ -5,11 +5,8 @@
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// An off-clipboard copy of the user's clipboard contents, taken before an expansion pastes over
-/// them. An empty snapshot means the clipboard was genuinely empty — a clipboard holding
-/// anything that could not be copied refuses in <see cref="Clipboard.Snapshot"/> rather than
-/// arriving here looking empty — so restoring one clears the clipboard instead of leaving the
-/// expansion's text behind.
+/// An off-clipboard copy of the user's clipboard, taken before an expansion pastes over it. An empty snapshot
+/// means the clipboard was genuinely empty, so restoring it clears the clipboard.
 /// </summary>
 internal sealed class ClipboardSnapshot(IReadOnlyList<ClipboardEntry> entries) : IDisposable
 {

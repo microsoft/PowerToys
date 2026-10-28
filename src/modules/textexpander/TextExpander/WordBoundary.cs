@@ -5,34 +5,16 @@
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// The "wait for space or punctuation" matching rule.
-///
-/// <para>
-/// By default a trigger waits until a space or punctuation confirms that the user has finished
-/// typing it. This prevents a trigger such as <c>btw</c> from firing in the middle of a longer
-/// word such as <i>a<b>btw</b>ard</i>.
-/// </para>
-///
-/// <para>
-/// The terminator the user typed is not thrown away: it is appended to the replacement, so typing
-/// <c>#sig </c> leaves the signature followed by the space, exactly as if the expansion had never
-/// happened. An explicitly saved false setting still enables immediate expansion.
-/// </para>
-///
-/// <para>
-/// Enter and Tab cannot act as terminators, because the hook treats them as buffer resets before
-/// matching is reached — they move the caret, and a caret move means the buffer no longer
-/// describes what is on screen.
-/// </para>
+/// The "wait for space or punctuation" matching rule: a trigger fires only after a terminator, which by
+/// default is given back after the replacement. Enter and Tab reset the buffer, so they never terminate.
 /// </summary>
 internal static class WordBoundary
 {
-    // Volatile because the settings watcher thread flips these while the hook thread reads them
-    // on every keystroke.
+    // Volatile: flipped by the settings watcher, read by the hook on every keystroke.
     private static volatile bool _required = true;
     private static volatile bool _keepTerminator = true;
 
-    /// <summary>Gets or sets a value indicating whether whether a trigger must be followed by a word terminator before it fires.</summary>
+    /// <summary>Gets or sets a value indicating whether a trigger must be followed by a word terminator before it fires.</summary>
     public static bool Required
     {
         get => _required;
@@ -40,18 +22,8 @@ internal static class WordBoundary
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether whether the terminator that released the trigger is given back after the replacement.
-    ///
-    /// <para>
-    /// On by default, because the user typed that space and not handing it back means typing it
-    /// twice. Off matters for the cases raised on the PowerToys issue thread — email addresses
-    /// and codes, where a trailing space is not cosmetic but wrong.
-    /// </para>
-    ///
-    /// <para>
-    /// Only consulted when <see cref="Required"/> is on. Without word mode there is no terminator
-    /// to keep or drop: the trigger's own last keystroke is what fires it.
-    /// </para>
+    /// Gets or sets a value indicating whether the terminator that released the trigger is given back after
+    /// the replacement. Only consulted when <see cref="Required"/> is on.
     /// </summary>
     public static bool KeepTerminator
     {
@@ -59,42 +31,19 @@ internal static class WordBoundary
         set => _keepTerminator = value;
     }
 
-    /// <summary>
-    /// A character that can sit inside a word. Underscore counts, because identifiers are the
-    /// one kind of "word" people routinely type where an underscore is not a break.
-    /// </summary>
+    /// <summary>A character that can sit inside a word (underscore included).</summary>
     public static bool IsWordCharacter(char c)
         => WordBoundaryRules.IsWordCharacter(c);
 
     /// <summary>
-    /// A character that ends a word, and so can release a pending trigger.
-    ///
-    /// <para>
-    /// Defined positively rather than as "not a word character" so that control characters and
-    /// other oddities cannot silently become terminators. Whitespace covers the space the feature
-    /// is named for; punctuation and symbols cover the rest of the natural cases —
-    /// <c>#sig.</c> and <c>#sig,</c> should expand just as readily as <c>#sig </c>.
-    /// </para>
+    /// A character that ends a word and so can release a pending trigger: whitespace, punctuation or a symbol.
     /// </summary>
     public static bool IsTerminator(char c)
         => WordBoundaryRules.IsTerminator(c);
 
     /// <summary>
-    /// Whether <paramref name="trigger"/> begins at a legitimate word start, given the text
-    /// immediately before it.
-    ///
-    /// <para>
-    /// A trigger that itself starts with punctuation — <c>#sig</c>, <c>:shrug</c> — carries its
-    /// own boundary, so nothing before it can put it mid-word. Requiring a break before those
-    /// too would stop <c>x#sig</c> expanding for no benefit the user would recognise.
-    /// </para>
-    ///
-    /// <para>
-    /// An empty <paramref name="textBefore"/> counts as a boundary. It can also mean the rolling
-    /// buffer has wrapped, which is only reachable for a word longer than the buffer, and
-    /// treating that as a word start is the reading that still expands rather than mysteriously
-    /// refusing to.
-    /// </para>
+    /// Whether <paramref name="trigger"/> begins at a word start, given the text before it. A trigger starting
+    /// with punctuation carries its own boundary, and an empty <paramref name="textBefore"/> counts as one.
     /// </summary>
     public static bool StartsAtWordBoundary(ReadOnlySpan<char> textBefore, string trigger)
         => WordBoundaryRules.StartsAtWordBoundary(textBefore, trigger);

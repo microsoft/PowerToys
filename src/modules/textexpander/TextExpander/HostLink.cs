@@ -9,83 +9,31 @@ using Microsoft.Win32.SafeHandles;
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// Links this process lifetime to the PowerToys runner.
-///
-/// <para>
-/// There are two ways to be asked to stop. A <b>named auto-reset event</b> is the convention every
-/// PowerToys C# module uses: the module's C++ shim does <c>SetEvent</c> →
-/// <c>WaitForSingleObject(process, ~1500ms)</c> → <c>TerminateProcess</c> as a hard fallback, so a
-/// module that does not listen for its event is always killed instead of asked. Separately, the
-/// <b>host process exiting</b> must take us with it: an orphaned engine would sit there holding a
-/// system-wide keyboard hook with nothing left to turn it off.
-/// </para>
-///
-/// <para>
-/// Both funnel into the same request, and that request deliberately does <em>not</em> tear the
-/// process down here. It posts the ordinary shutdown message to our own message window so the exit
-/// unwinds through the normal path, which waits for the expansion worker. That matters: every
-/// paste borrows the user's clipboard — emptied, overwritten, handed back — and only the normal
-/// path reaches the restore. Exiting from this thread would destroy whatever they had copied,
-/// which is precisely what being asked to stop is meant to avoid.
-/// </para>
+/// Links this process lifetime to the PowerToys runner: stops when the named exit event is signaled or the
+/// host process exits. Either request posts the ordinary shutdown message to our own message window, so the
+/// exit unwinds through the normal path that waits for the expansion worker and restores the clipboard.
 /// </summary>
 internal sealed class HostLink : IDisposable
 {
     /// <summary>Overrides <see cref="DefaultExitEventName"/>, for testing or a renamed module.</summary>
     public const string ExitEventSwitch = "--exit-event:";
 
-    /// <summary>
-    /// Explicit form of the host process id. PowerToys passes its pid as a bare argument, which
-    /// <see cref="ParseHostProcessId"/> also accepts; this spelling exists so the intent is
-    /// readable in a shortcut or a test script.
-    /// </summary>
+    /// <summary>Explicit form of the host process id; PowerToys passes a bare pid, which is also accepted.</summary>
     public const string HostPidSwitch = "--host-pid:";
 
     /// <summary>
-    /// Default name of the shutdown event.
-    ///
-    /// <para>
-    /// <b>Must match the constant the C++ module shim uses</b>, which for a PowerToys module lives
-    /// in <c>src/common/interop/shared_constants.h</c> alongside <c>POWERACCENT_EXIT_EVENT</c> and
-    /// friends. PowerToys suffixes these names with a GUID to avoid collisions; adopt whatever the
-    /// final module registration settles on and change it here and in the shim together.
-    /// </para>
-    ///
-    /// <para>
-    /// The GUID suffix matches what every PowerToys shared event name does
-    /// (<c>POWERACCENT_EXIT_EVENT</c> and friends in <c>shared_constants.h</c>). It is not
-    /// decoration: a fixed, guessable name can be created first by any same-user process, which
-    /// then owns its DACL. That matters most when this engine runs elevated from its logon task,
-    /// because a medium-integrity process cannot otherwise reach it — UIPI blocks the window
-    /// message, and the elevated token's default DACL grants a filtered token only
-    /// <c>EVENT_QUERY_STATE</c>, not <c>EVENT_MODIFY_STATE</c>. Squatting is the way round that,
-    /// so the name should not be easy to guess.
-    /// </para>
-    ///
-    /// <para>
-    /// <c>Local\</c> rather than <c>Global\</c> on purpose: the engine is a per-user, per-session
-    /// process, and a global name would let one session's shutdown stop another's.
-    /// </para>
+    /// Default name of the shutdown event; must match <c>TEXT_EXPANDER_EXIT_EVENT</c> in
+    /// <c>src/common/interop/shared_constants.h</c>. The GUID suffix makes the name hard to guess, so another
+    /// same-user process can't create it first and own its DACL; <c>Local\</c> keeps one session's shutdown
+    /// from stopping another's.
     /// </summary>
     public const string DefaultExitEventName =
         @"Local\PowerToysTextExpanderExitEvent-3f6c1b48-9d02-4a17-8e5b-7c0a2d64f91e";
 
     /// <summary>
-    /// Scopes the single-instance mutex, so an instance run by a host can coexist with a
-    /// differently scoped one instead of silently exiting.
-    ///
-    /// <para>
-    /// Without this, enabling a PowerToys module while another engine instance is already running
-    /// makes the module's process hit the shared mutex and <c>return 0</c> immediately. PowerToys
-    /// would show the module enabled, the shim would see its child vanish, and nothing would
-    /// expand — with nothing on screen to explain why.
-    /// </para>
-    ///
-    /// <para>
-    /// <b>The tradeoff is real:</b> two engines watching the same keyboard both expand the same
-    /// trigger, so separating them is only correct when the user genuinely wants one of each.
-    /// Leaving this unset keeps today's behaviour, where the second instance defers.
-    /// </para>
+    /// Scopes the single-instance mutex, so an instance run by a host can coexist with a differently scoped one
+    /// instead of silently exiting. Two engines both expand the same trigger, so leave it unset unless one of
+    /// each is genuinely wanted.
     /// </summary>
     public const string InstanceSwitch = "--instance:";
 
@@ -145,9 +93,7 @@ internal sealed class HostLink : IDisposable
         EventWaitHandle exitEvent;
         try
         {
-            // Auto-reset and initially unset, matching CreateEvent(nullptr, false, false, name)
-            // on the shim side. Opening an existing one is fine: the shim may well have created
-            // it first, and either side may legitimately win that race.
+            // Auto-reset and unset, matching the shim's CreateEvent; either side may create it first.
             exitEvent = new EventWaitHandle(false, EventResetMode.AutoReset, name, out _);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or WaitHandleCannotBeOpenedException or ArgumentException)
@@ -224,9 +170,8 @@ internal sealed class HostLink : IDisposable
     }
 
     /// <summary>
-    /// Reads the host process id. Accepts the explicit <c>--host-pid:&lt;n&gt;</c> spelling and the
-    /// bare positional integer PowerToys actually passes (<c>PowerToys.PowerAccent.exe 1234</c>).
-    /// Returns null when there is no host, when no host pid was provided.
+    /// Reads the host process id from <c>--host-pid:&lt;n&gt;</c> or the bare integer PowerToys passes;
+    /// null when there is none.
     /// </summary>
     internal static int? ParseHostProcessId(string[] args)
     {
@@ -267,9 +212,8 @@ internal sealed class HostLink : IDisposable
     // ── Host process ─────────────────────────────────────────
 
     /// <summary>
-    /// Opens the host for SYNCHRONIZE only — the least that allows a wait — and wraps it as a
-    /// wait handle. Returns null when the process cannot be opened or has already gone, rather
-    /// than refusing to start: losing the parent watch is survivable, failing to launch is not.
+    /// Opens the host for SYNCHRONIZE only and wraps it as a wait handle; null when the process can't be
+    /// opened or has gone, which never blocks startup.
     /// </summary>
     private static ManualResetEvent? TryWatchProcess(int pid)
     {

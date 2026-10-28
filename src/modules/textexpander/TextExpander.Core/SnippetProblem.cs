@@ -4,10 +4,7 @@
 
 namespace Microsoft.PowerToys.TextExpander
 {
-    /// <summary>
-    /// Why a trigger or a replacement can't be saved. Settings shows each one in the user's
-    /// language from its own resource.
-    /// </summary>
+    /// <summary>Why a trigger or a replacement can't be saved; the editor shows each in the user's language.</summary>
     public enum SnippetProblem
     {
         None,

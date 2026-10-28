@@ -133,13 +133,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             : _trigger;
 
         /// <summary>
-        /// Gets the stable handle for the underlying entry.
-        ///
-        /// <para>
-        /// Rows are addressed by this, never by trigger. A file may legitimately contain two rows
-        /// with the same trigger, and keying on the trigger meant editing or deleting the second
-        /// row silently hit the first.
-        /// </para>
+        /// Gets the stable handle for the underlying entry. Rows are addressed by this, never by trigger, because a
+        /// file may contain duplicate triggers.
         /// </summary>
         public int Id { get; }
 

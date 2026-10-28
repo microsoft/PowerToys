@@ -8,10 +8,8 @@ using System.Text;
 namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 {
     /// <summary>
-    /// Reads and writes the snippet file in the encoding it already has. The engine reads it with
-    /// <c>StreamReader</c>'s byte order mark detection, so Settings recognizes the same marks:
-    /// UTF-8, UTF-16 and UTF-32, little or big endian. A file without one is UTF-8, as in the engine.
-    /// Saving keeps the encoding and its mark, so a UTF-16 file stays UTF-16.
+    /// Reads and writes the snippet file in the encoding it already has, detecting the same byte order marks
+    /// as the engine's <c>StreamReader</c> (UTF-8, UTF-16, UTF-32); a file without one is UTF-8.
     /// </summary>
     internal static class TextExpanderSnippetEncoding
     {

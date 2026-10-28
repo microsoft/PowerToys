@@ -24,9 +24,7 @@ internal enum InjectionHealth
     TypingByChoice,
 
     /// <summary>
-    /// The clipboard has only ever opened unowned, so every write refused and every expansion
-    /// fell back to typing. Safe, but the paste path is inoperative and would otherwise go
-    /// unnoticed, because typing works.
+    /// The clipboard has only ever opened unowned, so every expansion silently fell back to typing.
     /// </summary>
     ClipboardOwnershipDeclined,
 
@@ -35,19 +33,9 @@ internal enum InjectionHealth
 }
 
 /// <summary>
-/// Records what the injector actually did, so the active path can be seen on a real machine
-/// without a debugger.
-///
-/// This exists because the failure that matters here is silent. Expansion falls back to typing
-/// whenever pasting cannot be done safely, and typing *works* — so a paste path that never once
-/// succeeds looks exactly like a healthy one from the outside. In particular, opening the
-/// clipboard against a window owned by another thread is undocumented territory: if Windows
-/// declines it, every open is unowned, every write refuses, and the whole point of the paste
-/// path is quietly lost. That shows up here as a count nobody has to go looking for.
-///
-/// Counters only, held in plain statics and bumped with Interlocked: no allocation, no strings
-/// and no timers on the expansion path. Nothing is written to disk and nothing leaves the
-/// machine — the report is built on demand, when a user asks to see it.
+/// Records what the injector actually did, so a paste path that silently degrades to typing can be seen
+/// without a debugger. Interlocked counters only: no allocation on the expansion path, nothing written to
+/// disk or sent off the machine.
 /// </summary>
 internal static class InjectionDiagnostics
 {
@@ -86,10 +74,7 @@ internal static class InjectionDiagnostics
     public static int ClipboardRestoreFailures => Volatile.Read(ref _clipboardRestoreFailures);
 
     /// <summary>
-    /// Gets how often the user's clipboard was deliberately left alone because somebody else had
-    /// written to it since our own write. Not a failure — the alternative was destroying data the
-    /// user copied moments ago — but worth being able to see, because the expansion's text is
-    /// then left on the clipboard rather than the snapshot.
+    /// Gets how often the user's clipboard was deliberately left alone because somebody else wrote to it after us.
     /// </summary>
     public static int ClipboardRestoresSkipped => Volatile.Read(ref _clipboardRestoreSkipped);
 

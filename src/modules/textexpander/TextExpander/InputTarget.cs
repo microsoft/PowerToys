@@ -7,16 +7,9 @@ using System.Runtime.InteropServices;
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// Answers whether synthetic input can reach a window at all.
-///
-/// SendInput cannot tell us. Microsoft is explicit that "this function fails when it is blocked
-/// by UIPI. Note that neither GetLastError nor the return value will indicate the failure was
-/// caused by UIPI blocking" — against an elevated window SendInput returns the full event count
-/// and the events are discarded further down. Treating that as success is how an expansion ends
-/// up having eaten the user's trigger, churned their clipboard, and inserted nothing.
-///
-/// So the question is asked before anything is sent, by comparing integrity levels. Text Expander
-/// never drives above medium integrity, even when its host is elevated.
+/// Answers whether synthetic input can reach a window. SendInput can't tell: against an elevated window it
+/// reports success while UIPI discards the events, so integrity levels are compared before anything is
+/// sent. Text Expander never drives above medium integrity, even when its host is elevated.
 /// </summary>
 internal static class InputTarget
 {
@@ -44,13 +37,8 @@ internal static class InputTarget
     }
 
     /// <summary>
-    /// True when input we synthesise can reach <paramref name="window"/>.
-    ///
-    /// Answers false when the target cannot be inspected at all. An ordinary desktop application
-    /// at our own integrity level is always inspectable, so the processes that refuse are the
-    /// elevated and protected ones — the very ones that would have discarded our input anyway.
-    /// Being wrong in this direction costs a paste and falls back to typing; being wrong in the
-    /// other direction costs the user their clipboard and their trigger.
+    /// True when input we synthesize can reach <paramref name="window"/>. False when the target can't be
+    /// inspected (elevated or protected processes), which only costs a fallback to typing.
     /// </summary>
     public static bool CanDrive(IntPtr window)
     {
@@ -86,10 +74,8 @@ internal static class InputTarget
                 return false;
             }
 
-            // UIPI blocks input travelling up. Equal levels are fine, which is the ordinary
-            // case: two medium-integrity desktop applications.
-            //
-            // Never allow user-controlled configuration to authorize high-integrity input.
+            // UIPI blocks input travelling up; equal levels are fine. User-controlled configuration must
+            // never authorize high-integrity input.
             uint ceiling = Math.Min(ours.Value, TrustCeiling);
             return theirs.Value <= ceiling;
         }
@@ -132,10 +118,7 @@ internal static class InputTarget
             && (string.Equals(Path.GetFileName(imagePath), "PowerToys.Settings.exe", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(Path.GetFileName(imagePath), "PowerToys.TextExpander.Editor.exe", StringComparison.OrdinalIgnoreCase));
 
-    /// <summary>
-    /// Our own integrity level, read once. It cannot change while the process is running, and
-    /// this is on the path of every expansion.
-    /// </summary>
+    /// <summary>Our own integrity level, read once: it can't change while the process runs.</summary>
     private static uint? OurIntegrityLevel()
     {
         if (!_ourIntegrityRead)

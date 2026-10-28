@@ -8,26 +8,8 @@ using System.Text.Json;
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// Reads the settings file a host writes for us, and keeps watching it.
-///
-/// <para>
-/// PowerToys modules are configured through the Settings app, which writes
-/// <c>%LOCALAPPDATA%\Microsoft\PowerToys\&lt;module&gt;\settings.json</c>. Without this the module's
-/// settings page would be a facade: the shim's <c>set_config</c> would dutifully save the file
-/// and the engine would carry on reading environment variables, so every control would appear to
-/// work and change nothing.
-/// </para>
-///
-/// <para>
-/// Entirely opt-in, via <c>--settings:&lt;path&gt;</c>. No switch means no file is read and the
-/// engine keeps running even when no host settings file is provided.
-/// </para>
-///
-/// <para>
-/// Parsed with <see cref="JsonDocument"/> rather than the serializer on purpose: the engine is
-/// published with <c>PublishTrimmed</c>, and reflection-based deserialization is precisely what
-/// trimming breaks. A DOM read of four known keys needs no reflection and no generated context.
-/// </para>
+/// Reads the settings file a host writes for us (opt-in via <c>--settings:&lt;path&gt;</c>) and keeps watching
+/// it. Parsed with <see cref="JsonDocument"/>, which needs no reflection.
 /// </summary>
 internal sealed class HostSettings : IDisposable
 {
@@ -90,9 +72,8 @@ internal sealed class HostSettings : IDisposable
     }
 
     /// <summary>
-    /// Reads the file. Returns an all-null <see cref="Values"/> when it is missing or unreadable,
-    /// which leaves current settings alone — a settings file that has not been written yet, or is
-    /// mid-save, must not reset how the engine injects text.
+    /// Reads the file. Returns an all-null <see cref="Values"/> when it is missing or unreadable (for example
+    /// mid-save), which leaves current settings alone.
     /// </summary>
     public Values Read()
     {
@@ -288,14 +269,8 @@ internal sealed class HostSettings : IDisposable
     }
 
     /// <summary>
-    /// The folder a host owns for this module's data, or null when no host settings path is provided.
-    ///
-    /// <para>
-    /// Derived from the settings file the host already told us about rather than from a new
-    /// switch. The host picked that location; putting snippets beside its settings keeps a
-    /// module's state in one directory the host can back up, migrate or delete as a unit, and
-    /// means the host's settings UI can find the snippet file without being told twice.
-    /// </para>
+    /// The folder a host owns for this module's data (the settings file's folder), or null when no host
+    /// settings path is provided.
     /// </summary>
     public static string? DataFolder(string? settingsFilePath)
     {

@@ -92,11 +92,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         }
 
         /// <summary>
-        /// Gets where Insert variable puts <paramref name="variable"/> and what it selects then:
-        /// it replaces the selection, though never part of another variable (see
-        /// <see cref="InsertionRange"/>), and then selects a question's label or a date's format,
-        /// ready to type over. A ready-made date format, with <paramref name="selectEditablePart"/>
-        /// false, leaves the caret after it instead.
+        /// Gets where Insert variable puts <paramref name="variable"/> (see <see cref="InsertionRange"/>) and what
+        /// it selects then (see <see cref="SelectionAfterInsert"/>); with <paramref name="selectEditablePart"/>
+        /// false, the caret goes after it.
         /// </summary>
         public static (int Start, int End, int SelectionStart, int SelectionEnd) PlanInsert(string text, int selectionStart, int selectionEnd, string variable, bool selectEditablePart)
         {
@@ -106,13 +104,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         }
 
         /// <summary>
-        /// Converts the box's text, as RichEdit reports it, to the replacement.
-        ///
-        /// <para>
-        /// RichEdit ends each paragraph with \r, and the whole text with one more that nobody typed.
-        /// Snippets use \n, so the file gets exactly the bytes the plain text box used to save.
-        /// Every other character maps one to one, so positions in the box stay valid.
-        /// </para>
+        /// Converts the box's text, as RichEdit reports it, to the replacement: paragraph \r becomes \n and the
+        /// final extra \r is dropped. Every other character maps one to one, so positions stay valid.
         /// </summary>
         public static string FromEditor(string raw, int storyLength)
         {

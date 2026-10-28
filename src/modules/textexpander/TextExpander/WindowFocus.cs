@@ -5,12 +5,8 @@
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// Forces a window to the foreground.
-///
-/// Windows refuses SetForegroundWindow from a process that is not already foreground and did not
-/// receive the last input event — which is exactly our situation, since the user is typing into
-/// someone else's window. Temporarily attaching our input queue to the foreground thread's makes
-/// the call succeed; this is the long-standing workaround every input utility relies on.
+/// Forces a window to the foreground. Windows refuses SetForegroundWindow from a background process, so our
+/// input queue is temporarily attached to the foreground thread's, the long-standing workaround.
 /// </summary>
 internal static class WindowFocus
 {

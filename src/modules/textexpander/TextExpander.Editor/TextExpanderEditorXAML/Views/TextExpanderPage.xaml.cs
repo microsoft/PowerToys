@@ -127,10 +127,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
-        /// Opens the Windows folder picker, as Keyboard Manager's editor does, at
-        /// <paramref name="startFolder"/> when it exists. Returns null when cancelled.
-        ///
-        /// The picker is initialized with the standalone editor's window handle.
+        /// Opens the Windows folder picker at <paramref name="startFolder"/> when it exists; null when cancelled.
         /// </summary>
         private async Task<string> PickSingleFolderDialog(string startFolder)
         {
@@ -177,10 +174,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         private TextExpanderViewModel ViewModel { get; set; }
 
         /// <summary>
-        /// Insets content in an InfoBar the way its template insets its own message, which custom
-        /// content doesn't get, so text would run into the InfoBar's right edge: by
-        /// InfoBarPanelMargin on the right, and below by the padding under a message that wraps,
-        /// InfoBarPanelVerticalOrientationPadding. Both come from WinUI's theme resources.
+        /// Insets custom InfoBar content the way the template insets its own message (InfoBarPanelMargin on the
+        /// right, InfoBarPanelVerticalOrientationPadding below), which custom content doesn't get.
         /// </summary>
         private static void InsetLikeAnInfoBarMessage(FrameworkElement content)
             => content.Margin = new Thickness(0, 0, ThemeThickness("InfoBarPanelMargin").Right, ThemeThickness("InfoBarPanelVerticalOrientationPadding").Bottom);
@@ -189,9 +184,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             => Application.Current.Resources.TryGetValue(key, out object value) && value is Thickness thickness ? thickness : default;
 
         /// <summary>
-        /// Builds the Insert variable menu from the view model, so the menu cannot drift from the
-        /// set of variables the engine can actually expand. Its samples are filled in each time
-        /// it opens, so the time and date are current.
+        /// Builds the Insert variable menu from the view model; its samples are refreshed each time it opens.
         /// </summary>
         private void BuildVariableMenu()
         {
@@ -673,9 +666,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 return;
             }
 
-            // The copy opens in the editor rather than being saved straight away, so it gets a
-            // trigger of its own first; nothing is written until Save. The suggested trigger is
-            // one that can fire, unlike the original's name plus a number.
+            // The copy opens in the editor with a suggested trigger; nothing is written until Save.
             await ShowSnippetDialogAsync(null, ViewModel.SuggestDuplicateTrigger(snippet.Id) ?? string.Empty, snippet.Replacement);
         }
 

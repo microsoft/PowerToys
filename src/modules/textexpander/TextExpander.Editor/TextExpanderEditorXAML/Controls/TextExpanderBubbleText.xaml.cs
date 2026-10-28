@@ -73,10 +73,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether everything shows as text: each value as its icon
-        /// and label without the bubble's box, and the cursor and markers as characters. A line
-        /// that's trimmed needs this, because WinUI draws an element that falls past the ellipsis
-        /// at the start of the line, over the text. The line is then spoken as the bubbles were.
+        /// Gets or sets a value indicating whether everything shows as text (values as icon and label, cursor
+        /// and markers as characters), as a trimmed line needs; see <see cref="TextExpanderTrimFallback"/>.
         /// </summary>
         public bool TextOnly
         {

@@ -93,10 +93,9 @@ namespace Microsoft.PowerToys.TextExpander.Storage
         private static readonly byte[] StarterFileBytes = CreateStarterFileBytes();
 
         /// <summary>
-        /// Selects the preferred existing snippet file in <paramref name="folder"/>, or publishes
-        /// the starter under <paramref name="currentFileName"/> when neither supported name exists.
-        /// Engine and Settings callers for the same folder are serialized across processes, and
-        /// both names are checked again while that claim is held.
+        /// Selects the preferred existing snippet file in <paramref name="folder"/>, or publishes the starter under
+        /// <paramref name="currentFileName"/> when neither name exists. Callers are serialized across processes,
+        /// and both names are checked again while that claim is held.
         /// </summary>
         public static FileResult ResolveOrCreateFileInFolder(
             string folder,
@@ -151,9 +150,8 @@ namespace Microsoft.PowerToys.TextExpander.Storage
 
             beforeStarterPublication?.Invoke();
 
-            // Resolution may have happened before this process acquired the folder claim.
-            // Check both names again at the publication boundary so a newly arrived legacy
-            // database wins instead of being hidden by a starter under the preferred name.
+            // Resolution may have happened before this process held the folder claim, so check both names
+            // again: a newly arrived legacy file must win over a starter under the preferred name.
             existing = FindExisting(current, legacy);
             if (existing is not null)
             {
@@ -167,11 +165,9 @@ namespace Microsoft.PowerToys.TextExpander.Storage
                 beforeStagingCleanup: null,
                 beforeStagingCleanupDisposition: null);
 
-            // A sync client or older build may not honor the folder claim. Resolve both names
-            // after publication as well. When that race leaves our untouched starter beside a
-            // legacy library, the legacy data wins; leaving the starter in place avoids a
-            // verify-then-delete race, and normal resolution keeps ignoring that exact starter
-            // if this process exits here.
+            // A sync client or older build may not honor the claim, so resolve both names after publication too.
+            // A legacy library beside our untouched starter wins; the starter is left in place rather than
+            // risk a verify-then-delete race.
             existing = FindExisting(current, legacy);
             if (existing is not null)
             {
@@ -187,9 +183,8 @@ namespace Microsoft.PowerToys.TextExpander.Storage
         }
 
         /// <summary>
-        /// Acquires the same cross-process claim used for starter publication. Callers that make
-        /// other decisions about the two supported files can hold it through their final
-        /// re-resolution, verification, and atomic publication.
+        /// Acquires the cross-process folder claim used for starter publication, for callers that must hold it
+        /// through their own re-resolution, verification and atomic publication.
         /// </summary>
         public static IDisposable AcquireFolderClaim(string folder)
             => AcquireFolderClaim(folder, TimeSpan.FromSeconds(FolderClaimTimeoutSeconds));

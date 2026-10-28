@@ -17,20 +17,12 @@ internal enum ClipboardFormatHandling
     SynthesizedFromDib,
 
     /// <summary>
-    /// A handle or application-owned resource we cannot reproduce. Copying the bytes would
-    /// duplicate a handle its real owner still frees, and leaving it out would destroy it, so
-    /// the only honest answer is to not take the clipboard at all.
+    /// A handle or application-owned resource we can't reproduce, so the clipboard isn't taken at all.
     /// </summary>
     Unreproducible,
 }
 
-/// <summary>
-/// Decides what a clipboard snapshot can and cannot put back.
-///
-/// Deliberately free of Win32 so the rule is reachable from tests: the decision is the part that
-/// can silently destroy a user's clipboard, while everything around it is P/Invoke against
-/// whatever another application happens to have published.
-/// </summary>
+/// <summary>Decides what a clipboard snapshot can put back; free of Win32 so the rule is testable.</summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, clipboard formats use Win32 SDK names.")]
 internal static class ClipboardFormats
 {
@@ -57,15 +49,11 @@ internal static class ClipboardFormats
 
     public static ClipboardFormatHandling Classify(uint format) => format switch
     {
-        // Both are bitmap handles, and Windows publishes CF_BITMAP alongside CF_DIB
-        // automatically, so skipping them costs nothing whenever the DIB is there to rebuild
-        // them from. The caller checks that; on its own this format says nothing about it.
+        // Bitmap handles Windows synthesizes from CF_DIB; the caller checks that a DIB is present.
         CF_BITMAP or CF_DSPBITMAP => ClipboardFormatHandling.SynthesizedFromDib,
 
-        // Metafiles are handles too, and CF_METAFILEPICT is a memory block whose contents are a
-        // handle, so copying its bytes duplicates an HMETAFILE its owner still frees. A palette
-        // is an HPALETTE with nothing memory-backed to rebuild it from, and CF_OWNERDISPLAY
-        // means the owning window draws the clipboard itself.
+        // Metafile and palette handles (CF_METAFILEPICT's memory holds a handle too) and owner-drawn
+        // content can't be copied as bytes.
         CF_METAFILEPICT or CF_ENHMETAFILE or CF_DSPMETAFILEPICT or CF_DSPENHMETAFILE
             or CF_PALETTE or CF_OWNERDISPLAY => ClipboardFormatHandling.Unreproducible,
 
@@ -78,16 +66,9 @@ internal static class ClipboardFormats
     };
 
     /// <summary>
-    /// Works out which of <paramref name="formats"/> a snapshot must copy in order to put the
-    /// clipboard back exactly as it was found.
-    ///
-    /// Returns null when the clipboard holds something that cannot be reproduced. That is a
-    /// refusal, not a failure: the caller leaves the clipboard alone and types the replacement
-    /// instead. Silently skipping such a format would be the worst of both worlds, because
-    /// restoring empties the clipboard first and would drop it for good.
-    ///
-    /// An empty result is not a refusal — it means the clipboard was genuinely empty, and
-    /// restoring it should clear the clipboard rather than leave our text behind.
+    /// Works out which of <paramref name="formats"/> a snapshot must copy to put the clipboard back exactly.
+    /// Returns null, a refusal, when something can't be reproduced; an empty result means the clipboard was
+    /// empty and restoring should clear it.
     /// </summary>
     public static IReadOnlyList<uint>? PlanCapture(IReadOnlyList<uint> formats)
     {
