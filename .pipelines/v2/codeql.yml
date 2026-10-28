@@ -1,7 +1,4 @@
-# .pipelines/v2/codeql.yml
-# Scheduled CodeQL scan of main. The CI pipelines turn CodeQL off (pipeline-ci-build.yml)
-# because tracing roughly doubles their build time. This pipeline traces one x64 Release
-# build of the product, without tests, installers, or published apps.
+# Nightly CodeQL scan of main. CI builds turn CodeQL off because tracing roughly doubles their build time.
 
 trigger: none
 pr: none
@@ -23,7 +20,6 @@ variables:
     value: true
   - name: Codeql.Enabled
     value: true
-  # Scan on every scheduled run; the schedule sets the cadence.
   - name: Codeql.Cadence
     value: 0
 
@@ -42,8 +38,7 @@ jobs:
       buildConfigurations: [Release]
       enablePackageCaching: true
       runTests: false
+      # Build the test projects without running them; buildTests: true would also run them (/t:Build;Test).
       buildTests: false
-      buildInstallers: false
+      additionalBuildOptions: /p:BuildTests=true
       publishArtifacts: false
-      csProjectsToPublish: []
-      timeoutInMinutes: 180
