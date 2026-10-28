@@ -78,6 +78,9 @@
     <ClInclude Include="auto_start_helper.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="auto_start_task.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
     <ClInclude Include="general_settings.h">
       <Filter>Utils</Filter>
     </ClInclude>

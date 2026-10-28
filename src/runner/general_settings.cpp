@@ -424,21 +424,18 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
         {
             if (is_process_elevated())
             {
-                delete_auto_start_task_for_this_user();
                 create_auto_start_task_for_this_user(run_as_elevated);
             }
             else
             {
                 if (!is_auto_start_task_active_for_this_user())
                 {
-                    delete_auto_start_task_for_this_user();
                     create_auto_start_task_for_this_user(false);
 
                     run_as_elevated = false;
                 }
                 else if (!general_configs.GetNamedBoolean(L"run_elevated", false))
                 {
-                    delete_auto_start_task_for_this_user();
                     create_auto_start_task_for_this_user(false);
                 }
             }
@@ -450,10 +447,13 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     }
     else
     {
-        delete_auto_start_task_for_this_user();
         if (gpo_run_as_startup == powertoys_gpo::gpo_rule_configured_enabled || gpo_run_as_startup == powertoys_gpo::gpo_rule_configured_not_configured)
         {
             create_auto_start_task_for_this_user(run_as_elevated);
+        }
+        else
+        {
+            delete_auto_start_task_for_this_user();
         }
     }
 
