@@ -208,7 +208,7 @@ namespace ViewModelTests
             File.WriteAllText(current, "!only=value");
             TextExpanderViewModel model = CreateViewModel();
 
-            Assert.IsNull(model.DeleteSnippet(model.Snippets.Single().Id));
+            Assert.IsNull(model.DeleteSnippet(model.Snippets.Single().Id, model.SnippetRevision));
             Assert.AreEqual(0, model.Snippets.Count);
             Assert.IsTrue(model.HasNoSnippets);
             Assert.AreEqual(0, new FileInfo(current).Length);
@@ -319,7 +319,7 @@ namespace ViewModelTests
             changes.Clear();
             Assert.IsNull(model.SaveSnippet(null, "#d", "4"));
             Assert.AreEqual(System.Collections.Specialized.NotifyCollectionChangedAction.Add, changes.Single());
-            Assert.IsNull(model.DeleteSnippet(before[0].Id));
+            Assert.IsNull(model.DeleteSnippet(before[0].Id, model.SnippetRevision));
             Assert.AreEqual(System.Collections.Specialized.NotifyCollectionChangedAction.Remove, changes.Last());
             Assert.AreEqual("#b=two\n#c=3\n#d=4\n", File.ReadAllText(_path));
 
@@ -606,7 +606,7 @@ namespace ViewModelTests
             Assert.AreEqual(0, model.FilteredSnippets.Count);
             Assert.AreEqual(blockedMessage, model.ValidateSnippet(null, "!new", "replacement"));
             Assert.AreEqual(blockedMessage, model.SaveSnippet(null, "!new", "replacement"));
-            Assert.AreEqual(blockedMessage, model.DeleteSnippet(0));
+            Assert.AreEqual(blockedMessage, model.DeleteSnippet(0, model.SnippetRevision));
             Assert.AreEqual(blockedMessage, model.OpenSnippetsFile());
             Assert.IsNull(model.SuggestDuplicateTrigger(0));
 

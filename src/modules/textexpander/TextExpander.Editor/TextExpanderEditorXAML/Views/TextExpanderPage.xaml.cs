@@ -685,6 +685,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
 
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
 
+            // The file watcher can reload the list while this asks, so the delete carries the revision the ID came from.
+            int revision = ViewModel.SnippetRevision;
+
             // Confirm, because there is no undo and the file is the only copy.
             var confirm = new ContentDialog
             {
@@ -704,7 +707,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 return;
             }
 
-            string error = ViewModel.DeleteSnippet(snippet.Id);
+            string error = ViewModel.DeleteSnippet(snippet.Id, revision);
             if (error != null)
             {
                 await ShowErrorAsync(error);

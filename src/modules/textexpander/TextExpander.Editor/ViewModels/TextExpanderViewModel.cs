@@ -966,12 +966,20 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             OnPropertyChanged(nameof(SnippetCountText));
         }
 
-        /// <summary>Deletes the snippet with <paramref name="id"/> and writes the file.</summary>
-        public string DeleteSnippet(int id)
+        /// <summary>
+        /// Deletes the snippet with <paramref name="id"/> and writes the file. Refused if the list was reloaded after
+        /// <paramref name="revision"/>: a reload numbers the snippets again, so <paramref name="id"/> may now be a different snippet.
+        /// </summary>
+        public string DeleteSnippet(int id, int revision)
         {
             if (!CanEditSnippets)
             {
                 return ElevatedSnippetAccessDeniedMessage();
+            }
+
+            if (revision != SnippetRevision)
+            {
+                return _getResourceString("TextExpander_FileChangedBeforeSave");
             }
 
             if (_file == null)
