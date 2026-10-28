@@ -354,6 +354,11 @@ must not be presented as proof of human intent for such a caller.
 
 ## Acceptance
 
+Update [Acceptance-Tracker.md](Acceptance-Tracker.md) after every executed
+acceptance case. It records the current candidate, per-case status, evidence,
+historical results and deployment blockers; a prior-version PASS is not
+automatically carried forward.
+
 The complete functional matrix is
 [workspaces-protected-storage-acceptance.md](../workspaces-protected-storage-acceptance.md).
 Builds, unit fixtures and authoring checks do not establish real A/B provisioning,

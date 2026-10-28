@@ -1,8 +1,19 @@
 # Workspaces protected storage: acceptance checklist
 
+The living result ledger is [Acceptance-Tracker.md](protected-storage/Acceptance-Tracker.md).
+Update that ledger after each executed case, including its environment, version,
+evidence and blockers. This document retains the acceptance criteria and stable
+case IDs; it is not a record that every case has passed.
+
 This checklist targets the production-oriented MSI-carrier implementation. A successful local build or a mocked unit test does not qualify an installed product or every failure-recovery scenario.
 
-The implementation is isolated in `feature/workspaces-protected-storage-msi`, based on `44b9a329230252bbcaf2fca3474b683c78f4a14f`. The previously validated standalone demo remains separate.
+The current main integration is `feature/workspaces-protected-storage-main-20261028`
+at product-code commit `e04dbf97a2ceb65d51905e80bbb41acf03c1c997`, based on main
+`8056ba09721708bceee6176291b24af7ebabb0b3` including PR #51114.
+The previous prototype and its complete working changes are preserved on
+`backup/workspaces-protected-storage-20261028` (`c576e95f`).
+Standalone-demo, previous-release and local-test results remain separate from
+qualification of the current production integration.
 
 ## Decision baseline
 
