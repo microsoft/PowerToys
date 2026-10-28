@@ -87,6 +87,14 @@ jobs:
       if ('${{ parameters.autoSelectUiTests }}' -eq 'True') {
         $modules = @($env:AUTO_UI_TEST_MODULES -split ';' | Where-Object { $_ })
       }
+      . "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\UmdfHidCi.Common.ps1"
+      $hidSelection = Get-UmdfHidUiTestSelection -Modules $modules -Platform '$(TestPlatform)' `
+        -AutoSelect ('${{ parameters.autoSelectUiTests }}' -eq 'True')
+      Write-Host "##vso[task.setvariable variable=ExcludeUmdfHidSuite]$($hidSelection.Exclude.ToString().ToLowerInvariant())"
+      Write-Host "##vso[task.setvariable variable=UmdfHidSelectionBlocked]$($hidSelection.Blocked.ToString().ToLowerInvariant())"
+      if ($hidSelection.Skipped) {
+        Write-Host "##vso[task.logissue type=warning]Skipping implicitly selected GrabAndMove.UITests on $(TestPlatform): the virtual HID driver requires an accepted ARM64 signing route. Other suites remain selected."
+      }
       $selection = Get-MwbUiTestSelection -Modules $modules `
         -AutoSelect ('${{ parameters.autoSelectUiTests }}' -eq 'True') `
         -Platform '$(TestPlatform)' -Configuration '$(BuildConfiguration)' `
@@ -444,8 +452,12 @@ jobs:
 
       # Run each test assembly once (a project reference can copy a runner into a sibling's output).
       $entries = $entries | Sort-Object FullName | Group-Object Name | ForEach-Object { $_.Group[0] }
+      $matchedEntries = @($entries).Count
+      if ($env:EXCLUDE_UMDF_HID_SUITE -eq 'true') {
+        $entries = @($entries | Where-Object Name -ne 'GrabAndMove.UITests.runtimeconfig.json')
+      }
 
-      if ($runGenericUiTests -and -not $entries) {
+      if ($runGenericUiTests -and -not $entries -and ($matchedEntries -eq 0 -or $env:EXCLUDE_UMDF_HID_SUITE -ne 'true')) {
         Write-Host "##vso[task.logissue type=error]No UI test runners matched (modules: '$modulesRaw') under $artifactRoot"
         exit 1
       }
@@ -556,6 +568,10 @@ jobs:
         Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: MWB requires the selected revision's shared Release runtime bundle (buildNow or buildNowSlim). Older official/installed builds are not substituted; other selected suites run independently."
         $failed++
       }
+      if ($env:UMDF_HID_SELECTION_BLOCKED -eq 'true') {
+        Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: explicitly selected GrabAndMove.UITests requires a virtual HID driver accepted by the ARM64 signing policy. No tests or protections are bypassed; other selected suites run independently."
+        $failed++
+      }
       if ($failed -gt 0) {
         Write-Host "##vso[task.logissue type=error]$failed UI test project(s) reported failures."
         exit 1
@@ -571,6 +587,8 @@ jobs:
       RUN_GENERIC_UI_TESTS: $(RunGenericUiTests)
       RUN_MWB_SANDBOX: $(RunMwbSandbox)
       MWB_SELECTION_BLOCKED: $(MwbSelectionBlocked)
+      EXCLUDE_UMDF_HID_SUITE: $(ExcludeUmdfHidSuite)
+      UMDF_HID_SELECTION_BLOCKED: $(UmdfHidSelectionBlocked)
       ${{ if eq(parameters.autoSelectUiTests, true) }}:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 

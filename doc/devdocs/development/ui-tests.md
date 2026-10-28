@@ -101,6 +101,11 @@ The scope is process-wide; input tests must not run in parallel. Disposal releas
 keys/buttons and restores the default helpers. Activation fails if the driver is missing, with no
 `SendInput` fallback. The current report descriptor supports six simultaneous non-modifier keys,
 primary-monitor mouse coordinates, and whole wheel detents (120 units).
+Call `MouseHelper.MoveTo` explicitly before click, wheel, or relative movement sequences. The HID
+backend retains the last requested position because feature-report completion can precede the OS
+cursor update; it does not track physical/injected mouse movement during the scope. Keyboard-only
+scopes do not reposition the mouse. Restore any original off-primary position after disposing the
+scope, when the default mouse backend is active again.
 
 Driver provisioning is separate, elevated test infrastructure; tests themselves run non-elevated.
 The test package targets UMDF 2.31 on Windows 10 2004+ and Windows 11 and is never shipped in the
@@ -108,6 +113,46 @@ PowerToys installer. The Microsoft sample-derived driver is MS-PL licensed; its 
 license accompany the test artifacts. ARM64 builds are supported, but the current ARM64 CI image
 rejects the self-signed catalog under Code Integrity: an accepted signing route is required, not
 weaker boot or certificate policies.
+
+> **Security:** provision this driver only in disposable, isolated test VMs without real credentials.
+> While installed, local code can emit hardware-style keyboard/mouse input, including input to
+> elevated desktops. Do not install it on a developer workstation. Keep Secure Boot and Code
+> Integrity enabled, do not enable TESTSIGNING, and remove the device, package and temporary trust
+> immediately after testing. Activation never installs a driver or changes machine trust.
+
+Build the test-only package on the build host (Visual Studio C++ tools and the SDK are required):
+
+```pwsh
+.\.pipelines\umdf-hid-smoke\Build-Smoke.ps1 `
+  -WorkRoot C:\HidBuild\work -OutputRoot C:\HidBuild\artifacts -Platforms x64 -DriverOnly
+```
+
+Copy the `x64` artifact directory and `Manage-SmokeDriver.ps1` into the dedicated VM. In the VM's
+separate administrator control session, provision the package with a persistent ownership journal:
+
+```pwsh
+.\Manage-SmokeDriver.ps1 -Action Install -ArtifactDirectory C:\HidTest\x64 `
+  -StatePath C:\HidTest\state.json -ResultsDirectory C:\HidTest\results
+```
+
+Run the built module executable in the logged-on **standard-user** desktop, using the normal
+runtime/winappcli setup described above:
+
+```pwsh
+.\GrabAndMove.UITests.exe --report-trx --results-directory C:\HidTest\test-results
+```
+
+Always clean up from the administrator control session, including after a failed install/test:
+
+```pwsh
+.\Manage-SmokeDriver.ps1 -Action Cleanup `
+  -StatePath C:\HidTest\state.json -ResultsDirectory C:\HidTest\results
+```
+
+Cleanup only removes journaled test trust and owned present devices/packages, and retains the
+journal on failure. Preserve that journal until cleanup succeeds. CI provisions automatically for
+the x64 Grab and Move suite. Implicit ARM64 selections skip that suite with an infrastructure
+warning; explicitly requesting it reports `BLOCKED_INFRASTRUCTURE` rather than a passing zero-test run.
 
 ## Running `.Next` tests in persistent local VMs
 

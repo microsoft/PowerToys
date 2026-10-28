@@ -69,6 +69,9 @@ parameters:
   - name: prepareUmdfHid
     type: boolean
     default: false
+  - name: umdfHidCondition
+    type: string
+    default: succeeded()
   - name: mwbRuntimeCondition
     type: string
     default: succeeded()
@@ -769,6 +772,8 @@ jobs:
 
   - ${{ if eq(parameters.prepareUmdfHid, true) }}:
     - template: steps-build-umdf-hid.yml
+      parameters:
+        condition: ${{ parameters.umdfHidCondition }}
 
   - ${{ if eq(parameters.publishArtifacts, true) }}:
     - publish: $(JobOutputDirectory)

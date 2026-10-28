@@ -16,6 +16,17 @@ namespace Microsoft.PowerToys.UITest.Next;
 /// </summary>
 public sealed class UmdfHidInput : IDisposable
 {
+    private const byte ControlReportId = 1;
+    private const byte SubmitInputCommand = 0x10;
+    private const byte KeyboardReportId = 2;
+    private const byte MouseReportId = 3;
+    private const int ControlReportLength = 16;
+    private const int KeyboardReportLength = 9;
+    private const int KeyboardKeyCapacity = 6;
+    private const ushort DeviceVendorId = 0xDEED;
+    private const ushort DeviceProductId = 0xFEED;
+    private const ushort ControlUsagePage = 0xFF00;
+    private const ushort ControlUsage = 1;
     private static readonly object ModeLock = new();
     private static UmdfHidInput? active;
     private readonly SafeFileHandle device;
@@ -24,11 +35,11 @@ public sealed class UmdfHidInput : IDisposable
     private byte buttons;
     private int mouseX;
     private int mouseY;
+    private bool hasMousePosition;
     private bool disposed;
 
     private UmdfHidInput()
     {
-        (mouseX, mouseY) = MouseHelper.GetMousePosition();
         device = OpenControlDevice();
     }
 
@@ -71,8 +82,11 @@ public sealed class UmdfHidInput : IDisposable
             {
                 try
                 {
-                    buttons = 0;
-                    SubmitMouse();
+                    if (buttons != 0)
+                    {
+                        buttons = 0;
+                        SubmitMouse();
+                    }
                 }
                 finally
                 {
@@ -142,6 +156,7 @@ public sealed class UmdfHidInput : IDisposable
             _ = Normalize(y, screen.Height);
             mouseX = x;
             mouseY = y;
+            hasMousePosition = true;
             SubmitMouse();
         }
     }
@@ -151,6 +166,15 @@ public sealed class UmdfHidInput : IDisposable
         lock (ModeLock)
         {
             ObjectDisposedException.ThrowIf(disposed, this);
+            if (!hasMousePosition)
+            {
+                (mouseX, mouseY) = MouseHelper.GetMousePosition();
+                var screen = System.Windows.Forms.SystemInformation.PrimaryMonitorSize;
+                _ = Normalize(mouseX, screen.Width);
+                _ = Normalize(mouseY, screen.Height);
+                hasMousePosition = true;
+            }
+
             switch (flags)
             {
                 case 0x01:
@@ -202,13 +226,13 @@ public sealed class UmdfHidInput : IDisposable
     {
         ArgumentNullException.ThrowIfNull(usages);
         var keys = usages.Distinct().Order().ToArray();
-        if (keys.Length > 6)
+        if (keys.Length > KeyboardKeyCapacity)
         {
             throw new InvalidOperationException("The virtual HID keyboard supports at most six simultaneous non-modifier keys.");
         }
 
-        var report = new byte[9];
-        report[0] = 2;
+        var report = new byte[KeyboardReportLength];
+        report[0] = KeyboardReportId;
         report[1] = modifier;
         keys.CopyTo(report, 3);
         return report;
@@ -251,14 +275,14 @@ public sealed class UmdfHidInput : IDisposable
         var screen = System.Windows.Forms.SystemInformation.PrimaryMonitorSize;
         var x = Normalize(mouseX, screen.Width);
         var y = Normalize(mouseY, screen.Height);
-        Submit([3, buttons, (byte)(x & 255), (byte)(x >> 8), (byte)(y & 255), (byte)(y >> 8), unchecked((byte)wheel)]);
+        Submit([MouseReportId, buttons, (byte)(x & 255), (byte)(x >> 8), (byte)(y & 255), (byte)(y >> 8), unchecked((byte)wheel)]);
     }
 
     private void Submit(byte[] input)
     {
-        var packet = new byte[16];
-        packet[0] = 1;
-        packet[1] = 0x10;
+        var packet = new byte[ControlReportLength];
+        packet[0] = ControlReportId;
+        packet[1] = SubmitInputCommand;
         input.CopyTo(packet, 2);
         var timer = Stopwatch.StartNew();
         while (!HidD_SetFeature(device, packet, packet.Length))
@@ -324,13 +348,13 @@ public sealed class UmdfHidInput : IDisposable
                     }
 
                     var attributes = new HidAttributes { Size = Marshal.SizeOf<HidAttributes>() };
-                    var matches = HidD_GetAttributes(handle, ref attributes) && attributes.Vendor == 0xDEED && attributes.Product == 0xFEED;
+                    var matches = HidD_GetAttributes(handle, ref attributes) && attributes.Vendor == DeviceVendorId && attributes.Product == DeviceProductId;
                     if (matches && HidD_GetPreparsedData(handle, out var preparsed))
                     {
                         try
                         {
                             matches = HidP_GetCaps(preparsed, out var caps) == 0x110000 &&
-                                caps.UsagePage == 0xFF00 && caps.Usage == 1 && caps.FeatureLength == 16;
+                                caps.UsagePage == ControlUsagePage && caps.Usage == ControlUsage && caps.FeatureLength == ControlReportLength;
                         }
                         finally
                         {

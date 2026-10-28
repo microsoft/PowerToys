@@ -41,8 +41,8 @@ public sealed class GrabAndMoveTests : UITestBase
     private static readonly string SettingsPath = Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, ModuleName, "settings.json");
     private static IDisposable? originalSettings;
     private static UmdfHidInput? hidInput;
+    private static Point originalPointer;
     private TestWindow? fixture;
-    private Point originalPointer;
 
     public GrabAndMoveTests()
         : base(PowerToysModule.PowerToysSettings, enableModules: [ModuleName])
@@ -56,6 +56,8 @@ public sealed class GrabAndMoveTests : UITestBase
     {
         ArgumentNullException.ThrowIfNull(context);
         Assert.IsFalse(ElevationHelper.IsCurrentProcessElevated(), "Run Grab And Move tests in a standard-user desktop.");
+        var (x, y) = MouseHelper.GetMousePosition();
+        originalPointer = new Point(x, y);
         hidInput = UmdfHidInput.Activate();
         context.WriteLine($"Real HID input: {hidInput.DevicePath}");
         StopProduct();
@@ -78,16 +80,21 @@ public sealed class GrabAndMoveTests : UITestBase
             finally
             {
                 originalSettings = null;
-                hidInput?.Dispose();
-                hidInput = null;
+                try
+                {
+                    hidInput?.Dispose();
+                }
+                finally
+                {
+                    hidInput = null;
+                    MouseHelper.MoveTo(originalPointer.X, originalPointer.Y);
+                }
             }
         }
     }
 
     protected override void PrepareTestState()
     {
-        var (x, y) = MouseHelper.GetMousePosition();
-        originalPointer = new Point(x, y);
         Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
         File.WriteAllText(SettingsPath, BaselineSettings);
     }
@@ -158,8 +165,15 @@ public sealed class GrabAndMoveTests : UITestBase
         var processId = ModuleProcessId();
 
         Step("Changing the activation modifier from Alt to Windows key through Settings");
-        Session.EnsureForeground();
-        Assert.IsTrue(WindowControl.WaitForForeground(new IntPtr(Session.WindowHandle), 5_000), ForegroundDiagnostic());
+        var settings = new IntPtr(Session.WindowHandle);
+        fixture!.TransferForegroundTo(settings);
+        var foreground = WaitHelper.WaitForStable(
+            WindowControl.GetForegroundWindowHandle,
+            hwnd => hwnd == settings,
+            5_000,
+            requiredConsecutiveMatches: 3,
+            recover: _ => fixture.TransferForegroundTo(settings));
+        Assert.IsTrue(foreground.Succeeded, ForegroundDiagnostic());
         var modifier = Find<ComboBox>(By.Name("Activation modifier key"));
         modifier.Focus();
         KeyboardHelper.SendKeys(Key.End);
@@ -227,7 +241,6 @@ public sealed class GrabAndMoveTests : UITestBase
             MouseHelper.RightUp();
             KeyboardHelper.ReleaseKey(Key.Alt);
             KeyboardHelper.ReleaseKey(Key.LWin);
-            MouseHelper.MoveTo(originalPointer.X, originalPointer.Y);
         }
         finally
         {

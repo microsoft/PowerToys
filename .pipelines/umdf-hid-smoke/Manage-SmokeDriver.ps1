@@ -25,7 +25,7 @@ finally {
 }
 
 function Get-OwnedDevices {
-    @(Get-PnpDevice -ErrorAction Stop | Where-Object InstanceId -Like 'ROOT\HIDCLASS\*' | Where-Object {
+    @(Get-PnpDevice -PresentOnly -ErrorAction Stop | Where-Object InstanceId -Like 'ROOT\HIDCLASS\*' | Where-Object {
         $ids = (Get-PnpDeviceProperty -InstanceId $_.InstanceId -KeyName DEVPKEY_Device_HardwareIds -ErrorAction Stop).Data
         $hardwareId -in $ids
     })
@@ -161,10 +161,15 @@ if ($Action -eq 'Cleanup') {
     if ($state.HardwareId -ne $hardwareId -or $state.Subject -ne $subject -or $state.Thumbprint -notmatch '^[A-Fa-f0-9]{40}$') {
         throw 'Invalid UMDF smoke cleanup journal.'
     }
+    if (@($state.InfNames | Where-Object { $_ -notmatch '^oem[0-9]+\.inf$' }).Count) {
+        throw 'Invalid published driver filename in cleanup journal.'
+    }
+    if (@($state.ImportedStores | Where-Object { $_ -notin @('Root', 'TrustedPublisher') }).Count) {
+        throw 'Unexpected certificate store in cleanup journal.'
+    }
     $errors = [Collections.Generic.List[string]]::new()
     $ownedDevices = @(Get-OwnedDevices)
     foreach ($name in $state.InfNames) {
-        if ($name -notmatch '^oem[0-9]+\.inf$') { throw 'Invalid published driver filename in cleanup journal.' }
         $inf = Join-Path $env:WINDIR "INF\$name"
         if (Test-Path -LiteralPath $inf) {
             if (-not (Select-String -LiteralPath $inf -SimpleMatch $hardwareId -Quiet)) {
@@ -181,14 +186,13 @@ if ($Action -eq 'Cleanup') {
         if ($LASTEXITCODE -notin @(0, 3010)) { $errors.Add("Device removal failed: $($device.InstanceId), exit $LASTEXITCODE") }
     }
     foreach ($store in $state.ImportedStores) {
-        if ($store -notin @('Root', 'TrustedPublisher')) { throw 'Unexpected certificate store in cleanup journal.' }
         $path = "Cert:\LocalMachine\$store\$($state.Thumbprint)"
         if (Test-Path $path) {
             if ((Get-Item $path).Subject -ne $subject) { throw 'Refusing to remove an unrelated certificate.' }
             Remove-Item $path
         }
     }
-    $remaining = @(Get-OwnedDevices | Where-Object Status -ne 'Unknown')
+    $remaining = @(Get-OwnedDevices)
     if ($remaining.Count) { $errors.Add('An owned UMDF device remains after cleanup.') }
     [pscustomobject]@{ Removed = $errors.Count -eq 0; Errors = @($errors) } |
         ConvertTo-Json -Depth 4 | Set-Content (Join-Path $ResultsDirectory 'driver-cleanup.json')
@@ -238,13 +242,15 @@ try {
         }
     }
     $currentStore = $null
-    foreach ($file in @('VhidminiUm.dll', 'PtHidProbe.cat')) {
+    foreach ($file in @('VhidminiUm.dll', 'PtHidProbe.cat', 'CreateUmdfHidDevice.exe')) {
         $signature = Get-AuthenticodeSignature (Join-Path $driver $file)
         if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Thumbprint -ne $certificate.Thumbprint) {
             throw "Driver signature validation failed: $file, $($signature.Status)"
         }
     }
-    & (Join-Path $driver 'devcon.exe') install (Join-Path $driver 'PtHidProbe.inf') $hardwareId
+    & (Join-Path $driver 'CreateUmdfHidDevice.exe')
+    if ($LASTEXITCODE -ne 0) { throw "Virtual HID root-device creation failed: $LASTEXITCODE." }
+    & pnputil.exe /add-driver (Join-Path $driver 'PtHidProbe.inf') /install
     $installExit = $LASTEXITCODE
     $state.InfNames = @(Get-ChildItem (Join-Path $env:WINDIR 'INF') -Filter 'oem*.inf' -File |
         Where-Object { $_.Name -notin $before -and (Select-String -LiteralPath $_.FullName -SimpleMatch $hardwareId -Quiet) } |

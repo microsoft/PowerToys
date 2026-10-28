@@ -83,6 +83,7 @@ stages:
             runTests: ${{ parameters.runTests }}
             buildTests: true
             prepareMwbRuntime: ${{ and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}
+            prepareUmdfHid: ${{ and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}
             ${{ if and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}:
               dependsOn:
                 - Resolve
@@ -90,7 +91,9 @@ stages:
               condition: and(not(failed()), not(canceled()))
               variables:
                 MwbSandboxSelected: $[ dependencies.Resolve.outputs['resolve.hasMwbUiTests'] ]
+                UmdfHidSelected: $[ dependencies.Resolve.outputs['resolve.hasUmdfHidUiTests'] ]
               mwbRuntimeCondition: and(succeeded(), eq(variables['MwbSandboxSelected'], 'true'))
+              umdfHidCondition: and(succeeded(), eq(variables['UmdfHidSelected'], 'true'))
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
             ${{ if eq(parameters.useLatestWinAppSDK, true) }}:

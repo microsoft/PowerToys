@@ -52,8 +52,10 @@ if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notm
 $packages = if ($PackageCache) { [IO.Path]::GetFullPath($PackageCache) } else { Join-Path $work 'packages' }
 $downloads = Join-Path $work 'downloads'
 New-Item $downloads -ItemType Directory -Force | Out-Null
-$ids = @('Microsoft.Windows.SDK.CPP', 'Microsoft.Windows.SDK.CPP.x64', 'Microsoft.Windows.SDK.CPP.arm64',
-    'Microsoft.Windows.WDK.x64', 'Microsoft.Windows.WDK.arm64')
+$ids = @('Microsoft.Windows.SDK.CPP', 'Microsoft.Windows.SDK.CPP.x64', 'Microsoft.Windows.WDK.x64')
+if ($Platforms -contains 'ARM64') {
+    $ids += 'Microsoft.Windows.SDK.CPP.arm64', 'Microsoft.Windows.WDK.arm64'
+}
 foreach ($id in $ids) {
     $name = "$id.$version.nupkg"
     $file = if ($PackageCache) { Join-Path $packages "$id.$version\$name" } else { Join-Path $downloads $name }
@@ -69,7 +71,10 @@ if (-not $PackageCache) {
     $escapedDownloads = [Security.SecurityElement]::Escape($downloads)
     "<configuration><packageSources><clear/><add key=`"VerifiedMicrosoft`" value=`"$escapedDownloads`"/></packageSources><packageSourceMapping><clear/><packageSource key=`"VerifiedMicrosoft`"><package pattern=`"Microsoft.Windows.*`"/></packageSource></packageSourceMapping></configuration>" |
         Set-Content $config
-    & $nuget restore (Join-Path $sample 'packages.config') -PackagesDirectory $packages -ConfigFile $config -NonInteractive -Verbosity quiet
+    $packageReferences = ($ids | ForEach-Object { "<package id=`"$_`" version=`"$version`" />" }) -join ''
+    $packageManifest = Join-Path $work 'packages.config'
+    "<packages>$packageReferences</packages>" | Set-Content $packageManifest
+    & $nuget restore $packageManifest -PackagesDirectory $packages -ConfigFile $config -NonInteractive -Verbosity quiet
     if ($LASTEXITCODE) { throw 'Official WDK/SDK restore failed.' }
 }
 $signTool = Get-ChildItem (Join-Path $packages "Microsoft.Windows.SDK.CPP.$version") -Recurse -Filter signtool.exe |
@@ -103,21 +108,26 @@ try {
         & (Join-Path $repo 'tools\build\build.cmd') -Path (Join-Path $PSScriptRoot 'driver') `
             -Platform $platform -Configuration Release
         if ($LASTEXITCODE) { throw "Native UMDF build failed: $platform" }
+        & (Join-Path $repo 'tools\build\build.cmd') -Path (Join-Path $PSScriptRoot 'device') `
+            -Platform $platform -Configuration Release
+        if ($LASTEXITCODE) { throw "Native root-device helper build failed: $platform" }
         $inf = Get-Content (Join-Path $PSScriptRoot 'driver\PtHidProbe.inf') -Raw
         if ($platform -eq 'ARM64') { $inf = $inf.Replace('NTamd64', 'NTarm64') }
         Set-Content (Join-Path $driver 'PtHidProbe.inf') $inf -Encoding ascii
         Export-Certificate -Cert $certificate -FilePath (Join-Path $driver 'PtHidProbe.cer') | Out-Null
-        & $signTool sign /s My /sha1 $certificate.Thumbprint /fd SHA256 (Join-Path $driver 'VhidminiUm.dll')
-        if ($LASTEXITCODE) { throw "Driver DLL signing failed: $platform" }
+        foreach ($binary in @('VhidminiUm.dll', 'CreateUmdfHidDevice.exe')) {
+            & $signTool sign /s My /sha1 $certificate.Thumbprint /fd SHA256 (Join-Path $driver $binary)
+            if ($LASTEXITCODE) { throw "Test binary signing failed: $platform, $binary" }
+        }
         $catalogOs = if ($platform -eq 'ARM64') { '10_VB_ARM64,10_CO_ARM64' } else { '10_VB_X64,10_CO_X64' }
         & $inf2cat "/driver:$driver" "/os:$catalogOs" /uselocaltime
         if ($LASTEXITCODE) { throw "Driver catalog generation failed: $platform" }
         & $signTool sign /s My /sha1 $certificate.Thumbprint /fd SHA256 (Join-Path $driver 'PtHidProbe.cat')
         if ($LASTEXITCODE) { throw "Catalog signing failed: $platform" }
-        $devconArch = if ($platform -eq 'ARM64') { 'arm64' } else { 'x64' }
-        $devcon = Join-Path $packages "Microsoft.Windows.WDK.$platform.$version\c\tools\10.0.28000.0\$devconArch\devcon.exe"
-        Copy-Item $devcon (Join-Path $driver 'devcon.exe')
+        $obsoleteTool = Join-Path $driver 'devcon.exe'
+        if (Test-Path -LiteralPath $obsoleteTool) { Remove-Item -LiteralPath $obsoleteTool }
         Copy-Item (Join-Path $sample 'LICENSE') (Join-Path $driver 'MS-PL.txt')
+        Copy-Item (Join-Path $repo 'LICENSE') (Join-Path $driver 'MIT-LICENSE.txt')
         Copy-Item (Join-Path $PSScriptRoot 'UPSTREAM.txt') $driver
 
         if (-not $DriverOnly) {
