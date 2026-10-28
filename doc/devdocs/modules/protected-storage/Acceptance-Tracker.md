@@ -22,7 +22,7 @@
 | 最近确认的运行环境 | **已切换到 `0.101.6003.0`**；新 Runner/Quick Access/Editor，服务 Running、`data_recovery_required=0` |
 | 新包部署状态 | 2026-10-28 14:49 经管理员授权完成本地保留数据更新；之前的 `ERROR_CANCELLED (1223)` 保留为历史记录 |
 | 数据保护结果 | 本次更新前后 `storage.index` 和活动 blob 哈希完全相同；旧 Code 已保留；没有 Reset、Purge 或重新迁移 |
-| 当前验收结论 | **真实 Quick Access -> Editor 列表及普通 CLI 查询已通过**；CRUD、launch/跨 UAC、迁移异常及正式 MSI 矩阵仍需各自执行，不能据此全部放行 |
+| 当前验收结论 | **真实 Quick Access -> Editor 列表及普通 CLI 查询已通过；DATA-14 当前为 FAIL**：6003 启动包含管理员 Notepad 的工作区时，protected plan 握手返回访问拒绝。其他 CRUD、普通 launch、迁移异常及正式 MSI 矩阵仍需各自执行 |
 
 `6003` 是合入 main 后的**本地 E2E 测试构建**，使用
 `ProtectedStorage.LocalLifecycle.exe` 和本地测试 bundle，不是正式 carrier MSI 部署。
@@ -79,7 +79,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 |---|---|---|
 | B01（已解除） | 早前提权取消后服务留在 6002；14:39 发现新 6003 客户端反复被旧 catalog 拒绝 | 2026-10-28 14:49 已授权保留数据更新，核对新 ready/catalog 和不变的数据哈希（E13/E15）。未执行的用例转为 NOT RUN，不自动变为 PASS |
 | B02 | 尚未在本台账提供并核验包含本次集成代码的正式签名安装包及升级配对版本 | P 环境安装/升级/卸载不能用本地 helper 或历史 3000/3001 CI 结果替代 |
-| R01 | 旧运行链路在 Arranger 启动会话阶段失败；隔离实验复现 Medium 查询 High 的 `PROCESS_QUERY_INFORMATION` 被 `NoReadUp` 拒绝，错误 5 | 6003 暂保留原 mapped-image 校验，**尚未实机复测**。句柄交接只是候选，不是 PR #51114 的要求，也未加入产品；不能删除检查来制造通过 |
+| R01（当前已复现） | 2026-10-28 16:19/16:30，6003 的 Medium shared executor 已创建 Arranger，但 protected plan 握手返回 `Unauthorized (native=5)`，Launcher 退出 7，尚未进入应用启动阶段 | E16 确认当前产品的失败阶段；当前保留的 `VerifyPeerImage` 仍申请完整查询权限，与 E10 的 NoReadUp 实验一致。本次没有已退出 Arranger 的 token/逐调用栈，不把推导写成捕获的 syscall 证据。句柄交接仍只是候选，未加入产品 |
 | R02 | 通用 “protected storage unavailable” 曾掩盖启动会话错误；授权不匹配还曾提供无效 Retry | 后一问题已修复并实测（E11/E12）；UX-01 的其他错误分类仍需逐项验证，不能根据弹窗直接诊断服务坏了 |
 | R03 | Capture 仍可能全量枚举 AppsFolder；旧机测约 35 秒，launch/arranger 已有定向查询改动 | PERF-01/02 分别量测；不把 launch 优化宣称为 Capture 已优化，也不把旧版更快的原因归因于未经 A/B 验证的缓存或 Debug |
 | R04 | 服务删除不等于 VA profile 已卸载；旧测试曾报告 profile 仍 loaded | 清理应报告准确残留，不强制卸载 hive；REM-06/CLEAN-02 单独判断 |
@@ -154,7 +154,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | DATA-11 / P0 | Capture/取消；preview 归属正确、有大小/生命周期限制、可回收，不写可篡改临时计划 | NOT RUN | 部署前置已满足；Capture 的速度另见 PERF-02 |
 | DATA-12 / P0 | 已保存/未保存工作区 Launch & Edit；使用准确 preview，重新捕获/保存/取消符合预期 | NOT RUN | 部署前置已满足；缺失/过期 preview 不接受任意 temp JSON，单测只覆盖其中拒绝分支 |
 | DATA-13 / P0 | Editor/快捷方式/CLI 启动普通工作区；目标、参数、布局、move-existing、最小化/最大化正确 | NOT RUN | 部署前置已满足；使用自有 fixture 的新 PID/启动时间，不把既有 Notepad 当新启动 |
-| DATA-14 / P0 | Medium 执行核心 -> High Arranger；同账号提升和 OTS 分别测试；原 owner/会话/精确计划不变，目标应用 elevation 正确 | NOT RUN | 部署前置已满足；另见 R01；6003 尚未实测，不能依据旧错误或候选实验标成新包 FAIL/PASS |
+| DATA-14 / P0 | Medium 执行核心 -> High Arranger；同账号提升和 OTS 分别测试；原 owner/会话/精确计划不变，目标应用 elevation 正确 | FAIL | L64；2026-10-28 16:19/16:30 用户启动 `Migration - Two Windows`，两次 protected plan 握手 `Unauthorized/native=5`，Launcher 退出 7（E16）。Notepad 的 elevated 标志为 true；未进入应用启动阶段。OTS/实际目标 token 矩阵尚未完成 |
 | DATA-15 / P0 | 安装元数据与 last-launched 经可观察 CAS 写回；不覆盖新编辑，不在 destructor 静默 I/O，不因重试重复启动 | NOT RUN | 部署前置已满足；成功启动与历史写回失败要分别反馈 |
 | DATA-16 / P1 | CmdPal/ModuleServices 枚举与启动使用同一 repository/owner；读取不预配，无 legacy escape | NOT RUN | 部署前置已满足；相关正式 host 还需新 catalog/构建证据 |
 | DATA-17 / P1 | Export 得到一致显式副本；Import 确认后完整替换，坏 JSON 整体拒绝；副本不是 live source | NOT RUN | 部署前置已满足；先备份可丢弃测试集合，不擅自替换真实业务数据 |
@@ -196,7 +196,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 | ID / 优先级 | 操作与通过标准 | 当前状态 | 证据 / 注意事项 |
 |---|---|---|---|
-| UX-01 / P0 | 区分未设置、服务停机、存储恢复、arranger 身份/通信、UAC 取消、应用启动失败；日志保留阶段/native error | PARTIAL | L64；授权不匹配不再提供无效 Retry/首次 Setup，真实 UI 已验证；通信超时仍可 Retry（E11/E12）。其余分类及 R02 的启动会话问题待测 |
+| UX-01 / P0 | 区分未设置、服务停机、存储恢复、arranger 身份/通信、UAC 取消、应用启动失败；日志保留阶段/native error | PARTIAL | 授权错误 Retry 子项 E11/E12 已通过。本次启动失败显示 LaunchFailed，native 日志记录 protected plan/native=5，Editor 记录 Launcher 退出 7（E16）；7 是进程退出码，不是底层 Win32 原因。其他错误类别未全验 |
 | UX-02 / P0 | Launch & Edit 连点不产生第二次启动；页面 busy 可恢复，失败保留草稿，busy/failed 非“坏数据” | NOT RUN | 部署前置已满足；历史 H03 不直接沿用 |
 | UX-03 / P1 | 进度 UI 冷启动能收到状态；关闭/取消无挂死；Import/Export/Reload/Retry cleanup 作用明确 | NOT RUN | 部署前置已满足；Reload 不重新预配，Retry cleanup 不做 blob GC |
 | UX-04 / P1 | 中英文、长路径/错误文本等可读且本地化；无 console/JSON 内容泄漏或无响应错误循环 | NOT RUN | 部署前置已满足；真实 UI 观察另留证据 |
@@ -332,6 +332,7 @@ Q10 的“直接验证原始 MSI”仍是独立验证候选，未经另行立项
 | E13 | `oct28-quickaccess-repair.log`；新 worktree `x64\Debug\ProtectedStorageLocalTest\Results\repair-20261028-144909-181.json` | 实际授权 repair 成功、Running/6003、旧 Code 保留、index/blob 前后哈希相同；非正式 MSI 升级 |
 | E14 | `oct28-quickaccess-live-after.json`、`oct28-quickaccess-cli-after.json`、`oct28-quickaccess-cli-text.txt` | 真正 Quick Access 按钮启动 Editor，无授权错误；显示两条迁移记录；普通 CLI 查询及只读哈希核对 |
 | E15 | `oct28-quickaccess-build.log`、`oct28-quickaccess-final-check.json`、`oct28-quickaccess-shortcut.json` | 本轮完整构建/pinned trust、所有客户端 catalog 哈希匹配、成功维护报告以及桌面快捷方式指向新包 |
+| E16 | `oct28-launch-failure-6003.log`、`oct28-launch-failure-6003.json`、`oct28-launch-failure-dialog.png` | 用户两次真实启动的日志/截图；服务6003健康，Launcher/Arranger 文件匹配 catalog，工作区 elevated 标志、数据哈希和普通 owner 可读/执行 Arranger 文件的只读核对；没有重放启动或修改业务数据 |
 
 ### 历史参考（不计入 6003 的 PASS）
 
@@ -362,6 +363,8 @@ Q10 的“直接验证原始 MSI”仍是独立验证候选，未经另行立项
 | 2026-10-28 | CLI-01；L64 | PASS：普通 CLI text/JSON list、ID/details/name 查询均符合预期，无业务数据写入 | E14 |
 | 2026-10-28 | ACL-01/owner-read、SEC-02/catalog 子项；L64 | PASS：普通 owner 可直接读；错 catalog 拒绝、匹配后正常授权；主条目均保持 PARTIAL | E12/E14；其他账号/VA/目标权限仍未测 |
 | 2026-10-28 | LOCAL-01、AUTO-01/07/09；L64/AUTO | PASS：重建 bundle 的所有客户端哈希匹配；现有桌面本地快捷方式更新到集成目录 | E15；未执行管理员应用 launch，不关闭 DATA-14 或 R01 |
+| 2026-10-28 16:19 / 16:30 +08:00 | DATA-14；L64 | FAIL：用户两次启动包含 elevated Notepad 的工作区，额外的 protected arranger plan 握手访问被拒绝；未启动工作区应用 | E16；最新 Launcher PID 28788、Arranger PID 11392，native=5、进程退出=7；当前唯一 Notepad PID 14436 创建于 10-21，并非此次启动 |
+| 2026-10-28 | R01 / UX-01 诊断；L64 | 已定位产品失败阶段，不是旧服务版本或新 GetState 授权错误；NoReadUp 机制依据仍是 E10 的隔离实验与当前代码 | 服务 host17968/worker2072、6003、recovery=0；runtime 错误日志最后写入为 14:48，早于本次启动；index/blob 哈希不变。只读调研，未修改产品实现 |
 
 ### 后续逐项填写模板
 
