@@ -1437,4 +1437,6 @@
   <Project Path="tools/project_template/ModuleTemplate/ModuleTemplateCompileTest.vcxproj" Id="64a80062-4d8b-4229-8a38-dfa1d7497749" />
   <Project Path="tools/CliShim/CliShim.vcxproj" Id="8a7fb7fa-65ea-4004-ba73-1b237435a57b" />
   <Project Path="tools/CliShim.UnitTests/CliShim.UnitTests.vcxproj" Id="d4b0ed68-867d-46b4-a03f-ec52b9fbebe5" />
+  <Project Path="tools/BugReportTool/BugReportTool/BugReportTool.vcxproj" Id="99126840-5c30-4e9e-ac6c-e73dded5c3bd" />
+  <Project Path="tools/StylesReportTool/StylesReportTool.vcxproj" Id="0febafaf-cb77-41f0-8ef9-8e3ad4b4f842" />
 </Solution>

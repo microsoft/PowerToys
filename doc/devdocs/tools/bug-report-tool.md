@@ -99,21 +99,22 @@ When adding new PowerToys features, the Bug Report Tool may need to be updated t
 
 ## Build Process
 
-The Bug Report Tool is built separately from the main PowerToys solution:
+The Bug Report Tool is part of the main PowerToys solution (`PowerToys.slnx`):
 
-1. Path from root: `tools\BugReportTool\BugReportTool.sln`
-2. Must be built before building the installer
+1. Project path from root: `tools\BugReportTool\BugReportTool\BugReportTool.vcxproj`
+2. Built as part of `PowerToys.slnx`, before building the installer
 3. Built version is included in the PowerToys installer
+
+A standalone `tools\BugReportTool\BugReportTool.sln` is also available. It uses the NuGet packages restored by `PowerToys.slnx`, so restore or build `PowerToys.slnx` first.
 
 ### Building from the Command Line
 
 ```
-nuget restore .\tools\BugReportTool\BugReportTool.sln
-msbuild -p:Platform=x64 -p:Configuration=Release .\tools\BugReportTool\BugReportTool.sln
+msbuild -restore -p:RestorePackagesConfig=true -p:Platform=x64 -p:Configuration=Release .\PowerToys.slnx
 ```
 
 ### Building from Visual Studio
 
-1. Open `tools\BugReportTool\BugReportTool.sln`
+1. Open `PowerToys.slnx`
 2. Set the Solution Configuration to `Release`
-3. Build the solution
+3. Build the `BugReportTool` project

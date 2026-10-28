@@ -54,7 +54,7 @@ PowerToys includes several specialized tools to help with debugging and troubles
 
 ### Build Process
 
-The Styles Report Tool is built separately from the main PowerToys solution:
+The Styles Report Tool is part of the main PowerToys solution (`PowerToys.slnx`), so building `PowerToys.slnx` builds it. A standalone `tools\StylesReportTool\StylesReportTool.sln` is also available:
 
 ```
 nuget restore .\tools\StylesReportTool\StylesReportTool.sln
