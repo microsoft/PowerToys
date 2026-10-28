@@ -43,7 +43,43 @@ $uiTestModules = foreach ($module in $touchedModules) {
         ForEach-Object { $_.BaseName }
 }
 
+# Changes to the shared UI-test infrastructure (test job, resolver, install/sign/cleanup scripts,
+# UITestAutomation.Next) can break every suite without touching a module, so run a small smoke set
+# that covers a non-elevated suite with an MSIX fixture (CropAndLock) and an elevated suite (Hosts).
+$uiTestInfrastructurePatterns = @(
+    '^\.pipelines/resolveUiTestModules\.ps1$',
+    '^\.pipelines/installPowerToys\.ps1$',
+    '^\.pipelines/signSparsePackages\.ps1$',
+    '^\.pipelines/removeTestSigningCertificates\.ps1$',
+    '^\.pipelines/stopPowerToysProcesses\.ps1$',
+    '^\.pipelines/configureLightSwitchLocation\.ps1$',
+    '^\.pipelines/v2/templates/job-test-project\.yml$',
+    '^\.pipelines/v2/templates/job-resolve-ui-tests\.yml$',
+    '^\.pipelines/v2/templates/steps-download-artifacts-with-azure-cli\.yml$',
+    '^src/common/UITestAutomation\.Next/'
+)
+$smokeUiTestModules = @('CropAndLock.UITests', 'Hosts.UITests.Next')
+
+$infrastructureChanged = @(
+    $ChangedFile |
+        ForEach-Object { $_ -replace '\\', '/' } |
+        Where-Object {
+            $file = $_
+            @($uiTestInfrastructurePatterns | Where-Object { $file -match $_ }).Count -gt 0
+        }
+).Count -gt 0
+
+if ($infrastructureChanged) {
+    $smokeProjects = @(
+        Get-ChildItem -LiteralPath (Join-Path $RepoRoot 'src\modules') -Filter '*.csproj' -File -Recurse -ErrorAction SilentlyContinue |
+            Where-Object { $smokeUiTestModules -contains $_.BaseName } |
+            ForEach-Object { $_.BaseName }
+    )
+    $uiTestModules = @($uiTestModules) + $smokeProjects
+}
+
 [PSCustomObject]@{
     TouchedModules = @($touchedModules)
-    UiTestModules = @($uiTestModules | Sort-Object -Unique)
+    InfrastructureChanged = $infrastructureChanged
+    UiTestModules = @($uiTestModules | Where-Object { $_ } | Sort-Object -Unique)
 }
