@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using DesktopFlyouts;
 using Microsoft.PowerToys.QuickAccess.Flyout;
 using Microsoft.PowerToys.QuickAccess.ViewModels;
@@ -32,6 +34,7 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
     private ManualResetEventSlim? _listenerShutdownEvent;
     private Thread? _showListenerThread;
     private Thread? _exitListenerThread;
+    private CancellationTokenSource? _trimCts;
 
     public QuickAccessFlyoutHost(QuickAccessLaunchContext launchContext, Action exitApplication)
     {
@@ -47,6 +50,7 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
         _flyoutIsOpenChangedToken = _flyout.RegisterPropertyChangedCallback(DesktopFlyout.IsOpenProperty, OnFlyoutIsOpenChanged);
 
         InitializeEventListeners();
+        ScheduleMemoryTrim();
     }
 
     private void RequestHide()
@@ -86,6 +90,7 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
             return;
         }
 
+        CancelMemoryTrim();
         _flyout.Show();
 
         _flyout.RefreshIfAppsList();
@@ -106,9 +111,12 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
     {
         if (_flyout.IsOpen)
         {
+            CancelMemoryTrim();
             _explicitFlyoutHidePending = false;
             return;
         }
+
+        ScheduleMemoryTrim();
 
         if (_explicitFlyoutHidePending)
         {
@@ -117,6 +125,43 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
         }
 
         _lastImplicitFlyoutCloseTick = Environment.TickCount64;
+    }
+
+    private void ScheduleMemoryTrim()
+    {
+        CancelMemoryTrim();
+        _trimCts = new CancellationTokenSource();
+        var token = _trimCts.Token;
+
+        // Preserve the legacy launcher's idle-memory policy without trimming during quick toggles.
+        _ = Task.Delay(2000, token).ContinueWith(
+            _ =>
+            {
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+
+                if (!token.IsCancellationRequested)
+                {
+                    using var process = Process.GetCurrentProcess();
+                    SetProcessWorkingSetSize(process.Handle, -1, -1);
+                }
+            },
+            token,
+            TaskContinuationOptions.OnlyOnRanToCompletion,
+            TaskScheduler.Default);
+    }
+
+    private void CancelMemoryTrim()
+    {
+        _trimCts?.Cancel();
+        _trimCts?.Dispose();
+        _trimCts = null;
     }
 
     private void InitializeEventListeners()
@@ -281,6 +326,7 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
             return;
         }
 
+        CancelMemoryTrim();
         StopEventListeners();
         _showEvent?.Dispose();
         _exitEvent?.Dispose();
@@ -294,4 +340,8 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
 
     [DllImport("user32.dll")]
     private static extern uint GetDoubleClickTime();
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool SetProcessWorkingSetSize(IntPtr hProcess, nint dwMinimumWorkingSetSize, nint dwMaximumWorkingSetSize);
 }
