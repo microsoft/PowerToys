@@ -16,50 +16,74 @@ public class IndexerTests : CommandPaletteTestBase
     private const string TestFileContent = "This is Indexer UI test sample";
     private const string TestFolderName = "Downloads";
 
-    private string testFileName = string.Empty;
-    private string testFileBaseName = string.Empty;
-    private string testFilePath = string.Empty;
-    private string browseFolderPath = string.Empty;
+    private static string testFileName = string.Empty;
+    private static string testFileBaseName = string.Empty;
+    private static string testFilePath = string.Empty;
+    private static string browseFolderPath = string.Empty;
+    private static string browseChildFileName = string.Empty;
     private long containingFolderWindowHandle;
     private long consoleWindowHandle;
     private int[] consoleProcessIds = [];
 
-    protected override void PrepareTestState()
+    [ClassInitialize]
+    public static void PrepareIndexedFixture(TestContext context)
     {
         testFileBaseName = $"indexer_test_item_{Guid.NewGuid():N}";
         testFileName = testFileBaseName + ".txt";
         var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         Directory.CreateDirectory(documentsPath);
         testFilePath = Path.Combine(documentsPath, testFileName);
-        File.WriteAllText(testFilePath, TestFileContent, Encoding.UTF8);
+        browseFolderPath = Path.Combine(documentsPath, $"indexer_test_folder_{Guid.NewGuid():N}");
+        browseChildFileName = $"indexer_browse_item_{Guid.NewGuid():N}.txt";
+        var browseChildPath = Path.Combine(browseFolderPath, browseChildFileName);
         var indexed = false;
         try
         {
-            Step($"Waiting for Windows Search to index fixture '{testFileName}' before launching Command Palette");
+            File.WriteAllText(testFilePath, TestFileContent, Encoding.UTF8);
+            Directory.CreateDirectory(browseFolderPath);
+            File.WriteAllText(browseChildPath, TestFileContent, Encoding.UTF8);
+            context.WriteLine("Waiting for Windows Search to index the shared file and browse-folder fixtures before launching Command Palette");
             var folder = StorageFolder.GetFolderFromPathAsync(documentsPath).AsTask().GetAwaiter().GetResult();
             var options = new QueryOptions(CommonFileQuery.OrderByName, [".txt"])
             {
                 IndexerOption = IndexerOption.OnlyUseIndexer,
-                FolderDepth = FolderDepth.Shallow,
-                ApplicationSearchFilter = $"System.FileName:=\"{testFileName}\"",
+                FolderDepth = FolderDepth.Deep,
             };
             var readiness = WaitHelper.WaitForStable(
-                observe: () => folder.CreateFileQueryWithOptions(options).GetFilesAsync(0, 1)
+                observe: () => folder.CreateFileQueryWithOptions(options).GetFilesAsync()
                     .AsTask().GetAwaiter().GetResult()
-                    .Any(file => string.Equals(file.Path, testFilePath, StringComparison.OrdinalIgnoreCase)),
-                isMatch: present => present,
-                timeoutMS: 120_000,
+                    .Select(file => file.Path).ToHashSet(StringComparer.OrdinalIgnoreCase),
+                isMatch: paths => paths is not null && paths.Contains(testFilePath) && paths.Contains(browseChildPath),
+                timeoutMS: 180_000,
                 requiredConsecutiveMatches: 1,
                 pollIntervalMS: 1_000);
             indexed = readiness.Succeeded;
-            Assert.IsTrue(indexed, $"Windows Search did not index fixture '{testFilePath}' before UI-test startup.");
+            Assert.IsTrue(indexed, $"Windows Search did not index fixtures '{testFilePath}' and '{browseChildPath}' before UI-test startup.");
         }
         finally
         {
             if (!indexed)
             {
                 File.Delete(testFilePath);
+                if (Directory.Exists(browseFolderPath))
+                {
+                    Directory.Delete(browseFolderPath, recursive: true);
+                }
             }
+        }
+    }
+
+    [ClassCleanup]
+    public static void RemoveIndexedFixture()
+    {
+        if (!string.IsNullOrEmpty(testFilePath))
+        {
+            File.Delete(testFilePath);
+        }
+
+        if (Directory.Exists(browseFolderPath))
+        {
+            Directory.Delete(browseFolderPath, recursive: true);
         }
     }
 
@@ -101,16 +125,6 @@ public class IndexerTests : CommandPaletteTestBase
             catch (InvalidOperationException)
             {
             }
-        }
-
-        if (File.Exists(testFilePath))
-        {
-            File.Delete(testFilePath);
-        }
-
-        if (!string.IsNullOrEmpty(browseFolderPath) && Directory.Exists(browseFolderPath))
-        {
-            Directory.Delete(browseFolderPath, recursive: true);
         }
     }
 
@@ -250,18 +264,14 @@ public class IndexerTests : CommandPaletteTestBase
     {
         // Use a uniquely named folder: a plain "Downloads" query can also match shortcuts such as
         // %USERPROFILE%\Links\Downloads.lnk, which cannot be browsed.
-        var folderName = $"indexer_test_folder_{Guid.NewGuid():N}";
-        var childFileName = $"indexer_browse_item_{Guid.NewGuid():N}.txt";
-        browseFolderPath = Path.Combine(Path.GetDirectoryName(testFilePath)!, folderName);
-        Directory.CreateDirectory(browseFolderPath);
-        File.WriteAllText(Path.Combine(browseFolderPath, childFileName), TestFileContent, Encoding.UTF8);
+        var folderName = Path.GetFileName(browseFolderPath);
 
         EnterIndexerExtension();
         FindIndexedItem(folderName).MouseClick();
         Step($"Browsing '{folderName}' with the secondary command");
         CommandPaletteSession.Find<Button>(By.AccessibilityId("SecondaryCommandButton")).Click();
         Assert.IsNotNull(
-            CommandPaletteSession.Find<NavigationViewItem>(childFileName, timeoutMS: 15_000),
+            CommandPaletteSession.Find<NavigationViewItem>(browseChildFileName, timeoutMS: 15_000),
             "Browsing the folder did not list the file it contains.");
     }
 
@@ -334,6 +344,7 @@ public class IndexerTests : CommandPaletteTestBase
 
         // cmd.exe is hosted by conhost on Windows 10 and by Windows Terminal when it is the default
         // terminal (Windows 11); the title casing of the cmd.exe path also differs between them.
+        // A cold Terminal frame can appear before its console and title finish loading.
         WindowsFinder.WindowInfo? consoleWindow = null;
         var consoleSession = WindowsFinder.WaitForWindow(
             window =>
@@ -350,7 +361,7 @@ public class IndexerTests : CommandPaletteTestBase
 
                 return isConsole;
             },
-            timeoutMS: 15_000);
+            timeoutMS: 45_000);
         consoleProcessIds = GetProcessIds("cmd").Where(id => !cmdProcessesBefore.Contains(id)).ToArray();
         consoleWindowHandle = consoleWindow?.Hwnd ?? 0;
 

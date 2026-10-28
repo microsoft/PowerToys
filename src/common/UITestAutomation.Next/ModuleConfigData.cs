@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Windows.Management.Deployment;
+
 namespace Microsoft.PowerToys.UITest.Next;
 
 /// <summary>
@@ -97,7 +99,7 @@ internal static class ModulePaths
         // 2. Installer mode forces the installed layout.
         if (EnvironmentConfig.UseInstallerForTest)
         {
-            return installed;
+            return ResolveInstalledExecutablePath(module, installed, FindPackagedCommandPaletteExecutable);
         }
 
         // 3. Dev / CI-artifact mode: the build output that holds the exe is an ancestor of the test
@@ -110,6 +112,27 @@ internal static class ModulePaths
         // 4. Last resort: an installed build if present (returns the installed path either way so a
         //    launch failure names a concrete location).
         return installed;
+    }
+
+    internal static string ResolveInstalledExecutablePath(
+        PowerToysModule module,
+        string installedPath,
+        Func<string?> findPackagedCommandPaletteExecutable)
+    {
+        if (module != PowerToysModule.CommandPalette || File.Exists(installedPath))
+        {
+            return installedPath;
+        }
+
+        var packagedPath = findPackagedCommandPaletteExecutable();
+        if (!string.IsNullOrEmpty(packagedPath) && File.Exists(packagedPath))
+        {
+            return packagedPath;
+        }
+
+        throw new FileNotFoundException(
+            "The installed Command Palette executable was not found in its registered Microsoft.CommandPalette package.",
+            installedPath);
     }
 
     /// <summary>Process name as winappcli's <c>-a</c> flag accepts it (case-insensitive substring).</summary>
@@ -127,6 +150,24 @@ internal static class ModulePaths
         string.IsNullOrEmpty(meta.SubDir)
             ? Path.Combine(root, meta.ExeName)
             : Path.Combine(root, meta.SubDir, meta.ExeName);
+
+    private static string? FindPackagedCommandPaletteExecutable()
+    {
+        // Installers register CmdPal's MSIX instead of laying its executable out beside the runner.
+        var package = new PackageManager()
+            .FindPackagesForUser(
+                string.Empty,
+                "Microsoft.CommandPalette",
+                "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US")
+            .Where(package => !package.IsResourcePackage)
+            .OrderByDescending(package => new Version(
+                package.Id.Version.Major,
+                package.Id.Version.Minor,
+                package.Id.Version.Build,
+                package.Id.Version.Revision))
+            .FirstOrDefault();
+        return package is null ? null : Path.Combine(package.InstalledLocation.Path, Meta[PowerToysModule.CommandPalette].ExeName);
+    }
 
     private static bool TryComposeDevBuild(ModuleMeta meta, out string path)
     {
