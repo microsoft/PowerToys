@@ -21,7 +21,7 @@ public partial class IndexerCommandsProvider : CommandProvider
         DisplayName = Resources.IndexerCommandsProvider_DisplayName;
         Icon = Icons.FileExplorerIcon;
 
-        if (IndexerListItem.IsActionsFeatureEnabled && ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
+        if (IndexerListItem.IsActionsFeatureEnabled && OperatingSystem.IsWindowsVersionAtLeast(10, 0, 26100) && ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
         {
             _ = ActionRuntimeManager.InstanceAsync;
         }

@@ -3,6 +3,8 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
+    <!-- JIT-only test code: collection expressions here never cross the WinRT ABI, so the CsWinRT AOT analyzer does not apply. -->
+    <NoWarn>$(NoWarn);CsWinRT1032</NoWarn>
     <IsPackable>false</IsPackable>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -31,7 +32,7 @@ public partial class ActionsCommandsProvider : CommandProvider
         if (!_init)
         {
             _init = true;
-            if (ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
+            if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 26100) && ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
             {
                 _actionRuntime = ActionRuntimeManager.InstanceAsync.GetAwaiter().GetResult();
                 if (_actionRuntime != null)
@@ -53,8 +54,8 @@ public partial class ActionsCommandsProvider : CommandProvider
 
     private static bool GetFeatureFlag()
     {
-        var env = System.Environment.GetEnvironmentVariable("CMDPAL_ENABLE_ACTIONS_LIST");
+        var env = Environment.GetEnvironmentVariable("CMDPAL_ENABLE_ACTIONS_LIST");
         return !string.IsNullOrEmpty(env) &&
-           (env == "1" || env.Equals("true", System.StringComparison.OrdinalIgnoreCase));
+           (env == "1" || env.Equals("true", StringComparison.OrdinalIgnoreCase));
     }
 }
