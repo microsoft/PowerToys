@@ -13,23 +13,24 @@
 
 | 项目 | 当前记录 |
 |---|---|
-| 待验收代码 | `feature/workspaces-protected-storage-main-20261028`，产品代码提交 `e04dbf97a2ceb65d51905e80bbb41acf03c1c997` |
+| 待验收代码 | `feature/workspaces-protected-storage-main-20261028`，产品代码提交 `f119abd128241ce39759f8bd69ea374798a42c15`；包含 main 集成 `e04dbf97` 及授权错误 Retry 修复 |
 | 主线基线 | `8056ba09721708bceee6176291b24af7ebabb0b3`；包含 PR #51114，合并提交 `06e6ae43e225cac51c2f282b0eebc42c6f995c97` |
 | 集成 worktree | `D:\PowerToys-Workspaces-Integration` |
 | 待测本地包 | x64 Debug `0.101.6003.0`；入口 `D:\PowerToys-Workspaces-Integration\x64\Debug\PowerToys.exe` |
 | 原代码备份 | `backup/workspaces-protected-storage-20261028`，提交 `c576e95f70d4247efeb68afe1c50bc5f7e57f4e2`；含原 worktree 全部已跟踪/未跟踪源码改动 |
 | 原 worktree | `D:\PowerToys-Workspaces-E2E`；原 HEAD `146518e3a3c3120257799b89e061b304f81fdab7`、索引和源码保留 |
-| 最近确认的运行环境 | **仍是旧 `0.101.6002.0`**，服务 Running、`data_recovery_required=0`；旧 Runner/Editor 已恢复 |
-| 新包部署状态 | **未部署**。2026-10-28 请求提升 PowerShell 时返回 `ERROR_CANCELLED (1223)`，实际服务更新逻辑未执行 |
-| 数据保护结果 | 本次取消前后，旧 `storage.index` 和活动 blob 哈希相同；没有 Reset、Purge 或重新迁移 |
-| 当前验收结论 | 构建和部分自动化检查已有证据；**新 6003 的已部署端到端验收尚未通过** |
+| 最近确认的运行环境 | **已切换到 `0.101.6003.0`**；新 Runner/Quick Access/Editor，服务 Running、`data_recovery_required=0` |
+| 新包部署状态 | 2026-10-28 14:49 经管理员授权完成本地保留数据更新；之前的 `ERROR_CANCELLED (1223)` 保留为历史记录 |
+| 数据保护结果 | 本次更新前后 `storage.index` 和活动 blob 哈希完全相同；旧 Code 已保留；没有 Reset、Purge 或重新迁移 |
+| 当前验收结论 | **真实 Quick Access -> Editor 列表及普通 CLI 查询已通过**；CRUD、launch/跨 UAC、迁移异常及正式 MSI 矩阵仍需各自执行，不能据此全部放行 |
 
 `6003` 是合入 main 后的**本地 E2E 测试构建**，使用
 `ProtectedStorage.LocalLifecycle.exe` 和本地测试 bundle，不是正式 carrier MSI 部署。
 本地保留数据的 `Repair` 不能替代生产常规 MSI 升级、无新增 UAC、卸载或 servicing 验收。
 
 两个 worktree 当前使用同一个本地测试服务身份和设置目录；源码隔离不代表运行环境隔离。
-不能同时运行新旧客户端并假定它们都匹配同一份服务 catalog。旧桌面快捷方式尚未切到新包。
+不能同时运行新旧客户端并假定它们都匹配同一份服务 catalog。桌面本地测试快捷方式已指向
+新 worktree；这次验证了目标路径，但没有把快捷方式/Settings/热键全链路一并标成通过。
 仅切换构建时，应走经授权的保留数据更新；不要误用默认 `Prepare`、`Reset` 或 `Clean`。
 
 ## 2. 状态和逐项更新规则
@@ -76,10 +77,10 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 | 编号 | 事实 | 影响与解除条件 |
 |---|---|---|
-| B01 | 6002 -> 6003 本地保留数据更新的提权请求被取消；更新尚未开始 | L64 实机复测阻塞。取得授权后，先确认旧 UI 无草稿并退出，再执行保留数据更新，核对 Code/catalog、ready 和业务数据哈希 |
+| B01（已解除） | 早前提权取消后服务留在 6002；14:39 发现新 6003 客户端反复被旧 catalog 拒绝 | 2026-10-28 14:49 已授权保留数据更新，核对新 ready/catalog 和不变的数据哈希（E13/E15）。未执行的用例转为 NOT RUN，不自动变为 PASS |
 | B02 | 尚未在本台账提供并核验包含本次集成代码的正式签名安装包及升级配对版本 | P 环境安装/升级/卸载不能用本地 helper 或历史 3000/3001 CI 结果替代 |
 | R01 | 旧运行链路在 Arranger 启动会话阶段失败；隔离实验复现 Medium 查询 High 的 `PROCESS_QUERY_INFORMATION` 被 `NoReadUp` 拒绝，错误 5 | 6003 暂保留原 mapped-image 校验，**尚未实机复测**。句柄交接只是候选，不是 PR #51114 的要求，也未加入产品；不能删除检查来制造通过 |
-| R02 | 旧的通用 “protected storage unavailable” 弹窗会掩盖启动会话错误 | UX-01 必须分别验证存储、arranger 身份/通信、UAC 取消及应用启动失败，不能根据弹窗直接诊断服务坏了 |
+| R02 | 通用 “protected storage unavailable” 曾掩盖启动会话错误；授权不匹配还曾提供无效 Retry | 后一问题已修复并实测（E11/E12）；UX-01 的其他错误分类仍需逐项验证，不能根据弹窗直接诊断服务坏了 |
 | R03 | Capture 仍可能全量枚举 AppsFolder；旧机测约 35 秒，launch/arranger 已有定向查询改动 | PERF-01/02 分别量测；不把 launch 优化宣称为 Capture 已优化，也不把旧版更快的原因归因于未经 A/B 验证的缓存或 Debug |
 | R04 | 服务删除不等于 VA profile 已卸载；旧测试曾报告 profile 仍 loaded | 清理应报告准确残留，不强制卸载 hive；REM-06/CLEAN-02 单独判断 |
 | Q02 | 首次管理员授权时机、fail-closed 范围和 UX 仍需 PM 结论 | 当前不得启用不受保护 fallback；技术检查通过不等于 PM 已批准 |
@@ -90,15 +91,15 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 | ID | 检查与通过标准 | 当前状态 | 最近结果 / 证据 |
 |---|---|---|---|
-| AUTO-01 | 新 worktree 完整构建同版本 Runner、Settings、Quick Access、Editor、Launcher、LauncherUI、SnapshotTool、Arranger、CLI 和本地服务 bundle | PASS | 2026-10-28；x64 Debug 6003；E01。Quick Access 有已有弃用警告，不宣称全包零警告 |
+| AUTO-01 | 新 worktree 完整构建同版本 Runner、Settings、Quick Access、Editor、Launcher、LauncherUI、SnapshotTool、Arranger、CLI 和本地服务 bundle | PASS | 2026-10-28；含本轮 Retry 修复的 x64 Debug 6003，E15；E01 为前一轮。Quick Access 有已有弃用警告，不宣称全包零警告 |
 | AUTO-02 | 本次集成的默认原生 Workspaces 单测全部通过，含 repository、CLI 合同、元数据及缺少 protected preview 的拒绝行为 | PASS | 2026-10-28；188 passed，0 failed/skipped；E02。未启用 `WorkspacesCliLiveTests`，不包括真实服务/UAC 验收 |
-| AUTO-03 | 托管存储/协议/迁移/repository 测试通过 | PASS | 2026-10-28；48 passed，0 failed/skipped；E03 |
+| AUTO-03 | 托管存储/协议/迁移/repository 测试通过 | PASS | 2026-10-28；本轮 49 passed，0 failed/skipped；E11。新增回归在修复前确实失败；E03 的 48 项为前一轮 |
 | AUTO-04 | 最终目标代码的 native storage 套件及 20,000 次 framing mutation 全部通过 | RETEST | 集成初期曾 PASS 3,019 assertions + 20,000 mutations（E04）；之后调整了 `Authentication.cpp` 查询失败错误码采集，最终代码未单独重跑此完整套件 |
 | AUTO-05 | 原生 Setup/Lifecycle/Broker/MsiAction 编译及安装器契约检查通过 | PASS | 2026-10-28；4,129 installer contract checks；E05。不是正式 MSI 打包/安装通过 |
 | AUTO-06 | 发布流程的 mocked gates、最终文件字节/哈希、固定 policy/version、篡改拒绝检查通过 | PASS | 2026-10-28；E06；明确为 process-scoped mock，不是实际发布/servicing |
-| AUTO-07 | 本地测试 CMS 正常签名接受，内容改变或不同 signer 拒绝 | PASS | 2026-10-28；E01。该轮 `expiredFixture=False`，不能据此关闭过期证书案例，更不能代替生产时间戳/吊销检查 |
+| AUTO-07 | 本地测试 CMS 正常签名接受，内容改变或不同 signer 拒绝 | PASS | 2026-10-28；本轮 E15，历史 E01。`expiredFixture=False`，不能据此关闭过期证书案例，更不能代替生产时间戳/吊销检查 |
 | AUTO-08 | 新 CLI 的 `--version`、`--help` 正常退出且报告 6003 | PASS | 2026-10-28；E07。不是 `list`/`launch` 已访问新服务 |
-| AUTO-09 | 原源码完整保存、新集成提交持久化；新客户端文件哈希匹配新 catalog；取消部署未改变旧业务数据 | PASS | 2026-10-28；E08。原 HEAD/索引/源码核对，旧 index/blob 哈希一致；新服务仍未部署 |
+| AUTO-09 | 原源码完整保存、新集成提交持久化；新客户端文件哈希匹配新 catalog；维护不改变原业务数据 | PASS | 2026-10-28；源码保留 E08；本轮更新和 catalog/业务数据哈希 E13～E15；不再处于未部署状态 |
 
 ### 原生产构建与单测要求的保留状态
 
@@ -122,67 +123,67 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 | ID / 优先级 | 操作与通过标准 | 当前状态 | 证据 / 阻塞 |
 |---|---|---|---|
-| LOCAL-01 / P0 | 核对新目录全部 PE 版本和 catalog；不得夹带旧 worktree 客户端 | PASS | L64 文件检查；2026-10-28，AUTO-01/09；只证明 bits，不证明运行 |
-| LOCAL-02 / P0 | 退出旧 UI；保留数据更新服务；记录 Code 前后版本、ready、index/blob 哈希及回退证据 | BLOCKED | B01；必须保留数据，不执行 Reset |
-| LOCAL-03 / P0 | 从新 Runner 的 Settings、Quick Access、热键打开 Editor；实际进程全部来自新包，读到正确集合 | BLOCKED | B01；不能拿旧桌面快捷方式/旧 Runner 的窗口判定 |
-| LOCAL-04 / P1 | 开发构建的 settings/log/mutex/event 与正式安装隔离；不改正式配置、不自动更新/卸载正式版本 | BLOCKED | B01；新旧 LocalE2E 本身并非不同命名空间 |
+| LOCAL-01 / P0 | 核对新目录全部 PE 版本和 catalog；不得夹带旧 worktree 客户端 | PASS | L64 文件检查；2026-10-28，本轮 E15；实际 UI 路由另见 LOCAL-03 |
+| LOCAL-02 / P0 | 退出旧 UI；保留数据更新服务；记录 Code 前后版本、ready、index/blob 哈希及回退证据 | PASS | L64；2026-10-28 14:49，6002 -> 6003；E13/E15。旧 Code 保留，dataPreserved=true，无 Reset |
+| LOCAL-03 / P0 | 从新 Runner 的 Settings、Quick Access、热键打开 Editor；实际进程全部来自新包，读到正确集合 | PARTIAL | L64；真实 Quick Access 按钮 -> 新 Editor 列表 PASS，显示两条原记录（E14）；Settings/热键未测，桌面快捷方式仅核对目标（E15） |
+| LOCAL-04 / P1 | 开发构建的 settings/log/mutex/event 与正式安装隔离；不改正式配置、不自动更新/卸载正式版本 | NOT RUN | 部署前置已满足；新旧 LocalE2E 本身并非不同命名空间 |
 | INST-01 / P0 | A 的真实 per-user 首次预配；carrier 为 A 的 USERUNMANAGED/context 2，服务为对应 VA，不是 SYSTEM/管理员 owner | NOT RUN | P；B02；本地 helper 无 carrier MSI，不能替代 |
 | INST-02 / P0 | 标准用户 B 在 Setup UAC 输入另一管理员凭据；业务 owner 全程仍是 B | NOT RUN | P；真实交互 OTS，不用 Session 0 合成 token 代替 |
 | INST-03 / P0 | 在**首次 Setup UI**取消/无法授权；受影响功能明确阻断、旧源保留、其他模块仍可用 | NOT RUN | P；本次开发 PowerShell 提权取消不等于本项已通过 |
 | INST-04 / P0 | A/B 同版本分别预配；同产品包、不同注册/VA/服务/Data，互不覆盖，无 MST | NOT RUN | P；需要真实 A/B 登录 |
 | INST-05 / P0 | 已预配的普通用户正常使用；不重复预配、不反复请求服务授权 | NOT RUN | P；数据/应用启动 UAC 单独计数 |
 | INST-06 / P1 | 首次设置部分失败后 retry；识别自有 partial state，不删 established/peer 实例 | NOT RUN | P；先保留操作日志，未知结果先 inspect |
-| INST-07 / P0 | PowerToys 已提升时仍取得正确 owner 的普通 Editor/维护/执行上下文；不借用其他用户 shell | BLOCKED | L64：B01；正式两种 scope 另记 |
-| INST-08 / P0 | 安装/启用模块、后台枚举或普通 inspect/sync 不隐式首次预配或弹设置 UAC | BLOCKED | L64：B01；P 范围还需 B02 |
-| LIFE-01 / P0 | 退出重开 PowerToys，重启 Windows 后重新登录；服务 Auto、数据保留、不重复迁移/首次授权 | BLOCKED | L64：B01；重启需安排，不自动打断用户工作 |
+| INST-07 / P0 | PowerToys 已提升时仍取得正确 owner 的普通 Editor/维护/执行上下文；不借用其他用户 shell | NOT RUN | L64：部署前置已满足；正式两种 scope 另记 |
+| INST-08 / P0 | 安装/启用模块、后台枚举或普通 inspect/sync 不隐式首次预配或弹设置 UAC | NOT RUN | L64：部署前置已满足；P 范围还需 B02 |
+| LIFE-01 / P0 | 退出重开 PowerToys，重启 Windows 后重新登录；服务 Auto、数据保留、不重复迁移/首次授权 | NOT RUN | L64：部署前置已满足；重启需安排，不自动打断用户工作 |
 
 ## 6. 数据、迁移与日常业务
 
 | ID / 优先级 | 操作与通过标准 | 当前状态 | 证据 / 注意事项 |
 |---|---|---|---|
-| DATA-01 / P0 | 真正未初始化的 store + 两个旧工作区；完整校验、提交并重开；持久化后才删除匹配旧源 | BLOCKED | B01；6002 的迁移回执仅历史 H04；不得把已有 store 当首次迁移 |
-| DATA-02 / P1 | 旧 JSON 损坏、版本/条目不支持；整体拒绝，无部分发布/成功标记，源保留且可修复重试 | BLOCKED | B01；需要独立迁移 fixture |
-| DATA-03 / P1 | 旧数据含 elevated/参数等敏感字段；按 module 规则完整验证/迁移，service 不解释业务 JSON | BLOCKED | B01；不能为迁移成功静默丢弃字段 |
-| DATA-04 / P2 | 读取/迁移/清理之间替换源文件；提交验证过的同一快照，不能删除后来替换的源 | BLOCKED | B01；独立 fixture，记录文件 identity/hash |
-| DATA-05 / P2 | 提交后响应丢失；查询原 operation ID，不能重复导入覆盖成功迁移 | BLOCKED | B01；需确定性故障注入 |
-| DATA-06 / P1 | 阻止旧源清理；target 仍权威，显示 pending；Retry cleanup 只删除匹配源，不重复迁移 | BLOCKED | B01；不是 blob GC/服务修复 |
-| DATA-07 / P0 | 已初始化后重启/更新/KeepData 重装，或放回旧文件；不得再次自动导入旧副本 | BLOCKED | B01；合法空集合也算初始化 |
-| DATA-08 / P2 | 初始化记录存在但 record 缺失/损坏；明确 recovery-required，不回退明文、不初始化为空 | BLOCKED | B01；仅 disposable VM/数据 |
-| DATA-09 / P1 | 编辑器和受支持 writer 产生真实 CAS 竞争；冲突可见、草稿保留、不覆盖无关修改 | BLOCKED | B01；开两个窗口本身不证明发生竞争 |
-| DATA-10 / P0 | 创建、改名/参数/布局、保存、重开、删除；完整持久化；保存失败保留可恢复草稿 | BLOCKED | B01；覆盖中文/空格，删除记录不能复活 |
-| DATA-11 / P0 | Capture/取消；preview 归属正确、有大小/生命周期限制、可回收，不写可篡改临时计划 | BLOCKED | B01；Capture 的速度另见 PERF-02 |
-| DATA-12 / P0 | 已保存/未保存工作区 Launch & Edit；使用准确 preview，重新捕获/保存/取消符合预期 | BLOCKED | B01；缺失/过期 preview 不接受任意 temp JSON，单测只覆盖其中拒绝分支 |
-| DATA-13 / P0 | Editor/快捷方式/CLI 启动普通工作区；目标、参数、布局、move-existing、最小化/最大化正确 | BLOCKED | B01；使用自有 fixture 的新 PID/启动时间，不把既有 Notepad 当新启动 |
-| DATA-14 / P0 | Medium 执行核心 -> High Arranger；同账号提升和 OTS 分别测试；原 owner/会话/精确计划不变，目标应用 elevation 正确 | BLOCKED | B01、R01；6003 尚未实测，不能依据旧错误或候选实验标成新包 FAIL/PASS |
-| DATA-15 / P0 | 安装元数据与 last-launched 经可观察 CAS 写回；不覆盖新编辑，不在 destructor 静默 I/O，不因重试重复启动 | BLOCKED | B01；成功启动与历史写回失败要分别反馈 |
-| DATA-16 / P1 | CmdPal/ModuleServices 枚举与启动使用同一 repository/owner；读取不预配，无 legacy escape | BLOCKED | B01；相关正式 host 还需新 catalog/构建证据 |
-| DATA-17 / P1 | Export 得到一致显式副本；Import 确认后完整替换，坏 JSON 整体拒绝；副本不是 live source | BLOCKED | B01；先备份可丢弃测试集合，不擅自替换真实业务数据 |
-| DATA-18 / P2 | 已接受 save 时进入维护/停止/重启；已接受写入结果可确定，未接受请求可重试，不假成功 | BLOCKED | B01；保留 operation ID，未知结果先查询 |
+| DATA-01 / P0 | 真正未初始化的 store + 两个旧工作区；完整校验、提交并重开；持久化后才删除匹配旧源 | NOT RUN | 部署前置已满足；6002 的迁移回执仅历史 H04；不得把已有 store 当首次迁移 |
+| DATA-02 / P1 | 旧 JSON 损坏、版本/条目不支持；整体拒绝，无部分发布/成功标记，源保留且可修复重试 | NOT RUN | 部署前置已满足；需要独立迁移 fixture |
+| DATA-03 / P1 | 旧数据含 elevated/参数等敏感字段；按 module 规则完整验证/迁移，service 不解释业务 JSON | NOT RUN | 部署前置已满足；不能为迁移成功静默丢弃字段 |
+| DATA-04 / P2 | 读取/迁移/清理之间替换源文件；提交验证过的同一快照，不能删除后来替换的源 | NOT RUN | 部署前置已满足；独立 fixture，记录文件 identity/hash |
+| DATA-05 / P2 | 提交后响应丢失；查询原 operation ID，不能重复导入覆盖成功迁移 | NOT RUN | 部署前置已满足；需确定性故障注入 |
+| DATA-06 / P1 | 阻止旧源清理；target 仍权威，显示 pending；Retry cleanup 只删除匹配源，不重复迁移 | NOT RUN | 部署前置已满足；不是 blob GC/服务修复 |
+| DATA-07 / P0 | 已初始化后重启/更新/KeepData 重装，或放回旧文件；不得再次自动导入旧副本 | NOT RUN | 部署前置已满足；合法空集合也算初始化 |
+| DATA-08 / P2 | 初始化记录存在但 record 缺失/损坏；明确 recovery-required，不回退明文、不初始化为空 | NOT RUN | 部署前置已满足；仅 disposable VM/数据 |
+| DATA-09 / P1 | 编辑器和受支持 writer 产生真实 CAS 竞争；冲突可见、草稿保留、不覆盖无关修改 | NOT RUN | 部署前置已满足；开两个窗口本身不证明发生竞争 |
+| DATA-10 / P0 | 创建、改名/参数/布局、保存、重开、删除；完整持久化；保存失败保留可恢复草稿 | NOT RUN | 部署前置已满足；覆盖中文/空格，删除记录不能复活 |
+| DATA-11 / P0 | Capture/取消；preview 归属正确、有大小/生命周期限制、可回收，不写可篡改临时计划 | NOT RUN | 部署前置已满足；Capture 的速度另见 PERF-02 |
+| DATA-12 / P0 | 已保存/未保存工作区 Launch & Edit；使用准确 preview，重新捕获/保存/取消符合预期 | NOT RUN | 部署前置已满足；缺失/过期 preview 不接受任意 temp JSON，单测只覆盖其中拒绝分支 |
+| DATA-13 / P0 | Editor/快捷方式/CLI 启动普通工作区；目标、参数、布局、move-existing、最小化/最大化正确 | NOT RUN | 部署前置已满足；使用自有 fixture 的新 PID/启动时间，不把既有 Notepad 当新启动 |
+| DATA-14 / P0 | Medium 执行核心 -> High Arranger；同账号提升和 OTS 分别测试；原 owner/会话/精确计划不变，目标应用 elevation 正确 | NOT RUN | 部署前置已满足；另见 R01；6003 尚未实测，不能依据旧错误或候选实验标成新包 FAIL/PASS |
+| DATA-15 / P0 | 安装元数据与 last-launched 经可观察 CAS 写回；不覆盖新编辑，不在 destructor 静默 I/O，不因重试重复启动 | NOT RUN | 部署前置已满足；成功启动与历史写回失败要分别反馈 |
+| DATA-16 / P1 | CmdPal/ModuleServices 枚举与启动使用同一 repository/owner；读取不预配，无 legacy escape | NOT RUN | 部署前置已满足；相关正式 host 还需新 catalog/构建证据 |
+| DATA-17 / P1 | Export 得到一致显式副本；Import 确认后完整替换，坏 JSON 整体拒绝；副本不是 live source | NOT RUN | 部署前置已满足；先备份可丢弃测试集合，不擅自替换真实业务数据 |
+| DATA-18 / P2 | 已接受 save 时进入维护/停止/重启；已接受写入结果可确定，未接受请求可重试，不假成功 | NOT RUN | 部署前置已满足；保留 operation ID，未知结果先查询 |
 
 ## 7. PR #51114 的共享执行与 CLI
 
 | ID / 优先级 | 操作与通过标准 | 当前状态 | 证据 / 注意事项 |
 |---|---|---|---|
-| CLI-01 / P0 | 普通终端 list/filter/details/JSON 与 Editor 同一集合；不修改 index/blob，不读旧明文 | BLOCKED | B01；AUTO-08 的 help/version 不是本项 |
-| CLI-02 / P0 | GUI 和 CLI 的 Medium 入口使用共享执行核心；CLI 同步等最终 arrangement 结果，失败/部分成功不报全成功 | BLOCKED | B01；核对实际 PID 与结果，不只看 exit 0 |
-| CLI-03 / P0 | High GUI/CLI launch 先交给同用户/会话的 Medium host；按保存的 elevation 标志启动，不因高权限终端把所有目标提权 | BLOCKED | B01；High -> Medium 与 Medium -> High Arranger 是两条独立链路 |
-| CLI-04 / P1 | 拒绝错误 owner/会话、失效进程/映像、非法 private host 输入；普通调用不能注入任意 workspace snapshot | BLOCKED | B01；保护存储和 plan 的身份要求不得因合并而悄悄移除 |
-| CLI-05 / P1 | GUI Cancel/Ctrl+C/deadline/owner exit/第二次启动；停止后续应用，保留已启动应用，释放锁，结果未知不自动重放 | BLOCKED | B01；同时验证 callback teardown、冷启动 readiness 和 final-result ack |
-| CLI-06 / P1 | 控制台应用独立控制台；CLI stdin/stdout/JSON、退出码、code page、隐私遥测合同保持主线行为 | BLOCKED | B01；错误/警告不得污染 JSON 流，参数/工作区内容不进遥测 |
-| CLI-07 / P0 | 普通与提升终端分别验证 list 的 owner 上下文和错误反馈 | BLOCKED | B01；不能只用 launch 的降权结果推断 list |
+| CLI-01 / P0 | 普通终端 list/filter/details/JSON 与 Editor 同一集合；不修改 index/blob，不读旧明文 | PASS | L64；2026-10-28，普通 text/JSON list、两条记录的 ID/details/name 查询通过，与 Editor 一致，数据哈希不变（E14） |
+| CLI-02 / P0 | GUI 和 CLI 的 Medium 入口使用共享执行核心；CLI 同步等最终 arrangement 结果，失败/部分成功不报全成功 | NOT RUN | 部署前置已满足；核对实际 PID 与结果，不只看 exit 0 |
+| CLI-03 / P0 | High GUI/CLI launch 先交给同用户/会话的 Medium host；按保存的 elevation 标志启动，不因高权限终端把所有目标提权 | NOT RUN | 部署前置已满足；High -> Medium 与 Medium -> High Arranger 是两条独立链路 |
+| CLI-04 / P1 | 拒绝错误 owner/会话、失效进程/映像、非法 private host 输入；普通调用不能注入任意 workspace snapshot | NOT RUN | 部署前置已满足；保护存储和 plan 的身份要求不得因合并而悄悄移除 |
+| CLI-05 / P1 | GUI Cancel/Ctrl+C/deadline/owner exit/第二次启动；停止后续应用，保留已启动应用，释放锁，结果未知不自动重放 | NOT RUN | 部署前置已满足；同时验证 callback teardown、冷启动 readiness 和 final-result ack |
+| CLI-06 / P1 | 控制台应用独立控制台；CLI stdin/stdout/JSON、退出码、code page、隐私遥测合同保持主线行为 | NOT RUN | 部署前置已满足；错误/警告不得污染 JSON 流，参数/工作区内容不进遥测 |
+| CLI-07 / P0 | 普通与提升终端分别验证 list 的 owner 上下文和错误反馈 | NOT RUN | 部署前置已满足；不能只用 launch 的降权结果推断 list |
 
 ## 8. 权限、隔离与信任
 
 | ID / 优先级 | 操作与通过标准 | 当前状态 | 证据 / 注意事项 |
 |---|---|---|---|
-| ACL-01 / P0 | 所属普通用户和管理员直接读取/list Data 的 index、blob、日志；其他普通用户/其他 VA 不获得读取权限 | BLOCKED | B01；这是更新后的要求，不再要求 owner/admin 读访问被拒绝 |
-| ACL-02 / P0 | owner/admin 正常文件访问不能写、追加、删除、替换、更改 DACL/owner；SYSTEM/对应 VA 仍可写 | BLOCKED | B01；不实际写内容的 open-write 探针；SharingViolation/不存在不算 AccessDenied 通过 |
-| ACL-03 / P1 | 既有 Data 启动迁移、嵌套文件、新 blob、原子 index 替换均保持只读策略；内容哈希/对象 owner 不变 | BLOCKED | B01；AUTO fixture 有覆盖但不等于完整服务实测 |
-| ACL-04 / P1 | Code/Policy/SCM 权限不因 Data 可读而放宽；排障以共享 read/write/delete 打开，不能阻塞正常提交 | BLOCKED | B01；不测试管理员主动 take ownership/backup privilege 并宣称 ACL 可阻止机器管理员 |
-| SEC-01 / P0 | 普通用户不能修改 Code/Data/control；另一 VA 不能改其他 owner 的树 | BLOCKED | B01；正式多用户矩阵另记 |
-| SEC-02 / P0 | 错 SID、未授权映像/角色/目标、伪造 owner 请求被拒绝；CLI 身份列入正确 catalog | BLOCKED | B01；同一 SID 不自动等于获授权 module |
-| SEC-03 / P1 | 客户端拒绝伪造 VA/server image、错误 PID 或 PID 重用 | BLOCKED | B01；记录实际拒绝点 |
-| SEC-04 / P2 | reparse/hardlink/源替换不能重定向特权写入或执行 | BLOCKED | B01；仅隔离 fixture，正常权限不能放宽来完成测试 |
+| ACL-01 / P0 | 所属普通用户和管理员直接读取/list Data 的 index、blob、日志；其他普通用户/其他 VA 不获得读取权限 | PARTIAL | L64；本轮普通 owner 的 index/blob/log 读取已观察成功（E14）；管理员与跨用户/VA 实机矩阵未执行 |
+| ACL-02 / P0 | owner/admin 正常文件访问不能写、追加、删除、替换、更改 DACL/owner；SYSTEM/对应 VA 仍可写 | NOT RUN | 部署前置已满足；不实际写内容的 open-write 探针；SharingViolation/不存在不算 AccessDenied 通过 |
+| ACL-03 / P1 | 既有 Data 启动迁移、嵌套文件、新 blob、原子 index 替换均保持只读策略；内容哈希/对象 owner 不变 | NOT RUN | 部署前置已满足；AUTO fixture 有覆盖但不等于完整服务实测 |
+| ACL-04 / P1 | Code/Policy/SCM 权限不因 Data 可读而放宽；排障以共享 read/write/delete 打开，不能阻塞正常提交 | NOT RUN | 部署前置已满足；不测试管理员主动 take ownership/backup privilege 并宣称 ACL 可阻止机器管理员 |
+| SEC-01 / P0 | 普通用户不能修改 Code/Data/control；另一 VA 不能改其他 owner 的树 | NOT RUN | 部署前置已满足；正式多用户矩阵另记 |
+| SEC-02 / P0 | 错 SID、未授权映像/角色/目标、伪造 owner 请求被拒绝；CLI 身份列入正确 catalog | PARTIAL | L64；旧 catalog 拒绝新客户端、更新后正确客户端/CLI 可读已观察（E12～E15）；错 SID/角色/目标及伪造 owner 专项未执行 |
+| SEC-03 / P1 | 客户端拒绝伪造 VA/server image、错误 PID 或 PID 重用 | NOT RUN | 部署前置已满足；记录实际拒绝点 |
+| SEC-04 / P2 | reparse/hardlink/源替换不能重定向特权写入或执行 | NOT RUN | 部署前置已满足；仅隔离 fixture，正常权限不能放宽来完成测试 |
 | SEC-05 / P1 | VA 无 SCM ChangeConfig/WriteDac/WriteOwner；SYSTEM 不执行 VA 可写 live Code 作为维护入口 | NOT RUN | P；实际服务/维护路径验证 |
 | SEC-06 / P0 | 缺失/错签名/错 catalog/混包 fail-closed；无生产 Debug/test-root 旁路 | NOT RUN | P；本地 exact-pin 不能代替正式信任策略 |
 | SEC-07 / P1 | 不同有效 Microsoft production leaf 可独立接受；不要求跨文件 leaf 相同或手工 allowlist | NOT RUN | P；历史签名成功只作参考 |
@@ -195,18 +196,18 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 | ID / 优先级 | 操作与通过标准 | 当前状态 | 证据 / 注意事项 |
 |---|---|---|---|
-| UX-01 / P0 | 区分未设置、服务停机、存储恢复、arranger 身份/通信、UAC 取消、应用启动失败；日志保留阶段/native error | BLOCKED | B01、R02；不能再一律提示 storage unavailable/InvalidPayload |
-| UX-02 / P0 | Launch & Edit 连点不产生第二次启动；页面 busy 可恢复，失败保留草稿，busy/failed 非“坏数据” | BLOCKED | B01；历史 H03 不直接沿用 |
-| UX-03 / P1 | 进度 UI 冷启动能收到状态；关闭/取消无挂死；Import/Export/Reload/Retry cleanup 作用明确 | BLOCKED | B01；Reload 不重新预配，Retry cleanup 不做 blob GC |
-| UX-04 / P1 | 中英文、长路径/错误文本等可读且本地化；无 console/JSON 内容泄漏或无响应错误循环 | BLOCKED | B01；真实 UI 观察另留证据 |
-| PERF-01 / P1 | 正常 launch/arranger 不重复全量枚举；记录 metadata/首应用/arrangement 分段耗时，legacy fallback 有说明 | BLOCKED | B01、R03；用同机同数据比较，不凭印象认定更快 |
-| PERF-02 / P1 | Capture 独立量测全量枚举和 UI 响应；不得因 launch 优化宣称 Capture 已改善 | BLOCKED | B01、R03；记录性能问题，不靠放宽 storage timeout 隐藏 |
-| BLOB-01 / P1 | 正常保存先 durable 新 generation，再原子发布 index；旧 generation 正常可删除，保留 live 数据 | BLOCKED | B01；blob 不是每个 workspace 一份，也不是备份历史 |
-| BLOB-02 / P2 | 人为阻止旧 blob 删除/中断提交后重启；Recover 验证有效 index/live generations 后回收 orphan | BLOCKED | B01；当前无周期性 GC/每次删除失败诊断，不把即时全部删除当已实现承诺 |
-| BLOB-03 / P2 | index/live 数据损坏时先报告恢复状态，不在验证前误删仍需保留的文件 | BLOCKED | B01；仅 disposable 数据 |
-| CLEAN-01 / P1 | reset 的 WhatIf/备份/范围验证正确；备份成功后才删准确 owner 的测试服务/Code/Data；重复执行安全 | BLOCKED | B01；历史 H05 不证明新 helper 完整通过；默认不清所有历史 prototype |
-| CLEAN-02 / P1 | profile loaded、服务未停、Code 无法删、结果未知分别报告；不强卸 hive、不吞错误、不误伤其他用户/原型 | BLOCKED | B01、R04；权限拒绝不是“对象不存在” |
-| CLEAN-03 / P1 | PrepareMigration 生成合法旧格式、缺 ID 等真实 fixture 到 local legacy 位置；不预先消费迁移 | BLOCKED | B01；当前 6002 已有迁移记录，不能把 10-23 的准备状态当作现在仍未初始化 |
+| UX-01 / P0 | 区分未设置、服务停机、存储恢复、arranger 身份/通信、UAC 取消、应用启动失败；日志保留阶段/native error | PARTIAL | L64；授权不匹配不再提供无效 Retry/首次 Setup，真实 UI 已验证；通信超时仍可 Retry（E11/E12）。其余分类及 R02 的启动会话问题待测 |
+| UX-02 / P0 | Launch & Edit 连点不产生第二次启动；页面 busy 可恢复，失败保留草稿，busy/failed 非“坏数据” | NOT RUN | 部署前置已满足；历史 H03 不直接沿用 |
+| UX-03 / P1 | 进度 UI 冷启动能收到状态；关闭/取消无挂死；Import/Export/Reload/Retry cleanup 作用明确 | NOT RUN | 部署前置已满足；Reload 不重新预配，Retry cleanup 不做 blob GC |
+| UX-04 / P1 | 中英文、长路径/错误文本等可读且本地化；无 console/JSON 内容泄漏或无响应错误循环 | NOT RUN | 部署前置已满足；真实 UI 观察另留证据 |
+| PERF-01 / P1 | 正常 launch/arranger 不重复全量枚举；记录 metadata/首应用/arrangement 分段耗时，legacy fallback 有说明 | NOT RUN | 部署前置已满足；另见 R03；用同机同数据比较，不凭印象认定更快 |
+| PERF-02 / P1 | Capture 独立量测全量枚举和 UI 响应；不得因 launch 优化宣称 Capture 已改善 | NOT RUN | 部署前置已满足；另见 R03；记录性能问题，不靠放宽 storage timeout 隐藏 |
+| BLOB-01 / P1 | 正常保存先 durable 新 generation，再原子发布 index；旧 generation 正常可删除，保留 live 数据 | NOT RUN | 部署前置已满足；blob 不是每个 workspace 一份，也不是备份历史 |
+| BLOB-02 / P2 | 人为阻止旧 blob 删除/中断提交后重启；Recover 验证有效 index/live generations 后回收 orphan | NOT RUN | 部署前置已满足；当前无周期性 GC/每次删除失败诊断，不把即时全部删除当已实现承诺 |
+| BLOB-03 / P2 | index/live 数据损坏时先报告恢复状态，不在验证前误删仍需保留的文件 | NOT RUN | 部署前置已满足；仅 disposable 数据 |
+| CLEAN-01 / P1 | reset 的 WhatIf/备份/范围验证正确；备份成功后才删准确 owner 的测试服务/Code/Data；重复执行安全 | NOT RUN | 部署前置已满足；历史 H05 不证明新 helper 完整通过；默认不清所有历史 prototype |
+| CLEAN-02 / P1 | profile loaded、服务未停、Code 无法删、结果未知分别报告；不强卸 hive、不吞错误、不误伤其他用户/原型 | NOT RUN | 部署前置已满足；另见 R04；权限拒绝不是“对象不存在” |
+| CLEAN-03 / P1 | PrepareMigration 生成合法旧格式、缺 ID 等真实 fixture 到 local legacy 位置；不预先消费迁移 | NOT RUN | 部署前置已满足；当前 6002 已有迁移记录，不能把 10-23 的准备状态当作现在仍未初始化 |
 
 ## 10. 正式升级、兼容和恢复
 
@@ -266,7 +267,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 推荐按以下顺序进行；不要为了重测第一项就在已有 store 中手删 index/policy/初始化记录：
 
-1. 解除 B01，完成 LOCAL-02/03：先确保真实运行的是同一套 6003 bits 和服务。
+1. LOCAL-02 已通过、B01 已解除。继续补 LOCAL-03 的 Settings/热键入口，保持客户端与服务为同一套 6003 bits/catalog。
 2. DATA-10、CLI-01、DATA-13：先做普通权限 CRUD/重开/普通启动，留可恢复的受控测试数据。
 3. DATA-14、CLI-03/07、UX-01：同账号提升，再单独测 OTS；记录实际 PID/token/IL 和拒绝阶段。
 4. DATA-11/12、UX-02/03、DATA-15/17：预览、取消、进度、写回和 Import/Export。
@@ -326,6 +327,11 @@ Q10 的“直接验证原始 MSI”仍是独立验证候选，未经另行立项
 | E08 | 备份提交 `c576e95f`、集成提交 `e04dbf97`；本会话源码/index/catalog 核对；`oct28-integration-data-before.json` 及取消后的逐文件哈希核对 | 源码保留、提交持久化、catalog 匹配和旧业务数据未改；不是新包已部署 |
 | E09 | 本会话工具执行 `oct28-integration-live-repair` 的 `Start-Process -Verb RunAs` 结果 | `ERROR_CANCELLED (1223)`，真实更新未开始；不要引用并不存在的成功 repair report |
 | E10 | `oct28-elevation-control.json`、`oct28-elevation-admin-detail.json`、`oct28-elevation-handoff.json` | 隔离实验中的 NoReadUp 和受限句柄候选机制；不是产品修复或新包 E2E PASS |
+| E11 | `oct28-quickaccess-results\retry-red.trx`、`retry-green.trx` | 授权错误 Retry 回归修复前失败；修复后完整 managed suite 49 passed，0 failed/skipped |
+| E12 | `oct28-quickaccess-auth-before.log`、`oct28-quickaccess-retry-ui.json` | 6003 客户端被旧 6002 catalog 在 authenticate 阶段拒绝；新 UI 的授权错误窗口只有 Cancel，无立即 Retry |
+| E13 | `oct28-quickaccess-repair.log`；新 worktree `x64\Debug\ProtectedStorageLocalTest\Results\repair-20261028-144909-181.json` | 实际授权 repair 成功、Running/6003、旧 Code 保留、index/blob 前后哈希相同；非正式 MSI 升级 |
+| E14 | `oct28-quickaccess-live-after.json`、`oct28-quickaccess-cli-after.json`、`oct28-quickaccess-cli-text.txt` | 真正 Quick Access 按钮启动 Editor，无授权错误；显示两条迁移记录；普通 CLI 查询及只读哈希核对 |
+| E15 | `oct28-quickaccess-build.log`、`oct28-quickaccess-final-check.json`、`oct28-quickaccess-shortcut.json` | 本轮完整构建/pinned trust、所有客户端 catalog 哈希匹配、成功维护报告以及桌面快捷方式指向新包 |
 
 ### 历史参考（不计入 6003 的 PASS）
 
@@ -350,6 +356,12 @@ Q10 的“直接验证原始 MSI”仍是独立验证候选，未经另行立项
 | 2026-10-28 | AUTO-05/06；AUTO | PASS：4,129 contracts、mocked publication | E05/E06；不是实际 installed acceptance |
 | 2026-10-28 | AUTO-08/09、LOCAL-01；AUTO/L64 文件检查 | PASS：CLI help/version、源码备份/哈希/版本检查 | E07/E08 |
 | 2026-10-28 | LOCAL-02；L64 | BLOCKED：请求提升时被取消，实际服务更新未执行 | E09/B01；旧环境恢复，数据不变 |
+| 2026-10-28 | AUTO-03、UX-01 授权错误子项；AUTO/L64 | PASS：新回归先失败后通过，49 managed tests；从 Quick Access 打开的授权错误 UI 不再显示无效 Retry | E11/E12；UX-01 其他分类不自动通过 |
+| 2026-10-28 14:49 +08:00 | LOCAL-02；L64 | PASS：本次管理员授权后，6002 -> 6003 保留数据更新成功 | E13；关闭 B01；旧 Code 保留，index/blob 哈希不变，不是正式 servicing |
+| 2026-10-28 | LOCAL-03/QuickAccess；L64 | PASS：Runner 15956 -> Quick Access 11880 的真实按钮启动 Editor 2540，进入列表，无授权错误 | E14；两条原工作区可见；主条目保持 PARTIAL，未代测 Settings/热键 |
+| 2026-10-28 | CLI-01；L64 | PASS：普通 CLI text/JSON list、ID/details/name 查询均符合预期，无业务数据写入 | E14 |
+| 2026-10-28 | ACL-01/owner-read、SEC-02/catalog 子项；L64 | PASS：普通 owner 可直接读；错 catalog 拒绝、匹配后正常授权；主条目均保持 PARTIAL | E12/E14；其他账号/VA/目标权限仍未测 |
+| 2026-10-28 | LOCAL-01、AUTO-01/07/09；L64/AUTO | PASS：重建 bundle 的所有客户端哈希匹配；现有桌面本地快捷方式更新到集成目录 | E15；未执行管理员应用 launch，不关闭 DATA-14 或 R01 |
 
 ### 后续逐项填写模板
 

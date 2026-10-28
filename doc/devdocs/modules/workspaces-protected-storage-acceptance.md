@@ -7,9 +7,10 @@ case IDs; it is not a record that every case has passed.
 
 This checklist targets the production-oriented MSI-carrier implementation. A successful local build or a mocked unit test does not qualify an installed product or every failure-recovery scenario.
 
-The current main integration is `feature/workspaces-protected-storage-main-20261028`
-at product-code commit `e04dbf97a2ceb65d51905e80bbb41acf03c1c997`, based on main
+The main-framework integration is recorded on `feature/workspaces-protected-storage-main-20261028`
+in commit `e04dbf97a2ceb65d51905e80bbb41acf03c1c997`, based on main
 `8056ba09721708bceee6176291b24af7ebabb0b3` including PR #51114.
+Use the living ledger for the latest candidate commit and deployed runtime.
 The previous prototype and its complete working changes are preserved on
 `backup/workspaces-protected-storage-20261028` (`c576e95f`).
 Standalone-demo, previous-release and local-test results remain separate from
