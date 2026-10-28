@@ -150,6 +150,22 @@ public sealed class SnippetFileTests
     }
 
     [TestMethod]
+    public void UnterminatedBlockWithoutATriggerCanStillReceiveAppendedSnippet()
+    {
+        // Found by TextExpander.FuzzTests: the appended snippet used to be written inside the open block.
+        foreach (string[] lines in new[] { new[] { "<<<" }, new[] { "x=1", "<<<", "!a=hidden" } })
+        {
+            SnippetFile file = SnippetFile.Parse(lines);
+            Assert.IsTrue(file.ToLines().SequenceEqual(lines), "An unedited file still round-trips.");
+
+            file.Upsert(null, "!b", "second");
+            Dictionary<string, string> parsed = SnippetStore.Parse(file.ToLines());
+            Assert.AreEqual("second", parsed["!b"], string.Join("|", lines));
+            Assert.IsFalse(parsed.ContainsKey("!a"), "Text inside the block stays out of the snippets.");
+        }
+    }
+
+    [TestMethod]
     public void StaleIdsAndRenameCollisionsThrow()
     {
         SnippetFile stale = SnippetFile.Parse(["x=first"]);

@@ -19,9 +19,16 @@ namespace Microsoft.PowerToys.TextExpander
         /// <summary>A line this file does not own: a comment, a blank, or unparseable text.</summary>
         private sealed class RawLine
         {
-            public RawLine(string text) => Text = text;
+            public RawLine(string text, bool endsUnterminatedBlock = false)
+            {
+                Text = text;
+                EndsUnterminatedBlock = endsUnterminatedBlock;
+            }
 
             public string Text { get; }
+
+            /// <summary>Gets a value indicating whether this is the last line of an unterminated block without a trigger.</summary>
+            public bool EndsUnterminatedBlock { get; }
         }
 
         /// <summary>
@@ -143,9 +150,9 @@ namespace Microsoft.PowerToys.TextExpander
                     }
                     else
                     {
-                        foreach (string skipped in lines[start..i])
+                        for (int skipped = start; skipped < i; skipped++)
                         {
-                                file.Add(new RawLine(skipped));
+                            file.Add(new RawLine(lines[skipped], endsUnterminatedBlock: !closed && skipped == i - 1));
                         }
                     }
 
@@ -278,6 +285,13 @@ namespace Microsoft.PowerToys.TextExpander
                 if (item is RawLine raw)
                 {
                     result.Add(raw.Text);
+
+                    // Like an unterminated named block below, close one without a trigger before anything follows it.
+                    if (raw.EndsUnterminatedBlock && index < _items.Count - 1)
+                    {
+                        result.Add(">>>");
+                    }
+
                     continue;
                 }
 
