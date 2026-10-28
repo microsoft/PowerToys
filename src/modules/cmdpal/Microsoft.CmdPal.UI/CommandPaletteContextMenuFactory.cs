@@ -64,6 +64,8 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             return results;
         }
 
+        // If this item is already on the tray menu, then we want to add a
+        // context menu entry to _unpin_ it specifically from the tray menu.
         if (page is TrayPaletteItemPageContext trayContext)
         {
             // Use the saved identity, including generated top-level IDs and packaged-app aliases.
@@ -75,6 +77,8 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                     commandItem),
             ];
             results.AddRange(DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(trayCommands.ToArray(), commandItem));
+
+            // we don't need any other commands if we're already on the tray menu
             return results;
         }
 
@@ -358,12 +362,23 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
     private void AddPinToTrayCommand(string itemId, string providerId, List<IContextItem> items, CommandItemViewModel commandItem)
     {
+        // Don't show the pin to tray icon if the tray menu isn't available.
+        if (_settingsService.Settings.TrayIconClickAction == TrayIconClickAction.OpenPalette)
+        {
+            return;
+        }
+
         var pinned = _settingsService.Settings.TrayPalette.Commands.Contains(new(providerId, itemId));
         items.Add(new PinToContextItem(
             new PinToCommand(itemId, providerId, !pinned, PinLocation.Tray, _settingsService, _topLevelCommandManager),
             commandItem));
     }
 
+    /// <summary>
+    /// Groups pin commands into a single menu item, with all "Pin to..."
+    /// commands grouped together underneath it. Unpin commands are left in the
+    /// main menu.
+    /// </summary>
     private static void GroupPinCommands(List<IContextItem> items)
     {
         var pins = items.OfType<PinToContextItem>().Where(item => item.IsPin).ToArray();
