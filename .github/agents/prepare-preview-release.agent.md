@@ -18,7 +18,7 @@ Do not request a version, branch, baseline tag, milestone, or release-note range
 
 Use the resolved context's `tag`: `v` followed by only the first three numeric version components. For example, build `0.102.2991.0` uses tag `v0.102.2991`. Preserve the full four-component version in build metadata and asset filenames; use the three-component tag in GitHub download URLs. Keep the release a draft prerelease.
 
-Use four numeric components, including the final `.0`, in the GitHub release title and managed body heading: `Release preview v<version>` from `stable`, or `Dev preview v<version>` from `main`. For example, tag `v0.103.3006` displays `Dev preview v0.103.3006.0`; keep the tag and download URLs three-component. Pass the build context's `sourceBranch` to draft creation and verification. Reserve `Release v<version>` for actual stable releases; stable build intent alone does not make this requested preview stable.
+Name a preview built from `stable` `Release preview <tag>` and one built from `main` `Development preview <tag>`. Pass the build context's `sourceBranch` to draft creation and verification. Reserve `Release <tag>` for actual stable releases outside this preview-only workflow; a stable build intent alone does not make the requested preview a stable release.
 
 ## Supported preview build sources
 
@@ -51,7 +51,6 @@ Never ask for a decision after processing begins.
 - Never upload `release-manifest.json`; retain it only in the local audit package.
 - Preserve human release-body edits outside the managed markers.
 - Use canonical skill scripts instead of ad hoc GitHub or ADO write operations.
-- Refresh contributor exclusions from live PowerToys code-owner membership plus the core roster. Credit only filtered `NeedThanks` humans; never add Copilot/bot accounts or team members back from raw author/coauthor metadata.
 
 ## Autonomous decisions
 

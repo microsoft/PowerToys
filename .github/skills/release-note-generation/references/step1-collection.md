@@ -51,21 +51,12 @@ After login, verify again with `gh auth status` and confirm exit code 0.
 
 ## 1.0.1 Generate MemberList.md (REQUIRED)
 
-Refresh `Generated Files/ReleaseNotes/MemberList.md` for every run with the canonical script:
-
-```powershell
-.\.github\skills\release-note-generation\scripts\get-release-member-list.ps1 `
-    -OutputPath '.\Generated Files\ReleaseNotes\MemberList.md'
-```
-
-The script combines the **PowerToys core team** section in [COMMUNITY.md](../../../COMMUNITY.md) with **current membership of `microsoft/powertoys-code-owners`**, including team members not yet listed in the document. Authenticate `gh` with team-read access (`read:org` as applicable). If live membership is inaccessible, stop rather than classify maintainers as external; `-TeamMembersJsonPath` accepts an explicitly reviewed saved team-members API response for offline use.
+Create `Generated Files/ReleaseNotes/MemberList.md` from the **PowerToys core team** section in [COMMUNITY.md](../../../COMMUNITY.md).
 
 Rules:
 - One GitHub username per line, **no** `@` prefix.
-- Deduplicate usernames case-insensitively across both sources.
-- Do not infer PowerToys membership from Microsoft organization `MEMBER` or repository `COLLABORATOR` badges.
-- Do not add former members solely from the former-team section; current code-owner team membership still counts.
-- Exclude bot/app accounts from `NeedThanks` independently of the member list. This includes GitHub bot metadata, `[bot]` suffixes, `app/` aliases, and Copilot aliases.
+- Use the usernames exactly as listed in the core team section.
+- Do not include former team members or other sections.
 
 Example (format only):
 ```
@@ -119,7 +110,7 @@ The script detects both merge commits (`Merge pull request #12345`) and squash c
 - `milestone_prs.json` - raw PR data
 - `sorted_prs.csv` - sorted PR list with columns: Id, Title, Labels, Author, Url, Body, CopilotSummary, NeedThanks
   - `Author`: Comma-separated list of all contributors (PR opener + co-authors from commit trailers)
-  - `NeedThanks`: Comma-separated list of external human contributors to thank. Both collectors use the shared filter to exclude the refreshed core/code-owner member list and bot/app accounts from PR authors and coauthors. Empty string means no public attribution.
+  - `NeedThanks`: Comma-separated list of external contributors to thank (excludes core team members from MemberList.md). Empty string means no thanks needed.
 
 ---
 

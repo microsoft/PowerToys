@@ -9,11 +9,9 @@
     numeric product version; -TagName may include channel suffixes such as
     v0.100.2607.08001-preview.
 
-    Default titles use the four-component display version: Release v<version>
-    for stable releases, Release preview v<version> for prereleases built from
-    stable, and Dev preview v<version> for prereleases built from main.
-    A three-component tag is displayed with .0 appended, without changing the tag.
-    Pass -SourceBranch from the build metadata
+    Default titles are Release <tag> for stable releases, Release preview <tag>
+    for prereleases built from stable, and Development preview <tag> for
+    prereleases built from main. Pass -SourceBranch from the build metadata
     when generating a prerelease title; -Target may be an immutable commit.
 #>
 param(

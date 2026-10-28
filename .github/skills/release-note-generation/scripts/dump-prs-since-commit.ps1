@@ -70,6 +70,8 @@ if (Test-Path $memberListPath) {
         Write-Err "MemberList.md is empty at $memberListPath"
         exit 1
     }
+    & (Join-Path $scriptDir "get-release-member-list.ps1") -OutputPath $memberListPath | Out-Null
+    $memberList = @(Get-Content -LiteralPath $memberListPath)
     Write-DebugMsg "Loaded $($memberList.Count) members from MemberList.md"
 } else {
     Write-Err "MemberList.md not found at $memberListPath"

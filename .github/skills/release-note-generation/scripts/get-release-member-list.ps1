@@ -4,15 +4,13 @@
 .DESCRIPTION
     Uses authenticated GitHub CLI team membership rather than organization-level MEMBER badges.
     Stops on inaccessible or empty team data; never silently falls back to the Markdown roster alone.
-    TeamMembersJsonPath accepts an explicit saved GitHub team-members response for offline review.
 .EXAMPLE
     .\get-release-member-list.ps1 -OutputPath '.\Generated Files\ReleaseNotes\MemberList.md'
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$OutputPath,
-    [string]$CommunityPath = (Join-Path $PSScriptRoot "..\..\..\..\COMMUNITY.md"),
-    [string]$TeamMembersJsonPath
+    [string]$CommunityPath = (Join-Path $PSScriptRoot "..\..\..\..\COMMUNITY.md")
 )
 
 Set-StrictMode -Version Latest
@@ -26,14 +24,9 @@ if ($coreLogins.Count -eq 0) {
     throw "The PowerToys core-team roster is missing or empty in '$CommunityPath'."
 }
 
-if ($TeamMembersJsonPath) {
-    $teamJson = Get-Content -LiteralPath $TeamMembersJsonPath -Raw
-}
-else {
-    $teamJson = gh api --paginate --slurp "orgs/microsoft/teams/powertoys-code-owners/members?per_page=100"
-    if ($LASTEXITCODE -ne 0) {
-        throw "Cannot refresh PowerToys code-owner membership. Authenticate gh with team-read access or supply an explicitly reviewed -TeamMembersJsonPath snapshot."
-    }
+$teamJson = gh api --paginate --slurp "orgs/microsoft/teams/powertoys-code-owners/members?per_page=100"
+if ($LASTEXITCODE -ne 0) {
+    throw "Cannot refresh PowerToys code-owner membership. Authenticate gh with team-read access before collecting release contributors."
 }
 $teamMembers = @($teamJson | ConvertFrom-Json | ForEach-Object { $_ } | ForEach-Object { $_ })
 $teamLogins = @($teamMembers | ForEach-Object { [string]$_.login })

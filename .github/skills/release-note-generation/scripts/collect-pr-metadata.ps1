@@ -55,6 +55,9 @@ if ($members.Count -eq 0) {
     throw "Required PowerToys member list is empty: $MemberListPath"
 }
 
+& (Join-Path $PSScriptRoot "get-release-member-list.ps1") -OutputPath $MemberListPath | Out-Null
+$members = @(Get-Content -LiteralPath $MemberListPath)
+
 $rows = @()
 foreach ($number in $PrNumbers) {
     Write-Host "Fetching PR #$number..." -ForegroundColor Cyan

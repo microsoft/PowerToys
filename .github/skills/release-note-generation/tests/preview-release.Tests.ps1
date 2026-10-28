@@ -1064,19 +1064,31 @@ Preview notes
 
 Describe "preview PR metadata attribution" {
     BeforeAll {
+        $global:ReleaseTestTeamLookupUnavailable = $false
         function gh {
             $global:LASTEXITCODE = 0
             if ($args[0] -eq "pr") {
                 return '{"number":123,"title":"Contributor test","labels":[],"author":{"login":"app/copilot-swe-agent","is_bot":true},"url":"https://example.test/123","body":"","reviews":[],"comments":[],"mergedAt":"2026-10-28T00:00:00Z","mergeCommit":{"oid":"0123456789abcdef0123456789abcdef01234567"}}'
             }
+            if (($args -join " ") -like "api *orgs/microsoft/teams/powertoys-code-owners/members*") {
+                if ($global:ReleaseTestTeamLookupUnavailable) {
+                    $global:LASTEXITCODE = 1
+                    return
+                }
+                return '[[{"login":"core-owner"},{"login":"live-owner"}]]'
+            }
             if ($args[0] -eq "api" -and $args[1] -eq "graphql") {
                 if ($args -contains "cursor=next-authors") {
                     return '{"data":{"repository":{"object":{"authors":{"nodes":[{"user":{"login":"external-two"}}],"pageInfo":{"hasNextPage":false,"endCursor":null}}}}}}'
                 }
-                return '{"data":{"repository":{"object":{"authors":{"nodes":[{"user":{"login":"CORE-owner"}},{"user":{"login":"Copilot"}},{"user":{"login":"external-one"}},{"user":null}],"pageInfo":{"hasNextPage":true,"endCursor":"next-authors"}}}}}}'
+                return '{"data":{"repository":{"object":{"authors":{"nodes":[{"user":{"login":"CORE-owner"}},{"user":{"login":"live-owner"}},{"user":{"login":"Copilot"}},{"user":{"login":"external-one"}},{"user":null}],"pageInfo":{"hasNextPage":true,"endCursor":"next-authors"}}}}}}'
             }
             throw "Unexpected GitHub command: $args"
         }
+    }
+
+    AfterAll {
+        Remove-Variable -Name ReleaseTestTeamLookupUnavailable -Scope Global -ErrorAction SilentlyContinue
     }
 
     It "rejects a missing member list before fetching PRs" {
@@ -1100,7 +1112,7 @@ Describe "preview PR metadata attribution" {
         }
     }
 
-    It "filters bot authors and team coauthors while preserving every external coauthor page" {
+    It "refreshes a stale member list and filters bot/team coauthors across pages" {
         $memberListPath = Join-Path $TestDrive "attribution-members.md"
         "core-owner" | Set-Content -LiteralPath $memberListPath
         $output = Join-Path $TestDrive "preview-attribution"
@@ -1115,6 +1127,23 @@ Describe "preview PR metadata attribution" {
         $rows[0].NeedThanks | Should Be "external-one, external-two"
         $rows[0].Author.Contains("Copilot") | Should Be $true
         $rows[0].Author.Contains("CORE-owner") | Should Be $true
+    }
+
+    It "stops collection when live membership cannot be refreshed" {
+        $memberListPath = Join-Path $TestDrive "unavailable-attribution-members.md"
+        "core-owner" | Set-Content -LiteralPath $memberListPath
+        $output = Join-Path $TestDrive "unavailable-preview-attribution"
+        $global:ReleaseTestTeamLookupUnavailable = $true
+        try {
+            {
+                & (Join-Path $scripts "collect-pr-metadata.ps1") `
+                    -PrNumbers @(123) -OutputDirectory $output -MemberListPath $memberListPath
+            } | Should Throw "Cannot refresh PowerToys code-owner membership"
+        }
+        finally {
+            $global:ReleaseTestTeamLookupUnavailable = $false
+        }
+        (Test-Path -LiteralPath (Join-Path $output "sorted_prs.csv")) | Should Be $false
     }
 
     It "uses the same filtering for stable commit-range collection" {
