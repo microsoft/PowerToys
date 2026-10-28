@@ -11,7 +11,7 @@
 
     Default titles use the four-component display version: Release v<version>
     for stable releases, Release preview v<version> for prereleases built from
-    stable, and Development preview v<version> for prereleases built from main.
+    stable, and Dev preview v<version> for prereleases built from main.
     A three-component tag is displayed with .0 appended, without changing the tag.
     Pass -SourceBranch from the build metadata
     when generating a prerelease title; -Target may be an immutable commit.

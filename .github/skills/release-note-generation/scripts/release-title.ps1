@@ -21,7 +21,7 @@ function Get-PowerToysReleaseTitle {
 
     switch ($SourceBranch) {
         "refs/heads/stable" { return "Release preview $displayTag" }
-        "refs/heads/main" { return "Development preview $displayTag" }
+        "refs/heads/main" { return "Dev preview $displayTag" }
         default { throw "A prerelease title requires the build's SourceBranch (refs/heads/main or refs/heads/stable)." }
     }
 }

@@ -37,7 +37,7 @@ Use the requested GitHub release type and the immutable build's source branch:
 | --- | --- | --- |
 | Stable release (separate workflow) | `stable` | `Release v<four-component version>` |
 | Prerelease | `stable` | `Release preview v<four-component version>` |
-| Prerelease | `main` | `Development preview v<four-component version>` |
+| Prerelease | `main` | `Dev preview v<four-component version>` |
 
 For example, a preview of build `0.102.2991.0` from `stable` has title and body heading `Release preview v0.102.2991.0`, but its tag remains `v0.102.2991`. Pad the display version with a final `.0`; never add it to the tag or download URLs. Pass `$context.sourceBranch` explicitly to creation and verification. Do not infer it from a local checkout or `TargetCommit`, and do not use intent/channel to override the requested prerelease type. Promotion to stable is a separate operation with title `Release v0.102.2991.0`.
 

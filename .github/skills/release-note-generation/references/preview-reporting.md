@@ -3,7 +3,7 @@
 Write `final-review.md` and return the same key information to the user:
 
 - Draft release URL, or explicit `Not created (dry run)` status for a local-only run.
-- Exact branch-specific four-component title and body heading: `Release preview v<version>` for `stable`, or `Development preview v<version>` for `main`; for example `Development preview v0.103.3006.0`, with tag `v0.103.3006`.
+- Exact branch-specific four-component title and body heading: `Release preview v<version>` for `stable`, or `Dev preview v<version>` for `main`; for example `Dev preview v0.103.3006.0`, with tag `v0.103.3006`.
 - ADO build URL and build ID.
 - Version, source branch, exact source commit, intent, and channel.
 - Previous release tag and source commit.

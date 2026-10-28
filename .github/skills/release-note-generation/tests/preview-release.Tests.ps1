@@ -736,7 +736,7 @@ Describe "release title selection" {
     It "generates the default draft title <ExpectedTitle>" -TestCases @(
         @{ Prerelease = $false; SourceBranch = $null; ExpectedTitle = "Release v0.101.2181.0" },
         @{ Prerelease = $true; SourceBranch = "refs/heads/stable"; ExpectedTitle = "Release preview v0.101.2181.0" },
-        @{ Prerelease = $true; SourceBranch = "refs/heads/main"; ExpectedTitle = "Development preview v0.101.2181.0" }
+        @{ Prerelease = $true; SourceBranch = "refs/heads/main"; ExpectedTitle = "Dev preview v0.101.2181.0" }
     ) {
         param($Prerelease, $SourceBranch, $ExpectedTitle)
 
@@ -785,7 +785,7 @@ Describe "release title selection" {
 
 Describe "draft preview release dry run" {
     It "constructs a draft-only operation for <SourceBranch> without contacting GitHub" -TestCases @(
-        @{ SourceBranch = "refs/heads/main"; ExpectedTitle = "Development preview v0.101.2181.0" },
+        @{ SourceBranch = "refs/heads/main"; ExpectedTitle = "Dev preview v0.101.2181.0" },
         @{ SourceBranch = "refs/heads/stable"; ExpectedTitle = "Release preview v0.101.2181.0" }
     ) {
         param($SourceBranch, $ExpectedTitle)
@@ -855,7 +855,7 @@ New generated notes
         $merged.Contains("New generated notes") | Should Be $true
         $merged.Contains("Old generated notes") | Should Be $false
         $merged.Contains("Human conclusion") | Should Be $true
-        $merged.Contains("# Development preview v0.101.2181.0") | Should Be $true
+        $merged.Contains("# Dev preview v0.101.2181.0") | Should Be $true
     }
 
     It "refuses to update a published release" {
@@ -922,7 +922,7 @@ New generated notes
     }
 
     It "writes a final review for <SourceBranch> independently of build intent" -TestCases @(
-        @{ SourceBranch = "refs/heads/main"; BuildIntent = "preview-release"; ExpectedTitle = "Development preview v0.101.2181.0" },
+        @{ SourceBranch = "refs/heads/main"; BuildIntent = "preview-release"; ExpectedTitle = "Dev preview v0.101.2181.0" },
         @{ SourceBranch = "refs/heads/stable"; BuildIntent = "stable-release"; ExpectedTitle = "Release preview v0.101.2181.0" }
     ) {
         param($SourceBranch, $BuildIntent, $ExpectedTitle)
@@ -994,7 +994,7 @@ Preview notes
         $bodyPath = Join-Path $TestDrive "stale-heading.md"
         @'
 <!-- BEGIN POWERTOYS PREVIEW AGENT -->
-# Development preview v0.101.2181
+# Dev preview v0.101.2181
 <!-- END POWERTOYS PREVIEW AGENT -->
 '@ | Set-Content -LiteralPath $bodyPath
 

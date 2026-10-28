@@ -6,7 +6,7 @@
     This script intentionally exposes no publish operation. It preserves text
     outside the managed preview-agent body markers and uploads only explicitly
     generated release assets. SourceBranch selects Release preview (stable)
-    or Development preview (main), independently of the original build intent.
+    or Dev preview (main), independently of the original build intent.
 
 .EXAMPLE
     .\upsert-draft-preview-release.ps1 -Tag v0.101.2181 -SourceBranch refs/heads/main -TargetCommit 0123... -BodyPath .\release-notes.md -AssetsDirectory .\assets

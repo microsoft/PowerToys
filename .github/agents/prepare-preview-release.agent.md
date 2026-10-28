@@ -18,7 +18,7 @@ Do not request a version, branch, baseline tag, milestone, or release-note range
 
 Use the resolved context's `tag`: `v` followed by only the first three numeric version components. For example, build `0.102.2991.0` uses tag `v0.102.2991`. Preserve the full four-component version in build metadata and asset filenames; use the three-component tag in GitHub download URLs. Keep the release a draft prerelease.
 
-Use four numeric components, including the final `.0`, in the GitHub release title and managed body heading: `Release preview v<version>` from `stable`, or `Development preview v<version>` from `main`. For example, tag `v0.103.3006` displays `Development preview v0.103.3006.0`; keep the tag and download URLs three-component. Pass the build context's `sourceBranch` to draft creation and verification. Reserve `Release v<version>` for actual stable releases; stable build intent alone does not make this requested preview stable.
+Use four numeric components, including the final `.0`, in the GitHub release title and managed body heading: `Release preview v<version>` from `stable`, or `Dev preview v<version>` from `main`. For example, tag `v0.103.3006` displays `Dev preview v0.103.3006.0`; keep the tag and download URLs three-component. Pass the build context's `sourceBranch` to draft creation and verification. Reserve `Release v<version>` for actual stable releases; stable build intent alone does not make this requested preview stable.
 
 ## Supported preview build sources
 
