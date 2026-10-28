@@ -52,7 +52,7 @@ internal sealed class KeyboardHook : IDisposable
     private int _count;
     private bool _disposed;
     private UndoEntry? _undo;
-    private long _undoGeneration;
+    private long _inputGeneration;
 
     /// <summary>Gets triggers detected but not yet expanded. Drained by the expansion worker.</summary>
     public BlockingCollection<PendingExpansion> Pending { get; } = new();
@@ -60,11 +60,17 @@ internal sealed class KeyboardHook : IDisposable
     private volatile bool _enabled = true;
     private volatile bool _suspended;
 
-    private sealed record UndoEntry(string Trigger, string Replacement, IntPtr TargetWindow);
+    // CursorLeft is how far before the end of Replacement the snippet's $|$ left the caret.
+    private sealed record UndoEntry(string Trigger, string Replacement, IntPtr TargetWindow, int CursorLeft);
 
     internal sealed record TargetAuthorization(IntPtr Window, uint ProcessId, bool CanDrive);
 
-    internal long UndoGeneration => Volatile.Read(ref _undoGeneration);
+    /// <summary>
+    /// Gets the input generation. Every key press other than a modifier, and every click, moves it on while
+    /// no prompt is open, because any of them can move the caret: work queued before one of them must not be
+    /// applied where the caret is now.
+    /// </summary>
+    internal long InputGeneration => Volatile.Read(ref _inputGeneration);
 
     /// <summary>
     /// Gets or sets a value indicating whether when false, keystrokes are still observed but never expanded. Turning this off is how a
@@ -269,10 +275,16 @@ internal sealed class KeyboardHook : IDisposable
         {
             ClearUndo();
 
-            // Overwritten, not just uncounted: the character the user deleted is exactly the kind
-            // they most often meant to take back.
-            if (_count > 0)
+            // Ctrl+Backspace deletes a whole word, and with Alt or Win it is a shortcut, so only a
+            // plain or shifted Backspace is known to remove exactly one character.
+            if (ctrl || alt || win)
             {
+                ResetBuffer();
+            }
+            else if (_count > 0)
+            {
+                // Overwritten, not just uncounted: the character the user deleted is exactly the kind
+                // they most often meant to take back.
                 _buffer[--_count] = '\0';
             }
 
@@ -290,7 +302,7 @@ internal sealed class KeyboardHook : IDisposable
 
             if (undo is not null && (undo.TargetWindow == IntPtr.Zero || Native.GetForegroundWindow() == undo.TargetWindow))
             {
-                Pending.Add(new PendingExpansion(undo.Trigger, string.Empty, undo.Replacement, undo.TargetWindow, IsUndo: true));
+                Pending.Add(new PendingExpansion(undo.Trigger, string.Empty, undo.Replacement, undo.TargetWindow, IsUndo: true, InputGeneration: InputGeneration, CursorLeft: undo.CursorLeft));
                 ResetBuffer();
                 return true;
             }
@@ -372,42 +384,51 @@ internal sealed class KeyboardHook : IDisposable
             return false;
         }
 
+        // As typed, so with case-insensitive matching its capitalization can differ from the saved
+        // trigger: it is what gets erased and what Ctrl+Z puts back. In word mode it ends with the
+        // space or punctuation that released the trigger.
+        int start = usable - trigger.Length;
+        string typedText = new(_buffer, start, _count - start);
         ResetBuffer();
 
-        string typedPrefix = wordMode ? trigger : trigger[..^1];
         string expandedText = wordMode && WordBoundary.KeepTerminator ? replacement + ch : replacement;
-        string? typedText = wordMode ? trigger + ch : null;
 
+        // The keystroke that completed the match is swallowed; everything typed before it reached the target.
         Pending.Add(new PendingExpansion(
             trigger,
-            typedPrefix,
+            typedText[..^1],
             expandedText,
             Native.GetForegroundWindow(),
             TypedText: typedText,
-            UndoGeneration: UndoGeneration));
+            InputGeneration: InputGeneration));
         return true;
     }
 
     public bool RecordExpansion(string trigger, string replacement, IntPtr targetWindow)
-        => RecordExpansion(trigger, replacement, targetWindow, UndoGeneration);
+        => RecordExpansion(trigger, replacement, targetWindow, InputGeneration);
 
-    internal bool RecordExpansion(string trigger, string replacement, IntPtr targetWindow, long undoGeneration)
+    internal bool RecordExpansion(string trigger, string replacement, IntPtr targetWindow, long inputGeneration, int cursorLeft = 0)
     {
         lock (_undoLock)
         {
-            if (undoGeneration != Volatile.Read(ref _undoGeneration))
+            if (inputGeneration != Volatile.Read(ref _inputGeneration))
             {
                 return false;
             }
 
-            _undo = new UndoEntry(trigger, replacement, targetWindow);
+            _undo = new UndoEntry(trigger, replacement, targetWindow, cursorLeft);
             return true;
         }
     }
 
     public void ClearUndo()
     {
-        Interlocked.Increment(ref _undoGeneration);
+        Interlocked.Increment(ref _inputGeneration);
+        DiscardUndo();
+    }
+
+    private void DiscardUndo()
+    {
         lock (_undoLock)
         {
             _undo = null;
@@ -616,10 +637,14 @@ internal sealed class KeyboardHook : IDisposable
         _buffer[_count++] = ch;
     }
 
-    private void ForegroundChanged(IntPtr hook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint thread, uint time)
+    internal void ForegroundChanged(IntPtr hook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint thread, uint time)
     {
         ResetBuffer();
-        ClearUndo();
+
+        // Ends undo without moving the input generation: a foreground change moves no caret by itself,
+        // queued work checks its window before typing, and focus coming back after a prompt must not
+        // cancel the expansion that asked.
+        DiscardUndo();
         _requestedAuthorizationWindow = IntPtr.Zero;
         RefreshTargetAuthorization(Native.GetForegroundWindow(), asynchronous: true);
     }

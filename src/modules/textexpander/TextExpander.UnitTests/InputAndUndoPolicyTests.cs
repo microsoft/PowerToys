@@ -77,7 +77,7 @@ public sealed class InputAndUndoPolicyTests
         using var store = new SnippetStore(Path.Combine(scratch.Path, "snippets.txt"));
         using var hook = new KeyboardHook(store);
 
-        long staleGeneration = hook.UndoGeneration;
+        long staleGeneration = hook.InputGeneration;
         Assert.IsFalse(hook.ProcessKey(Native.VK_PACKET, 'x', ctrl: false, alt: false, shift: false, win: false));
         Assert.IsFalse(hook.RecordExpansion("!old", "old replacement", IntPtr.Zero, staleGeneration));
         Assert.IsFalse(hook.ProcessKey(Native.VK_Z, 0, ctrl: true, alt: false, shift: false, win: false));
@@ -358,6 +358,192 @@ public sealed class InputAndUndoPolicyTests
         Assert.IsFalse(InputTarget.IsPowerToysSettings((uint)Environment.ProcessId));
     }
 
+    [TestMethod]
+    public void UndoOfACursorSnippetErasesFromTheEndOfTheExpansion()
+    {
+        // The $|$ leaves the caret inside the expansion. Backspacing from there turned "PREFIX" and
+        // "!abc " back into "PR!abc XYZ " instead of "PREFIX!abc ".
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=Ab$|$XYZ");
+        using var hook = new KeyboardHook(store);
+        var box = new FakeTextBox("PREFIX");
+
+        TypeInto(hook, box, "!abc ");
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+        Assert.AreEqual("PREFIX!abc|", box.ToString(), "The space that released the trigger is swallowed.");
+
+        // What the worker does with it.
+        (string text, int cursor) = Variables.ExpandWithPromptRequests(work.Replacement, _ => string.Empty);
+        int cursorLeft = Injector.CountDeletableUnits(text[cursor..]);
+        Assert.IsTrue(ReplaceIn(box, Injector.CountDeletableUnits(work.TypedPrefix), text, cursorLeft: cursorLeft));
+        Assert.AreEqual("PREFIXAb|XYZ ", box.ToString());
+        Assert.IsTrue(hook.RecordExpansion(work.TypedText!, text, IntPtr.Zero, work.InputGeneration, cursorLeft));
+
+        Assert.IsFalse(hook.ProcessKey(Native.VK_LCONTROL, 0, ctrl: false, alt: false, shift: false, win: false));
+        Assert.IsTrue(hook.ProcessKey(Native.VK_Z, 0, ctrl: true, alt: false, shift: false, win: false));
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion undo));
+        Assert.AreEqual(4, undo.CursorLeft);
+
+        Assert.IsTrue(ReplaceIn(box, Injector.CountDeletableUnits(undo.Replacement), undo.Trigger, cursorRight: undo.CursorLeft));
+        Assert.AreEqual("PREFIX!abc |", box.ToString());
+    }
+
+    [TestMethod]
+    public void AKeyPressAfterTheMatchCancelsTheQueuedExpansion()
+    {
+        // The worker erased wherever the caret was by then: "Before !abc " and a Left arrow
+        // came out as "BeforeEXPANDED c".
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=EXPANDED");
+        using var hook = new KeyboardHook(store);
+        var box = new FakeTextBox("Before ");
+
+        TypeInto(hook, box, "!abc ");
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+        bool InputUnchanged() => hook.InputGeneration == work.InputGeneration;
+        Assert.IsTrue(InputUnchanged());
+
+        // Focus changing on its own, as when it comes back after a prompt, moves no caret.
+        hook.ForegroundChanged(IntPtr.Zero, Native.EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, 0, 0, 0, 0);
+        Assert.IsTrue(InputUnchanged());
+
+        Assert.IsFalse(hook.ProcessKey(Native.VK_LEFT, 0, ctrl: false, alt: false, shift: false, win: false));
+        box.Left(1, IntPtr.Zero);
+        Assert.IsFalse(InputUnchanged());
+
+        Assert.IsFalse(ReplaceIn(box, Injector.CountDeletableUnits(work.TypedPrefix), "EXPANDED ", inputUnchanged: InputUnchanged));
+        Assert.AreEqual("Before !ab|c", box.ToString(), "Typing: nothing erased or inserted.");
+
+        InjectionBackend original = Injector.Backend;
+        try
+        {
+            Injector.Backend = InjectionBackend.Clipboard;
+            bool pasted = false;
+            Assert.IsFalse(Injector.ReplaceCore(
+                Injector.CountDeletableUnits(work.TypedPrefix),
+                "EXPANDED ",
+                IntPtr.Zero,
+                0,
+                _ => true,
+                () => new IntPtr(1),
+                (_, _, _, _) =>
+                {
+                    pasted = true;
+                    return PasteOutcome.Pasted;
+                },
+                box.Backspace,
+                box.Insert,
+                box.Left,
+                inputUnchanged: InputUnchanged));
+            Assert.IsFalse(pasted, "Pasting: the clipboard isn't even borrowed.");
+        }
+        finally
+        {
+            Injector.Backend = original;
+        }
+
+        Assert.AreEqual("Before !ab|c", box.ToString());
+    }
+
+    [TestMethod]
+    public void TheCaretIsCheckedAgainRightBeforeTheFirstBackspace()
+    {
+        // Borrowing the clipboard and the pause before backspacing both leave time for a key press.
+        InjectionBackend originalBackend = Injector.Backend;
+        int originalDelay = Injector.PreBackspaceDelayMs;
+        try
+        {
+            Injector.Backend = InjectionBackend.Typing;
+            Injector.PreBackspaceDelayMs = 0;
+
+            // Never the real foreground window, so no input can reach the desktop even if the check were gone.
+            var target = new IntPtr(-1);
+            int checks = 0;
+            bool typed = false;
+            Assert.IsFalse(Injector.ReplaceCore(
+                3,
+                "replacement",
+                target,
+                0,
+                _ => true,
+                () => target,
+                sendText: (_, _) =>
+                {
+                    typed = true;
+                    return true;
+                },
+                sendLeft: (_, _) => true,
+                inputUnchanged: () => ++checks == 1));
+            Assert.AreEqual(2, checks, "Asked when the work starts and again by the erase itself.");
+            Assert.IsFalse(typed);
+        }
+        finally
+        {
+            Injector.Backend = originalBackend;
+            Injector.PreBackspaceDelayMs = originalDelay;
+        }
+    }
+
+    [TestMethod]
+    [DataRow(Native.VK_LCONTROL, true, false, false, false, false)]
+    [DataRow(Native.VK_LMENU, false, true, false, false, false)]
+    [DataRow(Native.VK_RMENU, true, true, false, false, false)]
+    [DataRow(Native.VK_LWIN, false, false, false, true, false)]
+    [DataRow(Native.VK_LSHIFT, false, false, true, false, true)]
+    [DataRow(0, false, false, false, false, true)]
+    public void OnlyAPlainOrShiftedBackspaceIsTakenAsDeletingOneCharacter(int modifier, bool ctrl, bool alt, bool shift, bool win, bool stillExpands)
+    {
+        // Ctrl+Backspace deletes the whole word. The hook dropped one character, so "!abc",
+        // Ctrl+Backspace and "c " still expanded a trigger no longer behind the caret.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=EXPANDED");
+        using var hook = new KeyboardHook(store);
+
+        Assert.IsFalse(Type(hook, "!abc"));
+        if (modifier != 0)
+        {
+            Assert.IsFalse(hook.ProcessKey((uint)modifier, 0, ctrl: false, alt: false, shift: false, win: false));
+        }
+
+        Assert.IsFalse(hook.ProcessKey(Native.VK_BACK, 0, ctrl, alt, shift, win));
+        Assert.AreEqual(stillExpands, Type(hook, "c "));
+        Assert.AreEqual(stillExpands ? 1 : 0, hook.Pending.Count);
+    }
+
+    [TestMethod]
+    [DataRow(true, "!ABC ", "!ABC")]
+    [DataRow(false, "!ABC", "!AB")]
+    public void UndoPutsBackTheCapitalizationThatWasTyped(bool wordMode, string typed, string erased)
+    {
+        // With matching that ignores case, Ctrl+Z after "!ABC " typed the saved "!abc " instead.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=EXPANDED", caseSensitive: false);
+        using var hook = new KeyboardHook(store);
+
+        bool original = WordBoundary.Required;
+        try
+        {
+            WordBoundary.Required = wordMode;
+            Assert.IsTrue(Type(hook, typed));
+        }
+        finally
+        {
+            WordBoundary.Required = original;
+        }
+
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+        Assert.AreEqual("!abc", work.Trigger, "Matched against the saved trigger.");
+        Assert.AreEqual(erased, work.TypedPrefix);
+        Assert.AreEqual(typed, work.TypedText);
+
+        // The worker keeps what was typed for undo, and Ctrl+Z types it back.
+        Assert.IsTrue(hook.RecordExpansion(work.TypedText ?? work.Trigger, "EXPANDED", IntPtr.Zero, work.InputGeneration));
+        Assert.IsFalse(hook.ProcessKey(Native.VK_LCONTROL, 0, ctrl: false, alt: false, shift: false, win: false));
+        Assert.IsTrue(hook.ProcessKey(Native.VK_Z, 0, ctrl: true, alt: false, shift: false, win: false));
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion undo));
+        Assert.AreEqual(typed, undo.Trigger);
+    }
+
     /// <summary>Types text the way the touch keyboard does, so the layout doesn't matter.</summary>
     /// <returns>Whether the last character fired a trigger.</returns>
     private static bool Type(KeyboardHook hook, string text)
@@ -369,5 +555,96 @@ public sealed class InputAndUndoPolicyTests
         }
 
         return fired;
+    }
+
+    /// <summary>Types through the hook into <paramref name="box"/>, which never sees the keystrokes the hook swallows.</summary>
+    private static void TypeInto(KeyboardHook hook, FakeTextBox box, string text)
+    {
+        foreach (char ch in text)
+        {
+            if (!hook.ProcessKey(Native.VK_PACKET, ch, ctrl: false, alt: false, shift: false, win: false))
+            {
+                box.Insert(ch.ToString(), IntPtr.Zero);
+            }
+        }
+    }
+
+    private static SnippetStore LoadStore(ScratchDirectory scratch, string snippet, bool caseSensitive = true)
+    {
+        string path = Path.Combine(scratch.Path, "snippets.txt");
+        File.WriteAllText(path, snippet + "\n");
+        var store = new SnippetStore(path, caseSensitive: caseSensitive);
+        Assert.AreEqual(1, store.Load().Count);
+        return store;
+    }
+
+    /// <summary>Runs the injector's typing path against <paramref name="box"/> instead of the real input queue.</summary>
+    private static bool ReplaceIn(FakeTextBox box, int eraseCount, string text, int cursorLeft = 0, int cursorRight = 0, Func<bool>? inputUnchanged = null)
+    {
+        InjectionBackend original = Injector.Backend;
+        try
+        {
+            Injector.Backend = InjectionBackend.Typing;
+            return Injector.ReplaceCore(
+                eraseCount,
+                text,
+                IntPtr.Zero,
+                cursorLeft,
+                _ => true,
+                () => new IntPtr(1),
+                erase: box.Backspace,
+                sendText: box.Insert,
+                sendLeft: box.Left,
+                cursorRightUnits: cursorRight,
+                sendRight: box.Right,
+                inputUnchanged: inputUnchanged);
+        }
+        finally
+        {
+            Injector.Backend = original;
+        }
+    }
+
+    /// <summary>A text box for the injector's fakes: its text, and the caret as an index into it.</summary>
+    private sealed class FakeTextBox
+    {
+        public FakeTextBox(string text)
+        {
+            Text = text;
+            Caret = text.Length;
+        }
+
+        public string Text { get; private set; }
+
+        public int Caret { get; private set; }
+
+        public bool Insert(string value, IntPtr target)
+        {
+            Text = Text.Insert(Caret, value);
+            Caret += value.Length;
+            return true;
+        }
+
+        public bool Backspace(int count, IntPtr target)
+        {
+            Text = Text.Remove(Caret - count, count);
+            Caret -= count;
+            return true;
+        }
+
+        public bool Left(int count, IntPtr target)
+        {
+            Caret -= count;
+            return true;
+        }
+
+        public bool Right(int count, IntPtr target)
+        {
+            Caret += count;
+            return true;
+        }
+
+        /// <summary>Shows the caret as "|".</summary>
+        public override string ToString() => Text.Insert(Caret, "|");
     }
 }

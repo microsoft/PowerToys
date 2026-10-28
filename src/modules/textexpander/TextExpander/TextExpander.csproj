@@ -31,6 +31,8 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!-- MRT from the Windows App SDK looks for a pri file named after the executable before resources.pri. -->
     <ProjectPriFileName>PowerToys.TextExpander.pri</ProjectPriFileName>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -46,6 +48,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TextExpander.Core\TextExpander.Core.csproj" />
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
   </ItemGroup>
 
   <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">

@@ -73,6 +73,8 @@ internal static class Native
     public const int VK_RETURN = 0x0D;
     public const int VK_TAB = 0x09;
     public const int VK_ESCAPE = 0x1B;
+    public const int VK_LEFT = 0x25;
+    public const int VK_RIGHT = 0x27;
     public const int VK_PACKET = 0xE7;
     public const int VK_V = 0x56;
     public const int VK_Z = 0x5A;

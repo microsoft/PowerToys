@@ -42,7 +42,10 @@ internal enum PasteOutcome
     /// <summary>Nothing was sent and the trigger is still on screen. Type it instead.</summary>
     RefusedBeforeErase,
 
-    /// <summary>Focus left the window the trigger was typed into; nothing was or may be sent.</summary>
+    /// <summary>
+    /// Focus left the window the trigger was typed into, or a key press or click may have moved the caret;
+    /// nothing was or may be sent.
+    /// </summary>
     TargetLost,
 
     /// <summary>

@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using PowerToys.GPOWrapper;
 
 namespace Microsoft.PowerToys.TextExpander;
 
@@ -13,7 +14,9 @@ internal static class Program
     private const string DiagnosticsSwitch = "--diagnostics";
     private const string DiagnosticsFileSwitch = "--diagnostics-file";
     private const string WindowClassName = "PowerToys.TextExpander.MessageWindow";
-    private const string MutexName = @"Global\PowerToys.TextExpander.SingleInstance";
+
+    // Session-local, like the runner's instance mutex and the exit event: each signed-in session runs its own engine.
+    private const string MutexName = @"Local\PowerToys.TextExpander.SingleInstance";
     private const int WorkerDrainTimeoutMs = 2_000;
 
     // How long, at most, the window a prompt was answered for gets to come back to the front.
@@ -54,7 +57,13 @@ internal static class Program
             return RequestDiagnostics(toFile: false);
         }
 
-        using var mutex = new Mutex(true, MutexName + instanceSuffix, out bool createdNew);
+        // The runner doesn't start a utility that group policy turns off; starting the engine directly mustn't either.
+        if (!PolicyAllowsStart(GPOWrapper.GetConfiguredTextExpanderEnabledValue()))
+        {
+            return 0;
+        }
+
+        using var mutex = new Mutex(true, InstanceMutexName(instanceSuffix), out bool createdNew);
         if (!createdNew)
         {
             return 0;
@@ -129,6 +138,11 @@ internal static class Program
         _store.Dispose();
         return 0;
     }
+
+    /// <summary>Only a policy that turns Text Expander off stops the engine; one that isn't configured leaves it to the user.</summary>
+    internal static bool PolicyAllowsStart(GpoRuleConfigured configured) => configured != GpoRuleConfigured.Disabled;
+
+    internal static string InstanceMutexName(string instanceSuffix) => MutexName + instanceSuffix;
 
     private static void ConfigureInjection()
     {
@@ -341,6 +355,10 @@ internal static class Program
 
     private static void Expand(PendingExpansion work)
     {
+        // A key press or click after this was queued may have moved the caret, so the work is dropped
+        // rather than applied wherever the caret is now. Checked again right before anything is erased.
+        bool InputUnchanged() => _hook!.InputGeneration == work.InputGeneration;
+
         if (work.IsUndo)
         {
             // Ctrl is normally still held from the Ctrl+Z that asked for this. Backspaces sent now
@@ -355,7 +373,14 @@ internal static class Program
                 return;
             }
 
-            Injector.Replace(Injector.CountDeletableUnits(work.Replacement), work.Trigger, work.TargetWindow);
+            // A $|$ left the caret inside the expansion; it goes back to the end before the expansion is erased.
+            Injector.Replace(Injector.CountDeletableUnits(work.Replacement), work.Trigger, work.TargetWindow, cursorRightUnits: work.CursorLeft, inputUnchanged: InputUnchanged);
+            return;
+        }
+
+        // Before any prompt, so nobody answers questions for an expansion that can no longer happen.
+        if (!InputUnchanged())
+        {
             return;
         }
 
@@ -372,10 +397,10 @@ internal static class Program
         // copied to the clipboard stays as it is.
         int cursorLeft = cursor < 0 ? 0 : Injector.CountDeletableUnits(text[cursor..]);
 
-        bool inserted = Injector.ReplaceTyped(work.TypedPrefix, text, work.TargetWindow, cursorLeft);
+        bool inserted = Injector.ReplaceTyped(work.TypedPrefix, text, work.TargetWindow, cursorLeft, InputUnchanged);
         if (ShouldRecordExpansion(inserted, work.Replacement))
         {
-            _hook!.RecordExpansion(work.TypedText ?? work.Trigger, text, work.TargetWindow, work.UndoGeneration);
+            _hook!.RecordExpansion(work.TypedText ?? work.Trigger, text, work.TargetWindow, work.InputGeneration, cursorLeft);
         }
     }
 

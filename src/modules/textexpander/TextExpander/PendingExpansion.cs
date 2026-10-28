@@ -10,18 +10,23 @@ namespace Microsoft.PowerToys.TextExpander;
 /// </summary>
 /// <param name="Trigger">The matched trigger.</param>
 /// <param name="TypedPrefix">
-/// The part of the trigger that reached the target (the hook swallows the final keystroke); erased first.
+/// The part of <paramref name="TypedText"/> that reached the target (the hook swallows the final keystroke); erased first.
 /// </param>
 /// <param name="Replacement">The raw replacement text from the snapshot that matched.</param>
 /// <param name="TargetWindow">The foreground window at the moment the trigger matched.</param>
 /// <param name="IsUndo">True when this work item reverts the previous expansion.</param>
 /// <param name="TypedText">
-/// Everything the user typed for this match, restored by Ctrl+Z. Null means the trigger itself;
-/// in word mode it also carries the terminator that released the trigger.
+/// Everything the user typed for this match, exactly as typed, restored by Ctrl+Z. With case-insensitive
+/// matching its capitalization can differ from <paramref name="Trigger"/>; in word mode it also carries the
+/// terminator that released the trigger. Null on an undo, whose trigger is the text to restore.
 /// </param>
-/// <param name="UndoGeneration">
-/// The keyboard-input generation at match time. The worker may retain undo only while it is still
-/// current; later user input invalidates a slow expansion before it can publish stale undo state.
+/// <param name="InputGeneration">
+/// The keyboard and mouse input generation when this was queued. A later key press or click can move the
+/// caret, so the worker erases, inserts and keeps undo only while it is still current.
+/// </param>
+/// <param name="CursorLeft">
+/// On an undo, how far before the end of the expansion its $|$ left the caret; the caret goes back to the end
+/// before the expansion is erased.
 /// </param>
 internal readonly record struct PendingExpansion(
     string Trigger,
@@ -30,4 +35,5 @@ internal readonly record struct PendingExpansion(
     IntPtr TargetWindow,
     bool IsUndo = false,
     string? TypedText = null,
-    long UndoGeneration = 0);
+    long InputGeneration = 0,
+    int CursorLeft = 0);

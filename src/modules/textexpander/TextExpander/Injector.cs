@@ -107,8 +107,12 @@ internal static class Injector
     /// The window the trigger was typed into, re-checked before anything is inserted, or
     /// <see cref="IntPtr.Zero"/> when unknown.
     /// </param>
-    public static bool ReplaceTyped(string typedPrefix, string text, IntPtr targetWindow = default, int cursorLeftUnits = 0)
-        => Replace(CountDeletableUnits(typedPrefix), text, targetWindow, cursorLeftUnits);
+    /// <param name="inputUnchanged">
+    /// Whether the user has pressed no key and clicked nowhere since the trigger matched, asked again right
+    /// before anything is erased; null when there is nothing to check.
+    /// </param>
+    public static bool ReplaceTyped(string typedPrefix, string text, IntPtr targetWindow = default, int cursorLeftUnits = 0, Func<bool>? inputUnchanged = null)
+        => Replace(CountDeletableUnits(typedPrefix), text, targetWindow, cursorLeftUnits, inputUnchanged: inputUnchanged);
 
     internal static int CountDeletableUnits(string value)
     {
@@ -130,8 +134,11 @@ internal static class Injector
     /// <summary>
     /// Erases <paramref name="backspaceCount"/> characters, then inserts <paramref name="text"/>.
     /// </summary>
-    public static bool Replace(int backspaceCount, string text, IntPtr targetWindow = default, int cursorLeftUnits = 0)
-        => ReplaceCore(backspaceCount, text, targetWindow, cursorLeftUnits, InputTarget.CanDrive);
+    /// <param name="cursorRightUnits">
+    /// How far to move the caret right before erasing, when an earlier insertion left it inside the text to erase.
+    /// </param>
+    public static bool Replace(int backspaceCount, string text, IntPtr targetWindow = default, int cursorLeftUnits = 0, int cursorRightUnits = 0, Func<bool>? inputUnchanged = null)
+        => ReplaceCore(backspaceCount, text, targetWindow, cursorLeftUnits, InputTarget.CanDrive, cursorRightUnits: cursorRightUnits, inputUnchanged: inputUnchanged);
 
     internal static bool ReplaceCore(
         int backspaceCount,
@@ -143,19 +150,31 @@ internal static class Injector
         Func<int, string, IntPtr, int, PasteOutcome>? tryPaste = null,
         Func<int, IntPtr, bool>? erase = null,
         Func<string, IntPtr, bool>? sendText = null,
-        Func<int, IntPtr, bool>? sendLeft = null)
+        Func<int, IntPtr, bool>? sendLeft = null,
+        int cursorRightUnits = 0,
+        Func<int, IntPtr, bool>? sendRight = null,
+        Func<bool>? inputUnchanged = null)
     {
         ArgumentNullException.ThrowIfNull(canDrive);
 
+        Func<bool> unchanged = inputUnchanged ?? (static () => true);
         getForegroundWindow ??= Native.GetForegroundWindow;
-        tryPaste ??= TryPaste;
-        erase ??= Erase;
+        tryPaste ??= (count, value, target, left) => TryPaste(count, value, target, left, unchanged);
+        erase ??= (count, target) => Erase(count, target, unchanged);
         sendText ??= static (value, target) => SendText(value, target);
         sendLeft ??= SendLeft;
+        sendRight ??= SendRight;
 
-        if (!IsAuthorizedTarget(targetWindow, canDrive, getForegroundWindow))
+        // The window must still be in front and drivable, and nothing since the match may have moved the caret.
+        if (!unchanged() || !IsAuthorizedTarget(targetWindow, canDrive, getForegroundWindow))
         {
             InjectionDiagnostics.RecordTypingAbandoned();
+            return false;
+        }
+
+        // Erasing counts back from the end of the text, so a caret left inside it goes back to the end first.
+        if (!sendRight(cursorRightUnits, targetWindow))
+        {
             return false;
         }
 
@@ -170,7 +189,7 @@ internal static class Injector
                 case PasteOutcome.Pasted:
                     return true;
 
-                // Focus moved while the clipboard was borrowed; typing now would reach the wrong window, so abandon.
+                // Focus or the caret moved while the clipboard was borrowed; typing now would land in the wrong place, so abandon.
                 case PasteOutcome.TargetLost:
                     return false;
 
@@ -193,7 +212,8 @@ internal static class Injector
 
         if (!erase(backspaceCount, targetWindow))
         {
-            // Focus moved during the pre-backspace grace period; abandon rather than type into the wrong window.
+            // Focus moved, or the user pressed a key or clicked, during the pre-backspace grace period;
+            // abandon rather than type in the wrong place.
             InjectionDiagnostics.RecordTypingAbandoned();
             return false;
         }
@@ -215,7 +235,11 @@ internal static class Injector
         return completed;
     }
 
-    private static bool SendLeft(int count, IntPtr targetWindow)
+    private static bool SendLeft(int count, IntPtr targetWindow) => SendArrow(Native.VK_LEFT, count, targetWindow);
+
+    private static bool SendRight(int count, IntPtr targetWindow) => SendArrow(Native.VK_RIGHT, count, targetWindow);
+
+    private static bool SendArrow(int vk, int count, IntPtr targetWindow)
     {
         if (count <= 0)
         {
@@ -230,30 +254,38 @@ internal static class Injector
         var inputs = new Native.INPUT[count * 2];
         for (int i = 0; i < count; i++)
         {
-            inputs[i * 2] = KeyDown(0x25);
-            inputs[(i * 2) + 1] = KeyUp(0x25);
+            inputs[i * 2] = KeyDown(vk);
+            inputs[(i * 2) + 1] = KeyUp(vk);
         }
 
         return DispatchExactly(Dispatch, inputs);
     }
 
     /// <summary>
-    /// Erases the trigger. Returns false, having sent nothing, when focus moved while waiting; the caller
-    /// must then abandon the expansion because erase and insertion have to land in the same window.
+    /// Erases the trigger. Returns false, having sent nothing, when focus moved or the user pressed a key or
+    /// clicked while waiting; the caller must then abandon the expansion because erase and insertion have to
+    /// land where the trigger was typed.
     /// </summary>
-    private static bool Erase(int backspaceCount, IntPtr targetWindow)
+    private static bool Erase(int backspaceCount, IntPtr targetWindow, Func<bool> inputUnchanged)
     {
+        if (backspaceCount > 0 && PreBackspaceDelayMs > 0)
+        {
+            Thread.Sleep(PreBackspaceDelayMs);
+        }
+
+        // Re-checked after the delay, right before the first destructive key, even with nothing to erase:
+        // the insertion would land wherever the caret moved to.
+        if (!inputUnchanged())
+        {
+            return false;
+        }
+
         if (backspaceCount <= 0)
         {
             return true;
         }
 
-        if (PreBackspaceDelayMs > 0)
-        {
-            Thread.Sleep(PreBackspaceDelayMs);
-        }
-
-        // Re-checked after the delay: backspaces sent to a newly focused window would delete the user's text.
+        // Backspaces sent to a newly focused window would delete the user's text.
         if (!IsAuthorizedTarget(targetWindow, InputTarget.CanDrive))
         {
             return false;
@@ -287,7 +319,7 @@ internal static class Injector
     /// Pastes via the clipboard, restoring whatever the user had there. Nothing destructive happens until
     /// the target is checked and the clipboard takeover verified; only then is the trigger erased.
     /// </summary>
-    private static PasteOutcome TryPaste(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits)
+    private static PasteOutcome TryPaste(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, Func<bool> inputUnchanged)
     {
         PasteOutcome? refusal = CheckTarget(targetWindow);
         if (refusal is not null)
@@ -328,8 +360,9 @@ internal static class Injector
                 return refusal.Value;
             }
 
-            // Focus moved in the grace period: abandon with the trigger intact (the finally restores the clipboard).
-            if (!Erase(backspaceCount, targetWindow))
+            // Focus moved, or the user pressed a key or clicked, in the grace period: abandon with the trigger
+            // intact (the finally restores the clipboard).
+            if (!Erase(backspaceCount, targetWindow, inputUnchanged))
             {
                 return PasteOutcome.TargetLost;
             }
