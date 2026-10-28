@@ -27,6 +27,26 @@ public sealed class MaintenanceTests
     }
 
     [TestMethod]
+    public void AuthorizationMismatchRequiresComponentRecoveryInsteadOfImmediateRetry()
+    {
+        foreach (string code in new[] { "Unauthorized", "TargetDenied" })
+        {
+            var failure = WorkspacesCsharpLibrary.Data.WorkspacesFailurePresentation.For(code, true, true);
+            Assert.AreEqual("ProtectedStorageAccessDenied", failure.MessageKey);
+            Assert.AreEqual("RetryAfterComponentRecovery", failure.RetryKind);
+            Assert.IsFalse(failure.CanRetry);
+            Assert.IsFalse(failure.CanSetup);
+        }
+
+        foreach (string code in new[] { "ConnectionClosed", "Timeout" })
+        {
+            var failure = WorkspacesCsharpLibrary.Data.WorkspacesFailurePresentation.For(code, true, true);
+            Assert.IsTrue(failure.CanRetry);
+            Assert.IsFalse(failure.CanSetup);
+        }
+    }
+
+    [TestMethod]
     public void ShippingClientCannotSelectTheLocalTestNamespace()
     {
         Assert.IsFalse(StorageIdentity.IsLocalTest);
