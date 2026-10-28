@@ -330,7 +330,7 @@ jobs:
   # Vcpkg's MSBuild integration runs `vcpkg install` early in the main build and
   # every C++ compile waits for it. On a cold agent it fetches the vcpkg
   # registry, downloads cmake/powershell-core, and builds every port from
-  # source. The caches below make that a few seconds on warm runs.
+  # source. The caches below cover the registry fetch and the port builds.
   - template: .\steps-install-vcpkg.yml
     parameters:
       useVSPreview: ${{ parameters.useVSPreview }}
@@ -378,13 +378,8 @@ jobs:
         key: '"vcpkg-archives" | "$(Agent.OS)" | "$(BuildPlatform)" | "$(VcpkgToolVersion)" | "$(VcpkgScriptsVersion)" | "$(VcpkgMsvcToolsets)" | vcpkg.json | vcpkg-configuration.json | deps/vcpkg-overlays/**'
         path: $(LOCALAPPDATA)\vcpkg\archives
 
-    # cmake, powershell-core and 7zip that vcpkg downloads and extracts (~30s).
-    # Their versions are pinned by the vcpkg tool.
-    - task: Cache@2
-      displayName: 'Cache vcpkg tools'
-      inputs:
-        key: '"vcpkg-tools" | "$(Agent.OS)" | "$(VcpkgToolVersion)"'
-        path: $(LOCALAPPDATA)\vcpkg\downloads\tools
+    # Not cached: the cmake/powershell-core/7zip vcpkg downloads (~460 MB).
+    # Restoring them takes as long as downloading them.
 
     # Git object store for the microsoft/vcpkg registry. vcpkg fetches its HEAD
     # on every install; with this cache restored that fetch is incremental.
