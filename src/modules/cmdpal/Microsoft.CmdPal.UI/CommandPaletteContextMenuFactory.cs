@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
-using System.Linq;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps;
@@ -363,7 +361,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
     private void AddPinToTrayCommand(string itemId, string providerId, List<IContextItem> items, CommandItemViewModel commandItem)
     {
         // Don't show the pin to tray icon if the tray menu isn't available.
-        if (_settingsService.Settings.TrayIconClickAction == TrayIconClickAction.OpenPalette)
+        if (_settingsService.Settings.TrayIconClickAction == TrayIconClickAction.OpenCommandPalette)
         {
             return;
         }
@@ -593,7 +591,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             var (title, subtitle, icon) = GetDockPreview();
             var dockSettings = _settingsService.Settings.DockSettings;
             var dockSide = dockSettings.Side;
-            IReadOnlyList<MonitorInfo>? monitors = GetDockEnabledMonitors(_monitorService, dockSettings);
+            var monitors = GetDockEnabledMonitors(_monitorService, dockSettings);
             ShowPinToDockDialogMessage message = new(_providerId, _commandId, title, subtitle, icon, dockSide, monitors);
             WeakReferenceMessenger.Default.Send(message);
         }
