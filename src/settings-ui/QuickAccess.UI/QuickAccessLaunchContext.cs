@@ -2,12 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.PowerToys.QuickAccess;
 
-public sealed record QuickAccessLaunchContext(string? ShowEventName, string? ExitEventName, string? RunnerPipeName, string? AppPipeName)
+public sealed record QuickAccessLaunchContext(string? ShowEventName, string? ExitEventName, string? RunnerPipeName, string? AppPipeName, string? HideEventName = null)
 {
     public static QuickAccessLaunchContext Parse(string[] args)
     {
@@ -15,6 +17,7 @@ public sealed record QuickAccessLaunchContext(string? ShowEventName, string? Exi
         string? exitEvent = null;
         string? runnerPipe = null;
         string? appPipe = null;
+        string? hideEvent = null;
 
         foreach (var arg in args)
         {
@@ -26,6 +29,10 @@ public sealed record QuickAccessLaunchContext(string? ShowEventName, string? Exi
             {
                 exitEvent = value;
             }
+            else if (TryReadValue(arg, "--hide-event", out value))
+            {
+                hideEvent = value;
+            }
             else if (TryReadValue(arg, "--runner-pipe", out value))
             {
                 runnerPipe = value;
@@ -36,7 +43,7 @@ public sealed record QuickAccessLaunchContext(string? ShowEventName, string? Exi
             }
         }
 
-        return new QuickAccessLaunchContext(showEvent, exitEvent, runnerPipe, appPipe);
+        return new QuickAccessLaunchContext(showEvent, exitEvent, runnerPipe, appPipe, hideEvent);
     }
 
     private static bool TryReadValue(string candidate, string key, [NotNullWhen(true)] out string? value)

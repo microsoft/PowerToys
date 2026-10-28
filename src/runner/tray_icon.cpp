@@ -46,6 +46,7 @@ namespace
     HMENU h_sub_menu = nullptr;
     bool double_click_timer_running = false;
     bool double_clicked = false;
+    bool quick_access_visible_on_press = false;
     POINT tray_icon_click_point;
     std::optional<bool> last_quick_access_state; // Track the last known Quick Access state
 
@@ -181,7 +182,7 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
     }
 }
 
-void click_timer_elapsed()
+void click_timer_elapsed(bool hide_quick_access)
 {
     double_click_timer_running = false;
     if (!double_clicked)
@@ -191,7 +192,10 @@ void click_timer_elapsed()
 
         if (get_general_settings().enableQuickAccess)
         {
-            open_quick_access_flyout_window();
+            if (!hide_quick_access)
+            {
+                open_quick_access_flyout_window();
+            }
         }
         else
         {
@@ -358,6 +362,18 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                 TrackPopupMenu(h_sub_menu, TPM_CENTERALIGN | TPM_BOTTOMALIGN, mouse_pointer.x, mouse_pointer.y, 0, window, nullptr);
                 break;
             }
+            case WM_LBUTTONDOWN:
+            {
+                // Capture this gesture before the flyout's focus-loss animation finishes.
+                // The later single-click callback must not reopen what this press dismissed.
+                quick_access_visible_on_press = QuickAccessHost::is_visible();
+                if (quick_access_visible_on_press)
+                {
+                    // Hide now, so a later shortcut is not overridden by the click timer.
+                    QuickAccessHost::hide();
+                }
+                break;
+            }
             case WM_LBUTTONUP:
             {
                 // ignore event if this is the second click of a double click
@@ -368,9 +384,11 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                     double_clicked = false;
 
                     UINT doubleClickTime = GetDoubleClickTime();
-                    std::thread([doubleClickTime]() {
+                    const bool hide_quick_access = quick_access_visible_on_press;
+                    quick_access_visible_on_press = false;
+                    std::thread([doubleClickTime, hide_quick_access]() {
                         std::this_thread::sleep_for(std::chrono::milliseconds(doubleClickTime));
-                        click_timer_elapsed();
+                        click_timer_elapsed(hide_quick_access);
                     }).detach();
                 }
                 break;
