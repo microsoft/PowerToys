@@ -11,19 +11,18 @@ namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 internal static partial class ChartValueFormatter
 {
     private static readonly Lazy<CompactNumberFormats> LocalizedFormats = new(() => new CompactNumberFormats(
-        Load("AdaptiveChart_CompactThousands", CompactNumberFormats.English.Thousands),
-        Load("AdaptiveChart_CompactMillions", CompactNumberFormats.English.Millions),
-        Load("AdaptiveChart_CompactBillions", CompactNumberFormats.English.Billions),
-        Load("AdaptiveChart_CompactTrillions", CompactNumberFormats.English.Trillions)));
+        Load(Properties.Resources.AdaptiveChart_CompactThousands, CompactNumberFormats.English.Thousands),
+        Load(Properties.Resources.AdaptiveChart_CompactMillions, CompactNumberFormats.English.Millions),
+        Load(Properties.Resources.AdaptiveChart_CompactBillions, CompactNumberFormats.English.Billions),
+        Load(Properties.Resources.AdaptiveChart_CompactTrillions, CompactNumberFormats.English.Trillions)));
 
     /// <summary>Formats a value in the user's language, shortening large numbers such as 12,345 to 12.3K.</summary>
     public static string FormatCompact(double value) =>
         FormatCompact(value, CultureInfo.CurrentCulture, LocalizedFormats.Value);
 
     // A missing or broken translation falls back to English rather than losing the number.
-    private static CompositeFormat Load(string resourceId, CompositeFormat english)
+    private static CompositeFormat Load(string? format, CompositeFormat english)
     {
-        var format = ChartStrings.Get(resourceId);
         if (string.IsNullOrWhiteSpace(format) || !format.Contains("{0}", StringComparison.Ordinal))
         {
             return english;

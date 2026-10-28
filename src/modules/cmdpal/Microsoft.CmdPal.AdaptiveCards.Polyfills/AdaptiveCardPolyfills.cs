@@ -30,10 +30,8 @@ public static class AdaptiveCardPolyfills
     }
 
     /// <summary>Registers the element renderers.</summary>
-    /// <param name="getString">Gets a localized string by its resource name, such as <c>AdaptiveChart_LineChart</c>.</param>
-    public static void RegisterRenderers(AdaptiveCardRenderer renderer, Func<string, string> getString)
+    public static void RegisterRenderers(AdaptiveCardRenderer renderer)
     {
-        ChartStrings.SetLookup(getString);
         foreach (var type in Types)
         {
             renderer.ElementRenderers.Set(type.Name, new AdaptiveVisualElementRenderer(type));

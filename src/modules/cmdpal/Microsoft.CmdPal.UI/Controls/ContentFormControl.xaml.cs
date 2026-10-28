@@ -16,7 +16,6 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.System;
-using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
@@ -63,7 +62,7 @@ public sealed partial class ContentFormControl : UserControl
         RegisterRenderer<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementRenderer>(renderer);
         RegisterRenderer<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementRenderer>(renderer);
         RegisterRenderer<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementRenderer>(renderer);
-        AdaptiveCardPolyfills.RegisterRenderers(renderer, RS_.GetString);
+        AdaptiveCardPolyfills.RegisterRenderers(renderer);
         _cardUpdater = new IncrementalAdaptiveCardUpdater(
             renderer,
             CardHost,

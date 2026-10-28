@@ -22,15 +22,14 @@ Cards stay standard Adaptive Cards JSON, and extensions give each element a `fal
 
 ```csharp
 AdaptiveCardPolyfills.RegisterParsers(AdaptiveCardParserRegistrations.ElementParsers);
-AdaptiveCardPolyfills.RegisterRenderers(renderer, RS_.GetString);
+AdaptiveCardPolyfills.RegisterRenderers(renderer);
 _cardUpdater = new IncrementalAdaptiveCardUpdater(..., AdaptiveCardPolyfills.PatchableElements);
 ```
 
-The host provides:
+The library is self-contained, so deleting it only means removing these calls and the project reference:
 
-- **Strings.** The library has no resources of its own, so `RegisterRenderers` takes a lookup for the `AdaptiveChart_*` strings in Command Palette's `Resources.resw`: chart names and summaries for screen readers, and the suffixes of compact numbers such as 12.3K.
-
-`AdaptiveCustomElementJson` is public too: Command Palette's settings inputs, which are custom elements, use it to read and write the properties every element has.
+- **Strings.** The `AdaptiveChart_*` strings live in this library's `Properties\Resources.resx`: chart names and summaries for screen readers, and the suffixes of compact numbers such as 12.3K.
+- **Element JSON.** `AdaptiveCustomElementJson` is internal. Command Palette's settings inputs keep their own copy, so nothing outside this library depends on it.
 
 ## How an element works
 
@@ -54,7 +53,7 @@ A model whose `RendersItself` is false can't draw itself, so the element shows i
 ## Add an element
 
 1. Add a model that implements `IAdaptiveVisualModel` with a static `Parse(string elementJson, ICollection<string> warnings)`. Read the properties on the element's reference page, and nothing else.
-2. Add a control that derives from `AdaptiveVisualControl`, and implement `RenderCore` and `ApplyModel`. Read any text it shows with `ChartStrings.Get`, and add the string to Command Palette's `Resources.resw`.
+2. Add a control that derives from `AdaptiveVisualControl`, and implement `RenderCore` and `ApplyModel`. Add any text it shows to this library's `Properties\Resources.resx`, and read it with `Properties.Resources`.
 3. Add the element to the list in `AdaptiveCardPolyfills`.
 4. Add parsing tests to `Tests\Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests`.
 
@@ -72,4 +71,4 @@ When a renderer release adds one:
 1. Update `AdaptiveCards.Rendering.WinUI3` in `Directory.Packages.props`. Registrations here replace the renderer's own, so the update alone doesn't change any card.
 2. Compare the two. The renderer's controls don't update in place, so a live chart would be rebuilt on every update unless the renderer adds that.
 3. Remove the element from `AdaptiveCardPolyfills`, with its files and tests. Extensions don't change, since they send schema JSON.
-4. When nothing is left, move `AdaptiveCustomElementJson` back to Command Palette, and delete this project and its tests.
+4. When nothing is left, delete this project and its tests, and remove the calls in `ContentFormControl`.

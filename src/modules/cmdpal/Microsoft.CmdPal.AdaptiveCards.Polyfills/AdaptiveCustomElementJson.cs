@@ -7,8 +7,11 @@ using Windows.Data.Json;
 
 namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
-/// <summary>Reads and writes the properties that every element has, for custom elements.</summary>
-public static class AdaptiveCustomElementJson
+/// <summary>
+/// Reads and writes the properties that every element has, for the elements in this library.
+/// Command Palette's own custom inputs keep a separate copy, so this library can be deleted on its own.
+/// </summary>
+internal static class AdaptiveCustomElementJson
 {
     public static void ParseCommonProperties(
         IAdaptiveCardElement element,
@@ -83,22 +86,11 @@ public static class AdaptiveCustomElementJson
         return json;
     }
 
-    public static void SetString(JsonObject json, string propertyName, string? value) =>
+    private static void SetString(JsonObject json, string propertyName, string? value) =>
         json.SetNamedValue(propertyName, JsonValue.CreateStringValue(value ?? string.Empty));
 
-    public static void SetBoolean(JsonObject json, string propertyName, bool value) =>
+    private static void SetBoolean(JsonObject json, string propertyName, bool value) =>
         json.SetNamedValue(propertyName, JsonValue.CreateBooleanValue(value));
-
-    public static void SetStringArray(JsonObject json, string propertyName, IEnumerable<string> values)
-    {
-        var array = new JsonArray();
-        foreach (var value in values)
-        {
-            array.Add(JsonValue.CreateStringValue(value));
-        }
-
-        json.SetNamedValue(propertyName, array);
-    }
 
     private static TEnum ParseEnum<TEnum>(
         JsonObject inputJson,
