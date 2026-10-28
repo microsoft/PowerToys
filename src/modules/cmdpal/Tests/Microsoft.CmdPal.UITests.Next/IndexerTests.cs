@@ -18,6 +18,7 @@ public class IndexerTests : CommandPaletteTestBase
     private string testFileBaseName = string.Empty;
     private string testFilePath = string.Empty;
     private string browseFolderPath = string.Empty;
+    private long containingFolderWindowHandle;
     private long consoleWindowHandle;
     private int[] consoleProcessIds = [];
 
@@ -25,11 +26,9 @@ public class IndexerTests : CommandPaletteTestBase
     {
         testFileBaseName = $"indexer_test_item_{Guid.NewGuid():N}";
         testFileName = testFileBaseName + ".txt";
-        var downloadsPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            TestFolderName);
-        Directory.CreateDirectory(downloadsPath);
-        testFilePath = Path.Combine(downloadsPath, testFileName);
+        var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        Directory.CreateDirectory(documentsPath);
+        testFilePath = Path.Combine(documentsPath, testFileName);
         File.WriteAllText(testFilePath, TestFileContent, Encoding.UTF8);
     }
 
@@ -37,6 +36,11 @@ public class IndexerTests : CommandPaletteTestBase
     public async Task CleanupIndexerTest()
     {
         await CaptureFailureArtifactsBeforeCleanupAsync(TimeSpan.FromSeconds(1));
+
+        if (containingFolderWindowHandle != 0)
+        {
+            WindowControl.TryCloseWindow(containingFolderWindowHandle);
+        }
 
         WindowControl.TryCloseByApp(
             "Notepad",
@@ -126,6 +130,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.AreEqual("Search files", searchFileItem.Name);
         Step("Opening the Search files extension");
         DoubleClickResult(searchFileItem);
+        Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 45_000));
     }
 
     private Session? WaitForExplorerWindow(int timeoutMS = 10_000) =>
@@ -260,11 +265,20 @@ public class IndexerTests : CommandPaletteTestBase
         EnterIndexerExtension();
         FindIndexedItem(testFileName).MouseClick();
         OpenContextMenu();
+        var windowsBefore = SnapshotWindowHandles();
         Step("Showing the selected file in File Explorer");
         CommandPaletteSession.Find<NavigationViewItem>("Show in folder").Click();
 
-        var explorer = WaitForExplorerWindow(timeoutMS: 20_000);
+        var explorer = WindowsFinder.WaitForWindow(
+            window => window.ProcessName.Equals("explorer", StringComparison.OrdinalIgnoreCase) &&
+                      ExplorerShell.TryGetSelection(new IntPtr(window.Hwnd))?.SelectedPaths.SetEquals([testFilePath]) == true,
+            timeoutMS: 20_000);
         Assert.IsNotNull(explorer, "File Explorer did not open the folder containing the indexed file.");
+        if (!windowsBefore.Contains(explorer.WindowHandle))
+        {
+            containingFolderWindowHandle = explorer.WindowHandle;
+        }
+
         var selection = WaitHelper.WaitForStable(
             observe: () => ExplorerShell.TryGetSelection(new IntPtr(explorer.WindowHandle)),
             isMatch: snapshot => snapshot is not null &&

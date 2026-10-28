@@ -61,7 +61,9 @@ not on a working machine.
   untrusted sample packages fail setup for CmdPal jobs on both Windows 10 and Windows 11. The
   selected project also opts into the shared authenticated-Settings-IPC setup, which signs both
   `PowerToys.exe` and `PowerToys.Settings.exe` so Release lifecycle assertions exercise the production
-  authentication path.
+  authentication path. The suite uses the existing `runUiTestAsUser.ps1` dispatch so packaged COM
+  activation runs on the same non-elevated interactive desktop as local validation, not the elevated
+  agent process.
 - For a local host-desktop run, execute the same signing helper from an elevated terminal before
   running the tests as the normal test user (replace `<test-output>` with the executable's directory):
 
@@ -86,7 +88,9 @@ not on a working machine.
   copies its MSIX from the `Microsoft.WindowsAppSDK.Runtime` NuGet package, and `SamplePagesTests`
   installs it for the current user when a compatible version is missing (for example on clean
   Windows 10 machines).
-- Indexer tests create temporary files under `Downloads` and need Windows Search indexing enabled.
+- Indexer tests create temporary files under `Documents`, an indexed location in Windows Search's
+  Classic configuration, and need indexing enabled. Folder actions use `Downloads`; they do not
+  depend on the hidden `AppData` directory being indexed.
 
 ##### Checklist coverage
 

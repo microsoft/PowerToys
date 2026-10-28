@@ -278,6 +278,12 @@ public class SamplePagesTests : CommandPaletteTestBase
     private void VerifyContextFilterReceivesKeyboardInput()
     {
         Step("Verifying keyboard focus through the context filter's visible results");
+        var focus = WaitHelper.WaitForStable(
+            observe: GetFocusedElement,
+            isMatch: focused => focused.AutomationId is "ContextFilterBox" or "ItemContextMenuFlyout",
+            timeoutMS: 20_000,
+            requiredConsecutiveMatches: 2);
+        Assert.IsTrue(focus.Succeeded, $"The context filter did not receive focus; focused element is {focus.LastObservation}.");
         var originalClipboard = ClipboardHelper.GetText();
         try
         {

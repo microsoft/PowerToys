@@ -21,9 +21,10 @@ public class BasicTests : CommandPaletteTestBase
         Assert.AreEqual("Search files", searchFileItem.Name);
         Step("Opening the Search files extension");
         DoubleClickResult(searchFileItem);
+        Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 45_000));
 
-        SetFilesExtensionSearchBox("AppData");
-        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("AppData"));
+        SetFilesExtensionSearchBox("Downloads");
+        Assert.IsNotNull(FindExactResult("Downloads", timeoutMS: 20_000));
     }
 
     [TestMethod]
