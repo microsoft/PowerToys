@@ -327,23 +327,72 @@ jobs:
   # Cpp.Build.targets) using the three-tier VcpkgRoot fallback
   # (env var > VS-shipped > deps/vcpkg runtime clone).
   #
-  # Vcpkg's MSBuild integration runs `vcpkg install` once per project, so the
-  # binary cache below saves ~3-5 minutes per triplet on cache hits.
+  # Vcpkg's MSBuild integration runs `vcpkg install` early in the main build and
+  # every C++ compile waits for it. On a cold agent it fetches the vcpkg
+  # registry, downloads cmake/powershell-core, and builds every port from
+  # source. The caches below make that a few seconds on warm runs.
   - template: .\steps-install-vcpkg.yml
     parameters:
       useVSPreview: ${{ parameters.useVSPreview }}
 
   - ${{ if eq(parameters.enablePackageCaching, true) }}:
+    # vcpkg folds its tool and scripts versions, the cmake/powershell-core
+    # versions it pins, and a hash of the MSVC compiler it detects into every
+    # package ABI. Put those in the cache keys so an agent image or VS update
+    # saves a fresh cache instead of exact-hitting stale archives forever.
+    - pwsh: |-
+        $vcpkgExe = Join-Path $env:VCPKG_ROOT 'vcpkg.exe'
+        $versionOutput = & $vcpkgExe version
+        $toolVersion = [regex]::Match(($versionOutput -join "`n"), 'version\s+(\S+)').Groups[1].Value
+        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($toolVersion)) {
+          throw "Unable to read the vcpkg version from $vcpkgExe"
+        }
+
+        $bundle = Get-Content (Join-Path $env:VCPKG_ROOT 'vcpkg-bundle.json') -Raw -ErrorAction Ignore | ConvertFrom-Json
+        $scriptsVersion = if ($bundle.embeddedsha) { $bundle.embeddedsha } else { git -C $env:VCPKG_ROOT rev-parse HEAD }
+        if ([string]::IsNullOrWhiteSpace($scriptsVersion)) {
+          throw "Unable to determine the vcpkg scripts version for $env:VCPKG_ROOT"
+        }
+
+        $vsInstalls = & 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -all -prerelease -products * -property installationPath
+        $msvcToolsets = @($vsInstalls |
+          ForEach-Object { Get-ChildItem (Join-Path $_ 'VC\Tools\MSVC') -Directory -ErrorAction Ignore } |
+          ForEach-Object Name | Sort-Object -Unique) -join ','
+        if ([string]::IsNullOrWhiteSpace($msvcToolsets)) {
+          throw 'No MSVC toolsets found'
+        }
+
+        Write-Host "vcpkg tool version:    $toolVersion"
+        Write-Host "vcpkg scripts version: $scriptsVersion"
+        Write-Host "MSVC toolsets:         $msvcToolsets"
+        Write-Host "##vso[task.setvariable variable=VcpkgToolVersion]$toolVersion"
+        Write-Host "##vso[task.setvariable variable=VcpkgScriptsVersion]$scriptsVersion"
+        Write-Host "##vso[task.setvariable variable=VcpkgMsvcToolsets]$msvcToolsets"
+      displayName: Compute vcpkg cache keys
+
+    # Exact keys only, no restoreKeys: a fallback would restore stale content
+    # and the post-job step would save it again under the new key.
     - task: Cache@2
       displayName: 'Cache vcpkg binary archives'
       inputs:
-        # Key on the inputs vcpkg uses to compute its package ABI: the manifest,
-        # configuration, every overlay-port file, and the agent OS.
-        key: '"vcpkg" | "$(Agent.OS)" | vcpkg.json | vcpkg-configuration.json | deps/vcpkg-overlays/**'
-        restoreKeys: |
-           "vcpkg" | "$(Agent.OS)"
-           "vcpkg"
+        key: '"vcpkg-archives" | "$(Agent.OS)" | "$(BuildPlatform)" | "$(VcpkgToolVersion)" | "$(VcpkgScriptsVersion)" | "$(VcpkgMsvcToolsets)" | vcpkg.json | vcpkg-configuration.json | deps/vcpkg-overlays/**'
         path: $(LOCALAPPDATA)\vcpkg\archives
+
+    # cmake, powershell-core and 7zip that vcpkg downloads and extracts (~30s).
+    # Their versions are pinned by the vcpkg tool.
+    - task: Cache@2
+      displayName: 'Cache vcpkg tools'
+      inputs:
+        key: '"vcpkg-tools" | "$(Agent.OS)" | "$(VcpkgToolVersion)"'
+        path: $(LOCALAPPDATA)\vcpkg\downloads\tools
+
+    # Git object store for the microsoft/vcpkg registry. vcpkg fetches its HEAD
+    # on every install; with this cache restored that fetch is incremental.
+    - task: Cache@2
+      displayName: 'Cache vcpkg registry'
+      inputs:
+        key: '"vcpkg-registries" | "$(Agent.OS)" | vcpkg.json'
+        path: $(LOCALAPPDATA)\vcpkg\registries
 
 
 
