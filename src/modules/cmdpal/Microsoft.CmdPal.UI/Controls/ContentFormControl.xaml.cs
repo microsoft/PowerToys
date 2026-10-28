@@ -22,6 +22,7 @@ public sealed partial class ContentFormControl : UserControl
 {
     private readonly IncrementalAdaptiveCardUpdater _cardUpdater;
     private readonly AdaptiveCardRenderer _renderer;
+    private readonly AdaptiveInputValueTracker _inputValues = new();
     private static bool _customElementParsersRegistered;
     private ContentFormViewModel? _viewModel;
     private AdaptiveHostConfig _hostConfig;
@@ -63,6 +64,14 @@ public sealed partial class ContentFormControl : UserControl
         RegisterRenderer<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementRenderer>(renderer);
         RegisterRenderer<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementRenderer>(renderer);
         RegisterRenderer<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementRenderer>(renderer);
+        _inputValues.Attach(
+            renderer,
+            [
+                AdaptiveStringListInputElement.CustomInputType,
+                AdaptiveFilePathListInputElement.CustomInputType,
+                AdaptiveKeyValueListInputElement.CustomInputType,
+                AdaptiveFilePathInputElement.CustomInputType,
+            ]);
         _cardUpdater = new IncrementalAdaptiveCardUpdater(
             renderer,
             CardHost,
@@ -85,12 +94,42 @@ public sealed partial class ContentFormControl : UserControl
 
         _hostConfig = hostConfig;
         _renderer.HostConfig = hostConfig;
-        var card = _viewModel?.Card;
+        var card = _viewModel?.Card?.AdaptiveCard;
+        var inputValues = _inputValues.GetCurrentValues(_cardUpdater.RenderedCard);
         ResetCard();
         if (card is not null)
         {
-            RequestDisplayCard(card);
+            _ = DisplayCardAsync(WithInputValues(card, inputValues));
         }
+    }
+
+    /// <summary>Returns a copy of <paramref name="card"/> with the values the user entered, so a re-render doesn't discard them.</summary>
+    private static AdaptiveCard WithInputValues(AdaptiveCard card, Dictionary<string, string> inputValues)
+    {
+        if (inputValues.Count == 0)
+        {
+            return card;
+        }
+
+        try
+        {
+            var json = card.ToJson();
+            AdaptiveCardInputValues.Apply(json, inputValues);
+            var result = AdaptiveCard.FromJsonString(
+                json.Stringify(),
+                AdaptiveCardParserRegistrations.ElementParsers,
+                AdaptiveCardParserRegistrations.ActionParsers);
+            if (result.AdaptiveCard is AdaptiveCard cardWithValues)
+            {
+                return cardWithValues;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to keep Adaptive Card input values", ex);
+        }
+
+        return card;
     }
 
     private static void RegisterParser<TElement, TParser>()
