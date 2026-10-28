@@ -1791,6 +1791,7 @@ sourced
 sourcedoc
 SOURCEHEADER
 sourcesdirectory
+sparkline
 spdisp
 spdlog
 spdo
