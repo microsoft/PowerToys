@@ -110,15 +110,16 @@ scope, when the default mouse backend is active again.
 Driver provisioning is separate, elevated test infrastructure; tests themselves run non-elevated.
 The test package targets UMDF 2.31 on Windows 10 2004+ and Windows 11 and is never shipped in the
 PowerToys installer. The Microsoft sample-derived driver is MS-PL licensed; its attribution and
-license accompany the test artifacts. ARM64 builds are supported, but the current ARM64 CI image
-rejects the self-signed catalog under Code Integrity: an accepted signing route is required, not
-weaker boot or certificate policies.
+license accompany the test artifacts. ARM64 requires a separate, isolated CI image preconfigured
+with TESTSIGNING enabled. Other ARM64 suites and all x64 suites retain their ordinary images.
 
 > **Security:** provision this driver only in disposable, isolated test VMs without real credentials.
 > While installed, local code can emit hardware-style keyboard/mouse input, including input to
-> elevated desktops. Do not install it on a developer workstation. Keep Secure Boot and Code
-> Integrity enabled, do not enable TESTSIGNING, and remove the device, package and temporary trust
-> immediately after testing. Activation never installs a driver or changes machine trust.
+> elevated desktops. Do not install it on a developer workstation. Do not change ordinary test
+> images' boot/signing policies. Only the dedicated ARM64 image is provisioned for TESTSIGNING by
+> its owner; the pipeline never enables it, disables Secure Boot/HVCI, or reboots to change policy.
+> Remove the device, package and temporary trust immediately after testing. Activation never
+> installs a driver or changes machine trust.
 
 Build the test-only package on the build host (Visual Studio C++ tools and the SDK are required):
 
@@ -152,7 +153,27 @@ Always clean up from the administrator control session, including after a failed
 Cleanup only removes journaled test trust and owned present devices/packages, and retains the
 journal on failure. Preserve that journal until cleanup succeeds. CI provisions automatically for
 the x64 Grab and Move suite. Implicit ARM64 selections skip that suite with an infrastructure
-warning; explicitly requesting it reports `BLOCKED_INFRASTRUCTURE` rather than a passing zero-test run.
+warning while the dedicated image is unconfigured; explicitly requesting it reports
+`BLOCKED_INFRASTRUCTURE` rather than a passing zero-test run.
+
+#### Dedicated ARM64 Grab and Move CI image
+
+Configure `.pipelines\v2\templates\variables-umdf-hid.yml` before the first real ARM64 run:
+
+- Set `UmdfHidArm64Image` to the new `ImageOverride` name. Its empty default disables the route.
+- Provision the separate `SHINE-INT-Testing-arm64-UMDF` / `SHINE-OSS-Testing-arm64-UMDF` pools, or
+  update `UmdfHidArm64InternalPool` / `UmdfHidArm64OssPool` to their actual names. Do not reuse the
+  ordinary ARM64 pool.
+- The dedicated English-language Windows 11 ARM64 image needs TESTSIGNING enabled before boot,
+  an elevated agent, and the same logged-on standard-user desktop/UI-test prerequisites as the
+  ordinary test image. The job checks the architecture and existing boot configuration; it
+  does not alter them. Actual driver-load readiness is still checked separately.
+
+Once configured, PR selection, full builds and official/specific-build runs route only
+`GrabAndMove.UITests` to a separate `_UmdfHid` job. All/mixed selections keep every other suite on
+the ordinary pool. Official/specific-build runs retain both machine-level and per-user jobs.
+Native ARM64 driver artifacts are built on the ordinary build agents, never installed there.
+The experimental ARM64 transport-smoke path also uses the dedicated pool/image.
 
 ## Running `.Next` tests in persistent local VMs
 

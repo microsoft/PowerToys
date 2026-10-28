@@ -40,6 +40,12 @@ parameters:
   - name: jobSuffix
     type: string
     default: ''
+  - name: routeUmdfHidArm64
+    type: boolean
+    default: false
+  - name: umdfHidArm64Dedicated
+    type: boolean
+    default: false
 
 jobs:
 - job: Test${{ parameters.platform }}${{ parameters.configuration }}${{ parameters.jobSuffix }}
@@ -60,20 +66,27 @@ jobs:
     ${{ if eq(parameters.autoSelectUiTests, true) }}:
       AutoUiTestModules: $[ dependencies.Resolve.outputs['resolve.uiTestModules'] ]
   pool:
-    ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
-      ${{ if ne(parameters.platform, 'ARM64') }}:
-        name: SHINE-INT-Testing-x64
-        ${{ if eq(parameters.platform, 'x64Win11') }}:
-          demands: ImageOverride -equals SHINE-W11-Testing
+    ${{ if eq(parameters.umdfHidArm64Dedicated, true) }}:
+      ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+        name: ${{ variables.UmdfHidArm64InternalPool }}
       ${{ else }}:
-        name: SHINE-INT-Testing-arm64
+        name: ${{ variables.UmdfHidArm64OssPool }}
+      demands: ImageOverride -equals ${{ variables.UmdfHidArm64Image }}
     ${{ else }}:
-      ${{ if ne(parameters.platform, 'ARM64') }}:
-        name: SHINE-OSS-Testing-x64
-        ${{ if eq(parameters.platform, 'x64Win11') }}:
-          demands: ImageOverride -equals SHINE-W11-Testing
+      ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+        ${{ if ne(parameters.platform, 'ARM64') }}:
+          name: SHINE-INT-Testing-x64
+          ${{ if eq(parameters.platform, 'x64Win11') }}:
+            demands: ImageOverride -equals SHINE-W11-Testing
+        ${{ else }}:
+          name: SHINE-INT-Testing-arm64
       ${{ else }}:
-        name: SHINE-OSS-Testing-arm64
+        ${{ if ne(parameters.platform, 'ARM64') }}:
+          name: SHINE-OSS-Testing-x64
+          ${{ if eq(parameters.platform, 'x64Win11') }}:
+            demands: ImageOverride -equals SHINE-W11-Testing
+        ${{ else }}:
+          name: SHINE-OSS-Testing-arm64
   steps:
   - checkout: self
     submodules: false
@@ -89,11 +102,24 @@ jobs:
       }
       . "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\UmdfHidCi.Common.ps1"
       $hidSelection = Get-UmdfHidUiTestSelection -Modules $modules -Platform '$(TestPlatform)' `
-        -AutoSelect ('${{ parameters.autoSelectUiTests }}' -eq 'True')
+        -AutoSelect ('${{ parameters.autoSelectUiTests }}' -eq 'True') `
+        -RouteArm64 ('${{ parameters.routeUmdfHidArm64 }}' -eq 'True') `
+        -DedicatedArm64 ('${{ parameters.umdfHidArm64Dedicated }}' -eq 'True')
+      if ('${{ parameters.umdfHidArm64Dedicated }}' -eq 'True') {
+        $bootConfiguration = & bcdedit.exe /enum '{current}'
+        if ($LASTEXITCODE) { throw 'BLOCKED_INFRASTRUCTURE: cannot read the dedicated image boot configuration.' }
+        Assert-UmdfHidArm64TestEnvironment `
+          -OsArchitecture ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()) `
+          -BootConfiguration ($bootConfiguration -join "`n")
+        Write-Host "Dedicated ARM64 UMDF image: ${{ variables.UmdfHidArm64Image }} (TESTSIGNING is preconfigured; no boot settings are changed)."
+      }
       Write-Host "##vso[task.setvariable variable=ExcludeUmdfHidSuite]$($hidSelection.Exclude.ToString().ToLowerInvariant())"
       Write-Host "##vso[task.setvariable variable=UmdfHidSelectionBlocked]$($hidSelection.Blocked.ToString().ToLowerInvariant())"
       if ($hidSelection.Skipped) {
-        Write-Host "##vso[task.logissue type=warning]Skipping implicitly selected GrabAndMove.UITests on $(TestPlatform): the virtual HID driver requires an accepted ARM64 signing route. Other suites remain selected."
+        Write-Host "##vso[task.logissue type=warning]Skipping implicitly selected GrabAndMove.UITests on $(TestPlatform): the dedicated ARM64 UMDF image is not configured. Other suites remain selected."
+      }
+      if ($hidSelection.Routed) {
+        Write-Host 'GrabAndMove.UITests runs only in the separate ARM64 UMDF job; this job keeps the other selected suites.'
       }
       $selection = Get-MwbUiTestSelection -Modules $modules `
         -AutoSelect ('${{ parameters.autoSelectUiTests }}' -eq 'True') `
@@ -569,7 +595,7 @@ jobs:
         $failed++
       }
       if ($env:UMDF_HID_SELECTION_BLOCKED -eq 'true') {
-        Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: explicitly selected GrabAndMove.UITests requires a virtual HID driver accepted by the ARM64 signing policy. No tests or protections are bypassed; other selected suites run independently."
+        Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: explicitly selected GrabAndMove.UITests requires the configured dedicated ARM64 UMDF pool/image. No boot policies are changed; other selected suites run independently."
         $failed++
       }
       if ($failed -gt 0) {

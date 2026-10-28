@@ -51,6 +51,70 @@ Describe 'Virtual HID suite selection' {
         (Get-UmdfHidUiTestSelection -Modules 'grabandmove.uitests' -Platform x64win10).Run | Should Be $true
     }
 
+    It 'runs only GrabAndMove in the dedicated ARM64 job' {
+        $selection = Get-UmdfHidUiTestSelection -Modules 'GrabAndMove.UITests' -Platform ARM64 -DedicatedArm64 $true
+        $selection.Run | Should Be $true
+        $selection.Exclude | Should Be $false
+        $selection.Blocked | Should Be $false
+        $selection.Skipped | Should Be $false
+        $selection.Routed | Should Be $false
+    }
+
+    It 'routes ARM64 input away from the ordinary job for <Case>' -TestCases @(
+        @{ Case = 'explicit'; Modules = @('GrabAndMove.UITests'); Auto = $false }
+        @{ Case = 'PR'; Modules = @('GrabAndMove.UITests'); Auto = $true }
+        @{ Case = 'all'; Modules = @(); Auto = $false }
+        @{ Case = 'mixed'; Modules = @('GrabAndMove.UITests', 'ColorPicker.UITests'); Auto = $false }
+    ) {
+        param($Case, $Modules, $Auto)
+        $before = $Modules -join ';'
+        $selection = Get-UmdfHidUiTestSelection -Modules $Modules -Platform ARM64 -AutoSelect $Auto -RouteArm64 $true
+        $selection.Run | Should Be $false
+        $selection.Exclude | Should Be $true
+        $selection.Routed | Should Be $true
+        $selection.Blocked | Should Be $false
+        $selection.Skipped | Should Be $false
+        ($Modules -join ';') | Should Be $before
+    }
+
+    It 'does not route unrelated suites or change x64 behavior' {
+        (Get-UmdfHidUiTestSelection -Modules 'Other.UITests' -Platform ARM64 -RouteArm64 $true).Routed | Should Be $false
+        $selection = Get-UmdfHidUiTestSelection -Modules 'GrabAndMove.UITests' -Platform x64 -RouteArm64 $true
+        $selection.Run | Should Be $true
+        $selection.Exclude | Should Be $false
+        $selection.Routed | Should Be $false
+    }
+
+    It 'rejects unsafe dedicated-job selection <Case>' -TestCases @(
+        @{ Case = 'wrong architecture'; Platform = 'x64'; Modules = @('GrabAndMove.UITests'); Auto = $false }
+        @{ Case = 'all suites'; Platform = 'ARM64'; Modules = @(); Auto = $false }
+        @{ Case = 'another suite'; Platform = 'ARM64'; Modules = @('Other.UITests'); Auto = $false }
+        @{ Case = 'mixed suites'; Platform = 'ARM64'; Modules = @('GrabAndMove.UITests', 'Other.UITests'); Auto = $false }
+        @{ Case = 'PR override'; Platform = 'ARM64'; Modules = @('GrabAndMove.UITests'); Auto = $true }
+    ) {
+        param($Case, $Platform, $Modules, $Auto)
+        { Get-UmdfHidUiTestSelection -Modules $Modules -Platform $Platform -AutoSelect $Auto -DedicatedArm64 $true } |
+            Should Throw 'must select exactly GrabAndMove.UITests'
+    }
+
+    It 'accepts the preconfigured dedicated English-language ARM64 image' {
+        Assert-UmdfHidArm64TestEnvironment -OsArchitecture ARM64 -BootConfiguration "Windows Boot Loader`r`ntestsigning             Yes`r`n"
+    }
+
+    It 'rejects an unprepared dedicated image <Case>' -TestCases @(
+        @{ Case = 'x64'; Architecture = 'X64'; Boot = 'testsigning Yes' }
+        @{ Case = 'off'; Architecture = 'Arm64'; Boot = 'testsigning No' }
+        @{ Case = 'default-off'; Architecture = 'Arm64'; Boot = 'Windows Boot Loader' }
+        @{ Case = 'empty'; Architecture = 'Arm64'; Boot = '' }
+    ) {
+        param($Case, $Architecture, $Boot)
+        $failure = $null
+        try { Assert-UmdfHidArm64TestEnvironment -OsArchitecture $Architecture -BootConfiguration $Boot }
+        catch { $failure = $_ }
+        $failure | Should Not BeNullOrEmpty
+        $failure.Exception.Message | Should Match 'BLOCKED_INFRASTRUCTURE'
+    }
+
     It 'acquires only host tools and requested target packages for <Platform>' -TestCases @(
         @{ Platform = 'x64'; Expected = 3 }
         @{ Platform = 'ARM64'; Expected = 5 }
@@ -78,7 +142,7 @@ Describe 'Virtual HID suite selection' {
         $resolve | Should Match '\$hasUmdfHidUiTests = if \(\$modules -contains ''GrabAndMove.UITests''\)'
         $resolve | Should Match 'hasUmdfHidUiTests;isOutput=true'
         $ci = Get-Content (Join-Path $templates 'pipeline-ci-build.yml') -Raw
-        $ci | Should Match "prepareUmdfHid:.*parameters.runAffectedUiTests, eq\(platform, 'x64'\)"
+        $ci | Should Match "prepareUmdfHid:.*parameters.runAffectedUiTests, or\(eq\(platform, 'x64'\), and\(eq\(platform, 'arm64'\), ne\(variables.UmdfHidArm64Image, ''\)\)\)"
         $ci | Should Match "UmdfHidSelected:.*dependencies.Resolve.outputs\['resolve.hasUmdfHidUiTests'\]"
         $ci | Should Match "umdfHidCondition:.*eq\(variables\['UmdfHidSelected'\], 'true'\)"
         $build = Get-Content (Join-Path $templates 'job-build-project.yml') -Raw

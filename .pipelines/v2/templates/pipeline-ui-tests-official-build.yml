@@ -89,7 +89,7 @@ stages:
       displayName: Test ${{ parameters.platform }} (Official Build)
       dependsOn: BuildUITests_${{ parameters.platform }}
       jobs:
-        - template: job-test-project.yml
+        - template: job-test-arm64.yml
           parameters:
             platform: ${{ parameters.platform }}
             configuration: Release
@@ -99,7 +99,7 @@ stages:
             uiTestModules: ${{ parameters.uiTestModules }}
 
         # Additional per-user installation test
-        - template: job-test-project.yml
+        - template: job-test-arm64.yml
           parameters:
             platform: ${{ parameters.platform }}
             configuration: Release

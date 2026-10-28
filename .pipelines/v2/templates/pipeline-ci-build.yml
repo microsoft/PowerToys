@@ -1,4 +1,5 @@
 variables:
+  - template: variables-umdf-hid.yml
   - name: runCodesignValidationInjectionBG
     value: false
   - name: EnablePipelineCache
@@ -83,8 +84,8 @@ stages:
             runTests: ${{ parameters.runTests }}
             buildTests: true
             prepareMwbRuntime: ${{ and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}
-            prepareUmdfHid: ${{ and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}
-            ${{ if and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}:
+            prepareUmdfHid: ${{ and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(variables.UmdfHidArm64Image, '')))) }}
+            ${{ if and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(variables.UmdfHidArm64Image, '')))) }}:
               dependsOn:
                 - Resolve
               # Resolve is skipped outside PR builds; the ordinary build must still run.
@@ -136,7 +137,7 @@ stages:
                 condition: and(succeeded(), eq(dependencies.Resolve.outputs['resolve.hasUiTests'], 'true'))
 
           - ${{ if ne(platform, 'x64') }}:
-            - template: job-test-project.yml
+            - template: job-test-arm64.yml
               parameters:
                 platform: ${{ platform }}
                 configuration: Release

@@ -3,6 +3,7 @@ trigger: none
 pr: none
 
 variables:
+  - template: variables-umdf-hid.yml
   - name: runCodesignValidationInjectionBG
     value: false
   - name: EnablePipelineCache
