@@ -3,8 +3,6 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
-    <!-- JIT-only test code: collection expressions here never cross the WinRT ABI, so the CsWinRT AOT analyzer does not apply. -->
-    <NoWarn>$(NoWarn);CsWinRT1032</NoWarn>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
