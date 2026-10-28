@@ -18,6 +18,7 @@ activationaction
 adaptivecards
 ADDSTRING
 ADDUNDORECORD
+adlam
 ADMINS
 adml
 admx
@@ -33,6 +34,7 @@ AGGREGATABLE
 AHK
 AIUI
 akv
+alif
 ALIGNRIGHT
 ALLAPPS
 ALLCHILDREN
@@ -397,6 +399,7 @@ DENORMAL
 depersist
 deprioritized
 DESELECTOTHERS
+deseret
 DESIGNINFO
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
@@ -621,6 +624,7 @@ gacutil
 Gaeilge
 Gaidhlig
 gameid
+garay
 GC'ed
 GCLP
 gdi

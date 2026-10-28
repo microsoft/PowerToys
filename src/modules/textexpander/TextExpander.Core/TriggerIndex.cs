@@ -31,6 +31,13 @@ namespace Microsoft.PowerToys.TextExpander;
 /// </para>
 ///
 /// <para>
+/// With case sensitivity off, characters are compared as the replacement map compares triggers,
+/// with <see cref="StringComparer.OrdinalIgnoreCase"/>. That comparer cases a surrogate pair as
+/// one character (U+1E922 is the lowercase of U+1E900, though neither half has a case), so a pair
+/// is one step of the walk.
+/// </para>
+///
+/// <para>
 /// Immutable once built, so the hook reads it without locking, and allocation-free to query.
 /// </para>
 /// </summary>
@@ -40,16 +47,16 @@ public sealed class TriggerIndex
     {
         // The only child, while there is just one. Most nodes past the first few characters of a
         // trigger have one child, so a dictionary for each would mostly be overhead.
-        private char _onlyKey;
+        private int _onlyKey;
         private Node? _onlyChild;
 
         /// <summary>Children keyed by the next character *leftwards*, once there are two or more.</summary>
-        private Dictionary<char, Node>? _children;
+        private Dictionary<int, Node>? _children;
 
         /// <summary>Gets or sets the trigger ending here, when this node completes one.</summary>
         public string? Trigger { get; set; }
 
-        public bool TryGetChild(char key, [NotNullWhen(true)] out Node? child)
+        public bool TryGetChild(int key, [NotNullWhen(true)] out Node? child)
         {
             if (_onlyChild is not null)
             {
@@ -66,7 +73,7 @@ public sealed class TriggerIndex
             return false;
         }
 
-        public Node GetOrAddChild(char key)
+        public Node GetOrAddChild(int key)
         {
             if (TryGetChild(key, out Node? existing))
             {
@@ -83,7 +90,7 @@ public sealed class TriggerIndex
 
             if (_children is null)
             {
-                _children = new Dictionary<char, Node>(2) { [_onlyKey] = _onlyChild! };
+                _children = new Dictionary<int, Node>(2) { [_onlyKey] = _onlyChild! };
                 _onlyChild = null;
             }
 
@@ -95,6 +102,13 @@ public sealed class TriggerIndex
     private readonly Node _root;
     private readonly bool _caseSensitive;
 
+    /// <summary>
+    /// With case sensitivity off, the key of every character the triggers use, found with the
+    /// replacement map's comparer so that each capitalization of a character finds the same key.
+    /// With it on, a character's key is its UTF-16 value.
+    /// </summary>
+    private readonly Dictionary<string, int>.AlternateLookup<ReadOnlySpan<char>> _keys;
+
     /// <summary>Gets length of the longest indexed trigger. Zero when the index is empty, which lets
     /// the caller skip the lookup entirely.</summary>
     public int MaxTriggerLength { get; }
@@ -102,14 +116,18 @@ public sealed class TriggerIndex
     /// <summary>Gets how many triggers are indexed.</summary>
     public int Count { get; }
 
-    public static readonly TriggerIndex Empty = new(new Node(), 0, 0, caseSensitive: true);
+    public static readonly TriggerIndex Empty = new(new Node(), 0, 0, keys: null);
 
-    private TriggerIndex(Node root, int maxTriggerLength, int count, bool caseSensitive)
+    private TriggerIndex(Node root, int maxTriggerLength, int count, Dictionary<string, int>? keys)
     {
         _root = root;
         MaxTriggerLength = maxTriggerLength;
         Count = count;
-        _caseSensitive = caseSensitive;
+        _caseSensitive = keys is null;
+        if (keys is not null)
+        {
+            _keys = keys.GetAlternateLookup<ReadOnlySpan<char>>();
+        }
     }
 
     public static TriggerIndex Build(IEnumerable<string> triggers, bool caseSensitive = true)
@@ -117,6 +135,7 @@ public sealed class TriggerIndex
         ArgumentNullException.ThrowIfNull(triggers);
 
         var root = new Node();
+        Dictionary<string, int>? keys = caseSensitive ? null : new(StringComparer.OrdinalIgnoreCase);
         int max = 0;
         int count = 0;
 
@@ -128,9 +147,19 @@ public sealed class TriggerIndex
             }
 
             Node node = root;
-            for (int i = trigger.Length - 1; i >= 0; i--)
+            for (int end = trigger.Length; end > 0;)
             {
-                node = node.GetOrAddChild(Normalize(trigger[i], caseSensitive));
+                ReadOnlySpan<char> character = CharacterBefore(trigger, end, caseSensitive);
+                end -= character.Length;
+
+                int key = character[0];
+                if (keys is not null && !keys.GetAlternateLookup<ReadOnlySpan<char>>().TryGetValue(character, out key))
+                {
+                    key = keys.Count;
+                    keys.Add(character.ToString(), key);
+                }
+
+                node = node.GetOrAddChild(key);
             }
 
             // Two spellings of the same trigger cannot occur — the source is a dictionary keyed by
@@ -148,7 +177,7 @@ public sealed class TriggerIndex
             }
         }
 
-        return count == 0 && caseSensitive ? Empty : new TriggerIndex(root, max, count, caseSensitive);
+        return count == 0 && caseSensitive ? Empty : new TriggerIndex(root, max, count, keys);
     }
 
     /// <summary>
@@ -165,10 +194,14 @@ public sealed class TriggerIndex
         Node node = _root;
         string? best = null;
 
-        int limit = Math.Min(tail.Length, MaxTriggerLength);
-        for (int i = 0; i < limit; i++)
+        int stop = Math.Max(0, tail.Length - MaxTriggerLength);
+        for (int end = tail.Length; end > stop;)
         {
-            if (!node.TryGetChild(Normalize(tail[tail.Length - 1 - i], _caseSensitive), out Node? next))
+            ReadOnlySpan<char> character = CharacterBefore(tail, end, _caseSensitive);
+            end -= character.Length;
+
+            int key = character[0];
+            if ((!_caseSensitive && !_keys.TryGetValue(character, out key)) || !node.TryGetChild(key, out Node? next))
             {
                 break;
             }
@@ -187,6 +220,12 @@ public sealed class TriggerIndex
         return best;
     }
 
-    private static char Normalize(char value, bool caseSensitive)
-        => caseSensitive ? value : char.ToUpperInvariant(value);
+    /// <summary>
+    /// Gets the character that ends at <paramref name="end"/>: one UTF-16 unit or, when case is
+    /// ignored, a whole surrogate pair, because only the pair has a case.
+    /// </summary>
+    private static ReadOnlySpan<char> CharacterBefore(ReadOnlySpan<char> text, int end, bool caseSensitive)
+        => !caseSensitive && end > 1 && char.IsLowSurrogate(text[end - 1]) && char.IsHighSurrogate(text[end - 2])
+            ? text.Slice(end - 2, 2)
+            : text.Slice(end - 1, 1);
 }
