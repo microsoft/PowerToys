@@ -1541,6 +1541,14 @@ public sealed class SnippetStoreTests
         string host = Path.Combine(scratch.Path, "host");
         Assert.AreEqual(Path.Combine(host, "PowerToysTextExpanderSnippets.txt"), SnippetStore.ResolveConfiguredPath(null, host));
         Assert.AreEqual(defaultPath, SnippetStore.ResolveConfiguredPath(null, "::\0 not a path"));
+
+        // A value the shared selector rejects, and folders the engine cannot create, fall back to the host folder.
+        string hostFile = Path.Combine(host, "PowerToysTextExpanderSnippets.txt");
+        Assert.AreEqual(hostFile, SnippetStore.ResolveConfiguredPath(@"C:\" + new string('x', 40_000), host));
+        Assert.AreEqual(hostFile, SnippetStore.ResolveConfiguredPath(Path.Combine(scratch.Path, "a<b"), host));
+        string file = Path.Combine(scratch.Path, "file.txt");
+        File.WriteAllText(file, string.Empty);
+        Assert.AreEqual(hostFile, SnippetStore.ResolveConfiguredPath(Path.Combine(file, "folder"), host));
     }
 
     [TestMethod]

@@ -44,7 +44,7 @@
             <StackPanel MaxWidth="1000" Padding="24" Spacing="12">
                 <TextBlock x:Uid="TextExpander_EditorHeading" Style="{ThemeResource TitleTextBlockStyle}" AutomationProperties.HeadingLevel="Level1" />
                 <InfoBar x:Uid="TextExpander_ElevatedEditingNotice" IsClosable="False" IsOpen="{x:Bind ViewModel.IsElevated, Mode=OneWay}" Severity="Warning" />
-                <ContentControl HorizontalContentAlignment="Stretch" IsEnabled="{x:Bind ViewModel.IsSnippetEditingAvailable, Mode=OneWay}" IsTabStop="False">
+                <ContentControl HorizontalContentAlignment="Stretch" IsEnabled="{x:Bind ViewModel.CanEditSnippets, Mode=OneWay}" IsTabStop="False">
                     <StackPanel Spacing="8">
 
                         <!--  Collapsed while closed too, so the panel's spacing doesn't leave a gap above Add a snippet.  -->
@@ -65,7 +65,7 @@
                                 x:Uid="TextExpander_AddSnippetButton"
                                 AutomationProperties.AutomationId="Button_TextExpander_AddSnippet"
                                 Click="AddSnippet_Click"
-                                IsEnabled="{x:Bind ViewModel.HasSnippetError, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}"
+                                IsEnabled="{x:Bind ViewModel.HasNoSnippetError, Mode=OneWay}"
                                 Style="{StaticResource AccentButtonStyle}" />
                         </tkcontrols:SettingsCard>
 

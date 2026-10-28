@@ -3,10 +3,8 @@
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/interop/shared_constants.h>
 #include "trace.h"
-#include "resource.h"
 #include "TextExpanderConstants.h"
 #include <common/logger/logger.h>
-#include <common/SettingsAPI/settings_helpers.h>
 
 #include <common/utils/logger_helper.h>
 #include <common/utils/resources.h>
@@ -71,17 +69,11 @@ static std::wstring settings_argument()
 
 class TextExpander : public PowertoyModuleIface
 {
-    std::wstring app_name;
     std::wstring app_key;
 
 private:
     bool m_enabled = false;
     PROCESS_INFORMATION p_info = {};
-
-    bool is_process_running()
-    {
-        return p_info.hProcess && WaitForSingleObject(p_info.hProcess, 0) == WAIT_TIMEOUT;
-    }
 
     bool create_process_from_shell(const std::wstring& application_path, std::wstring& command_line, PROCESS_INFORMATION* process_info)
     {
@@ -248,7 +240,6 @@ private:
 public:
     TextExpander()
     {
-        app_name = MODULE_NAME;
         app_key = TextExpanderConstants::ModuleKey;
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", "TextExpander");
         Logger::info("TextExpander object is constructing");

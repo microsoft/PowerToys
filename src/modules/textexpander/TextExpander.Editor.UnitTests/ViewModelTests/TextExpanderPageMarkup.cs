@@ -64,9 +64,8 @@ namespace ViewModelTests
 
             Assert.AreEqual("https://howdygary.github.io/text-expander/", (string)link.Attribute("NavigateUri"));
 
-            XDocument resources = LoadResources();
-            Assert.AreEqual("Attribution", ResourceValue(resources, "TextExpander.SecondaryLinksHeader"));
-            Assert.AreEqual("Created by Gary Hsu", ResourceValue(resources, "Attribution_TextExpander.Content"));
+            Assert.AreEqual("Created by Gary Hsu", ResourceValue(LoadResources(), "Attribution_TextExpander.Content"));
+            Assert.AreEqual("Attribution", ResourceValue(LoadSettingsResources(), "TextExpander.SecondaryLinksHeader"));
         }
 
         [TestMethod]
@@ -142,7 +141,7 @@ namespace ViewModelTests
         [TestMethod]
         public void BoundarySettingUsesExactNameHelpAndGlobalBinding()
         {
-            XDocument resources = LoadResources();
+            XDocument resources = LoadSettingsResources();
             Assert.AreEqual(
                 "Wait for space or punctuation",
                 ResourceValue(resources, "TextExpander_RequireWordBoundary.Header"));
@@ -306,6 +305,18 @@ namespace ViewModelTests
             if (resources == null)
             {
                 Assert.Inconclusive("The English resources aren't next to the tests here.");
+            }
+
+            return XDocument.Load(resources);
+        }
+
+        /// <summary>Loads the Settings app's English resources, which hold the strings of the module's Settings page.</summary>
+        private static XDocument LoadSettingsResources()
+        {
+            string resources = FindRepositoryFile(Path.Combine("src", "settings-ui", "Settings.UI", "Strings", "en-us", "Resources.resw"));
+            if (resources == null)
+            {
+                Assert.Inconclusive("The Settings app's English resources aren't next to the tests here.");
             }
 
             return XDocument.Load(resources);

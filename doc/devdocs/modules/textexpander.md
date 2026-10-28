@@ -84,7 +84,7 @@ A self-contained .NET process. Its keyboard hook, matching and injection use no 
 | Module settings | `%LOCALAPPDATA%\Microsoft\PowerToys\TextExpander\settings.json` |
 | Snippets (default) | `%LOCALAPPDATA%\Microsoft\PowerToys\TextExpander\PowerToysTextExpanderSnippets.txt` (earlier versions: `snippets.txt`) |
 
-The snippet folder can be changed in the snippet editor under **Save snippets to a folder**. Text Expander does not implement a synchronization service: choosing a OneDrive or other provider-managed folder lets that provider synchronize the active file. The editor and engine resolve the snippet file with the same rules, so both read the same source-of-truth file. Shared Settings does not resolve or read snippet files. If the editor is launched directly as administrator, snippet-file resolving, reading, and editing remain disabled. Elevated Settings disables **Manage snippets** and tells the user to restart PowerToys without administrator rights. The engine runs with the desktop user's token even when the runner is elevated; a configured path that the desktop user cannot read will therefore fail to load rather than being read with elevated access. If PowerToys is elevated with a different administrator account, the engine runs as the signed-in desktop user and may be unable to read that account's settings and snippets.
+The snippet folder can be changed in the snippet editor under **Save snippets to a folder**. Text Expander does not implement a synchronization service: choosing a OneDrive or other provider-managed folder lets that provider synchronize the active file. The editor and engine select the snippet file with one shared core-library rule (`SnippetPathResolution.FromConfiguredPath`), so both read the same source-of-truth file: surrounding spaces and quotes are trimmed, environment variables are expanded, and a blank value or a relative path (the two processes share no working directory) selects the default folder. A configured folder that the engine cannot create also makes the engine use the default library, while the editor reports that folder's error. Shared Settings does not resolve or read snippet files. If the editor is launched directly as administrator, snippet-file resolving, reading, and editing remain disabled. Elevated Settings disables **Manage snippets** and tells the user to restart PowerToys without administrator rights. The engine runs with the desktop user's token even when the runner is elevated; a configured path that the desktop user cannot read will therefore fail to load rather than being read with elevated access. If PowerToys is elevated with a different administrator account, the engine runs as the signed-in desktop user and may be unable to read that account's settings and snippets.
 
 Changing the folder publishes the destination file and `settings.json` as one
 compensating transaction. Settings-file replacement and compensation hold a
@@ -99,8 +99,8 @@ uncertain case. If the file is still unreadable or conflicted, no snippet files 
 removed; the error names the settings and recovery files to keep until the active
 folder has been verified.
 
-**File name.** In a folder, the engine (`SnippetStore.ResolveInFolder`) and editor
-(`TextExpanderSnippetFileNames.ResolveInFolder`) pick the same file:
+**File name.** In a folder, the engine and editor pick the same file with
+`TextExpanderSnippetFileNames.ResolveInFolder`:
 `PowerToysTextExpanderSnippets.txt` if it exists, otherwise `snippets.txt` if that
 exists (the name earlier versions used), otherwise `PowerToysTextExpanderSnippets.txt`,
 which either the editor or engine can create. If both names exist and the current

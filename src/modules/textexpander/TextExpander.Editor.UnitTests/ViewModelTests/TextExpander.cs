@@ -9,7 +9,6 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.TextExpander;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
 using Microsoft.PowerToys.TextExpander.Editor.ViewModels;
@@ -119,14 +118,18 @@ namespace ViewModelTests
         public void CaseSensitivityDefaultsOnAndShowsBothFormsWhenTurnedOff()
         {
             File.WriteAllText(_path, "!Hello=Hello");
-            TextExpanderViewModel model = CreateViewModel();
+            var latest = new TextExpanderSettings();
+            latest.Properties.CaseSensitive = false;
+            TextExpanderViewModel model = CreateViewModel(latest: latest);
 
             Assert.IsTrue(model.CaseSensitive);
             Assert.AreEqual("!Hello", model.Snippets.Single().TriggerDisplay);
             Assert.IsNull(model.ValidateSnippet(null, "!HELLO", "Another"), "Different capitalization is distinct by default.");
 
-            model.CaseSensitive = false;
+            // Settings turns it off.
+            model.RefreshSettings();
 
+            Assert.IsFalse(model.CaseSensitive);
             Assert.AreEqual("!hello / !HELLO", model.Snippets.Single().TriggerDisplay);
             Assert.AreEqual("Duplicate: !Hello", model.ValidateSnippet(null, "!HELLO", "Another"));
             StringAssert.Contains(model.Snippets.Single().AutomationName, "TextExpander_Row_CaseInsensitiveAutomation");
@@ -501,9 +504,9 @@ namespace ViewModelTests
             string[] triggers = model.Snippets.Select(s => s.Trigger).ToArray();
 
             // The old name, !mysig2, could never fire: typing it completes !mysig first.
-            Assert.IsFalse(TextExpanderViewModel.CanFireAlongside("!mysig2", triggers, wordMode: false));
+            Assert.IsFalse(CanFireAlongside("!mysig2", triggers, wordMode: false));
             Assert.AreEqual("!3mysig", model.SuggestDuplicateTrigger(model.Snippets.First().Id));
-            Assert.IsTrue(TextExpanderViewModel.CanFireAlongside("!3mysig", triggers, wordMode: false));
+            Assert.IsTrue(CanFireAlongside("!3mysig", triggers, wordMode: false));
             Assert.AreEqual(3, model.Snippets.Count);
             Assert.AreEqual(library, File.ReadAllText(_path));
 
@@ -514,10 +517,10 @@ namespace ViewModelTests
         [TestMethod]
         public void ACopyTriggerNeitherWaitsBehindNorBlocksAnother()
         {
-            Assert.IsFalse(TextExpanderViewModel.CanFireAlongside("!sig", SigTrigger, wordMode: false), "Same trigger.");
-            Assert.IsFalse(TextExpanderViewModel.CanFireAlongside("!sig2", SigTrigger, wordMode: false), "!sig fires first.");
-            Assert.IsFalse(TextExpanderViewModel.CanFireAlongside("!si", SigTrigger, wordMode: false), "!sig could no longer fire.");
-            Assert.IsTrue(TextExpanderViewModel.CanFireAlongside("x!sig", SigTrigger, wordMode: false), "The longer match wins at the last key.");
+            Assert.IsFalse(CanFireAlongside("!sig", SigTrigger, wordMode: false), "Same trigger.");
+            Assert.IsFalse(CanFireAlongside("!sig2", SigTrigger, wordMode: false), "!sig fires first.");
+            Assert.IsFalse(CanFireAlongside("!si", SigTrigger, wordMode: false), "!sig could no longer fire.");
+            Assert.IsTrue(CanFireAlongside("x!sig", SigTrigger, wordMode: false), "The longer match wins at the last key.");
 
             Assert.AreEqual("!2sig", TextExpanderViewModel.SuggestCopyTrigger("!sig", SigTrigger, wordMode: false));
             Assert.AreEqual("2btw", TextExpanderViewModel.SuggestCopyTrigger("btw", BtwTrigger, wordMode: false));
@@ -533,9 +536,9 @@ namespace ViewModelTests
             Assert.AreEqual("2ab", TextExpanderViewModel.SuggestCopyTrigger("ab", AAndAb, wordMode: true));
 
             // In word mode, a copy that a longer trigger continues with a letter doesn't fire inside it.
-            Assert.IsTrue(TextExpanderViewModel.CanFireAlongside("!2sig", SigAndLongerCopy, wordMode: true));
-            Assert.IsFalse(TextExpanderViewModel.CanFireAlongside("!2sig", SigAndLongerCopy, wordMode: false), "!2sig would fire inside !2sigs.");
-            Assert.IsFalse(TextExpanderViewModel.CanFireAlongside("!2sig", SigAndHyphenatedCopy, wordMode: true), "A hyphen ends a word, so !2sig fires there.");
+            Assert.IsTrue(CanFireAlongside("!2sig", SigAndLongerCopy, wordMode: true));
+            Assert.IsFalse(CanFireAlongside("!2sig", SigAndLongerCopy, wordMode: false), "!2sig would fire inside !2sigs.");
+            Assert.IsFalse(CanFireAlongside("!2sig", SigAndHyphenatedCopy, wordMode: true), "A hyphen ends a word, so !2sig fires there.");
 
             // Counting on from a copy number, past numbers that are taken.
             Assert.AreEqual("!3sample", TextExpanderViewModel.SuggestCopyTrigger("!2sample", SampleAndCopy, wordMode: false));
@@ -596,7 +599,6 @@ namespace ViewModelTests
             string blockedMessage = model.SnippetError;
             Assert.AreEqual("TextExpander_ElevatedSnippetAccessDenied", blockedMessage);
             Assert.IsFalse(model.CanEditSnippets);
-            Assert.IsFalse(model.IsSnippetEditingAvailable);
             Assert.AreEqual(string.Empty, model.SnippetsFilePath);
             Assert.IsFalse(model.HasSnippetError);
             Assert.IsFalse(model.HasNoSnippets);
@@ -629,7 +631,6 @@ namespace ViewModelTests
             TextExpanderViewModel model = CreateViewModel();
 
             Assert.IsTrue(model.CanEditSnippets);
-            Assert.IsTrue(model.IsSnippetEditingAvailable || !model.IsEnabled);
             Assert.AreEqual(_path, model.SnippetsFilePath);
             Assert.AreEqual("hello", model.Snippets.Single().Trigger);
         }
@@ -657,26 +658,6 @@ namespace ViewModelTests
             Assert.AreEqual(other, model.SnippetsPath);
 
             CollectionAssert.AreEqual(new[] { _directory, _directory }, starts, "The picker opens at the folder of the snippet file in use.");
-        }
-
-        [TestMethod]
-        public void MinimumLengthToPasteAppliesOnlyToAutomatic()
-        {
-            TextExpanderViewModel model = CreateViewModel();
-            var changed = new List<string>();
-            model.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
-
-            model.InjectionBackendIndex = 1;
-            Assert.IsFalse(model.IsClipboardThresholdEnabled, "Always paste ignores the length.");
-            CollectionAssert.Contains(changed, nameof(TextExpanderViewModel.IsClipboardThresholdEnabled));
-
-            model.InjectionBackendIndex = 2;
-            Assert.IsFalse(model.IsClipboardThresholdEnabled, "Always type ignores the length.");
-
-            changed.Clear();
-            model.InjectionBackendIndex = 0;
-            Assert.IsTrue(model.IsClipboardThresholdEnabled, "Automatic pastes or types by length.");
-            CollectionAssert.Contains(changed, nameof(TextExpanderViewModel.IsClipboardThresholdEnabled));
         }
 
         [TestMethod]
@@ -748,7 +729,23 @@ namespace ViewModelTests
             CollectionAssert.AreEqual(VariableTokens, model.Variables.Select(variable => variable.Token).ToArray());
         }
 
-        private TextExpanderViewModel CreateViewModel(bool isElevated = false, Func<string, Task<string>> pickSingleFolderDialog = null, TextExpanderSettings settings = null)
+        /// <summary>
+        /// Whether <paramref name="candidate"/> could be added beside <paramref name="triggers"/>: it isn't
+        /// taken, nothing fires while it is typed, and it doesn't fire while a longer trigger is typed.
+        /// </summary>
+        private static bool CanFireAlongside(string candidate, string[] triggers, bool wordMode)
+        {
+            var taken = new TextExpanderTriggerSet(triggers);
+            if (taken.Contains(candidate) || TextExpanderTriggerReach.FindBlocker(candidate, taken, wordMode) is not null)
+            {
+                return false;
+            }
+
+            taken.Add(candidate);
+            return !triggers.Any(other => other.Length > candidate.Length && TextExpanderTriggerReach.FindBlocker(other, taken, wordMode)?.Trigger == candidate);
+        }
+
+        private TextExpanderViewModel CreateViewModel(bool isElevated = false, Func<string, Task<string>> pickSingleFolderDialog = null, TextExpanderSettings settings = null, TextExpanderSettings latest = null)
         {
             settings ??= new TextExpanderSettings();
             settings.Properties.SnippetsPath.Value = _directory;
@@ -759,12 +756,15 @@ namespace ViewModelTests
                 update(settings.Properties);
                 return settings;
             });
-            var repository = new Mock<ISettingsRepository<GeneralSettings>>();
-            repository.SetupGet(r => r.SettingsConfig).Returns(new GeneralSettings());
+            if (latest != null)
+            {
+                // What the editor reads back after Settings changes an option.
+                latest.Properties.SnippetsPath.Value = _directory;
+                utils.Setup(u => u.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(latest);
+            }
+
             return new TextExpanderViewModel(
                 utils.Object,
-                repository.Object,
-                _ => 0,
                 pickSingleFolderDialog,
                 isElevated,
                 key => key switch

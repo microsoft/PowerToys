@@ -302,14 +302,12 @@ internal sealed class SnippetStore : IDisposable
     // ── Path resolution ──────────────────────────────────────
 
     /// <summary>
-    /// Resolves the snippet file for a configured folder, or falls back to
-    /// <see cref="ResolveDefaultPath"/> when nothing was configured or the value is unusable,
-    /// including paths that are not fully qualified after environment variable expansion.
+    /// Resolves the snippet file for a configured folder or file, or falls back to
+    /// <see cref="ResolveDefaultPath"/> when nothing was configured or the value is unusable.
+    /// The selection rule is the one the editor uses too, <see cref="SnippetPathResolution.FromConfiguredPath"/>.
     ///
     /// <para>
-    /// A folder is accepted rather than a file path because that is what the setting asks for,
-    /// and because pointing the engine at an arbitrary file makes the "reloads on save" promise
-    /// harder to keep. A path that cannot be resolved falls back silently: the alternative is an
+    /// A path that cannot be resolved falls back silently: the alternative is an
     /// engine that refuses to expand anything because a setting has a typo in it.
     /// </para>
     /// </summary>
@@ -333,33 +331,17 @@ internal sealed class SnippetStore : IDisposable
 
     internal static SnippetPathResolution ResolveConfiguredPathInfo(string? configuredFolder, string? hostDataFolder)
     {
-        if (string.IsNullOrWhiteSpace(configuredFolder))
-        {
-            string fallback = string.IsNullOrWhiteSpace(hostDataFolder)
-                ? ResolveDefaultPath()
-                : ResolveHostPath(hostDataFolder!);
-            return new SnippetPathResolution(fallback, ResolveFolderNames: true);
-        }
-
         try
         {
-            string expanded = Environment.ExpandEnvironmentVariables(configuredFolder!.Trim().Trim('"'));
-
-            // The engine and its host's editor run in different processes. Their working
-            // directories cannot be a shared base for this setting, including drive-relative
-            // (C:snips) and root-relative (\snips) paths on Windows.
-            if (Path.IsPathFullyQualified(expanded))
+            if (SnippetPathResolution.FromConfiguredPath(configuredFolder, Environment.ExpandEnvironmentVariables, File.Exists) is { } configured)
             {
-                string full = Path.GetFullPath(expanded);
-
-                // Accept a file too: someone will inevitably paste the path to the snippet file itself.
-                if (File.Exists(full))
+                // The engine creates a configured folder; one it cannot create is unusable too.
+                if (configured.ResolveFolderNames)
                 {
-                    return new SnippetPathResolution(full, ResolveFolderNames: false);
+                    Directory.CreateDirectory(Path.GetDirectoryName(configured.FilePath)!);
                 }
 
-                Directory.CreateDirectory(full);
-                return new SnippetPathResolution(ResolveInFolder(full), ResolveFolderNames: true);
+                return configured;
             }
         }
         catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException or IOException or UnauthorizedAccessException)
@@ -404,14 +386,10 @@ internal sealed class SnippetStore : IDisposable
     /// Returns the snippet file in <paramref name="folder"/>: <see cref="FileName"/> if it exists,
     /// otherwise <see cref="LegacyFileName"/> if that exists, otherwise <see cref="FileName"/>.
     /// The legacy file wins when both exist only if the current file is the untouched starter,
-    /// recovering a non-participating publication race. Settings uses the same rule.
+    /// recovering a non-participating publication race. The editor uses the same rule.
     /// </summary>
     internal static string ResolveInFolder(string folder)
-    {
-        string current = Path.Combine(folder, FileName);
-        string legacy = Path.Combine(folder, LegacyFileName);
-        return TextExpanderStarter.FindExistingFile(current, legacy) ?? current;
-    }
+        => TextExpanderSnippetFileNames.ResolveInFolder(folder, File.Exists);
 
     // ── Loading ──────────────────────────────────────────────
     public TransitionResult Load()

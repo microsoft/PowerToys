@@ -19,8 +19,6 @@ internal static class Native
 
     public const int WM_KEYDOWN = 0x0100;
     public const int WM_SYSKEYDOWN = 0x0104;
-    public const int WM_KEYUP = 0x0101;
-    public const int WM_SYSKEYUP = 0x0105;
 
     // Low-level mouse button-down messages. A click repositions the caret without changing the
     // foreground window, so the typed-character buffer must be cleared on any of these. Only
@@ -30,8 +28,6 @@ internal static class Native
     public const int WM_MBUTTONDOWN = 0x0207;
     public const int WM_NCLBUTTONDOWN = 0x00A1;
     public const int WM_XBUTTONDOWN = 0x020B;
-
-    public const uint LLKHF_INJECTED = 0x00000010;
 
     [StructLayout(LayoutKind.Sequential)]
     public struct KBDLLHOOKSTRUCT
@@ -78,7 +74,6 @@ internal static class Native
     public const int VK_RETURN = 0x0D;
     public const int VK_TAB = 0x09;
     public const int VK_ESCAPE = 0x1B;
-    public const int VK_SPACE = 0x20;
     public const int VK_PACKET = 0xE7;
     public const int VK_V = 0x56;
     public const int VK_Z = 0x5A;
@@ -148,7 +143,6 @@ internal static class Native
     public const uint KEYEVENTF_EXTENDEDKEY = 0x0001;
     public const uint KEYEVENTF_KEYUP = 0x0002;
     public const uint KEYEVENTF_UNICODE = 0x0004;
-    public const uint KEYEVENTF_SCANCODE = 0x0008;
 
     [StructLayout(LayoutKind.Sequential)]
     public struct MOUSEINPUT
@@ -202,22 +196,10 @@ internal static class Native
 
     // ── Windows / message pump ───────────────────────────────
     public const int WM_DESTROY = 0x0002;
-    public const int WM_NULL = 0x0000;
     public const int WM_CLOSE = 0x0010;
     public const int WM_COMMAND = 0x0111;
-    public const int WM_APP = 0x8000;
-    public const int WM_USER = 0x0400;
     public const int WM_SETFONT = 0x0030;
     public const int EN_CHANGE = 0x0300;
-    public const int WM_GETTEXT = 0x000D;
-    public const int WM_GETTEXTLENGTH = 0x000E;
-    public const int WM_SETTEXT = 0x000C;
-
-    public const int WM_RBUTTONUP = 0x0205;
-    public const int WM_LBUTTONUP = 0x0202;
-    public const int WM_CONTEXTMENU = 0x007B;
-
-    public const uint CW_USEDEFAULT = 0x80000000;
 
     public const int WS_OVERLAPPED = 0x00000000;
     public const int WS_CAPTION = 0x00C00000;
@@ -225,7 +207,6 @@ internal static class Native
     public const int WS_VISIBLE = 0x10000000;
     public const int WS_CHILD = 0x40000000;
     public const int WS_TABSTOP = 0x00010000;
-    public const int WS_BORDER = 0x00800000;
     public const int WS_EX_TOPMOST = 0x00000008;
     public const int WS_EX_TOOLWINDOW = 0x00000080;
     public const int WS_EX_CLIENTEDGE = 0x00000200;
@@ -235,7 +216,6 @@ internal static class Native
 
     public const int SW_HIDE = 0;
     public const int SW_SHOW = 5;
-    public const int SW_SHOWNORMAL = 1;
 
     public delegate IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
@@ -324,9 +304,6 @@ internal static class Native
     [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     public static extern int GetClassNameW(IntPtr hWnd, [Out] char[] lpClassName, int nMaxCount);
 
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    public static extern IntPtr SendMessageW(IntPtr hWnd, uint msg, IntPtr wParam, [MarshalAs(UnmanagedType.LPWStr)] string lParam);
-
     [DllImport("user32.dll")]
     public static extern void PostQuitMessage(int nExitCode);
 
@@ -413,7 +390,6 @@ internal static class Native
 
     public const int IDOK = 1;
     public const int IDCANCEL = 2;
-    public const int EM_SETSEL = 0x00B1;
     public const int WS_EX_CONTROLPARENT = 0x00010000;
     public const int WS_EX_DLGMODALFRAME = 0x00000001;
 
@@ -427,81 +403,7 @@ internal static class Native
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     public static extern IntPtr GetModuleHandleW(string? lpModuleName);
 
-    // ── Menus ────────────────────────────────────────────────
-    public const uint MF_STRING = 0x0000;
-    public const uint MF_SEPARATOR = 0x0800;
-    public const uint MF_CHECKED = 0x0008;
-    public const uint MF_UNCHECKED = 0x0000;
-    public const uint MF_GRAYED = 0x0001;
-
-    public const uint TPM_RIGHTBUTTON = 0x0002;
-    public const uint TPM_BOTTOMALIGN = 0x0020;
-    public const uint TPM_RETURNCMD = 0x0100;
-    public const uint TPM_NONOTIFY = 0x0080;
-
-    [DllImport("user32.dll", SetLastError = true)]
-    public static extern IntPtr CreatePopupMenu();
-
-    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool AppendMenuW(IntPtr hMenu, uint uFlags, UIntPtr uIDNewItem, string? lpNewItem);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool DestroyMenu(IntPtr hMenu);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    public static extern int TrackPopupMenu(IntPtr hMenu, uint uFlags, int x, int y, int nReserved, IntPtr hWnd, IntPtr prcRect);
-
-    // ── Tray icon ────────────────────────────────────────────
-    public const uint NIM_ADD = 0x00000000;
-    public const uint NIM_MODIFY = 0x00000001;
-    public const uint NIM_DELETE = 0x00000002;
-
-    public const uint NIF_MESSAGE = 0x00000001;
-    public const uint NIF_ICON = 0x00000002;
-    public const uint NIF_TIP = 0x00000004;
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    public struct NOTIFYICONDATAW
-    {
-        public uint CbSize;
-        public IntPtr HWnd;
-        public uint UID;
-        public uint UFlags;
-        public uint UCallbackMessage;
-        public IntPtr HIcon;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-        public string SzTip;
-        public uint DwState;
-        public uint DwStateMask;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
-        public string SzInfo;
-        public uint UVersion;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
-        public string SzInfoTitle;
-        public uint DwInfoFlags;
-        public Guid GuidItem;
-        public IntPtr HBalloonIcon;
-    }
-
-    [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool Shell_NotifyIconW(uint dwMessage, ref NOTIFYICONDATAW lpData);
-
-    // ── Icons ────────────────────────────────────────────────
-    public static readonly IntPtr IDI_APPLICATION = new(32512);
-
-    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    public static extern IntPtr LoadIconW(IntPtr hInstance, IntPtr lpIconName);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool DestroyIcon(IntPtr hIcon);
-
-    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
-    public static extern uint ExtractIconExW(string lpszFile, int nIconIndex, out IntPtr phiconLarge, out IntPtr phiconSmall, uint nIcons);
-
+    // ── Cursor (for the prompt dialog) ───────────────────────
     public const int IDC_ARROW = 32512;
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
@@ -513,16 +415,11 @@ internal static class Native
     [DllImport("gdi32.dll")]
     public static extern IntPtr GetStockObject(int fnObject);
 
-    // ── Shell execute (elevation + opening files) ────────────
-    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
-    public static extern IntPtr ShellExecuteW(IntPtr hwnd, string? lpOperation, string lpFile, string? lpParameters, string? lpDirectory, int nShowCmd);
-
     // ── Message box ──────────────────────────────────────────
     public const uint MB_OK = 0x00000000;
     public const uint MB_ICONERROR = 0x00000010;
     public const uint MB_ICONINFORMATION = 0x00000040;
     public const uint MB_SETFOREGROUND = 0x00010000;
-    public const uint MB_TOPMOST = 0x00040000;
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     public static extern int MessageBoxW(IntPtr hWnd, string lpText, string lpCaption, uint uType);
@@ -613,8 +510,6 @@ internal static class Native
 
     public const uint TOKEN_QUERY = 0x0008;
     public const int TokenIntegrityLevel = 25;
-
-    public const uint SECURITY_MANDATORY_MEDIUM_RID = 0x2000;
 
     [StructLayout(LayoutKind.Sequential)]
     public struct SID_AND_ATTRIBUTES

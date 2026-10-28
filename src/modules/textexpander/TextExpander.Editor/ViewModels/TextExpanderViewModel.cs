@@ -8,14 +8,11 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.TextExpander;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
 using Microsoft.PowerToys.TextExpander.Storage;
@@ -24,20 +21,14 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
 {
     public sealed partial class TextExpanderViewModel : Observable, IDisposable
     {
-        private GeneralSettings GeneralSettingsConfig { get; set; }
-
         private static readonly string[] SnippetFileNames = { TextExpanderSnippetFileNames.Current, TextExpanderSnippetFileNames.Legacy };
 
         private readonly TextExpanderSettingsUtils _settingsUtils;
-        private readonly ISettingsRepository<GeneralSettings> _settingsRepository;
-        private readonly bool _enabledStateIsGPOConfigured;
         private readonly bool _isElevated;
         private readonly Func<string, Task<string>> _pickSingleFolderDialog;
         private readonly Func<string, string> _getResourceString;
         private readonly ITextExpanderStorageEnvironment _storageEnvironment;
         private readonly Action<string> _openFile;
-
-        private Func<string, int> SendConfigMSG { get; }
 
         private TextExpanderSettings _settings;
         private TextExpanderVariable[] _variables;
@@ -48,7 +39,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         private string _newline = Environment.NewLine;
         private System.Text.Encoding _encoding = new System.Text.UTF8Encoding(false, false);
         private bool _hadFinalNewline = true;
-        private bool _isEnabled;
         private string _searchText = string.Empty;
         private double _keycapColumnWidth = TextExpanderKeycapLayout.MinWidth;
         private Action<Action> _dispatch;
@@ -56,8 +46,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         private string _snippetFileWatchFolder;
         private long _snippetFileWatchGeneration;
         private IDisposable _settingsWatch;
-
-        private readonly record struct SnippetFileResolution(string FilePath, bool ResolveFolderNames);
 
         private sealed class FolderPublication
         {
@@ -137,32 +125,14 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             Exception Error);
 
         /// <param name="pickSingleFolderDialog">Shows a folder picker, opening at the folder it's given when that exists, and returns the folder picked, or null if cancelled.</param>
-        public TextExpanderViewModel(TextExpanderSettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, Task<string>> pickSingleFolderDialog, bool isElevated, Func<string, string> getResourceString = null, ITextExpanderStorageEnvironment storageEnvironment = null, Action<string> openFile = null)
+        public TextExpanderViewModel(TextExpanderSettingsUtils settingsUtils, Func<string, Task<string>> pickSingleFolderDialog, bool isElevated, Func<string, string> getResourceString = null, ITextExpanderStorageEnvironment storageEnvironment = null, Action<string> openFile = null)
         {
-            ArgumentNullException.ThrowIfNull(settingsRepository);
-
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
-            _settingsRepository = settingsRepository;
             _isElevated = isElevated;
-            GeneralSettingsConfig = settingsRepository.SettingsConfig;
-            SendConfigMSG = ipcMSGCallBackFunc;
             _pickSingleFolderDialog = pickSingleFolderDialog;
             _getResourceString = getResourceString ?? (key => ResourceLoaderInstance.ResourceLoader.GetString(key));
             _storageEnvironment = storageEnvironment ?? new TextExpanderStorageEnvironment();
             _openFile = openFile ?? OpenFileWithDefaultApplication;
-
-            // Group policy wins over anything the user picks here, so read it before the
-            // user-facing state and let it clamp the toggle.
-            GpoRuleConfigured gpo = GPOWrapper.GetConfiguredTextExpanderEnabledValue();
-            if (gpo == GpoRuleConfigured.Disabled || gpo == GpoRuleConfigured.Enabled)
-            {
-                _enabledStateIsGPOConfigured = true;
-                _isEnabled = gpo == GpoRuleConfigured.Enabled;
-            }
-            else
-            {
-                _isEnabled = GeneralSettingsConfig.Enabled.TextExpander;
-            }
 
             // Deliberately not wrapped in a catch-all. GetSettingsOrDefault already handles the
             // cases a user can cause — a missing file, or one corrupted into invalid JSON — by
@@ -175,6 +145,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             _settings = _settingsUtils.GetSettingsOrDefault<TextExpanderSettings>(TextExpanderSettings.ModuleName);
 
             // "Keep the space you typed" is no longer exposed; the typed delimiter is always kept.
+            // The engine still honors a false saved by earlier builds, and this is the one place
+            // that clears it.
             if (!_settings.Properties.WordBoundaryKeepsSpace)
             {
                 Save(properties => properties.WordBoundaryKeepsSpace = true);
@@ -207,175 +179,18 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             }
         }
 
-        public bool IsEnabledGpoConfigured => _enabledStateIsGPOConfigured;
-
         public bool IsElevated => _isElevated;
 
         public bool CanEditSnippets => !_isElevated;
 
-        public bool IsSnippetEditingAvailable => CanEditSnippets;
-
-        public bool IsEnabled
-        {
-            get => _isEnabled;
-            set
-            {
-                if (_enabledStateIsGPOConfigured)
-                {
-                    // Group policy decides this; the UI must not pretend otherwise.
-                    return;
-                }
-
-                if (_isEnabled != value)
-                {
-                    _isEnabled = value;
-                    GeneralSettingsConfig.Enabled.TextExpander = value;
-                    OnPropertyChanged(nameof(IsEnabled));
-                    OnPropertyChanged(nameof(IsSnippetEditingAvailable));
-
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
-                    SendConfigMSG(outgoing.ToString());
-                }
-            }
-        }
+        /// <summary>Gets a value indicating whether uppercase and lowercase trigger letters are distinct. Settings owns this option.</summary>
+        public bool CaseSensitive => _settings.Properties.CaseSensitive;
 
         /// <summary>
-        /// Gets or sets how a replacement reaches the focused window. Index maps to
-        /// auto / clipboard / type, matching <c>InjectionPolicy.ParseBackend</c> in the engine.
+        /// Gets a value indicating whether a trigger waits for a word terminator before firing.
+        /// Settings owns this option: on by default, and an explicitly saved false value remains false.
         /// </summary>
-        public int InjectionBackendIndex
-        {
-            get => _settings.Properties.InjectionBackend.Value switch
-            {
-                "clipboard" => 1,
-                "type" => 2,
-                _ => 0,
-            };
-
-            set
-            {
-                string backend = value switch
-                {
-                    1 => "clipboard",
-                    2 => "type",
-                    _ => "auto",
-                };
-
-                if (_settings.Properties.InjectionBackend.Value != backend)
-                {
-                    _settings.Properties.InjectionBackend.Value = backend;
-                    OnPropertyChanged(nameof(InjectionBackendIndex));
-                    OnPropertyChanged(nameof(IsClipboardThresholdEnabled));
-                    Save(properties => properties.InjectionBackend.Value = backend);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether Minimum length to paste applies. Only Automatic chooses
-        /// between pasting and typing by length; Always paste and Always type ignore it.
-        /// </summary>
-        public bool IsClipboardThresholdEnabled => InjectionBackendIndex == 0;
-
-        /// <summary>
-        /// Gets or sets the length at which a replacement is pasted rather than typed. Kept at or
-        /// above one: zero would mean pasting an empty replacement, and "never paste" is spelled
-        /// by choosing the typing backend instead.
-        /// </summary>
-        public int ClipboardThresholdChars
-        {
-            get => _settings.Properties.ClipboardThresholdChars.Value;
-            set
-            {
-                int clamped = Math.Max(1, value);
-                if (_settings.Properties.ClipboardThresholdChars.Value != clamped)
-                {
-                    _settings.Properties.ClipboardThresholdChars.Value = clamped;
-                    OnPropertyChanged(nameof(ClipboardThresholdChars));
-                    Save(properties => properties.ClipboardThresholdChars.Value = clamped);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets whether a Keyboard Manager remap counts as the user typing.
-        ///
-        /// On by default: the remapped character is the one the user meant and the only one
-        /// anything downstream sees, so ignoring it would silently stop snippets matching for
-        /// exactly the people who remap keys.
-        /// </summary>
-        public bool TreatRemapsAsTyping
-        {
-            get => _settings.Properties.TreatRemapsAsTyping;
-            set
-            {
-                if (_settings.Properties.TreatRemapsAsTyping != value)
-                {
-                    _settings.Properties.TreatRemapsAsTyping = value;
-                    OnPropertyChanged(nameof(TreatRemapsAsTyping));
-                    Save(properties => properties.TreatRemapsAsTyping = value);
-                }
-            }
-        }
-
-        /// <summary>Gets or sets whether uppercase and lowercase trigger letters are distinct.</summary>
-        public bool CaseSensitive
-        {
-            get => _settings.Properties.CaseSensitive;
-            set
-            {
-                if (_settings.Properties.CaseSensitive != value)
-                {
-                    _settings.Properties.CaseSensitive = value;
-                    OnPropertyChanged(nameof(CaseSensitive));
-                    ApplyCaseSensitivityToRows();
-                    DescribeSnippets();
-                    Save(properties => properties.CaseSensitive = value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets whether a trigger waits for a word terminator before firing.
-        ///
-        /// On by default: it stops a trigger going off inside a longer word — "btw" no longer
-        /// fires while typing "abtward". An explicitly saved false value remains false.
-        /// </summary>
-        public bool RequireWordBoundary
-        {
-            get => _settings.Properties.RequireWordBoundary;
-            set
-            {
-                if (_settings.Properties.RequireWordBoundary != value)
-                {
-                    _settings.Properties.RequireWordBoundary = value;
-                    OnPropertyChanged(nameof(RequireWordBoundary));
-                    Save(properties => properties.RequireWordBoundary = value);
-
-                    // Which triggers can never expand depends on this.
-                    DescribeSnippets();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets whether the space that released a trigger is given back after the
-        /// replacement. On by default; off for snippets expanding to an email address or a code,
-        /// where a trailing space is wrong rather than untidy.
-        /// </summary>
-        public bool WordBoundaryKeepsSpace
-        {
-            get => _settings.Properties.WordBoundaryKeepsSpace;
-            set
-            {
-                if (_settings.Properties.WordBoundaryKeepsSpace != value)
-                {
-                    _settings.Properties.WordBoundaryKeepsSpace = value;
-                    OnPropertyChanged(nameof(WordBoundaryKeepsSpace));
-                    Save(properties => properties.WordBoundaryKeepsSpace = value);
-                }
-            }
-        }
+        public bool RequireWordBoundary => _settings.Properties.RequireWordBoundary;
 
         /// <summary>Gets or sets the folder holding the snippet library. Empty lets the engine resolve it.</summary>
         public string SnippetsPath
@@ -753,6 +568,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         /// <summary>Gets a value indicating whether the snippet file could not be read or written.</summary>
         public bool HasSnippetError => CanEditSnippets && !string.IsNullOrEmpty(_snippetError);
 
+        /// <summary>Gets a value indicating whether <see cref="HasSnippetError"/> is false, which enables Add a snippet.</summary>
+        public bool HasNoSnippetError => !HasSnippetError;
+
         /// <summary>Gets the reason the snippet file could not be read or written.</summary>
         public string SnippetError => _isElevated ? ElevatedSnippetAccessDeniedMessage() : _snippetError ?? string.Empty;
 
@@ -790,9 +608,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             return _getResourceString("TextExpander_SnippetFile_OpenFailed");
         }
 
-        /// <summary>Gets the folder used while <see cref="SnippetsPath"/> is empty.</summary>
-        public string DefaultSnippetsFolder => CanEditSnippets ? _storageEnvironment.DefaultSnippetsFolder : string.Empty;
-
         /// <summary>
         /// Gets the variables the engine can expand, for the Insert variable menu.
         ///
@@ -828,61 +643,40 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         }
 
         /// <summary>
-        /// Resolves the snippet file the engine is using, applying the same rule the engine does.
+        /// Resolves the snippet file the engine is using, with the selection rule both share
+        /// (<see cref="SnippetPathResolution.FromConfiguredPath"/>).
         ///
         /// <para>
-        /// An unset folder means the engine's host default, which is this module's own settings
-        /// folder. That is why the engine derives its default from the settings path the shim
-        /// passes it: both sides compute the same answer without a second setting to disagree on.
+        /// An unset or unusable value means the engine's host default, which is this module's own
+        /// settings folder. That is why the engine derives its default from the settings path the
+        /// shim passes it: both sides compute the same answer without a second setting to disagree on.
         /// </para>
         /// </summary>
         private string ResolveSnippetsFile()
             => ResolveSnippetsFileInfo().FilePath;
 
-        private SnippetFileResolution ResolveSnippetsFileInfo()
+        private SnippetPathResolution ResolveSnippetsFileInfo()
         {
             if (!CanEditSnippets)
             {
-                return new SnippetFileResolution(string.Empty, ResolveFolderNames: false);
+                return new SnippetPathResolution(string.Empty, ResolveFolderNames: false);
             }
 
-            string configured = _settings.Properties.SnippetsPath.Value;
-
-            if (!string.IsNullOrWhiteSpace(configured))
+            try
             {
-                try
+                if (SnippetPathResolution.FromConfiguredPath(_settings.Properties.SnippetsPath.Value, _storageEnvironment.ExpandEnvironmentVariables, _storageEnvironment.FileExists) is { } configured)
                 {
-                    string expanded = _storageEnvironment.ExpandEnvironmentVariables(configured.Trim().Trim('"'));
-
-                    // Must match the engine's rule exactly. A relative path is resolved against
-                    // the *process* working directory, and the engine runs in a different process
-                    // from this one -- so "snips" would mean two different folders, and the user
-                    // would edit one file while the engine expanded from another with nothing on
-                    // screen to say so. Neither side rebases it; both fall back.
-                    if (Path.IsPathFullyQualified(expanded))
-                    {
-                        string full = Path.GetFullPath(expanded);
-
-                        // Accept a file too: someone will paste the path of the snippet file itself.
-                        return _storageEnvironment.FileExists(full)
-                            ? new SnippetFileResolution(full, ResolveFolderNames: false)
-                            : new SnippetFileResolution(TextExpanderSnippetFileNames.ResolveInFolder(full, _storageEnvironment.FileExists), ResolveFolderNames: true);
-                    }
-                }
-                catch (Exception ex) when (ex is ArgumentException or NotSupportedException
-                                              or PathTooLongException or IOException
-                                              or UnauthorizedAccessException or System.Security.SecurityException)
-                {
-                    // Fall through to the default; a typo in a path must not leave the page blank.
+                    return configured;
                 }
             }
+            catch (Exception ex) when (ex is ArgumentException or NotSupportedException
+                                          or PathTooLongException or IOException
+                                          or UnauthorizedAccessException or System.Security.SecurityException)
+            {
+                // Fall through to the default; a typo in a path must not leave the page blank.
+            }
 
-            // The same folder the engine derives from the settings path the shim passes it, so
-            // both sides land on one file without a second setting to disagree about. Within a
-            // folder, both pick the file the same way (TextExpanderSnippetFileNames.ResolveInFolder).
-            return new SnippetFileResolution(
-                TextExpanderSnippetFileNames.ResolveInFolder(_storageEnvironment.DefaultSnippetsFolder, _storageEnvironment.FileExists),
-                ResolveFolderNames: true);
+            return SnippetPathResolution.InFolder(_storageEnvironment.DefaultSnippetsFolder, _storageEnvironment.FileExists);
         }
 
         /// <summary>Reads the snippet file into <see cref="Snippets"/>.</summary>
@@ -907,7 +701,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
 
             try
             {
-                SnippetFileResolution resolution = ResolveSnippetsFileInfo();
+                SnippetPathResolution resolution = ResolveSnippetsFileInfo();
                 string path = resolution.FilePath;
                 if (resolution.ResolveFolderNames)
                 {
@@ -1005,7 +799,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             {
                 try
                 {
-                    SnippetFileResolution resolution = ResolveSnippetsFileInfo();
+                    SnippetPathResolution resolution = ResolveSnippetsFileInfo();
                     folder = resolution.ResolveFolderNames ? Path.GetDirectoryName(resolution.FilePath) : null;
                 }
                 catch (Exception ex) when (IsFileError(ex))
@@ -1050,7 +844,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
 
             try
             {
-                SnippetFileResolution resolution = ResolveSnippetsFileInfo();
+                SnippetPathResolution resolution = ResolveSnippetsFileInfo();
                 if (!resolution.ResolveFolderNames)
                 {
                     WatchSnippetFolder();
@@ -1315,20 +1109,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         }
 
         /// <summary>
-        /// Gets a value indicating whether <paramref name="candidate"/> could be added as a trigger:
-        /// it isn't taken and, by the engine's rules in the given mode, it can fire and doesn't keep
-        /// another trigger from firing.
-        /// </summary>
-        internal static bool CanFireAlongside(string candidate, IEnumerable<string> triggers, bool wordMode, bool caseSensitive = true)
-        {
-            var taken = new TextExpanderTriggerSet(triggers, caseSensitive);
-            StringComparison comparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-            return !taken.Contains(candidate)
-                && TextExpanderTriggerReach.FindBlocker(candidate, taken, wordMode) is null
-                && !BlocksAnother(candidate, taken.Triggers.Where(other => other.Contains(candidate, comparison)).ToList(), taken, wordMode, comparison);
-        }
-
-        /// <summary>
         /// Gets a value indicating whether adding <paramref name="candidate"/> would make it fire
         /// while one of <paramref name="longer"/> is being typed. <paramref name="taken"/> is
         /// changed only while this runs.
@@ -1380,7 +1160,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
 
             try
             {
-                SnippetFileResolution resolution = ResolveSnippetsFileInfo();
+                SnippetPathResolution resolution = ResolveSnippetsFileInfo();
                 string path = _loadedPath ?? resolution.FilePath;
                 if (resolution.ResolveFolderNames
                     && !string.Equals(resolution.FilePath, path, StringComparison.OrdinalIgnoreCase))
@@ -2225,6 +2005,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             RefreshSnippetFilter();
             OnPropertyChanged(nameof(HasNoSnippets));
             OnPropertyChanged(nameof(HasSnippetError));
+            OnPropertyChanged(nameof(HasNoSnippetError));
             OnPropertyChanged(nameof(SnippetError));
             OnPropertyChanged(nameof(SnippetsFilePath));
             OnPropertyChanged(nameof(SnippetsFolderPath));
@@ -2305,23 +2086,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             _settingsWatch?.Dispose();
             _settingsWatch = null;
             GC.SuppressFinalize(this);
-        }
-
-        public void RefreshEnabledState()
-        {
-            if (_enabledStateIsGPOConfigured)
-            {
-                return;
-            }
-
-            GeneralSettingsConfig = _settingsRepository.SettingsConfig;
-            _isEnabled = GeneralSettingsConfig.Enabled.TextExpander;
-            OnPropertyChanged(nameof(IsEnabled));
-        }
-
-        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            OnPropertyChanged(propertyName);
         }
     }
 }

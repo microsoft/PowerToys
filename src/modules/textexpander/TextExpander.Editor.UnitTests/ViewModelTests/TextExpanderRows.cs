@@ -8,7 +8,6 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.TextExpander;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
 using Microsoft.PowerToys.TextExpander.Editor.ViewModels;
@@ -224,7 +223,8 @@ namespace ViewModelTests
             try
             {
                 File.WriteAllText(Path.Combine(directory, "snippets.txt"), "!date=[{{date:yyyy-MM-dd}}]\n!dateiso=ABC-123\n!link=one\n!link=two\n");
-                TextExpanderViewModel model = CreateViewModel(directory);
+                bool wait = true;
+                TextExpanderViewModel model = CreateViewModel(directory, () => wait);
 
                 TextExpanderSnippetViewModel dateIso = model.Snippets.Single(s => s.Trigger == "!dateiso");
                 Assert.IsTrue(model.RequireWordBoundary);
@@ -233,10 +233,13 @@ namespace ViewModelTests
                 Assert.IsFalse(model.Snippets.Last(s => s.Trigger == "!link").HasWarning);
                 Assert.IsTrue(model.Snippets.Single(s => s.Trigger == "!date").HasSentence);
 
-                model.RequireWordBoundary = false;
+                // Settings turns the wait off, then on again.
+                wait = false;
+                model.RefreshSettings();
                 Assert.IsTrue(dateIso.HasWarning, "Without the wait, !date fires before !dateiso is complete.");
 
-                model.RequireWordBoundary = true;
+                wait = true;
+                model.RefreshSettings();
                 Assert.IsFalse(dateIso.HasWarning, "Restoring the wait lets !dateiso be reached again.");
                 Assert.AreEqual("!dateiso", dateIso.Trigger);
             }
@@ -405,7 +408,7 @@ namespace ViewModelTests
 
         private static string Resource(string key) => Templates.TryGetValue(key, out string value) ? value : key;
 
-        private static TextExpanderViewModel CreateViewModel(string directory)
+        private static TextExpanderViewModel CreateViewModel(string directory, Func<bool> requireWordBoundary = null)
         {
             var settings = new TextExpanderSettings();
             settings.Properties.SnippetsPath.Value = directory;
@@ -416,9 +419,19 @@ namespace ViewModelTests
                 update(settings.Properties);
                 return settings;
             });
-            var repository = new Mock<ISettingsRepository<GeneralSettings>>();
-            repository.SetupGet(r => r.SettingsConfig).Returns(new GeneralSettings());
-            return new TextExpanderViewModel(utils.Object, repository.Object, _ => 0, null, false, Resource);
+            if (requireWordBoundary != null)
+            {
+                // What the editor reads back after Settings changes Wait for space or punctuation.
+                utils.Setup(u => u.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(() =>
+                {
+                    var latest = new TextExpanderSettings();
+                    latest.Properties.SnippetsPath.Value = directory;
+                    latest.Properties.RequireWordBoundary = requireWordBoundary();
+                    return latest;
+                });
+            }
+
+            return new TextExpanderViewModel(utils.Object, null, false, Resource);
         }
     }
 }

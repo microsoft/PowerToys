@@ -15,30 +15,6 @@
     <data name="More_Options_ButtonTooltip.Text" xml:space="preserve">
     <value>More options</value>
   </data>
-  <data name="ToggleSwitch.OffContent" xml:space="preserve">
-    <value>Off</value>
-    <comment>The state of a ToggleSwitch when it's off</comment>
-  </data>
-  <data name="ToggleSwitch.OnContent" xml:space="preserve">
-    <value>On</value>
-    <comment>The state of a ToggleSwitch when it's on</comment>
-  </data>
-  <data name="TextExpander.ModuleTitle" xml:space="preserve">
-    <value>Text Expander</value>
-  </data>
-  <data name="TextExpander.ModuleDescription" xml:space="preserve">
-    <value>Expands short triggers you type into longer snippets. Type a trigger anywhere and it is replaced as you go.</value>
-  </data>
-  <data name="TextExpander.SecondaryLinksHeader" xml:space="preserve">
-    <value>Attribution</value>
-    <comment>giving credit to the projects this utility was based on</comment>
-  </data>
-  <data name="TextExpander_Enable.Header" xml:space="preserve">
-    <value>Enable Text Expander</value>
-  </data>
-  <data name="TextExpander_Snippets_GroupSettings.Header" xml:space="preserve">
-    <value>Snippets</value>
-  </data>
   <data name="TextExpander_PrivacyNotice.Title" xml:space="preserve">
     <value>Good to know</value>
   </data>
@@ -172,9 +148,6 @@
     <value>Recovery file paths are available at {0}.</value>
     <comment>{0} is one path or a semicolon-separated list of preserved snippet recovery files.</comment>
   </data>
-  <data name="TextExpander_SnippetFolder_FileAppeared" xml:space="preserve">
-    <value>A snippet file appeared in that folder after you chose it. Choose the folder again so you can decide which file to keep.</value>
-  </data>
   <data name="TextExpander_SnippetFolder_ChangeStale" xml:space="preserve">
     <value>The active snippet file or selected folder changed, disappeared, or is no longer available. Choose the folder again before moving your snippets.</value>
   </data>
@@ -184,46 +157,9 @@
   <data name="TextExpander_Dialog_Close" xml:space="preserve">
     <value>Close</value>
   </data>
-  <data name="TextExpander_InjectionBackend.Header" xml:space="preserve">
-    <value>Insertion method</value>
-  </data>
-  <data name="TextExpander_InjectionBackend.Description" xml:space="preserve">
-    <value>Automatic pastes long snippets and types short ones. Use Always type if an app blocks pasting.</value>
-  </data>
-  <data name="TextExpander_Backend_Auto.Content" xml:space="preserve">
-    <value>Automatic</value>
-  </data>
-  <data name="TextExpander_Backend_Clipboard.Content" xml:space="preserve">
-    <value>Always paste</value>
-  </data>
-  <data name="TextExpander_Backend_Type.Content" xml:space="preserve">
-    <value>Always type</value>
-  </data>
-  <data name="TextExpander_ClipboardThreshold.Header" xml:space="preserve">
-    <value>Minimum length to paste</value>
-  </data>
-  <data name="TextExpander_ClipboardThreshold.Description" xml:space="preserve">
-    <value>With Automatic, one-line snippets shorter than this are typed. Snippets with several lines are always pasted.</value>
-    <comment>"Automatic" is a choice of the Insertion method setting just above.</comment>
-  </data>
-  <data name="TextExpander_Advanced_GroupSettings.Header" xml:space="preserve">
-    <value>Advanced</value>
-  </data>
-  <data name="TextExpander_CaseSensitive.Header" xml:space="preserve">
-    <value>Case-sensitive snippets</value>
-  </data>
-  <data name="TextExpander_CaseSensitive.Description" xml:space="preserve">
-    <value>When on, snippet triggers must match the capitalization you saved. When off, capitalization is ignored.</value>
-  </data>
   <data name="TextExpander_Row_CaseInsensitiveAutomation" xml:space="preserve">
     <value>Case-insensitive trigger: {0} or {1}</value>
     <comment>{0} is the lowercase trigger and {1} is the uppercase trigger.</comment>
-  </data>
-  <data name="TextExpander_TreatRemapsAsTyping.Header" xml:space="preserve">
-    <value>Use PowerToys Keyboard Manager remaps when matching triggers</value>
-  </data>
-  <data name="TextExpander_TreatRemapsAsTyping.Description" xml:space="preserve">
-    <value>For example, if PowerToys Keyboard Manager remaps A to B, pressing A can match a trigger that contains B. Turn this off to use only the physical keys you press.</value>
   </data>
   <data name="TextExpander_AddSnippet.Header" xml:space="preserve">
     <value>Add a snippet</value>
@@ -478,15 +414,6 @@
   </data>
   <data name="TextExpander_Dialog_ReplacementBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
     <value>Click a Prompt window token, or place the caret in it and press F2, to edit it.</value>
-  </data>
-  <data name="TextExpander_RequireWordBoundary.Header" xml:space="preserve">
-    <value>Wait for space or punctuation</value>
-  </data>
-  <data name="TextExpander_RequireWordBoundary.Description" xml:space="preserve">
-    <value>Prevents expansion while you’re still typing a longer trigger.</value>
-  </data>
-  <data name="TextExpander_SnippetsPath_TextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Folder</value>
   </data>
   <data name="TextExpander_Search.PlaceholderText" xml:space="preserve">
     <value>Search triggers and replacement text</value>

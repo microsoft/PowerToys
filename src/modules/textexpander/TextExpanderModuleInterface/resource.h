@@ -1,7 +1,5 @@
 //{{NO_DEPENDENCIES}}
 // Used by TextExpanderModuleInterface.rc
-//
-#define IDS_TEXTEXPANDER_NAME           101
 
 //////////////////////////////
 // Non-localizable

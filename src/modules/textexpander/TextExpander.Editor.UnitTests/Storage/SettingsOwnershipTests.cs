@@ -8,11 +8,9 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.TextExpander.Editor.ViewModels;
 using Microsoft.PowerToys.TextExpander.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 
 namespace Microsoft.PowerToys.TextExpander.Editor.UnitTests;
 
@@ -105,10 +103,8 @@ public sealed class SettingsOwnershipTests
             var fileSystem = new MockFileSystem();
             var store = new TestSettingsStore(fileSystem, stale);
             store.SaveSettings(latest.ToJsonString(), TextExpanderSettings.ModuleName);
-            var repository = new Mock<ISettingsRepository<GeneralSettings>>();
-            repository.SetupGet(instance => instance.SettingsConfig).Returns(new GeneralSettings());
 
-            using var editor = new TextExpanderViewModel(store, repository.Object, _ => 0, null, false, key => key);
+            using var editor = new TextExpanderViewModel(store, null, false, key => key);
 
             TextExpanderSettings actual = store.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName);
             Assert.IsTrue(actual.Properties.WordBoundaryKeepsSpace);

@@ -9,7 +9,6 @@ using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.TextExpander;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
 using Microsoft.PowerToys.TextExpander.Editor.ViewModels;
@@ -1114,12 +1113,8 @@ namespace ViewModelTests
             Func<string, string> getResourceString = null,
             Action<string> openFile = null)
         {
-            var repository = new Mock<ISettingsRepository<GeneralSettings>>();
-            repository.SetupGet(r => r.SettingsConfig).Returns(new GeneralSettings());
             return new TextExpanderViewModel(
                 settingsUtils,
-                repository.Object,
-                _ => 0,
                 null,
                 isElevated: false,
                 getResourceString: getResourceString ?? (key => key),

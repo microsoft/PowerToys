@@ -11,7 +11,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.TextExpander;
 using Microsoft.PowerToys.TextExpander.Editor.Controls;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
@@ -64,7 +63,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             var settingsUtils = new TextExpanderSettingsUtils();
             using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
             bool isElevated = new System.Security.Principal.WindowsPrincipal(identity).IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
-            ViewModel = new TextExpanderViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), _ => throw new InvalidOperationException("Enablement belongs to Settings."), PickSingleFolderDialog, isElevated);
+            ViewModel = new TextExpanderViewModel(settingsUtils, PickSingleFolderDialog, isElevated);
             DataContext = ViewModel;
             this.InitializeComponent();
             InsetLikeAnInfoBarMessage(PrivacyNoticeBullets);
@@ -176,11 +175,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         }
 
         private TextExpanderViewModel ViewModel { get; set; }
-
-        public void RefreshEnabledState()
-        {
-            ViewModel.RefreshEnabledState();
-        }
 
         /// <summary>
         /// Insets content in an InfoBar the way its template insets its own message, which custom

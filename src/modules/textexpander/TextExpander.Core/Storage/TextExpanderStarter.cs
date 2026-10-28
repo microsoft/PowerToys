@@ -236,9 +236,6 @@ namespace Microsoft.PowerToys.TextExpander.Storage
             return @"Local\PowerToys.TextExpander.SnippetFolder." + Convert.ToHexString(hash);
         }
 
-        internal static string? FindExistingFile(string current, string legacy)
-            => FindExisting(current, legacy);
-
         internal static bool IsUntouchedStarterFile(string path)
         {
             try
