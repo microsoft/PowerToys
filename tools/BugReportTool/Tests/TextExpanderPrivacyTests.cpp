@@ -380,6 +380,68 @@ int main() {
     return 1;
   }
 
+  // An earlier snippet folder keeps its files, and the backups made there,
+  // after the location changes. With the default folder in use again, they are
+  // left out wherever they are in the TextExpander folder; other files stay.
+  const fs::path earlierFiles[] = {
+      moduleFolder / "old-folder" / "PowerToysTextExpanderSnippets.txt",
+      moduleFolder / "old-folder" /
+          "PowerToysTextExpanderSnippets.txt.backup-20261028-135850",
+      moduleFolder / "older" / "nested" / "snippets.txt",
+  };
+  for (const fs::path &file : earlierFiles) {
+    if (!WriteText(file, "private snippets in an earlier folder")) {
+      std::cerr << "Could not create the earlier-folder snippet fixture\n";
+      cleanup();
+      return 1;
+    }
+  }
+
+  fs::path earlierNotes = moduleFolder / "old-folder" / "notes.txt";
+  fs::path moduleLog = moduleFolder / "Logs" / "1.0.0" / "log.txt";
+  if (!WriteText(earlierNotes, "not a snippet file") ||
+      !WriteText(moduleLog, "snippet_count=3") ||
+      !WriteSettings(settings, "{\"snippets_path\":{\"value\":\"\"}}") ||
+      !ResetReport(settings, report) ||
+      !TextExpanderPrivacy::ExcludeConfiguredSnippetFile(settings, report)) {
+    std::cerr << "Snippets in an earlier folder could not be excluded\n";
+    cleanup();
+    return 1;
+  }
+
+  for (const fs::path &file : earlierFiles) {
+    if (fs::exists(report / file.lexically_relative(settings))) {
+      std::cerr << "Snippets in an earlier folder were not excluded: "
+                << file.lexically_relative(settings).string() << "\n";
+      cleanup();
+      return 1;
+    }
+  }
+
+  if (fs::exists(report / "TextExpander" /
+                 "PowerToysTextExpanderSnippets.txt") ||
+      !fs::exists(report / "TextExpander" / "settings.json") ||
+      !fs::exists(report / earlierNotes.lexically_relative(settings)) ||
+      !fs::exists(report / moduleLog.lexically_relative(settings))) {
+    std::cerr << "The snippets in use were kept, or files that aren't "
+                 "snippets were excluded, alongside an earlier folder\n";
+    cleanup();
+    return 1;
+  }
+
+  // Without a TextExpander folder there is nothing to leave out, and the report
+  // is still made.
+  fs::path otherSettings = root / "settings-without-text-expander";
+  if (!WriteText(otherSettings / "settings.json", "{}") ||
+      !ResetReport(otherSettings, report) ||
+      !TextExpanderPrivacy::ExcludeConfiguredSnippetFile(otherSettings,
+                                                         report) ||
+      !fs::exists(report / "settings.json")) {
+    std::cerr << "A report without a TextExpander folder was not made\n";
+    cleanup();
+    return 1;
+  }
+
   // A configured file with its own name: its temporary file goes, in its own
   // folder only, so a name like settings.txt never takes the module's
   // settings.json with it.

@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <string>
 #include <system_error>
-#include <utility>
+#include <tuple>
 #include <vector>
 
 #include <common/utils/json.h>
@@ -358,10 +358,11 @@ ResolveSnippetFiles(const std::filesystem::path &settingsRoot,
 }
 
 // Removes snippet files and the copies Text Expander makes of them
-// (IsSnippetFileFamily) from the report: in its TextExpander folder, where Stop
-// syncing keeps backups, and in any snippet folder that is inside the copied
-// settings. A configured file with a name of its own also gets copies named
-// after it, but only in its own folder.
+// (IsSnippetFileFamily) from the report: anywhere in its TextExpander folder,
+// where Stop syncing keeps backups and where an earlier snippet folder keeps
+// its files after the location changes, and in any snippet folder that is
+// inside the copied settings. A configured file with a name of its own also
+// gets copies named after it, but only in its own folder.
 inline bool ExcludeSnippetFileFamilies(
     const std::filesystem::path &settingsRoot,
     const std::filesystem::path &reportRoot,
@@ -371,8 +372,10 @@ inline bool ExcludeSnippetFileFamilies(
   const std::vector<std::wstring> standardBases{
       fs::path(SnippetFileName).stem().wstring(),
       fs::path(LegacySnippetFileName).stem().wstring()};
-  std::vector<std::pair<fs::path, std::vector<std::wstring>>> folders{
-      {reportRoot / L"TextExpander", standardBases}};
+  // Each folder, the names whose copies go, and whether its subfolders are
+  // searched too.
+  std::vector<std::tuple<fs::path, std::vector<std::wstring>, bool>> folders{
+      {reportRoot / L"TextExpander", standardBases, true}};
 
   std::error_code error;
   const fs::path root = fs::weakly_canonical(settingsRoot, error);
@@ -394,11 +397,13 @@ inline bool ExcludeSnippetFileFamilies(
 
     std::vector<std::wstring> bases = standardBases;
     bases.push_back(snippetFile.stem().wstring());
-    folders.emplace_back(reportRoot / relative, bases);
+    folders.emplace_back(reportRoot / relative, bases, false);
   }
 
-  for (const auto &[reportFolder, bases] : folders) {
-    bool exists = fs::is_directory(reportFolder, error);
+  for (const auto &[reportFolder, bases, recursive] : folders) {
+    // A folder that isn't there has nothing to leave out.
+    bool exists = fs::exists(reportFolder, error) &&
+                  fs::is_directory(reportFolder, error);
     if (error) {
       return false;
     }
@@ -407,19 +412,23 @@ inline bool ExcludeSnippetFileFamilies(
     }
 
     std::vector<fs::path> family;
-    fs::directory_iterator entry(reportFolder, error);
+    fs::recursive_directory_iterator entry(reportFolder, error);
     if (error) {
       return false;
     }
 
-    const fs::directory_iterator end;
+    const fs::recursive_directory_iterator end;
     for (; entry != end; entry.increment(error)) {
       if (error) {
         return false;
       }
 
+      // A match goes whole, so there's no need to look inside it.
       if (IsSnippetFileFamily(entry->path().filename().wstring(), bases)) {
         family.push_back(entry->path());
+        entry.disable_recursion_pending();
+      } else if (!recursive) {
+        entry.disable_recursion_pending();
       }
     }
 
