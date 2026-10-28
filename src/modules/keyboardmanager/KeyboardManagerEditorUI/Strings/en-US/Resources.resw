@@ -711,4 +711,40 @@
     <value>More options for {0}</value>
     <comment>Screen reader name of the &quot;...&quot; menu button in a mapping row. {0} is the row name. Do not translate {0}.</comment>
   </data>
+  <data name="Mapping_A11y_SavedFormat" xml:space="preserve">
+    <value>Saved: {0}</value>
+    <comment>Screen reader announcement after a mapping is saved. {0} is the mapping description. Do not translate {0}.</comment>
+  </data>
+  <data name="Mapping_A11y_DeletedFormat" xml:space="preserve">
+    <value>Deleted: {0}</value>
+    <comment>Screen reader announcement after a mapping is deleted. {0} is the mapping description. Do not translate {0}.</comment>
+  </data>
+  <data name="Mapping_A11y_DeletedCountFormat" xml:space="preserve">
+    <value>Deleted {0} mappings</value>
+    <comment>Screen reader announcement after several mappings are deleted at once. {0} is the number of mappings. Do not translate {0}.</comment>
+  </data>
+  <data name="Mapping_A11y_FilterCountFormat" xml:space="preserve">
+    <value>{0} mappings shown</value>
+    <comment>Screen reader announcement after the search or filters change. {0} is the number of visible mappings. Do not translate {0}.</comment>
+  </data>
+  <data name="Mapping_A11y_FilterNone" xml:space="preserve">
+    <value>No mappings match the search or filters</value>
+    <comment>Screen reader announcement when the search or filters hide every mapping.</comment>
+  </data>
+  <data name="Mapping_A11y_FilterOne" xml:space="preserve">
+    <value>1 mapping shown</value>
+    <comment>Screen reader announcement when the search or filters leave exactly one mapping visible.</comment>
+  </data>
+  <data name="Mapping_A11y_TriggerKeysFormat" xml:space="preserve">
+    <value>Trigger keys: {0}</value>
+    <comment>Screen reader announcement while recording the keys that trigger a mapping. {0} is the key combination, for example "Ctrl + A". Do not translate {0}.</comment>
+  </data>
+  <data name="Mapping_A11y_ActionKeysFormat" xml:space="preserve">
+    <value>Action keys: {0}</value>
+    <comment>Screen reader announcement while recording the keys a mapping sends. {0} is the key combination, for example "Ctrl + A". Do not translate {0}.</comment>
+  </data>
+  <data name="Mapping_A11y_MessageFormat" xml:space="preserve">
+    <value>{0}. {1}</value>
+    <comment>Screen reader announcement of a warning or error. {0} is the title and {1} is the message. Do not translate {0} or {1}.</comment>
+  </data>
 </root>

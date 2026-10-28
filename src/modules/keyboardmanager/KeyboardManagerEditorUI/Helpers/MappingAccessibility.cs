@@ -24,6 +24,15 @@ namespace KeyboardManagerEditorUI.Helpers
         public const string AppSuffixFormatKey = "Mapping_A11y_AppSuffixFormat";
         public const string EnableToggleFormatKey = "Mapping_A11y_EnableToggleFormat";
         public const string MoreOptionsFormatKey = "Mapping_A11y_MoreOptionsFormat";
+        public const string SavedFormatKey = "Mapping_A11y_SavedFormat";
+        public const string DeletedFormatKey = "Mapping_A11y_DeletedFormat";
+        public const string DeletedCountFormatKey = "Mapping_A11y_DeletedCountFormat";
+        public const string FilterCountFormatKey = "Mapping_A11y_FilterCountFormat";
+        public const string FilterNoneKey = "Mapping_A11y_FilterNone";
+        public const string FilterOneKey = "Mapping_A11y_FilterOne";
+        public const string TriggerKeysFormatKey = "Mapping_A11y_TriggerKeysFormat";
+        public const string ActionKeysFormatKey = "Mapping_A11y_ActionKeysFormat";
+        public const string MessageFormatKey = "Mapping_A11y_MessageFormat";
 
         public static string JoinKeys(IEnumerable<string>? keys)
         {
@@ -98,6 +107,58 @@ namespace KeyboardManagerEditorUI.Helpers
         {
             ArgumentNullException.ThrowIfNull(getString);
             return Format(getString(MoreOptionsFormatKey), rowName);
+        }
+
+        public static string SavedAnnouncement(string rowName, Func<string, string> getString)
+        {
+            ArgumentNullException.ThrowIfNull(getString);
+            return Format(getString(SavedFormatKey), rowName);
+        }
+
+        public static string DeletedAnnouncement(string rowName, Func<string, string> getString)
+        {
+            ArgumentNullException.ThrowIfNull(getString);
+            return Format(getString(DeletedFormatKey), rowName);
+        }
+
+        public static string DeletedCountAnnouncement(int count, Func<string, string> getString)
+        {
+            ArgumentNullException.ThrowIfNull(getString);
+            return Format(getString(DeletedCountFormatKey), count);
+        }
+
+        public static string FilterResultAnnouncement(int visibleCount, Func<string, string> getString)
+        {
+            ArgumentNullException.ThrowIfNull(getString);
+            return visibleCount switch
+            {
+                0 => Format(getString(FilterNoneKey)),
+                1 => Format(getString(FilterOneKey)),
+                _ => Format(getString(FilterCountFormatKey), visibleCount),
+            };
+        }
+
+        /// <summary>
+        /// Text announced while recording keys; empty when nothing is held so screen readers stay quiet.
+        /// </summary>
+        public static string RecordedKeysAnnouncement(bool isTrigger, IEnumerable<string>? keys, Func<string, string> getString)
+        {
+            ArgumentNullException.ThrowIfNull(getString);
+            string joined = JoinKeys(keys);
+            return joined.Length == 0
+                ? string.Empty
+                : Format(getString(isTrigger ? TriggerKeysFormatKey : ActionKeysFormatKey), joined);
+        }
+
+        public static string MessageAnnouncement(string? title, string? message, Func<string, string> getString)
+        {
+            ArgumentNullException.ThrowIfNull(getString);
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                return message ?? string.Empty;
+            }
+
+            return string.IsNullOrWhiteSpace(message) ? title : Format(getString(MessageFormatKey), title, message);
         }
 
         private static string Format(string format, params object[] args)
