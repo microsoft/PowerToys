@@ -4,7 +4,6 @@
 
 using System;
 using System.IO;
-using System.IO.Abstractions.TestingHelpers;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -20,11 +19,8 @@ public sealed class SettingsOwnershipTests
     [TestMethod]
     public void UpdatingOptionsPreservesTheEditorsCurrentFolder()
     {
-        var fileSystem = new MockFileSystem();
-        var store = new TestSettingsStore(fileSystem);
-        var settings = new TextExpanderSettings();
-        settings.Properties.SnippetsPath.Value = @"C:\Snippets";
-        store.SaveSettings(settings.ToJsonString(), TextExpanderSettings.ModuleName);
+        var store = new MockSettingsStore();
+        store.SaveSettings(EditorSettings.For(@"C:\Snippets").ToJsonString(), TextExpanderSettings.ModuleName);
         TextExpanderSettings updated = store.UpdateOptions(properties => properties.CaseSensitive = false);
         Assert.AreEqual(@"C:\Snippets", updated.Properties.SnippetsPath.Value);
         Assert.IsFalse(updated.Properties.CaseSensitive);
@@ -34,14 +30,11 @@ public sealed class SettingsOwnershipTests
     [TestMethod]
     public void PublishingAnEditorFolderPreservesNewerEngineOptions()
     {
-        var fileSystem = new MockFileSystem();
-        var store = new TestSettingsStore(fileSystem);
-        var staleEditorSettings = new TextExpanderSettings();
-        staleEditorSettings.Properties.SnippetsPath.Value = @"C:\NewSnippetFolder";
+        var store = new MockSettingsStore();
         var latestSettings = new TextExpanderSettings();
         latestSettings.Properties.CaseSensitive = false;
         store.SaveSettings(latestSettings.ToJsonString(), TextExpanderSettings.ModuleName);
-        store.SaveSettingsOrThrow(staleEditorSettings.ToJsonString(), TextExpanderSettings.ModuleName);
+        store.SaveSettingsOrThrow(EditorSettings.For(@"C:\NewSnippetFolder").ToJsonString(), TextExpanderSettings.ModuleName);
         TextExpanderSettings actual = store.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName);
         Assert.AreEqual(@"C:\NewSnippetFolder", actual.Properties.SnippetsPath.Value);
         Assert.IsFalse(actual.Properties.CaseSensitive);
@@ -50,18 +43,15 @@ public sealed class SettingsOwnershipTests
     [TestMethod]
     public void ReadOnlySettingsWaitForPublicationInsteadOfReturningTransientDefaults()
     {
-        var fileSystem = new MockFileSystem();
-        var store = new TestSettingsStore(fileSystem);
-        var settings = new TextExpanderSettings();
-        settings.Properties.SnippetsPath.Value = @"C:\Snippets";
-        store.SaveSettings(settings.ToJsonString(), TextExpanderSettings.ModuleName);
+        var store = new MockSettingsStore();
+        store.SaveSettings(EditorSettings.For(@"C:\Snippets").ToJsonString(), TextExpanderSettings.ModuleName);
         string path = store.GetSettingsFilePath(TextExpanderSettings.ModuleName);
         string publishingPath = path + ".publishing";
         using var readerStarted = new ManualResetEventSlim();
         Task<TextExpanderSettings> reader = null;
         store.UpdateOptions(properties =>
         {
-            fileSystem.File.Move(path, publishingPath);
+            store.FileSystem.File.Move(path, publishingPath);
             try
             {
                 reader = Task.Run(() =>
@@ -74,7 +64,7 @@ public sealed class SettingsOwnershipTests
             }
             finally
             {
-                fileSystem.File.Move(publishingPath, path);
+                store.FileSystem.File.Move(publishingPath, path);
             }
 
             properties.CaseSensitive = false;
@@ -88,67 +78,22 @@ public sealed class SettingsOwnershipTests
     [TestMethod]
     public void EditorInitializationMigrationPreservesAConcurrentOptionsUpdate()
     {
-        string directory = Path.Combine(Path.GetTempPath(), "PowerToys-TextExpander-Initialization-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(directory);
-        try
-        {
-            File.WriteAllText(Path.Combine(directory, TextExpanderSnippetFileNames.Current), "!test=Test");
-            var stale = new TextExpanderSettings();
-            stale.Properties.SnippetsPath.Value = directory;
-            stale.Properties.WordBoundaryKeepsSpace = false;
-            var latest = new TextExpanderSettings();
-            latest.Properties.SnippetsPath.Value = directory;
-            latest.Properties.WordBoundaryKeepsSpace = false;
-            latest.Properties.CaseSensitive = false;
-            var fileSystem = new MockFileSystem();
-            var store = new TestSettingsStore(fileSystem, stale);
-            store.SaveSettings(latest.ToJsonString(), TextExpanderSettings.ModuleName);
+        using var folder = new TempFolder();
+        File.WriteAllText(Path.Combine(folder.Path, TextExpanderSnippetFileNames.Current), "!test=Test");
+        TextExpanderSettings stale = EditorSettings.For(folder.Path);
+        stale.Properties.WordBoundaryKeepsSpace = false;
+        TextExpanderSettings latest = EditorSettings.For(folder.Path);
+        latest.Properties.WordBoundaryKeepsSpace = false;
+        latest.Properties.CaseSensitive = false;
+        var store = new MockSettingsStore { InitialSettings = stale };
+        store.SaveSettings(latest.ToJsonString(), TextExpanderSettings.ModuleName);
 
-            using var editor = new TextExpanderViewModel(store, null, false, key => key);
+        using var editor = new TextExpanderViewModel(store, null, false, key => key);
 
-            TextExpanderSettings actual = store.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName);
-            Assert.IsTrue(actual.Properties.WordBoundaryKeepsSpace);
-            Assert.IsFalse(actual.Properties.CaseSensitive);
-            Assert.IsFalse(editor.CaseSensitive);
-            Assert.AreEqual(directory, actual.Properties.SnippetsPath.Value);
-        }
-        finally
-        {
-            Directory.Delete(directory, recursive: true);
-        }
-    }
-
-    private sealed class TestSettingsStore : TextExpanderSettingsUtils
-    {
-        private readonly MockFileSystem _fileSystem;
-        private readonly TextExpanderSettings _initialSettings;
-
-        public TestSettingsStore(MockFileSystem fileSystem, TextExpanderSettings initialSettings = null)
-            : base(fileSystem)
-        {
-            _fileSystem = fileSystem;
-            _initialSettings = initialSettings;
-        }
-
-        public override T GetSettingsOrDefault<T>(string powertoy = "", string fileName = DefaultFileName)
-            => typeof(T) == typeof(TextExpanderSettings) && _initialSettings is not null
-                ? (T)(object)_initialSettings
-                : base.GetSettingsOrDefault<T>(powertoy, fileName);
-
-        protected override HandleBoundFileDeletionResult TryDeleteOwnedAtomicSaveArtifact(string path, byte[] ownedBytes)
-        {
-            if (!_fileSystem.File.Exists(path))
-            {
-                return new(HandleBoundFileDeletionStatus.NotFound, path, null);
-            }
-
-            if (!_fileSystem.File.ReadAllBytes(path).AsSpan().SequenceEqual(ownedBytes))
-            {
-                return new(HandleBoundFileDeletionStatus.IdentityMismatch, path, new IOException("Unexpected file contents."));
-            }
-
-            _fileSystem.File.Delete(path);
-            return new(HandleBoundFileDeletionStatus.Deleted, path, null);
-        }
+        TextExpanderSettings actual = store.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName);
+        Assert.IsTrue(actual.Properties.WordBoundaryKeepsSpace);
+        Assert.IsFalse(actual.Properties.CaseSensitive);
+        Assert.IsFalse(editor.CaseSensitive);
+        Assert.AreEqual(folder.Path, actual.Properties.SnippetsPath.Value);
     }
 }

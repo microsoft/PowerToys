@@ -4,11 +4,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Microsoft.PowerToys.TextExpander;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
+using Microsoft.PowerToys.TextExpander.Editor.UnitTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ViewModelTests
@@ -114,15 +114,7 @@ namespace ViewModelTests
         [TestMethod]
         public void EveryTrimmedLineInARowKeepsElementsAwayFromTheEllipsis()
         {
-            string page = FindPage();
-            if (page == null)
-            {
-                Assert.Inconclusive("The page's XAML isn't next to the tests here.");
-            }
-
-            XElement list = XDocument.Load(page).Descendants()
-                .Single(element => element.Name.LocalName == "ItemsRepeater" && ((string)element.Attribute("ItemsSource") ?? string.Empty).Contains("FilteredSnippets", StringComparison.Ordinal));
-            var trimmed = list.Descendants().Where(element => element.Name.LocalName == "TextExpanderBubbleText" && element.Attribute("TextTrimming") != null).ToList();
+            var trimmed = RepositoryFiles.SnippetList().Descendants().Where(element => element.Name.LocalName == "TextExpanderBubbleText" && element.Attribute("TextTrimming") != null).ToList();
             Assert.AreEqual(3, trimmed.Count, "The sentence, the title and the saved text under the sentence.");
             foreach (XElement line in trimmed)
             {
@@ -142,19 +134,5 @@ namespace ViewModelTests
             => TextExpanderRowDescriber.Describe(trigger, replacement, false, new TextExpanderTriggerSet(new[] { trigger }), false, Now, Resource);
 
         private static string Resource(string key) => Templates.TryGetValue(key, out string value) ? value : key;
-
-        private static string FindPage()
-        {
-            for (var folder = new DirectoryInfo(AppContext.BaseDirectory); folder != null; folder = folder.Parent)
-            {
-                string page = Path.Combine(folder.FullName, "src", "modules", "textexpander", "TextExpander.Editor", "TextExpanderEditorXAML", "Views", "TextExpanderPage.xaml");
-                if (File.Exists(page))
-                {
-                    return page;
-                }
-            }
-
-            return null;
-        }
     }
 }

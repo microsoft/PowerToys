@@ -5,16 +5,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.TextExpander;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
+using Microsoft.PowerToys.TextExpander.Editor.UnitTests;
 using Microsoft.PowerToys.TextExpander.Editor.ViewModels;
 using Microsoft.PowerToys.TextExpander.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 
 namespace ViewModelTests
 {
@@ -92,26 +91,21 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void NewSnippetCreationUsesBoundaryWaitingByDefault()
+        [DataRow(false)]
+        [DataRow(true)]
+        public void NewSnippetCreationKeepsTheBoundaryWaitingSetting(bool turnedOff)
         {
             var settings = new TextExpanderSettings();
+            if (turnedOff)
+            {
+                settings.Properties.RequireWordBoundary = false;
+            }
+
             TextExpanderViewModel model = CreateViewModel(settings: settings);
 
-            Assert.IsTrue(model.RequireWordBoundary);
+            Assert.AreEqual(!turnedOff, model.RequireWordBoundary, "Waiting is on by default.");
             Assert.IsNull(model.SaveSnippet(null, "#new", "New snippet"));
-            Assert.IsTrue(model.RequireWordBoundary);
-        }
-
-        [TestMethod]
-        public void NewSnippetCreationPreservesDisabledBoundaryWaiting()
-        {
-            var settings = new TextExpanderSettings();
-            settings.Properties.RequireWordBoundary = false;
-            TextExpanderViewModel model = CreateViewModel(settings: settings);
-
-            Assert.IsFalse(model.RequireWordBoundary);
-            Assert.IsNull(model.SaveSnippet(null, "#new", "New snippet"));
-            Assert.IsFalse(model.RequireWordBoundary);
+            Assert.AreEqual(!turnedOff, model.RequireWordBoundary);
         }
 
         [TestMethod]
@@ -749,22 +743,14 @@ namespace ViewModelTests
         {
             settings ??= new TextExpanderSettings();
             settings.Properties.SnippetsPath.Value = _directory;
-            var utils = new Mock<TextExpanderSettingsUtils>(new FileSystem(), null);
-            utils.Setup(u => u.GetSettingsOrDefault<TextExpanderSettings>(TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(settings);
-            utils.Setup(u => u.UpdateOptions(It.IsAny<Action<TextExpanderProperties>>())).Returns((Action<TextExpanderProperties> update) =>
-            {
-                update(settings.Properties);
-                return settings;
-            });
             if (latest != null)
             {
                 // What the editor reads back after Settings changes an option.
                 latest.Properties.SnippetsPath.Value = _directory;
-                utils.Setup(u => u.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(latest);
             }
 
             return new TextExpanderViewModel(
-                utils.Object,
+                EditorSettings.Store(settings, latest == null ? null : () => latest).Object,
                 pickSingleFolderDialog,
                 isElevated,
                 key => key switch

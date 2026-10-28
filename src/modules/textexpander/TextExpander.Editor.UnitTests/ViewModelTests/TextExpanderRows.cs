@@ -5,15 +5,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.TextExpander;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
+using Microsoft.PowerToys.TextExpander.Editor.UnitTests;
 using Microsoft.PowerToys.TextExpander.Editor.ViewModels;
-using Microsoft.PowerToys.TextExpander.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using Kind = Microsoft.PowerToys.TextExpander.Editor.Helpers.TextExpanderPreviewSegmentKind;
 
 namespace ViewModelTests
@@ -218,35 +216,27 @@ namespace ViewModelTests
         [TestMethod]
         public void RowsUseTheBoundaryDefaultAndRefreshWhenItChanges()
         {
-            string directory = Path.Combine(Path.GetTempPath(), "PowerToys-TextExpanderRows-" + Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(directory);
-            try
-            {
-                File.WriteAllText(Path.Combine(directory, "snippets.txt"), "!date=[{{date:yyyy-MM-dd}}]\n!dateiso=ABC-123\n!link=one\n!link=two\n");
-                bool wait = true;
-                TextExpanderViewModel model = CreateViewModel(directory, () => wait);
+            using var folder = new TempFolder();
+            File.WriteAllText(Path.Combine(folder.Path, "snippets.txt"), "!date=[{{date:yyyy-MM-dd}}]\n!dateiso=ABC-123\n!link=one\n!link=two\n");
+            bool wait = true;
+            TextExpanderViewModel model = CreateViewModel(folder.Path, () => wait);
 
-                TextExpanderSnippetViewModel dateIso = model.Snippets.Single(s => s.Trigger == "!dateiso");
-                Assert.IsTrue(model.RequireWordBoundary);
-                Assert.IsFalse(dateIso.HasWarning, "The default wait lets !dateiso be reached.");
-                Assert.IsTrue(model.Snippets.First(s => s.Trigger == "!link").HasWarning, "The first !link is never used.");
-                Assert.IsFalse(model.Snippets.Last(s => s.Trigger == "!link").HasWarning);
-                Assert.IsTrue(model.Snippets.Single(s => s.Trigger == "!date").HasSentence);
+            TextExpanderSnippetViewModel dateIso = model.Snippets.Single(s => s.Trigger == "!dateiso");
+            Assert.IsTrue(model.RequireWordBoundary);
+            Assert.IsFalse(dateIso.HasWarning, "The default wait lets !dateiso be reached.");
+            Assert.IsTrue(model.Snippets.First(s => s.Trigger == "!link").HasWarning, "The first !link is never used.");
+            Assert.IsFalse(model.Snippets.Last(s => s.Trigger == "!link").HasWarning);
+            Assert.IsTrue(model.Snippets.Single(s => s.Trigger == "!date").HasSentence);
 
-                // Settings turns the wait off, then on again.
-                wait = false;
-                model.RefreshSettings();
-                Assert.IsTrue(dateIso.HasWarning, "Without the wait, !date fires before !dateiso is complete.");
+            // Settings turns the wait off, then on again.
+            wait = false;
+            model.RefreshSettings();
+            Assert.IsTrue(dateIso.HasWarning, "Without the wait, !date fires before !dateiso is complete.");
 
-                wait = true;
-                model.RefreshSettings();
-                Assert.IsFalse(dateIso.HasWarning, "Restoring the wait lets !dateiso be reached again.");
-                Assert.AreEqual("!dateiso", dateIso.Trigger);
-            }
-            finally
-            {
-                Directory.Delete(directory, recursive: true);
-            }
+            wait = true;
+            model.RefreshSettings();
+            Assert.IsFalse(dateIso.HasWarning, "Restoring the wait lets !dateiso be reached again.");
+            Assert.AreEqual("!dateiso", dateIso.Trigger);
         }
 
         [TestMethod]
@@ -263,26 +253,18 @@ namespace ViewModelTests
         [TestMethod]
         public void EveryRowUsesTheSameKeycapColumnWidthIncludingRowsLoadedLater()
         {
-            string directory = Path.Combine(Path.GetTempPath(), "PowerToys-TextExpanderRows-" + Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(directory);
-            try
-            {
-                string file = Path.Combine(directory, "snippets.txt");
-                File.WriteAllText(file, "!short=one\n!longer=two\n");
-                TextExpanderViewModel model = CreateViewModel(directory);
+            using var folder = new TempFolder();
+            string file = Path.Combine(folder.Path, "snippets.txt");
+            File.WriteAllText(file, "!short=one\n!longer=two\n");
+            TextExpanderViewModel model = CreateViewModel(folder.Path);
 
-                model.KeycapColumnWidth = 57;
-                Assert.IsTrue(model.Snippets.All(s => s.KeycapColumnWidth == 57));
+            model.KeycapColumnWidth = 57;
+            Assert.IsTrue(model.Snippets.All(s => s.KeycapColumnWidth == 57));
 
-                File.WriteAllText(file, "!short=one\n!longer=two\n!third=three\n");
-                model.LoadSnippets();
-                Assert.AreEqual(3, model.Snippets.Count);
-                Assert.IsTrue(model.Snippets.All(s => s.KeycapColumnWidth == 57), "New rows start at the current width.");
-            }
-            finally
-            {
-                Directory.Delete(directory, recursive: true);
-            }
+            File.WriteAllText(file, "!short=one\n!longer=two\n!third=three\n");
+            model.LoadSnippets();
+            Assert.AreEqual(3, model.Snippets.Count);
+            Assert.IsTrue(model.Snippets.All(s => s.KeycapColumnWidth == 57), "New rows start at the current width.");
         }
 
         [TestMethod]
@@ -373,24 +355,16 @@ namespace ViewModelTests
             // The regression: the list is an ItemsRepeater, which sets no DataContext on rows built
             // with x:Bind, so a row's DataContext is the page's view model. Selecting a row did
             // nothing; only the menu items, which carry their snippet in Tag, still worked.
-            string directory = Path.Combine(Path.GetTempPath(), "PowerToys-TextExpanderRows-" + Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(directory);
-            try
-            {
-                File.WriteAllText(Path.Combine(directory, "snippets.txt"), "#sig=Regards\n#mail=you@example.com\n");
-                TextExpanderViewModel page = CreateViewModel(directory);
-                TextExpanderSnippetViewModel row = page.FilteredSnippets.Single(s => s.Trigger == "#mail");
+            using var folder = new TempFolder();
+            File.WriteAllText(Path.Combine(folder.Path, "snippets.txt"), "#sig=Regards\n#mail=you@example.com\n");
+            TextExpanderViewModel page = CreateViewModel(folder.Path);
+            TextExpanderSnippetViewModel row = page.FilteredSnippets.Single(s => s.Trigger == "#mail");
 
-                Assert.AreSame(row, TextExpanderRowSnippet.Resolve(row, page), "The row's Tag names its snippet while its DataContext is the page's.");
-                Assert.AreSame(row, TextExpanderRowSnippet.Resolve(null, row), "A list that does set DataContext still works.");
-                Assert.AreSame(row, TextExpanderRowSnippet.Resolve(row, page.FilteredSnippets.Single(s => s.Trigger == "#sig")), "The Tag wins: x:Bind keeps it current as rows are reused.");
-                Assert.IsNull(TextExpanderRowSnippet.Resolve(null, page), "Without its Tag a row can't tell which snippet it is, so nothing opens rather than the wrong one.");
-                Assert.IsNull(TextExpanderRowSnippet.Resolve("!mysig", page), "The example buttons carry a trigger, not a row.");
-            }
-            finally
-            {
-                Directory.Delete(directory, recursive: true);
-            }
+            Assert.AreSame(row, TextExpanderRowSnippet.Resolve(row, page), "The row's Tag names its snippet while its DataContext is the page's.");
+            Assert.AreSame(row, TextExpanderRowSnippet.Resolve(null, row), "A list that does set DataContext still works.");
+            Assert.AreSame(row, TextExpanderRowSnippet.Resolve(row, page.FilteredSnippets.Single(s => s.Trigger == "#sig")), "The Tag wins: x:Bind keeps it current as rows are reused.");
+            Assert.IsNull(TextExpanderRowSnippet.Resolve(null, page), "Without its Tag a row can't tell which snippet it is, so nothing opens rather than the wrong one.");
+            Assert.IsNull(TextExpanderRowSnippet.Resolve("!mysig", page), "The example buttons carry a trigger, not a row.");
         }
 
         private static TextExpanderPreviewSegment Text(string value) => new(Kind.Text, value);
@@ -410,28 +384,14 @@ namespace ViewModelTests
 
         private static TextExpanderViewModel CreateViewModel(string directory, Func<bool> requireWordBoundary = null)
         {
-            var settings = new TextExpanderSettings();
-            settings.Properties.SnippetsPath.Value = directory;
-            var utils = new Mock<TextExpanderSettingsUtils>(new FileSystem(), null);
-            utils.Setup(u => u.GetSettingsOrDefault<TextExpanderSettings>(TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(settings);
-            utils.Setup(u => u.UpdateOptions(It.IsAny<Action<TextExpanderProperties>>())).Returns((Action<TextExpanderProperties> update) =>
+            // What the editor reads back after Settings changes Wait for space or punctuation.
+            Func<TextExpanderSettings> latest = requireWordBoundary == null ? null : () =>
             {
-                update(settings.Properties);
+                TextExpanderSettings settings = EditorSettings.For(directory);
+                settings.Properties.RequireWordBoundary = requireWordBoundary();
                 return settings;
-            });
-            if (requireWordBoundary != null)
-            {
-                // What the editor reads back after Settings changes Wait for space or punctuation.
-                utils.Setup(u => u.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(() =>
-                {
-                    var latest = new TextExpanderSettings();
-                    latest.Properties.SnippetsPath.Value = directory;
-                    latest.Properties.RequireWordBoundary = requireWordBoundary();
-                    return latest;
-                });
-            }
-
-            return new TextExpanderViewModel(utils.Object, null, false, Resource);
+            };
+            return new TextExpanderViewModel(EditorSettings.Store(EditorSettings.For(directory), latest).Object, null, false, Resource);
         }
     }
 }

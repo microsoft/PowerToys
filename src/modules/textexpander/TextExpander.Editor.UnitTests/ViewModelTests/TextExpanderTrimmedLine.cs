@@ -3,10 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
+using Microsoft.PowerToys.TextExpander.Editor.UnitTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ViewModelTests
@@ -90,15 +90,7 @@ namespace ViewModelTests
         [TestMethod]
         public void TheRowsOneLineSavedTextIsTextOnly()
         {
-            string page = FindPage();
-            if (page == null)
-            {
-                Assert.Inconclusive("The page's XAML isn't next to the tests here.");
-            }
-
-            XElement list = XDocument.Load(page).Descendants()
-                .Single(element => element.Name.LocalName == "ItemsRepeater" && ((string)element.Attribute("ItemsSource") ?? string.Empty).Contains("FilteredSnippets", StringComparison.Ordinal));
-            var lines = list.Descendants().Where(element => element.Name.LocalName == "TextExpanderBubbleText").ToList();
+            var lines = RepositoryFiles.SnippetList().Descendants().Where(element => element.Name.LocalName == "TextExpanderBubbleText").ToList();
 
             // Every line trimmed to one line is all text, so no bubble can land past its ellipsis.
             var oneLine = lines.Where(line => (string)line.Attribute("MaxLines") == "1").ToList();
@@ -119,19 +111,5 @@ namespace ViewModelTests
             "TextExpander_PreviewPromptUnnamed" => "Your answer",
             _ => key,
         };
-
-        private static string FindPage()
-        {
-            for (var folder = new DirectoryInfo(AppContext.BaseDirectory); folder != null; folder = folder.Parent)
-            {
-                string page = Path.Combine(folder.FullName, "src", "modules", "textexpander", "TextExpander.Editor", "TextExpanderEditorXAML", "Views", "TextExpanderPage.xaml");
-                if (File.Exists(page))
-                {
-                    return page;
-                }
-            }
-
-            return null;
-        }
     }
 }

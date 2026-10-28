@@ -5,25 +5,34 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
-using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using System.Text;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.TextExpander;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
+using Microsoft.PowerToys.TextExpander.Editor.UnitTests;
 using Microsoft.PowerToys.TextExpander.Editor.ViewModels;
 using Microsoft.PowerToys.TextExpander.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Choice = Microsoft.PowerToys.TextExpander.Editor.ViewModels.TextExpanderFolderConflictChoice;
 
 namespace ViewModelTests
 {
     [TestClass]
     public class TextExpanderStorage
     {
+        private const string Current = TextExpanderSnippetFileNames.Current;
+        private const string Legacy = TextExpanderSnippetFileNames.Legacy;
+        private const string Stale = "TextExpander_SnippetFolder_ChangeStale";
+        private const string RollbackFailed = "TextExpander_SnippetFolder_RollbackFailed";
+        private const string SettingsSaveFailed = "TextExpander_SnippetFolder_SettingsSaveFailed";
+        private const string SettingsCommittedAfterError = "TextExpander_SnippetFolder_SettingsCommittedAfterError";
         private string _root;
         private string _local;
         private TestStorageEnvironment _environment;
+
+        private string Shared => Path.Combine(_root, "shared");
 
         [TestInitialize]
         public void Initialize()
@@ -43,63 +52,41 @@ namespace ViewModelTests
         [TestMethod]
         public void EmptyFolderReceivesCurrentFileBeforeItBecomesActive()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Legacy, "!local=Local");
-            string targetFolder = Path.Combine(_root, "shared");
+            string source = Write(_local, Legacy, "!local=Local");
             TextExpanderViewModel model = CreateViewModel();
 
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             Assert.IsFalse(change.HasExistingFile);
-            Assert.IsNull(model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
+            Assert.IsNull(model.ApplyFolderChange(change, Choice.ReplaceFolder, out string backup));
 
-            string target = Path.Combine(targetFolder, TextExpanderSnippetFileNames.Current);
             Assert.AreEqual(string.Empty, backup);
-            Assert.AreEqual(targetFolder, model.SnippetsPath);
-            Assert.AreEqual(File.ReadAllText(source), File.ReadAllText(target));
+            Assert.AreEqual(Shared, model.SnippetsPath);
+            Assert.AreEqual(File.ReadAllText(source), File.ReadAllText(Path.Combine(Shared, Current)));
             Assert.AreEqual("!local", model.Snippets.Single().Trigger);
         }
 
         [TestMethod]
-        public void OpenSnippetsFileUsesResolvedCurrentName()
+        [DataRow(Current)]
+        [DataRow(Legacy)]
+        public void OpenSnippetsFileUsesTheResolvedName(string name)
         {
-            string current = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Local");
+            string file = Write(_local, name, "!local=Local");
             string opened = null;
-            TextExpanderViewModel model = CreateViewModel(openFile: path =>
-            {
-                opened = path;
-            });
+            TextExpanderViewModel model = CreateViewModel(openFile: path => opened = path);
 
             Assert.IsNull(model.OpenSnippetsFile());
-            Assert.AreEqual(current, opened);
-        }
-
-        [TestMethod]
-        public void OpenSnippetsFileUsesResolvedLegacyName()
-        {
-            string legacy = Write(_local, TextExpanderSnippetFileNames.Legacy, "!local=Local");
-            string opened = null;
-            TextExpanderViewModel model = CreateViewModel(openFile: path =>
-            {
-                opened = path;
-            });
-
-            Assert.IsNull(model.OpenSnippetsFile());
-            Assert.AreEqual(legacy, opened);
+            Assert.AreEqual(file, opened);
         }
 
         [TestMethod]
         public void OpenSnippetsFileFollowsAnAppliedFolderChange()
         {
-            Write(_local, TextExpanderSnippetFileNames.Legacy, "!local=Local");
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Shared");
+            Write(_local, Legacy, "!local=Local");
+            string target = Write(Shared, Current, "!shared=Shared");
             string opened = null;
-            TextExpanderViewModel model = CreateViewModel(openFile: path =>
-            {
-                opened = path;
-            });
+            TextExpanderViewModel model = CreateViewModel(openFile: path => opened = path);
 
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
-            Assert.IsNull(model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.UseFolder, out _));
+            Assert.IsNull(model.ApplyFolderChange(model.PrepareFolderChange(Shared), Choice.UseFolder, out _));
             Assert.IsNull(model.OpenSnippetsFile());
             Assert.AreEqual(target, opened);
         }
@@ -107,7 +94,7 @@ namespace ViewModelTests
         [TestMethod]
         public void OpenSnippetsFileReportsLaunchAndMissingFileFailures()
         {
-            string current = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Local");
+            string current = Write(_local, Current, "!local=Local");
             TextExpanderViewModel model = CreateViewModel(openFile: _ => throw new InvalidOperationException("Injected launch failure."));
 
             Assert.AreEqual("TextExpander_SnippetFile_OpenFailed", model.OpenSnippetsFile());
@@ -119,13 +106,11 @@ namespace ViewModelTests
         [TestMethod]
         public void UsingFolderFileBacksUpThePreviousActiveFile()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Local");
-            string targetFolder = Path.Combine(_root, "shared");
-            Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Shared");
+            string source = Write(_local, Current, "!local=Local");
+            Write(Shared, Current, "!shared=Shared");
             TextExpanderViewModel model = CreateViewModel();
 
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
-            Assert.IsNull(model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.UseFolder, out string backup));
+            Assert.IsNull(model.ApplyFolderChange(model.PrepareFolderChange(Shared), Choice.UseFolder, out string backup));
 
             Assert.IsTrue(File.Exists(backup));
             Assert.AreEqual(File.ReadAllText(source), File.ReadAllText(backup));
@@ -135,13 +120,11 @@ namespace ViewModelTests
         [TestMethod]
         public void ReplacingFolderFileBacksUpItsPreviousContents()
         {
-            Write(_local, TextExpanderSnippetFileNames.Current, "!local=Local");
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Shared");
+            Write(_local, Current, "!local=Local");
+            string target = Write(Shared, Current, "!shared=Shared");
             TextExpanderViewModel model = CreateViewModel();
 
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
-            Assert.IsNull(model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
+            Assert.IsNull(model.ApplyFolderChange(model.PrepareFolderChange(Shared), Choice.ReplaceFolder, out string backup));
 
             Assert.AreEqual("!shared=Shared", File.ReadAllText(backup));
             Assert.AreEqual("!local=Local", File.ReadAllText(target));
@@ -151,18 +134,14 @@ namespace ViewModelTests
         [TestMethod]
         public void FileAppearingAfterFolderSelectionIsNotOverwritten()
         {
-            Write(_local, TextExpanderSnippetFileNames.Current, "!local=Local");
-            string targetFolder = Path.Combine(_root, "shared");
+            Write(_local, Current, "!local=Local");
             TextExpanderViewModel model = CreateViewModel();
 
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             Assert.IsFalse(change.HasExistingFile);
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Shared");
+            string target = Write(Shared, Current, "!shared=Shared");
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_ChangeStale",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
-            Assert.AreEqual(string.Empty, backup);
+            AssertStale(model, change);
             Assert.AreEqual("!shared=Shared", File.ReadAllText(target));
             Assert.AreEqual(_local, model.SnippetsPath);
         }
@@ -170,19 +149,15 @@ namespace ViewModelTests
         [TestMethod]
         public void LegacyDestinationChangingToCurrentRequiresANewDecision()
         {
-            Write(_local, TextExpanderSnippetFileNames.Current, "!local=Local");
-            string targetFolder = Path.Combine(_root, "shared");
-            string legacy = Write(targetFolder, TextExpanderSnippetFileNames.Legacy, "!legacy=Legacy");
+            Write(_local, Current, "!local=Local");
+            string legacy = Write(Shared, Legacy, "!legacy=Legacy");
             TextExpanderViewModel model = CreateViewModel();
 
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             Assert.AreEqual(legacy, change.FilePath);
-            string current = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!current=Current");
+            string current = Write(Shared, Current, "!current=Current");
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_ChangeStale",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
-            Assert.AreEqual(string.Empty, backup);
+            AssertStale(model, change);
             Assert.AreEqual("!legacy=Legacy", File.ReadAllText(legacy));
             Assert.AreEqual("!current=Current", File.ReadAllText(current));
             Assert.AreEqual(_local, model.SnippetsPath);
@@ -191,40 +166,32 @@ namespace ViewModelTests
         [TestMethod]
         public void SelectedDestinationDisappearingRequiresANewDecision()
         {
-            Write(_local, TextExpanderSnippetFileNames.Current, "!local=Local");
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Legacy, "!shared=Shared");
+            Write(_local, Current, "!local=Local");
+            string target = Write(Shared, Legacy, "!shared=Shared");
             TextExpanderViewModel model = CreateViewModel();
 
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             Assert.AreEqual(target, change.FilePath);
             File.Delete(target);
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_ChangeStale",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.UseFolder, out string backup));
-            Assert.AreEqual(string.Empty, backup);
+            AssertStale(model, change, Choice.UseFolder);
             Assert.IsFalse(File.Exists(target));
-            Assert.IsFalse(File.Exists(Path.Combine(targetFolder, TextExpanderSnippetFileNames.Current)));
+            Assert.IsFalse(File.Exists(Path.Combine(Shared, Current)));
             Assert.AreEqual(_local, model.SnippetsPath);
         }
 
         [TestMethod]
         public void SourceDisappearingBeforeReplacePreservesDestinationBytes()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Local");
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Shared");
+            string source = Write(_local, Current, "!local=Local");
+            string target = Write(Shared, Current, "!shared=Shared");
             byte[] destinationBytes = File.ReadAllBytes(target);
             TextExpanderViewModel model = CreateViewModel();
 
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             File.Delete(source);
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_ChangeStale",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
-            Assert.AreEqual(string.Empty, backup);
+            AssertStale(model, change);
             CollectionAssert.AreEqual(destinationBytes, File.ReadAllBytes(target));
             Assert.AreEqual(_local, model.SnippetsPath);
         }
@@ -232,9 +199,8 @@ namespace ViewModelTests
         [TestMethod]
         public void SettingsRechecksLegacyAtStarterPublicationBoundary()
         {
-            string current = Path.Combine(_local, TextExpanderSnippetFileNames.Current);
-            string legacy = Path.Combine(_local, TextExpanderSnippetFileNames.Legacy);
-            byte[] legacyBytes = System.Text.Encoding.UTF8.GetBytes("!legacy=arrived\r\n");
+            string legacy = Path.Combine(_local, Legacy);
+            byte[] legacyBytes = Utf8("!legacy=arrived\r\n");
             _environment.PublishAfterMissingProbe(legacy, legacyBytes);
 
             TextExpanderViewModel model = CreateViewModel();
@@ -242,15 +208,15 @@ namespace ViewModelTests
             Assert.AreEqual(legacy, model.SnippetsFilePath);
             Assert.AreEqual("!legacy", model.Snippets.Single().Trigger);
             CollectionAssert.AreEqual(legacyBytes, File.ReadAllBytes(legacy));
-            Assert.IsFalse(File.Exists(current), "Settings must use the same folder-aware publication rule as the engine.");
+            Assert.IsFalse(File.Exists(Path.Combine(_local, Current)), "Settings must use the same folder-aware publication rule as the engine.");
         }
 
         [TestMethod]
         public void SettingsWatcherHandoffReloadsLegacyArrivingAfterStarterResolution()
         {
-            string current = Path.Combine(_local, TextExpanderSnippetFileNames.Current);
-            string legacy = Path.Combine(_local, TextExpanderSnippetFileNames.Legacy);
-            byte[] legacyBytes = System.Text.Encoding.UTF8.GetBytes("!legacy=arrived-before-watch\r\n");
+            string current = Path.Combine(_local, Current);
+            string legacy = Path.Combine(_local, Legacy);
+            byte[] legacyBytes = Utf8("!legacy=arrived-before-watch\r\n");
             TextExpanderViewModel model = CreateViewModel();
             Assert.IsTrue(TextExpanderStarter.IsUntouchedStarterBytes(File.ReadAllBytes(current)));
 
@@ -266,8 +232,8 @@ namespace ViewModelTests
         [TestMethod]
         public void PreferredPathChangesReloadAndRaiseRevisionForOpenEditors()
         {
-            string legacy = Write(_local, TextExpanderSnippetFileNames.Legacy, "!legacy=Legacy");
-            string current = Path.Combine(_local, TextExpanderSnippetFileNames.Current);
+            string legacy = Write(_local, Legacy, "!legacy=Legacy");
+            string current = Path.Combine(_local, Current);
             TextExpanderViewModel model = CreateViewModel();
             int revisionNotifications = 0;
             model.PropertyChanged += (_, e) =>
@@ -302,7 +268,7 @@ namespace ViewModelTests
         [TestMethod]
         public void OwnAtomicSavesDoNotReloadOrCreateFalseConflicts()
         {
-            string current = Write(_local, TextExpanderSnippetFileNames.Current, "!one=1");
+            string current = Write(_local, Current, "!one=1");
             TextExpanderViewModel model = CreateViewModel();
             model.Dispatch = action => action();
 
@@ -330,54 +296,42 @@ namespace ViewModelTests
         {
             TextExpanderViewModel model = CreateViewModel();
             File.Delete(model.SnippetsFilePath);
-            string targetFolder = Path.Combine(_root, "shared");
 
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
-            Assert.IsNull(model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
+            Assert.IsNull(model.ApplyFolderChange(model.PrepareFolderChange(Shared), Choice.ReplaceFolder, out string backup));
 
-            string target = Path.Combine(targetFolder, TextExpanderSnippetFileNames.Current);
             Assert.AreEqual(string.Empty, backup);
-            Assert.AreEqual(TextExpanderStarter.Content, File.ReadAllText(target));
+            Assert.AreEqual(TextExpanderStarter.Content, File.ReadAllText(Path.Combine(Shared, Current)));
             Assert.AreEqual(6, model.Snippets.Count);
         }
 
         [TestMethod]
         public void ExistingZeroByteSourceRemainsZeroBytesInEmptyDestination()
         {
-            string source = Path.Combine(_local, TextExpanderSnippetFileNames.Current);
-            File.WriteAllBytes(source, Array.Empty<byte>());
+            string source = Write(_local, Current, string.Empty);
             TextExpanderViewModel model = CreateViewModel();
-            string targetFolder = Path.Combine(_root, "shared");
 
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
-            Assert.IsNull(model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out _));
+            Assert.IsNull(model.ApplyFolderChange(model.PrepareFolderChange(Shared), Choice.ReplaceFolder, out _));
 
-            string target = Path.Combine(targetFolder, TextExpanderSnippetFileNames.Current);
             Assert.AreEqual(0, new FileInfo(source).Length);
-            Assert.AreEqual(0, new FileInfo(target).Length);
+            Assert.AreEqual(0, new FileInfo(Path.Combine(Shared, Current)).Length);
             Assert.AreEqual(0, model.Snippets.Count);
         }
 
         [TestMethod]
         public void ReplacingDestinationPreservesSourceAndDestinationBytes()
         {
-            var utf8Bom = new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true);
+            var utf8Bom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true);
+            var utf16 = new UnicodeEncoding(bigEndian: false, byteOrderMark: true);
             byte[] sourceBytes = utf8Bom.GetPreamble().Concat(utf8Bom.GetBytes("!source=Keep\r\n")).ToArray();
-            string source = Path.Combine(_local, TextExpanderSnippetFileNames.Current);
+            byte[] destinationBytes = utf16.GetPreamble().Concat(utf16.GetBytes("!destination=Keep\n")).ToArray();
+            string source = Path.Combine(_local, Current);
             File.WriteAllBytes(source, sourceBytes);
-
-            string targetFolder = Path.Combine(_root, "shared");
-            Directory.CreateDirectory(targetFolder);
-            string target = Path.Combine(targetFolder, TextExpanderSnippetFileNames.Legacy);
-            byte[] destinationBytes = new System.Text.UnicodeEncoding(bigEndian: false, byteOrderMark: true)
-                .GetPreamble()
-                .Concat(new System.Text.UnicodeEncoding(false, true).GetBytes("!destination=Keep\n"))
-                .ToArray();
+            Directory.CreateDirectory(Shared);
+            string target = Path.Combine(Shared, Legacy);
             File.WriteAllBytes(target, destinationBytes);
             TextExpanderViewModel model = CreateViewModel();
 
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
-            Assert.IsNull(model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
+            Assert.IsNull(model.ApplyFolderChange(model.PrepareFolderChange(Shared), Choice.ReplaceFolder, out string backup));
 
             CollectionAssert.AreEqual(sourceBytes, File.ReadAllBytes(source));
             CollectionAssert.AreEqual(sourceBytes, File.ReadAllBytes(target));
@@ -387,45 +341,35 @@ namespace ViewModelTests
         [TestMethod]
         public void SupportedFileArrivingInFinalMoveWindowIsPreservedAndChangeIsStale()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Local");
+            string source = Write(_local, Current, "!local=Local");
             byte[] sourceBytes = File.ReadAllBytes(source);
-            string targetFolder = Path.Combine(_root, "shared");
-            string legacy = Path.Combine(targetFolder, TextExpanderSnippetFileNames.Legacy);
-            byte[] legacyBytes = System.Text.Encoding.UTF8.GetBytes("!legacy=Arrived");
+            string legacy = Path.Combine(Shared, Legacy);
+            byte[] legacyBytes = Utf8("!legacy=Arrived");
             TextExpanderViewModel model = CreateViewModel();
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             _environment.BeforeNextPublication(() => File.WriteAllBytes(legacy, legacyBytes));
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_ChangeStale",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
-
-            Assert.AreEqual(string.Empty, backup);
+            AssertStale(model, change);
             CollectionAssert.AreEqual(sourceBytes, File.ReadAllBytes(source));
             CollectionAssert.AreEqual(legacyBytes, File.ReadAllBytes(legacy));
-            Assert.IsFalse(File.Exists(Path.Combine(targetFolder, TextExpanderSnippetFileNames.Current)));
+            Assert.IsFalse(File.Exists(Path.Combine(Shared, Current)));
             Assert.AreEqual(_local, model.SnippetsPath);
         }
 
         [TestMethod]
         public void SupportedFileArrivingInFinalReplaceWindowRollsBackOwnedReplacement()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Local");
+            string source = Write(_local, Current, "!local=Local");
             byte[] sourceBytes = File.ReadAllBytes(source);
-            string targetFolder = Path.Combine(_root, "shared");
-            string current = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Original");
+            string current = Write(Shared, Current, "!shared=Original");
             byte[] currentBytes = File.ReadAllBytes(current);
-            string legacy = Path.Combine(targetFolder, TextExpanderSnippetFileNames.Legacy);
-            byte[] legacyBytes = System.Text.Encoding.UTF8.GetBytes("!legacy=Arrived");
+            string legacy = Path.Combine(Shared, Legacy);
+            byte[] legacyBytes = Utf8("!legacy=Arrived");
             TextExpanderViewModel model = CreateViewModel();
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             _environment.BeforeNextPublication(() => File.WriteAllBytes(legacy, legacyBytes));
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_ChangeStale",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
-
-            Assert.AreEqual(string.Empty, backup);
+            AssertStale(model, change);
             CollectionAssert.AreEqual(sourceBytes, File.ReadAllBytes(source));
             CollectionAssert.AreEqual(currentBytes, File.ReadAllBytes(current));
             CollectionAssert.AreEqual(legacyBytes, File.ReadAllBytes(legacy));
@@ -435,40 +379,30 @@ namespace ViewModelTests
         [TestMethod]
         public void SourceMutationInFinalMoveWindowRollsBackOwnedPublication()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
-            byte[] mutatedBytes = System.Text.Encoding.UTF8.GetBytes("!local=Mutated");
-            string targetFolder = Path.Combine(_root, "shared");
+            string source = Write(_local, Current, "!local=Original");
+            byte[] mutatedBytes = Utf8("!local=Mutated");
             TextExpanderViewModel model = CreateViewModel();
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             _environment.BeforeNextPublication(() => File.WriteAllBytes(source, mutatedBytes));
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_ChangeStale",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
-
-            Assert.AreEqual(string.Empty, backup);
+            AssertStale(model, change);
             CollectionAssert.AreEqual(mutatedBytes, File.ReadAllBytes(source));
-            Assert.IsFalse(File.Exists(Path.Combine(targetFolder, TextExpanderSnippetFileNames.Current)));
-            Assert.IsFalse(File.Exists(Path.Combine(targetFolder, TextExpanderSnippetFileNames.Legacy)));
+            Assert.IsFalse(File.Exists(Path.Combine(Shared, Current)));
+            Assert.IsFalse(File.Exists(Path.Combine(Shared, Legacy)));
             Assert.AreEqual(_local, model.SnippetsPath);
         }
 
         [TestMethod]
         public void SourceDisappearanceInFinalReplaceWindowRollsBackOwnedReplacement()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Original");
+            string source = Write(_local, Current, "!local=Original");
+            string target = Write(Shared, Current, "!shared=Original");
             byte[] targetBytes = File.ReadAllBytes(target);
             TextExpanderViewModel model = CreateViewModel();
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             _environment.BeforeNextPublication(() => File.Delete(source));
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_ChangeStale",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
-
-            Assert.AreEqual(string.Empty, backup);
+            AssertStale(model, change);
             Assert.IsFalse(File.Exists(source));
             CollectionAssert.AreEqual(targetBytes, File.ReadAllBytes(target));
             Assert.AreEqual(_local, model.SnippetsPath);
@@ -477,56 +411,42 @@ namespace ViewModelTests
         [TestMethod]
         public void StagingReplacementAtHandleBoundCleanupSurvivesAndIsSurfaced()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
-            byte[] mutatedSource = System.Text.Encoding.UTF8.GetBytes("!local=Mutated");
-            byte[] replacementBytes = System.Text.Encoding.UTF8.GetBytes("!external=StagingReplacement");
-            string targetFolder = Path.Combine(_root, "shared");
-            string replacementPath = null;
-            string ownedObjectPath = null;
+            string source = Write(_local, Current, "!local=Original");
+            byte[] mutatedSource = Utf8("!local=Mutated");
+            byte[] replacementBytes = Utf8("!external=StagingReplacement");
             TextExpanderViewModel model = CreateViewModel();
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             _environment.AfterNextStagingWrite(() => File.WriteAllBytes(source, mutatedSource));
-            _environment.BeforeNextCleanupDisposition(
-                path => Path.GetFileName(path).EndsWith(".tmp", StringComparison.OrdinalIgnoreCase),
-                path =>
-                {
-                    replacementPath = path;
-                    ownedObjectPath = path + ".owned";
-                    File.Move(path, ownedObjectPath);
-                    File.WriteAllBytes(path, replacementBytes);
-                });
+            _environment.ReplaceBeforeCleanupDisposition(name => name.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase), replacementBytes);
 
-            string error = model.ApplyFolderChange(
-                change,
-                TextExpanderFolderConflictChoice.ReplaceFolder,
-                out string recovery);
+            string error = model.ApplyFolderChange(change, Choice.ReplaceFolder, out string recovery);
 
+            string replacementPath = _environment.ReplacedCleanupPath;
             Assert.IsNotNull(error);
             StringAssert.Contains(error, "staging file");
             StringAssert.Contains(error, replacementPath);
             Assert.AreEqual(replacementPath, recovery);
             CollectionAssert.AreEqual(replacementBytes, File.ReadAllBytes(replacementPath));
-            Assert.IsFalse(File.Exists(ownedObjectPath), "Disposition must delete the verified object after it is renamed.");
+            Assert.IsFalse(File.Exists(replacementPath + ".owned"), "Disposition must delete the verified object after it is renamed.");
             CollectionAssert.AreEqual(mutatedSource, File.ReadAllBytes(source));
-            Assert.IsFalse(File.Exists(Path.Combine(targetFolder, TextExpanderSnippetFileNames.Current)));
+            Assert.IsFalse(File.Exists(Path.Combine(Shared, Current)));
             Assert.AreEqual(_local, model.SnippetsPath);
         }
 
         [TestMethod]
         public void PostPublicationIdentityReadFailureRestoresDestinationBytes()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
+            string source = Write(_local, Current, "!local=Original");
             byte[] sourceBytes = File.ReadAllBytes(source);
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Original");
+            string target = Write(Shared, Current, "!shared=Original");
             byte[] targetBytes = File.ReadAllBytes(target);
             TextExpanderViewModel model = CreateViewModel();
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             _environment.FailNextReadAfterPublication();
 
             Assert.AreEqual(
                 "Injected post-publication identity read failure.",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
+                model.ApplyFolderChange(change, Choice.ReplaceFolder, out string backup));
 
             Assert.AreEqual(string.Empty, backup);
             CollectionAssert.AreEqual(sourceBytes, File.ReadAllBytes(source));
@@ -538,69 +458,45 @@ namespace ViewModelTests
         [TestMethod]
         public void FolderQuarantineReplacementAtHandleBoundCleanupSurvivesAndIsSurfaced()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
+            string source = Write(_local, Current, "!local=Original");
             byte[] sourceBytes = File.ReadAllBytes(source);
-            byte[] replacementBytes = System.Text.Encoding.UTF8.GetBytes("!external=QuarantineReplacement");
-            string targetFolder = Path.Combine(_root, "shared");
-            string replacementPath = null;
-            string ownedObjectPath = null;
+            byte[] replacementBytes = Utf8("!external=QuarantineReplacement");
             TextExpanderViewModel model = CreateViewModel();
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             _environment.FailNextReadAfterPublication();
-            _environment.BeforeNextCleanupDisposition(
-                path => Path.GetFileName(path).Contains(".rollback-quarantine", StringComparison.OrdinalIgnoreCase),
-                path =>
-                {
-                    replacementPath = path;
-                    ownedObjectPath = path + ".owned";
-                    File.Move(path, ownedObjectPath);
-                    File.WriteAllBytes(path, replacementBytes);
-                });
+            _environment.ReplaceBeforeCleanupDisposition(name => name.Contains(".rollback-quarantine", StringComparison.OrdinalIgnoreCase), replacementBytes);
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_RollbackFailed",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string recovery));
+            Assert.AreEqual(RollbackFailed, model.ApplyFolderChange(change, Choice.ReplaceFolder, out string recovery));
 
+            string replacementPath = _environment.ReplacedCleanupPath;
             Assert.AreEqual(replacementPath, recovery);
             CollectionAssert.AreEqual(replacementBytes, File.ReadAllBytes(replacementPath));
-            Assert.IsFalse(File.Exists(ownedObjectPath), "Disposition must delete the verified quarantined object.");
+            Assert.IsFalse(File.Exists(replacementPath + ".owned"), "Disposition must delete the verified quarantined object.");
             CollectionAssert.AreEqual(sourceBytes, File.ReadAllBytes(source));
-            Assert.IsFalse(File.Exists(Path.Combine(targetFolder, TextExpanderSnippetFileNames.Current)));
+            Assert.IsFalse(File.Exists(Path.Combine(Shared, Current)));
             Assert.AreEqual(_local, model.SnippetsPath);
         }
 
         [TestMethod]
         public void BackupReplacementAtHandleBoundCleanupSurvivesAndIsSurfaced()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Original");
+            Write(_local, Current, "!local=Original");
+            string target = Write(Shared, Current, "!shared=Original");
             byte[] targetBytes = File.ReadAllBytes(target);
-            byte[] replacementBytes = System.Text.Encoding.UTF8.GetBytes("!external=BackupReplacement");
-            string replacementPath = null;
-            string ownedObjectPath = null;
+            byte[] replacementBytes = Utf8("!external=BackupReplacement");
             TextExpanderViewModel model = CreateViewModel();
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             _environment.FailNextReadAfterPublication(() => File.WriteAllBytes(target, targetBytes));
-            _environment.BeforeNextCleanupDisposition(
-                path => Path.GetFileName(path).Contains(".backup-", StringComparison.OrdinalIgnoreCase),
-                path =>
-                {
-                    replacementPath = path;
-                    ownedObjectPath = path + ".owned";
-                    File.Move(path, ownedObjectPath);
-                    File.WriteAllBytes(path, replacementBytes);
-                });
+            _environment.ReplaceBeforeCleanupDisposition(name => name.Contains(".backup-", StringComparison.OrdinalIgnoreCase), replacementBytes);
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_RollbackFailed",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string recovery));
+            Assert.AreEqual(RollbackFailed, model.ApplyFolderChange(change, Choice.ReplaceFolder, out string recovery));
 
+            string replacementPath = _environment.ReplacedCleanupPath;
             string[] recoveryPaths = SplitRecoveryPaths(recovery);
             CollectionAssert.Contains(recoveryPaths, replacementPath);
             CollectionAssert.Contains(recoveryPaths, target);
             CollectionAssert.AreEqual(replacementBytes, File.ReadAllBytes(replacementPath));
-            Assert.IsFalse(File.Exists(ownedObjectPath), "Disposition must delete the verified backup object.");
+            Assert.IsFalse(File.Exists(replacementPath + ".owned"), "Disposition must delete the verified backup object.");
             CollectionAssert.AreEqual(targetBytes, File.ReadAllBytes(target));
             Assert.AreEqual(_local, model.SnippetsPath);
         }
@@ -608,45 +504,38 @@ namespace ViewModelTests
         [TestMethod]
         public void NewerExternalFileArrivingDuringNewDestinationRollbackIsRestoredAndSurfaced()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
+            string source = Write(_local, Current, "!local=Original");
             byte[] sourceBytes = File.ReadAllBytes(source);
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Path.Combine(targetFolder, TextExpanderSnippetFileNames.Current);
-            byte[] externalBytes = System.Text.Encoding.UTF8.GetBytes("!external=Newer");
+            string target = Path.Combine(Shared, Current);
+            byte[] externalBytes = Utf8("!external=Newer");
             TextExpanderViewModel model = CreateViewModel();
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             _environment.FailNextReadAfterPublication();
             _environment.BeforeNextRollbackQuarantine(() => File.WriteAllBytes(target, externalBytes));
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_RollbackFailed",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string recovery));
+            Assert.AreEqual(RollbackFailed, model.ApplyFolderChange(change, Choice.ReplaceFolder, out string recovery));
 
             CollectionAssert.AreEqual(sourceBytes, File.ReadAllBytes(source));
             CollectionAssert.AreEqual(externalBytes, File.ReadAllBytes(target));
             CollectionAssert.AreEqual(new[] { target }, SplitRecoveryPaths(recovery));
-            Assert.IsFalse(Directory.GetFiles(targetFolder).Any(path =>
-                Path.GetFileName(path).Contains(".rollback-quarantine", StringComparison.OrdinalIgnoreCase)));
+            Assert.IsFalse(Directory.GetFiles(Shared).Any(IsRollbackQuarantine));
             Assert.AreEqual(_local, model.SnippetsPath);
         }
 
         [TestMethod]
         public void NewerExternalFileArrivingDuringReplacedDestinationRollbackPreservesBothWriters()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
+            string source = Write(_local, Current, "!local=Original");
             byte[] sourceBytes = File.ReadAllBytes(source);
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Original");
+            string target = Write(Shared, Current, "!shared=Original");
             byte[] targetBytes = File.ReadAllBytes(target);
-            byte[] externalBytes = System.Text.Encoding.UTF8.GetBytes("!external=Newer");
+            byte[] externalBytes = Utf8("!external=Newer");
             TextExpanderViewModel model = CreateViewModel();
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             _environment.FailNextReadAfterPublication();
             _environment.BeforeNextRollbackQuarantine(() => File.WriteAllBytes(target, externalBytes));
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_RollbackFailed",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string recovery));
+            Assert.AreEqual(RollbackFailed, model.ApplyFolderChange(change, Choice.ReplaceFolder, out string recovery));
 
             string[] recoveryPaths = SplitRecoveryPaths(recovery);
             Assert.AreEqual(2, recoveryPaths.Length);
@@ -654,35 +543,29 @@ namespace ViewModelTests
             Assert.IsTrue(recoveryPaths.Any(path => File.ReadAllBytes(path).SequenceEqual(externalBytes)));
             CollectionAssert.AreEqual(sourceBytes, File.ReadAllBytes(source));
             CollectionAssert.AreEqual(externalBytes, File.ReadAllBytes(target));
-            Assert.IsFalse(recoveryPaths.Any(path =>
-                Path.GetFileName(path).Contains(".rollback-quarantine", StringComparison.OrdinalIgnoreCase)));
+            Assert.IsFalse(recoveryPaths.Any(IsRollbackQuarantine));
             Assert.AreEqual(_local, model.SnippetsPath);
         }
 
         [TestMethod]
         public void FailedUnexpectedRollbackRestorationSurfacesQuarantineAndBackup()
         {
-            Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Original");
+            Write(_local, Current, "!local=Original");
+            string target = Write(Shared, Current, "!shared=Original");
             byte[] targetBytes = File.ReadAllBytes(target);
-            byte[] externalBytes = System.Text.Encoding.UTF8.GetBytes("!external=Displaced");
-            byte[] blockerBytes = System.Text.Encoding.UTF8.GetBytes("!external=Newest");
+            byte[] externalBytes = Utf8("!external=Displaced");
+            byte[] blockerBytes = Utf8("!external=Newest");
             TextExpanderViewModel model = CreateViewModel();
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             _environment.FailNextReadAfterPublication();
             _environment.BeforeNextRollbackQuarantine(() => File.WriteAllBytes(target, externalBytes));
             _environment.BeforeUnexpectedRollbackRestore(() => File.WriteAllBytes(target, blockerBytes));
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_RollbackFailed",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string recovery));
+            Assert.AreEqual(RollbackFailed, model.ApplyFolderChange(change, Choice.ReplaceFolder, out string recovery));
 
             string[] recoveryPaths = SplitRecoveryPaths(recovery);
             Assert.IsTrue(recoveryPaths.Any(path => File.ReadAllBytes(path).SequenceEqual(targetBytes)));
-            Assert.IsTrue(recoveryPaths.Any(path =>
-                Path.GetFileName(path).Contains(".rollback-quarantine", StringComparison.OrdinalIgnoreCase)
-                && File.ReadAllBytes(path).SequenceEqual(externalBytes)));
+            Assert.IsTrue(recoveryPaths.Any(path => IsRollbackQuarantine(path) && File.ReadAllBytes(path).SequenceEqual(externalBytes)));
             Assert.IsTrue(recoveryPaths.Any(path => File.ReadAllBytes(path).SequenceEqual(blockerBytes)));
             CollectionAssert.AreEqual(blockerBytes, File.ReadAllBytes(target));
             Assert.AreEqual(_local, model.SnippetsPath);
@@ -691,19 +574,16 @@ namespace ViewModelTests
         [TestMethod]
         public void RollbackApiFailurePreservesAndSurfacesOriginalDestinationBackup()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
+            string source = Write(_local, Current, "!local=Original");
             byte[] sourceBytes = File.ReadAllBytes(source);
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Original");
+            string target = Write(Shared, Current, "!shared=Original");
             byte[] targetBytes = File.ReadAllBytes(target);
             TextExpanderViewModel model = CreateViewModel();
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             _environment.FailNextReadAfterPublication();
             _environment.FailNextRollback();
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_RollbackFailed",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
+            Assert.AreEqual(RollbackFailed, model.ApplyFolderChange(change, Choice.ReplaceFolder, out string backup));
 
             Assert.IsFalse(string.IsNullOrEmpty(backup));
             Assert.IsTrue(File.Exists(backup));
@@ -716,28 +596,21 @@ namespace ViewModelTests
         [TestMethod]
         public void SettingsWriteFailureRestoresDestinationAndKeepsOldLibraryLoaded()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Original");
+            string source = Write(_local, Current, "!local=Original");
+            string target = Write(Shared, Current, "!shared=Original");
             byte[] targetBytes = File.ReadAllBytes(target);
             TextExpanderViewModel model = null;
             bool persistenceSawOldLibrary = false;
-            model = CreateViewModel(utils => utils
-                .Setup(u => u.SaveSettingsOrThrow(
-                    It.IsAny<string>(),
-                    TextExpanderSettings.ModuleName,
-                    SettingsUtils.DefaultFileName))
+            model = CreateViewModel(store => SetupSettingsSave(store)
                 .Callback(() =>
                 {
                     persistenceSawOldLibrary = model.SnippetsPath == _local
                         && model.Snippets.Single().Trigger == "!local";
                 })
                 .Throws(VerifiedPreviousSettingsFailure()));
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_SettingsSaveFailed",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
+            Assert.AreEqual(SettingsSaveFailed, model.ApplyFolderChange(change, Choice.ReplaceFolder, out string backup));
 
             Assert.IsTrue(persistenceSawOldLibrary, "The ViewModel must not switch libraries before settings persistence succeeds.");
             Assert.AreEqual(string.Empty, backup);
@@ -750,23 +623,15 @@ namespace ViewModelTests
         [TestMethod]
         public void SettingsWriteAndRollbackFailurePreserveAndSurfaceBackup()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
+            string source = Write(_local, Current, "!local=Original");
             byte[] sourceBytes = File.ReadAllBytes(source);
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Original");
+            string target = Write(Shared, Current, "!shared=Original");
             byte[] targetBytes = File.ReadAllBytes(target);
-            TextExpanderViewModel model = CreateViewModel(utils => utils
-                .Setup(u => u.SaveSettingsOrThrow(
-                    It.IsAny<string>(),
-                    TextExpanderSettings.ModuleName,
-                    SettingsUtils.DefaultFileName))
-                .Throws(VerifiedPreviousSettingsFailure()));
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            TextExpanderViewModel model = CreateViewModel(store => SetupSettingsSave(store).Throws(VerifiedPreviousSettingsFailure()));
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
             _environment.FailNextRollback();
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_RollbackFailed",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
+            Assert.AreEqual(RollbackFailed, model.ApplyFolderChange(change, Choice.ReplaceFolder, out string backup));
 
             Assert.IsFalse(string.IsNullOrEmpty(backup));
             Assert.IsTrue(File.Exists(backup));
@@ -777,185 +642,132 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void AtomicSettingsPublicationFailureRestoresExistingSettingsAndFolderState()
+        [DataRow(true)]
+        [DataRow(false)]
+        public void AtomicSettingsPublicationFailureRestoresSettingsAndFolderState(bool settingsExisted)
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Original");
+            string source = Write(_local, Current, "!local=Original");
+            string target = Write(Shared, Current, "!shared=Original");
             byte[] targetBytes = File.ReadAllBytes(target);
-            var settings = new TextExpanderSettings();
-            settings.Properties.SnippetsPath.Value = _local;
-            var settingsFileSystem = new MockFileSystem();
-            var settingsUtils = new ThrowAfterPublicationSettingsUtils(settingsFileSystem, settings);
-            settingsUtils.SaveSettings(settings.ToJsonString(), TextExpanderSettings.ModuleName);
-            string settingsPath = settingsUtils.GetSettingsFilePath(TextExpanderSettings.ModuleName);
-            byte[] settingsBytes = settingsFileSystem.File.ReadAllBytes(settingsPath);
-            TextExpanderViewModel model = CreateViewModel(settingsUtils);
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            var store = new MockSettingsStore { InitialSettings = EditorSettings.For(_local), ReadOnlyReturnsInitialSettings = true, ThrowAfterPublication = true };
+            if (settingsExisted)
+            {
+                SaveInitialSettings(store);
+            }
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_SettingsSaveFailed",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
+            string settingsPath = store.GetSettingsFilePath(TextExpanderSettings.ModuleName);
+            byte[] settingsBytes = settingsExisted ? store.FileSystem.File.ReadAllBytes(settingsPath) : null;
+            TextExpanderViewModel model = CreateViewModel(store);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
+
+            Assert.AreEqual(SettingsSaveFailed, model.ApplyFolderChange(change, Choice.ReplaceFolder, out string backup));
 
             Assert.AreEqual(string.Empty, backup);
-            CollectionAssert.AreEqual(settingsBytes, settingsFileSystem.File.ReadAllBytes(settingsPath));
+            if (settingsExisted)
+            {
+                CollectionAssert.AreEqual(settingsBytes, store.FileSystem.File.ReadAllBytes(settingsPath));
+            }
+            else
+            {
+                Assert.IsFalse(store.FileSystem.File.Exists(settingsPath));
+            }
+
             CollectionAssert.AreEqual(targetBytes, File.ReadAllBytes(target));
             Assert.AreEqual(_local, model.SnippetsPath);
             Assert.AreEqual("!local", model.Snippets.Single().Trigger);
             Assert.AreEqual("!local=Original", File.ReadAllText(source));
-            StringAssert.Contains(settingsUtils.StagedContents, targetFolder.Replace("\\", "\\\\", StringComparison.Ordinal));
-        }
-
-        [TestMethod]
-        public void AtomicSettingsPublicationFailureRemovesFirstSettingsFileAndRestoresFolderState()
-        {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Original");
-            byte[] targetBytes = File.ReadAllBytes(target);
-            var settings = new TextExpanderSettings();
-            settings.Properties.SnippetsPath.Value = _local;
-            var settingsFileSystem = new MockFileSystem();
-            var settingsUtils = new ThrowAfterPublicationSettingsUtils(settingsFileSystem, settings);
-            string settingsPath = settingsUtils.GetSettingsFilePath(TextExpanderSettings.ModuleName);
-            TextExpanderViewModel model = CreateViewModel(settingsUtils);
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
-
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_SettingsSaveFailed",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
-
-            Assert.AreEqual(string.Empty, backup);
-            Assert.IsFalse(settingsFileSystem.File.Exists(settingsPath));
-            CollectionAssert.AreEqual(targetBytes, File.ReadAllBytes(target));
-            Assert.AreEqual(_local, model.SnippetsPath);
-            Assert.AreEqual("!local", model.Snippets.Single().Trigger);
-            Assert.AreEqual("!local=Original", File.ReadAllText(source));
-            StringAssert.Contains(settingsUtils.StagedContents, targetFolder.Replace("\\", "\\\\", StringComparison.Ordinal));
+            StringAssert.Contains(store.StagedContents, Shared.Replace("\\", "\\\\", StringComparison.Ordinal));
         }
 
         [TestMethod]
         public void SettingsRestorationLateFailureStillRollsBackFolderAndMemory()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Original");
+            string source = Write(_local, Current, "!local=Original");
+            string target = Write(Shared, Current, "!shared=Original");
             byte[] targetBytes = File.ReadAllBytes(target);
-            var settings = new TextExpanderSettings();
-            settings.Properties.SnippetsPath.Value = _local;
-            var settingsFileSystem = new MockFileSystem();
-            var settingsUtils = new ThrowAfterCompensationSettingsUtils(settingsFileSystem, settings);
-            settingsUtils.SaveSettings(settings.ToJsonString(), TextExpanderSettings.ModuleName);
-            string settingsPath = settingsUtils.GetSettingsFilePath(TextExpanderSettings.ModuleName);
-            TextExpanderViewModel model = CreateViewModel(settingsUtils);
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            MockSettingsStore store = SaveInitialSettings(new MockSettingsStore { ThrowAfterPublication = true, FailAfterCompensation = true });
+            TextExpanderViewModel model = CreateViewModel(store);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_SettingsSaveFailed",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
+            Assert.AreEqual(SettingsSaveFailed, model.ApplyFolderChange(change, Choice.ReplaceFolder, out string backup));
 
             Assert.AreEqual(string.Empty, backup);
-            Assert.AreEqual(AtomicSettingsPublicationOutcome.PreviousSettingsVerified, settingsUtils.LastError?.Outcome);
-            Assert.AreEqual(_local, settingsUtils.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName).Properties.SnippetsPath.Value);
+            Assert.AreEqual(AtomicSettingsPublicationOutcome.PreviousSettingsVerified, store.LastError?.Outcome);
+            Assert.AreEqual(_local, PersistedSnippetsPath(store));
             Assert.AreEqual(_local, model.SnippetsPath);
             Assert.AreEqual("!local", model.Snippets.Single().Trigger);
             Assert.AreEqual("!local=Original", File.ReadAllText(source));
             CollectionAssert.AreEqual(targetBytes, File.ReadAllBytes(target));
-            Assert.IsTrue(settingsFileSystem.File.Exists(settingsPath));
+            Assert.IsTrue(store.FileSystem.File.Exists(store.GetSettingsFilePath(TextExpanderSettings.ModuleName)));
         }
 
         [TestMethod]
         public void VerifiedNewSettingsAfterLateFailureKeepFolderMemoryAndPersistedPathAligned()
         {
-            Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Original");
-            var settings = new TextExpanderSettings();
-            settings.Properties.SnippetsPath.Value = _local;
-            var settingsFileSystem = new MockFileSystem();
-            var settingsUtils = new FailCompensationSettingsUtils(settingsFileSystem, settings);
-            settingsUtils.SaveSettings(settings.ToJsonString(), TextExpanderSettings.ModuleName);
-            TextExpanderViewModel model = CreateViewModel(settingsUtils);
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            Write(_local, Current, "!local=Original");
+            string target = Write(Shared, Current, "!shared=Original");
+            MockSettingsStore store = SaveInitialSettings(new MockSettingsStore { ThrowAfterPublication = true, FailCompensation = true });
+            TextExpanderViewModel model = CreateViewModel(store);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_SettingsCommittedAfterError",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
+            Assert.AreEqual(SettingsCommittedAfterError, model.ApplyFolderChange(change, Choice.ReplaceFolder, out string backup));
 
-            Assert.AreEqual(AtomicSettingsPublicationOutcome.NewSettingsVerified, settingsUtils.LastError?.Outcome);
+            Assert.AreEqual(AtomicSettingsPublicationOutcome.NewSettingsVerified, store.LastError?.Outcome);
             Assert.IsFalse(string.IsNullOrEmpty(backup));
             Assert.IsTrue(File.Exists(backup));
             Assert.AreEqual("!shared=Original", File.ReadAllText(backup));
             Assert.AreEqual("!local=Original", File.ReadAllText(target));
-            Assert.AreEqual(targetFolder, model.SnippetsPath);
+            Assert.AreEqual(Shared, model.SnippetsPath);
             Assert.AreEqual(target, model.SnippetsFilePath);
             Assert.AreEqual("!local", model.Snippets.Single().Trigger);
-            Assert.AreEqual(
-                targetFolder,
-                settingsUtils.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName).Properties.SnippetsPath.Value);
+            Assert.AreEqual(Shared, PersistedSnippetsPath(store));
         }
 
         [TestMethod]
         public void ReadableUncertainSettingsAreInspectedAndMatchingNewPathIsKept()
         {
-            Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Original");
-            var settings = new TextExpanderSettings();
-            settings.Properties.SnippetsPath.Value = _local;
-            var concurrentSettings = new TextExpanderSettings();
-            concurrentSettings.Properties.SnippetsPath.Value = targetFolder;
-            string concurrentJson = concurrentSettings.ToJsonString() + Environment.NewLine;
-            var settingsFileSystem = new MockFileSystem();
-            var settingsUtils = new MutateBeforeCompensationSettingsUtils(
-                settingsFileSystem,
-                settings,
-                concurrentJson);
-            settingsUtils.SaveSettings(settings.ToJsonString(), TextExpanderSettings.ModuleName);
-            TextExpanderViewModel model = CreateViewModel(settingsUtils);
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            Write(_local, Current, "!local=Original");
+            string target = Write(Shared, Current, "!shared=Original");
+            MockSettingsStore store = SaveInitialSettings(new MockSettingsStore
+            {
+                ThrowAfterPublication = true,
+                WrittenBeforeCompensation = EditorSettings.For(Shared).ToJsonString() + Environment.NewLine,
+            });
+            TextExpanderViewModel model = CreateViewModel(store);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
 
-            Assert.AreEqual(
-                "TextExpander_SnippetFolder_SettingsCommittedAfterError",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
+            Assert.AreEqual(SettingsCommittedAfterError, model.ApplyFolderChange(change, Choice.ReplaceFolder, out string backup));
 
-            Assert.AreEqual(AtomicSettingsPublicationOutcome.StateUncertain, settingsUtils.LastError?.Outcome);
+            Assert.AreEqual(AtomicSettingsPublicationOutcome.StateUncertain, store.LastError?.Outcome);
             Assert.IsFalse(string.IsNullOrEmpty(backup));
-            Assert.AreEqual(targetFolder, model.SnippetsPath);
+            Assert.AreEqual(Shared, model.SnippetsPath);
             Assert.AreEqual(target, model.SnippetsFilePath);
             Assert.AreEqual("!local", model.Snippets.Single().Trigger);
-            Assert.AreEqual(
-                targetFolder,
-                settingsUtils.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName).Properties.SnippetsPath.Value);
+            Assert.AreEqual(Shared, PersistedSnippetsPath(store));
         }
 
         [TestMethod]
         public void ReadableUncertainPreviousPathRollsFolderBackWithoutClaimingEverythingWasUndone()
         {
-            Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
-            string targetFolder = Path.Combine(_root, "shared");
-            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Original");
+            Write(_local, Current, "!local=Original");
+            string target = Write(Shared, Current, "!shared=Original");
             byte[] targetBytes = File.ReadAllBytes(target);
-            var settings = new TextExpanderSettings();
-            settings.Properties.SnippetsPath.Value = _local;
-            string concurrentJson = settings.ToJsonString() + Environment.NewLine;
-            var settingsFileSystem = new MockFileSystem();
-            var settingsUtils = new MutateBeforeCompensationSettingsUtils(
-                settingsFileSystem,
-                settings,
-                concurrentJson);
-            settingsUtils.SaveSettings(settings.ToJsonString(), TextExpanderSettings.ModuleName);
-            TextExpanderViewModel model = CreateViewModel(settingsUtils);
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            MockSettingsStore store = SaveInitialSettings(new MockSettingsStore
+            {
+                ThrowAfterPublication = true,
+                WrittenBeforeCompensation = EditorSettings.For(_local).ToJsonString() + Environment.NewLine,
+            });
+            TextExpanderViewModel model = CreateViewModel(store);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
 
             Assert.AreEqual(
                 "TextExpander_SnippetFolder_SettingsStateUncertain",
-                model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out string backup));
+                model.ApplyFolderChange(change, Choice.ReplaceFolder, out string backup));
 
-            Assert.AreEqual(AtomicSettingsPublicationOutcome.StateUncertain, settingsUtils.LastError?.Outcome);
+            Assert.AreEqual(AtomicSettingsPublicationOutcome.StateUncertain, store.LastError?.Outcome);
             Assert.IsFalse(string.IsNullOrEmpty(backup));
-            Assert.IsTrue(settingsFileSystem.File.Exists(backup));
-            Assert.IsTrue(settingsUtils.LastError.RecoveryPaths.Contains(backup, StringComparer.OrdinalIgnoreCase));
+            Assert.IsTrue(store.FileSystem.File.Exists(backup));
+            Assert.IsTrue(store.LastError.RecoveryPaths.Contains(backup, StringComparer.OrdinalIgnoreCase));
             CollectionAssert.AreEqual(targetBytes, File.ReadAllBytes(target));
             Assert.AreEqual(_local, model.SnippetsPath);
             Assert.AreEqual("!local", model.Snippets.Single().Trigger);
@@ -964,41 +776,25 @@ namespace ViewModelTests
         [TestMethod]
         public void UnreadableUncertainSettingsPreserveFolderAndSurfaceAllRecoveryPaths()
         {
-            string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Original");
-            string targetFolder = Path.Combine(_root, "shared");
-            var settings = new TextExpanderSettings();
-            settings.Properties.SnippetsPath.Value = _local;
-            var settingsFileSystem = new MockFileSystem();
-            var settingsUtils = new MutateBeforeCompensationSettingsUtils(
-                settingsFileSystem,
-                settings,
-                "{not-json");
-            settingsUtils.SaveSettings(settings.ToJsonString(), TextExpanderSettings.ModuleName);
+            string source = Write(_local, Current, "!local=Original");
+            MockSettingsStore store = SaveInitialSettings(new MockSettingsStore { ThrowAfterPublication = true, WrittenBeforeCompensation = "{not-json" });
             TextExpanderViewModel model = CreateViewModel(
-                settingsUtils,
-                key => key switch
-                {
-                    "TextExpander_SnippetFolder_SettingsStateUncertain" =>
-                        "Settings path: {0}. Recovery paths: {1}.",
-                    _ => key,
-                });
-            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+                store,
+                key => key == "TextExpander_SnippetFolder_SettingsStateUncertain" ? "Settings path: {0}. Recovery paths: {1}." : key);
+            TextExpanderFolderChange change = model.PrepareFolderChange(Shared);
 
-            string error = model.ApplyFolderChange(
-                change,
-                TextExpanderFolderConflictChoice.ReplaceFolder,
-                out string backup);
+            string error = model.ApplyFolderChange(change, Choice.ReplaceFolder, out string backup);
 
-            Assert.AreEqual(AtomicSettingsPublicationOutcome.StateUncertain, settingsUtils.LastError?.Outcome);
+            Assert.AreEqual(AtomicSettingsPublicationOutcome.StateUncertain, store.LastError?.Outcome);
             Assert.IsNotNull(error);
-            StringAssert.Contains(error, settingsUtils.LastError.SettingsPath);
-            foreach (string recoveryPath in settingsUtils.LastError.RecoveryPaths)
+            StringAssert.Contains(error, store.LastError.SettingsPath);
+            foreach (string recoveryPath in store.LastError.RecoveryPaths)
             {
                 StringAssert.Contains(error, recoveryPath);
-                Assert.IsTrue(settingsFileSystem.File.Exists(recoveryPath));
+                Assert.IsTrue(store.FileSystem.File.Exists(recoveryPath));
             }
 
-            string target = Path.Combine(targetFolder, TextExpanderSnippetFileNames.Current);
+            string target = Path.Combine(Shared, Current);
             Assert.AreEqual(target, backup, "The first published folder file is the only folder recovery copy and must be surfaced.");
             Assert.IsTrue(File.Exists(backup));
             Assert.AreEqual(File.ReadAllText(source), File.ReadAllText(target));
@@ -1009,16 +805,13 @@ namespace ViewModelTests
         [TestMethod]
         public void SettingsProcessChangesRefreshTheFolderAndMatchingRules()
         {
-            Write(_local, TextExpanderSnippetFileNames.Current, "!old=Old");
+            Write(_local, Current, "!old=Old");
             string nextFolder = Path.Combine(_root, "next");
-            Write(nextFolder, TextExpanderSnippetFileNames.Current, "!next=Next");
-            var latest = new TextExpanderSettings();
-            latest.Properties.SnippetsPath.Value = nextFolder;
+            Write(nextFolder, Current, "!next=Next");
+            TextExpanderSettings latest = EditorSettings.For(nextFolder);
             latest.Properties.CaseSensitive = false;
             latest.Properties.RequireWordBoundary = false;
-            using TextExpanderViewModel model = CreateViewModel(utils => utils
-                .Setup(instance => instance.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(
-                    TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(latest));
+            using TextExpanderViewModel model = CreateViewModel(latest: () => latest);
 
             model.RefreshSettings();
 
@@ -1026,19 +819,16 @@ namespace ViewModelTests
             Assert.AreEqual("!next", model.Snippets.Single().Trigger);
             Assert.IsFalse(model.CaseSensitive);
             Assert.IsFalse(model.RequireWordBoundary);
-            Assert.IsTrue(File.Exists(Path.Combine(_local, TextExpanderSnippetFileNames.Current)));
+            Assert.IsTrue(File.Exists(Path.Combine(_local, Current)));
         }
 
         [TestMethod]
         public void UnrelatedEngineOptionsDoNotInvalidateAnOpenEditor()
         {
-            Write(_local, TextExpanderSnippetFileNames.Current, "!old=Old");
-            var latest = new TextExpanderSettings();
-            latest.Properties.SnippetsPath.Value = _local;
+            Write(_local, Current, "!old=Old");
+            TextExpanderSettings latest = EditorSettings.For(_local);
             latest.Properties.InjectionBackend.Value = "type";
-            using TextExpanderViewModel model = CreateViewModel(utils => utils
-                .Setup(instance => instance.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(
-                    TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(latest));
+            using TextExpanderViewModel model = CreateViewModel(latest: () => latest);
             int revision = model.SnippetRevision;
             TextExpanderSnippetViewModel row = model.Snippets.Single();
 
@@ -1051,14 +841,11 @@ namespace ViewModelTests
         [TestMethod]
         public void MatchingRuleChangesRefreshRowsWithoutInvalidatingAnOpenDraft()
         {
-            Write(_local, TextExpanderSnippetFileNames.Current, "!a=First\n!A=Last\n!abc=Longer");
-            var latest = new TextExpanderSettings();
-            latest.Properties.SnippetsPath.Value = _local;
+            Write(_local, Current, "!a=First\n!A=Last\n!abc=Longer");
+            TextExpanderSettings latest = EditorSettings.For(_local);
             latest.Properties.CaseSensitive = false;
             latest.Properties.RequireWordBoundary = false;
-            using TextExpanderViewModel model = CreateViewModel(utils => utils
-                .Setup(instance => instance.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(
-                    TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(latest));
+            using TextExpanderViewModel model = CreateViewModel(latest: () => latest);
             int revision = model.SnippetRevision;
             TextExpanderSnippetViewModel row = model.Snippets.First();
             Assert.IsFalse(row.HasWarning);
@@ -1076,11 +863,8 @@ namespace ViewModelTests
         [TestMethod]
         public void FailedSettingsRefreshIsVisibleAndPreservesTheLoadedLibrary()
         {
-            Write(_local, TextExpanderSnippetFileNames.Current, "!old=Old");
-            using TextExpanderViewModel model = CreateViewModel(utils => utils
-                .Setup(instance => instance.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(
-                    TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName))
-                .Throws(new InvalidOperationException("The settings file could not be read consistently.")));
+            Write(_local, Current, "!old=Old");
+            using TextExpanderViewModel model = CreateViewModel(latest: () => throw new InvalidOperationException("The settings file could not be read consistently."));
             int revision = model.SnippetRevision;
 
             model.RefreshSettings();
@@ -1092,34 +876,37 @@ namespace ViewModelTests
 
         private TextExpanderViewModel CreateViewModel(
             Action<Mock<TextExpanderSettingsUtils>> configureSettings = null,
-            Action<string> openFile = null)
+            Action<string> openFile = null,
+            Func<TextExpanderSettings> latest = null)
         {
-            var settings = new TextExpanderSettings();
-            settings.Properties.SnippetsPath.Value = _local;
-            var utils = new Mock<TextExpanderSettingsUtils>(new FileSystem(), null);
-            utils.Setup(u => u.GetSettingsOrDefault<TextExpanderSettings>(TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(settings);
-            utils.Setup(u => u.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(settings);
-            utils.Setup(u => u.UpdateOptions(It.IsAny<Action<TextExpanderProperties>>())).Returns((Action<TextExpanderProperties> update) =>
-            {
-                update(settings.Properties);
-                return settings;
-            });
-            configureSettings?.Invoke(utils);
-            return CreateViewModel(utils.Object, openFile: openFile);
+            Mock<TextExpanderSettingsUtils> store = EditorSettings.Store(EditorSettings.For(_local), latest);
+            configureSettings?.Invoke(store);
+            return CreateViewModel(store.Object, openFile: openFile);
         }
 
         private TextExpanderViewModel CreateViewModel(
             TextExpanderSettingsUtils settingsUtils,
             Func<string, string> getResourceString = null,
             Action<string> openFile = null)
+            => new(settingsUtils, null, isElevated: false, getResourceString ?? (key => key), _environment, openFile);
+
+        private MockSettingsStore SaveInitialSettings(MockSettingsStore store)
         {
-            return new TextExpanderViewModel(
-                settingsUtils,
-                null,
-                isElevated: false,
-                getResourceString: getResourceString ?? (key => key),
-                storageEnvironment: _environment,
-                openFile: openFile);
+            store.InitialSettings ??= EditorSettings.For(_local);
+            store.SaveSettings(store.InitialSettings.ToJsonString(), TextExpanderSettings.ModuleName);
+            return store;
+        }
+
+        private static Moq.Language.Flow.ISetup<TextExpanderSettingsUtils> SetupSettingsSave(Mock<TextExpanderSettingsUtils> store)
+            => store.Setup(s => s.SaveSettingsOrThrow(It.IsAny<string>(), TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName));
+
+        private static string PersistedSnippetsPath(MockSettingsStore store)
+            => store.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName).Properties.SnippetsPath.Value;
+
+        private void AssertStale(TextExpanderViewModel model, TextExpanderFolderChange change, Choice choice = Choice.ReplaceFolder)
+        {
+            Assert.AreEqual(Stale, model.ApplyFolderChange(change, choice, out string backup));
+            Assert.AreEqual(string.Empty, backup);
         }
 
         private static string Write(string folder, string name, string content)
@@ -1130,24 +917,24 @@ namespace ViewModelTests
             return path;
         }
 
+        private static byte[] Utf8(string text) => Encoding.UTF8.GetBytes(text);
+
+        private static bool IsRollbackQuarantine(string path)
+            => Path.GetFileName(path).Contains(".rollback-quarantine", StringComparison.OrdinalIgnoreCase);
+
         private static string[] SplitRecoveryPaths(string paths)
             => paths.Split("; ", StringSplitOptions.RemoveEmptyEntries);
 
         private static AtomicSettingsPublicationException VerifiedPreviousSettingsFailure()
-            => new AtomicSettingsPublicationException(
-                AtomicSettingsPublicationOutcome.PreviousSettingsVerified,
-                "settings.json",
-                recoveryPaths: null,
-                new IOException("Injected settings write failure."));
+            => new(AtomicSettingsPublicationOutcome.PreviousSettingsVerified, "settings.json", recoveryPaths: null, new IOException("Injected settings write failure."));
 
         private sealed class TestStorageEnvironment : ITextExpanderStorageEnvironment
         {
             private readonly string _root;
             private Action _filesChanged;
-            private string _publishAfterMissingPath;
-            private byte[] _publishAfterMissingBytes;
-            private string _publishWhenWatchStartsPath;
-            private byte[] _publishWhenWatchStartsBytes;
+            private string _missingProbePath;
+            private Action _afterMissingProbe;
+            private Action _whenWatchStarts;
             private Action _beforeNextPublication;
             private Action _afterNextStagingWrite;
             private bool _publicationCompleted;
@@ -1167,19 +954,18 @@ namespace ViewModelTests
 
             public string DefaultSnippetsFolder { get; }
 
+            public string ReplacedCleanupPath { get; private set; }
+
             public string ExpandEnvironmentVariables(string value) => value;
 
             public bool FileExists(string path)
             {
                 string guarded = Guard(path);
                 bool exists = File.Exists(guarded);
-                if (!exists && string.Equals(guarded, _publishAfterMissingPath, StringComparison.OrdinalIgnoreCase))
+                if (!exists && string.Equals(guarded, _missingProbePath, StringComparison.OrdinalIgnoreCase))
                 {
-                    string publishPath = _publishAfterMissingPath;
-                    byte[] publishBytes = _publishAfterMissingBytes;
-                    _publishAfterMissingPath = null;
-                    _publishAfterMissingBytes = null;
-                    File.WriteAllBytes(publishPath, publishBytes);
+                    _missingProbePath = null;
+                    InvokeAndClear(ref _afterMissingProbe);
                 }
 
                 return exists;
@@ -1212,15 +998,10 @@ namespace ViewModelTests
 
             public void MoveFile(string source, string destination)
             {
-                bool quarantineMove = IsRollbackQuarantinePath(destination);
-                bool unexpectedRestore = IsRollbackQuarantinePath(source);
+                bool quarantineMove = IsRollbackQuarantine(destination);
+                bool unexpectedRestore = IsRollbackQuarantine(source);
                 bool rollback = quarantineMove || unexpectedRestore || IsRollbackSource(source);
-                if (rollback && _failNextRollback)
-                {
-                    _failNextRollback = false;
-                    throw new IOException("Injected rollback API failure.");
-                }
-
+                FailIfRollbackShouldFail(rollback);
                 if (quarantineMove)
                 {
                     InvokeAndClear(ref _beforeNextRollbackQuarantine);
@@ -1232,7 +1013,7 @@ namespace ViewModelTests
 
                 if (!rollback)
                 {
-                    InvokeBeforeNextPublication();
+                    InvokeAndClear(ref _beforeNextPublication);
                 }
 
                 File.Move(Guard(source), Guard(destination), overwrite: false);
@@ -1242,15 +1023,10 @@ namespace ViewModelTests
             public void ReplaceFile(string source, string destination, string backup)
             {
                 bool rollback = IsRollbackSource(source);
-                if (rollback && _failNextRollback)
-                {
-                    _failNextRollback = false;
-                    throw new IOException("Injected rollback API failure.");
-                }
-
+                FailIfRollbackShouldFail(rollback);
                 if (!rollback)
                 {
-                    InvokeBeforeNextPublication();
+                    InvokeAndClear(ref _beforeNextPublication);
                 }
 
                 File.Replace(Guard(source), Guard(destination), backup == null ? null : Guard(backup), ignoreMetadataErrors: true);
@@ -1266,7 +1042,7 @@ namespace ViewModelTests
                     Action<string> action = _beforeCleanupDisposition;
                     _cleanupDispositionPredicate = null;
                     _beforeCleanupDisposition = null;
-                    beforeDisposition = () => action?.Invoke(guarded);
+                    beforeDisposition = () => action(guarded);
                 }
 
                 return HandleBoundFileDeletion.TryDelete(guarded, expectedBytes, beforeDisposition);
@@ -1275,15 +1051,7 @@ namespace ViewModelTests
             public IDisposable WatchForFiles(string folder, IReadOnlyList<string> fileNames, Action changed)
             {
                 Guard(folder);
-                if (_publishWhenWatchStartsPath != null)
-                {
-                    string publishPath = _publishWhenWatchStartsPath;
-                    byte[] publishBytes = _publishWhenWatchStartsBytes;
-                    _publishWhenWatchStartsPath = null;
-                    _publishWhenWatchStartsBytes = null;
-                    File.WriteAllBytes(publishPath, publishBytes);
-                }
-
+                InvokeAndClear(ref _whenWatchStarts);
                 _filesChanged = changed;
                 return new CallbackDisposable(() =>
                 {
@@ -1298,14 +1066,15 @@ namespace ViewModelTests
 
             public void PublishAfterMissingProbe(string path, byte[] bytes)
             {
-                _publishAfterMissingPath = Guard(path);
-                _publishAfterMissingBytes = bytes;
+                string guarded = Guard(path);
+                _missingProbePath = guarded;
+                _afterMissingProbe = () => File.WriteAllBytes(guarded, bytes);
             }
 
             public void PublishWhenWatchStarts(string path, byte[] bytes)
             {
-                _publishWhenWatchStartsPath = Guard(path);
-                _publishWhenWatchStartsBytes = bytes;
+                string guarded = Guard(path);
+                _whenWatchStarts = () => File.WriteAllBytes(guarded, bytes);
             }
 
             public void BeforeNextPublication(Action action)
@@ -1329,19 +1098,25 @@ namespace ViewModelTests
             public void BeforeUnexpectedRollbackRestore(Action action)
                 => _beforeUnexpectedRollbackRestore = action;
 
-            public void BeforeNextCleanupDisposition(
-                Func<string, bool> predicate,
-                Action<string> action)
+            /// <summary>Just before cleanup deletes a file whose name matches, moves it aside and puts <paramref name="replacement"/> in its place.</summary>
+            public void ReplaceBeforeCleanupDisposition(Func<string, bool> fileNameMatches, byte[] replacement)
             {
-                _cleanupDispositionPredicate = predicate;
-                _beforeCleanupDisposition = action;
+                _cleanupDispositionPredicate = path => fileNameMatches(Path.GetFileName(path));
+                _beforeCleanupDisposition = path =>
+                {
+                    ReplacedCleanupPath = path;
+                    File.Move(path, path + ".owned");
+                    File.WriteAllBytes(path, replacement);
+                };
             }
 
-            private void InvokeBeforeNextPublication()
+            private void FailIfRollbackShouldFail(bool rollback)
             {
-                Action action = _beforeNextPublication;
-                _beforeNextPublication = null;
-                action?.Invoke();
+                if (rollback && _failNextRollback)
+                {
+                    _failNextRollback = false;
+                    throw new IOException("Injected rollback API failure.");
+                }
             }
 
             private static void InvokeAndClear(ref Action action)
@@ -1353,9 +1128,6 @@ namespace ViewModelTests
 
             private static bool IsRollbackSource(string path)
                 => Path.GetFileName(path).Contains(".backup-", StringComparison.OrdinalIgnoreCase);
-
-            private static bool IsRollbackQuarantinePath(string path)
-                => Path.GetFileName(path).Contains(".rollback-quarantine", StringComparison.OrdinalIgnoreCase);
 
             private string Guard(string path)
             {
@@ -1380,218 +1152,6 @@ namespace ViewModelTests
             }
 
             public void Dispose() => _dispose();
-        }
-
-        private abstract class MockFileSystemSettingsUtils : TextExpanderSettingsUtils
-        {
-            protected MockFileSystemSettingsUtils(MockFileSystem fileSystem)
-                : base(fileSystem)
-            {
-                FileSystem = fileSystem;
-            }
-
-            protected MockFileSystem FileSystem { get; }
-
-            protected override HandleBoundFileDeletionResult TryDeleteOwnedAtomicSaveArtifact(
-                string path,
-                byte[] ownedBytes)
-            {
-                if (!FileSystem.File.Exists(path))
-                {
-                    return new HandleBoundFileDeletionResult(
-                        HandleBoundFileDeletionStatus.NotFound,
-                        path,
-                        Error: null);
-                }
-
-                if (!FileSystem.File.ReadAllBytes(path).AsSpan().SequenceEqual(ownedBytes))
-                {
-                    return new HandleBoundFileDeletionResult(
-                        HandleBoundFileDeletionStatus.IdentityMismatch,
-                        path,
-                        new IOException($"The mock file at '{path}' is not the owned cleanup artifact."));
-                }
-
-                FileSystem.File.Delete(path);
-                return new HandleBoundFileDeletionResult(
-                    HandleBoundFileDeletionStatus.Deleted,
-                    path,
-                    Error: null);
-            }
-        }
-
-        private sealed class ThrowAfterPublicationSettingsUtils : MockFileSystemSettingsUtils
-        {
-            private readonly MockFileSystem _fileSystem;
-            private readonly TextExpanderSettings _settings;
-
-            public ThrowAfterPublicationSettingsUtils(MockFileSystem fileSystem, TextExpanderSettings settings)
-                : base(fileSystem)
-            {
-                _fileSystem = fileSystem;
-                _settings = settings;
-            }
-
-            public string StagedContents { get; private set; }
-
-            public override T GetSettingsOrDefault<T>(string powertoy = "", string fileName = SettingsUtils.DefaultFileName)
-            {
-                if (typeof(T) == typeof(TextExpanderSettings))
-                {
-                    return (T)(object)System.Text.Json.JsonSerializer.Deserialize(
-                        _settings.ToJsonString(),
-                        SettingsSerializationContext.Default.TextExpanderSettings);
-                }
-
-                return base.GetSettingsOrDefault<T>(powertoy, fileName);
-            }
-
-            public override T GetSettingsOrDefaultReadOnly<T>(string powertoy = "", string fileName = SettingsUtils.DefaultFileName)
-            {
-                if (typeof(T) == typeof(TextExpanderSettings))
-                {
-                    return (T)(object)System.Text.Json.JsonSerializer.Deserialize(
-                        _settings.ToJsonString(),
-                        SettingsSerializationContext.Default.TextExpanderSettings);
-                }
-
-                return base.GetSettingsOrDefaultReadOnly<T>(powertoy, fileName);
-            }
-
-            protected override void PublishStagedSettingsFile(
-                string stagingPath,
-                string settingsPath,
-                string backupPath,
-                bool destinationExisted)
-            {
-                StagedContents = _fileSystem.File.ReadAllText(stagingPath);
-                base.PublishStagedSettingsFile(stagingPath, settingsPath, backupPath, destinationExisted);
-                throw new IOException("Injected failure after atomic settings publication.");
-            }
-        }
-
-        private abstract class AtomicFailureSettingsUtils : MockFileSystemSettingsUtils
-        {
-            private readonly TextExpanderSettings _settings;
-
-            protected AtomicFailureSettingsUtils(MockFileSystem fileSystem, TextExpanderSettings settings)
-                : base(fileSystem)
-            {
-                _settings = settings;
-            }
-
-            public AtomicSettingsPublicationException LastError { get; private set; }
-
-            public override T GetSettingsOrDefault<T>(string powertoy = "", string fileName = SettingsUtils.DefaultFileName)
-            {
-                if (typeof(T) == typeof(TextExpanderSettings))
-                {
-                    return (T)(object)_settings;
-                }
-
-                return base.GetSettingsOrDefault<T>(powertoy, fileName);
-            }
-
-            public override void SaveSettingsOrThrow(
-                string jsonSettings,
-                string powertoy = "",
-                string fileName = SettingsUtils.DefaultFileName)
-            {
-                try
-                {
-                    base.SaveSettingsOrThrow(jsonSettings, powertoy, fileName);
-                }
-                catch (AtomicSettingsPublicationException ex)
-                {
-                    LastError = ex;
-                    throw;
-                }
-            }
-
-            protected override void PublishStagedSettingsFile(
-                string stagingPath,
-                string settingsPath,
-                string backupPath,
-                bool destinationExisted)
-            {
-                base.PublishStagedSettingsFile(stagingPath, settingsPath, backupPath, destinationExisted);
-                throw new IOException("Injected failure after atomic settings publication.");
-            }
-        }
-
-        private sealed class ThrowAfterCompensationSettingsUtils : AtomicFailureSettingsUtils
-        {
-            public ThrowAfterCompensationSettingsUtils(
-                MockFileSystem fileSystem,
-                TextExpanderSettings settings)
-                : base(fileSystem, settings)
-            {
-            }
-
-            protected override void CompensateFailedSettingsPublication(
-                string stagingPath,
-                string settingsPath,
-                string backupPath,
-                string displacedPath,
-                bool destinationExisted,
-                byte[] originalBytes,
-                byte[] publishedBytes)
-            {
-                base.CompensateFailedSettingsPublication(
-                    stagingPath,
-                    settingsPath,
-                    backupPath,
-                    displacedPath,
-                    destinationExisted,
-                    originalBytes,
-                    publishedBytes);
-                throw new IOException("Injected failure after settings restoration.");
-            }
-        }
-
-        private sealed class FailCompensationSettingsUtils : AtomicFailureSettingsUtils
-        {
-            public FailCompensationSettingsUtils(
-                MockFileSystem fileSystem,
-                TextExpanderSettings settings)
-                : base(fileSystem, settings)
-            {
-            }
-
-            protected override void CompensateFailedSettingsPublication(
-                string stagingPath,
-                string settingsPath,
-                string backupPath,
-                string displacedPath,
-                bool destinationExisted,
-                byte[] originalBytes,
-                byte[] publishedBytes)
-            {
-                throw new IOException("Injected settings restoration failure.");
-            }
-        }
-
-        private sealed class MutateBeforeCompensationSettingsUtils : AtomicFailureSettingsUtils
-        {
-            private readonly string _replacementSettings;
-
-            public MutateBeforeCompensationSettingsUtils(
-                MockFileSystem fileSystem,
-                TextExpanderSettings settings,
-                string replacementSettings)
-                : base(fileSystem, settings)
-            {
-                _replacementSettings = replacementSettings;
-            }
-
-            protected override void BeforeSettingsPublicationCompensation(
-                string stagingPath,
-                string settingsPath,
-                string backupPath,
-                bool destinationExisted)
-            {
-                FileSystem.File.WriteAllText(settingsPath, _replacementSettings);
-            }
         }
     }
 }

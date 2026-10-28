@@ -5,6 +5,7 @@
 extern alias PowerToysSettings;
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.IO.Abstractions;
@@ -105,6 +106,38 @@ public sealed class TextExpanderSettingsTests
         model.RequireWordBoundary = false;
         Assert.IsTrue(model.HasSettingsSaveError);
         Assert.IsTrue(model.RequireWordBoundary);
+    }
+
+    [TestMethod]
+    public void MinimumLengthToPasteAppliesOnlyToAutomatic()
+    {
+        var settings = new TextExpanderSettings();
+        var store = new Mock<TextExpanderSettingsUtils>(new FileSystem(), null);
+        store.Setup(instance => instance.UpdateOptions(It.IsAny<Action<TextExpanderProperties>>()))
+            .Returns((Action<TextExpanderProperties> update) =>
+            {
+                update(settings.Properties);
+                return settings;
+            });
+        TextExpanderViewModel model = Create(() => { }, settingsStore: store);
+        var changed = new List<string>();
+        model.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
+        Assert.IsTrue(model.IsClipboardThresholdEnabled, "Automatic is the default.");
+
+        model.InjectionBackendIndex = 1;
+        Assert.AreEqual("clipboard", settings.Properties.InjectionBackend.Value);
+        Assert.IsFalse(model.IsClipboardThresholdEnabled, "Always paste ignores the length.");
+        CollectionAssert.Contains(changed, nameof(TextExpanderViewModel.IsClipboardThresholdEnabled));
+
+        model.InjectionBackendIndex = 2;
+        Assert.AreEqual("type", settings.Properties.InjectionBackend.Value);
+        Assert.IsFalse(model.IsClipboardThresholdEnabled, "Always type ignores the length.");
+
+        changed.Clear();
+        model.InjectionBackendIndex = 0;
+        Assert.AreEqual("auto", settings.Properties.InjectionBackend.Value);
+        Assert.IsTrue(model.IsClipboardThresholdEnabled, "Automatic pastes or types by length.");
+        CollectionAssert.Contains(changed, nameof(TextExpanderViewModel.IsClipboardThresholdEnabled));
     }
 
     private static TextExpanderViewModel Create(

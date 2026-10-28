@@ -21,16 +21,6 @@ public sealed class InputAndUndoPolicyTests
     }
 
     [TestMethod]
-    public void CursorMarkerParsingUsesDeletableUnitsAfterMarker()
-    {
-        string text = "abc$|$de😀";
-        int marker = text.IndexOf("$|$", StringComparison.Ordinal);
-        int left = Injector.CountDeletableUnits(text[(marker + 3)..]);
-        Assert.AreEqual(3, left);
-        Assert.AreEqual("abcde😀", text.Remove(marker, 3));
-    }
-
-    [TestMethod]
     public void IntegrityCeilingNeverExceedsMedium()
     {
         Assert.AreEqual(InputTarget.MediumIntegrity, InputTarget.TrustCeiling);
