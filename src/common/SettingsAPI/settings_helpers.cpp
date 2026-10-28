@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "settings_helpers.h"
+#include "../utils/build_identity.h"
 
 namespace PTSettingsHelper
 {
@@ -8,7 +9,7 @@ namespace PTSettingsHelper
     constexpr inline const wchar_t* last_version_run_filename = L"last_version_run.json";
     constexpr inline const wchar_t* opened_at_first_launch_json_field_name = L"openedAtFirstLaunch";
     constexpr inline const wchar_t* last_version_json_field_name = L"last_version";
-    constexpr inline const wchar_t* DataDiagnosticsRegKey = L"Software\\Classes\\PowerToys";
+    constexpr inline const wchar_t* DataDiagnosticsRegKey = PowerToysBuildIdentity::DiagnosticsKey;
     constexpr inline const wchar_t* DataDiagnosticsRegValueName = L"AllowDataDiagnostics";
 
     std::wstring get_root_save_folder_location()
@@ -18,7 +19,7 @@ namespace PTSettingsHelper
         std::wstring result{ local_app_path };
         CoTaskMemFree(local_app_path);
 
-        result += L"\\Microsoft\\PowerToys";
+        result += L"\\" + std::wstring(PowerToysBuildIdentity::SettingsFolder);
         std::filesystem::path save_path(result);
         if (!std::filesystem::exists(save_path))
         {
@@ -34,7 +35,7 @@ namespace PTSettingsHelper
         std::wstring result{ local_app_path };
         CoTaskMemFree(local_app_path);
 
-        result += L"\\Microsoft\\PowerToys";
+        result += L"\\" + std::wstring(PowerToysBuildIdentity::SettingsFolder);
         std::filesystem::path save_path(result);
         if (!std::filesystem::exists(save_path))
         {

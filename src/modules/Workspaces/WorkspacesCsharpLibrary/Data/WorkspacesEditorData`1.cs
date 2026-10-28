@@ -15,7 +15,7 @@ public class WorkspacesEditorData<T>
 {
     [RequiresUnreferencedCode("JSON serialization uses reflection-based serializer.")]
     [RequiresDynamicCode("JSON serialization uses reflection-based serializer.")]
-    public T Read(string file)
+    public T Import(string file)
     {
         IOUtils ioUtils = new();
         string data = ioUtils.ReadFile(file);

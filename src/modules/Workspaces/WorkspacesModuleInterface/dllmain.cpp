@@ -9,6 +9,8 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
+#include <common/utils/owner_process.h>
+#include <common/utils/process_path.h>
 
 #include <WorkspacesLib/trace.h>
 #include <WorkspacesLib/WorkspacesData.h>
@@ -190,6 +192,7 @@ public:
         app_key = L"Workspaces";
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", "Workspaces");
         init_settings();
+        Logger::trace(L"Workspaces settings initialized");
 
         m_hotkeyEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::WORKSPACES_HOTKEY_EVENT);
         if (!m_hotkeyEvent)
@@ -260,6 +263,7 @@ private:
         if (m_hProcess)
         {
             TerminateProcess(m_hProcess, 0);
+            CloseHandle(m_hProcess);
             m_hProcess = nullptr;
         }
     }
@@ -273,6 +277,11 @@ private:
             // Load and parse the settings file for this PowerToy.
             PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
             parse_hotkeys(settings);
+        }
+        catch (const winrt::hresult_error& error)
+        {
+            Logger::error(L"Workspaces settings initialization failed: 0x{:08X} {}", static_cast<uint32_t>(error.code()), error.message());
+            throw;
         }
         catch (std::exception&)
         {
@@ -325,21 +334,22 @@ private:
         std::wstring executable_args = L"";
         executable_args.append(std::to_wstring(powertoys_pid));
 
-        SHELLEXECUTEINFOW sei{ sizeof(sei) };
-        sei.fMask = SEE_MASK_NOCLOSEPROCESS;
-        sei.lpFile = L"PowerToys.WorkspacesEditor.exe";
-        sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = executable_args.data();
-        if (ShellExecuteExW(&sei))
+        const auto directory = std::filesystem::path(get_module_folderpath());
+        wil::unique_handle editor;
+        const auto error = owner_process::Start(directory / workspacesEditorPath, executable_args, directory, editor);
+        if (error == ERROR_SUCCESS)
         {
-            Logger::trace("Successfully started the Workspaces Editor");
+            Logger::trace("Successfully started the Workspaces Editor as its non-elevated owner");
+            if (m_hProcess)
+            {
+                CloseHandle(m_hProcess);
+            }
+            m_hProcess = editor.release();
         }
         else
         {
-            Logger::error(L"Workspaces Editor failed to start. {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"Workspaces Editor owner-context launch failed. {}", get_last_error_or_default(error));
         }
-
-        m_hProcess = sei.hProcess;
     }
 
     bool is_process_running() const

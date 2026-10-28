@@ -17,6 +17,7 @@ using System.Windows;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
+using PowerToys.ProtectedStorage;
 using WorkspacesCsharpLibrary;
 using WorkspacesCsharpLibrary.Data;
 using WorkspacesCsharpLibrary.Utils;
@@ -171,10 +172,15 @@ namespace WorkspacesEditor.ViewModels
             this.editedProject = editedProject;
         }
 
-        public void SaveProject(Project projectToSave)
+        public async Task<bool> SaveProjectAsync(Project projectToSave)
         {
-            SendEditTelemetryEvent(projectToSave, editedProject);
+            var candidates = Workspaces.Select(project => project.Id == projectToSave.Id ? projectToSave : project).ToList();
+            if (!await WorkspacesFailureViewModel.ExecuteAsync(() => _workspacesEditorIO.SerializeWorkspacesAsync(candidates)))
+            {
+                return false;
+            }
 
+            SendEditTelemetryEvent(projectToSave, editedProject);
             if (editedProject.Name != projectToSave.Name)
             {
                 RemoveShortcut(editedProject);
@@ -189,8 +195,9 @@ namespace WorkspacesEditor.ViewModels
 
             editedProject.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs("AppsCountString"));
             editedProject.Initialize(App.GetCurrentTheme());
-            _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
             ApplyShortcut(editedProject);
+            await ReleasePreviewAsync();
+            return true;
         }
 
         private string GetDesktopShortcutAddress(Project project) => Path.Combine(FolderUtils.Desktop(), project.Name + ".lnk");
@@ -259,9 +266,18 @@ namespace WorkspacesEditor.ViewModels
         {
             CancelSnapshot();
 
-            await Task.Run(() => RunSnapshotTool(_isExistingProjectLaunched));
+            Project project = null;
+            if (!await WorkspacesFailureViewModel.ExecuteAsync(async () =>
+            {
+                var id = await RunSnapshotToolAsync(_isExistingProjectLaunched);
+                await _workspacesEditorIO.ReleasePreviewAsync();
+                _workspacesEditorIO.PreviewId = id;
+                project = await _workspacesEditorIO.ParsePreviewAsync();
+            }))
+            {
+                return;
+            }
 
-            Project project = _workspacesEditorIO.ParseTempProject();
             if (project != null)
             {
                 if (_isExistingProjectLaunched)
@@ -339,22 +355,33 @@ namespace WorkspacesEditor.ViewModels
             project.IsShortcutNeeded = File.Exists(shortcutAddress);
         }
 
-        public void AddNewProject(Project project)
+        public async Task<bool> AddNewProjectAsync(Project project)
         {
+            var candidates = Workspaces.Append(project).ToList();
+            if (!await WorkspacesFailureViewModel.ExecuteAsync(() => _workspacesEditorIO.SerializeWorkspacesAsync(candidates)))
+            {
+                return false;
+            }
+
             project.Applications.RemoveAll(app => !app.IsIncluded);
             project.Initialize(App.GetCurrentTheme());
             Workspaces.Add(project);
-            _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
-            TempProjectData.DeleteTempFile();
+            await ReleasePreviewAsync();
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
             ApplyShortcut(project);
             SendCreateTelemetryEvent(project);
+            return true;
         }
 
-        public void DeleteProject(Project selectedProject)
+        public async Task DeleteProjectAsync(Project selectedProject)
         {
+            var candidates = Workspaces.Where(project => project != selectedProject).ToList();
+            if (!await WorkspacesFailureViewModel.ExecuteAsync(() => _workspacesEditorIO.SerializeWorkspacesAsync(candidates)))
+            {
+                return;
+            }
+
             Workspaces.Remove(selectedProject);
-            _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
             RemoveShortcut(selectedProject);
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
             SendDeleteTelemetryEvent();
@@ -408,8 +435,12 @@ namespace WorkspacesEditor.ViewModels
                 return;
             }
 
-            await Task.Run(() => RunLauncher(project.Id, InvokePoint.EditorButton));
-            if (_workspacesEditorIO.ParseWorkspaces(this).Result == true)
+            if (!await WorkspacesFailureViewModel.ExecuteAsync(() => RunLauncherAsync(project.Id, InvokePoint.EditorButton), allowRetry: false))
+            {
+                return;
+            }
+
+            if (editedProject == null && await WorkspacesFailureViewModel.ExecuteAsync(async () => await _workspacesEditorIO.ParseWorkspacesAsync(this)))
             {
                 OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
             }
@@ -434,38 +465,55 @@ namespace WorkspacesEditor.ViewModels
             }
         }
 
-        private void RunSnapshotTool(bool isExistingProjectLaunched)
+        private async Task<Guid> RunSnapshotToolAsync(bool isExistingProjectLaunched)
         {
-            Process process = new Process();
+            using Process process = new Process();
 
             process.StartInfo = ModuleProcess.CreateStartInfo(
                 "PowerToys.WorkspacesSnapshotTool.exe",
                 isExistingProjectLaunched ? $"{(int)InvokePoint.LaunchAndEdit}" : string.Empty);
+            process.StartInfo.RedirectStandardOutput = true;
 
-            try
+            if (!process.Start())
             {
-                process.Start();
-                process.WaitForExit();
+                throw new InvalidOperationException(Properties.Resources.ProtectedStorageCaptureFailed);
             }
-            catch (Exception ex)
+
+            // The ID arrives over the anonymous pipe inherited by this exact child, not a file.
+            var outputTask = process.StandardOutput.ReadToEndAsync();
+            await process.WaitForExitAsync();
+            var output = await outputTask;
+            if (process.ExitCode != 0 || !Guid.TryParse(output.Trim(), out var id) || id == Guid.Empty)
             {
-                MessageBox.Show($"An error occurred: {ex.Message}");
+                throw new InvalidOperationException(Properties.Resources.ProtectedStorageCaptureFailed);
             }
+
+            return id;
         }
 
-        private void RunLauncher(string projectId, InvokePoint invokePoint)
+        private async Task RunLauncherAsync(string projectId, InvokePoint invokePoint)
         {
-            Process process = new Process();
-            process.StartInfo = ModuleProcess.CreateStartInfo("PowerToys.WorkspacesLauncher.exe", $"{projectId} {(int)invokePoint}");
+            using Process process = new Process();
+            string preview = invokePoint == InvokePoint.LaunchAndEdit && _workspacesEditorIO.PreviewId is Guid id ? $" --preview={id:D}" : string.Empty;
+            process.StartInfo = ModuleProcess.CreateStartInfo("PowerToys.WorkspacesLauncher.exe", $"{projectId} {(int)invokePoint}{preview}");
 
             try
             {
-                process.Start();
-                process.WaitForExit();
+                if (!process.Start())
+                {
+                    throw new ProtectedStorageException("LaunchFailed");
+                }
             }
-            catch (Exception ex)
+            catch (Win32Exception error)
             {
-                MessageBox.Show($"An error occurred: {ex.Message}");
+                throw new ProtectedStorageException("LaunchFailed", nativeCode: error.NativeErrorCode, innerException: error);
+            }
+
+            await process.WaitForExitAsync();
+            if (process.ExitCode != 0)
+            {
+                Logger.LogError($"Workspaces Launcher exited with native code {process.ExitCode}.");
+                throw new ProtectedStorageException(process.ExitCode is 5 or 170 ? "LaunchBusy" : "LaunchFailed", nativeCode: process.ExitCode);
             }
         }
 
@@ -517,11 +565,26 @@ namespace WorkspacesEditor.ViewModels
             _mainWindow.WindowState = System.Windows.WindowState.Normal;
         }
 
-        internal async void LaunchAndEdit(Project project)
+        internal async Task LaunchAndEditAsync(Project project)
         {
-            await Task.Run(() => RunLauncher(project.Id, InvokePoint.LaunchAndEdit));
+            if (!await WorkspacesFailureViewModel.ExecuteAsync(
+                async () =>
+                {
+                    await _workspacesEditorIO.SerializePreviewAsync(project);
+                    await RunLauncherAsync(project.Id, InvokePoint.LaunchAndEdit);
+                },
+                allowRetry: false))
+            {
+                return;
+            }
+
             projectBeforeLaunch = new Project(project);
             EnterSnapshotMode(true);
+        }
+
+        internal async Task ReleasePreviewAsync()
+        {
+            await WorkspacesFailureViewModel.ExecuteAsync(() => _workspacesEditorIO.ReleasePreviewAsync());
         }
 
         private void SendCreateTelemetryEvent(Project project)

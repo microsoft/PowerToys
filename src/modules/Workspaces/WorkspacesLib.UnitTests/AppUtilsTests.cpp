@@ -8,6 +8,46 @@ namespace WorkspacesLibUnitTests
     TEST_CLASS(AppUtilsTests)
     {
     public:
+        TEST_METHOD(WorkspaceInventoryMatchesAuthenticatedPlanWithoutFullShellEnumeration)
+        {
+            WorkspacesData::WorkspacesProject project{};
+            WorkspacesData::WorkspacesProject::Application app{};
+            app.name = L"Captured application";
+            app.path = L"C:\\WorkspaceTest\\Captured.exe";
+            app.packageFullName = L"Example.Package_1.0.0.0_x64__example";
+            app.appUserModelId = L"Example.Package_example!App";
+            app.canLaunchElevated = true;
+            project.apps = { app, app };
+            const auto inventory = Utils::Apps::GetWorkspaceApps(project);
+            Assert::AreEqual(size_t{ 1 }, inventory.size());
+            const auto found = Utils::Apps::GetApp(app.path, GetCurrentProcessId(), inventory);
+            Assert::IsTrue(found.has_value());
+            Assert::AreEqual(app.name, found->name);
+            Assert::AreEqual(app.path, found->installPath);
+            Assert::AreEqual(app.packageFullName, found->packageFullName);
+            Assert::IsTrue(found->canLaunchElevated);
+        }
+
+        TEST_METHOD(WorkspaceInventoryPreservesSteamAndDoesNotAssignOnePwaToEveryBrowserWindow)
+        {
+            WorkspacesData::WorkspacesProject project{};
+            WorkspacesData::WorkspacesProject::Application game{};
+            game.name = L"Game";
+            game.path = L"C:\\Games\\Example\\game.exe";
+            game.appUserModelId = L"steam://rungameid/123";
+            WorkspacesData::WorkspacesProject::Application pwa{};
+            pwa.name = L"Work app (Edge)";
+            pwa.path = L"C:\\Browser\\msedge.exe";
+            pwa.pwaAppId = L"example-pwa";
+            project.apps = { game, pwa };
+            const auto inventory = Utils::Apps::GetWorkspaceApps(project);
+            Assert::AreEqual(size_t{ 2 }, inventory.size());
+            Assert::IsTrue(inventory[0].IsSteamGame());
+            Assert::AreEqual(game.appUserModelId, inventory[0].protocolPath);
+            Assert::IsTrue(inventory[1].IsEdge());
+            Assert::IsTrue(inventory[1].pwaAppId.empty());
+        }
+
         TEST_METHOD(GetCurrentFolder_ReturnsNonEmptyPath)
         {
             // Act

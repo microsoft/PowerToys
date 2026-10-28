@@ -221,6 +221,76 @@ namespace Utils
             return IterateAppsFolder();
         }
 
+        AppList GetWorkspaceApps(const WorkspacesData::WorkspacesProject& project, bool refreshPackages)
+        {
+            AppList result;
+            std::optional<AppList> legacyInventory;
+            for (const auto& app : project.apps)
+            {
+                if (std::any_of(result.begin(), result.end(), [&](const AppData& entry) {
+                    return entry.name == app.name && entry.appUserModelId == app.appUserModelId &&
+                        entry.installPath == app.path;
+                }))
+                    continue;
+                AppData data{
+                    .name = app.name,
+                    .installPath = app.path,
+                    .packageFullName = app.packageFullName,
+                    .appUserModelId = app.appUserModelId,
+                    .canLaunchElevated = app.canLaunchElevated,
+                };
+                if (app.appUserModelId.starts_with(NonLocalizable::SteamUrlProtocol))
+                    data.protocolPath = app.appUserModelId;
+                if (refreshPackages && !app.packageFullName.empty())
+                {
+                    CComPtr<IShellItem> item;
+                    auto hr = app.appUserModelId.empty() ? E_INVALIDARG :
+                        SHCreateItemFromParsingName((L"shell:AppsFolder\\" + app.appUserModelId).c_str(), nullptr, IID_PPV_ARGS(&item));
+                    CComPtr<IPropertyStore> store;
+                    if (SUCCEEDED(hr))
+                        hr = item->BindToHandler(nullptr, BHID_PropertyStore, IID_PPV_ARGS(&store));
+                    std::wstring package, path;
+                    if (SUCCEEDED(hr))
+                    {
+                        for (auto& entry : { std::pair{ NonLocalizable::PackageFullNameProp, &package },
+                                             std::pair{ NonLocalizable::PackageInstallPathProp, &path } })
+                        {
+                            PROPERTYKEY key{};
+                            hr = PSGetPropertyKeyFromName(entry.first, &key);
+                            if (FAILED(hr)) break;
+                            PROPVARIANT value{};
+                            hr = store->GetValue(key, &value);
+                            if (SUCCEEDED(hr))
+                            {
+                                CComHeapPtr<wchar_t> text;
+                                hr = PropVariantToStringAlloc(value, &text);
+                                if (SUCCEEDED(hr)) *entry.second = text.m_pData;
+                            }
+                            PropVariantClear(&value);
+                            if (FAILED(hr)) break;
+                        }
+                    }
+                    if (SUCCEEDED(hr) && !package.empty() && !path.empty())
+                    {
+                        data.packageFullName = std::move(package);
+                        data.installPath = std::move(path);
+                    }
+                    else
+                    {
+                        if (SUCCEEDED(hr)) hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
+                        Logger::warn(L"Targeted workspace package lookup failed (HRESULT=0x{:08X}); using the legacy application inventory.",
+                            static_cast<uint32_t>(hr));
+                        if (!legacyInventory) legacyInventory = GetAppsList();
+                        const auto found = std::find_if(legacyInventory->begin(), legacyInventory->end(),
+                            [&](const AppData& entry) { return entry.name == app.name; });
+                        if (found != legacyInventory->end()) data = *found;
+                    }
+                }
+                result.push_back(std::move(data));
+            }
+            return result;
+        }
+
         DWORD GetParentPid(DWORD pid)
         {
             DWORD res = 0;

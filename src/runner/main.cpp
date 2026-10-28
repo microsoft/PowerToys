@@ -20,6 +20,7 @@
 #include <common/updating/installer.h>
 #include <common/updating/updating.h>
 #include <common/updating/updateState.h>
+#include <common/updating/protectedStorageUpdate.h>
 #include <common/utils/appMutex.h>
 #include <common/utils/elevation.h>
 #include <common/utils/os-detect.h>
@@ -193,7 +194,7 @@ wil::unique_hfile create_settings_cli_lock()
 
 void open_menu_from_another_instance(std::optional<std::string> settings_window)
 {
-    const HWND hwnd_main = FindWindowW(L"PToyTrayIconWindow", nullptr);
+    const HWND hwnd_main = FindWindowW(pt_tray_icon_window_class, nullptr);
     LPARAM msg = static_cast<LPARAM>(ESettingsWindowNames::Dashboard);
     if (settings_window.has_value() && settings_window.value() != "")
     {
@@ -231,6 +232,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
     int result = -1;
     try
     {
+#ifndef POWERTOYS_LOCAL_E2E_BUILD
         if (!openOobe && showRestartNotificationAfterUpdate)
         {
             std::thread{
@@ -265,6 +267,9 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
                 notifications::show_toast(GET_RESOURCE_STRING(IDS_OLDER_MSIX_UNINSTALLED).c_str(), L"PowerToys");
             }
         } }.detach();
+#else
+        Logger::info("Local Workspaces E2E build: automatic updates, AI probing and legacy MSIX removal are disabled.");
+#endif
 
         chdir_current_executable();
 
@@ -273,12 +278,17 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         // This is done here too because a user-scope installer won't be able to remove the driver registration due to lack of permissions.
         if (isProcessElevated)
         {
+#ifndef POWERTOYS_LOCAL_E2E_BUILD
             clean_video_conference();
+#endif
         }
 
         // Load PowerToys DLLs
 
         std::vector<std::wstring_view> knownModules = {
+#ifdef POWERTOYS_LOCAL_E2E_BUILD
+            L"PowerToys.WorkspacesModuleInterface.dll",
+#else
             L"PowerToys.FancyZonesModuleInterface.dll",
             L"PowerToys.powerpreview.dll",
             L"WinUI3Apps/PowerToys.ImageResizerExt.dll",
@@ -316,6 +326,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.PowerDisplayModuleInterface.dll",
             L"PowerToys.GrabAndMoveModuleInterface.dll",
             L"PowerToys.AltWindowCycle.dll",
+#endif
         };
 
         for (auto moduleSubdir : knownModules)
@@ -329,12 +340,12 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             {
                 std::wstring errorMessage = POWER_TOYS_MODULE_LOAD_FAIL;
                 errorMessage += moduleSubdir;
-                
+
 #ifdef _DEBUG
                 // In debug mode, simply log the warning and continue execution.
                 // This contrasts with the past approach where developers had to build all modules
                 // without errors before debugging—slowing down quick clone-and-fix iterations.
-                Logger::warn(L"Debug mode: {}", errorMessage);
+                Logger::warn(L"Debug mode: {} (HRESULT=0x{:08X})", errorMessage, static_cast<uint32_t>(winrt::to_hresult()));
 #else
                 // In release mode, show error dialog as before
                 MessageBoxW(NULL,
@@ -613,6 +624,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
             Logger::info("Runner module shutdown completed");
         });
 
+#ifndef POWERTOYS_LOCAL_E2E_BUILD
         std::thread{ [] {
             auto state = UpdateState::read();
             if (state.state == UpdateState::upToDate)
@@ -620,6 +632,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
                 updating::cleanup_updates();
             }
         } }.detach();
+#endif
 
         auto general_settings = load_general_settings();
 
@@ -629,6 +642,38 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         const bool with_dont_elevate_arg = cmdLine.find("--dont-elevate") != std::string::npos;
         const bool run_elevated_setting = general_settings.GetNamedBoolean(L"run_elevated", false);
         const bool with_restartedElevated_arg = cmdLine.find("--restartedElevated") != std::string::npos;
+
+#ifndef POWERTOYS_LOCAL_E2E_BUILD
+        if (!(elevated && with_dont_elevate_arg && !run_elevated_setting) &&
+            (elevated || !run_elevated_setting || with_dont_elevate_arg || with_restartedElevated_arg))
+        {
+            const auto installDirectory = std::filesystem::path(get_module_folderpath());
+            try
+            {
+                std::thread{ [installDirectory] {
+                    try
+                    {
+                        winrt::init_apartment(winrt::apartment_type::multi_threaded);
+                        const auto apartment = wil::scope_exit([] { winrt::uninit_apartment(); });
+                        // Never provision or elevate from this background path.
+                        updating::SynchronizeProtectedStorageForOwner(installDirectory);
+                    }
+                    catch (const winrt::hresult_error& error)
+                    {
+                        Logger::error(L"Protected-storage startup coordination failed: {}", error.message());
+                    }
+                    catch (const std::exception& error)
+                    {
+                        Logger::error("Protected-storage startup coordination failed: {}", error.what());
+                    }
+                } }.detach();
+            }
+            catch (const std::exception& error)
+            {
+                Logger::error("Could not start protected-storage background coordination: {}", error.what());
+            }
+        }
+#endif
 
         // Update scoobe behavior based on setting and gpo
         bool scoobeSettingDisabled = general_settings.GetNamedBoolean(L"show_whats_new_after_updates", true) == false;

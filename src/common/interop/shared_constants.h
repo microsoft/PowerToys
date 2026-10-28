@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "../utils/build_identity.h"
 
 namespace CommonSharedConstants
 {
@@ -10,10 +11,14 @@ namespace CommonSharedConstants
     // Fake key code to represent VK_WIN.
     inline const DWORD VK_WIN_BOTH = 0x104;
 
-    const wchar_t APPDATA_PATH[] = L"Microsoft\\PowerToys";
+    inline const auto& APPDATA_PATH = PowerToysBuildIdentity::SettingsFolder;
 
     // Path to the event used by runner to terminate Settings app
+#ifdef POWERTOYS_LOCAL_E2E_BUILD
+    const wchar_t TERMINATE_SETTINGS_SHARED_EVENT[] = L"Local\\PowerToysLocalE2ETerminateSettingsEvent-c34cb661-2e69-4613-a1f8-4e39c25d7ef6";
+#else
     const wchar_t TERMINATE_SETTINGS_SHARED_EVENT[] = L"Local\\PowerToysRunnerTerminateSettingsEvent-c34cb661-2e69-4613-a1f8-4e39c25d7ef6";
+#endif
 
     // Path to the event used by PowerLauncher
     const wchar_t POWER_LAUNCHER_SHARED_EVENT[] = L"Local\\PowerToysRunInvokeEvent-30f26ad7-d36d-4c0e-ab02-68bb5ff3c4ab";
@@ -56,8 +61,13 @@ namespace CommonSharedConstants
     const wchar_t FANCY_ZONES_EDITOR_TOGGLE_EVENT[] = L"Local\\FancyZones-ToggleEditorEvent-1e174338-06a3-472b-874d-073b21c62f14";
 
     // Path to the event used by Workspaces
+#ifdef POWERTOYS_LOCAL_E2E_BUILD
+    const wchar_t WORKSPACES_LAUNCH_EDITOR_EVENT[] = L"Local\\PowerToysLocalE2E-Workspaces-LaunchEditorEvent";
+    const wchar_t WORKSPACES_HOTKEY_EVENT[] = L"Local\\PowerToysLocalE2E-Workspaces-HotkeyEvent";
+#else
     const wchar_t WORKSPACES_LAUNCH_EDITOR_EVENT[] = L"Local\\Workspaces-LaunchEditorEvent-a55ff427-cf62-4994-a2cd-9f72139296bf";
     const wchar_t WORKSPACES_HOTKEY_EVENT[] = L"Local\\PowerToys-Workspaces-HotkeyEvent-2625C3C8-BAC9-4DB3-BCD6-3B4391A26FD0";
+#endif
 
     const wchar_t SHOW_HOSTS_EVENT[] = L"Local\\Hosts-ShowHostsEvent-5a0c0aae-5ff5-40f5-95c2-20e37ed671f0";
 
@@ -194,4 +204,3 @@ namespace CommonSharedConstants
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;
 }
-

@@ -45,7 +45,7 @@ public sealed class WorkspaceService : ModuleServiceBase, IWorkspaceService
 
     public Task<OperationResult> LaunchWorkspaceAsync(string workspaceId, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(workspaceId))
+        if (!Guid.TryParse(workspaceId, out var id) || id == Guid.Empty)
         {
             return Task.FromResult(OperationResult.Fail("Workspace id is required."));
         }
@@ -61,7 +61,7 @@ public sealed class WorkspaceService : ModuleServiceBase, IWorkspaceService
             var launcherPath = Path.Combine(powertoysBaseDir, "PowerToys.WorkspacesLauncher.exe");
             var startInfo = new ProcessStartInfo(launcherPath)
             {
-                Arguments = workspaceId,
+                Arguments = id.ToString("B"),
                 UseShellExecute = true,
             };
 
@@ -80,17 +80,17 @@ public sealed class WorkspaceService : ModuleServiceBase, IWorkspaceService
         return Task.FromResult(OperationResult.Fail("Snapshot is not implemented for Workspaces."));
     }
 
-    public Task<OperationResult<IReadOnlyList<ProjectWrapper>>> GetWorkspacesAsync(CancellationToken cancellationToken = default)
+    public async Task<OperationResult<IReadOnlyList<ProjectWrapper>>> GetWorkspacesAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            var items = WorkspacesStorage.Load();
+            var items = await WorkspacesStorage.LoadAsync(cancellationToken).ConfigureAwait(false);
 
-            return Task.FromResult(OperationResults.Ok<IReadOnlyList<ProjectWrapper>>(items));
+            return OperationResults.Ok<IReadOnlyList<ProjectWrapper>>(items);
         }
         catch (Exception ex)
         {
-            return Task.FromResult(OperationResults.Fail<IReadOnlyList<ProjectWrapper>>($"Failed to read workspaces: {ex.Message}"));
+            return OperationResults.Fail<IReadOnlyList<ProjectWrapper>>($"Failed to read workspaces: {ex.Message} Open Workspaces Editor to set up protected storage or retry.");
         }
     }
 }

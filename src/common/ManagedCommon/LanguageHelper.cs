@@ -12,7 +12,11 @@ namespace ManagedCommon
 {
     public static class LanguageHelper
     {
+#if POWERTOYS_LOCAL_E2E_BUILD
+        public const string SettingsFilePath = "\\Microsoft\\PowerToysLocalE2E\\";
+#else
         public const string SettingsFilePath = "\\Microsoft\\PowerToys\\";
+#endif
         public const string SettingsFile = "language.json";
 
         internal sealed class OutGoingLanguageSettings

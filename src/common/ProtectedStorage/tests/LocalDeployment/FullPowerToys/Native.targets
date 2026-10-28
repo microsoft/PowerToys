@@ -1,0 +1,26 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <LocalE2EDirectory>$(MSBuildThisFileDirectory)..\</LocalE2EDirectory>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(PowerToysLocalE2E)' == 'true'">
+    <ClCompile>
+      <PreprocessorDefinitions>POWERTOYS_LOCAL_E2E_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(PowerToysLocalE2E)' == 'true' And $([System.Text.RegularExpressions.Regex]::IsMatch('$(MSBuildProjectName)', '^(ProtectedStorage\.Client|WorkspacesLib|WorkspacesCLI|WorkspacesLauncher|WorkspacesSnapshotTool|WorkspacesWindowArranger|WorkspacesModuleInterface)$'))">
+    <ClCompile>
+      <ForcedIncludeFiles>$(LocalE2EDirectory)Identity\ProtectedStorageIdentity.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup Condition="'$(PowerToysLocalE2E)' == 'true'">
+    <_ProductionStorageCommon Include="@(ProjectReference->WithMetadataValue('Filename', 'ProtectedStorage.Common'))" />
+    <ProjectReference Remove="@(_ProductionStorageCommon)" />
+    <ProjectReference Include="$(LocalE2EDirectory)Native\LocalCommon.vcxproj" Condition="'@(_ProductionStorageCommon)' != ''">
+      <Project>{CAB37E36-6B9A-4217-9D0A-A39A0C139C01}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Target Name="ValidateLocalE2ENativeBuild" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(PowerToysLocalE2E)' != 'true' Or '$(Configuration)' != 'Debug' Or '$(CIBuild)' == 'true'"
+           Text="The local PowerToys E2E target is a non-shipping Debug build only." />
+  </Target>
+</Project>

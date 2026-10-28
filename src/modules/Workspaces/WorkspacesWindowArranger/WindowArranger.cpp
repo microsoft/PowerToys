@@ -202,15 +202,15 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
 
         auto data = Utils::Apps::GetApp(processPath, pid, m_installedApps);
 
+        if (!data.has_value())
+        {
+            continue;
+        }
+
         if (!data->IsSteamGame() && !WindowUtils::HasThickFrame(window))
         {
             // Only care about steam games if it has no thick frame to remain consistent with
             // the behavior as before.
-            continue;
-        }
-
-        if (!data.has_value())
-        {
             continue;
         }
 
@@ -276,7 +276,7 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project, std::u
     m_operationId(std::move(operationId)),
     m_windowsBefore(WindowEnumerator::Enumerate(WindowFilter::Filter)),
     m_monitors(MonitorUtils::IdentifyMonitors()),
-    m_installedApps(Utils::Apps::GetAppsList()),
+    m_installedApps(Utils::Apps::GetWorkspaceApps(m_project)),
     m_ipcHelper(cliPipe ? nullptr : std::make_unique<IPCHelper>(IPCHelperStrings::WindowArrangerPipeName, IPCHelperStrings::LauncherArrangerPipeName, std::bind(&WindowArranger::receiveIpcMessage, this, std::placeholders::_1))),
     m_launchingStatus(m_project)
 {

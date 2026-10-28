@@ -7,6 +7,7 @@
 #include <taskschd.h>
 #include <sddl.h>
 #include <common/logger/logger.h>
+#include <common/utils/build_identity.h>
 
 // Helper macros from wix.
 #define ExitOnFailure(x, s, ...) \
@@ -122,14 +123,14 @@ bool create_auto_start_task_for_this_user(bool runElevated)
 
     // ------------------------------------------------------
     // Get the PowerToys task folder. Creates it if it doesn't exist.
-    hr = pService->GetFolder(_bstr_t(L"\\PowerToys"), &pTaskFolder);
+    hr = pService->GetFolder(_bstr_t(PowerToysBuildIdentity::StartupTaskFolder), &pTaskFolder);
     if (FAILED(hr))
     {
         // Folder doesn't exist. Get the Root folder and create the PowerToys subfolder.
         ITaskFolder* pRootFolder = NULL;
         hr = pService->GetFolder(_bstr_t(L"\\"), &pRootFolder);
         ExitOnFailure(hr, "Cannot get Root Folder pointer: {:x}", hr);
-        hr = pRootFolder->CreateFolder(_bstr_t(L"\\PowerToys"), _variant_t(L""), &pTaskFolder);
+        hr = pRootFolder->CreateFolder(_bstr_t(PowerToysBuildIdentity::StartupTaskFolder), _variant_t(L""), &pTaskFolder);
         if (FAILED(hr))
         {
             pRootFolder->Release();
@@ -336,7 +337,7 @@ bool delete_auto_start_task_for_this_user()
 
     // ------------------------------------------------------
     // Get the PowerToys task folder.
-    hr = pService->GetFolder(_bstr_t(L"\\PowerToys"), &pTaskFolder);
+    hr = pService->GetFolder(_bstr_t(PowerToysBuildIdentity::StartupTaskFolder), &pTaskFolder);
     if (FAILED(hr))
     {
         // Folder doesn't exist. No need to disable a non-existing task.
@@ -401,7 +402,7 @@ bool is_auto_start_task_active_for_this_user()
 
     // ------------------------------------------------------
     // Get the PowerToys task folder.
-    hr = pService->GetFolder(_bstr_t(L"\\PowerToys"), &pTaskFolder);
+    hr = pService->GetFolder(_bstr_t(PowerToysBuildIdentity::StartupTaskFolder), &pTaskFolder);
     ExitOnFailure(hr, "ITaskFolder doesn't exist: {:x}", hr);
 
     // ------------------------------------------------------

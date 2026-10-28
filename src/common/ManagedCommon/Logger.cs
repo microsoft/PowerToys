@@ -77,7 +77,7 @@ namespace ManagedCommon
             string basePath;
             if (isLocalLow)
             {
-                basePath = Environment.GetEnvironmentVariable("userprofile") + "\\appdata\\LocalLow\\Microsoft\\PowerToys" + applicationLogPath;
+                basePath = Environment.GetEnvironmentVariable("userprofile") + "\\appdata\\LocalLow" + LanguageHelper.SettingsFilePath.TrimEnd('\\') + applicationLogPath;
             }
             else
             {

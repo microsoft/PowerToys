@@ -26,6 +26,7 @@ namespace WorkspacesLauncherUI.ViewModels
         private Window _snapshotWindow;
         private ActiveWarning _warning;
         private bool _stopped;
+        private string _statusMessage = Properties.Resources.ResourceManager.GetString("PreparingLaunch", Properties.Resources.Culture);
 
         public MainViewModel()
             : this(false)
@@ -50,6 +51,16 @@ namespace WorkspacesLauncherUI.ViewModels
         }
 
         public ObservableCollection<AppLaunching> AppsListed { get; } = new ObservableCollection<AppLaunching>();
+
+        public string StatusMessage
+        {
+            get => _statusMessage;
+            private set
+            {
+                _statusMessage = value;
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(StatusMessage)));
+            }
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -315,6 +326,7 @@ namespace WorkspacesLauncherUI.ViewModels
             }
 
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(AppsListed)));
+            StatusMessage = string.Empty;
         }
 
         public void Dispose()

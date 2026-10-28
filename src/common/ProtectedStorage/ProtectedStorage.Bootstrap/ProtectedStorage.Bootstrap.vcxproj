@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Globals"><ProjectGuid>{B3FC4F8F-43AB-4E35-979B-B225E3A18FC9}</ProjectGuid><ProjectName>ProtectedStorage.Bootstrap</ProjectName></PropertyGroup>
+  <PropertyGroup Label="Configuration"><ConfigurationType>Application</ConfigurationType><CharacterSet>Unicode</CharacterSet></PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="..\ProtectedStorage.Native.props" />
+  <PropertyGroup><TargetName>Bootstrap</TargetName></PropertyGroup>
+  <ItemGroup><ClCompile Include="Bootstrap.cpp" /><ClInclude Include="ServiceHealth.h" /><ClInclude Include="MaintenanceAuthority.h" /><ResourceCompile Include="..\Version.rc" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="..\ProtectedStorage.Common\ProtectedStorage.Common.vcxproj"><Project>{918F71A9-BC92-481E-9501-769353CE45EB}</Project></ProjectReference></ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

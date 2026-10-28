@@ -1,0 +1,225 @@
+parameters:
+  - name: versionNumber
+    type: string
+  - name: signingIdentity
+    type: object
+    default: {}
+
+steps:
+  # Verification always runs on the x64 build host, even for ARM64 payloads.
+  # Do not publish/sign/harvest this verification-only tool as a client/helper.
+  - pwsh: |-
+      $ErrorActionPreference = 'Stop'
+      & .\tools\build\build.ps1 `
+        -Path .\src\common\ProtectedStorage\ProtectedStorage.TrustVerifier `
+        -Platform x64 -Configuration '$(BuildConfiguration)' `
+        -ExtraArgs '/p:CIBuild=true', '/p:BuildProjectReferences=true', '/p:RestoreConfigFile=$(Build.SourcesDirectory)\.pipelines\release-nuget.config'
+      if ($LASTEXITCODE) { throw "Host trust verifier build failed ($LASTEXITCODE)." }
+      $verifier = Join-Path '$(Build.SourcesDirectory)' 'x64\$(BuildConfiguration)\ProtectedStorage\ProtectedStorage.TrustVerifier.exe'
+      if (!(Test-Path -LiteralPath $verifier -PathType Leaf)) { throw 'Host trust verifier output is missing.' }
+      Write-Host "##vso[task.setvariable variable=ProtectedStorageTrustVerifierPath;isReadOnly=true]$verifier"
+    displayName: Build x64 host Protected Storage trust verifier
+
+  - pwsh: |-
+      $ErrorActionPreference = 'Stop'
+      . .\installer\PowerToysProtectedStorage\ReleaseTools.ps1
+      $bin = Join-Path '$(Build.SourcesDirectory)' '$(BuildPlatform)\$(BuildConfiguration)'
+      $editor = Join-Path $bin 'PowerToys.WorkspacesEditor.exe'
+      Assert-ReleaseSignature -Path $editor -TrustVerifierPath '$(ProtectedStorageTrustVerifierPath)'
+      $version = (Get-CarrierVersion '${{ parameters.versionNumber }}').PE
+      if ([Diagnostics.FileVersionInfo]::GetVersionInfo($editor).FileVersion -ne $version) {
+        throw 'The ESRP-signed Editor version does not match this release.'
+      }
+      $root = Join-Path '$(Build.SourcesDirectory)' 'artifacts\ProtectedStorage\$(BuildPlatform)\$(BuildConfiguration)'
+      Write-Host "##vso[task.setvariable variable=ProtectedStorageStageRoot;isReadOnly=true]$root"
+      & .\tools\build\New-ProtectedStorageClientInventory.ps1 `
+        -Platform '$(BuildPlatform)' -Configuration '$(BuildConfiguration)' `
+        -ModuleServicesHostPath (Join-Path $bin 'WinUI3Apps\Microsoft.CmdPal.Ext.PowerToys.exe') `
+        -OutputPath (Join-Path $root 'clients.json')
+    displayName: Prepare Protected Storage signed-client inventory
+
+  - pwsh: |-
+      & .\installer\PowerToysProtectedStorage\Build-Carrier.ps1 `
+        -ReleaseStage Payloads -Platform '$(BuildPlatform)' -Configuration '$(BuildConfiguration)' `
+        -Version '${{ parameters.versionNumber }}' `
+        -AdditionalBuildArguments '/p:CIBuild=true', '/p:BuildProjectReferences=false', '/p:RestoreConfigFile=$(Build.SourcesDirectory)\.pipelines\release-nuget.config'
+    displayName: Build Protected Storage payloads and MSI action
+
+  - template: steps-esrp-sign-files-authenticode.yml
+    parameters:
+      displayName: Sign Protected Storage payloads and MSI action
+      signingIdentity: ${{ parameters.signingIdentity }}
+      folder: '$(ProtectedStorageStageRoot)\Package'
+      pattern: |-
+        Bootstrap.exe
+        Runtime.exe
+        PowerToys.ProtectedStorageMsiAction.exe
+
+  - pwsh: |-
+      & .\installer\PowerToysProtectedStorage\Build-Carrier.ps1 `
+        -ReleaseStage Documents -Platform '$(BuildPlatform)' -Configuration '$(BuildConfiguration)' `
+        -Version '${{ parameters.versionNumber }}' `
+        -ClientCatalogInput '$(ProtectedStorageStageRoot)\clients.json'
+      $package = '$(ProtectedStorageStageRoot)\Package'
+      Copy-Item -LiteralPath "$package\manifest.txt" -Destination "$package\manifest.p7s" -Force
+      Copy-Item -LiteralPath "$package\ClientCatalog.json" -Destination "$package\ClientCatalog.p7s" -Force
+    displayName: Generate Protected Storage manifests and detached-signing inputs
+
+  - template: steps-esrp-sign-files-detached.yml
+    parameters:
+      signingIdentity: ${{ parameters.signingIdentity }}
+      folder: '$(ProtectedStorageStageRoot)\Package'
+      trustVerifierPath: '$(ProtectedStorageTrustVerifierPath)'
+
+  - ${{ each phase in split('Lifecycle,Carrier,Broker,Setup', ',') }}:
+    - ${{ if ne(phase, 'Carrier') }}:
+      - pwsh: |-
+          & .\installer\PowerToysProtectedStorage\Build-Carrier.ps1 `
+            -ReleaseStage '${{ phase }}' -Platform '$(BuildPlatform)' -Configuration '$(BuildConfiguration)' `
+            -Version '${{ parameters.versionNumber }}' `
+            -AdditionalBuildArguments '/p:CIBuild=true', '/p:BuildProjectReferences=false', '/p:RestoreConfigFile=$(Build.SourcesDirectory)\.pipelines\release-nuget.config'
+        displayName: Build Protected Storage ${{ phase }}
+
+    - ${{ if eq(phase, 'Carrier') }}:
+      - pwsh: |-
+          $ErrorActionPreference = 'Stop'
+          & .\installer\PowerToysProtectedStorage\Build-Carrier.ps1 `
+            -ReleaseStage CarrierInputs -Platform '$(BuildPlatform)' -Configuration '$(BuildConfiguration)' `
+            -Version '${{ parameters.versionNumber }}'
+          $service = Get-Service -Name msiserver
+          Write-Host "Windows Installer before MSI validation: status=$($service.Status); startType=$($service.StartType)"
+          Write-Host "Agent process: $([Security.Principal.WindowsIdentity]::GetCurrent().Name); TEMP=$env:TEMP"
+          if ($service.StartType -eq 'Disabled') { throw 'Windows Installer is disabled on this agent; ICE validation cannot run.' }
+        displayName: Verify carrier inputs and inspect Windows Installer availability
+
+      # Use the same VSBuild task and fresh MSBuild process as the main MSIs.
+      # Do not suppress ICEs or publish a carrier that could not be validated.
+      - task: VSBuild@1
+        displayName: Build Protected Storage Carrier
+        timeoutInMinutes: 15
+        inputs:
+          solution: 'installer\PowerToysProtectedStorage\PowerToysProtectedStorage.wixproj'
+          vsVersion: 18.0
+          msbuildArgs: >-
+            -restore
+            /p:RestorePackagesConfig=true;CIBuild=true;BuildProjectReferences=false
+            /p:ProtectedStorageStage="$(ProtectedStorageStageRoot)\Package"
+            /p:ProtectedStorageProductCode=$(ProtectedStorageCarrierProductCode)
+            /p:ProtectedStorageVersion=$(ProtectedStorageCarrierVersion)
+            /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config"
+            /bl:$(LogOutputDirectory)\protected-storage-carrier.binlog
+            /flp:LogFile=$(LogOutputDirectory)\protected-storage-carrier.log;Verbosity=normal
+          platform: $(BuildPlatform)
+          configuration: $(BuildConfiguration)
+          clean: false
+          msbuildArchitecture: x64
+          maximumCpuCount: true
+
+    - template: steps-esrp-sign-files-authenticode.yml
+      parameters:
+        displayName: Sign Protected Storage ${{ phase }}
+        signingIdentity: ${{ parameters.signingIdentity }}
+        folder: '$(ProtectedStorageStageRoot)\Package'
+        ${{ if eq(phase, 'Lifecycle') }}:
+          pattern: PowerToys.ProtectedStorageLifecycle.exe
+        ${{ elseif eq(phase, 'Carrier') }}:
+          pattern: PowerToys.ProtectedStorage.Carrier.msi
+        ${{ elseif eq(phase, 'Broker') }}:
+          pattern: PowerToys.ProtectedStorageProvisionBroker.exe
+        ${{ else }}:
+          pattern: PowerToys.ProtectedStorageSetup.exe
+
+  - pwsh: |-
+      & .\installer\PowerToysProtectedStorage\Build-Carrier.ps1 `
+        -ReleaseStage Publish -Platform '$(BuildPlatform)' -Configuration '$(BuildConfiguration)' `
+        -Version '${{ parameters.versionNumber }}'
+      $package = '$(ProtectedStorageStageRoot)\Package'
+      $destination = Join-Path '$(Build.ArtifactStagingDirectory)' 'ProtectedStorage'
+      New-Item -ItemType Directory -Path $destination -Force | Out-Null
+      # Explicit release inventory: never copy a verifier/test executable or a
+      # stale intermediate merely because it has a publishable extension.
+      foreach ($name in @(
+        'Bootstrap.exe', 'Runtime.exe', 'PowerToys.ProtectedStorageMsiAction.exe',
+        'PowerToys.ProtectedStorageLifecycle.exe', 'PowerToys.ProtectedStorage.Carrier.msi',
+        'PowerToys.ProtectedStorageProvisionBroker.exe', 'PowerToys.ProtectedStorageSetup.exe',
+        'ClientCatalog.json', 'ClientCatalog.p7s', 'manifest.txt', 'manifest.p7s',
+        'policy.txt', 'release.json'
+      )) {
+        Copy-Item -LiteralPath (Join-Path $package $name) -Destination $destination
+      }
+    displayName: Verify and publish finalized Protected Storage release
+
+  - pwsh: |-
+      $ErrorActionPreference = 'Stop'
+      . .\installer\PowerToysProtectedStorage\ReleaseTools.ps1
+      $bin = Join-Path '$(Build.SourcesDirectory)' '$(BuildPlatform)\$(BuildConfiguration)'
+      $paths = @(
+        (Join-Path $bin 'PowerToys.WorkspacesEditor.exe'),
+        (Join-Path $bin 'PowerToys.WorkspacesLauncher.exe')
+      )
+      $package = Join-Path '$(Build.SourcesDirectory)' 'artifacts\ProtectedStorage\$(BuildPlatform)\$(BuildConfiguration)\Package'
+      if (Test-Path -LiteralPath $package) {
+        $paths += @(Get-ChildItem -LiteralPath $package -File | Where-Object { $_.Extension -in '.exe', '.msi' } | ForEach-Object FullName)
+      }
+      $diagnostics = foreach ($path in $paths) {
+        if (!(Test-Path -LiteralPath $path)) { continue }
+        $signature = Get-AuthenticodeSignature -LiteralPath $path
+        [ordered]@{
+          name = [IO.Path]::GetFileName($path)
+          fileVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($path).FileVersion
+          sha256 = Get-ReleaseHash $path
+          signatureStatus = [string]$signature.Status
+          diagnosticCertificateSha256 = if ($signature.SignerCertificate) { Get-CertificateDiagnosticHash $signature.SignerCertificate } else { $null }
+          signerSubject = $signature.SignerCertificate.Subject
+          signerIssuer = $signature.SignerCertificate.Issuer
+        }
+      }
+      New-Item -ItemType Directory -Path '$(LogOutputDirectory)' -Force | Out-Null
+      $diagnostics | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath '$(LogOutputDirectory)\protected-storage-signing.json' -Encoding utf8
+      if (Test-Path -LiteralPath $package) {
+        Add-Type -AssemblyName System.Security.Cryptography.Pkcs
+        $cmsDiagnostics = foreach ($signaturePath in Get-ChildItem -LiteralPath $package -Filter '*.p7s' -File) {
+          try {
+            $cms = [Security.Cryptography.Pkcs.SignedCms]::new()
+            $cms.Decode([IO.File]::ReadAllBytes($signaturePath.FullName))
+            [ordered]@{
+              name = $signaturePath.Name
+              signers = @($cms.SignerInfos | ForEach-Object {
+                [ordered]@{
+                  diagnosticCertificateSha256 = Get-CertificateDiagnosticHash $_.Certificate
+                  subject = $_.Certificate.Subject
+                  issuer = $_.Certificate.Issuer
+                  digest = $_.DigestAlgorithm.Value
+                }
+              })
+            }
+          } catch {
+            Write-Warning "Could not decode diagnostic signature $($signaturePath.Name): $($_.Exception.Message)"
+            [ordered]@{ name = $signaturePath.Name; error = $_.Exception.Message }
+          }
+        }
+        $cmsDiagnostics | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath '$(LogOutputDirectory)\protected-storage-cms.json' -Encoding utf8
+      }
+      $logSources = @('installer\PowerToysProtectedStorage')
+      $logSources += @('Bootstrap', 'Runtime', 'MsiAction', 'Lifecycle', 'ProvisionBroker', 'Setup', 'TrustVerifier') | ForEach-Object { "src\common\ProtectedStorage\ProtectedStorage.$_" }
+      foreach ($source in $logSources) {
+        $directory = Join-Path '$(Build.SourcesDirectory)' $source
+        $logs = @(Get-ChildItem -LiteralPath $directory -Filter 'build.*' -File | Where-Object { $_.Extension -in '.log', '.binlog' })
+        if ($logs.Count) {
+          $destination = Join-Path '$(LogOutputDirectory)\ProtectedStorage' ([IO.Path]::GetFileName($directory))
+          New-Item -ItemType Directory -Path $destination -Force | Out-Null
+          $logs | Copy-Item -Destination $destination
+        }
+      }
+      try {
+        $service = Get-CimInstance -ClassName Win32_Service -Filter "Name='msiserver'"
+        $service | Select-Object Name, State, StartMode, StartName, ExitCode, ProcessId |
+          ConvertTo-Json | Set-Content -LiteralPath '$(LogOutputDirectory)\windows-installer-service.json' -Encoding utf8
+        $events = @(Get-WinEvent -FilterHashtable @{ LogName = 'Application'; ProviderName = 'MsiInstaller'; StartTime = (Get-Date).AddHours(-4) } -MaxEvents 30 -ErrorAction Stop)
+        $events | Select-Object TimeCreated, Id, LevelDisplayName, Message |
+          ConvertTo-Json -Depth 3 | Set-Content -LiteralPath '$(LogOutputDirectory)\windows-installer-events.json' -Encoding utf8
+      } catch {
+        Write-Warning "Windows Installer event diagnostics unavailable: $($_.Exception.Message)"
+      }
+    displayName: Record Protected Storage signature and version diagnostics
+    condition: always()

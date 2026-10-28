@@ -9,6 +9,7 @@
 #include <common/utils/resources.h>
 #include <WorkspacesLib/LaunchSession.h>
 #include <WorkspacesLib/utils.h>
+#include <common/ProtectedStorage/ProtectedStorage.Common/Protocol.h>
 #include <Generated Files/resource.h>
 
 int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -34,6 +35,7 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     {
         WorkspacesSession::Request request;
         request.id = command.workspaceId;
+        request.previewId = command.previewId;
         request.invokePoint = command.invokePoint;
         const auto result = WorkspacesSession::Start(request);
         if (result.persistence && *result.persistence != WorkspaceStore::UpdateResult::Updated)
@@ -46,7 +48,7 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         Logger::flush();
         WorkspacesSession::ExitIfExecutionUnresponsive(error);
         if (error.code == L"busy" || error.code == L"disabledByPolicy" || error.code == L"canceled")
-            return 0;
+            return error.exitCode;
         std::wstring message;
         if (error.code == L"workspaceNotFound")
             message = fmt::format(GET_RESOURCE_STRING(IDS_PROJECT_NOT_FOUND), command.workspaceId);
@@ -55,11 +57,17 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         else if (error.code == L"storageError" || error.code == L"invalidData")
         {
             const auto resource = error.code == L"storageError" ? IDS_FILE_READING_ERROR : IDS_INCORRECT_FILE_ERROR;
-            message = fmt::format(GET_RESOURCE_STRING(resource), error.fileName.empty() ? WorkspacesData::WorkspacesFile() : error.fileName);
+            message = fmt::format(GET_RESOURCE_STRING(resource), error.fileName.empty() ? WorkspacesData::LegacyWorkspacesFile() : error.fileName);
         }
         if (!message.empty())
             MessageBoxW(nullptr, message.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
-        return 1;
+        return error.exitCode;
+    }
+    catch (const PowerToys::ProtectedStorage::Error& error)
+    {
+        Logger::error("Protected Workspaces operation failed: {} (native={})", error.what(), error.code);
+        MessageBoxW(nullptr, GET_RESOURCE_STRING(IDS_PROTECTED_STORAGE_ERROR).c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
+        return 8;
     }
     catch (const winrt::hresult_error& error)
     {

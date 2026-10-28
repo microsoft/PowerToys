@@ -52,6 +52,9 @@ namespace Microsoft.PowerToys.Settings.UI
 
             var loader = ResourceLoaderInstance.ResourceLoader;
             Title = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
+#if POWERTOYS_LOCAL_E2E_BUILD
+            Title += " [Workspaces Local E2E]";
+#endif
 
             // send IPC Message
             ShellPage.SetDefaultSndMessageCallback(msg =>

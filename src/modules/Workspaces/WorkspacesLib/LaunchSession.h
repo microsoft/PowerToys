@@ -37,6 +37,7 @@ namespace WorkspacesSession
     {
         std::wstring id;
         std::wstring name;
+        std::string previewId;
         InvokePoint invokePoint = InvokePoint::EditorButton;
         Presentation presentation = Presentation::Progress;
         DWORD timeoutSeconds = 0;

@@ -13,7 +13,7 @@ public:
     ~WindowArrangerHelper();
 
     void StopCallbacks();
-    DWORD Launch(const std::wstring& projectId, bool elevated, std::function<bool()> keepWaitingCallback, DWORD timeoutSeconds = 0);
+    DWORD Launch(const WorkspacesData::WorkspacesProject& project, bool elevated, std::function<bool()> keepWaitingCallback, DWORD timeoutSeconds = 0);
     void UpdateLaunchStatus(const WorkspacesData::LaunchingAppState& appState) const;
     void KeepLaunchingAlive() const;
     void SendSnapshot(const WorkspacesData::WorkspacesProject& project) const;

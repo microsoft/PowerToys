@@ -3,10 +3,19 @@
 #include "pch.h"
 #include "BalBaseBAFunctions.h"
 #include "BalBaseBAFunctionsProc.h"
+#include <common/updating/protectedStorageUpdate.h>
+#include <common/logger/logger.h>
+#include <common/SettingsAPI/settings_helpers.h>
 
 class CSilentFilesInUseBAFunctions : public CBalBaseBAFunctions
 {
 public: // IBootstrapperApplication
+    virtual STDMETHODIMP OnCreate(IBootstrapperEngine* engine, BOOTSTRAPPER_COMMAND* command)
+    {
+        m_relatedBundle = command->relationType != BOOTSTRAPPER_RELATION_NONE;
+        return CBalBaseBAFunctions::OnCreate(engine, command);
+    }
+
     virtual STDMETHODIMP OnDetectBegin(
         __in BOOL fCached,
         __in BOOTSTRAPPER_REGISTRATION_TYPE registrationType,
@@ -30,6 +39,12 @@ public: // IBAFunctions
         HRESULT hr = S_OK;
 
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "*** CUSTOM BA FUNCTION SYSTEM ACTIVE *** Running plan begin BA function. cPackages=%u, fCancel=%d", cPackages, *pfCancel);
+
+        LONGLONG perUser = 0;
+        LONGLONG action = 0;
+        m_removeOwner = SUCCEEDED(m_pEngine->GetVariableNumeric(L"ProtectedStoragePerUserBundle", &perUser)) &&
+                        SUCCEEDED(m_pEngine->GetVariableNumeric(L"WixBundleAction", &action)) &&
+                        updating::ShouldRemoveOwnerCarrier(perUser == 1, action == BOOTSTRAPPER_ACTION_UNINSTALL, m_relatedBundle, true);
 
         //-------------------------------------------------------------------------------------------------
         // YOUR CODE GOES HERE
@@ -96,6 +111,51 @@ public: // IBAFunctions
 
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "*** CUSTOM BA FUNCTION SYSTEM ACTIVE *** Running execute complete BA function. hrStatus=0x%x, fCancel=%d", hrStatus, *pfCancel);
 
+        if (m_removeOwner && SUCCEEDED(hrStatus) && !m_removeAttempted)
+        {
+            m_removeAttempted = true;
+            try
+            {
+                HANDLE token = nullptr;
+                if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
+                {
+                    BalLog(BOOTSTRAPPER_LOG_LEVEL_ERROR, "Cannot verify the original uninstall owner token (%lu).", GetLastError());
+                    return S_OK;
+                }
+                TOKEN_ELEVATION elevation{};
+                DWORD size = 0;
+                const BOOL tokenRead = GetTokenInformation(token, TokenElevation, &elevation, sizeof(elevation), &size);
+                CloseHandle(token);
+                if (!tokenRead || elevation.TokenIsElevated)
+                {
+                    BalLog(BOOTSTRAPPER_LOG_LEVEL_ERROR, "Owner carrier cleanup requires the original ordinary bundle context; no administrator profile will be used.");
+                    return S_OK;
+                }
+                wchar_t path[32768]{};
+                const auto length = GetModuleFileNameW(m_module, path, ARRAYSIZE(path));
+                if (length == 0 || length >= ARRAYSIZE(path))
+                {
+                    BalLog(BOOTSTRAPPER_LOG_LEVEL_ERROR, "Cannot locate the verified owner-cleanup payload (%lu).", GetLastError());
+                    return S_OK;
+                }
+                const auto logRoot = std::filesystem::path(PTSettingsHelper::get_root_save_folder_location()) / L"Logs" / L"ProtectedStorage";
+                std::filesystem::create_directories(logRoot);
+                Logger::init("ProtectedStorageBundle", (logRoot / L"bundle-removal.log").wstring(), PTSettingsHelper::get_log_settings_file_location());
+                const auto result = updating::RemoveProtectedStorageForOwner(std::filesystem::path(path).parent_path());
+                BalLog(result.state == updating::ProtectedStorageSyncState::Completed ? BOOTSTRAPPER_LOG_LEVEL_STANDARD : BOOTSTRAPPER_LOG_LEVEL_ERROR,
+                       "Owner carrier removal after main MSI: state=%ls, nativeCode=%lu. Main removal is not rolled back.",
+                       updating::ProtectedStorageSyncStateName(result.state), result.nativeCode);
+            }
+            catch (const winrt::hresult_error& error)
+            {
+                BalLog(BOOTSTRAPPER_LOG_LEVEL_ERROR, "Owner carrier cleanup deferred: 0x%08x.", static_cast<unsigned>(error.code().value));
+            }
+            catch (const std::exception& error)
+            {
+                BalLog(BOOTSTRAPPER_LOG_LEVEL_ERROR, "Owner carrier cleanup deferred: %hs.", error.what());
+            }
+        }
+
         return hr;
     }
 
@@ -105,7 +165,7 @@ public:
     //
     CSilentFilesInUseBAFunctions(
         __in HMODULE hModule
-        ) : CBalBaseBAFunctions(hModule)
+        ) : CBalBaseBAFunctions(hModule), m_module(hModule)
     {
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "*** BA FUNCTION CONSTRUCTOR *** CSilentFilesInUseBAFunctions created");
     }
@@ -117,6 +177,12 @@ public:
     {
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "*** BA FUNCTION DESTRUCTOR *** CSilentFilesInUseBAFunctions destroyed");
     }
+
+private:
+    HMODULE m_module = nullptr;
+    bool m_relatedBundle = false;
+    bool m_removeOwner = false;
+    bool m_removeAttempted = false;
 };
 
 

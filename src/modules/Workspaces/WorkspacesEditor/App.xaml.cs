@@ -39,9 +39,10 @@ namespace WorkspacesEditor
             WorkspacesEditorIO = new WorkspacesEditorIO();
         }
 
-        private void OnStartup(object sender, StartupEventArgs e)
+        private async void OnStartup(object sender, StartupEventArgs e)
         {
-            Logger.InitializeLogger("\\Workspaces\\Logs");
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            Logger.InitializeLogger(PowerToys.ProtectedStorage.StorageIdentity.IsLocalTest ? "\\WorkspacesLocalTest\\Logs" : "\\Workspaces\\Logs");
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
             var languageTag = LanguageHelper.LoadLanguage();
@@ -58,7 +59,8 @@ namespace WorkspacesEditor
                 }
             }
 
-            const string appName = "Local\\PowerToys_Workspaces_Editor_InstanceMutex";
+            string appName = "Local\\PowerToys_Workspaces_Editor_InstanceMutex" +
+                (PowerToys.ProtectedStorage.StorageIdentity.IsLocalTest ? "_LocalTest" : string.Empty);
             bool createdNew;
             _instanceMutex = new Mutex(true, appName, out createdNew);
             if (!createdNew)
@@ -95,7 +97,25 @@ namespace WorkspacesEditor
                 _mainViewModel = new MainViewModel(WorkspacesEditorIO);
             }
 
-            var parseResult = WorkspacesEditorIO.ParseWorkspaces(_mainViewModel);
+            if (!await WorkspacesFailureViewModel.ExecuteAsync(
+                async () =>
+                {
+                    var result = await WorkspacesEditorIO.ParseWorkspacesAsync(_mainViewModel, initialize: true);
+                    if (!result.Result)
+                    {
+                        throw new System.IO.IOException(result.Message);
+                    }
+
+                    if (!string.IsNullOrEmpty(result.Message))
+                    {
+                        MessageBox.Show(result.Message, WorkspacesEditor.Properties.Resources.ProtectedStorageTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                },
+                allowSetup: true))
+            {
+                Shutdown(1);
+                return;
+            }
 
             // normal start of editor
             if (_mainWindow == null)
@@ -104,12 +124,18 @@ namespace WorkspacesEditor
             }
 
             // reset main window owner to keep it on the top
+            MainWindow = _mainWindow;
             _mainWindow.ShowActivated = true;
             _mainWindow.Topmost = true;
             _mainWindow.Show();
+            if (PowerToys.ProtectedStorage.StorageIdentity.IsLocalTest)
+            {
+                _mainWindow.Title += " [LOCAL TEST - isolated data]";
+            }
 
             // we can reset topmost flag after it's opened
             _mainWindow.Topmost = false;
+            ShutdownMode = ShutdownMode.OnMainWindowClose;
         }
 
         public static Theme GetCurrentTheme()

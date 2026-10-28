@@ -60,6 +60,12 @@ steps:
           **/SilentFilesInUseBAFunction.dll
 
   ## INSTALLER START
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - template: steps-build-protected-storage.yml
+      parameters:
+        versionNumber: ${{ parameters.versionNumber }}
+        signingIdentity: ${{ parameters.signingIdentity }}
+
   #### MSI BUILDING AND SIGNING
   #
   # The MSI build contains code that reverts the .wxs files to their in-tree versions.
@@ -80,6 +86,7 @@ steps:
         -restore
         /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=false;BuildProjectReferences=false;CIBuild=true
+        /p:ProtectedStorageTrustPolicy=microsoft-production-v1
         /bl:$(LogOutputDirectory)\installer-machine-msi.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
@@ -96,6 +103,7 @@ steps:
       msbuildArgs: >-
         /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=true;BuildProjectReferences=false;CIBuild=true
+        /p:ProtectedStorageTrustPolicy=microsoft-production-v1
         /bl:$(LogOutputDirectory)\installer-user-msi.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
@@ -110,6 +118,19 @@ steps:
       dir $(build.sourcesdirectory)\extractedMachineMsi
       dir $(build.sourcesdirectory)\extractedUserMsi
     displayName: "WiX5: Extract and verify MSIs"
+
+  - pwsh: |-
+      $ErrorActionPreference = 'Stop'
+      $lifecycle = '$(Build.SourcesDirectory)\artifacts\ProtectedStorage\$(BuildPlatform)\$(BuildConfiguration)\Package\PowerToys.ProtectedStorageLifecycle.exe'
+      & .\tools\build\Test-ProtectedStorageMsiTables.ps1 `
+        -MsiPath '$(Build.SourcesDirectory)\$(InstallerMachineRoot)\$(InstallerMachineBasename).msi' `
+        -PerUser false -ExpectedLifecyclePath $lifecycle `
+        -ExtractedBinaryPath '$(Build.SourcesDirectory)\extractedMachineMsi\Binary\PTStorageRemoval'
+      & .\tools\build\Test-ProtectedStorageMsiTables.ps1 `
+        -MsiPath '$(Build.SourcesDirectory)\$(InstallerUserRoot)\$(InstallerUserBasename).msi' `
+        -PerUser true -ExpectedLifecyclePath $lifecycle `
+        -ExtractedBinaryPath '$(Build.SourcesDirectory)\extractedUserMsi\Binary\PTStorageRemoval'
+    displayName: Verify compiled Protected Storage uninstall hooks in both MSI scopes
 
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-
@@ -148,6 +169,7 @@ steps:
         -restore
         /t:PowerToysBootstrapperVNext
         /p:PerUser=false;BuildProjectReferences=false;CIBuild=true
+        /p:ProtectedStorageTrustPolicy=microsoft-production-v1
         /bl:$(LogOutputDirectory)\installer-machine-bootstrapper.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
@@ -164,6 +186,7 @@ steps:
       msbuildArgs: >-
         /t:PowerToysBootstrapperVNext
         /p:PerUser=true;BuildProjectReferences=false;CIBuild=true
+        /p:ProtectedStorageTrustPolicy=microsoft-production-v1
         /bl:$(LogOutputDirectory)\installer-user-bootstrapper.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)

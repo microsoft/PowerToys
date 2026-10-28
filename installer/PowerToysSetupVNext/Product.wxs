@@ -70,6 +70,7 @@
       <ComponentGroupRef Id="CliShimsComponentGroup" />
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
       <ComponentGroupRef Id="WorkspacesComponentGroup" />
+      <ComponentGroupRef Id="ProtectedStorageComponents" />
       <ComponentGroupRef Id="CmdPalComponentGroup" />
     </Feature>
 

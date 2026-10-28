@@ -12,6 +12,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class SettingPath
     {
         private const string DefaultFileName = "settings.json";
+#if POWERTOYS_LOCAL_E2E_BUILD
+        private const string RootFolder = "Microsoft\\PowerToysLocalE2E";
+#else
+        private const string RootFolder = "Microsoft\\PowerToys";
+#endif
 
         private readonly IDirectory _directory;
 
@@ -30,17 +35,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public bool SettingsFolderExists(string powertoy)
         {
-            return _directory.Exists(System.IO.Path.Combine(Helper.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
+            return _directory.Exists(System.IO.Path.Combine(Helper.LocalApplicationDataFolder(), $"{RootFolder}\\{powertoy}"));
         }
 
         public void CreateSettingsFolder(string powertoy)
         {
-            _directory.CreateDirectory(System.IO.Path.Combine(Helper.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
+            _directory.CreateDirectory(System.IO.Path.Combine(Helper.LocalApplicationDataFolder(), $"{RootFolder}\\{powertoy}"));
         }
 
         public void DeleteSettings(string powertoy = "")
         {
-            _directory.Delete(System.IO.Path.Combine(Helper.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
+            _directory.Delete(System.IO.Path.Combine(Helper.LocalApplicationDataFolder(), $"{RootFolder}\\{powertoy}"));
         }
 
         /// <summary>
@@ -53,12 +58,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 return _path.Combine(
                     Helper.LocalApplicationDataFolder(),
-                    $"Microsoft\\PowerToys\\{fileName}");
+                    $"{RootFolder}\\{fileName}");
             }
 
             return _path.Combine(
                 Helper.LocalApplicationDataFolder(),
-                $"Microsoft\\PowerToys\\{powertoy}\\{fileName}");
+                $"{RootFolder}\\{powertoy}\\{fileName}");
         }
     }
 }

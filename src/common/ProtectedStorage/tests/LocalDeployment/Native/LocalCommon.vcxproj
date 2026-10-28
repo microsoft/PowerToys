@@ -1,0 +1,14 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Globals"><ProjectGuid>{CAB37E36-6B9A-4217-9D0A-A39A0C139C01}</ProjectGuid><ProjectName>ProtectedStorage.LocalCommon</ProjectName></PropertyGroup>
+  <PropertyGroup Label="Configuration"><ConfigurationType>StaticLibrary</ConfigurationType><CharacterSet>Unicode</CharacterSet></PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="LocalTest.props" />
+  <ItemGroup>
+    <ClCompile Include="..\..\..\ProtectedStorage.Common\Common.cpp" />
+    <ClCompile Include="..\..\..\ProtectedStorage.Common\Protocol.cpp" />
+    <ClCompile Include="..\..\..\ProtectedStorage.Common\Authentication.cpp" />
+    <ClCompile Include="LocalTestTrust.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

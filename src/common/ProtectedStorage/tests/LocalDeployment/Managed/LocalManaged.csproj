@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.props" />
+  <PropertyGroup>
+    <AssemblyName>PowerToys.ProtectedStorage.Client.Managed</AssemblyName>
+    <RootNamespace>PowerToys.ProtectedStorage</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <IsPackable>false</IsPackable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(RepoRoot)artifacts\ProtectedStorageLocalTest\$(Platform)\$(Configuration)\Managed\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\ProtectedStorage.Client.Managed\*.cs" Exclude="..\..\..\ProtectedStorage.Client.Managed\StorageIdentity.cs" />
+    <Compile Include="StorageIdentity.cs" />
+  </ItemGroup>
+</Project>

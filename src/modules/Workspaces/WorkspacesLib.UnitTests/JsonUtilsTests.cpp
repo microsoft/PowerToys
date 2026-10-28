@@ -11,7 +11,7 @@ namespace WorkspacesLibUnitTests
     private:
         std::wstring CreateTempJsonFile(const std::wstring& content)
         {
-            std::wstring tempPath = std::filesystem::temp_directory_path();
+            std::wstring tempPath = std::filesystem::current_path();
             tempPath += L"\\test_workspace_" + std::to_wstring(GetTickCount64()) + L".json";
 
             std::wofstream file(tempPath);
@@ -30,18 +30,16 @@ namespace WorkspacesLibUnitTests
         }
 
     public:
-        TEST_METHOD (ReadSingleWorkspace_NonExistentFile_ReturnsEmptyWorkspace)
+        TEST_METHOD (ImportSingleWorkspace_NonExistentFile_ReturnsError)
         {
             // Arrange
             std::wstring nonExistentFile = L"C:\\NonExistent\\File.json";
 
             // Act
-            auto result = JsonUtils::ReadSingleWorkspace(nonExistentFile);
+            auto result = JsonUtils::ImportSingleWorkspace(nonExistentFile);
 
             // Assert
-            Assert::IsTrue(result.isOk());
-            auto workspace = result.value();
-            Assert::IsTrue(workspace.name.empty());
+            Assert::IsTrue(result.isError());
         }
 
         TEST_METHOD (ReadSingleWorkspace_InvalidJsonFile_ReturnsError)
@@ -50,7 +48,7 @@ namespace WorkspacesLibUnitTests
             std::wstring tempFile = CreateTempJsonFile(L"invalid json content {");
 
             // Act
-            auto result = JsonUtils::ReadSingleWorkspace(tempFile);
+            auto result = JsonUtils::ImportSingleWorkspace(tempFile);
 
             // Assert
             Assert::IsTrue(result.isError());
@@ -67,7 +65,7 @@ namespace WorkspacesLibUnitTests
             std::wstring nonExistentFile = L"C:\\NonExistent\\File.json";
 
             // Act
-            auto result = JsonUtils::ReadWorkspaces(nonExistentFile);
+            auto result = JsonUtils::ImportWorkspaces(nonExistentFile);
 
             // Assert
             Assert::IsTrue(result.isError());
@@ -81,7 +79,7 @@ namespace WorkspacesLibUnitTests
             std::wstring tempFile = CreateTempJsonFile(L"invalid json content {");
 
             // Act
-            auto result = JsonUtils::ReadWorkspaces(tempFile);
+            auto result = JsonUtils::ImportWorkspaces(tempFile);
 
             // Assert
             Assert::IsTrue(result.isError());
@@ -95,7 +93,7 @@ namespace WorkspacesLibUnitTests
         TEST_METHOD (Write_ValidWorkspace_ReturnsTrue)
         {
             // Arrange
-            std::wstring tempPath = std::filesystem::temp_directory_path();
+            std::wstring tempPath = std::filesystem::current_path();
             tempPath += L"\\test_write_workspace_" + std::to_wstring(GetTickCount64()) + L".json";
 
             WorkspacesData::WorkspacesProject workspace;
@@ -106,7 +104,7 @@ namespace WorkspacesLibUnitTests
             workspace.creationTime = std::mktime(&tm);
 
             // Act
-            bool result = JsonUtils::Write(tempPath, workspace);
+            bool result = JsonUtils::Export(tempPath, workspace);
 
             // Assert
             Assert::IsTrue(result);
@@ -119,7 +117,7 @@ namespace WorkspacesLibUnitTests
         TEST_METHOD (Write_ValidWorkspacesList_ReturnsTrue)
         {
             // Arrange
-            std::wstring tempPath = std::filesystem::temp_directory_path();
+            std::wstring tempPath = std::filesystem::current_path();
             tempPath += L"\\test_write_workspaces_" + std::to_wstring(GetTickCount64()) + L".json";
 
             std::vector<WorkspacesData::WorkspacesProject> workspaces;
@@ -136,7 +134,7 @@ namespace WorkspacesLibUnitTests
             workspaces.push_back(workspace2);
 
             // Act
-            bool result = JsonUtils::Write(tempPath, workspaces);
+            bool result = JsonUtils::Export(tempPath, workspaces);
 
             // Assert
             Assert::IsTrue(result);
@@ -149,13 +147,13 @@ namespace WorkspacesLibUnitTests
         TEST_METHOD (Write_EmptyWorkspacesList_ReturnsTrue)
         {
             // Arrange
-            std::wstring tempPath = std::filesystem::temp_directory_path();
+            std::wstring tempPath = std::filesystem::current_path();
             tempPath += L"\\test_write_empty_" + std::to_wstring(GetTickCount64()) + L".json";
 
             std::vector<WorkspacesData::WorkspacesProject> emptyWorkspaces;
 
             // Act
-            bool result = JsonUtils::Write(tempPath, emptyWorkspaces);
+            bool result = JsonUtils::Export(tempPath, emptyWorkspaces);
 
             // Assert
             Assert::IsTrue(result);
@@ -176,7 +174,7 @@ namespace WorkspacesLibUnitTests
             workspace.creationTime = std::time(nullptr);
 
             // Act
-            bool result = JsonUtils::Write(invalidPath, workspace);
+            bool result = JsonUtils::Export(invalidPath, workspace);
 
             // Assert
             Assert::IsFalse(result);

@@ -1,0 +1,16 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal">
+  <Bundle Name="Non-distributable ProtectedStorage authoring fixture"
+          Version="0.0.1"
+          Manufacturer="PowerToys Tests"
+          UpgradeCode="{EC4F365C-AEC6-49C9-8316-51312C79E96C}">
+    <BootstrapperApplication>
+      <bal:WixStandardBootstrapperApplication LicenseUrl="" Theme="hyperlinkLicense" />
+      <Payload Name="SilentFilesInUseBAFunction.dll" SourceFile="$(var.BAFunction)" bal:BAFunctions="yes" />
+      <Payload Name="PowerToys.ProtectedStorageSetup.exe" SourceFile="$(var.Setup)" />
+    </BootstrapperApplication>
+    <Variable Name="ProtectedStoragePerUserBundle" Type="numeric" Value="1" />
+    <Chain>
+      <MsiPackage SourceFile="$(var.FixtureMsi)" />
+    </Chain>
+  </Bundle>
+</Wix>

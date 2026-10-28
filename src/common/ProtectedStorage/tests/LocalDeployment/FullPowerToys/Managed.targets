@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup Condition="'$(PowerToysLocalE2E)' == 'true'">
+    <DefineConstants>$(DefineConstants);POWERTOYS_LOCAL_E2E_BUILD</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(PowerToysLocalE2E)' == 'true' And '$(MSBuildProjectName)' == 'ProtectedStorage.Client.Managed'">
+    <Compile Remove="StorageIdentity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\Managed\StorageIdentity.cs" />
+  </ItemGroup>
+  <Target Name="ValidateLocalE2EManagedBuild" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(PowerToysLocalE2E)' != 'true' Or '$(Configuration)' != 'Debug' Or '$(CIBuild)' == 'true'"
+           Text="The local PowerToys E2E target is a non-shipping Debug build only." />
+  </Target>
+</Project>

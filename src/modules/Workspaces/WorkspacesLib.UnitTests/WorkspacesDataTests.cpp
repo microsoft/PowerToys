@@ -7,34 +7,14 @@ namespace WorkspacesLibUnitTests
     TEST_CLASS(WorkspacesDataTests)
     {
     public:
-        TEST_METHOD(WorkspacesFile_ReturnsValidPath)
+        TEST_METHOD(LegacyWorkspacesFile_ReturnsMigrationOnlyPath)
         {
             // Act
-            std::wstring result = WorkspacesData::WorkspacesFile();
+            std::wstring result = WorkspacesData::LegacyWorkspacesFile();
 
             // Assert
             Assert::IsFalse(result.empty());
             Assert::IsTrue(result.find(L"workspaces.json") != std::wstring::npos);
-        }
-
-        TEST_METHOD(TempWorkspacesFile_ReturnsValidPath)
-        {
-            // Act
-            std::wstring result = WorkspacesData::TempWorkspacesFile();
-
-            // Assert
-            Assert::IsFalse(result.empty());
-            Assert::IsTrue(result.find(L"temp-workspaces.json") != std::wstring::npos);
-        }
-
-        TEST_METHOD(WorkspacesFile_TempWorkspacesFile_DifferentPaths)
-        {
-            // Act
-            std::wstring workspacesFile = WorkspacesData::WorkspacesFile();
-            std::wstring tempWorkspacesFile = WorkspacesData::TempWorkspacesFile();
-
-            // Assert
-            Assert::AreNotEqual(workspacesFile, tempWorkspacesFile);
         }
 
         TEST_METHOD(Position_ToRect_ConvertsCorrectly)

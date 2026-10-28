@@ -358,6 +358,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             var loader = ResourceLoaderInstance.ResourceLoader;
             AppTitleBar.Title = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
+#if POWERTOYS_LOCAL_E2E_BUILD
+            AppTitleBar.Title += " [Workspaces Local E2E]";
+#endif
 #if DEBUG
             AppTitleBar.Subtitle = "Debug";
 #endif
@@ -396,7 +399,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void CloseDialog_Click(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
+#if POWERTOYS_LOCAL_E2E_BUILD
+            const string ptTrayIconWindowClass = "PToyTrayIconWindowLocalE2E";
+#else
             const string ptTrayIconWindowClass = "PToyTrayIconWindow"; // Defined in runner/tray_icon.h
+#endif
             const nuint ID_CLOSE_MENU_COMMAND = 40001;                  // Generated resource from runner/runner.base.rc
 
             // Exit the XAML application

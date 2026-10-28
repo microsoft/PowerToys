@@ -45,6 +45,10 @@ Function Generate-FileList() {
     # by two components (WIX ICE30 "installed by two different components" breaks ref-counting).
     $fileExclusionList += @("Microsoft.CommandPalette.Extensions.winmd")
 
+    # The finalized signed Setup has a dedicated component and an embedded
+    # machine-removal action. Client DLLs remain normal application dependencies.
+    $fileExclusionList += @("PowerToys.ProtectedStorageSetup.exe")
+
     $dllsToIgnore = @("System.CodeDom.dll", "WindowsBase.dll")
 
     if ($fileDepsJson -eq [string]::Empty) {

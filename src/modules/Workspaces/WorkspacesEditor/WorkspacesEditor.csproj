@@ -76,6 +76,7 @@
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\WorkspacesCsharpLibrary\WorkspacesCsharpLibrary.csproj" />
+    <ProjectReference Include="..\..\..\common\ProtectedStorage\ProtectedStorage.Client.Managed\ProtectedStorage.Client.Managed.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Data\WorkspacesData.cs" />

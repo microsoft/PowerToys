@@ -2,6 +2,7 @@
 #include <optional>
 #include <string>
 #include <common/SettingsAPI/settings_objects.h>
+#include <common/utils/build_identity.h>
 
 // Start the Tray Icon
 void start_tray_icon(bool isProcessElevated, bool theme_adaptive);
@@ -26,4 +27,4 @@ typedef void (*main_loop_callback_function)(PVOID);
 bool dispatch_run_on_main_ui_thread(main_loop_callback_function _callback, PVOID data);
 
 // Must be the same as: settings-ui/Settings.UI/Views/ShellPage.xaml.cs -> ExitPTItem_Tapped() -> const string ptTrayIconWindowClass
-const inline wchar_t* pt_tray_icon_window_class = L"PToyTrayIconWindow";
+const inline wchar_t* pt_tray_icon_window_class = PowerToysBuildIdentity::TrayClass;

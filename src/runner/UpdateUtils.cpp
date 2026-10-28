@@ -308,6 +308,9 @@ void PeriodicUpdateWorker()
 
 void CheckForUpdatesCallback()
 {
+#ifdef POWERTOYS_LOCAL_E2E_BUILD
+    Logger::warn("Software update requests are disabled in the isolated Workspaces E2E build.");
+#else
     Logger::trace(L"Check for updates callback invoked");
     auto state = UpdateState::read();
     try
@@ -345,4 +348,5 @@ void CheckForUpdatesCallback()
     {
         Logger::error("CheckForUpdatesCallback: error while processing version info");
     }
+#endif
 }

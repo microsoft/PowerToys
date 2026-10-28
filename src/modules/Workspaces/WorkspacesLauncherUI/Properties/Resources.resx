@@ -253,4 +253,6 @@
     <value>Signature verification could not be completed.</value>
     <comment>Generic inconclusive verification result. Do not translate as a confirmed invalid signature, revocation, or malicious application.</comment>
   </data>
+  <data name="PreparingLaunch" xml:space="preserve"><value>Preparing workspace launch...</value></data>
+  <data name="LaunchStatusUnavailable" xml:space="preserve"><value>Launch status could not be connected. Check the Workspaces logs before starting another launch.</value></data>
 </root>

@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "CliCommands.h"
 #include "WorkspaceStore.h"
+#include "WorkspacesRepository.h"
 
 #include <algorithm>
 #include <cmath>
@@ -10,6 +11,7 @@
 #include <shlobj.h>
 #include <wil/resource.h>
 #include <common/utils/gpo.h>
+#include <common/utils/build_identity.h>
 
 namespace WorkspacesCli
 {
@@ -173,7 +175,7 @@ namespace WorkspacesCli
     {
         wil::unique_cotaskmem_string local;
         winrt::check_hresult(SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_DONT_VERIFY, nullptr, &local));
-        return std::filesystem::path(local.get()) / L"Microsoft" / L"PowerToys";
+        return std::filesystem::path(local.get()) / PowerToysBuildIdentity::SettingsFolder;
     }
 
     std::optional<json::JsonObject> ReadJson(const std::filesystem::path& path)
@@ -235,14 +237,7 @@ namespace WorkspacesCli
 
     std::vector<WorkspacesData::WorkspacesProject> LoadWorkspaces()
     {
-        const auto file = SettingsRoot() / L"Workspaces" / L"workspaces.json";
-        const auto data = ReadJson(file);
-        if (!data)
-            return {};
-        auto parsed = WorkspacesData::WorkspacesListJSON::FromJson(*data);
-        if (!parsed)
-            throw Error(8, L"invalidData", "Invalid workspace configuration.", false, file.wstring());
-        return *parsed;
+        return Workspaces::Repository().Load().projects;
     }
 
     std::vector<WorkspacesData::WorkspacesProject> Select(

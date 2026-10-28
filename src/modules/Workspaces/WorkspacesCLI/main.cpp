@@ -10,6 +10,7 @@
 #include <WorkspacesLib/CliCommands.h>
 #include <WorkspacesLib/LaunchSession.h>
 #include <WorkspacesLib/trace.h>
+#include <common/ProtectedStorage/ProtectedStorage.Common/Protocol.h>
 #include "Resources.h"
 #include "JsonOutput.h"
 
@@ -154,6 +155,12 @@ int wmain(int argc, wchar_t** argv)
         }
         WorkspacesSession::ExitIfExecutionUnresponsive(error);
         return error.exitCode;
+    }
+    catch (const PowerToys::ProtectedStorage::Error& error)
+    {
+        Logger::error("Protected Workspaces operation failed: {} (native={})", error.what(), error.code);
+        Print(WorkspacesCli::Failure(command, { 8, L"storageUnavailable", "The protected workspace repository could not be accessed." }), asJson);
+        return 8;
     }
     catch (const std::exception&)
     {

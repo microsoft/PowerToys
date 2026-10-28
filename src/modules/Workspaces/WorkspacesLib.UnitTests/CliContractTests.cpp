@@ -39,6 +39,25 @@ namespace WorkspacesLibUnitTests
         }
 
     public:
+        TEST_METHOD (ProtectedLaunchAndEditRequiresPreviewInsteadOfLegacyFileFallback)
+        {
+            WorkspacesSession::Request request;
+            request.id = L"{6CF910A2-D2E0-436D-A50E-41432A88452A}";
+            request.invokePoint = InvokePoint::LaunchAndEdit;
+            bool draft = false;
+            try
+            {
+                WorkspacesSession::LoadSnapshot(request, draft);
+                Assert::Fail(L"Missing protected preview must not load a saved or temporary JSON file.");
+            }
+            catch (const WorkspacesSession::Error& error)
+            {
+                Assert::AreEqual(8, error.exitCode);
+                Assert::AreEqual(std::wstring(L"invalidData"), error.code);
+                Assert::IsFalse(draft);
+            }
+        }
+
         TEST_METHOD (SharedSessionResultRoundTripsWithoutChangingTheWireEnvelope)
         {
             auto project = Project();

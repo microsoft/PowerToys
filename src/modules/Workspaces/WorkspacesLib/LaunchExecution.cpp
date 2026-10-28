@@ -4,6 +4,7 @@
 #include "CliCommands.h"
 #include "SessionLogging.h"
 #include "trace.h"
+#include "WorkspacesRepository.h"
 #include <WorkspacesLauncher/Launcher.h>
 
 #include <future>
@@ -27,7 +28,12 @@ namespace WorkspacesSession
                 throw Error(6, L"disabledByPolicy", "Workspaces is disabled by policy.");
             if (draft && (options.presentation != Presentation::Progress || invokePoint != InvokePoint::LaunchAndEdit))
                 throw Error(8, L"invalidData", "Invalid editor draft session.");
-            wil::unique_mutex_nothrow mutex(CreateMutexW(nullptr, TRUE, L"Local\\PowerToys_WorkspacesLauncher_InstanceMutex"));
+#ifdef POWERTOYS_LOCAL_E2E_BUILD
+            constexpr auto mutexName = L"Local\\PowerToysLocalE2E_WorkspacesLauncher_InstanceMutex";
+#else
+            constexpr auto mutexName = L"Local\\PowerToys_WorkspacesLauncher_InstanceMutex";
+#endif
+            wil::unique_mutex_nothrow mutex(CreateMutexW(nullptr, TRUE, mutexName));
             const auto mutexError = GetLastError();
             if (!mutex || mutexError == ERROR_ALREADY_EXISTS)
                 throw Error(5, L"busy", "Another workspace launch is running.");
@@ -83,7 +89,17 @@ namespace WorkspacesSession
             }
             if (!draft && invokePoint != InvokePoint::LaunchAndEdit)
             {
-                result.persistence = WorkspaceStore::UpdateLastLaunched(WorkspacesData::WorkspacesFile(), project.id, std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
+                try
+                {
+                    Workspaces::Repository().UpdateLaunchMetadata(project, project, std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
+                    result.persistence = WorkspaceStore::UpdateResult::Updated;
+                }
+                catch (const PowerToys::ProtectedStorage::StorageError& error)
+                {
+                    using Code = PowerToys::ProtectedStorage::ErrorCode;
+                    result.persistence = error.errorCode == Code::RevisionConflict ? WorkspaceStore::UpdateResult::Conflict :
+                        error.errorCode == Code::OutcomeUnknown ? WorkspaceStore::UpdateResult::Unverified : WorkspaceStore::UpdateResult::Failed;
+                }
                 if (*result.persistence != WorkspaceStore::UpdateResult::Updated)
                     Logger::warn("Workspace launch history could not be saved.");
             }

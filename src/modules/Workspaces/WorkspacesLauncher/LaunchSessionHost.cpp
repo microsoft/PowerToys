@@ -94,11 +94,19 @@ namespace WorkspacesSession
             OperationLifetime lifetime(handles.ownerPid,
                                        options.timeoutSeconds ? options.timeoutSeconds * 1000 + 5000 : INFINITE,
                                        handles.ownerLifetime.get());
-            auto project = WorkspacesData::WorkspacesProjectJSON::FromJson(request.GetNamedObject(L"workspace"));
-            if (!project)
-                throw Error(8, L"invalidData", "Invalid session workspace.");
-            const bool draft = request.GetNamedBoolean(L"editorDraft");
-            return Execute(std::move(*project), invoke, draft, options);
+            if (!request.GetNamedBoolean(L"protectedSelection", false))
+                throw Error(8, L"invalidData", "Session hosts require a protected repository selection, not caller-supplied workspace data.");
+            Request selection;
+            selection.id = request.GetNamedString(L"id");
+            selection.name = request.GetNamedString(L"name");
+            selection.previewId = winrt::to_string(request.GetNamedString(L"previewId"));
+            selection.invokePoint = invoke;
+            selection.presentation = options.presentation;
+            if (selection.id.empty() == selection.name.empty())
+                throw Error(8, L"invalidData", "Invalid protected workspace selector.");
+            bool draft = false;
+            auto project = LoadSnapshot(selection, draft);
+            return Execute(std::move(project), invoke, draft, options);
         }
     }
 

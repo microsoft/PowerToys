@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <limits>
 #include <common/utils/elevation.h>
+#include "WorkspacesRepository.h"
 #include <common/utils/gpo.h>
 #include <wil/resource.h>
 #include <wil/stl.h>
@@ -87,23 +88,18 @@ namespace WorkspacesSession
         editorDraft = false;
         if (request.invokePoint == InvokePoint::LaunchAndEdit)
         {
-            const auto loaded = WorkspacesCli::ReadJson(WorkspacesData::TempWorkspacesFile());
-            if (loaded)
-            {
-                auto draft = WorkspacesData::WorkspacesProjectJSON::FromJson(*loaded);
-                if (!draft)
-                    throw Error(8, L"invalidData", "The editor workspace draft could not be read.", false, WorkspacesData::TempWorkspacesFile());
-                if (WorkspacesCli::NormalizeId(draft->id) == WorkspacesCli::NormalizeId(request.id))
-                {
-                    editorDraft = true;
-                    return *draft;
-                }
-            }
+            if (request.previewId.empty())
+                throw Error(8, L"invalidData", "An authenticated editor preview is required.");
+            auto draft = Workspaces::Repository().ReadPreview(request.previewId);
+            if (!Workspaces::Repository::SameIdentity(draft.id, request.id))
+                throw Error(8, L"invalidData", "The editor preview belongs to another workspace.");
+            editorDraft = true;
+            return draft;
         }
         WorkspacesCli::Options selection;
         selection.id = request.id;
         selection.name = request.name;
-        return WorkspacesCli::Select(WorkspacesCli::LoadWorkspaces(), selection).front();
+        return WorkspacesCli::Select(Workspaces::Repository().Load().projects, selection).front();
     }
 
     void PrepareProject(WorkspacesData::WorkspacesProject& project, bool editorDraft, Presentation presentation)
@@ -118,15 +114,13 @@ namespace WorkspacesSession
             throw Error(8, L"invalidData", "Workspace identity is invalid.");
         }
         auto prepared = project;
-        const bool missingIds = AssignMissingIds(prepared);
+        Workspaces::Repository::Validate({ prepared }, editorDraft);
         const auto identitySnapshot = prepared;
-        const bool resolved = Utils::Apps::UpdateWorkspacesApps(prepared, Utils::Apps::GetAppsList());
+        const bool resolved = Utils::Apps::UpdateWorkspacesApps(prepared, Utils::Apps::GetWorkspaceApps(prepared, true));
         WorkspacesCli::ValidateLaunch(prepared);
-        if (!editorDraft && (missingIds || (resolved && presentation == Presentation::Progress)))
+        if (!editorDraft && resolved && presentation == Presentation::Progress)
         {
-            // CLI resolves paths within its snapshot; the existing GUI also persists refreshed metadata.
-            const auto& update = presentation == Presentation::Progress ? prepared : identitySnapshot;
-            CommitMetadata(WorkspacesData::WorkspacesFile(), project, update);
+            Workspaces::Repository().UpdateLaunchMetadata(identitySnapshot, prepared);
         }
         project = std::move(prepared);
     }
@@ -297,23 +291,33 @@ namespace WorkspacesSession
         }
     }
 
+    static Result StartCore(const Request& request, const WorkspacesData::WorkspacesProject& project, bool draft, HANDLE cancelEvent, bool resolveInHost);
+
     Result Start(const Request& request, HANDLE cancelEvent)
     {
         CheckRequest(request);
         if (request.id.empty() == request.name.empty())
             throw Error(2, L"invalidArguments", "A session requires exactly one workspace selector.");
+        if (is_process_elevated())
+            return StartCore(request, {}, false, cancelEvent, true);
         bool draft{};
         const auto project = LoadSnapshot(request, draft);
-        return StartSnapshot(request, project, draft, cancelEvent);
+        return StartCore(request, project, draft, cancelEvent, false);
     }
 
     Result StartSnapshot(const Request& request, const WorkspacesData::WorkspacesProject& project, bool draft, HANDLE cancelEvent)
+    {
+        return StartCore(request, project, draft, cancelEvent, false);
+    }
+
+    static Result StartCore(const Request& request, const WorkspacesData::WorkspacesProject& project, bool draft, HANDLE cancelEvent, bool resolveInHost)
     {
         CheckRequest(request);
         if (draft && (request.presentation != Presentation::Progress || request.invokePoint != InvokePoint::LaunchAndEdit))
             throw Error(2, L"invalidArguments", "Invalid editor draft session.");
         const auto deadline = request.timeoutSeconds ? GetTickCount64() + request.timeoutSeconds * 1000ULL : 0;
-        WorkspacesCli::ValidateLaunch(project, true);
+        if (!resolveInHost)
+            WorkspacesCli::ValidateLaunch(project, true);
         const auto executable = HostPath();
         if (!std::filesystem::is_regular_file(executable.parent_path() / L"PowerToys.WorkspacesWindowArranger.exe"))
             throw Error(6, L"unavailable", "The matching Workspaces arranger is unavailable.");
@@ -330,7 +334,15 @@ namespace WorkspacesSession
         payload.SetNamedValue(L"presentation", json::value(static_cast<int>(request.presentation)));
         payload.SetNamedValue(L"invokePoint", json::value(static_cast<int>(request.invokePoint)));
         payload.SetNamedValue(L"editorDraft", json::value(draft));
-        payload.SetNamedValue(L"workspace", WorkspacesData::WorkspacesProjectJSON::ToJson(project));
+        if (resolveInHost)
+        {
+            payload.SetNamedValue(L"protectedSelection", json::value(true));
+            payload.SetNamedValue(L"id", json::value(request.id));
+            payload.SetNamedValue(L"name", json::value(request.name));
+            payload.SetNamedValue(L"previewId", json::value(winrt::to_hstring(request.previewId)));
+        }
+        else
+            payload.SetNamedValue(L"workspace", WorkspacesData::WorkspacesProjectJSON::ToJson(project));
         const auto bytes = winrt::to_string(payload.Stringify());
         if (bytes.size() > MaxPayload)
             throw Error(8, L"invalidData", "Workspace exceeds the session payload limit.");
@@ -379,7 +391,8 @@ namespace WorkspacesSession
         process = StartMediumWorker(executable.wstring(), operationId, { mapping.get(), cancel.get(), write.get() }, deadline);
         write.reset();
         auto result = ReadResult(process.hProcess, read.get(), cancel.get(), deadline, operationId);
-        if (WorkspacesCli::NormalizeId(result.project.id) != WorkspacesCli::NormalizeId(project.id))
+        const auto expectedId = resolveInHost ? request.id : project.id;
+        if (!expectedId.empty() && WorkspacesCli::NormalizeId(result.project.id) != WorkspacesCli::NormalizeId(expectedId))
             throw Error(9, L"outcomeUnknown", "Session returned a different workspace.");
         return result;
     }

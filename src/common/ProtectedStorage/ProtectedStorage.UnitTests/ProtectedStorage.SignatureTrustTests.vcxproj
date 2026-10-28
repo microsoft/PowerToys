@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Globals"><ProjectGuid>{B8F1AED5-9900-41E5-B259-DB3DD13CD902}</ProjectGuid><ProjectName>ProtectedStorage.SignatureTrustTests</ProjectName></PropertyGroup>
+  <PropertyGroup Label="Configuration"><ConfigurationType>Application</ConfigurationType><CharacterSet>Unicode</CharacterSet></PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="..\ProtectedStorage.Native.props" />
+  <PropertyGroup>
+    <RunVSTest>false</RunVSTest>
+    <IntDir>$(MSBuildProjectDirectory)\obj\SignatureTrust\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemGroup><ClCompile Include="SignatureTrustTests.cpp" /></ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="Test" DependsOnTargets="Build"><Exec Command="&quot;$(TargetPath)&quot;" WorkingDirectory="$(MSBuildProjectDirectory)" /></Target>
+</Project>

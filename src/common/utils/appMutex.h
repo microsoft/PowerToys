@@ -10,7 +10,11 @@
 
 namespace
 {
+#ifdef POWERTOYS_LOCAL_E2E_BUILD
+    constexpr inline wchar_t POWERTOYS_MSI_MUTEX_NAME[] = L"Local\\PowerToysLocalE2E_Runner_InstanceMutex";
+#else
     constexpr inline wchar_t POWERTOYS_MSI_MUTEX_NAME[] = L"Local\\PowerToys_Runner_MSI_InstanceMutex";
+#endif
     constexpr inline wchar_t POWERTOYS_BOOTSTRAPPER_MUTEX_NAME[] = L"Local\\PowerToys_Bootstrapper_InstanceMutex";
 }
 

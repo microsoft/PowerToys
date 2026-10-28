@@ -162,7 +162,7 @@ namespace updating
 
         // .exe (WiX bootstrapper) identity: version resource CompanyName must be
         // "Microsoft Corporation" and ProductName must start with "PowerToys (Preview)".
-        bool exe_version_info_is_powertoys(const std::wstring& installerPath)
+        bool exe_version_info_is_powertoys(const std::wstring& installerPath, const wchar_t* requiredOriginalFilename = nullptr)
         {
             DWORD ignoredHandle = 0;
             const DWORD size = GetFileVersionInfoSizeW(installerPath.c_str(), &ignoredHandle);
@@ -202,7 +202,11 @@ namespace updating
                 if (_wcsicmp(company.c_str(), MICROSOFT_ORGANIZATION_NAME) == 0 &&
                     product.starts_with(POWERTOYS_PRODUCT_NAME_PREFIX))
                 {
-                    return true;
+                    if (!requiredOriginalFilename ||
+                        _wcsicmp(read_version_string(versionInfo, translations[i].language, translations[i].codePage, L"OriginalFilename").c_str(), requiredOriginalFilename) == 0)
+                    {
+                        return true;
+                    }
                 }
             }
 
@@ -278,7 +282,7 @@ namespace updating
         }
     }
 
-    bool verify_installer_trust(const std::wstring& installerPath, void* verifiedFileHandle)
+    static bool verify_powertoys_file_trust(const std::wstring& installerPath, void* verifiedFileHandle, bool protectedStorageSetup)
     {
         WINTRUST_FILE_INFO fileInfo{};
         fileInfo.cbStruct = sizeof(fileInfo);
@@ -342,12 +346,25 @@ namespace updating
         // Identity pinning: confirm this is the PowerToys installer, not merely any Microsoft-signed
         // binary, so a different Microsoft-signed installer/tool can't be used for a confused-deputy
         // elevation.
-        if (!is_expected_powertoys_installer(installerPath))
+        const bool identityMatches = protectedStorageSetup ?
+            exe_version_info_is_powertoys(installerPath, L"PowerToys.ProtectedStorageSetup.exe") :
+            is_expected_powertoys_installer(installerPath);
+        if (!identityMatches)
         {
             Logger::error(L"Installer '{}' is Microsoft-signed but is not the PowerToys installer; refusing to run it elevated", installerPath);
             return false;
         }
 
         return true;
+    }
+
+    bool verify_installer_trust(const std::wstring& installerPath, void* verifiedFileHandle)
+    {
+        return verify_powertoys_file_trust(installerPath, verifiedFileHandle, false);
+    }
+
+    bool verify_protected_storage_setup_trust(const std::wstring& imagePath, void* verifiedFileHandle)
+    {
+        return verify_powertoys_file_trust(imagePath, verifiedFileHandle, true);
     }
 }

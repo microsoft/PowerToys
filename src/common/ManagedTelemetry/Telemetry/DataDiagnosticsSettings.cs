@@ -9,7 +9,11 @@ namespace Microsoft.PowerToys.Telemetry
 {
     public static class DataDiagnosticsSettings
     {
+#if POWERTOYS_LOCAL_E2E_BUILD
+        private static readonly string DataDiagnosticsRegistryKey = @"HKEY_CURRENT_USER\Software\Classes\PowerToysLocalE2E\";
+#else
         private static readonly string DataDiagnosticsRegistryKey = @"HKEY_CURRENT_USER\Software\Classes\PowerToys\";
+#endif
         private static readonly string DataDiagnosticsRegistryValueName = @"AllowDataDiagnostics";
         private static readonly string DataDiagnosticsDataDiagnosticsUserActionRegistryValueName = @"DataDiagnosticsUserAction";
         private static readonly string DataDiagnosticsDataDiagnosticsViewDataRegistryValueName = @"DataDiagnosticsViewEnabled";

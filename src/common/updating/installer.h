@@ -24,4 +24,7 @@ namespace updating
     // were verified are the bytes that get executed, fully closing the time-of-check /
     // time-of-use window.
     bool verify_installer_trust(const std::wstring& installerPath, void* verifiedFileHandle = nullptr);
+
+    // The protected-storage maintenance entry has a distinct signed PE identity.
+    bool verify_protected_storage_setup_trust(const std::wstring& imagePath, void* verifiedFileHandle);
 }

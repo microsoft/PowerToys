@@ -11,12 +11,13 @@
 
 #include <wil\stl.h>
 #include <wil\win32_helpers.h>
+#include "../../utils/build_identity.h"
 
 namespace fs = std::filesystem;
 
 namespace
 {
-    constexpr inline const wchar_t* DataDiagnosticsRegKey = L"Software\\Classes\\PowerToys";
+    constexpr inline const wchar_t* DataDiagnosticsRegKey = PowerToysBuildIdentity::DiagnosticsKey;
     constexpr inline const wchar_t* DataDiagnosticsRegValueName = L"AllowDataDiagnostics";
     constexpr inline const wchar_t* ViewDataDiagnosticsRegValueName = L"DataDiagnosticsViewEnabled";
 
@@ -27,7 +28,7 @@ namespace
         std::wstring result{ local_app_path };
         CoTaskMemFree(local_app_path);
 
-        result += L"\\Microsoft\\PowerToys";
+        result += L"\\" + std::wstring(PowerToysBuildIdentity::SettingsFolder);
         std::filesystem::path save_path(result);
         if (!std::filesystem::exists(save_path))
         {

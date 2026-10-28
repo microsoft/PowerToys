@@ -16,6 +16,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public CheckUpdateControl()
         {
             InitializeComponent();
+#if POWERTOYS_LOCAL_E2E_BUILD
+            IsEnabled = false;
+            ToolTipService.SetToolTip(this, "Software updates are disabled in the Workspaces Local E2E build.");
+#endif
         }
 
         private void UpdateButton_Click(object sender, RoutedEventArgs e)

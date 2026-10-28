@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Globals"><ProjectGuid>{A96A3B29-FC3B-4141-888D-3C14C849AAE9}</ProjectGuid><ProjectName>ProtectedStorage.Runtime</ProjectName></PropertyGroup>
+  <PropertyGroup Label="Configuration"><ConfigurationType>Application</ConfigurationType><CharacterSet>Unicode</CharacterSet></PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="..\ProtectedStorage.Native.props" />
+  <PropertyGroup><TargetName>Runtime</TargetName></PropertyGroup>
+  <ItemGroup><ClCompile Include="Runtime.cpp" /><ClCompile Include="BlobStore.cpp" /><ClInclude Include="BlobStore.h" /><ResourceCompile Include="..\Version.rc" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="..\ProtectedStorage.Common\ProtectedStorage.Common.vcxproj"><Project>{918F71A9-BC92-481E-9501-769353CE45EB}</Project></ProjectReference></ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

@@ -97,7 +97,11 @@ namespace WorkspacesLauncherUI
                 }
             }
 
+#if POWERTOYS_LOCAL_E2E_BUILD
+            var appName = "Local\\PowerToysLocalE2E_Workspaces_LauncherUI_InstanceMutex" + operationId;
+#else
             var appName = "Local\\PowerToys_Workspaces_LauncherUI_InstanceMutex" + operationId;
+#endif
             bool createdNew;
             _instanceMutex = new Mutex(true, appName, out createdNew);
             if (!createdNew)

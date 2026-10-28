@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.props" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\ProtectedStorageTests</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="..\..\..\..\modules\Workspaces\WorkspacesLib.UnitTests\StorageValidationVectors.json" Link="StorageValidationVectors.json" CopyToOutputDirectory="PreserveNewest" />
+    <PackageReference Include="MSTest" />
+    <ProjectReference Include="..\..\ProtectedStorage.Client.Managed\ProtectedStorage.Client.Managed.csproj" />
+    <ProjectReference Include="..\..\..\..\modules\Workspaces\WorkspacesCsharpLibrary\WorkspacesCsharpLibrary.csproj" />
+  </ItemGroup>
+</Project>

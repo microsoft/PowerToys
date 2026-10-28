@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using WorkspacesCsharpLibrary.Utils;
 using static WorkspacesCsharpLibrary.Data.WorkspacesData;
 
@@ -10,11 +11,10 @@ namespace WorkspacesCsharpLibrary.Data;
 
 public class WorkspacesData : WorkspacesEditorData<WorkspacesListWrapper>
 {
-    public string File => FolderUtils.DataFolder() + "\\workspaces.json";
-
     public struct WorkspacesListWrapper
     {
-        public List<ProjectWrapper> Workspaces { get; init; }
+        [JsonPropertyName("workspaces")]
+        public List<ProjectWrapper> Workspaces { get; set; }
     }
 
     public enum OrderBy
