@@ -159,7 +159,7 @@ jobs:
       EffectiveVersionNumber: ${{ parameters.resolvedVersionNumber }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
-    ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
+    ${{ if eq(parameters.runTests, true) }}:
       MSBuildMainBuildTargets: Build;Test
     ${{ else }}:
       MSBuildMainBuildTargets: Build
