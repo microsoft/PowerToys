@@ -20,7 +20,7 @@ public class BasicTests : CommandPaletteTestBase
         var searchFileItem = CommandPaletteSession.Find<NavigationViewItem>("Search files");
         Assert.AreEqual("Search files", searchFileItem.Name);
         Step("Opening the Search files extension");
-        DoubleClickResult(searchFileItem);
+        InvokeResultWithEnter(searchFileItem.Name);
         Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 45_000));
 
         SetFilesExtensionSearchBox("Downloads");

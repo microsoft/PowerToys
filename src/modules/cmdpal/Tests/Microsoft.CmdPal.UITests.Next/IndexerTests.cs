@@ -5,6 +5,8 @@
 using System.Text;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.Storage;
+using Windows.Storage.Search;
 
 namespace Microsoft.CmdPal.UITests;
 
@@ -30,6 +32,35 @@ public class IndexerTests : CommandPaletteTestBase
         Directory.CreateDirectory(documentsPath);
         testFilePath = Path.Combine(documentsPath, testFileName);
         File.WriteAllText(testFilePath, TestFileContent, Encoding.UTF8);
+        var indexed = false;
+        try
+        {
+            Step($"Waiting for Windows Search to index fixture '{testFileName}' before launching Command Palette");
+            var folder = StorageFolder.GetFolderFromPathAsync(documentsPath).AsTask().GetAwaiter().GetResult();
+            var options = new QueryOptions(CommonFileQuery.OrderByName, [".txt"])
+            {
+                IndexerOption = IndexerOption.OnlyUseIndexer,
+                FolderDepth = FolderDepth.Shallow,
+                ApplicationSearchFilter = $"System.FileName:=\"{testFileName}\"",
+            };
+            var readiness = WaitHelper.WaitForStable(
+                observe: () => folder.CreateFileQueryWithOptions(options).GetFilesAsync(0, 1)
+                    .AsTask().GetAwaiter().GetResult()
+                    .Any(file => string.Equals(file.Path, testFilePath, StringComparison.OrdinalIgnoreCase)),
+                isMatch: present => present,
+                timeoutMS: 120_000,
+                requiredConsecutiveMatches: 1,
+                pollIntervalMS: 1_000);
+            indexed = readiness.Succeeded;
+            Assert.IsTrue(indexed, $"Windows Search did not index fixture '{testFilePath}' before UI-test startup.");
+        }
+        finally
+        {
+            if (!indexed)
+            {
+                File.Delete(testFilePath);
+            }
+        }
     }
 
     [TestCleanup]
@@ -129,7 +160,7 @@ public class IndexerTests : CommandPaletteTestBase
         var searchFileItem = CommandPaletteSession.Find<NavigationViewItem>("Search files");
         Assert.AreEqual("Search files", searchFileItem.Name);
         Step("Opening the Search files extension");
-        DoubleClickResult(searchFileItem);
+        InvokeResultWithEnter(searchFileItem.Name);
         Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 45_000));
     }
 
