@@ -42,10 +42,17 @@ function Get-ManagedBlock {
     $start = $Body.IndexOf($beginMarker, [StringComparison]::Ordinal)
     $end = $Body.IndexOf($endMarker, [StringComparison]::Ordinal)
     if ($start -ge 0 -and $end -gt $start) {
-        return $Body.Substring($start, ($end + $endMarker.Length) - $start)
+        $block = $Body.Substring($start, ($end + $endMarker.Length) - $start)
+    }
+    else {
+        $block = "$beginMarker`n$($Body.Trim())`n$endMarker"
     }
 
-    return "$beginMarker`n$($Body.Trim())`n$endMarker"
+    $heading = [regex]::new('(?m)^# [^\r\n]*\r?$')
+    if ($heading.IsMatch($block)) {
+        return $heading.Replace($block, "# $releaseTitle", 1)
+    }
+    return $block.Replace($beginMarker, "$beginMarker`n# $releaseTitle`n")
 }
 
 function Merge-ReleaseBody {

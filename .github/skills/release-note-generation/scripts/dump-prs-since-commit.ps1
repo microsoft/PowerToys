@@ -51,6 +51,7 @@ function Write-DebugMsg($msg) { if ($PSBoundParameters.ContainsKey('Verbose') -o
 
 # Load member list from Generated Files/ReleaseNotes/MemberList.md (internal team - no thanks needed)
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+. (Join-Path $scriptDir "release-contributors.ps1")
 $repoRoot = Resolve-Path (Join-Path $scriptDir "..\..\..\..")
 $defaultMemberListPath = Join-Path $repoRoot "Generated Files\ReleaseNotes\MemberList.md"
 $memberListPath = $defaultMemberListPath
@@ -196,54 +197,6 @@ foreach ($mc in $mergeCommits) {
     $prToCommits[$mc.Pr] += $mc.Sha
 }
 
-<#
-.SYNOPSIS
-    Get all authors (including co-authors) for a set of commits via GitHub GraphQL API.
-.DESCRIPTION
-    Uses the Commit.authors field in GitHub's GraphQL API which natively includes
-    co-authors (from Co-authored-by trailers). Returns GitHub usernames (login)
-    without any email parsing — GitHub resolves the association for us.
-
-    NOTE: For squash merges this captures all co-authors correctly because GitHub
-    preserves Co-authored-by trailers in the squash commit. For traditional merge
-    commits, only the merger's author is returned — co-authors on individual PR
-    commits are not traversed. This is acceptable because PowerToys primarily uses
-    squash merging.
-#>
-function Get-CommitAuthors {
-    param(
-        [string[]]$CommitShas,
-        [string]$RepoFullName = "microsoft/PowerToys"
-    )
-    $parts = $RepoFullName -split '/'
-    $owner = $parts[0]
-    $repoName = $parts[1]
-    $allAuthors = @()
-
-    foreach ($sha in $CommitShas) {
-        try {
-            $query = "{ repository(owner: `"$owner`", name: `"$repoName`") { object(expression: `"$sha`") { ... on Commit { authors(first: 20) { nodes { user { login } name } } } } } }"
-            $result = gh api graphql -f query="$query" 2>$null | ConvertFrom-Json
-            $nodes = $result.data.repository.object.authors.nodes
-            if ($nodes) {
-                foreach ($node in $nodes) {
-                    if ($node.user -and $node.user.login) {
-                        $allAuthors += $node.user.login
-                    } else {
-                        # User without a GitHub account (rare) — use display name as fallback
-                        Write-DebugMsg "Commit $sha has an author without GitHub account: $($node.name)"
-                    }
-                }
-            }
-        }
-        catch {
-            Write-DebugMsg "GraphQL authors query failed for commit ${sha}: $_"
-        }
-    }
-
-    return $allAuthors | Select-Object -Unique
-}
-
 # Query GitHub for each PR
 $prDetails = @()
 function Get-CopilotSummaryFromPrJson {
@@ -342,30 +295,22 @@ foreach ($pr in $prNumbers) {
         $bodyValue = $bodyValue -replace '\s+', ' '
 
         # Collect all contributors: PR author + co-authors from commit messages
-        $authorLogin = $json.author.login
-        $allContributors = @($authorLogin)
+        $allContributors = @($json.author)
 
         # Extract all authors (including co-authors) from associated commits via GitHub GraphQL API
         if ($prToCommits.ContainsKey([int]$pr)) {
-            $commitAuthors = Get-CommitAuthors -CommitShas $prToCommits[[int]$pr] -RepoFullName $Repo
+            $commitAuthors = @(Get-ReleaseCommitAuthors -CommitShas $prToCommits[[int]$pr] -Repo $Repo)
             if ($commitAuthors) {
                 $allContributors += $commitAuthors
             }
         }
 
-        # Deduplicate contributors (case-insensitive)
-        $allContributors = $allContributors | Where-Object { $_ } | Sort-Object -Unique
-
-        # Filter to only external contributors (not in member list) for thanks
-        $externalContributors = @()
-        if ($memberList.Count -gt 0) {
-            $externalContributors = $allContributors | Where-Object { -not ($memberList -contains $_) }
-        } else {
-            $externalContributors = $allContributors
-        }
+        $externalContributors = @(Get-ReleaseExternalContributors -Contributors $allContributors -Members $memberList)
 
         # Author column: all contributors (comma-separated)
-        $authorField = ($allContributors -join ', ')
+        $authorField = (@($allContributors | Where-Object { $_ } | ForEach-Object {
+            Get-ReleaseContributorLogin -Contributor $_
+        } | Where-Object { $_ } | Sort-Object -Unique) -join ', ')
 
         # NeedThanks column: comma-separated list of external contributors who
         # deserve thanks attribution. Empty string means no thanks needed.

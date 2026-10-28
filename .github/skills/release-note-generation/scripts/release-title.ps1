@@ -4,7 +4,7 @@
 function Get-PowerToysReleaseTitle {
     <#
     .SYNOPSIS
-        Selects the release title from the requested release type and build source branch.
+        Selects the release title and pads three-component display versions without changing tags.
     #>
     [CmdletBinding()]
     param(
@@ -13,13 +13,15 @@ function Get-PowerToysReleaseTitle {
         [switch]$Prerelease
     )
 
+    $displayTag = if ($Tag -match '^v[0-9]+\.[0-9]+\.[0-9]+$') { "$Tag.0" } else { $Tag }
+
     if (-not $Prerelease) {
-        return "Release $Tag"
+        return "Release $displayTag"
     }
 
     switch ($SourceBranch) {
-        "refs/heads/stable" { return "Release preview $Tag" }
-        "refs/heads/main" { return "Development preview $Tag" }
+        "refs/heads/stable" { return "Release preview $displayTag" }
+        "refs/heads/main" { return "Development preview $displayTag" }
         default { throw "A prerelease title requires the build's SourceBranch (refs/heads/main or refs/heads/stable)." }
     }
 }

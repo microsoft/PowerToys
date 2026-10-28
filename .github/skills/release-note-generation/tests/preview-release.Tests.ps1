@@ -734,9 +734,9 @@ Describe "release title selection" {
     }
 
     It "generates the default draft title <ExpectedTitle>" -TestCases @(
-        @{ Prerelease = $false; SourceBranch = $null; ExpectedTitle = "Release v0.101.2181" },
-        @{ Prerelease = $true; SourceBranch = "refs/heads/stable"; ExpectedTitle = "Release preview v0.101.2181" },
-        @{ Prerelease = $true; SourceBranch = "refs/heads/main"; ExpectedTitle = "Development preview v0.101.2181" }
+        @{ Prerelease = $false; SourceBranch = $null; ExpectedTitle = "Release v0.101.2181.0" },
+        @{ Prerelease = $true; SourceBranch = "refs/heads/stable"; ExpectedTitle = "Release preview v0.101.2181.0" },
+        @{ Prerelease = $true; SourceBranch = "refs/heads/main"; ExpectedTitle = "Development preview v0.101.2181.0" }
     ) {
         param($Prerelease, $SourceBranch, $ExpectedTitle)
 
@@ -774,20 +774,27 @@ Describe "release title selection" {
         $output.Contains("--title $ExpectedTitle --notes-file") | Should Be $true
         $output.Contains("--draft") | Should Be $true
         $output.Contains("--prerelease") | Should Be $Prerelease
+        $output.Contains("--target 0123456789abcdef0123456789abcdef01234567") | Should Be $true
+        $output.Contains("release create v0.101.2181 ") | Should Be $true
+    }
+
+    It "does not append another component to an existing four-component display version" {
+        Get-PowerToysReleaseTitle -Tag "v0.101.2181.0" | Should Be "Release v0.101.2181.0"
     }
 }
 
 Describe "draft preview release dry run" {
     It "constructs a draft-only operation for <SourceBranch> without contacting GitHub" -TestCases @(
-        @{ SourceBranch = "refs/heads/main"; ExpectedTitle = "Development preview v0.101.2181" },
-        @{ SourceBranch = "refs/heads/stable"; ExpectedTitle = "Release preview v0.101.2181" }
+        @{ SourceBranch = "refs/heads/main"; ExpectedTitle = "Development preview v0.101.2181.0" },
+        @{ SourceBranch = "refs/heads/stable"; ExpectedTitle = "Release preview v0.101.2181.0" }
     ) {
         param($SourceBranch, $ExpectedTitle)
 
         $bodyPath = Join-Path $TestDrive "release-notes.md"
+        $mergedPath = Join-Path $TestDrive "display-version-notes.md"
         $assetsPath = Join-Path $TestDrive ("assets-" + (Split-Path $SourceBranch -Leaf))
         New-Item -ItemType Directory -Path $assetsPath | Out-Null
-        "Preview notes" | Set-Content -LiteralPath $bodyPath
+        "# Old three-component title`n`nPreview notes" | Set-Content -LiteralPath $bodyPath
         "installer" | Set-Content -LiteralPath (Join-Path $assetsPath "PowerToysSetup-0.101.2181.0-x64.exe")
         "local audit only" | Set-Content -LiteralPath (Join-Path $assetsPath "release-manifest.json")
         Write-TestAssetsManifest -AssetsPath $assetsPath -AssetNames @("PowerToysSetup-0.101.2181.0-x64.exe")
@@ -798,12 +805,14 @@ Describe "draft preview release dry run" {
             -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
             -BodyPath $bodyPath `
             -AssetsDirectory $assetsPath `
+            -MergedBodyOutputPath $mergedPath `
             -DryRun
 
         $result.draft | Should Be $true
         $result.prerelease | Should Be $true
         $result.tag | Should Be "v0.101.2181"
         $result.title | Should Be $ExpectedTitle
+        ((Get-Content -LiteralPath $mergedPath) -contains "# $ExpectedTitle") | Should Be $true
         $result.assetNames.Count | Should Be 1
         $result.assetNames[0] | Should Be "PowerToysSetup-0.101.2181.0-x64.exe"
         ($result.assetNames -contains "release-manifest.json") | Should Be $false
@@ -846,6 +855,7 @@ New generated notes
         $merged.Contains("New generated notes") | Should Be $true
         $merged.Contains("Old generated notes") | Should Be $false
         $merged.Contains("Human conclusion") | Should Be $true
+        $merged.Contains("# Development preview v0.101.2181.0") | Should Be $true
     }
 
     It "refuses to update a published release" {
@@ -912,8 +922,8 @@ New generated notes
     }
 
     It "writes a final review for <SourceBranch> independently of build intent" -TestCases @(
-        @{ SourceBranch = "refs/heads/main"; BuildIntent = "preview-release"; ExpectedTitle = "Development preview v0.101.2181" },
-        @{ SourceBranch = "refs/heads/stable"; BuildIntent = "stable-release"; ExpectedTitle = "Release preview v0.101.2181" }
+        @{ SourceBranch = "refs/heads/main"; BuildIntent = "preview-release"; ExpectedTitle = "Development preview v0.101.2181.0" },
+        @{ SourceBranch = "refs/heads/stable"; BuildIntent = "stable-release"; ExpectedTitle = "Release preview v0.101.2181.0" }
     ) {
         param($SourceBranch, $BuildIntent, $ExpectedTitle)
 
@@ -925,11 +935,12 @@ New generated notes
         $reviewPath = Join-Path $TestDrive "final-review.md"
         New-Item -ItemType Directory -Path $assetsPath | Out-Null
         New-Item -ItemType Directory -Path $deltaPath | Out-Null
-        @'
+        @"
 <!-- BEGIN POWERTOYS PREVIEW AGENT -->
+# $ExpectedTitle
 Preview notes
 <!-- END POWERTOYS PREVIEW AGENT -->
-'@ | Set-Content -LiteralPath $bodyPath
+"@ | Set-Content -LiteralPath $bodyPath
         "installer" | Set-Content -LiteralPath (Join-Path $assetsPath "PowerToysSetup-0.101.2181.0-x64.exe")
         Write-TestAssetsManifest -AssetsPath $assetsPath -AssetNames @("PowerToysSetup-0.101.2181.0-x64.exe")
         "[]" | Set-Content -LiteralPath (Join-Path $deltaPath "delta-prs.json")
@@ -977,6 +988,26 @@ Preview notes
         $review.Contains("154000000") | Should Be $true
         $review.Contains("v0.100.0@1123456789ab") | Should Be $true
         $review.Contains("Delta mode: same-lineage") | Should Be $true
+    }
+
+    It "rejects a stale three-component body heading even when the release title is correct" {
+        $bodyPath = Join-Path $TestDrive "stale-heading.md"
+        @'
+<!-- BEGIN POWERTOYS PREVIEW AGENT -->
+# Development preview v0.101.2181
+<!-- END POWERTOYS PREVIEW AGENT -->
+'@ | Set-Content -LiteralPath $bodyPath
+
+        {
+            & (Join-Path $scripts "verify-draft-preview-release.ps1") `
+                -Tag "v0.101.2181" `
+                -SourceBranch "refs/heads/main" `
+                -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
+                -AssetsDirectory $TestDrive `
+                -BodyPath $bodyPath `
+                -OutputPath (Join-Path $TestDrive "stale-heading-review.md") `
+                -DryRun
+        } | Should Throw "Managed release-note heading"
     }
 
     It "rejects a title source branch that conflicts with the build context" {
@@ -1032,6 +1063,22 @@ Preview notes
 }
 
 Describe "preview PR metadata attribution" {
+    BeforeAll {
+        function gh {
+            $global:LASTEXITCODE = 0
+            if ($args[0] -eq "pr") {
+                return '{"number":123,"title":"Contributor test","labels":[],"author":{"login":"app/copilot-swe-agent","is_bot":true},"url":"https://example.test/123","body":"","reviews":[],"comments":[],"mergedAt":"2026-10-28T00:00:00Z","mergeCommit":{"oid":"0123456789abcdef0123456789abcdef01234567"}}'
+            }
+            if ($args[0] -eq "api" -and $args[1] -eq "graphql") {
+                if ($args -contains "cursor=next-authors") {
+                    return '{"data":{"repository":{"object":{"authors":{"nodes":[{"user":{"login":"external-two"}}],"pageInfo":{"hasNextPage":false,"endCursor":null}}}}}}'
+                }
+                return '{"data":{"repository":{"object":{"authors":{"nodes":[{"user":{"login":"CORE-owner"}},{"user":{"login":"Copilot"}},{"user":{"login":"external-one"}},{"user":null}],"pageInfo":{"hasNextPage":true,"endCursor":"next-authors"}}}}}}'
+            }
+            throw "Unexpected GitHub command: $args"
+        }
+    }
+
     It "rejects a missing member list before fetching PRs" {
         Assert-Throws {
             & (Join-Path $scripts "collect-pr-metadata.ps1") `
@@ -1051,5 +1098,131 @@ Describe "preview PR metadata attribution" {
                 -OutputDirectory (Join-Path $TestDrive "empty-members") `
                 -MemberListPath $memberListPath
         }
+    }
+
+    It "filters bot authors and team coauthors while preserving every external coauthor page" {
+        $memberListPath = Join-Path $TestDrive "attribution-members.md"
+        "core-owner" | Set-Content -LiteralPath $memberListPath
+        $output = Join-Path $TestDrive "preview-attribution"
+
+        & (Join-Path $scripts "collect-pr-metadata.ps1") `
+            -PrNumbers @(123) `
+            -OutputDirectory $output `
+            -MemberListPath $memberListPath | Out-Null
+
+        $rows = @(Import-Csv -LiteralPath (Join-Path $output "sorted_prs.csv"))
+        $rows.Count | Should Be 1
+        $rows[0].NeedThanks | Should Be "external-one, external-two"
+        $rows[0].Author.Contains("Copilot") | Should Be $true
+        $rows[0].Author.Contains("CORE-owner") | Should Be $true
+    }
+
+    It "uses the same filtering for stable commit-range collection" {
+        $repository = Join-Path $TestDrive "attribution-repo"
+        New-Item -ItemType Directory -Path $repository | Out-Null
+        Invoke-TestGit -Repository $repository init -q | Out-Null
+        Invoke-TestGit -Repository $repository config user.name "Release Test" | Out-Null
+        Invoke-TestGit -Repository $repository config user.email "release-test@example.test" | Out-Null
+        $start = Add-TestCommit -Repository $repository -FileName "file.txt" -Content "before" -Message "Initial commit"
+        $end = Add-TestCommit -Repository $repository -FileName "file.txt" -Content "after" -Message "Contributor test (#123)"
+        $output = Join-Path $TestDrive "stable-attribution"
+        New-Item -ItemType Directory -Path $output | Out-Null
+        "core-owner" | Set-Content -LiteralPath (Join-Path $output "MemberList.md")
+
+        Push-Location $repository
+        try {
+            & (Join-Path $scripts "dump-prs-since-commit.ps1") `
+                -StartCommit $start -EndCommit $end -OutputDir $output | Out-Null
+        }
+        finally {
+            Pop-Location
+        }
+
+        $rows = @(Import-Csv -LiteralPath (Join-Path $output "sorted_prs.csv"))
+        $rows[0].NeedThanks | Should Be "external-one, external-two"
+    }
+}
+
+Describe "release contributor filtering" {
+    BeforeAll {
+        . (Join-Path $scripts "release-contributors.ps1")
+    }
+
+    It "excludes bot aliases and team members case-insensitively without dropping external humans" {
+        $contributors = @(
+            "CoPiLoT", "github-copilot", "copilot-swe-agent", "app/custom-agent",
+            "dependabot[bot]", "github-actions", "CORE-owner", "external-human", "external-human"
+        )
+
+        $external = @(Get-ReleaseExternalContributors -Contributors $contributors -Members @("core-owner"))
+
+        $external.Count | Should Be 1
+        $external[0] | Should Be "external-human"
+    }
+
+    It "honors bot metadata while retaining organization members outside the PowerToys team" {
+        $contributors = @(
+            [pscustomobject]@{ login = "automation-one"; is_bot = $true },
+            [pscustomobject]@{ login = "automation-two"; type = "Bot" },
+            [pscustomobject]@{ login = "automation-three"; __typename = "Bot" },
+            [pscustomobject]@{ login = "external-org-member"; authorAssociation = "MEMBER"; is_bot = $false }
+        )
+
+        $external = @(Get-ReleaseExternalContributors -Contributors $contributors -Members @("core-owner"))
+
+        $external.Count | Should Be 1
+        $external[0] | Should Be "external-org-member"
+    }
+}
+
+Describe "release member-list refresh" {
+    BeforeAll {
+        function gh {
+            $global:LASTEXITCODE = 0
+            if (($args -join " ") -like "api *orgs/microsoft/teams/powertoys-code-owners/members*") {
+                return '[[{"login":"live-owner"},{"login":"CORE-owner"}],[{"login":"second-owner"}]]'
+            }
+            throw "Unexpected GitHub command: $args"
+        }
+    }
+
+    It "includes live team members absent from the document and excludes the former-team section" {
+        $communityPath = Join-Path $TestDrive "community.md"
+        $memberListPath = Join-Path $TestDrive "refreshed-members.md"
+        @'
+## PowerToys core team
+
+- [@core-owner](https://github.com/core-owner)
+- [@manual-owner](https://github.com/manual-owner)
+
+## Former PowerToys core team members
+
+- [@former-owner](https://github.com/former-owner)
+'@ | Set-Content -LiteralPath $communityPath
+
+        $result = & (Join-Path $scripts "get-release-member-list.ps1") `
+            -CommunityPath $communityPath -OutputPath $memberListPath
+        $members = @(Get-Content -LiteralPath $memberListPath)
+
+        $result.memberCount | Should Be 4
+        ($members -contains "live-owner") | Should Be $true
+        ($members -contains "second-owner") | Should Be $true
+        ($members -contains "manual-owner") | Should Be $true
+        ($members -contains "former-owner") | Should Be $false
+    }
+
+    It "does not overwrite exclusions when live team membership is inaccessible" {
+        $communityPath = Join-Path $TestDrive "unavailable-community.md"
+        "## PowerToys core team`n- [@core-owner](https://github.com/core-owner)" |
+            Set-Content -LiteralPath $communityPath
+        $memberListPath = Join-Path $TestDrive "existing-members.md"
+        "previous-owner" | Set-Content -LiteralPath $memberListPath
+        Mock gh { $global:LASTEXITCODE = 1 }
+
+        {
+            & (Join-Path $scripts "get-release-member-list.ps1") `
+                -CommunityPath $communityPath -OutputPath $memberListPath
+        } | Should Throw "Cannot refresh PowerToys code-owner membership"
+        (Get-Content -LiteralPath $memberListPath) | Should Be "previous-owner"
     }
 }

@@ -11,4 +11,4 @@ Use the existing release-note workflow for a milestone or stable release version
 
 Do not apply the preview-specific baseline, branch-transition, draft-upsert, or managed-body rules to the stable workflow.
 
-Use `Release <tag>` as the GitHub title for an actual stable release. A build from `stable` prepared as a prerelease instead uses `Release preview <tag>`; a prerelease from `main` uses `Development preview <tag>`. Build origin alone does not determine the release type.
+Use `Release v<four-component version>` as the GitHub title for an actual stable release. A build from `stable` prepared as a prerelease instead uses `Release preview v<four-component version>`; a prerelease from `main` uses `Development preview v<four-component version>`. Pad three-component display versions with `.0`, including the release-note heading, without changing the three-component GitHub tag or download URLs. Build origin alone does not determine the release type.

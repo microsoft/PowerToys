@@ -1,6 +1,6 @@
 ---
 name: release-note-generation
-description: Toolkit for generating PowerToys stable or preview release notes from GitHub milestones, commit ranges, or Azure DevOps release-candidate builds. Prepare draft preview releases with three-component GitHub tags while preserving four-component build and asset versions. Use when asked to create release notes, summarize milestone PRs, generate changelog, prepare a draft preview release, calculate PR deltas across main and stable, update release documentation, manage PR milestones, or prepare and validate release assets.
+description: Toolkit for generating PowerToys stable or preview release notes from GitHub milestones, commit ranges, or Azure DevOps release-candidate builds. Prepare draft preview releases with three-component tags, four-component display versions, and external-human contributor attribution. Use when asked to create release notes, summarize milestone PRs, generate changelog, prepare a draft preview release, calculate PR deltas across main and stable, update release documentation, manage PR milestones, or prepare and validate release assets.
 license: Complete terms in LICENSE.txt
 ---
 
@@ -56,6 +56,7 @@ Generated Files/ReleaseNotes/preview-<buildId>/
 ## Prerequisites
 
 - **GitHub CLI (`gh`) installed and authenticated** — The collection script uses `gh pr view` and `gh api graphql` to fetch PR metadata and co-author information. Run `gh auth status` to verify; if not logged in, run `gh auth login` first. See [Step 1.0.0](./references/step1-collection.md) for details.
+- **PowerToys team-read access** — Refresh contributor exclusions from the live `microsoft/powertoys-code-owners` team as well as the documented core roster. Do not equate Microsoft organization `MEMBER` badges with PowerToys team membership. Stop if team membership cannot be read, unless an explicitly reviewed snapshot is supplied.
 - MCP Server: github-mcp-server installed (used to fetch PR diffs/files for the local-agent review step)
 - For preview releases and [prepare-release-assets.ps1](./scripts/prepare-release-assets.ps1): **Azure CLI** authenticated against the Microsoft tenant (`az login`) with the `azure-devops` extension; access to the `microsoft/Dart` ADO project
 
@@ -151,6 +152,8 @@ Do not read all steps at once—only read the step you are executing.
 | [get-previous-published-release.ps1](./scripts/get-previous-published-release.ps1) | Select the latest published stable or preview release that predates the candidate queue time |
 | [get-preview-release-delta.ps1](./scripts/get-preview-release-delta.ps1) | Calculate semantic added/removed PRs between exact release commits |
 | [collect-pr-metadata.ps1](./scripts/collect-pr-metadata.ps1) | Normalize GitHub metadata for an explicit set of PR numbers |
+| [get-release-member-list.ps1](./scripts/get-release-member-list.ps1) | Refresh attribution exclusions from live PowerToys code owners and the core roster |
+| [release-contributors.ps1](./scripts/release-contributors.ps1) | Share author/coauthor collection and external-human attribution filtering |
 | [new-preview-release-manifest.ps1](./scripts/new-preview-release-manifest.ps1) | Create the auditable build, baseline, and semantic-delta release manifest |
 | [upsert-draft-preview-release.ps1](./scripts/upsert-draft-preview-release.ps1) | Create or update a draft prerelease without exposing a publish operation |
 | [verify-draft-preview-release.ps1](./scripts/verify-draft-preview-release.ps1) | Verify draft flags, target commit, managed body, and uploaded assets |
@@ -165,7 +168,8 @@ Do not read all steps at once—only read the step you are executing.
 - **Terminal usage**: Disabled by default; only run scripts when user explicitly requests
 - **Preview automation**: An explicit request to prepare a preview release, or invocation by the Prepare Preview Release agent, authorizes the canonical preview scripts
 - **Preview tags**: Use `$context.tag`, containing only `v` and the first three numeric version components (for example, build `0.102.2991.0` maps to tag `v0.102.2991`). Do not append `.0` or `-preview`. Keep `$context.version`, installer filenames, and asset versions unchanged, and pass `-ReleaseTag $context.tag` when preparing asset download links.
-- **Release titles**: Use `Release <tag>` for a stable release, `Release preview <tag>` for a prerelease built from `stable`, and `Development preview <tag>` for a prerelease built from `main`. Use the requested GitHub release type and the build's `sourceBranch`, not its original intent/channel. Pass `-SourceBranch $context.sourceBranch` to preview draft creation and verification; previews remain prereleases regardless of branch.
+- **Release titles and body headings**: Display four numeric components with a final `.0`: `Release v<version>` for stable, `Release preview v<version>` for a prerelease built from `stable`, and `Development preview v<version>` for a prerelease built from `main`. For example, tag `v0.103.3006` has title and body heading `Development preview v0.103.3006.0`. Keep the tag and download URLs three-component. Use the requested release type and the build's `sourceBranch`, not intent/channel; pass `-SourceBranch $context.sourceBranch` to draft creation and verification.
+- **Contributor attribution**: Refresh `MemberList.md` with `get-release-member-list.ps1` for every run. Both collectors filter authors and coauthors through `release-contributors.ps1`. Credit only `NeedThanks`: exclude core/code-owner team members and all bot/app accounts, including Copilot aliases. Never rebuild public attribution from the unfiltered `Author` column.
 - **Preview manifests**: Keep `release-manifest.json` and `assets-manifest.json` in the local audit package; do not upload either file as a GitHub release asset
 - **Preview note layout**: Place the `Installer Hashes` section immediately after the title and short public introduction, before `Highlights` and all change sections
 - **Batch generation**: Generate ALL grouped_md files in one pass, then human reviews

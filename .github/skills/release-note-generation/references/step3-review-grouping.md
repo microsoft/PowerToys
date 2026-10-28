@@ -21,6 +21,8 @@ For every PR listed in `Generated Files/ReleaseNotes/sorted_prs.csv` whose `Copi
 2. Read the PR title, body, and diff. Produce a 1–3 sentence, user-facing summary in the same style as a Copilot PR review (focus on observable behavior change, not implementation details).
 3. Write the summary into the `CopilotSummary` column for that PR row in `Generated Files/ReleaseNotes/sorted_prs.csv`. Preserve all other columns and the existing row order.
 
+Keep the collectors' `NeedThanks` filtering intact. It contains only external humans after the live PowerToys member exclusions and bot/app filtering. Do not add authors or coauthors back from `Author`, commit trailers, or raw GitHub metadata when writing summaries.
+
 **Batching guidance**
 
 - Process PRs in the order they appear in `sorted_prs.csv`.
@@ -55,4 +57,3 @@ pwsh ./.github/skills/release-note-generation/scripts/group-prs-by-label.ps1 -Cs
 Creates `Generated Files/ReleaseNotes/grouped_csv/` with one CSV per label combination.
 
 **Validation:** The `Unlabeled.csv` file should be minimal (ideally empty). If many PRs remain unlabeled, return to Step 2 (see [step2-labeling.md](./step2-labeling.md)).
-

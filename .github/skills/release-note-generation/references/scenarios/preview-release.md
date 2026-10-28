@@ -29,17 +29,17 @@ Use the first three numeric components of the resolved build version for the Git
 
 Keep the four-component `$context.version` for ADO artifact lookup, installer and GPO filenames, hashes, and build audit metadata. Installer download URLs use the three-component tag and the unchanged four-component filename. Older PowerToys updaters reject four-component release tags; this format remains parseable if the release is later promoted through the separate release-management process. This workflow still creates only draft prereleases and never sets a release as Latest.
 
-## Release title
+## Release title and body heading
 
 Use the requested GitHub release type and the immutable build's source branch:
 
 | Release type | Build source | Title |
 | --- | --- | --- |
-| Stable release (separate workflow) | `stable` | `Release <tag>` |
-| Prerelease | `stable` | `Release preview <tag>` |
-| Prerelease | `main` | `Development preview <tag>` |
+| Stable release (separate workflow) | `stable` | `Release v<four-component version>` |
+| Prerelease | `stable` | `Release preview v<four-component version>` |
+| Prerelease | `main` | `Development preview v<four-component version>` |
 
-For example, a preview of build `0.102.2991.0` from `stable` is `Release preview v0.102.2991`. Pass `$context.sourceBranch` explicitly to creation and verification. Do not infer it from a local checkout or `TargetCommit`, and do not use the build's intent/channel to override the requested prerelease type. If release management later promotes the preview to a stable release, change its title to `Release <tag>` as part of that separate operation.
+For example, a preview of build `0.102.2991.0` from `stable` has title and body heading `Release preview v0.102.2991.0`, but its tag remains `v0.102.2991`. Pad the display version with a final `.0`; never add it to the tag or download URLs. Pass `$context.sourceBranch` explicitly to creation and verification. Do not infer it from a local checkout or `TargetCommit`, and do not use intent/channel to override the requested prerelease type. Promotion to stable is a separate operation with title `Release v0.102.2991.0`.
 
 ## Workflow
 
@@ -73,9 +73,12 @@ For example, a preview of build `0.102.2991.0` from `stable` is `Release preview
 
 4. Collect normalized metadata for added PRs:
 
-   First create `<run directory>\MemberList.md` from the **PowerToys core team** section in [`COMMUNITY.md`](../../../../../COMMUNITY.md), following the exact username format in [Step 1.0.1](../step1-collection.md#101-generate-memberlistmd-required). Then run:
+   First refresh `<run directory>\MemberList.md` from the live PowerToys code-owner team plus the documented core roster, following [Step 1.0.1](../step1-collection.md#101-generate-memberlistmd-required). Do not rely on the Markdown roster alone. Then collect PR authors and merged-commit coauthors with shared team/bot filtering:
 
    ```powershell
+   .\.github\skills\release-note-generation\scripts\get-release-member-list.ps1 `
+     -OutputPath '<run directory>\MemberList.md'
+
    .\.github\skills\release-note-generation\scripts\collect-pr-metadata.ps1 `
      -DeltaPath '<run directory>\delta-prs.json' `
      -OutputDirectory '<run directory>' `
@@ -88,7 +91,8 @@ For example, a preview of build `0.102.2991.0` from `stable` is `Release preview
    - Put unlabeled PRs under `General`.
    - Use conservative title-based wording when summary confidence is low.
    - Place `Installer Hashes` immediately after the title and short public introduction, before `Highlights` and all change sections.
-   - Use the same branch-specific release title for the release-note heading and GitHub draft.
+   - Use the same branch-specific, four-component display title for the release-note heading and GitHub draft; keep the tag three-component.
+   - Credit only the filtered `NeedThanks` humans; never reintroduce maintainers or Copilot/bot coauthors from raw metadata.
    - Include removed PRs under `Differences from the previous preview`.
    - Include unattributed commits under `Changes needing final review`.
    - Enclose the generated body in the managed markers documented in [preview draft safety](../preview-draft-safety.md).
