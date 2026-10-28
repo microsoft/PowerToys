@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Runtime.CompilerServices;
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
 using Microsoft.UI.Xaml;
@@ -25,7 +24,9 @@ internal sealed partial class AdaptiveInputValueTracker
         "Input.Toggle",
     ];
 
-    private readonly ConditionalWeakTable<AdaptiveInputs, List<TrackedInput>> _inputs = new();
+    // Each render gets its own AdaptiveInputs. The projection can return a different wrapper for the
+    // same native object, so entries are matched with Equals rather than by reference.
+    private readonly List<RenderInputs> _renders = [];
 
     /// <summary>Wraps the renderer's input renderers. Register custom input renderers first.</summary>
     public void Attach(AdaptiveCardRenderer renderer, IEnumerable<string> customInputTypes)
@@ -43,9 +44,9 @@ internal sealed partial class AdaptiveInputValueTracker
     public Dictionary<string, string> GetCurrentValues(RenderedAdaptiveCard? card)
     {
         var values = new Dictionary<string, string>(StringComparer.Ordinal);
-        if (card?.UserInputs is AdaptiveInputs userInputs && _inputs.TryGetValue(userInputs, out var inputs))
+        if (card?.UserInputs is AdaptiveInputs userInputs && Find(userInputs) is RenderInputs render)
         {
-            foreach (var input in inputs)
+            foreach (var input in render.Inputs)
             {
                 values[input.Id] = input.Value.CurrentValue ?? string.Empty;
             }
@@ -54,10 +55,37 @@ internal sealed partial class AdaptiveInputValueTracker
         return values;
     }
 
-    private void Track(AdaptiveInputs userInputs, string id, IAdaptiveInputValue value) =>
-        _inputs.GetOrCreateValue(userInputs).Add(new TrackedInput(id, value));
+    /// <summary>Forgets renders other than <paramref name="card"/> and the latest render, which may still be in progress.</summary>
+    public void Retain(RenderedAdaptiveCard? card)
+    {
+        var current = card?.UserInputs is AdaptiveInputs userInputs ? Find(userInputs) : null;
+        var latest = _renders.Count > 0 ? _renders[^1] : null;
+        _renders.RemoveAll(render => render != current && render != latest);
+    }
+
+    private RenderInputs? Find(AdaptiveInputs userInputs) =>
+        _renders.FindLast(render => ReferenceEquals(render.UserInputs, userInputs) || render.UserInputs.Equals(userInputs));
+
+    private void Track(AdaptiveInputs userInputs, string id, IAdaptiveInputValue value)
+    {
+        var render = Find(userInputs);
+        if (render is null)
+        {
+            render = new RenderInputs(userInputs);
+            _renders.Add(render);
+        }
+
+        render.Inputs.Add(new TrackedInput(id, value));
+    }
 
     private sealed record TrackedInput(string Id, IAdaptiveInputValue Value);
+
+    private sealed class RenderInputs(AdaptiveInputs userInputs)
+    {
+        public AdaptiveInputs UserInputs { get; } = userInputs;
+
+        public List<TrackedInput> Inputs { get; } = [];
+    }
 
     private sealed partial class TrackingRenderer(IAdaptiveElementRenderer inner, AdaptiveInputValueTracker tracker) : IAdaptiveElementRenderer
     {
