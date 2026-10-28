@@ -15,7 +15,8 @@ namespace
 {
     // High-resolution wheels and touchpads report a notch (WHEEL_DELTA) as several smaller
     // packets, so partial deltas are accumulated until a whole notch has been rolled.
-    int wheelDeltaAccumulator = 0;
+    int verticalWheelDeltaAccumulator = 0;
+    int horizontalWheelDeltaAccumulator = 0;
 }
 
 MouseButtonsHook::MouseButtonsHook(std::function<void()> extRightClickCallback, std::function<void()> extMiddleClickCallback, std::function<bool(bool)> extWheelCallback)
@@ -42,7 +43,8 @@ void MouseButtonsHook::enable()
 void MouseButtonsHook::disable()
 {
     // Don't let a partial notch from this drag leak into the next one
-    wheelDeltaAccumulator = 0;
+    verticalWheelDeltaAccumulator = 0;
+    horizontalWheelDeltaAccumulator = 0;
 
     if (hHook)
     {
@@ -67,8 +69,10 @@ LRESULT CALLBACK MouseButtonsHook::MouseButtonsProc(int nCode, WPARAM wParam, LP
         {
             middleClickCallback();
         }
-        else if (wParam == WM_MOUSEWHEEL)
+        else if (wParam == WM_MOUSEWHEEL || wParam == WM_MOUSEHWHEEL)
         {
+            const bool horizontal = wParam == WM_MOUSEHWHEEL;
+            int& wheelDeltaAccumulator = horizontal ? horizontalWheelDeltaAccumulator : verticalWheelDeltaAccumulator;
             const int delta = GET_WHEEL_DELTA_WPARAM(reinterpret_cast<MSLLHOOKSTRUCT*>(lParam)->mouseData);
             if (delta != 0 && wheelDeltaAccumulator != 0 && (delta < 0) != (wheelDeltaAccumulator < 0))
             {
@@ -80,8 +84,10 @@ LRESULT CALLBACK MouseButtonsHook::MouseButtonsProc(int nCode, WPARAM wParam, LP
             bool handled = false;
             while (std::abs(wheelDeltaAccumulator) >= WHEEL_DELTA)
             {
-                const bool up = wheelDeltaAccumulator > 0;
-                if (!wheelCallback(up))
+                const bool positive = wheelDeltaAccumulator > 0;
+                // Up/left selects the previous layout, down/right selects the next layout.
+                const bool previous = horizontal ? !positive : positive;
+                if (!wheelCallback(previous))
                 {
                     // Nothing was switched, drop the remainder so it can't trigger a stray switch later
                     wheelDeltaAccumulator = 0;
@@ -89,7 +95,7 @@ LRESULT CALLBACK MouseButtonsHook::MouseButtonsProc(int nCode, WPARAM wParam, LP
                 }
 
                 handled = true;
-                wheelDeltaAccumulator -= up ? WHEEL_DELTA : -WHEEL_DELTA;
+                wheelDeltaAccumulator -= positive ? WHEEL_DELTA : -WHEEL_DELTA;
             }
 
             if (handled)
