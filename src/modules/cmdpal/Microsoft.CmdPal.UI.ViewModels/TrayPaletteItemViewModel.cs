@@ -18,7 +18,18 @@ public sealed partial class TrayPaletteItemViewModel : IDisposable
 
     public bool IsPage => Item.Command.IsPage;
 
-    internal TrayPaletteItemViewModel(PinnedCommandSettings pin, CommandResolution resolution, IContextMenuFactory contextMenuFactory)
+    /// <summary>
+    /// Creates and initializes a tray palette item. This is the
+    /// factory method for creating a tray palette item, to make it clear that
+    /// construction also calls InitializeProperties on it. This should only
+    /// ever be used on a background thread.
+    /// </summary>
+    internal static TrayPaletteItemViewModel CreateAndInitialize(PinnedCommandSettings pin, CommandResolution resolution, IContextMenuFactory contextMenuFactory)
+    {
+        return new TrayPaletteItemViewModel(pin, resolution, contextMenuFactory);
+    }
+
+    private TrayPaletteItemViewModel(PinnedCommandSettings pin, CommandResolution resolution, IContextMenuFactory contextMenuFactory)
     {
         _resolution = resolution;
         Pin = pin;

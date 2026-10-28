@@ -102,7 +102,7 @@ public sealed partial class TrayPaletteViewModel : ObservableObject, IDisposable
                         continue;
                     }
 
-                    items.Add(new(pin, resolution, _contextMenuFactory));
+                    items.Add(TrayPaletteItemViewModel.CreateAndInitialize(pin, resolution, _contextMenuFactory));
                     resolution = null;
                 }
                 catch (Exception ex)
