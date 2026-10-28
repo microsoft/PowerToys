@@ -30,6 +30,7 @@
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
     <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" Version="0.1.260116-build.2514" />
     <PackageVersion Include="ControlzEx" Version="6.0.0" />
+    <PackageVersion Include="DesktopFlyouts.WinUI" Version="1.5.0" />
     <PackageVersion Include="HelixToolkit" Version="2.24.0" />
     <PackageVersion Include="HelixToolkit.Core.Wpf" Version="2.24.0" />
     <!-- Transitive pin: keeps one HtmlAgilityPack version across apps. -->
