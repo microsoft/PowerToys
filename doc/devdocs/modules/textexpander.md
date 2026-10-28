@@ -15,10 +15,41 @@ Text Expander replaces short triggers with longer snippets as you type, in any a
 textexpander/
 ├── TextExpanderModuleInterface/  # Native runner module DLL
 ├── TextExpander/                 # Expansion engine (PowerToys.TextExpander.exe)
-└── TextExpander.UnitTests/       # Engine unit tests
+├── TextExpander.Core/            # Shared grammar, templates, matching, starter publication
+├── TextExpander.Storage/         # Coordinated module-settings persistence
+├── TextExpander.Editor/          # Standalone WinUI snippet-management app
+├── TextExpander.Editor.UnitTests/# Editor, storage, and ownership tests
+└── TextExpander.UnitTests/       # Engine and shared-rule unit tests
 ```
 
-The Settings page lives in `src/settings-ui` (`TextExpanderPage.xaml`, `TextExpanderViewModel.cs`, and `TextExpanderSettings.cs` / `TextExpanderProperties.cs` / `TextExpanderSnippetFile.cs` in `Settings.UI.Library`).
+The thin Settings page lives in `src/settings-ui` and owns enablement, engine options,
+and the **Manage snippets** launch entry point. Configuration DTOs remain in
+`Settings.UI.Library`; snippet editing, previews, file watching, backups, and folder
+transactions belong to the module. Settings does not reference the editor executable.
+Both processes use `TextExpander.Storage` for coordinated module-settings reads and
+writes. Readers wait for publication rather than treating a transiently missing
+destination as default settings. Matching-option changes revalidate an open snippet
+draft without invalidating it; an actual library-file or folder change still does.
+The engine and editor reference `TextExpander.Core`, which has no Settings or WinUI dependency.
+
+### Snippet editor (TextExpander.Editor)
+
+**Manage snippets** opens `WinUI3Apps\PowerToys.TextExpander.Editor.exe`. Repeated
+launches activate the existing editor, including restoring a minimized window.
+Managing snippets does not require the expansion engine to be enabled. A disabled
+group policy blocks editor startup; elevated Settings retains its existing restriction
+on snippet editing rather than launching an elevated editor.
+
+The editor owns its XAML, view models, resources (`PowerToys.TextExpander.Editor.pri`),
+and focused tests. It observes module-settings changes from the Settings process and
+reloads matching rules and the active snippet folder. Closing it disposes both settings
+and snippet watchers. The engine excludes both Settings and the editor from expansion,
+so typing a trigger into the replacement editor cannot expand it.
+
+`SnippetFile` provides the single comment-preserving snippet grammar, `SnippetTemplate`
+tokenizes replacements for both expansion and preview, and `Variables.FormatDate`
+provides shared .NET/strftime formatting. Trigger reachability uses the runtime's
+`TriggerIndex` and `WordBoundaryRules`, not a transcription of engine behavior.
 
 ### Module Interface (TextExpanderModuleInterface)
 
@@ -53,7 +84,7 @@ A self-contained .NET process. Its keyboard hook, matching and injection use no 
 | Module settings | `%LOCALAPPDATA%\Microsoft\PowerToys\TextExpander\settings.json` |
 | Snippets (default) | `%LOCALAPPDATA%\Microsoft\PowerToys\TextExpander\PowerToysTextExpanderSnippets.txt` (earlier versions: `snippets.txt`) |
 
-The snippet folder can be changed in non-elevated Settings under **Save snippets to a folder**. Text Expander does not implement a synchronization service: choosing a OneDrive or other provider-managed folder lets that provider synchronize the active file. The Settings page and engine resolve the snippet file with the same rules, so both read the same source-of-truth file. While Settings is elevated, snippet-file resolving, reading, and editing are disabled; elevation is checked from the Settings process token as well as the runner's launch state. The runner launches Settings with its own elevation, so this applies whenever PowerToys runs as administrator; the page tells the user to restart PowerToys without administrator rights to manage snippets. The engine runs with the desktop user's token even when the runner is elevated; a configured path that the desktop user cannot read will therefore fail to load rather than being read with elevated access. If PowerToys is elevated with a different administrator account, the engine runs as the signed-in desktop user and may be unable to read that account's settings and snippets.
+The snippet folder can be changed in the snippet editor under **Save snippets to a folder**. Text Expander does not implement a synchronization service: choosing a OneDrive or other provider-managed folder lets that provider synchronize the active file. The editor and engine resolve the snippet file with the same rules, so both read the same source-of-truth file. Shared Settings does not resolve or read snippet files. If the editor is launched directly as administrator, snippet-file resolving, reading, and editing remain disabled. Elevated Settings disables **Manage snippets** and tells the user to restart PowerToys without administrator rights. The engine runs with the desktop user's token even when the runner is elevated; a configured path that the desktop user cannot read will therefore fail to load rather than being read with elevated access. If PowerToys is elevated with a different administrator account, the engine runs as the signed-in desktop user and may be unable to read that account's settings and snippets.
 
 Changing the folder publishes the destination file and `settings.json` as one
 compensating transaction. Settings-file replacement and compensation hold a
@@ -62,28 +93,27 @@ destination still has the exact bytes this save published. A later participating
 save therefore waits, while a sync client or older build that changes the file is
 never overwritten or deleted by compensation. The save reports whether the previous
 settings were verified, the new settings were verified, or the state is uncertain.
-Settings rolls the folder publication back only for the verified-previous case,
+The editor rolls the folder publication back only for the verified-previous case,
 keeps it for a verified-new commit, and re-reads `settings.json` before deciding an
 uncertain case. If the file is still unreadable or conflicted, no snippet files are
 removed; the error names the settings and recovery files to keep until the active
 folder has been verified.
 
-**File name.** In a folder, the engine (`SnippetStore.ResolveInFolder`) and Settings
+**File name.** In a folder, the engine (`SnippetStore.ResolveInFolder`) and editor
 (`TextExpanderSnippetFileNames.ResolveInFolder`) pick the same file:
 `PowerToysTextExpanderSnippets.txt` if it exists, otherwise `snippets.txt` if that
 exists (the name earlier versions used), otherwise `PowerToysTextExpanderSnippets.txt`,
-which either Settings or the engine can create. If both names exist and the current
+which either the editor or engine can create. If both names exist and the current
 file is byte-for-byte the untouched starter, the legacy file wins; this recovers a
 sync client arriving during starter publication without ever ignoring a modified
 current file. A file path in the setting is used as it is. Existing files are never
 renamed: a folder sync service could propagate the rename while a PC still running an
-earlier version would then lose its file. Each side keeps the two names in one place
-(`SnippetStore.FileName` and `LegacyFileName`, and
-`TextExpanderSnippetFileNames.Current` and `Legacy`). Starter publication uses one
+earlier version would then lose its file. Both use the constants
+`TextExpanderSnippetFileNames.Current` and `Legacy` in the core library. Starter publication uses one
 shared folder operation: a per-folder cross-process claim serializes engine and
-Settings creators, both names are resolved again while it is held and after the
+editor creators, both names are resolved again while it is held and after the
 atomic move, and the current name is published only when neither exists. An engine
-test compiles the Settings file to check that the names match. Bug reports leave out
+test checks the shared file-name contract. Bug reports leave out
 both names in the PowerToys folder and in the configured folder, plus a configured
 file whatever its name (`TextExpanderPrivacy.h`); both paths are masked in the
 report's copy of `settings.json`.
@@ -95,7 +125,7 @@ short guide (how to write a snippet, each variable with an example of what it gi
 and tips), examples that are commented out until the user removes the `//`, and six
 working snippets, `!ddate`, `!ttime`, `!ddt`, `!isodate`, `!mysig` and `!myemail`,
 none of which reads the clipboard or asks for input. Existing files, including empty
-files, are never replaced. When the user chooses an empty folder, Settings copies the
+files, are never replaced. When the user chooses an empty folder, the editor copies the
 current active file there before switching, so selecting a new location never silently
 replaces the library with starter snippets.
 
@@ -112,17 +142,15 @@ Redmond, WA 98052
 
 ### Settings page layout
 
-The page leads with the snippets: **Add a snippet**, search, and the list.
-**Advanced** then holds **Wait for space or punctuation**; **Insertion method** (Automatic,
+The page contains enablement and **Manage snippets**.
+**Advanced** holds **Wait for space or punctuation**; **Insertion method** (Automatic,
 Always paste, or Always type), whose **Minimum length to paste** is available only
 with Automatic, the one method that chooses by length; **Match trigger
-capitalization**; **Save snippets to a folder**; and **Use PowerToys Keyboard
-Manager remaps when matching triggers**. The page ends with the
-**Good to know** note, which is reference rather than a setting. The warning shown
-while PowerToys runs as administrator stays at the top, because it explains why the
-snippet controls are off.
+capitalization**; and **Use PowerToys Keyboard Manager remaps when matching triggers**.
+The separate editor contains **Add a snippet**, search, the snippet list,
+**Save snippets to a folder**, and the **Good to know** note.
 
-### Managing snippets in Settings
+### Managing snippets in the editor
 
 **Wait for space or punctuation** is a module-wide setting rather than a field in
 each snippet row. A clean settings file defaults it on, and adding a snippet uses
@@ -186,7 +214,7 @@ say it ("…, 2 lines"), then the warning when there is one.
 
 The editor validates trigger conflicts and unrepresentable replacement text as
 you type, with the reason under the fields in the user's language
-(`TextExpanderSnippetProblem`, mapped to resources by the view model). An empty
+(`SnippetProblem`, mapped to resources by the view model). An empty
 dialog stays quiet, but once there's text, a missing trigger says "Type a trigger
 to save this snippet." Save errors stay in the dialog with your text intact. Closing an edited
 snippet (Cancel or Esc) shows "Discard your changes?" at the bottom of the dialog,
@@ -200,10 +228,9 @@ runs are drawn as bubbles in the style of a KeyVisual key: **Clipboard**, a
 question's label, and dates and times evaluated as they are now. The first
 `$|$` is a thin cursor marker, and `\n` and `\t` are real line breaks and tabs.
 It never reads your clipboard or asks for input. `TextExpanderSnippetPreview`
-builds the preview by applying the engine's steps in the engine's order, so a
-variable produced by an earlier step is previewed the way it expands; it keeps
-its own copy of the strftime table, as the Settings project cannot reference the
-engine. The preview's accessible name spells out each bubble, for example
+uses the core library's template parser and date formatter, so runtime values remain
+literal and date formats agree with expansion without a second strftime table.
+The preview's accessible name spells out each bubble, for example
 "Clipboard, filled in when the snippet runs", and the hint under it appears only
 when there are bubbles.
 
@@ -232,9 +259,9 @@ the box: chips for `yyyy yy`, `MMMM MMM MM M`, `dddd ddd dd d` and `h HH mm tt`,
 each with what it gives now, that put their code in at the caret (never over the
 braces); a "Shows as" line for the format at the caret; a tip to put words outside
 the braces; and a **More codes** link to .NET's custom date and time format strings.
-Everything is formatted the way the engine formats it (`TextExpanderDateGuide`,
-using the preview's copy of the engine's formatter), and tests in both projects pin
-the same examples for one moment.
+`TextExpanderDateGuide` and the preview use the engine's shared
+`Variables.FormatDate` implementation in `TextExpander.Core`; tests pin the same
+examples for one moment.
 
 Colors in the box are set as character formatting, so they don't follow the theme
 by themselves. Ordinary text gets the box's own text color, read from the
@@ -253,7 +280,7 @@ keeps the filter and includes a reminder in the status message.
 Failed writes do not reserve triggers or apply deletions in memory. If an
 external edit refreshes the library while an existing snippet is open, the editor keeps your draft but requires reopening the
 snippet before saving, so an old row handle cannot overwrite a different entry. For
-folder/default configurations, Settings keeps watching both supported names. A
+folder/default configurations, the editor keeps watching both supported names. A
 preferred current-name file appearing replaces a loaded legacy file; deleting it
 falls back to legacy when present. The engine commits a newly resolved path and its
 parsed snippets as one generation-tagged state. Initial loads, folder repoints, and
@@ -275,8 +302,8 @@ restart attempts toward the desired target. Once a newer transition commits, eve
 from the disposed watcher are ignored. This handoff prevents a legacy file arriving
 beside an untouched starter from being hidden. Either identity change advances the
 snippet revision, invalidates an open editor, and closes its Prompt window. Watch
-events whose bytes equal Settings' own atomic save are ignored. During first-run
-setup, Settings creates or observes the shared starter before constructing its
+events whose bytes equal the editor's own atomic save are ignored. During first-run
+setup, the editor creates or observes the shared starter before constructing its
 editable model, so the first save cannot produce a headerless file. A file that wins a
 concurrent creation race is loaded rather than overwritten. Saves preserve comments,
 the file's encoding (UTF-8 with or without a BOM, UTF-16 or UTF-32), line-ending style,
@@ -294,7 +321,7 @@ notices an edit made elsewhere in the meantime.
 
 ### Save snippets to a folder
 
-The **Save snippets to a folder** expander in **Advanced** manages the one active
+The **Save snippets to a folder** expander in the snippet editor manages the one active
 snippet file. Its collapsed description says whether the default local folder or a
 folder chosen by the user is active and includes the snippet count when available.
 When expanded, it shows "To use the same snippets across devices, choose a folder
@@ -306,7 +333,7 @@ The expander provides folder selection, conflict handling, and manual reload:
 
 - **Current folder** shows the resolved folder and opens the Windows folder picker.
   Selecting an empty folder copies the current active file there before switching.
-  If the active source disappeared and the destination is also empty, Settings
+  If the active source disappeared and the destination is also empty, the editor
   publishes the authoritative starter instead of creating a zero-byte placeholder.
   A genuine existing zero-byte source is copied unchanged.
 - **Open snippets file** launches the resolved active file itself with the user's
@@ -314,7 +341,7 @@ The expander provides folder selection, conflict handling, and manual reload:
   changes because it uses the same loaded path as the editor. Missing, inaccessible,
   or failed launches show an error instead of reporting success.
 - If the selected folder already contains `PowerToysTextExpanderSnippets.txt` or
-  the legacy `snippets.txt`, Settings asks whether to **Use folder file** or
+  the legacy `snippets.txt`, the editor asks whether to **Use folder file** or
   **Replace folder file**. Using the folder file first backs up the file this PC was
   using; replacing first backs up the destination. No files are merged or silently
   overwritten. The dialog defaults to Cancel.
@@ -323,12 +350,12 @@ The expander provides folder selection, conflict handling, and manual reload:
   The active-folder file remains the source of truth.
 All replacements use a temporary file in the destination directory and then an
 atomic move or `File.Replace`. Backup names are unique (`.backup-<timestamp>`, with
-a numeric suffix when necessary). Settings holds the shared per-folder claim through
+a numeric suffix when necessary). The editor holds the shared per-folder claim through
 the final re-resolution, decision verification, and publication. It compares the
 exact prepared bytes and existence of the active source and both supported
 destination names, checks them again immediately before the atomic operation, and
 checks ownership after publication. Destination publication and throwing persistence
-of `SnippetsPath` form one compensating transaction; Settings does not switch its
+of `SnippetsPath` form one compensating transaction; the editor does not switch its
 loaded library until both succeed. A changed, arrived, or disappeared file, a
 post-publication identity-read failure, or a settings-write failure stops the
 operation; a vanished source is never replaced with synthesized empty bytes.
@@ -344,7 +371,7 @@ backup, or generated recovery copy is reported (as a semicolon-separated path li
 when necessary), and the operation returns an explicit uncertain or rollback-failed
 result instead of hiding a partial publication.
 
-While Settings is elevated, these actions and all other snippet editing remain
+While the editor is elevated, these actions and all other snippet editing remain
 unavailable; no snippet path is resolved or displayed. See *Settings and snippet
 storage* above.
 
@@ -354,7 +381,7 @@ storage* above.
 it is off, the engine builds its suffix trie with invariant case normalization and
 uses an ordinal-ignore-case replacement map. Triggers that differ only by case are
 therefore duplicates and the last file row wins, matching the existing duplicate
-rule. Settings applies the same comparison to validation, copy suggestions and
+rule. The editor applies the same comparison to validation, copy suggestions and
 reachability warnings.
 
 In the snippet list, a trigger containing letters is shown as both forms while the

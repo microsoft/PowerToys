@@ -64,7 +64,7 @@ internal static class WordBoundary
     /// one kind of "word" people routinely type where an underscore is not a break.
     /// </summary>
     public static bool IsWordCharacter(char c)
-        => char.IsLetterOrDigit(c) || c == '_';
+        => WordBoundaryRules.IsWordCharacter(c);
 
     /// <summary>
     /// A character that ends a word, and so can release a pending trigger.
@@ -77,7 +77,7 @@ internal static class WordBoundary
     /// </para>
     /// </summary>
     public static bool IsTerminator(char c)
-        => char.IsWhiteSpace(c) || char.IsPunctuation(c) || char.IsSymbol(c);
+        => WordBoundaryRules.IsTerminator(c);
 
     /// <summary>
     /// Whether <paramref name="trigger"/> begins at a legitimate word start, given the text
@@ -97,12 +97,5 @@ internal static class WordBoundary
     /// </para>
     /// </summary>
     public static bool StartsAtWordBoundary(ReadOnlySpan<char> textBefore, string trigger)
-    {
-        if (trigger.Length == 0 || !IsWordCharacter(trigger[0]))
-        {
-            return true;
-        }
-
-        return textBefore.Length == 0 || !IsWordCharacter(textBefore[^1]);
-    }
+        => WordBoundaryRules.StartsAtWordBoundary(textBefore, trigger);
 }

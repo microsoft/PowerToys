@@ -23,6 +23,8 @@
       runtime that PowerToys' other WinUI utilities use.
     -->
     <UseWinUI>true</UseWinUI>
+    <!-- Embeds compiled XAML in the PRI; the installer does not ship loose .xbf files. -->
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
@@ -43,8 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\settings-ui\Settings.UI.Library\HandleBoundFileDeletion.cs" Link="Shared\HandleBoundFileDeletion.cs" />
-    <Compile Include="..\..\..\settings-ui\Settings.UI.Library\TextExpanderStarter.cs" Link="Shared\TextExpanderStarter.cs" />
+    <ProjectReference Include="..\TextExpander.Core\TextExpander.Core.csproj" />
   </ItemGroup>
 
   <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">

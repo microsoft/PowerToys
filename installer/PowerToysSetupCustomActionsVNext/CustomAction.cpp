@@ -1646,6 +1646,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.GrabAndMove.exe",
         L"PowerToys.PowerAccent.exe",
         L"PowerToys.TextExpander.exe",
+        L"PowerToys.TextExpander.Editor.exe",
         L"PowerToys.PowerOCR.exe",
         L"PowerToys.MeasureToolUI.exe",
         L"PowerToys.ShortcutGuide.exe",

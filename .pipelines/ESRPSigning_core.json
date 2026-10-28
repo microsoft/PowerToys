@@ -224,6 +224,10 @@
             "PowerToys.TextExpanderModuleInterface.dll",
             "WinUI3Apps\\PowerToys.TextExpander.dll",
             "WinUI3Apps\\PowerToys.TextExpander.exe",
+            "WinUI3Apps\\PowerToys.TextExpander.Core.dll",
+            "WinUI3Apps\\PowerToys.TextExpander.Storage.dll",
+            "WinUI3Apps\\PowerToys.TextExpander.Editor.dll",
+            "WinUI3Apps\\PowerToys.TextExpander.Editor.exe",
 
             "PowerToys.PowerDisplayModuleInterface.dll",
             "WinUI3Apps\\PowerToys.PowerDisplay.dll",

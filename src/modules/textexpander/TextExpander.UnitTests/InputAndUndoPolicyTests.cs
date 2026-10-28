@@ -359,6 +359,9 @@ public sealed class InputAndUndoPolicyTests
         Assert.IsFalse(InputTarget.IsPowerToysSettingsImage(@"C:\Program Files\PowerToys\PowerToys.exe"));
         Assert.IsFalse(InputTarget.IsPowerToysSettingsImage(@"C:\Windows\System32\notepad.exe"));
         Assert.IsFalse(InputTarget.IsPowerToysSettingsImage(@"C:\Temp\PowerToys.Settings.exe.bak"));
+        Assert.IsTrue(InputTarget.IsPowerToysSettingsImage(@"C:\Program Files\PowerToys\WinUI3Apps\PowerToys.TextExpander.Editor.exe"));
+        Assert.IsTrue(InputTarget.IsPowerToysSettingsImage(@"C:\pt\POWERTOYS.TEXTEXPANDER.EDITOR.EXE"));
+        Assert.IsFalse(InputTarget.IsPowerToysSettingsImage(@"C:\Temp\PowerToys.TextExpander.Editor.exe.bak"));
         Assert.IsFalse(InputTarget.IsPowerToysSettingsImage(null));
 
         // Reads a real process's image path, the way the foreground check does.

@@ -15,13 +15,13 @@ internal sealed class SnippetStore : IDisposable
     /// The name a new snippet file gets. Settings has the same name in
     /// <c>TextExpanderSnippetFileNames.Current</c>, and a test checks that they match.
     /// </summary>
-    internal const string FileName = "PowerToysTextExpanderSnippets.txt";
+    internal const string FileName = TextExpanderSnippetFileNames.Current;
 
     /// <summary>
     /// The name earlier versions used. It is still read, and never renamed: a folder sync service
     /// could propagate the rename while another PC still runs an earlier version.
     /// </summary>
-    internal const string LegacyFileName = "snippets.txt";
+    internal const string LegacyFileName = TextExpanderSnippetFileNames.Legacy;
 
     /// <summary>Immutable snapshot so the keyboard hook can read without locking.</summary>
     public sealed class Snapshot
@@ -750,52 +750,10 @@ internal sealed class SnippetStore : IDisposable
     internal static Dictionary<string, string> Parse(string[] lines, bool caseSensitive = true)
     {
         var result = new Dictionary<string, string>(caseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase);
-        int i = 0;
-
-        while (i < lines.Length)
+        foreach (SnippetFile.Entry entry in SnippetFile.Parse(lines).Snippets)
         {
-            string line = lines[i];
-            string stripped = line.Trim();
-            i++;
-
-            if (stripped.Length == 0 || stripped.StartsWith("//", StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            if (stripped.EndsWith("<<<", StringComparison.Ordinal))
-            {
-                string trigger = stripped[..^3];
-                var body = new List<string>();
-                while (i < lines.Length)
-                {
-                    string bodyLine = lines[i];
-                    i++;
-                    if (bodyLine.Trim() == ">>>")
-                    {
-                        break;
-                    }
-
-                    body.Add(bodyLine);
-                }
-
-                if (trigger.Length > 0)
-                {
-                    result.Remove(trigger);
-                    result[trigger] = string.Join("\n", body);
-                }
-            }
-            else
-            {
-                int eq = stripped.IndexOf('=');
-                if (eq > 0)
-                {
-                    int rawEq = line.IndexOf('=');
-                    string trigger = stripped[..eq];
-                    result.Remove(trigger);
-                    result[trigger] = line[(rawEq + 1)..];
-                }
-            }
+            result.Remove(entry.Trigger);
+            result[entry.Trigger] = entry.Replacement;
         }
 
         return result;

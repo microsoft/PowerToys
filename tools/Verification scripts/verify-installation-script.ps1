@@ -502,6 +502,10 @@ function Test-CoreFiles {
         # Text Expander
         'PowerToys.TextExpander.dll',
         'PowerToys.TextExpander.exe',
+        'PowerToys.TextExpander.Core.dll',
+        'PowerToys.TextExpander.Storage.dll',
+        'PowerToys.TextExpander.Editor.dll',
+        'PowerToys.TextExpander.Editor.exe',
 
         # PowerOCR (Text Extractor) - managed app moved to WinUI3Apps
         'PowerToys.PowerOCR.Core.dll',
@@ -511,6 +515,9 @@ function Test-CoreFiles {
 
     # Required unsigned files in the WinUI3Apps subdirectory
     $winUI3RequiredUnsignedFiles = @(
+        'PowerToys.TextExpander.Editor.pri',
+        'PowerToys.TextExpander.Editor.deps.json',
+        'PowerToys.TextExpander.Editor.runtimeconfig.json',
         'PowerToys.PowerOCR.pri'
     )
     

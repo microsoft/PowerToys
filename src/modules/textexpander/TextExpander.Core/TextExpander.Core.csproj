@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.props" />
+  <PropertyGroup>
+    <AssemblyName>PowerToys.TextExpander.Core</AssemblyName>
+    <RootNamespace>Microsoft.PowerToys.TextExpander</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="PowerToys.TextExpander" />
+    <InternalsVisibleTo Include="PowerToys.TextExpander.Editor" />
+    <InternalsVisibleTo Include="PowerToys.TextExpander.UnitTests" />
+    <InternalsVisibleTo Include="PowerToys.TextExpander.Editor.UnitTests" />
+  </ItemGroup>
+</Project>

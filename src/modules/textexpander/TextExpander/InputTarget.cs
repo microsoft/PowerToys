@@ -100,7 +100,7 @@ internal static class InputTarget
     }
 
     /// <summary>
-    /// True when <paramref name="processId"/> is PowerToys Settings, where Text Expander must not
+    /// True when <paramref name="processId"/> is PowerToys Settings or the snippet editor, where Text Expander must not
     /// expand: a trigger typed into the snippet editor would replace the very text being written.
     /// Asked once per foreground change, never per key. False when the process can't be inspected;
     /// <see cref="CanDrive"/> already refuses those.
@@ -126,10 +126,11 @@ internal static class InputTarget
         }
     }
 
-    /// <summary>True when <paramref name="imagePath"/> is the PowerToys Settings executable.</summary>
+    /// <summary>True when <paramref name="imagePath"/> belongs to Settings or the snippet editor.</summary>
     internal static bool IsPowerToysSettingsImage(string? imagePath)
         => !string.IsNullOrEmpty(imagePath)
-            && string.Equals(Path.GetFileName(imagePath), "PowerToys.Settings.exe", StringComparison.OrdinalIgnoreCase);
+            && (string.Equals(Path.GetFileName(imagePath), "PowerToys.Settings.exe", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(Path.GetFileName(imagePath), "PowerToys.TextExpander.Editor.exe", StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// Our own integrity level, read once. It cannot change while the process is running, and
