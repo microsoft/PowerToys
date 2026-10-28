@@ -231,6 +231,10 @@
   <data name="KeyDropDownButton_NoResults.Text" xml:space="preserve">
     <value>No keys found</value>
   </data>
+  <data name="KeyDropDownButton_KeyList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Keys</value>
+    <comment>Screen reader name for the list of keys in the key picker</comment>
+  </data>
   <data name="ExactMatchCheckBox.Content" xml:space="preserve">
     <value>Exact match</value>
   </data>
@@ -618,5 +622,93 @@
   </data>
   <data name="NoResultsClearBtn.Content" xml:space="preserve">
     <value>Clear filters</value>
+  </data>
+  <data name="NewRemappingBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>New remapping</value>
+    <comment>Accessible name for the button that opens the dialog to add a new remapping. Must start with the visible label &quot;New&quot;.</comment>
+  </data>
+  <data name="RemappingsListView.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Keys and shortcuts</value>
+    <comment>Accessible name of the list of key and shortcut remappings.</comment>
+  </data>
+  <data name="TextListView.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Text</value>
+    <comment>Accessible name of the list of shortcuts that insert text.</comment>
+  </data>
+  <data name="ProgramsListView.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Programs</value>
+    <comment>Accessible name of the list of shortcuts that open programs.</comment>
+  </data>
+  <data name="UrlsListView.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Urls</value>
+    <comment>Accessible name of the list of shortcuts that open URLs.</comment>
+  </data>
+  <data name="DisabledListView.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Disabled</value>
+    <comment>Accessible name of the list of disabled keys.</comment>
+  </data>
+  <data name="TriggerTypeComboBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Trigger type</value>
+    <comment>Accessible name of the combo box that selects what kind of input triggers the remapping.</comment>
+  </data>
+  <data name="ActionTypeComboBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Action type</value>
+    <comment>Accessible name of the combo box that selects what the remapping does.</comment>
+  </data>
+  <data name="TriggerKeyToggleBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Record trigger keys</value>
+    <comment>Accessible name of the toggle button that starts recording the keys that trigger the remapping.</comment>
+  </data>
+  <data name="TriggerKeyToggleBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
+    <value>Turn on, then press the keys to record. Press Tab to stop recording.</value>
+    <comment>Screen reader hint for the trigger recording button. &quot;Tab&quot; is the keyboard key name.</comment>
+  </data>
+  <data name="ActionKeyToggleBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Record action keys</value>
+    <comment>Accessible name of the toggle button that starts recording the keys the remapping sends.</comment>
+  </data>
+  <data name="ActionKeyToggleBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
+    <value>Turn on, then press the keys to record. Press Tab to stop recording.</value>
+    <comment>Screen reader hint for the action recording button. &quot;Tab&quot; is the keyboard key name.</comment>
+  </data>
+  <data name="KeyDropDownButton_SelectKeyAutomationName" xml:space="preserve">
+    <value>Select key</value>
+    <comment>Accessible name of the key picker button when no key is selected yet.</comment>
+  </data>
+  <data name="Mapping_A11y_KeyRemapFormat" xml:space="preserve">
+    <value>{0} maps to {1}</value>
+    <comment>Screen reader name of a remapping row. {0} is the original key or shortcut, {1} is the new key or shortcut. Do not translate {0} or {1}.</comment>
+  </data>
+  <data name="Mapping_A11y_DisabledFormat" xml:space="preserve">
+    <value>{0} is disabled</value>
+    <comment>Screen reader name of a disabled key row. {0} is the key or shortcut. Do not translate {0}.</comment>
+  </data>
+  <data name="Mapping_A11y_TextFormat" xml:space="preserve">
+    <value>{0} inserts text {1}</value>
+    <comment>Screen reader name of a text mapping row. {0} is the shortcut, {1} is the inserted text. Do not translate {0} or {1}.</comment>
+  </data>
+  <data name="Mapping_A11y_ProgramFormat" xml:space="preserve">
+    <value>{0} opens program {1}</value>
+    <comment>Screen reader name of a program shortcut row. {0} is the shortcut, {1} is the program. Do not translate {0} or {1}.</comment>
+  </data>
+  <data name="Mapping_A11y_UrlFormat" xml:space="preserve">
+    <value>{0} opens {1}</value>
+    <comment>Screen reader name of a URL shortcut row. {0} is the shortcut, {1} is the URL. Do not translate {0} or {1}.</comment>
+  </data>
+  <data name="Mapping_A11y_AloneSuffixFormat" xml:space="preserve">
+    <value>{0}, only when pressed alone</value>
+    <comment>Appended to a remapping row name when the remapping only fires when the key is tapped alone. {0} is the rest of the row name. Do not translate {0}.</comment>
+  </data>
+  <data name="Mapping_A11y_AppSuffixFormat" xml:space="preserve">
+    <value>{0}, in {1}</value>
+    <comment>Appended to a row name when the mapping only applies in one app. {0} is the rest of the row name, {1} is the app name. Do not translate {0} or {1}.</comment>
+  </data>
+  <data name="Mapping_A11y_EnableToggleFormat" xml:space="preserve">
+    <value>Enable {0}</value>
+    <comment>Screen reader name of the on/off switch in a mapping row. {0} is the row name. Do not translate {0}.</comment>
+  </data>
+  <data name="Mapping_A11y_MoreOptionsFormat" xml:space="preserve">
+    <value>More options for {0}</value>
+    <comment>Screen reader name of the &quot;...&quot; menu button in a mapping row. {0} is the row name. Do not translate {0}.</comment>
   </data>
 </root>
