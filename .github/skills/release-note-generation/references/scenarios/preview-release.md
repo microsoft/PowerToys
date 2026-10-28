@@ -87,8 +87,8 @@ For example, a preview of build `0.102.2991.0` from `stable` is `Release preview
    - Do not assign milestones or change labels.
    - Put unlabeled PRs under `General`.
    - Use conservative title-based wording when summary confidence is low.
-   - Place `Installer Hashes` immediately after the title and short public introduction, before `Highlights` and all change sections.
-   - Use the same branch-specific release title for the release-note heading and GitHub draft.
+   - Start the body with a short public introduction. Do not repeat the release name as a heading: GitHub and the in-app What's new page already display it. This overrides the title-heading example in the shared summarization instructions.
+   - Place `Installer Hashes` immediately after the introduction, before `Highlights` and all change sections. Use level-two headings for sections, not a level-one release title.
    - Include removed PRs under `Differences from the previous preview`.
    - Include unattributed commits under `Changes needing final review`.
    - Enclose the generated body in the managed markers documented in [preview draft safety](../preview-draft-safety.md).

@@ -31,6 +31,7 @@ $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "preview-release-assets.ps1")
 . (Join-Path $PSScriptRoot "github-tag-target.ps1")
 . (Join-Path $PSScriptRoot "release-title.ps1")
+. (Join-Path $PSScriptRoot "preview-release-body.ps1")
 
 $beginMarker = "<!-- BEGIN POWERTOYS PREVIEW AGENT -->"
 $endMarker = "<!-- END POWERTOYS PREVIEW AGENT -->"
@@ -81,6 +82,7 @@ if (-not (Test-Path -LiteralPath $AssetsDirectory -PathType Container)) {
 }
 
 $generatedBody = Get-Content -LiteralPath $BodyPath -Raw
+Assert-PreviewReleaseBodyLayout -Body $generatedBody
 $assetFiles = @(Get-PreviewReleaseAssets -AssetsDirectory $AssetsDirectory)
 if ($assetFiles.Count -eq 0) {
     throw "No generated release assets were found in '$AssetsDirectory'."

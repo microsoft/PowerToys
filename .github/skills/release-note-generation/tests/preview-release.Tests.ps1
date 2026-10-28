@@ -777,7 +777,66 @@ Describe "release title selection" {
     }
 }
 
+Describe "preview release body layout" {
+    BeforeAll {
+        . (Join-Path $scripts "preview-release-body.ps1")
+    }
+
+    It "accepts an introduction followed by section headings" {
+        Assert-PreviewReleaseBodyLayout -Body "PowerToys preview introduction.`r`n`r`n## Installer Hashes`r`n`r`n## Highlights"
+    }
+
+    It "rejects a repeated release title" {
+        { Assert-PreviewReleaseBodyLayout -Body "# Dev preview v0.103.3006.0`n`nIntroduction" } |
+            Should Throw "must not contain a level-one title heading"
+    }
+
+    It "rejects a setext release title" {
+        { Assert-PreviewReleaseBodyLayout -Body "Preview v0.103.3006.0`r`n===`r`n`r`nIntroduction" } |
+            Should Throw "must not contain a level-one title heading"
+    }
+
+    It "validates the managed body without rejecting human headings outside it" {
+        Assert-PreviewReleaseBodyLayout -Body "# Human introduction`n<!-- BEGIN POWERTOYS PREVIEW AGENT -->`nPreview notes`n## Highlights`n<!-- END POWERTOYS PREVIEW AGENT -->"
+    }
+}
+
 Describe "draft preview release dry run" {
+    It "rejects a generated release-title heading before creating a draft" {
+        $bodyPath = Join-Path $TestDrive "duplicate-title.md"
+        $assetsPath = Join-Path $TestDrive "duplicate-title-assets"
+        New-Item -ItemType Directory -Path $assetsPath | Out-Null
+        "<!-- BEGIN POWERTOYS PREVIEW AGENT -->`n# Dev preview v0.101.2181.0`n`nIntroduction`n<!-- END POWERTOYS PREVIEW AGENT -->" |
+            Set-Content -LiteralPath $bodyPath
+
+        {
+            & (Join-Path $scripts "upsert-draft-preview-release.ps1") `
+                -Tag "v0.101.2181" `
+                -SourceBranch "refs/heads/main" `
+                -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
+                -BodyPath $bodyPath `
+                -AssetsDirectory $assetsPath `
+                -DryRun
+        } | Should Throw "must not contain a level-one title heading"
+    }
+
+    It "rejects a generated release-title heading during final verification" {
+        $bodyPath = Join-Path $TestDrive "verify-duplicate-title.md"
+        "<!-- BEGIN POWERTOYS PREVIEW AGENT -->`n# Preview v0.101.2181.0`n`nIntroduction`n<!-- END POWERTOYS PREVIEW AGENT -->" |
+            Set-Content -LiteralPath $bodyPath
+
+        {
+            & (Join-Path $scripts "verify-draft-preview-release.ps1") `
+                -Tag "v0.101.2181" `
+                -SourceBranch "refs/heads/main" `
+                -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
+                -BodyPath $bodyPath `
+                -AssetsDirectory (Join-Path $TestDrive "unused-assets") `
+                -OutputPath (Join-Path $TestDrive "invalid-review.md") `
+                -DryRun
+        } | Should Throw "must not contain a level-one title heading"
+    }
+
     It "constructs a draft-only operation for <SourceBranch> without contacting GitHub" -TestCases @(
         @{ SourceBranch = "refs/heads/main"; ExpectedTitle = "Development preview v0.101.2181" },
         @{ SourceBranch = "refs/heads/stable"; ExpectedTitle = "Release preview v0.101.2181" }

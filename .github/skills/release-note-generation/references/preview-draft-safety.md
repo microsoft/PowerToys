@@ -24,9 +24,17 @@ Wrap generated release content with:
 
 ```markdown
 <!-- BEGIN POWERTOYS PREVIEW AGENT -->
+PowerToys <resolved version> is a development preview ...
+
+## Installer Hashes
+...
+
+## Highlights
 ...
 <!-- END POWERTOYS PREVIEW AGENT -->
 ```
+
+Keep the release title in GitHub's title field only. Do not add a level-one heading to the managed body: GitHub and the in-app What's new page already render the release name above it. The draft creation and verification scripts reject level-one headings rather than silently rewriting generated content.
 
 On rerun, replace only this region. Preserve human-authored text before and after it.
 
