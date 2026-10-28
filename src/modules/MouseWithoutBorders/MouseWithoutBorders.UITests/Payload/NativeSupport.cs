@@ -79,17 +79,45 @@ namespace Microsoft.MouseWithoutBorders.UITests
                 // toolhelp32 snapshot walk (ParentId), the process token/session query
                 // (SessionId), or QueryFullProcessImageName (ImagePath) is the one that failed.
                 int parentId;
-                try { parentId = NativeSupport.ParentId(id); }
-                catch (Exception error) { throw new InvalidOperationException("ParentId: " + error.Message, error); }
+                try
+                {
+                    parentId = NativeSupport.ParentId(id);
+                }
+                catch (Exception error)
+                {
+                    throw new InvalidOperationException("ParentId: " + error.Message, error);
+                }
+
                 int sessionId;
-                try { sessionId = process.SessionId; }
-                catch (Exception error) { throw new InvalidOperationException("SessionId: " + error.Message, error); }
+                try
+                {
+                    sessionId = process.SessionId;
+                }
+                catch (Exception error)
+                {
+                    throw new InvalidOperationException("SessionId: " + error.Message, error);
+                }
+
                 string path;
-                try { path = NativeSupport.ImagePath(id); }
-                catch (Exception error) { throw new InvalidOperationException("ImagePath: " + error.Message, error); }
+                try
+                {
+                    path = NativeSupport.ImagePath(id);
+                }
+                catch (Exception error)
+                {
+                    throw new InvalidOperationException("ImagePath: " + error.Message, error);
+                }
+
                 DateTime startTimeUtc;
-                try { startTimeUtc = process.StartTime.ToUniversalTime(); }
-                catch (Exception error) { throw new InvalidOperationException("StartTime: " + error.Message, error); }
+                try
+                {
+                    startTimeUtc = process.StartTime.ToUniversalTime();
+                }
+                catch (Exception error)
+                {
+                    throw new InvalidOperationException("StartTime: " + error.Message, error);
+                }
+
                 return new ProcessIdentity
                 {
                     Id = id,
@@ -472,12 +500,18 @@ namespace Microsoft.MouseWithoutBorders.UITests
             }
 
             var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-            return string.Equals(processPath, Path.Combine(windows,
-                @"SystemApps\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\StartMenuExperienceHost.exe"), StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(processPath, Path.Combine(windows,
-                @"SystemApps\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\SearchHost.exe"), StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(processPath, Path.Combine(windows,
-                @"SystemApps\Microsoft.Windows.Search_cw5n1h2txyewy\SearchApp.exe"), StringComparison.OrdinalIgnoreCase);
+            return string.Equals(
+                    processPath,
+                    Path.Combine(windows, @"SystemApps\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\StartMenuExperienceHost.exe"),
+                    StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(
+                    processPath,
+                    Path.Combine(windows, @"SystemApps\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\SearchHost.exe"),
+                    StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(
+                    processPath,
+                    Path.Combine(windows, @"SystemApps\Microsoft.Windows.Search_cw5n1h2txyewy\SearchApp.exe"),
+                    StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsUncloakedCoreWindow(IntPtr window)
@@ -499,7 +533,8 @@ namespace Microsoft.MouseWithoutBorders.UITests
             int hresult = DwmGetWindowAttribute(window, 14 /* DWMWA_CLOAKED */, out cloaked, sizeof(int));
             if (hresult < 0)
             {
-                throw new InvalidOperationException("Could not query Start-menu cloaking (HRESULT 0x" + hresult.ToString("X8", CultureInfo.InvariantCulture) + ").",
+                throw new InvalidOperationException(
+                    "Could not query Start-menu cloaking (HRESULT 0x" + hresult.ToString("X8", CultureInfo.InvariantCulture) + ").",
                     Marshal.GetExceptionForHR(hresult));
             }
 
@@ -606,7 +641,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
         {
             List<WindowInfo> windows = new List<WindowInfo>();
             EnumWindows(
-                delegate(IntPtr window, IntPtr lParam)
+                (window, lParam) =>
                 {
                     if (WindowProcessId(window) != processId)
                     {
