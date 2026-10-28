@@ -71,7 +71,10 @@
     <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="Microsoft.WindowsPackageManager.ComInterop" Version="1.10.340" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.269" />
-    <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->
+    <!--
+      CsWinRT must ship the same WinRT.Runtime.dll version as the Microsoft.Windows.SDK.NET.Ref pack selected by WindowsSdkPackageVersion in src\Common.Dotnet.props.
+      Class-library deps.json files list both copies, and .pipelines\verifyDepsJsonLibraryVersions.ps1 fails the build when their versions differ.
+    -->
     <!-- 
       TODO: in Common.Dotnet.CsWinRT.props, on upgrade, verify RemoveCsWinRTPackageAnalyzer is no longer needed.  
       This is present due to a bug in CsWinRT where WPF projects cause the analyzer to fail.
