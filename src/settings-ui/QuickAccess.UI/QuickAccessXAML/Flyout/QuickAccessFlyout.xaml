@@ -1,0 +1,13 @@
+<desktopflyouts:DesktopFlyout
+    x:Class="Microsoft.PowerToys.QuickAccess.Flyout.QuickAccessFlyout"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:desktopflyouts="using:DesktopFlyouts"
+    ActivationMode="Activate"
+    FlyoutWidth="400"
+    Placement="BottomRight">
+
+    <desktopflyouts:DesktopFlyoutIsland IslandHeight="516">
+        <Frame x:Name="ContentFrame" Loaded="ContentFrame_Loaded" />
+    </desktopflyouts:DesktopFlyoutIsland>
+</desktopflyouts:DesktopFlyout>

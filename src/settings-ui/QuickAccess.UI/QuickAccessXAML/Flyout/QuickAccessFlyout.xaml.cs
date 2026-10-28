@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using DesktopFlyouts;
 using ManagedCommon;
 using Microsoft.PowerToys.QuickAccess.Services;
 using Microsoft.PowerToys.QuickAccess.ViewModels;
@@ -12,36 +13,40 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.QuickAccess.Flyout;
 
-/// <summary>
-/// Hosts the flyout navigation frame.
-/// </summary>
-public sealed partial class ShellPage : Page
+public sealed partial class QuickAccessFlyout : DesktopFlyout
 {
     private LauncherViewModel? _launcherViewModel;
     private AllAppsViewModel? _allAppsViewModel;
     private IQuickAccessCoordinator? _coordinator;
+    private bool _contentFrameLoaded;
 
-    public ShellPage()
+    public QuickAccessFlyout()
     {
         InitializeComponent();
         ContentFrame.NavigationFailed += ContentFrame_NavigationFailed;
     }
 
-    public void Initialize(IQuickAccessCoordinator coordinator, LauncherViewModel launcherViewModel, AllAppsViewModel allAppsViewModel)
+    internal void Initialize(IQuickAccessCoordinator coordinator, LauncherViewModel launcherViewModel, AllAppsViewModel allAppsViewModel)
     {
         _coordinator = coordinator;
         _launcherViewModel = launcherViewModel;
         _allAppsViewModel = allAppsViewModel;
+
+        if (_contentFrameLoaded)
+        {
+            NavigateToLaunchWithoutTransition();
+        }
     }
 
-    private void Page_Loaded(object sender, RoutedEventArgs e)
+    private void ContentFrame_Loaded(object sender, RoutedEventArgs e)
     {
-        if (_launcherViewModel == null || _allAppsViewModel == null || _coordinator == null)
-        {
-            return;
-        }
+        _contentFrameLoaded = true;
+        NavigateToLaunchWithoutTransition();
+    }
 
-        if (ContentFrame.Content is LaunchPage)
+    private void NavigateToLaunchWithoutTransition()
+    {
+        if (_launcherViewModel == null || _allAppsViewModel == null || _coordinator == null || ContentFrame.Content is LaunchPage)
         {
             return;
         }
