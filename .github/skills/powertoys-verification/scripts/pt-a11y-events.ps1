@@ -113,6 +113,9 @@ namespace PtA11yEvents {
             return _events.ToArray();
         }
 
+        // Events so far, without stopping (for live captions).
+        public EventRecord[] Snapshot() { return _events.ToArray(); }
+
         public EventRecord ReadFocus() {
             var uia = (IAutomation5)new CUIAutomation8();
             return Describe(uia.GetFocusedElement(), "Focus");
