@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+
 using MouseJump.Common.Win32Gen;
 using MouseJump.Models.Drawing;
 
@@ -113,9 +116,17 @@ public static class MouseHelper
             },
         };
 
-        // don't check return value - we aren't going to do anything if it fails
-        _ = User32.SendInput(inputs, inputs.Length)
+        // cbSize is the size of an INPUT struct, *not* the number of inputs - SendInput
+        // rejects the call if it's wrong, and the crosshair silently stops following the
+        // cursor (see microsoft#48290).
+        //
+        // the cursor has already moved by this point, so don't crash if the synthetic
+        // mouse move can't be sent - but assert in debug builds so a regression like
+        // the one above gets noticed during development
+        var cbSize = Marshal.SizeOf<INPUT>();
+        var result = User32.SendInput(inputs, cbSize)
             .IgnoreFailure();
+        Debug.Assert(result.Success, $"SendInput failed - LastError: {result.LastError}");
     }
 
     private static decimal CalculateAbsoluteCoordinateX(decimal x)
