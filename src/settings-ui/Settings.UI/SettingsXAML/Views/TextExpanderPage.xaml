@@ -18,6 +18,7 @@
                     <Button x:Uid="TextExpander_ManageSnippetsButton" AutomationProperties.AutomationId="Button_TextExpander_ManageSnippets" Click="ManageSnippets_Click" IsEnabled="{x:Bind ViewModel.CanLaunchEditor, Mode=OneWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar x:Uid="TextExpander_EditorLaunchError" IsClosable="False" IsOpen="{x:Bind ViewModel.HasEditorLaunchError, Mode=OneWay}" Severity="Error" />
+                <InfoBar x:Uid="TextExpander_OptionsReadError" IsClosable="False" IsOpen="{x:Bind ViewModel.HasSettingsReadError, Mode=OneWay}" Severity="Error" />
                 <InfoBar x:Uid="TextExpander_OptionsSaveError" IsClosable="False" IsOpen="{x:Bind ViewModel.HasSettingsSaveError, Mode=OneWay}" Severity="Error" />
                 <InfoBar x:Uid="TextExpander_ElevatedEditingNotice" IsClosable="False" IsOpen="{x:Bind ViewModel.IsElevated, Mode=OneWay}" Severity="Warning" />
                     <controls:SettingsGroup x:Uid="TextExpander_Advanced_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

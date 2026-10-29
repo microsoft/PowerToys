@@ -9,7 +9,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
+using System.Text;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -110,6 +112,42 @@ public sealed class TextExpanderSettingsTests
     }
 
     [TestMethod]
+    public void UnreadableOptionsFileIsReportedAndLeftUnchanged()
+    {
+        // The engine accepts a wrapped bool, but the Settings model can't read it.
+        byte[] unreadable = Encoding.UTF8.GetBytes("{\"properties\":{\"snippets_path\":{\"value\":\"C:\\\\Snippets\"},\"case_sensitive\":{\"value\":false}}}");
+        var fileSystem = new MockFileSystem();
+        string path = new SettingsUtils(fileSystem).GetSettingsFilePath(TextExpanderSettings.ModuleName);
+        fileSystem.AddFile(path, new MockFileData(unreadable));
+
+        TextExpanderViewModel model = Create(() => { }, fileSystem: fileSystem);
+        model.CaseSensitive = false;
+
+        Assert.IsTrue(model.HasSettingsReadError);
+        Assert.IsTrue(model.HasSettingsSaveError);
+        Assert.IsTrue(model.CaseSensitive, "Defaults are shown while the file can't be read.");
+        CollectionAssert.AreEqual(unreadable, fileSystem.File.ReadAllBytes(path));
+
+        fileSystem.File.WriteAllText(path, "{\"properties\":{\"case_sensitive\":false}}");
+        model.RefreshEnabledState();
+        Assert.IsFalse(model.HasSettingsReadError);
+        Assert.IsFalse(model.CaseSensitive);
+    }
+
+    [TestMethod]
+    public void MissingOptionsFileShowsDefaultsWithoutAnError()
+    {
+        var fileSystem = new MockFileSystem();
+
+        TextExpanderViewModel model = Create(() => { }, fileSystem: fileSystem);
+
+        Assert.IsFalse(model.HasSettingsReadError);
+        Assert.IsTrue(model.RequireWordBoundary);
+        Assert.AreEqual(TextExpanderSettings.DefaultClipboardThresholdChars, model.ClipboardThresholdChars);
+        Assert.IsFalse(fileSystem.File.Exists(new SettingsUtils(fileSystem).GetSettingsFilePath(TextExpanderSettings.ModuleName)));
+    }
+
+    [TestMethod]
     public void MinimumLengthToPasteAppliesOnlyToAutomatic()
     {
         var settings = new TextExpanderSettings();
@@ -170,14 +208,16 @@ public sealed class TextExpanderSettingsTests
         GpoRuleConfigured policy = GpoRuleConfigured.NotConfigured,
         bool isElevated = false,
         Mock<TextExpanderSettingsUtils> settingsStore = null,
-        GeneralSettings general = null)
+        GeneralSettings general = null,
+        IFileSystem fileSystem = null)
     {
         var utils = settingsStore ?? new Mock<TextExpanderSettingsUtils>(new FileSystem(), null);
-        utils.Setup(instance => instance.GetSettingsOrDefault<TextExpanderSettings>(
+        utils.Setup(instance => instance.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(
             TextExpanderSettings.ModuleName,
             SettingsUtils.DefaultFileName)).Returns(new TextExpanderSettings());
         var repository = new Mock<ISettingsRepository<GeneralSettings>>();
         repository.SetupGet(instance => instance.SettingsConfig).Returns(general ?? new GeneralSettings());
-        return new TextExpanderViewModel(utils.Object, repository.Object, _ => 0, isElevated, launch, () => policy);
+        TextExpanderSettingsUtils store = fileSystem is null ? utils.Object : new TextExpanderSettingsUtils(fileSystem);
+        return new TextExpanderViewModel(store, repository.Object, _ => 0, isElevated, launch, () => policy);
     }
 }

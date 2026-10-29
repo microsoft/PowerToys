@@ -71,6 +71,8 @@ public sealed class TextExpanderViewModel : Observable
         }
     }
 
+    public bool HasSettingsReadError { get; private set; }
+
     public bool IsEnabled
     {
         get => _isEnabled;
@@ -147,7 +149,19 @@ public sealed class TextExpanderViewModel : Observable
     public void RefreshEnabledState()
     {
         _isEnabled = IsEnabledGpoConfigured ? _policy == GpoRuleConfigured.Enabled : _repository.SettingsConfig.Enabled.TextExpander;
-        _settings = _settingsUtils.GetSettingsOrDefault<TextExpanderSettings>(TextExpanderSettings.ModuleName);
+        try
+        {
+            // Read-only: replacing an unreadable file with defaults would reset every option and the snippet folder.
+            _settings = _settingsUtils.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName);
+            HasSettingsReadError = false;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            Logger.LogError("Could not read Text Expander options.", ex);
+            _settings = new TextExpanderSettings();
+            HasSettingsReadError = true;
+        }
+
         OnPropertyChanged(string.Empty);
     }
 
