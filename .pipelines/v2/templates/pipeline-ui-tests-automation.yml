@@ -13,9 +13,9 @@ parameters:
     type: string
     default: SHINE-W11-Preview-Testing-arm64-TestSigning
     values:
-      - ''
+      - disabled
       - SHINE-W11-Preview-Testing-arm64-TestSigning
-    displayName: "Isolated ARM64 UMDF image (empty disables the route)"
+    displayName: "Isolated ARM64 UMDF image (disabled turns off the route)"
   - name: buildPlatforms
     type: object
     default:
@@ -55,7 +55,10 @@ stages:
   - ${{ if eq(parameters.umdfHidSmokeOnly, true) }}:
     - template: pipeline-umdf-hid-smoke.yml
       parameters:
-        umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
+        ${{ if eq(parameters.umdfHidArm64Image, 'disabled') }}:
+          umdfHidArm64Image: ''
+        ${{ else }}:
+          umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
         buildPlatforms: ${{ parameters.buildPlatforms }}
         uiTestModules: ${{ parameters.uiTestModules }}
   - ${{ if eq(parameters.umdfHidSmokeOnly, false) }}:
@@ -65,7 +68,10 @@ stages:
       - ${{ if or(eq(parameters.buildSource, 'buildNow'), eq(parameters.buildSource, 'buildNowSlim')) }}:
         - template: pipeline-ui-tests-full-build.yml
           parameters:
-            umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
+            ${{ if eq(parameters.umdfHidArm64Image, 'disabled') }}:
+              umdfHidArm64Image: ''
+            ${{ else }}:
+              umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
             platform: ${{ platform }}
             buildSource: ${{ parameters.buildSource }}
             enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
@@ -77,7 +83,10 @@ stages:
       - ${{ if and(ne(parameters.buildSource, 'buildNow'), ne(parameters.buildSource, 'buildNowSlim')) }}:
         - template: pipeline-ui-tests-official-build.yml
           parameters:
-            umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
+            ${{ if eq(parameters.umdfHidArm64Image, 'disabled') }}:
+              umdfHidArm64Image: ''
+            ${{ else }}:
+              umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
             platform: ${{ platform }}
             buildSource: ${{ parameters.buildSource }}
             specificBuildId: ${{ parameters.specificBuildId }}

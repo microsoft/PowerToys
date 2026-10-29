@@ -7,9 +7,9 @@ variables:
 parameters:
   - name: umdfHidArm64Image
     type: string
-    default: ''
+    default: disabled
     values:
-      - ''
+      - disabled
       - SHINE-W11-Preview-Testing-arm64-TestSigning
   - name: buildPlatforms
     type: object
@@ -89,8 +89,8 @@ stages:
             runTests: ${{ parameters.runTests }}
             buildTests: true
             prepareMwbRuntime: ${{ and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}
-            prepareUmdfHid: ${{ and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(parameters.umdfHidArm64Image, '')))) }}
-            ${{ if and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(parameters.umdfHidArm64Image, '')))) }}:
+            prepareUmdfHid: ${{ and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(parameters.umdfHidArm64Image, 'disabled')))) }}
+            ${{ if and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(parameters.umdfHidArm64Image, 'disabled')))) }}:
               dependsOn:
                 - Resolve
               # Resolve is skipped outside PR builds; the ordinary build must still run.
@@ -144,7 +144,10 @@ stages:
           - ${{ if ne(platform, 'x64') }}:
             - template: job-test-arm64.yml
               parameters:
-                umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
+                ${{ if eq(parameters.umdfHidArm64Image, 'disabled') }}:
+                  umdfHidArm64Image: ''
+                ${{ else }}:
+                  umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
                 platform: ${{ platform }}
                 configuration: Release
                 buildSource: buildNowSlim

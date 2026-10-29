@@ -142,7 +142,7 @@ Describe 'Virtual HID suite selection' {
         $resolve | Should Match '\$hasUmdfHidUiTests = if \(\$modules -contains ''GrabAndMove.UITests''\)'
         $resolve | Should Match 'hasUmdfHidUiTests;isOutput=true'
         $ci = Get-Content (Join-Path $templates 'pipeline-ci-build.yml') -Raw
-        $ci | Should Match "prepareUmdfHid:.*parameters.runAffectedUiTests, or\(eq\(platform, 'x64'\), and\(eq\(platform, 'arm64'\), ne\(parameters.umdfHidArm64Image, ''\)\)\)"
+        $ci | Should Match "prepareUmdfHid:.*parameters.runAffectedUiTests, or\(eq\(platform, 'x64'\), and\(eq\(platform, 'arm64'\), ne\(parameters.umdfHidArm64Image, 'disabled'\)\)\)"
         $ci | Should Match "UmdfHidSelected:.*dependencies.Resolve.outputs\['resolve.hasUmdfHidUiTests'\]"
         $ci | Should Match "umdfHidCondition:.*eq\(variables\['UmdfHidSelected'\], 'true'\)"
         $build = Get-Content (Join-Path $templates 'job-build-project.yml') -Raw

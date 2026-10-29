@@ -9,20 +9,20 @@ Describe 'Dedicated ARM64 virtual HID routing' {
         $manual = Get-Content (Join-Path $templates 'pipeline-ui-tests-automation.yml') -Raw
         $manual | Should Match 'name: umdfHidArm64Image\r?\n\s+type: string\r?\n\s+default: SHINE-W11-Preview-Testing-arm64-TestSigning'
         $ci = Get-Content (Join-Path $templates 'pipeline-ci-build.yml') -Raw
-        $ci | Should Match "name: umdfHidArm64Image\r?\n\s+type: string\r?\n\s+default: ''"
+        $ci | Should Match 'name: umdfHidArm64Image\r?\n\s+type: string\r?\n\s+default: disabled'
     }
 
     It 'keeps unverified public PR pools opted out of the ARM64 image' {
         $ci = Get-Content (Join-Path $PSScriptRoot '..\v2\ci.yml') -Raw
         $ci | Should Match "if eq\(variables\['System.CollectionId'\], 'cb55739e-4afe-46a3-970f-1b49d8ee7564'\)"
         $ci | Should Match 'umdfHidArm64Image: SHINE-W11-Preview-Testing-arm64-TestSigning'
-        $ci | Should Match "(?s)\$\{\{ else \}\}:\r?\n\s+umdfHidArm64Image: ''"
+        $ci | Should Match "(?s)\$\{\{ else \}\}:\r?\n\s+umdfHidArm64Image: disabled"
     }
 
     It 'restricts queue-time image values and never interpolates image text into scripts' {
         foreach ($name in @('pipeline-ci-build.yml', 'pipeline-ui-tests-automation.yml')) {
             $source = Get-Content (Join-Path $templates $name) -Raw
-            $source | Should Match "values:\r?\n\s+- ''\r?\n\s+- SHINE-W11-Preview-Testing-arm64-TestSigning"
+            $source | Should Match 'values:\r?\n\s+- disabled\r?\n\s+- SHINE-W11-Preview-Testing-arm64-TestSigning'
         }
         $job = Get-Content (Join-Path $templates 'job-test-project.yml') -Raw
         $smoke = Get-Content (Join-Path $templates 'pipeline-umdf-hid-smoke.yml') -Raw
@@ -73,9 +73,8 @@ Describe 'Dedicated ARM64 virtual HID routing' {
     It 'builds native ARM64 artifacts only when the separate image is configured' {
         $full = Get-Content (Join-Path $templates 'pipeline-ui-tests-full-build.yml') -Raw
         $ci = Get-Content (Join-Path $templates 'pipeline-ci-build.yml') -Raw
-        foreach ($source in @($full, $ci)) {
-            $source | Should Match "prepareUmdfHid:.*eq\((parameters.platform|platform), 'arm64'\), ne\(parameters.umdfHidArm64Image, ''\)"
-        }
+        $full | Should Match "prepareUmdfHid:.*eq\(parameters.platform, 'arm64'\), ne\(parameters.umdfHidArm64Image, ''\)"
+        $ci | Should Match "prepareUmdfHid:.*eq\(platform, 'arm64'\), ne\(parameters.umdfHidArm64Image, 'disabled'\)"
         $testsOnly = Get-Content (Join-Path $templates 'job-build-ui-tests.yml') -Raw
         $testsOnly | Should Match "eq\(variables\['BuildPlatform'\], 'arm64'\), eq\('\$\{\{ ne\(parameters.umdfHidArm64Image, ''\) \}\}', 'True'\)"
     }

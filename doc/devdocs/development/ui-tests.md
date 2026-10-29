@@ -163,7 +163,8 @@ The `umdfHidArm64Image` template parameter is declared by
 explicitly through the stage/job templates so it is available during structural expansion:
 
 - Manual internal UI-test runs default to `SHINE-W11-Preview-Testing-arm64-TestSigning` through
-  `ImageOverride`. The image parameter permits only that name or an empty value to disable routing.
+  `ImageOverride`. The image parameter permits only that name or `disabled` to turn off routing;
+  root templates translate `disabled` to the internal empty-image convention.
 - PR CI enables the image only in the verified internal collection (`SHINE-INT-Testing-arm64`).
   The shared CI template defaults to disabled; public `shine-oss` PR CI explicitly keeps it
   disabled until the image is provisioned and verified there. Implicit ARM64 selections then
