@@ -100,8 +100,8 @@ functionality.
     - [Goals](#goals)
     - [Overview](#overview)
     - [API](#api)
-    - [Why `CreateCommand`](#why-createcommand)
     - [Passive fallbacks](#passive-fallbacks)
+      - [Why `CreateCommand`](#why-createcommand)
     - [Active fallbacks](#active-fallbacks)
     - [Result sources](#result-sources)
       - [Snapshots and progress](#snapshots-and-progress)
@@ -2789,38 +2789,6 @@ public interface IFallbackCommandItem3
 ```
 
 
-### Why `CreateCommand`
-
-An earlier prototype added an `IInvokableCommand2.InvokeWithArgs` method. That
-works for invokable commands, but it does not solve the equivalent page
-scenario. Consider a passive WinGet fallback: selecting "Search WinGet for
-foo" should open its list page with `foo` already in the page's search box.
-Pages are navigated to; they do not have an invocation method where the host can
-pass additional arguments.
-
-`CreateCommand` handles both cases. It runs only after activation, and it can
-return either:
-
-* an `IInvokableCommand` which has captured the query, or
-* an `IPage` initialized with the query.
-
-An extension which does not need the query may return the same object as
-`ICommandItem.Command`. A result source returns query-specific
-commands in its `IListItem`s, so the host does not call the fallback item's
-`CreateCommand` for those results.
-
-The host activates passive fallbacks through `CreateCommand`.
-Legacy fallbacks without `IFallbackCommandItem3` continue to use `ICommandItem.Command`.
-The host keeps the provider ID, fallback ID, exact query, and query ID with each
-displayed fallback or result item. This provenance is host state; the host does
-not change the extension's item to store it.
-
-This also avoids adding another interface branch to `ICommand`. Out-of-process
-metadata-based marshalling behaves best when interfaces form a linear chain.
-The same is why formatting, host matching, and the query handler are all on
-`IFallbackCommandItem3`, rather than separate
-`IFormattedFallbackCommandItem` and `IHostMatchedFallbackCommandItem` interfaces.
-
 ### Passive fallbacks
 
 Passive fallbacks implement `IFallbackCommandItem3` and return null from `QueryHandler`.
@@ -2860,6 +2828,38 @@ returned command. This is the first time the passive fallback receives that
 query. Although `IFallbackCommandInvocationArgs` includes the host's opaque
 `QueryId`, the passive fallback receives it only with this activation-time call,
 never while the user types.
+
+#### Why `CreateCommand`
+
+An earlier prototype added an `IInvokableCommand2.InvokeWithArgs` method. That
+works for invokable commands, but it does not solve the equivalent page
+scenario. Consider a passive WinGet fallback: selecting "Search WinGet for
+foo" should open its list page with `foo` already in the page's search box.
+Pages are navigated to; they do not have an invocation method where the host can
+pass additional arguments.
+
+`CreateCommand` handles both cases. It runs only after activation, and it can
+return either:
+
+* an `IInvokableCommand` which has captured the query, or
+* an `IPage` initialized with the query.
+
+An extension which does not need the query may return the same object as
+`ICommandItem.Command`. A result source returns query-specific
+commands in its `IListItem`s, so the host does not call the fallback item's
+`CreateCommand` for those results.
+
+The host activates passive fallbacks through `CreateCommand`.
+Legacy fallbacks without `IFallbackCommandItem3` continue to use `ICommandItem.Command`.
+The host keeps the provider ID, fallback ID, exact query, and query ID with each
+displayed fallback or result item. This provenance is host state; the host does
+not change the extension's item to store it.
+
+This also avoids adding another interface branch to `ICommand`. Out-of-process
+metadata-based marshalling behaves best when interfaces form a linear chain.
+The same is why formatting, host matching, and the query handler are all on
+`IFallbackCommandItem3`, rather than separate
+`IFormattedFallbackCommandItem` and `IHostMatchedFallbackCommandItem` interfaces.
 
 ### Active fallbacks
 
