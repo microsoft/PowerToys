@@ -530,6 +530,28 @@ function New-MwbCiSignedRuntime {
     [pscustomobject]@{ Files = $files; RuntimeManifest = $runtime }
 }
 
+function ConvertTo-MwbProvisioningProgress {
+    param([string] $Line)
+
+    $phases = @('Validating staged payload', 'Checking staged process inventory',
+        'Checking Sandbox feature', 'Validating Sandbox preview', 'Checking firewall conflicts',
+        'Fingerprinting payload', 'Inspecting public test trust', 'Hashing MWB executable',
+        'Hashing MWB assembly', 'Hashing Sandbox runtime archive', 'Recording provisioning ownership',
+        'Writing provisioning marker', 'Waiting for Sandbox network', 'Importing owned public test trust')
+    if ($Line.Length -gt 256 -or
+        $Line -cnotmatch '\AMWB provisioning: (?<Phase>[A-Za-z ]+) \((?<Elapsed>[0-9]{1,6}(?:,[0-9]{3}){0,2}\.[0-9])s\)\z' -or
+        $Matches.Phase -cnotin $phases) {
+        return
+    }
+    $phase = $Matches.Phase
+    $elapsed = 0.0
+    if (-not [double]::TryParse($Matches.Elapsed, [Globalization.NumberStyles]::Number,
+            [Globalization.CultureInfo]::InvariantCulture, [ref]$elapsed) -or $elapsed -gt 3600) {
+        return
+    }
+    [pscustomobject]@{ Phase = $phase; ElapsedSeconds = $elapsed }
+}
+
 # Match the trusted family required by WinAppSandbox.AssertPrerequisites.
 $script:MwbSandboxPackageFamily = 'MicrosoftWindows.WindowsSandbox_cw5n1h2txyewy'
 

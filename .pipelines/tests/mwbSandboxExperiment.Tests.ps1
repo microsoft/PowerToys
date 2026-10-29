@@ -3,6 +3,7 @@
 # See the LICENSE file in the project root for more information.
 
 #Requires -Version 7.0
+. "$PSScriptRoot\..\mwb\MwbSandboxCi.Common.ps1"
 $scriptPath = Join-Path $PSScriptRoot '..\mwb\mwbSandboxExperiment.ps1'
 $tokens = $null
 $parseErrors = $null
@@ -253,6 +254,20 @@ Describe 'MWB bounded public provisioning diagnostics' {
         Assert-MockCalled Assert-MwbProtectedDirectory -Times 1 -Exactly -ParameterFilter { $Path -eq $logRoot }
         Assert-MockCalled Assert-MwbProtectedDirectory -Times 1 -Exactly -ParameterFilter { $Path -eq $stderrPath }
         Assert-MockCalled Assert-MwbProtectedDirectory -Times 1 -Exactly -ParameterFilter { $Path -eq $stdoutPath }
+    }
+
+    It 'publishes phase progress without printing raw stdout or stderr' {
+        @('private-authentication-state',
+            'MWB provisioning: Inspecting public test trust (1.2s)',
+            'MWB provisioning: Hashing Sandbox runtime archive (3.4s)',
+            'MWB provisioning: unknown private phase (4.5s)') |
+            Set-Content -LiteralPath $stdoutPath
+        'private-stderr-state' | Set-Content -LiteralPath $stderrPath
+        Write-MwbProvisioningDiagnostics $directory
+        $output = $script:diagnosticLines -join "`n"
+        $output | Should Match 'Inspecting public test trust \(1[.,]2s\)'
+        $output | Should Match 'Hashing Sandbox runtime archive \(3[.,]4s\)'
+        $output | Should Not Match 'private-authentication-state|private-stderr-state|unknown private phase'
     }
 
     It 'explicitly reports unavailable logs when the launcher never started' {
