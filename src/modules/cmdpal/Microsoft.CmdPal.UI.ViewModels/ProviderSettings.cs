@@ -101,10 +101,7 @@ public record ProviderSettings
                 {
                     var enableGlobalResults = (wrapper.Extension is null)
                         && !_excludedBuiltInFallbacks.Contains(fallback.Id);
-                    builder[fallback.Id] = new FallbackSettings(
-                        enableGlobalResults,
-                        fallback.SuggestedQueryDelayMilliseconds,
-                        fallback.SuggestedMinQueryLength);
+                    builder[fallback.Id] = new FallbackSettings(enableGlobalResults);
                     changed = true;
                 }
             }

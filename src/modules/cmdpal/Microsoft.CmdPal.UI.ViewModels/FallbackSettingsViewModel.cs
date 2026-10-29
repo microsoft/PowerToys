@@ -6,15 +6,12 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
-using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class FallbackSettingsViewModel : ObservableObject
 {
     private readonly ProviderSettingsViewModel _providerSettingsViewModel;
-    private readonly uint? _suggestedQueryDelayMilliseconds;
-    private readonly uint? _suggestedMinimumQueryLength;
 
     private FallbackSettings _fallbackSettings;
 
@@ -48,7 +45,7 @@ public partial class FallbackSettingsViewModel : ObservableObject
 
     public double QueryDelayMilliseconds
     {
-        get => _fallbackSettings.QueryDelayMilliseconds ?? _suggestedQueryDelayMilliseconds ?? 0;
+        get => _fallbackSettings.QueryDelayMilliseconds ?? 0;
         set => Update(
             nameof(QueryDelayMilliseconds),
             _fallbackSettings with { QueryDelayMilliseconds = ToUInt32(value, FallbackSettings.MaximumQueryDelayMilliseconds) });
@@ -56,7 +53,7 @@ public partial class FallbackSettingsViewModel : ObservableObject
 
     public double MinimumQueryLength
     {
-        get => _fallbackSettings.MinimumQueryLength ?? _suggestedMinimumQueryLength ?? 0;
+        get => _fallbackSettings.MinimumQueryLength ?? 0;
         set => Update(
             nameof(MinimumQueryLength),
             _fallbackSettings with { MinimumQueryLength = ToUInt32(value, FallbackSettings.MaximumMinimumQueryLength) });
@@ -69,12 +66,10 @@ public partial class FallbackSettingsViewModel : ObservableObject
     {
         _providerSettingsViewModel = providerSettings;
         _fallbackSettings = fallbackSettings;
-        _suggestedQueryDelayMilliseconds = fallback.SuggestedQueryDelayMilliseconds;
-        _suggestedMinimumQueryLength = fallback.SuggestedMinQueryLength;
 
         Id = fallback.Id;
         RankId = fallback.FallbackKey;
-        HasQuerySettings = fallback.IsFallbackV2 && fallback.FallbackMode == FallbackCommandMode.Active;
+        HasQuerySettings = fallback.FallbackQueryHandler is not null;
         DisplayName = string.IsNullOrWhiteSpace(fallback.DisplayTitle)
             ? (string.IsNullOrWhiteSpace(fallback.Title) ? providerSettings.DisplayName : fallback.Title)
             : fallback.DisplayTitle;

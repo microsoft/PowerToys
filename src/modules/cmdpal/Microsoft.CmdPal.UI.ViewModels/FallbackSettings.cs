@@ -9,12 +9,12 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public record FallbackSettings
 {
     /// <summary>
-    /// Largest query delay, in milliseconds, that a user or an extension can ask for.
+    /// Largest query delay, in milliseconds, that a user can ask for.
     /// </summary>
     public const uint MaximumQueryDelayMilliseconds = 2000;
 
     /// <summary>
-    /// Largest minimum query length that a user or an extension can ask for.
+    /// Largest minimum query length that a user can ask for.
     /// </summary>
     public const uint MaximumMinimumQueryLength = 100;
 

@@ -693,21 +693,17 @@ public sealed partial class MainListPage : DynamicListPage,
 
                 if (s.IsFallbackV2)
                 {
-                    if (s.FallbackMode == FallbackCommandMode.Passive)
+                    if (s.IsPassiveFallback)
                     {
                         if (!s.PreparePassiveFallback(newSearch, queryId, token))
                         {
                             continue;
                         }
                     }
-                    else if (s.FallbackMode == FallbackCommandMode.Results)
+                    else
                     {
                         // Result sources need the asynchronous result host, not the legacy handler.
                         continue;
-                    }
-                    else
-                    {
-                        activeFallbacks.Add(s);
                     }
                 }
                 else

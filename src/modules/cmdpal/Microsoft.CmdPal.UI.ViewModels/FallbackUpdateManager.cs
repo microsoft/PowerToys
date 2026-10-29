@@ -95,26 +95,8 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                 }
 
                 var command = commands[i];
-                if (command.IsFallbackV2)
-                {
-                    if ((uint)query.Length < command.EffectiveMinimumQueryLength)
-                    {
-                        continue;
-                    }
-
-                    // This worker owns a pool thread for the whole call, so the wait
-                    // blocks instead of using await. The cap keeps that block short.
-                    var delay = TimeSpan.FromMilliseconds(
-                        Math.Min(command.EffectiveQueryDelayMilliseconds, FallbackSettings.MaximumQueryDelayMilliseconds));
-                    if (delay > TimeSpan.Zero && cancellationToken.WaitHandle.WaitOne(delay))
-                    {
-                        return;
-                    }
-                }
-
                 var counter = _inflightFallbacks.GetOrAdd(command.FallbackKey, static _ => new InflightCounter());
-                var maximumInflight = command.IsFallbackV2 ? 1 : MaxInflightPerFallback;
-                if (!counter.TryClaim(maximumInflight))
+                if (!counter.TryClaim(MaxInflightPerFallback))
                 {
                     // At capacity — store this query as a pending retry so it runs
                     // when one of the in-flight calls finishes. Latest query wins.
@@ -220,8 +202,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                 return;
             }
 
-            var maximumInflight = cmd.IsFallbackV2 ? 1 : MaxInflightPerFallback;
-            if (!ctr.TryClaim(maximumInflight))
+            if (!ctr.TryClaim(MaxInflightPerFallback))
             {
                 // Still at capacity (a newer worker claimed the freed slot first).
                 // The pending was already consumed from TakePending, so it's dropped here.
