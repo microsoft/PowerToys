@@ -17,6 +17,12 @@ public class MousePointerCrosshairsTests : UITestBase
     private const string WindowClass = "MousePointerCrosshairs";
     private const string CrosshairsColor = "#FF0000";
 
+    // Distance from the cursor at which AssertCrosshairsAt samples each arm.
+    private const int ArmSampleOffset = 60;
+
+    // Neighbor-monitor scenarios need every arm sample to stay inside both monitors' shared height.
+    private const int MinimumSharedHeight = (2 * ArmSampleOffset) + 40;
+
     private static readonly IDisposable ModuleSettings = SettingsConfigHelper.PreserveModuleSettings(ModuleName);
 
     static MousePointerCrosshairsTests()
@@ -359,10 +365,10 @@ public class MousePointerCrosshairsTests : UITestBase
         var result = WaitHelper.WaitForStable(
             () => new[]
             {
-                WindowHelper.GetPixelColorHex(cursorX - 60, cursorY),
-                WindowHelper.GetPixelColorHex(cursorX + 60, cursorY),
-                WindowHelper.GetPixelColorHex(cursorX, cursorY - 60),
-                WindowHelper.GetPixelColorHex(cursorX, cursorY + 60),
+                WindowHelper.GetPixelColorHex(cursorX - ArmSampleOffset, cursorY),
+                WindowHelper.GetPixelColorHex(cursorX + ArmSampleOffset, cursorY),
+                WindowHelper.GetPixelColorHex(cursorX, cursorY - ArmSampleOffset),
+                WindowHelper.GetPixelColorHex(cursorX, cursorY + ArmSampleOffset),
             },
             colors => colors is not null && colors.All(color => color.Equals(CrosshairsColor, StringComparison.OrdinalIgnoreCase)),
             timeoutMS: 5_000,
@@ -379,7 +385,7 @@ public class MousePointerCrosshairsTests : UITestBase
         var probe = FindNeighborMonitorProbe();
         if (probe is null)
         {
-            Assert.Inconclusive("This scenario requires two side-by-side monitors that share at least 100px of height.");
+            Assert.Inconclusive($"This scenario requires two side-by-side monitors that share at least {MinimumSharedHeight}px of height.");
             return;
         }
 
@@ -419,7 +425,7 @@ public class MousePointerCrosshairsTests : UITestBase
             {
                 var sharedTop = Math.Max(source.Top, neighbor.Top);
                 var sharedBottom = Math.Min(source.Bottom, neighbor.Bottom);
-                if (sharedBottom - sharedTop < 100)
+                if (sharedBottom - sharedTop < MinimumSharedHeight)
                 {
                     continue;
                 }

@@ -376,11 +376,12 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
 
 InclusiveCrosshairs::ArmLengths InclusiveCrosshairs::GetArmLengths(float availableLength) const noexcept
 {
-    // A fixed-length arm that ends before the boundary shows its border on both ends.
+    // A fixed-length arm that ends before the boundary shows its border on both ends,
+    // but the outer border is still cut at the boundary when the arm ends close to it.
     if (m_crosshairs_is_fixed_length_enabled && m_crosshairs_fixed_length < availableLength)
     {
         float length = static_cast<float>(m_crosshairs_fixed_length);
-        return { length, length + m_crosshairs_border_size * 2.f };
+        return { length, min(length + m_crosshairs_border_size * 2.f, availableLength + m_crosshairs_border_size) };
     }
 
     // Otherwise the arm is cut at the boundary, where its outer end is off-screen.
