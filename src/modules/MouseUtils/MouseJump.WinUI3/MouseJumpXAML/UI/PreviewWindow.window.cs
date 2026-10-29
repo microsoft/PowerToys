@@ -249,15 +249,12 @@ internal sealed partial class PreviewWindow
                     return;
                 }
 
+                // we seem to need to turn off topmost and then re-enable it again
+                // when we show the form - otherwise it doesn't always get shown topmost...
                 var presenter = this.AppWindow.Presenter as OverlappedPresenter
                     ?? throw new InvalidOperationException();
-                if (!this.Visible)
-                {
-                    // we seem to need to turn off topmost and then re-enable it again
-                    // when we show the form - otherwise it doesn't always get shown topmost...
-                    presenter.IsAlwaysOnTop = false;
-                    presenter.IsAlwaysOnTop = true;
-                }
+                presenter.IsAlwaysOnTop = false;
+                presenter.IsAlwaysOnTop = true;
 
                 this.ApplyRoundRectRegion(width, height, cornerRadius);
 
