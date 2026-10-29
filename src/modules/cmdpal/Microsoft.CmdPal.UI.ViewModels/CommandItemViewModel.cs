@@ -198,7 +198,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
-        Command.InitializeProperties();
+        InitializeOwnedCommandProperties();
 
         var icon = model.Icon;
         if (icon is not null)
@@ -386,7 +386,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                     return;
                 }
 
-                Command.InitializeProperties();
+                InitializeOwnedCommandProperties();
                 SubscribeToCommand(Command);
 
                 // Extensions based on Command Palette SDK < 0.3 CommandItem class won't notify when Title changes because Command
@@ -673,6 +673,14 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         ReleaseReplaced(replaced, command);
+    }
+
+    private void InitializeOwnedCommandProperties()
+    {
+        if (_commandState.Owned)
+        {
+            _commandState.Command.InitializeProperties();
+        }
     }
 
     /// <summary>

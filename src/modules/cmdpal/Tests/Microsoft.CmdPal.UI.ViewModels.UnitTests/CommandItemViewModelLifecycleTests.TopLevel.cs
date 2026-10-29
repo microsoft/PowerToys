@@ -142,6 +142,34 @@ public partial class CommandItemViewModelLifecycleTests
             ? new TopLevelFallbackViewModel(source, CommandPaletteHost.Instance, CommandProviderContext.Empty, new(), services, null, DefaultContextMenuFactory.Instance)
             : new TopLevelViewModel(source, TopLevelType.Normal, CommandPaletteHost.Instance, CommandProviderContext.Empty, new(), services, DefaultContextMenuFactory.Instance);
 
+    [TestMethod]
+    public void TopLevelRows_DoNotInitializeBorrowedCommand()
+    {
+        var context = new TestPageContext();
+        var command = new TestCommand { Name = "Loaded command" };
+        var item = new TestCommandItem { CommandValue = command };
+        var source = new CommandItemViewModel(new(item), new(context), DefaultContextMenuFactory.Instance);
+        source.FastInitializeProperties();
+        using var services = new ServiceCollection().AddSingleton(Mock.Of<ISettingsService>()).BuildServiceProvider();
+        var topLevel = CreateTopLevelSource(source, services, fallback: false);
+        var row = new ListItemViewModel(topLevel, new(context), DefaultContextMenuFactory.Instance);
+        command.ReadIcon = () => Assert.Fail("A row must not initialize a command owned by another view model.");
+
+        try
+        {
+            row.InitializeProperties();
+
+            Assert.AreSame(source.Command, row.Command);
+            Assert.AreEqual(0, command.CountSubscribers<CommandViewModel>());
+        }
+        finally
+        {
+            row.SafeCleanup();
+            topLevel.Cleanup();
+            GC.KeepAlive(context);
+        }
+    }
+
     private static int CountCommandHandlers(CommandViewModel command, object target)
     {
         var field = typeof(ObservableObject).GetField(nameof(ObservableObject.PropertyChanged), BindingFlags.Instance | BindingFlags.NonPublic);
