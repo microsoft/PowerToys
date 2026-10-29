@@ -16,6 +16,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
     [DoNotParallelize]
     public class ClipboardHelperTests
     {
+        private const int ErrorAccessDenied = 5;
+
         [DataTestMethod]
         [DataRow("")]
         [DataRow("2")]
@@ -147,16 +149,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                     // Clipboard state belongs to the window station. Isolate these
                     // integration tests from the user's interactive clipboard.
                     station = CreateWindowStation(null, 0, 0x037f, IntPtr.Zero);
-                    if (station == IntPtr.Zero || !SetProcessWindowStation(station))
-                    {
-                        throw new Win32Exception(Marshal.GetLastWin32Error());
-                    }
+                    RequireClipboardIsolation(station != IntPtr.Zero, nameof(CreateWindowStation));
+                    RequireClipboardIsolation(SetProcessWindowStation(station), nameof(SetProcessWindowStation));
 
                     desktop = CreateDesktop("ClipboardTests", null, IntPtr.Zero, 0, 0x01ff, IntPtr.Zero);
-                    if (desktop == IntPtr.Zero || !SetThreadDesktop(desktop))
-                    {
-                        throw new Win32Exception(Marshal.GetLastWin32Error());
-                    }
+                    RequireClipboardIsolation(desktop != IntPtr.Zero, nameof(CreateDesktop));
+                    RequireClipboardIsolation(SetThreadDesktop(desktop), nameof(SetThreadDesktop));
 
                     RunOnStaThread(action);
                 }
@@ -184,6 +182,22 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             if (failure != null)
             {
                 ExceptionDispatchInfo.Capture(failure).Throw();
+            }
+        }
+
+        private static void RequireClipboardIsolation(bool succeeded, string operation)
+        {
+            if (!succeeded)
+            {
+                var error = Marshal.GetLastWin32Error();
+                if (error == ErrorAccessDenied)
+                {
+                    // Service-hosted test runners may prohibit private window stations
+                    // or desktops. Never fall back to the interactive user's clipboard.
+                    Assert.Inconclusive($"{operation} denied clipboard isolation (Win32 error {error}). Run this integration test on a runner that permits private window stations and desktops.");
+                }
+
+                throw new Win32Exception(error, $"{operation} failed with Win32 error {error}.");
             }
         }
 
