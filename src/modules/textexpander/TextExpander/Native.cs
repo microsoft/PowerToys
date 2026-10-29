@@ -38,6 +38,9 @@ internal static class Native
         public IntPtr DwExtraInfo;
     }
 
+    public const uint LLKHF_EXTENDED = 0x01;
+    public const uint LLKHF_UP = 0x80;
+
     public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
 
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
@@ -203,6 +206,7 @@ internal static class Native
     // ── Windows / message pump ───────────────────────────────
     public const int WM_DESTROY = 0x0002;
     public const int WM_CLOSE = 0x0010;
+    public const int WM_SETTINGCHANGE = 0x001A;
     public const int WM_COMMAND = 0x0111;
     public const int WM_SETFONT = 0x0030;
     public const int EN_CHANGE = 0x0300;

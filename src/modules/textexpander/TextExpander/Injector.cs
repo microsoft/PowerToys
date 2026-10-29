@@ -101,20 +101,9 @@ internal static class Injector
     public static Action<string>? ClipboardRestoreFailed { get; set; }
 
     /// <summary>
-    /// Erases the text the user actually typed, then inserts <paramref name="text"/>. Backspaces are
-    /// counted in text elements, not UTF-16 units, so an emoji or combining sequence isn't over-deleted.
+    /// Counts the Backspaces that erase <paramref name="value"/>: text elements, not UTF-16 units, so an emoji or
+    /// combining sequence isn't over-deleted.
     /// </summary>
-    /// <param name="targetWindow">
-    /// The window the trigger was typed into, re-checked before anything is inserted, or
-    /// <see cref="IntPtr.Zero"/> when unknown.
-    /// </param>
-    /// <param name="inputUnchanged">
-    /// Whether the user has pressed no key and clicked nowhere since the trigger matched, asked again right
-    /// before anything is erased; null when there is nothing to check.
-    /// </param>
-    public static bool ReplaceTyped(string typedPrefix, string text, IntPtr targetWindow = default, int cursorLeftUnits = 0, Func<bool>? inputUnchanged = null)
-        => Replace(CountDeletableUnits(typedPrefix), text, targetWindow, cursorLeftUnits, inputUnchanged: inputUnchanged);
-
     internal static int CountDeletableUnits(string value)
     {
         if (value.Length == 0)
@@ -135,11 +124,23 @@ internal static class Injector
     /// <summary>
     /// Erases <paramref name="backspaceCount"/> characters, then inserts <paramref name="text"/>.
     /// </summary>
+    /// <param name="targetWindow">
+    /// The window the trigger was typed into, re-checked before anything is inserted, or
+    /// <see cref="IntPtr.Zero"/> when unknown.
+    /// </param>
     /// <param name="cursorRightUnits">
     /// How far to move the caret right before erasing, when an earlier insertion left it inside the text to erase.
     /// </param>
-    public static bool Replace(int backspaceCount, string text, IntPtr targetWindow = default, int cursorLeftUnits = 0, int cursorRightUnits = 0, Func<bool>? inputUnchanged = null)
-        => ReplaceCore(backspaceCount, text, targetWindow, cursorLeftUnits, InputTarget.CanDrive, cursorRightUnits: cursorRightUnits, inputUnchanged: inputUnchanged);
+    /// <param name="inputUnchanged">
+    /// Whether the user has pressed no key and clicked nowhere since the trigger matched, asked again right
+    /// before anything is erased; null when there is nothing to check.
+    /// </param>
+    /// <param name="commit">
+    /// Asked instead of <paramref name="inputUnchanged"/> right before anything is erased, the last check: once it
+    /// passes, the work goes ahead.
+    /// </param>
+    public static bool Replace(int backspaceCount, string text, IntPtr targetWindow = default, int cursorLeftUnits = 0, int cursorRightUnits = 0, Func<bool>? inputUnchanged = null, Func<bool>? commit = null)
+        => ReplaceCore(backspaceCount, text, targetWindow, cursorLeftUnits, InputTarget.CanDrive, cursorRightUnits: cursorRightUnits, inputUnchanged: inputUnchanged, commit: commit);
 
     internal static bool ReplaceCore(
         int backspaceCount,
@@ -154,14 +155,16 @@ internal static class Injector
         Func<int, IntPtr, bool>? sendLeft = null,
         int cursorRightUnits = 0,
         Func<int, IntPtr, bool>? sendRight = null,
-        Func<bool>? inputUnchanged = null)
+        Func<bool>? inputUnchanged = null,
+        Func<bool>? commit = null)
     {
         ArgumentNullException.ThrowIfNull(canDrive);
 
         Func<bool> unchanged = inputUnchanged ?? (static () => true);
+        Func<bool> lastCheck = commit ?? unchanged;
         getForegroundWindow ??= Native.GetForegroundWindow;
-        tryPaste ??= (count, value, target, left) => TryPaste(count, value, target, left, unchanged);
-        erase ??= (count, target) => Erase(count, target, unchanged);
+        tryPaste ??= (count, value, target, left) => TryPaste(count, value, target, left, lastCheck);
+        erase ??= (count, target) => Erase(count, target, lastCheck);
         sendText ??= static (value, target) => SendText(value, target);
         sendLeft ??= SendLeft;
         sendRight ??= SendRight;
@@ -761,7 +764,7 @@ internal static class Injector
     /// when another thread has called BlockInput. A non-zero count is not proof of delivery:
     /// UIPI discards events further down without reporting anything.
     /// </summary>
-    private static uint Dispatch(Native.INPUT[] inputs)
+    internal static uint Dispatch(Native.INPUT[] inputs)
     {
         if (inputs.Length == 0)
         {

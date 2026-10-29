@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerToys.GPOWrapper;
 
@@ -28,6 +30,32 @@ public sealed class HostIntegrationPolicyTests
         Assert.IsTrue(Program.PolicyAllowsStart(GpoRuleConfigured.NotConfigured));
         Assert.IsTrue(Program.PolicyAllowsStart(GpoRuleConfigured.Unavailable));
         Assert.IsTrue(Program.PolicyAllowsStart(GpoRuleConfigured.WrongValue));
+    }
+
+    [TestMethod]
+    public void ARegionSettingsChangeReadsTheUsersFormatsAgain()
+    {
+        // .NET keeps the user's culture from when it was first read: a new short date format set in Region
+        // settings showed in the editor, but the engine typed the old one until PowerToys restarted.
+        IntPtr region = Marshal.StringToHGlobalUni("intl");
+        IntPtr theme = Marshal.StringToHGlobalUni("ImmersiveColorSet");
+        try
+        {
+            CultureInfo before = CultureInfo.CurrentCulture;
+            Assert.IsFalse(Program.RefreshCultureOnRegionChange(Native.WM_SETTINGCHANGE, theme));
+            Assert.IsFalse(Program.RefreshCultureOnRegionChange(Native.WM_SETTINGCHANGE, IntPtr.Zero));
+            Assert.IsFalse(Program.RefreshCultureOnRegionChange(Native.WM_DESTROY, region));
+            Assert.AreSame(before, CultureInfo.CurrentCulture);
+
+            Assert.IsTrue(Program.RefreshCultureOnRegionChange(Native.WM_SETTINGCHANGE, region));
+            Assert.AreNotSame(before, CultureInfo.CurrentCulture, "Read again from Windows.");
+            Assert.AreEqual(before.Name, CultureInfo.CurrentCulture.Name);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(region);
+            Marshal.FreeHGlobal(theme);
+        }
     }
 
     [TestMethod]

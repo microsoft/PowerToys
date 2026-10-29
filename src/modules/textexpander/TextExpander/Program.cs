@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using PowerToys.GPOWrapper;
 
@@ -313,7 +314,24 @@ internal static class Program
             return IntPtr.Zero;
         }
 
+        _ = RefreshCultureOnRegionChange(msg, lParam);
         return Native.DefWindowProcW(hwnd, msg, wParam, lParam);
+    }
+
+    /// <summary>
+    /// Reads the user's culture again when Region settings change. .NET keeps it, with the date and time formats,
+    /// from when it was first read, so expansions would go on typing the old formats until the engine restarted.
+    /// </summary>
+    /// <returns>Whether <paramref name="msg"/> was that change.</returns>
+    internal static bool RefreshCultureOnRegionChange(uint msg, IntPtr lParam)
+    {
+        if (msg != Native.WM_SETTINGCHANGE || lParam == IntPtr.Zero || !string.Equals(Marshal.PtrToStringUni(lParam), "intl", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        CultureInfo.CurrentCulture.ClearCachedData();
+        return true;
     }
 
     private static void RunMessageLoop()
@@ -353,35 +371,64 @@ internal static class Program
         }
     }
 
-    private static void Expand(PendingExpansion work)
+    private static void Expand(PendingExpansion work) => Run(_hook!, work, commit => TryExpand(_hook!, work, commit));
+
+    /// <summary>
+    /// Does <paramref name="work"/> and ends its hold however the work ends: held keys are typed again after the
+    /// expansion, or after the completing key when it didn't happen. <paramref name="apply"/> gets the check that
+    /// commits the work right before anything is erased.
+    /// </summary>
+    internal static void Run(KeyboardHook hook, PendingExpansion work, Func<Func<bool>, bool> apply)
     {
-        // A key press or click after this was queued may have moved the caret, so the work is dropped
-        // rather than applied wherever the caret is now. Checked again right before anything is erased.
-        bool InputUnchanged() => _hook!.InputGeneration == work.InputGeneration;
+        long holdId = work.HoldId;
+        bool done = false;
+        try
+        {
+            done = apply(() => hook.Commit(ref holdId, work.InputGeneration));
+        }
+        finally
+        {
+            hook.EndHold(holdId, done);
+        }
+    }
+
+    /// <summary>Erases and types for <see cref="TryExpand"/>: <see cref="Injector.Replace"/>, or a test's fake.</summary>
+    internal delegate bool ReplaceText(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, int cursorRightUnits, Func<bool>? inputUnchanged, Func<bool>? commit);
+
+    /// <summary>
+    /// Expands or undoes <paramref name="work"/>; <paramref name="commit"/> is the injector's last check. Tests pass a
+    /// fake <paramref name="replace"/> and <paramref name="isKeyDown"/>, so nothing is typed or read from the keyboard.
+    /// </summary>
+    internal static bool TryExpand(KeyboardHook hook, PendingExpansion work, Func<bool> commit, ReplaceText? replace = null, Func<int, bool>? isKeyDown = null)
+    {
+        replace ??= Injector.Replace;
+
+        // A key press or click after this was queued may have moved the caret, so the work is dropped rather than
+        // applied wherever the caret is now. Checked again, by commit, right before anything is erased.
+        bool InputUnchanged() => hook.InputGeneration == work.InputGeneration;
 
         if (work.IsUndo)
         {
             // Ctrl is normally still held from the Ctrl+Z that asked for this. Backspaces sent now
             // would arrive as Ctrl+Backspace, which deletes whole words in most editors.
-            if (!Injector.WaitForModifierRelease(Injector.UndoModifierReleaseTimeoutMs))
+            if (!Injector.WaitForModifierRelease(Injector.UndoModifierReleaseTimeoutMs, isKeyDown))
             {
-                return;
+                return false;
             }
 
             if (work.TargetWindow != IntPtr.Zero && Native.GetForegroundWindow() != work.TargetWindow)
             {
-                return;
+                return false;
             }
 
             // A $|$ left the caret inside the expansion; it goes back to the end before the expansion is erased.
-            Injector.Replace(Injector.CountDeletableUnits(work.Replacement), work.Trigger, work.TargetWindow, cursorRightUnits: work.CursorLeft, inputUnchanged: InputUnchanged);
-            return;
+            return replace(Injector.CountDeletableUnits(work.Replacement), work.Trigger, work.TargetWindow, cursorLeftUnits: 0, cursorRightUnits: work.CursorLeft, InputUnchanged, commit);
         }
 
         // Before any prompt, so nobody answers questions for an expansion that can no longer happen.
         if (!InputUnchanged())
         {
-            return;
+            return false;
         }
 
         (string text, int cursor) = Variables.NeedsPrompt(work.Replacement)
@@ -390,18 +437,20 @@ internal static class Program
 
         if (work.TargetWindow != IntPtr.Zero && Native.GetForegroundWindow() != work.TargetWindow)
         {
-            return;
+            return false;
         }
 
         // The marker comes from the snippet's own text only; a "$|$" typed into a prompt or
         // copied to the clipboard stays as it is.
         int cursorLeft = cursor < 0 ? 0 : Injector.CountDeletableUnits(text[cursor..]);
 
-        bool inserted = Injector.ReplaceTyped(work.TypedPrefix, text, work.TargetWindow, cursorLeft, InputUnchanged);
+        bool inserted = replace(Injector.CountDeletableUnits(work.TypedPrefix), text, work.TargetWindow, cursorLeft, cursorRightUnits: 0, InputUnchanged, commit);
         if (ShouldRecordExpansion(inserted, work.Replacement))
         {
-            _hook!.RecordExpansion(work.TypedText ?? work.Trigger, text, work.TargetWindow, work.InputGeneration, cursorLeft);
+            hook.RecordExpansion(work.TypedText ?? work.Trigger, text, work.TargetWindow, work.InputGeneration, cursorLeft);
         }
+
+        return inserted;
     }
 
     internal static bool ShouldRecordExpansion(bool inserted, string sourceReplacement)

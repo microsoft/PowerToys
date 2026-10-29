@@ -389,27 +389,60 @@ public sealed class InputAndUndoPolicyTests
     }
 
     [TestMethod]
-    public void AKeyPressAfterTheMatchCancelsTheQueuedExpansion()
+    public void TypingOnAfterATriggerLandsAfterTheExpansion()
     {
-        // The worker erased wherever the caret was by then: "Before !abc " and a Left arrow
-        // came out as "BeforeEXPANDED c".
+        // A key typed straight on cancelled the expansion and lost the space that released the trigger, and one
+        // arriving while the paste held Ctrl became Ctrl+A or Ctrl+S. It's held now, and typed after the expansion.
         using ScratchDirectory scratch = ScratchDirectory.Create();
         using SnippetStore store = LoadStore(scratch, "!abc=EXPANDED");
         using var hook = new KeyboardHook(store);
+        List<Native.INPUT[]> replays = CaptureReplays(hook);
         var box = new FakeTextBox("Before ");
+        var steps = new List<string>();
+
+        TypeInto(hook, box, "!abc ");
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+        long generation = hook.InputGeneration;
+        Assert.IsTrue(Hold(hook, "asap"), "Swallowed: none of it reached the app.");
+        Assert.AreEqual(generation, hook.InputGeneration, "So the caret hasn't moved.");
+
+        Expand(hook, work, FakeInjector(hook, box, steps));
+        Assert.AreEqual("check True, commit True, insert True", string.Join(", ", steps));
+        Assert.IsFalse(hook.Holding);
+
+        // Typed again in one go; the hook takes them as typing like any other, rather than holding them again.
+        TypeAgain(hook, box, replays.Single());
+        Assert.AreEqual("Before EXPANDED asap|", box.ToString());
+        Assert.AreNotEqual(generation, hook.InputGeneration);
+    }
+
+    [TestMethod]
+    public void AClickDropsTheExpansionAndTheHeldKeysComeBackAfterIt()
+    {
+        // The worker erased wherever the caret was by then: "Before !abc " and a click that put the caret
+        // before the "c" came out as "BeforeEXPANDED c". Clicks aren't held, so they still cancel.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=EXPANDED");
+        using var hook = new KeyboardHook(store);
+        List<Native.INPUT[]> replays = CaptureReplays(hook);
+        var box = new FakeTextBox("Before ");
+        var steps = new List<string>();
 
         TypeInto(hook, box, "!abc ");
         Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
         bool InputUnchanged() => hook.InputGeneration == work.InputGeneration;
-        Assert.IsTrue(InputUnchanged());
 
         // Focus changing on its own, as when it comes back after a prompt, moves no caret.
         hook.ForegroundChanged(IntPtr.Zero, Native.EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, 0, 0, 0, 0);
         Assert.IsTrue(InputUnchanged());
 
-        Assert.IsFalse(hook.ProcessKey(Native.VK_LEFT, 0, ctrl: false, alt: false, shift: false, win: false));
+        // Keys typed before and after the click stay held; nothing comes back from inside the click.
+        Assert.IsTrue(Hold(hook, "as"));
+        hook.Clicked();
         box.Left(1, IntPtr.Zero);
+        Assert.IsTrue(Hold(hook, "ap"));
         Assert.IsFalse(InputUnchanged());
+        Assert.AreEqual(0, replays.Count);
 
         Assert.IsFalse(ReplaceIn(box, Injector.CountDeletableUnits(work.TypedPrefix), "EXPANDED ", inputUnchanged: InputUnchanged));
         Assert.AreEqual("Before !ab|c", box.ToString(), "Typing: nothing erased or inserted.");
@@ -442,7 +475,276 @@ public sealed class InputAndUndoPolicyTests
             Injector.Backend = original;
         }
 
-        Assert.AreEqual("Before !ab|c", box.ToString());
+        // The worker sees the drop, and the space that completed the trigger comes back first, then the held keys,
+        // where the click put the caret.
+        Expand(hook, work, FakeInjector(hook, box, steps));
+        Assert.AreEqual(0, steps.Count, "Dropped before the injector is asked.");
+        TypeAgain(hook, box, replays.Single());
+        Assert.AreEqual("Before !ab asap|c", box.ToString());
+    }
+
+    [TestMethod]
+    public void OnlyWorkThatDidNotHappenGivesItsCompletingKeyBack()
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=EXPANDED");
+        using var hook = new KeyboardHook(store);
+        List<Native.INPUT[]> replays = CaptureReplays(hook);
+
+        // Typed back in the expansion, or consumed on purpose.
+        Assert.IsTrue(Type(hook, "!abc "));
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion done));
+        hook.EndHold(done.HoldId, done: true);
+        Assert.AreEqual(0, replays.Count);
+
+        Assert.IsTrue(Type(hook, "!abc "));
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion dropped));
+        hook.EndHold(dropped.HoldId, done: false);
+        Assert.AreEqual(" ", Typed(replays.Single()));
+
+        // Without the word wait, the trigger's last character completed it.
+        bool original = WordBoundary.Required;
+        try
+        {
+            WordBoundary.Required = false;
+            Assert.IsTrue(Type(hook, "!abc"));
+            Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion instant));
+            hook.EndHold(instant.HoldId, done: false);
+            Assert.AreEqual("c", Typed(replays[1]));
+        }
+        finally
+        {
+            WordBoundary.Required = original;
+        }
+
+        // An undo's Ctrl+Z isn't: once Ctrl is up, a Z typed again would be a letter.
+        Assert.IsTrue(hook.RecordExpansion("!abc ", "EXPANDED ", IntPtr.Zero));
+        Assert.IsTrue(hook.ProcessKey(Native.VK_Z, 0, ctrl: true, alt: false, shift: false, win: false));
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion undo));
+        hook.EndHold(undo.HoldId, done: false);
+        Assert.AreEqual(2, replays.Count);
+    }
+
+    [TestMethod]
+    public void HeldKeysAreTypedAgainOnceInOrderAsTheyCame()
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=EXPANDED");
+        using var hook = new KeyboardHook(store);
+        List<Native.INPUT[]> replays = CaptureReplays(hook);
+        Assert.IsFalse(hook.HoldsBack(Key(Native.VK_PACKET, 'x'), out _), "Nothing is held without work in flight.");
+
+        Assert.IsTrue(Type(hook, "!abc "));
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+        long generation = hook.InputGeneration;
+
+        // A key-up passes when its key went down before the hold, like a Ctrl let go after the trigger.
+        Assert.IsFalse(hook.HoldsBack(Key(Native.VK_LCONTROL, 0x1D, up: true), out _));
+
+        // Modifiers and key-ups are held with the rest; a remapped extended key keeps its tag and flag.
+        const uint shiftScan = 0x2A;
+        const uint rightScan = 0x4D;
+        Assert.IsTrue(hook.HoldsBack(Key(Native.VK_LSHIFT, shiftScan), out _));
+        Assert.IsTrue(Hold(hook, "Q"));
+        Assert.IsTrue(hook.HoldsBack(Key(Native.VK_LSHIFT, shiftScan, up: true), out _));
+        Assert.IsTrue(hook.HoldsBack(new Native.KBDLLHOOKSTRUCT { VkCode = Native.VK_RIGHT, ScanCode = rightScan, Flags = Native.LLKHF_EXTENDED, DwExtraInfo = new IntPtr(0x11) }, out _));
+        Assert.AreEqual(generation, hook.InputGeneration, "Held keys haven't reached the app.");
+
+        // The worker's own keys pass.
+        Assert.IsFalse(hook.HoldsBack(Key(Native.VK_BACK, 0x0E, extraInfo: KeyboardHook.InjectionSignature), out HostInputKind own));
+        Assert.AreEqual(HostInputKind.Ignored, own);
+
+        hook.EndHold(work.HoldId, done: true);
+        hook.EndHold(work.HoldId, done: true);
+        Assert.AreEqual(1, replays.Count, "One SendInput, once.");
+
+        Native.KEYBDINPUT[] keys = [.. replays[0].Select(input => input.U.Ki)];
+        Assert.AreEqual(5, keys.Length);
+        Assert.AreEqual((ushort)Native.VK_LSHIFT, keys[0].WVk);
+        Assert.AreEqual(shiftScan, keys[0].WScan);
+        Assert.AreEqual(0u, keys[0].DwFlags);
+        Assert.AreEqual(Native.KEYEVENTF_UNICODE, keys[1].DwFlags);
+        Assert.AreEqual('Q', (char)keys[1].WScan);
+        Assert.AreEqual(Native.KEYEVENTF_UNICODE | Native.KEYEVENTF_KEYUP, keys[2].DwFlags);
+        Assert.AreEqual(Native.KEYEVENTF_KEYUP, keys[3].DwFlags);
+        Assert.AreEqual(Native.KEYEVENTF_EXTENDEDKEY, keys[4].DwFlags);
+        Assert.AreEqual(new IntPtr(0x11), keys[4].DwExtraInfo, "Keyboard Manager's tag, so it isn't remapped twice.");
+        Assert.IsTrue(keys.Take(4).All(key => key.DwExtraInfo == IntPtr.Zero), "Ordinary typing has no tag.");
+
+        Assert.IsFalse(hook.Holding);
+        Assert.IsFalse(hook.HoldsBack(Key(Native.VK_PACKET, 'x'), out _));
+    }
+
+    [TestMethod]
+    public void TheCapDropsWorkThatHasNotCommittedAndGivesEverythingBack()
+    {
+        // The cap gave the held keys back but left the work to run: the worker gave up at its check and typed the
+        // space after them, ";emailhi " for ";email hi".
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=EXPANDED");
+        using var hook = new KeyboardHook(store);
+        List<Native.INPUT[]> replays = CaptureReplays(hook);
+        long now = 0;
+        hook.Clock = () => now;
+
+        Assert.IsTrue(Type(hook, "!abc "));
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+        Assert.IsTrue(Hold(hook, "hi"));
+
+        // The worker's own keys show it's still at it.
+        now += KeyboardHook.HoldCapMs - 1;
+        Assert.IsFalse(hook.HoldsBack(Key(Native.VK_BACK, 0x0E, extraInfo: KeyboardHook.InjectionSignature), out _));
+        now += KeyboardHook.HoldCapMs - 1;
+        hook.ReleaseIfExpired();
+        Assert.IsTrue(hook.Holding);
+        Assert.AreEqual(0, replays.Count);
+
+        // Nothing from it for the whole cap: a mouse move gives everything back, the space first, and drops the work.
+        now += 1;
+        hook.ReleaseIfExpired();
+        Assert.IsFalse(hook.Holding);
+        Assert.AreEqual(" hi", Typed(replays.Single()));
+        long holdId = work.HoldId;
+        Assert.IsFalse(hook.Commit(ref holdId, work.InputGeneration), "The worker gives up at its check.");
+        hook.EndHold(holdId, done: false);
+        Assert.AreEqual(1, replays.Count, "Everything already went back.");
+        Assert.IsFalse(hook.HoldsBack(Key(Native.VK_PACKET, 'b'), out _), "Later keys aren't held.");
+    }
+
+    [TestMethod]
+    public void TheCapAfterTheWorkCommittedGivesBackOnlyTheHeldKeys()
+    {
+        // Past its last check the worker types the expansion with its completing key, so only what was held goes back.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=EXPANDED");
+        using var hook = new KeyboardHook(store);
+        List<Native.INPUT[]> replays = CaptureReplays(hook);
+        long now = 0;
+        hook.Clock = () => now;
+
+        Assert.IsTrue(Type(hook, "!abc "));
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+
+        // A worker slow to reach its last check: with nothing held the cap has nothing to give back, and a key right
+        // after the check is held, not sent ahead of the Backspaces that follow it.
+        now += 10 * KeyboardHook.HoldCapMs;
+        hook.ReleaseIfExpired();
+        Assert.IsTrue(hook.Holding);
+        long holdId = work.HoldId;
+        Assert.IsTrue(hook.Commit(ref holdId, work.InputGeneration));
+        Assert.AreEqual(work.HoldId, holdId, "The hold begun at the trigger goes on.");
+        Assert.IsTrue(Hold(hook, "h"));
+        Assert.AreEqual(0, replays.Count);
+
+        // A key arriving once the worker has sent nothing for the whole cap goes back last, after what's held.
+        now += KeyboardHook.HoldCapMs;
+        Assert.IsTrue(hook.HoldsBack(Key(Native.VK_PACKET, 'i'), out _));
+        Assert.AreEqual("hi", Typed(replays.Single()));
+        Assert.AreEqual(work.InputGeneration, hook.InputGeneration, "The work isn't dropped.");
+        hook.EndHold(holdId, done: true);
+        Assert.AreEqual(1, replays.Count);
+
+        // A worker finishing late doesn't end a later trigger's hold.
+        Assert.IsTrue(Type(hook, "!abc "));
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion second));
+        Assert.IsTrue(Hold(hook, "z"));
+        hook.EndHold(holdId, done: false);
+        Assert.IsTrue(hook.Holding);
+        hook.EndHold(second.HoldId, done: true);
+        Assert.AreEqual("z", Typed(replays[1]));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void AFailureAfterTheLastCheckStillEndsTheHold(bool throws)
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=EXPANDED");
+        using var hook = new KeyboardHook(store);
+        List<Native.INPUT[]> replays = CaptureReplays(hook);
+
+        Assert.IsTrue(Type(hook, "!abc "));
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+        Assert.IsTrue(Hold(hook, "as"));
+
+        Program.ReplaceText fail = (_, _, _, _, _, _, commit) => commit!() && (throws ? throw new InvalidOperationException() : false);
+        if (throws)
+        {
+            Assert.ThrowsException<InvalidOperationException>(() => Expand(hook, work, fail));
+        }
+        else
+        {
+            Expand(hook, work, fail);
+        }
+
+        Assert.IsFalse(hook.Holding);
+        Assert.AreEqual(" as", Typed(replays.Single()), "The expansion didn't type the space, so it comes back first.");
+    }
+
+    [TestMethod]
+    public void ASnippetThatAsksHoldsKeysOnlyFromItsLastCheck()
+    {
+        // Holding keys from the trigger kept them from the prompt, or typed them into it. They go where they go until
+        // the prompt is answered; from the last check on they're held, so none can combine with the paste's Ctrl.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=Dear {{prompt:Name}}");
+        using var hook = new KeyboardHook(store);
+        List<Native.INPUT[]> replays = CaptureReplays(hook);
+
+        Assert.IsTrue(Type(hook, "!abc "));
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+        Assert.IsFalse(hook.HoldsBack(Key(Native.VK_PACKET, 'x'), out _), "Not held before the prompt.");
+
+        Program.Run(hook, work, commit =>
+        {
+            hook.SuspendFor(new IntPtr(10));
+            Assert.IsFalse(hook.HoldsBack(Key(Native.VK_PACKET, 'T'), out _), "Nor while it's open.");
+            hook.Suspended = false;
+
+            Assert.IsTrue(commit());
+            return Hold(hook, "as");
+        });
+
+        Assert.IsFalse(hook.Holding);
+        Assert.AreEqual("as", Typed(replays.Single()));
+    }
+
+    [TestMethod]
+    public void AnUndoHoldsKeysOnlyFromItsLastCheck()
+    {
+        // The undo held keys from its Ctrl+Z, so a second Z pressed with Ctrl still down was held, and typed back once
+        // Ctrl was up, as a "z".
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=EXPANDED");
+        using var hook = new KeyboardHook(store);
+        List<Native.INPUT[]> replays = CaptureReplays(hook);
+        var box = new FakeTextBox("PREFIXEXPANDED ");
+        var steps = new List<string>();
+
+        Assert.IsTrue(hook.RecordExpansion("!abc ", "EXPANDED ", IntPtr.Zero));
+        Assert.IsFalse(hook.ProcessKey(Native.VK_LCONTROL, 0, ctrl: false, alt: false, shift: false, win: false));
+        Assert.IsTrue(hook.ProcessKey(Native.VK_Z, 0x2C, ctrl: true, alt: false, shift: false, win: false));
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion undo));
+
+        // Z again with Ctrl down goes to the app as Ctrl+Z and drops the undo, with nothing typed back.
+        Assert.IsFalse(hook.HoldsBack(Key(Native.VK_Z, 0x2C), out _));
+        Assert.IsFalse(hook.ProcessKey(Native.VK_Z, 0x2C, ctrl: true, alt: false, shift: false, win: false));
+        Expand(hook, undo, FakeInjector(hook, box, steps));
+        Assert.AreEqual("check False", string.Join(", ", steps));
+        Assert.AreEqual("PREFIXEXPANDED |", box.ToString());
+        Assert.AreEqual(0, replays.Count);
+
+        // Undone: a key typed right after the last check is held, and typed after the trigger comes back.
+        steps.Clear();
+        Assert.IsTrue(hook.RecordExpansion("!abc ", "EXPANDED ", IntPtr.Zero));
+        Assert.IsTrue(hook.ProcessKey(Native.VK_Z, 0x2C, ctrl: true, alt: false, shift: false, win: false));
+        Assert.IsTrue(hook.Pending.TryTake(out undo));
+        Program.ReplaceText inject = FakeInjector(hook, box, steps);
+        Expand(hook, undo, (count, text, target, left, right, unchanged, commit) => inject(count, text, target, left, right, unchanged, () => commit!() && Hold(hook, "x")));
+        Assert.AreEqual("check False, commit False, insert True", string.Join(", ", steps));
+        TypeAgain(hook, box, replays.Single());
+        Assert.AreEqual("PREFIX!abc x|", box.ToString());
     }
 
     [TestMethod]
@@ -580,6 +882,34 @@ public sealed class InputAndUndoPolicyTests
                 inputUnchanged: () => ++checks == 1));
             Assert.AreEqual(2, checks, "Asked when the work starts and again by the erase itself.");
             Assert.IsFalse(typed);
+
+            // A caller that commits to the work does it there, at the last check, not when the work starts.
+            var asked = new List<string>();
+            Assert.IsFalse(Injector.ReplaceCore(
+                3,
+                "replacement",
+                target,
+                0,
+                _ => true,
+                () => target,
+                sendText: (_, _) =>
+                {
+                    typed = true;
+                    return true;
+                },
+                sendLeft: (_, _) => true,
+                inputUnchanged: () =>
+                {
+                    asked.Add("unchanged");
+                    return true;
+                },
+                commit: () =>
+                {
+                    asked.Add("commit");
+                    return false;
+                }));
+            Assert.AreEqual("unchanged, commit", string.Join(", ", asked));
+            Assert.IsFalse(typed);
         }
         finally
         {
@@ -672,6 +1002,94 @@ public sealed class InputAndUndoPolicyTests
             }
         }
     }
+
+    /// <summary>Offers each character's key-down and key-up to the hook, as the touch keyboard types them; returns whether all were held.</summary>
+    private static bool Hold(KeyboardHook hook, string text)
+    {
+        bool held = true;
+        foreach (char ch in text)
+        {
+            held &= hook.HoldsBack(Key(Native.VK_PACKET, ch), out _);
+            held &= hook.HoldsBack(Key(Native.VK_PACKET, ch, up: true), out _);
+        }
+
+        return held;
+    }
+
+    /// <summary>A key event as the keyboard hook receives it.</summary>
+    private static Native.KBDLLHOOKSTRUCT Key(uint vk, uint scanCode, bool up = false, IntPtr extraInfo = default)
+        => new() { VkCode = vk, ScanCode = scanCode, Flags = up ? Native.LLKHF_UP : 0, DwExtraInfo = extraInfo };
+
+    /// <summary>
+    /// Sends a replay back through the hook, as Windows does: none of it is held again, and its characters are typed,
+    /// into <paramref name="box"/> unless the hook swallows one.
+    /// </summary>
+    private static void TypeAgain(KeyboardHook hook, FakeTextBox box, Native.INPUT[] replay)
+    {
+        foreach (Native.INPUT input in replay)
+        {
+            Native.KEYBDINPUT key = input.U.Ki;
+            bool unicode = (key.DwFlags & Native.KEYEVENTF_UNICODE) != 0;
+            bool up = (key.DwFlags & Native.KEYEVENTF_KEYUP) != 0;
+            Assert.IsFalse(hook.HoldsBack(Key(unicode ? (uint)Native.VK_PACKET : key.WVk, key.WScan, up, key.DwExtraInfo), out _));
+            if (unicode && !up && !hook.ProcessKey(Native.VK_PACKET, key.WScan, ctrl: false, alt: false, shift: false, win: false))
+            {
+                box.Insert(((char)key.WScan).ToString(), IntPtr.Zero);
+            }
+        }
+    }
+
+    /// <summary>Runs the worker's own path for <paramref name="work"/>, with <paramref name="replace"/> as the injector.</summary>
+    private static void Expand(KeyboardHook hook, PendingExpansion work, Program.ReplaceText replace)
+    {
+        // The window in front isn't asked about.
+        work = work with { TargetWindow = IntPtr.Zero };
+        Program.Run(hook, work, commit => Program.TryExpand(hook, work, commit, replace, isKeyDown: _ => false));
+    }
+
+    /// <summary>
+    /// An injector over <paramref name="box"/>: it checks the input as the real one does, last with the commit it's
+    /// given, then replaces the text. <paramref name="steps"/> notes whether keys were held at each step.
+    /// </summary>
+    private static Program.ReplaceText FakeInjector(KeyboardHook hook, FakeTextBox box, List<string> steps)
+        => (count, text, _, left, right, inputUnchanged, commit) =>
+        {
+            Assert.IsNotNull(inputUnchanged);
+            Assert.IsNotNull(commit, "The worker commits at the injector's last check.");
+            steps.Add($"check {hook.Holding}");
+            if (!inputUnchanged() || !box.Right(right, IntPtr.Zero))
+            {
+                return false;
+            }
+
+            steps.Add($"commit {hook.Holding}");
+            if (!commit())
+            {
+                return false;
+            }
+
+            steps.Add($"insert {hook.Holding}");
+            return box.Backspace(count, IntPtr.Zero) && box.Insert(text, IntPtr.Zero) && box.Left(left, IntPtr.Zero);
+        };
+
+    /// <summary>Captures what the hook types again, so no real input is ever sent.</summary>
+    private static List<Native.INPUT[]> CaptureReplays(KeyboardHook hook)
+    {
+        var replays = new List<Native.INPUT[]>();
+        hook.Replay = inputs =>
+        {
+            replays.Add((Native.INPUT[])inputs.Clone());
+            return (uint)inputs.Length;
+        };
+
+        return replays;
+    }
+
+    /// <summary>The characters a replay types: its Unicode key-downs.</summary>
+    private static string Typed(Native.INPUT[] replay)
+        => string.Concat(replay
+            .Where(input => (input.U.Ki.DwFlags & (Native.KEYEVENTF_UNICODE | Native.KEYEVENTF_KEYUP)) == Native.KEYEVENTF_UNICODE)
+            .Select(input => (char)input.U.Ki.WScan));
 
     private static SnippetStore LoadStore(ScratchDirectory scratch, string snippet, bool caseSensitive = true)
     {
