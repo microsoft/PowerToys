@@ -25,8 +25,8 @@ public class IndexerTests : CommandPaletteTestBase
     private long consoleWindowHandle;
     private int[] consoleProcessIds = [];
 
-    [ClassInitialize]
-    public static void PrepareIndexedFixture(TestContext context)
+    [AssemblyInitialize]
+    public static void CreateIndexedFixture(TestContext context)
     {
         testFileBaseName = $"indexer_test_item_{Guid.NewGuid():N}";
         testFileName = testFileBaseName + ".txt";
@@ -36,12 +36,32 @@ public class IndexerTests : CommandPaletteTestBase
         browseFolderPath = Path.Combine(documentsPath, $"indexer_test_folder_{Guid.NewGuid():N}");
         browseChildFileName = $"indexer_browse_item_{Guid.NewGuid():N}.txt";
         var browseChildPath = Path.Combine(browseFolderPath, browseChildFileName);
-        var indexed = false;
+        var created = false;
         try
         {
             File.WriteAllText(testFilePath, TestFileContent, Encoding.UTF8);
             Directory.CreateDirectory(browseFolderPath);
             File.WriteAllText(browseChildPath, TestFileContent, Encoding.UTF8);
+            created = true;
+            context.WriteLine($"Created indexed fixtures '{testFilePath}' and '{browseChildPath}' before any UI-test workload.");
+        }
+        finally
+        {
+            if (!created)
+            {
+                RemoveIndexedFixture();
+            }
+        }
+    }
+
+    [ClassInitialize]
+    public static void PrepareIndexedFixture(TestContext context)
+    {
+        var documentsPath = Path.GetDirectoryName(testFilePath)!;
+        var browseChildPath = Path.Combine(browseFolderPath, browseChildFileName);
+        var indexed = false;
+        try
+        {
             context.WriteLine("Waiting for Windows Search to index the shared file and browse-folder fixtures before launching Command Palette");
             var folder = StorageFolder.GetFolderFromPathAsync(documentsPath).AsTask().GetAwaiter().GetResult();
             var options = new QueryOptions(CommonFileQuery.OrderByName, [".txt"])
@@ -58,22 +78,20 @@ public class IndexerTests : CommandPaletteTestBase
                 requiredConsecutiveMatches: 1,
                 pollIntervalMS: 1_000);
             indexed = readiness.Succeeded;
-            Assert.IsTrue(indexed, $"Windows Search did not index fixtures '{testFilePath}' and '{browseChildPath}' before UI-test startup.");
+            Assert.IsTrue(
+                indexed,
+                $"Windows Search did not index fixtures '{testFilePath}' and '{browseChildPath}' before UI-test startup. Observed {readiness.LastObservation?.Count ?? 0} indexed text files under '{documentsPath}'.");
         }
         finally
         {
             if (!indexed)
             {
-                File.Delete(testFilePath);
-                if (Directory.Exists(browseFolderPath))
-                {
-                    Directory.Delete(browseFolderPath, recursive: true);
-                }
+                RemoveIndexedFixture();
             }
         }
     }
 
-    [ClassCleanup]
+    [AssemblyCleanup]
     public static void RemoveIndexedFixture()
     {
         if (!string.IsNullOrEmpty(testFilePath))
