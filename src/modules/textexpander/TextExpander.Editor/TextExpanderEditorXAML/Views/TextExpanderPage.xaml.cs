@@ -23,6 +23,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.ViewManagement;
@@ -76,6 +77,14 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             FrameworkElementAutomationPeer.CreatePeerForElement(SnippetProblemBar);
             BuildVariableMenu();
             BuildDateFormatGuide();
+
+            // The prompt preview shows the window's icon, which the engine project copies beside this app.
+            string icon = Path.Combine(AppContext.BaseDirectory, "app.ico");
+            if (File.Exists(icon))
+            {
+                PromptPreviewIcon.Source = new BitmapImage(new Uri(icon));
+            }
+
             _replacementEditor = new TextExpanderReplacementEditor(ReplacementBox, GetVariableColors);
             _replacementEditor.TextChanged += (_, _) => Validate();
             _replacementEditor.PromptEditRequested += ReplacementEditor_PromptEditRequested;
@@ -378,7 +387,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             }
 
             (int start, int end) = _replacementEditor.Selection;
-            BeginPromptEdit(TextExpanderPromptEditSession.BeginNew(_replacementEditor.Text, start, end));
+            BeginPromptEdit(TextExpanderPromptEditSession.BeginNew(_replacementEditor.Text, start, end, PromptQuestionBox.PlaceholderText));
         }
 
         private void ReplacementEditor_PromptEditRequested(object sender, TextExpanderPromptEditRequestedEventArgs e)
@@ -395,10 +404,11 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             _promptEditSession = session;
             _promptFlyoutCloseIntent = PromptFlyoutCloseIntent.None;
             PromptQuestionBox.Text = session.Question;
-            PromptRequireAnswer.IsChecked = session.RequireAnswer;
-            PromptQuestionError.Text = string.Empty;
-            PromptQuestionError.Visibility = Visibility.Collapsed;
+            PromptRequired.IsOn = session.RequireAnswer;
+            PromptAddButton.Content = ResourceLoaderInstance.ResourceLoader.GetString(session.IsNew ? "TextExpander_PromptFlyout_Add" : "TextExpander_PromptFlyout_Update");
+            ClearPromptValidation();
             _replacementEditor.BeginTransientEdit(session.InitialText, session.TokenStart, session.TokenEnd);
+            UpdatePromptDraft();
 
             PromptFlyout.XamlRoot = XamlRoot;
             bool queued = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
@@ -410,21 +420,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
 
                 try
                 {
-                    var options = new FlyoutShowOptions
-                    {
-                        Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft,
-                        ShowMode = FlyoutShowMode.Standard,
-                    };
-
-                    if (_replacementEditor.PositionForRange(session.TokenStart, session.TokenEnd) is Point position)
-                    {
-                        options.Position = position;
-                        PromptFlyout.ShowAt(ReplacementBox, options);
-                    }
-                    else
-                    {
-                        PromptFlyout.ShowAt(ReplacementBox);
-                    }
+                    ShowPromptFlyout(session);
                 }
                 catch (Exception ex) when (ex is ArgumentException or COMException or InvalidOperationException)
                 {
@@ -437,6 +433,38 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             }
         }
 
+        /// <summary>Shows the question flyout as <see cref="TextExpanderPromptPlacement"/> places it against the token.</summary>
+        private void ShowPromptFlyout(TextExpanderPromptEditSession session)
+        {
+            if (_replacementEditor.BoundsForRange(session.TokenStart, session.TokenEnd) is not Rect token)
+            {
+                PromptFlyout.ShowAt(ReplacementBox);
+                return;
+            }
+
+            // Measured as it will show, preview included, at the width it will have.
+            Rect box = ReplacementBox.TransformToVisual(null).TransformBounds(new Rect(0, 0, ReplacementBox.ActualWidth, ReplacementBox.ActualHeight));
+            Thickness border = ThemeThickness("FlyoutBorderThemeThickness");
+            PromptFlyoutContent.Width = Math.Max(0, TextExpanderPromptPlacement.WidthFor(box, XamlRoot.Size) - border.Left - border.Right);
+            PromptPreview.Visibility = Visibility.Visible;
+            PromptFlyoutContent.Measure(new Size(PromptFlyoutContent.Width, double.PositiveInfinity));
+            TextExpanderPromptPlacement placement = TextExpanderPromptPlacement.Place(
+                token,
+                box,
+                XamlRoot.Size,
+                PromptFlyoutContent.DesiredSize.Height + border.Top + border.Bottom);
+
+            // Capped, so the flyout never grows over the token, which WinUI would do to keep it in the window.
+            PromptPreview.Visibility = placement.ShowsPreview ? Visibility.Visible : Visibility.Collapsed;
+            PromptFlyoutScroller.MaxHeight = Math.Max(0, placement.MaxHeight - border.Top - border.Bottom);
+            PromptFlyout.ShowAt(ReplacementBox, new FlyoutShowOptions
+            {
+                Placement = placement.Above ? FlyoutPlacementMode.TopEdgeAlignedLeft : FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                Position = new Point(placement.X - box.X, placement.Y - box.Y),
+                ShowMode = FlyoutShowMode.Standard,
+            });
+        }
+
         private void PromptFlyout_Opened(object sender, object e) => FocusPromptQuestion(selectAll: true);
 
         private void PromptQuestionBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -446,19 +474,43 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 return;
             }
 
-            TextExpanderPromptValidationError error = TextExpanderPromptToken.Validate(PromptQuestionBox.Text);
-            if (error == TextExpanderPromptValidationError.InvalidQuestion)
+            UpdatePromptDraft();
+
+            // An error shows only once adding is refused (Add, Enter or a click outside); then it follows the typing.
+            if (PromptQuestionError.Visibility == Visibility.Visible)
             {
-                ShowPromptValidation(error, refocus: false);
+                TextExpanderPromptValidationError error = TextExpanderPromptToken.Validate(PromptQuestionBox.Text);
+                if (error == TextExpanderPromptValidationError.None)
+                {
+                    ClearPromptValidation();
+                }
+                else
+                {
+                    ShowPromptValidation(error, refocus: false);
+                }
             }
-            else if (error == TextExpanderPromptValidationError.None)
+        }
+
+        private void PromptRequired_Toggled(object sender, RoutedEventArgs e) => UpdatePromptDraft();
+
+        /// <summary>
+        /// Shows the question as it's typed: in the token, as the snippet will read, and in the preview, as the
+        /// window will ask it when the snippet runs.
+        /// </summary>
+        private void UpdatePromptDraft()
+        {
+            if (_promptEditSession == null)
             {
-                ClearPromptValidation();
+                return;
             }
-            else if (PromptQuestionError.Visibility == Visibility.Visible)
-            {
-                ShowPromptValidation(error, refocus: false);
-            }
+
+            (string text, int tokenStart, int tokenEnd) = _promptEditSession.Draft(PromptQuestionBox.Text, PromptRequired.IsOn, PromptQuestionBox.PlaceholderText);
+            _replacementEditor.UpdateTransientEdit(text, tokenStart, tokenEnd);
+            PromptPreviewLabel.Text = PromptQuestionBox.Text.Trim();
+            PromptPreviewPlaceholder.Visibility = PromptPreviewLabel.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+
+            // As in the window: OK waits for a required answer.
+            PromptPreviewOk.IsEnabled = !PromptRequired.IsOn;
         }
 
         private void PromptFlyoutContent_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
@@ -470,13 +522,15 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             }
             else if (e.Key == global::Windows.System.VirtualKey.Enter && e.OriginalSource is not Button)
             {
-                // A button gets its own Enter, so the close button closes without saving, as its name says.
+                // A button gets its own Enter, so Enter on Cancel cancels, as its name says.
                 e.Handled = true;
                 TryCommitPromptEdit(TextExpanderPromptEditCloseReason.Enter, hideFlyout: true);
             }
         }
 
-        private void PromptFlyoutClose_Click(object sender, RoutedEventArgs e) => CancelPromptEdit();
+        private void PromptAdd_Click(object sender, RoutedEventArgs e) => TryCommitPromptEdit(TextExpanderPromptEditCloseReason.Enter, hideFlyout: true);
+
+        private void PromptCancel_Click(object sender, RoutedEventArgs e) => CancelPromptEdit();
 
         private void PromptFlyout_Closing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
         {
@@ -512,7 +566,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             TextExpanderPromptEditDecision decision = _promptEditSession.Resolve(
                 reason,
                 PromptQuestionBox.Text,
-                PromptRequireAnswer.IsChecked != false);
+                PromptRequired.IsOn);
             if (decision.Kind == TextExpanderPromptEditDecisionKind.KeepOpen)
             {
                 ShowPromptValidation(decision.Error, refocus: true);
@@ -541,7 +595,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             TextExpanderPromptEditDecision decision = _promptEditSession.Resolve(
                 TextExpanderPromptEditCloseReason.Cancel,
                 PromptQuestionBox.Text,
-                PromptRequireAnswer.IsChecked != false);
+                PromptRequired.IsOn);
             _replacementEditor.CancelTransientEdit(decision.Text, decision.SelectionStart, decision.SelectionEnd);
             _promptEditSession = null;
             _promptFlyoutCloseIntent = PromptFlyoutCloseIntent.Cancel;

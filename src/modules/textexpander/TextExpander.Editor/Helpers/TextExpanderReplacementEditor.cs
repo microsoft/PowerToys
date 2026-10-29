@@ -5,6 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using CommunityToolkit.WinUI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
@@ -216,6 +217,15 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             _hasTransientEdit = false;
         }
 
+        /// <summary>Shows a provisional edit's latest text, still without an undo step.</summary>
+        public void UpdateTransientEdit(string text, int selectionStart, int selectionEnd)
+        {
+            if (_hasTransientEdit)
+            {
+                ApplyWithoutHistory(text, selectionStart, selectionEnd);
+            }
+        }
+
         /// <summary>Restores the text and selection from before a provisional edit without an undo step.</summary>
         public void CancelTransientEdit(string text, int selectionStart, int selectionEnd)
         {
@@ -230,30 +240,29 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         }
 
         /// <summary>
-        /// Gets a point in the box beside a token. RichEdit reports client coordinates, which are
-        /// also the coordinates FlyoutShowOptions expects when the box is the placement target.
+        /// Gets a range's bounds in the window. RichEdit measures from the start of its text, which the box shows
+        /// inside its border and padding, scrolled; that's what its ContentElement holds.
         /// </summary>
-        public Point? PositionForRange(int start, int end)
+        public Rect? BoundsForRange(int start, int end)
         {
             try
             {
-                int length = _text.Length;
-                ITextRange range = _box.Document.GetRange(Math.Clamp(start, 0, length), Math.Clamp(end, 0, length));
-                range.ScrollIntoView(PointOptions.Start);
-                Rect rect = default;
-                int hit = 0;
-                range.GetRect(PointOptions.ClientCoordinates | PointOptions.Start, out rect, out hit);
-                if (double.IsNaN(rect.X)
-                    || double.IsNaN(rect.Y)
-                    || double.IsInfinity(rect.X)
-                    || double.IsInfinity(rect.Y))
+                if (_box.FindDescendant("ContentElement") is not ScrollViewer view)
                 {
                     return null;
                 }
 
-                return new Point(
-                    Math.Clamp(rect.X, 0, Math.Max(0, _box.ActualWidth)),
-                    Math.Clamp(rect.Y + Math.Max(1, rect.Height), 0, Math.Max(0, _box.ActualHeight)));
+                int length = _text.Length;
+                ITextRange range = _box.Document.GetRange(Math.Clamp(start, 0, length), Math.Clamp(end, 0, length));
+                range.GetRect(PointOptions.ClientCoordinates | PointOptions.Start, out Rect rect, out _);
+                if (!double.IsFinite(rect.X) || !double.IsFinite(rect.Y))
+                {
+                    return null;
+                }
+
+                Point origin = view.TransformToVisual(null).TransformPoint(
+                    new Point(view.Padding.Left - view.HorizontalOffset, view.Padding.Top - view.VerticalOffset));
+                return new Rect(origin.X + rect.X, origin.Y + rect.Y, rect.Width, rect.Height);
             }
             catch (Exception ex) when (ex is ArgumentException or COMException or InvalidOperationException)
             {

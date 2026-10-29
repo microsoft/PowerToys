@@ -277,39 +277,72 @@
     <comment>Insert variable menu: the text the user copied last</comment>
   </data>
   <data name="TextExpander_Variable_Prompt" xml:space="preserve">
-    <value>Prompt window</value>
-    <comment>Insert variable menu: asks the user to type something each time the snippet expands</comment>
+    <value>Ask a question…</value>
+    <comment>Insert variable menu: adds a question the snippet asks each time it expands. The ellipsis says that more choices follow</comment>
   </data>
   <data name="TextExpander_Variable_Prompt_Help" xml:space="preserve">
     <value>Ask for text when the snippet runs.</value>
-    <comment>Help text for Prompt window in the Insert variable menu</comment>
+    <comment>Tooltip of "Ask a question…" in the Insert variable menu</comment>
   </data>
   <data name="TextExpander_PromptFlyout.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Prompt window</value>
+    <value>Ask when the snippet runs</value>
+    <comment>Screen reader name of the panel that sets up a question a snippet asks each time it runs; the same as the panel's title</comment>
   </data>
   <data name="TextExpander_PromptFlyout_Title.Text" xml:space="preserve">
-    <value>Prompt window</value>
+    <value>Ask when the snippet runs</value>
+    <comment>Title of the panel, opened from Insert variable > Ask a question…, that sets up a question a snippet asks each time it runs</comment>
   </data>
-  <data name="TextExpander_PromptFlyout_Help.Text" xml:space="preserve">
-    <value>Ask for text when the snippet runs.</value>
-  </data>
-  <data name="TextExpander_PromptFlyout_Close.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Close Prompt window without saving changes</value>
-  </data>
-  <data name="TextExpander_PromptFlyout_Question.Header" xml:space="preserve">
-    <value>What should Text Expander ask?</value>
+  <data name="TextExpander_PromptFlyout_Question.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Question</value>
+    <comment>Screen reader name of the box for the question the snippet asks; the box has no visible label</comment>
   </data>
   <data name="TextExpander_PromptFlyout_Question.PlaceholderText" xml:space="preserve">
-    <value>For example, What is the ticket number?</value>
+    <value>Ticket number</value>
+    <comment>An example question. It shows in the empty question box, dimmed in the preview of the window that asks it, and in the snippet's {{prompt:…}} variable until a question is typed. Don't use the } character</comment>
   </data>
-  <data name="TextExpander_PromptFlyout_Require.Content" xml:space="preserve">
-    <value>Require an answer</value>
+  <data name="TextExpander_PromptFlyout_Required.OnContent" xml:space="preserve">
+    <value>Required</value>
+    <comment>Label of a toggle switch, shown whether it is on or off. On, the snippet waits until an answer is typed</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_Required.OffContent" xml:space="preserve">
+    <value>Required</value>
+    <comment>The same label as TextExpander_PromptFlyout_Required.OnContent, shown while the switch is off</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_Preview.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Preview of the window shown when the snippet runs</value>
+    <comment>Screen reader name of a small picture of the window that asks the question; it can't be used</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_PreviewTitle.Text" xml:space="preserve">
+    <value>PowerToys Text Expander</value>
+    <comment>Title in the preview of the window that asks the question; translate it as that window's own title. {Locked="PowerToys"}</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_PreviewOk.Content" xml:space="preserve">
+    <value>OK</value>
+    <comment>A button in the preview of the window that asks the question; translate it as that window's OK button</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_PreviewCancel.Content" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>A button in the preview of the window that asks the question; translate it as that window's Cancel button</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_Add" xml:space="preserve">
+    <value>Add</value>
+    <comment>Button that puts a new question into the snippet</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_Update" xml:space="preserve">
+    <value>Update</value>
+    <comment>Button that saves the changes to a question already in the snippet, in place of "Add"</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_Cancel.Content" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Button that closes the panel without changing the snippet</comment>
   </data>
   <data name="TextExpander_PromptFlyout_QuestionRequired" xml:space="preserve">
-    <value>Enter the question Text Expander should ask.</value>
+    <value>Type a question.</value>
+    <comment>Shown under the empty question box after Add or Enter</comment>
   </data>
   <data name="TextExpander_PromptFlyout_InvalidQuestion" xml:space="preserve">
-    <value>The question can't contain a closing brace (}).</value>
+    <value>A question can't contain }.</value>
+    <comment>Shown under the question box after Add or Enter when the question has a closing brace, which would end the snippet's variable early. Keep the } character</comment>
   </data>
   <data name="TextExpander_VariableWithSample" xml:space="preserve">
     <value>{0}  —  {1}</value>
@@ -417,7 +450,8 @@
     <value>Replacement</value>
   </data>
   <data name="TextExpander_Dialog_ReplacementBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
-    <value>Click a Prompt window token, or place the caret in it and press F2, to edit it.</value>
+    <value>To change a question, click it or press F2.</value>
+    <comment>Screen reader help for the Replacement box. A question is a {{prompt:…}} variable in the text; F2 is the key</comment>
   </data>
   <data name="TextExpander_Search.PlaceholderText" xml:space="preserve">
     <value>Search triggers and replacement text</value>

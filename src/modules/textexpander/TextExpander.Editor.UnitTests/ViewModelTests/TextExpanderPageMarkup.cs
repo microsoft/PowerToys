@@ -19,6 +19,7 @@ namespace ViewModelTests
     public class TextExpanderPageMarkup
     {
         private const string EditorApp = @"src\modules\textexpander\TextExpander.Editor\TextExpanderEditorXAML\App.xaml.cs";
+        private const string ReplacementEditor = @"src\modules\textexpander\TextExpander.Editor\Helpers\TextExpanderReplacementEditor.cs";
         private static readonly string[] RowHandlers = { "EditSnippet_Click", "EditSnippet_Click", "DuplicateSnippet_Click", "DeleteSnippet_Click" };
         private static readonly string[] MenuOrder = { "TextExpander_EditSnippet", "TextExpander_DuplicateSnippet", "TextExpander_DeleteSnippet" };
         private static readonly string[] SnippetFolderItemOrder = { "TextExpander_SnippetFolder_Current", "TextExpander_SnippetFile_Open", "TextExpander_SnippetFolder_Reload" };
@@ -41,6 +42,12 @@ namespace ViewModelTests
             "TextExpander_Variable_Prompt",
             "TextExpander_Variable_Prompt_Help",
             "TextExpander_PromptFlyout.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name",
+            "TextExpander_PromptFlyout_Question.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name",
+            "TextExpander_PromptFlyout_Preview.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name",
+            "TextExpander_PromptFlyout_QuestionRequired",
+            "TextExpander_PromptFlyout_InvalidQuestion",
+            "TextExpander_PromptFlyout_Add",
+            "TextExpander_PromptFlyout_Update",
             "TextExpander_Dialog_ReplacementBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText",
         };
 
@@ -102,7 +109,7 @@ namespace ViewModelTests
             Assert.AreEqual("PromptFlyout_Opened", (string)flyout.Attribute("Opened"));
             Assert.AreEqual("PromptFlyout_Closing", (string)flyout.Attribute("Closing"));
             Assert.AreEqual("PromptFlyout_Closed", (string)flyout.Attribute("Closed"));
-            Assert.AreEqual("BottomEdgeAlignedLeft", (string)flyout.Attribute("Placement"));
+            Assert.AreEqual("BottomEdgeAlignedLeft", (string)flyout.Attribute("Placement"), "The page places it at a point against the token; this is only the fallback.");
             Assert.AreEqual("True", (string)flyout.Attribute("ShouldConstrainToRootBounds"));
             Assert.AreEqual("PromptFlyoutContent_PreviewKeyDown", (string)WithName(flyout, "PromptFlyoutContent").Attribute("PreviewKeyDown"));
             Assert.AreEqual("Level2", (string)WithUid(flyout, "TextExpander_PromptFlyout_Title").Attribute("AutomationProperties.HeadingLevel"));
@@ -110,6 +117,86 @@ namespace ViewModelTests
             XElement error = WithName(flyout, "PromptQuestionError");
             Assert.AreEqual("Assertive", (string)error.Attribute("AutomationProperties.LiveSetting"));
             Assert.AreEqual("Collapsed", (string)error.Attribute("Visibility"));
+        }
+
+        [TestMethod]
+        public void PromptWindowAddsOrCancelsAndPreviewsTheWindowOutOfReach()
+        {
+            XElement flyout = WithName(Xml(EditorPage), "PromptFlyout");
+            XElement required = WithName(flyout, "PromptRequired");
+            Assert.AreEqual("ToggleSwitch", required.Name.LocalName);
+            Assert.AreEqual("True", (string)required.Attribute("IsOn"), "A new question is required by default.");
+            Assert.AreEqual("PromptRequired_Toggled", (string)required.Attribute("Toggled"));
+
+            XElement add = WithName(flyout, "PromptAddButton");
+            Assert.AreEqual("PromptAdd_Click", (string)add.Attribute("Click"));
+            Assert.AreEqual("{StaticResource AccentButtonStyle}", (string)add.Attribute("Style"));
+            Assert.AreEqual("PromptCancel_Click", (string)WithUid(flyout, "TextExpander_PromptFlyout_Cancel").Attribute("Click"));
+
+            // Only to look at: it has a name for screen readers, and nothing in it can be clicked, typed in or tabbed to.
+            XElement preview = WithName(flyout, "PromptPreview");
+            Assert.AreEqual("TextExpander_PromptFlyout_Preview", (string)preview.Attribute(Uid));
+            Assert.AreEqual("False", (string)preview.Attribute("IsHitTestVisible"));
+            Assert.AreEqual("{ThemeResource SmokeFillColorDefaultBrush}", (string)preview.Elements().Single().Attribute("Background"), "A mid-grey backdrop, as in the mockup, that follows light, dark and high contrast.");
+            Assert.IsFalse(preview.Descendants().Any(element => element.Name.LocalName is "TextBox" or "CheckBox" or "ToggleSwitch"));
+            foreach (XElement button in preview.Descendants().Where(element => element.Name.LocalName == "Button"))
+            {
+                Assert.AreEqual("False", (string)button.Attribute("IsTabStop"));
+                Assert.AreEqual("Raw", (string)button.Attribute("AutomationProperties.AccessibilityView"));
+            }
+
+            // Typing follows the question in the token and the preview, but no draft is an undo step, and an error
+            // waits until adding is refused.
+            string code = Text(EditorPage + ".cs");
+            StringAssert.Contains(Member(code, "private void UpdatePromptDraft("), "_replacementEditor.UpdateTransientEdit(");
+            Assert.IsFalse(Member(Text(ReplacementEditor), "public void UpdateTransientEdit(").Contains("_history", StringComparison.Ordinal));
+            StringAssert.Contains(Member(code, "private void PromptQuestionBox_TextChanged("), "if (PromptQuestionError.Visibility == Visibility.Visible)");
+        }
+
+        [TestMethod]
+        public void PromptWindowSaysUpdateForAnExistingQuestionAndAsksTheExampleUntilOneIsTyped()
+        {
+            // Reopening a question used to offer Add; and an empty question's token said a hardcoded "Question"
+            // while the box and the preview showed their translated example.
+            string begin = Member(Text(EditorPage + ".cs"), "private void BeginPromptEdit(");
+            StringAssert.Contains(begin, "session.IsNew ? \"TextExpander_PromptFlyout_Add\" : \"TextExpander_PromptFlyout_Update\"");
+
+            string code = Text(EditorPage + ".cs");
+            StringAssert.Contains(code, "TextExpanderPromptEditSession.BeginNew(_replacementEditor.Text, start, end, PromptQuestionBox.PlaceholderText)");
+            StringAssert.Contains(Member(code, "private void UpdatePromptDraft("), "PromptQuestionBox.PlaceholderText");
+            Assert.AreEqual("{x:Bind PromptQuestionBox.PlaceholderText}", (string)WithName(Xml(EditorPage), "PromptPreviewPlaceholder").Attribute("Text"));
+        }
+
+        [TestMethod]
+        public void PromptWindowPartsHaveAutomationIds()
+        {
+            // F040: UI tests and screen reader scripts find these by AutomationId, which Add and Cancel lacked.
+            XElement flyout = WithName(Xml(EditorPage), "PromptFlyout");
+            var ids = new Dictionary<string, string>
+            {
+                ["PromptFlyoutScroller"] = "TextExpander_PromptFlyout",
+                ["PromptQuestionBox"] = "TextExpander_PromptQuestion",
+                ["PromptRequired"] = "Toggle_TextExpander_PromptRequired",
+                ["PromptAddButton"] = "Button_TextExpander_PromptAdd",
+            };
+            foreach ((string name, string id) in ids)
+            {
+                Assert.AreEqual(id, (string)WithName(flyout, name).Attribute("AutomationProperties.AutomationId"), name);
+            }
+
+            Assert.AreEqual("Button_TextExpander_PromptCancel", (string)WithUid(flyout, "TextExpander_PromptFlyout_Cancel").Attribute("AutomationProperties.AutomationId"));
+        }
+
+        [TestMethod]
+        public void PromptWindowIsPlacedAgainstTheTokenWithinTheWindow()
+        {
+            // It covered the token's line and the dialog's buttons by half; the token's bounds were measured from
+            // the text inside the box's border and padding.
+            string show = Member(Text(EditorPage + ".cs"), "private void ShowPromptFlyout(");
+            StringAssert.Contains(show, "TextExpanderPromptPlacement.Place(");
+            StringAssert.Contains(show, "PromptFlyoutScroller.MaxHeight =");
+            StringAssert.Contains(show, "FlyoutPlacementMode.TopEdgeAlignedLeft : FlyoutPlacementMode.BottomEdgeAlignedLeft");
+            StringAssert.Contains(Member(Text(ReplacementEditor), "public Rect? BoundsForRange("), "view.Padding.Top - view.VerticalOffset");
         }
 
         [TestMethod]
@@ -210,10 +297,10 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void EnterOnThePromptWindowsCloseButtonClosesItWithoutSaving()
+        public void EnterOnThePromptWindowsCancelButtonCancels()
         {
-            // The flyout took Enter from every control in it, so Enter on "Close Prompt window without saving
-            // changes" saved the question instead.
+            // The flyout took Enter from every control in it, so Enter on the button that closes it without
+            // saving saved the question instead.
             string handler = Member(Text(EditorPage + ".cs"), "private void PromptFlyoutContent_PreviewKeyDown(");
             StringAssert.Contains(handler, "VirtualKey.Enter && e.OriginalSource is not Button");
         }

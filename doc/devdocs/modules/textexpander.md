@@ -428,19 +428,28 @@ states that either form matches.
 ### Prompt authoring and validation
 
 **Prompt window** in **Insert variable** means “Ask for text when the snippet runs.”
-Selecting it immediately puts a safe provisional prompt token at the replacement
-caret or selection and opens a compact flyout beside that token. The question field
-is focused and selected, and **Require an answer** is on by default. Enter, clicking
-back in the replacement, or another light-dismiss commits a valid question without
-a second Insert or Apply action. An empty question or one containing `}` keeps the
-flyout open with an assertive inline error.
+Selecting it puts a provisional `{{prompt:Question}}` token at the replacement caret or
+selection and opens **Ask when the snippet runs** under that token: a question box
+(focused, with the example "Ticket number"), a **Required** toggle (on by default), a
+preview of the window the snippet will show, and **Add** and **Cancel**. It's a Flyout
+styled like a teaching tip, because a `TeachingTip` doesn't open when it can't fit around
+its target and stops catching outside clicks after a canceled light dismiss. As the
+question is typed, the token and the preview follow it. The preview is the runtime
+window scaled down (icon, "PowerToys Text Expander", the question over an empty box, OK
+and Cancel); it can't be clicked or tabbed to, and screen readers name it "Preview of
+the window shown when the snippet runs."
 
-Click an existing prompt token, or put the caret in one and press F2, to reopen the
-same flyout. It restores whether that prompt requires an answer. Escape or the
-flyout's close button (clicked, or Enter while it has focus) removes a new provisional token and restores the original
-replacement selection; for an existing token it discards the draft and reselects the
-unchanged token. Closing the parent snippet dialog also discards a pending prompt
-draft. A completed new prompt is one editor undo step.
+Enter, **Add**, or clicking back in the replacement commits a valid question; Enter on
+a button activates that button. An empty question ("Type a question.") or one
+containing `}` keeps the flyout open with an assertive inline error, shown only after
+a commit is refused and then updated as you type.
+
+Click an existing prompt token, or put the caret in one and press F2, to reopen it
+with its question and **Required** setting. Escape or **Cancel** removes a new
+provisional token and restores the original replacement selection; for an existing
+token it discards the changes and reselects the unchanged token. Closing the snippet
+dialog or a reload also discards a pending prompt. Drafts are never undo steps, so a
+completed new prompt is one editor undo step.
 
 The flyout writes `{{prompt:<question>}}` when required or
 `{{prompt?:<question>}}` when optional. The runtime grammar and snippet schema are

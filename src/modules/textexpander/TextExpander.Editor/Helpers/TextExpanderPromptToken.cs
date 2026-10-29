@@ -13,9 +13,15 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         private const string OptionalPrefix = "{{prompt?:";
         private const string Closing = "}}";
 
-        public const string ProvisionalQuestion = "Question";
-
-        public static string ProvisionalToken => Build(ProvisionalQuestion, requireAnswer: true);
+        /// <summary>
+        /// Gets the token a question shows until one is typed. It asks <paramref name="example"/>, the example the
+        /// question box shows, so the box, the token and the preview agree; an example that can't be written
+        /// leaves the token without a question.
+        /// </summary>
+        public static string Provisional(string example, bool requireAnswer)
+            => (requireAnswer ? RequiredPrefix : OptionalPrefix)
+                + (Validate(example) == TextExpanderPromptValidationError.None ? example.Trim() : string.Empty)
+                + Closing;
 
         public static TextExpanderPromptValidationError Validate(string question)
         {

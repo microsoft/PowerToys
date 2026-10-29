@@ -56,11 +56,12 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 
         public bool IsNew { get; }
 
-        public static TextExpanderPromptEditSession BeginNew(string text, int selectionStart, int selectionEnd)
+        /// <summary>Begins a new prompt at the selection, shown as a token that asks <paramref name="example"/> until a question is typed.</summary>
+        public static TextExpanderPromptEditSession BeginNew(string text, int selectionStart, int selectionEnd, string example)
         {
             text ??= string.Empty;
             (int start, int end) = TextExpanderTokenText.InsertionRange(text, selectionStart, selectionEnd);
-            string provisional = TextExpanderPromptToken.ProvisionalToken;
+            string provisional = TextExpanderPromptToken.Provisional(example, requireAnswer: true);
             return new TextExpanderPromptEditSession(
                 text,
                 start,
@@ -155,6 +156,23 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
                 selectionEnd,
                 _replaceStart,
                 _replaceStart + token.Length);
+        }
+
+        /// <summary>
+        /// Gets the replacement as it reads while the question is typed: with the token as Add would write it, or
+        /// with the provisional token, asking <paramref name="example"/>, while the question can't be written.
+        /// Drafts never reach the undo history.
+        /// </summary>
+        public (string Text, int TokenStart, int TokenEnd) Draft(string question, bool requireAnswer, string example)
+        {
+            TextExpanderPromptEditDecision decision = Resolve(TextExpanderPromptEditCloseReason.Enter, question, requireAnswer);
+            if (decision.Kind == TextExpanderPromptEditDecisionKind.Commit)
+            {
+                return (decision.Text, decision.TokenStart, decision.TokenEnd);
+            }
+
+            string token = TextExpanderPromptToken.Provisional(example, requireAnswer);
+            return (Replace(_originalText, _replaceStart, _replaceEnd, token), _replaceStart, _replaceStart + token.Length);
         }
 
         private static string Replace(string text, int start, int end, string replacement)

@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.UI;
+using Windows.Foundation;
 using Kind = Microsoft.PowerToys.TextExpander.Editor.Helpers.TextExpanderPreviewSegmentKind;
 using Segment = Microsoft.PowerToys.TextExpander.Editor.Helpers.TextExpanderPreviewSegment;
 
@@ -18,6 +19,10 @@ namespace ViewModelTests
     public class TextExpanderEditor
     {
         // A Saturday afternoon, so 12- and 24-hour formats differ.
+        // The question box's example, which a new question's token asks until one is typed.
+        private const string Example = "Ticket number";
+        private const double Gap = TextExpanderPromptPlacement.Gap;
+
         private static readonly DateTime Now = new(2026, 10, 17, 14, 5, 9);
 
         [TestMethod]
@@ -220,32 +225,35 @@ namespace ViewModelTests
         [TestMethod]
         public void NewPromptStartsAtTheCaretOrReplacesTheSelection()
         {
-            TextExpanderPromptEditSession atCaret = TextExpanderPromptEditSession.BeginNew("Hello ", 6, 6);
-            Assert.AreEqual("Hello {{prompt:Question}}", atCaret.InitialText);
-            Assert.AreEqual((6, 25), (atCaret.TokenStart, atCaret.TokenEnd));
+            TextExpanderPromptEditSession atCaret = TextExpanderPromptEditSession.BeginNew("Hello ", 6, 6, Example);
+            Assert.AreEqual("Hello {{prompt:Ticket number}}", atCaret.InitialText, "The token asks the question box's example, as the box and the preview show.");
+            Assert.AreEqual((6, 30), (atCaret.TokenStart, atCaret.TokenEnd));
             Assert.AreEqual(string.Empty, atCaret.Question);
             Assert.IsTrue(atCaret.RequireAnswer);
 
-            TextExpanderPromptEditSession overSelection = TextExpanderPromptEditSession.BeginNew("Hello name!", 6, 10);
-            Assert.AreEqual("Hello {{prompt:Question}}!", overSelection.InitialText);
+            TextExpanderPromptEditSession overSelection = TextExpanderPromptEditSession.BeginNew("Hello name!", 6, 10, Example);
+            Assert.AreEqual("Hello {{prompt:Ticket number}}!", overSelection.InitialText);
 
             // A selection inside another variable is preserved and the provisional prompt goes after it.
             const string existing = "Hi {{clipboard}} there";
             (int Start, int End) clipboard = Range(existing, "{{clipboard}}");
-            TextExpanderPromptEditSession afterVariable = TextExpanderPromptEditSession.BeginNew(existing, clipboard.Start + 2, clipboard.End - 2);
-            Assert.AreEqual("Hi {{clipboard}}{{prompt:Question}} there", afterVariable.InitialText);
+            TextExpanderPromptEditSession afterVariable = TextExpanderPromptEditSession.BeginNew(existing, clipboard.Start + 2, clipboard.End - 2, Example);
+            Assert.AreEqual("Hi {{clipboard}}{{prompt:Ticket number}} there", afterVariable.InitialText);
+
+            // A translated example that can't be written leaves the token without a question rather than break it.
+            Assert.AreEqual("Hi {{prompt:}}", TextExpanderPromptEditSession.BeginNew("Hi ", 3, 3, "a}b").InitialText);
         }
 
         [TestMethod]
         public void EnterAndValidLightDismissCommitWithoutASecondAction()
         {
-            TextExpanderPromptEditSession enter = TextExpanderPromptEditSession.BeginNew("Hi !", 3, 3);
+            TextExpanderPromptEditSession enter = TextExpanderPromptEditSession.BeginNew("Hi !", 3, 3, Example);
             TextExpanderPromptEditDecision enterDecision = enter.Resolve(TextExpanderPromptEditCloseReason.Enter, "Name", requireAnswer: true);
             Assert.AreEqual(TextExpanderPromptEditDecisionKind.Commit, enterDecision.Kind);
             Assert.AreEqual("Hi {{prompt:Name}}!", enterDecision.Text);
             Assert.AreEqual((18, 18), (enterDecision.SelectionStart, enterDecision.SelectionEnd));
 
-            TextExpanderPromptEditSession outside = TextExpanderPromptEditSession.BeginNew("Note: ", 6, 6);
+            TextExpanderPromptEditSession outside = TextExpanderPromptEditSession.BeginNew("Note: ", 6, 6, Example);
             TextExpanderPromptEditDecision outsideDecision = outside.Resolve(TextExpanderPromptEditCloseReason.LightDismiss, "Details", requireAnswer: false);
             Assert.AreEqual(TextExpanderPromptEditDecisionKind.Commit, outsideDecision.Kind);
             Assert.AreEqual("Note: {{prompt?:Details}}", outsideDecision.Text);
@@ -254,7 +262,7 @@ namespace ViewModelTests
         [TestMethod]
         public void InvalidLightDismissKeepsThePromptOpen()
         {
-            TextExpanderPromptEditSession session = TextExpanderPromptEditSession.BeginNew("Hi ", 3, 3);
+            TextExpanderPromptEditSession session = TextExpanderPromptEditSession.BeginNew("Hi ", 3, 3, Example);
 
             TextExpanderPromptEditDecision empty = session.Resolve(TextExpanderPromptEditCloseReason.LightDismiss, string.Empty, requireAnswer: true);
             Assert.AreEqual(TextExpanderPromptEditDecisionKind.KeepOpen, empty.Kind);
@@ -269,7 +277,7 @@ namespace ViewModelTests
         [TestMethod]
         public void EscapeRemovesANewPromptAndRestoresTheOriginalSelection()
         {
-            TextExpanderPromptEditSession session = TextExpanderPromptEditSession.BeginNew("Replace this text", 8, 12);
+            TextExpanderPromptEditSession session = TextExpanderPromptEditSession.BeginNew("Replace this text", 8, 12, Example);
             TextExpanderPromptEditDecision decision = session.Resolve(TextExpanderPromptEditCloseReason.Cancel, "Ignored", requireAnswer: true);
 
             Assert.AreEqual(TextExpanderPromptEditDecisionKind.Cancel, decision.Kind);
@@ -317,7 +325,7 @@ namespace ViewModelTests
         public void CompletedNewPromptIsOneUndoStep()
         {
             const string original = "Hi ";
-            TextExpanderPromptEditSession session = TextExpanderPromptEditSession.BeginNew(original, original.Length, original.Length);
+            TextExpanderPromptEditSession session = TextExpanderPromptEditSession.BeginNew(original, original.Length, original.Length, Example);
             TextExpanderPromptEditDecision decision = session.Resolve(TextExpanderPromptEditCloseReason.Enter, "Name", requireAnswer: true);
             var history = new TextExpanderEditHistory(original);
 
@@ -326,6 +334,45 @@ namespace ViewModelTests
             Assert.IsTrue(history.TryUndo(out string undone, out _, out _));
             Assert.AreEqual(original, undone);
             Assert.IsFalse(history.CanUndo);
+        }
+
+        [TestMethod]
+        public void TheTokenFollowsTheQuestionAsItIsTyped()
+        {
+            const string original = "Ticket  is mine";
+            TextExpanderPromptEditSession session = TextExpanderPromptEditSession.BeginNew(original, 7, 7, Example);
+
+            // The example until there's a question that can be written, then the token Add would write.
+            Assert.AreEqual("Ticket {{prompt:Ticket number}} is mine", session.InitialText);
+            Assert.AreEqual(session.InitialText, session.Draft(string.Empty, requireAnswer: true, Example).Text);
+            Assert.AreEqual("Ticket {{prompt?:Ticket number}} is mine", session.Draft(" ", requireAnswer: false, Example).Text);
+            (string text, int start, int end) = session.Draft(" Order ID ", requireAnswer: true, Example);
+            Assert.AreEqual("Ticket {{prompt:Order ID}} is mine", text);
+            Assert.AreEqual("{{prompt:Order ID}}", text[start..end]);
+            Assert.AreEqual("Ticket {{prompt?:Order ID}} is mine", session.Draft("Order ID", requireAnswer: false, Example).Text);
+            Assert.AreEqual(session.InitialText, session.Draft("Order}", requireAnswer: true, Example).Text);
+
+            // Drafts don't change how the edit ends: Add writes the question, Cancel puts back the text and selection.
+            Assert.AreEqual(text, session.Resolve(TextExpanderPromptEditCloseReason.Enter, "Order ID", requireAnswer: true).Text);
+            TextExpanderPromptEditDecision cancel = session.Resolve(TextExpanderPromptEditCloseReason.Cancel, "Order ID", requireAnswer: true);
+            Assert.AreEqual(original, cancel.Text);
+            Assert.AreEqual((7, 7), (cancel.SelectionStart, cancel.SelectionEnd));
+        }
+
+        [TestMethod]
+        public void AnExistingTokenIsDraftedUntilAddOrCancel()
+        {
+            const string text = "Hi {{prompt:  First name  }}!";
+            (int Start, int End) prompt = Range(text, "{{prompt:  First name  }}");
+            Assert.IsTrue(TextExpanderPromptEditSession.TryBeginExisting(text, prompt.Start, prompt.End, out TextExpanderPromptEditSession session));
+
+            Assert.AreEqual(text, session.Draft(session.Question, session.RequireAnswer, Example).Text, "Unchanged, it keeps its exact text.");
+            Assert.AreEqual("Hi {{prompt?:First name}}!", session.Draft(session.Question, requireAnswer: false, Example).Text);
+            Assert.AreEqual("Hi {{prompt:Ticket number}}!", session.Draft(string.Empty, requireAnswer: true, Example).Text);
+
+            TextExpanderPromptEditDecision cancel = session.Resolve(TextExpanderPromptEditCloseReason.Cancel, string.Empty, requireAnswer: true);
+            Assert.AreEqual(text, cancel.Text);
+            Assert.AreEqual(prompt, (cancel.SelectionStart, cancel.SelectionEnd));
         }
 
         [TestMethod]
@@ -346,6 +393,68 @@ namespace ViewModelTests
         {
             var history = new TextExpanderEditHistory();
             Type(history, string.Empty, "hello world");
+
+        [TestMethod]
+        public void TheQuestionFlyoutGoesUnderTheTokenLinedUpWithTheReplacementBox()
+        {
+            var window = new Size(1200, 760);
+            var box = new Rect(380, 300, 440, 96);
+            var token = new Rect(430, 306, 160, 19);
+
+            TextExpanderPromptPlacement placement = TextExpanderPromptPlacement.Place(token, box, window, height: 360);
+            Assert.IsFalse(placement.Above);
+            Assert.IsTrue(placement.ShowsPreview);
+            Assert.AreEqual(token.Bottom + Gap, placement.Y, "A small gap under the token's line, never over it.");
+            Assert.AreEqual(box.X, placement.X);
+            Assert.AreEqual(box.Width, placement.Width, "As wide as the box, so it covers the buttons under the box completely or not at all.");
+            Assert.AreEqual(window.Height - Gap - placement.Y, placement.MaxHeight);
+        }
+
+        [TestMethod]
+        public void WithoutRoomBelowTheQuestionFlyoutGoesAboveTheTokenLine()
+        {
+            var token = new Rect(430, 560, 160, 19);
+            TextExpanderPromptPlacement placement = TextExpanderPromptPlacement.Place(token, new Rect(380, 554, 440, 96), new Size(1200, 760), height: 360);
+
+            Assert.IsTrue(placement.Above);
+            Assert.IsTrue(placement.ShowsPreview);
+            Assert.AreEqual(token.Top - Gap, placement.Y, "Above the token, Y is the flyout's bottom edge.");
+            Assert.AreEqual(placement.Y - Gap, placement.MaxHeight);
+        }
+
+        [TestMethod]
+        public void WhenTheQuestionFlyoutFitsNeitherWayItGoesWhereThereIsMoreRoomWithoutItsPreview()
+        {
+            // The editor's smallest window, where the flyout used to cover the token.
+            var window = new Size(628, 444);
+            var box = new Rect(90, 199, 448, 96);
+            var token = new Rect(120, 205, 160, 19);
+
+            TextExpanderPromptPlacement placement = TextExpanderPromptPlacement.Place(token, box, window, height: 360);
+            Assert.IsFalse(placement.ShowsPreview);
+            Assert.IsFalse(placement.Above, "There's a little more room below.");
+            Assert.AreEqual(token.Bottom + Gap, placement.Y);
+            Assert.AreEqual(window.Height - Gap - placement.Y, placement.MaxHeight, "Capped, so it scrolls rather than cover the token.");
+
+            TextExpanderPromptPlacement lower = TextExpanderPromptPlacement.Place(new Rect(120, 260, 160, 19), box, window, height: 360);
+            Assert.IsTrue(lower.Above);
+            Assert.IsFalse(lower.ShowsPreview);
+            Assert.AreEqual(260 - Gap, lower.Y);
+            Assert.AreEqual(lower.Y - Gap, lower.MaxHeight);
+        }
+
+        [TestMethod]
+        public void TheQuestionFlyoutStaysInsideTheWindow()
+        {
+            var window = new Size(600, 700);
+            TextExpanderPromptPlacement wide = TextExpanderPromptPlacement.Place(new Rect(40, 100, 80, 19), new Rect(0, 90, 900, 96), window, height: 300);
+            Assert.AreEqual(window.Width - (2 * Gap), wide.Width);
+            Assert.AreEqual(Gap, wide.X);
+
+            TextExpanderPromptPlacement right = TextExpanderPromptPlacement.Place(new Rect(500, 100, 80, 19), new Rect(400, 90, 300, 96), window, height: 300);
+            Assert.AreEqual(300, right.Width);
+            Assert.AreEqual(window.Width - Gap - 300, right.X);
+        }
 
             Assert.IsTrue(history.TryUndo(out string text, out int start, out int end));
             Assert.AreEqual("hello ", text);
