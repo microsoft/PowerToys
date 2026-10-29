@@ -25,9 +25,6 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
     private string _fallbackId = string.Empty;
     private string _displayTitle = string.Empty;
     private string _name = string.Empty;
-    private FallbackCommandMode _mode = FallbackCommandMode.Active;
-    private uint? _suggestedQueryDelayMilliseconds;
-    private uint? _suggestedMinQueryLength;
     private string? _title;
     private string? _subtitle;
     private FallbackInvocationViewModel? _invocationCommand;
@@ -45,13 +42,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
 
     public override bool IsEnabled => !ProviderSettings.FallbackCommands.TryGetValue(_fallbackId, out var settings) || settings.IsEnabled;
 
-    internal override FallbackCommandMode FallbackMode => _mode;
-
     internal override bool IsFallbackV2 => _isV2;
-
-    internal override uint? SuggestedQueryDelayMilliseconds => _suggestedQueryDelayMilliseconds;
-
-    internal override uint? SuggestedMinQueryLength => _suggestedMinQueryLength;
 
     internal override IFallbackHandler2? FallbackQueryHandler => IsCleanedUp ? null : _queryHandler.Unsafe;
 
@@ -102,20 +93,14 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
         _isV2 = fallbackV2 is not null;
         if (fallbackV2 is not null)
         {
-            _mode = fallbackV2.Mode;
-            _matchKind = fallbackV2.MatchKind;
-            _matchValue = fallbackV2.MatchValue;
-            _titleTemplate = fallbackV2.TitleTemplate;
-            _subtitleTemplate = fallbackV2.SubtitleTemplate;
-            _name = fallbackV2.Name;
-            _suggestedQueryDelayMilliseconds = fallbackV2.SuggestedQueryDelayMilliseconds.ToNullableUInt32();
-            _suggestedMinQueryLength = fallbackV2.SuggestedMinQueryLength.ToNullableUInt32();
-            if (FallbackMode == FallbackCommandMode.Results)
+            _queryHandler = new(fallbackV2.QueryHandler);
+            if (IsPassiveFallback)
             {
-                _queryHandler = new(fallbackV2.QueryHandler);
-            }
-            else
-            {
+                _matchKind = fallbackV2.MatchKind;
+                _matchValue = fallbackV2.MatchValue;
+                _titleTemplate = fallbackV2.TitleTemplate;
+                _subtitleTemplate = fallbackV2.SubtitleTemplate;
+                _name = fallbackV2.Name;
                 _invocationCommand = CreateInvocation(null, CancellationToken.None);
             }
         }
@@ -123,7 +108,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
 
     internal override bool SafeUpdateFallbackTextSynchronous(string newQuery, string queryId, CancellationToken queryToken)
     {
-        if (IsCleanedUp || !IsEnabled || queryToken.IsCancellationRequested)
+        if (IsCleanedUp || IsFallbackV2 || !IsEnabled || queryToken.IsCancellationRequested)
         {
             return false;
         }
@@ -137,7 +122,6 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
                 return false;
             }
 
-            SetQuery(newQuery, queryId, queryToken);
             return !string.Equals(oldTitle, Title, StringComparison.Ordinal);
         }
         catch (Exception ex)
@@ -150,7 +134,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
 
     internal override bool PreparePassiveFallback(string query, string queryId, CancellationToken queryToken)
     {
-        if (IsCleanedUp || !IsFallbackV2 || FallbackMode != FallbackCommandMode.Passive || !IsEnabled || queryToken.IsCancellationRequested)
+        if (IsCleanedUp || !IsPassiveFallback || !IsEnabled || queryToken.IsCancellationRequested)
         {
             return false;
         }
@@ -174,7 +158,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
 
     private void SetQuery(string query, string queryId, CancellationToken queryToken)
     {
-        if (!IsFallbackV2 || FallbackMode == FallbackCommandMode.Results)
+        if (!IsPassiveFallback)
         {
             return;
         }
@@ -213,7 +197,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
 
     private void UnsafeFetchName()
     {
-        if (!IsCleanedUp && _fallbackV2.Unsafe is { } model)
+        if (!IsCleanedUp && IsPassiveFallback && _fallbackV2.Unsafe is { } model)
         {
             _name = model.Name;
             _invocationCommand?.UpdateName(_name);

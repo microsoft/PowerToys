@@ -93,26 +93,20 @@ public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem,
     // Fallback items
     public virtual string DisplayTitle => string.Empty;
 
-    internal virtual FallbackCommandMode FallbackMode => FallbackCommandMode.Active;
-
     internal virtual bool IsFallbackV2 => false;
 
-    internal virtual uint? SuggestedQueryDelayMilliseconds => null;
-
-    internal virtual uint? SuggestedMinQueryLength => null;
-
     internal virtual IFallbackHandler2? FallbackQueryHandler => null;
+
+    internal bool IsPassiveFallback => IsFallbackV2 && FallbackQueryHandler is null;
 
     internal string FallbackKey => $"{CommandProviderId}\0{Id}";
 
     internal bool IncludeInGlobalResults => GetFallbackSettings()?.IncludeInGlobalResults == true;
 
     internal uint EffectiveQueryDelayMilliseconds => GetFallbackSettings()?.QueryDelayMilliseconds
-        ?? SuggestedQueryDelayMilliseconds
         ?? 0;
 
     internal uint EffectiveMinimumQueryLength => GetFallbackSettings()?.MinimumQueryLength
-        ?? SuggestedMinQueryLength
         ?? 0;
 
     internal uint EffectiveMaximumVisibleItemCount => Math.Clamp(

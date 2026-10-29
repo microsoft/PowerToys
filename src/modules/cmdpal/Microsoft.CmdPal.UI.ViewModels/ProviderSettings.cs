@@ -102,14 +102,12 @@ public record ProviderSettings
                 {
                     var enableGlobalResults = (wrapper.Extension is null)
                         && !_excludedBuiltInFallbacks.Contains(fallback.Id);
-                    uint? maximumVisibleItemCount = fallback.IsFallbackV2 && fallback.FallbackMode == FallbackCommandMode.Results
+                    uint? maximumVisibleItemCount = fallback.FallbackQueryHandler is not null
                         ? FallbackResultQueryManager.InitialRequestedItemCount
                         : null;
                     builder[fallback.Id] = new FallbackSettings(
                         enableGlobalResults,
-                        fallback.SuggestedQueryDelayMilliseconds,
-                        fallback.SuggestedMinQueryLength,
-                        maximumVisibleItemCount);
+                        maximumVisibleItemCount: maximumVisibleItemCount);
                     changed = true;
                 }
             }

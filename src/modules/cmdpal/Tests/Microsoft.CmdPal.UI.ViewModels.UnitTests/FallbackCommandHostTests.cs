@@ -15,6 +15,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
@@ -22,12 +23,11 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 public sealed partial class FallbackCommandHostTests
 {
     [TestMethod]
-    [DataRow(FallbackCommandMode.Active)]
-    [DataRow(FallbackCommandMode.Passive)]
-    [DataRow(FallbackCommandMode.Results)]
-    public async Task FallbackProvider_CreatesSpecializedTopLevelViewModel(FallbackCommandMode mode)
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task FallbackProvider_CreatesSpecializedTopLevelViewModel(bool hasQueryHandler)
     {
-        var fallback = new RecordingFallback(mode);
+        var fallback = new RecordingFallback { QueryHandler = hasQueryHandler ? new RecordingQueryHandler() : null };
         await using var services = CreateServices();
         var source = await LoadFallbackAsync(fallback, services);
         try
@@ -35,7 +35,8 @@ public sealed partial class FallbackCommandHostTests
             Assert.IsInstanceOfType<TopLevelFallbackViewModel>(source);
             Assert.IsTrue(source.IsFallback);
             Assert.IsTrue(source.IsFallbackV2);
-            Assert.AreEqual(mode, source.FallbackMode);
+            Assert.AreEqual(!hasQueryHandler, source.IsPassiveFallback);
+            Assert.AreSame(fallback.QueryHandler, source.FallbackQueryHandler);
             Assert.AreEqual("fallback", source.Id);
             Assert.AreEqual("Test fallback", source.DisplayTitle);
             Assert.IsTrue(source.IsEnabled);
@@ -49,12 +50,12 @@ public sealed partial class FallbackCommandHostTests
     [TestMethod]
     public async Task FallbackInitialization_PreservesPreparedQueryAndDoesNotReadAfterCleanup()
     {
-        var fallback = new RecordingFallback(FallbackCommandMode.Passive) { Name = "Run" };
+        var fallback = new RecordingFallback { Name = "Run" };
         await using var services = CreateServices();
         var source = await LoadFallbackAsync(fallback, services);
         try
         {
-            PrepareQuery(source, FallbackCommandMode.Passive, CancellationToken.None);
+            PrepareQuery(source, CancellationToken.None);
             var invocation = source.CommandViewModel;
             fallback.FailNameRead = true;
 
@@ -81,7 +82,7 @@ public sealed partial class FallbackCommandHostTests
     [DataRow("", "abc", false)]
     public async Task PassiveFallback_FormatsOnlyWholeQueryMatches(string pattern, string query, bool matches)
     {
-        var fallback = new RecordingFallback(FallbackCommandMode.Passive)
+        var fallback = new RecordingFallback
         {
             MatchKind = HostMatchKind.Regex,
             MatchValue = pattern,
@@ -99,14 +100,12 @@ public sealed partial class FallbackCommandHostTests
     }
 
     [TestMethod]
-    [DataRow(FallbackCommandMode.Active)]
-    [DataRow(FallbackCommandMode.Passive)]
-    public async Task FallbackInvocation_IsLazyAndPreservesQueryAndProvider(FallbackCommandMode mode)
+    public async Task FallbackInvocation_IsLazyAndPreservesQueryAndProvider()
     {
-        var fallback = new RecordingFallback(mode);
+        var fallback = new RecordingFallback();
         await using var services = CreateServices();
         var source = await LoadFallbackAsync(fallback, services);
-        PrepareQuery(source, mode, CancellationToken.None);
+        PrepareQuery(source, CancellationToken.None);
         var message = source.GetPerformCommandMessage();
         Assert.AreEqual(0, fallback.CreateCount);
         var requested = message.Command;
@@ -126,15 +125,13 @@ public sealed partial class FallbackCommandHostTests
     }
 
     [TestMethod]
-    [DataRow(FallbackCommandMode.Active)]
-    [DataRow(FallbackCommandMode.Passive)]
-    public async Task FallbackInvocation_RejectsCanceledQuery(FallbackCommandMode mode)
+    public async Task FallbackInvocation_RejectsCanceledQuery()
     {
-        var fallback = new RecordingFallback(mode);
+        var fallback = new RecordingFallback();
         await using var services = CreateServices();
         var source = await LoadFallbackAsync(fallback, services);
         using var cancellation = new CancellationTokenSource();
-        PrepareQuery(source, mode, cancellation.Token);
+        PrepareQuery(source, cancellation.Token);
         var requested = source.GetPerformCommandMessage().Command;
         cancellation.Cancel();
 
@@ -148,7 +145,7 @@ public sealed partial class FallbackCommandHostTests
     [DataRow(2)]
     public async Task RenderedFallback_BorrowsInvocationAndTracksQueryChanges(int wrapperCount)
     {
-        var fallback = new RecordingFallback(FallbackCommandMode.Passive);
+        var fallback = new RecordingFallback();
         await using var services = CreateServices();
         var source = await LoadFallbackAsync(fallback, services);
         IListItem item = source;
@@ -166,7 +163,7 @@ public sealed partial class FallbackCommandHostTests
             Assert.AreEqual(0, fallback.CreateCount);
 
             using var cancellation = new CancellationTokenSource();
-            PrepareQuery(source, FallbackCommandMode.Passive, cancellation.Token);
+            PrepareQuery(source, cancellation.Token);
             var firstMessage = new Messages.PerformCommandMessage(rendered);
             Assert.AreSame(source.CommandViewModel, firstMessage.Command);
             cancellation.Cancel();
@@ -194,10 +191,10 @@ public sealed partial class FallbackCommandHostTests
     public async Task FallbackInvocation_RejectsQueryCanceledDuringCreation()
     {
         using var cancellation = new CancellationTokenSource();
-        var fallback = new RecordingFallback(FallbackCommandMode.Passive) { OnCreate = cancellation.Cancel };
+        var fallback = new RecordingFallback { OnCreate = cancellation.Cancel };
         await using var services = CreateServices();
         var source = await LoadFallbackAsync(fallback, services);
-        PrepareQuery(source, FallbackCommandMode.Passive, cancellation.Token);
+        PrepareQuery(source, cancellation.Token);
 
         Assert.IsNull(ShellViewModel.ResolveRequestedCommand(source.CommandViewModel));
         Assert.AreEqual(1, fallback.CreateCount);
@@ -207,7 +204,7 @@ public sealed partial class FallbackCommandHostTests
     public async Task FallbackWithoutCommand_ExposesLazyPrimaryAction()
     {
         var command = new NoOpCommand { Id = "created.command" };
-        var fallback = new RecordingFallback(FallbackCommandMode.Passive)
+        var fallback = new RecordingFallback
         {
             Command = null,
             Name = "Run",
@@ -226,7 +223,7 @@ public sealed partial class FallbackCommandHostTests
             Assert.AreSame(source.CommandViewModel, rendered.PrimaryMenuItem.Command);
             Assert.AreEqual(0, fallback.CreateCount);
 
-            PrepareQuery(source, FallbackCommandMode.Passive, CancellationToken.None);
+            PrepareQuery(source, CancellationToken.None);
 
             Assert.AreSame(source.CommandViewModel, rendered.PrimaryMenuItem.Command);
             Assert.AreSame(command, ShellViewModel.ResolveRequestedCommand(rendered.PrimaryMenuItem.Command)?.Model.Unsafe);
@@ -242,10 +239,10 @@ public sealed partial class FallbackCommandHostTests
     [TestMethod]
     public async Task FallbackInvocation_TracksNameChangesAndRejectsCleanedUpSource()
     {
-        var fallback = new RecordingFallback(FallbackCommandMode.Passive) { Name = "Run" };
+        var fallback = new RecordingFallback { Name = "Run" };
         await using var services = CreateServices();
         var source = await LoadFallbackAsync(fallback, services);
-        PrepareQuery(source, FallbackCommandMode.Passive, CancellationToken.None);
+        PrepareQuery(source, CancellationToken.None);
         var message = source.GetPerformCommandMessage();
 
         fallback.Name = "Updated action";
@@ -261,12 +258,12 @@ public sealed partial class FallbackCommandHostTests
     [TestMethod]
     public async Task FallbackNameReadFailure_PreservesCachedNameAndForwardsNotification()
     {
-        var fallback = new RecordingFallback(FallbackCommandMode.Passive) { Name = "Run" };
+        var fallback = new RecordingFallback { Name = "Run" };
         await using var services = CreateServices();
         var source = await LoadFallbackAsync(fallback, services);
         try
         {
-            PrepareQuery(source, FallbackCommandMode.Passive, CancellationToken.None);
+            PrepareQuery(source, CancellationToken.None);
             var invocation = source.CommandViewModel;
             var nameNotifications = 0;
             source.PropChanged += (_, args) =>
@@ -297,17 +294,13 @@ public sealed partial class FallbackCommandHostTests
     }
 
     [TestMethod]
-    public async Task ActiveFallback_PersistsSuggestedQuerySettings()
+    public async Task ResultFallback_UsesHostQuerySettings()
     {
-        var fallback = new RecordingFallback(FallbackCommandMode.Active)
-        {
-            SuggestedQueryDelayMilliseconds = 125,
-            SuggestedMinQueryLength = 3,
-        };
+        var fallback = new RecordingFallback { QueryHandler = new RecordingQueryHandler() };
         await using var services = CreateServices();
         var source = await LoadFallbackAsync(fallback, services);
-        Assert.AreEqual(125u, source.EffectiveQueryDelayMilliseconds);
-        Assert.AreEqual(3u, source.EffectiveMinimumQueryLength);
+        Assert.AreEqual(0u, source.EffectiveQueryDelayMilliseconds);
+        Assert.AreEqual(0u, source.EffectiveMinimumQueryLength);
         var settings = services.GetRequiredService<ISettingsService>();
         settings.UpdateSettings(s => s with
         {
@@ -327,7 +320,7 @@ public sealed partial class FallbackCommandHostTests
     [TestMethod]
     public async Task ResultFallback_DoesNotUseLegacyQueryUpdates()
     {
-        var fallback = new RecordingFallback(FallbackCommandMode.Results);
+        var fallback = new RecordingFallback { QueryHandler = new RecordingQueryHandler() };
         await using var services = CreateServices();
         var source = await LoadFallbackAsync(fallback, services);
         var settings = services.GetRequiredService<ISettingsService>();
@@ -349,16 +342,69 @@ public sealed partial class FallbackCommandHostTests
         Assert.IsFalse(page.GetItems().Contains(source));
     }
 
-    private static void PrepareQuery(TopLevelViewModel source, FallbackCommandMode mode, CancellationToken token)
+    [TestMethod]
+    public async Task LegacyFallback_UpdatesAndUsesItsCommand()
     {
-        if (mode == FallbackCommandMode.Passive)
+        var fallback = new LegacyFallback();
+        await using var services = CreateServices();
+        var source = await LoadFallbackAsync(fallback, services);
+        try
         {
-            Assert.IsTrue(source.PreparePassiveFallback("query", "query-id", token));
+            source.SafeUpdateFallbackTextSynchronous("query", "query-id", CancellationToken.None);
+            Assert.IsFalse(source.IsFallbackV2);
+            Assert.IsFalse(source.IsPassiveFallback);
+            Assert.AreEqual(1, fallback.UpdateCount);
+            Assert.AreSame(fallback.Command, source.CommandViewModel.Model.Unsafe);
+            Assert.IsFalse(source.PreparePassiveFallback("query", "query-id", CancellationToken.None));
         }
-        else
+        finally
         {
-            source.SafeUpdateFallbackTextSynchronous("query", "query-id", token);
+            source.Cleanup();
         }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task V2Fallback_NeverUsesLegacyQueryUpdates(bool hasQueryHandler)
+    {
+        var fallback = new RecordingFallback { QueryHandler = hasQueryHandler ? new RecordingQueryHandler() : null };
+        await using var services = CreateServices();
+        var source = await LoadFallbackAsync(fallback, services);
+        try
+        {
+            Assert.IsFalse(source.SafeUpdateFallbackTextSynchronous("query", "query-id", CancellationToken.None));
+            Assert.AreEqual(0, fallback.UpdateCount);
+        }
+        finally
+        {
+            source.Cleanup();
+        }
+    }
+
+    [TestMethod]
+    public async Task ResultFallback_IgnoresPassivePropertiesAndReadsHandlerOnce()
+    {
+        var fallback = new RecordingFallback { QueryHandler = new RecordingQueryHandler(), FailNameRead = true };
+        await using var services = CreateServices();
+        var source = await LoadFallbackAsync(fallback, services);
+        try
+        {
+            Assert.IsFalse(source.IsPassiveFallback);
+            Assert.IsFalse(source.PreparePassiveFallback("query", "query-id", CancellationToken.None));
+            source.InitializeProperties();
+            Assert.AreEqual(1, fallback.QueryHandlerReadCount);
+            Assert.AreEqual(0, fallback.CreateCount);
+        }
+        finally
+        {
+            source.Cleanup();
+        }
+    }
+
+    private static void PrepareQuery(TopLevelViewModel source, CancellationToken token)
+    {
+        Assert.IsTrue(source.PreparePassiveFallback("query", "query-id", token));
     }
 
     private static ServiceProvider CreateServices()
@@ -390,17 +436,38 @@ public sealed partial class FallbackCommandHostTests
         public override IFallbackCommandItem[] FallbackCommands() => [fallback];
     }
 
-    private sealed partial class RecordingFallback(FallbackCommandMode mode)
-        : FallbackCommandItem(new NoOpCommand { Id = "command" }, "Test fallback", "fallback")
+    private sealed partial class RecordingFallback()
+        : FallbackCommandItem(new NoOpCommand { Id = "command" }, "Test fallback", "fallback"), IFallbackCommandItem3
     {
-        public override FallbackCommandMode Mode => mode;
+        private string _name = string.Empty;
 
         public bool FailNameRead { get; set; }
 
-        public override string Name
+        public string Name
         {
-            get => FailNameRead ? throw new InvalidOperationException("Name read failed.") : base.Name;
-            set => base.Name = value;
+            get => FailNameRead ? throw new InvalidOperationException("Name read failed.") : _name;
+            set => SetProperty(ref _name, value);
+        }
+
+        public string TitleTemplate { get; init; } = string.Empty;
+
+        public string SubtitleTemplate { get; init; } = string.Empty;
+
+        public HostMatchKind MatchKind { get; init; }
+
+        public string MatchValue { get; init; } = string.Empty;
+
+        public int QueryHandlerReadCount { get; private set; }
+
+        public IFallbackHandler2? QueryHandler { get; init; }
+
+        IFallbackHandler2 IFallbackCommandItem3.QueryHandler
+        {
+            get
+            {
+                QueryHandlerReadCount++;
+                return QueryHandler!;
+            }
         }
 
         public void NotifyNameChanged() => OnPropertyChanged(nameof(Name));
@@ -417,12 +484,28 @@ public sealed partial class FallbackCommandHostTests
 
         public override void UpdateQuery(string query) => UpdateCount++;
 
-        public override ICommand CreateCommand(IFallbackCommandInvocationArgs args)
+        public ICommand CreateCommand(IFallbackCommandInvocationArgs args)
         {
             CreateCount++;
             LastArgs = args;
             OnCreate?.Invoke();
             return CommandToCreate ?? Command!;
         }
+    }
+
+    private sealed partial class LegacyFallback()
+        : FallbackCommandItem(new NoOpCommand { Id = "command" }, "Legacy fallback", "legacy")
+    {
+        public int UpdateCount { get; private set; }
+
+        public override void UpdateQuery(string query) => UpdateCount++;
+    }
+
+    private sealed partial class RecordingQueryHandler : IFallbackHandler2
+    {
+        public void UpdateQuery(string query) => Assert.Fail("V2 handlers must not receive legacy updates.");
+
+        public IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args)
+            => throw new NotSupportedException("Result queries belong to the result-host layer.");
     }
 }

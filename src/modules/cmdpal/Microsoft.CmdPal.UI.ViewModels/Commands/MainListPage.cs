@@ -722,14 +722,14 @@ public sealed partial class MainListPage : DynamicListPage,
 
                 if (s.IsFallbackV2)
                 {
-                    if (s.FallbackMode == FallbackCommandMode.Passive)
+                    if (s.IsPassiveFallback)
                     {
                         if (!s.PreparePassiveFallback(newSearch, queryId, token))
                         {
                             continue;
                         }
                     }
-                    else if (s.FallbackMode == FallbackCommandMode.Results)
+                    else
                     {
                         if (s.IsEnabled && s.FallbackQueryHandler is not null)
                         {
@@ -737,10 +737,6 @@ public sealed partial class MainListPage : DynamicListPage,
                         }
 
                         continue;
-                    }
-                    else
-                    {
-                        activeFallbacks.Add(s);
                     }
                 }
                 else
