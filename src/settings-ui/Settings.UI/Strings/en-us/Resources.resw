@@ -6990,15 +6990,13 @@ Text uses the current drawing color.</value>
     <value>Text Expander</value>
   </data>
   <data name="Oobe_TextExpander.Description" xml:space="preserve">
-    <value>Type a short trigger in any app and it's replaced with a longer snippet.</value>
+    <value>Stop typing the same things over and over. Save text you use often as a snippet, then type a short trigger to insert it in any app.</value>
   </data>
   <data name="Oobe_TextExpander_HowToUse.Text" xml:space="preserve">
-    <value>Select **Manage snippets** in Settings to add a snippet: a short trigger, like **!sig**, and the text it should become.
-
-Then type the trigger in any app, followed by a space or punctuation, and it's replaced with your text.
-
-**Tip:** Start triggers with a symbol such as **!** so they don't fire in the middle of a word.</value>
-    <comment>Markdown: **text** is bold. "Manage snippets" is the name of a button in Settings. !sig and ! are examples of what the user types and are not translated.</comment>
+    <value>1. Turn on Text Expander.
+2. Select **Manage snippets** and add a snippet: your text and the short trigger that inserts it, like **!mysig**.
+3. In any app, type the trigger and a space, and watch your text appear.</value>
+    <comment>Markdown numbered list; **text** is bold. "Manage snippets" is the name of a button in Settings. !mysig is an example of what the user types and is not translated.</comment>
   </data>
   <data name="TextExpander_RequireWordBoundary.Header" xml:space="preserve">
     <value>Wait for space or punctuation</value>
@@ -7043,7 +7041,11 @@ Then type the trigger in any app, followed by a space or punctuation, and it's r
     <value>Can't read Text Expander options</value>
   </data>
   <data name="TextExpander_OptionsReadError.Message" xml:space="preserve">
-    <value>Showing default options, and your settings file is left as it is. Fix settings.json in %LOCALAPPDATA%\Microsoft\PowerToys\TextExpander, then reopen this page.</value>
-    <comment>{Locked="settings.json","%LOCALAPPDATA%\Microsoft\PowerToys\TextExpander"} settings.json is the Text Expander settings file and the path is the folder that holds it.</comment>
+    <value>Showing default options, and your settings file is left as it is. Fix settings.json, then reopen this page.</value>
+    <comment>{Locked="settings.json"} settings.json is the Text Expander settings file. The "Open folder" button next to this message shows it in File Explorer.</comment>
+  </data>
+  <data name="TextExpander_OptionsReadError_OpenFolder.Content" xml:space="preserve">
+    <value>Open folder</value>
+    <comment>Button that opens the folder holding the Text Expander settings file in File Explorer.</comment>
   </data>
 </root>

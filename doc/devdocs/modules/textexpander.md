@@ -163,8 +163,8 @@ with Automatic, the one method that chooses by length; **Match trigger
 capitalization**; and **Use PowerToys Keyboard Manager remaps when matching triggers**.
 The page only reads `settings.json`: a missing file shows the defaults without creating
 it, and a file it can't read shows the defaults with **Can't read Text Expander options**
-and is left unchanged. Each option change re-reads the file first, so changes are
-refused until it can be read.
+and is left unchanged; the bar's **Open folder** selects the file in File Explorer. Each
+option change re-reads the file first, so changes are refused until it can be read.
 The separate editor contains **Add a snippet**, search, the snippet list,
 **Save snippets to a folder**, and the **Good to know** note.
 
