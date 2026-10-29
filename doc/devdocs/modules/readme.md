@@ -30,6 +30,7 @@ This section contains documentation for individual PowerToys modules, including 
 | [Screen Ruler](screenruler.md) | Tool for measuring pixel distances and color boundaries on screen |
 | [Shortcut Guide](shortcut_guide.md) | Tool for displaying Windows keyboard shortcuts when holding the Windows key |
 | [Text Extractor](textextractor.md) | Tool for extracting text from images and screenshots |
+| [Window Hopper (Alt Window Cycle)](alt_window_cycle.md) | Tool for cycling between windows of the focused application |
 | [Workspaces](workspaces.md) | Tool for saving and restoring window layouts for different projects |
 | [ZoomIt](zoomit.md) | Screen zoom and annotation tool |
 

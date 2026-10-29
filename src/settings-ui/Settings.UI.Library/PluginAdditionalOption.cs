@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
 
@@ -64,6 +65,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// You can define the visibility order in settings ui by arranging the list items.
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "The public setter signature must remain compatible with already-compiled third-party PowerToys Run plugins.")]
         public List<KeyValuePair<string, string>> ComboBoxItems { get; set; }
 
         private string _textValue;
@@ -90,6 +92,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </remarks>
         // This property should help to deal with the line break handling. It is an alias for the TextValue property. Therefore, it should not be written to the json file.
         [JsonIgnore]
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "The public setter signature must remain compatible with already-compiled third-party PowerToys Run plugins.")]
         public List<string> TextValueAsMultilineList
         {
             get { return _textValue?.Split("\r", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)?.ToList() ?? new List<string>(); }
@@ -141,6 +144,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// PLEASE DON'T USE ANYMORE!! (The property was used for the list of combobox items in the past and is not functional anymore.)
         /// </summary>
         [JsonIgnore]
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "The legacy public setter must remain compatible with already-compiled third-party PowerToys Run plugins.")]
         public List<string> ComboBoxOptions { get; set; }
 #pragma warning restore SA1623 // Property summary documentation should match accessors
     }

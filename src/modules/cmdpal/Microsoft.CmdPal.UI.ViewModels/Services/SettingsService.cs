@@ -26,6 +26,7 @@ public sealed class SettingsService : ISettingsService
     private readonly IApplicationInfoService _appInfoService;
     private readonly string _filePath;
     private readonly Lock _saveLock = new();
+    private string? _lastSavedSettingsJson;
 
     public SettingsService(IPersistenceService persistence, IApplicationInfoService appInfoService)
     {
@@ -33,6 +34,7 @@ public sealed class SettingsService : ISettingsService
         _appInfoService = appInfoService;
         _filePath = SettingsJsonPath();
         _settings = _persistence.Load(_filePath, JsonSerializationContext.Default.SettingsModel);
+        _lastSavedSettingsJson = JsonSerializer.Serialize(_settings, JsonSerializationContext.Default.SettingsModel);
         ApplyMigrations();
     }
 
@@ -45,10 +47,13 @@ public sealed class SettingsService : ISettingsService
     public event TypedEventHandler<ISettingsService, SettingsModel>? SettingsChanged;
 
     /// <inheritdoc/>
-    public void Save(bool hotReload = true) => UpdateSettings(s => s, hotReload);
+    public void Save(bool hotReload = true) => UpdateSettings(s => s, hotReload, forceSave: true);
 
     /// <inheritdoc/>
     public void UpdateSettings(Func<SettingsModel, SettingsModel> transform, bool hotReload = true)
+        => UpdateSettings(transform, hotReload, forceSave: false);
+
+    private void UpdateSettings(Func<SettingsModel, SettingsModel> transform, bool hotReload, bool forceSave)
     {
         SettingsModel snapshot;
         SettingsModel updated;
@@ -60,11 +65,10 @@ public sealed class SettingsService : ISettingsService
         while (Interlocked.CompareExchange(ref _settings, updated, snapshot) != snapshot);
 
 #if DEBUG
-        // Capture the caller outside the lock and exclude tracing from the timings.
-        var saveCaller = new StackTrace(skipFrames: 1, fNeedFileInfo: true);
         var saveLockRequested = Stopwatch.GetTimestamp();
         TimeSpan saveLockWait;
-        TimeSpan saveDuration;
+        TimeSpan saveDuration = default;
+        var saveAttempted = false;
 #endif
 
         SettingsModel newSettings;
@@ -77,18 +81,32 @@ public sealed class SettingsService : ISettingsService
 
             // Read after acquiring the lock so an older caller cannot save a stale snapshot last.
             newSettings = Volatile.Read(ref _settings);
-            _persistence.Save(newSettings, _filePath, JsonSerializationContext.Default.SettingsModel);
+
+            // Compare persisted values, not record equality: provider connections contain
+            // runtime-only metadata, and immutable collections can be rebuilt without changes.
+            var settingsJson = JsonSerializer.Serialize(newSettings, JsonSerializationContext.Default.SettingsModel);
+            if (forceSave || !string.Equals(settingsJson, _lastSavedSettingsJson, StringComparison.Ordinal))
+            {
+                _lastSavedSettingsJson = null;
+                var saved = _persistence.Save(newSettings, _filePath, JsonSerializationContext.Default.SettingsModel);
+                _lastSavedSettingsJson = saved ? settingsJson : null;
 
 #if DEBUG
-            saveDuration = Stopwatch.GetElapsedTime(saveStarted);
+                saveAttempted = true;
+                saveDuration = Stopwatch.GetElapsedTime(saveStarted);
 #endif
+            }
         }
 
 #if DEBUG
-        Logger.LogDebug(
-            $"Settings save attempt (thread {Environment.CurrentManagedThreadId}, hotReload={hotReload}): " +
-            $"lock wait {saveLockWait.TotalMilliseconds:F2} ms, persistence {saveDuration.TotalMilliseconds:F2} ms." +
-            $"{Environment.NewLine}{saveCaller}");
+        if (saveAttempted)
+        {
+            var saveCaller = new StackTrace(skipFrames: 2, fNeedFileInfo: true);
+            Logger.LogDebug(
+                $"Settings save attempt (thread {Environment.CurrentManagedThreadId}, hotReload={hotReload}): " +
+                $"lock wait {saveLockWait.TotalMilliseconds:F2} ms, persistence {saveDuration.TotalMilliseconds:F2} ms." +
+                $"{Environment.NewLine}{saveCaller}");
+        }
 #endif
 
         if (hotReload)

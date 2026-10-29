@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
@@ -52,13 +52,10 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ShowPaletteAtMessage>,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>,
-    IRecipient<NavigateToPageMessage>,
     IRecipient<NavigationDepthMessage>,
     IRecipient<SearchQueryMessage>,
     IRecipient<ErrorOccurredMessage>,
     IRecipient<TelemetryCommandStartedMessage>,
-    IRecipient<DragStartedMessage>,
-    IRecipient<DragCompletedMessage>,
     IRecipient<ToggleDevRibbonMessage>,
     IRecipient<GetHwndMessage>,
     IRecipient<ExpandCompactModeMessage>,
@@ -74,7 +71,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly WNDPROC? _hotkeyWndProc;
     private readonly WNDPROC? _originalWndProc;
     private readonly List<TopLevelHotkey> _hotkeys = [];
-    private readonly KeyboardListener _keyboardListener;
+    private readonly GlobalKeyboardListener _keyboardListener;
     private readonly LocalKeyboardListener _localKeyboardListener = new();
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private readonly CopilotKeyRegistration? _copilotKeyRegistration;
@@ -84,6 +81,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
     private readonly AccessKeyModeController _accessKeyMode;
     private readonly List<long> _breakthroughTimestamps = [];
+    private readonly ShellViewModel _shellViewModel;
     private ShellIconCacheInvalidator? _shellIconCacheInvalidator;
 
     private bool _ignoreHotKeyWhenFullScreen = true;
@@ -157,6 +155,9 @@ public sealed partial class MainWindow : WindowEx,
         InitializeComponent();
 
         ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
+        _shellViewModel = App.Current.Services.GetRequiredService<ShellViewModel>();
+        _shellViewModel.PageNavigationRequested += ShellViewModel_PageNavigationRequested;
+        ShellContent.DragStateChanged += ShellContent_DragStateChanged;
 
         _autoGoHomeTimer = new DispatcherTimer();
         _autoGoHomeTimer.Tick += OnAutoGoHomeTimerOnTick;
@@ -183,10 +184,10 @@ public sealed partial class MainWindow : WindowEx,
 
         _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
 
-        _keyboardListener = new KeyboardListener();
-        _keyboardListener.Start();
-
-        _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand(HandleSummon));
+        _keyboardListener = new GlobalKeyboardListener(
+            HandleSummon,
+            static error => Logger.LogError("Failed when invoking global keyboard hook", error));
+        StartKeyboardListener();
 
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
         var shellIconAssociationsChangedMessage = PInvoke.RegisterWindowMessage(
@@ -214,13 +215,10 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowPaletteAtMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
-        WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigationDepthMessage>(this);
         WeakReferenceMessenger.Default.Register<SearchQueryMessage>(this);
         WeakReferenceMessenger.Default.Register<ErrorOccurredMessage>(this);
         WeakReferenceMessenger.Default.Register<TelemetryCommandStartedMessage>(this);
-        WeakReferenceMessenger.Default.Register<DragStartedMessage>(this);
-        WeakReferenceMessenger.Default.Register<DragCompletedMessage>(this);
         WeakReferenceMessenger.Default.Register<ToggleDevRibbonMessage>(this);
         WeakReferenceMessenger.Default.Register<GetHwndMessage>(this);
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
@@ -272,7 +270,7 @@ public sealed partial class MainWindow : WindowEx,
 
         // BEAR LOADING: Focus Search must be suppressed here; otherwise it may steal focus (for example, from the system tray icon)
         // and prevent the user from opening its context menu.
-        WeakReferenceMessenger.Default.Send(new GoHomeMessage(WithAnimation: false, FocusSearch: false));
+        _shellViewModel.GoHome(withAnimation: false, focusSearch: false);
     }
 
     private void ThemeServiceOnThemeChanged(object? sender, ThemeChangedEventArgs e)
@@ -312,11 +310,11 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
+    private void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
     {
         if (e.Key == VirtualKey.GoBack)
         {
-            WeakReferenceMessenger.Default.Send(new GoBackMessage());
+            _shellViewModel.GoBack();
         }
     }
 
@@ -406,10 +404,12 @@ public sealed partial class MainWindow : WindowEx,
             {
                 var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
                 var workArea = displayArea.WorkArea;
+                var targetDpi = WindowPositionHelper.GetDpiForDisplay(displayArea);
+                var workAreaHeightDip = workArea.Height * 96.0 / targetDpi;
 
                 // The setting is the relative height measured from the *bottom* of the screen,
                 // so a larger percentage places the search box higher up the display.
-                var fractionFromTop = GetCompactCenterFractionFromTop(settings);
+                var fractionFromTop = GetCompactCenterFractionFromTop(settings, workAreaHeightDip);
                 var desiredCardCenterY = workArea.Y + (int)Math.Round(workArea.Height * fractionFromTop);
                 finalRect.Y = desiredCardCenterY - searchRowCenterFromHwndTop;
 
@@ -471,9 +471,11 @@ public sealed partial class MainWindow : WindowEx,
     // Converts the "center height" setting (a percentage measured up from the bottom of the
     // screen) into the fraction of the work area, measured from the top, at which the
     // collapsed search box should be centered.
-    private static double GetCompactCenterFractionFromTop(SettingsModel settings)
+    private static double GetCompactCenterFractionFromTop(SettingsModel settings, double workAreaHeightDip)
     {
-        var pct = Math.Clamp(settings.CompactCenterHeightPercentage, 0, 100);
+        var pct = CompactPositionConstraints.ClampPercentageFromBottom(
+            settings.CompactCenterHeightPercentage,
+            workAreaHeightDip);
         return 1.0 - (pct / 100.0);
     }
 
@@ -624,6 +626,7 @@ public sealed partial class MainWindow : WindowEx,
             }
 
             return x.UseLowLevelGlobalHotkey == y.UseLowLevelGlobalHotkey
+                && x.UseWindowsKey == y.UseWindowsKey
                 && x.ShowSystemTrayIcon == y.ShowSystemTrayIcon
                 && x.IgnoreShortcutWhenFullscreen == y.IgnoreShortcutWhenFullscreen
                 && x.IgnoreShortcutWhenBusy == y.IgnoreShortcutWhenBusy
@@ -666,6 +669,7 @@ public sealed partial class MainWindow : WindowEx,
         {
             var hash = default(HashCode);
             hash.Add(obj.UseLowLevelGlobalHotkey);
+            hash.Add(obj.UseWindowsKey);
             hash.Add(obj.ShowSystemTrayIcon);
             hash.Add(obj.IgnoreShortcutWhenFullscreen);
             hash.Add(obj.IgnoreShortcutWhenBusy);
@@ -1066,6 +1070,8 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Receive(QuitMessage message)
     {
+        Logger.LogInfo("Command Palette exit requested: QuitMessage received.");
+
         // Always defer, even on the UI thread. This can be sent from the window procedure and
         // is broadcast to multiple windows. MainWindow_Closed exits the process, so closing
         // inline could terminate while the window procedure or message broadcast is still active.
@@ -1076,7 +1082,7 @@ public sealed partial class MainWindow : WindowEx,
     {
         if (message.ForceGoHome)
         {
-            RunOnUiThread(() => WeakReferenceMessenger.Default.Send(new GoHomeMessage(false, false)));
+            RunOnUiThread(() => _shellViewModel.GoHome(withAnimation: false, focusSearch: false));
         }
 
         // This might come in off the UI thread. Make sure to hop back.
@@ -1089,7 +1095,7 @@ public sealed partial class MainWindow : WindowEx,
 
     // Session telemetry: Track metrics during the Command Palette session
     // These receivers increment counters that are sent when EndSession is called
-    public void Receive(NavigateToPageMessage message)
+    private void ShellViewModel_PageNavigationRequested(object? sender, PageNavigationRequestedEventArgs e)
     {
         RunOnUiThread(() => _sessionPagesVisited++);
     }
@@ -1237,6 +1243,8 @@ public sealed partial class MainWindow : WindowEx,
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
+        Logger.LogInfo("Command Palette exiting: main window closed.");
+        _keyboardListener.Dispose();
         _copilotKeyRegistration?.Dispose();
         SaveWindowPosition();
 
@@ -1256,7 +1264,6 @@ public sealed partial class MainWindow : WindowEx,
         (RootElement.MainContent as ShellPage)?.Dispose();
         DisposeAcrylic();
 
-        _keyboardListener.Stop();
         Environment.Exit(0);
     }
 
@@ -1267,6 +1274,7 @@ public sealed partial class MainWindow : WindowEx,
             return AppRestartFailureReason.RestartPending;
         }
 
+        Logger.LogInfo("Command Palette restart requested.");
         SaveWindowPosition();
         var services = App.Current.Services;
         var trayIcon = services.GetRequiredService<TrayIconService>();
@@ -1292,7 +1300,7 @@ public sealed partial class MainWindow : WindowEx,
             _isRestarting = false;
 
             // A successful restart terminates this process. Restore services if it returns or throws.
-            _keyboardListener.Start();
+            StartKeyboardListener();
             trayIcon.SetupTrayIcon();
             WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>();
         }
@@ -1685,11 +1693,31 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
+    private void StartKeyboardListener()
+    {
+        if (_keyboardListener.Start(out var error))
+        {
+            return;
+        }
+
+        Logger.LogError("Failed to register global keyboard hook", error);
+        var errorCode = error is Win32Exception nativeError ? nativeError.NativeErrorCode : error.HResult;
+        var message = FormattableString.Invariant($"SetWindowsHookEx: {error.Message} ({errorCode})");
+        _ = PInvoke.MessageBox(HWND.Null, message, RS_.GetString("AppName"), MESSAGEBOX_STYLE.MB_OK | MESSAGEBOX_STYLE.MB_ICONERROR);
+    }
+
     private void SetupHotkey(SettingsModel settings)
     {
         UnregisterHotkeys();
 
-        RegisterHotkey(settings, settings.Hotkey, string.Empty);
+        if (settings.IsWindowsKeyHotkeyActive)
+        {
+            _keyboardListener.SetWindowsKeyAction(string.Empty);
+        }
+        else
+        {
+            RegisterHotkey(settings, settings.Hotkey, string.Empty);
+        }
 
         // The dock shortcut rides the same registration path as command hotkeys. HandleSummon
         // peels it back off so nothing tries to summon a command with a dock ID. Skip it when
@@ -1922,6 +1950,7 @@ public sealed partial class MainWindow : WindowEx,
                     if (command == PInvoke.SC_CLOSE)
                     {
                         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+                        Logger.LogInfo($"Command Palette exit requested: system close command (Alt+F4 or window close); AllowAltF4={settings.AllowAltF4}.");
                         if (settings.AllowAltF4)
                         {
                             WeakReferenceMessenger.Default.Send<QuitMessage>();
@@ -2090,6 +2119,9 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Dispose()
     {
+        _keyboardListener.Dispose();
+        _shellViewModel.PageNavigationRequested -= ShellViewModel_PageNavigationRequested;
+        ShellContent.DragStateChanged -= ShellContent_DragStateChanged;
         _accessKeyMode.Dispose();
         _copilotKeyRegistration?.Dispose();
         _themeService.ThemeChanged -= ThemeServiceOnThemeChanged;
@@ -2112,18 +2144,15 @@ public sealed partial class MainWindow : WindowEx,
         });
     }
 
-    public void Receive(DragStartedMessage message)
+    private void ShellContent_DragStateChanged(object? sender, PageDragStateChangedEventArgs e)
     {
-        RunOnUiThread(() => _preventHideWhenDeactivated = true);
-    }
-
-    public void Receive(DragCompletedMessage message)
-    {
-        RunOnUiThread(() =>
+        _preventHideWhenDeactivated = e.IsDragging;
+        if (e.IsDragging)
         {
-            _preventHideWhenDeactivated = false;
-            Task.Delay(200).ContinueWith(_ => RunOnUiThread(StealForeground));
-        });
+            return;
+        }
+
+        Task.Delay(200).ContinueWith(_ => RunOnUiThread(StealForeground));
     }
 
     private unsafe void StealForeground()

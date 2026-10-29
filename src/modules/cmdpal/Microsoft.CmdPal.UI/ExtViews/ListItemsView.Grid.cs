@@ -244,6 +244,8 @@ public sealed partial class ListItemsView
 
         var current = ItemsGrid.SelectedIndex;
         var target = current;
+        var loadMore = false;
+        var wrapForward = false;
         if (current < 0)
         {
             target = 0;
@@ -257,12 +259,20 @@ public sealed partial class ListItemsView
             }
 
             target = GridNavigationLayout.MoveHorizontal(current, increaseIndex, GridItems.ItemCount);
+            wrapForward = increaseIndex && current == GridItems.ItemCount - 1;
+            loadMore = increaseIndex && target == GridItems.ItemCount - 1;
             _gridNavigationColumn = null;
         }
         else
         {
             if (!TryGetGridNavigationLayout(out var layout) || layout is null)
             {
+                return false;
+            }
+
+            if (layout.ItemCount != GridItems.ItemCount)
+            {
+                _gridNavigationLayout = null;
                 return false;
             }
 
@@ -282,25 +292,46 @@ public sealed partial class ListItemsView
                 VirtualKey.PageDown => layout.MovePage(current, down: true, column, viewportHeight),
                 _ => current,
             };
+            wrapForward = (key is VirtualKey.Down or VirtualKey.PageDown) &&
+                layout.MoveVertical(current, down: true, column, wrap: false) == current;
+            loadMore = (key is VirtualKey.Down or VirtualKey.PageDown) &&
+                layout.MoveVertical(target, down: true, column, wrap: false) == target;
         }
 
-        if (target >= 0 && target != current)
+        if (wrapForward)
         {
-            _isGridNavigationSelection = true;
-            try
-            {
-                _scrollOnNextSelectionChange = true;
-                ItemsGrid.SelectedIndex = target;
-            }
-            finally
-            {
-                _isGridNavigationSelection = false;
-            }
+            _ = LoadMoreBeforeWrappingAsync(() => SelectGridIndex(target));
+            return true;
+        }
 
-            PushSelectionToVm();
+        SelectGridIndex(target);
+        if (loadMore)
+        {
+            ViewModel?.LoadMoreIfNeeded();
         }
 
         return true;
+    }
+
+    private void SelectGridIndex(int target)
+    {
+        if (target < 0 || target == ItemsGrid.SelectedIndex)
+        {
+            return;
+        }
+
+        _isGridNavigationSelection = true;
+        try
+        {
+            _scrollOnNextSelectionChange = true;
+            ItemsGrid.SelectedIndex = target;
+        }
+        finally
+        {
+            _isGridNavigationSelection = false;
+        }
+
+        PushSelectionToVm();
     }
 
     private void ScrollGridToItem(ListItemViewModel item)

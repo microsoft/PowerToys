@@ -372,8 +372,6 @@ private:
 
         if (new_run_in_service_mode != run_in_service_mode)
         {
-            run_in_service_mode = new_run_in_service_mode;
-
             shutdown_processes();
 
             if (new_run_in_service_mode)
@@ -383,18 +381,32 @@ private:
             // Wait until Settings -> MWB IPC Shutdown() call is completed
             else
             {
+                const auto waitStarted = GetTickCount64();
                 const auto ps = getProcessHandlesByName(L"PowerToys.MouseWithoutBorders.exe", PROCESS_QUERY_LIMITED_INFORMATION);
                 for (const auto& p : ps)
                 {
                     DWORD status = STILL_ACTIVE;
                     do
                     {
-                        GetExitCodeProcess(p.get(), &status);
+                        if (!GetExitCodeProcess(p.get(), &status))
+                        {
+                            Logger::error(L"Could not check whether MouseWithoutBorders exited. Error: {}", GetLastError());
+                            return;
+                        }
+                        if (status == STILL_ACTIVE)
+                        {
+                            if (GetTickCount64() - waitStarted >= 10000)
+                            {
+                                Logger::error(L"MouseWithoutBorders did not exit before the service mode change.");
+                                return;
+                            }
+                            Sleep(50);
+                        }
                     } while (status == STILL_ACTIVE);
                 }
-
-                Sleep(1000);
             }
+
+            run_in_service_mode = new_run_in_service_mode;
 
             if (m_enabled)
             {

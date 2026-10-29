@@ -4,6 +4,7 @@
 
 using System;
 using System.CommandLine;
+using System.CommandLine.Help;
 using System.Globalization;
 using System.Linq;
 
@@ -23,9 +24,11 @@ internal static class FancyZonesCliUsage
         Console.WriteLine();
 
         Console.WriteLine(Properties.Resources.usage_options);
-        foreach (var option in cmd.Options)
+
+        // Skip RootCommand's built-in --help/--version; the examples below cover them.
+        foreach (var option in cmd.Options.Where(o => o is not HelpOption and not VersionOption))
         {
-            var aliases = string.Join(", ", option.Aliases);
+            var aliases = string.Join(", ", option.Aliases.Prepend(option.Name));
             var description = option.Description ?? string.Empty;
             Console.WriteLine($"  {aliases,-30} {description}");
         }
@@ -34,7 +37,7 @@ internal static class FancyZonesCliUsage
         Console.WriteLine(Properties.Resources.usage_commands);
         foreach (var command in cmd.Subcommands)
         {
-            if (command.IsHidden)
+            if (command.Hidden)
             {
                 continue;
             }
@@ -69,6 +72,7 @@ internal static class FancyZonesCliUsage
 
         // Find matching subcommand by name or alias
         var subcommand = rootCmd.Subcommands.FirstOrDefault(c =>
+            string.Equals(c.Name, commandName, StringComparison.OrdinalIgnoreCase) ||
             c.Aliases.Any(a => string.Equals(a, commandName, StringComparison.OrdinalIgnoreCase)));
 
         if (subcommand == null)
@@ -90,7 +94,7 @@ internal static class FancyZonesCliUsage
 
         // Usage line
         string argsLabel = string.Join(" ", subcommand.Arguments.Select(a => $"<{a.Name}>"));
-        string optionsLabel = subcommand.Options.Any() ? " [options]" : string.Empty;
+        string optionsLabel = subcommand.Options.Count > 0 ? " [options]" : string.Empty;
         Console.WriteLine($"Usage: FancyZonesCLI {subcommand.Name} {argsLabel}{optionsLabel}".TrimEnd());
         Console.WriteLine();
 
@@ -103,7 +107,7 @@ internal static class FancyZonesCliUsage
         }
 
         // Arguments
-        if (subcommand.Arguments.Any())
+        if (subcommand.Arguments.Count > 0)
         {
             Console.WriteLine(Properties.Resources.usage_arguments);
             foreach (var arg in subcommand.Arguments)
@@ -116,12 +120,12 @@ internal static class FancyZonesCliUsage
         }
 
         // Options
-        if (subcommand.Options.Any())
+        if (subcommand.Options.Count > 0)
         {
             Console.WriteLine(Properties.Resources.usage_options);
             foreach (var option in subcommand.Options)
             {
-                var optAliases = string.Join(", ", option.Aliases);
+                var optAliases = string.Join(", ", option.Aliases.Prepend(option.Name));
                 var optDescription = option.Description ?? string.Empty;
                 Console.WriteLine($"  {optAliases,-25} {optDescription}");
             }

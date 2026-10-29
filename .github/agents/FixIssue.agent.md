@@ -21,7 +21,7 @@ You are an **IMPLEMENTATION AGENT** specialized in executing implementation plan
 
 For the given **issue_number**, execute the implementation plan and produce:
 1. Working code changes applied directly to the repository
-2. `Generated Files/issueFix/{{issue_number}}/pr-description.md` — PR-ready description
+2. `Generated Files/issueFix/{{issue_number}}/pr-description.md`: notes for the author, NOT a PR-ready body. Follow the format in `.github/prompts/fix-issue.prompt.md`.
 3. `Generated Files/issueFix/{{issue_number}}/manual-steps.md` — Only if human action needed
 
 ## Core Directive
@@ -80,6 +80,7 @@ Never skip steps. Never commit broken code. Never proceed if build fails.
 - Add noisy logs in hot paths
 - Break IPC/JSON contracts without updating both sides
 - Introduce dependencies without documenting in NOTICE.md
+- Write the visible PR description. A human must write it in their own words. Put AI-generated text only inside a `<details><summary>AI-generated summary</summary>` block (see [AGENTS.md](../../AGENTS.md#pull-request-descriptions-hard-rule))
 
 ## References
 

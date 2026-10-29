@@ -17,12 +17,16 @@ public record SettingsModel
 
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
+    public const int DefaultCompactCenterHeightPercentage = 75;
+
     internal const int MinQuickAccessShelfPinnedCommandLimit = 0;
     internal const int MaxQuickAccessShelfPinnedCommandLimit = 99;
     internal const int DefaultQuickAccessShelfPinnedCommandLimit = 9;
     internal const int MinRecentCommandsDisplayLimit = 1;
     internal const int MaxRecentCommandsDisplayLimit = 10;
     internal const int DefaultRecentCommandsDisplayLimit = 5;
+
+    public static readonly bool IsWindowsKeyHotkeyFeatureEnabled = GetWindowsKeyHotkeyFeatureFlag();
 
     public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
 
@@ -61,6 +65,11 @@ public record SettingsModel
     public bool DockRememberLastFocusedItem { get; init; } = true;
 
     public bool UseLowLevelGlobalHotkey { get; init; }
+
+    public bool UseWindowsKey { get; init; }
+
+    [JsonIgnore]
+    public bool IsWindowsKeyHotkeyActive => IsWindowsKeyHotkeyFeatureEnabled && UseWindowsKey;
 
     public bool ShowAppDetails { get; init; }
 
@@ -125,7 +134,7 @@ public record SettingsModel
     // height from the bottom of the screen (as a percentage) at which the collapsed search
     // box is vertically centered. 75 places it in the upper portion of the display. Ignored
     // when compact mode is off.
-    public int CompactCenterHeightPercentage { get; set; } = 75;
+    public int CompactCenterHeightPercentage { get; set; } = DefaultCompactCenterHeightPercentage;
 
     private ImmutableDictionary<string, ProviderSettings>? _providerSettings
         = ImmutableDictionary<string, ProviderSettings>.Empty;
@@ -269,6 +278,9 @@ public record SettingsModel
     public SettingsModel()
     {
     }
+
+    private static bool GetWindowsKeyHotkeyFeatureFlag() =>
+        Environment.GetEnvironmentVariable("CMDPAL_ENABLE_WIN_HOTKEY") == "1";
 
     public (SettingsModel Model, ProviderSettings Settings) GetProviderSettings(CommandProviderWrapper provider)
     {
