@@ -17,6 +17,7 @@ public record SettingsModel
 
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
+    // WARNING: IF YOU ADD A SETTING, MAKE SURE YOU UPDATE SettingsSearchCatalog.
     public const int DefaultCompactCenterHeightPercentage = 75;
 
     internal const int MinQuickAccessShelfPinnedCommandLimit = 0;
