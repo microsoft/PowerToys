@@ -7008,7 +7008,7 @@ Text uses the current drawing color.</value>
     <value>Text Expander</value>
   </data>
   <data name="TextExpander.ModuleDescription" xml:space="preserve">
-    <value>Replace short triggers with longer snippets as you type.</value>
+    <value>Stop typing the same things over and over. Save text you use often, like your email signature, address or a standard reply, as a snippet, then type a short trigger to insert it in any app.</value>
   </data>
   <data name="TextExpander_ManageSnippets.Header" xml:space="preserve">
     <value>Manage snippets</value>
