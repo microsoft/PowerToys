@@ -162,11 +162,15 @@ The `umdfHidArm64Image` template parameter is declared by
 `.pipelines\v2\templates\pipeline-ui-tests-automation.yml` and `pipeline-ci-build.yml`, then passed
 explicitly through the stage/job templates so it is available during structural expansion:
 
-- It defaults to `SHINE-W11-Preview-Testing-arm64-TestSigning` through `ImageOverride`.
-  An empty value disables the route.
-- The dedicated job uses the existing `SHINE-INT-Testing-arm64` / `SHINE-OSS-Testing-arm64` pools.
-  Image isolation is explicit: ordinary jobs retain the pool's default image. Do not make the
-  TESTSIGNING image the pool default.
+- Manual internal UI-test runs default to `SHINE-W11-Preview-Testing-arm64-TestSigning` through
+  `ImageOverride`. The image parameter permits only that name or an empty value to disable routing.
+- PR CI enables the image only in the verified internal collection (`SHINE-INT-Testing-arm64`).
+  The shared CI template defaults to disabled; public `shine-oss` PR CI explicitly keeps it
+  disabled until the image is provisioned and verified there. Implicit ARM64 selections then
+  skip Grab and Move with a warning while other suites still run.
+- Image isolation is explicit: ordinary jobs retain the pool's default image. Do not make the
+  TESTSIGNING image the pool default. Registering the image in an OSS pool alone does not opt
+  public CI into it; its root pipeline configuration must also be updated.
 - The dedicated English-language Windows 11 ARM64 image needs TESTSIGNING enabled before boot,
   an elevated agent, and the same logged-on standard-user desktop/UI-test prerequisites as the
   ordinary test image. The job checks the architecture and existing boot configuration; it

@@ -114,7 +114,7 @@ jobs:
         Assert-UmdfHidArm64TestEnvironment `
           -OsArchitecture ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()) `
           -BootConfiguration ($bootConfiguration -join "`n")
-        Write-Host "Dedicated ARM64 UMDF image: ${{ parameters.umdfHidArm64Image }} (TESTSIGNING is preconfigured; no boot settings are changed)."
+        Write-Host "Dedicated ARM64 UMDF image: $env:UMDF_HID_ARM64_IMAGE (TESTSIGNING is preconfigured; no boot settings are changed)."
       }
       Write-Host "##vso[task.setvariable variable=ExcludeUmdfHidSuite]$($hidSelection.Exclude.ToString().ToLowerInvariant())"
       Write-Host "##vso[task.setvariable variable=UmdfHidSelectionBlocked]$($hidSelection.Blocked.ToString().ToLowerInvariant())"
@@ -155,6 +155,7 @@ jobs:
     displayName: Select UI test suites
     env:
       SELECTED_UI_TEST_MODULES: ${{ join(';', parameters.uiTestModules) }}
+      UMDF_HID_ARM64_IMAGE: ${{ parameters.umdfHidArm64Image }}
       ${{ if eq(parameters.autoSelectUiTests, true) }}:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 

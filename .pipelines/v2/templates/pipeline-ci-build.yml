@@ -7,7 +7,10 @@ variables:
 parameters:
   - name: umdfHidArm64Image
     type: string
-    default: SHINE-W11-Preview-Testing-arm64-TestSigning
+    default: ''
+    values:
+      - ''
+      - SHINE-W11-Preview-Testing-arm64-TestSigning
   - name: buildPlatforms
     type: object
     default:

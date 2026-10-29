@@ -6,11 +6,32 @@ $templates = Join-Path $PSScriptRoot '..\v2\templates'
 
 Describe 'Dedicated ARM64 virtual HID routing' {
     It 'pins the TESTSIGNING image in the existing ARM64 pools' {
-        foreach ($root in @('pipeline-ci-build.yml', 'pipeline-ui-tests-automation.yml')) {
-            $source = Get-Content (Join-Path $templates $root) -Raw
-            $source | Should Match 'name: umdfHidArm64Image\r?\n\s+type: string\r?\n\s+default: SHINE-W11-Preview-Testing-arm64-TestSigning'
-            $source | Should Not Match 'variables-umdf-hid.yml'
+        $manual = Get-Content (Join-Path $templates 'pipeline-ui-tests-automation.yml') -Raw
+        $manual | Should Match 'name: umdfHidArm64Image\r?\n\s+type: string\r?\n\s+default: SHINE-W11-Preview-Testing-arm64-TestSigning'
+        $ci = Get-Content (Join-Path $templates 'pipeline-ci-build.yml') -Raw
+        $ci | Should Match "name: umdfHidArm64Image\r?\n\s+type: string\r?\n\s+default: ''"
+    }
+
+    It 'keeps unverified public PR pools opted out of the ARM64 image' {
+        $ci = Get-Content (Join-Path $PSScriptRoot '..\v2\ci.yml') -Raw
+        $ci | Should Match "if eq\(variables\['System.CollectionId'\], 'cb55739e-4afe-46a3-970f-1b49d8ee7564'\)"
+        $ci | Should Match 'umdfHidArm64Image: SHINE-W11-Preview-Testing-arm64-TestSigning'
+        $ci | Should Match "(?s)\$\{\{ else \}\}:\r?\n\s+umdfHidArm64Image: ''"
+    }
+
+    It 'restricts queue-time image values and never interpolates image text into scripts' {
+        foreach ($name in @('pipeline-ci-build.yml', 'pipeline-ui-tests-automation.yml')) {
+            $source = Get-Content (Join-Path $templates $name) -Raw
+            $source | Should Match "values:\r?\n\s+- ''\r?\n\s+- SHINE-W11-Preview-Testing-arm64-TestSigning"
         }
+        $job = Get-Content (Join-Path $templates 'job-test-project.yml') -Raw
+        $smoke = Get-Content (Join-Path $templates 'pipeline-umdf-hid-smoke.yml') -Raw
+        foreach ($source in @($job, $smoke)) {
+            $source | Should Match 'UMDF_HID_ARM64_IMAGE: \$\{\{ parameters.umdfHidArm64Image \}\}'
+        }
+        $job | Should Not Match 'Write-Host.*\$\{\{ parameters.umdfHidArm64Image \}\}'
+        $smoke | Should Match 'IsNullOrWhiteSpace\(\$env:UMDF_HID_ARM64_IMAGE\)'
+        $smoke | Should Not Match "-and '\$\{\{ parameters.umdfHidArm64Image \}\}'"
     }
 
     It 'passes image configuration explicitly through every template boundary' {
@@ -56,7 +77,7 @@ Describe 'Dedicated ARM64 virtual HID routing' {
             $source | Should Match "prepareUmdfHid:.*eq\((parameters.platform|platform), 'arm64'\), ne\(parameters.umdfHidArm64Image, ''\)"
         }
         $testsOnly = Get-Content (Join-Path $templates 'job-build-ui-tests.yml') -Raw
-        $testsOnly | Should Match "eq\(variables\['BuildPlatform'\], 'arm64'\), ne\('\$\{\{ parameters.umdfHidArm64Image \}\}', ''\)"
+        $testsOnly | Should Match "eq\(variables\['BuildPlatform'\], 'arm64'\), eq\('\$\{\{ ne\(parameters.umdfHidArm64Image, ''\) \}\}', 'True'\)"
     }
 
     It 'selects the dedicated image without changing the existing default pool branches' {

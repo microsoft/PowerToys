@@ -34,7 +34,7 @@ stages:
               if ($env:SELECTED_MODULES -ne 'GrabAndMove.HidSmoke.Probe') {
                 throw 'The smoke path requires exactly [GrabAndMove.HidSmoke.Probe].'
               }
-              if ('arm64' -in ($env:BUILD_PLATFORMS -split ';') -and '${{ parameters.umdfHidArm64Image }}' -eq '') {
+              if ('arm64' -in ($env:BUILD_PLATFORMS -split ';') -and [string]::IsNullOrWhiteSpace($env:UMDF_HID_ARM64_IMAGE)) {
                 throw 'BLOCKED_INFRASTRUCTURE: configure the dedicated ARM64 UMDF image before requesting ARM64 smoke tests.'
               }
               & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Build-Smoke.ps1" `
@@ -45,6 +45,7 @@ stages:
             env:
               SELECTED_MODULES: ${{ join(';', parameters.uiTestModules) }}
               BUILD_PLATFORMS: ${{ join(';', parameters.buildPlatforms) }}
+              UMDF_HID_ARM64_IMAGE: ${{ parameters.umdfHidArm64Image }}
           - publish: $(Build.ArtifactStagingDirectory)\umdf-hid-smoke
             artifact: umdf-hid-smoke
             displayName: Publish driver and probe

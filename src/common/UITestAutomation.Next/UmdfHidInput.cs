@@ -16,6 +16,7 @@ namespace Microsoft.PowerToys.UITest.Next;
 /// </summary>
 public sealed class UmdfHidInput : IDisposable
 {
+    // Keep this protocol in sync with .pipelines\umdf-hid-smoke\vhidmini-input.patch.
     private const byte ControlReportId = 1;
     private const byte SubmitInputCommand = 0x10;
     private const byte KeyboardReportId = 2;
@@ -27,6 +28,12 @@ public sealed class UmdfHidInput : IDisposable
     private const ushort DeviceProductId = 0xFEED;
     private const ushort ControlUsagePage = 0xFF00;
     private const ushort ControlUsage = 1;
+    private const int ErrorNotReady = 21;
+    private const int ErrorNoMoreItems = 259;
+    private const int ErrorInsufficientBuffer = 122;
+    private const uint SetupDiPresent = 0x2;
+    private const uint SetupDiDeviceInterface = 0x10;
+    private const int HidStatusSuccess = 0x110000;
     private static readonly object ModeLock = new();
     private static UmdfHidInput? active;
     private readonly SafeFileHandle device;
@@ -288,7 +295,7 @@ public sealed class UmdfHidInput : IDisposable
         while (!HidD_SetFeature(device, packet, packet.Length))
         {
             var error = Marshal.GetLastWin32Error();
-            if (error != 21 || timer.ElapsedMilliseconds > 5_000)
+            if (error != ErrorNotReady || timer.ElapsedMilliseconds > 5_000)
             {
                 throw new Win32Exception(error, $"HID feature transport failed for report {input[0]} on '{DevicePath}'.");
             }
@@ -300,7 +307,7 @@ public sealed class UmdfHidInput : IDisposable
     private SafeFileHandle OpenControlDevice()
     {
         HidD_GetHidGuid(out var guid);
-        var devices = SetupDiGetClassDevsW(ref guid, null, IntPtr.Zero, 0x12);
+        var devices = SetupDiGetClassDevsW(ref guid, null, IntPtr.Zero, SetupDiPresent | SetupDiDeviceInterface);
         if (devices == new IntPtr(-1))
         {
             throw new Win32Exception(Marshal.GetLastWin32Error());
@@ -314,7 +321,7 @@ public sealed class UmdfHidInput : IDisposable
                 if (!SetupDiEnumDeviceInterfaces(devices, IntPtr.Zero, ref guid, index, ref data))
                 {
                     var error = Marshal.GetLastWin32Error();
-                    if (error == 259)
+                    if (error == ErrorNoMoreItems)
                     {
                         break;
                     }
@@ -324,7 +331,7 @@ public sealed class UmdfHidInput : IDisposable
 
                 _ = SetupDiGetDeviceInterfaceDetailW(devices, ref data, IntPtr.Zero, 0, out var required, IntPtr.Zero);
                 var sizeError = Marshal.GetLastWin32Error();
-                if (sizeError != 122 || required < 8)
+                if (sizeError != ErrorInsufficientBuffer || required < 8)
                 {
                     throw new Win32Exception(sizeError, "Could not determine the HID interface detail buffer size.");
                 }
@@ -353,7 +360,7 @@ public sealed class UmdfHidInput : IDisposable
                     {
                         try
                         {
-                            matches = HidP_GetCaps(preparsed, out var caps) == 0x110000 &&
+                            matches = HidP_GetCaps(preparsed, out var caps) == HidStatusSuccess &&
                                 caps.UsagePage == ControlUsagePage && caps.Usage == ControlUsage && caps.FeatureLength == ControlReportLength;
                         }
                         finally

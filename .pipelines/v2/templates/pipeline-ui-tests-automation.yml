@@ -12,6 +12,9 @@ parameters:
   - name: umdfHidArm64Image
     type: string
     default: SHINE-W11-Preview-Testing-arm64-TestSigning
+    values:
+      - ''
+      - SHINE-W11-Preview-Testing-arm64-TestSigning
     displayName: "Isolated ARM64 UMDF image (empty disables the route)"
   - name: buildPlatforms
     type: object
