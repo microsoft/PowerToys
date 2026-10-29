@@ -25,8 +25,7 @@ public class IndexerTests : CommandPaletteTestBase
     private long consoleWindowHandle;
     private int[] consoleProcessIds = [];
 
-    [AssemblyInitialize]
-    public static void CreateIndexedFixture(TestContext context)
+    internal static void CreateIndexedFixture(TestContext context)
     {
         testFileBaseName = $"indexer_test_item_{Guid.NewGuid():N}";
         testFileName = testFileBaseName + ".txt";
@@ -91,8 +90,7 @@ public class IndexerTests : CommandPaletteTestBase
         }
     }
 
-    [AssemblyCleanup]
-    public static void RemoveIndexedFixture()
+    internal static void RemoveIndexedFixture()
     {
         if (!string.IsNullOrEmpty(testFilePath))
         {

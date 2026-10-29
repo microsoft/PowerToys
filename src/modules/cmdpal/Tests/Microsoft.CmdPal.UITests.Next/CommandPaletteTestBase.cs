@@ -63,9 +63,10 @@ public class CommandPaletteTestBase : UITestBase
             }
 
             var foreground = WindowControl.GetForegroundWindowInfo();
-            if (foreground.ProcessName == "SearchHost")
+            if (foreground.ProcessName == "SearchHost" ||
+                (foreground.ProcessName == "ShellExperienceHost" && foreground.Title == "New notification"))
             {
-                Step("Dismissing Windows Search before re-summoning Command Palette");
+                Step($"Dismissing the foreground shell surface '{foreground.Title}' before re-summoning Command Palette");
                 KeyboardHelper.SendKeys(Key.Esc);
             }
 

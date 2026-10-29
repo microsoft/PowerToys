@@ -27,8 +27,7 @@ public class ModuleLifecycleTests : UITestBase
     protected override IReadOnlyList<string> StaleProcessNames =>
         [.. base.StaleProcessNames, ProcessName];
 
-    [ClassInitialize]
-    public static void PrepareCommandPalettePackage(TestContext context)
+    internal static void PrepareCommandPalettePackage(TestContext context)
     {
         var manager = new PackageManager();
         if (manager.FindPackagesForUser(string.Empty, PackageName, Publisher).Any())
@@ -37,8 +36,8 @@ public class ModuleLifecycleTests : UITestBase
             return;
         }
 
-        var runtimeDirectory = Path.GetDirectoryName(
-            SessionHelper.GetExecutablePath(PowerToysModule.CommandPalette))!;
+        var runtimeDirectory = Path.Combine(
+            Path.GetDirectoryName(SessionHelper.GetExecutablePath(PowerToysModule.Runner))!, "WinUI3Apps", "CmdPal");
         var packages = Directory.GetFiles(runtimeDirectory, "*.msix", SearchOption.TopDirectoryOnly);
         if (packages.Length == 0)
         {
@@ -46,15 +45,14 @@ public class ModuleLifecycleTests : UITestBase
         }
 
         Assert.HasCount(1, packages, "The runtime must include exactly one signed Command Palette MSIX.");
-        context.WriteLine($"Installing Command Palette for the runner lifecycle test: {packages[0]}");
+        context.WriteLine($"Installing Command Palette for the UI-test assembly: {packages[0]}");
         manager.AddPackageAsync(new Uri(packages[0]), null, DeploymentOptions.ForceApplicationShutdown)
             .AsTask().GetAwaiter().GetResult();
         installedPackage = manager.FindPackagesForUser(string.Empty, PackageName, Publisher)
             .Single().Id.FullName;
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
-    public static void RestoreCommandPalettePackage()
+    internal static void RestoreCommandPalettePackage()
     {
         if (installedPackage is not null)
         {
