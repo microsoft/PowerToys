@@ -83,7 +83,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | B04 | 6006服务更新的UAC返回1223；repair进程未启动，服务仍6005 | E31；匹配更新前不要启动6006客户端，不能重试提权或把新客户端的授权失败当作Capture算法回归 |
 | R01（6003 失败；6004 已完成实机会话） | 6003 的额外握手失败保留 E16；6004 两次 shared session 正常完成（E22），没有再卡在 protected-plan | 不把未采集 token 的已退出 Arranger 当作 High 证明；目标应用的 elevation 复用缺陷见 R05 |
 | R02 | 通用 “protected storage unavailable” 曾掩盖启动会话错误；授权不匹配还曾提供无效 Retry | 后一问题已修复并实测（E11/E12）；UX-01 的其他错误分类仍需逐项验证，不能根据弹窗直接诊断服务坏了 |
-| R03（发现路径已修，待实机闭环） | 6005清单47.152秒；独立x64诊断定位到AppsFolder首次Next等待，循环与main相同。6006改为当前窗口包信息+非解析的桌面快捷方式发现 | E28/E29：新697ms vs旧36958ms；没有只加进度、后台预热或改服务timeout。完整UI计时待B04解除；具体OS内部RPC延迟原因未断言 |
+| R03（已绕开慢路径，快慢差异尚未闭环） | 6005清单47.152秒；独立x64诊断定位到AppsFolder首次Next等待。10-29 23:10最新main仍使用相同枚举循环（E32），不是已找到main的另一套快速实现 | E29/E32：新路径分别697/2924ms，旧路径36958/37383ms；没有改服务timeout。未对原版main二进制做同机同权限A/B，不能据源码相同断言原版必慢，也不能把6006优化说成已证明的分支回归根因修复 |
 | R04 | 服务删除不等于 VA profile 已卸载；旧测试曾报告 profile 仍 loaded | 清理应报告准确残留，不强制卸载 hive；REM-06/CLEAN-02 单独判断 |
 | R05 | 6004 `move-existing-windows=true` 时只匹配名称/路径/PWA，没有比较实际 token elevation；普通 Notepad14436 可满足 elevated 条目，绕过新启动路径 | 6005 在既有窗口选择和新窗口认领处均要求 elevation 匹配；仅用 limited process query，查询失败不当作普通窗口，不引入身份握手或 DACL 修改 |
 | Q02 | 首次管理员授权时机、fail-closed 范围和 UX 仍需 PM 结论 | 当前不得启用不受保护 fallback；技术检查通过不等于 PM 已批准 |
@@ -209,7 +209,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | UX-04 / P1 | 中英文、长路径/错误文本等可读且本地化；无 console/JSON 内容泄漏或无响应错误循环 | NOT RUN | 部署前置已满足；真实 UI 观察另留证据 |
 | PERF-01 / P1 | 正常 launch/arranger 不重复全量枚举；记录 metadata/首应用/arrangement 分段耗时，legacy fallback 有说明 | NOT RUN | 部署前置已满足；另见 R03；用同机同数据比较，不凭印象认定更快 |
 | PERF-02 / P1 | Capture 独立量测全量枚举和 UI 响应；不得因 launch 优化宣称 Capture 已改善 | PASS | 量测范围：E26，清单 47.152 秒/整体约 47.293 秒，进度可见。**不表示性能达标或已加速**；R03 性能问题保留 |
-| PERF-03 / P0 | Capture恢复秒级可用，不靠只显示进度或丢失必要应用元数据；记录真实点击Capture到可编辑界面耗时 | PARTIAL | AUTO：新发现697ms、旧36958ms、11个可见应用比对一致（E29）；6006编辑器完整计时受B04阻塞，不宣称已完成GUI性能验收 |
+| PERF-03 / P0 | Capture恢复秒级可用，不靠只显示进度或丢失必要应用元数据；记录真实点击Capture到可编辑界面耗时 | PARTIAL | AUTO：下午新697ms/旧36958ms、11个可见应用；晚间新2924ms/旧37383ms、9个可见应用，比对均通过（E29/E32）。不能把697ms视为固定延迟；完整GUI计时受B04阻塞 |
 | UX-05 / P0 | Create/Capture 等待期间显示进度和说明，不允许第二次 Capture；完成/失败后恢复可操作状态，进度窗不遮挡错误对话框 | PARTIAL | E26：6005 正常捕获/等待/完成/取消实机 PASS；仅一个 native child，Capture/Cancel 禁用，主窗 IsWindowEnabled=false，完成后 Save/Cancel 可用。失败/Retry 实机待测；6004 FAIL 保留 E22 |
 | BLOB-01 / P1 | 正常保存先 durable 新 generation，再原子发布 index；旧 generation 正常可删除，保留 live 数据 | NOT RUN | 部署前置已满足；blob 不是每个 workspace 一份，也不是备份历史 |
 | BLOB-02 / P2 | 人为阻止旧 blob 删除/中断提交后重启；Recover 验证有效 index/live generations 后回收 orphan | NOT RUN | 部署前置已满足；当前无周期性 GC/每次删除失败诊断，不把即时全部删除当已实现承诺 |
@@ -357,6 +357,7 @@ Q10 的“直接验证原始 MSI”仍是独立验证候选，未经另行立项
 | E29 | `oct29-capture-perf-build.log`、`oct29-capture-perf-results\capture-discovery-final.trx` | 5 passed；同一测试进程新清单697ms、旧AppsFolder36958ms，11个可见应用比对通过。失败过的全目录替代原型未采用；当前实现仅给 Capture 增加快速发现，不改通用旧枚举/launcher fallback |
 | E30 | `oct29-6006-build.log` | 完整6006本地包、同版本检查和pinned CMS正常/篡改/不同signer检查通过；不是部署报告 |
 | E31 | `oct29-6006-data-before.json`、`oct29-6006-final-state.json`；本会话`oct29-6006-live`的Start-Process结果 | UAC取消1223，repair未开始；17:42服务6005/recovery0，候选SnapshotTool6006；业务index/blob哈希不变、无该输出目录的本地UI进程；没有生成虚假的成功repair报告 |
+| E32 | `oct29-latest-main-capture-comparison.json`、`oct29-capture-perf-results\main-comparison-evening.trx` | 最新main `4150e73f9b12f5bfa16428e0904c84a4f1023c41`（10-29 23:10 +08:00）：AppUtils、SnapshotUtils、SnapshotTool项目、ModuleProcess与原集成main的blob一致；枚举函数与6005逐字一致。晚间同机Release库比较：旧37383ms/新2924ms，9个可见应用比对通过。不是原版main EXE对照；D:\PowerToys实际为旧stable，非今天main，非LocalTest日志最近为8月13日约6秒的历史记录 |
 
 ### 历史参考（不计入当前候选的 PASS）
 
@@ -406,6 +407,7 @@ Q10 的“直接验证原始 MSI”仍是独立验证候选，未经另行立项
 | 2026-10-29 | AUTO-13；Release AUTO | PASS：新清单697ms vs旧36958ms，11个可见应用关键元数据一致；共5项定向回归通过 | E29；6006完整包构建/实机验收单独记录，不把内部函数耗时当UI端到端耗时 |
 | 2026-10-29 | AUTO-01/07；6006 AUTO | PASS：完整6006包和本地签名绑定检查 | E30；未部署 |
 | 2026-10-29 17:40–17:42 +08:00 | LOCAL-02、PERF-03；6006 L64 | BLOCKED：服务更新的UAC取消1223；未开始repair，未执行后续两个GUI Capture计时 | E31/B04；未重试提权、未改服务/data ACL，当前业务哈希不变；诊断二进制/obj已清理，源码和日志保留 |
+| 2026-10-29 23:12–23:18 +08:00 | R03/PERF-03；最新main只读比较 | 已抓取并核对当天23:10的main；没有发现可解释“main更快”的Capture代码差异；Release库晚间比较旧37383ms、新2924ms通过 | E32；未merge/rebase、未修改产品代码、未部署。明确区分“定位热点/绕开热点”与“证明原版main和原型快慢差异原因”；后者仍需实际二进制同环境对照 |
 
 ### 后续逐项填写模板
 
