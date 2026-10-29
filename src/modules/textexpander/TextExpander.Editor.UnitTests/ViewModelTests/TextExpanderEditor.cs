@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Windows.UI;
 using Windows.Foundation;
+using Windows.UI;
 using Kind = Microsoft.PowerToys.TextExpander.Editor.Helpers.TextExpanderPreviewSegmentKind;
 using Segment = Microsoft.PowerToys.TextExpander.Editor.Helpers.TextExpanderPreviewSegment;
 
@@ -18,11 +18,11 @@ namespace ViewModelTests
     [TestClass]
     public class TextExpanderEditor
     {
-        // A Saturday afternoon, so 12- and 24-hour formats differ.
         // The question box's example, which a new question's token asks until one is typed.
         private const string Example = "Ticket number";
         private const double Gap = TextExpanderPromptPlacement.Gap;
 
+        // A Saturday afternoon, so 12- and 24-hour formats differ.
         private static readonly DateTime Now = new(2026, 10, 17, 14, 5, 9);
 
         [TestMethod]
@@ -376,25 +376,6 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void EditorLineBreaksBecomeTheNewlinesSnippetsUse()
-        {
-            // RichEdit ends each paragraph with \r, and the story with one more nobody typed.
-            Assert.AreEqual("one\ntwo", TextExpanderTokenText.FromEditor("one\rtwo\r", 8));
-            Assert.AreEqual("one\n", TextExpanderTokenText.FromEditor("one\r\r", 5));
-            Assert.AreEqual("one\ntwo", TextExpanderTokenText.FromEditor("one\rtwo", 8));
-            Assert.AreEqual(string.Empty, TextExpanderTokenText.FromEditor("\r", 1));
-
-            Assert.AreEqual("a\rb\rc\rd", TextExpanderTokenText.ToEditor("a\r\nb\nc\rd"));
-            Assert.AreEqual("a\nb\nc\nd", TextExpanderTokenText.FromEditor(TextExpanderTokenText.ToEditor("a\r\nb\nc\rd") + "\r", 8));
-        }
-
-        [TestMethod]
-        public void UndoStepsBackAWordAtATime()
-        {
-            var history = new TextExpanderEditHistory();
-            Type(history, string.Empty, "hello world");
-
-        [TestMethod]
         public void TheQuestionFlyoutGoesUnderTheTokenLinedUpWithTheReplacementBox()
         {
             var window = new Size(1200, 760);
@@ -455,6 +436,25 @@ namespace ViewModelTests
             Assert.AreEqual(300, right.Width);
             Assert.AreEqual(window.Width - Gap - 300, right.X);
         }
+
+        [TestMethod]
+        public void EditorLineBreaksBecomeTheNewlinesSnippetsUse()
+        {
+            // RichEdit ends each paragraph with \r, and the story with one more nobody typed.
+            Assert.AreEqual("one\ntwo", TextExpanderTokenText.FromEditor("one\rtwo\r", 8));
+            Assert.AreEqual("one\n", TextExpanderTokenText.FromEditor("one\r\r", 5));
+            Assert.AreEqual("one\ntwo", TextExpanderTokenText.FromEditor("one\rtwo", 8));
+            Assert.AreEqual(string.Empty, TextExpanderTokenText.FromEditor("\r", 1));
+
+            Assert.AreEqual("a\rb\rc\rd", TextExpanderTokenText.ToEditor("a\r\nb\nc\rd"));
+            Assert.AreEqual("a\nb\nc\nd", TextExpanderTokenText.FromEditor(TextExpanderTokenText.ToEditor("a\r\nb\nc\rd") + "\r", 8));
+        }
+
+        [TestMethod]
+        public void UndoStepsBackAWordAtATime()
+        {
+            var history = new TextExpanderEditHistory();
+            Type(history, string.Empty, "hello world");
 
             Assert.IsTrue(history.TryUndo(out string text, out int start, out int end));
             Assert.AreEqual("hello ", text);
