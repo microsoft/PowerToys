@@ -58,6 +58,8 @@ Some items in the Development section may overlap and should be moved to the Mod
 
 ### Example Final Structure
 
+For preview releases, omit the level-one release-title heading shown below and start with the short public introduction, followed by `Installer Hashes` and `Highlights`, as specified in the [preview release scenario](./scenarios/preview-release.md). The release name is already displayed by GitHub and the in-app What's new page.
+
 ```markdown
 # PowerToys v{{ReleaseVersion}} Release Notes
 

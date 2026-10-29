@@ -31,6 +31,7 @@ $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "preview-release-assets.ps1")
 . (Join-Path $PSScriptRoot "github-tag-target.ps1")
 . (Join-Path $PSScriptRoot "release-title.ps1")
+. (Join-Path $PSScriptRoot "preview-release-body.ps1")
 
 $context = if ($ContextPath) {
     Get-Content -LiteralPath $ContextPath -Raw | ConvertFrom-Json
@@ -96,6 +97,7 @@ if ([string]$release.body -notmatch "<!-- BEGIN POWERTOYS PREVIEW AGENT -->" -or
     [string]$release.body -notmatch "<!-- END POWERTOYS PREVIEW AGENT -->") {
     throw "Release '$Tag' is missing the managed preview body markers."
 }
+Assert-PreviewReleaseBodyLayout -Body ([string]$release.body)
 
 $localFiles = @(Get-PreviewReleaseAssets -AssetsDirectory $AssetsDirectory)
 

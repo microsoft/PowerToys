@@ -167,7 +167,7 @@ Do not read all steps at once—only read the step you are executing.
 - **Preview tags**: Use `$context.tag`, containing only `v` and the first three numeric version components (for example, build `0.102.2991.0` maps to tag `v0.102.2991`). Do not append `.0` or `-preview`. Keep `$context.version`, installer filenames, and asset versions unchanged, and pass `-ReleaseTag $context.tag` when preparing asset download links.
 - **Release titles**: Use `Release <tag>` for a stable release, `Release preview <tag>` for a prerelease built from `stable`, and `Development preview <tag>` for a prerelease built from `main`. Use the requested GitHub release type and the build's `sourceBranch`, not its original intent/channel. Pass `-SourceBranch $context.sourceBranch` to preview draft creation and verification; previews remain prereleases regardless of branch.
 - **Preview manifests**: Keep `release-manifest.json` and `assets-manifest.json` in the local audit package; do not upload either file as a GitHub release asset
-- **Preview note layout**: Place the `Installer Hashes` section immediately after the title and short public introduction, before `Highlights` and all change sections
+- **Preview note layout**: Start the body with a short public introduction, not a release-title heading. GitHub and the in-app What's new page already display the release name. Place `Installer Hashes` immediately after the introduction, before `Highlights` and all change sections; use level-two headings for sections.
 - **Batch generation**: Generate ALL grouped_md files in one pass, then human reviews
 - **PR order**: Preserve order from `sorted_prs.csv` in all outputs
 - **Label filtering**: Keeps `Product-*`, `Area-*`, `GitHub*`, `*Plugin`, `Issue-*`
