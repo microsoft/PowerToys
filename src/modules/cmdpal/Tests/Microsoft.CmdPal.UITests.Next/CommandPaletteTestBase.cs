@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -22,7 +23,7 @@ public class CommandPaletteTestBase : UITestBase
 
     protected Session CommandPaletteSession =>
         commandPaletteSession ??= Session.FromProcess(
-            "Microsoft.CmdPal.UI",
+            Session.ProcessId.ToString(CultureInfo.InvariantCulture),
             PowerToysModule.CommandPalette,
             timeoutMS: 10_000);
 
@@ -38,7 +39,7 @@ public class CommandPaletteTestBase : UITestBase
     /// <summary>
     /// Command Palette dismisses itself whenever its window is deactivated. On a slow (1 vCPU) machine
     /// the cold-started window can lose activation before the test's first interaction, leaving it
-    /// cloaked. Relaunching the executable redirects to the running instance, which summons the window.
+    /// cloaked. Activating the module redirects to the running instance, which summons the window.
     /// </summary>
     protected void EnsureCommandPaletteForeground()
     {
@@ -69,13 +70,7 @@ public class CommandPaletteTestBase : UITestBase
             }
 
             Step($"Command Palette is not in the foreground (foreground: '{foreground.ProcessName}' '{foreground.Title}'); re-summoning");
-            using (Process.Start(new ProcessStartInfo
-            {
-                FileName = SessionHelper.GetExecutablePath(PowerToysModule.CommandPalette),
-                UseShellExecute = true,
-            }))
-            {
-            }
+            SessionHelper.LaunchScope(PowerToysModule.CommandPalette);
 
             // The relaunched process only redirects its activation to the running instance and then
             // exits. Wait for it to go away so winapp's process-name target resolves to the real window.

@@ -109,9 +109,8 @@ internal static class ModulePaths
             return dev;
         }
 
-        // 4. Last resort: an installed build if present (returns the installed path either way so a
-        //    launch failure names a concrete location).
-        return installed;
+        // 4. Last resort: an installed build, including CmdPal's registered MSIX layout.
+        return ResolveInstalledExecutablePath(module, installed, FindPackagedCommandPaletteExecutable);
     }
 
     internal static string ResolveInstalledExecutablePath(
@@ -154,7 +153,12 @@ internal static class ModulePaths
     private static string? FindPackagedCommandPaletteExecutable()
     {
         // Installers register CmdPal's MSIX instead of laying its executable out beside the runner.
-        var package = new PackageManager()
+        var package = FindPackagedCommandPalette();
+        return package is null ? null : Path.Combine(package.InstalledLocation.Path, Meta[PowerToysModule.CommandPalette].ExeName);
+    }
+
+    internal static Windows.ApplicationModel.Package? FindPackagedCommandPalette() =>
+        new PackageManager()
             .FindPackagesForUser(
                 string.Empty,
                 "Microsoft.CommandPalette",
@@ -166,8 +170,6 @@ internal static class ModulePaths
                 package.Id.Version.Build,
                 package.Id.Version.Revision))
             .FirstOrDefault();
-        return package is null ? null : Path.Combine(package.InstalledLocation.Path, Meta[PowerToysModule.CommandPalette].ExeName);
-    }
 
     private static bool TryComposeDevBuild(ModuleMeta meta, out string path)
     {

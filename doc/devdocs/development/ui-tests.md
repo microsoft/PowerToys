@@ -63,8 +63,9 @@ not on a working machine.
   `PowerToys.exe` and `PowerToys.Settings.exe` so Release lifecycle assertions exercise the production
   authentication path. The suite uses the existing `runUiTestAsUser.ps1` dispatch so packaged COM
   activation runs on the same non-elevated interactive desktop as local validation, not the elevated
-  agent process. Installer-mode runs resolve Command Palette from its registered MSIX package;
-  build-artifact runs continue to use the loose output under test.
+  agent process. Installed-layout fallback resolves Command Palette from its registered MSIX package
+  even when `useInstallerForTest` is unset and uses registered app activation instead of directly
+  executing its WindowsApps file. Build-artifact runs still prefer the loose output under test.
 - For a local host-desktop run, execute the same signing helper from an elevated terminal before
   running the tests as the normal test user (replace `<test-output>` with the executable's directory):
 
