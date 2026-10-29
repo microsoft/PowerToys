@@ -9,8 +9,10 @@ internal static class WordBoundaryRules
     internal static bool IsWordCharacter(char character)
         => char.IsLetterOrDigit(character) || character == '_';
 
+    // A character inside a word never ends it: '_' is connector punctuation, but addr_line is one word.
     internal static bool IsTerminator(char character)
-        => char.IsWhiteSpace(character) || char.IsPunctuation(character) || char.IsSymbol(character);
+        => !IsWordCharacter(character)
+            && (char.IsWhiteSpace(character) || char.IsPunctuation(character) || char.IsSymbol(character));
 
     internal static bool StartsAtWordBoundary(ReadOnlySpan<char> textBefore, ReadOnlySpan<char> trigger)
         => trigger.Length == 0 || !IsWordCharacter(trigger[0])

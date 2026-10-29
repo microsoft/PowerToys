@@ -446,6 +446,110 @@ public sealed class InputAndUndoPolicyTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void AKeyOrClickReachingTheTargetWhileAPromptIsOpenCancelsTheQueuedExpansion(bool click)
+    {
+        // The prompt suspends the hook, which then let every key and click pass unseen: a key typed into the
+        // target before the prompt took focus, or a click there while it was open, moved the caret, and after
+        // OK the Backspaces deleted other text.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=Dear {{prompt:Name}}");
+        using var hook = new KeyboardHook(store);
+        var box = new FakeTextBox("Before ");
+
+        TypeInto(hook, box, "!abc ");
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+        bool InputUnchanged() => hook.InputGeneration == work.InputGeneration;
+
+        hook.SuspendFor(new IntPtr(10));
+
+        // Answering the prompt changes nothing: typing and clicking in it or in another app (to copy the answer
+        // from a browser, say), a modifier pressed in the target, and focus going to the prompt and back.
+        hook.KeyWhileSuspended(Native.VK_PACKET, reachesTarget: false);
+        hook.KeyWhileSuspended(Native.VK_RETURN, reachesTarget: false);
+        hook.ClickWhileSuspended(reachesTarget: false);
+        hook.KeyWhileSuspended(Native.VK_LCONTROL, reachesTarget: true);
+        hook.ForegroundChanged(IntPtr.Zero, Native.EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, 0, 0, 0, 0);
+        Assert.IsTrue(InputUnchanged());
+
+        if (click)
+        {
+            hook.ClickWhileSuspended(reachesTarget: true);
+        }
+        else
+        {
+            hook.KeyWhileSuspended(Native.VK_LEFT, reachesTarget: true);
+        }
+
+        box.Left(1, IntPtr.Zero);
+        Assert.IsFalse(InputUnchanged());
+
+        hook.Suspended = false;
+        Assert.IsFalse(ReplaceIn(box, Injector.CountDeletableUnits(work.TypedPrefix), "Dear team ", inputUnchanged: InputUnchanged));
+        Assert.AreEqual("Before !ab|c", box.ToString(), "Nothing erased or inserted.");
+    }
+
+    [TestMethod]
+    public void WhileAPromptIsOpenOnlyInputReachingTheTargetCounts()
+    {
+        // Every key and click outside the engine counted, so copying the answer from a browser, or picking it
+        // from Win+V or the emoji panel, dropped the expansion.
+        var target = new IntPtr(10);
+        var prompt = new IntPtr(11);
+        var browser = new IntPtr(12);
+        bool IsOurs(IntPtr window) => window == prompt;
+
+        Assert.IsTrue(KeyboardHook.ReachesTarget(target, target, IsOurs));
+        Assert.IsFalse(KeyboardHook.ReachesTarget(browser, target, IsOurs));
+        Assert.IsFalse(KeyboardHook.ReachesTarget(prompt, target, IsOurs));
+        Assert.IsFalse(KeyboardHook.ReachesTarget(IntPtr.Zero, target, IsOurs));
+
+        // With the target unknown, any window but ours might be it.
+        Assert.IsTrue(KeyboardHook.ReachesTarget(browser, IntPtr.Zero, IsOurs));
+        Assert.IsTrue(KeyboardHook.ReachesTarget(IntPtr.Zero, IntPtr.Zero, IsOurs), "No window counts as another app's.");
+        Assert.IsFalse(KeyboardHook.ReachesTarget(prompt, IntPtr.Zero, IsOurs));
+    }
+
+    [TestMethod]
+    public void ARemapThatIsNotMatchedStillCountsAsInput()
+    {
+        // With remaps not counting as typing, they were dropped like the engine's own input: "!si", Caps Lock
+        // remapped to Home, then "g" still completed "!sig", and its Backspaces erased text at the line start.
+        const uint home = 0x24;
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!sig=Best regards");
+        using var hook = new KeyboardHook(store);
+
+        bool original = HostInputTags.AcceptRemappedInput;
+        try
+        {
+            HostInputTags.AcceptRemappedInput = false;
+            Assert.AreEqual(HostInputKind.Unmatched, HostInputTags.Classify(new IntPtr(0x11), KeyboardHook.InjectionSignature));
+
+            Assert.IsFalse(Type(hook, "!si"));
+            long before = hook.InputGeneration;
+            hook.UnmatchedKey(home);
+            Assert.AreNotEqual(before, hook.InputGeneration);
+            _ = Type(hook, "g ");
+            Assert.AreEqual(0, hook.Pending.Count, "\"!si\" is no longer in front of the caret.");
+
+            // A remapped modifier moves no caret.
+            Assert.IsFalse(Type(hook, "!si"));
+            before = hook.InputGeneration;
+            hook.UnmatchedKey(Native.VK_RSHIFT);
+            Assert.AreEqual(before, hook.InputGeneration);
+            _ = Type(hook, "g ");
+            Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion expansion));
+            Assert.AreEqual("!sig", expansion.Trigger);
+        }
+        finally
+        {
+            HostInputTags.AcceptRemappedInput = original;
+        }
+    }
+
+    [TestMethod]
     public void TheCaretIsCheckedAgainRightBeforeTheFirstBackspace()
     {
         // Borrowing the clipboard and the pause before backspacing both leave time for a key press.

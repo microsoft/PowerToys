@@ -409,7 +409,7 @@ internal static class Program
 
     private static (string Text, int Cursor) ExpandWithPrompts(string replacement, IntPtr target)
     {
-        _hook!.Suspended = true;
+        _hook!.SuspendFor(target);
         (string Text, int Cursor) expanded;
         try
         {

@@ -319,7 +319,8 @@ internal static class Clipboard
 
     /// <summary>
     /// Puts a snapshot back, emptying the clipboard when the snapshot is empty. Returns false unless fully
-    /// restored. Every format goes back, including exclusion formats, so protected content stays protected.
+    /// restored. Every format goes back, including exclusion formats, so protected content stays protected;
+    /// content without any is marked with them (see <see cref="ClipboardPrivacy.ShouldMarkRestore"/>).
     /// </summary>
     public static bool Restore(ClipboardSnapshot snapshot)
     {
@@ -343,6 +344,11 @@ internal static class Clipboard
             if (!Native.EmptyClipboard())
             {
                 return false;
+            }
+
+            if (ClipboardPrivacy.ShouldMarkRestore(snapshot.Entries, RegisteredFormat))
+            {
+                PublishPrivacyExclusions();
             }
 
             bool allPublished = true;

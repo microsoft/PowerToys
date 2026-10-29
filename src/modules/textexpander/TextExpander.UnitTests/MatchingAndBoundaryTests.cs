@@ -58,6 +58,45 @@ public sealed class MatchingAndBoundaryTests
     }
 
     [TestMethod]
+    public void AnUnderscoreKeepsTheWordGoingInsteadOfReleasingATrigger()
+    {
+        // '_' is part of a word, yet it also released triggers: typing addr_line expanded addr as soon as
+        // the underscore was typed, although my_addr was left alone.
+        Assert.IsFalse(WordBoundary.IsTerminator('_'));
+
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        string path = Path.Combine(scratch.Path, "snippets.txt");
+        File.WriteAllText(path, "addr=1 Main Street\n");
+        using var store = new SnippetStore(path);
+        Assert.AreEqual(1, store.Load().Count);
+        using var hook = new KeyboardHook(store);
+
+        bool original = WordBoundary.Required;
+        try
+        {
+            WordBoundary.Required = true;
+            foreach (char ch in "addr_line my_addr_ addr")
+            {
+                Assert.IsFalse(hook.ProcessKey(Native.VK_PACKET, ch, ctrl: false, alt: false, shift: false, win: false), $"'{ch}'");
+            }
+
+            Assert.IsTrue(hook.ProcessKey(Native.VK_PACKET, '.', ctrl: false, alt: false, shift: false, win: false), "Punctuation still releases it.");
+            Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion expansion));
+            Assert.AreEqual("addr", expansion.Trigger);
+            Assert.AreEqual(0, hook.Pending.Count);
+        }
+        finally
+        {
+            WordBoundary.Required = original;
+        }
+
+        // The editor's "Never expands" check follows the same rule.
+        var triggers = new TextExpanderTriggerSet(["addr", "addr_line"]);
+        Assert.IsNull(TextExpanderTriggerReach.FindBlocker("addr_line", triggers, wordMode: true));
+        Assert.AreEqual(("addr", '_'), TextExpanderTriggerReach.FindBlocker("addr_line", triggers, wordMode: false), "Without the wait, addr fires as it's typed.");
+    }
+
+    [TestMethod]
     public void WordBoundaryDefaultsToWaitingForSpaceOrPunctuation()
     {
         Assert.IsTrue(WordBoundary.Required);

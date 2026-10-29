@@ -36,7 +36,7 @@ internal static class Injector
 
     /// <summary>
     /// Gets or sets the upper bound on how long to let the target consume the paste before the clipboard is
-    /// restored. Reached only when the target's read is never observed (see <see cref="WaitForPasteToSettle"/>).
+    /// restored. Reached only when the target's read is never observed (see <see cref="WaitForPasteToSettle(IntPtr)"/>).
     /// </summary>
     public static int PasteSettleMs { get; set; } = 350;
 
@@ -44,10 +44,11 @@ internal static class Injector
     public static int PasteSettlePollMs { get; set; } = 5;
 
     /// <summary>
-    /// Gets or sets the shortest the settle may be cut to, however quickly the target's read is observed;
-    /// a flat 120 ms proved too short.
+    /// Gets or sets the shortest the settle may be cut to, however quickly the target's read is observed. It keeps a
+    /// margin over the flat 120 ms that proved too short, so an early exit is never faster than a figure already known
+    /// to be marginal.
     /// </summary>
-    public static int PasteSettleFloorMs { get; set; } = 60;
+    public static int PasteSettleFloorMs { get; set; } = 150;
 
     /// <summary>
     /// Gets or sets grace period after the target closes the clipboard again. It has the data by then; this
@@ -397,6 +398,17 @@ internal static class Injector
     /// </summary>
     private static void WaitForPasteToSettle(IntPtr targetWindow)
     {
+        long start = System.Diagnostics.Stopwatch.GetTimestamp();
+        WaitForPasteToSettle(() => Clipboard.IsOpenByTarget(targetWindow), Thread.Sleep, () => (long)System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds);
+    }
+
+    /// <summary>
+    /// The wait behind <see cref="WaitForPasteToSettle(IntPtr)"/>, with the clock and the clipboard check passed in
+    /// for tests. Timed by the clock, not by counting polls: a short sleep lasts a whole timer tick (about 15 ms),
+    /// so counted 5 ms polls held the clipboard for over a second.
+    /// </summary>
+    internal static void WaitForPasteToSettle(Func<bool> isOpenByTarget, Action<int> sleep, Func<long> elapsedMs)
+    {
         int budget = PasteSettleMs;
         if (budget <= 0)
         {
@@ -407,9 +419,9 @@ internal static class Injector
         int floor = Math.Min(PasteSettleFloorMs, budget);
         bool observedRead = false;
 
-        for (int waited = 0; waited < budget; waited += poll)
+        for (long waited = elapsedMs(); waited < budget; waited = elapsedMs())
         {
-            if (Clipboard.IsOpenByTarget(targetWindow))
+            if (isOpenByTarget())
             {
                 observedRead = true;
             }
@@ -418,13 +430,13 @@ internal static class Injector
                 // Opened and closed again: the target has the data.
                 if (PasteSettleGraceMs > 0)
                 {
-                    Thread.Sleep(PasteSettleGraceMs);
+                    sleep(PasteSettleGraceMs);
                 }
 
                 return;
             }
 
-            Thread.Sleep(poll);
+            sleep(poll);
         }
     }
 

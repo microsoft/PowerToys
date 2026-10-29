@@ -33,20 +33,58 @@ public sealed class HostIntegrationPolicyTests
     [TestMethod]
     public void HostInputTagsDistinguishOwnInjectedRemappedAndOrdinaryInput()
     {
-        var own = new IntPtr(0x47544558);
-        Assert.IsTrue(HostInputTags.ShouldIgnore(own, own));
-        Assert.IsTrue(HostInputTags.ShouldIgnore(new IntPtr(HostInputTags.CentralizedHookDontTrigger), own));
-        Assert.IsFalse(HostInputTags.ShouldIgnore(new IntPtr(HostInputTags.KeyboardManagerInjected), own));
-        Assert.IsFalse(HostInputTags.ShouldIgnore(IntPtr.Zero, own));
+        // Keyboard Manager's own tags (KeyboardManagerConstants.h). Only a bare 0x1, which it never sends, was
+        // taken for a remap, and 0x111, which it swallows itself, counted as a key press. With remaps not counting
+        // as typing, a remap was then dropped like our own input, although it still reaches the app.
+        IntPtr own = KeyboardHook.InjectionSignature;
+        (long Tag, HostInputKind RemapsCount, HostInputKind RemapsDoNotCount)[] cases =
+        [
+            (0x11, HostInputKind.Typing, HostInputKind.Unmatched), // a single-key remap
+            (0x101, HostInputKind.Typing, HostInputKind.Unmatched), // a shortcut or text remap
+            (HostInputTags.KeyboardManagerInjected, HostInputKind.Typing, HostInputKind.Unmatched),
+            (0xFFC3D44F, HostInputKind.Typing, HostInputKind.Unmatched), // another app's tag with the same bit
+            (0x111, HostInputKind.Ignored, HostInputKind.Ignored), // swallowed by Keyboard Manager itself
+            (HostInputTags.CentralizedHookDontTrigger, HostInputKind.Ignored, HostInputKind.Ignored),
+            (own.ToInt64(), HostInputKind.Ignored, HostInputKind.Ignored),
+            (0, HostInputKind.Typing, HostInputKind.Typing),
+        ];
 
+        bool original = HostInputTags.AcceptRemappedInput;
         try
         {
-            HostInputTags.AcceptRemappedInput = false;
-            Assert.IsTrue(HostInputTags.ShouldIgnore(new IntPtr(HostInputTags.KeyboardManagerInjected), own));
+            foreach ((long tag, HostInputKind remapsCount, HostInputKind remapsDoNotCount) in cases)
+            {
+                HostInputTags.AcceptRemappedInput = true;
+                Assert.AreEqual(remapsCount, HostInputTags.Classify(new IntPtr(tag), own), $"0x{tag:X}");
+                HostInputTags.AcceptRemappedInput = false;
+                Assert.AreEqual(remapsDoNotCount, HostInputTags.Classify(new IntPtr(tag), own), $"0x{tag:X}, remaps not counted");
+            }
         }
         finally
         {
+            HostInputTags.AcceptRemappedInput = original;
+        }
+    }
+
+    [TestMethod]
+    public void OwnInputCarriesKeyboardManagersBitAndIsIgnoredEitherWay()
+    {
+        // Keyboard Manager remaps every key without this bit: with Ctrl or V remapped, the paste chord
+        // became another key after the trigger had already been erased.
+        Assert.AreEqual(HostInputTags.KeyboardManagerInjected, KeyboardHook.InjectionSignature.ToInt64() & HostInputTags.KeyboardManagerInjected);
+
+        // Matched exactly first, so it is never taken for a remap.
+        bool original = HostInputTags.AcceptRemappedInput;
+        try
+        {
             HostInputTags.AcceptRemappedInput = true;
+            Assert.AreEqual(HostInputKind.Ignored, HostInputTags.Classify(KeyboardHook.InjectionSignature, KeyboardHook.InjectionSignature));
+            HostInputTags.AcceptRemappedInput = false;
+            Assert.AreEqual(HostInputKind.Ignored, HostInputTags.Classify(KeyboardHook.InjectionSignature, KeyboardHook.InjectionSignature));
+        }
+        finally
+        {
+            HostInputTags.AcceptRemappedInput = original;
         }
     }
 
@@ -76,16 +114,17 @@ public sealed class HostIntegrationPolicyTests
     [TestMethod]
     public void HostInputTagsCanOptOutOfRemappedInputWithoutSuppressingOrdinaryInput()
     {
-        var own = new IntPtr(0x47544558);
+        IntPtr own = KeyboardHook.InjectionSignature;
+        bool original = HostInputTags.AcceptRemappedInput;
         try
         {
             HostInputTags.AcceptRemappedInput = false;
-            Assert.IsTrue(HostInputTags.ShouldIgnore(new IntPtr(HostInputTags.KeyboardManagerInjected), own));
-            Assert.IsFalse(HostInputTags.ShouldIgnore(IntPtr.Zero, own));
+            Assert.AreEqual(HostInputKind.Unmatched, HostInputTags.Classify(new IntPtr(0x11), own), "Not matched, but still input.");
+            Assert.AreEqual(HostInputKind.Typing, HostInputTags.Classify(IntPtr.Zero, own));
         }
         finally
         {
-            HostInputTags.AcceptRemappedInput = true;
+            HostInputTags.AcceptRemappedInput = original;
         }
     }
 }

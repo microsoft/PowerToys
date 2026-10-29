@@ -64,4 +64,47 @@ public sealed class ClipboardPolicyTests
         Assert.IsTrue(plan.Contains(protectedMark));
         Assert.IsTrue(plan.Contains(protectedMark2));
     }
+
+    [TestMethod]
+    public void TheRestoredClipboardIsMarkedSoItIsNotKeptAsANewCopy()
+    {
+        // Windows takes the restore for a new copy: every pasted expansion added the user's last copy to
+        // Clipboard History again and synced it to Cloud Clipboard again.
+        var registered = new Dictionary<string, uint>
+        {
+            [ClipboardPrivacy.ExcludeFromMonitorProcessing] = 0xC0A0,
+            [ClipboardPrivacy.CanIncludeInClipboardHistory] = 0xC0A1,
+            [ClipboardPrivacy.CanUploadToCloudClipboard] = 0xC0A2,
+        };
+        var text = new ClipboardEntry(ClipboardFormats.CF_UNICODETEXT, [65, 0, 0, 0]);
+
+        Assert.IsTrue(ClipboardPrivacy.ShouldMarkRestore([text], name => registered[name]));
+
+        // A copy that came with markings of its own goes back with them, whatever they say.
+        foreach (uint mark in registered.Values)
+        {
+            Assert.IsFalse(ClipboardPrivacy.ShouldMarkRestore([text, new ClipboardEntry(mark, [1, 0, 0, 0])], name => registered[name]), $"0x{mark:X}");
+        }
+
+        Assert.IsFalse(ClipboardPrivacy.ShouldMarkRestore([], name => registered[name]), "An empty clipboard stays empty.");
+    }
+
+    [TestMethod]
+    public void TheClipboardIsHandedBackByTheClockNotByCountingShortSleeps()
+    {
+        // A 5 ms Thread.Sleep lasts a whole timer tick, about 15 ms, so counting polls held the clipboard about
+        // three times as long as intended: over a second instead of 350 ms.
+        const int timerTick = 15;
+        long now = 0;
+        void Sleep(int ms) => now += Math.Max(ms, timerTick);
+
+        Injector.WaitForPasteToSettle(() => false, Sleep, () => now);
+        Assert.AreEqual(360, now, "Never read: the 350 ms budget, to the next tick.");
+
+        // Opened by the target at the first check and closed by the next.
+        now = 0;
+        int checks = 0;
+        Injector.WaitForPasteToSettle(() => ++checks == 1, Sleep, () => now);
+        Assert.AreEqual(170, now, "Read: the 150 ms floor, then the 20 ms grace period.");
+    }
 }

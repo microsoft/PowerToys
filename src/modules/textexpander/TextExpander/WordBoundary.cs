@@ -36,7 +36,8 @@ internal static class WordBoundary
         => WordBoundaryRules.IsWordCharacter(c);
 
     /// <summary>
-    /// A character that ends a word and so can release a pending trigger: whitespace, punctuation or a symbol.
+    /// A character that ends a word and so can release a pending trigger: whitespace, punctuation or a symbol,
+    /// but not the underscore, which is part of the word.
     /// </summary>
     public static bool IsTerminator(char c)
         => WordBoundaryRules.IsTerminator(c);

@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.TextExpander
         {
             for (int typed = 1; typed < trigger.Length; typed++)
             {
-                // With the word wait, only a space, punctuation or symbol lets anything fire.
+                // With the word wait, only a space, punctuation other than '_', or a symbol lets anything fire.
                 if (wordMode && !IsTerminator(trigger[typed]))
                 {
                     continue;

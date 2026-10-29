@@ -24,8 +24,12 @@ namespace Microsoft.PowerToys.TextExpander;
 /// </summary>
 internal sealed class KeyboardHook : IDisposable
 {
-    /// <summary>Tags our own synthetic input so we never react to it.</summary>
-    public static readonly IntPtr InjectionSignature = new(0x47544558); // "GTEX"
+    /// <summary>
+    /// Tags our own synthetic input so we never react to it. It carries Keyboard Manager's injected bit, so
+    /// Keyboard Manager's key remaps (a Caps Lock and Ctrl swap, a remapped Backspace) leave our keys alone
+    /// instead of turning the paste chord or the erase into other keys.
+    /// </summary>
+    public static readonly IntPtr InjectionSignature = new(0x47544558 | HostInputTags.KeyboardManagerInjected); // "GTEX"
 
     private const int MinimumBufferCapacity = 256;
 
@@ -60,15 +64,18 @@ internal sealed class KeyboardHook : IDisposable
     private volatile bool _enabled = true;
     private volatile bool _suspended;
 
+    // The window the expansion waiting on a prompt will type into, or zero when it isn't known.
+    private volatile IntPtr _promptTarget;
+
     // CursorLeft is how far before the end of Replacement the snippet's $|$ left the caret.
     private sealed record UndoEntry(string Trigger, string Replacement, IntPtr TargetWindow, int CursorLeft);
 
     internal sealed record TargetAuthorization(IntPtr Window, uint ProcessId, bool CanDrive);
 
     /// <summary>
-    /// Gets the input generation. Every key press other than a modifier, and every click, moves it on while
-    /// no prompt is open, because any of them can move the caret: work queued before one of them must not be
-    /// applied where the caret is now.
+    /// Gets the input generation. Every key press other than a modifier, and every click, moves it on, because
+    /// any of them can move the caret: work queued before one of them must not be applied where the caret is now.
+    /// While a prompt is open, only those reaching the window the expansion will type into do.
     /// </summary>
     internal long InputGeneration => Volatile.Read(ref _inputGeneration);
 
@@ -91,9 +98,10 @@ internal sealed class KeyboardHook : IDisposable
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether set while our own UI has focus so we ignore the user typing into it. Also erases the
-    /// buffer, for the same reason as <see cref="Enabled"/>: what was typed before a prompt
-    /// dialog opened is not needed after it.
+    /// Gets or sets a value indicating whether set while our own UI has focus so we ignore the user typing into it.
+    /// Keys and clicks reaching the window the expansion will type into (see <see cref="SuspendFor"/>) still move
+    /// <see cref="InputGeneration"/>. Also erases the buffer, for the same reason as <see cref="Enabled"/>: what
+    /// was typed before a prompt dialog opened is not needed after it.
     /// </summary>
     public bool Suspended
     {
@@ -106,6 +114,16 @@ internal sealed class KeyboardHook : IDisposable
                 ResetBuffer();
             }
         }
+    }
+
+    /// <summary>
+    /// Suspends the hook for a prompt asked for an expansion that will type into <paramref name="target"/>, or zero
+    /// when that window isn't known. Clearing <see cref="Suspended"/> ends it.
+    /// </summary>
+    public void SuspendFor(IntPtr target)
+    {
+        _promptTarget = target;
+        Suspended = true;
     }
 
     public KeyboardHook(SnippetStore store)
@@ -176,13 +194,21 @@ internal sealed class KeyboardHook : IDisposable
         // filtering on LLKHF_INJECTED generally: the Windows touch keyboard, on-screen keyboard
         // and remote-desktop clients all inject their input, and blanket-filtering would silently
         // break expansion on 2-in-1 ARM devices. See HostInputTags for which tags are honoured.
-        if (HostInputTags.ShouldIgnore(data.DwExtraInfo, InjectionSignature))
+        HostInputKind kind = HostInputTags.Classify(data.DwExtraInfo, InjectionSignature);
+        if (kind == HostInputKind.Ignored)
         {
             return Native.CallNextHookEx(_hookHandle, nCode, wParam, lParam);
         }
 
         if (Suspended)
         {
+            KeyWhileSuspended(data.VkCode, ReachesPromptTarget(Native.GetForegroundWindow()));
+            return Native.CallNextHookEx(_hookHandle, nCode, wParam, lParam);
+        }
+
+        if (kind == HostInputKind.Unmatched)
+        {
+            UnmatchedKey(data.VkCode);
             return Native.CallNextHookEx(_hookHandle, nCode, wParam, lParam);
         }
 
@@ -200,13 +226,13 @@ internal sealed class KeyboardHook : IDisposable
     ///
     /// This runs for every mouse event system-wide, so it must be as cheap as the keyboard
     /// callback: if this thread misses the 300 ms LowLevelHooksTimeout the hook is silently
-    /// removed. We therefore read only wParam to identify the message and never marshal the
-    /// MSLLHOOKSTRUCT behind lParam. Mouse input is never swallowed — the result of
-    /// CallNextHookEx is always returned.
+    /// removed. We therefore read only wParam to identify the message, and read the
+    /// MSLLHOOKSTRUCT behind lParam only for a button press while a prompt is open. Mouse input
+    /// is never swallowed — the result of CallNextHookEx is always returned.
     /// </summary>
     private IntPtr MouseCallback(int nCode, IntPtr wParam, IntPtr lParam)
     {
-        if (nCode == Native.HC_ACTION && !Suspended)
+        if (nCode == Native.HC_ACTION)
         {
             // Only button-down messages reposition the caret. Wheel and WM_MOUSEMOVE do not, and
             // clearing on every move would be both wrong and far too expensive for this hook.
@@ -217,13 +243,80 @@ internal sealed class KeyboardHook : IDisposable
                 case Native.WM_MBUTTONDOWN:
                 case Native.WM_NCLBUTTONDOWN:
                 case Native.WM_XBUTTONDOWN:
-                    ResetBuffer();
-                    ClearUndo();
+                    if (!Suspended)
+                    {
+                        ResetBuffer();
+                        ClearUndo();
+                    }
+                    else
+                    {
+                        // MSLLHOOKSTRUCT starts with the point clicked.
+                        Native.POINT point = System.Runtime.InteropServices.Marshal.PtrToStructure<Native.POINT>(lParam);
+                        ClickWhileSuspended(ReachesPromptTarget(Native.GetAncestor(Native.WindowFromPoint(point), Native.GA_ROOT)));
+                    }
+
                     break;
             }
         }
 
         return Native.CallNextHookEx(_mouseHookHandle, nCode, wParam, lParam);
+    }
+
+    /// <summary>
+    /// Handles a key press while a prompt is open. It isn't recorded, but unless it is a modifier, one that reaches
+    /// the window the expansion will type into can move the caret there.
+    /// </summary>
+    internal void KeyWhileSuspended(uint vk, bool reachesTarget)
+    {
+        if (reachesTarget && !IsModifierKey(vk))
+        {
+            ClearUndo();
+        }
+    }
+
+    /// <summary>Handles a click while a prompt is open: one on the window the expansion will type into can move the caret there.</summary>
+    internal void ClickWhileSuspended(bool reachesTarget)
+    {
+        if (reachesTarget)
+        {
+            ClearUndo();
+        }
+    }
+
+    /// <summary>
+    /// Handles a key press that reaches the app but isn't matched (<see cref="HostInputKind.Unmatched"/>). Unless it
+    /// is a modifier it can move the caret, so what was typed before it can't complete a trigger, and undo ends.
+    /// </summary>
+    internal void UnmatchedKey(uint vk)
+    {
+        if (!IsModifierKey(vk))
+        {
+            ResetBuffer();
+            ClearUndo();
+        }
+    }
+
+    /// <summary>
+    /// Whether a key going to <paramref name="window"/>, or a click on it, can move the caret where the expansion
+    /// waiting on a prompt will type. Only the <paramref name="target"/> window's can, so answering the prompt or
+    /// copying the answer from another app cancels nothing. Root windows are compared, so an app hosted by
+    /// ApplicationFrameHost matches. With no target known, any window that isn't ours might be it.
+    /// </summary>
+    internal static bool ReachesTarget(IntPtr window, IntPtr target, Func<IntPtr, bool> isOurs)
+        => target != IntPtr.Zero ? window == target : !isOurs(window);
+
+    private bool ReachesPromptTarget(IntPtr window) => ReachesTarget(window, _promptTarget, BelongsToThisProcess);
+
+    /// <summary>Whether <paramref name="window"/> is one of ours, such as the prompt. No window counts as another app's.</summary>
+    private static bool BelongsToThisProcess(IntPtr window)
+    {
+        if (window == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        _ = Native.GetWindowThreadProcessId(window, out uint processId);
+        return processId == (uint)Environment.ProcessId;
     }
 
     /// <summary>Returns true when the keystroke should be swallowed because it completed a trigger.</summary>
