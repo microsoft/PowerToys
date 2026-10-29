@@ -224,14 +224,23 @@ public class CommandPaletteTestBase : UITestBase
 
     protected void AssertWindowsSettingsOpened()
     {
-        var settings = WindowsFinder.WaitForWindow(
-            window => window.Title == "Settings" &&
-                window.ProcessName is "SystemSettings" or "ApplicationFrameHost",
-            timeoutMS: 60_000);
-        Assert.IsNotNull(settings, "The command did not open the Windows Settings application.");
-        Assert.IsNotNull(
-            settings.Find<TextBox>("Find a setting", timeoutMS: 60_000),
-            "Windows Settings did not finish loading its search control.");
+        // Windows 10 can replace its splash HWND before the Settings content becomes available.
+        var ready = WaitHelper.WaitForStable(
+            observe: () => WindowsFinder.WaitForWindow(
+                window => window.Title == "Settings" &&
+                    window.ProcessName is "SystemSettings" or "ApplicationFrameHost",
+                timeoutMS: 1_000),
+            isMatch: settings => settings is not null &&
+                settings.FindAll<TextBox>(By.Name("Find a setting"), timeoutMS: 0).Count > 0,
+            timeoutMS: 60_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 200,
+            shouldRetryException: exception => exception is AssertFailedException &&
+                exception.Message.Contains("Window HWND", StringComparison.Ordinal) &&
+                exception.Message.Contains("AppNotFoundException", StringComparison.Ordinal));
+        Assert.IsTrue(
+            ready.Succeeded,
+            $"The command did not open a fully loaded Windows Settings application. {ready.LastException?.Message}");
     }
 
     protected void OpenSettingsWindow()

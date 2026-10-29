@@ -45,7 +45,9 @@ public class CommandWorkflowTests : CommandPaletteTestBase
             shortcutObject = shortcut;
             shortcut.TargetPath = Path.Combine(Environment.SystemDirectory, "cmd.exe");
             shortcut.Arguments = $"/d /k title {fixtureName}";
-            shortcut.WorkingDirectory = fixtureDirectory;
+
+            // A console host can outlive cmd.exe and retain its working directory during cleanup.
+            shortcut.WorkingDirectory = Environment.SystemDirectory;
             shortcut.Save();
         }
         finally

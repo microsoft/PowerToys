@@ -17,6 +17,8 @@ public class ModuleLifecycleTests : UITestBase
     private const string ProcessName = "Microsoft.CmdPal.UI";
     private static string? installedPackage;
 
+    private Session settingsSession = null!;
+
     public ModuleLifecycleTests()
         : base(PowerToysModule.PowerToysSettings, enableModules: ["CmdPal"])
     {
@@ -65,13 +67,14 @@ public class ModuleLifecycleTests : UITestBase
     [TestCategory("CmdPal")]
     public void SettingsToggleControlsProcessAndActivationShortcut()
     {
-        if (!Session.Has(By.AccessibilityId("CmdPalNavItem"), timeoutMS: 500))
+        settingsSession = WaitForSettingsContent();
+        if (!settingsSession.Has(By.AccessibilityId("CmdPalNavItem"), timeoutMS: 500))
         {
-            Session.Find<NavigationViewItem>(By.AccessibilityId("SystemToolsNavItem")).Click();
+            settingsSession.Find<NavigationViewItem>(By.AccessibilityId("SystemToolsNavItem")).Click();
         }
 
-        Session.Find<NavigationViewItem>(By.AccessibilityId("CmdPalNavItem")).Click();
-        var toggle = Session.Find<ToggleSwitch>("Command Palette");
+        settingsSession.Find<NavigationViewItem>(By.AccessibilityId("CmdPalNavItem")).Click();
+        var toggle = settingsSession.Find<ToggleSwitch>("Command Palette");
         var initiallyEnabled = toggle.IsOn;
         try
         {
@@ -80,7 +83,7 @@ public class ModuleLifecycleTests : UITestBase
             SetModuleEnabled(toggle, false);
 
             Step("Sending the activation shortcut while the module is disabled");
-            WindowHelper.MinimizeWindow(new IntPtr(Session.WindowHandle));
+            WindowHelper.MinimizeWindow(new IntPtr(settingsSession.WindowHandle));
             KeyboardHelper.SendKeys(Key.LWin, Key.Alt, Key.Space);
             var deadline = Stopwatch.StartNew();
             while (deadline.Elapsed < TimeSpan.FromSeconds(3))
@@ -99,10 +102,44 @@ public class ModuleLifecycleTests : UITestBase
         }
     }
 
+    private static Session WaitForSettingsContent()
+    {
+        var processName = SessionHelper.GetProcessName(PowerToysModule.PowerToysSettings);
+        long maximizedWindow = 0;
+        var ready = WaitHelper.WaitForStable(
+            observe: () =>
+            {
+                var settings = WindowsFinder.WaitForWindow(
+                    window => window.ProcessName.Equals(processName, StringComparison.OrdinalIgnoreCase) &&
+                        window.Title == "PowerToys Settings",
+                    attributeAs: PowerToysModule.PowerToysSettings,
+                    timeoutMS: 1_000);
+                if (settings is not null && settings.WindowHandle != maximizedWindow)
+                {
+                    WindowHelper.MaximizeWindow(new IntPtr(settings.WindowHandle));
+                    maximizedWindow = settings.WindowHandle;
+                }
+
+                return settings;
+            },
+            isMatch: settings => settings is not null &&
+                (settings.Has(By.AccessibilityId("SystemToolsNavItem"), timeoutMS: 0) ||
+                 settings.Has(By.AccessibilityId("CmdPalNavItem"), timeoutMS: 0)),
+            timeoutMS: 60_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 200,
+            shouldRetryException: exception => exception is AssertFailedException &&
+                exception.Message.Contains("Window HWND", StringComparison.Ordinal) &&
+                exception.Message.Contains("AppNotFoundException", StringComparison.Ordinal));
+        Assert.IsTrue(ready.Succeeded, $"PowerToys Settings did not expose its navigation content. {ready.LastException?.Message}");
+        Assert.IsNotNull(ready.LastObservation);
+        return ready.LastObservation;
+    }
+
     private void SetModuleEnabled(ToggleSwitch toggle, bool enabled)
     {
         Step($"Setting the PowerToys Command Palette toggle to {enabled}");
-        Session.EnsureForeground();
+        settingsSession.EnsureForeground();
         if (toggle.IsOn != enabled)
         {
             toggle.Invoke(msPostAction: 0);
@@ -129,7 +166,7 @@ public class ModuleLifecycleTests : UITestBase
         Assert.IsTrue(initialized.Succeeded, "The runner-launched Command Palette did not initialize its native window.");
         Assert.IsNotNull(initialized.LastObservation);
         Step($"Initialized CmdPal HWND={initialized.LastObservation.Hwnd}");
-        WindowHelper.MinimizeWindow(new IntPtr(Session.WindowHandle));
+        WindowHelper.MinimizeWindow(new IntPtr(settingsSession.WindowHandle));
         if (!IsPaletteVisible())
         {
             KeyboardHelper.SendKeys(Key.Esc);

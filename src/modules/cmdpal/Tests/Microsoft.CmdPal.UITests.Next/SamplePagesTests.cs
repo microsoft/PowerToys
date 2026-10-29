@@ -166,9 +166,9 @@ public class SamplePagesTests : CommandPaletteTestBase
     }
 
     /// <summary>
-    /// Search for the "Sample Pages" command and wait until it is the selected result. Command Palette
-    /// loads extensions asynchronously after startup, and name search is a substring match that the
-    /// "Sample Pages Extension" app entry also satisfies, so require the exact command title.
+    /// Wait for the selected "Sample Pages" result and its context commands before sending shortcuts.
+    /// Extension discovery and command loading finish asynchronously; the similarly named app entry
+    /// is not the sample command.
     /// </summary>
     private void SearchForSamplePages()
     {
@@ -181,13 +181,22 @@ public class SamplePagesTests : CommandPaletteTestBase
             if (item is not null)
             {
                 SelectResult("Sample Pages");
-                CommandPaletteSession.Find<TextBox>(By.AccessibilityId("MainSearchBox")).Focus();
-                return;
+                var secondaryReady = CommandPaletteSession
+                    .FindAll<Button>(By.AccessibilityId("SecondaryCommandButton"), timeoutMS: 0)
+                    .Any(button => button.Name == "Sample List Page" && button.Displayed);
+                var contextReady = CommandPaletteSession
+                    .FindAll<Button>(By.AccessibilityId("MoreContextMenuButton"), timeoutMS: 0)
+                    .Any(button => button.Displayed);
+                if (secondaryReady && contextReady)
+                {
+                    CommandPaletteSession.Find<TextBox>(By.AccessibilityId("MainSearchBox")).Focus();
+                    return;
+                }
             }
 
             if (DateTime.UtcNow >= nextRefresh)
             {
-                // Refresh the filter when extension discovery completes after the initial query.
+                // Refresh when extension discovery or its context commands finish after the query.
                 SetSearchBox(string.Empty);
                 SetSearchBox("Sample Pages");
                 nextRefresh = DateTime.UtcNow.AddSeconds(15);
@@ -196,7 +205,7 @@ public class SamplePagesTests : CommandPaletteTestBase
             Thread.Sleep(500);
         }
 
-        Assert.Fail("Command Palette did not show the registered SamplePagesExtension's exact 'Sample Pages' command.");
+        Assert.Fail("Command Palette did not finish loading the registered SamplePagesExtension's 'Sample Pages' command and its context commands.");
     }
 
     private NavigationViewItem? FindExactItem(string name, int timeoutMS = 5000)
