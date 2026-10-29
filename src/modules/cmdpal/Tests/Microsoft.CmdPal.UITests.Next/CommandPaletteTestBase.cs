@@ -207,7 +207,8 @@ public class CommandPaletteTestBase : UITestBase
     {
         SetSearchBox(query);
         Step($"Opening the '{title}' extension");
-        DoubleClickResult(title);
+        InvokeResultWithEnter(title);
+        Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 45_000));
     }
 
     protected void InvokeResultWithEnter(string title)
