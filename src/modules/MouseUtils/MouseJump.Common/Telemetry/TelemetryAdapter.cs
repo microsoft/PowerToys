@@ -46,6 +46,13 @@ internal sealed class TelemetryAdapter : IDisposable
             Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
             ActivityStopped = activity =>
             {
+                // scopes don't generate actual telemetry output - they just contain
+                // tags to attach to timers and events that are raised within their lifetime
+                if (activity.GetTagItem(TelemetryContext.KindTag) is "scope")
+                {
+                    return;
+                }
+
                 var record = TelemetryAdapter.Flatten(activity);
                 _ = this.channel.Writer.TryWrite(() => writer.Write(record));
             },
@@ -58,10 +65,26 @@ internal sealed class TelemetryAdapter : IDisposable
             {
                 // blocks here while paused - the channel (already unbounded) keeps accepting
                 // and buffering new records regardless, so collection never stalls, only the
-                // writer's own work does
+                // writer's own work does. the gate is held for the whole action, so pausing
+                // waits for a write in progress to finish, and a caller-side flush (see Flush)
+                // can never run at the same time as a write
                 await this.writeGate.WaitAsync().ConfigureAwait(false);
-                this.writeGate.Release();
-                action();
+                try
+                {
+                    action();
+                }
+                catch (Exception ex)
+                {
+                    // telemetry is diagnostic, so a failing writer only loses the record it
+                    // failed on - letting this escape would end the loop for good, after which
+                    // nothing else is written, Flush blocks forever waiting for a signal that
+                    // never runs, and Dispose rethrows the writer's exception into the app
+                    Debug.WriteLine($"Telemetry writer failed: {ex}");
+                }
+                finally
+                {
+                    this.writeGate.Release();
+                }
             }
         });
     }
@@ -114,7 +137,11 @@ internal sealed class TelemetryAdapter : IDisposable
         var signal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         _ = this.channel.Writer.TryWrite(() => signal.SetResult());
         signal.Task.GetAwaiter().GetResult();
-        this.writer.Flush();
+
+        // the consumer may already be writing later records by now, so take the same gate it
+        // holds for each write - but only after the wait above, since the consumer needs the
+        // gate itself to reach the signal
+        this.FlushWriterThroughGate();
     }
 
     /// <summary>
@@ -131,7 +158,26 @@ internal sealed class TelemetryAdapter : IDisposable
         this.channel.Writer.Complete();
         this.ResumeWriting();
         this.consumerTask.GetAwaiter().GetResult();
-        this.writer.Flush();
+        this.FlushWriterThroughGate();
+    }
+
+    /// <summary>
+    /// Calls <see cref="ITelemetryWriter.Flush"/> while holding the same gate the consumer holds
+    /// for each write, so a flush and a write never overlap - writers aren't expected to be
+    /// thread-safe (e.g. <see cref="FileTelemetryWriter"/> wraps a plain <c>StreamWriter</c>).
+    /// Exceptions from the flush are passed on to the caller, unlike write failures.
+    /// </summary>
+    private void FlushWriterThroughGate()
+    {
+        this.writeGate.Wait();
+        try
+        {
+            this.writer.Flush();
+        }
+        finally
+        {
+            this.writeGate.Release();
+        }
     }
 
     /// <summary>

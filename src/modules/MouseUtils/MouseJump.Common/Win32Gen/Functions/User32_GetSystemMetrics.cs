@@ -36,9 +36,15 @@ internal static partial class User32
         // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getsystemmetrics
         // If the function succeeds, the return value is the requested system metric or configuration setting.
         // If the function fails, the return value is 0.
-        // GetLastError does not provide extended error information, so it isn't
-        // captured here even though 0 is treated as failure.
-        return PInvoke.GetSystemMetrics(nIndex)
-            .SuccessIsNonZero();
+        // GetLastError does not provide extended error information.
+        var result = PInvoke.GetSystemMetrics(nIndex);
+
+        // as far as i can tell, zero is a legitimate return value for many (or all) valid values of nIndex,
+        // and the only time zero means an error is if nIndex is not a value the OS recognizes.
+        //
+        // since we can't generally assume zero is an error we have to assume it's valid and
+        // the caller will need to check based on the value of nIndex they supplied at the call site
+        return result
+            .AlwaysSucceeds();
     }
 }

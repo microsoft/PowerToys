@@ -130,6 +130,70 @@ public sealed class ScreenshotCapturePipelineTests
         Assert.IsTrue(provider.Disposed);
     }
 
+    [TestMethod]
+    public async Task CapturesArePushedToTheSinkInCompletionOrderNotScreenOrder()
+    {
+        var screenLayouts = new[]
+        {
+            ScreenshotCapturePipelineTests.CreateScreenLayout(1),
+            ScreenshotCapturePipelineTests.CreateScreenLayout(2),
+        };
+        var deviceLayout = ScreenshotCapturePipelineTests.CreateDeviceLayout(screenLayouts);
+
+        var capture1 = new TaskCompletionSource<Bitmap>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var capture2 = new TaskCompletionSource<Bitmap>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var provider = new FakeScreenshotCaptureProvider(
+            _ => capture1.Task,
+            _ => capture2.Task);
+
+        var sink = new FakeScreenshotCaptureSink();
+        await using var pipeline = new ScreenshotCapturePipeline(sink);
+
+        var captureTasks = pipeline.AddCaptureTasks(deviceLayout, provider);
+
+        // screen 2 finishes first - it should reach the sink straight away, without waiting
+        // for screen 1 (a slow screen mustn't hold up the others' previews)
+        using var bitmap2 = new Bitmap(1, 1);
+        capture2.SetResult(bitmap2);
+        sink.WaitForCount(1);
+        Assert.AreEqual(screenLayouts[1], sink.Received[0].ScreenLayout);
+        Assert.IsFalse(captureTasks[0].CaptureTask.IsCompleted);
+
+        using var bitmap1 = new Bitmap(1, 1);
+        capture1.SetResult(bitmap1);
+        await pipeline.WaitForCompletionAsync();
+
+        CollectionAssert.AreEqual(
+            new[] { screenLayouts[1], screenLayouts[0] },
+            sink.Received.Select(entry => entry.ScreenLayout).ToList());
+    }
+
+    [TestMethod]
+    public async Task ThePipelineNeverDisposesABitmapItHasHandedToTheSink()
+    {
+        var screenLayouts = new[]
+        {
+            ScreenshotCapturePipelineTests.CreateScreenLayout(1),
+        };
+        var deviceLayout = ScreenshotCapturePipelineTests.CreateDeviceLayout(screenLayouts);
+
+        using var bitmap = new Bitmap(3, 2);
+        var provider = new FakeScreenshotCaptureProvider(
+            _ => Task.FromResult(bitmap));
+
+        var sink = new FakeScreenshotCaptureSink();
+        var pipeline = new ScreenshotCapturePipeline(sink);
+
+        pipeline.AddCaptureTasks(deviceLayout, provider);
+        await pipeline.DisposeAsync();
+
+        // ownership transferred to the sink (see IScreenshotCaptureSink.SetScreenshotAsync), so
+        // the bitmap must still be usable even after the pipeline itself has been disposed - a
+        // disposed GDI+ bitmap throws on any property access
+        Assert.AreSame(bitmap, sink.Received.Single().Bitmap);
+        Assert.AreEqual(3, bitmap.Width);
+    }
+
     private static ScreenLayout CreateScreenLayout(nint handle)
         => new(
             screenInfo: new ScreenInfo(handle, primary: false, displayArea: RectangleInfo.Empty, workingArea: null),
@@ -171,20 +235,53 @@ public sealed class ScreenshotCapturePipelineTests
 
     private sealed class FakeScreenshotCaptureSink : IScreenshotCaptureSink
     {
-        public FakeScreenshotCaptureSink()
-        {
-            this.Received = new List<(ScreenLayout ScreenLayout, Bitmap Bitmap)>();
-        }
+        private static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(10);
 
+        private readonly List<(ScreenLayout ScreenLayout, Bitmap Bitmap)> received = new();
+
+        /// <summary>
+        /// Gets a snapshot of everything received so far, in arrival order - captures can
+        /// complete (and push here) on background threads, so this copies under the lock.
+        /// </summary>
         public List<(ScreenLayout ScreenLayout, Bitmap Bitmap)> Received
         {
-            get;
+            get
+            {
+                lock (this.received)
+                {
+                    return this.received.ToList();
+                }
+            }
         }
 
         public Task SetScreenshotAsync(ScreenLayout screenLayout, Bitmap bitmap)
         {
-            this.Received.Add((screenLayout, bitmap));
+            lock (this.received)
+            {
+                this.received.Add((screenLayout, bitmap));
+                Monitor.PulseAll(this.received);
+            }
+
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Blocks until at least <paramref name="count"/> screenshots have been received in total.
+        /// </summary>
+        public void WaitForCount(int count)
+        {
+            var deadline = DateTime.UtcNow + FakeScreenshotCaptureSink.WaitTimeout;
+            lock (this.received)
+            {
+                while (this.received.Count < count)
+                {
+                    var remaining = deadline - DateTime.UtcNow;
+                    if ((remaining <= TimeSpan.Zero) || !Monitor.Wait(this.received, remaining))
+                    {
+                        Assert.Fail("timed out waiting for the sink to receive a screenshot");
+                    }
+                }
+            }
         }
     }
 }

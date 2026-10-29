@@ -62,18 +62,20 @@ internal static partial class User32
         // If the user cancels the menu without making a selection, or if an error occurs, the return value is zero.
         // If you do not specify TPM_RETURNCMD in the fuFlags parameter, the return value is nonzero if the function succeeds and zero if it fails.
         // To get extended error information, call GetLastError.
-        var result = PInvoke.TrackPopupMenuEx(hMenu, uFlags, x, y, hwnd, lptpm)
-            .SuccessIsNonZero();
+        var result = PInvoke.TrackPopupMenuEx(hMenu, uFlags, x, y, hwnd, lptpm);
 
-        // With TPM_RETURNCMD set, a zero result means either "the user cancelled"
-        // or "an error occurred" - the docs don't say GetLastError can tell those
-        // apart, so it isn't captured here, to avoid reporting a stale or
-        // misleading error code for what may just be a cancelled selection.
-        if ((uFlags & (uint)TRACK_POPUP_MENU_FLAGS.TPM_RETURNCMD) == 0)
+        // With TPM_RETURNCMD set, the result is a menu-item identifier, and zero means
+        // either "the user cancelled" (a normal outcome, e.g. clicking outside the menu)
+        // or "an error occurred" - and the docs don't say GetLastError can tell those
+        // apart. So this always reports success, and the caller inspects the raw value.
+        if ((uFlags & (uint)TRACK_POPUP_MENU_FLAGS.TPM_RETURNCMD) != 0)
         {
-            result = result.WithLastError();
+            return result
+                .AlwaysSucceeds();
         }
 
-        return result;
+        return result
+            .SuccessIsNonZero()
+            .WithLastError();
     }
 }
