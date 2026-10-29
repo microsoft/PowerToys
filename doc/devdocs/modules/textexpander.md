@@ -330,7 +330,7 @@ is pending or has exhausted its retries: its events refresh the fallback snapsho
 restart attempts toward the desired target. Once a newer transition commits, events
 from the disposed watcher are ignored. This handoff prevents a legacy file arriving
 beside an untouched starter from being hidden. Either identity change advances the
-snippet revision, closes an open **More options** menu and the editor's Prompt window,
+snippet revision, closes an open **More options** menu and the editor's question flyout,
 and invalidates an editor open on an existing snippet. Watch
 events whose bytes equal the editor's own atomic save are ignored. During first-run
 setup, the editor creates or observes the shared starter before constructing its
@@ -427,24 +427,36 @@ states that either form matches.
 
 ### Prompt authoring and validation
 
-**Prompt window** in **Insert variable** means “Ask for text when the snippet runs.”
-Selecting it puts a provisional `{{prompt:Question}}` token at the replacement caret or
-selection and opens **Ask when the snippet runs** under that token: a question box
-(focused, with the example "Ticket number"), a **Required** toggle (on by default), a
-preview of the window the snippet will show, and **Add** and **Cancel**. It's a Flyout
-styled like a teaching tip, because a `TeachingTip` doesn't open when it can't fit around
-its target and stops catching outside clicks after a canceled light dismiss. As the
-question is typed, the token and the preview follow it. The preview is the runtime
-window scaled down (icon, "PowerToys Text Expander", the question over an empty box, OK
-and Cancel); it can't be clicked or tabbed to, and screen readers name it "Preview of
-the window shown when the snippet runs."
+**Ask a question…** in **Insert variable** (tooltip "Ask for text when the snippet runs.")
+puts a provisional `{{prompt:<example>}}` token at the replacement caret or selection.
+`<example>` is the question box's localized example ("Ticket number"); if a translation
+contains `}`, the token is `{{prompt:}}`. It then opens **Ask when the snippet runs**
+against that token: a question box (focused, showing the same example), a **Required**
+toggle (on by default), a preview of the window the snippet will show, and **Add** and
+**Cancel**. Reopening an existing question shows **Update** instead of **Add**. It's a
+Flyout styled like a teaching tip, because a `TeachingTip` doesn't open when it can't fit
+around its target and stops catching outside clicks after a canceled light dismiss. The
+page places it (`TextExpanderPromptPlacement`) from the token's bounds, the Replacement
+box and the window: lined up with the box's left edge and as wide as the box, within
+4 px of the window's edges, so it covers buttons beside it completely or not at all. It
+goes 4 px below the token's line, or above the line when it fits only there, and never
+over the line; when it fits neither way, it goes where there's more room without the
+preview and scrolls if it still doesn't fit. As the question is typed, the token and the
+preview follow it. The preview is the runtime window scaled down (icon, "PowerToys Text
+Expander", the question over an empty box, OK and Cancel) on a mid-grey backdrop that
+follows light, dark and high contrast; it can't be clicked or tabbed to, and screen
+readers name it "Preview of the window shown when the snippet runs." The flyout, question
+box, toggle, Add/Update and Cancel have AutomationIds: `TextExpander_PromptFlyout`,
+`TextExpander_PromptQuestion`, `Toggle_TextExpander_PromptRequired`,
+`Button_TextExpander_PromptAdd` and `Button_TextExpander_PromptCancel`.
 
 Enter, **Add**, or clicking back in the replacement commits a valid question; Enter on
 a button activates that button. An empty question ("Type a question.") or one
 containing `}` keeps the flyout open with an assertive inline error, shown only after
 a commit is refused and then updated as you type.
 
-Click an existing prompt token, or put the caret in one and press F2, to reopen it
+Click an existing prompt token, or put the caret in one and press F2 (the Replacement
+box's screen reader help says "To change a question, click it or press F2."), to reopen it
 with its question and **Required** setting. Escape or **Cancel** removes a new
 provisional token and restores the original replacement selection; for an existing
 token it discards the changes and reselects the unchanged token. Closing the snippet
