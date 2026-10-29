@@ -1,0 +1,81 @@
+# Builds every C++ project in x64 Release with MSVC code analysis (/analyze, CppRuleSet.ruleset, warnings as errors).
+parameters:
+  - name: pool
+    type: object
+    default: []
+  - name: useVSPreview
+    type: boolean
+    default: false
+
+jobs:
+- job: CppCodeAnalysis
+  displayName: C++ code analysis (x64 Release)
+  ${{ if ne(length(parameters.pool), 0) }}:
+    pool: ${{ parameters.pool }}
+  timeoutInMinutes: 60
+  variables:
+    NUGET_PACKAGES: 'C:\NuGetPackages'
+    CppAnalysisFilter: PowerToys.CppAnalysis.slnf
+  steps:
+  - checkout: self
+    clean: true
+    fetchTags: false
+    fetchDepth: 1
+
+  - template: steps-ensure-dotnet-version.yml
+
+  - task: NuGetAuthenticate@1
+
+  - pwsh: |-
+      & "$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1"
+    displayName: Work around DD-1541167 (VCToolsVersion)
+    ${{ if eq(parameters.useVSPreview, true) }}:
+      env:
+        VCWhereExtraVersionTarget: '-prerelease'
+
+  - template: steps-install-vcpkg.yml
+    parameters:
+      useVSPreview: ${{ parameters.useVSPreview }}
+
+  # Generated at build time so new C++ projects in PowerToys.slnx are analyzed without
+  # maintaining a filter by hand.
+  - pwsh: |-
+      $solution = [xml](Get-Content -LiteralPath PowerToys.slnx -Raw)
+      $projects = @($solution.SelectNodes('//Project') | ForEach-Object { $_.Path } | Where-Object { $_ -like '*.vcxproj' } | ForEach-Object { $_.Replace('/', '\') })
+      if ($projects.Count -eq 0) { throw 'No .vcxproj projects found in PowerToys.slnx' }
+      @{ solution = @{ path = 'PowerToys.slnx'; projects = $projects } } | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath '$(CppAnalysisFilter)' -Encoding utf8
+      Write-Host "Analyzing $($projects.Count) C++ projects from PowerToys.slnx"
+    displayName: Generate C++ solution filter
+
+  # No -graph: graph builds of a solution filter fail with MSB0001 ("nodes should include solution projects")
+  # because PowerToys.slnx build dependencies (for example runner -> C# apps) point at filtered-out projects.
+  # Non-graph solution builds drop those dependencies.
+  - task: VSBuild@1
+    displayName: Analyze PowerToys C++ projects
+    inputs:
+      solution: $(CppAnalysisFilter)
+      vsVersion: 18.0
+      msbuildArgs: >-
+        -restore
+        /p:RestorePackagesConfig=true
+        /p:CIBuild=true
+        /p:BuildTests=true
+      platform: x64
+      configuration: Release
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+
+  # RunBuildEvents=false skips the pre-build event that needs the full product build to fill in the .wxs files.
+  - task: VSBuild@1
+    displayName: Analyze installer custom actions
+    inputs:
+      solution: installer/PowerToysSetup.slnx
+      vsVersion: 18.0
+      msbuildArgs: >-
+        /t:PowerToysSetupCustomActionsVNext;SilentFilesInUseBAFunction
+        /p:RunBuildEvents=false;RestorePackagesConfig=true;CIBuild=true
+        -restore -graph
+      platform: x64
+      configuration: Release
+      msbuildArchitecture: x64
+      maximumCpuCount: true
