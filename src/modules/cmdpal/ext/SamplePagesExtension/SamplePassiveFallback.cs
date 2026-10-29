@@ -8,7 +8,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
-internal sealed partial class SamplePassiveFallback : PassiveFallbackCommandItem
+internal sealed partial class SamplePassiveFallback : FallbackPassiveItem
 {
     internal SamplePassiveFallback()
         : base("Sample web search", "com.microsoft.cmdpal.sample.fallback.passive")

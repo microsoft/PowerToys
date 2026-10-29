@@ -114,7 +114,7 @@ functionality.
       - [Passive web search](#passive-web-search)
       - [Opening a page with the query](#opening-a-page-with-the-query)
       - [File results on the top level](#file-results-on-the-top-level)
-      - [Registering all three modes](#registering-all-three-modes)
+      - [Registering passive commands and result sources](#registering-passive-commands-and-result-sources)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
@@ -2637,118 +2637,88 @@ contract.
 
 ### Overview
 
-Each v2 fallback declares one `FallbackCommandMode`:
+The host selects the behavior from the item's interfaces and `QueryHandler`.
+There is no mode property.
 
-| Mode | Host behavior | Typical examples |
+| Declaration | Host behavior | Typical examples |
 |---|---|---|
-| `Passive` | Format and match locally. Do not call the extension while the user types. | Web search, ask an assistant, open a URL |
-| `Active` | Call the existing `IFallbackHandler.UpdateQuery` for each accepted query. | Run a command line, calculator input with a live title |
-| `Results` | Call the asynchronous v2 handler and display all returned items. | Files, settings, open windows, remote search |
+| No `IFallbackCommandItem3` | Call the legacy `FallbackHandler.UpdateQuery`. | Existing active fallbacks |
+| `IFallbackCommandItem3` with a null `QueryHandler` | Format and match locally. Call `CreateCommand` only on activation. | Web search, ask an assistant, open a URL |
+| `IFallbackCommandItem3` with a non-null `QueryHandler` | Call `QueryHandler.QueryAsync` and display its returned items. | Files, settings, open windows, remote search |
 
-A provider can return more than one fallback, and each fallback can use a
-different mode. For example, a single provider might expose one passive "Search
-the web" command and one result source for browser history.
+A provider can return legacy fallbacks, passive commands, and result sources together.
+For example, one provider can expose a passive web search command and a result source for browser history.
+The host reads `QueryHandler` when it loads the fallback.
+The extension must keep this handler unchanged for the lifetime of that fallback.
+The host never calls `FallbackHandler.UpdateQuery` on an item that implements `IFallbackCommandItem3`.
 
 ### API
 
-```c#
-enum FallbackCommandMode
-{
-	Active = 0,
-	Passive,
-	Results,
-};
-
+```csharp
 enum HostMatchKind
 {
-	// No additional match filtering. Normal host fallback policy applies.
-	None = 0,
-
-	// Host determines visibility by evaluating the MatchValue regex
-	Regex,
+    None = 0,
+    Regex,
 };
 
-struct OptionalUInt32
-{
-	Boolean HasValue;
-	UInt32 Value;
-};
-
-// The host creates one of these for each accepted top-level query.
 interface IFallbackQueryArgs requires IExtendedAttributesProvider
 {
-	String Query { get; };
-	String QueryId { get; };
-	UInt32 RequestedItemCount { get; };
-	String[] LanguageTags { get; };
+    String Query { get; };
+    String QueryId { get; };
+    UInt32 RequestedItemCount { get; };
+    String[] LanguageTags { get; };
 };
 
-// Passed back when a command is created for a particular query. This derives
-// from IFallbackQueryArgs so future query context can be added in one place.
 [uuid(4f3ba46e-4d06-4a3e-9464-8b6e9f5b792c)]
 interface IFallbackCommandInvocationArgs requires IFallbackQueryArgs
 {
 };
 
-// One complete snapshot from a result source. Progress values and the final
-// return value use the same shape. The final result also owns its continuation.
 interface IFallbackCommandResult
 {
-	String Query { get; };
-	String QueryId { get; };
-	IListItem[] Items { get; };
-	Boolean HasMoreItems { get; };
+    String Query { get; };
+    String QueryId { get; };
+    IListItem[] Items { get; };
+    Boolean HasMoreItems { get; };
 
-	Windows.Foundation.IAsyncOperationWithProgress<
-		IFallbackCommandResult,
-		IFallbackCommandResult> LoadMoreItemsAsync(UInt32 requestedItemCount);
+    Windows.Foundation.IAsyncOperationWithProgress<
+        IFallbackCommandResult,
+        IFallbackCommandResult> LoadMoreItemsAsync(UInt32 requestedItemCount);
 };
 
-// This remains in a linear chain with IFallbackHandler. UpdateQuery is not
-// called when the owning fallback is in Results mode.
 interface IFallbackHandler2 requires IFallbackHandler
 {
-	Windows.Foundation.IAsyncOperationWithProgress<
-		IFallbackCommandResult,
-		IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args);
+    Windows.Foundation.IAsyncOperationWithProgress<
+        IFallbackCommandResult,
+        IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args);
 };
 
-// Keep all new fallback metadata on one linear interface. In particular, do
-// not split formatting, matching, and defaults into sibling interfaces.
 interface IFallbackCommandItem3 requires IFallbackCommandItem2
 {
-	FallbackCommandMode Mode { get; };
+    String Name { get; };
 
-	// The host will use this for the action label before that command has been
-	// created.
-	String Name { get; };
+    String TitleTemplate { get; };
+    String SubtitleTemplate { get; };
 
-	// Used by Passive mode. The host replaces the literal token "{query}".
-	// An empty template means to use the corresponding ICommandItem property.
-	String TitleTemplate { get; };
-	String SubtitleTemplate { get; };
+    HostMatchKind MatchKind { get; };
+    String MatchValue { get; };
 
-	HostMatchKind MatchKind { get; };
-	String MatchValue { get; };
+    IFallbackHandler2 QueryHandler { get; };
 
-	// These are suggestions. The host is ultimately in control of query scheduling policy.
-	OptionalUInt32 SuggestedQueryDelayMilliseconds { get; };
-	OptionalUInt32 SuggestedMinQueryLength { get; };
-
-	// Required for Results mode. It may be null for Passive and Active modes.
-	IFallbackHandler2 QueryHandler { get; };
-
-	// Called only after the user activates this fallback. This supports both
-	// invokable commands and pages without adding sibling interfaces to the
-	// ICommand/IPage/IInvokableCommand inheritance trees.
-	ICommand CreateCommand(IFallbackCommandInvocationArgs args);
+    ICommand CreateCommand(IFallbackCommandInvocationArgs args);
 };
 ```
 
 `ICommandProvider.FallbackCommands()` continues to return
 `IFallbackCommandItem[]`. For each returned object, a v2 host checks whether it
 also implements `IFallbackCommandItem3`. This is the same pattern the host
-already uses to discover `IFallbackCommandItem2`. 
+already uses to discover `IFallbackCommandItem2`.
+
+The host creates `IFallbackQueryArgs` for each accepted top-level query.
+`IFallbackCommandInvocationArgs` extends this context for passive command activation.
+`IFallbackCommandResult` describes a complete snapshot and owns its continuation.
+`IFallbackHandler2` retains its linear inheritance from `IFallbackHandler` for marshalling.
+This inheritance does not cause the host to call `UpdateQuery` for v2 fallbacks.
 
 `IFallbackQueryArgs.GetProperties()` is reserved for optional host context that
 does not justify a new contract version. Extensions must ignore properties they
@@ -2769,12 +2739,54 @@ ignore items beyond the requested budget and may apply a lower display limit.
 order. A source can use these tags to select the language for results. The
 source does not have to use the current culture of the host process.
 
-`Name` is required for `Passive` and `Active` fallbacks. It is the name the host
-shows for the default action before `CreateCommand` runs. The command returned
-by `CreateCommand` should expose the same `ICommand.Name`. `Name` is not used
-for a `Results` fallback, because each returned `IListItem` already supplies its
-own command. This is an action label, not the fallback row's
-`ICommandItem.Title` or its settings and source-attribution `DisplayTitle`.
+For passive fallbacks, `Name` supplies the default action label before `CreateCommand` runs.
+The returned command must expose the same `ICommand.Name`.
+This label is separate from the item's `Title` and its source-attribution `DisplayTitle`.
+For result sources, the host ignores `Name`, the templates, `MatchKind`, `MatchValue`, and `CreateCommand`.
+Each returned `IListItem` supplies its own display properties and command.
+
+For the sake of clarity, the final complete `IFallbackCommandItem3` interface looks like the following:
+
+```cs
+// for IFallbackCommandItem
+interface IFallbackHandler {
+    void UpdateQuery(String query);
+};
+
+// for IFallbackCommandItem3
+interface IFallbackHandler2 requires IFallbackHandler
+{
+	IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args);
+};
+
+public interface IFallbackCommandItem3
+{
+    // ---- IFallbackCommandItem ----
+    IFallbackHandler FallbackHandler{ get; };
+    String DisplayTitle { get; };
+
+    // ---- IFallbackCommandItem2 ----
+    String Id { get; };
+
+    // ---- IFallbackCommandItem3 ----
+	String Name { get; };
+
+	// Passive fallbacks use these:
+	String TitleTemplate { get; };
+	String SubtitleTemplate { get; };
+	HostMatchKind MatchKind { get; };
+	String MatchValue { get; };
+
+	// Null selects a passive fallback. A non-null handler selects a result source.
+	IFallbackHandler2 QueryHandler { get; };
+
+	// Called only after the user activates a passive fallback. This supports both
+	// invokable commands and pages without adding sibling interfaces to the
+	// ICommand/IPage/IInvokableCommand inheritance trees.
+	ICommand CreateCommand(IFallbackCommandInvocationArgs args);
+}
+```
+
 
 ### Why `CreateCommand`
 
@@ -2792,25 +2804,25 @@ return either:
 * an `IPage` initialized with the query.
 
 An extension which does not need the query may return the same object as
-`ICommandItem.Command`. A `Results` fallback normally returns query-specific
+`ICommandItem.Command`. A result source returns query-specific
 commands in its `IListItem`s, so the host does not call the fallback item's
 `CreateCommand` for those results.
 
-Both passive and v2 active fallbacks are activated through `CreateCommand`.
-Legacy `IFallbackCommandItem` objects continue to use `ICommandItem.Command`.
+The host activates passive fallbacks through `CreateCommand`.
+Legacy fallbacks without `IFallbackCommandItem3` continue to use `ICommandItem.Command`.
 The host keeps the provider ID, fallback ID, exact query, and query ID with each
 displayed fallback or result item. This provenance is host state; the host does
 not change the extension's item to store it.
 
 This also avoids adding another interface branch to `ICommand`. Out-of-process
 metadata-based marshalling behaves best when interfaces form a linear chain.
-The same is why formatting, host matching, and suggested defaults are all on
+The same is why formatting, host matching, and the query handler are all on
 `IFallbackCommandItem3`, rather than separate
-`IFormattedFallbackCommandItem`, `IHostMatchedFallbackCommandItem`, and
-`IFallbackCommandItemDefaults` interfaces.
+`IFormattedFallbackCommandItem` and `IHostMatchedFallbackCommandItem` interfaces.
 
 ### Passive fallbacks
 
+Passive fallbacks implement `IFallbackCommandItem3` and return null from `QueryHandler`.
 The host must not call either `IFallbackHandler.UpdateQuery` or
 `IFallbackHandler2.QueryAsync` for a passive fallback.
 
@@ -2850,38 +2862,25 @@ never while the user types.
 
 ### Active fallbacks
 
-Active fallbacks preserve the v1 behavior. The host calls
-`IFallbackHandler.UpdateQuery` on a worker thread, and the fallback may update
-its title, subtitle, icon, or command before the host displays it.
+Active fallbacks are legacy items that do not implement `IFallbackCommandItem3`.
+Their query and activation behavior does not change.
+The host calls `FallbackHandler.UpdateQuery` on a worker thread.
+The fallback can update its title, subtitle, icon, or command.
+On activation, the host uses `ICommandItem.Command`.
 
-Active fallbacks should be uncommon. They put an out-of-process call on the
-typing path and are the easiest kind of fallback to make slow. An extension
-should use a passive fallback when it only needs to include the query in a title
-or pass the query to a command at activation time.
+`UpdateQuery` cannot be cancelled and has no query ID.
+The host continues to accept later property changes from the item.
+The cancellation and stale-snapshot rules for result sources do not apply to legacy active fallbacks.
 
-The host may apply `SuggestedQueryDelayMilliseconds`,
-`SuggestedMinQueryLength`, and user overrides before calling `UpdateQuery`.
-Only the newest pending query needs to run. Calls are serialized for each
-fallback.
-
-`UpdateQuery` cannot be cancelled and has no query ID. An active fallback should
-finish its query-dependent changes before it returns. The host continues to
-apply property changes which the fallback raises later, as it does for v1
-fallbacks. The strict cancellation and stale-snapshot rules below apply to
-`Results` mode, not to active fallbacks.
-
-When an active fallback which implements `IFallbackCommandItem3` is activated,
-the host calls `CreateCommand` with the most recent query whose `UpdateQuery`
-call has completed.
-
-Existing `IFallbackCommandItem` implementations are treated as active
-fallbacks. Their behavior does not change. The host queries and displays all
-active fallbacks with the same rules. The only difference is activation: the
-host calls `CreateCommand` on an `IFallbackCommandItem3`, and uses
-`ICommandItem.Command` for a v1 fallback.
+There is no v2 active fallback.
+A new extension that needs query-dependent work can return one item from a result source.
+This approach supports cancellation and query-specific commands without changes to a shared legacy item.
+A passive fallback is sufficient for host-side formatting or activation-time query handling.
 
 ### Result sources
 
+A result source implements `IFallbackCommandItem3` and returns a non-null `QueryHandler`.
+The host calls this handler's `QueryAsync`, never its inherited `UpdateQuery`.
 A result source searches its domain. The host sends it the whole
 top-level query and displays the returned `IListItem`s directly on the main
 page. The extension does not need to create a nested page merely to expose its
@@ -3008,9 +3007,9 @@ The user can configure each fallback independently:
 * delay before querying, and
 * maximum item count for each request.
 
-The extension's delay and minimum-length values are suggestions used to
-initialize settings. Explicit user values win. The host may clamp unreasonable
-values and may apply its own safety budgets.
+The host owns query scheduling and its default settings.
+The API does not expose extension-suggested delays or minimum query lengths.
+The host can limit user settings and apply its own safety budgets.
 
 Putting a source "in the main results" does not make its private relevance
 scores comparable with host results. Until a common scoring contract exists,
@@ -3064,38 +3063,27 @@ release the provider after all of those objects have been released.
 
 The toolkit should provide default implementations for:
 
-* `FallbackCommandItem`, the existing fallback base class, which now
-  implements `IFallbackCommandItem3` with `Active` as its default mode,
-* `PassiveFallbackCommandItem`,
-* `FallbackResultSource`,
-* `FallbackQueryResult`, which owns an optional paging callback, and
-* `OptionalUInt32` conversions from nullable `uint` values.
+* `FallbackCommandItem`, the unchanged legacy base class that implements
+  `IFallbackCommandItem2`, not `IFallbackCommandItem3`,
+* `FallbackPassiveItem`, a passive fallback that implements `IFallbackCommandItem3`
+  and returns null from `QueryHandler`,
+* `FallbackResultsItem`, a result source that implements `IFallbackCommandItem3`
+  and returns itself from `QueryHandler`, and
+* `FallbackQueryResult`, which owns an optional paging callback.
 
-The toolkit has one fallback base class. It does not add a versioned class such
-as `FallbackCommandItem3`; the version of the API is not part of the toolkit's
-class names. `PassiveFallbackCommandItem` and `FallbackResultSource` derive from
-`FallbackCommandItem`. The defaults of `FallbackCommandItem` keep the v1
-behavior of an existing subclass:
+Both new helpers derive from `FallbackCommandItem`.
+An existing subclass of `FallbackCommandItem` remains a legacy active fallback after recompilation.
+Its `UpdateQuery` and `Command` behavior does not change.
+The extension must explicitly adopt a new helper or implement `IFallbackCommandItem3` to use v2.
 
-* `Mode` is `Active`, so the host continues to call `UpdateQuery`.
-* `Name` returns the name of the current `Command` until the extension sets it.
-  Setting `Name` also sets the name of the current toolkit `Command`.
-* `CreateCommand` returns the current `Command`.
-* `QueryHandler` is null, and the suggested query delay and minimum query length
-  have no value.
+`FallbackPassiveItem.Name` follows the current command's name until the extension sets it.
+An explicit name also updates the current command if it is a toolkit `Command`.
+`CreateCommand` returns the current `Command` by default.
+Only the host replaces `{query}` in the templates.
 
-Thus, when an extension recompiles against the new toolkit without other
-changes, a new host treats its fallbacks as v2 active fallbacks, and an older
-host treats them as v1 fallbacks, as before. An extension author must change
-code only when a subclass already declares a member with the same name as one of
-the new members, such as `Name` or `Mode`. The compiler reports warning CS0108
-or CS0114 for that member. Rename the member, or override the toolkit member if
-the two members have the same meaning.
-
-The passive helper should implement `UpdateQuery` as a no-op. Only the host
-should replace `{query}`. `FallbackResultSource` implements `UpdateQuery` as a
-no-op and sets `QueryHandler` to itself. It adapts a cancellable C# `Task`
-method to the WinRT asynchronous operation. `FallbackQueryResult` permits one
+Both new helpers implement `UpdateQuery` as a no-op for older hosts.
+`FallbackResultsItem` adapts a cancellable C# `Task` method to the WinRT asynchronous operation.
+`FallbackQueryResult` permits one
 load-more callback. It removes the callback when the call starts. A later or
 concurrent call returns the current snapshot with `HasMoreItems = false`.
 
@@ -3107,7 +3095,7 @@ This fallback does no work while the user types. Only after the user activates
 it does the extension create a command containing the query.
 
 ```cs
-internal sealed partial class WebSearchFallback : PassiveFallbackCommandItem
+internal sealed partial class WebSearchFallback : FallbackPassiveItem
 {
 	public WebSearchFallback()
 		: base("Search the web", "com.contoso.web.search")
@@ -3134,7 +3122,7 @@ A command-line fallback can use host-side matching to avoid waking its
 extension for queries that cannot be command lines:
 
 ```cs
-internal sealed partial class ShellFallback : PassiveFallbackCommandItem
+internal sealed partial class ShellFallback : FallbackPassiveItem
 {
 	public ShellFallback()
 		: base("Run command", "com.contoso.shell.run")
@@ -3159,7 +3147,7 @@ The same API works for pages. This fallback opens a dynamic WinGet page with
 the top-level query already applied:
 
 ```cs
-internal sealed partial class WinGetFallback : PassiveFallbackCommandItem
+internal sealed partial class WinGetFallback : FallbackPassiveItem
 {
 	public WinGetFallback()
 		: base("Search WinGet", "com.contoso.winget.search")
@@ -3187,7 +3175,7 @@ helpers may differ, but the important parts are cancellation, complete
 snapshots, stable commands, and preservation of the query ID.
 
 ```cs
-internal sealed partial class FileSearchFallback : FallbackResultSource
+internal sealed partial class FileSearchFallback : FallbackResultsItem
 {
 	private readonly FileIndex _index;
 
@@ -3195,8 +3183,6 @@ internal sealed partial class FileSearchFallback : FallbackResultSource
 		: base("Files", "com.contoso.files.search")
 	{
 		_index = index;
-		SuggestedQueryDelayMilliseconds = 100;
-		SuggestedMinQueryLength = 2;
 		Icon = new IconInfo("\uE8B7");
 	}
 
@@ -3262,9 +3248,9 @@ exhausted or the result is released. `LoadMoreFromCursorAsync` returns another
 complete `FallbackQueryResult`, including the previously loaded items and the
 next paging callback when more items remain.
 
-#### Registering all three modes
+#### Registering passive commands and result sources
 
-An extension can mix fallback modes in one provider:
+An extension can mix passive commands and result sources in one provider:
 
 ```cs
 internal sealed partial class ContosoCommandProvider : CommandProvider

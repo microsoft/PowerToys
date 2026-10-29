@@ -10,16 +10,26 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 /// <summary>
 /// Defines a fallback that returns a set of query results.
 /// </summary>
-public abstract partial class FallbackResultSource : FallbackCommandItem, IFallbackHandler2
+public abstract partial class FallbackResultsItem : FallbackCommandItem, IFallbackCommandItem3, IFallbackHandler2
 {
-    protected FallbackResultSource(string displayTitle, string id)
+    protected FallbackResultsItem(string displayTitle, string id)
         : base(displayTitle, id)
     {
     }
 
-    public override FallbackCommandMode Mode => FallbackCommandMode.Results;
+    public IFallbackHandler2 QueryHandler => this;
 
-    public override IFallbackHandler2 QueryHandler => this;
+    string IFallbackCommandItem3.Name => string.Empty;
+
+    string IFallbackCommandItem3.TitleTemplate => string.Empty;
+
+    string IFallbackCommandItem3.SubtitleTemplate => string.Empty;
+
+    HostMatchKind IFallbackCommandItem3.MatchKind => HostMatchKind.None;
+
+    string IFallbackCommandItem3.MatchValue => string.Empty;
+
+    ICommand IFallbackCommandItem3.CreateCommand(IFallbackCommandInvocationArgs args) => Command!;
 
     public override void UpdateQuery(string query)
     {

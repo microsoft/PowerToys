@@ -10,7 +10,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
-internal sealed partial class SampleResultFallback : FallbackResultSource
+internal sealed partial class SampleResultFallback : FallbackResultsItem
 {
     private const int TotalItemCount = 6;
 
@@ -18,8 +18,6 @@ internal sealed partial class SampleResultFallback : FallbackResultSource
         : base("Sample results", "com.microsoft.cmdpal.sample.fallback.results")
     {
         Title = "Sample results";
-        SuggestedQueryDelayMilliseconds = 75;
-        SuggestedMinQueryLength = 1;
         Icon = new IconInfo("\uE8B7");
     }
 
