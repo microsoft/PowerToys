@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -32,7 +33,7 @@ public class FallbackV2Tests
     [TestMethod]
     public void PassiveFallback_UsesPassiveDefaults()
     {
-        var fallback = new PassiveFallbackCommandItem("Search", "sample.search")
+        var fallback = new FallbackPassiveItem("Search", "sample.search")
         {
             Name = "Search",
             TitleTemplate = "Search for {query}",
@@ -40,39 +41,50 @@ public class FallbackV2Tests
 
         fallback.UpdateQuery("test");
 
-        Assert.AreEqual(FallbackCommandMode.Passive, fallback.Mode);
+        Assert.IsInstanceOfType<IFallbackCommandItem3>(fallback);
         Assert.AreEqual("Search", fallback.Title);
         Assert.AreEqual("Search", fallback.Name);
         Assert.AreEqual("Search", fallback.Command?.Name);
         Assert.IsNull(fallback.QueryHandler);
+        Assert.IsNull(((IFallbackCommandItem3)fallback).QueryHandler);
+        Assert.AreEqual("Search for {query}", fallback.TitleTemplate);
+        Assert.AreSame(fallback.Command, fallback.CreateCommand(new FallbackCommandInvocationArgs("test", "query-id")));
     }
 
     [TestMethod]
-    public void FallbackCommandItem_DefaultsToActiveV2Fallback()
+    public void FallbackCommandItem_RemainsLegacyFallback()
     {
-        var command = new NoOpCommand { Name = "Run" };
+        var command = new LegacyFallbackCommand { Name = "Run" };
         var fallback = new FallbackCommandItem(command, "Runner", "sample.run");
 
-        Assert.IsInstanceOfType<IFallbackCommandItem3>(fallback);
-        Assert.AreEqual(FallbackCommandMode.Active, fallback.Mode);
-        Assert.AreEqual("Run", fallback.Name);
-        Assert.AreSame(command, fallback.CreateCommand(new FallbackCommandInvocationArgs("query", "query-id")));
+        fallback.FallbackHandler!.UpdateQuery("query");
 
-        var v3 = (IFallbackCommandItem3)fallback;
-        Assert.IsFalse(v3.SuggestedQueryDelayMilliseconds.HasValue);
-        Assert.IsFalse(v3.SuggestedMinQueryLength.HasValue);
-        Assert.IsNull(v3.QueryHandler);
+        Assert.IsInstanceOfType<IFallbackCommandItem2>(fallback);
+        Assert.IsFalse(fallback is IFallbackCommandItem3);
+        Assert.AreSame(command, fallback.Command);
+        Assert.AreEqual("query", command.Query);
     }
 
     [TestMethod]
-    public void FallbackCommandItem_NameFollowsCurrentCommand()
+    public void PassiveFallback_UpdateQueryDoesNotForwardToCommand()
+    {
+        var command = new LegacyFallbackCommand();
+        var fallback = new FallbackPassiveItem(command, "Search", "sample.search");
+
+        ((IFallbackCommandItem)fallback).FallbackHandler.UpdateQuery("query");
+
+        Assert.AreEqual(string.Empty, command.Query);
+    }
+
+    [TestMethod]
+    public void PassiveFallback_NameFollowsCurrentCommand()
     {
         var command = new NoOpCommand { Name = "Run" };
-        var fallback = new FallbackCommandItem(command, "Runner", "sample.run");
+        var fallback = new FallbackPassiveItem(command, "Runner", "sample.run");
         var nameChanges = 0;
         fallback.PropChanged += (sender, args) =>
         {
-            if (args.PropertyName == nameof(FallbackCommandItem.Name))
+            if (args.PropertyName == nameof(FallbackPassiveItem.Name))
             {
                 nameChanges++;
             }
@@ -89,10 +101,10 @@ public class FallbackV2Tests
     }
 
     [TestMethod]
-    public void FallbackCommandItem_ExplicitNameIsKept()
+    public void PassiveFallback_ExplicitNameIsKept()
     {
         var command = new NoOpCommand { Name = "Run" };
-        var fallback = new FallbackCommandItem(command, "Runner", "sample.run")
+        var fallback = new FallbackPassiveItem(command, "Runner", "sample.run")
         {
             Name = "Run it",
         };
@@ -101,6 +113,40 @@ public class FallbackV2Tests
 
         fallback.Command = new NoOpCommand { Name = "Open" };
         Assert.AreEqual("Run it", fallback.Name);
+    }
+
+    [TestMethod]
+    public async Task ResultsFallback_ExposesQueryHandlerAndReturnsSnapshot()
+    {
+        var fallback = new TestResultsItem();
+        var item = (IFallbackCommandItem3)fallback;
+        var args = new FallbackQueryArgs("query", "query-id", 5);
+
+        item.FallbackHandler.UpdateQuery("ignored");
+        Assert.IsNull(fallback.LastQuery);
+        Assert.AreSame(fallback, item.QueryHandler);
+
+        var result = await item.QueryHandler.QueryAsync(args);
+
+        Assert.AreSame(args, fallback.LastQuery);
+        Assert.AreEqual(args.Query, result.Query);
+        Assert.AreEqual(args.QueryId, result.QueryId);
+        Assert.HasCount(1, result.Items);
+        Assert.AreEqual("query", result.Items[0].Title);
+    }
+
+    [TestMethod]
+    public async Task ResultsFallback_QueryAsyncPropagatesCancellation()
+    {
+        var fallback = new TestResultsItem { WaitForCancellation = true };
+        var operation = fallback.QueryHandler.QueryAsync(new FallbackQueryArgs("query", "query-id", 5));
+        var task = operation.AsTask();
+        await fallback.Started.Task;
+
+        operation.Cancel();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(async () => await task);
+        Assert.IsTrue(fallback.QueryCancellationToken.IsCancellationRequested);
     }
 
     [TestMethod]
@@ -207,5 +253,44 @@ public class FallbackV2Tests
         callbackCanFinish.SetResult();
         await loadTask;
         Assert.AreEqual(0, closeCount);
+    }
+
+    private sealed partial class LegacyFallbackCommand : NoOpCommand, IFallbackHandler
+    {
+        public string Query { get; private set; } = string.Empty;
+
+        public void UpdateQuery(string query) => Query = query;
+    }
+
+    private sealed partial class TestResultsItem : FallbackResultsItem
+    {
+        public IFallbackQueryArgs? LastQuery { get; private set; }
+
+        public bool WaitForCancellation { get; init; }
+
+        public CancellationToken QueryCancellationToken { get; private set; }
+
+        public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TestResultsItem()
+            : base("Results", "sample.results")
+        {
+        }
+
+        protected override async Task<IFallbackCommandResult> QueryAsync(
+            IFallbackQueryArgs args,
+            CancellationToken cancellationToken,
+            IProgress<IFallbackCommandResult> progress)
+        {
+            LastQuery = args;
+            QueryCancellationToken = cancellationToken;
+            Started.SetResult();
+            if (WaitForCancellation)
+            {
+                await Task.Delay(Timeout.Infinite, cancellationToken);
+            }
+
+            return new FallbackQueryResult(args.Query, args.QueryId, [new ListItem(new NoOpCommand()) { Title = args.Query }]);
+        }
     }
 }

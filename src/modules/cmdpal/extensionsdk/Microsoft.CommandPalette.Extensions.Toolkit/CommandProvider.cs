@@ -150,8 +150,6 @@ public abstract partial class CommandProvider :
 
         public string Id => string.Empty;
 
-        public FallbackCommandMode Mode => FallbackCommandMode.Active;
-
         public string Name => string.Empty;
 
         public string TitleTemplate => string.Empty;
@@ -161,10 +159,6 @@ public abstract partial class CommandProvider :
         public HostMatchKind MatchKind => HostMatchKind.None;
 
         public string MatchValue => string.Empty;
-
-        public OptionalUInt32 SuggestedQueryDelayMilliseconds => default;
-
-        public OptionalUInt32 SuggestedMinQueryLength => default;
 
         public IFallbackHandler2 QueryHandler => null!;
 
