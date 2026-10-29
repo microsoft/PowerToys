@@ -20,7 +20,7 @@
         <!--  As in a ContentDialog: a lighter layer over the question, the buttons below a line.  -->
         <Border Grid.RowSpan="2" Background="{ThemeResource LayerFillColorAltBrush}" />
 
-        <!--  The title bar: Text Expander's icon and name, as PowerToys' other utilities show theirs. The close button is the system's.  -->
+        <!--  The title bar: Text Expander's icon and its PowerToys name, as PowerToys' other utilities show theirs. The close button is the system's.  -->
         <Grid
             x:Name="TitleBar"
             Height="32"

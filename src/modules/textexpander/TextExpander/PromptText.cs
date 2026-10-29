@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.TextExpander;
 internal static class PromptText
 {
     /// <summary>Gets the window's title, beside Text Expander's icon.</summary>
-    public static string Title => EngineText.Get("Prompt_Title", "Text Expander");
+    public static string Title => EngineText.Get("Prompt_Title", "PowerToys Text Expander");
 
     /// <summary>Gets the box's label when the snippet's question has none, as in {{prompt:}}. Settings' preview uses the same words.</summary>
     public static string UnnamedLabel => EngineText.Get("Prompt_UnnamedLabel", "Your answer");

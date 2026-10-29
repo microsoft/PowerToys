@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 using ManagedCommon;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
 using Microsoft.PowerToys.TextExpander.Editor.Views;
@@ -41,6 +42,14 @@ public partial class App : Application
             Height = 800,
             SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop(),
         };
+
+        // The engine project copies app.ico beside both executables in WinUI3Apps; the prompt window uses it too.
+        string icon = Path.Combine(AppContext.BaseDirectory, "app.ico");
+        if (File.Exists(icon))
+        {
+            _window.AppWindow.SetIcon(icon);
+        }
+
         EditorWindow = _window;
         _window.Content = new TextExpanderPage();
         _window.Closed += (_, _) => EditorWindow = null;

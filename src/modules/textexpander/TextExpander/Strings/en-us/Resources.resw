@@ -59,8 +59,8 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
     <data name="Prompt_Title" xml:space="preserve">
-    <value>Text Expander</value>
-    <comment>Title of the window that asks for the answer to a snippet's question</comment>
+    <value>PowerToys Text Expander</value>
+    <comment>Title of the window that asks for the answer to a snippet's question. {Locked="PowerToys"}</comment>
   </data>
   <data name="Prompt_UnnamedLabel" xml:space="preserve">
     <value>Your answer</value>
@@ -79,8 +79,8 @@
     <comment>Inline validation shown when a snippet prompt requires an answer and the answer box is empty</comment>
   </data>
   <data name="Message_Title" xml:space="preserve">
-    <value>Text Expander</value>
-    <comment>Title of Text Expander's message boxes</comment>
+    <value>PowerToys Text Expander</value>
+    <comment>Title of Text Expander's message boxes. {Locked="PowerToys"}</comment>
   </data>
   <data name="Error_Elevated" xml:space="preserve">
     <value>Text Expander can't run as administrator. Restart PowerToys without administrator rights.</value>

@@ -647,7 +647,8 @@ Your Name</value>
     <value>Your snippet file was changed somewhere else, so this change wasn't saved. The list has been updated. Try again.</value>
   </data>
   <data name="TextExpander_EditorTitle" xml:space="preserve">
-    <value>Text Expander - Manage snippets</value>
+    <value>PowerToys Text Expander - Manage snippets</value>
+    <comment>Title of the snippet editor window. {Locked="PowerToys"}</comment>
   </data>
   <data name="TextExpander_EditorHeading.Text" xml:space="preserve">
     <value>Manage snippets</value>

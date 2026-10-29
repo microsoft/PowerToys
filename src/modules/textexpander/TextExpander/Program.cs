@@ -515,7 +515,7 @@ internal static class Program
     }
 
     // The same name as the prompt window's title.
-    private static string MessageTitle => EngineText.Get("Message_Title", "Text Expander");
+    private static string MessageTitle => EngineText.Get("Message_Title", "PowerToys Text Expander");
 
     private static void Info(string message)
         => _ = Native.MessageBoxW(IntPtr.Zero, message, MessageTitle, Native.MB_OK | Native.MB_ICONINFORMATION | Native.MB_SETFOREGROUND);

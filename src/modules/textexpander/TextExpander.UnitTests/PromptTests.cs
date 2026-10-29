@@ -43,7 +43,7 @@ public sealed class PromptTests
         Assert.AreEqual("what type", PromptText.Label("  what type "));
         Assert.AreEqual("Your answer", PromptText.Label(string.Empty), "{{prompt:}} has no label of its own.");
         Assert.AreEqual("Your answer", PromptText.Label(null));
-        Assert.AreEqual("Text Expander", PromptText.Title);
+        Assert.AreEqual("PowerToys Text Expander", PromptText.Title, "The prompt pops up over other apps, so it names PowerToys.");
     }
 
     [TestMethod]
