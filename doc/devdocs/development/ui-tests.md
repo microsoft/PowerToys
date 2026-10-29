@@ -158,12 +158,13 @@ warning while the dedicated image is unconfigured; explicitly requesting it repo
 
 #### Dedicated ARM64 Grab and Move CI image
 
-Configure `.pipelines\v2\templates\variables-umdf-hid.yml` before the first real ARM64 run:
+Configuration lives in `.pipelines\v2\templates\variables-umdf-hid.yml`:
 
-- Set `UmdfHidArm64Image` to the new `ImageOverride` name. Its empty default disables the route.
-- Provision the separate `SHINE-INT-Testing-arm64-UMDF` / `SHINE-OSS-Testing-arm64-UMDF` pools, or
-  update `UmdfHidArm64InternalPool` / `UmdfHidArm64OssPool` to their actual names. Do not reuse the
-  ordinary ARM64 pool.
+- `UmdfHidArm64Image` selects `SHINE-W11-Preview-Testing-arm64-TestSigning` through `ImageOverride`.
+  An empty value disables the route.
+- The dedicated job uses the existing `SHINE-INT-Testing-arm64` / `SHINE-OSS-Testing-arm64` pools.
+  Image isolation is explicit: ordinary jobs retain the pool's default image. Do not make the
+  TESTSIGNING image the pool default.
 - The dedicated English-language Windows 11 ARM64 image needs TESTSIGNING enabled before boot,
   an elevated agent, and the same logged-on standard-user desktop/UI-test prerequisites as the
   ordinary test image. The job checks the architecture and existing boot configuration; it
@@ -173,7 +174,7 @@ Once configured, PR selection, full builds and official/specific-build runs rout
 `GrabAndMove.UITests` to a separate `_UmdfHid` job. All/mixed selections keep every other suite on
 the ordinary pool. Official/specific-build runs retain both machine-level and per-user jobs.
 Native ARM64 driver artifacts are built on the ordinary build agents, never installed there.
-The experimental ARM64 transport-smoke path also uses the dedicated pool/image.
+The experimental ARM64 transport-smoke path also explicitly selects the TESTSIGNING image.
 
 ## Running `.Next` tests in persistent local VMs
 

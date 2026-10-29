@@ -1,9 +1,9 @@
 variables:
-  # Set the image name only after the dedicated ARM64 TESTSIGNING image/pools are ready.
-  # Empty keeps the route disabled; ordinary ARM64 agents never install this driver.
+  # Only the isolated UMDF jobs request this image; the pool's default image stays unchanged.
+  # Empty disables the route; ordinary ARM64 agents never install this driver.
   - name: UmdfHidArm64Image
-    value: ''
+    value: SHINE-W11-Preview-Testing-arm64-TestSigning
   - name: UmdfHidArm64InternalPool
-    value: SHINE-INT-Testing-arm64-UMDF
+    value: SHINE-INT-Testing-arm64
   - name: UmdfHidArm64OssPool
-    value: SHINE-OSS-Testing-arm64-UMDF
+    value: SHINE-OSS-Testing-arm64

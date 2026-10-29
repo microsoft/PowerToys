@@ -5,11 +5,11 @@
 $templates = Join-Path $PSScriptRoot '..\v2\templates'
 
 Describe 'Dedicated ARM64 virtual HID routing' {
-    It 'keeps the image unconfigured and uses different pools from ordinary ARM64' {
+    It 'pins the TESTSIGNING image in the existing ARM64 pools' {
         $config = Get-Content (Join-Path $templates 'variables-umdf-hid.yml') -Raw
-        $config | Should Match "name: UmdfHidArm64Image\r?\n\s+value: ''"
-        $config | Should Match 'value: SHINE-INT-Testing-arm64-UMDF'
-        $config | Should Match 'value: SHINE-OSS-Testing-arm64-UMDF'
+        $config | Should Match 'value: SHINE-W11-Preview-Testing-arm64-TestSigning'
+        $config | Should Match 'value: SHINE-INT-Testing-arm64\r?\n'
+        $config | Should Match 'value: SHINE-OSS-Testing-arm64\r?\n'
         foreach ($root in @('pipeline-ci-build.yml', 'pipeline-ui-tests-automation.yml')) {
             (Get-Content (Join-Path $templates $root) -Raw) | Should Match 'template: variables-umdf-hid.yml'
         }
@@ -52,7 +52,7 @@ Describe 'Dedicated ARM64 virtual HID routing' {
         $testsOnly | Should Match "eq\(variables\['BuildPlatform'\], 'arm64'\), ne\('\$\{\{ variables.UmdfHidArm64Image \}\}', ''\)"
     }
 
-    It 'selects the dedicated pool/image without changing the existing default pool branches' {
+    It 'selects the dedicated image without changing the existing default pool branches' {
         $job = Get-Content (Join-Path $templates 'job-test-project.yml') -Raw
         $job | Should Match "if eq\(parameters.umdfHidArm64Dedicated, true\)"
         $job | Should Match 'name: \$\{\{ variables.UmdfHidArm64InternalPool \}\}'
