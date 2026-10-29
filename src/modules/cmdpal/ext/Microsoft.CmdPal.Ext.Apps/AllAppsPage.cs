@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -19,6 +20,7 @@ public sealed partial class AllAppsPage : ListPage
 {
     private readonly Lock _listLock = new();
     private readonly IAppCache _appCache;
+    private readonly AllAppsSettings _settings;
 
     private volatile AppListSnapshot _snapshot = AppListSnapshot.Empty;
 
@@ -28,7 +30,13 @@ public sealed partial class AllAppsPage : ListPage
     }
 
     public AllAppsPage(IAppCache appCache)
+        : this(appCache, AllAppsSettings.Instance)
     {
+    }
+
+    internal AllAppsPage(IAppCache appCache, AllAppsSettings settings)
+    {
+        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _appCache = appCache ?? throw new ArgumentNullException(nameof(appCache));
         this.Name = Resources.all_apps;
         this.Icon = Icons.AllAppsIcon;
@@ -64,7 +72,8 @@ public sealed partial class AllAppsPage : ListPage
             return false;
         }
 
-        return _snapshot.ItemsByCommandId.TryGetValue(commandId, out item);
+        item = _snapshot.Commands.GetApp(commandId);
+        return item is not null;
     }
 
     private void BuildListItems()
@@ -79,17 +88,9 @@ public sealed partial class AllAppsPage : ListPage
                 stopwatch.Start();
 
                 var items = GetPrograms();
-                var itemsByCommandId = new Dictionary<string, AppListItem>(items.Length, StringComparer.Ordinal);
-                foreach (var item in items)
-                {
-                    var commandId = item.Command?.Id;
-                    if (!string.IsNullOrEmpty(commandId))
-                    {
-                        itemsByCommandId.TryAdd(commandId, item);
-                    }
-                }
-
-                _snapshot = new AppListSnapshot(items, itemsByCommandId);
+                var aliases = _settings.RetainAppCommandAliases(items.Select(item => item.App));
+                var commands = new AppListItemSnapshot(items, [], commandAliases: aliases);
+                _snapshot = new AppListSnapshot(items, commands);
 
                 this.IsLoading = false;
 
@@ -123,7 +124,7 @@ public sealed partial class AllAppsPage : ListPage
 
         items.Sort((a, b) => string.Compare(a.Title, b.Title, StringComparison.Ordinal));
 
-        if (AllAppsSettings.Instance.HideAppDescriptions)
+        if (_settings.HideAppDescriptions)
         {
             foreach (var item in items)
             {
@@ -131,13 +132,21 @@ public sealed partial class AllAppsPage : ListPage
             }
         }
 
-        return [.. items];
+        return items.GroupBy(item => item.Command!.Id, StringComparer.OrdinalIgnoreCase).Select(group =>
+        {
+            var preferred = group.First();
+            preferred.App.CommandIds = group.SelectMany(item => item.App.CommandIds).Distinct(StringComparer.Ordinal).ToArray();
+            return preferred;
+        }).ToArray();
     }
 
     private sealed record AppListSnapshot(
         AppListItem[] Items,
-        IReadOnlyDictionary<string, AppListItem> ItemsByCommandId)
+        AppListItemSnapshot Commands)
     {
-        public static AppListSnapshot Empty { get; } = new([], new Dictionary<string, AppListItem>(StringComparer.Ordinal));
+        public static AppListSnapshot Empty { get; } = new([], new AppListItemSnapshot([], []));
     }
+
+    /// <summary>Captures the published command lookup without waiting for discovery.</summary>
+    public AppListItemSnapshot GetSnapshot() => _snapshot.Commands;
 }

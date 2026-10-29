@@ -194,7 +194,9 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
         }
 
         var recentCommands = _appStateService.State.RecentCommands;
-        var withoutItem = recentCommands.WithoutHistoryItem(item.CommandId);
+        var appSnapshot = item.ProviderId == AllAppsCommandProvider.WellKnownId ? AllAppsCommandProvider.Page.GetSnapshot() : null;
+        string CanonicalId(string id) => appSnapshot?.GetApp(id)?.Command?.Id ?? id;
+        var withoutItem = recentCommands.WithoutHistoryItem(item.CommandId, CanonicalId);
         if (ReferenceEquals(recentCommands, withoutItem))
         {
             return false;
@@ -202,7 +204,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
 
         _appStateService.UpdateState(state => state with
         {
-            RecentCommands = state.RecentCommands.WithoutHistoryItem(item.CommandId),
+            RecentCommands = state.RecentCommands.WithoutHistoryItem(item.CommandId, CanonicalId),
         });
         return true;
     }
@@ -308,7 +310,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
             recentCommandIds,
             availableCommands,
             new InProcObject<IListPage>(AllAppsCommandProvider.Page),
-            includeApps: includeRecentCommands && _topLevelCommandManager.IsProviderActive(AllAppsCommandProvider.WellKnownId),
+            includeApps: _topLevelCommandManager.IsProviderActive(AllAppsCommandProvider.WellKnownId),
             pinnedCommandLimit: configuration.PinnedCommandLimit,
             recentCommandLimit: configuration.RecentCommandLimit,
             includeRegular: false,

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions;
@@ -126,8 +127,10 @@ public class MockUWPApplication : IUWPApplication
         var iconPath = LogoType != LogoType.Error ? LogoPath : string.Empty;
         return new AppItem()
         {
+            CatalogId = AppIdentity.ForPackaged(UserModelId),
             Name = Name,
             Subtitle = Description,
+            CommandIds = [AppCommand.GenerateId(Name, Description, string.Empty)],
             Type = "Packaged Application", // Equivalent to UWPApplication.Type()
             IcoPath = iconPath,
             DirPath = Location,

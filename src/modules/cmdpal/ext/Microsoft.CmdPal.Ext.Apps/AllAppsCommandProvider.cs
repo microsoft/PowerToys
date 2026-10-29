@@ -17,7 +17,9 @@ public partial class AllAppsCommandProvider : CommandProvider
     public const string WellKnownId = "AllApps";
     internal const int DefaultResultLimit = 10;
 
-    public static readonly AllAppsPage Page = new();
+    private static readonly Lazy<AllAppsPage> SharedPage = new(() => new());
+
+    public static AllAppsPage Page => SharedPage.Value;
 
     private readonly AllAppsPage _page;
     private readonly CommandItem _listItem;
@@ -163,15 +165,7 @@ public partial class AllAppsCommandProvider : CommandProvider
 
     public override ICommandItem? GetCommandItem(string id)
     {
-        var items = _page.GetItems();
-        foreach (var item in items)
-        {
-            if (item.Command.Id == id)
-            {
-                return item;
-            }
-        }
-
-        return null;
+        _ = _page.GetItems();
+        return _page.GetSnapshot().GetCommandItem(id);
     }
 }

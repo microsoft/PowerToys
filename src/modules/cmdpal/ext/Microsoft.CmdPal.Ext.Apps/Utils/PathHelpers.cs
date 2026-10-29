@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Microsoft.CmdPal.Ext.Apps.Utils;
@@ -66,4 +67,24 @@ internal static class PathHelpers
         return directory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
             + Path.DirectorySeparatorChar;
     }
+
+    internal static string NormalizePath(string path)
+    {
+        try
+        {
+            return Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            return path;
+        }
+    }
+
+    internal static bool IsExecutablePath(string path)
+    {
+        var extension = Path.GetExtension(path);
+        return !string.IsNullOrEmpty(extension) && ExecutableApplicationExtensions.Contains(extension[1..]);
+    }
+
+    private static readonly HashSet<string> ExecutableApplicationExtensions = new(StringComparer.OrdinalIgnoreCase) { "exe", "bat", "bin", "com", "cpl", "msc", "msi", "cmd", "ps1", "job", "msp", "mst", "sct", "ws", "wsh", "wsf" };
 }

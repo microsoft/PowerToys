@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Xml;
 using ManagedCommon;
+using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Properties;
@@ -363,6 +364,7 @@ public class UWPApplication : IUWPApplication
         var jumboIconPath = app.JumboLogoType != LogoType.Error ? app.JumboLogoPath : string.Empty;
         var item = new AppItem
         {
+            CatalogId = AppIdentity.ForPackaged(app.UserModelId),
             Name = app.Name,
             Subtitle = app.Description,
             Type = UWPApplication.Type(),
@@ -375,6 +377,7 @@ public class UWPApplication : IUWPApplication
             AppIdentifier = app.GetAppIdentifier(),
             PackageFamilyName = app.Package.FamilyName,
         };
+        item.CommandIds = [AppCommand.GenerateId(item.Name, item.Subtitle, item.ExePath)];
         return item;
     }
 

@@ -28,7 +28,7 @@ public class AllAppsPageTests : AppsTestBase
         var mockCache = new MockAppCache();
 
         // Act
-        var page = new AllAppsPage(mockCache);
+        var page = new AllAppsPage(mockCache, Settings);
 
         // Assert
         Assert.IsNotNull(page);
@@ -59,7 +59,7 @@ public class AllAppsPageTests : AppsTestBase
         mockCache.AddWin32Program(win32App);
         mockCache.AddUWPApplication(uwpApp);
 
-        var page = new AllAppsPage(mockCache);
+        var page = new AllAppsPage(mockCache, Settings);
 
         // Wait a bit for initialization to complete
         await Task.Delay(100);
@@ -81,7 +81,7 @@ public class AllAppsPageTests : AppsTestBase
     {
         var mockCache = new MockAppCache();
         mockCache.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe"));
-        var page = new AllAppsPage(mockCache);
+        var page = new AllAppsPage(mockCache, Settings);
         await Task.Delay(100);
 
         var expected = page.GetItems().OfType<AppListItem>().Single();
@@ -102,9 +102,9 @@ public class AllAppsPageTests : AppsTestBase
 
         try
         {
-            AllAppsSettings.Instance.Settings.Update("{\"apps.HideAppDescriptions\": \"true\"}");
+            Settings.Settings.Update("{\"apps.HideAppDescriptions\": \"true\"}");
 
-            var page = new AllAppsPage(mockCache);
+            var page = new AllAppsPage(mockCache, Settings);
             await Task.Delay(100);
 
             // Act
@@ -117,7 +117,7 @@ public class AllAppsPageTests : AppsTestBase
         }
         finally
         {
-            AllAppsSettings.Instance.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
+            Settings.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
         }
     }
 
@@ -131,9 +131,9 @@ public class AllAppsPageTests : AppsTestBase
 
         try
         {
-            AllAppsSettings.Instance.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
+            Settings.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
 
-            var page = new AllAppsPage(mockCache);
+            var page = new AllAppsPage(mockCache, Settings);
             await Task.Delay(100);
 
             // Act
@@ -146,7 +146,7 @@ public class AllAppsPageTests : AppsTestBase
         }
         finally
         {
-            AllAppsSettings.Instance.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
+            Settings.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
         }
     }
 

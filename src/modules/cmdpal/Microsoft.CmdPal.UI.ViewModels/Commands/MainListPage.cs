@@ -149,7 +149,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _recentCommands = _appStateService.State.RecentCommands;
         _tlcManager = topLevelCommandManager;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
-        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateService.State.RecentCommands, _fuzzyMatcherProvider.Current, ResolveProviderSearchWeight);
+        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, GetAppHistory(_appStateService.State.RecentCommands, TopLevelCommandResolver.GetAppsSnapshot(_allAppsPage)), _fuzzyMatcherProvider.Current, ResolveProviderSearchWeight, appSnapshot: TopLevelCommandResolver.GetAppsSnapshot(_allAppsPage));
         _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, _settingsService.Settings.FallbackRanks);
 
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
@@ -744,7 +744,9 @@ public sealed partial class MainListPage : DynamicListPage,
                         .Select(item => new InProcObject<IListItem>(item)).ToList();
 
                     // We need to remove pinned apps from allNewApps so they don't show twice.
-                    var pinnedCommandIds = _settingsService.Settings.GetPinnedCommandIds(AllAppsCommandProvider.WellKnownId);
+                    var lookup = TopLevelCommandResolver.GetAppsSnapshot(_allAppsPage);
+                    var pinnedCommandIds = _settingsService.Settings.GetPinnedCommandIds(AllAppsCommandProvider.WellKnownId)
+                        .Select(id => lookup.GetApp(id)?.Command?.Id ?? id).ToHashSet(StringComparer.Ordinal);
 
                     if (pinnedCommandIds.Count > 0)
                     {
@@ -782,7 +784,8 @@ public sealed partial class MainListPage : DynamicListPage,
         // Snapshot every scoring input once, up front: the live fields can be swapped mid-pass when
         // a selection calls WithHistoryItem on another thread, which would mix two frecency
         // snapshots into one pass or race a parallel thread against an unwarmed history index.
-        var recent = _appStateService.State.RecentCommands;
+        var appSnapshot = TopLevelCommandResolver.GetAppsSnapshot(_allAppsPage);
+        var recent = GetAppHistory(_appStateService.State.RecentCommands, appSnapshot);
         recent.PrewarmIndex();
         var matcher = _fuzzyMatcherProvider.Current;
         var settings = _settingsService.Settings;
@@ -799,9 +802,9 @@ public sealed partial class MainListPage : DynamicListPage,
         Func<InProcObject<IListItem>, ProviderSearchWeight> appsProviderLookup = _ => appsProviderWeight;
 
         ScoringFunction<InProcObject<IListItem>> commandsScorer = (in FuzzyQuery q, InProcObject<IListItem> item) =>
-            ScoreTopLevelItem(in q, item, recent, matcher, commandsProviderLookup, scoringNow);
+            ScoreTopLevelItem(in q, item, recent, matcher, commandsProviderLookup, scoringNow, appSnapshot);
         ScoringFunction<InProcObject<IListItem>> appsScorer = (in FuzzyQuery q, InProcObject<IListItem> item) =>
-            ScoreTopLevelItem(in q, item, recent, matcher, appsProviderLookup, scoringNow);
+            ScoreTopLevelItem(in q, item, recent, matcher, appsProviderLookup, scoringNow, appSnapshot);
 
         var scoredFilteredItems = InternalListHelpers.FilterListWithScores(itemsSource, searchQuery, commandsScorer);
 
@@ -921,7 +924,8 @@ public sealed partial class MainListPage : DynamicListPage,
         IRecentCommandsManager history,
         IPrecomputedFuzzyMatcher precomputedFuzzyMatcher,
         Func<InProcObject<IListItem>, ProviderSearchWeight>? providerWeightLookup = null,
-        DateTimeOffset? now = null)
+        DateTimeOffset? now = null,
+        AppListItemSnapshot? appSnapshot = null)
     {
         var title = topLevelOrAppItem.Safe.Title;
         if (string.IsNullOrWhiteSpace(title))
@@ -987,7 +991,10 @@ public sealed partial class MainListPage : DynamicListPage,
             return 0;
         }
 
-        var frecencyWeight = history.GetCommandHistoryWeight(id, now ?? DateTimeOffset.UtcNow);
+        var historyId = topLevelOrAppItem.Safe is AppListItem || topLevelOrAppItem.Safe is TopLevelViewModel { CommandProviderId: AllAppsCommandProvider.WellKnownId }
+            ? appSnapshot?.GetApp(id)?.Command?.Id ?? id
+            : id;
+        var frecencyWeight = history.GetCommandHistoryWeight(historyId, now ?? DateTimeOffset.UtcNow);
         var aliasSubstringBonus = isAliasSubstringMatch && !isAliasMatch ? MainListRanker.AliasSubstringBonus : 0.0;
 
         // Per-provider weight is a within-tier nudge only. Resolving it here (rather than in
@@ -1032,9 +1039,16 @@ public sealed partial class MainListPage : DynamicListPage,
         return finalScore;
     }
 
+    private Tuple<RecentCommandsManager, AppListItemSnapshot, RecentCommandsManager>? _appHistoryCache;
+
     public void UpdateHistory(InProcObject<IListItem> topLevelOrAppItem)
     {
         var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
+        if (topLevelOrAppItem.Safe is AppListItem || topLevelOrAppItem.Safe is TopLevelViewModel { CommandProviderId: AllAppsCommandProvider.WellKnownId })
+        {
+            id = TopLevelCommandResolver.GetAppsSnapshot(_allAppsPage).GetApp(id)?.Command?.Id ?? id;
+        }
+
         _appStateService.UpdateState(state => state with
         {
             RecentCommands = state.RecentCommands.WithHistoryItem(id),
@@ -1196,4 +1210,17 @@ public sealed partial class MainListPage : DynamicListPage,
         InProcObject<IListItem>[] Pinned,
         InProcObject<IListItem>[] Recent,
         InProcObject<IListItem>[] Regular);
+
+    internal RecentCommandsManager GetAppHistory(RecentCommandsManager history, AppListItemSnapshot appSnapshot)
+    {
+        var cached = Volatile.Read(ref _appHistoryCache);
+        if (cached is not null && ReferenceEquals(cached.Item1, history) && ReferenceEquals(cached.Item2, appSnapshot))
+        {
+            return cached.Item3;
+        }
+
+        var projected = history.WithCanonicalCommandIds(id => appSnapshot.GetApp(id)?.Command?.Id ?? id);
+        Volatile.Write(ref _appHistoryCache, Tuple.Create(history, appSnapshot, projected));
+        return projected;
+    }
 }

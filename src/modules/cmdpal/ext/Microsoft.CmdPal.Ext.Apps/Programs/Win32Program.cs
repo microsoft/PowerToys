@@ -7,10 +7,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 using System.Security;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ManagedCommon;
+using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
@@ -367,13 +369,25 @@ public partial class Win32Program : IProgram
         }
     }
 
-    private static Win32Program LnkProgram(string path)
+    internal static Win32Program LnkProgram(
+        string path,
+        AllAppsSettings? settings = null,
+        Func<Environment.SpecialFolder, string>? getFolderPath = null)
     {
         try
         {
             var program = CreateWin32Program(path);
-            var shellLinkHelper = new ShellLinkHelper();
-            var target = shellLinkHelper.RetrieveTargetPath(path);
+            program.AppType = ApplicationType.ShortcutApplication;
+            var link = ShellLinkReader.Read(path);
+            if (link is null)
+            {
+                return InvalidProgram;
+            }
+
+            var target = link.TargetPath;
+            program.PackagedAppUserModelId = link.PackagedAppUserModelId;
+            program.ExplicitAppUserModelId = link.ExplicitAppUserModelId;
+            program.WorkingDirectory = link.WorkingDirectory;
 
             if (!string.IsNullOrEmpty(target))
             {
@@ -391,14 +405,14 @@ public partial class Win32Program : IProgram
                 program.FullPath = Path.GetFullPath(target);
                 program.FullPathLocalized = ShellLocalization.Instance.GetLocalizedPath(target);
 
-                program.Arguments = shellLinkHelper.Arguments;
+                program.Arguments = link.Arguments;
 
                 // A .lnk could be a (Chrome) PWA, set correct AppType
                 program.AppType = program.IsWebApplication()
                     ? ApplicationType.WebApplication
                     : GetAppTypeFromPath(target);
 
-                var description = shellLinkHelper.Description;
+                var description = link.Description;
                 if (!string.IsNullOrEmpty(description))
                 {
                     program.Description = description;
@@ -411,38 +425,38 @@ public partial class Win32Program : IProgram
                         program.Description = info.FileDescription;
                     }
                 }
+            }
 
-                if (program.AppType is ApplicationType.GenericFile or ApplicationType.Folder)
+            if (program.AppType is ApplicationType.GenericFile or ApplicationType.Folder)
+            {
+                settings ??= AllAppsSettings.Instance;
+                var lnk = program.LnkFilePath;
+                if (!string.IsNullOrEmpty(lnk))
                 {
-                    var includeNonAppsOnDesktop = AllAppsSettings.Instance.IncludeNonAppsOnDesktop;
-                    var includeNonAppsInStartMenu = AllAppsSettings.Instance.IncludeNonAppsInStartMenu;
+                    var isDesktop = StartsWithFolder(lnk, Environment.SpecialFolder.Desktop) ||
+                                    StartsWithFolder(lnk, Environment.SpecialFolder.CommonDesktopDirectory);
 
-                    var lnk = program.LnkFilePath;
-                    if (!string.IsNullOrEmpty(lnk))
+                    var isStartMenu = StartsWithFolder(lnk, Environment.SpecialFolder.StartMenu) ||
+                                      StartsWithFolder(lnk, Environment.SpecialFolder.CommonStartMenu);
+
+                    if ((isDesktop && !settings.IncludeNonAppsOnDesktop) || (isStartMenu && !settings.IncludeNonAppsInStartMenu))
                     {
-                        var isDesktop = StartsWithFolder(lnk, Environment.SpecialFolder.Desktop) ||
-                                        StartsWithFolder(lnk, Environment.SpecialFolder.CommonDesktopDirectory);
-
-                        var isStartMenu = StartsWithFolder(lnk, Environment.SpecialFolder.StartMenu) ||
-                                          StartsWithFolder(lnk, Environment.SpecialFolder.CommonStartMenu);
-
-                        if ((isDesktop && !includeNonAppsOnDesktop) || (isStartMenu && !includeNonAppsInStartMenu))
-                        {
-                            program.Enabled = false;
-                        }
+                        program.Enabled = false;
                     }
                 }
             }
 
-            program.IcoPath = !string.IsNullOrEmpty(shellLinkHelper.IconLocation)
-                ? shellLinkHelper.IconLocation
+            program.IcoPath = !string.IsNullOrEmpty(link.IconLocation)
+                ? link.IconLocation
                 : program.FullPath;
 
             return program;
 
-            static bool StartsWithFolder(string path, Environment.SpecialFolder folder)
+            bool StartsWithFolder(string path, Environment.SpecialFolder folder)
             {
-                var folderPath = Environment.GetFolderPath(folder, Environment.SpecialFolderOption.DoNotVerify);
+                var folderPath = getFolderPath is null
+                    ? Environment.GetFolderPath(folder, Environment.SpecialFolderOption.DoNotVerify)
+                    : getFolderPath(folder);
                 return !string.IsNullOrEmpty(folderPath)
                        && path.StartsWith(folderPath, StringComparison.OrdinalIgnoreCase);
             }
@@ -843,16 +857,36 @@ public partial class Win32Program : IProgram
 
         public bool Equals(Win32Program? app1, Win32Program? app2)
         {
-            return app1 is null && app2 is null
-                ? true
-                : app1 is not null
-                    && app2 is not null
-                    && (app1.Name?.ToUpperInvariant(), app1.ExecutableName?.ToUpperInvariant(), app1.FullPath?.ToUpperInvariant())
-                    .Equals((app2.Name?.ToUpperInvariant(), app2.ExecutableName?.ToUpperInvariant(), app2.FullPath?.ToUpperInvariant()));
+            if (app1 is null && app2 is null)
+            {
+                return true;
+            }
+
+            if (app1 is null || app2 is null)
+            {
+                return false;
+            }
+
+            return string.Equals(app1.Name, app2.Name, StringComparison.OrdinalIgnoreCase)
+                   && string.Equals(app1.ExecutableName, app2.ExecutableName, StringComparison.OrdinalIgnoreCase)
+                   && app1.Target.Equals(app2.Target)
+                   && string.Equals(app1.Arguments, app2.Arguments, StringComparison.Ordinal)
+                   && string.Equals(
+                       GetDistinctWorkingDirectory(app1.AppExecutionAlias?.TargetPath ?? app1.FullPath, app1.WorkingDirectory, app1.ExplicitAppUserModelId),
+                       GetDistinctWorkingDirectory(app2.AppExecutionAlias?.TargetPath ?? app2.FullPath, app2.WorkingDirectory, app2.ExplicitAppUserModelId),
+                       StringComparison.OrdinalIgnoreCase);
         }
 
-        public int GetHashCode(Win32Program obj)
-            => (obj.Name?.ToUpperInvariant(), obj.ExecutableName?.ToUpperInvariant(), obj.FullPath?.ToUpperInvariant()).GetHashCode();
+        public int GetHashCode(Win32Program app)
+        {
+            HashCode hash = default;
+            hash.Add(app.Name, StringComparer.OrdinalIgnoreCase);
+            hash.Add(app.ExecutableName, StringComparer.OrdinalIgnoreCase);
+            hash.Add(app.Target);
+            hash.Add(app.Arguments, StringComparer.Ordinal);
+            hash.Add(GetDistinctWorkingDirectory(app.AppExecutionAlias?.TargetPath ?? app.FullPath, app.WorkingDirectory, app.ExplicitAppUserModelId), StringComparer.OrdinalIgnoreCase);
+            return hash.ToHashCode();
+        }
     }
 
     public static List<Win32Program> DeduplicatePrograms(IEnumerable<Win32Program> programs)
@@ -900,39 +934,35 @@ public partial class Win32Program : IProgram
         }
     }
 
-    private static bool TryGetIcoPathForRunCommandProgram(Win32Program program, out string? icoPath)
+    private static ReparsePoint.AppExecutionAliasInfo? GetAppExecutionAliasInfoForRunCommandProgram(Win32Program program)
     {
-        icoPath = null;
-
         if (program.AppType != ApplicationType.RunCommand)
         {
-            return false;
+            return null;
         }
 
         if (string.IsNullOrEmpty(program.FullPath))
         {
-            return false;
+            return null;
         }
 
         // https://msdn.microsoft.com/library/windows/desktop/ee872121
         try
         {
-            var redirectionPath = ReparsePoint.GetTarget(program.FullPath);
-            if (string.IsNullOrEmpty(redirectionPath))
+            var alias = ReparsePoint.GetAppExecutionAliasInfo(program.FullPath);
+            if (alias is null)
             {
-                return false;
+                return null;
             }
 
-            icoPath = ExpandEnvironmentVariables(redirectionPath);
-            return true;
+            return alias with { TargetPath = ExpandEnvironmentVariables(alias.TargetPath) };
         }
         catch (IOException e)
         {
             Logger.LogError(e.Message);
         }
 
-        icoPath = null;
-        return false;
+        return null;
     }
 
     private static Win32Program GetRunCommandProgramFromPath(string path)
@@ -942,9 +972,12 @@ public partial class Win32Program : IProgram
         {
             program.AppType = ApplicationType.RunCommand;
 
-            if (TryGetIcoPathForRunCommandProgram(program, out var icoPath))
+            var appExecutionAlias = GetAppExecutionAliasInfoForRunCommandProgram(program);
+            program.AppExecutionAlias = appExecutionAlias;
+            program.PackagedAppUserModelId = appExecutionAlias?.Aumid ?? string.Empty;
+            if (!string.IsNullOrEmpty(appExecutionAlias?.TargetPath))
             {
-                program.IcoPath = icoPath ?? string.Empty;
+                program.IcoPath = appExecutionAlias.TargetPath;
             }
         }
 
@@ -1086,8 +1119,13 @@ public partial class Win32Program : IProgram
                 app.FullPath) :
             app.IcoPath;
 
-        return new AppItem()
+        var workingDirectory = AppIdentity.GetDistinctWorkingDirectory(app.AppExecutionAlias?.TargetPath ?? app.FullPath, app.WorkingDirectory, app.ExplicitAppUserModelId);
+        var item = new AppItem()
         {
+            CatalogId = AppIdentity.ForWin32(
+                app.Target,
+                app.Arguments,
+                workingDirectory),
             Name = app.Name,
             Subtitle = app.Description,
             Type = app.Type(),
@@ -1098,6 +1136,16 @@ public partial class Win32Program : IProgram
             AppIdentifier = app.GetAppIdentifier(),
             FullExecutablePath = app.FullPath,
         };
+        var launchIdentity = AppIdentity.ForWin32(
+            string.IsNullOrEmpty(app.LnkFilePath) ? app.Target : LaunchTarget.FilePath(app.LnkFilePath),
+            app.Arguments,
+            workingDirectory);
+        item.CommandIds = AppIdentity.GetCommandIds(item.CatalogId)
+            .Concat(AppIdentity.GetCommandIds(launchIdentity))
+            .Prepend(AppCommand.GenerateId(item.Name, item.Subtitle, item.ExePath))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        return item;
     }
 
     /// <summary>
@@ -1144,4 +1192,21 @@ public partial class Win32Program : IProgram
         """,
         RegexOptions.IgnorePatternWhitespace)]
     private static partial Regex InternetShortcutURLPrefixesGenerator();
+
+    public string WorkingDirectory { get; set; } = string.Empty;
+
+    public string ExplicitAppUserModelId { get; set; } = string.Empty;
+
+    public string PackagedAppUserModelId { get; set; } = string.Empty;
+
+    internal LaunchTarget Target => AppType == ApplicationType.InternetShortcutApplication
+        ? LaunchTarget.Url(FullPath)
+        : LaunchTarget.FilePath(FullPath);
+
+    internal ReparsePoint.AppExecutionAliasInfo? AppExecutionAlias { get; set; }
+
+    internal static string GetDistinctWorkingDirectory(string targetPath, string workingDirectory, string? explicitAppUserModelId = null)
+    {
+        return AppIdentity.GetDistinctWorkingDirectory(targetPath, workingDirectory, explicitAppUserModelId);
+    }
 }
