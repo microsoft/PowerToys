@@ -1305,7 +1305,20 @@ public sealed partial class MainListPage : DynamicListPage,
                 return existing;
             }
 
-            var created = new FallbackSnapshotLease(snapshot, OnSnapshotLeaseReleased);
+            // A result wrapper can release its lease from a finalizer after the page is collected.
+            // Do not keep the page's managed snapshot registry alive only through that finalizer.
+            var owner = new WeakReference<MainListPage>(this);
+            var created = new FallbackSnapshotLease(snapshot, lease =>
+            {
+                if (owner.TryGetTarget(out var page))
+                {
+                    page.OnSnapshotLeaseReleased(lease);
+                }
+                else
+                {
+                    lease.CloseSnapshot();
+                }
+            });
             _fallbackSnapshotLeases[snapshot] = created;
             return created;
         }

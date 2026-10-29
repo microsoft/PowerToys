@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Text;
@@ -320,7 +321,8 @@ public sealed partial class FallbackCommandHostTests
     [TestMethod]
     public async Task ResultFallback_DoesNotUseLegacyQueryUpdates()
     {
-        var fallback = new RecordingFallback { QueryHandler = new RecordingQueryHandler() };
+        var handler = new RecordingQueryHandler();
+        var fallback = new RecordingFallback { QueryHandler = handler, FailNameRead = true };
         await using var services = CreateServices();
         var source = await LoadFallbackAsync(fallback, services);
         var settings = services.GetRequiredService<ISettingsService>();
@@ -336,10 +338,51 @@ public sealed partial class FallbackCommandHostTests
             appState.Object,
             new ListPage());
 
+        var resultsReady = new TaskCompletionSource<IListItem[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+        page.ItemsChanged += (_, _) =>
+        {
+            var items = page.GetItems().OfType<FallbackResultListItem>().Cast<IListItem>().ToArray();
+            if (items.Length > 0)
+            {
+                resultsReady.TrySetResult(items);
+            }
+        };
         page.SearchText = "query";
+        var results = await resultsReady.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         Assert.AreEqual(0, fallback.UpdateCount);
+        Assert.AreEqual(0, fallback.CreateCount);
+        Assert.AreEqual("query", handler.LastArgs?.Query);
+        Assert.IsFalse(string.IsNullOrEmpty(handler.LastArgs?.QueryId));
+        Assert.AreEqual(FallbackResultQueryManager.InitialRequestedItemCount, handler.LastArgs?.RequestedItemCount);
+        Assert.HasCount(1, results);
+        Assert.AreEqual("File result", results[0].Title);
         Assert.IsFalse(page.GetItems().Contains(source));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task FallbackSettings_ExposeQueryControlsOnlyForResultHandlers(bool hasQueryHandler)
+    {
+        var fallback = new RecordingFallback { QueryHandler = hasQueryHandler ? new RecordingQueryHandler() : null };
+        await using var services = CreateServices();
+        var wrapper = new CommandProviderWrapper(new TestProvider(fallback), TaskScheduler.Default);
+        await wrapper.LoadTopLevelCommands(services);
+        var settings = services.GetRequiredService<ISettingsService>();
+        var persisted = settings.Settings.ProviderSettings[wrapper.ProviderId];
+        using var provider = new ProviderSettingsViewModel(wrapper, persisted, settings);
+        var viewModel = new FallbackSettingsViewModel(wrapper.FallbackItems[0], persisted.FallbackCommands["fallback"], provider);
+
+        Assert.AreEqual(hasQueryHandler, viewModel.HasQuerySettings);
+        Assert.AreEqual(hasQueryHandler, viewModel.HasResultSettings);
+        Assert.AreEqual(0, viewModel.QueryDelayMilliseconds);
+        Assert.AreEqual(0, viewModel.MinimumQueryLength);
+        Assert.IsNull(persisted.FallbackCommands["fallback"].QueryDelayMilliseconds);
+        Assert.IsNull(persisted.FallbackCommands["fallback"].MinimumQueryLength);
+        Assert.AreEqual(
+            hasQueryHandler ? FallbackResultQueryManager.InitialRequestedItemCount : (uint?)null,
+            persisted.FallbackCommands["fallback"].MaximumVisibleItemCount);
     }
 
     [TestMethod]
@@ -503,9 +546,18 @@ public sealed partial class FallbackCommandHostTests
 
     private sealed partial class RecordingQueryHandler : IFallbackHandler2
     {
+        public IFallbackQueryArgs? LastArgs { get; private set; }
+
         public void UpdateQuery(string query) => Assert.Fail("V2 handlers must not receive legacy updates.");
 
         public IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args)
-            => throw new NotSupportedException("Result queries belong to the result-host layer.");
+        {
+            LastArgs = args;
+            return AsyncInfo.Run<IFallbackCommandResult, IFallbackCommandResult>((_, _) =>
+                Task.FromResult<IFallbackCommandResult>(new FallbackQueryResult(
+                    args.Query,
+                    args.QueryId,
+                    [new ListItem(new NoOpCommand { Id = "file.result" }) { Title = "File result" }])));
+        }
     }
 }
