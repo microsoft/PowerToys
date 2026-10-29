@@ -51,7 +51,20 @@ public partial class App : Application
         }
 
         EditorWindow = _window;
-        _window.Content = new TextExpanderPage();
+        var page = new TextExpanderPage();
+        _window.Content = page;
+
+        // The snippet dialog covers only the content, so the title bar's close button and Alt+F4 would
+        // otherwise lose an edited snippet without asking.
+        _window.AppWindow.Closing += (_, e) =>
+        {
+            if (page.AskToDiscardBeforeClosing())
+            {
+                // Shown, in case the close came from the taskbar while the window was minimized.
+                e.Cancel = true;
+                ActivateEditor();
+            }
+        };
         _window.Closed += (_, _) => EditorWindow = null;
         ActivateEditor();
     }

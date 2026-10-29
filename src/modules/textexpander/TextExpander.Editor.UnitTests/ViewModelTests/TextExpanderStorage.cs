@@ -299,20 +299,19 @@ namespace ViewModelTests
             model.Dispatch = action => action();
 
             // What the page holds while it asks to confirm deleting !b.
-            int id = model.Snippets.Single(row => row.Trigger == "!b").Id;
-            int revision = model.SnippetRevision;
+            TextExpanderSnippetViewModel confirming = model.Snippets.Single(row => row.Trigger == "!b");
 
             // Meanwhile a sync puts !c first and the watcher reloads, which numbers the rows again.
             File.WriteAllText(current, "!c=C\n!a=A\n!b=B\n");
             _environment.NotifyFilesChanged();
-            Assert.AreEqual("!a", model.Snippets.Single(row => row.Id == id).Trigger);
+            Assert.AreEqual("!a", model.Snippets.Single(row => row.Id == confirming.Id).Trigger);
 
-            Assert.AreEqual("TextExpander_FileChangedBeforeSave", model.DeleteSnippet(id, revision));
+            Assert.AreEqual("TextExpander_FileChangedBeforeSave", model.DeleteSnippet(confirming));
             Assert.AreEqual("!c=C\n!a=A\n!b=B\n", File.ReadAllText(current));
             Assert.AreEqual("!c,!a,!b", string.Join(',', model.Snippets.Select(row => row.Trigger)));
 
             // Deleting from the reloaded list removes exactly !b.
-            Assert.IsNull(model.DeleteSnippet(model.Snippets.Single(row => row.Trigger == "!b").Id, model.SnippetRevision));
+            Assert.IsNull(model.DeleteSnippet(model.Snippets.Single(row => row.Trigger == "!b")));
             Assert.AreEqual("!c=C\n!a=A\n", File.ReadAllText(current));
         }
 
@@ -918,12 +917,12 @@ namespace ViewModelTests
         private MockSettingsStore SaveInitialSettings(MockSettingsStore store)
         {
             store.InitialSettings ??= EditorSettings.For(_local);
-            store.SaveSettings(store.InitialSettings.ToJsonString(), TextExpanderSettings.ModuleName);
+            store.WriteExistingSettings(store.InitialSettings.ToJsonString());
             return store;
         }
 
-        private static Moq.Language.Flow.ISetup<TextExpanderSettingsUtils> SetupSettingsSave(Mock<TextExpanderSettingsUtils> store)
-            => store.Setup(s => s.SaveSettingsOrThrow(It.IsAny<string>(), TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName));
+        private static Moq.Language.Flow.ISetup<TextExpanderSettingsUtils, TextExpanderSettings> SetupSettingsSave(Mock<TextExpanderSettingsUtils> store)
+            => store.Setup(s => s.UpdateSnippetsPath(It.IsAny<string>()));
 
         private static string PersistedSnippetsPath(MockSettingsStore store)
             => store.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName).Properties.SnippetsPath.Value;

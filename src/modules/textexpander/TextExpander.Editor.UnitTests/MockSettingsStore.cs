@@ -67,17 +67,25 @@ internal sealed class MockSettingsStore : TextExpanderSettingsUtils
             ? (T)(object)CopyOfInitialSettings()
             : base.GetSettingsOrDefaultReadOnly<T>(powertoy, fileName);
 
-    public override void SaveSettingsOrThrow(string jsonSettings, string powertoy = "", string fileName = DefaultFileName)
+    public override TextExpanderSettings UpdateSnippetsPath(string snippetsPath)
     {
         try
         {
-            base.SaveSettingsOrThrow(jsonSettings, powertoy, fileName);
+            return base.UpdateSnippetsPath(snippetsPath);
         }
         catch (AtomicSettingsPublicationException ex)
         {
             LastError = ex;
             throw;
         }
+    }
+
+    /// <summary>Writes the settings file as it was before the test, without the injected save faults.</summary>
+    public void WriteExistingSettings(string json, string powertoy = TextExpanderSettings.ModuleName)
+    {
+        string path = GetSettingsFilePath(powertoy);
+        FileSystem.Directory.CreateDirectory(Path.GetDirectoryName(path));
+        FileSystem.File.WriteAllText(path, json);
     }
 
     protected override void PublishStagedSettingsFile(string stagingPath, string settingsPath, string backupPath, bool destinationExisted)

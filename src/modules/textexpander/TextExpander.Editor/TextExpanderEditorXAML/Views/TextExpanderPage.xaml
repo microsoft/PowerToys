@@ -49,6 +49,7 @@
 
                         <!--  Collapsed while closed too, so the panel's spacing doesn't leave a gap above Add a snippet.  -->
                         <InfoBar
+                            x:Name="SnippetErrorBar"
                             x:Uid="TextExpander_SnippetError"
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.HasSnippetError, Mode=OneWay}"
@@ -222,7 +223,7 @@
                                             Style="{StaticResource SubtleButtonStyle}"
                                             Tag="{x:Bind}">
                                             <Button.Flyout>
-                                                <MenuFlyout>
+                                                <MenuFlyout Opening="RowMenu_Opening">
                                                     <MenuFlyoutItem
                                                         x:Uid="TextExpander_EditSnippet"
                                                         Click="EditSnippet_Click"
@@ -371,8 +372,9 @@
                         <TextBlock x:Uid="TextExpander_Dialog_Trigger" Style="{ThemeResource BodyStrongTextBlockStyle}" />
                         <TextBox
                             x:Name="TriggerBox"
-                            AutomationProperties.AutomationId="TextExpander_Trigger"
                             x:Uid="TextExpander_Dialog_TriggerBox"
+                            AutomationProperties.AutomationId="TextExpander_Trigger"
+                            AutomationProperties.FullDescription="{x:Bind SnippetProblem, Mode=OneWay}"
                             FontFamily="Consolas"
                             GotFocus="SnippetField_GotFocus"
                             TextChanged="SnippetField_Changed" />
@@ -517,6 +519,7 @@
                     </StackPanel>
 
                     <InfoBar
+                        x:Name="SnippetProblemBar"
                         IsClosable="False"
                         IsOpen="{x:Bind HasSnippetProblem, Mode=OneWay}"
                         Message="{x:Bind SnippetProblem, Mode=OneWay}"

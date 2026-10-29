@@ -34,10 +34,59 @@ public sealed class SettingsOwnershipTests
         var latestSettings = new TextExpanderSettings();
         latestSettings.Properties.CaseSensitive = false;
         store.SaveSettings(latestSettings.ToJsonString(), TextExpanderSettings.ModuleName);
-        store.SaveSettingsOrThrow(EditorSettings.For(@"C:\NewSnippetFolder").ToJsonString(), TextExpanderSettings.ModuleName);
+        TextExpanderSettings updated = store.UpdateSnippetsPath(@"C:\NewSnippetFolder");
         TextExpanderSettings actual = store.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName);
         Assert.AreEqual(@"C:\NewSnippetFolder", actual.Properties.SnippetsPath.Value);
         Assert.IsFalse(actual.Properties.CaseSensitive);
+        Assert.AreEqual(updated.ToJsonString(), actual.ToJsonString());
+    }
+
+    [TestMethod]
+    public void SavingSettingsOrThrowKeepsEveryPropertyItIsGiven()
+    {
+        var store = new MockSettingsStore();
+        store.SaveSettings(EditorSettings.For(@"C:\Snippets").ToJsonString(), TextExpanderSettings.ModuleName);
+        TextExpanderSettings saved = EditorSettings.For(@"C:\NewSnippetFolder");
+        saved.Properties.CaseSensitive = false;
+        saved.Properties.InjectionBackend.Value = "type";
+
+        store.SaveSettingsOrThrow(saved.ToJsonString(), TextExpanderSettings.ModuleName);
+
+        Assert.AreEqual(saved.ToJsonString(), store.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName).ToJsonString());
+    }
+
+    [TestMethod]
+    public void SavingSettingsWaitsForAnOptionsUpdateInProgress()
+    {
+        var store = new MockSettingsStore();
+        store.SaveSettings(EditorSettings.For(@"C:\Snippets").ToJsonString(), TextExpanderSettings.ModuleName);
+        Task writer = null;
+        store.UpdateOptions(properties =>
+        {
+            writer = Task.Run(() => store.SaveSettings(EditorSettings.For(@"C:\Later").ToJsonString(), TextExpanderSettings.ModuleName));
+            Assert.IsFalse(writer.Wait(TimeSpan.FromMilliseconds(200)), "SaveSettings must wait for the settings claim.");
+            properties.CaseSensitive = false;
+        });
+
+        Assert.IsTrue(writer.Wait(TimeSpan.FromSeconds(5)));
+        TextExpanderSettings actual = store.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName);
+        Assert.AreEqual(@"C:\Later", actual.Properties.SnippetsPath.Value);
+        Assert.IsTrue(actual.Properties.CaseSensitive);
+    }
+
+    [TestMethod]
+    public void FailedSettingsSaveIsUndoneWithoutThrowing()
+    {
+        var store = new MockSettingsStore();
+        store.SaveSettings(EditorSettings.For(@"C:\Snippets").ToJsonString(), TextExpanderSettings.ModuleName);
+        string path = store.GetSettingsFilePath(TextExpanderSettings.ModuleName);
+        byte[] original = store.FileSystem.File.ReadAllBytes(path);
+        store.ThrowAfterPublication = true;
+
+        store.SaveSettings(EditorSettings.For(@"C:\Other").ToJsonString(), TextExpanderSettings.ModuleName);
+
+        StringAssert.Contains(store.StagedContents, "Other");
+        CollectionAssert.AreEqual(original, store.FileSystem.File.ReadAllBytes(path));
     }
 
     [TestMethod]

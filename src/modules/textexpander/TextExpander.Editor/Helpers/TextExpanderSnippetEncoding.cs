@@ -51,11 +51,17 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             return new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: false);
         }
 
-        /// <summary>Decodes a snippet file's bytes, and returns the encoding to save it with.</summary>
+        /// <summary>
+        /// Decodes a snippet file's bytes, and returns the encoding to save it with. Throws
+        /// <see cref="DecoderFallbackException"/> for bytes that aren't valid in that encoding, such as an ANSI
+        /// <c>é</c> (0xE9) in a file without a byte order mark: saving would write U+FFFD in their place.
+        /// </summary>
         public static string Decode(byte[] bytes, out Encoding encoding)
         {
             encoding = Detect(bytes, out int markLength);
-            return encoding.GetString(bytes, markLength, bytes.Length - markLength);
+            Encoding strict = (Encoding)encoding.Clone();
+            strict.DecoderFallback = DecoderFallback.ExceptionFallback;
+            return strict.GetString(bytes, markLength, bytes.Length - markLength);
         }
 
         /// <summary>Encodes <paramref name="text"/> with the encoding's byte order mark, if it has one, in one array.</summary>

@@ -50,6 +50,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         private TextBlock _triggerMeasure;
         private TextExpanderPromptEditSession _promptEditSession;
         private PromptFlyoutCloseIntent _promptFlyoutCloseIntent;
+        private MenuFlyout _rowMenu;
+        private bool _closeWindowOnDiscard;
 
         private enum PromptFlyoutCloseIntent
         {
@@ -67,6 +69,11 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             DataContext = ViewModel;
             this.InitializeComponent();
             InsetLikeAnInfoBarMessage(PrivacyNoticeBullets);
+
+            // An InfoBar announces itself as it opens only if it already has an automation peer, which nothing
+            // makes for a collapsed one, so these two get theirs now.
+            FrameworkElementAutomationPeer.CreatePeerForElement(SnippetErrorBar);
+            FrameworkElementAutomationPeer.CreatePeerForElement(SnippetProblemBar);
             BuildVariableMenu();
             BuildDateFormatGuide();
             _replacementEditor = new TextExpanderReplacementEditor(ReplacementBox, GetVariableColors);
@@ -103,6 +110,13 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 if (e.PropertyName == nameof(TextExpanderViewModel.CaseSensitive))
                 {
                     QueueKeycapColumnUpdate();
+                }
+
+                if (e.PropertyName == nameof(TextExpanderViewModel.SnippetRevision))
+                {
+                    // A reload makes new rows, so an open More options menu would act on a row that's gone, or on
+                    // another one once the list reuses its element.
+                    _rowMenu?.Hide();
                 }
 
                 if ((e.PropertyName is nameof(TextExpanderViewModel.CaseSensitive) or nameof(TextExpanderViewModel.RequireWordBoundary))
@@ -149,9 +163,16 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             get => _snippetProblem;
             private set
             {
+                bool wasShown = HasSnippetProblem;
                 if (Set(ref _snippetProblem, value))
                 {
                     OnPropertyChanged(nameof(HasSnippetProblem));
+
+                    // The bar announces itself as it opens, but not a different problem while it's open.
+                    if (wasShown && HasSnippetProblem)
+                    {
+                        Announce(SnippetProblemBar, value, "textExpanderSnippetProblem");
+                    }
                 }
             }
         }
@@ -447,8 +468,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 e.Handled = true;
                 CancelPromptEdit();
             }
-            else if (e.Key == global::Windows.System.VirtualKey.Enter)
+            else if (e.Key == global::Windows.System.VirtualKey.Enter && e.OriginalSource is not Button)
             {
+                // A button gets its own Enter, so the close button closes without saving, as its name says.
                 e.Handled = true;
                 TryCommitPromptEdit(TextExpanderPromptEditCloseReason.Enter, hideFlyout: true);
             }
@@ -615,12 +637,18 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
 
         private void ReloadSnippets_Click(object sender, RoutedEventArgs e)
         {
+            bool hadError = ViewModel.HasSnippetError;
             ViewModel.LoadSnippets();
             if (!ViewModel.HasSnippetError)
             {
                 SetSnippetStatus(
                     ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SnippetFolder_Reloaded"),
                     "textExpanderSnippetFileReloaded");
+            }
+            else if (hadError)
+            {
+                // The error bar announces itself only as it opens, and a failed Retry leaves it open.
+                Announce(SnippetErrorBar, ViewModel.SnippetError, "textExpanderSnippetError");
             }
         }
 
@@ -646,7 +674,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             }
 
             // Both the row and its menu's Edit come here.
-            TextExpanderSnippetViewModel snippet = GetSnippetFromSender(sender);
+            TextExpanderSnippetViewModel snippet = await GetListedSnippetAsync(sender);
             if (snippet != null)
             {
                 await ShowSnippetDialogAsync(snippet.Id, snippet.Trigger, snippet.Replacement);
@@ -660,7 +688,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 return;
             }
 
-            TextExpanderSnippetViewModel snippet = GetSnippetFromSender(sender);
+            TextExpanderSnippetViewModel snippet = await GetListedSnippetAsync(sender);
             if (snippet == null)
             {
                 return;
@@ -677,16 +705,13 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 return;
             }
 
-            TextExpanderSnippetViewModel snippet = GetSnippetFromSender(sender);
+            TextExpanderSnippetViewModel snippet = await GetListedSnippetAsync(sender);
             if (snippet == null)
             {
                 return;
             }
 
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-
-            // The file watcher can reload the list while this asks, so the delete carries the revision the ID came from.
-            int revision = ViewModel.SnippetRevision;
 
             // Confirm, because there is no undo and the file is the only copy.
             var confirm = new ContentDialog
@@ -707,7 +732,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 return;
             }
 
-            string error = ViewModel.DeleteSnippet(snippet.Id, revision);
+            // Refused if the list reloaded while this asked, since the row may name another snippet now.
+            string error = ViewModel.DeleteSnippet(snippet);
             if (error != null)
             {
                 await ShowErrorAsync(error);
@@ -726,6 +752,26 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         private static TextExpanderSnippetViewModel GetSnippetFromSender(object sender)
             => sender is FrameworkElement element ? TextExpanderRowSnippet.Resolve(element.Tag, element.DataContext) : null;
 
+        /// <summary>
+        /// Gets the sender's snippet, as <see cref="GetSnippetFromSender"/> does, or null after saying why its row
+        /// can't be used: a row from before a reload may have a different snippet's ID now.
+        /// </summary>
+        private async Task<TextExpanderSnippetViewModel> GetListedSnippetAsync(object sender)
+        {
+            TextExpanderSnippetViewModel snippet = GetSnippetFromSender(sender);
+            string problem = ViewModel.ValidateRow(snippet);
+            if (problem == null)
+            {
+                return snippet;
+            }
+
+            await ShowErrorAsync(problem);
+            return null;
+        }
+
+        /// <summary>Keeps the More options menu that is opening, which a reload then hides.</summary>
+        private void RowMenu_Opening(object sender, object e) => _rowMenu = (MenuFlyout)sender;
+
         private async System.Threading.Tasks.Task ShowSnippetDialogAsync(int? id, string trigger, string replacement)
         {
             if (!ViewModel.CanEditSnippets)
@@ -738,6 +784,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             _isSnippetDialogOpen = true;
             _originalSnippet = new TextExpanderSnippetViewModel(id ?? -1, trigger ?? string.Empty, replacement ?? string.Empty);
             _allowDialogClose = false;
+            _closeWindowOnDiscard = false;
             ShowDiscardWarning = false;
             _lastEditedField = TriggerBox;
             CancelPromptEdit();
@@ -798,20 +845,37 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         }
 
         private void SnippetDialog_Closing(ContentDialog sender, ContentDialogClosingEventArgs args)
+            => args.Cancel = AskToDiscardChanges();
+
+        /// <summary>
+        /// Called as the user closes the window. With an edited snippet open, asks "Discard your changes?" as Cancel
+        /// and Esc do, and returns true to keep the window open; Discard then closes it.
+        /// </summary>
+        internal bool AskToDiscardBeforeClosing()
         {
-            // A dialog close means discard the pending flyout edit, not light-dismiss-commit it.
+            _closeWindowOnDiscard = _isSnippetDialogOpen && AskToDiscardChanges();
+            return _closeWindowOnDiscard;
+        }
+
+        /// <summary>Shows "Discard your changes?", with Keep editing focused, if the snippet has unsaved changes; returns whether it did.</summary>
+        private bool AskToDiscardChanges()
+        {
+            // A close means discard the pending flyout edit, not light-dismiss-commit it.
             CancelPromptEdit();
-            if (!_allowDialogClose && _originalSnippet.HasChanges(TriggerBox.Text, _replacementEditor.Text))
+            if (_allowDialogClose || !_originalSnippet.HasChanges(TriggerBox.Text, _replacementEditor.Text))
             {
-                args.Cancel = true;
-                ShowDiscardWarning = true;
-                FocusWhenShown(KeepEditingButton, DiscardWarning, () => Announce(DiscardWarning, DiscardWarning.Title, "textExpanderDiscardWarning"));
+                return false;
             }
+
+            ShowDiscardWarning = true;
+            FocusWhenShown(KeepEditingButton, DiscardWarning, () => Announce(DiscardWarning, DiscardWarning.Title, "textExpanderDiscardWarning"));
+            return true;
         }
 
         private void KeepEditing_Click(object sender, RoutedEventArgs e)
         {
             ShowDiscardWarning = false;
+            _closeWindowOnDiscard = false;
 
             // Back to whichever field the user was working in.
             (_lastEditedField ?? TriggerBox).Focus(FocusState.Programmatic);
@@ -823,6 +887,11 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         {
             _allowDialogClose = true;
             SnippetDialog.Hide();
+            if (_closeWindowOnDiscard)
+            {
+                // The window was being closed and waited for this answer.
+                App.EditorWindow?.Close();
+            }
         }
 
         private void AnnounceSnippetChange(string resourceKey)
@@ -1037,7 +1106,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
 
             ShowPreview(replacement);
 
-            if (_isSnippetDialogOpen && _editingRevision != ViewModel.SnippetRevision)
+            // Only an existing snippet's ID can name a different entry after a reload. A new one is checked
+            // against the reloaded file below, so its Save stays available.
+            if (_isSnippetDialogOpen && _editingId.HasValue && _editingRevision != ViewModel.SnippetRevision)
             {
                 SnippetProblem = ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_EditorFileChanged");
                 IsSnippetValid = false;

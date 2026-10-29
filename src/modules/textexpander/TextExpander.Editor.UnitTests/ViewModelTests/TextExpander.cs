@@ -208,7 +208,7 @@ namespace ViewModelTests
             File.WriteAllText(current, "!only=value");
             TextExpanderViewModel model = CreateViewModel();
 
-            Assert.IsNull(model.DeleteSnippet(model.Snippets.Single().Id, model.SnippetRevision));
+            Assert.IsNull(model.DeleteSnippet(model.Snippets.Single()));
             Assert.AreEqual(0, model.Snippets.Count);
             Assert.IsTrue(model.HasNoSnippets);
             Assert.AreEqual(0, new FileInfo(current).Length);
@@ -218,6 +218,42 @@ namespace ViewModelTests
             Assert.AreEqual(0, model.Snippets.Count);
             Assert.IsTrue(model.HasNoSnippets);
             Assert.AreEqual(0, new FileInfo(current).Length);
+        }
+
+        [TestMethod]
+        public void ARowFromBeforeAReloadCanNoLongerBeEditedOrDeleted()
+        {
+            File.WriteAllText(_path, "#a=A\n#b=B\n");
+            TextExpanderViewModel model = CreateViewModel();
+
+            // A row a More options menu still holds after a reload, which numbers the snippets again.
+            TextExpanderSnippetViewModel stale = model.Snippets.Single(row => row.Trigger == "#b");
+            File.WriteAllText(_path, "#c=C\n#a=A\n#b=B\n");
+            model.LoadSnippets();
+            Assert.AreEqual("#a", model.Snippets.Single(row => row.Id == stale.Id).Trigger, "Its ID is now another snippet's.");
+
+            Assert.AreEqual("TextExpander_FileChangedBeforeSave", model.ValidateRow(stale), "Edit and Duplicate check the row first.");
+            Assert.AreEqual("TextExpander_FileChangedBeforeSave", model.DeleteSnippet(stale));
+            Assert.AreEqual("#c=C\n#a=A\n#b=B\n", File.ReadAllText(_path));
+
+            TextExpanderSnippetViewModel current = model.Snippets.Single(row => row.Trigger == "#b");
+            Assert.IsNull(model.ValidateRow(current));
+            Assert.IsNull(model.DeleteSnippet(current));
+            Assert.AreEqual("#c=C\n#a=A\n", File.ReadAllText(_path));
+        }
+
+        [TestMethod]
+        public void DeletingASnippetThatIsAlreadyGoneIsNotReportedAsDeleted()
+        {
+            File.WriteAllText(_path, "#a=A\n#b=B\n");
+            TextExpanderViewModel model = CreateViewModel();
+            TextExpanderSnippetViewModel row = model.Snippets.First();
+            Assert.IsNull(model.DeleteSnippet(row));
+
+            // The page says "Snippet deleted" only for null.
+            Assert.AreEqual("TextExpander_FileChangedBeforeSave", model.DeleteSnippet(row));
+            Assert.AreEqual("#b=B\n", File.ReadAllText(_path));
+            Assert.AreEqual("#b", model.Snippets.Single().Trigger);
         }
 
         [TestMethod]
@@ -319,7 +355,7 @@ namespace ViewModelTests
             changes.Clear();
             Assert.IsNull(model.SaveSnippet(null, "#d", "4"));
             Assert.AreEqual(System.Collections.Specialized.NotifyCollectionChangedAction.Add, changes.Single());
-            Assert.IsNull(model.DeleteSnippet(before[0].Id, model.SnippetRevision));
+            Assert.IsNull(model.DeleteSnippet(before[0]));
             Assert.AreEqual(System.Collections.Specialized.NotifyCollectionChangedAction.Remove, changes.Last());
             Assert.AreEqual("#b=two\n#c=3\n#d=4\n", File.ReadAllText(_path));
 
@@ -431,6 +467,32 @@ namespace ViewModelTests
                 Assert.AreEqual(reader.CurrentEncoding.WebName, encoding.WebName, BitConverter.ToString(sample));
                 CollectionAssert.AreEqual(sample, TextExpanderSnippetEncoding.Encode(settingsText, encoding), "Saving gives the same bytes back.");
             }
+        }
+
+        [TestMethod]
+        public void AFileThatIsNotUtf8IsShownAsAnErrorAndNeverRewritten()
+        {
+            // An ANSI é (0xE9) would decode to U+FFFD, and saving any change would write that in its place.
+            byte[] ansi = System.Text.Encoding.Latin1.GetBytes("#cafe=caf\u00E9\n#ok=Fine\n");
+            File.WriteAllBytes(_path, ansi);
+            TextExpanderViewModel model = CreateViewModel();
+
+            Assert.IsTrue(model.HasSnippetError);
+            Assert.AreEqual("TextExpander_SnippetFile_NotUtf8", model.SnippetError);
+            Assert.AreEqual(0, model.Snippets.Count);
+            Assert.AreEqual(model.SnippetError, model.SaveSnippet(null, "#new", "New"));
+            Assert.IsNotNull(model.SaveSnippet(0, "#cafe", "Changed"));
+            Assert.IsNotNull(model.DeleteSnippet(new TextExpanderSnippetViewModel(0, "#cafe", "caf\u00E9")));
+            Assert.IsNull(model.SuggestDuplicateTrigger(0));
+            CollectionAssert.AreEqual(ansi, File.ReadAllBytes(_path));
+
+            // Saved as UTF-8, it loads on Retry and edits keep the é.
+            File.WriteAllText(_path, "#cafe=caf\u00E9\n#ok=Fine\n");
+            model.LoadSnippets();
+            Assert.IsFalse(model.HasSnippetError);
+            Assert.AreEqual("caf\u00E9", model.Snippets[0].Replacement);
+            Assert.IsNull(model.SaveSnippet(null, "#new", "New"));
+            Assert.AreEqual("#cafe=caf\u00E9\n#ok=Fine\n#new=New\n", File.ReadAllText(_path));
         }
 
         [TestMethod]
@@ -606,7 +668,9 @@ namespace ViewModelTests
             Assert.AreEqual(0, model.FilteredSnippets.Count);
             Assert.AreEqual(blockedMessage, model.ValidateSnippet(null, "!new", "replacement"));
             Assert.AreEqual(blockedMessage, model.SaveSnippet(null, "!new", "replacement"));
-            Assert.AreEqual(blockedMessage, model.DeleteSnippet(0, model.SnippetRevision));
+            var row = new TextExpanderSnippetViewModel(0, "!new", "replacement");
+            Assert.AreEqual(blockedMessage, model.ValidateRow(row));
+            Assert.AreEqual(blockedMessage, model.DeleteSnippet(row));
             Assert.AreEqual(blockedMessage, model.OpenSnippetsFile());
             Assert.IsNull(model.SuggestDuplicateTrigger(0));
 

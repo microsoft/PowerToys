@@ -91,6 +91,10 @@
   <data name="TextExpander_SnippetFile_OpenFailed" xml:space="preserve">
     <value>Windows couldn't open the active snippet file. Check that a default app is available for text files, then try again.</value>
   </data>
+  <data name="TextExpander_SnippetFile_NotUtf8" xml:space="preserve">
+    <value>Your snippet file isn't saved as UTF-8, so editing it here would change some of its characters. Open the file in a text editor, save it with UTF-8 encoding, then select Retry.</value>
+    <comment>Shown when the snippet file has bytes that aren't valid text in its encoding, such as a file saved as ANSI. UTF-8 is an encoding name and is not translated. "Retry" is the button next to this message.</comment>
+  </data>
   <data name="TextExpander_OpenSnippetsErrorDialog_Title" xml:space="preserve">
     <value>Can't open the snippets file</value>
   </data>

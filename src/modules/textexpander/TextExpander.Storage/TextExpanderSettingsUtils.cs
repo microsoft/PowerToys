@@ -35,16 +35,30 @@ namespace Microsoft.PowerToys.TextExpander.Storage
             _settingsPath = new SettingPath(fileSystem.Directory, fileSystem.Path);
         }
 
+        /// <summary>Saves all of <paramref name="jsonSettings"/>, atomically and under the settings claim.</summary>
         public override void SaveSettingsOrThrow(string jsonSettings, string powertoy = "", string fileName = DefaultFileName)
         {
             try
             {
-                SaveSettingsAtomically(jsonSettings ?? throw new ArgumentNullException(nameof(jsonSettings)), powertoy, fileName, mergeSnippetFolder: true);
+                SaveSettingsAtomically(jsonSettings ?? throw new ArgumentNullException(nameof(jsonSettings)), powertoy, fileName);
             }
             catch (Exception e)
             {
                 Logger.LogError($"Exception encountered while saving {powertoy} settings.", e);
                 throw;
+            }
+        }
+
+        /// <summary>Saves like <see cref="SaveSettingsOrThrow"/>, but logs a failure instead of throwing it, as the base class does.</summary>
+        public override void SaveSettings(string jsonSettings, string powertoy = "", string fileName = DefaultFileName)
+        {
+            try
+            {
+                SaveSettingsAtomically(jsonSettings ?? throw new ArgumentNullException(nameof(jsonSettings)), powertoy, fileName);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Exception encountered while saving {powertoy} settings.", e);
             }
         }
 
@@ -78,6 +92,23 @@ namespace Microsoft.PowerToys.TextExpander.Storage
             }
         }
 
+        /// <summary>
+        /// Sets the snippet folder on the latest settings, keeping options another process saved meanwhile. A claim
+        /// it can't get is reported, like a failed publication, as an <see cref="AtomicSettingsPublicationException"/>
+        /// whose outcome is uncertain.
+        /// </summary>
+        public virtual TextExpanderSettings UpdateSnippetsPath(string snippetsPath)
+        {
+            ArgumentNullException.ThrowIfNull(snippetsPath);
+            using (AcquirePublicationClaim(GetSettingsFilePath(TextExpanderSettings.ModuleName)))
+            {
+                TextExpanderSettings settings = GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName);
+                settings.Properties.SnippetsPath.Value = snippetsPath;
+                SaveSettingsAtomically(settings.ToJsonString(), TextExpanderSettings.ModuleName, DefaultFileName);
+                return settings;
+            }
+        }
+
         private readonly record struct AtomicFileIdentity(bool Exists, byte[] Bytes)
         {
             public static AtomicFileIdentity Missing { get; } = new(false, Array.Empty<byte>());
@@ -97,7 +128,7 @@ namespace Microsoft.PowerToys.TextExpander.Storage
             public bool Succeeded => Error is null;
         }
 
-        private void SaveSettingsAtomically(string jsonSettings, string powertoy, string fileName, bool mergeSnippetFolder = false)
+        private void SaveSettingsAtomically(string jsonSettings, string powertoy, string fileName)
         {
             string settingsPath = _settingsPath.GetSettingsPath(powertoy, fileName);
             string? directory = Path.GetDirectoryName(settingsPath);
@@ -106,10 +137,18 @@ namespace Microsoft.PowerToys.TextExpander.Storage
                 throw new IOException($"The settings folder for '{settingsPath}' could not be resolved.");
             }
 
-            IDisposable claim;
+            using (AcquirePublicationClaim(settingsPath))
+            {
+                SaveSettingsAtomicallyUnderClaim(jsonSettings, powertoy, settingsPath, directory);
+            }
+        }
+
+        /// <summary>Takes the settings claim for a save. Not getting it is reported as a publication whose outcome is uncertain.</summary>
+        private static IDisposable AcquirePublicationClaim(string settingsPath)
+        {
             try
             {
-                claim = AcquireAtomicSettingsClaim(settingsPath, AtomicSettingsClaimTimeout);
+                return AcquireAtomicSettingsClaim(settingsPath, AtomicSettingsClaimTimeout);
             }
             catch (Exception claimError)
             {
@@ -118,22 +157,6 @@ namespace Microsoft.PowerToys.TextExpander.Storage
                     settingsPath,
                     recoveryPaths: null,
                     claimError);
-            }
-
-            using (claim)
-            {
-                if (mergeSnippetFolder && powertoy == TextExpanderSettings.ModuleName && fileName == DefaultFileName)
-                {
-                    TextExpanderSettings incoming = System.Text.Json.JsonSerializer.Deserialize(
-                        jsonSettings,
-                        SettingsSerializationContext.Default.TextExpanderSettings)
-                        ?? throw new System.Text.Json.JsonException("Missing Text Expander settings.");
-                    TextExpanderSettings latest = GetSettingsOrDefaultReadOnly<TextExpanderSettings>(powertoy);
-                    latest.Properties.SnippetsPath.Value = incoming.Properties.SnippetsPath.Value;
-                    jsonSettings = latest.ToJsonString();
-                }
-
-                SaveSettingsAtomicallyUnderClaim(jsonSettings, powertoy, settingsPath, directory);
             }
         }
 

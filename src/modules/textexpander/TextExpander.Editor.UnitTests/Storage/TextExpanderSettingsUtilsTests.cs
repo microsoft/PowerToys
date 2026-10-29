@@ -309,7 +309,7 @@ namespace CommonLibTest
             string module = "TextExpanderSettingsTest-" + Guid.NewGuid().ToString("N");
             if (existing)
             {
-                store.SaveSettings(Original, module);
+                store.WriteExistingSettings(Original, module);
             }
 
             return (module, store.GetSettingsFilePath(module));

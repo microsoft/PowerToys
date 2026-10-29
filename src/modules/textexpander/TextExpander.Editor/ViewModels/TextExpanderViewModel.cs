@@ -391,20 +391,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                     ? string.Empty
                     : change.FolderPath;
                 string oldSnippetsPath = _settings.Properties.SnippetsPath.Value;
-                string settingsJson;
-                _settings.Properties.SnippetsPath.Value = newSnippetsPath;
                 try
                 {
-                    settingsJson = _settings.ToJsonString();
-                }
-                finally
-                {
-                    _settings.Properties.SnippetsPath.Value = oldSnippetsPath;
-                }
-
-                try
-                {
-                    _settingsUtils.SaveSettingsOrThrow(settingsJson, TextExpanderSettings.ModuleName);
+                    _settingsUtils.UpdateSnippetsPath(newSnippetsPath);
                 }
                 catch (Exception ex)
                 {
@@ -727,9 +716,13 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             {
                 // Say why rather than showing an empty list, which would read as "no snippets"
                 // and invite the user to recreate everything on top of a file that still exists.
+                // Bytes the file's encoding can't decode would be saved back as U+FFFD, so the
+                // file stays unloaded until it is saved as UTF-8.
                 _file = null;
                 _loadedBytes = null;
-                _snippetError = ex.Message;
+                _snippetError = ex is System.Text.DecoderFallbackException
+                    ? _getResourceString("TextExpander_SnippetFile_NotUtf8")
+                    : ex.Message;
                 rows.Clear();
             }
 
@@ -847,8 +840,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             }
             catch (Exception ex) when (IsFileError(ex))
             {
-                // An editor may still hold the file during a non-atomic save. The watch also
-                // polls, so retry after the writer releases it rather than showing a false error.
+                // An editor may still hold the file during a non-atomic save. The watch calls back
+                // again when its size or write time next changes, so retry then rather than
+                // showing a false error.
             }
         }
 
@@ -967,19 +961,26 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         }
 
         /// <summary>
-        /// Deletes the snippet with <paramref name="id"/> and writes the file. Refused if the list was reloaded after
-        /// <paramref name="revision"/>: a reload numbers the snippets again, so <paramref name="id"/> may now be a different snippet.
+        /// Gets why the row <paramref name="snippet"/> can't be edited, duplicated or deleted, or null. A reload makes new
+        /// rows and numbers the snippets again, so a row from before it may have a different snippet's ID now.
         /// </summary>
-        public string DeleteSnippet(int id, int revision)
+        public string ValidateRow(TextExpanderSnippetViewModel snippet)
         {
             if (!CanEditSnippets)
             {
                 return ElevatedSnippetAccessDeniedMessage();
             }
 
-            if (revision != SnippetRevision)
+            return snippet != null && Snippets.Contains(snippet) ? null : _getResourceString("TextExpander_FileChangedBeforeSave");
+        }
+
+        /// <summary>Deletes the row <paramref name="snippet"/>'s snippet and writes the file. See <see cref="ValidateRow"/>.</summary>
+        public string DeleteSnippet(TextExpanderSnippetViewModel snippet)
+        {
+            string problem = ValidateRow(snippet);
+            if (problem != null)
             {
-                return _getResourceString("TextExpander_FileChangedBeforeSave");
+                return problem;
             }
 
             if (_file == null)
@@ -989,7 +990,13 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
 
             SnippetFile previousFile = _file;
             _file = previousFile.Clone();
-            _file.Remove(id);
+            if (!_file.Remove(snippet.Id))
+            {
+                // Nothing went, so the page mustn't say it was deleted.
+                _file = previousFile;
+                return _getResourceString("TextExpander_FileChangedBeforeSave");
+            }
+
             return WriteEditedFile(previousFile);
         }
 
