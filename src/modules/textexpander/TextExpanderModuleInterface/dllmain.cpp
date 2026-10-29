@@ -199,6 +199,24 @@ private:
         return module_path.substr(0, separator + 1) + ENGINE_PATH;
     }
 
+    // Whether the engine must not inherit the runner's token: it is elevated, or can't be read.
+    // is_process_elevated in common/utils/elevation.h reads the same flag, but including that
+    // header would pull WIL into this module.
+    static bool runner_may_be_elevated()
+    {
+        HANDLE token = nullptr;
+        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
+        {
+            return true;
+        }
+
+        TOKEN_ELEVATION elevation = {};
+        DWORD size = 0;
+        bool read = GetTokenInformation(token, TokenElevation, &elevation, sizeof(elevation), &size);
+        CloseHandle(token);
+        return !read || elevation.TokenIsElevated != 0;
+    }
+
     bool launch_process()
     {
         Logger::trace(L"Launching PowerToys TextExpander process");
@@ -218,10 +236,26 @@ private:
             settings_argument();
         Logger::trace(L"PowerToys TextExpander launching: " + full_command_path);
 
-        if (!create_process_from_shell(application_path, full_command_path, &p_info))
+        // A runner that isn't elevated has a token the engine can simply inherit, which also works
+        // at sign-in, before Explorer has created the shell window. An elevated runner's token must
+        // not be passed on, so the engine is then started from the shell, and not at all without one.
+        bool from_shell = runner_may_be_elevated();
+        bool created = false;
+        if (from_shell)
+        {
+            created = create_process_from_shell(application_path, full_command_path, &p_info);
+        }
+        else
+        {
+            STARTUPINFOW startup_info = { sizeof(startup_info) };
+            created = CreateProcessW(application_path.c_str(), full_command_path.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startup_info, &p_info);
+        }
+
+        if (!created)
         {
             DWORD error = GetLastError();
-            std::wstring message = L"PowerToys Text Expander failed to start as the desktop user with error: ";
+            std::wstring message = from_shell ? L"PowerToys Text Expander failed to start as the desktop user with error: " :
+                                                L"PowerToys Text Expander failed to start with error: ";
             message += std::to_wstring(error);
             Logger::error(message);
             p_info = {};
