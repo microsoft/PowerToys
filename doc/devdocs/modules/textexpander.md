@@ -58,22 +58,22 @@ provides shared .NET/strftime formatting. Trigger reachability uses the runtime'
 ### Module Interface (TextExpanderModuleInterface)
 
 `dllmain.cpp` implements `PowertoyModuleIface`. It:
-- Launches `WinUI3Apps\PowerToys.TextExpander.exe` as the desktop shell user when the module is enabled, resolving the path relative to its own DLL. If the shell process cannot be used to create a medium-integrity engine, startup fails closed rather than inheriting an elevated runner token.
+- Launches `WinUI3Apps\PowerToys.TextExpander.exe` when the module is enabled, resolving the path relative to its own DLL. A runner that isn't elevated starts it directly, so the engine inherits its medium-integrity token, which also works at sign-in before Explorer has created the shell window. An elevated runner starts it as a child of the desktop shell instead; if the shell can't be used, startup fails closed rather than passing on the elevated token.
 - Passes the runner PID, `--managed --instance:powertoys`, and `--settings:"<path to settings.json>"`.
 - Stops the engine by signaling `CommonSharedConstants::TEXT_EXPANDER_EXIT_EVENT`, then terminates it if it has not exited within 1.5 seconds.
-- Honors the `ConfigureEnabledUtilityTextExpander` group policy.
+- Honors the `ConfigureEnabledUtilityTextExpander` group policy, which `PowerToys.Settings.Cli` also applies to `list`, `enable` and `disable`.
 
 ### Engine (TextExpander)
 
 A self-contained .NET process. Its keyboard hook, matching and injection use no UI framework; WinUI 3 is loaded only for the `{{prompt}}` window. It:
 - Installs a low-level keyboard hook and tracks the characters typed into the focused app. Keys are captured only for the foreground window once it has been checked (integrity level, not PowerToys Settings), off the hook's path, after each foreground change. Activation through `AttachThreadInput`, which is how focus goes back to the app after a prompt, raises the foreground event before `GetForegroundWindow` reports the new window, so the hook also asks, once, for a check of a window in front that was never checked (`KeyboardHook.NeedsAuthorization`).
 - Asks for `{{prompt:<question>}}` answers in a small WinUI 3 window (`PromptWindow`): Mica, the Text Expander icon and "PowerToys Text Expander" in a custom title bar (the window pops up over other apps, so it names PowerToys; the engine's message boxes use the same caption), the question above a box, then **OK** (default) and **Cancel**. Prompts are required by default: OK stays disabled while the answer is blank, and Enter shows "Enter an answer to continue." without closing the window. `{{prompt?:<question>}}` is the explicit optional form and still accepts an empty answer. The window follows Windows' theme, including high contrast, is per-monitor DPI aware, stays on top, and opens a little above the middle of the target window's screen (or the pointer's, if that window has gone). It is exactly as tall as its content, title bar row included, with ContentDialog's footer: 24-pixel padding around 32-pixel buttons. Because the content extends into the title bar, the client area includes it, so the window is sized from its measured frame (`PromptWindowSize`) rather than with `AppWindow.ResizeClient`, which leaves room for a system caption that isn't drawn. Esc, Cancel and the close button leave that spot blank and go on to the next question. The keyboard hook is suspended while it is open, so nothing typed in it expands, and focus goes back to the target window afterwards. The box is emptied as soon as the answer is read, and answers are never logged. XAML runs on its own thread (`PromptHost`), started the first time a snippet asks for something, never on the hook's thread; the expansion worker waits there for each answer, so questions are asked one at a time. Measured on an ARM64 Debug build: the first prompt is in front after about 0.3 s and later ones after about 0.12 s; loading XAML adds about 45 MB of private memory to the engine from the first prompt on. If the Windows App SDK can't start, the Win32 fallback (`ClassicPromptDialog`) enforces the same required-answer behavior.
-- Matches triggers against the snippet file (`PowerToysTextExpanderSnippets.txt`, or `snippets.txt` from earlier versions), optionally ignoring capitalization and, by default, waiting for a space or punctuation before expanding. An explicitly saved disabled value keeps immediate expansion.
-- Replaces the trigger by pasting (the user's clipboard is saved and restored) or by typing with `SendInput`, depending on the Insertion method setting and snippet length.
+- Matches triggers against the snippet file (`PowerToysTextExpanderSnippets.txt`, or `snippets.txt` from earlier versions), optionally ignoring capitalization and, by default, waiting for a space or punctuation before expanding. An underscore is part of a word, so it doesn't release a trigger: typing `addr_line` doesn't expand `addr`. An explicitly saved disabled value keeps immediate expansion.
+- Replaces the trigger by pasting (the user's clipboard is saved and restored) or by typing with `SendInput`, depending on the Insertion method setting and snippet length. The pasted text, and the user's clipboard when it's put back, carry the exclusion formats for clipboard monitors, Clipboard History and Cloud Clipboard, so a paste doesn't record the user's last copy again; a clipboard that already carried any of them goes back exactly as it was. It's put back once the target has read the paste (at least 150 ms), or after at most 350 ms, timed by the clock.
 - Expands variables (`{{date}}`, `{{time}}`, `{{datetime}}`, `{{isodate}}`, `{{date:<format>}}`, `{{clipboard}}`, `{{prompt:<question>}}`, `{{prompt?:<question>}}`) and places the cursor at `$|$`. Only the snippet's own text is read for `\n`, `\t`, `{{clipboard}}` and `$|$`: a prompt answer, the clipboard and a formatted date are inserted exactly as they are, so a `$|$` or `\n` in them stays literal.
 - Supports undo: pressing Ctrl+Z immediately after an expansion restores exactly what was typed, in the capitalization it was typed in, even when matching ignores case. If the snippet's `$|$` left the caret inside the expansion, the undo first presses Right as many times as the insertion pressed Left, so it erases from the end of the expansion. Modifier key-downs on the way to Ctrl+Z do not cancel the pending undo, but any other key does; Ctrl+Shift+Z is left to the app as redo. The undo waits up to one second for modifiers to be released, and is abandoned otherwise, so its Backspaces are never sent as Ctrl+Backspace.
-- Drops a queued expansion or undo, instead of applying it where the caret is now, when a key other than a modifier is pressed or the mouse is clicked after the trigger matched. The worker compares the hook's input generation before it starts (before any prompt) and again right before the first Backspace. The keystroke the hook swallowed to complete the trigger is not typed back. A foreground change alone doesn't cancel the work, because focus returns to the target after a prompt; typing still checks that the target window is in front. Backspace with Ctrl, Alt or Win clears the rolling buffer instead of removing one character.
-- Ignores its own injected input and, optionally, input injected by Keyboard Manager remaps.
+- Drops a queued expansion or undo, instead of applying it where the caret is now, when a key other than a modifier is pressed or the mouse is clicked after the trigger matched. While a `{{prompt}}` window is open, only a key pressed while the window being typed into is in front, or a click on that window, counts; typing or clicking in the prompt or in another app (to copy the answer, say) doesn't. If that window isn't known, any key or click outside the engine's own windows counts. The worker compares the hook's input generation before it starts (before any prompt) and again right before the first Backspace. The keystroke the hook swallowed to complete the trigger is not typed back. A foreground change alone doesn't cancel the work, because focus returns to the target after a prompt; typing still checks that the target window is in front. Backspace with Ctrl, Alt or Win clears the rolling buffer instead of removing one character.
+- Ignores its own injected input, the runner's replayed hotkeys (`0x110`) and the key events Keyboard Manager swallows itself (`0x111`). Input carrying Keyboard Manager's injected bit (`0x1`, as in its `0x11` and `0x101` remaps) counts as typing. With **Use PowerToys Keyboard Manager remaps when matching triggers** off, that input isn't matched against triggers but still reaches the app, so a key other than a modifier still clears the rolling buffer, ends the one-step undo and drops queued work. The engine's own tag carries that bit too, so Keyboard Manager's key remaps leave its Backspaces, arrows and Ctrl+V alone. Its shortcut remaps skip only `0x101`, so a remap of Ctrl+V itself still applies to a pasted expansion.
 - Runs at the desktop user's integrity level and refuses synthetic input to elevated windows. This preserves expansion in ordinary desktop apps when PowerToys itself is elevated, while preventing user-controlled settings and snippet files from authorizing elevated input or being read by an elevated engine.
 - Checks its actual integrity level before loading host settings or snippets and exits if the check fails or the process is above medium integrity.
 - Exits at startup, before taking its single-instance mutex, loading settings or snippets, or installing hooks, when the `ConfigureEnabledUtilityTextExpander` group policy turns Text Expander off, so starting `PowerToys.TextExpander.exe` directly doesn't get around it.
@@ -104,7 +104,12 @@ The editor rolls the folder publication back only for the verified-previous case
 keeps it for a verified-new commit, and re-reads `settings.json` before deciding an
 uncertain case. If the file is still unreadable or conflicted, no snippet files are
 removed; the error names the settings and recovery files to keep until the active
-folder has been verified.
+folder has been verified. The editor publishes the folder with
+`TextExpanderSettingsUtils.UpdateSnippetsPath`, which re-reads the latest
+`settings.json` under the claim and changes only `snippets_path`, so options saved in
+Settings meanwhile are kept. `SaveSettingsOrThrow` saves the JSON it's given in full,
+and `SaveSettings` takes the same claim and atomic publication but logs a failure
+instead of throwing.
 
 **File name.** In a folder, the engine and editor pick the same file with
 `TextExpanderSnippetFileNames.ResolveInFolder`:
@@ -123,7 +128,8 @@ atomic move, and the current name is published only when neither exists. An engi
 test checks the shared file-name contract. Bug reports leave out both names, and the
 copies Text Expander makes of them, anywhere in the PowerToys `TextExpander` folder
 (including earlier snippet folders there) and in the configured folder, plus a configured
-file whatever its name (`TextExpanderPrivacy.h`); both paths are masked in the
+file whatever its name (`TextExpanderPrivacy.h`, tested by
+`tools/BugReportTool/BugReportTool.UnitTests`); both paths are masked in the
 report's copy of `settings.json`.
 
 **Starter file.** When the resolved snippet file is missing, whichever process reaches
@@ -155,6 +161,10 @@ The page contains enablement and **Manage snippets**.
 Always paste, or Always type), whose **Minimum length to paste** is available only
 with Automatic, the one method that chooses by length; **Match trigger
 capitalization**; and **Use PowerToys Keyboard Manager remaps when matching triggers**.
+The page only reads `settings.json`: a missing file shows the defaults without creating
+it, and a file it can't read shows the defaults with **Can't read Text Expander options**
+and is left unchanged. Each option change re-reads the file first, so changes are
+refused until it can be read.
 The separate editor contains **Add a snippet**, search, the snippet list,
 **Save snippets to a folder**, and the **Good to know** note.
 
@@ -170,9 +180,11 @@ Search matches triggers and replacement text without changing file order. The
 count shows matching and total snippets ("Showing 1 of 1 snippet" for a library of
 one); **Clear search** restores the full list.
 Select a row to edit it; each row ends with a pencil (tooltip "Edit") instead of a
-chevron. **More options** has **Edit**, **Duplicate** and **Delete**. If the snippet
-file reloads while the delete confirmation is open, the delete is refused and the
-list shows the reloaded file, because the row it named may now be another snippet.
+chevron. **More options** has **Edit**, **Duplicate** and **Delete**. A reload numbers the
+snippets again, so it closes an open **More options** menu, and **Edit**, **Duplicate**
+and **Delete** refuse a row from before it, including a delete confirmed after a
+reload; the list then shows the reloaded file. A delete that removes nothing isn't
+reported as deleted.
 **Duplicate** opens the copy in the editor, unsaved, with a trigger that can fire
 (`!mysig` → `!2mysig`; `!mysig2` would never fire, because typing it completes
 `!mysig` first).
@@ -214,7 +226,7 @@ whenever the list or **Wait for space or punctuation** setting changes:
 - **Never expands**, with the reason, by the engine's own rules for the current
   mode (`TextExpanderTriggerReach`): another trigger completes partway through
   typing this one; with **Wait for space or punctuation**, only when a space,
-  punctuation or symbol in this trigger releases it at a word start; or a later
+    punctuation other than `_`, or a symbol in this trigger releases it at a word start; or a later
   row has the same trigger, since the last one wins. It is one line with a caution
   icon and the reason spelled out, so color is never the only cue.
 
@@ -224,12 +236,14 @@ say it ("…, 2 lines"), then the warning when there is one.
 
 The editor validates trigger conflicts and unrepresentable replacement text as
 you type, with the reason under the fields in the user's language
-(`SnippetProblem`, mapped to resources by the view model). An empty
+(`SnippetProblem`, mapped to resources by the view model). The reason is announced
+when it appears or changes and is the **Trigger** box's full description. An empty
 dialog stays quiet, but once there's text, a missing trigger says "Type a trigger
 to save this snippet." Save errors stay in the dialog with your text intact. Closing an edited
-snippet (Cancel or Esc) shows "Discard your changes?" at the bottom of the dialog,
-above Save and Cancel, with **Keep editing** (focused; it returns to the field you
-were editing) and **Discard**. Empty libraries
+snippet (Cancel, Esc, or the window's close button or Alt+F4) shows "Discard your
+changes?" at the bottom of the dialog, above Save and Cancel, with **Keep editing**
+(focused; it returns to the field you were editing) and **Discard**. When closing the
+window asked, the window comes to the front and **Discard** also closes it. Empty libraries
 offer optional signature, email, and date examples that open in the editor;
 choosing one does not save it automatically.
 
@@ -289,8 +303,13 @@ keeps the filter and includes a reminder in the status message.
 
 Failed writes do not reserve triggers or apply deletions in memory. If an
 external edit refreshes the library while an existing snippet is open, the editor keeps your draft but requires reopening the
-snippet before saving, so an old row handle cannot overwrite a different entry. For
-folder/default configurations, the editor keeps watching both supported names. A
+snippet before saving, so an old row handle cannot overwrite a different entry. A new
+snippet (**Add a snippet**, **Duplicate** or an example) is checked against the reloaded
+file instead and can still be saved. For
+folder/default configurations, the editor keeps watching both supported names. Each
+watch pairs a `FileSystemWatcher` with a 2-second poll that compares only the files'
+existence, size and last-write time, off the UI thread, and reaches the UI only when
+they change or the watcher reports an event or error. A
 preferred current-name file appearing replaces a loaded legacy file; deleting it
 falls back to legacy when present. The engine commits a newly resolved path and its
 parsed snippets as one generation-tagged state. Initial loads, folder repoints, and
@@ -311,13 +330,18 @@ is pending or has exhausted its retries: its events refresh the fallback snapsho
 restart attempts toward the desired target. Once a newer transition commits, events
 from the disposed watcher are ignored. This handoff prevents a legacy file arriving
 beside an untouched starter from being hidden. Either identity change advances the
-snippet revision, invalidates an open editor, and closes its Prompt window. Watch
+snippet revision, closes an open **More options** menu and the editor's Prompt window,
+and invalidates an editor open on an existing snippet. Watch
 events whose bytes equal the editor's own atomic save are ignored. During first-run
 setup, the editor creates or observes the shared starter before constructing its
 editable model, so the first save cannot produce a headerless file. A file that wins a
 concurrent creation race is loaded rather than overwritten. Saves preserve comments,
 the file's encoding (UTF-8 with or without a BOM, UTF-16 or UTF-32), line-ending style,
-and final-newline presence.
+and final-newline presence. A file with bytes that aren't valid in its encoding, such as
+one saved as ANSI (`é` is 0xE9), isn't loaded, because saving would replace those bytes
+in every line: the editor shows the file error, which asks for the file to be saved as
+UTF-8 and reloaded with **Retry**, and changes nothing until then. The engine still
+reads such a file, with U+FFFD in place of those bytes.
 
 The list is virtualized (an `ItemsRepeater`), so only the rows in view are built,
 however long the library. An `ItemsRepeater` sets no `DataContext` on rows whose
@@ -413,7 +437,7 @@ flyout open with an assertive inline error.
 
 Click an existing prompt token, or put the caret in one and press F2, to reopen the
 same flyout. It restores whether that prompt requires an answer. Escape or the
-flyout's close button removes a new provisional token and restores the original
+flyout's close button (clicked, or Enter while it has focus) removes a new provisional token and restores the original
 replacement selection; for an existing token it discards the draft and reselects the
 unchanged token. Closing the parent snippet dialog also discards a pending prompt
 draft. A completed new prompt is one editor undo step.
