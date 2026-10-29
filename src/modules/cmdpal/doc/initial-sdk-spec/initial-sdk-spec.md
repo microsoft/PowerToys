@@ -2638,13 +2638,14 @@ contract.
 ### Overview
 
 The host selects the behavior from the item's interfaces and `QueryHandler`.
-There is no mode property.
 
-| Declaration | Host behavior | Typical examples |
-|---|---|---|
-| No `IFallbackCommandItem3` | Call the legacy `FallbackHandler.UpdateQuery`. | Existing active fallbacks |
-| `IFallbackCommandItem3` with a null `QueryHandler` | Format and match locally. Call `CreateCommand` only on activation. | Web search, ask an assistant, open a URL |
-| `IFallbackCommandItem3` with a non-null `QueryHandler` | Call `QueryHandler.QueryAsync` and display its returned items. | Files, settings, open windows, remote search |
+There are three "modes" of a fallback:
+
+| Mode | Implementation | Host behavior | Typical examples |
+| ---- |---|---|---|
+| [Active](#active-fallbacks) | No `IFallbackCommandItem3` | Call the legacy `FallbackHandler.UpdateQuery`. | Existing v1 fallbacks |
+| [Passive](#passive-fallbacks) | `IFallbackCommandItem3` with a null `QueryHandler` | Format and match locally. Call `CreateCommand` only on activation. | Web search, ask an assistant, open a URL |
+| [Results](#results-fallbacks) | `IFallbackCommandItem3` with a non-null `QueryHandler` | Call `QueryHandler.QueryAsync` and display its returned items. | Files, settings, open windows, remote search |
 
 A provider can return legacy fallbacks, passive commands, and result sources together.
 For example, one provider can expose a passive web search command and a result source for browser history.
@@ -2771,18 +2772,18 @@ public interface IFallbackCommandItem3
     // ---- IFallbackCommandItem3 ----
 	String Name { get; };
 
+    // If this is set, then this is treated as a result source.
+    // If it is null, then this is treated as a passive fallback.
+	IFallbackHandler2 QueryHandler { get; };
+
 	// Passive fallbacks use these:
 	String TitleTemplate { get; };
 	String SubtitleTemplate { get; };
 	HostMatchKind MatchKind { get; };
 	String MatchValue { get; };
 
-	// Null selects a passive fallback. A non-null handler selects a result source.
-	IFallbackHandler2 QueryHandler { get; };
-
 	// Called only after the user activates a passive fallback. This supports both
-	// invokable commands and pages without adding sibling interfaces to the
-	// ICommand/IPage/IInvokableCommand inheritance trees.
+	// invokable commands and pages.
 	ICommand CreateCommand(IFallbackCommandInvocationArgs args);
 }
 ```
