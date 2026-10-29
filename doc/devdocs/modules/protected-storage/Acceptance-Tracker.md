@@ -13,23 +13,23 @@
 
 | 项目 | 当前记录 |
 |---|---|
-| 待验收代码 | `feature/workspaces-protected-storage-main-20261028`；`21c02063f3` 基线上增加窗口 elevation 匹配与 Capture busy/单操作修复 |
+| 待验收代码 | `feature/workspaces-protected-storage-main-20261028`；`b0e90065f1` 基线上增加 Capture 快速应用发现；不改通用旧枚举、launcher fallback 或服务授权 |
 | 主线基线 | `8056ba09721708bceee6176291b24af7ebabb0b3`；包含 PR #51114，合并提交 `06e6ae43e225cac51c2f282b0eebc42c6f995c97` |
 | 集成 worktree | `D:\PowerToys-Workspaces-Integration` |
-| 待测本地包 | x64 Debug **`0.101.6005.0`，已构建并部署**；入口 `D:\PowerToys-Workspaces-Integration\x64\Debug\PowerToys.exe`；桌面本地测试快捷方式已同步 |
+| 待测本地包 | x64 Debug **`0.101.6006.0`，构建成功但未部署**；入口 `D:\PowerToys-Workspaces-Integration\x64\Debug\PowerToys.exe`；必须先匹配更新服务/catalog，不能混用当前6005服务 |
 | 原代码备份 | `backup/workspaces-protected-storage-20261028`，提交 `c576e95f70d4247efeb68afe1c50bc5f7e57f4e2`；含原 worktree 全部已跟踪/未跟踪源码改动 |
 | 原 worktree | `D:\PowerToys-Workspaces-E2E`；原 HEAD `146518e3a3c3120257799b89e061b304f81fdab7`、索引和源码保留 |
-| 最近确认的运行环境 | **6005**：host7484/worker30168、recovery=0；普通 Runner12176/Editor31300 来自集成 `x64\Debug`，列表可用。测试草稿已取消；原 Notepad14436 未关闭 |
-| 新包部署状态 | 6004 已于 16:01 部署（E21）；6004 -> 6005 保留数据 repair 于 16:44 成功（E25），复用现有服务/VA，不是 Reset |
-| 数据保护结果 | 6005 repair 前后及 Capture/取消/最终 list 后，index/blob 哈希与本轮更新前基线相同；两个已保存工作区保留 |
-| 当前验收结论 | 6005 Capture 实机完成：进度可见、主窗原生禁用、单个 child、结束可编辑/取消；全量清单仍耗时 47.152 秒。elevation 匹配回归通过；真实管理员启动在 Arranger 授权尚未完成时超过 CLI 45 秒期限，**未验证新 elevated Notepad，未重试未知结果** |
+| 最近确认的运行环境 | 服务仍 **6005**：host18428/worker30608、recovery=0（17:42读数）；构建前已关闭本地客户端，当前没有该输出目录的 UI 进程 |
+| 新包部署状态 | 6006 更新的 PowerShell UAC 返回1223，实际 repair 未开始（E31）；没有重试或绕过授权。6005历史部署成功记录保留E25 |
+| 数据保护结果 | 相对本轮6006构建前基线，当前saved index/blob哈希完全相同；没有Reset/Purge、重建VA或迁移。用户在两轮之间的业务修改不与E25旧哈希混比 |
+| 当前验收结论 | 快速发现回归5项通过；新清单 **0.697秒** vs 同机旧 **36.958秒**，11个当前可见应用关键元数据相符。6006完整构建通过，但 **编辑器端到端耗时仍BLOCKED于服务更新授权**；不能把内部函数耗时当成完整Capture时间 |
 
-`6003`、`6004`、`6005` 都是合入 main 后的**本地 E2E 测试构建**，使用
+`6003`、`6004`、`6005`、`6006` 都是合入 main 后的**本地 E2E 测试构建**，使用
 `ProtectedStorage.LocalLifecycle.exe` 和本地测试 bundle，不是正式 carrier MSI 部署。
 本地保留数据的 `Repair` 不能替代生产常规 MSI 升级、无新增 UAC、卸载或 servicing 验收。
 
 两个 worktree 当前使用同一个本地测试服务身份和设置目录；源码隔离不代表运行环境隔离。
-不能同时运行新旧客户端并假定它们都匹配同一份服务 catalog。6005 必须完成匹配的
+不能同时运行新旧客户端并假定它们都匹配同一份服务 catalog。6006 必须完成匹配的
 服务/catalog 保留数据更新后再恢复客户端；旧 `Debug-6003-before-snapshot` 仅作历史备份。
 仅切换构建时，应走经授权的保留数据更新；不要误用默认 `Prepare`、`Reset` 或 `Clean`。
 
@@ -65,7 +65,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | 环境 ID | 范围 |
 |---|---|
 | `AUTO` | 非安装的编译、单元/协议/授权 fixture、发布 authoring/mock 检查 |
-| `L64` | 当前候选为 x64 Debug 6005；真实本地 E2E 必须先部署匹配的服务/catalog，旧 6003/6004 结果单独保留 |
+| `L64` | 当前候选为 x64 Debug 6006；真实本地 E2E 必须先部署匹配的服务/catalog，旧6003/6004/6005结果单独保留 |
 | `P-XU` / `P-XM` | 包含本次集成代码的正式签名 x64 per-user / per-machine 安装 |
 | `P-AU` / `P-AM` | 包含本次集成代码的正式签名 ARM64 per-user / per-machine 安装及 ARM64 运行 |
 
@@ -80,9 +80,10 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | B01（已解除） | 早前提权取消后服务留在 6002；14:39 发现新 6003 客户端反复被旧 catalog 拒绝 | 2026-10-28 14:49 已授权保留数据更新，核对新 ready/catalog 和不变的数据哈希（E13/E15）。未执行的用例转为 NOT RUN，不自动变为 PASS |
 | B02 | 尚未在本台账提供并核验包含本次集成代码的正式签名安装包及升级配对版本 | P 环境安装/升级/卸载不能用本地 helper 或历史 3000/3001 CI 结果替代 |
 | B03（历史探测取消） | 6004 隔离 High Arranger 探测曾返回 1223；之后用户已完成 6004 服务更新（E21） | High/OTS 完整资格仍需独立证据；不再把部署列为 6004 阻塞。6005 更新单独记录 |
+| B04 | 6006服务更新的UAC返回1223；repair进程未启动，服务仍6005 | E31；匹配更新前不要启动6006客户端，不能重试提权或把新客户端的授权失败当作Capture算法回归 |
 | R01（6003 失败；6004 已完成实机会话） | 6003 的额外握手失败保留 E16；6004 两次 shared session 正常完成（E22），没有再卡在 protected-plan | 不把未采集 token 的已退出 Arranger 当作 High 证明；目标应用的 elevation 复用缺陷见 R05 |
 | R02 | 通用 “protected storage unavailable” 曾掩盖启动会话错误；授权不匹配还曾提供无效 Retry | 后一问题已修复并实测（E11/E12）；UX-01 的其他错误分类仍需逐项验证，不能根据弹窗直接诊断服务坏了 |
-| R03 | 6004 Capture 约 44.6/41.9 秒；6005 清单精确耗时 **47.152 秒**，完整创建约 47.293 秒 | 6005 已修等待反馈/单操作保护；未替换全量枚举算法，不宣称本轮已加速 Capture |
+| R03（发现路径已修，待实机闭环） | 6005清单47.152秒；独立x64诊断定位到AppsFolder首次Next等待，循环与main相同。6006改为当前窗口包信息+非解析的桌面快捷方式发现 | E28/E29：新697ms vs旧36958ms；没有只加进度、后台预热或改服务timeout。完整UI计时待B04解除；具体OS内部RPC延迟原因未断言 |
 | R04 | 服务删除不等于 VA profile 已卸载；旧测试曾报告 profile 仍 loaded | 清理应报告准确残留，不强制卸载 hive；REM-06/CLEAN-02 单独判断 |
 | R05 | 6004 `move-existing-windows=true` 时只匹配名称/路径/PWA，没有比较实际 token elevation；普通 Notepad14436 可满足 elevated 条目，绕过新启动路径 | 6005 在既有窗口选择和新窗口认领处均要求 elevation 匹配；仅用 limited process query，查询失败不当作普通窗口，不引入身份握手或 DACL 修改 |
 | Q02 | 首次管理员授权时机、fail-closed 范围和 UX 仍需 PM 结论 | 当前不得启用不受保护 fallback；技术检查通过不等于 PM 已批准 |
@@ -93,18 +94,19 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 | ID | 检查与通过标准 | 当前状态 | 最近结果 / 证据 |
 |---|---|---|---|
-| AUTO-01 | 新 worktree 完整构建同版本 Runner、Settings、Quick Access、Editor、Launcher、LauncherUI、SnapshotTool、Arranger、CLI 和本地服务 bundle | PASS | 2026-10-29；6005，E24。有已有 XAML 弃用和原生部分 PDB 缺失警告，不宣称全包零警告/完整符号 |
+| AUTO-01 | 新 worktree 完整构建同版本 Runner、Settings、Quick Access、Editor、Launcher、LauncherUI、SnapshotTool、Arranger、CLI 和本地服务 bundle | PASS | 2026-10-29；6006，E30；不宣称全包零警告/完整符号，仍有既有XAML警告 |
 | AUTO-02 | 本次集成的默认原生 Workspaces 单测全部通过，含 repository、CLI 合同、元数据及缺少 protected preview 的拒绝行为 | RETEST | 6004 的 193 个不同用例通过记录保留 E18；6005 运行受影响 AppUtils 21 项（AUTO-12），不是重跑全部默认/opt-in 套件 |
 | AUTO-03 | 托管存储/协议/迁移/repository 测试通过 | PASS | 2026-10-29；49 passed，0 failed/skipped，E19；旧 E03/E11 记录保留 |
 | AUTO-04 | 最终目标代码的 native storage 套件及 20,000 次 framing mutation 全部通过 | PASS | 2026-10-29；3,018 assertions + 20,000 mutations，E19。少的一条是已删除 peer helper 的参数断言；服务端映像和权限检查没有删除 |
 | AUTO-05 | 原生 Setup/Lifecycle/Broker/MsiAction 编译及安装器契约检查通过 | RETEST | 旧 E05 的 4,129 检查和 helper 编译结果保留；本轮仅重跑 storage native、更新 inventory 的 authoring/mock，未重新编译整个生产 helper 图 |
 | AUTO-06 | 发布流程的 mocked gates、最终文件字节/哈希、固定 policy/version、篡改拒绝检查通过 | PASS | 2026-10-29；E19，含新 inventory；仍是 process-scoped mock，不是实际发布/servicing |
-| AUTO-07 | 本地测试 CMS 正常签名接受，内容改变或不同 signer 拒绝 | PASS | 2026-10-29；6005 E24，`expiredFixture=False`；不代替生产时间戳/吊销检查 |
+| AUTO-07 | 本地测试 CMS 正常签名接受，内容改变或不同 signer 拒绝 | PASS | 2026-10-29；6006 E30，`expiredFixture=False`；不代替生产时间戳/吊销检查 |
 | AUTO-08 | 新 CLI 的 `--version`、`--help` 正常退出且报告当前候选版本 | PASS | 2026-10-29；6004，E20；未连接 6004 服务执行 list/launch |
-| AUTO-09 | 原源码完整保存、新集成提交持久化；新客户端文件哈希匹配新 catalog；维护不改变原业务数据 | PASS | E08 备份保留；6005 匹配 bundle 已部署，CLI/Editor/Snapshot 访问成功，维护和捕获取消后业务哈希不变（E24～E26） |
+| AUTO-09 | 原源码完整保存、新集成提交持久化；新客户端文件哈希匹配新 catalog；维护不改变原业务数据 | PASS | E08备份保留；6006构建匹配bundle，构建/取消更新后当前业务哈希不变（E30/E31）。不代表6006客户端已连接新服务 |
 | AUTO-10 | 真实 Arranger 用既有认证 IPC 获取快照；拒绝错误 operation；无需完整进程查询 | PASS | E18：旧 6003 因要求额外 plan 参数而失败，6004 通过；限权案例仅修改可丢弃 Medium 子进程 DACL，并实际确认 full-query 拒绝、limited-query 成功，不是 High/MIC 验收 |
 | AUTO-11 | Capture 等待可见、禁用重复操作/关闭、完成后恢复；开始前取消不启动 native capture | PASS | E23：Release WorkspacesCsharpLibrary.UnitTests 10 passed，其中 2 个新增真实 WPF/STA 窗口用例；模拟 pending Task，不代表已部署 native Capture E2E |
 | AUTO-12 | 既有/新窗口匹配要求实际 elevation 一致；查询失败不按普通权限处理 | PASS | E24：Release AppUtils 21 passed，包含当前真实 token 的匹配/相反 elevation 拒绝、无效 PID 两种请求均拒绝；不是实际 High/OTS 新应用启动 |
+| AUTO-13 | Capture 快路径保留当前可见应用的名称、路径、包身份与提升能力；快捷方式/Steam/PWA 不丢失必要启动信息 | PASS | E29：5 项定向 Release 回归通过，11 个可见应用元数据与旧枚举一致；快捷方式覆盖环境变量路径、显式 AUMID、Steam URL、不可读链接；PWA/Steam 既有计划回归通过。不是所有安装应用/所有机器的完整目录等价证明 |
 
 ### 原生产构建与单测要求的保留状态
 
@@ -128,9 +130,9 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 | ID / 优先级 | 操作与通过标准 | 当前状态 | 证据 / 阻塞 |
 |---|---|---|---|
-| LOCAL-01 / P0 | 核对新目录全部 PE 版本和 catalog；不得夹带旧 worktree 客户端 | PASS | 6005 构建版本检查、匹配 bundle 部署及桌面入口更新 E24/E25；未改原 worktree |
-| LOCAL-02 / P0 | 退出旧 UI；保留数据更新服务；记录 Code 前后版本、ready、index/blob 哈希及回退证据 | PASS | 6004 -> 6005，E25：dataPreserved=true、旧 Code 保留、ready6005/recovery0 |
-| LOCAL-03 / P0 | 从新 Runner 的 Settings、Quick Access、热键打开 Editor；实际进程全部来自新包，读到正确集合 | PARTIAL | 6005 普通 Runner/Editor 已恢复、列表可用（E25）；本轮 Editor 直接启动，Settings/Quick Access/热键入口未逐项重测 |
+| LOCAL-01 / P0 | 核对新目录全部 PE 版本和 catalog；不得夹带旧 worktree 客户端 | PASS | 6006构建版本检查和匹配bundle，E30；服务仍6005，未将文件检查冒充部署 |
+| LOCAL-02 / P0 | 退出旧 UI；保留数据更新服务；记录 Code 前后版本、ready、index/blob 哈希及回退证据 | BLOCKED | 6006：B04/E31；6004 -> 6005 的PASS保留E25 |
+| LOCAL-03 / P0 | 从新 Runner 的 Settings、Quick Access、热键打开 Editor；实际进程全部来自新包，读到正确集合 | BLOCKED | 6006：B04；旧6005直接启动/列表记录保留E25，非当前候选通过 |
 | LOCAL-04 / P1 | 开发构建的 settings/log/mutex/event 与正式安装隔离；不改正式配置、不自动更新/卸载正式版本 | NOT RUN | 部署前置已满足；新旧 LocalE2E 本身并非不同命名空间 |
 | INST-01 / P0 | A 的真实 per-user 首次预配；carrier 为 A 的 USERUNMANAGED/context 2，服务为对应 VA，不是 SYSTEM/管理员 owner | NOT RUN | P；B02；本地 helper 无 carrier MSI，不能替代 |
 | INST-02 / P0 | 标准用户 B 在 Setup UAC 输入另一管理员凭据；业务 owner 全程仍是 B | NOT RUN | P；真实交互 OTS，不用 Session 0 合成 token 代替 |
@@ -207,6 +209,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | UX-04 / P1 | 中英文、长路径/错误文本等可读且本地化；无 console/JSON 内容泄漏或无响应错误循环 | NOT RUN | 部署前置已满足；真实 UI 观察另留证据 |
 | PERF-01 / P1 | 正常 launch/arranger 不重复全量枚举；记录 metadata/首应用/arrangement 分段耗时，legacy fallback 有说明 | NOT RUN | 部署前置已满足；另见 R03；用同机同数据比较，不凭印象认定更快 |
 | PERF-02 / P1 | Capture 独立量测全量枚举和 UI 响应；不得因 launch 优化宣称 Capture 已改善 | PASS | 量测范围：E26，清单 47.152 秒/整体约 47.293 秒，进度可见。**不表示性能达标或已加速**；R03 性能问题保留 |
+| PERF-03 / P0 | Capture恢复秒级可用，不靠只显示进度或丢失必要应用元数据；记录真实点击Capture到可编辑界面耗时 | PARTIAL | AUTO：新发现697ms、旧36958ms、11个可见应用比对一致（E29）；6006编辑器完整计时受B04阻塞，不宣称已完成GUI性能验收 |
 | UX-05 / P0 | Create/Capture 等待期间显示进度和说明，不允许第二次 Capture；完成/失败后恢复可操作状态，进度窗不遮挡错误对话框 | PARTIAL | E26：6005 正常捕获/等待/完成/取消实机 PASS；仅一个 native child，Capture/Cancel 禁用，主窗 IsWindowEnabled=false，完成后 Save/Cancel 可用。失败/Retry 实机待测；6004 FAIL 保留 E22 |
 | BLOB-01 / P1 | 正常保存先 durable 新 generation，再原子发布 index；旧 generation 正常可删除，保留 live 数据 | NOT RUN | 部署前置已满足；blob 不是每个 workspace 一份，也不是备份历史 |
 | BLOB-02 / P2 | 人为阻止旧 blob 删除/中断提交后重启；Recover 验证有效 index/live generations 后回收 orphan | NOT RUN | 部署前置已满足；当前无周期性 GC/每次删除失败诊断，不把即时全部删除当已实现承诺 |
@@ -350,6 +353,10 @@ Q10 的“直接验证原始 MSI”仍是独立验证候选，未经另行立项
 | E25 | `oct29-6005-repair.log`；`x64\Debug\ProtectedStorageLocalTest\Results\repair-20261029-164427-290.json`；`oct29-6005-shortcut.json`、`oct29-6005-final-state.json` | 保留数据 repair 成功、ready6005；普通 Runner/Editor 恢复、CLI list 正常、桌面入口同步；最终 saved index/blob 哈希与更新前一致 |
 | E26 | `oct29-6005-capture-pending.json`、`oct29-6005-capture-completed.json`、`oct29-6005-final-state.json` | 实际单 child、等待反馈、47.152 秒清单、可编辑页面和取消；首次 UIA 断言误把主窗 IsEnabled=true 当作未禁用，随后用原生 IsWindowEnabled=false 确认模态禁用；不是产品重复捕获失败 |
 | E27 | `oct29-6005-launch.json`、`oct29-6005-launch-tokens.json`、`oct29-6005-final-state.json`；本会话 consent31072 进程观察 | 45 秒授权等待后 outcomeUnknown/exit9；普通 CLI/原 Notepad token 有实测，未获得新 High 目标证据；没有重复启动或绕过授权，后续无 pending 进程 |
+| E28 | `capture-inventory-profile-stack-x64.log`、`capture-inventory-profile-workers-x64.log`、`capture-target-profile-appinfo.log`、`capture-target-profile-policy.log` | x64 首次 Next 约36.8秒；AppResolver 等待 Shell taskpool/RPC，后续属性读取很快。直接属性/STA/FASTITEMS 探测均未解决；具体 OS 内部 RPC 延迟原因未断言。WinRT AppInfo 约7–22ms；对应 Shell 解析约1.0–1.3秒；实际 token windowing policy 与被测包的 Shell elevation 能力相符 |
+| E29 | `oct29-capture-perf-build.log`、`oct29-capture-perf-results\capture-discovery-final.trx` | 5 passed；同一测试进程新清单697ms、旧AppsFolder36958ms，11个可见应用比对通过。失败过的全目录替代原型未采用；当前实现仅给 Capture 增加快速发现，不改通用旧枚举/launcher fallback |
+| E30 | `oct29-6006-build.log` | 完整6006本地包、同版本检查和pinned CMS正常/篡改/不同signer检查通过；不是部署报告 |
+| E31 | `oct29-6006-data-before.json`、`oct29-6006-final-state.json`；本会话`oct29-6006-live`的Start-Process结果 | UAC取消1223，repair未开始；17:42服务6005/recovery0，候选SnapshotTool6006；业务index/blob哈希不变、无该输出目录的本地UI进程；没有生成虚假的成功repair报告 |
 
 ### 历史参考（不计入当前候选的 PASS）
 
@@ -395,6 +402,10 @@ Q10 的“直接验证原始 MSI”仍是独立验证候选，未经另行立项
 | 2026-10-29 16:44 +08:00 | LOCAL-01/02；6005 L64 | PASS：匹配服务/catalog已更新、旧Code保留、业务哈希不变，恢复普通Runner/Editor | E25；未重建VA、未Reset/Purge |
 | 2026-10-29 16:44–16:45 +08:00 | DATA-14；6005 L64 | BLOCKED：Arranger的UAC授权未完成，CLI45秒deadline后返回outcomeUnknown/9；不自动重放未知操作 | E27；后续确认无pending consent/Arranger，也无新Notepad；不宣称管理员启动已通过 |
 | 2026-10-29 16:46–16:48 +08:00 | UX-05/正常路径、DATA-11/Capture取消、PERF-02；6005 L64 | PASS：等待有文字/进度、主窗原生禁用、一个SnapshotTool，47.293秒后进入编辑页，取消返回列表 | E26；清单47.152秒，未优化枚举；最后两个saved workspaces与index/blob哈希不变 |
+| 2026-10-29 | PERF-02/R03；隔离 AUTO 调研 | 已定位等待发生在首个 AppsFolder Next，不是保护服务请求；该枚举循环及 COM 模式与集成 main 相同 | E28；诊断仅观察自身进程，未改系统目录/包/服务来加速 |
+| 2026-10-29 | AUTO-13；Release AUTO | PASS：新清单697ms vs旧36958ms，11个可见应用关键元数据一致；共5项定向回归通过 | E29；6006完整包构建/实机验收单独记录，不把内部函数耗时当UI端到端耗时 |
+| 2026-10-29 | AUTO-01/07；6006 AUTO | PASS：完整6006包和本地签名绑定检查 | E30；未部署 |
+| 2026-10-29 17:40–17:42 +08:00 | LOCAL-02、PERF-03；6006 L64 | BLOCKED：服务更新的UAC取消1223；未开始repair，未执行后续两个GUI Capture计时 | E31/B04；未重试提权、未改服务/data ACL，当前业务哈希不变；诊断二进制/obj已清理，源码和日志保留 |
 
 ### 后续逐项填写模板
 

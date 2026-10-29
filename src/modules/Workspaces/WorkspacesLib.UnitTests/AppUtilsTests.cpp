@@ -2,6 +2,15 @@
 #include <filesystem> // Add this line
 #include <WorkspacesLib/WindowUtils.h>
 #include <wil/resource.h>
+#include <wil/com.h>
+#include <atlbase.h>
+#include <shlobj.h>
+#include <propkey.h>
+#include <propvarutil.h>
+#include <fstream>
+#include <chrono>
+#include <common/utils/process_path.h>
+#include <workspaces-common/WindowUtils.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -10,6 +19,96 @@ namespace WorkspacesLibUnitTests
     TEST_CLASS(AppUtilsTests)
     {
     public:
+        TEST_METHOD(CaptureShortcutPreservesTargetIdentityAndElevation)
+        {
+            auto apartment = wil::CoInitializeEx(COINIT_APARTMENTTHREADED);
+            GUID id{};
+            Assert::IsTrue(SUCCEEDED(CoCreateGuid(&id)));
+            auto folder = std::filesystem::temp_directory_path() / (L"WorkspacesCapture-" + std::wstring(winrt::to_hstring(id)));
+            std::filesystem::create_directory(folder);
+            auto cleanup = wil::scope_exit([&] { std::filesystem::remove_all(folder); });
+            auto shortcut = folder / L"Capture Shortcut.lnk";
+            CComPtr<IShellLinkW> link;
+            Assert::IsTrue(SUCCEEDED(link.CoCreateInstance(CLSID_ShellLink)));
+            Assert::IsTrue(SUCCEEDED(link->SetPath(L"%SystemRoot%\\System32\\notepad.exe")));
+            CComQIPtr<IPropertyStore> store(link);
+            PROPVARIANT value{};
+            Assert::IsTrue(SUCCEEDED(InitPropVariantFromString(L"Workspaces.Capture.Test", &value)));
+            Assert::IsTrue(SUCCEEDED(store->SetValue(PKEY_AppUserModel_ID, value)));
+            PropVariantClear(&value);
+            Assert::IsTrue(SUCCEEDED(store->Commit()));
+            CComQIPtr<IPersistFile> file(link);
+            Assert::IsTrue(SUCCEEDED(file->Save(shortcut.c_str(), TRUE)));
+
+            const auto app = Utils::Apps::GetShortcutApp(shortcut.wstring());
+            Assert::IsTrue(app.has_value());
+            wchar_t expected[MAX_PATH]{};
+            ExpandEnvironmentStringsW(L"%SystemRoot%\\System32\\notepad.exe", expected, ARRAYSIZE(expected));
+            Assert::AreEqual(0, _wcsicmp(expected, app->installPath.c_str()));
+            Assert::AreEqual(std::wstring(L"Capture Shortcut"), app->name);
+            Assert::AreEqual(std::wstring(L"Workspaces.Capture.Test"), app->appUserModelId);
+            Assert::IsTrue(app->canLaunchElevated);
+        }
+
+        TEST_METHOD(CaptureShortcutPreservesSteamProtocolAndRejectsUnreadableLinks)
+        {
+            auto apartment = wil::CoInitializeEx(COINIT_APARTMENTTHREADED);
+            GUID id{};
+            Assert::IsTrue(SUCCEEDED(CoCreateGuid(&id)));
+            auto folder = std::filesystem::temp_directory_path() / (L"WorkspacesCapture-" + std::wstring(winrt::to_hstring(id)));
+            std::filesystem::create_directory(folder);
+            auto cleanup = wil::scope_exit([&] { std::filesystem::remove_all(folder); });
+            auto shortcut = folder / L"Capture Game.url";
+            std::ofstream(shortcut) << "[InternetShortcut]\nURL=steam://rungameid/99999999999999999999\n";
+            const auto app = Utils::Apps::GetShortcutApp(shortcut.wstring());
+            Assert::IsTrue(app.has_value());
+            Assert::IsTrue(app->IsSteamGame());
+            Assert::AreEqual(std::wstring(L"steam://rungameid/99999999999999999999"), app->protocolPath);
+            Assert::IsFalse(Utils::Apps::GetShortcutApp((folder / L"missing.lnk").wstring()).has_value());
+        }
+
+        TEST_METHOD(CaptureDiscoveryPreservesVisibleApplicationMetadata)
+        {
+            auto apartment = wil::CoInitializeEx(COINIT_APARTMENTTHREADED);
+            std::vector<HWND> windows;
+            EnumWindows([](HWND window, LPARAM context) -> BOOL {
+                if (IsWindowVisible(window) && GetWindowTextLengthW(window))
+                    reinterpret_cast<std::vector<HWND>*>(context)->push_back(window);
+                return TRUE;
+            }, reinterpret_cast<LPARAM>(&windows));
+            const auto start = std::chrono::steady_clock::now();
+            const auto capture = Utils::Apps::GetCaptureAppsList(windows);
+            const auto captureMs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+            const auto baselineStart = std::chrono::steady_clock::now();
+            const auto baseline = Utils::Apps::GetAppsList();
+            const auto baselineMs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - baselineStart).count();
+            Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage(
+                (L"Capture inventory ms=" + std::to_wstring(captureMs) + L"; AppsFolder ms=" + std::to_wstring(baselineMs)).c_str());
+            size_t compared{};
+            for (const auto window : windows)
+            {
+                DWORD pid{};
+                GetWindowThreadProcessId(window, &pid);
+                const auto path = get_process_path(pid);
+                if (path.empty() || WindowUtils::IsExcludedByDefault(window, path))
+                    continue;
+                const auto oldApp = Utils::Apps::GetApp(path, pid, baseline);
+                const auto newApp = Utils::Apps::GetApp(path, pid, capture);
+                Assert::IsTrue(oldApp.has_value() == newApp.has_value(), path.c_str());
+                if (!oldApp)
+                    continue;
+                Assert::AreEqual(oldApp->name, newApp->name, path.c_str());
+                Assert::IsTrue(_wcsicmp(oldApp->installPath.c_str(), newApp->installPath.c_str()) == 0, path.c_str());
+                Assert::AreEqual(oldApp->packageFullName, newApp->packageFullName, path.c_str());
+                Assert::IsTrue(oldApp->canLaunchElevated == newApp->canLaunchElevated, path.c_str());
+                if (!oldApp->packageFullName.empty() || oldApp->IsSteamGame())
+                    Assert::AreEqual(oldApp->appUserModelId, newApp->appUserModelId, path.c_str());
+                ++compared;
+            }
+            Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage(
+                (L"Visible application metadata matched=" + std::to_wstring(compared)).c_str());
+        }
+
         TEST_METHOD(WindowMatchingRejectsTheOppositeElevation)
         {
             wil::unique_handle token;

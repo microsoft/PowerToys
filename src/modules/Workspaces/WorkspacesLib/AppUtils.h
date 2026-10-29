@@ -27,6 +27,8 @@ namespace Utils
         const std::wstring& GetCurrentFolderUpper();
 
         AppList GetAppsList();
+        std::optional<AppData> GetShortcutApp(const std::wstring& path);
+        AppList GetCaptureAppsList(const std::vector<HWND>& windows);
         AppList GetWorkspaceApps(const WorkspacesData::WorkspacesProject& project, bool refreshPackages = false);
         std::optional<AppData> GetApp(const std::wstring& appPath, DWORD pid, const AppList& apps);
         std::optional<AppData> GetApp(HWND window, const AppList& apps);

@@ -8,6 +8,11 @@
 #include <TlHelp32.h>
 
 #include <filesystem>
+#include <set>
+#include <appmodel.h>
+#include <propkey.h>
+#include <wil/resource.h>
+#include <winrt/Windows.ApplicationModel.h>
 
 #include <common/logger/logger.h>
 #include <common/utils/process_path.h>
@@ -219,6 +224,149 @@ namespace Utils
         AppList GetAppsList()
         {
             return IterateAppsFolder();
+        }
+
+        std::optional<AppData> GetShortcutApp(const std::wstring& path)
+        {
+            std::wstring extension = std::filesystem::path(path).extension();
+            std::transform(extension.begin(), extension.end(), extension.begin(), towlower);
+            AppData data{};
+            wchar_t target[32768]{};
+            if (extension == L".lnk")
+            {
+                CComPtr<IShellLinkW> link;
+                if (FAILED(link.CoCreateInstance(CLSID_ShellLink)))
+                    return std::nullopt;
+                CComQIPtr<IPersistFile> file(link);
+                if (!file || FAILED(file->Load(path.c_str(), STGM_READ)) ||
+                    FAILED(link->GetPath(target, ARRAYSIZE(target), nullptr, SLGP_RAWPATH)))
+                    return std::nullopt;
+                CComQIPtr<IPropertyStore> store(link);
+                PROPVARIANT value{};
+                if (store && SUCCEEDED(store->GetValue(PKEY_AppUserModel_ID, &value)))
+                {
+                    CComHeapPtr<wchar_t> id;
+                    if (SUCCEEDED(PropVariantToStringAlloc(value, &id)))
+                        data.appUserModelId = id.m_pData;
+                }
+                PropVariantClear(&value);
+            }
+            else if (extension == L".url")
+            {
+                GetPrivateProfileStringW(L"InternetShortcut", L"URL", L"", target, ARRAYSIZE(target), path.c_str());
+            }
+            else
+            {
+                return std::nullopt;
+            }
+
+            if (!target[0])
+                return std::nullopt;
+            const auto required = ExpandEnvironmentStringsW(target, nullptr, 0);
+            if (!required || required > 32768)
+                return std::nullopt;
+            std::wstring expanded(required, L'\0');
+            if (ExpandEnvironmentStringsW(target, expanded.data(), required) != required)
+                return std::nullopt;
+            expanded.resize(required - 1);
+            data.installPath = std::move(expanded);
+            data.canLaunchElevated = true;
+
+            CComPtr<IShellItem> item;
+            CComHeapPtr<wchar_t> name;
+            if (SUCCEEDED(SHCreateItemFromParsingName(path.c_str(), nullptr, IID_PPV_ARGS(&item))) &&
+                SUCCEEDED(item->GetDisplayName(SIGDN_NORMALDISPLAY, &name)))
+                data.name = name.m_pData;
+            else
+                data.name = std::filesystem::path(path).stem();
+
+            if (data.installPath.starts_with(NonLocalizable::SteamUrlProtocol))
+            {
+                data.protocolPath = data.installPath;
+                try
+                {
+                    const auto game = Steam::GetSteamGameInfoFromAcfFile(Steam::GetGameIdFromUrlProtocolPath(data.protocolPath));
+                    if (game)
+                        data.installPath = game->gameInstallationPath;
+                }
+                catch (const std::exception& error)
+                {
+                    Logger::warn("Could not resolve captured Steam shortcut: {}", error.what());
+                }
+            }
+            return data;
+        }
+
+        AppList GetCaptureAppsList(const std::vector<HWND>& windows)
+        {
+            AppList result;
+            std::set<DWORD> seen;
+            for (const auto window : windows)
+            {
+                DWORD pid{};
+                GetWindowThreadProcessId(window, &pid);
+                if (!pid || !seen.insert(pid).second)
+                    continue;
+                wil::unique_handle process(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid));
+                if (!process)
+                    continue;
+                wchar_t id[APPLICATION_USER_MODEL_ID_MAX_LENGTH + 1]{};
+                UINT32 idLength = ARRAYSIZE(id);
+                wchar_t package[PACKAGE_FULL_NAME_MAX_LENGTH + 1]{};
+                UINT32 packageLength = ARRAYSIZE(package);
+                if (GetApplicationUserModelId(process.get(), &idLength, id) != ERROR_SUCCESS ||
+                    GetPackageFullName(process.get(), &packageLength, package) != ERROR_SUCCESS)
+                    continue;
+                try
+                {
+                    const auto info = winrt::Windows::ApplicationModel::AppInfo::GetFromAppUserModelId(id);
+                    AppData data{
+                        .name = std::wstring(info.DisplayInfo().DisplayName()),
+                        .installPath = get_process_path(pid),
+                        .packageFullName = package,
+                        .appUserModelId = id,
+                    };
+                    wil::unique_handle token;
+                    AppPolicyWindowingModel model{};
+                    data.canLaunchElevated = OpenProcessToken(process.get(), TOKEN_QUERY, token.put()) &&
+                        AppPolicyGetWindowingModel(token.get(), &model) == ERROR_SUCCESS &&
+                        model == AppPolicyWindowingModel_ClassicDesktop;
+                    if (!data.name.empty() && !data.installPath.empty())
+                        result.push_back(std::move(data));
+                }
+                catch (const winrt::hresult_error& error)
+                {
+                    Logger::warn(L"Could not resolve captured package metadata: 0x{:08X}", static_cast<uint32_t>(error.code()));
+                }
+            }
+
+            // AppsFolder synchronously rebuilds the entire app catalog. Read desktop
+            // shortcuts without resolving/launching them; query packages only for live windows.
+            for (const auto& folderId : { FOLDERID_Programs, FOLDERID_CommonPrograms })
+            {
+                CComHeapPtr<wchar_t> path;
+                if (FAILED(SHGetKnownFolderPath(folderId, KF_FLAG_DEFAULT, nullptr, &path)))
+                    continue;
+                std::error_code error;
+                std::filesystem::recursive_directory_iterator entry(path.m_pData, std::filesystem::directory_options::skip_permission_denied, error);
+                const std::filesystem::recursive_directory_iterator end;
+                while (entry != end)
+                {
+                    const auto attributes = GetFileAttributesW(entry->path().c_str());
+                    if (attributes != INVALID_FILE_ATTRIBUTES &&
+                        (attributes & FILE_ATTRIBUTE_DIRECTORY) && (attributes & FILE_ATTRIBUTE_REPARSE_POINT))
+                        entry.disable_recursion_pending();
+                    if (auto data = GetShortcutApp(entry->path().wstring()))
+                        result.push_back(std::move(*data));
+                    entry.increment(error);
+                    if (error)
+                    {
+                        Logger::warn("Could not finish capture shortcut discovery: {}", error.message());
+                        break;
+                    }
+                }
+            }
+            return result;
         }
 
         AppList GetWorkspaceApps(const WorkspacesData::WorkspacesProject& project, bool refreshPackages)

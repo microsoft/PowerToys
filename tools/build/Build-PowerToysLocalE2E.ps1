@@ -4,7 +4,7 @@
 param(
     [ValidateSet('Prepare','Build','Repair','Launch','Stop','Reset','Clean','Inspect')][string]$Mode = 'Prepare',
     [ValidateSet('x64','ARM64')][string]$Platform = 'x64',
-    [string]$Version = '0.101.6005.0',
+    [string]$Version = '0.101.6006.0',
     [switch]$SkipBuild,
     [switch]$BackupBeforeReset
 )
