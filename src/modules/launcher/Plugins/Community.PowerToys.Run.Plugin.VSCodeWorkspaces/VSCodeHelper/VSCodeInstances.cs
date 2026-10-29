@@ -18,7 +18,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
         private static readonly string _userAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         private static readonly string _userProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-        public static List<VSCodeInstance> Instances { get; set; } = new List<VSCodeInstance>();
+        public static List<VSCodeInstance> Instances { get; } = new List<VSCodeInstance>();
 
         private static BitmapImage Bitmap2BitmapImage(Bitmap bitmap)
         {

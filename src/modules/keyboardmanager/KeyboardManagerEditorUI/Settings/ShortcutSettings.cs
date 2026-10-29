@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace KeyboardManagerEditorUI.Settings
 
         public ShortcutKeyMapping Shortcut { get; set; } = new ShortcutKeyMapping();
 
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This JSON DTO retains its writable deserialization contract, including existing omitted-member defaults and explicit-null behavior.")]
         public List<string> Profiles { get; set; } = new List<string>();
 
         public bool IsActive { get; set; } = true;

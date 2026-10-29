@@ -16,7 +16,7 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     public new ExtensionObject<IListItem> Model { get; }
 
-    public List<TagViewModel>? Tags { get; set; }
+    public List<TagViewModel>? Tags { get; private set; }
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]

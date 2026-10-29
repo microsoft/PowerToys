@@ -559,7 +559,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
 
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = new();
 
-    public ObservableCollection<FallbackSettingsViewModel> FallbackRankings { get; set; } = new();
+    public ObservableCollection<FallbackSettingsViewModel> FallbackRankings { get; private set; } = new();
 
     public ObservableCollection<DockMonitorConfigViewModel> MonitorConfigs { get; } = new();
 

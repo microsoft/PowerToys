@@ -259,7 +259,7 @@ public partial class ProviderSettingsViewModel : ObservableObject, IDisposable
     }
 
     [field: AllowNull]
-    public List<FallbackSettingsViewModel> FallbackCommands { get; set; } = [];
+    public List<FallbackSettingsViewModel> FallbackCommands { get; private set; } = [];
 
     public bool HasFallbackCommands => _provider.FallbackItems?.Length > 0;
 
