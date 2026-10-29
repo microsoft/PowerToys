@@ -44,19 +44,9 @@ if (!$project.SelectSingleNode('/Project/Target[@Name="VerifyProtectedStoragePay
     throw 'Signed release validation is not a main-installer build prerequisite.'
 }
 $inventoryScript = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'New-ProtectedStorageClientInventory.ps1') -Raw
-if (!$inventoryScript.Contains("role = 'workspaces.arranger'") -or $inventoryScript.Contains('workspaces.plan-reader')) {
-    throw 'The signed catalog must use the frozen identity-only arranger role.'
-}
-$contractSources = @(
-    'src\common\ProtectedStorage\ProtectedStorage.Common\Authentication.cpp',
-    'src\modules\Workspaces\WorkspacesLib\WorkspaceLaunchSession.cpp',
-    'installer\PowerToysProtectedStorage\Build-Carrier.ps1'
-)
-foreach ($source in $contractSources) {
-    $text = Get-Content -LiteralPath (Join-Path $repo $source) -Raw
-    if (!$text.Contains('workspaces.arranger') -or $text.Contains('workspaces.plan-reader')) {
-        throw "Arranger identity role is inconsistent across producer/server/consumer: $source"
-    }
+if ($inventoryScript.Contains('PowerToys.WorkspacesWindowArranger.exe') -or
+    !$inventoryScript.Contains("PowerToys.WorkspacesCLI.exe'; role = 'workspaces.launcher'")) {
+    throw 'Only actual data consumers belong in the catalog; CLI needs launcher access and Arranger needs none.'
 }
 $harvest = Get-Content -LiteralPath (Join-Path $installer 'generateAllFileComponents.ps1') -Raw
 if (!$harvest.Contains('$fileExclusionList += @("PowerToys.ProtectedStorageSetup.exe")')) {

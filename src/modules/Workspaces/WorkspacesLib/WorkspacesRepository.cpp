@@ -330,7 +330,7 @@ namespace Workspaces
         Storage::Check(capabilities.At("protocolMajor").Number() == 1 && capabilities.At("protocolMinor").Number() == 0 &&
             capabilities.At("maxBlobBytes").Number() >= MaximumBytes && capabilities.At("maxMetadataBytes").Number() >= 8192,
             Storage::ErrorCode::IncompatibleVersion);
-        for (const auto* required : { "cas", "write-query", "source-receipt", "transient", "signed-peer-catalog", "purge-suppression" })
+        for (const auto* required : { "cas", "write-query", "source-receipt", "transient", "purge-suppression" })
         {
             const auto& features = capabilities.At("features").Items();
             Storage::Check(std::any_of(features.begin(), features.end(), [&](const auto& feature) { return feature.Text() == required; }),

@@ -4,7 +4,7 @@
 param(
     [ValidateSet('Prepare','Build','Repair','Launch','Stop','Reset','Clean','Inspect')][string]$Mode = 'Prepare',
     [ValidateSet('x64','ARM64')][string]$Platform = 'x64',
-    [string]$Version = '0.101.6003.0',
+    [string]$Version = '0.101.6004.0',
     [switch]$SkipBuild,
     [switch]$BackupBeforeReset
 )
@@ -150,8 +150,7 @@ if (!$SkipBuild -and $Mode -in @('Prepare','Build','Repair')) {
             @('PowerToys.WorkspacesLauncher.exe','workspaces.launcher'),
             @('PowerToys.WorkspacesCLI.exe','workspaces.launcher'),
             @('PowerToys.WorkspacesLauncher.exe','workspaces.preview'),
-            @('PowerToys.WorkspacesSnapshotTool.exe','workspaces.preview'),
-            @('PowerToys.WorkspacesWindowArranger.exe','workspaces.arranger')
+            @('PowerToys.WorkspacesSnapshotTool.exe','workspaces.preview')
         )
         $clients = foreach ($entry in $entries) {
             @{image=$entry[0]; role=$entry[1]; version=$Version; sha256=(Get-FileHash -LiteralPath (Join-Path $package $entry[0]) -Algorithm SHA256).Hash.ToLowerInvariant()}

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation. Licensed under the MIT license.
-// Exercises CLI process/stream behavior without launching workspace applications or requesting UAC.
+// Exercises CLI/IPC without launching workspace applications. The explicit elevated
+// snapshot mode requests UAC only for the real, operation-owned arranger.
 #include <windows.h>
 #include <sddl.h>
 #include <shellapi.h>
@@ -22,6 +23,7 @@
 #include <WorkspacesCLI/JsonOutput.h>
 #include <WorkspacesCLI/Resources.h>
 #include <WorkspacesLib/CliCommands.h>
+#include <WorkspacesLib/SessionHandoff.h>
 #include <WorkspacesLib/trace.h>
 
 namespace
@@ -216,6 +218,152 @@ namespace
     {
         if (!value)
             throw std::runtime_error("CLI runtime fixture assertion failed.");
+    }
+
+    json::JsonObject CheckArrangerSnapshot(bool elevated, bool invalidOperation, bool restrictQuery)
+    {
+        Logger::init(std::vector<spdlog::sink_ptr>{ std::make_shared<spdlog::sinks::null_sink_mt>() });
+        Check(WorkspacesSession::IsMediumProcess(GetCurrentProcess()));
+        wchar_t module[32768]{};
+        Check(GetModuleFileNameW(nullptr, module, ARRAYSIZE(module)) != 0);
+        const auto executable = std::filesystem::path(module).parent_path() / L"PowerToys.WorkspacesWindowArranger.exe";
+        WorkspacesData::WorkspacesProject project{};
+        project.id = L"{6CF910A2-D2E0-436D-A50E-41432A88452A}";
+        project.name = L"Snapshot transport only";
+        WorkspacesData::WorkspacesProject::Application app{};
+        app.id = L"{49330ECB-5917-4DF3-B70A-1F2D7FE4899B}";
+        app.name = L"No application is launched";
+        app.path = L"C:\\PowerToysSnapshotProbeMissing.exe";
+        app.position = { 0, 0, 100, 100 };
+        app.monitor = 1;
+        project.apps.push_back(app);
+        WorkspacesData::WorkspacesProject::Monitor monitor{};
+        monitor.number = 1;
+        monitor.dpi = 96;
+        monitor.monitorRectDpiAware = monitor.monitorRectDpiUnaware = { 0, 0, 800, 600 };
+        project.monitors.push_back(monitor);
+        GUID operation{};
+        winrt::check_hresult(CoCreateGuid(&operation));
+        wchar_t text[40]{};
+        Check(StringFromGUID2(operation, text, ARRAYSIZE(text)) != 0);
+        const auto operationId = WorkspacesCli::NormalizeId(text);
+        std::atomic<bool> requested{}, ready{}, completed{};
+        wil::unique_handle allowSnapshot(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+        Check(static_cast<bool>(allowSnapshot));
+        std::string callbackError;
+        std::unique_ptr<IPCHelper> pipe;
+        pipe = std::make_unique<IPCHelper>(
+            IPCHelperStrings::LauncherArrangerPipeName + operationId,
+            IPCHelperStrings::WindowArrangerPipeName + operationId,
+            [&](const std::wstring& message) {
+                try
+                {
+                    if (message == L"snapshot-request")
+                    {
+                        Check(WaitForSingleObject(allowSnapshot.get(), 5000) == WAIT_OBJECT_0);
+                        json::JsonObject snapshot;
+                        snapshot.SetNamedValue(L"protocolVersion", json::value(1));
+                        snapshot.SetNamedValue(L"operationId", json::value(invalidOperation ? L"another-operation" : operationId));
+                        snapshot.SetNamedValue(L"workspace", WorkspacesData::WorkspacesProjectJSON::ToJson(project));
+                        requested = true;
+                        pipe->send(snapshot.Stringify().c_str());
+                    }
+                    else if (message == L"ready")
+                    {
+                        ready = true;
+                        // Complete the fixture without starting or moving any target window.
+                        pipe->send(WorkspacesData::AppLaunchInfoJSON::ToJson({ app, nullptr, LaunchingState::Failed }).Stringify().c_str());
+                    }
+                    else
+                    {
+                        const auto result = json::JsonObject::Parse(message);
+                        if (result.GetNamedString(L"kind", L"") == L"arranger-result")
+                        {
+                            WorkspacesData::LaunchingAppStateMap expected;
+                            expected.emplace(app, WorkspacesData::LaunchingAppState{ app, nullptr, LaunchingState::Waiting });
+                            const auto states = WorkspacesCli::ParseArrangerResult(result, expected, operationId);
+                            Check(states.at(app).state == LaunchingState::Failed);
+                            completed = true;
+                            pipe->send(L"result-ack");
+                        }
+                    }
+                }
+                catch (const std::exception& error) { callbackError = error.what(); }
+                catch (const winrt::hresult_error& error) { callbackError = winrt::to_string(error.message()); }
+            },
+            IPCHelper::ModulePeer(L"PowerToys.WorkspacesWindowArranger.exe"));
+        const auto arguments = project.id + L" --session-worker " + operationId + L" " +
+            std::to_wstring(GetCurrentProcessId()) + L" 10";
+        SHELLEXECUTEINFOW launch{ sizeof(launch) };
+        launch.fMask = SEE_MASK_NOCLOSEPROCESS;
+        launch.lpVerb = elevated ? L"runas" : L"open";
+        launch.lpFile = executable.c_str();
+        launch.lpParameters = arguments.c_str();
+        launch.nShow = SW_HIDE;
+        if (!ShellExecuteExW(&launch))
+            throw std::runtime_error("Arranger fixture launch failed, native=" + std::to_string(GetLastError()));
+        wil::unique_handle child(launch.hProcess);
+        auto cleanup = wil::scope_exit([&] {
+            SetEvent(allowSnapshot.get());
+            pipe->Stop();
+            if (WaitForSingleObject(child.get(), 0) == WAIT_TIMEOUT)
+            {
+                TerminateProcess(child.get(), 1);
+                WaitForSingleObject(child.get(), 2000);
+            }
+        });
+        wil::unique_handle token;
+        if (!OpenProcessToken(child.get(), TOKEN_QUERY, token.put()))
+            throw std::runtime_error("Arranger fixture token query failed, native=" + std::to_string(GetLastError()));
+        TOKEN_ELEVATION elevation{};
+        DWORD length{};
+        Check(GetTokenInformation(token.get(), TokenElevation, &elevation, sizeof(elevation), &length) != FALSE);
+        Check((elevation.TokenIsElevated != 0) == elevated);
+        GetTokenInformation(token.get(), TokenIntegrityLevel, nullptr, 0, &length);
+        Check(length >= sizeof(TOKEN_MANDATORY_LABEL) && length <= 65536);
+        std::vector<BYTE> integrity(length);
+        Check(GetTokenInformation(token.get(), TokenIntegrityLevel, integrity.data(), length, &length) != FALSE);
+        const auto sid = reinterpret_cast<TOKEN_MANDATORY_LABEL*>(integrity.data())->Label.Sid;
+        const auto rid = *GetSidSubAuthority(sid, *GetSidSubAuthorityCount(sid) - 1);
+        Check(rid == static_cast<DWORD>(elevated ? SECURITY_MANDATORY_HIGH_RID : SECURITY_MANDATORY_MEDIUM_RID));
+        if (restrictQuery)
+        {
+            GetTokenInformation(token.get(), TokenUser, nullptr, 0, &length);
+            Check(length >= sizeof(TOKEN_USER) && length <= 65536);
+            std::vector<BYTE> user(length);
+            Check(GetTokenInformation(token.get(), TokenUser, user.data(), length, &length) != FALSE);
+            wil::unique_hlocal_string owner;
+            Check(ConvertSidToStringSidW(reinterpret_cast<TOKEN_USER*>(user.data())->User.Sid, owner.put()) != FALSE);
+            const auto sddl = std::wstring(L"D:P(A;;0x101000;;;") + owner.get() + L")(A;;GA;;;SY)";
+            wil::unique_hlocal_security_descriptor descriptor;
+            Check(ConvertStringSecurityDescriptorToSecurityDescriptorW(sddl.c_str(), SDDL_REVISION_1, descriptor.put(), nullptr) != FALSE);
+            // Only the disposable child's DACL changes; its integrity label and token do not.
+            Check(SetKernelObjectSecurity(child.get(), DACL_SECURITY_INFORMATION, descriptor.get()) != FALSE);
+            wil::unique_handle full(OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, GetProcessId(child.get())));
+            Check(!full && GetLastError() == ERROR_ACCESS_DENIED);
+            wil::unique_handle limited(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, GetProcessId(child.get())));
+            Check(static_cast<bool>(limited));
+        }
+        Check(SetEvent(allowSnapshot.get()) != FALSE);
+        Check(WaitForSingleObject(child.get(), 20000) == WAIT_OBJECT_0);
+        DWORD code{};
+        Check(GetExitCodeProcess(child.get(), &code) != FALSE);
+        pipe->Stop();
+        const bool passed = invalidOperation ? code == 9 && requested && !ready && !completed :
+                                               code == 0 && requested && ready && completed;
+        if (!passed || !callbackError.empty())
+            throw std::runtime_error("Arranger snapshot exchange failed: exit=" + std::to_string(code) +
+                " requested=" + std::to_string(requested.load()) + " ready=" + std::to_string(ready.load()) +
+                " completed=" + std::to_string(completed.load()) + " " + callbackError);
+        json::JsonObject report;
+        report.SetNamedValue(L"passed", json::value(true));
+        report.SetNamedValue(L"callerMedium", json::value(true));
+        report.SetNamedValue(L"arrangerElevated", json::value(elevated));
+        report.SetNamedValue(L"arrangerIntegrity", json::value(static_cast<int>(rid)));
+        report.SetNamedValue(L"arrangerPid", json::value(static_cast<int>(GetProcessId(child.get()))));
+        report.SetNamedValue(L"mismatchedOperationRejected", json::value(invalidOperation));
+        report.SetNamedValue(L"fullQueryDenied", json::value(restrictQuery));
+        return report;
     }
 
     void CheckGuiFileErrors()
@@ -649,6 +797,18 @@ int wmain(int argc, wchar_t** argv)
         {
             CheckPipeStartup(std::wstring_view(argv[1]) == L"pipe-startup-canceled");
             std::cout << "{\"passed\":true}\n";
+            return 0;
+        }
+        if (std::wstring_view(argv[1]) == L"session-arranger-snapshot" ||
+            std::wstring_view(argv[1]) == L"session-arranger-snapshot-elevated" ||
+            std::wstring_view(argv[1]) == L"session-arranger-snapshot-mismatch" ||
+            std::wstring_view(argv[1]) == L"session-arranger-snapshot-query-limited")
+        {
+            const auto report = CheckArrangerSnapshot(
+                std::wstring_view(argv[1]) == L"session-arranger-snapshot-elevated",
+                std::wstring_view(argv[1]) == L"session-arranger-snapshot-mismatch",
+                std::wstring_view(argv[1]) == L"session-arranger-snapshot-query-limited");
+            std::cout << winrt::to_string(report.Stringify()) << '\n';
             return 0;
         }
         if (std::wstring_view(argv[1]).starts_with(L"session-"))

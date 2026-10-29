@@ -56,35 +56,33 @@ main's same-user/session `SessionHandoff` to a verified Medium host. That host
 loads the protected snapshot before executing. A caller-supplied snapshot on the
 private host entry is rejected. CLI has its own catalog-authorized launcher role.
 
-## Arranger identity
+## Arranger session
 
-The launcher creates a first-instance, local-only, random placement pipe before
-starting the arranger. It binds the reader to the returned process handle, PID,
-creation time, expected sibling image and Windows session. The arranger verifies
-the pipe server against the corresponding launcher identity and a detached,
-policy-pinned signed client catalog. `ProcessImageFileMapping` binds each held
-executable to the actual mapped process image, so renaming/replacing a path is
-not an identity proof. The plan binds both creation times and a session nonce.
+The shared Medium executor sends its validated repository/preview snapshot over
+the operation-scoped IPC from PR #51114. The arranger waits for both endpoints,
+requests the snapshot, checks its protocol/operation/workspace identity, and
+uses the immutable result for window placement. Malformed, oversized or missing
+snapshots fail without falling back to a file.
 
-The launcher first sends only the public signed catalog to its actual child.
-After verifying the launcher, the arranger grants that original owner query-only
-access to its own process/token. The launcher then verifies the actual arranger
-under the identity-only `workspaces.arranger` catalog role before releasing
-workspace data. That role grants no repository or transient access.
+The existing peer policy remains enabled in both directions. The arranger pins
+the executor PID and accepts only the expected CLI/Launcher directory, basename,
+version and Release signature in the same Windows session. The reverse direction
+checks the Arranger module identity and session; it does not claim an exact
+child-PID pin. The launcher separately retains the ShellExecute process handle
+for operation lifetime and cleanup. Readiness, cancellation, final-result
+acknowledgement and callback teardown remain the main implementation.
 
-An over-the-shoulder elevated arranger receives only the validated, immutable
-placement snapshot. It never selects another owner's SID or opens their service.
-Uncataloged developer binaries intentionally cannot perform this elevated handoff.
-The operation-scoped status/result IPC from main remains separate from protected
-plan delivery, including its cancellation, completion acknowledgement and
-callback teardown behavior.
+There is no second protected-plan pipe, `--plan` argument, cross-IL query grant
+or query-handle transfer. Module IPC uses upstream limited-query authentication,
+not the retired bidirectional mapped-image proof. This does not claim those
+identity guarantees are equivalent: mapped-image/catalog/owner/role checks remain
+mandatory at the data-service boundary and are unchanged.
 
-The original mapped-image check is retained during main integration. DACL query
-grants alone do not overcome an elevated process's `NoReadUp` mandatory label:
-Medium-to-High full-query access can still fail with access denied. This is a
-known elevated-launch qualification blocker, not evidence that storage is
-unavailable. The integration does not lower integrity labels or replace this
-check with main's weaker limited-query peer observation.
+Arranger has no current data-client catalog entry, never opens an owner's
+repository or legacy file, and does not launch workspace applications. The
+Medium executor retains application launch, confirmation and UAC behavior.
+OTS remains a separate acceptance scenario; no credential user's profile may
+replace the original owner's selected snapshot.
 
 ## Setup and failures
 

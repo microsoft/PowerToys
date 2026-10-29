@@ -7,7 +7,6 @@
 #include <common/utils/winapi_error.h>
 
 #include <WorkspacesLib/WorkspacesData.h>
-#include <WorkspacesLib/WorkspaceLaunchSession.h>
 
 #include <AppLauncher.h>
 
@@ -39,7 +38,7 @@ void WindowArrangerHelper::StopCallbacks()
     m_ipcHelper.Stop();
 }
 
-DWORD WindowArrangerHelper::Launch(const WorkspacesData::WorkspacesProject& project, bool elevated, std::function<bool()> keepWaitingCallback, DWORD timeoutSeconds)
+DWORD WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, std::function<bool()> keepWaitingCallback, DWORD timeoutSeconds)
 {
     Logger::trace(L"Starting WorkspacesWindowArranger");
 
@@ -47,26 +46,15 @@ DWORD WindowArrangerHelper::Launch(const WorkspacesData::WorkspacesProject& proj
     GetModuleFileName(NULL, buffer, MAX_PATH);
     std::wstring path = std::filesystem::path(buffer).parent_path();
 
-    Workspaces::LaunchSession protectedPlan;
-    std::wstring arguments = project.id;
+    std::wstring arguments = projectId;
     if (!m_operationId.empty())
         arguments += L" --session-worker " + m_operationId + L" " + std::to_wstring(GetCurrentProcessId()) + L" " + std::to_wstring(timeoutSeconds);
-    arguments += L" " + protectedPlan.Arguments();
     auto res = AppLauncher::LaunchApp(path + L"\\PowerToys.WorkspacesWindowArranger.exe", arguments, elevated);
     if (res.isOk())
     {
         auto value = res.value();
         m_processId = GetProcessId(value.hProcess);
         m_process.reset(value.hProcess);
-        try
-        {
-            protectedPlan.Send(m_process.get(), project);
-        }
-        catch (const PowerToys::ProtectedStorage::Error& error)
-        {
-            Logger::error("Protected arranger plan handshake failed: {} (native={})", error.what(), error.code);
-            return error.code ? error.code : ERROR_ACCESS_DENIED;
-        }
         Logger::info(L"WorkspacesWindowArranger started with pid {}", m_processId);
         std::atomic_bool timeoutExpired = false;
         m_threadExecutor.submit(OnThreadExecutor::task_t{

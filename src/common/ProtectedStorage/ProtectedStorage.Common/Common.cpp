@@ -1056,11 +1056,6 @@ namespace PowerToys::ProtectedStorage
     {
         GrantIdentityQuery(paths.va, paths.owner);
     }
-    void AllowPeerIdentityQuery(const std::wstring& peerSid)
-    {
-        Require(ValidOwner(peerSid), "peer observer must be a canonical real-user SID");
-        GrantIdentityQuery(peerSid, TokenSid());
-    }
     Child Spawn(const std::wstring& executable, const std::wstring& arguments, const std::vector<HANDLE>& inherited, DWORD flags)
     {
         SIZE_T size = 0;

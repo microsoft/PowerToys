@@ -230,23 +230,20 @@ The raw-MSI alternative (Q10) remains future work, not this signing topology.
 
 The inventory has a `clients` array of `{ "path": "...", "role": "..." }`.
 Supported client roles are `workspaces.writer`, `workspaces.reader`,
-`workspaces.launcher`, `workspaces.preview`, and the handoff-only
-`workspaces.arranger`. Paths select already-signed
+`workspaces.launcher` and `workspaces.preview`. Paths select already-signed
 release build outputs; no path is embedded as caller authority. The signed
 catalog contains filename, exact hash, role, and release.
 Setup, Broker, Lifecycle, Bootstrap, Runtime, and MsiAction cannot be supplied
 as data-client inventory entries. The builder adds the signed MsiAction
 maintenance entry itself, after compiling/signing that executable.
 Preview is explicit: Editor needs writer+preview, Launcher launcher+preview,
-SnapshotTool preview, and actual ModuleServices hosts reader. Arranger's
-`workspaces.arranger` entry authorizes only module-owned peer verification,
-not repository or transient APIs.
+SnapshotTool preview, CLI launcher, and actual ModuleServices hosts reader.
 The confirmed ModuleServices process is `Microsoft.CmdPal.Ext.PowerToys.exe`
 (`workspaces.reader`); do not blanket-authorize `PowerToys.exe` or other hosts.
-Arranger still needs its peer-only catalog entry despite
-having no direct data-service calls; LauncherUI needs no data-service entry.
-The current source inventory must map `PowerToys.WorkspacesWindowArranger.exe`
-to `workspaces.arranger`, matching the module's exact `VerifyPeerImage` role.
+Arranger and LauncherUI have no data-service entries. Their module IPC identity
+checks, including production signing, remain separate from storage authorization.
+The runtime recognizes the legacy identity-only arranger role in older catalogs
+without granting it data access, but new release inventories do not emit it.
 
 Release output is
 `artifacts\ProtectedStorage\<Platform>\<Configuration>\Package\`.

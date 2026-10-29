@@ -144,7 +144,7 @@ if (!$Package -and $ReleaseStage -eq 'Compile') {
         if (!$ClientCatalogInput) { throw 'Documents requires the final signed client inventory.' }
         $catalogSource = Get-Content -LiteralPath $ClientCatalogInput -Raw | ConvertFrom-Json
         $clients = @()
-        $roles = @('workspaces.writer', 'workspaces.reader', 'workspaces.launcher', 'workspaces.preview', 'workspaces.arranger')
+        $roles = @('workspaces.writer', 'workspaces.reader', 'workspaces.launcher', 'workspaces.preview')
         $reservedImages = @('Bootstrap.exe', 'Runtime.exe', 'PowerToys.ProtectedStorageSetup.exe',
             'PowerToys.ProtectedStorageProvisionBroker.exe', 'PowerToys.ProtectedStorageLifecycle.exe',
             'PowerToys.ProtectedStorageMsiAction.exe', 'ProtectedStorage.TrustVerifier.exe')

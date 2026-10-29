@@ -106,7 +106,6 @@ function Assert-ReleaseClientCatalog {
         'PowerToys.WorkspacesCLI.exe|workspaces.launcher',
         'PowerToys.WorkspacesLauncher.exe|workspaces.preview',
         'PowerToys.WorkspacesSnapshotTool.exe|workspaces.preview',
-        'PowerToys.WorkspacesWindowArranger.exe|workspaces.arranger',
         'Microsoft.CmdPal.Ext.PowerToys.exe|workspaces.reader',
         'PowerToys.ProtectedStorageMsiAction.exe|maintenance'
     )

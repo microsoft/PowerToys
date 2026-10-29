@@ -363,9 +363,6 @@ namespace
         Handle executable(CreateFileW(image.c_str(), GENERIC_READ | GENERIC_EXECUTE, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT, nullptr));
         Expect(static_cast<bool>(executable), "open own executable identity");
         VerifyProcessImageFile(GetCurrentProcess(), executable.get());
-        Reject([&] {
-            VerifyPeerImage(GetCurrentProcess(), ProcessBirth(GetCurrentProcess()) + 1, TokenSid(), {}, "workspaces.reader", image);
-        });
         Fixture fixture;
         const auto copy = fixture.path / L"same-bytes.exe";
         {

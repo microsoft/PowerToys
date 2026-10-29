@@ -158,10 +158,11 @@ initialize the repository or acknowledge source cleanup. Launcher may read and C
 replace it. Preview permissions never permit repository initialization.
 Preview access requires the explicit `workspaces.preview` role, rather than being
 implied by writer/launcher. Editor therefore receives writer+preview, Launcher
-launcher+preview, and SnapshotTool preview. The Arranger's `workspaces.arranger`
-role exists only for signed module-handoff peer verification and grants no
-repository or transient API access. Actual ModuleServices hosts receive reader.
-Expected peer-role matching is exact; there are no alternate labels or aliases.
+launcher+preview, CLI launcher, and SnapshotTool preview. The legacy
+`workspaces.arranger` role remains parseable in older signed catalogs but grants
+no repository or transient access and is not emitted by current inventories.
+Arranger uses the module session IPC, not this service. Actual ModuleServices
+hosts receive reader.
 
 The CA must be built **before** the catalog. Neither the catalog nor a manifest
 containing its hash may be embedded in that CA. Store payload/manifest/catalog
@@ -251,7 +252,7 @@ Runtime must have that exact live Bootstrap parent generation. No client opens
 private Code files to authenticate the server. OTS credentials never confer
 another owner's access.
 
-### Reusing catalog trust for module-owned handoffs
+### Public signed catalog metadata
 
 Native `ProtectedStoreClient::GetSignedClientCatalog()` requests command 1 with
 `{"includeClientCatalog":true}`. The `signed-peer-catalog` capability advertises
@@ -260,34 +261,15 @@ of exactly that many UTF-8 catalog bytes followed by the detached CMS signature.
 The service revalidates the live proof before returning it. This exposes signed
 public release metadata only, never Code executables or owner blobs.
 
-`Common\Authentication.h` exposes:
+The MSI action still consumes this metadata when inspecting the live release.
+The capability and API remain compatible; Workspaces repository readiness no
+longer requires them solely to deliver a placement snapshot.
 
-```cpp
-SignedClientCatalog { std::vector<BYTE> document, signature; };
-CallerIdentity VerifyPeerImage(
-    HANDLE process, uint64_t expectedBirth, const std::wstring& originalOwnerSid,
-    const SignedClientCatalog&, const std::string& expectedRole,
-    const std::wstring& expectedImagePath);
-void AllowPeerIdentityQuery(const std::wstring& peerSid);
-```
-
-`VerifyPeerImage` opens only the fixed SYSTEM-owned Policy for the original
-owner, validates its protected ancestors/ACLs, checks the production CMS signing policy and
-minimum release, then verifies the actual mapped process image, expected path,
-exact catalog hash and role. Its result retains process/image/ancestor handles.
-The original owner must be an actual endpoint's TokenUser, not an unrelated
-caller-selected account. The module must derive it from the authenticated
-**original launcher**, and must separately bind the exact process handle/PID,
-creation time, Windows session, fixed sibling image and immutable handoff.
-Launcher uses `workspaces.launcher`; Arranger uses `workspaces.arranger` (not reader).
-
-The signed proof can travel within the module's read-only handoff so an OTS
-arranger does not need access to the owner's service endpoint or private Code.
-Policy is public-read/SYSTEM-write metadata; no profile-wide or Code read ACL is
-added. For cross-owner process observation, the target can call
-`AllowPeerIdentityQuery` for the already bound peer SID: only process query/
-synchronize and token-query access is added, never VM reads, handle duplication,
-impersonation or mutation. This verification API grants no data-store authority.
+Module-owned Arranger communication uses the existing operation-scoped IPC and
+peer policy. The former `VerifyPeerImage` / `AllowPeerIdentityQuery` helpers and
+separate plan pipe have been removed. Service-side `AuthenticateCaller` still
+checks actual mapped image, approved catalog hash, owner and requested role/target;
+no data authorization or production release verification is relaxed.
 
 ## Data protocol v1
 

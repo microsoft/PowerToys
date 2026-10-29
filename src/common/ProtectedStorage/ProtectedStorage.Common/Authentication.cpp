@@ -133,48 +133,6 @@ namespace PowerToys::ProtectedStorage
     {
         return VerifySignedClientCatalog(ReadSignedClientCatalog(directory), policy, release);
     }
-    CallerIdentity VerifyPeerImage(HANDLE process, uint64_t expectedBirth, const std::wstring& originalOwnerSid, const SignedClientCatalog& proof, const std::string& expectedRole, const std::wstring& expectedImagePath)
-    {
-        Check(process && expectedBirth && IsAbsoluteLocal(expectedImagePath), ErrorCode::Unauthorized);
-        Check(WaitForSingleObject(process, 0) == WAIT_TIMEOUT && ProcessBirth(process) == expectedBirth,
-              ErrorCode::Unauthorized);
-        CallerIdentity result;
-        result.pid = GetProcessId(process);
-        Check(result.pid != 0, ErrorCode::Unauthorized, GetLastError());
-        result.process.reset(OpenProcess(PROCESS_QUERY_INFORMATION | SYNCHRONIZE, FALSE, result.pid));
-        Check(static_cast<bool>(result.process), ErrorCode::Unauthorized, GetLastError());
-        Check(ProcessBirth(result.process.get()) == expectedBirth, ErrorCode::Unauthorized);
-        result.birth = expectedBirth;
-        result.owner = TokenSid(result.process.get());
-        const auto currentOwner = TokenSid();
-        Check(ValidOwner(result.owner) && ValidOwner(currentOwner) &&
-                  (originalOwnerSid == currentOwner || originalOwnerSid == result.owner),
-              ErrorCode::Unauthorized);
-        Paths authority(originalOwnerSid);
-        std::vector<Handle> policyDirectories;
-        for (const auto& directory : { authority.state, authority.state + L"\\Policy", Parent(authority.policy) })
-        {
-            auto ancestors = HoldDirectories(directory);
-            CheckAcl(ancestors.back().get(), authority.va, false);
-            for (auto& ancestor : ancestors)
-                policyDirectories.push_back(std::move(ancestor));
-        }
-        const auto catalog = VerifySignedClientCatalog(proof, LoadPolicy(authority));
-        const auto image = ProcessImage(result.process.get());
-        Check(_wcsicmp(image.c_str(), expectedImagePath.c_str()) == 0, ErrorCode::Unauthorized);
-        result.pinnedDirectories = HoldDirectories(Parent(image));
-        auto executable = OpenRead(image);
-        Handle imageIdentity(CreateFileW(image.c_str(), GENERIC_READ | GENERIC_EXECUTE, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT, nullptr));
-        Check(static_cast<bool>(imageIdentity), ErrorCode::Unauthorized, GetLastError());
-        VerifyProcessImageFile(result.process.get(), imageIdentity.get());
-        result.imageHash = Hash(executable.get());
-        result.roles = CatalogRoles(catalog, image.substr(image.find_last_of(L'\\') + 1), result.imageHash, false);
-        Check(result.roles.contains(expectedRole) && WaitForSingleObject(result.process.get(), 0) == WAIT_TIMEOUT &&
-                  ProcessBirth(result.process.get()) == expectedBirth,
-              ErrorCode::Unauthorized);
-        result.pinnedImages.push_back(std::move(executable));
-        return result;
-    }
     void RequireOrdinaryMaintenanceProcess(HANDLE process)
     {
         HANDLE raw = nullptr;

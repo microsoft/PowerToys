@@ -1058,18 +1058,19 @@ workspace ID、preview ID 和 operation ID 是三种不同标识，不能互换�
 旧 `temp-workspaces.json` 不能继续作为可提权启动流程的隐含回退入口。
 传参/IPC 只传引用或已验证当前 session 的数据，不让高权限消费者凭调用者任意路径重新读取配置。
 
-**Arranger 的 owner 交接是必须接线的现有缺口，不只是未来优化：**
+**2026-10-29：按已合入的 PR #51114 收敛 Arranger 交接，不另造 protected-plan 协议。**
 
-- 当前 `WindowArrangerHelper::Launch()` 只传 projectId，arranger 自己重新读 temp/权威文件。
-- 在 OTS 提权使用另一管理员凭据时，arranger 当前 token/profile 可能不再是原 owner；
-  所以不能直接以其当前身份连接另一个用户的 data pipe，再关闭 owner 校验来“修好”。
-- 拟新增 Workspaces 内部 `WorkspaceLaunchSession::Create()` / `SendPlacementPlan()` /
-  `ReceivePlacementPlan()`。正常 launcher 从 repository/preview 读取一致数据，
-  并将**本次窗口匹配与排列所需的只读 snapshot**交给本次启动的 arranger。
-- IPC 必须绑定 launcher/arranger 的真实进程 handle、PID+birth、预期 image、owner 和 session nonce；
-  命令行 projectId/nonce 本身不是授权。绑定失败即拒绝，不退回文件读取。
-- 这是已有 launcher→arranger 协作的身份与数据来源修正，不是新增 Q01 排除的业务审批组件。
-  Arranger 不因收到 plan 获得 repository 写权限，也不成为任意高权限程序启动代理。
+- 正常 GUI/CLI 执行核心从 repository/preview 取得一致快照；提升入口交给同用户的 Medium host
+  选择受保护数据。Arranger 不以自身 token/profile 重新读取文件或另一个 owner 的服务。
+- 复用 operation-scoped IPC 的 `snapshot-request` / snapshot、ready、状态和最终结果确认；
+  快照检查 protocol、operation/workspace ID 和大小，拒绝无效输入，不回退旧文件。
+- 保留主线 peer authentication：Arranger 校验指定执行者 PID、CLI/Launcher 模块身份和会话；
+  反向校验 Arranger 模块身份及会话，不将其描述为精确子 PID 或 mapped-image 证明。
+  Release 签名规则不变，进程生命周期仍使用实际创建的子进程 handle。
+- 移除另一路计划管道、反向完整映像查询及配套 query ACL，不新增句柄交接，也不降低完整性级别。
+  服务端对实际映像、catalog hash、owner、角色和写权限的验证保持不变。
+- Arranger 不获得 repository/transient 权限，也不成为高权限程序启动代理。
+  可写安装目录、OTS 和正式签名环境仍按验收矩阵验证，不以 Debug 跑通宣称安全策略等价。
 
 ### 16.5 复用现有测试工程
 

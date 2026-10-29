@@ -58,7 +58,6 @@
     <ClInclude Include="WindowUtils.h" />
     <ClInclude Include="WorkspacesData.h" />
     <ClInclude Include="WorkspacesRepository.h" />
-    <ClInclude Include="WorkspaceLaunchSession.h" />
     <ClInclude Include="trace.h" />
   </ItemGroup>
   <ItemGroup>
@@ -104,7 +103,6 @@
     <ClCompile Include="WindowUtils.cpp" />
     <ClCompile Include="WorkspacesData.cpp" />
     <ClCompile Include="WorkspacesRepository.cpp" />
-    <ClCompile Include="WorkspaceLaunchSession.cpp" />
     <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>

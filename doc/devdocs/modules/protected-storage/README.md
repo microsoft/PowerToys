@@ -286,9 +286,10 @@ certificate fallback. The main MSI embeds the signed Lifecycle resource for
 machine-only final-uninstall cleanup; it never runs a helper selected from a
 user-writable installation as SYSTEM or launches nested carrier MSI.
 
-`workspaces.arranger` is the sole identity-only arranger catalog role.
-It has no Blob/transient permissions. All server, installer inventory and
-consumer references are checked together by
+Current catalogs authorize actual data consumers only, including the CLI.
+Arranger uses the shared module IPC and has no catalog entry or Blob/transient
+permissions. Older identity-only arranger roles remain unprivileged when parsed.
+Installer inventory and consumer references are checked together by
 `Test-ProtectedStorageMainInstaller.ps1`.
 
 ## Behavior and limits

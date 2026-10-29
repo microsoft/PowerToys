@@ -99,6 +99,15 @@ namespace WorkspacesLibUnitTests
                 return;
             }
             Assert::IsTrue(result.GetNamedBoolean(L"passed"));
+            if (scenario.starts_with(L"session-arranger-snapshot"))
+            {
+                Assert::IsTrue(result.GetNamedBoolean(L"callerMedium"));
+                Assert::IsFalse(result.GetNamedBoolean(L"arrangerElevated"));
+                Assert::AreEqual(8192.0, result.GetNamedNumber(L"arrangerIntegrity"));
+                Assert::IsTrue(result.GetNamedBoolean(L"mismatchedOperationRejected") == (scenario == L"session-arranger-snapshot-mismatch"));
+                Assert::IsTrue(result.GetNamedBoolean(L"fullQueryDenied") == (scenario == L"session-arranger-snapshot-query-limited"));
+                return;
+            }
             Assert::AreEqual(1u, result.Size(), L"Only final JSON, no prompt content, may reach stdout.");
         }
 
@@ -134,6 +143,21 @@ namespace WorkspacesLibUnitTests
         }
 
 #ifdef _DEBUG
+        TEST_METHOD (ArrangerUsesTheAuthenticatedSessionSnapshotWithoutASeparatePlanPipe)
+        {
+            Run(L"session-arranger-snapshot");
+        }
+
+        TEST_METHOD (ArrangerRejectsASnapshotFromAnotherOperation)
+        {
+            Run(L"session-arranger-snapshot-mismatch");
+        }
+
+        TEST_METHOD (ArrangerSnapshotNeedsOnlyLimitedProcessQuery)
+        {
+            Run(L"session-arranger-snapshot-query-limited");
+        }
+
         TEST_METHOD (CancellationJoinsSnapshotCallbackBeforeReleasingItsOwner)
         {
             Run(L"session-teardown-snapshot");

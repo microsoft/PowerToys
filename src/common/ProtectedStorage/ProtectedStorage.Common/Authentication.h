@@ -26,8 +26,6 @@ namespace PowerToys::ProtectedStorage
     // Schema validation only; authorization must enter through VerifySignedClientCatalog.
     Value ParseClientCatalogDocument(const std::vector<BYTE>& document, const Policy& policy, std::optional<uint64_t> release = {});
     Value VerifyClientCatalog(const std::wstring& directory, const Policy& policy, uint64_t release);
-    CallerIdentity VerifyPeerImage(HANDLE process, uint64_t expectedBirth, const std::wstring& originalOwnerSid, const SignedClientCatalog& proof, const std::string& expectedRole, const std::wstring& expectedImagePath);
-    void AllowPeerIdentityQuery(const std::wstring& peerSid);
     void RequireOrdinaryMaintenanceProcess(HANDLE process);
     CallerIdentity AuthenticateOwner(HANDLE pipe, const Paths& paths);
     CallerIdentity AuthenticateCaller(HANDLE pipe, const Paths& paths, bool maintenance = false, const Value* candidateCatalog = nullptr);

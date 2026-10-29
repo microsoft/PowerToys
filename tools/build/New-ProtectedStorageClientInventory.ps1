@@ -21,7 +21,6 @@ $clients = @(
     @{ path = Join-Path $bin 'PowerToys.WorkspacesCLI.exe'; role = 'workspaces.launcher' }
     @{ path = Join-Path $bin 'PowerToys.WorkspacesLauncher.exe'; role = 'workspaces.preview' }
     @{ path = Join-Path $bin 'PowerToys.WorkspacesSnapshotTool.exe'; role = 'workspaces.preview' }
-    @{ path = Join-Path $bin 'PowerToys.WorkspacesWindowArranger.exe'; role = 'workspaces.arranger' }
     @{ path = $hostPath; role = 'workspaces.reader' }
 )
 foreach ($client in $clients) {

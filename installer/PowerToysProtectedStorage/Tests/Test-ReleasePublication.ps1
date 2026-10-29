@@ -62,7 +62,6 @@ try {
         @{ image = 'PowerToys.WorkspacesCLI.exe'; role = 'workspaces.launcher'; sha256 = 'f' * 64 },
         @{ image = 'PowerToys.WorkspacesLauncher.exe'; role = 'workspaces.preview'; sha256 = 'b' * 64 },
         @{ image = 'PowerToys.WorkspacesSnapshotTool.exe'; role = 'workspaces.preview'; sha256 = 'c' * 64 },
-        @{ image = 'PowerToys.WorkspacesWindowArranger.exe'; role = 'workspaces.arranger'; sha256 = 'd' * 64 },
         @{ image = 'Microsoft.CmdPal.Ext.PowerToys.exe'; role = 'workspaces.reader'; sha256 = 'e' * 64 },
         @{ image = 'PowerToys.ProtectedStorageMsiAction.exe'; role = 'maintenance'; sha256 = Get-ReleaseHash "$stage\PowerToys.ProtectedStorageMsiAction.exe" }
     )
