@@ -21,7 +21,7 @@ namespace Microsoft.CmdPal.UI.Settings;
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class AppearancePage : Page
+public sealed partial class AppearancePage : Page, IDisposable
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
@@ -36,6 +36,14 @@ public sealed partial class AppearancePage : Page
         var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
         var languageService = App.Current.Services.GetRequiredService<ILanguageService>();
         ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService, languageService);
+    }
+
+    public void Dispose() => ViewModel.Dispose();
+
+    private void OpenRecentItemsSettings_Click(object sender, RoutedEventArgs e)
+    {
+        WeakReferenceMessenger.Default.Send(new OpenSettingsMessage(
+            SettingsLinkId: SettingsLinkIds.Appearance.HomeRecentCommands));
     }
 
     private async void PickBackgroundImage_Click(object sender, RoutedEventArgs e)

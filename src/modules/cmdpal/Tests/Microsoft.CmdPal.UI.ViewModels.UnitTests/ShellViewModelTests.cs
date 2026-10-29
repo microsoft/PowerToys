@@ -84,6 +84,40 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void PerformCommand_ResolvesHostAndProviderFromSourceContext(bool withSourcePage)
+    {
+        var currentHost = new TestAppExtensionHost();
+        var sourceHost = new TestAppExtensionHost();
+        var sourceProvider = Mock.Of<ICommandProviderContext>();
+        var sourcePage = new PageViewModel(new Page(), TaskScheduler.Default, sourceHost, sourceProvider);
+        var appHostService = CreateAppHostService(currentHost);
+        var pageFactory = new Mock<IPageViewModelFactoryService>();
+        var page = new TestPage();
+        pageFactory.Setup(factory => factory.TryCreatePageViewModel(page, true, currentHost, CommandProviderContext.Empty))
+            .Returns(new TestPageViewModel(page, currentHost));
+        using var shell = new ShellViewModel(
+            TaskScheduler.Default,
+            Mock.Of<IRootPageService>(),
+            pageFactory.Object,
+            appHostService.Object);
+        var item = new ListItem(page);
+        var message = new PerformCommandMessage(
+            new ExtensionObject<ICommand>(page),
+            new ExtensionObject<IListItem>(item),
+            withSourcePage ? sourcePage : null);
+        var expectedHost = withSourcePage ? sourceHost : shell.CurrentPage.ExtensionHost;
+        var expectedProvider = withSourcePage ? sourceProvider : shell.CurrentPage.ProviderContext;
+
+        shell.Receive(message);
+
+        appHostService.Verify(service => service.GetHostForCommand(item, expectedHost), Times.Once);
+        appHostService.Verify(service => service.GetProviderContextForCommand(item, expectedProvider), Times.Once);
+        pageFactory.Verify(factory => factory.TryCreatePageViewModel(page, true, currentHost, CommandProviderContext.Empty), Times.Once);
+    }
+
+    [TestMethod]
     public void PerformCommand_InvalidListPageOptions_DoesNotMutateNavigationState()
     {
         var host = new TestAppExtensionHost();

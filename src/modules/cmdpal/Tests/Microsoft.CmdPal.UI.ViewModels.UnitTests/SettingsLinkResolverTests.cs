@@ -22,6 +22,20 @@ public class SettingsLinkResolverTests
         Assert.AreEqual(SettingsLinkFallback.None, result.Fallback);
     }
 
+    [TestMethod]
+    [DataRow(SettingsLinkIds.Appearance.HomeRecentCommands, "home-recent-commands")]
+    [DataRow(SettingsLinkIds.Appearance.RecentCommandsDisplayLimit, "recent-commands-display-limit")]
+    [DataRow(SettingsLinkIds.Appearance.ClearRecentCommands, "clear-recent-commands")]
+    public void Resolve_MovedRecentSettings_PreservesStableLinks(string linkId, string elementId)
+    {
+        var result = _resolver.Resolve(linkId, null);
+
+        Assert.AreEqual(linkId, result.Destination.LinkId);
+        Assert.AreEqual(SettingsPageTags.General, result.Destination.PageTag);
+        Assert.AreEqual(elementId, result.Destination.ElementId);
+        Assert.AreEqual(SettingsLinkFallback.None, result.Fallback);
+    }
+
     [DataTestMethod]
     [DataRow(null, SettingsLinkIds.General.Page)]
     [DataRow("unknown", SettingsLinkIds.General.Page)]
@@ -122,6 +136,7 @@ public class SettingsLinkResolverTests
     [DataRow(SettingsPageTags.General, "activation-section", false, SettingsLinkIds.General.Activation)]
     [DataRow(SettingsPageTags.Appearance, "THEME", false, SettingsLinkIds.Appearance.Theme)]
     [DataRow(SettingsPageTags.Appearance, "layout-section", false, SettingsLinkIds.Appearance.Layout)]
+    [DataRow(SettingsPageTags.Appearance, "compact-position", false, SettingsLinkIds.Appearance.CompactPosition)]
     [DataRow(SettingsPageTags.Dock, "focus-shortcut", false, SettingsLinkIds.Dock.FocusShortcut)]
     [DataRow(SettingsPageTags.Dock, "theme", false, SettingsLinkIds.Dock.Theme)]
     [DataRow(SettingsPageTags.Dock, "behavior-section", false, SettingsLinkIds.Dock.BehaviorSection)]

@@ -1,4 +1,11 @@
 GetPhysicallyInstalledSystemMemory
+SIIGBF
+BITMAP
+GetObject
+GetDIBits
+GetDC
+ReleaseDC
+DeleteObject
 GlobalMemoryStatusEx
 GetSystemInfo
 GetActiveWindow

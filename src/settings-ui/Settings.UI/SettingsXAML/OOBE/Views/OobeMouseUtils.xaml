@@ -8,7 +8,7 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_MouseUtils" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/MouseUtils.gif">
+    <controls:OOBEPageControl x:Uid="Oobe_MouseUtils" HeroVideo="ms-appx:///Assets/Settings/Modules/OOBE/MouseUtils.mp4">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_MouseUtils_FindMyMouse" Style="{ThemeResource OobeSubtitleStyle}" />

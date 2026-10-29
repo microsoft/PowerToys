@@ -11,7 +11,6 @@
     <PackageVersion Include="AdaptiveCards.Rendering.WinUI3" Version="2.2.4-beta" />
     <PackageVersion Include="AdaptiveCards.Templating" Version="2.0.6" />
     <PackageVersion Include="boost" Version="1.87.0" TargetFramework="native" />
-    <PackageVersion Include="boost_regex-vc143" Version="1.87.0" TargetFramework="native" />
     <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView" Version="0.1.251101-build.2372" />
     <PackageVersion Include="Microsoft.Bot.AdaptiveExpressions.Core" Version="4.23.1" />
     <PackageVersion Include="Appium.WebDriver" Version="4.4.5" />

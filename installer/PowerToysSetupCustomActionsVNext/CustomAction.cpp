@@ -1608,6 +1608,8 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.PowerDisplay.exe",
         // Also matches the installed shim PowerToys.PowerDisplay.CLI.exe.
         L"PowerToys.PowerDisplay.Cli.exe",
+        // Also matches the installed shim PowerToys.Settings.CLI.exe.
+        L"PowerToys.Settings.Cli.exe",
         L"PowerToys.GcodeThumbnailProvider.exe",
         L"PowerToys.BgcodeThumbnailProvider.exe",
         L"PowerToys.PdfThumbnailProvider.exe",

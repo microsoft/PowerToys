@@ -59,7 +59,7 @@ public class DockItemActionsTests
         CollectionAssert.AreEqual(new[] { item }, invocations);
         var message = DockItemActions.CreateInvocationMessage(invocations[0]);
         Assert.AreSame(item.Command.Model, message.Command);
-        Assert.IsNull(message.Context, "Direct dock activation must not change the sender or enter home-page history.");
+        Assert.IsNull(message.CommandContext, "Direct dock activation must not change the sender or enter home-page history.");
         Assert.IsFalse(message.WithAnimation);
         Assert.IsTrue(message.TransientPage);
     }
@@ -84,7 +84,7 @@ public class DockItemActionsTests
 
         CollectionAssert.AreEqual(new[] { item.SecondaryCommand }, invocations);
         var message = DockItemActions.CreateInvocationMessage(invocations[0]);
-        Assert.AreSame(secondary, message.Context);
+        Assert.AreSame(secondary, message.CommandContext);
         Assert.IsFalse(message.WithAnimation);
         Assert.IsTrue(message.TransientPage);
     }
@@ -149,7 +149,7 @@ public class DockItemActionsTests
         {
             Assert.IsEmpty(opened);
             Assert.HasCount(1, invocations);
-            Assert.AreSame(requested, DockItemActions.CreateInvocationMessage(invocations[0]).Context);
+            Assert.AreSame(requested, DockItemActions.CreateInvocationMessage(invocations[0]).CommandContext);
         }
     }
 
