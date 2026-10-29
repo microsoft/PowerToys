@@ -37,8 +37,7 @@ internal sealed partial class PreviewPane
 
         var scale = this.GetRasterizationScale();
         var bounds = layout.CanvasLayout.CanvasBounds.OuterBounds;
-        this.Width = (double)bounds.Width / scale;
-        this.Height = (double)bounds.Height / scale;
+        this.PositionCanvas(layout, scale);
 
         using var backgroundBitmap = DrawingHelper.RenderBackground(bounds.Size, layout.CanvasLayout.CanvasStyle.BackgroundStyle);
         this.BackgroundImage.Source = MediaHelper.ToBitmapImage(backgroundBitmap);
@@ -80,17 +79,10 @@ internal sealed partial class PreviewPane
                 // than the previous one. Reapplying position/size here is cheap (a handful of
                 // property writes, no re-render) and keeps that in sync even though the
                 // visuals themselves are being reused as-is.
-                var screenBounds = screenLayout.ScreenBounds;
-                PreviewPane.PositionElement(previousSlot.BezelImage, screenBounds.BorderBounds, scale);
-                if (previousSlot.PlaceholderRectangle is not null)
-                {
-                    PreviewPane.PositionElement(previousSlot.PlaceholderRectangle, screenBounds.PaddingBounds, scale);
-                }
-
-                PreviewPane.PositionElement(previousSlot.ContentImage, screenBounds.ContentBounds, scale);
-
-                newSlots.Add(new ScreenSlot(
-                    screenLayout, previousSlot.BezelImage, previousSlot.PlaceholderRectangle, previousSlot.ContentImage));
+                var reusedSlot = new ScreenSlot(
+                    screenLayout, previousSlot.BezelImage, previousSlot.PlaceholderRectangle, previousSlot.ContentImage);
+                PreviewPane.PositionSlot(reusedSlot, scale);
+                newSlots.Add(reusedSlot);
             }
             else
             {
@@ -211,6 +203,84 @@ internal sealed partial class PreviewPane
 
     private double GetRasterizationScale()
         => this.XamlRoot?.RasterizationScale ?? 1.0;
+
+    /// <summary>
+    /// Repositions everything already on screen for <paramref name="scale"/>, without
+    /// re-rendering anything or touching the screenshots it's showing.
+    /// </summary>
+    /// <remarks>
+    /// Every element's DIP-space size and position depends on the rasterization scale, and
+    /// when the hosting window moves to a monitor with a different DPI setting,
+    /// <see cref="XamlRoot.RasterizationScale"/> isn't necessarily updated until *after*
+    /// <see cref="Layout"/> has already been applied with the previous monitor's scale - which
+    /// would leave the preview drawn at the wrong size until the next activation. Listening
+    /// for the scale change (see <see cref="XamlRoot_Changed"/>) and repositioning keeps the
+    /// pane correct without needing its host to tell it about DPI changes.
+    /// </remarks>
+    private void ApplyScale(PreviewLayout layout, double scale)
+    {
+        this.PositionCanvas(layout, scale);
+        foreach (var slot in this.screenSlots)
+        {
+            PreviewPane.PositionSlot(slot, scale);
+        }
+    }
+
+    private void PreviewPane_Loaded(object sender, RoutedEventArgs e)
+    {
+        // the XamlRoot isn't available until the pane is in the visual tree - remember which
+        // one we subscribed to, so it can be unsubscribed even if it's gone by Unloaded
+        this.subscribedXamlRoot = this.XamlRoot;
+        if (this.subscribedXamlRoot is not null)
+        {
+            this.subscribedXamlRoot.Changed += this.XamlRoot_Changed;
+        }
+    }
+
+    private void PreviewPane_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if (this.subscribedXamlRoot is not null)
+        {
+            this.subscribedXamlRoot.Changed -= this.XamlRoot_Changed;
+            this.subscribedXamlRoot = null;
+        }
+    }
+
+    private void XamlRoot_Changed(XamlRoot sender, XamlRootChangedEventArgs args)
+    {
+        // Changed is also raised for size/visibility changes - only the scale matters here
+        var scale = this.GetRasterizationScale();
+        if ((this.Layout is { } layout) && (scale != this.appliedScale))
+        {
+            this.ApplyScale(layout, scale);
+        }
+    }
+
+    /// <summary>
+    /// Sizes the pane itself for <paramref name="scale"/>.
+    /// </summary>
+    private void PositionCanvas(PreviewLayout layout, double scale)
+    {
+        var bounds = layout.CanvasLayout.CanvasBounds.OuterBounds;
+        this.Width = (double)bounds.Width / scale;
+        this.Height = (double)bounds.Height / scale;
+        this.appliedScale = scale;
+    }
+
+    /// <summary>
+    /// Positions a screen's bezel, placeholder and content elements for <paramref name="scale"/>.
+    /// </summary>
+    private static void PositionSlot(ScreenSlot slot, double scale)
+    {
+        var screenBounds = slot.ScreenLayout.ScreenBounds;
+        PreviewPane.PositionElement(slot.BezelImage, screenBounds.BorderBounds, scale);
+        if (slot.PlaceholderRectangle is not null)
+        {
+            PreviewPane.PositionElement(slot.PlaceholderRectangle, screenBounds.PaddingBounds, scale);
+        }
+
+        PreviewPane.PositionElement(slot.ContentImage, screenBounds.ContentBounds, scale);
+    }
 
     private static void PositionElement(FrameworkElement element, RectangleInfo bounds, double scale)
     {

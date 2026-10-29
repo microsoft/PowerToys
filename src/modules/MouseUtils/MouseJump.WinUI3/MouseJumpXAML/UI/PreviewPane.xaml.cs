@@ -39,6 +39,17 @@ internal sealed partial class PreviewPane : UserControl
     private List<ScreenSlot> screenSlots = [];
 
     /// <summary>
+    /// The rasterization scale everything was last positioned for - see <see cref="ApplyScale"/>.
+    /// </summary>
+    private double appliedScale;
+
+    /// <summary>
+    /// The <see cref="XamlRoot"/> whose <see cref="XamlRoot.Changed"/> event this pane is
+    /// listening to for scale changes, if any - see <see cref="PreviewPane_Loaded"/>.
+    /// </summary>
+    private XamlRoot? subscribedXamlRoot;
+
+    /// <summary>
     /// How long <see cref="CrossfadeContent"/> takes to fade a screen's content in. Short enough
     /// not to read as a deliberate animation, but spreading the change across enough frames
     /// (roughly 6, at 60Hz) that no single frame carries more than a fraction of the total
@@ -52,6 +63,8 @@ internal sealed partial class PreviewPane : UserControl
         this.InitializeComponent();
         this.PointerPressed += this.PreviewPane_PointerPressed;
         this.PreviewKeyDown += this.PreviewPane_PreviewKeyDown;
+        this.Loaded += this.PreviewPane_Loaded;
+        this.Unloaded += this.PreviewPane_Unloaded;
     }
 
     /// <summary>
