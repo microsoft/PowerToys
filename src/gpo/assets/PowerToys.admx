@@ -5,7 +5,7 @@
   <policyNamespaces>
     <target prefix="powertoys" namespace="Microsoft.Policies.PowerToys" />
   </policyNamespaces>
-  <resources minRequiredRevision="1.22"/><!-- Last changed with PowerToys v0.102.0 -->
+  <resources minRequiredRevision="1.22"/><!-- Last changed with PowerToys v0.103.0 -->
   <supportedOn>
     <definitions>
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
@@ -33,6 +33,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_100_0" displayName="$(string.SUPPORTED_POWERTOYS_0_100_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_101_0" displayName="$(string.SUPPORTED_POWERTOYS_0_101_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_102_0" displayName="$(string.SUPPORTED_POWERTOYS_0_102_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_103_0" displayName="$(string.SUPPORTED_POWERTOYS_0_103_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1)"/>
     </definitions>
   </supportedOn>
@@ -409,7 +410,7 @@
     </policy>
     <policy name="ConfigureEnabledUtilityCursorBrake" class="Both" displayName="$(string.ConfigureEnabledUtilityCursorBrake)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityCursorBrake">
       <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_102_0" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_103_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
