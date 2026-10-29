@@ -158,9 +158,11 @@ warning while the dedicated image is unconfigured; explicitly requesting it repo
 
 #### Dedicated ARM64 Grab and Move CI image
 
-Configuration lives in `.pipelines\v2\templates\variables-umdf-hid.yml`:
+The `umdfHidArm64Image` template parameter is declared by
+`.pipelines\v2\templates\pipeline-ui-tests-automation.yml` and `pipeline-ci-build.yml`, then passed
+explicitly through the stage/job templates so it is available during structural expansion:
 
-- `UmdfHidArm64Image` selects `SHINE-W11-Preview-Testing-arm64-TestSigning` through `ImageOverride`.
+- It defaults to `SHINE-W11-Preview-Testing-arm64-TestSigning` through `ImageOverride`.
   An empty value disables the route.
 - The dedicated job uses the existing `SHINE-INT-Testing-arm64` / `SHINE-OSS-Testing-arm64` pools.
   Image isolation is explicit: ordinary jobs retain the pool's default image. Do not make the

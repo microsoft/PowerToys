@@ -1,4 +1,7 @@
 parameters:
+  - name: umdfHidArm64Image
+    type: string
+    default: ''
   - name: configuration
     type: string
     default: "Release"
@@ -68,10 +71,10 @@ jobs:
   pool:
     ${{ if eq(parameters.umdfHidArm64Dedicated, true) }}:
       ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
-        name: ${{ variables.UmdfHidArm64InternalPool }}
+        name: SHINE-INT-Testing-arm64
       ${{ else }}:
-        name: ${{ variables.UmdfHidArm64OssPool }}
-      demands: ImageOverride -equals ${{ variables.UmdfHidArm64Image }}
+        name: SHINE-OSS-Testing-arm64
+      demands: ImageOverride -equals ${{ parameters.umdfHidArm64Image }}
     ${{ else }}:
       ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
         ${{ if ne(parameters.platform, 'ARM64') }}:
@@ -111,7 +114,7 @@ jobs:
         Assert-UmdfHidArm64TestEnvironment `
           -OsArchitecture ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()) `
           -BootConfiguration ($bootConfiguration -join "`n")
-        Write-Host "Dedicated ARM64 UMDF image: ${{ variables.UmdfHidArm64Image }} (TESTSIGNING is preconfigured; no boot settings are changed)."
+        Write-Host "Dedicated ARM64 UMDF image: ${{ parameters.umdfHidArm64Image }} (TESTSIGNING is preconfigured; no boot settings are changed)."
       }
       Write-Host "##vso[task.setvariable variable=ExcludeUmdfHidSuite]$($hidSelection.Exclude.ToString().ToLowerInvariant())"
       Write-Host "##vso[task.setvariable variable=UmdfHidSelectionBlocked]$($hidSelection.Blocked.ToString().ToLowerInvariant())"

@@ -1,4 +1,7 @@
 parameters:
+  - name: umdfHidArm64Image
+    type: string
+    default: ''
   - name: buildPlatforms
     type: object
   - name: uiTestModules
@@ -31,7 +34,7 @@ stages:
               if ($env:SELECTED_MODULES -ne 'GrabAndMove.HidSmoke.Probe') {
                 throw 'The smoke path requires exactly [GrabAndMove.HidSmoke.Probe].'
               }
-              if ('arm64' -in ($env:BUILD_PLATFORMS -split ';') -and '${{ variables.UmdfHidArm64Image }}' -eq '') {
+              if ('arm64' -in ($env:BUILD_PLATFORMS -split ';') -and '${{ parameters.umdfHidArm64Image }}' -eq '') {
                 throw 'BLOCKED_INFRASTRUCTURE: configure the dedicated ARM64 UMDF image before requesting ARM64 smoke tests.'
               }
               & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Build-Smoke.ps1" `
@@ -63,15 +66,15 @@ stages:
                 name: SHINE-INT-Testing-x64
                 demands: ImageOverride -equals SHINE-W11-Testing
               ${{ else }}:
-                name: ${{ variables.UmdfHidArm64InternalPool }}
-                demands: ImageOverride -equals ${{ variables.UmdfHidArm64Image }}
+                name: SHINE-INT-Testing-arm64
+                demands: ImageOverride -equals ${{ parameters.umdfHidArm64Image }}
             ${{ else }}:
               ${{ if eq(platform, 'x64') }}:
                 name: SHINE-OSS-Testing-x64
                 demands: ImageOverride -equals SHINE-W11-Testing
               ${{ else }}:
-                name: ${{ variables.UmdfHidArm64OssPool }}
-                demands: ImageOverride -equals ${{ variables.UmdfHidArm64Image }}
+                name: SHINE-OSS-Testing-arm64
+                demands: ImageOverride -equals ${{ parameters.umdfHidArm64Image }}
           variables:
             HidResults: $(Agent.TempDirectory)\umdf-hid-smoke-results-$(Build.BuildId)-$(System.JobAttempt)
             HidState: $(Agent.WorkFolder)\PowerToysUiTestState\UmdfHidSmoke.json

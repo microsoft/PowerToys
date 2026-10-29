@@ -1,11 +1,13 @@
 variables:
-  - template: variables-umdf-hid.yml
   - name: runCodesignValidationInjectionBG
     value: false
   - name: EnablePipelineCache
     value: true
 
 parameters:
+  - name: umdfHidArm64Image
+    type: string
+    default: SHINE-W11-Preview-Testing-arm64-TestSigning
   - name: buildPlatforms
     type: object
     default:
@@ -84,8 +86,8 @@ stages:
             runTests: ${{ parameters.runTests }}
             buildTests: true
             prepareMwbRuntime: ${{ and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}
-            prepareUmdfHid: ${{ and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(variables.UmdfHidArm64Image, '')))) }}
-            ${{ if and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(variables.UmdfHidArm64Image, '')))) }}:
+            prepareUmdfHid: ${{ and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(parameters.umdfHidArm64Image, '')))) }}
+            ${{ if and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(parameters.umdfHidArm64Image, '')))) }}:
               dependsOn:
                 - Resolve
               # Resolve is skipped outside PR builds; the ordinary build must still run.
@@ -139,6 +141,7 @@ stages:
           - ${{ if ne(platform, 'x64') }}:
             - template: job-test-arm64.yml
               parameters:
+                umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
                 platform: ${{ platform }}
                 configuration: Release
                 buildSource: buildNowSlim

@@ -2,6 +2,9 @@
 # This template only builds UI test projects and stages their test DLLs for consumption by test pipelines
 
 parameters:
+  - name: umdfHidArm64Image
+    type: string
+    default: ''
   - name: buildConfigurations
     type: object
     default:
@@ -130,7 +133,7 @@ jobs:
   - ${{ if or(eq(length(parameters.uiTestModules), 0), containsValue(parameters.uiTestModules, 'GrabAndMove.UITests')) }}:
     - template: steps-build-umdf-hid.yml
       parameters:
-        condition: and(succeeded(), or(eq(variables['BuildPlatform'], 'x64'), and(eq(variables['BuildPlatform'], 'arm64'), ne('${{ variables.UmdfHidArm64Image }}', ''))))
+        condition: and(succeeded(), or(eq(variables['BuildPlatform'], 'x64'), and(eq(variables['BuildPlatform'], 'arm64'), ne('${{ parameters.umdfHidArm64Image }}', ''))))
 
   - publish: $(JobOutputDirectory)
     artifact: $(JobOutputArtifactName)

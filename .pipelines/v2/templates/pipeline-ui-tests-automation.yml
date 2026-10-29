@@ -3,13 +3,16 @@ trigger: none
 pr: none
 
 variables:
-  - template: variables-umdf-hid.yml
   - name: runCodesignValidationInjectionBG
     value: false
   - name: EnablePipelineCache
     value: true
 
 parameters:
+  - name: umdfHidArm64Image
+    type: string
+    default: SHINE-W11-Preview-Testing-arm64-TestSigning
+    displayName: "Isolated ARM64 UMDF image (empty disables the route)"
   - name: buildPlatforms
     type: object
     default:
@@ -49,6 +52,7 @@ stages:
   - ${{ if eq(parameters.umdfHidSmokeOnly, true) }}:
     - template: pipeline-umdf-hid-smoke.yml
       parameters:
+        umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
         buildPlatforms: ${{ parameters.buildPlatforms }}
         uiTestModules: ${{ parameters.uiTestModules }}
   - ${{ if eq(parameters.umdfHidSmokeOnly, false) }}:
@@ -58,6 +62,7 @@ stages:
       - ${{ if or(eq(parameters.buildSource, 'buildNow'), eq(parameters.buildSource, 'buildNowSlim')) }}:
         - template: pipeline-ui-tests-full-build.yml
           parameters:
+            umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
             platform: ${{ platform }}
             buildSource: ${{ parameters.buildSource }}
             enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
@@ -69,6 +74,7 @@ stages:
       - ${{ if and(ne(parameters.buildSource, 'buildNow'), ne(parameters.buildSource, 'buildNowSlim')) }}:
         - template: pipeline-ui-tests-official-build.yml
           parameters:
+            umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
             platform: ${{ platform }}
             buildSource: ${{ parameters.buildSource }}
             specificBuildId: ${{ parameters.specificBuildId }}
