@@ -784,17 +784,17 @@ Describe "release title selection" {
 }
 
 Describe "draft preview release dry run" {
-    It "constructs a draft-only operation for <SourceBranch> without contacting GitHub" -TestCases @(
+    It "prepares and verifies the documented dry-run route for <SourceBranch> without contacting GitHub" -TestCases @(
         @{ SourceBranch = "refs/heads/main"; ExpectedTitle = "Dev preview v0.101.2181.0" },
         @{ SourceBranch = "refs/heads/stable"; ExpectedTitle = "Release preview v0.101.2181.0" }
     ) {
         param($SourceBranch, $ExpectedTitle)
 
         $bodyPath = Join-Path $TestDrive "release-notes.md"
-        $mergedPath = Join-Path $TestDrive "display-version-notes.md"
         $assetsPath = Join-Path $TestDrive ("assets-" + (Split-Path $SourceBranch -Leaf))
         New-Item -ItemType Directory -Path $assetsPath | Out-Null
-        "# Old three-component title`n`nPreview notes" | Set-Content -LiteralPath $bodyPath
+        $oldTitle = if ($SourceBranch -eq "refs/heads/main") { "Development preview v0.101.2181" } else { "Release preview v0.101.2181" }
+        "# $oldTitle`n`nPreview notes" | Set-Content -LiteralPath $bodyPath
         "installer" | Set-Content -LiteralPath (Join-Path $assetsPath "PowerToysSetup-0.101.2181.0-x64.exe")
         "local audit only" | Set-Content -LiteralPath (Join-Path $assetsPath "release-manifest.json")
         Write-TestAssetsManifest -AssetsPath $assetsPath -AssetNames @("PowerToysSetup-0.101.2181.0-x64.exe")
@@ -805,18 +805,30 @@ Describe "draft preview release dry run" {
             -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
             -BodyPath $bodyPath `
             -AssetsDirectory $assetsPath `
-            -MergedBodyOutputPath $mergedPath `
+            -MergedBodyOutputPath $bodyPath `
             -DryRun
 
         $result.draft | Should Be $true
         $result.prerelease | Should Be $true
         $result.tag | Should Be "v0.101.2181"
         $result.title | Should Be $ExpectedTitle
-        ((Get-Content -LiteralPath $mergedPath) -contains "# $ExpectedTitle") | Should Be $true
+        ((Get-Content -LiteralPath $bodyPath) -contains "# $ExpectedTitle") | Should Be $true
         $result.assetNames.Count | Should Be 1
         $result.assetNames[0] | Should Be "PowerToysSetup-0.101.2181.0-x64.exe"
         ($result.assetNames -contains "release-manifest.json") | Should Be $false
         ($result.assetNames -contains "assets-manifest.json") | Should Be $false
+
+        $verified = & (Join-Path $scripts "verify-draft-preview-release.ps1") `
+            -Tag "v0.101.2181" `
+            -SourceBranch $SourceBranch `
+            -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
+            -AssetsDirectory $assetsPath `
+            -BodyPath $bodyPath `
+            -OutputPath (Join-Path $TestDrive "prepared-dry-run-review.md") `
+            -DryRun
+
+        $verified.status | Should Be "PASS"
+        $verified.draftUrl | Should Be $null
     }
 
     It "preserves human text outside managed body markers" {
@@ -1065,10 +1077,13 @@ Preview notes
 Describe "preview PR metadata attribution" {
     BeforeAll {
         $global:ReleaseTestTeamLookupUnavailable = $false
+        $global:ReleaseTestAttributionFailureSha = $null
         function gh {
             $global:LASTEXITCODE = 0
             if ($args[0] -eq "pr") {
-                return '{"number":123,"title":"Contributor test","labels":[],"author":{"login":"app/copilot-swe-agent","is_bot":true},"url":"https://example.test/123","body":"","reviews":[],"comments":[],"mergedAt":"2026-10-28T00:00:00Z","mergeCommit":{"oid":"0123456789abcdef0123456789abcdef01234567"}}'
+                $pr = '{"number":123,"title":"Contributor test","labels":[],"author":{"login":"app/copilot-swe-agent","is_bot":true},"url":"https://example.test/123","body":"","reviews":[],"comments":[],"mergedAt":"2026-10-28T00:00:00Z","mergeCommit":{"oid":"0123456789abcdef0123456789abcdef01234567"}}' | ConvertFrom-Json
+                $pr.number = [int]$args[2]
+                return $pr | ConvertTo-Json -Depth 5
             }
             if (($args -join " ") -like "api *orgs/microsoft/teams/powertoys-code-owners/members*") {
                 if ($global:ReleaseTestTeamLookupUnavailable) {
@@ -1078,6 +1093,10 @@ Describe "preview PR metadata attribution" {
                 return '[[{"login":"core-owner"},{"login":"live-owner"}]]'
             }
             if ($args[0] -eq "api" -and $args[1] -eq "graphql") {
+                if ($global:ReleaseTestAttributionFailureSha -and $args -contains "sha=$global:ReleaseTestAttributionFailureSha") {
+                    $global:LASTEXITCODE = 1
+                    return
+                }
                 if ($args -contains "cursor=next-authors") {
                     return '{"data":{"repository":{"object":{"authors":{"nodes":[{"user":{"login":"external-two"}}],"pageInfo":{"hasNextPage":false,"endCursor":null}}}}}}'
                 }
@@ -1089,6 +1108,7 @@ Describe "preview PR metadata attribution" {
 
     AfterAll {
         Remove-Variable -Name ReleaseTestTeamLookupUnavailable -Scope Global -ErrorAction SilentlyContinue
+        Remove-Variable -Name ReleaseTestAttributionFailureSha -Scope Global -ErrorAction SilentlyContinue
     }
 
     It "rejects a missing member list before fetching PRs" {
@@ -1169,6 +1189,36 @@ Describe "preview PR metadata attribution" {
 
         $rows = @(Import-Csv -LiteralPath (Join-Path $output "sorted_prs.csv"))
         $rows[0].NeedThanks | Should Be "external-one, external-two"
+    }
+
+    It "terminates stable collection without exporting partial notes when attribution fails after an earlier PR" {
+        $repository = Join-Path $TestDrive "failed-attribution-repo"
+        New-Item -ItemType Directory -Path $repository | Out-Null
+        Invoke-TestGit -Repository $repository init -q | Out-Null
+        Invoke-TestGit -Repository $repository config user.name "Release Test" | Out-Null
+        Invoke-TestGit -Repository $repository config user.email "release-test@example.test" | Out-Null
+        $start = Add-TestCommit -Repository $repository -FileName "file.txt" -Content "initial" -Message "Initial commit"
+        Add-TestCommit -Repository $repository -FileName "file.txt" -Content "first" -Message "First PR (#123)" | Out-Null
+        $end = Add-TestCommit -Repository $repository -FileName "file.txt" -Content "second" -Message "Second PR (#124)"
+        $output = Join-Path $TestDrive "failed-stable-attribution"
+        New-Item -ItemType Directory -Path $output | Out-Null
+        "core-owner" | Set-Content -LiteralPath (Join-Path $output "MemberList.md")
+        $global:ReleaseTestAttributionFailureSha = $end
+
+        Push-Location $repository
+        try {
+            {
+                & (Join-Path $scripts "dump-prs-since-commit.ps1") `
+                    -StartCommit $start -EndCommit $end -OutputDir $output
+            } | Should Throw "Failed to collect PR #124"
+        }
+        finally {
+            Pop-Location
+            $global:ReleaseTestAttributionFailureSha = $null
+        }
+
+        (Test-Path -LiteralPath (Join-Path $output "sorted_prs.csv")) | Should Be $false
+        (Test-Path -LiteralPath (Join-Path $output "milestone_prs.json")) | Should Be $false
     }
 }
 

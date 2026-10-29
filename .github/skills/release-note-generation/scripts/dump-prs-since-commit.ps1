@@ -330,8 +330,7 @@ foreach ($pr in $prNumbers) {
         }
     }
     catch {
-        $err = $_
-        Write-Warn ("Failed to fetch PR #{0}: {1}" -f $pr, $err)
+        throw "Failed to collect PR #${pr}: $($_.Exception.Message)"
     }
 }
 
