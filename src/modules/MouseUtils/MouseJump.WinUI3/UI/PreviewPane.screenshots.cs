@@ -112,7 +112,7 @@ internal sealed partial class PreviewPane
     private WriteableBitmap? GetBlurredPlaceholder(ScreenInfo screenInfo)
     {
         WriteableBitmap? result = null;
-        this.blurPipeline.TryGet(screenInfo, blurredImage => result = MediaHelper.ToBitmapImage(blurredImage));
+        this.blurPipeline.TryBorrow(screenInfo, blurredImage => result = MediaHelper.ToBitmapImage(blurredImage));
         return result;
     }
 }
