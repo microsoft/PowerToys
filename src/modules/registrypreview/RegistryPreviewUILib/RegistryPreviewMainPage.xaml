@@ -22,40 +22,27 @@
         Grid.Row="1"
         Width="Auto"
         Height="Auto"
-        Margin="12"
         x:FieldModifier="public"
         Loaded="GridPreview_Loaded"
         TabFocusNavigation="Cycle">
-        <Grid.Resources>
-            <Style x:Key="GridCardStyle" TargetType="Border">
-                <Style.Setters>
-                    <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
-                    <Setter Property="BorderThickness" Value="1" />
-                    <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
-                    <Setter Property="CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
-                </Style.Setters>
-            </Style>
-        </Grid.Resources>
         <Grid.ColumnDefinitions>
             <!--  Left, Splitter, Right  -->
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="1" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <!--  CommandBar, Tree, Splitter, List  -->
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="8" />
+            <RowDefinition Height="1" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <Border
             Grid.Row="0"
             Grid.Column="0"
-            Grid.ColumnSpan="3"
-            Margin="0,0,0,12"
-            Style="{StaticResource GridCardStyle}">
+            Grid.ColumnSpan="3">
 
             <CommandBar
                 Name="commandBar"
@@ -159,8 +146,7 @@
 
         <Border
             Grid.Row="1"
-            Grid.Column="2"
-            Style="{StaticResource GridCardStyle}">
+            Grid.Column="2">
             <TreeView
                 x:Name="treeView"
                 AllowDrop="False"
@@ -171,9 +157,9 @@
                 IsTabStop="False"
                 ItemInvoked="TreeView_ItemInvoked"
                 ScrollViewer.BringIntoViewOnFocusChange="True"
-                ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                ScrollViewer.HorizontalScrollBarVisibility="Auto"
                 ScrollViewer.HorizontalScrollMode="Enabled"
-                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                ScrollViewer.VerticalScrollBarVisibility="Auto"
                 ScrollViewer.VerticalScrollMode="Auto"
                 TabIndex="1">
                 <TreeView.ItemTemplate>
@@ -203,8 +189,7 @@
 
         <Border
             Grid.Row="3"
-            Grid.Column="2"
-            Style="{StaticResource GridCardStyle}">
+            Grid.Column="2">
             <tk7controls:DataGrid
                 x:Name="dataGrid"
                 AllowDrop="False"
@@ -340,6 +325,7 @@
             Grid.Row="1"
             Grid.RowSpan="3"
             Grid.Column="1"
+            Width="8"
             HorizontalAlignment="Center"
             VerticalAlignment="Stretch"
             IsTabStop="False" />
@@ -347,6 +333,7 @@
             x:Name="horizontalSplitter"
             Grid.Row="2"
             Grid.Column="2"
+            Height="8"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
             IsTabStop="False" />

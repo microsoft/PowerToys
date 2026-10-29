@@ -123,19 +123,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AppLauncher.cpp" />
-    <ClCompile Include="Launcher.cpp" />
-    <ClCompile Include="LauncherUIHelper.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="RegistryUtils.cpp" />
-    <ClCompile Include="WindowArrangerHelper.cpp" />
+    <ClCompile Include="LaunchSessionHost.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AppLauncher.h" />
     <ClInclude Include="Launcher.h" />
+    <ClInclude Include="LaunchSessionHost.h" />
     <ClInclude Include="LauncherUIHelper.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RegistryUtils.h" />
@@ -146,6 +143,16 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\WorkspacesLauncherUI\WorkspacesLauncherUI.csproj">
+      <Project>{9c53cc25-0623-4569-95bc-b05410675ee3}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\WorkspacesWindowArranger\WorkspacesWindowArranger.vcxproj">
+      <Project>{37d07516-4185-43a4-924f-3c7a5d95ecf6}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\common\Display\Display.vcxproj">
       <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
     </ProjectReference>

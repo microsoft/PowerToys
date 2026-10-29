@@ -76,7 +76,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
 
             toolTipText.AppendLine(CultureInfo.CurrentCulture, $"{Resources.Application}: {entry.Type}");
 
-            if (entry.Areas != null && entry.Areas.Any())
+            if (entry.Areas != null && entry.Areas.Count > 0)
             {
                 toolTipText.AppendLine(CultureInfo.CurrentCulture, $"{Resources.Area}: {entry.JoinedAreaPath}");
             }
