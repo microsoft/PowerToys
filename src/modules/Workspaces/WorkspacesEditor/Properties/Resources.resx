@@ -349,6 +349,7 @@
   <data name="ProtectedStorageSetupFailed" xml:space="preserve"><value>Setup did not complete. Resolve the reported setup problem and try again. Workspaces will not use an unprotected file as a fallback.</value></data>
   <data name="ProtectedStorageCleanupPending" xml:space="preserve"><value>Migration completed. The legacy source could not be removed or has changed. Protected storage is now authoritative. Use Retry cleanup to remove only the matching migrated source.</value></data>
   <data name="ProtectedStorageCaptureFailed" xml:space="preserve"><value>Could not create or read the protected workspace capture.</value></data>
+  <data name="ProtectedStorageCapturing" xml:space="preserve"><value>Capturing open windows. Finding installed applications can take a while. Please wait.</value><comment>Displayed while workspace capture is running; the user must wait for this capture to finish before starting another.</comment></data>
   <data name="ProtectedStorageLaunchFailed" xml:space="preserve"><value>The workspace launch did not complete. Check the launcher error before starting it again.</value></data>
   <data name="ProtectedStorageLaunchBusy" xml:space="preserve"><value>Another workspace launch is still in progress. Wait for it to finish before starting another launch. Your current draft has been retained.</value></data>
   <data name="ProtectedStorageLaunching" xml:space="preserve"><value>Launching...</value></data>

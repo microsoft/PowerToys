@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "SnapshotUtils.h"
+#include <chrono>
 
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
@@ -48,7 +49,10 @@ namespace SnapshotUtils
         Utils::PwaHelper pwaHelper{};
         std::vector<WorkspacesData::WorkspacesProject::Application> apps{};
 
+        const auto inventoryStart = std::chrono::steady_clock::now();
         auto installedApps = Utils::Apps::GetAppsList();
+        Logger::info("Capture application inventory resolved in {} ms",
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - inventoryStart).count());
         auto windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
 
         for (const auto window : windows)

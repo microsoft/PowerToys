@@ -12,6 +12,7 @@
 #include <propkey.h>
 
 #include <wil/com.h>
+#include <wil/resource.h>
 
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
@@ -22,6 +23,17 @@
 
 namespace Utils
 {
+    bool MatchesProcessElevation(DWORD processId, bool elevated)
+    {
+        wil::unique_handle process(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processId));
+        wil::unique_handle token;
+        TOKEN_ELEVATION elevation{};
+        DWORD length{};
+        return process && OpenProcessToken(process.get(), TOKEN_QUERY, token.put()) &&
+            GetTokenInformation(token.get(), TokenElevation, &elevation, sizeof(elevation), &length) &&
+            (elevation.TokenIsElevated != 0) == elevated;
+    }
+
     std::wstring GetAUMIDFromProcessId(DWORD processId)
     {
         HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processId);

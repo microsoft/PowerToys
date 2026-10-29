@@ -262,7 +262,7 @@ namespace WorkspacesEditor.ViewModels
             project.Name = projectNameBeingEdited;
         }
 
-        public async void SnapWorkspace()
+        public async Task SnapWorkspaceAsync()
         {
             CancelSnapshot();
 
@@ -552,7 +552,7 @@ namespace WorkspacesEditor.ViewModels
             _snapshotWindow = new SnapshotWindow(this);
             _snapshotWindow.ShowActivated = true;
             _snapshotWindow.Topmost = true;
-            _snapshotWindow.Show();
+            _snapshotWindow.ShowDialog();
         }
 
         internal void CancelSnapshot()

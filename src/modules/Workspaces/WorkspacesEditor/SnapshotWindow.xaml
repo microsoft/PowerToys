@@ -18,20 +18,30 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="1*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" />
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
         <TextBlock
+            x:Name="SnapshotDescriptionText"
             Grid.ColumnSpan="2"
             Margin="8,16,8,16"
             Text="{x:Static props:Resources.SnapshotDescription}"
             TextAlignment="Center"
             TextWrapping="Wrap" />
+        <ProgressBar
+            x:Name="CaptureProgress"
+            Grid.Row="1"
+            Grid.ColumnSpan="2"
+            Height="4"
+            Margin="8,0,8,12"
+            IsIndeterminate="True"
+            Visibility="Collapsed" />
         <Button
             x:Name="SnapshotButton"
-            Grid.Row="1"
+            Grid.Row="2"
             Margin="8,8,4,8"
             HorizontalAlignment="Stretch"
             AutomationProperties.Name="{x:Static props:Resources.Take_Snapshot}"
@@ -40,7 +50,7 @@
             Style="{DynamicResource AccentButtonStyle}" />
         <Button
             x:Name="CancelButton"
-            Grid.Row="1"
+            Grid.Row="2"
             Grid.Column="1"
             Margin="4,8,8,8"
             HorizontalAlignment="Stretch"

@@ -195,6 +195,7 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
                 if (pid != otherPid && title == WindowUtils::GetWindowTitle(otherWindow))
                 {
                     processPath = get_process_path(otherPid);
+                    pid = otherPid;
                     break;
                 }
             }
@@ -245,6 +246,11 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
 
         if ((app.name == appData.name || app.path == appData.installPath) && (app.pwaAppId == appData.pwaAppId))
         {
+            if (!Utils::MatchesProcessElevation(pid, app.isElevated))
+            {
+                Logger::trace(L"Skipping existing {} window: process {} elevation does not match the request or is unavailable.", app.name, pid);
+                continue;
+            }
             if (!appDataNearest.has_value())
             {
                 appDataNearest = data;
@@ -455,7 +461,8 @@ bool WindowArranger::processWindow(HWND window)
     auto iter = std::find_if(apps.begin(), apps.end(), [&](const auto& val) {
         return val.second.state == LaunchingState::Launched &&
                !val.second.window &&
-               (val.first.name == data.value().name || val.first.path == data.value().installPath);
+               (val.first.name == data.value().name || val.first.path == data.value().installPath) &&
+               Utils::MatchesProcessElevation(pid, val.first.isElevated);
     });
 
     if (iter == apps.end())

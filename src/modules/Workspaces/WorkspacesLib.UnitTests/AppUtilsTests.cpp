@@ -1,5 +1,7 @@
 #include "pch.h"
 #include <filesystem> // Add this line
+#include <WorkspacesLib/WindowUtils.h>
+#include <wil/resource.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -8,6 +10,24 @@ namespace WorkspacesLibUnitTests
     TEST_CLASS(AppUtilsTests)
     {
     public:
+        TEST_METHOD(WindowMatchingRejectsTheOppositeElevation)
+        {
+            wil::unique_handle token;
+            Assert::IsTrue(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, token.put()) != FALSE);
+            TOKEN_ELEVATION elevation{};
+            DWORD length{};
+            Assert::IsTrue(GetTokenInformation(token.get(), TokenElevation, &elevation, sizeof(elevation), &length) != FALSE);
+            const bool actual = elevation.TokenIsElevated != 0;
+            Assert::IsTrue(Utils::MatchesProcessElevation(GetCurrentProcessId(), actual));
+            Assert::IsFalse(Utils::MatchesProcessElevation(GetCurrentProcessId(), !actual));
+        }
+
+        TEST_METHOD(UnknownProcessElevationIsNotTreatedAsNonElevated)
+        {
+            Assert::IsFalse(Utils::MatchesProcessElevation(MAXDWORD, false));
+            Assert::IsFalse(Utils::MatchesProcessElevation(MAXDWORD, true));
+        }
+
         TEST_METHOD(WorkspaceInventoryMatchesAuthenticatedPlanWithoutFullShellEnumeration)
         {
             WorkspacesData::WorkspacesProject project{};
