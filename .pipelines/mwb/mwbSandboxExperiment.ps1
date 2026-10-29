@@ -168,10 +168,18 @@ function Write-MwbProvisioningDiagnostics {
         }
         Assert-MwbProtectedDirectory $path
         try {
-            # Even apparently harmless excerpts can contain wrapped authentication state.
-            # Public diagnostics contain file metadata only; raw logs stay administrator-only.
+            # Raw logs can contain authentication state. Publish only validated phase enums/timings.
             $length = (Get-Item -LiteralPath $path -Force).Length
             Write-Host "MWB provisioning ${name}: present; bytes=$length; raw content remains in protected local storage."
+            if ($name -ceq 'stdout.log') {
+                foreach ($line in Get-Content -LiteralPath $path -TotalCount 256) {
+                    $progress = ConvertTo-MwbProvisioningProgress $line
+                    if ($null -ne $progress) {
+                        Write-Host ('MWB provisioning progress: {0} ({1:F1}s)' -f
+                            $progress.Phase, $progress.ElapsedSeconds)
+                    }
+                }
+            }
         }
         catch [IO.IOException], [UnauthorizedAccessException] {
             Write-Host "MWB provisioning ${name}: cannot read the protected log ($($_.Exception.GetType().Name))."
@@ -358,6 +366,7 @@ if ($Mode -eq 'Prepare') {
             # The initial marker is enough. On Win10, only the test can start Sandbox's Default Switch.
             $marker = Read-MwbProvisioningMarker $hostProductRoot $userSid.Value
             if ($marker.Status -in @('WaitingForSandbox', 'Ready')) {
+                Write-MwbProvisioningDiagnostics $runRoot
                 Write-Host "Privileged setup $($marker.Status); dispatch may start Sandbox as $interactiveUser."
                 return
             }
