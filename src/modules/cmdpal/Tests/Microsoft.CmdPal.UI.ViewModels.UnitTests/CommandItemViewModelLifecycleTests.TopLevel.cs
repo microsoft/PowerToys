@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,7 +34,7 @@ public partial class CommandItemViewModelLifecycleTests
         source.ApplyPendingUpdates();
         using var services = new ServiceCollection().AddSingleton(Mock.Of<ISettingsService>()).BuildServiceProvider();
         var topLevel = CreateTopLevelSource(source, services, fallback);
-        IListItem presentation = recent ? new RecentCommandListItem(topLevel, topLevel.Id) : topLevel;
+        IListItem presentation = recent ? new RecentCommandListItem(new InProcObject<IListItem>(topLevel), topLevel.Id) : topLevel;
         command.ReadId = () => Assert.Fail("A recreated host row must not fetch the extension's Id again.");
         command.ReadName = () => Assert.Fail("A recreated host row must use the cached command name.");
         command.ReadIcon = () => Assert.Fail("The loaded command must not be initialized again.");
@@ -88,7 +89,7 @@ public partial class CommandItemViewModelLifecycleTests
         await ui.StartNew(() => { });
         using var services = new ServiceCollection().AddSingleton(Mock.Of<ISettingsService>()).BuildServiceProvider();
         var topLevel = CreateTopLevelSource(source, services, fallback: false);
-        IListItem presentation = recent ? new RecentCommandListItem(topLevel, topLevel.Id) : topLevel;
+        IListItem presentation = recent ? new RecentCommandListItem(new InProcObject<IListItem>(topLevel), topLevel.Id) : topLevel;
         var row = new ListItemViewModel(presentation, new(context), DefaultContextMenuFactory.Instance);
         row.InitializeProperties();
         var oldViewModel = source.Command;

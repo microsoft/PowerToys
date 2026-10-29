@@ -603,7 +603,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     {
         while (item is RecentCommandListItem recent)
         {
-            item = recent.Source;
+            item = recent.Source.Safe;
         }
 
         if (item is TopLevelViewModel topLevel)
