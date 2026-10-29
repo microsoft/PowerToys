@@ -7,7 +7,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
-internal sealed partial class SamplePageFallback : PassiveFallbackCommandItem
+internal sealed partial class SamplePageFallback : FallbackPassiveItem
 {
     internal SamplePageFallback()
         : base("Sample query page", "com.microsoft.cmdpal.sample.fallback.page")
