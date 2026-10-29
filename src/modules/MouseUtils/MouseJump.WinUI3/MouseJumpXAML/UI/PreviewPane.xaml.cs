@@ -11,6 +11,10 @@ using MouseJump.Models.Layout;
 
 namespace MouseJump.WinUI3.UI;
 
+/// <remarks>
+/// Lives under the "/MouseJumpXAML" folder to avoid collisions with the compiled *.xbf files
+/// from xaml files in other modules when they all get copied to the shared build output folder.
+/// </remarks>
 internal sealed partial class PreviewPane : UserControl
 {
     public static readonly DependencyProperty LayoutProperty = DependencyProperty.Register(

@@ -23,11 +23,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Page Remove="App\App.xaml" />
+        <Page Remove="MouseJumpXAML\App.xaml" />
     </ItemGroup>
 
     <ItemGroup>
-        <ApplicationDefinition Include="App\App.xaml" />
+        <ApplicationDefinition Include="MouseJumpXAML\App.xaml" />
     </ItemGroup>
 
     <ItemGroup>
@@ -40,10 +40,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Update="UI\PreviewPane.*.cs">
+        <Compile Update="MouseJumpXAML\UI\PreviewPane.*.cs">
             <DependentUpon>PreviewPane.xaml</DependentUpon>
         </Compile>
-        <Compile Update="UI\PreviewWindow.*.cs">
+        <Compile Update="MouseJumpXAML\UI\PreviewWindow.*.cs">
             <DependentUpon>PreviewWindow.xaml</DependentUpon>
         </Compile>
     </ItemGroup>
