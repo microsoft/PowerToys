@@ -253,6 +253,108 @@ namespace Microsoft.CommandPalette.Extensions
         Windows.Foundation.IAsyncAction LogMessage(ILogMessage message);
     };
 
+    enum FallbackCommandMode
+    {
+    	// The host calls IFallbackHandler.UpdateQuery. This is the original
+    	// fallback behavior.
+    	Active = 0,
+
+    	// The host formats and matches the item without calling the extension.
+    	Passive,
+
+    	// The host calls IFallbackHandler2.QueryAsync and displays its items.
+    	Results,
+    };
+
+    enum HostMatchKind
+    {
+    	// No additional match filtering. Normal host fallback policy applies.
+    	None = 0,
+
+    	// Host determines visibility by evaluating the MatchValue regex
+    	Regex,
+    };
+
+    struct OptionalUInt32
+    {
+    	Boolean HasValue;
+    	UInt32 Value;
+    };
+
+    // The host creates one of these for each accepted top-level query.
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFallbackQueryArgs requires IExtendedAttributesProvider
+    {
+    	String Query { get; };
+    	String QueryId { get; };
+    	UInt32 RequestedItemCount { get; };
+    	String[] LanguageTags { get; };
+    };
+
+    // Passed back when a command is created for a particular query. This derives
+    // from IFallbackQueryArgs so future query context can be added in one place.
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFallbackCommandInvocationArgs requires IFallbackQueryArgs
+    {
+    };
+
+    // One complete snapshot from a result source. Progress values and the final
+    // return value use the same shape. The final result also owns its continuation.
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFallbackCommandResult
+    {
+    	String Query { get; };
+    	String QueryId { get; };
+    	IListItem[] Items { get; };
+    	Boolean HasMoreItems { get; };
+
+    	Windows.Foundation.IAsyncOperationWithProgress<
+    		IFallbackCommandResult,
+    		IFallbackCommandResult> LoadMoreItemsAsync(UInt32 requestedItemCount);
+    };
+
+    // This remains in a linear chain with IFallbackHandler. UpdateQuery is not
+    // called when the owning fallback is in Results mode.
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFallbackHandler2 requires IFallbackHandler
+    {
+    	Windows.Foundation.IAsyncOperationWithProgress<
+    		IFallbackCommandResult,
+    		IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args);
+    };
+
+    // Keep all new fallback metadata on one linear interface. In particular, do
+    // not split formatting, matching, and defaults into sibling interfaces.
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFallbackCommandItem3 requires IFallbackCommandItem2
+    {
+    	FallbackCommandMode Mode { get; };
+
+    	// The host will use this for the action label before that command has been
+    	// created.
+    	String Name { get; };
+
+    	// Used by Passive mode. The host replaces the literal token "{query}".
+    	// An empty template means to use the corresponding ICommandItem property.
+    	String TitleTemplate { get; };
+    	String SubtitleTemplate { get; };
+
+    	HostMatchKind MatchKind { get; };
+    	String MatchValue { get; };
+
+    	// These are suggestions. The host is ultimately in control of query scheduling policy.
+    	OptionalUInt32 SuggestedQueryDelayMilliseconds { get; };
+    	OptionalUInt32 SuggestedMinQueryLength { get; };
+
+    	// Required for Results mode. It may be null for Passive and Active modes.
+    	IFallbackHandler2 QueryHandler { get; };
+
+    	// Called only after the user activates this fallback. This supports both
+    	// invokable commands and pages without adding sibling interfaces to the
+    	// ICommand/IPage/IInvokableCommand inheritance trees.
+    	ICommand CreateCommand(IFallbackCommandInvocationArgs args);
+    };
+
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IPage requires ICommand {
         String Title { get; };
@@ -386,66 +488,6 @@ namespace Microsoft.CommandPalette.Extensions
         String Id { get; };
     };
 
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    enum FallbackCommandMode {
-        Active = 0,
-        Passive,
-        Results,
-    };
-
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    enum HostMatchKind {
-        None = 0,
-        Regex,
-    };
-
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    struct OptionalUInt32 {
-        Boolean HasValue;
-        UInt32 Value;
-    };
-
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IFallbackQueryArgs requires IExtendedAttributesProvider {
-        String Query { get; };
-        String QueryId { get; };
-        UInt32 RequestedItemCount { get; };
-        String[] LanguageTags { get; };
-    };
-
-    [uuid(4f3ba46e-4d06-4a3e-9464-8b6e9f5b792c)]
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IFallbackCommandInvocationArgs requires IFallbackQueryArgs {
-    };
-
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IFallbackCommandResult {
-        String Query { get; };
-        String QueryId { get; };
-        IListItem[] Items { get; };
-        Boolean HasMoreItems { get; };
-        Windows.Foundation.IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> LoadMoreItemsAsync(UInt32 requestedItemCount);
-    };
-
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IFallbackHandler2 requires IFallbackHandler {
-        Windows.Foundation.IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args);
-    };
-
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IFallbackCommandItem3 requires IFallbackCommandItem2 {
-        FallbackCommandMode Mode { get; };
-        String Name { get; };
-        String TitleTemplate { get; };
-        String SubtitleTemplate { get; };
-        HostMatchKind MatchKind { get; };
-        String MatchValue { get; };
-        OptionalUInt32 SuggestedQueryDelayMilliseconds { get; };
-        OptionalUInt32 SuggestedMinQueryLength { get; };
-        IFallbackHandler2 QueryHandler { get; };
-        ICommand CreateCommand(IFallbackCommandInvocationArgs args);
-    };
-    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ICommandProvider requires Windows.Foundation.IClosable, INotifyItemsChanged
     {
