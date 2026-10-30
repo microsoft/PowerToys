@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2026-09-03
+last updated: 2026-10-02
 issue id: n/a
 ---
 
@@ -952,6 +952,26 @@ like.
 * For example: An "Agenda" extension may want to have one section for each day,
   with each section's items containing the events for the day.
 * Or a Pokedex extension may want to group results by region.
+
+A section header has a null `Command` and a non-empty `Section`. Give it an
+action through `WellKnownExtensionAttributes.SectionCommand` in its
+`IExtendedAttributesProvider.GetProperties()` bag, or use the Toolkit helper:
+
+```cs
+var header = new Separator("Recent files", showMoreCommand);
+```
+
+The command must have a non-empty `Name`. It makes the header selectable and
+serves as its primary action in the command bar and context menu. For a
+`Subtitle` or `MoreCommands`, use a `ListItem` with `Command = null`.
+
+The header shows the command's `Icon`, defaulting to a chevron. Its `Name`
+appears on hover or selection in both list and grid layouts.
+
+After changing the property bag, raise `PropChanged` for `"SectionCommand"`
+(or `"Properties"`). For a `ListItem` header, subclass it to call the
+protected `OnPropertyChanged` method. The `Separator.SectionCommand` setter
+raises the notification automatically.
 
 Lists may either be a list of items like a traditional ListView, or they can be
 a grid of items. Each of these items can be grouped into sections, which will be

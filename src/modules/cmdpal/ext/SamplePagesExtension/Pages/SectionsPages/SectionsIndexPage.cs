@@ -22,22 +22,27 @@ internal sealed partial class SectionsIndexPage : ListPage
                new ListItem(new SampleListPageWithSections())
                {
                    Title = "A list page with sections",
+                   Subtitle = "Includes a Show more... section header command",
                },
                new ListItem(new SampleListPageWithSections(new SmallGridLayout()))
                {
                    Title = "A small grid page with sections",
+                   Subtitle = "Includes a Show more... section header command",
                },
                new ListItem(new SampleListPageWithSections(new MediumGridLayout()))
                {
                    Title = "A medium grid page with sections",
+                   Subtitle = "Includes a Show more... section header command",
                },
                new ListItem(new SampleListPageWithSections(new GalleryGridLayout()))
                {
                    Title = "A Gallery grid page with sections",
+                   Subtitle = "Includes a Show more... section header command",
                },
                new ListItem(new SampleListPageWithSections(new GalleryGridLayout() { ShowTitle = false, ShowSubtitle = false }))
                {
                    Title = "A Gallery grid page without labels with sections",
+                   Subtitle = "Includes a Show more... section header command",
                },
             ];
     }
