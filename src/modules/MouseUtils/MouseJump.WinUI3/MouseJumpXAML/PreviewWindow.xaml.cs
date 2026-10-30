@@ -19,7 +19,7 @@ using MouseJump.Common.Imaging;
 using MouseJump.Common.Interop;
 using MouseJump.Models.Display;
 using MouseJump.Models.Drawing;
-using MouseJump.Models.ViewModel;
+using MouseJump.Models.Layout;
 using MouseJump.WinUI3.Helpers;
 
 using Windows.Graphics;
@@ -44,7 +44,7 @@ internal sealed partial class PreviewWindow : Window
         this.InitializeWindow();
     }
 
-    private FormViewModel? FormLayout
+    private FormLayout? FormLayout
     {
         get;
         set;

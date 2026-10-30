@@ -6,7 +6,7 @@
     This script intentionally exposes no publish operation. It preserves text
     outside the managed preview-agent body markers and uploads only explicitly
     generated release assets. SourceBranch selects Release preview (stable)
-    or Development preview (main), independently of the original build intent.
+    or Dev preview (main), independently of the original build intent.
 
 .EXAMPLE
     .\upsert-draft-preview-release.ps1 -Tag v0.101.2181 -SourceBranch refs/heads/main -TargetCommit 0123... -BodyPath .\release-notes.md -AssetsDirectory .\assets
@@ -42,10 +42,17 @@ function Get-ManagedBlock {
     $start = $Body.IndexOf($beginMarker, [StringComparison]::Ordinal)
     $end = $Body.IndexOf($endMarker, [StringComparison]::Ordinal)
     if ($start -ge 0 -and $end -gt $start) {
-        return $Body.Substring($start, ($end + $endMarker.Length) - $start)
+        $block = $Body.Substring($start, ($end + $endMarker.Length) - $start)
+    }
+    else {
+        $block = "$beginMarker`n$($Body.Trim())`n$endMarker"
     }
 
-    return "$beginMarker`n$($Body.Trim())`n$endMarker"
+    $heading = [regex]::new('(?m)^# [^\r\n]*\r?$')
+    if ($heading.IsMatch($block)) {
+        return $heading.Replace($block, "# $releaseTitle", 1)
+    }
+    return $block.Replace($beginMarker, "$beginMarker`n# $releaseTitle`n")
 }
 
 function Merge-ReleaseBody {

@@ -5,6 +5,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Tray;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -166,6 +167,7 @@ internal sealed partial class TrayIconService
                     }
                     else if (wParam == PInvoke.WM_USER + 2)
                     {
+                        Logger.LogInfo("Command Palette exit requested: tray menu Quit.");
                         WeakReferenceMessenger.Default.Send<QuitMessage>();
                     }
                 }

@@ -1,0 +1,42 @@
+# Nightly CodeQL scan of main. CI builds turn CodeQL off because tracing roughly doubles their build time.
+
+trigger: none
+pr: none
+
+schedules:
+  - cron: "0 10 * * *"   # 10:00 UTC daily
+    displayName: Nightly CodeQL scan (main)
+    branches:
+      include:
+        - main
+    always: true
+
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+variables:
+  - name: runCodesignValidationInjectionBG
+    value: false
+  - name: EnablePipelineCache
+    value: true
+  - name: Codeql.Enabled
+    value: true
+  - name: Codeql.Cadence
+    value: 0
+
+jobs:
+  - template: templates/job-build-project.yml
+    parameters:
+      jobName: CodeQL
+      pool:
+        ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+          name: SHINE-INT-L
+        ${{ else }}:
+          name: SHINE-OSS-L
+        demands: ImageOverride -equals SHINE-VS18-Latest
+      buildPlatforms:
+        - x64
+      buildConfigurations: [Release]
+      enablePackageCaching: true
+      runTests: false
+      buildTests: true
+      publishArtifacts: false

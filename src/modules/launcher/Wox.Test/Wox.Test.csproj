@@ -18,6 +18,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="$(RepoRoot)src\settings-ui\Settings.UI\SettingsXAML\Views\PowerLauncherPage.xaml" Link="TestData\PowerLauncherPage.xaml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Plugins\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.csproj" />
     <ProjectReference Include="..\Plugins\Microsoft.Plugin.Indexer\Microsoft.Plugin.Indexer.csproj" />
     <ProjectReference Include="..\Plugins\Microsoft.Plugin.Program\Microsoft.Plugin.Program.csproj" />

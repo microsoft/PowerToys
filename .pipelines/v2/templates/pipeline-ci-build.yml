@@ -3,6 +3,10 @@ variables:
     value: false
   - name: EnablePipelineCache
     value: true
+  # CodeQL tracing roughly doubles the main build and pushes jobs past their timeout.
+  # .pipelines\v2\codeql.yml scans main on a schedule instead.
+  - name: Codeql.Enabled
+    value: false
 
 parameters:
   - name: buildPlatforms
