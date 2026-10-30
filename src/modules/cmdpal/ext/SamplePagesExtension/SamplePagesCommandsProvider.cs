@@ -49,10 +49,20 @@ public partial class SamplePagesCommandsProvider : CommandProvider
        },
     ];
 
+    private readonly IFallbackCommandItem[] _fallbacks =
+    [
+        new SamplePassiveFallback(),
+        new SamplePageFallback(),
+        new SampleActiveFallback(),
+        new SampleResultFallback(),
+    ];
+
     public override ICommandItem[] TopLevelCommands()
     {
         return _commands;
     }
+
+    public override IFallbackCommandItem[] FallbackCommands() => _fallbacks;
 
     public override ICommandItem GetCommandItem(string id) =>
         id == SampleCompactPinToDockPage.PinnableItem.Command.Id ? SampleCompactPinToDockPage.PinnableItem : null;
