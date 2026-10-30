@@ -82,7 +82,12 @@ a larger value for a module or project-wide run.
 ### Optional virtual HID input
 
 Some modules intentionally reject injected input. In a dedicated test VM with the PowerToys
-UMDF virtual HID test driver already provisioned, opt the existing helpers into real device input:
+UMDF virtual HID test driver already provisioned, opt the existing helpers into real device input.
+
+For Grab and Move's complete local build, self-signing, provisioning, execution and cleanup
+workflow, see the [module-specific testing guide](../modules/grabandmove.md#ui-tests).
+
+For example:
 
 ```csharp
 using var input = UmdfHidInput.Activate();
@@ -101,6 +106,12 @@ The scope is process-wide; input tests must not run in parallel. Disposal releas
 keys/buttons and restores the default helpers. Activation fails if the driver is missing, with no
 `SendInput` fallback. The current report descriptor supports six simultaneous non-modifier keys,
 primary-monitor mouse coordinates, and whole wheel detents (120 units).
+
+Run driver-backed gestures on an active, unlocked **console** test desktop, not inside RDP or
+Hyper-V Enhanced Session. The current backend is not an RDP-session input injector: the device
+can open while its input never reaches that session's cursor. Use a physical console or Hyper-V
+Basic Session; a host-side RDP connection is fine when tests execute in a guest's console desktop.
+
 Call `MouseHelper.MoveTo` explicitly before click, wheel, or relative movement sequences. The HID
 backend retains the last requested position because feature-report completion can precede the OS
 cursor update; it does not track physical/injected mouse movement during the scope. Keyboard-only
