@@ -105,10 +105,6 @@ dotnet tool install --global wix --version 5.0.2
 
 > **Note:** As of release 0.94, PowerToys has migrated from WiX v3 to WiX v5. The WiX v3 toolset is no longer required.
 
-#### Building prerequisite projects
-
-The installer packages `BugReportTool` and `StylesReportTool`. Both are part of `PowerToys.slnx`, so building `PowerToys.slnx` in `Release` builds them; no separate step is needed.
-
 #### Locally compiling the installer
 
 1. Open `installer\PowerToysSetup.slnx`

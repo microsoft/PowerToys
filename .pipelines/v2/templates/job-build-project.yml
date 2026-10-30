@@ -250,8 +250,6 @@ jobs:
 
   - pwsh: |-
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\PowerToys.slnx'
-      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\BugReportTool\BugReportTool.sln'
-      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\StylesReportTool\StylesReportTool.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.slnx'
     displayName: Verify ARM64 configurations
 
@@ -429,9 +427,6 @@ jobs:
       flattenFolders: True
       targetFolder: $(JobOutputDirectory)/sdk/winmd
 
-  # BugReportTool and StylesReportTool are part of PowerToys.slnx, so the main build above produces them.
-
-  # Publish every installer-packaged .NET app in one parallel MSBuild invocation; see the project list in PublishForPackaging.proj.
   - task: VSBuild@1
     displayName: Publish projects for Packaging
     inputs:

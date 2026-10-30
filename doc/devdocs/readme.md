@@ -170,7 +170,7 @@ Our installer is two parts, an EXE and an MSI.  The EXE (Bootstrapper) contains 
 
 The installer can only be compiled in `Release` mode; step 1 must be performed before the MSI can be compiled.
 
-1. Compile `PowerToys.slnx`. Instructions are listed above. This also builds the `BugReportTool` and `StylesReportTool` tools that the installer packages.
+1. Compile `PowerToys.slnx`.
 1. Compile `PowerToysSetup.slnx` Path from root: `installer\PowerToysSetup.slnx` (details listed below)
 
 See [Installer](core/installer.md) for more details on building and debugging the installer.
