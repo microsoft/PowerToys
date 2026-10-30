@@ -6,7 +6,6 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
@@ -277,8 +276,8 @@ public class FallbackV2Tests
         {
         }
 
-        protected override async Task<IFallbackCommandResult> QueryAsync(
-            IFallbackQueryArgs args,
+        protected async override Task<IFallbackCommandResult> QueryAsync(
+            FallbackQueryArgs args,
             CancellationToken cancellationToken,
             IProgress<IFallbackCommandResult> progress)
         {
