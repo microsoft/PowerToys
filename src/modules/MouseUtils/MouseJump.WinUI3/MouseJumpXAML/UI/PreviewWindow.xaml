@@ -19,10 +19,16 @@
         alpha transparency from DWM, so this is what actually makes the corners outside the
         rounded border disappear against the real desktop, rather than BorderImage's own
         transparent corners alone.
+
+        RootGrid has a Transparent (rather than null) Background so it's hit-testable - BorderImage
+        isn't, and PreviewPane doesn't cover the border ring around it, so without this a
+        right-click on the border wouldn't reach anything (see RootGrid_PointerPressed).
     -->
     <Grid
+        x:Name="RootGrid"
         HorizontalAlignment="Stretch"
-        VerticalAlignment="Stretch">
+        VerticalAlignment="Stretch"
+        Background="Transparent">
         <Image
             x:Name="BorderImage"
             HorizontalAlignment="Left"

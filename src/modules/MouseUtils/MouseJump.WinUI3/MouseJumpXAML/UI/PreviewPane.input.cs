@@ -25,6 +25,9 @@ internal sealed partial class PreviewPane
         var pointerPoint = e.GetCurrentPoint(this);
         if (pointerPoint.Properties.IsRightButtonPressed)
         {
+            // mark it handled so it doesn't also bubble up to the host window's own
+            // right-click handling (see PreviewWindow.RootGrid_PointerPressed)
+            e.Handled = true;
             this.Cancel?.Invoke(this, EventArgs.Empty);
             return;
         }

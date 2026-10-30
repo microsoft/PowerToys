@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
 
 using MouseJump.Common.Helpers;
 
@@ -22,6 +24,7 @@ internal sealed partial class PreviewWindow
         this.Activated += this.PreviewWindow_Activated;
         this.PreviewPane.NavigateTo += this.PreviewPane_NavigateTo;
         this.PreviewPane.Cancel += this.PreviewPane_Cancel;
+        this.RootGrid.PointerPressed += this.RootGrid_PointerPressed;
     }
 
     private void PreviewWindow_Activated(object sender, WindowActivatedEventArgs e)
@@ -61,5 +64,26 @@ internal sealed partial class PreviewWindow
     private void PreviewPane_Cancel(object? sender, EventArgs e)
     {
         this.DismissWindow();
+    }
+
+    /// <summary>
+    /// Dismisses the window on a right-click anywhere outside <see cref="PreviewPane"/> - i.e. on
+    /// the border ring around it, which <see cref="PreviewPane"/> doesn't cover. Right-clicks
+    /// inside the pane are handled (and marked as handled) by the pane itself, so they never
+    /// bubble up to here.
+    /// </summary>
+    private void RootGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        if (!e.Pointer.PointerDeviceType.Equals(PointerDeviceType.Mouse))
+        {
+            // not a mouse click
+            return;
+        }
+
+        if (e.GetCurrentPoint(this.RootGrid).Properties.IsRightButtonPressed)
+        {
+            e.Handled = true;
+            this.DismissWindow();
+        }
     }
 }
