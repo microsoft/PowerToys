@@ -12,6 +12,7 @@ namespace Microsoft.CmdPal.UITests;
 public class CommandPaletteTestBase : UITestBase
 {
     private Session? commandPaletteSession;
+    private CmdPalDiagnosticTrace? diagnosticTrace;
 
     public CommandPaletteTestBase()
         : base(PowerToysModule.CommandPalette)
@@ -27,13 +28,19 @@ public class CommandPaletteTestBase : UITestBase
             PowerToysModule.CommandPalette,
             timeoutMS: 10_000);
 
+    protected IDisposable BeginNavigationDiagnostics() =>
+        diagnosticTrace = new CmdPalDiagnosticTrace(TestContext, Session);
+
     protected void SetSearchBox(string text)
     {
         EnsureCommandPaletteForeground();
         Step($"Setting Command Palette search to '{text}'");
         var searchBox = CommandPaletteSession.Find<TextBox>(By.AccessibilityId("MainSearchBox"), timeoutMS: 45_000);
+        diagnosticTrace?.Record("MainSearchBox-found", new { Query = text, CommandPaletteSession.TargetFlag, CommandPaletteSession.TargetValue });
         searchBox.SetText(text);
+        diagnosticTrace?.Record("MainSearchBox-value-set", new { Query = text });
         Assert.IsTrue(searchBox.WaitForValue(text, timeoutMS: 10_000), $"The search box did not update to '{text}'.");
+        diagnosticTrace?.Record("MainSearchBox-value-confirmed", new { Query = text });
     }
 
     /// <summary>
@@ -118,6 +125,7 @@ public class CommandPaletteTestBase : UITestBase
             try
             {
                 target.DoubleClick();
+                diagnosticTrace?.Record("double-click-sent", new { Result = resultName });
                 return;
             }
             catch (AssertFailedException ex) when (
@@ -208,7 +216,9 @@ public class CommandPaletteTestBase : UITestBase
         SetSearchBox(query);
         Step($"Opening the '{title}' extension");
         InvokeResultWithEnter(title);
+        Step($"Waiting for the '{title}' destination page's Back control");
         Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 45_000));
+        diagnosticTrace?.Record("destination-Back-found", new { Extension = title });
     }
 
     protected void InvokeResultWithEnter(string title)
@@ -216,7 +226,9 @@ public class CommandPaletteTestBase : UITestBase
         Step($"Invoking '{title}' with Enter");
         SelectResult(title);
         EnsureCommandPaletteForeground();
+        diagnosticTrace?.Record("Enter-sending", new { Result = title });
         KeyboardHelper.SendChord(Key.Enter);
+        diagnosticTrace?.Record("Enter-sent", new { Result = title });
     }
 
     protected void AssertWindowsSettingsOpened()
@@ -269,6 +281,9 @@ public class CommandPaletteTestBase : UITestBase
         CommandPaletteSession.Find<Button>(By.AccessibilityId("MoreContextMenuButton")).Click();
     }
 
-    protected void Step(string message) =>
+    protected void Step(string message)
+    {
+        diagnosticTrace?.Record(message);
         TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
+    }
 }

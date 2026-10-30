@@ -113,6 +113,7 @@ public class CommandWorkflowTests : CommandPaletteTestBase
     [TestCategory("CmdPal")]
     public void InstalledAppsLaunchesPackagedSettings()
     {
+        using var diagnostics = BeginNavigationDiagnostics();
         OpenExtension("Search apps", "Search apps");
         SetSearchBox("Settings");
         try

@@ -52,14 +52,17 @@ public class BasicTests : CommandPaletteTestBase
     [TestCategory("CmdPal")]
     public void BasicTimeAndDateTest()
     {
+        using var diagnostics = BeginNavigationDiagnostics();
         SetSearchBox("time and date");
 
         var timeAndDateItem = CommandPaletteSession.Find<NavigationViewItem>("Time and date");
         Assert.AreEqual("Time and date", timeAndDateItem.Name);
-        Step("Opening the Time and date extension");
-        DoubleClickResult(timeAndDateItem);
+        InvokeResultWithEnter(timeAndDateItem.Name);
+        Step("Waiting for the Time and date destination page's Back control");
+        Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 45_000));
 
         SetTimeAndDateExtensionSearchBox("year");
+        Step($"Waiting for the Time/Date result for year {DateTime.Now.Year}");
         Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>(
             DateTime.Now.Year.ToString(CultureInfo.InvariantCulture)));
     }
