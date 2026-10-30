@@ -1,0 +1,141 @@
+parameters:
+  - name: umdfHidArm64Image
+    type: string
+    default: ''
+  - name: buildPlatforms
+    type: object
+  - name: uiTestModules
+    type: object
+
+stages:
+  - stage: Build_HidSmoke
+    displayName: Build isolated UMDF HID smoke
+    dependsOn: []
+    jobs:
+      - job: BuildHidSmoke
+        timeoutInMinutes: 45
+        pool:
+          ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+            name: SHINE-INT-L
+          ${{ else }}:
+            name: SHINE-OSS-L
+          demands: ImageOverride -equals SHINE-VS18-Latest
+        steps:
+          - checkout: self
+            clean: true
+            submodules: false
+            fetchDepth: 1
+            fetchTags: false
+          - template: steps-ensure-dotnet-version.yml
+            parameters:
+              sdk: true
+              version: '10.0'
+          - pwsh: |
+              if ($env:SELECTED_MODULES -ne 'GrabAndMove.HidSmoke.Probe') {
+                throw 'The smoke path requires exactly [GrabAndMove.HidSmoke.Probe].'
+              }
+              if ('arm64' -in ($env:BUILD_PLATFORMS -split ';') -and [string]::IsNullOrWhiteSpace($env:UMDF_HID_ARM64_IMAGE)) {
+                throw 'BLOCKED_INFRASTRUCTURE: configure the dedicated ARM64 UMDF image before requesting ARM64 smoke tests.'
+              }
+              & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Build-Smoke.ps1" `
+                -WorkRoot "$(Agent.TempDirectory)\pt-hid-smoke" `
+                -OutputRoot "$(Build.ArtifactStagingDirectory)\umdf-hid-smoke" `
+                -Platforms ($env:BUILD_PLATFORMS -split ';')
+            displayName: Build only the pinned UMDF driver and transport probe
+            env:
+              SELECTED_MODULES: ${{ join(';', parameters.uiTestModules) }}
+              BUILD_PLATFORMS: ${{ join(';', parameters.buildPlatforms) }}
+              UMDF_HID_ARM64_IMAGE: ${{ parameters.umdfHidArm64Image }}
+          - publish: $(Build.ArtifactStagingDirectory)\umdf-hid-smoke
+            artifact: umdf-hid-smoke
+            displayName: Publish driver and probe
+          - publish: $(Build.SourcesDirectory)\artifacts\logs
+            artifact: umdf-hid-smoke-build-logs
+            condition: always()
+
+  - ${{ each platform in parameters.buildPlatforms }}:
+    - stage: Test_HidSmoke_${{ platform }}
+      displayName: Test UMDF HID ${{ platform }} (Windows 11)
+      dependsOn: Build_HidSmoke
+      jobs:
+        - job: TestHidSmoke
+          timeoutInMinutes: 20
+          cancelTimeoutInMinutes: 5
+          pool:
+            ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+              ${{ if eq(platform, 'x64') }}:
+                name: SHINE-INT-Testing-x64
+                demands: ImageOverride -equals SHINE-W11-Testing
+              ${{ else }}:
+                name: SHINE-INT-Testing-arm64
+                demands: ImageOverride -equals ${{ parameters.umdfHidArm64Image }}
+            ${{ else }}:
+              ${{ if eq(platform, 'x64') }}:
+                name: SHINE-OSS-Testing-x64
+                demands: ImageOverride -equals SHINE-W11-Testing
+              ${{ else }}:
+                name: SHINE-OSS-Testing-arm64
+                demands: ImageOverride -equals ${{ parameters.umdfHidArm64Image }}
+          variables:
+            HidResults: $(Agent.TempDirectory)\umdf-hid-smoke-results-$(Build.BuildId)-$(System.JobAttempt)
+            HidState: $(Agent.WorkFolder)\PowerToysUiTestState\UmdfHidSmoke.json
+          steps:
+            - checkout: self
+              clean: true
+              submodules: false
+              fetchDepth: 1
+              fetchTags: false
+            - download: current
+              artifact: umdf-hid-smoke
+            - template: steps-ensure-dotnet-version.yml
+              parameters:
+                sdk: false
+                version: '10.0'
+            - pwsh: |
+                if ('${{ platform }}' -eq 'arm64') {
+                  . "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\UmdfHidCi.Common.ps1"
+                  $bootConfiguration = & bcdedit.exe /enum '{current}'
+                  if ($LASTEXITCODE) { throw 'Cannot read the dedicated ARM64 image boot configuration.' }
+                  Assert-UmdfHidArm64TestEnvironment `
+                    -OsArchitecture ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()) `
+                    -BootConfiguration ($bootConfiguration -join "`n")
+                }
+                & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Manage-SmokeDriver.ps1" `
+                  -Action Cleanup -StatePath "$(HidState)" -ResultsDirectory "$(HidResults)"
+                & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Manage-SmokeDriver.ps1" `
+                  -Action Install -ArtifactDirectory "$(Pipeline.Workspace)\umdf-hid-smoke\${{ platform }}" `
+                  -StatePath "$(HidState)" -ResultsDirectory "$(HidResults)"
+              displayName: Verify UMDF driver load without changing image policy
+            - pwsh: |
+                & "$(Build.SourcesDirectory)\.pipelines\runUiTestAsUser.ps1" `
+                  -TestExecutable "$(Pipeline.Workspace)\umdf-hid-smoke\${{ platform }}\tests\GrabAndMove.HidSmoke.Probe.exe" `
+                  -ResultsDirectory "$(HidResults)" -TimeoutMinutes 8
+                if ($LASTEXITCODE) { throw "Non-elevated HID smoke failed: $LASTEXITCODE" }
+                $files = @(Get-ChildItem "$(HidResults)" -Recurse -Filter '*.trx')
+                if ($files.Count -ne 1) { throw 'Expected one smoke TRX.' }
+                [xml]$trx = Get-Content $files[0].FullName -Raw
+                $counts = $trx.TestRun.ResultSummary.Counters
+                if ([int]$counts.total -ne 1 -or [int]$counts.executed -ne 1 -or [int]$counts.passed -ne 1) {
+                  throw 'The real HID probe did not execute and pass.'
+                }
+              displayName: Verify real HID flags as a non-elevated desktop user
+              env:
+                platform: ${{ platform }}
+                TF_BUILD: 'true'
+            - pwsh: |
+                & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Manage-SmokeDriver.ps1" `
+                  -Action Cleanup -StatePath "$(HidState)" -ResultsDirectory "$(HidResults)"
+              displayName: Remove only the test driver and test trust
+              condition: always()
+            - task: PublishTestResults@2
+              displayName: Publish HID smoke result
+              condition: always()
+              inputs:
+                testResultsFormat: VSTest
+                testResultsFiles: '$(HidResults)\**\*.trx'
+                failTaskOnFailedTests: true
+                failTaskOnMissingResultsFile: true
+                testRunTitle: UMDF HID ${{ platform }}
+            - publish: $(HidResults)
+              artifact: umdf-hid-smoke-${{ platform }}-evidence
+              condition: always()

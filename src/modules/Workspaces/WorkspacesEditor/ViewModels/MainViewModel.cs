@@ -53,7 +53,7 @@ namespace WorkspacesEditor.ViewModels
                 OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsWorkspacesViewEmpty)));
                 if (IsWorkspacesViewEmpty)
                 {
-                    if (Workspaces != null && Workspaces.Any())
+                    if (Workspaces != null && Workspaces.Count > 0)
                     {
                         EmptyWorkspacesViewMessage = Properties.Resources.NoWorkspacesMatch;
                     }

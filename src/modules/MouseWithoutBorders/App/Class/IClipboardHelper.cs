@@ -11,9 +11,11 @@ using System.IO;
 using System.IO.Pipes;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Threading;
 using System.Windows.Forms;
 
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.VisualStudio.Threading;
 using MouseWithoutBorders.Core;
 using Newtonsoft.Json;
@@ -164,43 +166,65 @@ namespace MouseWithoutBorders
 
     internal sealed class IpcHelper
     {
-        private const string ChannelName = "MouseWithoutBorders";
-        private const string RemoteObjectName = "ClipboardHelper";
-
 #if !MM_HELPER
+        private static readonly object IpcServerLock = new();
+        private static CancellationTokenSource _serverTaskCancellationSource;
+
         private static void CleanupStream()
         {
-            if (_serverTaskCancellationSource != null)
+            lock (IpcServerLock)
             {
-                _serverTaskCancellationSource.Cancel();
-                _serverTaskCancellationSource.Dispose();
-                _serverTaskCancellationSource = null;
+                if (_serverTaskCancellationSource != null)
+                {
+                    _serverTaskCancellationSource.Cancel();
+                    _serverTaskCancellationSource.Dispose();
+                    _serverTaskCancellationSource = null;
+                }
+
+                IpcChannelHelper.IpcChannelCreated = false;
             }
         }
 
-        private static CancellationTokenSource _serverTaskCancellationSource;
-
-        internal static void CreateIpcServer(bool cleanup)
+        internal static void EnsureIpcServer()
         {
-            try
+            lock (IpcServerLock)
             {
-                if (cleanup)
+                if (_serverTaskCancellationSource != null)
                 {
-                    CleanupStream();
                     return;
                 }
 
-                _serverTaskCancellationSource = new CancellationTokenSource();
-                CancellationToken cancellationToken = _serverTaskCancellationSource.Token;
+                try
+                {
+                    using var identity = WindowsIdentity.GetCurrent();
+                    var processUser = identity.User ?? throw new InvalidOperationException("The clipboard server has no user SID.");
+                    using var process = Process.GetCurrentProcess();
+                    int sessionId = process.SessionId;
+                    var user = processUser.IsWellKnown(WellKnownSidType.LocalSystemSid)
+                        ? Program.GetInteractiveSessionUserSid(sessionId)
+                        : processUser;
+                    if (processUser.IsWellKnown(WellKnownSidType.LocalSystemSid))
+                    {
+                        MouseWithoutBordersIpc.GrantCurrentProcessQueryAccess(user);
+                    }
 
-                IpcChannel<ClipboardHelper>.StartIpcServer(ChannelName + "/" + RemoteObjectName, cancellationToken);
-                IpcChannelHelper.IpcChannelCreated = true;
-            }
-            catch (Exception e)
-            {
-                IpcChannelHelper.IpcChannelCreated = false;
-                Common.ShowToolTip("Error setting up clipboard sharing, clipboard sharing will not work!", 5000, ToolTipIcon.Error);
-                Logger.Log(e);
+                    _serverTaskCancellationSource = new CancellationTokenSource();
+                    CancellationToken cancellationToken = _serverTaskCancellationSource.Token;
+
+                    IpcChannel<ClipboardHelper>.StartVerifiedIpcServer(
+                        ClipboardHelperIpc.GetPipeName(sessionId),
+                        user,
+                        stream => ClipboardHelperIpc.VerifyClient(stream, user, sessionId),
+                        cancellationToken);
+                    IpcChannelHelper.IpcChannelCreated = true;
+                    Application.ApplicationExit += (_, _) => CleanupStream();
+                }
+                catch (Exception e)
+                {
+                    CleanupStream();
+                    Common.ShowToolTip("Error setting up clipboard sharing, clipboard sharing will not work!", 5000, ToolTipIcon.Error);
+                    Logger.Log(e);
+                }
             }
         }
 #else
@@ -208,11 +232,17 @@ namespace MouseWithoutBorders
         {
             try
             {
-                var stream = new NamedPipeClientStream(".", ChannelName + "/" + RemoteObjectName, PipeDirection.InOut, PipeOptions.Asynchronous);
-
-                stream.Connect();
-
-                return JsonRpc.Attach<IClipboardHelper>(stream);
+                using var process = Process.GetCurrentProcess();
+                var stream = ClipboardHelperIpc.Connect(ClipboardHelperIpc.GetPipeName(process.SessionId));
+                try
+                {
+                    return JsonRpc.Attach<IClipboardHelper>(stream);
+                }
+                catch
+                {
+                    stream.Dispose();
+                    throw;
+                }
             }
             catch (Exception e)
             {
