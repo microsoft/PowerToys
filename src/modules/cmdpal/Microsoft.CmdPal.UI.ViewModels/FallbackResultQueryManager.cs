@@ -5,6 +5,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices.WindowsRuntime;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -164,7 +165,7 @@ internal sealed partial class FallbackResultQueryManager : IDisposable
             querySlotAcquired = true;
 
             var handler = source.FallbackQueryHandler;
-            if (handler is null)
+            if (!handler.HasValue)
             {
                 return;
             }
@@ -234,10 +235,20 @@ internal sealed partial class FallbackResultQueryManager : IDisposable
     }
 
     private static Task<IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult>> InvokeQueryAsync(
-        IFallbackHandler2 handler,
+        IExtensionObject<IFallbackHandler2> handler,
         IFallbackQueryArgs args,
         CancellationToken cancellationToken)
-        => StartCancelableAsync(() => handler.QueryAsync(args), cancellationToken);
+        => StartCancelableAsync(
+            () =>
+            {
+                if (!handler.HasValue)
+                {
+                    throw new InvalidOperationException("The fallback query handler is not available.");
+                }
+
+                return handler.Unsafe.QueryAsync(args);
+            },
+            cancellationToken);
 
     private static Task<IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult>> InvokeLoadMoreAsync(
         IFallbackCommandResult result,

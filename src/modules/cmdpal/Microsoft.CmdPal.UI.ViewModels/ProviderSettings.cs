@@ -102,7 +102,7 @@ public record ProviderSettings
                 {
                     var enableGlobalResults = (wrapper.Extension is null)
                         && !_excludedBuiltInFallbacks.Contains(fallback.Id);
-                    uint? maximumVisibleItemCount = fallback.FallbackQueryHandler is not null
+                    uint? maximumVisibleItemCount = fallback.HasFallbackQueryHandler
                         ? FallbackResultQueryManager.InitialRequestedItemCount
                         : null;
                     builder[fallback.Id] = new FallbackSettings(

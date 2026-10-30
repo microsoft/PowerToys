@@ -88,7 +88,7 @@ public partial class FallbackSettingsViewModel : ObservableObject
 
         Id = fallback.Id;
         RankId = fallback.FallbackKey;
-        HasQuerySettings = fallback.FallbackQueryHandler is not null;
+        HasQuerySettings = fallback.HasFallbackQueryHandler;
         HasResultSettings = HasQuerySettings;
         DisplayName = string.IsNullOrWhiteSpace(fallback.DisplayTitle)
             ? (string.IsNullOrWhiteSpace(fallback.Title) ? providerSettings.DisplayName : fallback.Title)

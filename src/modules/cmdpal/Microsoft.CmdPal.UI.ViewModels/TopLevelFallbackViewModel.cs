@@ -44,7 +44,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
 
     internal override bool IsFallbackV2 => _isV2;
 
-    internal override IFallbackHandler2? FallbackQueryHandler => IsCleanedUp ? null : _queryHandler.Unsafe;
+    internal override IExtensionObject<IFallbackHandler2> FallbackQueryHandler => IsCleanedUp ? base.FallbackQueryHandler : _queryHandler;
 
     public override string Title => _title ?? base.Title;
 

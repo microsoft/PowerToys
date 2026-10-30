@@ -731,7 +731,7 @@ public sealed partial class MainListPage : DynamicListPage,
                     }
                     else
                     {
-                        if (s.IsEnabled && s.FallbackQueryHandler is not null)
+                        if (s.IsEnabled && s.HasFallbackQueryHandler)
                         {
                             resultFallbacks.Add(s);
                         }

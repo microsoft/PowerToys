@@ -27,7 +27,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Models;
 /// the object reaches us through a different apartment).
 /// </para>
 /// </remarks>
-public sealed class ExtensionObject<T>(T? value) : IEquatable<ExtensionObject<T>>
+public sealed class ExtensionObject<T>(T? value) : IExtensionObject<T>, IEquatable<ExtensionObject<T>>
     where T : class
 {
     /// <summary>
