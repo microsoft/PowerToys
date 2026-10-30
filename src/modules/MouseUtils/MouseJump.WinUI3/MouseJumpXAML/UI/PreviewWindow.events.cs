@@ -29,6 +29,7 @@ internal sealed partial class PreviewWindow
         switch (e.WindowActivationState)
         {
             case WindowActivationState.CodeActivated:
+            case WindowActivationState.PointerActivated:
                 this.FocusPreviewPane();
                 break;
             case WindowActivationState.Deactivated:
