@@ -80,6 +80,10 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         var providerContext = page.ProviderContext;
         var model = commandItem.Model.Unsafe;
         var sourceModel = model is RecentCommandListItem recentItem ? recentItem.Source.Safe : model;
+        if (sourceModel is AppSearchResultListItem searchResult)
+        {
+            sourceModel = searchResult.Source;
+        }
 
         // AppListItems can be surfaced on the main page even though they still
         // belong to the All Apps provider.

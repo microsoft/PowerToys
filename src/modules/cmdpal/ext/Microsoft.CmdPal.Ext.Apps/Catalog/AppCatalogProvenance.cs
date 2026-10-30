@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog;
@@ -18,7 +19,8 @@ namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 /// </remarks>
 internal sealed class AppCatalogProvenance
 {
-    /// <summary>Gets the representation preference; lower values are preferred.</summary>
+    /// <summary>Gets the effective representation priority; lower values win before shortcut preferences are compared.</summary>
+    /// <remarks>Selects the payload of equivalent apps independently of scan scheduling and search scores.</remarks>
     public int Priority { get; }
 
     /// <summary>Gets the source reference associated with the selected payload.</summary>
@@ -83,6 +85,32 @@ internal sealed class AppCatalogProvenance
             return 0;
         }
 
+        if (PreferredSource.ShortcutPreference is { } shortcut)
+        {
+            if (other.PreferredSource.ShortcutPreference is not { } otherShortcut)
+            {
+                return -1;
+            }
+
+            comparison = shortcut.CompareTo(otherShortcut);
+            if (comparison != 0)
+            {
+                return comparison;
+            }
+
+            comparison = Path.GetFileName(PreferredSource.ItemId.AsSpan())
+                .CompareTo(Path.GetFileName(other.PreferredSource.ItemId.AsSpan()), StringComparison.OrdinalIgnoreCase);
+            if (comparison != 0)
+            {
+                return comparison;
+            }
+        }
+        else if (other.PreferredSource.ShortcutPreference.HasValue)
+        {
+            // Order known and older cached preferences consistently so partial publications remain associative.
+            return 1;
+        }
+
         return PreferredSource.CompareTo(other.PreferredSource);
     }
 
@@ -100,7 +128,7 @@ internal sealed class AppCatalogProvenance
 
         for (var index = 0; index < References.Length; index++)
         {
-            if (!References[index].Equals(other.References[index]))
+            if (!References[index].HasSameContent(other.References[index]))
             {
                 return false;
             }

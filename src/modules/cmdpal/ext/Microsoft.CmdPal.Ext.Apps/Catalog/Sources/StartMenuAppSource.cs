@@ -13,6 +13,7 @@ internal sealed class StartMenuAppSource : DirectoryWin32ProgramSource
 
     public override string Id => "start-menu";
 
+    /// <summary>Gets the source priority that follows Desktop at equal shortcut ownership and depth.</summary>
     public override int Priority => 10;
 
     public override bool IsEnabled => _settings.EnableStartMenuSource;
@@ -44,5 +45,11 @@ internal sealed class StartMenuAppSource : DirectoryWin32ProgramSource
         : base(startMenuDirectories, settings.ProgramSuffixes, startupDirectories)
     {
         _settings = settings;
+    }
+
+    /// <inheritdoc />
+    public override AppShortcutPreference? GetShortcutPreference(string path)
+    {
+        return GetStandardShortcutPreference(path, isStartMenu: true);
     }
 }

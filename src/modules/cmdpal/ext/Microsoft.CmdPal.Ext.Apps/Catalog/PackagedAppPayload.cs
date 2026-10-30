@@ -195,7 +195,7 @@ internal sealed record PackagedAppPayload : IAppCatalogPayload
         {
             RequestedShortcut = KeyChords.OpenFileLocation,
         });
-        commands.Add(new CommandContextItem(new OpenInConsoleCommand(PackageLocation))
+        commands.Add(new CommandContextItem(OpenInConsoleCommand.FromDirectory(PackageLocation))
         {
             RequestedShortcut = KeyChords.OpenInConsole,
         });

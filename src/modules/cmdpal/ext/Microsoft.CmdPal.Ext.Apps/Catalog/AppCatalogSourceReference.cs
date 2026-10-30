@@ -18,15 +18,29 @@ internal sealed class AppCatalogSourceReference : IEquatable<AppCatalogSourceRef
     /// <summary>Gets the source-local identity, usually a normalized discovery path.</summary>
     public string ItemId { get; }
 
+    /// <summary>Gets the shortcut display name, or null for other source representations.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ShortcutName { get; }
+
+    /// <summary>Gets standard shortcut ownership, root-relative depth and source priority, or null for other representations.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AppShortcutPreference? ShortcutPreference { get; }
+
     /// <summary>Initializes a new instance of the <see cref="AppCatalogSourceReference"/> class. Initializes a source-local application reference.</summary>
+    /// <param name="sourceId">The stable source or sub-source identity.</param>
+    /// <param name="itemId">The source-local identity or discovery path.</param>
+    /// <param name="shortcutName">The display name retained for a shortcut representation, or null for other entries.</param>
+    /// <param name="shortcutPreference">The source-provided ownership, depth and priority captured for a Desktop or Start Menu shortcut.</param>
     [JsonConstructor]
-    public AppCatalogSourceReference(string sourceId, string itemId)
+    public AppCatalogSourceReference(string sourceId, string itemId, string? shortcutName = null, AppShortcutPreference? shortcutPreference = null)
     {
         ArgumentNullException.ThrowIfNull(sourceId);
         ArgumentNullException.ThrowIfNull(itemId);
 
         SourceId = sourceId;
         ItemId = itemId;
+        ShortcutName = shortcutName;
+        ShortcutPreference = shortcutPreference;
     }
 
     /// <inheritdoc />
@@ -49,6 +63,14 @@ internal sealed class AppCatalogSourceReference : IEquatable<AppCatalogSourceRef
         return HashCode.Combine(
             StringComparer.OrdinalIgnoreCase.GetHashCode(SourceId),
             StringComparer.OrdinalIgnoreCase.GetHashCode(ItemId));
+    }
+
+    /// <summary>Compares retained presentation metadata as well as the source-local identity.</summary>
+    internal bool HasSameContent(AppCatalogSourceReference other)
+    {
+        return Equals(other)
+            && string.Equals(ShortcutName, other.ShortcutName, StringComparison.Ordinal)
+            && ShortcutPreference == other.ShortcutPreference;
     }
 
     /// <summary>

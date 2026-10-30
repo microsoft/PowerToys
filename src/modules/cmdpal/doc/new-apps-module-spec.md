@@ -167,9 +167,41 @@ Manifest reads share access with writers and release native references before co
 
 ### 2.1 Deduplication
 
+Priorities select the representation of a merged app; scan scheduling and search ranking are
+separate. Source priority and effective representation priority have different roles:
+
+| Value | Role |
+| --- | --- |
+| `IWin32ProgramSource.Priority` | Base preference for a discovery origin. Normally contributes to the effective representation priority. |
+| `AppCatalogProvenance.Priority` | Effective representation priority, compared first. Standard Desktop and Start Menu shortcuts share a fixed tier; other Win32 representations use the source priority plus any raw-executable offset. |
+| `AppShortcutPreference.SourcePriority` | Retained source priority, compared after ownership and depth within an equal representation tier. |
+
+These values are ordering keys, not score weights. The first unequal comparison decides the
+winner, so Desktop **9** versus Start Menu **10** is a decisive tie-break rather than a small
+search-score bonus.
+
 - Merge equivalent shortcut, executable, execution-alias and packaged representations when their
   launch behavior is equivalent.
 - Keep entries distinct when arguments or meaningful working directories differ.
+- Select the preferred payload by `AppCatalogProvenance.Priority` first; lower values win.
+- Desktop and Start Menu `.lnk` entries share representation priority **10**. Within that tier,
+  compare the following in order:
+  - Personal roots before shared/public roots.
+  - Fewer directories below Desktop or Start Menu\Programs, falling back to the Start Menu
+    root for entries outside Programs.
+  - Actual source priority: Desktop **9**, Start Menu **10**. This breaks ties only after
+    ownership and depth.
+  - Shortcut filenames case-insensitively, then full source references deterministically.
+- Capture `IsUser`, `DirectoryDepth` and `SourcePriority` in `AppShortcutPreference` during
+  discovery. `IWin32ProgramSource.GetShortcutPreference` supplies this optional metadata and
+  defaults to null. Winner selection uses retained metadata without filesystem reads, source-ID
+  checks or concrete source-type checks.
+- At equal representation priority, entries with shortcut preferences precede entries without
+  them. This ordering keeps partial and cached publications independent of merge order.
+- Other representations use their actual source priority. Desktop's priority **9** also applies
+  to its non-shortcut entries; raw executables without execution-alias metadata retain their
+  **1000** priority offset. Custom-folder and packaged representation tiers remain unchanged.
+- Winner changes retain the canonical identity, contributed references and command aliases.
 - Chromium PWA shortcuts, including Chrome and Brave, use the existing Win32 target and
   argument identity. Different browsers, app IDs, profiles and user-data directories remain distinct.
 - Merge equivalent hosted Edge PWA packages only when their publishers, host runtime,
@@ -185,6 +217,12 @@ Manifest reads share access with writers and release native references before co
 - Treat a Squirrel launcher's direct `app-<numeric version>` working directory as an installer
   default when its explicit Windows app ID matches the install-root and executable names.
   Preserve the original shortcut and working directory, plus previous identities as aliases.
+
+Ownership and depth take precedence so a personal Start Menu shortcut can beat a public or
+more deeply nested Desktop copy. Source priority prefers Desktop when both are equally close
+to the user. A root `Desktop\Visual Studio Code.lnk` therefore wins over
+`Desktop\Tools\Editors\VS Code.lnk` for the same app, regardless of their
+alphabetical path order. Retaining the other representations keeps their names searchable.
 
 A shortcut and an executable can describe the same app, but arguments or a meaningful working
 directory can select a different profile or launch context. Deduplicate by launch behavior.
@@ -395,6 +433,15 @@ complete, recognized launch metadata so unfamiliar formats cannot merge unrelate
   score**.
 - Queries containing a path separator or colon additionally search full paths.
 - Ordinary searches omit shared discovery-directory prefixes.
+- A strong retained shortcut-name match uses that shortcut's title, launch path and location
+  actions in All Apps and Home. When the names differ, its subtitle explains the relationship
+  with "Also listed as {preferred name}", followed by the description when descriptions are shown.
+  Browsing, pins and dock entries keep the preferred representation, and every search projection
+  keeps the canonical command ID for pinning and usage history.
+- Executable, description and explicit-path matches keep the preferred title. Shortcut names are
+  retained separately from generic metadata. Explicit `.exe` queries and exact matches to an app's
+  actual executable filename keep its preferred representation. Other dotted shortcut names, such
+  as `Outlook.com`, remain eligible for shortcut presentation.
 - Exact executable names from the actual launch/target paths can take priority over fuzzy
   matches when the launch has no arguments. Argument-bearing shortcuts remain searchable
   without that priority; retained metadata does not imply an executable match.
@@ -585,9 +632,9 @@ enlarging a small asset when a suitable larger asset exists.
 
 ## 8 Class diagram
 
-This diagram shows the main relationships in the current Apps implementation. Source profiles,
-payload implementations, provenance details, policy filters, event types and icon helpers are
-omitted for clarity. `1` means exactly one; `*` means zero or more.
+This diagram shows the main relationships in the current Apps implementation, including retained
+shortcut preferences. Source profiles, payload implementation details, policy filters, event
+types and icon helpers are omitted for clarity. `1` means exactly one; `*` means zero or more.
 
 ```mermaid
 classDiagram
@@ -599,9 +646,16 @@ classDiagram
         String CacheKey
     }
     class Win32AppSource
+    class IWin32ProgramSource {
+        <<interface>>
+        String Id
+        Int32 Priority
+        GetShortcutPreference(String path) AppShortcutPreference?
+    }
     class Win32AppReader
     class Win32AppMetadata
     class Win32AppPayload
+    Win32AppSource --> "1" IWin32ProgramSource : obtains candidates and preferences
     Win32AppSource ..> Win32AppReader : reads candidate files
     Win32AppReader ..> Win32AppMetadata : returns transient metadata
     Win32AppSource ..> Win32AppPayload : captures immutable launch data
@@ -655,6 +709,27 @@ classDiagram
         IAppCatalogPayload Payload
         ToAppItem() AppItem
     }
+    class AppCatalogProvenance {
+        Int32 Priority
+        AppCatalogSourceReference PreferredSource
+        AppCatalogSourceReference[] References
+    }
+    class AppCatalogSourceReference {
+        String SourceId
+        String ItemId
+        String? ShortcutName
+        AppShortcutPreference? ShortcutPreference
+    }
+    class AppShortcutPreference {
+        <<struct>>
+        Boolean IsUser
+        Int32 DirectoryDepth
+        Int32 SourcePriority
+    }
+    AppCatalogItem --> "1" AppCatalogProvenance : retains representation preference
+    AppCatalogProvenance o-- "1..*" AppCatalogSourceReference : retains all representations
+    AppCatalogSourceReference *-- "0..1" AppShortcutPreference : retains optional tie-breaks
+    IWin32ProgramSource ..> AppShortcutPreference : supplies during discovery
     class AppCatalogSnapshot {
         AppItem[] Items
         AppItem[] HiddenItems
