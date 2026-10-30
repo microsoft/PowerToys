@@ -3,7 +3,7 @@
 # properties a screen reader actually announces (Name, HelpText, HeadingLevel, ItemStatus) and flags
 # the defects that an AutomationId alone cannot catch:
 #   A11Y-NAME-MISSING   interactive/focusable control with an empty Name
-#   A11Y-NAME-TYPENAME  Name is a CLR type name or record ToString() ("Ns.Type", "Rec { X = 1 }")
+#   A11Y-NAME-TYPENAME  Name is a CLR type name or record ToString() ("Ns.Type", "Rec { X = 1 }", "FooViewModel")
 #   A11Y-NAME-IS-ID     Name equals a code-style AutomationId (likely fallback, not real text)
 #   A11Y-NO-HEADINGS    window has no element with a HeadingLevel (no heading navigation)
 #
@@ -73,7 +73,8 @@ $script:PtA11yInteractiveTypes = @(
 
 function Test-PtA11yTypeName {
     param([string]$Name)
-    return ($Name -cmatch '^[A-Za-z_]\w*(\.[A-Z_]\w*){2,}$') -or ($Name -cmatch '^\w+ \{ \w+ = ')
+    $Name = "$Name".Trim()
+    return ($Name -cmatch '^[A-Za-z_]\w*(\.[A-Z_]\w*){2,}$') -or ($Name -cmatch '^\w+ \{ \w+ = ') -or ($Name -cmatch '^[A-Z]\w*ViewModel$')
 }
 
 function Get-PtA11yAudit {
@@ -86,10 +87,13 @@ function Get-PtA11yAudit {
         [Parameter(Mandatory)] [string]$ProcessName,
         [string]$WindowName,
         [string]$OutFile,
-        [int]$MaxElements = 3000
+        [int]$MaxElements = 3000,
+        # Restrict to one process when several share the name (e.g. a dev and a release build).
+        [int]$ProcessId
     )
 
     $procIds = @(Get-Process -Name $ProcessName -ErrorAction Stop | ForEach-Object Id)
+    if ($ProcessId) { $procIds = @($procIds | Where-Object { $_ -eq $ProcessId }) }
     $root = [System.Windows.Automation.AutomationElement]::RootElement
     $windows = $root.FindAll([System.Windows.Automation.TreeScope]::Children, [System.Windows.Automation.Condition]::TrueCondition) |
         Where-Object { $procIds -contains $_.Current.ProcessId -and (-not $WindowName -or $_.Current.Name -eq $WindowName) }
