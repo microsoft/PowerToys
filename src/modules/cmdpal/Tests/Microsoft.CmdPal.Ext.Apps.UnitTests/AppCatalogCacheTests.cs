@@ -10,6 +10,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
+using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
@@ -203,6 +204,16 @@ public class AppCatalogCacheTests
             Assert.IsNotNull(loaded);
             Assert.AreEqual(1, loaded.Sources.Count);
             Assert.AreEqual("Cached app", loaded.Sources[0].Items[0].ToAppItem().Name);
+            var savedPayload = JsonNode.Parse(File.ReadAllText(cachePath))!["Sources"]![0]!["Items"]![0]!["Payload"]!;
+            Assert.AreEqual(program.Name, savedPayload[nameof(Win32AppPayload.Name)]!.GetValue<string>());
+            Assert.AreEqual(program.DisplayName, savedPayload[nameof(Win32AppPayload.DisplayName)]!.GetValue<string>());
+            Assert.AreEqual(program.Description, savedPayload[nameof(Win32AppPayload.Description)]!.GetValue<string>());
+            Assert.AreEqual(program.IconLocation, savedPayload[nameof(Win32AppPayload.IconLocation)]!.GetValue<string>());
+            Assert.AreEqual(program.TargetPath, savedPayload[nameof(Win32AppPayload.TargetPath)]!.GetValue<string>());
+            Assert.AreEqual(program.Arguments, savedPayload[nameof(Win32AppPayload.Arguments)]!.GetValue<string>());
+            Assert.AreEqual(program.ParentDirectory, savedPayload[nameof(Win32AppPayload.ParentDirectory)]!.GetValue<string>());
+            Assert.IsNull(savedPayload["FullPath"]);
+            Assert.IsNull(savedPayload["IcoPath"]);
             Assert.IsTrue(item.HasSamePersistedContent(loaded.Sources[0].Items[0]));
             CollectionAssert.AreEqual(item.IdentityAliases.ToArray(), loaded.Sources[0].Items[0].IdentityAliases.ToArray());
             CollectionAssert.Contains(loaded.Sources[0].Items[0].IdentityAliases.ToArray(), "win32:cached");
@@ -221,7 +232,7 @@ public class AppCatalogCacheTests
             Assert.IsFalse(app.IsPackaged);
             Assert.AreEqual(new AppCommand(item.ToAppItem()).Id, new AppCommand(app).Id);
             CollectionAssert.AreEqual(item.ToAppItem().CommandIds.ToArray(), app.CommandIds.ToArray());
-            var row = new Programs.AppListItem(app, useThumbnails: false);
+            var row = new Programs.AppListItem(app);
             var snapshot = new AppListItemSnapshot([row], []);
             Assert.AreSame(row, snapshot.GetVisibleApp(legacyId));
             Assert.AreEqual(legacyId, snapshot.GetCommandItem(legacyId)?.Command?.Id);
@@ -272,7 +283,7 @@ public class AppCatalogCacheTests
             Assert.AreEqual(program.DisplayName, app.Name);
             Assert.AreEqual(program.LnkFilePath, app.LaunchTarget);
             Assert.AreEqual(canonicalId, new AppCommand(app).Id);
-            var row = new Programs.AppListItem(app, useThumbnails: false);
+            var row = new Programs.AppListItem(app);
             var snapshot = new AppListItemSnapshot([row], []);
             Assert.AreSame(row, snapshot.GetVisibleApp(canonicalId));
             Assert.AreSame(row, snapshot.GetVisibleApp(releasedId));
@@ -329,7 +340,7 @@ public class AppCatalogCacheTests
             var app = cachedItem.ToAppItem();
             Assert.AreEqual(program.Name, app.Name);
             Assert.AreEqual(canonicalId, new AppCommand(app).Id);
-            var row = new Programs.AppListItem(app, useThumbnails: false);
+            var row = new Programs.AppListItem(app);
             var snapshot = new AppListItemSnapshot([row], []);
             Assert.AreSame(row, snapshot.GetVisibleApp(releasedId));
         }
@@ -352,10 +363,15 @@ public class AppCatalogCacheTests
                 priority: 0,
                 new AppCatalogSourceReference("packaged", "Cached.Package!App"),
                 ["edit.exe"],
-                new PackagedAppSnapshot
+                new PackagedAppPayload
                 {
                     Name = "Cached package",
+                    Description = "Cached package description",
+                    AppUserModelId = "Cached.Package!App",
                     PackageFullName = "Cached.Package_1.0.0.0_x64__publisher",
+                    PackageLocation = @"C:\Packages\Cached",
+                    SmallLogoUri = @"Assets\Logo.png",
+                    LargeLogoUri = @"Assets\JumboLogo.png",
                     Executable = @"Tools\Editor.exe",
                 });
             var cache = new AppCatalogCache(cachePath);
@@ -369,9 +385,22 @@ public class AppCatalogCacheTests
 
             Assert.IsNotNull(loaded);
             var payload = loaded.Sources[0].Items[0].Payload;
-            Assert.IsInstanceOfType<PackagedAppSnapshot>(payload);
+            Assert.IsInstanceOfType<PackagedAppPayload>(payload);
             Assert.AreEqual("Cached package", payload.ToAppItem().Name);
-            Assert.AreEqual(@"Tools\Editor.exe", ((PackagedAppSnapshot)payload).Executable);
+            Assert.AreEqual("Cached package description", payload.ToAppItem().Subtitle);
+            Assert.AreEqual(@"C:\Packages\Cached", payload.ToAppItem().DirectoryPath);
+            Assert.IsTrue(PackagedAppIcons.TryParse(payload.ToAppItem().IconSource, out var listIcon));
+            Assert.IsTrue(PackagedAppIcons.TryParse(payload.ToAppItem().JumboIconSource!, out var heroIcon));
+            Assert.AreEqual("Cached.Package_1.0.0.0_x64__publisher", listIcon.PackageFullName);
+            Assert.AreEqual(@"Assets\Logo.png", listIcon.LogoUri);
+            Assert.AreEqual(string.Empty, listIcon.LargeLogoUri);
+            Assert.AreEqual(@"Assets\JumboLogo.png", heroIcon.LargeLogoUri);
+            var savedPayload = JsonNode.Parse(File.ReadAllText(cachePath))!["Sources"]![0]!["Items"]![0]!["Payload"]!;
+            Assert.AreEqual("Cached.Package!App", savedPayload[nameof(PackagedAppPayload.AppUserModelId)]!.GetValue<string>());
+            Assert.IsNull(savedPayload["UserModelId"]);
+            Assert.AreEqual(@"Assets\Logo.png", savedPayload[nameof(PackagedAppPayload.SmallLogoUri)]!.GetValue<string>());
+            Assert.IsNull(savedPayload["LogoPath"]);
+            Assert.AreEqual(@"Tools\Editor.exe", ((PackagedAppPayload)payload).Executable);
             CollectionAssert.Contains(loaded.Sources[0].Items[0].MatchTerms.ToArray(), "edit.exe");
             Assert.IsTrue(item.HasSamePersistedContent(loaded.Sources[0].Items[0]));
         }
@@ -395,7 +424,7 @@ public class AppCatalogCacheTests
                 0,
                 new AppCatalogSourceReference("packaged", "Cached.Package!App"),
                 [],
-                new PackagedAppSnapshot { Name = "Cached package" });
+                new PackagedAppPayload { Name = "Cached package" });
             var cache = new AppCatalogCache(cachePath);
             await cache.SaveAsync(
                 new Dictionary<string, IReadOnlyList<AppCatalogItem>> { ["packaged"] = [item] },
@@ -418,7 +447,7 @@ public class AppCatalogCacheTests
             var loaded = await cache.LoadAsync(context, CancellationToken.None);
 
             Assert.IsNotNull(loaded);
-            var cachedPayload = (PackagedAppSnapshot)loaded.Sources.Single().Items.Single().Payload;
+            var cachedPayload = (PackagedAppPayload)loaded.Sources.Single().Items.Single().Payload;
             Assert.AreEqual(string.Empty, cachedPayload.Executable);
             Assert.AreEqual(item.Payload.GetCommandId(), cachedPayload.GetCommandId());
             Assert.IsTrue(item.HasSamePersistedContent(loaded.Sources.Single().Items.Single()));
@@ -667,17 +696,13 @@ public class AppCatalogCacheTests
         string identity,
         Programs.Win32AppMetadata program,
         string sourceId)
-    {
-        return new(
+        => new(
             identity,
             priority: 0,
             new AppCatalogSourceReference(sourceId, program.TargetPath),
             [],
             Win32AppPayload.From(program));
-    }
 
     private static string TemporaryCachePath()
-    {
-        return Path.Combine(Path.GetTempPath(), $"cmdpal-app-catalog-{Guid.NewGuid():N}.json");
-    }
+        => Path.Combine(Path.GetTempPath(), $"cmdpal-app-catalog-{Guid.NewGuid():N}.json");
 }

@@ -24,38 +24,44 @@ internal sealed partial class PackagedAppSource : IAppSource
     public event EventHandler<AppSourceInvalidatedEventArgs>? Invalidated;
 
     private const string SourceId = "packaged";
+    private const int IndexingMaxDegreeOfParallelism = 2;
 
     private readonly IPackageCatalog _packageCatalog;
+    private readonly IPackageManager _packageManager;
     private readonly MEL.ILogger<PackagedAppSource> _logger;
     private Dictionary<string, FileStamp?>? _manifestStamps;
     private AppSourceScanResult? _lastScan;
-    private string? _lastCacheKey;
     private bool _disposed;
 
     public string Id => SourceId;
 
-    public string CacheKey => $"{Environment.OSVersion.Version}|{ThemeHelper.GetCurrentTheme()}";
+    /// <summary>Gets the compatibility key for theme-independent manifest metadata.</summary>
+    public string CacheKey => Environment.OSVersion.Version.ToString();
 
+    /// <summary>Initializes a new instance of the <see cref="PackagedAppSource"/> class. Creates current-user package discovery and subscribes to package deployment changes.</summary>
     public PackagedAppSource(
         IPackageCatalog packageCatalog,
-        MEL.ILogger<PackagedAppSource>? logger = null)
+        MEL.ILogger<PackagedAppSource>? logger = null,
+        IPackageManager? packageManager = null)
     {
-        _packageCatalog = packageCatalog ?? throw new ArgumentNullException(nameof(packageCatalog));
+        ArgumentNullException.ThrowIfNull(packageCatalog);
+
+        _packageCatalog = packageCatalog;
+        _packageManager = packageManager ?? new PackageManagerWrapper();
         _logger = logger ?? NullLogger<PackagedAppSource>.Instance;
         _packageCatalog.PackageInstalling += OnPackageInstalling;
         _packageCatalog.PackageUninstalling += OnPackageUninstalling;
         _packageCatalog.PackageUpdating += OnPackageUpdating;
     }
 
+    /// <inheritdoc />
     public Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken, bool background = false, IReadOnlyList<AppSourcePathChange>? dirtyPaths = null)
     {
         return AppSourceWork.Run<IReadOnlyList<AppCatalogItem>>(
             () =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var theme = ThemeHelper.GetCurrentTheme();
-                var cacheKey = $"{Environment.OSVersion.Version}|{theme}";
-                var packages = UWP.CurrentUserPackages(out var packagesComplete).ToArray();
+                var packages = GetCurrentUserPackages(out var packagesComplete).ToArray();
                 var stamps = new Dictionary<string, FileStamp?>(StringComparer.OrdinalIgnoreCase);
                 foreach (var package in packages)
                 {
@@ -65,7 +71,6 @@ internal sealed partial class PackagedAppSource : IAppSource
                 }
 
                 if (background && packagesComplete && _lastScan is not null
-                    && string.Equals(cacheKey, _lastCacheKey, StringComparison.Ordinal)
                     && _manifestStamps is not null && stamps.Count == _manifestStamps.Count
                     && stamps.All(pair => pair.Value is not null
                         && _manifestStamps.TryGetValue(pair.Key, out var previous) && pair.Value == previous))
@@ -79,7 +84,7 @@ internal sealed partial class PackagedAppSource : IAppSource
                 var coverageUnknown = 0;
                 var onlyMissingManifests = 1;
                 var checkedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                var applications = UWP.All(
+                var applications = ReadPackages(
                     packages,
                     out var manifestsComplete,
                     background,
@@ -111,17 +116,10 @@ internal sealed partial class PackagedAppSource : IAppSource
                 foreach (var app in applications)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    if (!app.Enabled)
-                    {
-                        checkedPaths.Add(app.UserModelId);
-                        continue;
-                    }
-
                     try
                     {
-                        app.UpdateLogoPath(theme);
                         items.Add(CreateCatalogItem(app));
-                        checkedPaths.Add(app.UserModelId);
+                        checkedPaths.Add(app.AppUserModelId);
                     }
                     catch (Exception ex)
                     {
@@ -163,7 +161,6 @@ internal sealed partial class PackagedAppSource : IAppSource
                     // Retain missing-manifest failures without treating their scan as validated cache data.
                     _manifestStamps = stamps;
                     _lastScan = result;
-                    _lastCacheKey = cacheKey;
                 }
 
                 return result;
@@ -172,24 +169,113 @@ internal sealed partial class PackagedAppSource : IAppSource
             cancellationToken);
     }
 
-    internal static AppCatalogItem CreateCatalogItem(IUWPApplication app)
+    /// <summary>Builds an AUMID-identified catalog item with logical logo references and searchable executable aliases.</summary>
+    internal static AppCatalogItem CreateCatalogItem(PackagedAppMetadata app)
     {
-        var snapshot = PackagedAppSnapshot.From(app);
+        var payload = PackagedAppPayload.From(app);
         return new AppCatalogItem(
-            AppIdentity.ForPackaged(snapshot.UserModelId),
+            AppIdentity.ForPackaged(payload.AppUserModelId),
             priority: 0,
-            new AppCatalogSourceReference(SourceId, snapshot.UserModelId),
-            CreateMatchTerms(snapshot, app.ExecutionAliases),
-            snapshot);
+            new AppCatalogSourceReference(SourceId, payload.AppUserModelId),
+            CreateMatchTerms(payload, app.ExecutionAliases),
+            payload);
     }
 
-    private static List<string> CreateMatchTerms(PackagedAppSnapshot app, IReadOnlyList<string> executionAliases)
+    private IEnumerable<IPackage> GetCurrentUserPackages(out bool isComplete)
+    {
+        isComplete = true;
+        List<IPackage> packages = [];
+        foreach (var package in _packageManager.FindPackagesForCurrentUser())
+        {
+            try
+            {
+                if (!package.IsFramework && !string.IsNullOrEmpty(package.InstalledLocation))
+                {
+                    packages.Add(package);
+                }
+            }
+            catch (Exception exception)
+            {
+                isComplete = false;
+                ManagedCommon.Logger.LogError(exception.Message);
+            }
+        }
+
+        return packages;
+    }
+
+    private static PackagedAppMetadata[] ReadPackages(
+        IEnumerable<IPackage> packages,
+        out bool isComplete,
+        bool background,
+        Action<IPackage, Exception> onError,
+        CancellationToken cancellationToken)
+    {
+        var items = new ConcurrentBag<PackagedAppMetadata>();
+        var incomplete = 0;
+
+        if (background)
+        {
+            foreach (var package in packages)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                ReadPackage(package);
+            }
+        }
+        else
+        {
+            Parallel.ForEach(
+                packages,
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = IndexingMaxDegreeOfParallelism,
+                    CancellationToken = cancellationToken,
+                },
+                ReadPackage);
+        }
+
+        isComplete = incomplete == 0;
+        return [.. items];
+
+        void ReadPackage(IPackage package)
+        {
+            try
+            {
+                var apps = PackagedAppReader.ReadManifest(
+                    new PackageMetadata(package),
+                    out var complete,
+                    exception => onError(package, exception),
+                    cancellationToken);
+                if (!complete)
+                {
+                    Interlocked.Exchange(ref incomplete, 1);
+                }
+
+                foreach (var app in apps)
+                {
+                    items.Add(app);
+                }
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                Interlocked.Exchange(ref incomplete, 1);
+                onError(package, exception);
+                ManagedCommon.Logger.LogError(exception.Message);
+            }
+        }
+    }
+
+    private static List<string> CreateMatchTerms(PackagedAppPayload app, IReadOnlyList<string> executionAliases)
     {
         List<string> terms = [];
         var uniqueTerms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         AddMatchTerm(terms, uniqueTerms, app.Name);
         AddMatchTerm(terms, uniqueTerms, app.Description);
-        AddMatchTerm(terms, uniqueTerms, app.UserModelId);
+        AddMatchTerm(terms, uniqueTerms, app.AppUserModelId);
         AddMatchTerm(terms, uniqueTerms, app.PackageFamilyName);
         AddMatchTerm(terms, uniqueTerms, app.PackageFullName);
         AddMatchTerm(terms, uniqueTerms, app.PackageLocation);
@@ -245,6 +331,7 @@ internal sealed partial class PackagedAppSource : IAppSource
     [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Failed to index packaged application '{AppName}'.")]
     private static partial void LogApplicationIndexingFailed(MEL.ILogger logger, string appName, Exception exception);
 
+    /// <inheritdoc />
     public void Dispose()
     {
         if (_disposed)

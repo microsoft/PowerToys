@@ -88,7 +88,7 @@ public sealed class MainListPageScoringTests
         var matcher = new PrecomputedFuzzyMatcher();
         var query = matcher.PrecomputeQuery("obsid");
         var now = new DateTimeOffset(2026, 10, 25, 0, 0, 0, TimeSpan.Zero);
-        var app = new AppListItem(new AppItem { Name = "Obsidian", Subtitle = "Obsidian" }, useThumbnails: false);
+        var app = new AppListItem(new AppItem { Name = "Obsidian", Subtitle = "Obsidian" });
         var command = CreateCommand("Obsidian Tasks", "View and manage your tasks", "Obsidian Task Notes");
         Assert.IsNotNull(app.Command);
         var history = new RecentCommandsManager().WithHistoryItem(app.Command.Id, now);

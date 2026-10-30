@@ -24,14 +24,14 @@ public class QueryTests : CommandPaletteUnitTestBase
         var settings = new AllAppsSettings(_settingsPath);
         using var mockCatalog = new MockAppCatalog();
         var win32App = TestDataHelper.CreateTestWin32Metadata("Notepad", "C:\\Windows\\System32\\notepad.exe");
-        var uwpApp = TestDataHelper.CreateTestUWPApplication("Calculator");
+        var uwpApp = TestDataHelper.CreateTestPackagedMetadata("Calculator");
         mockCatalog.AddWin32Program(win32App);
-        mockCatalog.AddUWPApplication(uwpApp);
+        mockCatalog.AddPackagedApp(uwpApp);
 
         for (var i = 0; i < 10; i++)
         {
             mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata($"App{i}"));
-            mockCatalog.AddUWPApplication(TestDataHelper.CreateTestUWPApplication($"UWP App {i}"));
+            mockCatalog.AddPackagedApp(TestDataHelper.CreateTestPackagedMetadata($"UWP App {i}"));
         }
 
         using var itemSource = new AppListItemSource(mockCatalog, settings);

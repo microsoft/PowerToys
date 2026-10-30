@@ -15,13 +15,14 @@ namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 /// </remarks>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 [JsonDerivedType(typeof(Win32AppPayload), "win32")]
-[JsonDerivedType(typeof(PackagedAppSnapshot), "packaged")]
+[JsonDerivedType(typeof(PackagedAppPayload), "packaged")]
 internal interface IAppCatalogPayload
 {
     /// <summary>Materializes the consumer-facing application.</summary>
     AppItem ToAppItem();
 
-    /// <summary>Gets the persisted command ID of this source representation.</summary>
+    /// <summary>Gets the released name-based ID of this source representation.</summary>
+    /// <remarks>Canonical typed IDs are derived separately from the containing catalog item identity.</remarks>
     string GetCommandId();
 
     /// <summary>

@@ -146,7 +146,7 @@ public class Win32AppReaderTests
             var app = payload.ToAppItem();
             Assert.AreEqual(shortcutPath, app.LaunchTarget);
             Assert.AreEqual("/c echo shortcut", app.LaunchArguments);
-            var item = new AppListItem(app, useThumbnails: true);
+            var item = new AppListItem(app);
             Assert.IsTrue(AppIconProtocol.TryParse(item.Icon.Light.Icon, out var candidates, out var jumbo));
             Assert.IsFalse(jumbo);
             CollectionAssert.AreEqual(

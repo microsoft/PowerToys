@@ -39,7 +39,7 @@ public class RegistryAppSourceTests
             [],
             Win32AppPayload.From(shortcut));
         var merged = shortcutItem.MergeProvenance(registryItem);
-        var row = new AppListItem(merged.ToAppItem(), useThumbnails: false);
+        var row = new AppListItem(merged.ToAppItem());
         var match = new AppSearch(query, new PrecomputedFuzzyMatcher(), ExecutableNameMatchMode.FilenameAndStem).Evaluate(row);
 
         Assert.AreEqual("Editor", row.Title);
@@ -172,7 +172,7 @@ public class RegistryAppSourceTests
         Assert.IsNotNull(loaded);
         var cachedItem = loaded.Sources.Single().Items.Single();
         Assert.IsTrue(items.Single().HasSamePersistedContent(cachedItem));
-        var row = new AppListItem(cachedItem.ToAppItem(), useThumbnails: false);
+        var row = new AppListItem(cachedItem.ToAppItem());
         Assert.IsTrue(new AppSearch("foo", new PrecomputedFuzzyMatcher(), ExecutableNameMatchMode.Disabled).Evaluate(row).IsExactMetadataMatch);
     }
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -20,8 +20,6 @@ internal static class KeyChords
     internal static KeyChord RunAsAdministrator { get; } = WellKnownKeyChords.RunAsAdministrator;
 
     internal static KeyChord RunAsDifferentUser { get; } = WellKnownKeyChords.RunAsDifferentUser;
-
-    internal static KeyChord TogglePin { get; } = WellKnownKeyChords.TogglePin;
 
     public static KeyChord Delete { get; } = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Delete);
 }
