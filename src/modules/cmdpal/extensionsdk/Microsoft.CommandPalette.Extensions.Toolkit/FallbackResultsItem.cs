@@ -31,21 +31,47 @@ public abstract partial class FallbackResultsItem : FallbackCommandItem, IFallba
 
     ICommand IFallbackCommandItem3.CreateCommand(IFallbackCommandInvocationArgs args) => Command!;
 
+    /// <summary>
+    /// Unused. Extensions using the FallbackResultsItem should implement QueryAsync instead.
+    /// </summary>
     public override void UpdateQuery(string query)
     {
     }
 
     public virtual IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args)
     {
-        return AsyncInfo.Run<IFallbackCommandResult, IFallbackCommandResult>(
-            (cancellationToken, progress) => QueryAsync(args, cancellationToken, progress));
+        try
+        {
+            // NOTE: IFallbackQueryArgs is an object that's owned by the host, and
+            // marshalled-by-reference across the process boundary.
+            //
+            // Copy the values we need before returning from this method.
+            var queryArgs = new FallbackQueryArgs(args.Query, args.QueryId, args.RequestedItemCount, args.LanguageTags);
+            return AsyncInfo.Run<IFallbackCommandResult, IFallbackCommandResult>(
+                (cancellationToken, progress) => QueryAsync(queryArgs, cancellationToken, progress));
+        }
+        catch (Exception ex)
+        {
+            return AsyncInfo.Run<IFallbackCommandResult, IFallbackCommandResult>(
+                (cancellationToken, progress) => Task.FromException<IFallbackCommandResult>(ex));
+        }
     }
 
-    protected virtual Task<IFallbackCommandResult> QueryAsync(
-        IFallbackQueryArgs args,
+    /// <summary>
+    /// Called when the host sends an extension a new top-level search query.
+    /// Extensions with top-level fallback results should implement this method
+    /// to return a set of relevant results.
+    /// </summary>
+    /// <param name="args">Contains the query information, like what the search
+    /// string was.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the
+    /// asynchronous operation. The host (Command Palette) may cancel this
+    /// operation, which will be notified through this token.</param>
+    /// <param name="progress">Used to report progress to the host.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous
+    /// operation.</returns>
+    protected abstract Task<IFallbackCommandResult> QueryAsync(
+        FallbackQueryArgs args,
         CancellationToken cancellationToken,
-        IProgress<IFallbackCommandResult> progress)
-    {
-        return Task.FromException<IFallbackCommandResult>(new NotSupportedException("Override the cancellable QueryAsync method."));
-    }
+        IProgress<IFallbackCommandResult> progress);
 }
