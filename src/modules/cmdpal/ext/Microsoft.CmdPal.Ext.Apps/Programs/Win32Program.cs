@@ -230,7 +230,7 @@ public partial class Win32Program : IProgram
             && !IsShortcutTarget(this))
         {
             commands.Add(new CommandContextItem(
-                new UninstallApplicationConfirmation(this))
+                new UninstallApplicationConfirmation(Name))
             {
                 RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Delete),
                 IsCritical = true,
@@ -1199,11 +1199,11 @@ public partial class Win32Program : IProgram
 
     public string PackagedAppUserModelId { get; set; } = string.Empty;
 
+    internal ReparsePoint.AppExecutionAliasInfo? AppExecutionAlias { get; set; }
+
     internal LaunchTarget Target => AppType == ApplicationType.InternetShortcutApplication
         ? LaunchTarget.Url(FullPath)
         : LaunchTarget.FilePath(FullPath);
-
-    internal ReparsePoint.AppExecutionAliasInfo? AppExecutionAlias { get; set; }
 
     internal static string GetDistinctWorkingDirectory(string targetPath, string workingDirectory, string? explicitAppUserModelId = null)
     {

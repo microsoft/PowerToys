@@ -166,9 +166,9 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
     {
     }
 
-    public AllAppsSettings(string filePath)
+    internal AllAppsSettings(string filePath)
     {
-        FilePath = filePath;
+        FilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
 
         Settings.Add(_enableStartMenuSource);
         Settings.Add(_includeNonAppsInStartMenu);
@@ -186,7 +186,6 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
 
     private AppCommandAliasStore? _commandAliasStore;
 
-    /// <summary>Retains released IDs in the alias file used by the catalog migration.</summary>
     internal IReadOnlyDictionary<string, string> RetainAppCommandAliases(IEnumerable<AppItem> apps)
     {
         lock (_commandAliasesLock)
