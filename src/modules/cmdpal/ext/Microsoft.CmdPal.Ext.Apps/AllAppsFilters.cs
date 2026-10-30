@@ -14,8 +14,10 @@ namespace Microsoft.CmdPal.Ext.Apps;
 internal sealed partial class AllAppsFilters : Filters
 {
     internal const string AllFilterId = "all";
+    internal const string WindowsFilterId = "windows";
     internal const string Win32FilterId = "win32";
     internal const string PackagedFilterId = "packaged";
+    internal const string WebFilterId = "web";
     internal const string HiddenFilterId = "hidden";
 
     /// <summary>Initializes a new instance of the <see cref="AllAppsFilters"/> class. Initializes the application filters with All apps selected.</summary>
@@ -31,8 +33,11 @@ internal sealed partial class AllAppsFilters : Filters
         [
             new Filter() { Id = AllFilterId, Name = Resources.filter_all_apps, Icon = Icons.AllAppsFilterIcon },
             new Separator(),
-            new Filter() { Id = Win32FilterId, Name = Resources.filter_win32_apps, Icon = Icons.Win32AppsFilterIcon },
-            new Filter() { Id = PackagedFilterId, Name = Resources.filter_packaged_apps, Icon = Icons.PackagedAppsFilterIcon },
+            new Filter() { Id = WindowsFilterId, Name = Resources.filter_windows_apps, Icon = Icons.WindowsAppsFilterIcon },
+
+            // new Filter() { Id = Win32FilterId, Name = Resources.filter_win32_apps, Icon = Icons.WindowsAppsFilterIcon },
+            // new Filter() { Id = PackagedFilterId, Name = Resources.filter_packaged_apps, Icon = Icons.PackagedAppsFilterIcon },
+            new Filter() { Id = WebFilterId, Name = Resources.filter_web_apps, Icon = Icons.WebAppsFilterIcon },
             new Separator(),
             new Filter() { Id = HiddenFilterId, Name = Resources.filter_hidden_apps, Icon = Icons.Hide },
         ];

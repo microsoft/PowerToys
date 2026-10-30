@@ -170,6 +170,17 @@ Manifest reads share access with writers and release native references before co
 - Merge equivalent shortcut, executable, execution-alias and packaged representations when their
   launch behavior is equivalent.
 - Keep entries distinct when arguments or meaningful working directories differ.
+- Chromium PWA shortcuts, including Chrome and Brave, use the existing Win32 target and
+  argument identity. Different browsers, app IDs, profiles and user-data directories remain distinct.
+- Merge equivalent hosted Edge PWA packages only when their publishers, host runtime,
+  exact parameters and complete profile context match. Generated package names and versions
+  do not distinguish equivalent launches. Missing or unfamiliar launch metadata does not merge.
+  - Select the preferred package by source priority, then source reference order, using the same
+    rule as payload selection. This is deterministic across scan order and cached startup;
+    it does not infer installation age from package names or versions.
+  - Activation, presentation and context actions use the selected payload. Uninstall removes
+    only its package; another equivalent registration can remain and become the displayed row.
+    Equivalent launch behavior does not establish ownership of every contributing package.
 - Deduplicate default executable-directory variants.
 - Treat a Squirrel launcher's direct `app-<numeric version>` working directory as an installer
   default when its explicit Windows app ID matches the install-root and executable names.
@@ -363,10 +374,17 @@ order solely to improve time to first rows.
 
 | Condition           | Behavior                                           |
 | ------------------- | -------------------------------------------------- |
-| Filters             | All, Win32, Packaged and Hidden.                   |
+| Filters             | All, Windows apps, Web apps and Hidden.             |
 | Empty query         | Culture-aware alphabetical/numeric ordering.       |
 | Matching query      | Exact title, exact executable, then score/title.    |
 | Descriptions hidden | Presentation only; descriptions remain searchable. |
+
+The Web apps filter includes recognized Chromium PWA shortcuts, Firefox `-taskbar-tab` shortcuts and packaged apps that declare `uap10:HostId="PWA"`.
+The Windows apps filter includes every non-web app, whether packaged or Win32, so these two categories do not overlap.
+The classification comes from cached payload metadata, so selecting a filter does not reread
+shortcuts or manifests. Hidden web apps remain in the Hidden filter.
+Packaged web-app classification does not require Edge's private launch format; deduplication still requires
+complete, recognized launch metadata so unfamiliar formats cannot merge unrelated apps.
 
 ### 4.2 Shared matching
 

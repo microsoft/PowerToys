@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps.Programs;
@@ -37,6 +38,11 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
         Icon = Icons.AllAppsIcon,
     };
 
+    private readonly ICommand _noAppsCommand;
+    private readonly AnonymousCommand _clearFilterCommand;
+    private readonly AnonymousCommand _showHiddenAppsCommand;
+    private readonly IContextItem[] _hiddenAppsCommands;
+    private CompositeFormat? _hiddenMatchesFormat;
     private InterlockedBoolean _disposed;
 
     public IContextItem[] MoreCommands { get; }
@@ -62,6 +68,21 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
         _filters.PropChanged += OnFiltersChanged;
         Filters = _filters;
 
+        _noAppsCommand = _noAppsPlaceholder.Command!;
+        _clearFilterCommand = new AnonymousCommand(() => _filters.CurrentFilterId = AllAppsFilters.AllFilterId)
+        {
+            Name = Resources.clear_filter,
+            Icon = Icons.AllAppsFilterIcon,
+            Result = CommandResult.KeepOpen(),
+        };
+        _showHiddenAppsCommand = new AnonymousCommand(() => _filters.CurrentFilterId = AllAppsFilters.HiddenFilterId)
+        {
+            Name = Resources.show_hidden_apps,
+            Icon = Icons.Hide,
+            Result = CommandResult.KeepOpen(),
+        };
+        _hiddenAppsCommands = [new CommandContextItem(_showHiddenAppsCommand)];
+
         MoreCommands =
         [
             new CommandContextItem(
@@ -76,10 +97,20 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
 
     public override IListItem[] GetItems()
     {
-        var appItems = GetFilteredAppItems();
+        var filterId = _filters.CurrentFilterId;
+        var snapshot = _appListItemSource.GetSnapshot();
+        var query = SearchText;
+        AppSearch? search = null;
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            _appListItemSource.RequestExecutionAliasRefresh();
+            search = new AppSearch(query, _fuzzyMatcherProvider.Current, snapshot.ExecutableNameMatchMode, snapshot.GetExecutionAliasOwner(query));
+        }
+
+        var appItems = GetFilteredAppItems(snapshot, filterId, search);
         if (!_appListItemSource.IsLoading)
         {
-            return appItems.Length == 0 ? [_noAppsPlaceholder] : appItems;
+            return appItems.Length == 0 ? [GetNoAppsPlaceholder(snapshot, filterId, search)] : appItems;
         }
 
         if (appItems.Length == 0)
@@ -87,7 +118,7 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
             return [_refreshingBanner];
         }
 
-        return _filters.CurrentFilterId == AllAppsFilters.HiddenFilterId
+        return filterId == AllAppsFilters.HiddenFilterId
             ? [_refreshingBanner, .. appItems]
             : [_refreshingBanner, _allAppsSeparator, .. appItems];
     }
@@ -122,18 +153,40 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
         RaiseItemsChanged();
     }
 
-    private IListItem[] GetFilteredAppItems()
+    private ListItem GetNoAppsPlaceholder(AppListItemSnapshot snapshot, string filterId, AppSearch? search)
     {
-        var filterId = _filters.CurrentFilterId;
-        var snapshot = _appListItemSource.GetSnapshot();
-        var query = SearchText;
-        AppSearch? search = null;
-        if (!string.IsNullOrWhiteSpace(query))
+        var hasFilter = filterId != AllAppsFilters.AllFilterId;
+        var filterHint = hasFilter ? Resources.no_apps_found_filter_hint : string.Empty;
+        var hiddenCount = filterId == AllAppsFilters.HiddenFilterId
+            ? 0
+            : CountMatchingApps(snapshot.HiddenItems, filterId, search) + CountMatchingApps(snapshot.PatternHiddenItems, filterId, search);
+        var hiddenHint = hiddenCount == 0
+            ? string.Empty
+            : string.Format(CultureInfo.CurrentCulture, _hiddenMatchesFormat ??= CompositeFormat.Parse(Resources.no_apps_found_hidden_matches), hiddenCount);
+        _noAppsPlaceholder.Subtitle = $"{filterHint} {hiddenHint}".Trim();
+        _noAppsPlaceholder.Command = hasFilter
+            ? _clearFilterCommand
+            : hiddenCount > 0 ? _showHiddenAppsCommand : _noAppsCommand;
+        _noAppsPlaceholder.MoreCommands = hasFilter && hiddenCount > 0 ? _hiddenAppsCommands : [];
+        return _noAppsPlaceholder;
+    }
+
+    private static int CountMatchingApps(IReadOnlyList<AppListItem> candidates, string filterId, AppSearch? search)
+    {
+        var count = 0;
+        foreach (var candidate in candidates)
         {
-            _appListItemSource.RequestExecutionAliasRefresh();
-            search = new AppSearch(query, _fuzzyMatcherProvider.Current, snapshot.ExecutableNameMatchMode, snapshot.GetExecutionAliasOwner(query));
+            if (MatchesTypeFilter(candidate, filterId) && (search is null || search.Evaluate(candidate).HasMatch))
+            {
+                count++;
+            }
         }
 
+        return count;
+    }
+
+    private IListItem[] GetFilteredAppItems(AppListItemSnapshot snapshot, string filterId, AppSearch? search)
+    {
         if (filterId != AllAppsFilters.HiddenFilterId)
         {
             return FilterAppItems(snapshot.VisibleItems, filterId, search);
@@ -229,8 +282,10 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
     {
         return filterId switch
         {
+            AllAppsFilters.WindowsFilterId => !item.App.IsWebApp,
             AllAppsFilters.Win32FilterId => !item.App.IsPackaged,
             AllAppsFilters.PackagedFilterId => item.App.IsPackaged,
+            AllAppsFilters.WebFilterId => item.App.IsWebApp,
             _ => true,
         };
     }

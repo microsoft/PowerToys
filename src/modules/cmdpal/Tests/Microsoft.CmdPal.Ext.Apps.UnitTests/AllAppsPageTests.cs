@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
@@ -12,6 +14,7 @@ using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 
@@ -235,6 +238,140 @@ public class AllAppsPageTests : AppsTestBase
 
         Assert.AreEqual(1, items.Length);
         Assert.AreEqual(Properties.Resources.no_apps_found, items[0].Title);
+        Assert.AreEqual(string.Empty, items[0].Subtitle);
+        Assert.IsInstanceOfType<NoOpCommand>(items[0].Command);
+        Assert.AreEqual(0, items[0].MoreCommands.Length);
+    }
+
+    [TestMethod]
+    [DataRow(AllAppsFilters.WindowsFilterId)]
+    [DataRow(AllAppsFilters.WebFilterId)]
+    [DataRow(AllAppsFilters.HiddenFilterId)]
+    public void AllAppsPage_EmptyFilterSuggestsAllAppsAndClearsHintWhenReset(string filterId)
+    {
+        Page.SearchText = "zzzzzzzzzz";
+        Page.Filters!.CurrentFilterId = filterId;
+
+        var placeholder = Page.GetItems().Single();
+        Assert.AreEqual(Properties.Resources.no_apps_found, placeholder.Title);
+        Assert.AreEqual(Properties.Resources.no_apps_found_filter_hint, placeholder.Subtitle);
+
+        Assert.AreEqual(Properties.Resources.clear_filter, placeholder.Command!.Name);
+        Assert.AreEqual(0, placeholder.MoreCommands.Length);
+        var itemsChanged = false;
+        Page.ItemsChanged += (_, _) => itemsChanged = true;
+
+        var result = ((AnonymousCommand)placeholder.Command).Invoke();
+
+        Assert.AreEqual(CommandResultKind.KeepOpen, result.Kind);
+        Assert.AreEqual(AllAppsFilters.AllFilterId, Page.Filters.CurrentFilterId);
+        Assert.AreEqual("zzzzzzzzzz", Page.SearchText);
+        Assert.IsTrue(itemsChanged);
+        Assert.AreEqual(string.Empty, Page.GetItems().Single().Subtitle);
+        Assert.IsInstanceOfType<NoOpCommand>(Page.GetItems().Single().Command);
+        Assert.AreEqual(0, MockCatalog.RefreshCallCount);
+    }
+
+    [TestMethod]
+    [DataRow(AllAppsFilters.AllFilterId, "note", 2)]
+    [DataRow(AllAppsFilters.WindowsFilterId, "note", 1)]
+    [DataRow(AllAppsFilters.WebFilterId, "note", 1)]
+    [DataRow(AllAppsFilters.AllFilterId, "", 3)]
+    [DataRow(AllAppsFilters.WindowsFilterId, "", 2)]
+    [DataRow(AllAppsFilters.WebFilterId, "", 1)]
+    [DataRow(AllAppsFilters.AllFilterId, "zzzzzzzzzz", 0)]
+    [DataRow(AllAppsFilters.WebFilterId, "zzzzzzzzzz", 0)]
+    [DataRow(AllAppsFilters.HiddenFilterId, "zzzzzzzzzz", 0)]
+    public void AllAppsPage_EmptySearchCountsOnlyMatchingHiddenApps(string filterId, string query, int expectedCount)
+    {
+        var manuallyHidden = new AppListItem(new AppItem
+        {
+            Name = "Notepad",
+            CatalogId = "win32:notepad",
+            LaunchTarget = @"C:\Apps\Notepad.exe",
+        });
+        var patternHidden = new AppListItem(new AppItem
+        {
+            Name = "Notepad Online",
+            CatalogId = "win32:notepad-online",
+            LaunchTarget = @"C:\Apps\Browser.exe",
+            IsWebApp = true,
+        });
+        var unrelatedHidden = new AppListItem(new AppItem
+        {
+            Name = "Calculator",
+            CatalogId = "win32:calculator",
+            LaunchTarget = @"C:\Apps\Calculator.exe",
+        });
+        var source = new Mock<IAppListItemSource>();
+        source.Setup(service => service.GetSnapshot()).Returns(new AppListItemSnapshot([], [manuallyHidden, unrelatedHidden], [patternHidden]));
+        using var page = new AllAppsPage(source.Object, TestDataHelper.CreateFuzzyMatcherProvider());
+        page.Filters!.CurrentFilterId = filterId;
+        page.SearchText = query;
+
+        var placeholder = page.GetItems().Single();
+
+        Assert.AreEqual(Properties.Resources.no_apps_found, placeholder.Title);
+        var filterHint = filterId == AllAppsFilters.AllFilterId ? string.Empty : Properties.Resources.no_apps_found_filter_hint;
+        var hiddenHint = expectedCount == 0
+            ? string.Empty
+            : string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Properties.Resources.no_apps_found_hidden_matches), expectedCount);
+        Assert.AreEqual($"{filterHint} {hiddenHint}".Trim(), placeholder.Subtitle);
+        source.Verify(service => service.GetSnapshot(), Times.Once);
+
+        if (expectedCount > 0)
+        {
+            ICommand hiddenCommand;
+            if (filterId == AllAppsFilters.AllFilterId)
+            {
+                hiddenCommand = placeholder.Command;
+                Assert.AreEqual(0, placeholder.MoreCommands.Length);
+            }
+            else
+            {
+                Assert.AreEqual(Properties.Resources.clear_filter, placeholder.Command!.Name);
+                hiddenCommand = placeholder.MoreCommands.OfType<CommandContextItem>().Single().Command;
+            }
+
+            Assert.AreEqual(Properties.Resources.show_hidden_apps, hiddenCommand!.Name);
+            var result = ((AnonymousCommand)hiddenCommand).Invoke();
+
+            Assert.AreEqual(CommandResultKind.KeepOpen, result.Kind);
+            Assert.AreEqual(AllAppsFilters.HiddenFilterId, page.Filters.CurrentFilterId);
+            Assert.AreEqual(query, page.SearchText);
+            Assert.IsTrue(page.GetItems().OfType<AppListItem>().Any());
+        }
+        else
+        {
+            Assert.AreEqual(0, placeholder.MoreCommands.Length);
+        }
+
+        source.Verify(service => service.RefreshAsync(), Times.Never);
+    }
+
+    [TestMethod]
+    public async Task AllAppsPage_EmptyStateUpdatesAfterSearchAndVisibilityChanges()
+    {
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad"));
+        var row = AppListItemSource.GetSnapshot().VisibleItems.Single();
+        await MockCatalog.SetAppHiddenAsync(row.App.CatalogId, true);
+        Page.SearchText = "note";
+
+        var hiddenHint = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Properties.Resources.no_apps_found_hidden_matches), 1);
+        Assert.AreEqual(hiddenHint, Page.GetItems().Single().Subtitle);
+        Assert.AreEqual(Properties.Resources.show_hidden_apps, Page.GetItems().Single().Command!.Name);
+
+        Page.SearchText = "zzzzzzzzzz";
+        Assert.AreEqual(string.Empty, Page.GetItems().Single().Subtitle);
+        Assert.IsInstanceOfType<NoOpCommand>(Page.GetItems().Single().Command);
+        Assert.AreEqual(0, Page.GetItems().Single().MoreCommands.Length);
+
+        Page.SearchText = "note";
+        Assert.AreEqual(hiddenHint, Page.GetItems().Single().Subtitle);
+
+        await MockCatalog.SetAppHiddenAsync(row.App.CatalogId, false);
+        Assert.AreSame(row, Page.GetItems().Single());
+        Assert.AreEqual(0, MockCatalog.RefreshCallCount);
     }
 
     [TestMethod]
@@ -673,8 +810,11 @@ public class AllAppsPageTests : AppsTestBase
         Assert.AreEqual(6, filters.Length);
         Assert.AreEqual(AllAppsFilters.AllFilterId, ((IFilter)filters[0]).Id);
         Assert.IsInstanceOfType<Separator>(filters[1]);
-        Assert.AreEqual(AllAppsFilters.Win32FilterId, ((IFilter)filters[2]).Id);
-        Assert.AreEqual(AllAppsFilters.PackagedFilterId, ((IFilter)filters[3]).Id);
+        Assert.AreEqual(AllAppsFilters.WindowsFilterId, ((IFilter)filters[2]).Id);
+        Assert.AreEqual(Properties.Resources.filter_windows_apps, ((IFilter)filters[2]).Name);
+        Assert.IsNotNull(((IFilter)filters[2]).Icon);
+        Assert.AreEqual(AllAppsFilters.WebFilterId, ((IFilter)filters[3]).Id);
+        Assert.IsNotNull(((IFilter)filters[3]).Icon);
         Assert.IsInstanceOfType<Separator>(filters[4]);
         Assert.AreEqual(AllAppsFilters.HiddenFilterId, ((IFilter)filters[5]).Id);
     }
@@ -785,6 +925,104 @@ public class AllAppsPageTests : AppsTestBase
         var packagedItems = Page.GetItems();
         Assert.AreEqual(1, packagedItems.Length);
         Assert.IsTrue(((AppListItem)packagedItems[0]).App.IsPackaged);
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("Portal")]
+    public void AllAppsPage_WindowsAndWebFiltersReuseRowsAndPartitionApplications(string query)
+    {
+        var browserApp = TestDataHelper.CreateTestWin32Metadata("Portal Chrome", @"C:\Chrome\chrome_proxy.exe");
+        browserApp.AppType = Win32AppType.WebApplication;
+        browserApp.Arguments = "--app-id=portal";
+        MockCatalog.AddWin32Program(browserApp);
+        var packagedApp = TestDataHelper.CreateTestPackagedMetadata("Portal Edge", "Contoso.WebPortal!App");
+        packagedApp.IsWebApp = true;
+        MockCatalog.AddPackagedApp(packagedApp);
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Portal Desktop", @"C:\Tools\Portal.exe"));
+        MockCatalog.AddPackagedApp(TestDataHelper.CreateTestPackagedMetadata("Portal Packaged", "Contoso.DesktopPortal!App"));
+        var snapshot = AppListItemSource.GetSnapshot();
+        var originalRows = snapshot.VisibleItems.ToDictionary(item => item.Title);
+        Page.SearchText = query;
+
+        foreach (var (filterId, names) in new[]
+        {
+            (AllAppsFilters.WebFilterId, new[] { "Portal Chrome", "Portal Edge" }),
+            (AllAppsFilters.WindowsFilterId, new[] { "Portal Desktop", "Portal Packaged" }),
+            (AllAppsFilters.AllFilterId, originalRows.Keys.ToArray()),
+        })
+        {
+            Page.Filters!.CurrentFilterId = filterId;
+            var rows = Page.GetItems().OfType<AppListItem>().ToArray();
+
+            CollectionAssert.AreEquivalent(names, rows.Select(item => item.Title).ToArray());
+            foreach (var row in rows)
+            {
+                Assert.AreSame(originalRows[row.Title], row);
+            }
+
+            Assert.AreSame(snapshot, AppListItemSource.GetSnapshot());
+        }
+
+        Assert.AreEqual(0, MockCatalog.RefreshCallCount);
+    }
+
+    [TestMethod]
+    public void AllAppsPage_WebFilterSearchRanksTitlesAboveDescriptions()
+    {
+        var browserApp = TestDataHelper.CreateTestWin32Metadata("Alpha", @"C:\Chrome\chrome_proxy.exe");
+        browserApp.AppType = Win32AppType.WebApplication;
+        browserApp.Arguments = "--app-id=portal";
+        browserApp.Description = "Portal";
+        MockCatalog.AddWin32Program(browserApp);
+        var packagedApp = TestDataHelper.CreateTestPackagedMetadata("Portal", "Contoso.WebPortal!App");
+        packagedApp.IsWebApp = true;
+        MockCatalog.AddPackagedApp(packagedApp);
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Portal", @"C:\Tools\Portal.exe"));
+
+        Page.Filters!.CurrentFilterId = AllAppsFilters.WebFilterId;
+        Page.SearchText = "Portal";
+
+        var items = Page.GetItems();
+        Assert.AreEqual(2, items.Length);
+        Assert.AreEqual("Portal", items[0].Title);
+        Assert.AreEqual("Alpha", items[1].Title);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task AllAppsPage_HiddenWebAppsRemainInHiddenFilter(bool packaged)
+    {
+        if (packaged)
+        {
+            var app = TestDataHelper.CreateTestPackagedMetadata("Portal", "Contoso.WebPortal!App");
+            app.IsWebApp = true;
+            MockCatalog.AddPackagedApp(app);
+        }
+        else
+        {
+            var app = TestDataHelper.CreateTestWin32Metadata("Portal", @"C:\Chrome\chrome_proxy.exe");
+            app.AppType = Win32AppType.WebApplication;
+            app.Arguments = "--app-id=portal";
+            MockCatalog.AddWin32Program(app);
+        }
+
+        Page.Filters!.CurrentFilterId = AllAppsFilters.WebFilterId;
+        var row = Page.GetItems().OfType<AppListItem>().Single();
+        await MockCatalog.SetAppHiddenAsync(row.App.CatalogId, true);
+
+        Assert.AreEqual(Properties.Resources.no_apps_found, Page.GetItems().Single().Title);
+        Page.Filters.CurrentFilterId = AllAppsFilters.WindowsFilterId;
+        Assert.AreEqual(Properties.Resources.no_apps_found, Page.GetItems().Single().Title);
+        Page.Filters.CurrentFilterId = AllAppsFilters.HiddenFilterId;
+        Assert.AreSame(row, Page.GetItems().OfType<AppListItem>().Single());
+        Assert.IsTrue(row.App.IsWebApp);
+
+        await MockCatalog.SetAppHiddenAsync(row.App.CatalogId, false);
+        Page.Filters.CurrentFilterId = AllAppsFilters.WebFilterId;
+        Assert.AreSame(row, Page.GetItems().Single());
+        Assert.AreEqual(0, MockCatalog.RefreshCallCount);
     }
 
     [TestMethod]
