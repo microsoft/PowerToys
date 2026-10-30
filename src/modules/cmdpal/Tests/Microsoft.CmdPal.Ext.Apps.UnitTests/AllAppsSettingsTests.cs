@@ -5,8 +5,11 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
+using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -55,7 +58,7 @@ public class AllAppsSettingsTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -90,7 +93,7 @@ public class AllAppsSettingsTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -128,7 +131,7 @@ public class AllAppsSettingsTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -164,7 +167,7 @@ public class AllAppsSettingsTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -211,7 +214,537 @@ public class AllAppsSettingsTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("apps.settings.json", "apps.aliases.json")]
+    [DataRow("custom.json", "custom.aliases.json")]
+    public void CommandAliases_UseASiblingFile(string settingsName, string aliasesName)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"cmdpal-alias-path-{Guid.NewGuid():N}");
+        var settingsPath = Path.Combine(directory, settingsName);
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var settings = new AllAppsSettings(settingsPath);
+
+            Assert.AreEqual(Path.Combine(directory, aliasesName), settings.AppCommandAliasesFilePath);
+        }
+        finally
+        {
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory);
+            }
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task CommandAliases_ExistingSidecarIsAuthoritativeAndMigrationIsIdempotent(bool emptySidecar)
+    {
+        var settingsPath = TemporarySettingsPath();
+        var aliasPath = AllAppsSettings.AppCommandAliasesPath(settingsPath);
+        try
+        {
+            File.WriteAllText(settingsPath, "{\"futureSetting\":\"preserved\",\"AppCommandAliases\":{\"stale_42\":\"app-v1-packaged-Old!App\"}}");
+            var content = emptySidecar ? "{\"AppCommandAliases\":{}}" : "{\"AppCommandAliases\":{\"Current_42\":\"app-v1-packaged-Current!App\",\"ambiguous_42\":\"\"}}";
+            File.WriteAllText(aliasPath, content);
+            var settings = new AllAppsSettings(settingsPath);
+            var aliases = settings.RetainAppCommandAliases([]);
+            await settings.WaitForAliasSavesAsync();
+
+            Assert.IsFalse(aliases.ContainsKey("stale_42"));
+            Assert.AreEqual(emptySidecar ? 0 : 2, aliases.Count);
+            if (!emptySidecar)
+            {
+                Assert.AreEqual("app-v1-packaged-Current!App", aliases["Current_42"]);
+                Assert.AreEqual(string.Empty, aliases["ambiguous_42"]);
+            }
+
+            var savedSettings = JsonNode.Parse(File.ReadAllText(settingsPath))!.AsObject();
+            Assert.IsFalse(savedSettings.ContainsKey("AppCommandAliases"));
+            Assert.AreEqual("preserved", savedSettings["futureSetting"]!.GetValue<string>());
+            Assert.AreEqual(content, File.ReadAllText(aliasPath), "An authoritative sidecar must not be rewritten by legacy cleanup.");
+
+            var reloaded = new AllAppsSettings(settingsPath);
+            Assert.AreEqual(aliases.Count, reloaded.RetainAppCommandAliases([]).Count);
+            await reloaded.WaitForAliasSavesAsync();
+            Assert.AreEqual(content, File.ReadAllText(aliasPath));
+        }
+        finally
+        {
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task CommandAliases_LoadAndSaveWithoutValidPreferences(bool invalidPreferences)
+    {
+        var settingsPath = TemporarySettingsPath();
+        try
+        {
+            if (invalidPreferences)
+            {
+                File.WriteAllText(settingsPath, "[]");
+            }
+
+            var app = new AppItem { CatalogId = @"win32:C:\Apps\Editor.exe|args:", Name = "Editor", ExePath = @"C:\Links\Editor.lnk" };
+            var aliasPath = AllAppsSettings.AppCommandAliasesPath(settingsPath);
+            File.WriteAllText(aliasPath, new JsonObject
+            {
+                ["AppCommandAliases"] = new JsonObject { ["Earlier Editor_42"] = AppIdentity.ForCommand(app.CatalogId) },
+            }.ToJsonString());
+            var settings = new AllAppsSettings(settingsPath);
+            var aliases = settings.RetainAppCommandAliases([app]);
+            await settings.WaitForAliasSavesAsync();
+            var row = new AppListItem(app, useThumbnails: false);
+            var snapshot = new AppListItemSnapshot([row], [], commandAliases: aliases);
+
+            Assert.AreSame(row, snapshot.GetVisibleApp("Earlier Editor_42"));
+            Assert.AreEqual("Earlier Editor_42", snapshot.GetCommandItem("Earlier Editor_42")?.Command?.Id);
+            Assert.IsNull(snapshot.GetVisibleApp("earlier editor_42"));
+            var savedAliases = JsonNode.Parse(File.ReadAllText(aliasPath))!["AppCommandAliases"]!.AsObject();
+            Assert.AreEqual(AppIdentity.ForCommand(app.CatalogId), savedAliases[AppCommand.GenerateId(app.Name, app.Subtitle, app.ExePath)]!.GetValue<string>());
+            if (invalidPreferences)
+            {
+                Assert.AreEqual("[]", File.ReadAllText(settingsPath));
+            }
+            else
+            {
+                Assert.IsFalse(File.Exists(settingsPath), "Alias publication must not create a preference file.");
+            }
+        }
+        finally
+        {
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task CommandAliases_AliasOnlySavePreservesManualPreferenceEdits()
+    {
+        var settingsPath = TemporarySettingsPath();
+        try
+        {
+            File.WriteAllText(settingsPath, "{\"apps.SearchResultLimit\":\"5\",\"futureSetting\":\"original\"}");
+            var settings = new AllAppsSettings(settingsPath);
+            const string editedPreferences = "{\"apps.SearchResultLimit\":\"1\",\"futureSetting\":\"edited\"}";
+            File.WriteAllText(settingsPath, editedPreferences);
+            var app = new AppItem { CatalogId = @"win32:C:\Apps\Editor.exe|args:", Name = "Editor", ExePath = @"C:\Links\Editor.lnk" };
+
+            settings.RetainAppCommandAliases([app]);
+            await settings.WaitForAliasSavesAsync();
+
+            Assert.AreEqual(5, settings.EffectiveSearchResultLimit);
+            Assert.AreEqual(editedPreferences, File.ReadAllText(settingsPath));
+            Assert.IsTrue(File.Exists(settings.AppCommandAliasesFilePath));
+        }
+        finally
+        {
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("[]")]
+    [DataRow("{}")]
+    [DataRow("{\"AppCommandAliases\":{\"old_42\":null}}")]
+    [DataRow("invalid json")]
+    [DataRow("directory")]
+    public async Task CommandAliases_UnreadableSidecarPreservesHistoryAndAllowsPreferenceSaves(string content)
+    {
+        var settingsPath = TemporarySettingsPath();
+        var aliasPath = AllAppsSettings.AppCommandAliasesPath(settingsPath);
+        try
+        {
+            File.WriteAllText(settingsPath, "{\"AppCommandAliases\":{\"stale_42\":\"app-v1-packaged-Old!App\"}}");
+            if (content == "directory")
+            {
+                Directory.CreateDirectory(aliasPath);
+            }
+            else
+            {
+                File.WriteAllText(aliasPath, content);
+            }
+
+            var logger = new RecordingLogger<AllAppsSettings>();
+            var settings = new AllAppsSettings(settingsPath, logger);
+            Assert.AreEqual(6, logger.LastEventId?.Id);
+            Assert.AreEqual("Failed to load Apps command aliases.", logger.LastMessage);
+            var app = new AppItem { CatalogId = @"win32:C:\Apps\Editor.exe|args:", Name = "Editor", ExePath = @"C:\Links\Editor.lnk" };
+            Assert.IsFalse(settings.RetainAppCommandAliases([app]).ContainsKey("stale_42"));
+            await settings.WaitForAliasSavesAsync();
+
+            var form = (SettingsForm)settings.Settings.ToContent().Single();
+            form.SubmitForm("{\"apps.HideAppDescriptions\":\"true\"}", string.Empty);
+            var savedSettings = JsonNode.Parse(File.ReadAllText(settingsPath))!.AsObject();
+            Assert.AreEqual("true", savedSettings["apps.HideAppDescriptions"]!.GetValue<string>());
+            Assert.IsTrue(savedSettings.ContainsKey("AppCommandAliases"), "Unreadable sidecars must not discard the only readable copy of old aliases.");
+            if (content == "directory")
+            {
+                Assert.IsTrue(Directory.Exists(aliasPath));
+                Directory.Delete(aliasPath);
+            }
+            else
+            {
+                Assert.AreEqual(content, File.ReadAllText(aliasPath));
+            }
+
+            File.WriteAllText(aliasPath, "{\"AppCommandAliases\":{\"Recovered_42\":\"app-v1-packaged-Recovered!App\"}}");
+            settings.LoadSettings();
+            var recovered = settings.RetainAppCommandAliases([app]);
+            await settings.WaitForAliasSavesAsync();
+            Assert.IsTrue(recovered.ContainsKey("Recovered_42"));
+            Assert.IsFalse(recovered.ContainsKey("stale_42"));
+            Assert.IsFalse(JsonNode.Parse(File.ReadAllText(settingsPath))!.AsObject().ContainsKey("AppCommandAliases"));
+            Assert.IsTrue(JsonNode.Parse(File.ReadAllText(aliasPath))!["AppCommandAliases"]!.AsObject().ContainsKey(AppCommand.GenerateId(app.Name, app.Subtitle, app.ExePath)));
+        }
+        finally
+        {
+            if (Directory.Exists(aliasPath))
+            {
+                Directory.Delete(aliasPath);
+            }
+
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task CommandAliases_TransientSharingViolationPreservesAliasesAndAllowsSaves()
+    {
+        var settingsPath = TemporarySettingsPath();
+        try
+        {
+            const string ambiguityMarker = "Ambiguous Editor_42";
+            var app = new AppItem
+            {
+                CatalogId = @"win32:D:\New\Editor.exe|args:",
+                Name = "Editor",
+                ExePath = @"C:\Links\Editor.lnk",
+                CommandIds = [ambiguityMarker],
+            };
+            var previousId = AppIdentity.ForCommand(@"win32:C:\Old\Editor.exe|args:");
+            var currentId = AppIdentity.ForCommand(app.CatalogId);
+            var aliasPath = AllAppsSettings.AppCommandAliasesPath(settingsPath);
+            File.WriteAllText(settingsPath, "{\"AppCommandAliases\":{\"stale_42\":\"app-v1-packaged-Old!App\"}}");
+            File.WriteAllText(aliasPath, new JsonObject
+            {
+                ["AppCommandAliases"] = new JsonObject
+                {
+                    [previousId] = currentId,
+                    [ambiguityMarker] = string.Empty,
+                },
+            }.ToJsonString());
+            using var lockedFile = new FileStream(aliasPath, FileMode.Open, FileAccess.Read, FileShare.None);
+            var logger = new RecordingLogger<AllAppsSettings>
+            {
+                OnLog = eventId =>
+                {
+                    if (eventId.Id == 8)
+                    {
+                        lockedFile.Dispose();
+                    }
+                },
+            };
+            var settings = new AllAppsSettings(settingsPath, logger);
+            Assert.AreEqual(8, logger.LastEventId?.Id);
+            Assert.AreEqual("Retrying Apps command alias read after an I/O failure.", logger.LastMessage);
+            var aliases = settings.RetainAppCommandAliases([app]);
+            await settings.WaitForAliasSavesAsync();
+            var row = new AppListItem(app, useThumbnails: false);
+            var snapshot = new AppListItemSnapshot([row], [], commandAliases: aliases);
+
+            Assert.AreEqual(currentId, aliases[previousId]);
+            Assert.AreEqual(string.Empty, aliases[ambiguityMarker]);
+            Assert.IsFalse(aliases.ContainsKey("stale_42"));
+            Assert.AreSame(row, snapshot.GetVisibleApp(previousId));
+            Assert.AreEqual(previousId, snapshot.GetCommandItem(previousId)?.Command?.Id);
+            Assert.IsNull(snapshot.GetCommandItem(ambiguityMarker));
+            var savedAliases = JsonNode.Parse(File.ReadAllText(aliasPath))!["AppCommandAliases"]!.AsObject();
+            Assert.AreEqual(currentId, savedAliases[previousId]!.GetValue<string>());
+            Assert.AreEqual(string.Empty, savedAliases[ambiguityMarker]!.GetValue<string>());
+            Assert.AreEqual(currentId, savedAliases[AppCommand.GenerateId(app.Name, app.Subtitle, app.ExePath)]!.GetValue<string>(), "A recovered read must allow subsequent alias publication to be saved.");
+        }
+        finally
+        {
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task CommandAliases_WriteFailurePreservesLegacyAliasesAndAllowsPreferenceSaves()
+    {
+        var settingsPath = TemporarySettingsPath();
+        var logger = new RecordingLogger<AllAppsSettings>();
+        var settings = new AllAppsSettings(settingsPath, logger);
+        try
+        {
+            File.WriteAllText(settingsPath, "{\"AppCommandAliases\":{\"old_42\":\"app-v1-packaged-Old!App\"}}");
+            Directory.CreateDirectory(settings.AppCommandAliasesFilePath);
+            var app = new AppItem { CatalogId = @"win32:C:\Apps\Editor.exe|args:", Name = "Editor", ExePath = @"C:\Links\Editor.lnk" };
+            settings.RetainAppCommandAliases([app]);
+            await settings.WaitForAliasSavesAsync();
+
+            Assert.AreEqual(7, logger.LastEventId?.Id);
+            Assert.AreEqual("Failed to save Apps command aliases.", logger.LastMessage);
+            var form = (SettingsForm)settings.Settings.ToContent().Single();
+            form.SubmitForm("{\"apps.HideAppDescriptions\":\"true\"}", string.Empty);
+            var savedSettings = JsonNode.Parse(File.ReadAllText(settingsPath))!.AsObject();
+            Assert.AreEqual("true", savedSettings["apps.HideAppDescriptions"]!.GetValue<string>());
+            Assert.AreEqual("app-v1-packaged-Old!App", savedSettings["AppCommandAliases"]!["old_42"]!.GetValue<string>());
+            Assert.IsTrue(Directory.Exists(settings.AppCommandAliasesFilePath));
+
+            Directory.Delete(settings.AppCommandAliasesFilePath);
+            settings.SaveSettings();
+            Assert.IsTrue(File.Exists(settings.AppCommandAliasesFilePath));
+            Assert.IsFalse(JsonNode.Parse(File.ReadAllText(settingsPath))!.AsObject().ContainsKey("AppCommandAliases"));
+        }
+        finally
+        {
+            await settings.WaitForAliasSavesAsync();
+            if (Directory.Exists(settings.AppCommandAliasesFilePath))
+            {
+                Directory.Delete(settings.AppCommandAliasesFilePath);
+            }
+
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task CommandAliases_InvalidPreferenceReloadRetriesUnsavedHiddenIdentityMove()
+    {
+        var settingsPath = TemporarySettingsPath();
+        var settings = new AllAppsSettings(settingsPath);
+        try
+        {
+            var original = new AppItem { CatalogId = @"win32:C:\Old\Editor.exe|args:", Name = "Editor", ExePath = @"C:\Links\Editor.lnk" };
+            Assert.IsTrue(settings.SetAppHidden(original.CatalogId, hidden: true));
+            settings.RetainAppCommandAliases([original]);
+            await settings.WaitForAliasSavesAsync();
+            Assert.IsTrue(new AllAppsSettings(settingsPath).IsAppHidden(original.CatalogId));
+
+            File.WriteAllText(settingsPath, "[]");
+            var moved = new AppItem { CatalogId = @"win32:D:\New\Editor.exe|args:", Name = original.Name, ExePath = original.ExePath };
+            settings.RetainAppCommandAliases([moved]);
+            await settings.WaitForAliasSavesAsync();
+            Assert.IsTrue(settings.IsAppHidden(moved.CatalogId));
+            Assert.AreEqual("[]", File.ReadAllText(settingsPath));
+            var savedAliases = JsonNode.Parse(File.ReadAllText(settings.AppCommandAliasesFilePath))!["AppCommandAliases"]!.AsObject();
+            Assert.AreEqual(AppIdentity.ForCommand(moved.CatalogId), savedAliases[AppIdentity.ForCommand(original.CatalogId)]!.GetValue<string>());
+
+            settings.LoadSettings();
+            File.WriteAllText(settingsPath, "{}");
+            moved.Name = "Renamed Editor";
+            settings.RetainAppCommandAliases([moved]);
+            await settings.WaitForAliasSavesAsync();
+
+            Assert.IsTrue(new AllAppsSettings(settingsPath).IsAppHidden(moved.CatalogId), "A failed reload must not mark the migrated hidden set as already saved.");
+        }
+        finally
+        {
+            await settings.WaitForAliasSavesAsync();
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task CommandAliases_MigrateFlatStorageAndPersistLatestPublication()
+    {
+        var settingsPath = TemporarySettingsPath();
+        try
+        {
+            var apps = Enumerable.Range(0, 500).Select(index => new AppItem
+            {
+                CatalogId = $@"win32:C:\Apps\App{index}.exe|args:",
+                Name = $"App {index}",
+                ExePath = $@"C:\Links\App{index}.lnk",
+                CommandIds =
+                [
+                    AppIdentity.ForCommand($@"win32:C:\Desktop\App{index}.lnk|args:"),
+                    AppIdentity.ForCommand($@"win32:C:\Start Menu\App{index}.lnk|args:"),
+                    AppCommand.GenerateId($"Registry App {index}", string.Empty, $@"C:\Apps\App{index}.exe"),
+                ],
+            }).ToArray();
+            var flatAliases = new JsonObject { ["ambiguous_old-id"] = string.Empty };
+            foreach (var app in apps)
+            {
+                var commandId = AppIdentity.ForCommand(app.CatalogId);
+                foreach (var alias in app.CommandIds.Append(AppCommand.GenerateId(app.Name, app.Subtitle, app.ExePath)).Append(commandId))
+                {
+                    flatAliases[alias] = commandId;
+                }
+            }
+
+            flatAliases["CaseSensitiveAlias_42"] = AppIdentity.ForCommand(apps[0].CatalogId);
+            flatAliases["casesensitivealias_42"] = AppIdentity.ForCommand(apps[1].CatalogId);
+            var stickyLegacyId = AppCommand.GenerateId(apps[2].Name, apps[2].Subtitle, apps[2].ExePath);
+            flatAliases[stickyLegacyId] = string.Empty;
+            var legacyJson = new JsonObject
+            {
+                ["futureSetting"] = "preserved",
+                ["AppCommandAliases"] = flatAliases,
+                ["AppCommandAliasGroups"] = new JsonObject
+                {
+                    ["unused_target"] = new JsonArray(JsonValue.Create("unused_alias")),
+                },
+            }.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(settingsPath, legacyJson);
+            var settings = new AllAppsSettings(settingsPath);
+            var aliases = settings.RetainAppCommandAliases(apps);
+            await settings.WaitForAliasSavesAsync();
+            var saved = JsonNode.Parse(File.ReadAllText(settingsPath))!.AsObject();
+            var savedAliases = JsonNode.Parse(File.ReadAllText(settings.AppCommandAliasesFilePath))!["AppCommandAliases"]!.AsObject();
+            Assert.IsFalse(saved.ContainsKey("AppCommandAliases"), "Legacy aliases must be removed only after the sidecar has been written.");
+            Assert.IsFalse(saved.ContainsKey("AppCommandAliasGroups"), "The grouped alias format from earlier pre-release builds must be cleared from the settings file.");
+            Assert.AreEqual(aliases.Count, savedAliases.Count);
+            Assert.IsTrue(apps.All(app => !savedAliases.ContainsKey(AppIdentity.ForCommand(app.CatalogId))), "Redundant self-aliases must not be persisted.");
+            Assert.AreEqual("preserved", saved["futureSetting"]!.GetValue<string>());
+
+            var reloaded = new AllAppsSettings(settingsPath);
+            var reloadedAliases = reloaded.RetainAppCommandAliases(apps);
+            await reloaded.WaitForAliasSavesAsync();
+            foreach (var alias in aliases)
+            {
+                Assert.AreEqual(alias.Value, reloadedAliases[alias.Key]);
+            }
+
+            Assert.AreEqual(string.Empty, reloadedAliases["ambiguous_old-id"]);
+            Assert.AreEqual(string.Empty, reloadedAliases[stickyLegacyId], "Migration must preserve a sticky ambiguity marker even when only one current app claims it.");
+            Assert.AreEqual(AppIdentity.ForCommand(apps[0].CatalogId), reloadedAliases["CaseSensitiveAlias_42"]);
+            Assert.AreEqual(AppIdentity.ForCommand(apps[1].CatalogId), reloadedAliases["casesensitivealias_42"]);
+            var originalId = AppIdentity.ForCommand(apps[0].CatalogId);
+            var legacyId = AppCommand.GenerateId(apps[0].Name, apps[0].Subtitle, apps[0].ExePath);
+            apps[0].Name = "Renamed App";
+            settings.RetainAppCommandAliases(apps);
+            apps[0].CatalogId = @"win32:D:\Moved\App0.exe|args:";
+            settings.RetainAppCommandAliases(apps);
+            await settings.WaitForAliasSavesAsync();
+            reloaded = new AllAppsSettings(settingsPath);
+            reloadedAliases = reloaded.RetainAppCommandAliases(apps);
+            await reloaded.WaitForAliasSavesAsync();
+            var currentId = AppIdentity.ForCommand(apps[0].CatalogId);
+            Assert.AreEqual(currentId, reloadedAliases[originalId]);
+            Assert.AreEqual(currentId, reloadedAliases[legacyId]);
+        }
+        finally
+        {
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task CommandAliases_CasingOnlyPackagedUpdatePreservesLegacyAliasesAfterReload()
+    {
+        var settingsPath = TemporarySettingsPath();
+        var settings = new AllAppsSettings(settingsPath);
+        try
+        {
+            const string earlierAumid = "contoso.app_123!main";
+            const string currentAumid = "Contoso.App_123!Main";
+            const string historicalLegacyId = "Earlier display name_42";
+            var app = new AppItem
+            {
+                CatalogId = AppIdentity.ForPackaged(earlierAumid),
+                Name = "App display name",
+                UserModelId = earlierAumid,
+                IsPackaged = true,
+                CommandIds = [historicalLegacyId],
+            };
+            var legacyId = AppCommand.GenerateId(app.Name, app.Subtitle, app.ExePath);
+            settings.RetainAppCommandAliases([app]);
+            await settings.WaitForAliasSavesAsync();
+
+            app.CatalogId = AppIdentity.ForPackaged(currentAumid);
+            app.UserModelId = currentAumid;
+            var updatedAliases = settings.RetainAppCommandAliases([app]);
+            Assert.AreNotEqual(string.Empty, updatedAliases[legacyId]);
+            Assert.AreNotEqual(string.Empty, updatedAliases[historicalLegacyId]);
+            await settings.WaitForAliasSavesAsync();
+
+            var reloaded = new AllAppsSettings(settingsPath);
+            var reloadedAliases = reloaded.RetainAppCommandAliases([app]);
+            await reloaded.WaitForAliasSavesAsync();
+            var row = new AppListItem(app, useThumbnails: false);
+            var snapshot = new AppListItemSnapshot([row], [], commandAliases: reloadedAliases);
+            foreach (var requestedId in new[] { legacyId, historicalLegacyId })
+            {
+                Assert.AreNotEqual(string.Empty, reloadedAliases[requestedId]);
+                Assert.AreSame(row, snapshot.GetVisibleApp(requestedId));
+                Assert.AreEqual(requestedId, snapshot.GetCommandItem(requestedId)?.Command?.Id);
+                Assert.IsNull(snapshot.GetVisibleApp(requestedId.ToUpperInvariant()));
+            }
+
+            Assert.AreEqual(AppIdentity.ForCommand(app.CatalogId), row.Command!.Id);
+            Assert.AreEqual(currentAumid, row.App.UserModelId);
+        }
+        finally
+        {
+            await settings.WaitForAliasSavesAsync();
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task CommandAliases_FlushDrainsChangesQueuedDuringAnActiveSave()
+    {
+        var settingsPath = TemporarySettingsPath();
+        var writerStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseWriter = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var logger = new RecordingLogger<AllAppsSettings>
+        {
+            OnLog = eventId =>
+            {
+                if (eventId.Id == 7)
+                {
+                    writerStarted.TrySetResult();
+                    releaseWriter.Task.GetAwaiter().GetResult();
+                }
+            },
+        };
+        var settings = new AllAppsSettings(settingsPath, logger);
+        try
+        {
+            var original = new AppItem { CatalogId = @"win32:C:\Old\Editor.exe|args:", Name = "Editor", ExePath = @"C:\Links\Editor.lnk" };
+            Directory.CreateDirectory(settings.AppCommandAliasesFilePath);
+            settings.RetainAppCommandAliases([original]);
+            var flush = settings.WaitForAliasSavesAsync();
+            await writerStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+            Directory.Delete(settings.AppCommandAliasesFilePath);
+            var moved = new AppItem { CatalogId = @"win32:D:\New\Editor.exe|args:", Name = original.Name, ExePath = original.ExePath };
+            settings.RetainAppCommandAliases([moved]);
+            Assert.AreSame(flush, settings.WaitForAliasSavesAsync(), "A flush must wait for the same writer to drain changes queued while saving.");
+            releaseWriter.SetResult();
+            await flush.WaitAsync(TimeSpan.FromSeconds(5));
+
+            var aliases = new AllAppsSettings(settingsPath).RetainAppCommandAliases([]);
+            Assert.AreEqual(AppIdentity.ForCommand(moved.CatalogId), aliases[AppIdentity.ForCommand(original.CatalogId)]);
+
+            moved.Name = "Renamed Editor";
+            settings.RetainAppCommandAliases([moved]);
+            await settings.WaitForAliasSavesAsync().WaitAsync(TimeSpan.FromSeconds(5));
+            var renamedAliases = new AllAppsSettings(settingsPath).RetainAppCommandAliases([]);
+            Assert.IsTrue(renamedAliases.ContainsKey(AppCommand.GenerateId(moved.Name, moved.Subtitle, moved.ExePath)));
+        }
+        finally
+        {
+            releaseWriter.TrySetResult();
+            await settings.WaitForAliasSavesAsync().WaitAsync(TimeSpan.FromSeconds(5));
+            if (Directory.Exists(settings.AppCommandAliasesFilePath))
+            {
+                Directory.Delete(settings.AppCommandAliasesFilePath);
+            }
+
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -234,7 +767,7 @@ public class AllAppsSettingsTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -262,7 +795,7 @@ public class AllAppsSettingsTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -283,7 +816,7 @@ public class AllAppsSettingsTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -302,7 +835,7 @@ public class AllAppsSettingsTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -322,6 +855,8 @@ public class AllAppsSettingsTests
 
     private sealed class RecordingLogger<T> : MEL.ILogger<T>
     {
+        public Action<EventId> OnLog { get; init; }
+
         public LogLevel? LastLevel { get; private set; }
 
         public EventId? LastEventId { get; private set; }
@@ -344,6 +879,7 @@ public class AllAppsSettingsTests
             LastLevel = logLevel;
             LastEventId = eventId;
             LastMessage = formatter(state, exception);
+            OnLog?.Invoke(eventId);
         }
     }
 }

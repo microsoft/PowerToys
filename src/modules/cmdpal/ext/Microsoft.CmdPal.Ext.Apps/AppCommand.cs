@@ -25,7 +25,9 @@ internal sealed partial class AppCommand : InvokableCommand
     {
         _app = app;
         Name = Resources.run_command_action!;
-        Id = string.IsNullOrEmpty(app.CatalogId) ? GenerateId(app.Name, app.Subtitle, app.ExePath) : AppIdentity.ForCommand(app.CatalogId);
+        Id = string.IsNullOrEmpty(app.CatalogId)
+            ? GenerateId(app.Name, app.Subtitle, app.ExePath)
+            : AppIdentity.ForCommand(app.CatalogId);
         Icon = Icons.GenericAppIcon;
     }
 
@@ -87,6 +89,7 @@ internal sealed partial class AppCommand : InvokableCommand
         return CommandResult.Dismiss();
     }
 
+    /// <summary>Creates the legacy ID used by existing saved app commands.</summary>
     internal static string GenerateId(string name, string subtitle, string exePath)
     {
         // Use WyHash64 to generate stable ID hashes.

@@ -103,7 +103,7 @@ internal sealed class AppCatalogItem
             .Select(reference => reference.ItemId)
             .Where(path => Path.IsPathFullyQualified(path) && Win32Program.IsExecutablePath(path))
             .ToArray();
-        app.CommandIds = CommandIds.Concat(IdentityAliases.SelectMany(AppIdentity.GetCommandIds)).Distinct(StringComparer.Ordinal).ToArray();
+        app.CommandIds = CommandIds.Concat(IdentityAliases.SelectMany(identity => AppIdentity.GetCommandIds(identity))).Distinct(StringComparer.Ordinal).ToArray();
         return app;
     }
 
@@ -302,5 +302,36 @@ internal sealed class AppCatalogItem
         return comparison != 0
             ? comparison
             : string.Compare(left, right, StringComparison.Ordinal);
+    }
+
+    /// <summary>Compares source snapshots by persisted item content, independent of item order.</summary>
+    internal static bool HaveSamePersistedContent(
+        IReadOnlyList<AppCatalogItem> left,
+        IReadOnlyList<AppCatalogItem> right)
+    {
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+
+        var leftById = new Dictionary<string, AppCatalogItem>(left.Count, StringComparer.OrdinalIgnoreCase);
+        foreach (var item in left)
+        {
+            if (!leftById.TryAdd(item.Identity, item))
+            {
+                return false;
+            }
+        }
+
+        foreach (var item in right)
+        {
+            if (!leftById.Remove(item.Identity, out var leftItem)
+                || !leftItem.HasSamePersistedContent(item))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

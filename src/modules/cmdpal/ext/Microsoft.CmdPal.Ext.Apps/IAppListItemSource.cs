@@ -22,11 +22,6 @@ public interface IAppListItemSource : IDisposable
     event EventHandler? Changed;
 
     /// <summary>
-    /// Gets an atomic snapshot of visible and hidden application list items.
-    /// </summary>
-    AppListItemSnapshot GetSnapshot();
-
-    /// <summary>
     /// Gets a value indicating whether the initial catalog load or a user-requested refresh is active.
     /// </summary>
     bool IsLoading { get; }
@@ -35,6 +30,11 @@ public interface IAppListItemSource : IDisposable
     /// Gets the configured maximum number of application results for consumers that embed the list.
     /// </summary>
     int TopLevelResultLimit { get; }
+
+    /// <summary>
+    /// Gets an atomic snapshot of visible and hidden application list items.
+    /// </summary>
+    AppListItemSnapshot GetSnapshot();
 
     /// <summary>
     /// Requests a full background refresh of the application catalog.

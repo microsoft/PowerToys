@@ -162,12 +162,6 @@ public partial class Win32Program
         return ExecutableName;
     }
 
-    public string GetAppIdentifier()
-    {
-        // Use a combination of name and path to create a unique identifier
-        return $"{Name}|{FullPath}";
-    }
-
     private static Win32Program CreateWin32Program(string path)
     {
         try

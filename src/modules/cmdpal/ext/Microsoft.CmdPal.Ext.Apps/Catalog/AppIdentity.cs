@@ -207,12 +207,4 @@ internal static class AppIdentity
         var expectedId = $"com.squirrel.{Path.GetFileName(targetDirectory).Replace(" ", string.Empty)}.{Path.GetFileNameWithoutExtension(targetPath).Replace(" ", string.Empty)}";
         return string.Equals(explicitAppUserModelId, expectedId, StringComparison.OrdinalIgnoreCase);
     }
-
-    /// <summary>Creates the Win32 identity shared by legacy discovery and the catalog.</summary>
-    internal static string ForWin32(LaunchTarget target, string? arguments, string workingDirectory)
-    {
-        var encodedArguments = Convert.ToHexString(Encoding.UTF8.GetBytes(arguments ?? string.Empty));
-        var identity = $"win32:{target.IdentityToken}|args:{encodedArguments}";
-        return string.IsNullOrEmpty(workingDirectory) ? identity : $"{identity}|cwd:{workingDirectory}";
-    }
 }

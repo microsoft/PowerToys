@@ -486,7 +486,7 @@ public class AllAppsPageTests : AppsTestBase
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -648,9 +648,10 @@ public class AllAppsPageTests : AppsTestBase
     {
         using var mockCatalog = new MockAppCatalog();
         mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Editor", @"C:\Apps\Editor.exe"));
-        mockCatalog.Items[0].MatchTerms = ["LegacyAliasNeedle"];
-        mockCatalog.Items[0].FullExecutablePath = @"C:\ResolvedTargetNeedle\Editor.exe";
-        mockCatalog.Items[0].UserModelId = "Contoso.PackagedIdentityNeedle!Editor";
+        var app = mockCatalog.GetSnapshot().Items[0];
+        app.MatchTerms = ["LegacyAliasNeedle"];
+        app.FullExecutablePath = @"C:\ResolvedTargetNeedle\Editor.exe";
+        app.UserModelId = "Contoso.PackagedIdentityNeedle!Editor";
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
         using var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await WaitForPageInitializationAsync(page);
