@@ -42,7 +42,9 @@ public static class Win32Helper
         ArgumentNullException.ThrowIfNull(windowProcDelegate);
 
         // see https://learn.microsoft.com/en-us/windows/win32/winmsg/using-messages-and-message-queues
-        var hInstance = (HINSTANCE)Process.GetCurrentProcess().Handle;
+        // and https://github.com/microsoft/PowerToys/pull/51713/changes/BASE..c1c84438727b72ec50fa540cf7323f11168e1505#r4422435955
+        using var process = Process.GetCurrentProcess();
+        var hInstance = (HINSTANCE)(process.MainModule ?? throw new InvalidOperationException("The current process has no main module.")).BaseAddress;
 
         // register the window class
         // see https://stackoverflow.com/a/30992796/3156906
