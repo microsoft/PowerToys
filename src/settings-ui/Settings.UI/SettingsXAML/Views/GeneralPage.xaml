@@ -53,7 +53,7 @@
                                 x:Name="GeneralPageCheckForUpdatesButton"
                                 x:Uid="GeneralPage_CheckForUpdates"
                                 AutomationProperties.AutomationId="GeneralOpenUpdateSurfaceButton"
-                                Click="UpdateStatusCard_Click"
+                                Command="{x:Bind SharedUpdateViewModel.CheckForUpdatesCommand}"
                                 Style="{StaticResource AccentButtonStyle}" />
                         </StackPanel>
                         <tkcontrols:SettingsExpander.ItemsHeader>

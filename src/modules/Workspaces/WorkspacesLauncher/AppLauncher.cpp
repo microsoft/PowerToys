@@ -35,7 +35,7 @@ namespace AppLauncher
         SHELLEXECUTEINFO sei = { 0 };
         sei.cbSize = sizeof(SHELLEXECUTEINFO);
         sei.hwnd = nullptr;
-        sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE;
+        sei.fMask = SEE_MASK_NOCLOSEPROCESS;
         sei.lpVerb = elevated ? L"runas" : L"open";
         sei.lpFile = appPath.c_str();
         sei.lpParameters = commandLineArgs.c_str();
@@ -88,17 +88,23 @@ namespace AppLauncher
         return false;
     }
 
-    LaunchResult Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList& launchErrors, const ApprovalCallback& requestApproval, const std::function<bool()>& isCanceled)
+    LaunchResult Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList& launchErrors, const ApprovalCallback& requestApproval, const std::function<bool()>& isCanceled, DWORD* nativeError)
     {
         bool launched{ false };
+        if (nativeError)
+            *nativeError = ERROR_SUCCESS;
         std::optional<LaunchResult> terminalResult;
         const auto stop = [&](LaunchDecision decision) -> Result<SHELLEXECUTEINFO, LaunchError> {
             if (decision == LaunchDecision::Skipped || decision == LaunchDecision::Canceled)
             {
+                if (nativeError)
+                    *nativeError = ERROR_CANCELLED;
                 terminalResult = decision == LaunchDecision::Skipped ? LaunchResult::Skipped : LaunchResult::Canceled;
                 return Error(LaunchError{ ERROR_CANCELLED, L"Launch skipped or canceled." });
             }
             terminalResult = LaunchResult::Failed;
+            if (nativeError)
+                *nativeError = ERROR_NOT_READY;
             const auto reason = decision == LaunchDecision::TimedOut ? L"Elevation confirmation could not be displayed in time." :
                                 decision == LaunchDecision::InvalidResponse ? L"Invalid elevation confirmation response." :
                                 L"Elevation confirmation UI is unavailable.";
@@ -108,10 +114,14 @@ namespace AppLauncher
         };
         if (isCanceled())
         {
+            if (nativeError)
+                *nativeError = ERROR_CANCELLED;
             return LaunchResult::Canceled;
         }
         const auto execute = [&](const std::wstring& path, const std::wstring& arguments) {
             auto result = LaunchApp(path, arguments, app.isElevated);
+            if (nativeError)
+                *nativeError = result.isError() ? result.error().code : ERROR_SUCCESS;
             if (result.isError() && result.error().code == ERROR_CANCELLED)
             {
                 terminalResult = LaunchResult::Canceled;
@@ -291,6 +301,8 @@ namespace AppLauncher
             DWORD dwAttrib = GetFileAttributesW(appPathFinal.c_str());
             if (dwAttrib == INVALID_FILE_ATTRIBUTES)
             {
+                if (nativeError)
+                    *nativeError = GetLastError();
                 Logger::error(L"File not found at {}", appPathFinal);
                 launchErrors.push_back({ std::filesystem::path(appPathFinal).filename(), L"File not found" });
                 return LaunchResult::Failed;
@@ -308,6 +320,8 @@ namespace AppLauncher
         }
 
         Logger::trace(L"{} {} at {}", app.name, (launched ? L"launched" : L"not launched"), appPathFinal);
+        if (launched && nativeError)
+            *nativeError = ERROR_SUCCESS;
         return terminalResult.value_or(launched ? LaunchResult::Launched : LaunchResult::Failed);
     }
 }

@@ -346,7 +346,7 @@ public partial class ShellViewModel : ObservableObject,
         {
             // TODO: It would be better to do this as a page exception, rather
             // than a silent log message.
-            host?.Log(ex.Message);
+            CoreLogger.LogError("Failed to perform command", ex);
         }
     }
 
@@ -418,7 +418,7 @@ public partial class ShellViewModel : ObservableObject,
 
             // TODO: It would be better to do this as a page exception, rather
             // than a silent log message.
-            host?.Log(ex.Message);
+            CoreLogger.LogError("Failed to invoke command", ex);
         }
         finally
         {

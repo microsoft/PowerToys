@@ -26,8 +26,8 @@ public static class WorkspacesStorage
 
         try
         {
-            var json = File.ReadAllText(filePath);
-            var data = JsonSerializer.Deserialize(json, WorkspacesStorageJsonContext.Default.WorkspacesFile);
+            using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            var data = JsonSerializer.Deserialize(stream, WorkspacesStorageJsonContext.Default.WorkspacesFile);
 
             if (data?.Workspaces == null)
             {

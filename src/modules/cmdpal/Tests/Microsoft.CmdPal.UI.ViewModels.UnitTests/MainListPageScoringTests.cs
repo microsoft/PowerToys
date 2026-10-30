@@ -10,7 +10,9 @@ using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -45,8 +47,8 @@ public sealed class MainListPageScoringTests
         var command = CreateCommand(title, subtitle, extensionName);
         var itemWithoutExtension = new ListItem(new NoOpCommand()) { Title = title, Subtitle = subtitle };
 
-        var expected = MainListPage.ScoreTopLevelItem(query, itemWithoutExtension, history, matcher);
-        var actual = MainListPage.ScoreTopLevelItem(query, command, history, matcher);
+        var expected = MainListPage.ScoreTopLevelItem(query, new InProcObject<IListItem>(itemWithoutExtension), history, matcher);
+        var actual = MainListPage.ScoreTopLevelItem(query, new InProcObject<IListItem>(command), history, matcher);
 
         Assert.IsTrue(expected > 0, "The title or subtitle must match independently of the extension name.");
         Assert.AreEqual(expected, actual, "A matching extension name must not boost an existing title or subtitle match.");
@@ -63,9 +65,9 @@ public sealed class MainListPageScoringTests
         var command = CreateCommand("My issues", "View assigned issues", extensionName);
         var itemWithoutExtension = new ListItem(new NoOpCommand()) { Title = command.Title, Subtitle = command.Subtitle };
 
-        Assert.AreEqual(0, MainListPage.ScoreTopLevelItem(query, itemWithoutExtension, history, matcher));
+        Assert.AreEqual(0, MainListPage.ScoreTopLevelItem(query, new InProcObject<IListItem>(itemWithoutExtension), history, matcher));
 
-        var score = MainListPage.ScoreTopLevelItem(query, command, history, matcher);
+        var score = MainListPage.ScoreTopLevelItem(query, new InProcObject<IListItem>(command), history, matcher);
         if (shouldMatch)
         {
             var extensionScore = matcher.Score(query, matcher.PrecomputeTarget(extensionName)) / 1.5;
@@ -91,8 +93,8 @@ public sealed class MainListPageScoringTests
         Assert.IsNotNull(app.Command);
         var history = new RecentCommandsManager().WithHistoryItem(app.Command.Id, now);
 
-        var appScore = MainListPage.ScoreTopLevelItem(query, app, history, matcher, now: now);
-        var commandScore = MainListPage.ScoreTopLevelItem(query, command, history, matcher, now: now);
+        var appScore = MainListPage.ScoreTopLevelItem(query, new InProcObject<IListItem>(app), history, matcher, now: now);
+        var commandScore = MainListPage.ScoreTopLevelItem(query, new InProcObject<IListItem>(command), history, matcher, now: now);
 
         Assert.AreEqual(RankTier.Prefix, MainListRanker.TierOf(appScore));
         Assert.AreEqual(RankTier.Prefix, MainListRanker.TierOf(commandScore));

@@ -153,7 +153,7 @@ public sealed partial class FallbackCommandHostTests
         IListItem item = source;
         for (var i = 0; i < wrapperCount; i++)
         {
-            item = new RecentCommandListItem(item, source.Id);
+            item = new RecentCommandListItem(new(item), source.Id);
         }
 
         var rendered = new ListItemViewModel(item, source.ItemViewModel.PageContext, DefaultContextMenuFactory.Instance);
@@ -336,7 +336,7 @@ public sealed partial class FallbackCommandHostTests
             new FuzzyMatcherProvider(new PrecomputedFuzzyMatcherOptions()),
             settings,
             appState.Object,
-            new ListPage());
+            new(new ListPage()));
 
         page.SearchText = "query";
 

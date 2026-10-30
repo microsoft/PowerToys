@@ -143,7 +143,7 @@ IFACEMETHODIMP CPowerRenameRegEx::PutSearchTerm(_In_ PCWSTR searchTerm, bool for
         std::wstring normalizedSearchTerm = SanitizeAndNormalize(searchTerm);
 
         CSRWExclusiveAutoLock lock(&m_lock);
-        if (m_searchTerm == nullptr || lstrcmp(normalizedSearchTerm.c_str(), m_searchTerm) != 0)
+        if (m_searchTerm == nullptr || wcscmp(normalizedSearchTerm.c_str(), m_searchTerm) != 0)
         {
             changed = true;
             CoTaskMemFree(m_searchTerm);
@@ -289,7 +289,7 @@ IFACEMETHODIMP CPowerRenameRegEx::PutReplaceTerm(_In_ PCWSTR replaceTerm, bool f
         std::wstring normalizedReplaceTerm = SanitizeAndNormalize(replaceTerm);
 
         CSRWExclusiveAutoLock lock(&m_lock);
-        if (m_replaceTerm == nullptr || lstrcmp(normalizedReplaceTerm.c_str(), m_RawReplaceTerm.c_str()) != 0)
+        if (m_replaceTerm == nullptr || wcscmp(normalizedReplaceTerm.c_str(), m_RawReplaceTerm.c_str()) != 0)
         {
             changed = true;
             CoTaskMemFree(m_replaceTerm);

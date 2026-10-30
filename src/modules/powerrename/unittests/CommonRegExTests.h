@@ -727,6 +727,24 @@ TEST_METHOD(VerifyRegexMetacharacterCaret)
     CoTaskMemFree(result);
 }
 
+TEST_METHOD (VerifyTermChangeBetweenLinguisticallyEqualTerms)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+
+    // "ss" and "ß" compare equal linguistically, so changing one into the other must still be applied.
+    Assert::IsTrue(renameRegEx->PutSearchTerm(L"ss") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"\u00DF") == S_OK);
+    Assert::IsTrue(renameRegEx->PutSearchTerm(L"\u00DF") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"ss") == S_OK);
+
+    PWSTR result = nullptr;
+    unsigned long index = {};
+    Assert::IsTrue(renameRegEx->Replace(L"Ma\u00DF", &result, index) == S_OK);
+    Assert::AreEqual(L"Mass", result);
+    CoTaskMemFree(result);
+}
+
 #ifndef TESTS_PARTIAL
 };
 }
