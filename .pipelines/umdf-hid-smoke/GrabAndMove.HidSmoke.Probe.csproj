@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>GrabAndMove.HidSmoke.Probe</AssemblyName>
+    <RootNamespace>Microsoft.GrabAndMove.UITests</RootNamespace>
+    <ApplicationManifest>$(RepoRoot)src\modules\GrabAndMove\Tests\GrabAndMove.UITests\app.manifest</ApplicationManifest>
+    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <RunVSTest>false</RunVSTest>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\GrabAndMove.HidSmoke.Probe\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+    <ProjectReference Include="$(RepoRoot)src\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
+    <Compile Include="$(RepoRoot)src\modules\GrabAndMove\Tests\GrabAndMove.UITests\TestWindow.cs" Link="TestWindow.cs" />
+  </ItemGroup>
+</Project>

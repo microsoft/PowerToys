@@ -11,8 +11,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MouseJump.Common.Helpers;
 using MouseJump.Models.Display;
 using MouseJump.Models.Drawing;
+using MouseJump.Models.Layout;
 using MouseJump.Models.Styles;
-using MouseJump.Models.ViewModel;
 
 namespace MouseJump.Common.UnitTests.Helpers;
 
@@ -112,7 +112,7 @@ public static class LayoutHelperTests
     {
         public sealed class TestCase
         {
-            public TestCase(string testName, PreviewStyle previewStyle, DisplayInfo displayInfo, ScreenInfo activatedScreen, PointInfo activatedLocation, RectangleInfo expectedFormBounds, FormViewModel expectedResult)
+            public TestCase(string testName, PreviewStyle previewStyle, DisplayInfo displayInfo, ScreenInfo activatedScreen, PointInfo activatedLocation, RectangleInfo expectedFormBounds, FormLayout expectedResult)
             {
                 this.TestName = testName;
                 this.PreviewStyle = previewStyle;
@@ -135,7 +135,7 @@ public static class LayoutHelperTests
 
             public RectangleInfo ExpectedFormBounds { get; }
 
-            public FormViewModel ExpectedResult { get; }
+            public FormLayout ExpectedResult { get; }
         }
 
         public static IEnumerable<object[]> GetTestCases()
@@ -188,13 +188,13 @@ public static class LayoutHelperTests
             var activatedScreen = displayInfo.Devices[0].Screens[0];
             var activatedLocation = activatedScreen.DisplayArea.Midpoint;
             var expectedFormBounds = new RectangleInfo(250, 186, 524, 396);
-            var expectedResult = new FormViewModel(
+            var expectedResult = new FormLayout(
                 canvasLayout: new(
                     canvasBounds: BoxBounds.CreateFromOuterBounds(
                         outerBounds: new(0, 0, 524, 396),
                         boxStyle: previewStyle.CanvasStyle),
                     canvasStyle: previewStyle.CanvasStyle,
-                    deviceLayouts: new List<DeviceViewModel>()
+                    deviceLayouts: new List<DeviceLayout>()
                     {
                         new(
                             deviceInfo: displayInfo.Devices[0],
@@ -202,7 +202,7 @@ public static class LayoutHelperTests
                                 outerBounds: new(6, 6, 512, 384),
                                 boxStyle: BoxStyle.Empty),
                             deviceStyle: BoxStyle.Empty,
-                            screenLayouts: new List<ScreenViewModel>
+                            screenLayouts: new List<ScreenLayout>
                             {
                                 new(
                                     screenInfo: displayInfo.Devices[0].Screens[0],
@@ -263,13 +263,13 @@ public static class LayoutHelperTests
             activatedScreen = displayInfo.Devices[0].Screens[0];
             activatedLocation = activatedScreen.DisplayArea.Midpoint;
             expectedFormBounds = new RectangleInfo(256, 192, 512, 384);
-            expectedResult = new FormViewModel(
+            expectedResult = new FormLayout(
                 canvasLayout: new(
                     canvasBounds: BoxBounds.CreateFromOuterBounds(
                         outerBounds: new(0, 0, 512, 384),
                         boxStyle: previewStyle.CanvasStyle),
                     canvasStyle: previewStyle.CanvasStyle,
-                    deviceLayouts: new List<DeviceViewModel>()
+                    deviceLayouts: new List<DeviceLayout>()
                     {
                         new(
                             deviceInfo: displayInfo.Devices[0],
@@ -277,7 +277,7 @@ public static class LayoutHelperTests
                                 outerBounds: new(0, 0, 512, 384),
                                 boxStyle: BoxStyle.Empty),
                             deviceStyle: BoxStyle.Empty,
-                            screenLayouts: new List<ScreenViewModel>
+                            screenLayouts: new List<ScreenLayout>
                             {
                                 new(
                                     screenInfo: displayInfo.Devices[0].Screens[0],
@@ -334,13 +334,13 @@ public static class LayoutHelperTests
             activatedScreen = displayInfo.Devices[0].Screens[0];
             activatedLocation = activatedScreen.DisplayArea.Midpoint;
             expectedFormBounds = new RectangleInfo(300, 66.5m, 300, 67);
-            expectedResult = new FormViewModel(
+            expectedResult = new FormLayout(
                 canvasLayout: new(
                     canvasBounds: BoxBounds.CreateFromOuterBounds(
                         outerBounds: new(0, 0, 300, 67),
                         boxStyle: previewStyle.CanvasStyle),
                     canvasStyle: previewStyle.CanvasStyle,
-                    deviceLayouts: new List<DeviceViewModel>()
+                    deviceLayouts: new List<DeviceLayout>()
                     {
                         new(
                             deviceInfo: displayInfo.Devices[0],
@@ -348,7 +348,7 @@ public static class LayoutHelperTests
                                 outerBounds: new(0, 0, 300, 67),
                                 boxStyle: BoxStyle.Empty),
                             deviceStyle: BoxStyle.Empty,
-                            screenLayouts: new List<ScreenViewModel>()
+                            screenLayouts: new List<ScreenLayout>()
                             {
                                 new(
                                     screenInfo: displayInfo.Devices[0].Screens[0],
@@ -430,13 +430,13 @@ public static class LayoutHelperTests
             activatedScreen = displayInfo.Devices[0].Screens[0];
             activatedLocation = activatedScreen.DisplayArea.Midpoint;
             expectedFormBounds = new RectangleInfo(-1318, -42, 716, 204);
-            expectedResult = new FormViewModel(
+            expectedResult = new FormLayout(
                 canvasLayout: new(
                     canvasBounds: BoxBounds.CreateFromOuterBounds(
                         outerBounds: new(0, 0, 716, 204),
                         boxStyle: previewStyle.CanvasStyle),
                     canvasStyle: previewStyle.CanvasStyle,
-                    deviceLayouts: new List<DeviceViewModel>()
+                    deviceLayouts: new List<DeviceLayout>()
                     {
                         new(
                             deviceInfo: displayInfo.Devices[0],
@@ -444,7 +444,7 @@ public static class LayoutHelperTests
                                 outerBounds: new(6, 6, 704, 192),
                                 boxStyle: BoxStyle.Empty),
                             deviceStyle: BoxStyle.Empty,
-                            screenLayouts: new List<ScreenViewModel>()
+                            screenLayouts: new List<ScreenLayout>()
                             {
                                 new(
                                     screenInfo: displayInfo.Devices[0].Screens[0],
@@ -512,13 +512,13 @@ public static class LayoutHelperTests
             activatedScreen = displayInfo.Devices[0].Screens[0];
             activatedLocation = activatedScreen.DisplayArea.Midpoint;
             expectedFormBounds = new RectangleInfo(1760, 607.5m, 1600, 225);
-            expectedResult = new FormViewModel(
+            expectedResult = new FormLayout(
                 canvasLayout: new(
                     canvasBounds: BoxBounds.CreateFromOuterBounds(
                         outerBounds: new(0, 0, 1600, 225),
                         boxStyle: previewStyle.CanvasStyle),
                     canvasStyle: previewStyle.CanvasStyle,
-                    deviceLayouts: new List<DeviceViewModel>()
+                    deviceLayouts: new List<DeviceLayout>()
                     {
                         new(
                             deviceInfo: displayInfo.Devices[0],
@@ -526,7 +526,7 @@ public static class LayoutHelperTests
                                 outerBounds: new(0, 0, 800, 225),
                                 boxStyle: BoxStyle.Empty),
                             deviceStyle: BoxStyle.Empty,
-                            screenLayouts: new List<ScreenViewModel>()
+                            screenLayouts: new List<ScreenLayout>()
                             {
                                 new(
                                     screenInfo: displayInfo.Devices[0].Screens[0],
@@ -542,7 +542,7 @@ public static class LayoutHelperTests
                                 outerBounds: new(800, 0, 800, 225),
                                 boxStyle: BoxStyle.Empty),
                             deviceStyle: BoxStyle.Empty,
-                            screenLayouts: new List<ScreenViewModel>()
+                            screenLayouts: new List<ScreenLayout>()
                             {
                                 new(
                                     screenInfo: displayInfo.Devices[1].Screens[0],

@@ -1,4 +1,7 @@
 parameters:
+  - name: umdfHidArm64Image
+    type: string
+    default: ''
   - name: configuration
     type: string
     default: "Release"
@@ -40,6 +43,12 @@ parameters:
   - name: jobSuffix
     type: string
     default: ''
+  - name: routeUmdfHidArm64
+    type: boolean
+    default: false
+  - name: umdfHidArm64Dedicated
+    type: boolean
+    default: false
 
 jobs:
 - job: Test${{ parameters.platform }}${{ parameters.configuration }}${{ parameters.jobSuffix }}
@@ -60,20 +69,27 @@ jobs:
     ${{ if eq(parameters.autoSelectUiTests, true) }}:
       AutoUiTestModules: $[ dependencies.Resolve.outputs['resolve.uiTestModules'] ]
   pool:
-    ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
-      ${{ if ne(parameters.platform, 'ARM64') }}:
-        name: SHINE-INT-Testing-x64
-        ${{ if eq(parameters.platform, 'x64Win11') }}:
-          demands: ImageOverride -equals SHINE-W11-Testing
-      ${{ else }}:
+    ${{ if eq(parameters.umdfHidArm64Dedicated, true) }}:
+      ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
         name: SHINE-INT-Testing-arm64
-    ${{ else }}:
-      ${{ if ne(parameters.platform, 'ARM64') }}:
-        name: SHINE-OSS-Testing-x64
-        ${{ if eq(parameters.platform, 'x64Win11') }}:
-          demands: ImageOverride -equals SHINE-W11-Testing
       ${{ else }}:
         name: SHINE-OSS-Testing-arm64
+      demands: ImageOverride -equals ${{ parameters.umdfHidArm64Image }}
+    ${{ else }}:
+      ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+        ${{ if ne(parameters.platform, 'ARM64') }}:
+          name: SHINE-INT-Testing-x64
+          ${{ if eq(parameters.platform, 'x64Win11') }}:
+            demands: ImageOverride -equals SHINE-W11-Testing
+        ${{ else }}:
+          name: SHINE-INT-Testing-arm64
+      ${{ else }}:
+        ${{ if ne(parameters.platform, 'ARM64') }}:
+          name: SHINE-OSS-Testing-x64
+          ${{ if eq(parameters.platform, 'x64Win11') }}:
+            demands: ImageOverride -equals SHINE-W11-Testing
+        ${{ else }}:
+          name: SHINE-OSS-Testing-arm64
   steps:
   - checkout: self
     submodules: false
@@ -87,6 +103,27 @@ jobs:
       if ('${{ parameters.autoSelectUiTests }}' -eq 'True') {
         $modules = @($env:AUTO_UI_TEST_MODULES -split ';' | Where-Object { $_ })
       }
+      . "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\UmdfHidCi.Common.ps1"
+      $hidSelection = Get-UmdfHidUiTestSelection -Modules $modules -Platform '$(TestPlatform)' `
+        -AutoSelect ('${{ parameters.autoSelectUiTests }}' -eq 'True') `
+        -RouteArm64 ('${{ parameters.routeUmdfHidArm64 }}' -eq 'True') `
+        -DedicatedArm64 ('${{ parameters.umdfHidArm64Dedicated }}' -eq 'True')
+      if ('${{ parameters.umdfHidArm64Dedicated }}' -eq 'True') {
+        $bootConfiguration = & bcdedit.exe /enum '{current}'
+        if ($LASTEXITCODE) { throw 'BLOCKED_INFRASTRUCTURE: cannot read the dedicated image boot configuration.' }
+        Assert-UmdfHidArm64TestEnvironment `
+          -OsArchitecture ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()) `
+          -BootConfiguration ($bootConfiguration -join "`n")
+        Write-Host "Dedicated ARM64 UMDF image: $env:UMDF_HID_ARM64_IMAGE (TESTSIGNING is preconfigured; no boot settings are changed)."
+      }
+      Write-Host "##vso[task.setvariable variable=ExcludeUmdfHidSuite]$($hidSelection.Exclude.ToString().ToLowerInvariant())"
+      Write-Host "##vso[task.setvariable variable=UmdfHidSelectionBlocked]$($hidSelection.Blocked.ToString().ToLowerInvariant())"
+      if ($hidSelection.Skipped) {
+        Write-Host "##vso[task.logissue type=warning]Skipping implicitly selected GrabAndMove.UITests on $(TestPlatform): the dedicated ARM64 UMDF image is not configured. Other suites remain selected."
+      }
+      if ($hidSelection.Routed) {
+        Write-Host 'GrabAndMove.UITests runs only in the separate ARM64 UMDF job; this job keeps the other selected suites.'
+      }
       $selection = Get-MwbUiTestSelection -Modules $modules `
         -AutoSelect ('${{ parameters.autoSelectUiTests }}' -eq 'True') `
         -Platform '$(TestPlatform)' -Configuration '$(BuildConfiguration)' `
@@ -97,6 +134,7 @@ jobs:
       Write-Host "##vso[task.setvariable variable=MwbSelectionBlocked]$($selection.Blocked.ToString().ToLowerInvariant())"
       Write-Host "##vso[task.setvariable variable=MwbUiTestsPassed]false"
       Write-Host "##vso[task.setvariable variable=UiTestCleanupComplete]false"
+      Write-Host "##vso[task.setvariable variable=UmdfHidRequested]false"
       if ($selection.Reason -eq 'SkippedRequiresCurrentBuildBundle') {
         Write-Host "##vso[task.logissue type=warning]Skipping implicit MWB selection: its Sandbox suite requires buildNow or buildNowSlim. Other suites will run against the selected official build."
       }
@@ -117,6 +155,7 @@ jobs:
     displayName: Select UI test suites
     env:
       SELECTED_UI_TEST_MODULES: ${{ join(';', parameters.uiTestModules) }}
+      UMDF_HID_ARM64_IMAGE: ${{ parameters.umdfHidArm64Image }}
       ${{ if eq(parameters.autoSelectUiTests, true) }}:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 
@@ -162,6 +201,48 @@ jobs:
       # and '!' lines do NOT exclude. Per the task docs they "include files that don't match any
       # include pattern", so a '!**/*.pdb' line pulls in every non-pdb file — i.e. the whole product
       # tree (~14 GB). Use INCLUDE-ONLY patterns so only the installer + tests folder transfer.
+      # The whole 'tests' folder is still ~12 GB (every unit/fuzz/UI test output), so narrow it to
+      # the selected UI test projects' output folders, or to every *UITest* folder when none are
+      # selected. Fixtures (e.g. TestApp msix) are staged into each UI test project's own folder.
+      - pwsh: |
+          $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
+          if (-not [string]::IsNullOrWhiteSpace($env:AUTO_UI_TEST_MODULES)) {
+            $modulesRaw = $env:AUTO_UI_TEST_MODULES
+          }
+          $modules = @($modulesRaw -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+
+          if ($modules.Count -eq 0) {
+            $patterns = @('**/tests/*UITest*/**')
+          } else {
+            # Map each selected project (csproj or assembly name) to its OutputPath folder under tests\.
+            $projects = @(Get-ChildItem -Path "$(Build.SourcesDirectory)\src" -Filter '*.csproj' -File -Recurse)
+            $folders = foreach ($module in $modules) {
+              $folder = $module
+              $escaped = [regex]::Escape($module)
+              $project = $projects | Where-Object { $_.BaseName -eq $module } | Select-Object -First 1
+              if (-not $project) {
+                $project = $projects |
+                  Where-Object { [IO.File]::ReadAllText($_.FullName) -match "<AssemblyName>$escaped</AssemblyName>" } |
+                  Select-Object -First 1
+              }
+              if ($project -and [IO.File]::ReadAllText($project.FullName) -match '<OutputPath>[^<]*\\tests\\([^\\<]+)') {
+                $folder = $Matches[1]
+              }
+              $folder
+            }
+            $folders = @($folders | Sort-Object -Unique)
+            $patterns = @($folders | ForEach-Object { "**/tests/$_/**" })
+          }
+
+          # One pattern per line: the artifact download does not expand {a,b} braces, and
+          # setvariable decodes %0A to a newline that the task splits into separate patterns.
+          Write-Host "UI test artifact patterns:"
+          $patterns | ForEach-Object { Write-Host "  $_" }
+          Write-Host "##vso[task.setvariable variable=UiTestArtifactPattern]$($patterns -join '%0A')"
+        displayName: Compute UI test artifact pattern
+        ${{ if eq(parameters.autoSelectUiTests, true) }}:
+          env:
+            AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
       - task: DownloadPipelineArtifact@2
         displayName: Download artifacts (slim)
         condition: and(succeeded(), or(eq(variables['RunGenericUiTests'], 'true'), eq(variables['RunMwbSandbox'], 'true')))
@@ -171,8 +252,9 @@ jobs:
           targetPath: '$(Pipeline.Workspace)/$(TestArtifactsName)'
           patterns: |
             **/PowerToysSetup*.exe
-            **/tests/**
+            $(UiTestArtifactPattern)
             mwb-sandbox-ci/**
+            umdf-hid/**
   - ${{ else }}:
       # buildNow (whole tree, run in place) and the official path (small tests-only artifact) both
       # download the full named artifact via the Azure CLI ArtifactTool (bulk dedup, parallel). The
@@ -280,6 +362,7 @@ jobs:
         'ColorPicker.UITests',
         'CropAndLock.UITests',
         'FileLocksmith.UITests',
+        'GrabAndMove.UITests',
         'HostsEditor.UITests',
         'Hosts.UITests.Next',
         'ImageResizer.UITests',
@@ -328,7 +411,9 @@ jobs:
 
       if ($allModules -or $selectedModules -contains 'Workspaces.UITests.Next') {
         $requiredPackages += 'Workspaces.TestApp.msix'
-        $requiredAuthenticodeFiles += 'PowerToys.QuickAccess.exe'
+        $requiredAuthenticodeFiles += 'PowerToys.QuickAccess.exe', 'PowerToys.WorkspacesCLI.exe',
+          'PowerToys.WorkspacesLauncher.exe', 'PowerToys.WorkspacesWindowArranger.exe',
+          'PowerToys.WorkspacesLauncherUI.exe'
       }
 
       if ($allModules -or $selectedModules -contains 'Microsoft.CmdPal.UITests.Next') {
@@ -446,8 +531,12 @@ jobs:
 
       # Run each test assembly once (a project reference can copy a runner into a sibling's output).
       $entries = $entries | Sort-Object FullName | Group-Object Name | ForEach-Object { $_.Group[0] }
+      $matchedEntries = @($entries).Count
+      if ($env:EXCLUDE_UMDF_HID_SUITE -eq 'true') {
+        $entries = @($entries | Where-Object Name -ne 'GrabAndMove.UITests.runtimeconfig.json')
+      }
 
-      if ($runGenericUiTests -and -not $entries) {
+      if ($runGenericUiTests -and -not $entries -and ($matchedEntries -eq 0 -or $env:EXCLUDE_UMDF_HID_SUITE -ne 'true')) {
         Write-Host "##vso[task.logissue type=error]No UI test runners matched (modules: '$modulesRaw') under $artifactRoot"
         exit 1
       }
@@ -455,7 +544,7 @@ jobs:
       $resultsDir = "$(Common.TestResultsDirectory)"
       New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
 
-      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'Microsoft.CmdPal.UITests.Next', 'Workspaces.UITests.Next')
+      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'Microsoft.CmdPal.UITests.Next', 'Workspaces.UITests.Next')
       . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
       $locationStatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\LightSwitchLocation.json"
       $failed = 0
@@ -468,6 +557,17 @@ jobs:
         Write-Host "##[group]Run UI tests: $base"
         Push-Location $dir
         try {
+          if ($base -eq 'GrabAndMove.UITests') {
+            Write-Host "##vso[task.setvariable variable=UmdfHidRequested]true"
+            $hidArguments = @{
+              StatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\UmdfHidSmoke.json"
+              ResultsDirectory = Join-Path $resultsDir 'umdf-hid'
+            }
+            & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Manage-SmokeDriver.ps1" `
+              -Action Cleanup @hidArguments
+            & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Manage-SmokeDriver.ps1" `
+              -Action Install -ArtifactDirectory (Join-Path $artifactRoot 'umdf-hid\$(BuildPlatform)') @hidArguments
+          }
           if ($base -eq 'LightSwitch.UITests.Next') {
             try {
               Enable-LightSwitchLocation -StatePath $locationStatePath
@@ -499,6 +599,15 @@ jobs:
           $suiteFailed = $true
         } finally {
           try {
+            if ($base -eq 'GrabAndMove.UITests') {
+              try {
+                & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Manage-SmokeDriver.ps1" `
+                  -Action Cleanup @hidArguments
+              } catch {
+                Write-Host "##vso[task.logissue type=error]Virtual HID cleanup failed: $($_.Exception.Message)"
+                $suiteFailed = $true
+              }
+            }
             if ($base -eq 'LightSwitch.UITests.Next') {
               try {
                 Restore-LightSwitchLocation -StatePath $locationStatePath
@@ -538,6 +647,10 @@ jobs:
         Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: MWB requires the selected revision's shared Release runtime bundle (buildNow or buildNowSlim). Older official/installed builds are not substituted; other selected suites run independently."
         $failed++
       }
+      if ($env:UMDF_HID_SELECTION_BLOCKED -eq 'true') {
+        Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: explicitly selected GrabAndMove.UITests requires the configured dedicated ARM64 UMDF pool/image. No boot policies are changed; other selected suites run independently."
+        $failed++
+      }
       if ($failed -gt 0) {
         Write-Host "##vso[task.logissue type=error]$failed UI test project(s) reported failures."
         exit 1
@@ -553,12 +666,24 @@ jobs:
       RUN_GENERIC_UI_TESTS: $(RunGenericUiTests)
       RUN_MWB_SANDBOX: $(RunMwbSandbox)
       MWB_SELECTION_BLOCKED: $(MwbSelectionBlocked)
+      EXCLUDE_UMDF_HID_SUITE: $(ExcludeUmdfHidSuite)
+      UMDF_HID_SELECTION_BLOCKED: $(UmdfHidSelectionBlocked)
       ${{ if eq(parameters.autoSelectUiTests, true) }}:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 
   - pwsh: |
       $ErrorActionPreference = 'Stop'
       $failures = 0
+      $hidState = "$(Agent.WorkFolder)\PowerToysUiTestState\UmdfHidSmoke.json"
+      if (Test-Path -LiteralPath $hidState) {
+        try {
+          & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Manage-SmokeDriver.ps1" `
+            -Action Cleanup -StatePath $hidState -ResultsDirectory "$(Common.TestResultsDirectory)\umdf-hid"
+        } catch {
+          Write-Host "##vso[task.logissue type=error]Virtual HID prerequisite cleanup failed: $($_.Exception.Message)"
+          $failures++
+        }
+      }
       if ($env:RUN_MWB_SANDBOX -eq 'true') {
         try {
           . "$(Build.SourcesDirectory)\.pipelines\mwb\MwbSandboxCi.Common.ps1"
@@ -584,6 +709,13 @@ jobs:
       RUN_MWB_SANDBOX: $(RunMwbSandbox)
 
   # Preserve pre-TRX/cancellation evidence before potentially lengthy recording uploads.
+  - task: PublishPipelineArtifact@1
+    displayName: Publish virtual HID readiness and cleanup evidence
+    condition: and(always(), eq(variables['UmdfHidRequested'], 'true'))
+    inputs:
+      targetPath: '$(Common.TestResultsDirectory)\umdf-hid'
+      artifactName: umdf-hid-$(TestPlatform)-$(System.JobId)
+
   - task: PublishPipelineArtifact@1
     displayName: Publish UI-test diagnostics
     condition: and(always(), eq(variables['RunMwbSandbox'], 'true'), or(failed(), canceled(), ne(variables['MwbUiTestsPassed'], 'true'), ne(variables['UiTestCleanupComplete'], 'true')))

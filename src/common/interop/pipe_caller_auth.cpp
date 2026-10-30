@@ -312,7 +312,7 @@ namespace interop_auth
         return GetModuleVersion(self);
     }
 
-    AuthResult AuthenticateClient(HANDLE pipe, const CallerPolicy& policy, VerificationCache& cache)
+    static AuthResult AuthenticateProcess(ULONG pid, const CallerPolicy& policy, VerificationCache& cache)
     {
         AuthResult res;
         if (!policy.enabled)
@@ -321,12 +321,6 @@ namespace interop_auth
             return res;
         }
 
-        ULONG pid = 0;
-        if (!GetNamedPipeClientProcessId(pipe, &pid))
-        {
-            res.reasonCode = L"no-client-pid";
-            return res;
-        }
         res.pid = pid;
 
         if (policy.expectedClientPid.has_value() && policy.expectedClientPid.value() != pid)
@@ -429,5 +423,25 @@ namespace interop_auth
         }
 
         return res;
+    }
+
+    AuthResult AuthenticateClient(HANDLE pipe, const CallerPolicy& policy, VerificationCache& cache)
+    {
+        ULONG pid = 0;
+        if (policy.enabled && !GetNamedPipeClientProcessId(pipe, &pid))
+        {
+            return { false, 0, {}, L"no-client-pid" };
+        }
+        return AuthenticateProcess(pid, policy, cache);
+    }
+
+    AuthResult AuthenticateServer(HANDLE pipe, const CallerPolicy& policy, VerificationCache& cache)
+    {
+        ULONG pid = 0;
+        if (policy.enabled && !GetNamedPipeServerProcessId(pipe, &pid))
+        {
+            return { false, 0, {}, L"no-server-pid" };
+        }
+        return AuthenticateProcess(pid, policy, cache);
     }
 }

@@ -39,6 +39,7 @@ Describe 'UI test signing selection' {
         'ColorPicker.UITests',
         'CropAndLock.UITests',
         'FileLocksmith.UITests',
+        'GrabAndMove.UITests',
         'HostsEditor.UITests',
         'Hosts.UITests.Next',
         'ImageResizer.UITests',
@@ -78,6 +79,7 @@ Describe 'UI test signing selection' {
         'AltWindowCycle.UITests.Extra',
         'FancyZones.UITests.Next',
         'FileLocksmith.UITests.Extra',
+        'GrabAndMove.UITests.Extra',
         'ImageResizer.UITests.Extra',
         'LightSwitch.UITests.Next.Extra',
         'MouseWithoutBorders.UITests.Extra',
@@ -147,6 +149,21 @@ Describe 'UI test signing selection' {
         ($result.Packages -contains 'NewPlusPackage.msix') | Should Be ($Platform -ne 'x64Win10')
         ($result.Files -contains 'PowerToys.exe') | Should Be $true
         ($result.Files -contains 'PowerToys.Settings.exe') | Should Be $true
+    }
+
+    It 'signs the shared Workspaces session peers on <Platform>' -TestCases @(
+        'x64Win10', 'x64Win11', 'ARM64' | ForEach-Object { @{ Platform = $_ } }
+    ) {
+        param($Platform)
+        foreach ($modules in @(@('Workspaces.UITests.Next'), @())) {
+            $result = Get-UITestSigningSelection -Modules $modules -Platform $Platform
+            foreach ($file in @('PowerToys.WorkspacesCLI.exe', 'PowerToys.WorkspacesLauncher.exe',
+                    'PowerToys.WorkspacesWindowArranger.exe', 'PowerToys.WorkspacesLauncherUI.exe')) {
+                ($result.Files -contains $file) | Should Be $true
+            }
+        }
+        $unrelated = Get-UITestSigningSelection -Modules 'Workspaces.Editor.UITests' -Platform $Platform
+        ($unrelated.Files -contains 'PowerToys.WorkspacesCLI.exe') | Should Be $false
     }
 
     It 'accepts mixed module selections and preserves case-insensitive matching' {

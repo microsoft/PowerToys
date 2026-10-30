@@ -16,6 +16,7 @@ This section contains documentation for individual PowerToys modules, including 
 | [FancyZones](fancyzones.md) ([debugging tools](fancyzones-tools.md)) | Window manager utility for custom window layouts |
 | [File Explorer add-ons](fileexploreraddons.md) | Extensions for enhancing Windows File Explorer functionality |
 | [File Locksmith](filelocksmith.md) | Tool for finding processes that lock files |
+| [Grab and Move](grabandmove.md) | Modifier-drag window moving/resizing, including driver-backed local UI testing |
 | [Hosts File Editor](hostsfileeditor.md) | Tool for managing the system hosts file |
 | [Image Resizer](imageresizer.md) | Tool for quickly resizing images within File Explorer |
 | [Keyboard Manager](keyboardmanager/README.md) | Tool for remapping keys and keyboard shortcuts |

@@ -6,6 +6,9 @@ steps:
       $tests = @(Get-ChildItem -LiteralPath $testRoot -Filter 'mwb*.Tests.ps1' -File)
       if ($tests.Count -eq 0) { throw 'No MWB infrastructure tests were discovered.' }
       $tests += Get-Item -LiteralPath (Join-Path $testRoot 'winappCliRelease.Tests.ps1')
+      $tests += Get-ChildItem -LiteralPath $testRoot -Filter 'umdfHid*.Tests.ps1' -File
+      $tests += Get-Item -LiteralPath (Join-Path $testRoot 'runUiTestAsUser.Tests.ps1')
+      $tests += Get-Item -LiteralPath (Join-Path $testRoot 'uiTestSigningSelection.Tests.ps1')
       $null = New-Item -ItemType Directory -Path "$(LogOutputDirectory)" -Force
       $result = Invoke-Pester -Script $tests.FullName -ExcludeTag NativeCompiler -PassThru -Quiet `
         -OutputFile "$(LogOutputDirectory)\pipeline-powershell-tests.xml" -OutputFormat NUnitXml

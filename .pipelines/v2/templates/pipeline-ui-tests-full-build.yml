@@ -1,5 +1,8 @@
 # Template for full build path: Build PowerToys + Build UI Tests + Run Tests
 parameters:
+  - name: umdfHidArm64Image
+    type: string
+    default: ''
   - name: platform
     type: string
   # buildNow = download the whole build artifact and run in place; buildNowSlim = download only the
@@ -45,6 +48,7 @@ stages:
           runTests: false
           buildTests: true
           prepareMwbRuntime: ${{ and(eq(parameters.platform, 'x64'), or(eq(length(parameters.uiTestModules), 0), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests'))) }}
+          prepareUmdfHid: ${{ and(or(eq(parameters.platform, 'x64'), and(eq(parameters.platform, 'arm64'), ne(parameters.umdfHidArm64Image, ''))), or(eq(length(parameters.uiTestModules), 0), containsValue(parameters.uiTestModules, 'GrabAndMove.UITests'))) }}
           useVSPreview: ${{ parameters.useVSPreview }}
           timeoutInMinutes: 90
 
@@ -79,8 +83,9 @@ stages:
       displayName: Test ${{ parameters.platform }} (Full Build)
       dependsOn: Build_${{ parameters.platform }}
       jobs:
-        - template: job-test-project.yml
+        - template: job-test-arm64.yml
           parameters:
+            umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
             platform: ${{ parameters.platform }}
             configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
