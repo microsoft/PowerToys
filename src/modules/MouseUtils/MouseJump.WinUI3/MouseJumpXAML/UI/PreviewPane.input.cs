@@ -49,11 +49,14 @@ internal sealed partial class PreviewPane
         var pointerLocation = new PointInfo((decimal)pointerPoint.Position.X, (decimal)pointerPoint.Position.Y)
             .Scale((decimal)scale);
 
-        // work out which screenshot was clicked, keeping the owning device too
+        // work out which screenshot was clicked, keeping the owning device too. use FirstOrDefault
+        // rather than SingleOrDefault - LayoutHelper rounds each screen's position and size
+        // independently, so adjacent screens' bounds can overlap by a pixel, and a click in that
+        // overlap would otherwise throw
         var clickedEntry = layout.CanvasLayout.DeviceLayouts
             .SelectMany(deviceLayout => deviceLayout.ScreenLayouts.Select(
                 screenLayout => (DeviceLayout: deviceLayout, ScreenLayout: screenLayout)))
-            .SingleOrDefault(
+            .FirstOrDefault(
                 entry => entry.ScreenLayout.ScreenBounds.OuterBounds.Contains(pointerLocation));
         if (clickedEntry.ScreenLayout is null)
         {
