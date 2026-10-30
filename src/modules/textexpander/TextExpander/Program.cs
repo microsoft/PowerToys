@@ -29,6 +29,9 @@ internal static class Program
     private static readonly uint ShowDiagnosticsMessage =
         Native.RegisterWindowMessageW("PowerToys.TextExpander.ShowDiagnostics");
 
+    // One diagnostics file write at a time.
+    private static readonly object DiagnosticsFileLock = new();
+
     private static string _windowClassName = WindowClassName;
     private static Native.WndProc? _wndProcDelegate;
     private static SnippetStore? _store;
@@ -81,17 +84,14 @@ internal static class Program
         SnippetPathResolution resolution = SnippetStore.ResolveConfiguredPathInfo(
             _hostSettings?.Read().SnippetsPath,
             HostSettings.DataFolder(_hostSettings?.FilePath));
-        _store = new SnippetStore(resolution.FilePath, resolution.ResolveFolderNames);
+        _store = new SnippetStore(resolution.FilePath, resolution.IsDefault);
+
+        // A snippets file that can't be loaded yet, such as one in OneDrive before OneDrive starts at sign-in, leaves
+        // Text Expander running with no snippets. Once it's watching, the store keeps trying quietly.
         SnippetStore.TransitionResult initialLoad = _store.Load();
         if (!initialLoad.Succeeded)
         {
             ReportSnippetTransitionFailure("load the initial snippet library", initialLoad);
-            Error(EngineText.Get(
-                "Error_SnippetFile",
-                "Text Expander couldn't load your snippets from:\n\n{0}\n\nCheck that the file is available, then restart PowerToys.")
-                .Replace("{0}", initialLoad.AttemptedPath, StringComparison.Ordinal));
-            _store.Dispose();
-            return 1;
         }
 
         IntPtr hwnd = CreateMessageWindow();
@@ -241,7 +241,7 @@ internal static class Program
             SnippetPathResolution resolution = SnippetStore.ResolveConfiguredPathInfo(
                 _hostSettings.Read().SnippetsPath,
                 HostSettings.DataFolder(_hostSettings.FilePath));
-            SnippetStore.TransitionResult result = _store.Repoint(resolution.FilePath, resolution.ResolveFolderNames);
+            SnippetStore.TransitionResult result = _store.Repoint(resolution.FilePath, resolution.IsDefault);
             if (!result.Succeeded)
             {
                 ReportSnippetTransitionFailure("switch the snippet library", result);
@@ -371,40 +371,33 @@ internal static class Program
         }
     }
 
-    private static void Expand(PendingExpansion work) => Run(_hook!, work, commit => TryExpand(_hook!, work, commit));
-
-    /// <summary>
-    /// Does <paramref name="work"/> and ends its hold however the work ends: held keys are typed again after the
-    /// expansion, or after the completing key when it didn't happen. <paramref name="apply"/> gets the check that
-    /// commits the work right before anything is erased.
-    /// </summary>
-    internal static void Run(KeyboardHook hook, PendingExpansion work, Func<Func<bool>, bool> apply)
+    private static void Expand(PendingExpansion work)
     {
-        long holdId = work.HoldId;
-        bool done = false;
         try
         {
-            done = apply(() => hook.Commit(ref holdId, work.InputGeneration));
+            _ = TryExpand(_hook!, work);
         }
         finally
         {
-            hook.EndHold(holdId, done);
+            // However the work ended, keys held since a prompt was answered go back to their window, or are dropped if
+            // it isn't in front.
+            _hook!.Guard.Abandon();
         }
     }
 
     /// <summary>Erases and types for <see cref="TryExpand"/>: <see cref="Injector.Replace"/>, or a test's fake.</summary>
-    internal delegate bool ReplaceText(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, int cursorRightUnits, Func<bool>? inputUnchanged, Func<bool>? commit);
+    internal delegate bool ReplaceText(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, int cursorRightUnits, InsertionGuard guard, long inputGeneration, Action? inserted);
 
     /// <summary>
-    /// Expands or undoes <paramref name="work"/>; <paramref name="commit"/> is the injector's last check. Tests pass a
-    /// fake <paramref name="replace"/> and <paramref name="isKeyDown"/>, so nothing is typed or read from the keyboard.
+    /// Expands or undoes <paramref name="work"/>. Tests pass a fake <paramref name="replace"/> and
+    /// <paramref name="isKeyDown"/>, so nothing is typed or read from the keyboard.
     /// </summary>
-    internal static bool TryExpand(KeyboardHook hook, PendingExpansion work, Func<bool> commit, ReplaceText? replace = null, Func<int, bool>? isKeyDown = null)
+    internal static bool TryExpand(KeyboardHook hook, PendingExpansion work, ReplaceText? replace = null, Func<int, bool>? isKeyDown = null)
     {
         replace ??= Injector.Replace;
 
         // A key press or click after this was queued may have moved the caret, so the work is dropped rather than
-        // applied wherever the caret is now. Checked again, by commit, right before anything is erased.
+        // applied wherever the caret is now. The hook has the last word when the insertion starts.
         bool InputUnchanged() => hook.InputGeneration == work.InputGeneration;
 
         if (work.IsUndo)
@@ -422,7 +415,7 @@ internal static class Program
             }
 
             // A $|$ left the caret inside the expansion; it goes back to the end before the expansion is erased.
-            return replace(Injector.CountDeletableUnits(work.Replacement), work.Trigger, work.TargetWindow, cursorLeftUnits: 0, cursorRightUnits: work.CursorLeft, InputUnchanged, commit);
+            return replace(Injector.CountDeletableUnits(work.Replacement), work.Trigger, work.TargetWindow, cursorLeftUnits: 0, cursorRightUnits: work.CursorLeft, hook.Guard, work.InputGeneration, inserted: null);
         }
 
         // Before any prompt, so nobody answers questions for an expansion that can no longer happen.
@@ -432,8 +425,12 @@ internal static class Program
         }
 
         (string text, int cursor) = Variables.NeedsPrompt(work.Replacement)
-            ? ExpandWithPrompts(work.Replacement, work.TargetWindow)
+            ? ExpandWithPrompts(hook, work.Replacement, work.TargetWindow)
             : Variables.ExpandWithPromptRequests(work.Replacement, static _ => string.Empty, Clipboard.GetText);
+        if (work.Terminator is char terminator)
+        {
+            text += terminator;
+        }
 
         if (work.TargetWindow != IntPtr.Zero && Native.GetForegroundWindow() != work.TargetWindow)
         {
@@ -441,39 +438,41 @@ internal static class Program
         }
 
         // The marker comes from the snippet's own text only; a "$|$" typed into a prompt or
-        // copied to the clipboard stays as it is.
+        // copied to the clipboard stays as it is. One too far from the end stays at the end.
         int cursorLeft = cursor < 0 ? 0 : Injector.CountDeletableUnits(text[cursor..]);
-
-        bool inserted = replace(Injector.CountDeletableUnits(work.TypedPrefix), text, work.TargetWindow, cursorLeft, cursorRightUnits: 0, InputUnchanged, commit);
-        if (ShouldRecordExpansion(inserted, work.Replacement))
+        if (cursorLeft > Injector.MaxCaretMoves)
         {
-            hook.RecordExpansion(work.TypedText ?? work.Trigger, text, work.TargetWindow, work.InputGeneration, cursorLeft);
+            cursorLeft = 0;
         }
 
-        return inserted;
+        // Kept for Ctrl+Z before the keys held meanwhile go back, unless it holds a prompt's answer or the clipboard.
+        Action? record = Variables.UsesSensitiveRuntimeInput(work.Replacement)
+            ? null
+            : () => hook.RecordExpansion(work.TypedText ?? work.Trigger, text, work.TargetWindow, work.InputGeneration, cursorLeft);
+        return replace(Injector.CountDeletableUnits(work.TypedPrefix), text, work.TargetWindow, cursorLeft, cursorRightUnits: 0, hook.Guard, work.InputGeneration, record);
     }
 
-    internal static bool ShouldRecordExpansion(bool inserted, string sourceReplacement)
-        => inserted && !Variables.UsesSensitiveRuntimeInput(sourceReplacement);
-
-    private static (string Text, int Cursor) ExpandWithPrompts(string replacement, IntPtr target)
+    private static (string Text, int Cursor) ExpandWithPrompts(KeyboardHook hook, string replacement, IntPtr target)
     {
-        _hook!.SuspendFor(target);
+        // Once the last answer is accepted, keys typed right away are held for the expansion, so they land after it.
+        int prompts = SnippetTemplate.Parse(replacement).Count(token => token.Kind == SnippetTokenKind.Prompt);
+        hook.SuspendFor(target);
         (string Text, int Cursor) expanded;
         try
         {
-            expanded = Variables.ExpandWithPromptRequests(replacement, request => PromptDialog.Show(request, target), Clipboard.GetText);
+            expanded = Variables.ExpandWithPromptRequests(replacement, request => PromptDialog.Show(request, target, --prompts == 0 ? () => hook.Guard.Hold(target) : null), Clipboard.GetText);
         }
         finally
         {
-            _hook.Suspended = false;
+            hook.Suspended = false;
         }
 
         if (target != IntPtr.Zero)
         {
             WindowFocus.Force(target);
 
-            // Types as soon as the window is in front again, instead of after a fixed 350 ms.
+            // Types as soon as the window is in front again, instead of after a fixed 350 ms. If it doesn't come back,
+            // the keys held since the answer are dropped once the work ends.
             WindowFocus.WaitUntilInFront(target, PromptRefocusTimeoutMs);
         }
 
@@ -484,20 +483,29 @@ internal static class Program
         => Info(EngineText.Get("Diagnostics_Title", "Text Expander diagnostics") + "\n\n"
             + InjectionDiagnostics.BuildReport(Injector.Backend, Injector.ClipboardThresholdChars));
 
-    private static void WriteDiagnosticsFile()
+    /// <summary>
+    /// Writes the diagnostics file, which bug reports copy as it is: so where the snippets file is shows only as the
+    /// default location or a custom one, never as a path. <paramref name="store"/> and <paramref name="path"/> are for tests.
+    /// </summary>
+    internal static void WriteDiagnosticsFile(SnippetStore? store = null, string? path = null)
     {
-        string path = DiagnosticsFilePath;
+        store ??= _store;
+        path ??= DiagnosticsFilePath;
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 
-        string source = _store is null
-            ? "snippets_file=(none)\nsnippet_count=0\nwatching=false\n"
-            : $"snippets_file={_store.FilePath}\nsnippet_count={_store.Current.Map.Count}\n"
-                + $"watching={(_store.IsWatching ? "true" : "false")}\n";
+        string source = store is null
+            ? "snippets_location=(none)\nsnippets_file_exists=false\nsnippet_count=0\nwatching=false\n"
+            : $"snippets_location={(store.IsDefaultPath ? "default" : "custom")}\n"
+                + $"snippets_file_exists={(File.Exists(store.FilePath) ? "true" : "false")}\n"
+                + $"snippet_count={store.Current.Map.Count}\nwatching={(store.IsWatching ? "true" : "false")}\n";
 
         source += $"word_boundary={(WordBoundary.Required ? "true" : "false")}\n"
             + $"word_boundary_keeps_space={(WordBoundary.KeepTerminator ? "true" : "false")}\n";
 
-        File.WriteAllText(path, source + InjectionDiagnostics.BuildMachineReport(Injector.Backend, Injector.ClipboardThresholdChars));
+        lock (DiagnosticsFileLock)
+        {
+            File.WriteAllText(path, source + InjectionDiagnostics.BuildMachineReport(Injector.Backend, Injector.ClipboardThresholdChars));
+        }
     }
 
     private static IntPtr FindEngineWindow()

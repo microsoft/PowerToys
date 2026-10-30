@@ -23,15 +23,16 @@ internal static class ClassicPromptDialog
     private static string? _result;
     private static bool _closed;
     private static PromptRequest _request;
+    private static Action? _accepted;
 
-    /// <summary>Shows the dialog modally. Returns null when cancelled.</summary>
-    public static string? Show(PromptRequest request)
+    /// <summary>Shows the dialog modally. Returns null when cancelled; <paramref name="accepted"/> runs as an answer is accepted.</summary>
+    public static string? Show(PromptRequest request, Action? accepted = null)
     {
         // Laid out in fixed pixels, so let Windows scale it.
         IntPtr previous = Native.SetThreadDpiAwarenessContext(Native.DPI_AWARENESS_CONTEXT_UNAWARE);
         try
         {
-            return ShowUnscaled(request);
+            return ShowUnscaled(request, accepted);
         }
         finally
         {
@@ -42,11 +43,12 @@ internal static class ClassicPromptDialog
         }
     }
 
-    private static string? ShowUnscaled(PromptRequest request)
+    private static string? ShowUnscaled(PromptRequest request, Action? accepted)
     {
         EnsureClassRegistered();
 
         _request = request;
+        _accepted = accepted;
         _editHandle = IntPtr.Zero;
         _okHandle = IntPtr.Zero;
         _errorHandle = IntPtr.Zero;
@@ -218,6 +220,7 @@ internal static class ClassicPromptDialog
                     }
 
                     _result = typed;
+                    _accepted?.Invoke();
                     Close(hwnd);
                     return IntPtr.Zero;
                 }

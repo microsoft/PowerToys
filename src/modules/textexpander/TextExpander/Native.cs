@@ -39,6 +39,7 @@ internal static class Native
     }
 
     public const uint LLKHF_EXTENDED = 0x01;
+    public const uint LLKHF_LOWER_IL_INJECTED = 0x02;
     public const uint LLKHF_UP = 0x80;
 
     public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);

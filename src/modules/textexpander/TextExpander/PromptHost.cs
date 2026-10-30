@@ -26,7 +26,7 @@ internal static class PromptHost
     /// shown, so the caller can fall back to the classic box. Otherwise <paramref name="answer"/> is
     /// the answer, or null when the user cancelled.
     /// </summary>
-    public static bool TryAsk(PromptRequest request, IntPtr target, out string? answer)
+    public static bool TryAsk(PromptRequest request, IntPtr target, Action? accepted, out string? answer)
     {
         answer = null;
         DispatcherQueue? dispatcher = EnsureStarted();
@@ -44,6 +44,11 @@ internal static class PromptHost
             {
                 var window = new PromptWindow(request, target, typed =>
                 {
+                    if (typed is not null)
+                    {
+                        accepted?.Invoke();
+                    }
+
                     result = typed;
                     done.Set();
                 });

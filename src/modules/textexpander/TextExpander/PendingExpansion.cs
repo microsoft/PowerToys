@@ -28,9 +28,9 @@ namespace Microsoft.PowerToys.TextExpander;
 /// On an undo, how far before the end of the expansion its $|$ left the caret; the caret goes back to the end
 /// before the expansion is erased.
 /// </param>
-/// <param name="HoldId">
-/// The hook's hold begun when the trigger completed, or 0 when keys are held only from the worker's last check: for a
-/// snippet that asks for something, and for an undo.
+/// <param name="Terminator">
+/// In word mode, when it's kept, the space or punctuation that released the trigger: the worker adds it after the
+/// expansion, so the hook doesn't copy the replacement.
 /// </param>
 internal readonly record struct PendingExpansion(
     string Trigger,
@@ -41,4 +41,4 @@ internal readonly record struct PendingExpansion(
     string? TypedText = null,
     long InputGeneration = 0,
     int CursorLeft = 0,
-    long HoldId = 0);
+    char? Terminator = null);

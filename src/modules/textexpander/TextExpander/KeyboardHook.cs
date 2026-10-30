@@ -17,25 +17,23 @@ namespace Microsoft.PowerToys.TextExpander;
 /// Windows delivers WH_KEYBOARD_LL and WH_MOUSE_LL callbacks by marshalling them to the thread
 /// that installed the hook, so that thread must keep pumping messages. If it stops for longer than
 /// LowLevelHooksTimeout (300 ms by default) the hook is silently removed with no notification.
-/// Matching is therefore done inline here because it is cheap, while the expansion — which
-/// deliberately sleeps between injected characters — is handed to a dedicated worker thread.
-/// Posting it back to this thread's own message loop would not help: the blocking would simply
-/// move from inside the callback to just after it, still starving the next hook dispatch.
+/// Matching is therefore done inline here because it is cheap, while the expansion — which waits
+/// for prompts and for the target to take a paste, and paces the characters it types — is handed
+/// to a dedicated worker thread. Posting it back to this thread's own message loop would not help:
+/// the blocking would simply move from inside the callback to just after it, still starving the
+/// next hook dispatch. While the worker inserts, the hook keeps the user's keys out of the
+/// insertion (see <see cref="InsertionGuard"/>).
 /// </summary>
 internal sealed class KeyboardHook : IDisposable
 {
     /// <summary>
-    /// Tags our own synthetic input so we never react to it. It carries Keyboard Manager's injected bit, so
-    /// Keyboard Manager's key remaps (a Caps Lock and Ctrl swap, a remapped Backspace) leave our keys alone
-    /// instead of turning the paste chord or the erase into other keys.
+    /// Tags our own synthetic input so we never react to it. Random for each run, so no other program can pass its keys
+    /// off as ours, and well clear of the small tags PowerToys' hooks use (0x1, 0x11, 0x101, 0x110, 0x111). It carries
+    /// Keyboard Manager's injected bit, so Keyboard Manager's key remaps (a Caps Lock and Ctrl swap, a remapped
+    /// Backspace) leave our keys alone instead of turning the paste chord or the erase into other keys.
     /// </summary>
-    public static readonly IntPtr InjectionSignature = new(0x47544558 | HostInputTags.KeyboardManagerInjected); // "GTEX"
-
-    /// <summary>
-    /// How long keys may stay held while the worker sends nothing (our own keys restart it) before they're given
-    /// back anyway, so a stalled worker can't keep the keyboard.
-    /// </summary>
-    internal const int HoldCapMs = 2_000;
+    public static readonly IntPtr InjectionSignature =
+        new((System.Security.Cryptography.RandomNumberGenerator.GetInt32(0x0100_0000, int.MaxValue) & ~0xFFF) | HostInputTags.KeyboardManagerInjected);
 
     private const int MinimumBufferCapacity = 256;
 
@@ -46,10 +44,6 @@ internal sealed class KeyboardHook : IDisposable
     private readonly Native.WinEventProc _winEventProc;
     private readonly object _bufferLock = new();
     private readonly object _undoLock = new();
-    private readonly object _holdLock = new();
-
-    // Keys whose key-down is held, so their key-ups are held too and nothing is typed again left pressed.
-    private readonly ulong[] _heldDowns = new ulong[4];
     private readonly SnippetStore _store;
     private TargetAuthorization _targetAuthorization = new(IntPtr.Zero, 0, false);
     private long _authorizationGeneration;
@@ -77,18 +71,6 @@ internal sealed class KeyboardHook : IDisposable
     // The window the expansion waiting on a prompt will type into, or zero when it isn't known.
     private volatile IntPtr _promptTarget;
 
-    // Keys typed while an expansion goes in, typed again afterwards so they land after it: one arriving while the
-    // paste held Ctrl became Ctrl+A or Ctrl+S. A snippet without a prompt holds them from its trigger; one with a
-    // prompt, and an undo, from the worker's last check. The hook fills the queue and the worker empties it, both
-    // under _holdLock.
-    private Native.INPUT[] _held = new Native.INPUT[32];
-    private int _heldCount;
-    private long _holdDeadline;
-    private long _holdId;
-    private bool _committed;
-    private string? _giveBack;
-    private volatile bool _holding;
-
     // CursorLeft is how far before the end of Replacement the snippet's $|$ left the caret.
     private sealed record UndoEntry(string Trigger, string Replacement, IntPtr TargetWindow, int CursorLeft);
 
@@ -98,9 +80,12 @@ internal sealed class KeyboardHook : IDisposable
     /// Gets the input generation. Every key press other than a modifier, and every click, moves it on, because
     /// any of them can move the caret: work queued before one of them must not be applied where the caret is now.
     /// While a prompt is open, only those reaching the window the expansion will type into do. Keys held while an
-    /// expansion goes in don't: they haven't reached the app yet.
+    /// insertion goes in don't: they haven't reached the app yet.
     /// </summary>
     internal long InputGeneration => Volatile.Read(ref _inputGeneration);
+
+    /// <summary>Gets the guard that keeps the user's keys out of each insertion.</summary>
+    internal InsertionGuard Guard { get; }
 
     /// <summary>
     /// Gets or sets a value indicating whether when false, keystrokes are still observed but never expanded. Turning this off is how a
@@ -155,11 +140,12 @@ internal sealed class KeyboardHook : IDisposable
         _hookProc = HookCallback;
         _mouseHookProc = MouseCallback;
         _winEventProc = ForegroundChanged;
+        Guard = new InsertionGuard(() => InputGeneration, TargetInFront);
     }
 
     public bool Install()
     {
-        Replay = Injector.Dispatch;
+        Guard.Resend = Injector.Dispatch;
         RefreshTargetAuthorization(Native.GetForegroundWindow(), asynchronous: false);
 
         IntPtr module = Native.GetModuleHandleW(null);
@@ -197,58 +183,52 @@ internal sealed class KeyboardHook : IDisposable
     }
 
     // ── Hook callback ────────────────────────────────────────
-    private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+    private unsafe IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
     {
-        if (nCode != Native.HC_ACTION)
+        // Copied, not marshalled, which would allocate on every key event on the machine.
+        return nCode == Native.HC_ACTION && OnKeyEvent(*(Native.KBDLLHOOKSTRUCT*)lParam, wParam.ToInt32())
+            ? new IntPtr(1)
+            : Native.CallNextHookEx(_hookHandle, nCode, wParam, lParam);
+    }
+
+    /// <summary>Handles a key event, and returns whether it's swallowed. Every one, key-ups too, goes to the guard first.</summary>
+    internal bool OnKeyEvent(Native.KBDLLHOOKSTRUCT data, int message)
+    {
+        if (Guard.Swallows(data))
         {
-            return Native.CallNextHookEx(_hookHandle, nCode, wParam, lParam);
+            return true;
         }
 
-        int message = wParam.ToInt32();
-        bool keyDown = message == Native.WM_KEYDOWN || message == Native.WM_SYSKEYDOWN;
-
-        // Key-ups only matter while keys are held.
-        if (!keyDown && !_holding)
+        if (message != Native.WM_KEYDOWN && message != Native.WM_SYSKEYDOWN)
         {
-            return Native.CallNextHookEx(_hookHandle, nCode, wParam, lParam);
+            return false;
         }
-
-        Native.KBDLLHOOKSTRUCT data = System.Runtime.InteropServices.Marshal
-            .PtrToStructure<Native.KBDLLHOOKSTRUCT>(lParam);
 
         // Ignore input we synthesised ourselves — which is what prevents an expansion from
         // re-triggering — and the synthetic input PowerToys' own hooks replay. Deliberately NOT
         // filtering on LLKHF_INJECTED generally: the Windows touch keyboard, on-screen keyboard
         // and remote-desktop clients all inject their input, and blanket-filtering would silently
         // break expansion on 2-in-1 ARM devices. See HostInputTags for which tags are honoured.
-        if (HoldsBack(data, out HostInputKind kind))
+        HostInputKind kind = HostInputTags.Classify(data.DwExtraInfo, InjectionSignature);
+        if (kind == HostInputKind.Ignored)
         {
-            return new IntPtr(1);
-        }
-
-        if (kind == HostInputKind.Ignored || !keyDown)
-        {
-            return Native.CallNextHookEx(_hookHandle, nCode, wParam, lParam);
+            return false;
         }
 
         if (Suspended)
         {
             KeyWhileSuspended(data.VkCode, ReachesPromptTarget(Native.GetForegroundWindow()));
-            return Native.CallNextHookEx(_hookHandle, nCode, wParam, lParam);
+            return false;
         }
 
         if (kind == HostInputKind.Unmatched)
         {
             UnmatchedKey(data.VkCode);
-            return Native.CallNextHookEx(_hookHandle, nCode, wParam, lParam);
+            return false;
         }
 
-        if (HandleKey(data))
-        {
-            return new IntPtr(1); // swallow the final trigger character
-        }
-
-        return Native.CallNextHookEx(_hookHandle, nCode, wParam, lParam);
+        // Swallows the final trigger character.
+        return HandleKey(data);
     }
 
     /// <summary>
@@ -265,11 +245,6 @@ internal sealed class KeyboardHook : IDisposable
     {
         if (nCode == Native.HC_ACTION)
         {
-            if (_holding)
-            {
-                ReleaseIfExpired();
-            }
-
             // Only button-down messages reposition the caret. Wheel and WM_MOUSEMOVE do not, and
             // clearing on every move would be both wrong and far too expensive for this hook.
             switch (wParam.ToInt32())
@@ -281,7 +256,8 @@ internal sealed class KeyboardHook : IDisposable
                 case Native.WM_XBUTTONDOWN:
                     if (!Suspended)
                     {
-                        Clicked();
+                        ResetBuffer();
+                        ClearUndo();
                     }
                     else
                     {
@@ -295,253 +271,6 @@ internal sealed class KeyboardHook : IDisposable
         }
 
         return Native.CallNextHookEx(_mouseHookHandle, nCode, wParam, lParam);
-    }
-
-    /// <summary>Handles a click outside a prompt: it can move the caret, so queued work is dropped. Clicks aren't held.</summary>
-    internal void Clicked()
-    {
-        ResetBuffer();
-        ClearUndo();
-    }
-
-    /// <summary>Gets a value indicating whether keys are being held while an expansion goes in.</summary>
-    internal bool Holding => _holding;
-
-    /// <summary>
-    /// Gets or sets how held keys are typed again. Until <see cref="Install"/> no real key can be held, so nothing is
-    /// sent; tests capture them.
-    /// </summary>
-    internal Func<Native.INPUT[], uint> Replay { get; set; } = static _ => 0;
-
-    /// <summary>Gets or sets the clock, in milliseconds, that the hold's cap is measured on.</summary>
-    internal Func<long> Clock { get; set; } = static () => Environment.TickCount64;
-
-    /// <summary>
-    /// Starts holding the user's keys for a work item: from its trigger, before it's queued so the worker can't end
-    /// the hold first, or from its last check. <paramref name="giveBack"/> is the completing key, typed back if the
-    /// work doesn't happen.
-    /// </summary>
-    private long BeginHold(string? giveBack)
-    {
-        lock (_holdLock)
-        {
-            _holding = true;
-            _committed = false;
-            _giveBack = giveBack;
-            _holdDeadline = Clock() + HoldCapMs;
-            return ++_holdId;
-        }
-    }
-
-    /// <summary>
-    /// The keyboard hook's decision before any matching: whether a key event is swallowed, either held for the
-    /// work in flight or given back with what's held. <paramref name="kind"/> says how the rest of the hook treats it.
-    /// </summary>
-    internal bool HoldsBack(Native.KBDLLHOOKSTRUCT data, out HostInputKind kind)
-    {
-        kind = HostInputTags.Classify(data.DwExtraInfo, InjectionSignature);
-        if (kind != HostInputKind.Ignored)
-        {
-            return _holding && TryHold(data.VkCode, data.ScanCode, data.Flags, data.DwExtraInfo);
-        }
-
-        // Our own keys show the worker is still at it, so a long typed insertion doesn't run into the cap.
-        if (_holding && data.DwExtraInfo == InjectionSignature)
-        {
-            lock (_holdLock)
-            {
-                _holdDeadline = Clock() + HoldCapMs;
-            }
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Holds a keystroke that arrives while an expansion goes in, and returns whether it did. A key whose key-down is
-    /// held has every later event held too, its key-up included, so nothing comes back pressed; other key-ups pass,
-    /// and so do new keys while a prompt is open.
-    /// </summary>
-    private bool TryHold(uint vk, uint scanCode, uint flags, IntPtr extraInfo)
-    {
-        bool keyUp = (flags & Native.LLKHF_UP) != 0;
-        int word = (int)(vk >> 6) & 3;
-        ulong bit = 1UL << (int)(vk & 63);
-        Native.INPUT[]? released;
-        lock (_holdLock)
-        {
-            bool down = (_heldDowns[word] & bit) != 0;
-            if (!_holding || (!down && (keyUp || Suspended)))
-            {
-                return false;
-            }
-
-            AppendHeld(ToInput(vk, scanCode, flags, extraInfo));
-            _heldDowns[word] = keyUp ? _heldDowns[word] & ~bit : _heldDowns[word] | bit;
-
-            // This key goes back last, so nothing overtakes what's held.
-            released = TakeIfCapPassed();
-        }
-
-        SendHeld(released);
-        return true;
-    }
-
-    /// <summary>
-    /// The worker's last check, right before it erases anything: whether the caret can still be where the trigger
-    /// was typed. If so, the work is committed (a click or the cap no longer drops it or gives back its completing
-    /// key) and keys are held to its end; a work item that held none yet gets a hold here, in <paramref name="holdId"/>.
-    /// </summary>
-    internal bool Commit(ref long holdId, long inputGeneration)
-    {
-        lock (_holdLock)
-        {
-            if (inputGeneration != InputGeneration)
-            {
-                return false;
-            }
-
-            // A snippet with a prompt, and an undo, hold keys only from here.
-            if (!_holding || holdId != _holdId)
-            {
-                holdId = BeginHold(null);
-            }
-
-            _committed = true;
-
-            // The erase follows at once, so the time it took to get here doesn't count toward the cap.
-            _holdDeadline = Clock() + HoldCapMs;
-            return true;
-        }
-    }
-
-    /// <summary>Gives held keys back once the cap has passed, without waiting for another key.</summary>
-    internal void ReleaseIfExpired()
-    {
-        Native.INPUT[]? released;
-        lock (_holdLock)
-        {
-            released = _holding ? TakeIfCapPassed() : null;
-        }
-
-        SendHeld(released);
-    }
-
-    /// <summary>
-    /// Ends the hold <paramref name="holdId"/>, begun for a work item at its trigger or its last check, and types the
-    /// held keys again in one go, after the completing key when the work wasn't <paramref name="done"/>.
-    /// </summary>
-    internal void EndHold(long holdId, bool done)
-    {
-        Native.INPUT[]? replay = null;
-        lock (_holdLock)
-        {
-            // A hold given back early has nothing left, and a later trigger's hold isn't this one's to end.
-            if (holdId == _holdId)
-            {
-                replay = TakeHeld(includeCompletingKey: !done);
-                _giveBack = null;
-            }
-        }
-
-        SendHeld(replay);
-    }
-
-    /// <summary>
-    /// Called under <c>_holdLock</c>. Once the cap has passed with keys held, they go back. Work not yet committed is
-    /// dropped, and its completing key goes back first.
-    /// </summary>
-    private Native.INPUT[]? TakeIfCapPassed()
-    {
-        if (_heldCount == 0 || Clock() < _holdDeadline)
-        {
-            return null;
-        }
-
-        if (!_committed)
-        {
-            ClearUndo();
-        }
-
-        return TakeHeld(includeCompletingKey: !_committed);
-    }
-
-    /// <summary>Called under <c>_holdLock</c>: the keys to type again, the completing key first if asked, and the hold ends.</summary>
-    private Native.INPUT[] TakeHeld(bool includeCompletingKey)
-    {
-        string giveBack = includeCompletingKey ? _giveBack ?? string.Empty : string.Empty;
-        var replay = new Native.INPUT[(giveBack.Length * 2) + _heldCount];
-        int next = 0;
-        foreach (char ch in giveBack)
-        {
-            replay[next++] = ToInput(Native.VK_PACKET, ch, 0, IntPtr.Zero);
-            replay[next++] = ToInput(Native.VK_PACKET, ch, Native.LLKHF_UP, IntPtr.Zero);
-        }
-
-        Array.Copy(_held, 0, replay, next, _heldCount);
-        Array.Clear(_held, 0, _heldCount);
-        Array.Clear(_heldDowns);
-        _heldCount = 0;
-        _holding = false;
-        if (includeCompletingKey)
-        {
-            _giveBack = null;
-        }
-
-        return replay;
-    }
-
-    private void SendHeld(Native.INPUT[]? replay)
-    {
-        if (replay is { Length: > 0 })
-        {
-            _ = Replay(replay);
-
-            // Keystrokes don't stay behind in memory.
-            Array.Clear(replay);
-        }
-    }
-
-    private void AppendHeld(Native.INPUT input)
-    {
-        if (_heldCount == _held.Length)
-        {
-            var larger = new Native.INPUT[_held.Length * 2];
-            Array.Copy(_held, larger, _heldCount);
-            Array.Clear(_held);
-            _held = larger;
-        }
-
-        _held[_heldCount++] = input;
-    }
-
-    /// <summary>
-    /// A held key as it came in. One Keyboard Manager had remapped keeps its tag, so it isn't remapped a second time;
-    /// ordinary typing has none.
-    /// </summary>
-    private static Native.INPUT ToInput(uint vk, uint scanCode, uint flags, IntPtr extraInfo)
-    {
-        bool packet = vk == Native.VK_PACKET;
-        uint keyFlags = packet ? Native.KEYEVENTF_UNICODE : (flags & Native.LLKHF_EXTENDED) != 0 ? Native.KEYEVENTF_EXTENDEDKEY : 0;
-        if ((flags & Native.LLKHF_UP) != 0)
-        {
-            keyFlags |= Native.KEYEVENTF_KEYUP;
-        }
-
-        return new Native.INPUT
-        {
-            Type = Native.INPUT_KEYBOARD,
-            U = new Native.InputUnion
-            {
-                Ki = new Native.KEYBDINPUT
-                {
-                    WVk = packet ? (ushort)0 : (ushort)vk,
-                    WScan = (ushort)scanCode,
-                    DwFlags = keyFlags,
-                    DwExtraInfo = extraInfo,
-                },
-            },
-        };
     }
 
     /// <summary>
@@ -692,6 +421,13 @@ internal sealed class KeyboardHook : IDisposable
             ClearUndo();
         }
 
+        // With nothing to expand, nothing typed is kept.
+        SnippetStore.Snapshot snapshot = _store.Current;
+        if (!Enabled || snapshot.MaxTriggerLength == 0)
+        {
+            return false;
+        }
+
         if (IsResetKey(vk))
         {
             ResetBuffer();
@@ -711,19 +447,8 @@ internal sealed class KeyboardHook : IDisposable
             return false;
         }
 
-        SnippetStore.Snapshot snapshot = _store.Current;
         EnsureCapacity(snapshot.MaxTriggerLength);
         Append(ch);
-
-        if (!Enabled)
-        {
-            return false;
-        }
-
-        if (snapshot.MaxTriggerLength == 0)
-        {
-            return false;
-        }
 
         bool wordMode = WordBoundary.Required;
 
@@ -766,20 +491,15 @@ internal sealed class KeyboardHook : IDisposable
         string typedText = new(_buffer, start, _count - start);
         ResetBuffer();
 
-        string expandedText = wordMode && WordBoundary.KeepTerminator ? replacement + ch : replacement;
-
-        // The keystroke that completed the match is swallowed; everything typed before it reached the target. Keys
-        // typed from here are held until the expansion is in, and if it doesn't happen, the key is typed back first.
-        // A snippet that asks for something holds them only from the worker's last check: keys must reach the prompt.
-        long holdId = Variables.NeedsPrompt(replacement) ? 0 : BeginHold(typedText[^1..]);
+        // The keystroke that completed the match is swallowed; everything typed before it reached the target.
         Pending.Add(new PendingExpansion(
             trigger,
             typedText[..^1],
-            expandedText,
+            replacement,
             Native.GetForegroundWindow(),
             TypedText: typedText,
             InputGeneration: InputGeneration,
-            HoldId: holdId));
+            Terminator: wordMode && WordBoundary.KeepTerminator ? ch : null));
         return true;
     }
 
@@ -1019,6 +739,7 @@ internal sealed class KeyboardHook : IDisposable
     internal void ForegroundChanged(IntPtr hook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint thread, uint time)
     {
         ResetBuffer();
+        Guard.ForegroundChanged(hwnd);
 
         // Ends undo without moving the input generation: a foreground change moves no caret by itself,
         // queued work checks its window before typing, and focus coming back after a prompt must not
@@ -1109,6 +830,10 @@ internal sealed class KeyboardHook : IDisposable
             && authorization.ProcessId == foregroundProcessId
             && authorization.CanDrive;
 
+    /// <summary>Whether <paramref name="target"/> is in front and our input reaches it, checked as the worker does.</summary>
+    private static bool TargetInFront(IntPtr target)
+        => target != IntPtr.Zero && Native.GetForegroundWindow() == target && InputTarget.CanDrive(target);
+
     /// <summary>
     /// Gets a value indicating whether the window in front has never been checked and isn't being
     /// checked already. A window that was checked and refused is not asked about again.
@@ -1138,6 +863,7 @@ internal sealed class KeyboardHook : IDisposable
             _winEventHandle = IntPtr.Zero;
         }
 
+        Guard.Dispose();
         lock (_bufferLock)
         {
             if (_disposed)

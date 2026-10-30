@@ -31,10 +31,6 @@ internal static class WordBoundary
         set => _keepTerminator = value;
     }
 
-    /// <summary>A character that can sit inside a word (underscore included).</summary>
-    public static bool IsWordCharacter(char c)
-        => WordBoundaryRules.IsWordCharacter(c);
-
     /// <summary>
     /// A character that ends a word and so can release a pending trigger: whitespace, punctuation or a symbol,
     /// but not the underscore, which is part of the word.

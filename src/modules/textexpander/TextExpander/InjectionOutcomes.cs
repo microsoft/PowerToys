@@ -43,8 +43,8 @@ internal enum PasteOutcome
     RefusedBeforeErase,
 
     /// <summary>
-    /// Focus left the window the trigger was typed into, or a key press or click may have moved the caret;
-    /// nothing was or may be sent.
+    /// Focus left the window the trigger was typed into, the window can't be driven (an elevated window), or a key
+    /// press or click may have moved the caret; nothing was or may be sent.
     /// </summary>
     TargetLost,
 

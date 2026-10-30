@@ -38,7 +38,7 @@ internal static class InputTarget
 
     /// <summary>
     /// True when input we synthesize can reach <paramref name="window"/>. False when the target can't be
-    /// inspected (elevated or protected processes), which only costs a fallback to typing.
+    /// inspected (elevated or protected processes): nothing is sent there, and the trigger stays as typed.
     /// </summary>
     public static bool CanDrive(IntPtr window)
     {
@@ -47,8 +47,7 @@ internal static class InputTarget
             return false;
         }
 
-        uint processId = 0;
-        _ = Native.GetWindowThreadProcessId(window, out processId);
+        _ = Native.GetWindowThreadProcessId(window, out uint processId);
         if (processId == 0)
         {
             return false;

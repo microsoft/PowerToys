@@ -34,7 +34,7 @@ public sealed class MatchingAndBoundaryTests
     [TestMethod]
     public void CaseInsensitiveFileTreatsCaseOnlyDuplicatesAsLastRowWins()
     {
-        Dictionary<string, string> store = SnippetStore.Parse(["!Hi=first", "!HI=second"], caseSensitive: false);
+        Dictionary<string, string> store = SnippetStore.Parse(SnippetJson.Bytes("!Hi=first", "!HI=second"), caseSensitive: false);
         TriggerIndex index = TriggerIndex.Build(store.Keys, caseSensitive: false);
 
         Assert.AreEqual(1, store.Count);
@@ -45,9 +45,9 @@ public sealed class MatchingAndBoundaryTests
     [TestMethod]
     public void WordBoundaryClassifiesTerminatorsAndStartPositions()
     {
-        Assert.IsTrue(WordBoundary.IsWordCharacter('a'));
-        Assert.IsTrue(WordBoundary.IsWordCharacter('7'));
-        Assert.IsTrue(WordBoundary.IsWordCharacter('_'));
+        Assert.IsTrue(WordBoundaryRules.IsWordCharacter('a'));
+        Assert.IsTrue(WordBoundaryRules.IsWordCharacter('7'));
+        Assert.IsTrue(WordBoundaryRules.IsWordCharacter('_'));
         Assert.IsTrue(WordBoundary.IsTerminator(' '));
         Assert.IsTrue(WordBoundary.IsTerminator('.'));
         Assert.IsFalse(WordBoundary.IsTerminator('a'));
@@ -65,8 +65,8 @@ public sealed class MatchingAndBoundaryTests
         Assert.IsFalse(WordBoundary.IsTerminator('_'));
 
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Path.Combine(scratch.Path, "snippets.txt");
-        File.WriteAllText(path, "addr=1 Main Street\n");
+        string path = Path.Combine(scratch.Path, "snippets.json");
+        File.WriteAllText(path, SnippetJson.Of("addr=1 Main Street"));
         using var store = new SnippetStore(path);
         Assert.AreEqual(1, store.Load().Count);
         using var hook = new KeyboardHook(store);
@@ -135,7 +135,7 @@ public sealed class MatchingAndBoundaryTests
     [TestMethod]
     public void WordBoundaryModeWaitsForTerminatorAndKeepsItByDefault()
     {
-        Dictionary<string, string> store = SnippetStore.Parse(["btw=by the way", "#sig=Best regards"]);
+        Dictionary<string, string> store = SnippetStore.Parse(SnippetJson.Bytes("btw=by the way", "#sig=Best regards"));
         TriggerIndex index = TriggerIndex.Build(store.Keys);
         Assert.IsNull(Simulate("btw", true, index, store));
         Assert.AreEqual("by the way ", Simulate("btw ", true, index, store)!.Value.Inserted);
@@ -147,7 +147,7 @@ public sealed class MatchingAndBoundaryTests
     [TestMethod]
     public void WordBoundaryCanDropTerminatorWithoutChangingErasedTrigger()
     {
-        Dictionary<string, string> store = SnippetStore.Parse(["btw=by the way"]);
+        Dictionary<string, string> store = SnippetStore.Parse(SnippetJson.Bytes("btw=by the way"));
         TriggerIndex index = TriggerIndex.Build(store.Keys);
         bool original = WordBoundary.KeepTerminator;
         try
@@ -166,7 +166,7 @@ public sealed class MatchingAndBoundaryTests
     [TestMethod]
     public void InstantModeSwallowsLastKeystroke()
     {
-        Dictionary<string, string> store = SnippetStore.Parse(["btw=by the way"]);
+        Dictionary<string, string> store = SnippetStore.Parse(SnippetJson.Bytes("btw=by the way"));
         var expansion = Simulate("btw", false, TriggerIndex.Build(store.Keys), store)!.Value;
         Assert.AreEqual("bt", expansion.Erased);
         Assert.AreEqual("by the way", expansion.Inserted);
@@ -177,7 +177,7 @@ public sealed class MatchingAndBoundaryTests
     {
         // Why Settings suggests !2mysig, not !mysig2, for a copy of !mysig: typing !mysig2
         // completes !mysig first, and the engine expands at once.
-        Dictionary<string, string> store = SnippetStore.Parse(["!mysig=Regards", "!mysig2=Copy", "!2mysig=Copy"]);
+        Dictionary<string, string> store = SnippetStore.Parse(SnippetJson.Bytes("!mysig=Regards", "!mysig2=Copy", "!2mysig=Copy"));
         TriggerIndex index = TriggerIndex.Build(store.Keys);
         Assert.AreEqual("!mysig", FirstExpansion("!mysig2", index, store));
         Assert.AreEqual("!2mysig", FirstExpansion("!2mysig", index, store));

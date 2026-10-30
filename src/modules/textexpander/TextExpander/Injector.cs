@@ -57,12 +57,6 @@ internal static class Injector
     public static int PasteSettleGraceMs { get; set; } = 20;
 
     /// <summary>
-    /// Gets or sets pause between pressing Ctrl and pressing V, and again before releasing Ctrl. Without it
-    /// the target can act on V before it has registered the modifier, pasting a literal "v".
-    /// </summary>
-    public static int ModifierSettleMs { get; set; } = 30;
-
-    /// <summary>
     /// Gets or sets the delay between injected characters on the typing path. Generous on purpose:
     /// Windows 11 Notepad drops and smears characters when synthetic input arrives faster.
     /// </summary>
@@ -89,6 +83,15 @@ internal static class Injector
 
     private const int ModifierReleasePollMs = 10;
 
+    /// <summary>
+    /// The most caret moves that place a snippet's $|$. One further back than that is left at the end of the text:
+    /// placing it would take thousands of key presses.
+    /// </summary>
+    internal const int MaxCaretMoves = 2_000;
+
+    /// <summary>The most key events one call sends: a longer erase or caret move goes out in parts.</summary>
+    private const int MaxInputsPerCall = 1_000;
+
     /// <summary>Gets or sets how many times to try handing the user's clipboard back before giving up.</summary>
     public static int RestoreAttempts { get; set; } = 3;
 
@@ -99,6 +102,9 @@ internal static class Injector
     /// Gets or sets the callback invoked when the user's clipboard could not be handed back, so the loss is never silent.
     /// </summary>
     public static Action<string>? ClipboardRestoreFailed { get; set; }
+
+    // The user's clipboard couldn't be handed back: told once the guard is over. Only the expansion worker touches it.
+    private static bool _clipboardLost;
 
     /// <summary>
     /// Counts the Backspaces that erase <paramref name="value"/>: text elements, not UTF-16 units, so an emoji or
@@ -122,7 +128,8 @@ internal static class Injector
     }
 
     /// <summary>
-    /// Erases <paramref name="backspaceCount"/> characters, then inserts <paramref name="text"/>.
+    /// Erases <paramref name="backspaceCount"/> characters, then inserts <paramref name="text"/>, with
+    /// <paramref name="guard"/> keeping the user's keys out of it.
     /// </summary>
     /// <param name="targetWindow">
     /// The window the trigger was typed into, re-checked before anything is inserted, or
@@ -131,16 +138,13 @@ internal static class Injector
     /// <param name="cursorRightUnits">
     /// How far to move the caret right before erasing, when an earlier insertion left it inside the text to erase.
     /// </param>
-    /// <param name="inputUnchanged">
-    /// Whether the user has pressed no key and clicked nowhere since the trigger matched, asked again right
-    /// before anything is erased; null when there is nothing to check.
+    /// <param name="inputGeneration">
+    /// The input generation when the trigger matched. A key pressed or a click since then may have moved the caret, so
+    /// nothing is erased or inserted.
     /// </param>
-    /// <param name="commit">
-    /// Asked instead of <paramref name="inputUnchanged"/> right before anything is erased, the last check: once it
-    /// passes, the work goes ahead.
-    /// </param>
-    public static bool Replace(int backspaceCount, string text, IntPtr targetWindow = default, int cursorLeftUnits = 0, int cursorRightUnits = 0, Func<bool>? inputUnchanged = null, Func<bool>? commit = null)
-        => ReplaceCore(backspaceCount, text, targetWindow, cursorLeftUnits, InputTarget.CanDrive, cursorRightUnits: cursorRightUnits, inputUnchanged: inputUnchanged, commit: commit);
+    /// <param name="inserted">Runs once it's all in, before the keys held meanwhile go back: a Ctrl+Z among them undoes it.</param>
+    public static bool Replace(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, int cursorRightUnits, InsertionGuard guard, long inputGeneration, Action? inserted)
+        => ReplaceCore(backspaceCount, text, targetWindow, cursorLeftUnits, InputTarget.CanDrive, guard, inputGeneration, cursorRightUnits: cursorRightUnits, inserted: inserted);
 
     internal static bool ReplaceCore(
         int backspaceCount,
@@ -148,189 +152,262 @@ internal static class Injector
         IntPtr targetWindow,
         int cursorLeftUnits,
         Func<IntPtr, bool> canDrive,
+        InsertionGuard guard,
+        long inputGeneration,
         Func<IntPtr>? getForegroundWindow = null,
-        Func<int, string, IntPtr, int, PasteOutcome>? tryPaste = null,
-        Func<int, IntPtr, bool>? erase = null,
-        Func<string, IntPtr, bool>? sendText = null,
-        Func<int, IntPtr, bool>? sendLeft = null,
+        Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, PasteOutcome>? tryPaste = null,
+        Func<Native.INPUT[], uint>? dispatch = null,
         int cursorRightUnits = 0,
-        Func<int, IntPtr, bool>? sendRight = null,
-        Func<bool>? inputUnchanged = null,
-        Func<bool>? commit = null)
+        Func<int, short>? getAsyncKeyState = null,
+        Action<int>? sleep = null,
+        Action? inserted = null)
     {
         ArgumentNullException.ThrowIfNull(canDrive);
 
-        Func<bool> unchanged = inputUnchanged ?? (static () => true);
-        Func<bool> lastCheck = commit ?? unchanged;
         getForegroundWindow ??= Native.GetForegroundWindow;
-        tryPaste ??= (count, value, target, left) => TryPaste(count, value, target, left, lastCheck);
-        erase ??= (count, target) => Erase(count, target, lastCheck);
-        sendText ??= static (value, target) => SendText(value, target);
-        sendLeft ??= SendLeft;
-        sendRight ??= SendRight;
+        tryPaste ??= TryPaste;
+        dispatch ??= Dispatch;
+        getAsyncKeyState ??= Native.GetAsyncKeyState;
+        sleep ??= Thread.Sleep;
 
         // The window must still be in front and drivable, and nothing since the match may have moved the caret.
-        if (!unchanged() || !IsAuthorizedTarget(targetWindow, canDrive, getForegroundWindow))
+        if (!Ready())
         {
             InjectionDiagnostics.RecordTypingAbandoned();
             return false;
         }
 
-        // Erasing counts back from the end of the text, so a caret left inside it goes back to the end first.
-        if (!sendRight(cursorRightUnits, targetWindow))
+        // A grace period, so the erase doesn't race ahead of the target still processing the trigger's last keystrokes.
+        if (backspaceCount > 0 && PreBackspaceDelayMs > 0)
         {
-            return false;
+            sleep(PreBackspaceDelayMs);
         }
 
-        // Typing stays the fallback whenever the paste path refuses.
-        if (text.Length > 0 && InjectionPolicy.ShouldUseClipboard(text, ClipboardThresholdChars, Backend))
-        {
-            PasteOutcome outcome = tryPaste(backspaceCount, text, targetWindow, cursorLeftUnits);
-            InjectionDiagnostics.RecordOutcome(outcome);
+        bool pasting = text.Length > 0 && InjectionPolicy.ShouldUseClipboard(text, ClipboardThresholdChars, Backend);
+        PasteOutcome outcome = pasting ? PasteOutcome.TargetLost : PasteOutcome.NotAttempted;
+        bool sentAny = false;
+        bool guarded = false;
+        bool succeeded = false;
+        Native.INPUT marker = default;
+        int[] modifiers = [];
+        Native.INPUT[] pressAgain = [];
 
-            switch (outcome)
+        // Asked again right before anything goes out.
+        if (Ready() && Start())
+        {
+            if (pasting)
             {
-                case PasteOutcome.Pasted:
-                    return true;
-
-                // Focus or the caret moved while the clipboard was borrowed; typing now would land in the wrong place, so abandon.
-                case PasteOutcome.TargetLost:
-                    return false;
-
-                // The trigger is gone and SendInput did not complete: typing could compound a partial paste,
-                // and reporting success would keep an undo entry for text that may not be there.
-                case PasteOutcome.FailedAfterErase:
-                    return false;
+                outcome = tryPaste(text, targetWindow, () => (Insert(paste: true), sentAny));
             }
-        }
-        else
-        {
-            InjectionDiagnostics.RecordOutcome(PasteOutcome.NotAttempted);
+
+            // Typing is the fallback, inside the same guard, only when the paste was refused before anything went out.
+            succeeded = outcome == PasteOutcome.Pasted || (Typing() && Insert(paste: false));
         }
 
-        // Re-authorize before falling back so a paste refusal never becomes an unguarded injection route.
-        if (!IsAuthorizedTarget(targetWindow, canDrive, getForegroundWindow))
-        {
-            return false;
-        }
-
-        if (!erase(backspaceCount, targetWindow))
-        {
-            // Focus moved, or the user pressed a key or clicked, during the pre-backspace grace period;
-            // abandon rather than type in the wrong place.
-            InjectionDiagnostics.RecordTypingAbandoned();
-            return false;
-        }
-
-        if (text.Length > 0)
-        {
-            if (!sendText(text, targetWindow))
-            {
-                return false;
-            }
-        }
-
-        bool completed = sendLeft(cursorLeftUnits, targetWindow);
-        if (completed)
+        EndGuard();
+        InjectionDiagnostics.RecordOutcome(outcome);
+        if (succeeded && Typing())
         {
             InjectionDiagnostics.RecordTypingSucceeded();
         }
-
-        return completed;
-    }
-
-    private static bool SendLeft(int count, IntPtr targetWindow) => SendArrow(Native.VK_LEFT, count, targetWindow);
-
-    private static bool SendRight(int count, IntPtr targetWindow) => SendArrow(Native.VK_RIGHT, count, targetWindow);
-
-    private static bool SendArrow(int vk, int count, IntPtr targetWindow)
-    {
-        if (count <= 0)
+        else if (!sentAny && Typing())
         {
+            InjectionDiagnostics.RecordTypingAbandoned();
+        }
+
+        // Only now: the message box takes the focus.
+        if (_clipboardLost)
+        {
+            _clipboardLost = false;
+            ReportClipboardLoss();
+        }
+
+        return succeeded;
+
+        bool Ready() => guard.Unchanged(inputGeneration) && IsAuthorizedTarget(targetWindow, canDrive, getForegroundWindow);
+
+        bool Typing() => outcome is PasteOutcome.NotAttempted or PasteOutcome.RefusedBeforeErase;
+
+        // The guard keeps the user's keys out (see InsertionGuard). The start marker goes out alone, and nothing else until
+        // the hook has decided: a discarded insertion sends only its markers, and borrows no clipboard, so a Ctrl+V the
+        // user pressed first pastes what they copied. The modifiers read after the decision are exactly the ones the user
+        // holds: any pressed since is held.
+        bool Start()
+        {
+            marker = InsertionGuard.Marker(guard.Begin(inputGeneration, targetWindow != IntPtr.Zero ? targetWindow : getForegroundWindow()));
+            if (!DispatchExactly(dispatch, [marker]))
+            {
+                guard.Abandon();
+                return false;
+            }
+
+            guarded = true;
+            if (!guard.AwaitStart())
+            {
+                return false;
+            }
+
+            modifiers = HeldModifiers(getAsyncKeyState);
+            pressAgain = Modifiers(modifiers, up: false);
             return true;
         }
 
-        if (!IsAuthorizedTarget(targetWindow, InputTarget.CanDrive))
+        // The erase, Ctrl+V or the text, the caret moves, and the undo record. A slow clipboard borrow can outlast the
+        // guard, and a modifier pressed after it reaches the app: then a new start marker decides again, and the modifiers
+        // are read again, rather than erase unguarded. Nothing is erased if a click, which isn't held, moved the caret.
+        bool Insert(bool paste)
         {
+            bool done = (guard.Renew() || (!guard.Cancelled && Start()))
+                && guard.Unchanged(inputGeneration)
+                && SendChunks(Erase(modifiers, cursorRightUnits, backspaceCount))
+                && (paste ? PasteChord() : TypeText())
+                && SendChunks(Presses(Native.VK_LEFT, cursorLeftUnits));
+            if (done)
+            {
+                inserted?.Invoke();
+            }
+
+            return done;
+        }
+
+        // The end marker, after the paste's settle and restore: the keys held meanwhile go back after it all.
+        void EndGuard()
+        {
+            if (guarded)
+            {
+                guarded = false;
+                guard.AwaitEnd(DispatchExactly(dispatch, [marker]), pressAgain);
+            }
+        }
+
+        // Checked before each call: once the target has lost the front, the insertion goes no further, and what the
+        // guard held is dropped.
+        bool OnTarget()
+        {
+            if (!guard.Cancelled && IsAuthorizedTarget(targetWindow, canDrive, getForegroundWindow))
+            {
+                return true;
+            }
+
+            guard.Drop();
             return false;
         }
 
-        var inputs = new Native.INPUT[count * 2];
-        for (int i = 0; i < count; i++)
+        bool Send(Native.INPUT[] keys)
         {
-            inputs[i * 2] = KeyDown(vk);
-            inputs[(i * 2) + 1] = KeyUp(vk);
+            bool whole = DispatchExactly(dispatch, keys, out uint count);
+            sentAny |= count > 0;
+            return whole;
         }
 
-        return DispatchExactly(Dispatch, inputs);
-    }
-
-    /// <summary>
-    /// Erases the trigger. Returns false, having sent nothing, when focus moved or the user pressed a key or
-    /// clicked while waiting; the caller must then abandon the expansion because erase and insertion have to
-    /// land where the trigger was typed.
-    /// </summary>
-    private static bool Erase(int backspaceCount, IntPtr targetWindow, Func<bool> inputUnchanged)
-    {
-        if (backspaceCount > 0 && PreBackspaceDelayMs > 0)
+        // A long run goes out in parts, with the target checked before each.
+        bool SendChunks(Native.INPUT[] keys)
         {
-            Thread.Sleep(PreBackspaceDelayMs);
-        }
+            for (int at = 0; at < keys.Length; at += MaxInputsPerCall)
+            {
+                if (!OnTarget() || !Send(keys.Length <= MaxInputsPerCall ? keys : keys[at..Math.Min(keys.Length, at + MaxInputsPerCall)]))
+                {
+                    return false;
+                }
+            }
 
-        // Re-checked after the delay, right before the first destructive key, even with nothing to erase:
-        // the insertion would land wherever the caret moved to.
-        if (!inputUnchanged())
-        {
-            return false;
-        }
-
-        if (backspaceCount <= 0)
-        {
             return true;
         }
 
-        // Backspaces sent to a newly focused window would delete the user's text.
-        if (!IsAuthorizedTarget(targetWindow, InputTarget.CanDrive))
+        bool PasteChord()
         {
+            if (!OnTarget())
+            {
+                return false;
+            }
+
+            if (Send([KeyDown(Native.VK_CONTROL), KeyDown(Native.VK_V), KeyUp(Native.VK_V), KeyUp(Native.VK_CONTROL)]))
+            {
+                return true;
+            }
+
+            // Cut off: never leave Ctrl down.
+            _ = dispatch([KeyUp(Native.VK_CONTROL)]);
             return false;
         }
 
-        return SendBackspaces(backspaceCount, targetWindow);
+        // A character per call, paced: Windows 11 Notepad drops and smears characters that arrive faster.
+        bool TypeText()
+        {
+            for (int i = 0; i < text.Length; i++)
+            {
+                char ch = text[i];
+                if (ch == '\r')
+                {
+                    continue;
+                }
+
+                // Before every character, however many UTF-16 units it takes.
+                if (!OnTarget())
+                {
+                    return false;
+                }
+
+                Native.INPUT[] keys;
+                if (ch is '\n' or '\t')
+                {
+                    // Real key presses: many editors ignore a literal \n delivered as a Unicode event. A modifier the user
+                    // holds once the guard has let go is let go of first, or Tab would become Shift+Tab.
+                    int vk = ch == '\n' ? Native.VK_RETURN : Native.VK_TAB;
+                    keys = [.. Modifiers(HeldModifiers(getAsyncKeyState), up: true), KeyDown(vk), KeyUp(vk)];
+                }
+                else if (char.IsHighSurrogate(ch) && i + 1 < text.Length && char.IsLowSurrogate(text[i + 1]))
+                {
+                    // A surrogate pair must reach the target as a single uninterrupted unit.
+                    char low = text[++i];
+                    keys = [UnicodeDown(ch), UnicodeUp(ch), UnicodeDown(low), UnicodeUp(low)];
+                }
+                else
+                {
+                    keys = [UnicodeDown(ch), UnicodeUp(ch)];
+                }
+
+                if (!Send(keys))
+                {
+                    return false;
+                }
+
+                int delay = KeyDelayMs + (IsSentenceBoundary(ch) ? SentenceBoundaryDelayMs : 0);
+                if (delay > 0)
+                {
+                    sleep(delay);
+                }
+
+                // Keys are held for HoldCapMs at most; the rest of the text goes in unguarded.
+                if (guarded && guard.Overdue)
+                {
+                    EndGuard();
+                }
+            }
+
+            return true;
+        }
     }
 
-    private static bool IsAuthorizedTarget(IntPtr targetWindow, Func<IntPtr, bool> canDrive, Func<IntPtr>? getForegroundWindow = null)
+    private static bool IsSentenceBoundary(char ch) => ch is '.' or '!' or '?' or '\n';
+
+    private static bool IsAuthorizedTarget(IntPtr targetWindow, Func<IntPtr, bool> canDrive, Func<IntPtr> getForegroundWindow)
     {
-        IntPtr foreground = (getForegroundWindow ?? Native.GetForegroundWindow)();
+        IntPtr foreground = getForegroundWindow();
         return foreground != IntPtr.Zero
             && (targetWindow == IntPtr.Zero || foreground == targetWindow)
             && canDrive(foreground);
     }
 
-    /// <summary>Where a target window stands with respect to receiving synthetic input.</summary>
-    private enum TargetState
-    {
-        /// <summary>Focused and drivable.</summary>
-        Ready,
-
-        /// <summary>Focus has moved elsewhere.</summary>
-        Moved,
-
-        /// <summary>Still focused, but at an integrity level our input cannot reach.</summary>
-        Unreachable,
-    }
-
     /// <summary>
-    /// Pastes via the clipboard, restoring whatever the user had there. Nothing destructive happens until
-    /// the target is checked and the clipboard takeover verified; only then is the trigger erased.
+    /// Pastes via the clipboard, restoring whatever the user had there. It's borrowed only once the guard has decided,
+    /// so a Ctrl+V the user pressed first pastes what they copied. Nothing destructive happens until the clipboard
+    /// takeover is verified; only then does <paramref name="send"/> erase the trigger and paste, checking the target
+    /// before each call. The paste settles and the clipboard goes back before the end marker, so a Ctrl+V among the
+    /// keys held meanwhile pastes what the user copied too.
     /// </summary>
-    private static PasteOutcome TryPaste(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, Func<bool> inputUnchanged)
+    private static PasteOutcome TryPaste(string text, IntPtr targetWindow, Func<(bool Whole, bool SentAny)> send)
     {
-        PasteOutcome? refusal = CheckTarget(targetWindow);
-        if (refusal is not null)
-        {
-            return refusal.Value;
-        }
-
         // Null when the clipboard can't be read, is too large to copy, or holds something we couldn't put back.
         using ClipboardSnapshot? saved = Clipboard.Snapshot();
         if (saved is null)
@@ -347,46 +424,24 @@ internal static class Injector
         // Taken right after our own write: any later change is someone else's, and restoring over it
         // would destroy what the user copied during the settle.
         var loan = new ClipboardLoan(Clipboard.SequenceNumber);
-
-        // Verified, not assumed: SetClipboardData can succeed and still leave other data on the clipboard.
-        if (write == ClipboardWrite.Failed || !Clipboard.HoldsText(text))
-        {
-            RestoreClipboard(saved, loan);
-            return PasteOutcome.RefusedBeforeErase;
-        }
-
         try
         {
-            // Borrowing the clipboard can be slow, so focus is re-checked before anything is erased.
-            refusal = CheckTarget(targetWindow);
-            if (refusal is not null)
+            // Verified, not assumed: SetClipboardData can succeed and still leave other data on the clipboard.
+            if (write == ClipboardWrite.Failed || !Clipboard.HoldsText(text))
             {
-                return refusal.Value;
+                return PasteOutcome.RefusedBeforeErase;
             }
 
-            // Focus moved, or the user pressed a key or clicked, in the grace period: abandon with the trigger
-            // intact (the finally restores the clipboard).
-            if (!Erase(backspaceCount, targetWindow, inputUnchanged))
+            (bool pasted, bool sentAny) = send();
+
+            // The target reads the clipboard asynchronously; restoring at once would paste the previous contents.
+            if (sentAny)
             {
-                return PasteOutcome.TargetLost;
+                WaitForPasteToSettle(targetWindow);
             }
 
-            if (!SendPasteChord(targetWindow, out bool pasteMayHaveBeenSent))
-            {
-                if (pasteMayHaveBeenSent)
-                {
-                    WaitForPasteToSettle(targetWindow);
-                }
-
-                return PasteOutcome.FailedAfterErase;
-            }
-
-            // Queued behind Ctrl+V (input is processed in order) instead of after the settle wait.
-            bool cursorMoved = SendLeft(cursorLeftUnits, targetWindow);
-
-            // The target reads the clipboard asynchronously; restoring now would paste the previous contents.
-            WaitForPasteToSettle(targetWindow);
-            return cursorMoved ? PasteOutcome.Pasted : PasteOutcome.FailedAfterErase;
+            // Not sent at all: focus moved, a click may have moved the caret, or deciding again dropped it. The trigger is intact.
+            return !sentAny ? PasteOutcome.TargetLost : pasted ? PasteOutcome.Pasted : PasteOutcome.FailedAfterErase;
         }
         finally
         {
@@ -444,40 +499,8 @@ internal static class Injector
     }
 
     /// <summary>
-    /// Checks whether <paramref name="targetWindow"/> is still where input is going and is a
-    /// window we are actually permitted to drive. Returns null when the paste may proceed, or
-    /// the outcome the caller should report.
-    /// </summary>
-    private static PasteOutcome? CheckTarget(IntPtr targetWindow)
-    {
-        switch (ReadTargetState(targetWindow))
-        {
-            case TargetState.Moved:
-                return PasteOutcome.TargetLost;
-
-            // Typing won't reach it either, but it's the documented fallback; the clipboard is left alone.
-            case TargetState.Unreachable:
-                return PasteOutcome.RefusedBeforeErase;
-
-            default:
-                return null;
-        }
-    }
-
-    private static TargetState ReadTargetState(IntPtr targetWindow)
-    {
-        IntPtr foreground = Native.GetForegroundWindow();
-        if (targetWindow != IntPtr.Zero && foreground != targetWindow)
-        {
-            return TargetState.Moved;
-        }
-
-        return InputTarget.CanDrive(foreground) ? TargetState.Ready : TargetState.Unreachable;
-    }
-
-    /// <summary>
-    /// Hands the user's clipboard back, retrying while another process holds it, and reports a failure.
-    /// Refuses when someone else wrote to the clipboard after our own write: their newer data wins.
+    /// Hands the user's clipboard back, retrying while another process holds it. Refuses when someone else wrote to the
+    /// clipboard after our own write: their newer data wins. A loss is reported once the guard is over.
     /// </summary>
     private static void RestoreClipboard(ClipboardSnapshot saved, ClipboardLoan loan)
     {
@@ -505,79 +528,27 @@ internal static class Injector
         }
 
         // Nothing was lost if the clipboard was empty.
-        if (saved.IsEmpty)
+        if (!saved.IsEmpty)
         {
-            return;
+            InjectionDiagnostics.RecordClipboardRestoreFailure();
+            _clipboardLost = true;
         }
-
-        InjectionDiagnostics.RecordClipboardRestoreFailure();
-
-        ClipboardRestoreFailed?.Invoke(EngineText.Get(
-            "ClipboardRestoreFailed",
-            "Your clipboard couldn't be restored after a snippet expanded, so what you had copied is gone.\n\nTo keep snippets from using the clipboard, open PowerToys Settings > Text Expander > Advanced, and set Insertion method to Always type."));
     }
 
     /// <summary>
-    /// Sends Ctrl+V staggered rather than as one batch, so the target registers Ctrl before V. Returns false
-    /// unless every key event was accepted; <paramref name="pasteMayHaveBeenSent"/> says whether a partial
-    /// V pair may already have pasted. SendInput can't report UIPI, so <see cref="InputTarget"/> is asked first.
+    /// Tells the user their clipboard is lost, on a thread of its own, and doesn't wait: the handler opens a message
+    /// box, which on the worker held up every expansion after it until someone found and closed it. Never while the
+    /// guard holds keys, as the box takes the focus.
     /// </summary>
-    internal static bool SendPasteChord(
-        IntPtr targetWindow,
-        out bool pasteMayHaveBeenSent,
-        Func<Native.INPUT[], uint>? dispatch = null,
-        Func<IntPtr, bool>? canDrive = null,
-        Func<IntPtr>? getForegroundWindow = null,
-        Func<int, short>? getAsyncKeyState = null,
-        Action<int>? sleep = null)
+    internal static void ReportClipboardLoss()
     {
-        pasteMayHaveBeenSent = false;
-        dispatch ??= Dispatch;
-        canDrive ??= InputTarget.CanDrive;
-        getForegroundWindow ??= Native.GetForegroundWindow;
-        getAsyncKeyState ??= Native.GetAsyncKeyState;
-        sleep ??= Thread.Sleep;
-
-        if (!ReleaseHeldModifiers(dispatch, getAsyncKeyState)
-            || !IsAuthorizedTarget(targetWindow, canDrive, getForegroundWindow))
+        Action<string>? report = ClipboardRestoreFailed;
+        if (report is not null)
         {
-            return false;
+            new Thread(() => report(EngineText.Get(
+                "ClipboardRestoreFailed",
+                "Your clipboard couldn't be restored after a snippet expanded, so what you had copied is gone.\n\nTo keep snippets from using the clipboard, open PowerToys Settings > Text Expander > Advanced, and set Insertion method to Always type."))) { IsBackground = true }.Start();
         }
-
-        if (!DispatchExactly(dispatch, [KeyDown(Native.VK_CONTROL)]))
-        {
-            return false;
-        }
-
-        bool pasteSent = false;
-        bool controlReleased = false;
-        try
-        {
-            if (ModifierSettleMs > 0)
-            {
-                sleep(ModifierSettleMs);
-            }
-
-            if (IsAuthorizedTarget(targetWindow, canDrive, getForegroundWindow))
-            {
-                Native.INPUT[] paste = [KeyDown(Native.VK_V), KeyUp(Native.VK_V)];
-                pasteSent = DispatchExactly(dispatch, paste, out uint inserted);
-                pasteMayHaveBeenSent = inserted > 0;
-
-                if (pasteSent && ModifierSettleMs > 0)
-                {
-                    sleep(ModifierSettleMs);
-                }
-            }
-        }
-        finally
-        {
-            // Never leave Ctrl down, whatever happened above: a stuck modifier turns the user's
-            // next keystroke into a shortcut.
-            controlReleased = DispatchExactly(dispatch, [KeyUp(Native.VK_CONTROL)]);
-        }
-
-        return pasteSent && controlReleased;
     }
 
     /// <summary>
@@ -607,137 +578,63 @@ internal static class Injector
     }
 
     /// <summary>
-    /// Releases modifiers the user is still holding (a trigger ending in Shift or AltGr would turn Ctrl+V
-    /// into "paste special"). Never re-pressed: the user's own key-up still arrives.
+    /// The modifiers the user holds, to let go of: Backspace with Ctrl deletes whole words, and Shift or AltGr turns
+    /// Ctrl+V into "paste special".
     /// </summary>
-    private static bool ReleaseHeldModifiers(
-        Func<Native.INPUT[], uint> dispatch,
-        Func<int, short> getAsyncKeyState)
+    private static int[] HeldModifiers(Func<int, short> getAsyncKeyState)
     {
-        bool released = true;
-        released &= ReleaseIfHeld(Native.VK_LSHIFT, extended: false, dispatch, getAsyncKeyState);
-        released &= ReleaseIfHeld(Native.VK_RSHIFT, extended: false, dispatch, getAsyncKeyState);
-        released &= ReleaseIfHeld(Native.VK_LMENU, extended: false, dispatch, getAsyncKeyState);
-        released &= ReleaseIfHeld(Native.VK_RMENU, extended: true, dispatch, getAsyncKeyState);
-        released &= ReleaseIfHeld(Native.VK_LWIN, extended: true, dispatch, getAsyncKeyState);
-        released &= ReleaseIfHeld(Native.VK_RWIN, extended: true, dispatch, getAsyncKeyState);
-        return released;
+        int[] modifiers = [Native.VK_LSHIFT, Native.VK_RSHIFT, Native.VK_LCONTROL, Native.VK_RCONTROL, Native.VK_LMENU, Native.VK_RMENU, Native.VK_LWIN, Native.VK_RWIN];
+        return Array.FindAll(modifiers, vk => (getAsyncKeyState(vk) & 0x8000) != 0);
     }
 
-    private static bool ReleaseIfHeld(
-        int vk,
-        bool extended,
-        Func<Native.INPUT[], uint> dispatch,
-        Func<int, short> getAsyncKeyState)
+    /// <summary>Key-ups that let go of <paramref name="modifiers"/>, or key-downs that press them again.</summary>
+    private static Native.INPUT[] Modifiers(int[] modifiers, bool up)
     {
-        const int PressedBit = 0x8000;
-        if ((getAsyncKeyState(vk) & PressedBit) == 0)
+        var keys = new Native.INPUT[modifiers.Length];
+        for (int i = 0; i < modifiers.Length; i++)
         {
-            return true;
+            int vk = modifiers[i];
+            keys[i] = up ? KeyUp(vk) : KeyDown(vk);
+            if (vk is Native.VK_RCONTROL or Native.VK_RMENU or Native.VK_LWIN or Native.VK_RWIN)
+            {
+                keys[i].U.Ki.DwFlags |= Native.KEYEVENTF_EXTENDEDKEY;
+            }
         }
 
-        var up = KeyUp(vk);
-        if (extended)
-        {
-            up.U.Ki.DwFlags |= Native.KEYEVENTF_EXTENDEDKEY;
-        }
-
-        return DispatchExactly(dispatch, [up]);
+        return keys;
     }
 
-    private static bool SendBackspaces(int count, IntPtr targetWindow)
+    /// <summary>
+    /// The start of an insertion, in one array: the modifiers the user holds let go of, the caret back to the end of the
+    /// text to erase, and the erase.
+    /// </summary>
+    private static Native.INPUT[] Erase(int[] modifiers, int cursorRightUnits, int backspaceCount)
     {
-        // Backspaces batch safely; only character insertion showed the corruption.
-        var inputs = new Native.INPUT[count * 2];
+        Native.INPUT[] releases = Modifiers(modifiers, up: true);
+        var keys = new Native.INPUT[releases.Length + (2 * (Math.Max(0, cursorRightUnits) + Math.Max(0, backspaceCount)))];
+        releases.CopyTo(keys, 0);
+        AddPresses(keys, AddPresses(keys, releases.Length, Native.VK_RIGHT, cursorRightUnits), Native.VK_BACK, backspaceCount);
+        return keys;
+    }
+
+    private static Native.INPUT[] Presses(int vk, int count)
+    {
+        var keys = new Native.INPUT[Math.Max(0, count) * 2];
+        AddPresses(keys, 0, vk, count);
+        return keys;
+    }
+
+    /// <summary>Puts <paramref name="count"/> presses of <paramref name="vk"/> in <paramref name="keys"/> at <paramref name="next"/>, and returns where they end.</summary>
+    private static int AddPresses(Native.INPUT[] keys, int next, int vk, int count)
+    {
         for (int i = 0; i < count; i++)
         {
-            inputs[i * 2] = KeyDown(Native.VK_BACK);
-            inputs[(i * 2) + 1] = KeyUp(Native.VK_BACK);
+            keys[next++] = KeyDown(vk);
+            keys[next++] = KeyUp(vk);
         }
 
-        if (!IsAuthorizedTarget(targetWindow, InputTarget.CanDrive))
-        {
-            return false;
-        }
-
-        return DispatchExactly(Dispatch, inputs);
+        return next;
     }
-
-    internal static bool SendText(
-        string text,
-        IntPtr targetWindow,
-        Func<Native.INPUT[], uint>? dispatch = null,
-        Func<IntPtr, bool>? canDrive = null,
-        Func<IntPtr>? getForegroundWindow = null,
-        Action<int>? sleep = null)
-    {
-        dispatch ??= Dispatch;
-        canDrive ??= InputTarget.CanDrive;
-        getForegroundWindow ??= Native.GetForegroundWindow;
-        sleep ??= Thread.Sleep;
-
-        for (int i = 0; i < text.Length; i++)
-        {
-            // Typing a long fallback takes seconds, so focus is re-checked as we go.
-            if ((i & 7) == 0 && !IsAuthorizedTarget(targetWindow, canDrive, getForegroundWindow))
-            {
-                InjectionDiagnostics.RecordTypingAbandoned();
-                return false;
-            }
-
-            char ch = text[i];
-
-            // Real key presses: many editors ignore a literal \n delivered as a Unicode event.
-            if (ch == '\n')
-            {
-                if (!DispatchExactly(dispatch, [KeyDown(Native.VK_RETURN), KeyUp(Native.VK_RETURN)]))
-                {
-                    return false;
-                }
-            }
-            else if (ch == '\t')
-            {
-                if (!DispatchExactly(dispatch, [KeyDown(Native.VK_TAB), KeyUp(Native.VK_TAB)]))
-                {
-                    return false;
-                }
-            }
-            else if (ch == '\r')
-            {
-                continue;
-            }
-            else if (char.IsHighSurrogate(ch) && i + 1 < text.Length && char.IsLowSurrogate(text[i + 1]))
-            {
-                // A surrogate pair must reach the target as a single uninterrupted unit.
-                char low = text[i + 1];
-                i++;
-                if (!DispatchExactly(dispatch, [UnicodeDown(ch), UnicodeUp(ch), UnicodeDown(low), UnicodeUp(low)]))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if (!DispatchExactly(dispatch, [UnicodeDown(ch), UnicodeUp(ch)]))
-                {
-                    return false;
-                }
-            }
-
-            if (KeyDelayMs > 0 || IsSentenceBoundary(ch))
-            {
-                int delay = KeyDelayMs + (IsSentenceBoundary(ch) ? SentenceBoundaryDelayMs : 0);
-                if (delay > 0)
-                {
-                    sleep(delay);
-                }
-            }
-        }
-
-        return true;
-    }
-
-    private static bool IsSentenceBoundary(char ch) => ch is '.' or '!' or '?' or '\n';
 
     private static bool DispatchExactly(
         Func<Native.INPUT[], uint> dispatch,

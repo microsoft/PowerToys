@@ -62,4 +62,30 @@ public sealed class DiagnosticsTests
         StringAssert.Contains(InjectionDiagnostics.BuildMachineReport(InjectionBackend.Auto, 5), "failed_after_erase=1\n");
         InjectionDiagnostics.Reset();
     }
+
+    [TestMethod]
+    public void TheDiagnosticsFileNeverNamesTheSnippetsFile()
+    {
+        // Bug reports copy the file as it is.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        string snippets = Path.Combine(scratch.Path, "Contoso merger", "Contoso.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(snippets)!);
+        File.WriteAllText(snippets, SnippetJson.Of("!a=A"));
+        string diagnostics = Path.Combine(scratch.Path, "diagnostics.txt");
+        using var store = new SnippetStore(snippets);
+        store.Load();
+
+        Program.WriteDiagnosticsFile(store, diagnostics);
+        string text = File.ReadAllText(diagnostics);
+        StringAssert.StartsWith(text, "snippets_location=custom\nsnippets_file_exists=true\nsnippet_count=1\n");
+        Assert.IsFalse(text.Contains("Contoso", StringComparison.OrdinalIgnoreCase), text);
+
+        File.Delete(snippets);
+        Program.WriteDiagnosticsFile(store, diagnostics);
+        StringAssert.Contains(File.ReadAllText(diagnostics), "snippets_file_exists=false\n");
+
+        using var defaultStore = new SnippetStore(Path.Combine(scratch.Path, SnippetStore.FileName), isDefault: true);
+        Program.WriteDiagnosticsFile(defaultStore, diagnostics);
+        StringAssert.StartsWith(File.ReadAllText(diagnostics), "snippets_location=default\n");
+    }
 }
