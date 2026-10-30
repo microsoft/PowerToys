@@ -5,6 +5,7 @@
 #pragma warning disable IDE0007 // Use implicit type
 
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -17,10 +18,10 @@ internal static class MainListPageResultFactory
     /// applying an application result limit and filtering fallback items as needed.
     /// </summary>
     public static IListItem[] Create(
-        IList<RoScored<IListItem>>? filteredItems,
-        IList<RoScored<IListItem>>? scoredFallbackItems,
-        IList<RoScored<IListItem>>? filteredApps,
-        IList<RoScored<IListItem>>? fallbackItems,
+        IList<RoScored<InProcObject<IListItem>>>? filteredItems,
+        IList<RoScored<InProcObject<IListItem>>>? scoredFallbackItems,
+        IList<RoScored<InProcObject<IListItem>>>? filteredApps,
+        IList<RoScored<InProcObject<IListItem>>>? fallbackItems,
         IListItem resultsSeparator,
         IListItem fallbacksSeparator,
         int appResultLimit)
@@ -73,15 +74,15 @@ internal static class MainListPageResultFactory
 
             if (score1 >= score2 && score1 >= score3)
             {
-                result[writePos++] = filteredItems[idx1++].Item;
+                result[writePos++] = filteredItems[idx1++].Item.Safe;
             }
             else if (score2 >= score3)
             {
-                result[writePos++] = scoredFallbackItems[idx2++].Item;
+                result[writePos++] = scoredFallbackItems[idx2++].Item.Safe;
             }
             else
             {
-                result[writePos++] = filteredApps[idx3++].Item;
+                result[writePos++] = filteredApps[idx3++].Item.Safe;
             }
         }
 
@@ -90,11 +91,11 @@ internal static class MainListPageResultFactory
         {
             if (filteredItems![idx1].Score >= scoredFallbackItems![idx2].Score)
             {
-                result[writePos++] = filteredItems[idx1++].Item;
+                result[writePos++] = filteredItems[idx1++].Item.Safe;
             }
             else
             {
-                result[writePos++] = scoredFallbackItems[idx2++].Item;
+                result[writePos++] = scoredFallbackItems[idx2++].Item.Safe;
             }
         }
 
@@ -102,11 +103,11 @@ internal static class MainListPageResultFactory
         {
             if (filteredItems![idx1].Score >= filteredApps![idx3].Score)
             {
-                result[writePos++] = filteredItems[idx1++].Item;
+                result[writePos++] = filteredItems[idx1++].Item.Safe;
             }
             else
             {
-                result[writePos++] = filteredApps[idx3++].Item;
+                result[writePos++] = filteredApps[idx3++].Item.Safe;
             }
         }
 
@@ -114,28 +115,28 @@ internal static class MainListPageResultFactory
         {
             if (scoredFallbackItems![idx2].Score >= filteredApps![idx3].Score)
             {
-                result[writePos++] = scoredFallbackItems[idx2++].Item;
+                result[writePos++] = scoredFallbackItems[idx2++].Item.Safe;
             }
             else
             {
-                result[writePos++] = filteredApps[idx3++].Item;
+                result[writePos++] = filteredApps[idx3++].Item.Safe;
             }
         }
 
         // Drain remaining items from a non-empty list.
         while (idx1 < len1)
         {
-            result[writePos++] = filteredItems![idx1++].Item;
+            result[writePos++] = filteredItems![idx1++].Item.Safe;
         }
 
         while (idx2 < len2)
         {
-            result[writePos++] = scoredFallbackItems![idx2++].Item;
+            result[writePos++] = scoredFallbackItems![idx2++].Item.Safe;
         }
 
         while (idx3 < len3)
         {
-            result[writePos++] = filteredApps![idx3++].Item;
+            result[writePos++] = filteredApps![idx3++].Item.Safe;
         }
 
         // Append filtered fallback items. Fallback items are added post-sort so they are
@@ -150,7 +151,7 @@ internal static class MainListPageResultFactory
 
             for (int i = 0; i < fallbackItems.Count; i++)
             {
-                var item = fallbackItems[i].Item;
+                var item = fallbackItems[i].Item.Safe;
                 if (!string.IsNullOrEmpty(item.Title))
                 {
                     result[writePos++] = item;
@@ -161,7 +162,7 @@ internal static class MainListPageResultFactory
         return result;
     }
 
-    private static int GetNonEmptyFallbackItemsCount(IList<RoScored<IListItem>>? fallbackItems)
+    private static int GetNonEmptyFallbackItemsCount(IList<RoScored<InProcObject<IListItem>>>? fallbackItems)
     {
         int fallbackItemsCount = 0;
 
@@ -169,7 +170,7 @@ internal static class MainListPageResultFactory
         {
             for (int i = 0; i < fallbackItems.Count; i++)
             {
-                if (!string.IsNullOrWhiteSpace(fallbackItems[i].Item.Title))
+                if (!string.IsNullOrWhiteSpace(fallbackItems[i].Item.Safe.Title))
                 {
                     fallbackItemsCount++;
                 }
