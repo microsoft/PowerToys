@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using Windows.ApplicationModel;
 using Windows.Foundation.Metadata;
 using Package = Windows.ApplicationModel.Package;
@@ -12,6 +13,8 @@ namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 public class PackageWrapper : IPackage
 {
+    private const int ErrorAppDataNotFoundHResult = unchecked((int)0x80071130);
+
     public string Name { get; } = string.Empty;
 
     public string FullName { get; } = string.Empty;
@@ -53,27 +56,56 @@ public class PackageWrapper : IPackage
         {
             path = IsPackageDotInstallationPathAvailable.Value ? GetInstalledPath(package) : package.InstalledLocation.Path;
         }
-        catch (Exception e) when (e is ArgumentException || e is FileNotFoundException || e is DirectoryNotFoundException)
+        catch (Exception e) when (
+            e is ArgumentException or FileNotFoundException or DirectoryNotFoundException ||
+            IsFastCacheDataNotFound(e))
         {
-            return new PackageWrapper(
-                package.Id.Name,
-                package.Id.FullName,
-                package.Id.FamilyName,
-                package.IsFramework,
-                package.IsDevelopmentMode,
-                string.Empty,
-                package.SignatureKind == PackageSignatureKind.System);
+            path = string.Empty;
         }
 
         return new PackageWrapper(
-                package.Id.Name,
-                package.Id.FullName,
-                package.Id.FamilyName,
-                package.IsFramework,
-                package.IsDevelopmentMode,
-                path,
-                package.SignatureKind == PackageSignatureKind.System);
+            package.Id.Name,
+            package.Id.FullName,
+            package.Id.FamilyName,
+            package.IsFramework,
+            package.IsDevelopmentMode,
+            path,
+            GetIsNonRemovable(() => package.SignatureKind));
     }
+
+    internal static bool GetIsNonRemovable(Func<PackageSignatureKind> getSignatureKind)
+    {
+        ArgumentNullException.ThrowIfNull(getSignatureKind);
+
+        try
+        {
+            return getSignatureKind() == PackageSignatureKind.System;
+        }
+        catch (COMException e) when (IsFastCacheDataNotFound(e))
+        {
+            // Signature kind only controls whether the Uninstall command is offered. If Windows'
+            // package cache is temporarily unavailable, keep the app and choose the safe default.
+            return true;
+        }
+    }
+
+    internal static bool GetIsFramework(Func<bool> getIsFramework)
+    {
+        ArgumentNullException.ThrowIfNull(getIsFramework);
+
+        try
+        {
+            return getIsFramework();
+        }
+        catch (Exception)
+        {
+            // Unknown package type must not suppress an application refresh.
+            return false;
+        }
+    }
+
+    private static bool IsFastCacheDataNotFound(Exception exception)
+        => exception.HResult == ErrorAppDataNotFoundHResult;
 
     // This is a separate method so the reference to .InstalledPath won't be loaded in API versions which do not support this API (e.g. older then Build 19041)
     private static string GetInstalledPath(Package package)

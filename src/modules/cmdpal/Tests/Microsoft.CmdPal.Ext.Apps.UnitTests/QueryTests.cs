@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.UnitTestBase;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -13,36 +14,30 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 [TestClass]
 public class QueryTests : CommandPaletteUnitTestBase
 {
-    private readonly string _settingsPath = Path.Combine(Path.GetTempPath(), $"apps-query-{Guid.NewGuid():N}.settings.json");
-    private AllAppsSettings _settings;
-
-    [TestCleanup]
-    public void CleanupAliases()
-    {
-        _settings?.WaitForAliasSavesAsync().GetAwaiter().GetResult();
-        File.Delete(_settingsPath);
-        File.Delete(AllAppsSettings.AppCommandAliasesPath(_settingsPath));
-    }
-
     [TestMethod]
-    public void QueryReturnsExpectedResults()
+    public async Task QueryReturnsExpectedResults()
     {
         // Arrange
-        var mockCache = new MockAppCache();
+        var settings = new AllAppsSettings(Path.Combine(Path.GetTempPath(), $"apps-settings-{Guid.NewGuid():N}.json"));
+        var mockCatalog = new MockAppCatalog();
         var win32App = TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe");
         var uwpApp = TestDataHelper.CreateTestUWPApplication("Calculator");
-        mockCache.AddWin32Program(win32App);
-        mockCache.AddUWPApplication(uwpApp);
+        mockCatalog.AddWin32Program(win32App);
+        mockCatalog.AddUWPApplication(uwpApp);
 
         for (var i = 0; i < 10; i++)
         {
-            mockCache.AddWin32Program(TestDataHelper.CreateTestWin32Program($"App{i}"));
-            mockCache.AddUWPApplication(TestDataHelper.CreateTestUWPApplication($"UWP App {i}"));
+            mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program($"App{i}"));
+            mockCatalog.AddUWPApplication(TestDataHelper.CreateTestUWPApplication($"UWP App {i}"));
         }
 
-        _settings = new AllAppsSettings(_settingsPath);
-        var page = new AllAppsPage(mockCache, _settings);
-        var provider = new AllAppsCommandProvider(page);
+        var page = new AllAppsPage(mockCatalog, settings);
+        var provider = new AllAppsCommandProvider(page, settings);
+
+        while (page.IsLoading)
+        {
+            await Task.Delay(10);
+        }
 
         // Act
         var allItems = page.GetItems();

@@ -19,6 +19,8 @@ namespace Microsoft.CmdPal.Ext.Apps.Programs;
 [Serializable]
 public partial class UWP
 {
+    private const int IndexingMaxDegreeOfParallelism = 2;
+
     private static readonly IPath Path = new FileSystem().Path;
 
     private static readonly Dictionary<string, PackageVersion> _versionFromNamespace = new()
@@ -91,7 +93,7 @@ public partial class UWP
         }
         catch (Exception ex)
         {
-            Apps = Array.Empty<UWPApplication>();
+            Apps = [];
             Logger.LogError($"Failed to initialize UWP app info for {Name} ({FullName}): {ex.Message}");
             return;
         }
@@ -125,7 +127,7 @@ public partial class UWP
         }
         else
         {
-            return Array.Empty<string>();
+            return [];
         }
     }
 
@@ -147,7 +149,7 @@ public partial class UWP
     {
         var appsBag = new ConcurrentBag<UWPApplication>();
 
-        Parallel.ForEach(CurrentUserPackages(), p =>
+        Parallel.ForEach(CurrentUserPackages(), new ParallelOptions { MaxDegreeOfParallelism = IndexingMaxDegreeOfParallelism }, p =>
         {
             try
             {
@@ -156,21 +158,7 @@ public partial class UWP
 
                 foreach (var app in u.Apps)
                 {
-                    var isDisabled = false;
-
-                    foreach (var disabled in AllAppsSettings.Instance.DisabledProgramSources)
-                    {
-                        if (disabled.UniqueIdentifier == app.UniqueIdentifier)
-                        {
-                            isDisabled = true;
-                            break;
-                        }
-                    }
-
-                    if (!isDisabled)
-                    {
-                        appsBag.Add(app);
-                    }
+                    appsBag.Add(app);
                 }
             }
             catch (Exception ex)

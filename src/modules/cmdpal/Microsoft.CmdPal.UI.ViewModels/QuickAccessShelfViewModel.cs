@@ -23,6 +23,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly IAppStateService _appStateService;
     private readonly ISettingsService _settingsService;
+    private readonly AllAppsPage _allAppsPage;
     private readonly TaskScheduler _scheduler;
     private readonly Lock _observedItemsLock = new();
     private readonly List<INotifyPropChanged> _observedItems = [];
@@ -46,18 +47,22 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
         RecentCommandsPlacement recentCommandsPlacement,
         int pinnedCommandLimit,
         int recentCommandLimit,
-        TaskScheduler scheduler)
+        TaskScheduler scheduler,
+        AllAppsPage allAppsPage)
     {
+        ArgumentNullException.ThrowIfNull(allAppsPage);
+
         _topLevelCommandManager = topLevelCommandManager;
         _appStateService = appStateService;
         _settingsService = settingsService;
+        _allAppsPage = allAppsPage;
         _recentCommands = _appStateService.State.RecentCommands;
         _configuration = CreateConfiguration(recentCommandsPlacement, pinnedCommandLimit, recentCommandLimit);
         _scheduler = scheduler;
         _topLevelCommandManager.PinnedCommandsChanged += PinnedCommands_Changed;
         _topLevelCommandManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
         _appStateService.StateChanged += AppStateService_StateChanged;
-        AllAppsCommandProvider.Page.PropChanged += AllApps_PropChanged;
+        _allAppsPage.PropChanged += AllApps_PropChanged;
         QueueRebuild();
     }
 
@@ -194,7 +199,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
         }
 
         var recentCommands = _appStateService.State.RecentCommands;
-        var appSnapshot = item.ProviderId == AllAppsCommandProvider.WellKnownId ? AllAppsCommandProvider.Page.GetSnapshot() : null;
+        var appSnapshot = item.ProviderId == AllAppsCommandProvider.WellKnownId ? _allAppsPage.GetSnapshot() : null;
         string CanonicalId(string id) => appSnapshot?.GetApp(id)?.Command?.Id ?? id;
         var withoutItem = recentCommands.WithoutHistoryItem(item.CommandId, CanonicalId);
         if (ReferenceEquals(recentCommands, withoutItem))
@@ -247,8 +252,8 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
     private void AllApps_PropChanged(object? sender, IPropChangedEventArgs args)
     {
         if (IncludesRecentCommands(_configuration.RecentCommandsPlacement) &&
-            args.PropertyName == nameof(AllAppsCommandProvider.Page.IsLoading) &&
-            !AllAppsCommandProvider.Page.IsLoading)
+            args.PropertyName == nameof(AllAppsPage.IsLoading) &&
+            !_allAppsPage.IsLoading)
         {
             QueueRebuild();
         }
@@ -309,7 +314,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
             pinnedCommands,
             recentCommandIds,
             availableCommands,
-            new InProcObject<IListPage>(AllAppsCommandProvider.Page),
+            new InProcObject<IListPage>(_allAppsPage),
             includeApps: _topLevelCommandManager.IsProviderActive(AllAppsCommandProvider.WellKnownId),
             pinnedCommandLimit: configuration.PinnedCommandLimit,
             recentCommandLimit: configuration.RecentCommandLimit,
@@ -477,7 +482,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
         _topLevelCommandManager.PinnedCommandsChanged -= PinnedCommands_Changed;
         _topLevelCommandManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
         _appStateService.StateChanged -= AppStateService_StateChanged;
-        AllAppsCommandProvider.Page.PropChanged -= AllApps_PropChanged;
+        _allAppsPage.PropChanged -= AllApps_PropChanged;
         UpdateObservedItems([]);
         GC.SuppressFinalize(this);
     }
