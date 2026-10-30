@@ -30,10 +30,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Controls
 
         private readonly TextExpanderTrimFallback _trimFallback = new();
 
-        private bool _showBreaksAsMarkers;
-
-        private bool _textOnly;
-
         private bool _textOnlyWhenTrimmed;
 
         private bool _hasElements;
@@ -58,37 +54,13 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Controls
             set => SetValue(SegmentsProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether line breaks and tabs show as ↵ and → markers,
-        /// keeping a snippet on one line in the list.
-        /// </summary>
-        public bool ShowBreaksAsMarkers
-        {
-            get => _showBreaksAsMarkers;
-            set
-            {
-                _showBreaksAsMarkers = value;
-                Render();
-            }
-        }
+        /// <summary>Gets or sets a value indicating whether the bubbles sit on the list's accent chip, in its colors.</summary>
+        public bool OnAccent { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether everything shows as text (values as icon and label, cursor
-        /// and markers as characters), as a trimmed line needs; see <see cref="TextExpanderTrimFallback"/>.
-        /// </summary>
-        public bool TextOnly
-        {
-            get => _textOnly;
-            set
-            {
-                _textOnly = value;
-                Render();
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the line shows bubbles until WinUI trims it, and
-        /// then shows as text, as with <see cref="TextOnly"/>, until it has clearly more room.
+        /// Gets or sets a value indicating whether the text shows bubbles until WinUI trims it, and then shows as text
+        /// (values as icon and label, the cursor as a character) until it has clearly more room; see
+        /// <see cref="TextExpanderTrimFallback"/>.
         /// </summary>
         public bool TextOnlyWhenTrimmed
         {
@@ -117,13 +89,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Controls
         {
             get => Block.TextWrapping;
             set => Block.TextWrapping = value;
-        }
-
-        /// <summary>Gets or sets the text's name for screen readers, which may not reach the bubbles themselves.</summary>
-        public string AccessibleName
-        {
-            get => AutomationProperties.GetName(Block);
-            set => AutomationProperties.SetName(Block, value);
         }
 
         /// <summary>Describes a bubble for screen readers, for example "Clipboard, filled in when the snippet runs".</summary>
@@ -171,17 +136,11 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Controls
 
             Block.Blocks.Clear();
             var segments = Segments as IReadOnlyList<TextExpanderPreviewSegment>;
-            bool textOnly = _textOnly || _trimFallback.ShowsText;
-            if (textOnly)
-            {
-                // The icons are characters that mean nothing read aloud, so the line says what the bubbles would have.
-                AutomationProperties.SetName(Block, segments == null ? string.Empty : TextExpanderSnippetPreview.Describe(segments, DescribeBubble));
-            }
-            else if (_textOnlyWhenTrimmed)
-            {
-                Block.ClearValue(AutomationProperties.NameProperty);
-            }
+            bool textOnly = _trimFallback.ShowsText;
 
+            // Screen readers don't reliably reach elements inside text, and the icons are characters that mean nothing
+            // read aloud, so the text's name says what each bubble is.
+            AutomationProperties.SetName(Block, segments == null ? string.Empty : TextExpanderSnippetPreview.Describe(segments, DescribeBubble));
             _hasElements = false;
             if (segments == null || segments.Count == 0)
             {
@@ -189,14 +148,14 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Controls
             }
 
             var paragraph = new Paragraph();
-            foreach (TextExpanderInline piece in TextExpanderInlines.Plan(segments, _showBreaksAsMarkers, textOnly, Resource))
+            foreach (TextExpanderInline piece in TextExpanderInlines.Plan(segments, textOnly, Resource))
             {
                 Inline inline = piece.Kind switch
                 {
                     TextExpanderInlineKind.LineBreak => new LineBreak(),
                     TextExpanderInlineKind.Bubble => new InlineUIContainer { Child = CreateBubble(piece.Segment) },
                     TextExpanderInlineKind.CursorBar => new InlineUIContainer { Child = CreateCursorMarker() },
-                    TextExpanderInlineKind.BreakMarker => CreateMarker(piece.Text),
+
                     TextExpanderInlineKind.ValueIcon => new Run { Text = piece.Text, FontFamily = ThemeFont("SymbolThemeFontFamily", "Segoe Fluent Icons, Segoe MDL2 Assets") },
                     TextExpanderInlineKind.ValueLabel => new Run { Text = piece.Text, FontFamily = ThemeFont("ContentControlThemeFontFamily", "Segoe UI Variable, Segoe UI") },
                     TextExpanderInlineKind.CursorText => CreateCursorText(piece.Text),
@@ -219,11 +178,12 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Controls
         {
             (string glyph, string text) = TextExpanderInlines.ValueText(segment, Resource);
 
+            string styles = OnAccent ? "AccentBubble" : "Bubble";
             var content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
-            content.Children.Add(new FontIcon { Glyph = glyph, Style = (Style)Resources["BubbleIconStyle"] });
-            content.Children.Add(new TextBlock { Text = text, Style = (Style)Resources["BubbleTextStyle"] });
+            content.Children.Add(new FontIcon { Glyph = glyph, Style = (Style)Resources[styles + "IconStyle"] });
+            content.Children.Add(new TextBlock { Text = text, Style = (Style)Resources[styles + "TextStyle"] });
 
-            var bubble = new Border { Child = content, Style = (Style)Resources["BubbleStyle"] };
+            var bubble = new Border { Child = content, Style = (Style)Resources[styles + "Style"] };
             AutomationProperties.SetName(bubble, DescribeBubble(segment));
             return bubble;
         }
@@ -234,9 +194,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Controls
             AutomationProperties.SetName(marker, DescribeBubble(new TextExpanderPreviewSegment(TextExpanderPreviewSegmentKind.Cursor)));
             return marker;
         }
-
-        private InlineUIContainer CreateMarker(string glyph)
-            => new() { Child = new TextBlock { Text = glyph, Style = (Style)Resources["MarkerStyle"] } };
 
         /// <summary>The cursor as a bar character in the cursor bar's accent color, which follows the theme.</summary>
         private Run CreateCursorText(string text)

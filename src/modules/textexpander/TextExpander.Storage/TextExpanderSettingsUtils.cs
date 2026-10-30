@@ -212,11 +212,7 @@ namespace Microsoft.PowerToys.TextExpander.Storage
                 Exception? compensationError = null;
                 try
                 {
-                    BeforeSettingsPublicationCompensation(
-                        stagingPath,
-                        settingsPath,
-                        backupPath,
-                        destinationExisted);
+                    BeforeSettingsPublicationCompensation(settingsPath);
                     CompensateFailedSettingsPublication(
                         stagingPath,
                         settingsPath,
@@ -348,25 +344,15 @@ namespace Microsoft.PowerToys.TextExpander.Storage
             }
         }
 
-        protected virtual void BeforeSettingsPublicationCompensation(
-            string stagingPath,
-            string settingsPath,
-            string backupPath,
-            bool destinationExisted)
+        protected virtual void BeforeSettingsPublicationCompensation(string settingsPath)
         {
         }
 
-        protected virtual void BeforeSettingsCompensationQuarantine(
-            string settingsPath,
-            string quarantinePath,
-            bool destinationExisted)
+        protected virtual void BeforeSettingsCompensationQuarantine(string settingsPath)
         {
         }
 
-        protected virtual void BeforeUnexpectedSettingsRestore(
-            string quarantinePath,
-            string settingsPath,
-            bool destinationExisted)
+        protected virtual void BeforeUnexpectedSettingsRestore(string settingsPath)
         {
         }
 
@@ -411,7 +397,7 @@ namespace Microsoft.PowerToys.TextExpander.Storage
                 return;
             }
 
-            BeforeSettingsCompensationQuarantine(settingsPath, displacedPath, destinationExisted);
+            BeforeSettingsCompensationQuarantine(settingsPath);
             try
             {
                 _file.Move(settingsPath, displacedPath);
@@ -478,7 +464,7 @@ namespace Microsoft.PowerToys.TextExpander.Storage
         {
             try
             {
-                BeforeUnexpectedSettingsRestore(displacedPath, settingsPath, destinationExisted);
+                BeforeUnexpectedSettingsRestore(settingsPath);
                 _file.Move(displacedPath, settingsPath);
             }
             catch (Exception restoreError)

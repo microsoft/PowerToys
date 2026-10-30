@@ -54,6 +54,16 @@ public partial class App : Application
         var page = new TextExpanderPage();
         _window.Content = page;
 
+        // Keyboard Manager's title bar: the page draws it, with the search box, and the caption buttons follow the theme.
+        _window.ExtendsContentIntoTitleBar = true;
+        _window.SetTitleBar(page.AppTitleBar);
+        if (AppWindowTitleBar.IsCustomizationSupported())
+        {
+            _window.AppWindow.TitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
+        }
+
+        WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(_window.GetWindowHandle());
+
         // The snippet dialog covers only the content, so the title bar's close button and Alt+F4 would
         // otherwise lose an edited snippet without asking.
         _window.AppWindow.Closing += (_, e) =>

@@ -37,7 +37,7 @@ public sealed class TriggerCasingTests
     [TestMethod]
     public void TheFormsAreOneTriggerToDuplicateDetectionAndTheEngine()
     {
-        SnippetFile file = SnippetFile.Parse([Lower + "=first", Upper + "=second"]);
+        SnippetFile file = SnippetFile.Read(SnippetJson.Bytes(Lower + "=first", Upper + "=second"));
         int second = file.Snippets[1].Id;
         Assert.AreEqual(Lower, file.FindDuplicate(Upper, second, caseSensitive: false)?.Trigger);
         Assert.IsNull(file.FindDuplicate(Upper, second, caseSensitive: true));

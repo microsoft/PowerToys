@@ -6995,8 +6995,10 @@ Text uses the current drawing color.</value>
   <data name="Oobe_TextExpander_HowToUse.Text" xml:space="preserve">
     <value>1. Turn on Text Expander.
 2. Select **Manage snippets** and add a snippet: your text and the short trigger that inserts it, like **!mysig**.
-3. In any app, type the trigger and a space, and watch your text appear.</value>
-    <comment>Markdown numbered list; **text** is bold. "Manage snippets" is the name of a button in Settings. !mysig is an example of what the user types and is not translated.</comment>
+3. In any app, type the trigger and a space, and watch your text appear.
+
+Don't save passwords, Social Security numbers, credit card numbers or other sensitive info in snippets. They're saved as plain text and aren't encrypted.</value>
+    <comment>Markdown numbered list; **text** is bold. "Manage snippets" is the name of a button in Settings. !mysig is an example of what the user types and is not translated. The last paragraph warns that snippets aren't encrypted; replace "Social Security numbers" with the national ID number people know in your market.</comment>
   </data>
   <data name="TextExpander_RequireWordBoundary.Header" xml:space="preserve">
     <value>Wait for space or punctuation</value>

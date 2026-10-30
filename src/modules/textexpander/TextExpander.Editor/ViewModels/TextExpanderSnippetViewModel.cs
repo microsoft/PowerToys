@@ -16,7 +16,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         private string _replacement;
         private string _summary;
         private TextExpanderRowDescription _description;
-        private double _keycapColumnWidth = TextExpanderKeycapLayout.MinWidth;
         private bool _caseSensitive = true;
         private string _caseVariantAutomationName = string.Empty;
 
@@ -27,23 +26,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             _replacement = replacement;
         }
 
-        /// <summary>Gets or sets the width of the list's keycap column, the same on every row so descriptions line up.</summary>
-        public double KeycapColumnWidth
-        {
-            get => _keycapColumnWidth;
-            set
-            {
-                if (_keycapColumnWidth != value)
-                {
-                    _keycapColumnWidth = value;
-                    OnPropertyChanged(nameof(KeycapColumnWidth));
-                }
-            }
-        }
-
         /// <summary>
-        /// Gets or sets what the row shows besides its trigger. Set by the page's view model, which
-        /// knows the other triggers and the matching mode.
+        /// Gets or sets what the row shows besides its trigger. Set by the page's view model, which knows the other
+        /// triggers and the matching mode.
         /// </summary>
         public TextExpanderRowDescription Description
         {
@@ -52,45 +37,30 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             {
                 _description = value;
                 OnPropertyChanged(nameof(Description));
-                OnPropertyChanged(nameof(Sentence));
-                OnPropertyChanged(nameof(SentenceParts));
-                OnPropertyChanged(nameof(HasSentence));
-                OnPropertyChanged(nameof(ShowsSavedTextAsTitle));
-                OnPropertyChanged(nameof(ShowsSavedTextBelow));
-                OnPropertyChanged(nameof(Segments));
-                OnPropertyChanged(nameof(TitleSegments));
+                OnPropertyChanged(nameof(KindGlyph));
+                OnPropertyChanged(nameof(LeadSegments));
+                OnPropertyChanged(nameof(ChipSegments));
                 OnPropertyChanged(nameof(Warning));
                 OnPropertyChanged(nameof(HasWarning));
                 OnPropertyChanged(nameof(AutomationName));
             }
         }
 
-        /// <summary>Gets the plain sentence shown for a dynamic snippet, or empty.</summary>
-        public string Sentence => _description?.Sentence ?? string.Empty;
+        /// <summary>Gets the icon of the chip that shows what the snippet inserts.</summary>
+        public string KindGlyph => _description?.KindGlyph ?? TextExpanderRowDescriber.TextGlyph;
 
-        public bool HasSentence => _description?.Sentence != null;
+        /// <summary>Gets the words before the chip: "inserts", or the questions the snippet asks first, as bubbles.</summary>
+        public IReadOnlyList<TextExpanderPreviewSegment> LeadSegments => _description?.Lead ?? Array.Empty<TextExpanderPreviewSegment>();
 
-        /// <summary>Gets a value indicating whether the saved text itself is the row's title, as it is for plain text.</summary>
-        public bool ShowsSavedTextAsTitle => !HasSentence;
-
-        /// <summary>Gets a value indicating whether the saved text goes under the sentence, which it does only when it adds something.</summary>
-        public bool ShowsSavedTextBelow => HasSentence && _description.ShowsSegmentsBelow;
-
-        /// <summary>Gets the saved text, with the editor's bubbles.</summary>
-        public IReadOnlyList<TextExpanderPreviewSegment> Segments => _description?.Segments ?? Array.Empty<TextExpanderPreviewSegment>();
-
-        /// <summary>Gets the sentence with its variables as bubbles.</summary>
-        public IReadOnlyList<TextExpanderPreviewSegment> SentenceParts => _description?.SentenceParts ?? Array.Empty<TextExpanderPreviewSegment>();
-
-        /// <summary>Gets the saved text as the title, on up to two lines, for a snippet without a sentence.</summary>
-        public IReadOnlyList<TextExpanderPreviewSegment> TitleSegments => _description?.TitleSegments ?? Array.Empty<TextExpanderPreviewSegment>();
+        /// <summary>Gets what the snippet inserts, as its real lines with bubbles: at most three, then "…".</summary>
+        public IReadOnlyList<TextExpanderPreviewSegment> ChipSegments => _description?.Chip ?? Array.Empty<TextExpanderPreviewSegment>();
 
         /// <summary>Gets why the snippet never expands, or empty.</summary>
         public string Warning => _description?.Warning ?? string.Empty;
 
         public bool HasWarning => _description?.Warning != null;
 
-        /// <summary>Gets what a screen reader says for the row: the trigger, what it does, and any warning.</summary>
+        /// <summary>Gets what a screen reader says for the row: the trigger, its text, and any warning.</summary>
         public string AutomationName => string.IsNullOrEmpty(_caseVariantAutomationName)
             ? _description?.AutomationName ?? _trigger
             : string.Concat(_description?.AutomationName ?? _trigger, ". ", _caseVariantAutomationName);
@@ -169,15 +139,13 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         }
 
         /// <summary>
-        /// Gets the replacement with line breaks visible; the row limits its visual preview to two
-        /// lines. Kept until the replacement changes, because the search reads it for every row on
-        /// every keystroke.
+        /// Gets the replacement with \n line breaks, for the search. Kept until the replacement changes, because the
+        /// search reads it for every row on every keystroke.
         /// </summary>
-        public string Summary => _summary ??= (_replacement ?? string.Empty)
-            .Replace("\r\n", "\n", StringComparison.Ordinal)
-            .Replace('\r', '\n')
-            .Replace("\\n", "\n", StringComparison.Ordinal)
-            .Replace("\\t", "\t", StringComparison.Ordinal);
+        public string Summary => _summary ??= NormaliseNewlines(_replacement);
+
+        /// <summary>Gets <see cref="AutomationName"/>, which the list reads as the row's name.</summary>
+        public override string ToString() => AutomationName;
 
         public bool HasChanges(string trigger, string replacement)
             => !string.Equals(Trigger, trigger, StringComparison.Ordinal)

@@ -8,6 +8,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
     internal readonly record struct TextExpanderInline(TextExpanderInlineKind Kind, string Text, TextExpanderPreviewSegment Segment)
     {
         /// <summary>Gets a value indicating whether this piece is an element in the line rather than text.</summary>
-        public bool IsElement => Kind is TextExpanderInlineKind.Bubble or TextExpanderInlineKind.CursorBar or TextExpanderInlineKind.BreakMarker;
+        public bool IsElement => Kind is TextExpanderInlineKind.Bubble or TextExpanderInlineKind.CursorBar;
     }
 }

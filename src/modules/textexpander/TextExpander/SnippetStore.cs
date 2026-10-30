@@ -2,20 +2,18 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Security.Cryptography;
 using Microsoft.PowerToys.TextExpander.Storage;
 
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// Loads and watches the snippet file using the same grammar as the snippet editor.
+/// Loads and watches the snippets file, reading it as the snippet editor does.
 /// </summary>
 internal sealed class SnippetStore : IDisposable
 {
-    /// <summary>The name a new snippet file gets.</summary>
+    /// <summary>The snippets file's name in the default location.</summary>
     internal const string FileName = TextExpanderSnippetFileNames.Current;
-
-    /// <summary>The name earlier versions used; still read, never renamed.</summary>
-    internal const string LegacyFileName = TextExpanderSnippetFileNames.Legacy;
 
     /// <summary>Immutable snapshot so the keyboard hook can read without locking.</summary>
     public sealed class Snapshot
@@ -27,6 +25,9 @@ internal sealed class SnippetStore : IDisposable
 
         public required int MaxTriggerLength { get; init; }
 
+        /// <summary>Gets the SHA-256 hash of the file the snapshot was read from, or null when there was no file.</summary>
+        public byte[]? Hash { get; init; }
+
         public static readonly Snapshot Empty = new()
         {
             Map = new Dictionary<string, string>(StringComparer.Ordinal),
@@ -37,11 +38,11 @@ internal sealed class SnippetStore : IDisposable
 
     private sealed class StoreState
     {
-        public StoreState(long generation, string filePath, bool resolveFolderNames, bool caseSensitive, Snapshot snapshot)
+        public StoreState(long generation, string filePath, bool isDefault, bool caseSensitive, Snapshot snapshot)
         {
             Generation = generation;
             FilePath = filePath;
-            ResolveFolderNames = resolveFolderNames;
+            IsDefault = isDefault;
             CaseSensitive = caseSensitive;
             Snapshot = snapshot;
         }
@@ -50,7 +51,7 @@ internal sealed class SnippetStore : IDisposable
 
         public string FilePath { get; }
 
-        public bool ResolveFolderNames { get; }
+        public bool IsDefault { get; }
 
         public bool CaseSensitive { get; }
 
@@ -59,11 +60,11 @@ internal sealed class SnippetStore : IDisposable
 
     private sealed class TransitionTarget
     {
-        public TransitionTarget(long generation, string filePath, bool resolveFolderNames, bool caseSensitive)
+        public TransitionTarget(long generation, string filePath, bool isDefault, bool caseSensitive)
         {
             Generation = generation;
             FilePath = filePath;
-            ResolveFolderNames = resolveFolderNames;
+            IsDefault = isDefault;
             CaseSensitive = caseSensitive;
         }
 
@@ -71,7 +72,7 @@ internal sealed class SnippetStore : IDisposable
 
         public string FilePath { get; }
 
-        public bool ResolveFolderNames { get; }
+        public bool IsDefault { get; }
 
         public bool CaseSensitive { get; }
     }
@@ -194,8 +195,6 @@ internal sealed class SnippetStore : IDisposable
         bool HasCurrentState = true)
     {
         public bool Succeeded => Status is TransitionStatus.Succeeded or TransitionStatus.Unchanged;
-
-        public bool Changed => Status == TransitionStatus.Succeeded;
     }
 
     internal sealed class TestHooks
@@ -215,29 +214,37 @@ internal sealed class SnippetStore : IDisposable
 
     private static readonly TimeSpan DefaultDebounceDelay = TimeSpan.FromMilliseconds(250);
     private static readonly TimeSpan DefaultRetryDelay = TimeSpan.FromMilliseconds(250);
+    private static readonly TimeSpan DefaultRecoveryInterval = TimeSpan.FromSeconds(30);
     private const int DefaultMaxReloadAttempts = 4;
 
     private readonly object _requestLock = new();
     private readonly object _transitionLock = new();
     private readonly object _debounceLock = new();
-    private readonly Func<string, string[]> _readAllLines;
+    private readonly Func<string, byte[]> _readAllBytes;
     private readonly TimeSpan _debounceDelay;
     private readonly TimeSpan _retryDelay;
+    private readonly TimeSpan _recoveryInterval;
     private readonly int _maxReloadAttempts;
     private readonly Action<string> _log;
     private readonly TestHooks? _testHooks;
     private volatile PublishedState _published;
     private volatile TransitionTarget _desired;
     private Timer? _debounce;
+    private Timer? _recovery;
     private long _nextGeneration;
     private long _nextWatcherIdentity;
     private long _nextReloadSequence;
     private ReloadRequest? _scheduledReload;
     private bool _reloadWorkerActive;
     private int _watchingRequested;
+    private int _recovering;
+    private string? _missingFileLogged;
     private int _disposed;
 
     public string FilePath => _published.State.FilePath;
+
+    /// <summary>Gets a value indicating whether the snippets file is the default one, not one the user chose.</summary>
+    public bool IsDefaultPath => _published.State.IsDefault;
 
     public Snapshot Current => _published.State.Snapshot;
 
@@ -248,12 +255,12 @@ internal sealed class SnippetStore : IDisposable
     /// <summary>Raised after a successful reload. Fires on a thread pool thread.</summary>
     public event Action<int>? Reloaded;
 
-    public SnippetStore(string filePath, bool resolveFolderNames = false, bool caseSensitive = true)
+    public SnippetStore(string filePath, bool isDefault = false, bool caseSensitive = true)
         : this(
             filePath,
-            resolveFolderNames,
+            isDefault,
             caseSensitive,
-            ReadAllLinesShared,
+            ReadAllBytesShared,
             DefaultDebounceDelay,
             DefaultRetryDelay,
             DefaultMaxReloadAttempts,
@@ -261,29 +268,35 @@ internal sealed class SnippetStore : IDisposable
     {
     }
 
+    /// <param name="recoveryInterval">
+    /// How often, once watching, to try again to load a snippets file that couldn't be loaded or watched, such as one in
+    /// OneDrive before it starts at sign-in, or in a folder that isn't there yet. Thirty seconds when null.
+    /// </param>
     internal SnippetStore(
         string filePath,
-        bool resolveFolderNames,
+        bool isDefault,
         bool caseSensitive,
-        Func<string, string[]> readAllLines,
+        Func<string, byte[]> readAllBytes,
         TimeSpan debounceDelay,
         TimeSpan retryDelay,
         int maxReloadAttempts,
         Action<string>? log = null,
-        TestHooks? testHooks = null)
+        TestHooks? testHooks = null,
+        TimeSpan? recoveryInterval = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
-        ArgumentNullException.ThrowIfNull(readAllLines);
+        ArgumentNullException.ThrowIfNull(readAllBytes);
         ArgumentOutOfRangeException.ThrowIfLessThan(debounceDelay, TimeSpan.Zero);
         ArgumentOutOfRangeException.ThrowIfLessThan(retryDelay, TimeSpan.Zero);
         ArgumentOutOfRangeException.ThrowIfLessThan(maxReloadAttempts, 1);
 
-        var initialState = new StoreState(0, filePath, resolveFolderNames, caseSensitive, Snapshot.Empty);
+        var initialState = new StoreState(0, filePath, isDefault, caseSensitive, Snapshot.Empty);
         _published = new PublishedState(initialState, watcher: null, hasLoadedState: false);
-        _desired = new TransitionTarget(0, filePath, resolveFolderNames, caseSensitive);
-        _readAllLines = readAllLines;
+        _desired = new TransitionTarget(0, filePath, isDefault, caseSensitive);
+        _readAllBytes = readAllBytes;
         _debounceDelay = debounceDelay;
         _retryDelay = retryDelay;
+        _recoveryInterval = recoveryInterval ?? DefaultRecoveryInterval;
         _maxReloadAttempts = maxReloadAttempts;
         _log = log ?? (_ => { });
         _testHooks = testHooks;
@@ -292,32 +305,17 @@ internal sealed class SnippetStore : IDisposable
     // ── Path resolution ──────────────────────────────────────
 
     /// <summary>
-    /// Resolves the snippet file for a configured folder or file with
-    /// <see cref="SnippetPathResolution.FromConfiguredPath"/>, falling back silently to
-    /// <see cref="ResolveDefaultPath"/> when nothing usable was configured.
+    /// Resolves the snippets file for a configured file with <see cref="SnippetPathResolution.FromConfiguredPath"/>,
+    /// falling back silently when nothing usable was configured: to <paramref name="hostDataFolder"/> under a host,
+    /// whose installer owns the folder beside the executable, and otherwise to <see cref="ResolveDefaultPath"/>.
     /// </summary>
-    public static string ResolveConfiguredPath(string? configuredFolder)
-        => ResolveConfiguredPath(configuredFolder, hostDataFolder: null);
-
-    /// <summary>
-    /// As above, but falls back to <paramref name="hostDataFolder"/> when nothing is configured: under a host,
-    /// the folder beside the executable belongs to its installer.
-    /// </summary>
-    public static string ResolveConfiguredPath(string? configuredFolder, string? hostDataFolder)
-        => ResolveConfiguredPathInfo(configuredFolder, hostDataFolder).FilePath;
-
-    internal static SnippetPathResolution ResolveConfiguredPathInfo(string? configuredFolder, string? hostDataFolder)
+    internal static SnippetPathResolution ResolveConfiguredPathInfo(string? configuredPath, string? hostDataFolder)
     {
         try
         {
-            if (SnippetPathResolution.FromConfiguredPath(configuredFolder, Environment.ExpandEnvironmentVariables, File.Exists) is { } configured)
+            // A chosen file is used where it is, and nothing is created there.
+            if (SnippetPathResolution.FromConfiguredPath(configuredPath, Environment.ExpandEnvironmentVariables) is { } configured)
             {
-                // The engine creates a configured folder; one it cannot create is unusable too.
-                if (configured.ResolveFolderNames)
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(configured.FilePath)!);
-                }
-
                 return configured;
             }
         }
@@ -326,14 +324,13 @@ internal sealed class SnippetStore : IDisposable
             // An unusable setting must not prevent the host/default library from loading.
         }
 
-        string fallbackPath = string.IsNullOrWhiteSpace(hostDataFolder)
-            ? ResolveDefaultPath()
-            : ResolveHostPath(hostDataFolder!);
-        return new SnippetPathResolution(fallbackPath, ResolveFolderNames: true);
+        return new SnippetPathResolution(
+            string.IsNullOrWhiteSpace(hostDataFolder) ? ResolveDefaultPath() : ResolveHostPath(hostDataFolder!),
+            IsDefault: true);
     }
 
     /// <summary>
-    /// The snippet file inside the host data folder, falling back to the PowerToys per-user folder if that folder cannot be created.
+    /// The snippets file inside the host data folder, falling back to the PowerToys per-user folder if that folder cannot be created.
     /// </summary>
     private static string ResolveHostPath(string hostDataFolder)
     {
@@ -341,7 +338,7 @@ internal sealed class SnippetStore : IDisposable
         {
             string full = Path.GetFullPath(hostDataFolder);
             Directory.CreateDirectory(full);
-            return ResolveInFolder(full);
+            return Path.Combine(full, FileName);
         }
         catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException or IOException or UnauthorizedAccessException)
         {
@@ -350,21 +347,14 @@ internal sealed class SnippetStore : IDisposable
     }
 
     /// <summary>
-    /// Resolves the PowerToys per-user snippet file used when no settings path is available.
+    /// Resolves the PowerToys per-user snippets file used when no settings path is available.
     /// </summary>
     public static string ResolveDefaultPath()
     {
         string appData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "TextExpander");
         Directory.CreateDirectory(appData);
-        return ResolveInFolder(appData);
+        return SnippetPathResolution.Default(appData).FilePath;
     }
-
-    /// <summary>
-    /// Returns the snippet file in <paramref name="folder"/> by the rule shared with the editor
-    /// (<see cref="TextExpanderSnippetFileNames"/>).
-    /// </summary>
-    internal static string ResolveInFolder(string folder)
-        => TextExpanderSnippetFileNames.ResolveInFolder(folder, File.Exists);
 
     // ── Loading ──────────────────────────────────────────────
     public TransitionResult Load()
@@ -373,7 +363,7 @@ internal sealed class SnippetStore : IDisposable
         lock (_requestLock)
         {
             TransitionTarget desired = _desired;
-            target = PublishTransition(desired.FilePath, desired.ResolveFolderNames, desired.CaseSensitive);
+            target = PublishTransition(desired.FilePath, desired.IsDefault, desired.CaseSensitive);
         }
 
         return ExecuteTransition(target);
@@ -391,34 +381,11 @@ internal sealed class SnippetStore : IDisposable
         string candidatePath = target.FilePath;
         try
         {
-            if (target.ResolveFolderNames)
-            {
-                string? folder = Path.GetDirectoryName(target.FilePath);
-                if (string.IsNullOrEmpty(folder))
-                {
-                    throw new IOException("The Text Expander snippet folder could not be resolved.");
-                }
-
-                candidatePath = TextExpanderStarter.ResolveOrCreateFileInFolder(folder, FileName, LegacyFileName).FilePath;
-            }
-            else
-            {
-                TextExpanderStarter.TryCreateFile(candidatePath);
-            }
-
-            string[] lines = _readAllLines(candidatePath);
-            Dictionary<string, string> map = Parse(lines, target.CaseSensitive);
-            var index = TriggerIndex.Build(map.Keys, target.CaseSensitive);
-            var snapshot = new Snapshot
-            {
-                Map = map,
-                Triggers = index,
-                MaxTriggerLength = index.MaxTriggerLength,
-            };
+            Snapshot snapshot = ReadSnippets(target);
 
             if (Volatile.Read(ref _disposed) != 0)
             {
-                return Failed(target, candidatePath, new ObjectDisposedException(nameof(SnippetStore)));
+                return Failed(candidatePath, new ObjectDisposedException(nameof(SnippetStore)));
             }
 
             if (!isStillCurrent())
@@ -429,17 +396,68 @@ internal sealed class SnippetStore : IDisposable
             candidate = new StoreState(
                 target.Generation,
                 candidatePath,
-                target.ResolveFolderNames,
+                target.IsDefault,
                 target.CaseSensitive,
                 snapshot);
-            return new TransitionResult(TransitionStatus.Succeeded, map.Count, candidatePath, Error: null);
+            return new TransitionResult(TransitionStatus.Succeeded, snapshot.Map.Count, candidatePath, Error: null);
         }
         catch (Exception ex) when (IsLoadError(ex))
         {
             // Preserve the complete previous path, metadata, and snippet snapshot. The explicit
             // failed result keeps synchronous callers from mistaking that old count for success.
-            return Failed(target, candidatePath, ex);
+            return Failed(candidatePath, ex);
         }
+    }
+
+    /// <summary>
+    /// Reads the snippets in <paramref name="target"/>'s file. Only the default location gets its folder, and the starter
+    /// when it has no file. A chosen file that's missing, or whose folder is, gives no snippets until it's there: it was
+    /// moved or deleted, maybe on another PC, or its drive or sync service isn't ready yet, and creating it there would
+    /// put the starter where a sync service copies it to the user's other PCs. A file touched but not changed, as a sync
+    /// service does, keeps the snippets already read from it.
+    /// </summary>
+    private Snapshot ReadSnippets(TransitionTarget target)
+    {
+        string path = target.FilePath;
+        if (target.IsDefault)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            TextExpanderStarter.TryCreateFile(path);
+        }
+
+        byte[] bytes;
+        try
+        {
+            bytes = _readAllBytes(path);
+        }
+        catch (Exception ex) when (!target.IsDefault && ex is FileNotFoundException or DirectoryNotFoundException)
+        {
+            if (!string.Equals(Interlocked.Exchange(ref _missingFileLogged, path), path, StringComparison.OrdinalIgnoreCase))
+            {
+                _log($"Text Expander has no snippets until the snippets file '{path}' is there: {ex.Message}");
+            }
+
+            return BuildSnapshot(new Dictionary<string, string>(target.CaseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase), target.CaseSensitive, hash: null);
+        }
+
+        Interlocked.Exchange(ref _missingFileLogged, null);
+        byte[] hash = SHA256.HashData(bytes);
+        StoreState loaded = _published.State;
+        if (loaded.Snapshot.Hash is { } loadedHash
+            && loadedHash.AsSpan().SequenceEqual(hash)
+            && loaded.CaseSensitive == target.CaseSensitive
+            && string.Equals(loaded.FilePath, path, StringComparison.OrdinalIgnoreCase))
+        {
+            return loaded.Snapshot;
+        }
+
+        return BuildSnapshot(Parse(bytes, target.CaseSensitive), target.CaseSensitive, hash);
+    }
+
+    private static Snapshot BuildSnapshot(Dictionary<string, string> map, bool caseSensitive, byte[]? hash)
+    {
+        var index = TriggerIndex.Build(map.Keys, caseSensitive);
+        return new Snapshot { Map = map, Triggers = index, MaxTriggerLength = index.MaxTriggerLength, Hash = hash };
     }
 
     private TransitionResult ExecutePublishedWatcherReloadLocked(WatcherRegistration watcher)
@@ -451,7 +469,7 @@ internal sealed class SnippetStore : IDisposable
                 new TransitionTarget(
                     watcher.TransitionGeneration,
                     current.State.FilePath,
-                    current.State.ResolveFolderNames,
+                    current.State.IsDefault,
                     current.State.CaseSensitive),
                 current.State.FilePath);
         }
@@ -459,7 +477,7 @@ internal sealed class SnippetStore : IDisposable
         var target = new TransitionTarget(
             current.State.Generation,
             current.State.FilePath,
-            current.State.ResolveFolderNames,
+            current.State.IsDefault,
             current.State.CaseSensitive);
         TransitionResult result = TryStageStateLocked(
             target,
@@ -499,7 +517,7 @@ internal sealed class SnippetStore : IDisposable
     {
         if (Volatile.Read(ref _disposed) != 0)
         {
-            return Failed(target, target.FilePath, new ObjectDisposedException(nameof(SnippetStore)));
+            return Failed(target.FilePath, new ObjectDisposedException(nameof(SnippetStore)));
         }
 
         if (!IsCurrent(target))
@@ -529,8 +547,8 @@ internal sealed class SnippetStore : IDisposable
                 return result;
             }
 
-            // A supported file can arrive after folder resolution and before the watcher is active, so
-            // re-resolve and read once more under the same generation before publishing.
+            // The file can change after the read above and before the watcher is active, so read it once more under the
+            // same generation before publishing.
             result = TryStageStateLocked(target, out StoreState? handoffCandidate);
             if (!result.Succeeded || handoffCandidate is null)
             {
@@ -546,7 +564,7 @@ internal sealed class SnippetStore : IDisposable
             catch (Exception ex) when (IsLoadError(ex))
             {
                 watcher.Dispose();
-                return Failed(target, candidate.FilePath, ex);
+                return Failed(candidate.FilePath, ex);
             }
         }
 
@@ -557,7 +575,7 @@ internal sealed class SnippetStore : IDisposable
                 watcher?.Dispose();
             }
 
-            return Failed(target, candidate.FilePath, new ObjectDisposedException(nameof(SnippetStore)));
+            return Failed(candidate.FilePath, new ObjectDisposedException(nameof(SnippetStore)));
         }
 
         if (!IsCurrent(target))
@@ -592,10 +610,10 @@ internal sealed class SnippetStore : IDisposable
             Error: null);
     }
 
-    private TransitionTarget PublishTransition(string filePath, bool resolveFolderNames, bool caseSensitive)
+    private TransitionTarget PublishTransition(string filePath, bool isDefault, bool caseSensitive)
     {
         long generation = ++_nextGeneration;
-        var target = new TransitionTarget(generation, filePath, resolveFolderNames, caseSensitive);
+        var target = new TransitionTarget(generation, filePath, isDefault, caseSensitive);
         _desired = target;
         CancelScheduledDesiredReload();
         return target;
@@ -621,42 +639,29 @@ internal sealed class SnippetStore : IDisposable
 
     private static bool SameConfiguration(
         string firstPath,
-        bool firstResolveFolderNames,
+        bool firstIsDefault,
         bool firstCaseSensitive,
         string secondPath,
-        bool secondResolveFolderNames,
+        bool secondIsDefault,
         bool secondCaseSensitive)
-    {
-        if (firstResolveFolderNames != secondResolveFolderNames || firstCaseSensitive != secondCaseSensitive)
-        {
-            return false;
-        }
-
-        if (!firstResolveFolderNames)
-        {
-            return string.Equals(firstPath, secondPath, StringComparison.OrdinalIgnoreCase);
-        }
-
-        return string.Equals(
-            Path.GetDirectoryName(firstPath),
-            Path.GetDirectoryName(secondPath),
-            StringComparison.OrdinalIgnoreCase);
-    }
+        => firstIsDefault == secondIsDefault
+            && firstCaseSensitive == secondCaseSensitive
+            && string.Equals(firstPath, secondPath, StringComparison.OrdinalIgnoreCase);
 
     private static bool SameConfiguration(StoreState state, TransitionTarget target)
         => SameConfiguration(
             state.FilePath,
-            state.ResolveFolderNames,
+            state.IsDefault,
             state.CaseSensitive,
             target.FilePath,
-            target.ResolveFolderNames,
+            target.IsDefault,
             target.CaseSensitive);
 
     private static bool IsLoadError(Exception ex)
         => ex is IOException or UnauthorizedAccessException or System.Security.SecurityException
             or ArgumentException or NotSupportedException or PathTooLongException;
 
-    private TransitionResult Failed(TransitionTarget target, string attemptedPath, Exception error)
+    private TransitionResult Failed(string attemptedPath, Exception error)
     {
         PublishedState current = _published;
         return new TransitionResult(
@@ -679,30 +684,28 @@ internal sealed class SnippetStore : IDisposable
     }
 
     /// <summary>Reads with permissive sharing so an open editor does not block us.</summary>
-    private static string[] ReadAllLinesShared(string path)
+    private static byte[] ReadAllBytesShared(string path)
     {
         using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-        using var reader = new StreamReader(stream, System.Text.Encoding.UTF8, true);
-
-        var lines = new List<string>();
-        string? line;
-        while ((line = reader.ReadLine()) is not null)
+        if (stream.Length > Array.MaxLength)
         {
-            lines.Add(line);
+            throw new IOException($"The snippets file '{path}' is too large to read.");
         }
 
-        return [.. lines];
+        // A file still being written can end before its length said, which throws EndOfStreamException, an IOException.
+        byte[] bytes = new byte[stream.Length];
+        stream.ReadExactly(bytes);
+        return bytes;
     }
 
     /// <summary>
-    /// Parses the snippet file format: "//" comments, "trigger=replacement", and
-    /// "trigger&lt;&lt;&lt; ... &gt;&gt;&gt;" multi-line blocks. Replacement text is taken from the
-    /// raw line so trailing spaces survive.
+    /// Reads a snippets file (<see cref="SnippetFile.Read"/>) into the runtime map, where the last of two snippets with
+    /// the same trigger wins.
     /// </summary>
-    internal static Dictionary<string, string> Parse(string[] lines, bool caseSensitive = true)
+    internal static Dictionary<string, string> Parse(ReadOnlySpan<byte> utf8Json, bool caseSensitive = true)
     {
         var result = new Dictionary<string, string>(caseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase);
-        foreach (SnippetFile.Entry entry in SnippetFile.Parse(lines).Snippets)
+        foreach (SnippetFile.Entry entry in SnippetFile.Read(utf8Json).Snippets)
         {
             result.Remove(entry.Trigger);
             result[entry.Trigger] = entry.Replacement;
@@ -712,15 +715,6 @@ internal sealed class SnippetStore : IDisposable
     }
 
     // ── Matching ─────────────────────────────────────────────
-
-    /// <summary>
-    /// Returns the longest trigger that is a suffix of <paramref name="tail"/>, or null. Runs in the keyboard
-    /// hook, so it costs at most <c>MaxTriggerLength</c> steps however many snippets exist.
-    /// </summary>
-    public string? Match(ReadOnlySpan<char> tail) => _published.State.Snapshot.Triggers.MatchLongestSuffix(tail);
-
-    public bool TryGetReplacement(string trigger, out string replacement)
-        => _published.State.Snapshot.Map.TryGetValue(trigger, out replacement!);
 
     /// <summary>
     /// Changes whether trigger matching distinguishes capitalization, then rebuilds the immutable
@@ -746,7 +740,7 @@ internal sealed class SnippetStore : IDisposable
                     Error: null);
             }
 
-            target = PublishTransition(desired.FilePath, desired.ResolveFolderNames, caseSensitive);
+            target = PublishTransition(desired.FilePath, desired.IsDefault, caseSensitive);
         }
 
         return ExecuteTransition(target);
@@ -756,7 +750,59 @@ internal sealed class SnippetStore : IDisposable
     public TransitionResult StartWatching()
     {
         Interlocked.Exchange(ref _watchingRequested, 1);
+        lock (_debounceLock)
+        {
+            if (Volatile.Read(ref _disposed) == 0)
+            {
+                _recovery ??= new Timer(_ => Recover(), null, _recoveryInterval, _recoveryInterval);
+            }
+        }
+
         return ExecuteTransition(_desired);
+    }
+
+    /// <summary>
+    /// Loads the desired snippets file again, quietly, while it isn't loaded and watched: it couldn't be read or watched,
+    /// as when it's in OneDrive before OneDrive starts or its folder isn't there, so no watcher reports when it can be.
+    /// </summary>
+    private void Recover()
+    {
+        if (Volatile.Read(ref _disposed) != 0 || Interlocked.Exchange(ref _recovering, 1) != 0)
+        {
+            return;
+        }
+
+        try
+        {
+            TransitionTarget desired = _desired;
+            PublishedState published = _published;
+            if (published.Watcher is not null
+                && published.HasLoadedState
+                && published.State.Generation == desired.Generation
+                && SameConfiguration(published.State, desired))
+            {
+                return;
+            }
+
+            TransitionResult result;
+            lock (_transitionLock)
+            {
+                result = ExecuteTransitionLocked(desired);
+            }
+
+            if (result.Succeeded)
+            {
+                Reloaded?.Invoke(result.Count);
+            }
+        }
+        catch (Exception ex)
+        {
+            _log($"Text Expander could not recover its snippets file: {ex.Message}");
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _recovering, 0);
+        }
     }
 
     /// <summary>
@@ -764,7 +810,7 @@ internal sealed class SnippetStore : IDisposable
     /// the keyboard hook captured it; consumers see either the complete old path/snapshot/watcher or the
     /// complete new set. Failure leaves the old state live while bounded retries retain this target.
     /// </summary>
-    public TransitionResult Repoint(string newPath, bool resolveFolderNames = false)
+    public TransitionResult Repoint(string newPath, bool isDefault = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(newPath);
 
@@ -775,10 +821,10 @@ internal sealed class SnippetStore : IDisposable
             PublishedState current = _published;
             if (SameConfiguration(
                     desired.FilePath,
-                    desired.ResolveFolderNames,
+                    desired.IsDefault,
                     desired.CaseSensitive,
                     newPath,
-                    resolveFolderNames,
+                    isDefault,
                     desired.CaseSensitive)
                 && current.HasLoadedState
                 && current.State.Generation == desired.Generation
@@ -791,7 +837,7 @@ internal sealed class SnippetStore : IDisposable
                     Error: null);
             }
 
-            target = PublishTransition(newPath, resolveFolderNames, desired.CaseSensitive);
+            target = PublishTransition(newPath, isDefault, desired.CaseSensitive);
         }
 
         return ExecuteTransition(target);
@@ -805,23 +851,24 @@ internal sealed class SnippetStore : IDisposable
         watcher = null;
         if (Volatile.Read(ref _watchingRequested) == 0 || Volatile.Read(ref _disposed) != 0)
         {
-            return Failed(target, state.FilePath, new ObjectDisposedException(nameof(SnippetStore)));
+            return Failed(state.FilePath, new ObjectDisposedException(nameof(SnippetStore)));
+        }
+
+        // Not logged here: the caller reports the failed transition, and recovery tries again quietly.
+        string? dir = Path.GetDirectoryName(state.FilePath);
+        if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir))
+        {
+            return Failed(state.FilePath, new DirectoryNotFoundException($"The Text Expander snippet folder '{dir}' is not available."));
         }
 
         FileSystemWatcher? fileWatcher = null;
         try
         {
-            string? dir = Path.GetDirectoryName(state.FilePath);
-            if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir))
-            {
-                throw new DirectoryNotFoundException($"The Text Expander snippet folder '{dir}' is not available.");
-            }
-
             fileWatcher = new FileSystemWatcher(dir)
             {
                 // Watch the directory: editors that save by renaming a temporary file over the original
-                // destroy a file-level watch. A folder setting watches both supported names.
-                Filter = state.ResolveFolderNames ? "*" : Path.GetFileName(state.FilePath),
+                // destroy a file-level watch.
+                Filter = Path.GetFileName(state.FilePath),
                 NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Size,
                 IncludeSubdirectories = false,
             };
@@ -836,10 +883,12 @@ internal sealed class SnippetStore : IDisposable
                 }
             }
 
+            // The handlers keep the file's name, not the state: that would keep its snippets after every reload.
+            string fileName = Path.GetFileName(state.FilePath);
             FileSystemEventHandler onFileEvent = (_, e) =>
             {
-                if (IsRelevantFileName(state, e.Name)
-                    || (e is RenamedEventArgs renamed && IsRelevantFileName(state, renamed.OldName)))
+                if (IsRelevantFileName(fileName, e.Name)
+                    || (e is RenamedEventArgs renamed && IsRelevantFileName(fileName, renamed.OldName)))
                 {
                     ScheduleFileReload();
                 }
@@ -847,7 +896,7 @@ internal sealed class SnippetStore : IDisposable
 
             RenamedEventHandler onRenamed = (_, e) =>
             {
-                if (IsRelevantFileName(state, e.Name) || IsRelevantFileName(state, e.OldName))
+                if (IsRelevantFileName(fileName, e.Name) || IsRelevantFileName(fileName, e.OldName))
                 {
                     ScheduleFileReload();
                 }
@@ -881,7 +930,7 @@ internal sealed class SnippetStore : IDisposable
             fileWatcher?.Dispose();
             watcher = null;
             _log($"Text Expander could not watch '{state.FilePath}': {ex.Message}");
-            return Failed(target, state.FilePath, ex);
+            return Failed(state.FilePath, ex);
         }
     }
 
@@ -898,18 +947,8 @@ internal sealed class SnippetStore : IDisposable
         watcher?.Dispose();
     }
 
-    private static bool IsRelevantFileName(StoreState state, string? name)
-    {
-        if (!state.ResolveFolderNames)
-        {
-            return string.Equals(name, Path.GetFileName(state.FilePath), StringComparison.OrdinalIgnoreCase);
-        }
-
-        return string.Equals(name, FileName, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(name, LegacyFileName, StringComparison.OrdinalIgnoreCase);
-    }
-
-    internal TransitionResult ReloadPreferredPath() => Load();
+    private static bool IsRelevantFileName(string fileName, string? name)
+        => string.Equals(name, fileName, StringComparison.OrdinalIgnoreCase);
 
     private void OnWatcherError(WatcherRegistration watcher, Exception error)
     {
@@ -937,7 +976,7 @@ internal sealed class SnippetStore : IDisposable
         TransitionTarget target = _desired;
         if (Volatile.Read(ref _disposed) == 0)
         {
-            ScheduleRetryAfterFailure(target, Failed(target, attemptedPath, error));
+            ScheduleRetryAfterFailure(target, Failed(attemptedPath, error));
         }
     }
 
@@ -1289,6 +1328,8 @@ internal sealed class SnippetStore : IDisposable
         {
             _debounce?.Dispose();
             _debounce = null;
+            _recovery?.Dispose();
+            _recovery = null;
             _scheduledReload = null;
         }
     }

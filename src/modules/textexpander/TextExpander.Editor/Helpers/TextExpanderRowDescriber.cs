@@ -8,25 +8,27 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.PowerToys.TextExpander;
 
 namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 {
     /// <summary>
-    /// Describes a snippet for its row in the list: a plain sentence for a dynamic snippet (from whole
-    /// localized templates, only for shapes recognized with certainty), the saved text, and why it never expands.
+    /// Describes a snippet for its row in the list, in Keyboard Manager's style: the questions it asks, what it
+    /// inserts as its real lines in an accent chip, why it never expands, and what a screen reader says.
     /// </summary>
     internal static partial class TextExpanderRowDescriber
     {
-        /// <summary>The longest link shown in full. Longer ones keep the host and the end of the path.</summary>
-        internal const int LinkBudget = 60;
+        /// <summary>The most real lines a row's chip shows; "…" after the last one says more follow.</summary>
+        internal const int ChipLineLimit = 3;
+
+        /// <summary>The chip's icon for text.</summary>
+        internal const string TextGlyph = "\uE8D2";
 
         private const int SpokenLimit = 170;
 
-        private static readonly string[] Schemes = { "https://", "http://" };
-
-        private static readonly char[] SurroundingPunctuation = { ' ', '(', ')', '[', ']', '{', '}', '-', '\u2013', '\u2014', ',', '.', ':', ';', '/', '|' };
-
+        /// <summary>
+        /// Describes a snippet for its row in Keyboard Manager's style: the questions it asks, what it inserts as its
+        /// real lines in an accent chip with an icon, why it never expands, and what a screen reader says.
+        /// </summary>
         public static TextExpanderRowDescription Describe(
             string trigger,
             string replacement,
@@ -39,8 +41,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             trigger ??= string.Empty;
             IReadOnlyList<TextExpanderPreviewSegment> segments = TextExpanderSnippetPreview.Build(replacement ?? string.Empty, now);
 
-            var labels = new List<string>();
-            bool unnamedQuestion = false;
+            var questions = new List<string>();
             bool clipboard = false;
             bool dates = false;
             bool onlyTimes = true;
@@ -63,253 +64,128 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
                         dates = true;
                         break;
                     case TextExpanderPreviewSegmentKind.Prompt:
-                        if (string.IsNullOrWhiteSpace(segment.Value))
+                        string label = TextExpanderInlines.ValueText(segment, resource).Label;
+                        if (!questions.Contains(label, StringComparer.Ordinal))
                         {
-                            unnamedQuestion = true;
-                        }
-                        else if (!labels.Contains(segment.Value, StringComparer.Ordinal))
-                        {
-                            labels.Add(segment.Value);
+                            questions.Add(label);
                         }
 
                         break;
                 }
             }
 
-            string host = segments.Count > 0 && segments[0].Kind == TextExpanderPreviewSegmentKind.Text && LinkStart().IsMatch(segments[0].Value)
-                ? ExtractHost(segments[0].Value)
-                : null;
-            bool asks = labels.Count > 0 || unnamedQuestion;
-            bool dateOnly = dates && !clipboard && !asks && lines == 1 && segments.All(IsDateOrPunctuation);
-
-            List<TextExpanderPreviewSegment> sentenceParts = null;
-            if (clipboard || asks || dates)
-            {
-                sentenceParts = host != null
-                    ? LinkSentence(host, clipboard, labels, unnamedQuestion, resource)
-                    : OtherSentence(segments, dateOnly, onlyTimes, clipboard, labels, unnamedQuestion, lines, resource);
-            }
-
-            string sentence = sentenceParts == null ? null : string.Concat(sentenceParts.Select(part => part.Value));
-            IReadOnlyList<TextExpanderPreviewSegment> shown = sentence != null && host != null ? WithShortLink(segments) : segments;
+            // A snippet that is one value, or only dates and times with punctuation, shows them as its text, with their icon.
+            bool oneValue = segments.Count == 1 && segments[0].IsBubble;
+            bool onlyDates = dates && !clipboard && questions.Count == 0 && lines == 1 && segments.All(IsDateOrPunctuation);
+            TextExpanderPreviewSegmentKind? kind = oneValue ? segments[0].Kind
+                : onlyDates ? (onlyTimes ? TextExpanderPreviewSegmentKind.Time : TextExpanderPreviewSegmentKind.Date)
+                : clipboard ? TextExpanderPreviewSegmentKind.Clipboard
+                : (TextExpanderPreviewSegmentKind?)null;
+            string glyph = kind is { } valueKind ? TextExpanderInlines.ValueText(new(valueKind), resource).Glyph : TextGlyph;
 
             string warning = WarningFor(trigger, hasLaterDuplicate, triggers, wordMode, resource);
-
-            // The saved text goes under a sentence only when it says more: words or numbers of its
-            // own, beyond the variables the sentence already shows.
-            bool showSegmentsBelow = sentence != null && segments.Any(HasWordCharacters);
-
-            // Without a sentence, the saved text is the title.
-            IReadOnlyList<TextExpanderPreviewSegment> title = sentence == null ? TitleLines(segments) : Array.Empty<TextExpanderPreviewSegment>();
-
-            // A row shows two lines at most, so the name says how many there are, unless the sentence does.
-            bool sentenceCountsLines = sentence != null && host == null && lines > 1;
-            string spoken = sentence ?? Spoken(segments, resource);
-            if (lines > 1 && !sentenceCountsLines && spoken.Length > 0)
+            string spoken = Spoken(segments, resource);
+            if (lines > 1 && spoken.Length > 0)
             {
                 spoken = Format(resource("TextExpander_Row_SpokenLines"), spoken, lines);
             }
 
+            string never = warning == null ? null : Format(resource("TextExpander_Row_NeverExpandsSpoken"), warning);
             string automationName = spoken.Length == 0
-                ? (warning == null ? trigger : Format(resource("TextExpander_Row_AutomationName"), trigger, warning))
-                : warning == null
+                ? (never == null ? trigger : Format(resource("TextExpander_Row_AutomationName"), trigger, never))
+                : never == null
                     ? Format(resource("TextExpander_Row_AutomationName"), trigger, spoken)
-                    : Format(resource("TextExpander_Row_AutomationNameWarning"), trigger, spoken, warning);
+                    : Format(resource("TextExpander_Row_AutomationNameWarning"), trigger, WithoutFinalPeriod(spoken), never);
 
-            return new TextExpanderRowDescription(
-                sentence,
-                (IReadOnlyList<TextExpanderPreviewSegment>)sentenceParts ?? Array.Empty<TextExpanderPreviewSegment>(),
-                shown,
-                title,
-                showSegmentsBelow,
-                warning,
-                automationName);
+            return new TextExpanderRowDescription(glyph, Lead(questions, resource), ChipLines(segments, oneValue || onlyDates, resource), warning, automationName);
         }
 
         /// <summary>
-        /// The saved text as a row's title: its first two lines that have something on them, then
-        /// "…" if more follow. A blank line, such as the one between a message and its sign-off,
-        /// would otherwise use up the row.
+        /// Gets the words before the chip: "inserts", or the questions as bubbles in "asks {0} then inserts". The
+        /// template stays whole, so each language keeps its own word order around the questions.
         /// </summary>
-        internal static IReadOnlyList<TextExpanderPreviewSegment> TitleLines(IReadOnlyList<TextExpanderPreviewSegment> segments)
+        private static IReadOnlyList<TextExpanderPreviewSegment> Lead(List<string> questions, Func<string, string> resource)
         {
+            var lead = new List<TextExpanderPreviewSegment>();
+            string template = resource(questions.Count == 0 ? "TextExpander_Row_Inserts" : "TextExpander_Row_AsksThenInserts") ?? string.Empty;
+            int slot = template.IndexOf("{0}", StringComparison.Ordinal);
+            AddText(lead, slot < 0 ? template : template[..slot]);
+            for (int index = 0; index < questions.Count; index++)
+            {
+                AddText(lead, index > 0 ? " " : string.Empty);
+                lead.Add(new TextExpanderPreviewSegment(TextExpanderPreviewSegmentKind.Prompt, questions[index]));
+            }
+
+            AddText(lead, slot < 0 ? string.Empty : template[(slot + 3)..]);
+            return lead;
+        }
+
+        /// <summary>
+        /// Gets the real lines a row's chip shows: without blank lines at either end, at most
+        /// <see cref="ChipLineLimit"/>, then "…" if more follow. With <paramref name="valuesAsText"/>, values are
+        /// text rather than bubbles.
+        /// </summary>
+        internal static IReadOnlyList<TextExpanderPreviewSegment> ChipLines(IReadOnlyList<TextExpanderPreviewSegment> segments, bool valuesAsText, Func<string, string> resource)
+        {
+            // Only the lines from the first that isn't blank, ChipLineLimit of them, are kept: past them, all that matters
+            // is whether anything else shows.
             var lines = new List<List<TextExpanderPreviewSegment>> { new() };
+            bool more = false;
             foreach (TextExpanderPreviewSegment segment in segments)
             {
                 if (segment.Kind == TextExpanderPreviewSegmentKind.LineBreak)
                 {
-                    lines.Add(new List<TextExpanderPreviewSegment>());
+                    if (lines.Count == 1 && IsBlankLine(lines[0]))
+                    {
+                        lines[0].Clear();
+                    }
+                    else if (lines.Count <= ChipLineLimit)
+                    {
+                        lines.Add(new List<TextExpanderPreviewSegment>());
+                    }
+
+                    continue;
+                }
+
+                TextExpanderPreviewSegment shown = valuesAsText && segment.IsBubble
+                    ? new TextExpanderPreviewSegment(TextExpanderPreviewSegmentKind.Text, TextExpanderInlines.ValueText(segment, resource).Label)
+                    : segment;
+                if (lines.Count > ChipLineLimit)
+                {
+                    if (!IsBlank(shown))
+                    {
+                        more = true;
+                        break;
+                    }
+                }
+                else if (shown.Kind == TextExpanderPreviewSegmentKind.Text)
+                {
+                    AddText(lines[^1], shown.Value);
                 }
                 else
                 {
-                    lines[^1].Add(segment);
+                    lines[^1].Add(shown);
                 }
             }
 
-            List<List<TextExpanderPreviewSegment>> filled = lines.Where(line => !line.All(IsBlank)).ToList();
-            var title = new List<TextExpanderPreviewSegment>();
-            for (int i = 0; i < Math.Min(2, filled.Count); i++)
+            int count = more ? ChipLineLimit : lines.FindLastIndex(line => !IsBlankLine(line)) + 1;
+            var chip = new List<TextExpanderPreviewSegment>();
+            for (int index = 0; index < count; index++)
             {
-                if (i > 0)
+                if (index > 0)
                 {
-                    title.Add(new TextExpanderPreviewSegment(TextExpanderPreviewSegmentKind.LineBreak));
+                    chip.Add(new TextExpanderPreviewSegment(TextExpanderPreviewSegmentKind.LineBreak));
                 }
 
-                title.AddRange(filled[i]);
+                chip.AddRange(lines[index]);
             }
 
-            if (filled.Count > 2)
+            if (more)
             {
-                title.Add(new TextExpanderPreviewSegment(TextExpanderPreviewSegmentKind.Text, "\u2026"));
+                AddText(chip, " \u2026");
             }
 
-            return title;
-        }
-
-        /// <summary>Gets the host a link goes to, or null when there isn't a clear one.</summary>
-        internal static string ExtractHost(string text)
-        {
-            Match match = HostPattern().Match(text ?? string.Empty);
-            if (!match.Success)
-            {
-                return null;
-            }
-
-            string host = match.Groups[1].Value;
-            int userInfo = host.LastIndexOf('@');
-            if (userInfo >= 0)
-            {
-                host = host[(userInfo + 1)..];
-            }
-
-            return host.Length == 0 ? null : host;
-        }
-
-        /// <summary>
-        /// Drops a link's http:// or https:// and, when it is still longer than
-        /// <paramref name="budget"/>, keeps the host and the end of the path, which is the part that
-        /// tells links apart: <c>contoso.com/…/Forms/report</c>. Text after the link is kept.
-        /// </summary>
-        internal static string ShortenLink(string text, int budget)
-        {
-            text ??= string.Empty;
-            int start = 0;
-            while (start < text.Length && char.IsWhiteSpace(text[start]))
-            {
-                start++;
-            }
-
-            int scheme = SchemeLength(text, start);
-            int end = start + scheme;
-            while (end < text.Length && !char.IsWhiteSpace(text[end]))
-            {
-                end++;
-            }
-
-            string url = text[(start + scheme)..end];
-            if (url.Length > budget)
-            {
-                int slash = url.IndexOf('/');
-                if (slash > 0)
-                {
-                    string host = url[..slash];
-                    string path = url[slash..];
-                    int room = Math.Max(1, budget - host.Length - 2);
-                    string tail = null;
-                    for (int index = path.IndexOf('/', 1); index >= 0; index = path.IndexOf('/', index + 1))
-                    {
-                        if (path.Length - index <= room)
-                        {
-                            tail = path[index..];
-                            break;
-                        }
-                    }
-
-                    url = host + "/\u2026" + (tail ?? path[^Math.Min(room, path.Length)..]);
-                }
-            }
-
-            return text[..start] + url + text[end..];
-        }
-
-        private static int SchemeLength(string text, int start)
-        {
-            foreach (string scheme in Schemes)
-            {
-                if (string.Compare(text, start, scheme, 0, scheme.Length, StringComparison.OrdinalIgnoreCase) == 0)
-                {
-                    return scheme.Length;
-                }
-            }
-
-            return 0;
-        }
-
-        private static List<TextExpanderPreviewSegment> LinkSentence(string host, bool clipboard, List<string> labels, bool unnamedQuestion, Func<string, string> resource)
-        {
-            if (unnamedQuestion)
-            {
-                return null;
-            }
-
-            List<TextExpanderPreviewSegment> site = TextPart(host);
-            return (clipboard, labels.Count > 0) switch
-            {
-                (true, true) => Fill(resource("TextExpander_Row_LinkClipboardPrompts"), site, ClipboardBubble(resource), LabelBubbles(labels, resource)),
-                (true, false) => Fill(resource("TextExpander_Row_LinkClipboard"), site, ClipboardBubble(resource)),
-                (false, true) => Fill(resource("TextExpander_Row_LinkPrompts"), site, LabelBubbles(labels, resource)),
-                _ => Fill(resource("TextExpander_Row_Link"), site),
-            };
-        }
-
-        private static List<TextExpanderPreviewSegment> OtherSentence(
-            IReadOnlyList<TextExpanderPreviewSegment> segments,
-            bool dateOnly,
-            bool onlyTimes,
-            bool clipboard,
-            List<string> labels,
-            bool unnamedQuestion,
-            int lines,
-            Func<string, string> resource)
-        {
-            if (dateOnly)
-            {
-                // One bubble for the value, without the brackets or punctuation around it.
-                string value = string.Concat(segments.Select(s => s.Kind == TextExpanderPreviewSegmentKind.Tab ? " " : s.Value)).Trim().Trim(SurroundingPunctuation);
-                if (value.Length == 0)
-                {
-                    return null;
-                }
-
-                var bubble = new List<TextExpanderPreviewSegment>
-                {
-                    new(onlyTimes ? TextExpanderPreviewSegmentKind.Time : TextExpanderPreviewSegmentKind.Date, value),
-                };
-                return Fill(resource(onlyTimes ? "TextExpander_Row_Time" : "TextExpander_Row_Date"), bubble);
-            }
-
-            string count = lines.ToString(CultureInfo.CurrentCulture);
-            if (labels.Count > 0 || unnamedQuestion)
-            {
-                if (unnamedQuestion)
-                {
-                    return null;
-                }
-
-                return lines > 1
-                    ? Fill(resource("TextExpander_Row_PromptsLines"), LabelBubbles(labels, resource), TextPart(count))
-                    : Fill(resource("TextExpander_Row_Prompts"), LabelBubbles(labels, resource));
-            }
-
-            if (clipboard)
-            {
-                return lines > 1
-                    ? Fill(resource("TextExpander_Row_ClipboardLines"), ClipboardBubble(resource), TextPart(count))
-                    : Fill(resource("TextExpander_Row_Clipboard"), ClipboardBubble(resource));
-            }
-
-            // Dates mixed into other text: the saved text with its bubbles says it better.
-            return null;
+            return chip;
         }
 
         private static string WarningFor(string trigger, bool hasLaterDuplicate, TextExpanderTriggerSet triggers, bool wordMode, Func<string, string> resource)
@@ -344,88 +220,16 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             _ => true,
         };
 
-        private static bool HasWordCharacters(TextExpanderPreviewSegment segment)
-            => segment.Kind == TextExpanderPreviewSegmentKind.Text && segment.Value.Any(char.IsLetterOrDigit);
+        /// <summary>Gets a value indicating whether a line shows nothing at all: only spaces and tabs.</summary>
+        private static bool IsBlankLine(List<TextExpanderPreviewSegment> line) => line.TrueForAll(IsBlank);
 
-        /// <summary>Gets a value indicating whether a piece of a line shows nothing worth a row's space.</summary>
-        private static bool IsBlank(TextExpanderPreviewSegment segment) => segment.Kind switch
-        {
-            TextExpanderPreviewSegmentKind.Text => string.IsNullOrWhiteSpace(segment.Value),
-            TextExpanderPreviewSegmentKind.Tab or TextExpanderPreviewSegmentKind.Cursor => true,
-            _ => false,
-        };
+        private static bool IsBlank(TextExpanderPreviewSegment segment)
+            => segment.Kind == TextExpanderPreviewSegmentKind.Tab
+                || (segment.Kind == TextExpanderPreviewSegmentKind.Text && string.IsNullOrWhiteSpace(segment.Value));
 
-        private static IReadOnlyList<TextExpanderPreviewSegment> WithShortLink(IReadOnlyList<TextExpanderPreviewSegment> segments)
-        {
-            var shown = segments.ToList();
-            shown[0] = shown[0] with { Value = ShortenLink(shown[0].Value, LinkBudget) };
-            return shown;
-        }
-
-        /// <summary>Each label in a bubble, joined as the language joins a list: "A", "A and B", "A, B and C".</summary>
-        private static List<TextExpanderPreviewSegment> LabelBubbles(List<string> labels, Func<string, string> resource)
-        {
-            var last = new List<TextExpanderPreviewSegment> { new(TextExpanderPreviewSegmentKind.Prompt, labels[^1]) };
-            if (labels.Count == 1)
-            {
-                return last;
-            }
-
-            var head = new List<TextExpanderPreviewSegment>();
-            for (int i = 0; i < labels.Count - 1; i++)
-            {
-                if (i > 0)
-                {
-                    AddText(head, resource("TextExpander_Row_JoinSeparator"));
-                }
-
-                head.Add(new TextExpanderPreviewSegment(TextExpanderPreviewSegmentKind.Prompt, labels[i]));
-            }
-
-            return Fill(resource("TextExpander_Row_JoinPair"), head, last);
-        }
-
-        /// <summary>A bubble for the clipboard that reads "what you copied".</summary>
-        private static List<TextExpanderPreviewSegment> ClipboardBubble(Func<string, string> resource)
-            => new() { new(TextExpanderPreviewSegmentKind.Clipboard, resource("TextExpander_Row_SpokenClipboard")) };
-
-        private static List<TextExpanderPreviewSegment> TextPart(string text)
-            => new() { new(TextExpanderPreviewSegmentKind.Text, text) };
-
-        /// <summary>
-        /// Fills a localized template's {0}, {1}… with text or bubbles. The template stays whole,
-        /// so each language keeps its own word order around the slots.
-        /// </summary>
-        private static List<TextExpanderPreviewSegment> Fill(string template, params List<TextExpanderPreviewSegment>[] values)
-        {
-            template ??= string.Empty;
-            var parts = new List<TextExpanderPreviewSegment>();
-            int at = 0;
-            foreach (Match slot in Slot().Matches(template))
-            {
-                AddText(parts, template[at..slot.Index]);
-                int index = int.Parse(slot.Groups[1].Value, CultureInfo.InvariantCulture);
-                if (index < values.Length && values[index] != null)
-                {
-                    foreach (TextExpanderPreviewSegment part in values[index])
-                    {
-                        if (part.Kind == TextExpanderPreviewSegmentKind.Text)
-                        {
-                            AddText(parts, part.Value);
-                        }
-                        else
-                        {
-                            parts.Add(part);
-                        }
-                    }
-                }
-
-                at = slot.Index + slot.Length;
-            }
-
-            AddText(parts, template[at..]);
-            return parts;
-        }
+        /// <summary>Drops a final period, which the warning's sentence after it would double.</summary>
+        private static string WithoutFinalPeriod(string text)
+            => text.EndsWith('.') && !text.EndsWith("..", StringComparison.Ordinal) ? text[..^1] : text;
 
         private static void AddText(List<TextExpanderPreviewSegment> parts, string text)
         {
@@ -444,10 +248,14 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             }
         }
 
-        /// <summary>Reads the saved text aloud, saying what each bubble, line break and tab is.</summary>
+        /// <summary>
+        /// Reads the saved text aloud, saying what each bubble, line break and tab is. Spaces run together into one, and
+        /// reading stops once there's more than a row says.
+        /// </summary>
         private static string Spoken(IReadOnlyList<TextExpanderPreviewSegment> segments, Func<string, string> resource)
         {
             var text = new StringBuilder();
+            bool space = false;
             foreach (TextExpanderPreviewSegment segment in segments)
             {
                 string part = segment.Kind switch
@@ -460,29 +268,30 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
                     TextExpanderPreviewSegmentKind.Prompt => " (" + Format(resource("TextExpander_Row_SpokenPrompt"), string.IsNullOrWhiteSpace(segment.Value) ? resource("TextExpander_PreviewPromptUnnamed") : segment.Value) + ") ",
                     _ => " (" + resource("TextExpander_Row_SpokenCursor") + ") ",
                 };
-                text.Append(part);
+                foreach (char character in part ?? string.Empty)
+                {
+                    if (char.IsWhiteSpace(character))
+                    {
+                        space = text.Length > 0;
+                        continue;
+                    }
+
+                    text.Append(space ? " " : string.Empty).Append(character);
+                    space = false;
+                    if (text.Length > SpokenLimit)
+                    {
+                        return text.ToString(0, SpokenLimit - 1) + "\u2026";
+                    }
+                }
             }
 
-            string spoken = WhiteSpaceRun().Replace(text.ToString(), " ").Trim();
-            return spoken.Length > SpokenLimit ? spoken[..(SpokenLimit - 1)] + "\u2026" : spoken;
+            return text.ToString();
         }
 
         private static string Format(string template, params object[] values)
             => string.Format(CultureInfo.CurrentCulture, template, values);
 
-        [GeneratedRegex(@"^\s*(?:https?://|www\.)\S", RegexOptions.IgnoreCase)]
-        private static partial Regex LinkStart();
-
-        [GeneratedRegex(@"^\s*(?:https?://|(?=www\.))([^/\s?#]+)", RegexOptions.IgnoreCase)]
-        private static partial Regex HostPattern();
-
         [GeneratedRegex(@"^[\s()\[\]{}\-\u2013\u2014,.:;/|]*$")]
         private static partial Regex PunctuationOnly();
-
-        [GeneratedRegex(@"\s+")]
-        private static partial Regex WhiteSpaceRun();
-
-        [GeneratedRegex(@"\{(\d+)\}")]
-        private static partial Regex Slot();
     }
 }

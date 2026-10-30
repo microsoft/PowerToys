@@ -7,6 +7,27 @@
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
             </ResourceDictionary.MergedDictionaries>
+            <!--  Keyboard Manager's tint for what a mapping does (KeyboardManagerEditorUI Styles\Colors.xaml), here what a snippet inserts; and the backdrop of the question flyout's miniature window, light in light mode.  -->
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Default">
+                    <SolidColorBrush
+                        x:Key="CustomAccentBackgroundBrush"
+                        Opacity="0.3"
+                        Color="{ThemeResource SystemAccentColorLight2}" />
+                    <SolidColorBrush x:Key="PromptPreviewBackdropBrush" Color="{ThemeResource SmokeFillColorDefault}" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush
+                        x:Key="CustomAccentBackgroundBrush"
+                        Opacity="0.2"
+                        Color="{ThemeResource SystemAccentColorDark1}" />
+                    <SolidColorBrush x:Key="PromptPreviewBackdropBrush" Color="{ThemeResource SolidBackgroundFillColorBaseAlt}" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <SolidColorBrush x:Key="CustomAccentBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="PromptPreviewBackdropBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

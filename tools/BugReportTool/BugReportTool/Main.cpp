@@ -48,7 +48,7 @@ map<wstring, vector<wstring>> escapeInfo = {
         L"properties/custom-actions/value/name",
         L"properties/custom-actions/value/prompt"
         } },
-    { L"TextExpander\\settings.json", { L"properties/snippets_path", L"properties/last_sync_folder" } },
+    { L"TextExpander\\settings.json", { L"properties/snippets_path" } },
 };
 
 vector<wstring> filesToDelete = {
@@ -59,8 +59,6 @@ vector<wstring> filesToDelete = {
     L"PowerRename\\search-mru.json",
     L"PowerToys Run\\Settings\\UserSelectedRecord.json",
     L"PowerToys Run\\Settings\\QueryHistory.json",
-    L"TextExpander\\PowerToysTextExpanderSnippets.txt",
-    L"TextExpander\\snippets.txt",
     L"NewPlus\\Templates",
     L"etw",
 };

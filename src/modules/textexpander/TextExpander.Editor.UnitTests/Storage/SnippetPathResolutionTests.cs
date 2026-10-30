@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -56,15 +55,15 @@ public sealed class SnippetPathResolutionTests
     [TestMethod]
     public void QuotesSpacesAndEnvironmentVariablesAreResolvedFirst()
     {
-        string folder = Path.Combine(_root, "my snippets");
-        var expected = new SnippetPathResolution(Path.Combine(folder, TextExpanderSnippetFileNames.Current), ResolveFolderNames: true);
+        string file = Path.Combine(_root, "my snippets.json");
+        var expected = new SnippetPathResolution(file, IsDefault: false);
 
-        Assert.AreEqual(expected, Resolve($"  \"{folder}\"  "));
-        Assert.AreEqual(expected, Resolve($"%{RootVariable}%\\my snippets"));
-        Assert.AreEqual(expected, Resolve($"\"%{RootVariable}%\\my snippets\""), "Quotes are trimmed before expansion.");
+        Assert.AreEqual(expected, Resolve($"  \"{file}\"  "));
+        Assert.AreEqual(expected, Resolve($"%{RootVariable}%\\my snippets.json"));
+        Assert.AreEqual(expected, Resolve($"\"%{RootVariable}%\\my snippets.json\""), "Quotes are trimmed before expansion.");
         Assert.AreEqual(
             expected,
-            SnippetPathResolution.FromConfiguredPath("%SNIPPETS%", value => value.Replace("%SNIPPETS%", folder, StringComparison.Ordinal), File.Exists),
+            SnippetPathResolution.FromConfiguredPath("%SNIPPETS%", value => value.Replace("%SNIPPETS%", file, StringComparison.Ordinal)),
             "The expansion is an adapter, as the editor's storage environment supplies it.");
     }
 
@@ -76,40 +75,33 @@ public sealed class SnippetPathResolutionTests
             Assert.IsNull(Resolve(value), value);
         }
 
-        Assert.IsNull(SnippetPathResolution.FromConfiguredPath(@"C:\%SNIPPETS%", _ => "snips", File.Exists), "Checked after expansion.");
+        Assert.IsNull(SnippetPathResolution.FromConfiguredPath(@"C:\%SNIPPETS%", _ => "snips"), "Checked after expansion.");
     }
 
     [TestMethod]
-    public void AFolderUsesTheCurrentNameThenTheLegacyName()
+    public void AFullPathIsTheSnippetsFileWhateverItsNameAndNothingIsCreated()
     {
-        string folder = Path.Combine(_root, "library");
-        string current = Path.Combine(folder, TextExpanderSnippetFileNames.Current);
-        string legacy = Path.Combine(folder, TextExpanderSnippetFileNames.Legacy);
+        string existing = Path.Combine(_root, "work snippets.json");
+        File.WriteAllText(existing, SnippetJson.Of("!a=b"));
+        string moved = Path.Combine(_root, "moved", "my snippets.json");
+        string folder = Directory.CreateDirectory(Path.Combine(_root, "a folder")).FullName;
+        string text = Path.Combine(_root, "old.txt");
 
-        Assert.AreEqual(new SnippetPathResolution(current, ResolveFolderNames: true), Resolve(folder), "A missing folder gets the current name.");
-        Assert.IsFalse(Directory.Exists(folder), "Selecting has no side effects; the engine creates the folder itself.");
+        foreach (string file in new[] { existing, moved, folder, text, @"\\server\share\mine.json" })
+        {
+            Assert.AreEqual(new SnippetPathResolution(file, IsDefault: false), Resolve(file), file);
+        }
 
-        Directory.CreateDirectory(folder);
-        File.WriteAllText(legacy, "!old=Legacy\n");
-        Assert.AreEqual(new SnippetPathResolution(legacy, ResolveFolderNames: true), Resolve(folder), "Only the legacy name exists.");
-
-        Assert.IsTrue(TextExpanderStarter.TryCreateFile(current));
-        Assert.AreEqual(new SnippetPathResolution(legacy, ResolveFolderNames: true), Resolve(folder), "An untouched starter yields to the legacy library.");
-
-        File.WriteAllText(current, "!new=Current\n");
-        Assert.AreEqual(new SnippetPathResolution(current, ResolveFolderNames: true), Resolve(folder + Path.DirectorySeparatorChar), "A changed current file wins.");
+        Assert.AreEqual(@"\\server\share\snippets.json", Resolve("//server/share/snippets.json")?.FilePath);
+        Assert.IsFalse(Directory.Exists(Path.Combine(_root, "moved")), "Selecting has no side effects.");
     }
 
     [TestMethod]
-    public void AnExistingFileIsUsedAsItIsWhateverItsName()
+    public void TheDefaultLocationIsTheSnippetsFileInTheFolder()
     {
-        string file = Path.Combine(_root, "work snippets.txt");
-        File.WriteAllText(file, "!a=b\n");
-        var expected = new SnippetPathResolution(file, ResolveFolderNames: false);
-
-        Assert.AreEqual(expected, Resolve(file));
-        Assert.AreEqual(expected, Resolve($" \"{file}\" "));
-        Assert.AreEqual(expected, Resolve($"%{RootVariable}%\\work snippets.txt"));
+        string folder = Path.Combine(_root, "default");
+        Assert.AreEqual(new SnippetPathResolution(Path.Combine(folder, "PowerToysTextExpanderSnippets.json"), IsDefault: true), SnippetPathResolution.Default(folder));
+        Assert.IsFalse(Directory.Exists(folder), "The caller creates it.");
     }
 
     [TestMethod]
@@ -117,51 +109,22 @@ public sealed class SnippetPathResolutionTests
     {
         Assert.ThrowsException<PathTooLongException>(() => Resolve(TooLongPath));
         Assert.ThrowsException<ArgumentException>(
-            () => SnippetPathResolution.FromConfiguredPath("C:\\bad\0name", value => value, File.Exists),
+            () => SnippetPathResolution.FromConfiguredPath("C:\\bad\0name.json", value => value),
             "Environment.ExpandEnvironmentVariables stops at a null character; an injected expansion keeps it.");
-        Assert.ThrowsException<UnauthorizedAccessException>(
-            () => SnippetPathResolution.FromConfiguredPath(_root, Environment.ExpandEnvironmentVariables, _ => throw new UnauthorizedAccessException()));
     }
 
     [TestMethod]
-    public void CharactersWindowsRejectsAreLeftToTheCallerToCreate()
+    public void CharactersWindowsRejectsAreReportedAndNothingIsCreated()
     {
-        string folder = Path.Combine(_root, "a<b");
+        string file = Path.Combine(_root, "a<b", "snippets.json");
 
-        Assert.AreEqual(new SnippetPathResolution(Path.Combine(folder, TextExpanderSnippetFileNames.Current), ResolveFolderNames: true), Resolve(folder));
+        Assert.AreEqual(new SnippetPathResolution(file, IsDefault: false), Resolve(file));
 
-        // The engine can't create the folder, so it falls back to its default library
-        // (SnippetStoreTests); the editor reports the folder's error rather than switching libraries.
-        using TextExpanderViewModel editor = CreateEditor(folder, Path.Combine(_root, "default"));
+        // The editor reports the file's error rather than switching to the default location.
+        using TextExpanderViewModel editor = CreateEditor(file, Path.Combine(_root, "default"));
         Assert.IsTrue(editor.HasSnippetError);
-        Assert.AreEqual(Path.Combine(folder, TextExpanderSnippetFileNames.Current), editor.SnippetsFilePath);
+        Assert.AreEqual(file, editor.SnippetsFilePath);
         Assert.IsFalse(Directory.Exists(Path.Combine(_root, "default")));
-    }
-
-    [TestMethod]
-    public void UncPathsFollowTheSameRuleThroughTheAdapters()
-    {
-        const string Folder = @"\\server\share\snippets";
-        string current = Folder + @"\" + TextExpanderSnippetFileNames.Current;
-        string legacy = Folder + @"\" + TextExpanderSnippetFileNames.Legacy;
-        var probed = new List<string>();
-        bool LegacyOnly(string path)
-        {
-            probed.Add(path);
-            return path == legacy;
-        }
-
-        Assert.AreEqual(
-            new SnippetPathResolution(legacy, ResolveFolderNames: true),
-            SnippetPathResolution.FromConfiguredPath($"\"{Folder}\"", Environment.ExpandEnvironmentVariables, LegacyOnly));
-        CollectionAssert.AreEqual(new[] { Folder, current, legacy }, probed, "Only the adapter is asked, so no share is contacted.");
-
-        Assert.AreEqual(current, SnippetPathResolution.FromConfiguredPath("//server/share/snippets", Environment.ExpandEnvironmentVariables, _ => false)?.FilePath);
-
-        const string PinnedFile = @"\\server\share\mine.txt";
-        Assert.AreEqual(
-            new SnippetPathResolution(PinnedFile, ResolveFolderNames: false),
-            SnippetPathResolution.FromConfiguredPath(PinnedFile, Environment.ExpandEnvironmentVariables, path => path == PinnedFile));
     }
 
     [TestMethod]
@@ -169,7 +132,7 @@ public sealed class SnippetPathResolutionTests
     {
         string defaultFolder = Path.Combine(_root, "default");
         string expected = Path.Combine(defaultFolder, TextExpanderSnippetFileNames.Current);
-        foreach (string value in new[] { null, "  ", "relative", "C:snips", TooLongPath })
+        foreach (string value in new[] { null, "  ", "relative.json", "C:snips.json", TooLongPath })
         {
             using TextExpanderViewModel editor = CreateEditor(value, defaultFolder);
 
@@ -178,7 +141,7 @@ public sealed class SnippetPathResolutionTests
             Assert.IsFalse(editor.HasSnippetError, label);
         }
 
-        using TextExpanderViewModel injected = CreateEditor("C:\\bad\0name", defaultFolder, expandEnvironmentVariables: value => value);
+        using TextExpanderViewModel injected = CreateEditor("C:\\bad\0name.json", defaultFolder, expandEnvironmentVariables: value => value);
         Assert.AreEqual(expected, injected.SnippetsFilePath, "An invalid character falls back too.");
     }
 
@@ -186,17 +149,14 @@ public sealed class SnippetPathResolutionTests
     public void TheEngineAndEditorSelectTheSameFileForTheSameValue()
     {
         string defaultFolder = Path.Combine(_root, "default");
-        string library = Path.Combine(_root, "library");
-        Directory.CreateDirectory(library);
-        File.WriteAllText(Path.Combine(library, TextExpanderSnippetFileNames.Legacy), "!old=Legacy\n");
-        string pinned = Path.Combine(_root, "pinned.txt");
-        File.WriteAllText(pinned, "!pinned=File\n");
+        string pinned = Path.Combine(_root, "pinned.json");
+        File.WriteAllText(pinned, SnippetJson.Of("!pinned=File"));
 
-        foreach (string value in new[] { null, "relative", library, $" \"{library}\\\" ", $"%{RootVariable}%\\library", pinned, $"%{RootVariable}%\\pinned.txt", Path.Combine(_root, "new") })
+        foreach (string value in new[] { null, "relative", pinned, $" \"{pinned}\" ", $"%{RootVariable}%\\pinned.json", Path.Combine(_root, "new.json"), _root })
         {
-            // SnippetStore.ResolveConfiguredPathInfo's adapters, apart from it creating the folder.
-            SnippetPathResolution engine = SnippetPathResolution.FromConfiguredPath(value, Environment.ExpandEnvironmentVariables, File.Exists)
-                ?? SnippetPathResolution.InFolder(defaultFolder, File.Exists);
+            // SnippetStore.ResolveConfiguredPathInfo's adapters, apart from it creating the default folder.
+            SnippetPathResolution engine = SnippetPathResolution.FromConfiguredPath(value, Environment.ExpandEnvironmentVariables)
+                ?? SnippetPathResolution.Default(defaultFolder);
 
             using TextExpanderViewModel editor = CreateEditor(value, defaultFolder);
 
@@ -205,7 +165,7 @@ public sealed class SnippetPathResolutionTests
     }
 
     private static SnippetPathResolution? Resolve(string value)
-        => SnippetPathResolution.FromConfiguredPath(value, Environment.ExpandEnvironmentVariables, File.Exists);
+        => SnippetPathResolution.FromConfiguredPath(value, Environment.ExpandEnvironmentVariables);
 
     /// <summary>Creates an editor with its own path adapters, unless one is given, and a scratch default folder.</summary>
     private static TextExpanderViewModel CreateEditor(string snippetsPath, string defaultFolder, Func<string, string> expandEnvironmentVariables = null)
@@ -220,6 +180,7 @@ public sealed class SnippetPathResolutionTests
         environment.SetupGet(e => e.DefaultSnippetsFolder).Returns(defaultFolder);
         environment.Setup(e => e.ExpandEnvironmentVariables(It.IsAny<string>())).Returns<string>(expandEnvironmentVariables ?? adapters.ExpandEnvironmentVariables);
         environment.Setup(e => e.FileExists(It.IsAny<string>())).Returns<string>(adapters.FileExists);
-        return new TextExpanderViewModel(utils.Object, null, isElevated: false, key => key, environment.Object);
+        environment.Setup(e => e.CreateDirectory(It.IsAny<string>())).Callback<string>(adapters.CreateDirectory);
+        return new TextExpanderViewModel(utils.Object, isElevated: false, key => key, environment.Object);
     }
 }

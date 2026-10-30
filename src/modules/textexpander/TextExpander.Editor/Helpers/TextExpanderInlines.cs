@@ -13,11 +13,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
     /// </summary>
     internal static class TextExpanderInlines
     {
-        private const string LineBreakMarker = "\u21B5";
-        private const string TabMarker = "\u2192";
         private const string ThinSpace = "\u2009";
 
-        public static IReadOnlyList<TextExpanderInline> Plan(IReadOnlyList<TextExpanderPreviewSegment> segments, bool breaksAsMarkers, bool textOnly, Func<string, string> resource)
+        public static IReadOnlyList<TextExpanderInline> Plan(IReadOnlyList<TextExpanderPreviewSegment> segments, bool textOnly, Func<string, string> resource)
         {
             var plan = new List<TextExpanderInline>();
             foreach (TextExpanderPreviewSegment segment in segments ?? Array.Empty<TextExpanderPreviewSegment>())
@@ -29,11 +27,11 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
                         break;
 
                     case TextExpanderPreviewSegmentKind.LineBreak:
-                        plan.Add(breaksAsMarkers ? Marker(LineBreakMarker, segment, textOnly) : new(TextExpanderInlineKind.LineBreak, "\n", segment));
+                        plan.Add(new(TextExpanderInlineKind.LineBreak, "\n", segment));
                         break;
 
                     case TextExpanderPreviewSegmentKind.Tab:
-                        plan.Add(breaksAsMarkers ? Marker(TabMarker, segment, textOnly) : new(TextExpanderInlineKind.Text, "\t", segment));
+                        plan.Add(new(TextExpanderInlineKind.Text, "\t", segment));
                         break;
 
                     case TextExpanderPreviewSegmentKind.Cursor:
@@ -68,8 +66,5 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             TextExpanderPreviewSegmentKind.Time => ("\uE823", segment.Value),
             _ => ("\uE787", segment.Value),
         };
-
-        private static TextExpanderInline Marker(string glyph, TextExpanderPreviewSegment segment, bool textOnly)
-            => textOnly ? new(TextExpanderInlineKind.Text, ThinSpace + glyph + ThinSpace, segment) : new(TextExpanderInlineKind.BreakMarker, glyph, segment);
     }
 }

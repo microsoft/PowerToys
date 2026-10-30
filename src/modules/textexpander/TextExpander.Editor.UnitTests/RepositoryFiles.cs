@@ -28,7 +28,7 @@ internal static class RepositoryFiles
 
     /// <summary>The editor page's snippet list, whose rows are built from its DataTemplate.</summary>
     public static XElement SnippetList()
-        => Xml(EditorPage).Descendants().Single(element => element.Name.LocalName == "ItemsRepeater"
+        => Xml(EditorPage).Descendants().Single(element => element.Name.LocalName == "ListView"
             && ((string)element.Attribute("ItemsSource") ?? string.Empty).Contains("FilteredSnippets", StringComparison.Ordinal));
 
     public static XElement WithUid(XContainer container, string uid)

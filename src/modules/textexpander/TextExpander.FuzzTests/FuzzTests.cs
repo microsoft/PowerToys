@@ -9,7 +9,7 @@ using Microsoft.PowerToys.TextExpander;
 namespace TextExpander.FuzzTests;
 
 /// <summary>
-/// OneFuzz targets for the snippet file and snippet text, which users and other apps edit freely. A failed check
+/// OneFuzz targets for the snippets file and snippet text, which users and other apps edit freely. A failed check
 /// throws, so OneFuzz reports a disagreement between the editor, the engine and the file the way it reports a crash.
 /// </summary>
 public static class FuzzTests
@@ -17,46 +17,55 @@ public static class FuzzTests
     private const string AddedTrigger = "fuzz";
 
     /// <summary>
-    /// Reads the input as the snippet file, as the engine does. Writing it back unedited, re-saving each snippet the
-    /// editor would accept and adding one must read back the same snippets, and the engine's trigger matcher must
-    /// agree with a linear scan.
+    /// Reads the input as the snippets file, as the engine and the editor do. A file that isn't one is refused with
+    /// <see cref="SnippetFileFormatException"/> and nothing else. One that is must save and read back the same snippets,
+    /// unedited and after re-saving each snippet the editor would accept and adding the input as one, and the engine's
+    /// trigger matcher must agree with a linear scan. Text kept without being read that can't be written back, such as
+    /// half of an emoji, is refused with <see cref="SnippetFileWriteException"/>, which the editor reports instead of saving.
     /// </summary>
     public static void FuzzSnippetFile(ReadOnlySpan<byte> input)
     {
-        using var reader = new StreamReader(new MemoryStream(input.ToArray()), Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
-        string text = reader.ReadToEnd();
-        string[] lines = ReadLines(text);
+        SnippetFile file;
+        try
+        {
+            file = SnippetFile.Read(input);
+        }
+        catch (SnippetFileFormatException)
+        {
+            return;
+        }
 
-        SnippetFile file = SnippetFile.Parse(lines);
-        Check(file.ToLines().SequenceEqual(lines), "An unedited file was not written back line for line.");
-
+        string text = Encoding.UTF8.GetString(input);
         CheckMatching(file.Snippets.Select(entry => entry.Trigger).ToHashSet(StringComparer.Ordinal), text);
+
+        byte[] saved;
+        try
+        {
+            saved = file.ToBytes();
+        }
+        catch (SnippetFileWriteException)
+        {
+            return;
+        }
+
+        CheckSameSnippets(file, SnippetFile.Read(saved), "An unedited file read back different snippets.");
 
         SnippetFile edited = file.Clone();
         foreach (SnippetFile.Entry entry in file.Snippets)
         {
             if (SnippetFile.IsValidTrigger(entry.Trigger, out _) && edited.FindDuplicate(entry.Trigger, entry.Id) is null)
             {
-                // Changing the text and changing it back makes the entry render afresh instead of keeping its lines.
-                edited.Upsert(entry.Id, entry.Trigger, entry.Replacement + " ");
                 edited.Upsert(entry.Id, entry.Trigger, entry.Replacement);
             }
         }
 
         if (edited.FindDuplicate(AddedTrigger) is null)
         {
-            // Pasting the input in as a new snippet puts raw line breaks through the editor's renderer.
-            edited.Upsert(null, AddedTrigger, SnippetFile.IsValidReplacement(text, out _) ? text : string.Empty);
+            // Pasting the input in as a new snippet puts any text through the writer.
+            edited.Upsert(null, AddedTrigger, text);
         }
 
-        // Compared line for line: the editor writes these lines with the file's own line breaks.
-        string[] saved = edited.ToLines();
-        Check(!saved.Any(line => line.AsSpan().ContainsAny('\r', '\n')), "A saved line holds a line break.");
-
-        SnippetFile reloaded = SnippetFile.Parse(saved);
-        Check(
-            reloaded.Snippets.Select(entry => (entry.Trigger, entry.Replacement)).SequenceEqual(edited.Snippets.Select(entry => (entry.Trigger, entry.Replacement))),
-            "A saved file read back different snippets.");
+        CheckSameSnippets(edited, SnippetFile.Read(edited.ToBytes()), "A saved file read back different snippets.");
     }
 
     /// <summary>
@@ -94,18 +103,10 @@ public static class FuzzTests
         _ = TriggerIndex.Build(triggers, caseSensitive: false).MatchLongestSuffix(typed);
     }
 
-    // Splits on CRLF, LF and lone CR, as the engine's StreamReader.ReadLine does.
-    private static string[] ReadLines(string text)
-    {
-        var lines = new List<string>();
-        using var reader = new StringReader(text);
-        for (string? line = reader.ReadLine(); line is not null; line = reader.ReadLine())
-        {
-            lines.Add(line);
-        }
-
-        return lines.ToArray();
-    }
+    private static void CheckSameSnippets(SnippetFile expected, SnippetFile actual, string message)
+        => Check(
+            actual.Snippets.Select(entry => (entry.Trigger, entry.Replacement)).SequenceEqual(expected.Snippets.Select(entry => (entry.Trigger, entry.Replacement))),
+            message);
 
     private static void Check(bool condition, string message)
     {

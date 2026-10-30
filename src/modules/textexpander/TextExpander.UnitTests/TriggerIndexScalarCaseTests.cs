@@ -107,9 +107,9 @@ public sealed class TriggerIndexScalarCaseTests
     public void TheHookExpandsASupplementaryTriggerTypedInTheOtherCase()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Path.Combine(scratch.Path, "snippets.txt");
+        string path = Path.Combine(scratch.Path, "snippets.json");
         string trigger = "a" + AdlamSmallAlif;
-        File.WriteAllText(path, trigger + "=adlam\n");
+        File.WriteAllText(path, SnippetJson.Of(trigger + "=adlam"));
         using var store = new SnippetStore(path, caseSensitive: false);
         Assert.AreEqual(1, store.Load().Count);
         using var hook = new KeyboardHook(store);

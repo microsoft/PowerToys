@@ -11,179 +11,47 @@ namespace Microsoft.PowerToys.TextExpander.UnitTests;
 public sealed class SnippetStoreTests
 {
     private static readonly string[] StarterTriggers = ["!ddate", "!ttime", "!ddt", "!isodate", "!mysig", "!myemail"];
-    private static readonly string[] ExampleTriggers = ["!hello", "!mdlink", "!longdate", "!time24", "!todo", "!myaddr", "!tabhead", "!meeting"];
-    private static readonly byte[] WinnerBytes = System.Text.Encoding.UTF8.GetBytes("!external=winner\r\n");
+    private static readonly byte[] WinnerBytes = SnippetJson.Bytes("!external=winner");
 
     [TestMethod]
-    public void ConfiguredPathUsesFolderFileOrHostDefault()
+    public void ConfiguredPathIsTheFileOrTheHostDefault()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string folder = Path.Combine(scratch.Path, "library");
-        Assert.AreEqual(Path.Combine(folder, "PowerToysTextExpanderSnippets.txt"), SnippetStore.ResolveConfiguredPath(folder, null));
-        Assert.IsTrue(Directory.Exists(folder));
 
-        string direct = Write(scratch, "direct.txt", "#x=y");
-        Assert.AreEqual(direct, SnippetStore.ResolveConfiguredPath(direct, null));
+        // A configured path is the snippets file, whatever its name, used where it is: its folder isn't created.
+        string chosen = Path.Combine(scratch.Path, "library", "work.json");
+        Assert.AreEqual(new SnippetPathResolution(chosen, IsDefault: false), SnippetStore.ResolveConfiguredPathInfo(chosen, null));
+        Assert.IsFalse(Directory.Exists(Path.Combine(scratch.Path, "library")));
+        string notes = Write(scratch, "notes.txt");
+        Assert.AreEqual(notes, SnippetStore.ResolveConfiguredPathInfo(notes, null).FilePath);
 
+        // Without one, the file is in the host's folder, which is created.
         string host = Path.Combine(scratch.Path, "host");
-        Assert.AreEqual(Path.Combine(host, "PowerToysTextExpanderSnippets.txt"), SnippetStore.ResolveConfiguredPath(null, host));
-        Assert.AreEqual(Path.Combine(host, "PowerToysTextExpanderSnippets.txt"), SnippetStore.ResolveConfiguredPath("relative", host));
-    }
-
-    [TestMethod]
-    public void AFolderUsesTheNewNameThenTheLegacyName()
-    {
-        using ScratchDirectory scratch = ScratchDirectory.Create();
-        foreach ((bool hasNew, bool hasLegacy, string expected) in new[]
-        {
-            (false, false, "PowerToysTextExpanderSnippets.txt"),
-            (false, true, "snippets.txt"),
-            (true, false, "PowerToysTextExpanderSnippets.txt"),
-            (true, true, "PowerToysTextExpanderSnippets.txt"),
-        })
-        {
-            string folder = Path.Combine(scratch.Path, $"new-{hasNew}-legacy-{hasLegacy}");
-            Directory.CreateDirectory(folder);
-            if (hasNew)
-            {
-                File.WriteAllText(Path.Combine(folder, "PowerToysTextExpanderSnippets.txt"), "!new=1\n");
-            }
-
-            if (hasLegacy)
-            {
-                File.WriteAllText(Path.Combine(folder, "snippets.txt"), "!old=1\n");
-            }
-
-            string want = Path.Combine(folder, expected);
-            Assert.AreEqual(want, SnippetStore.ResolveInFolder(folder), folder);
-            Assert.AreEqual(want, SnippetStore.ResolveConfiguredPath(folder, null), "Configured folder: " + folder);
-            Assert.AreEqual(want, SnippetStore.ResolveConfiguredPath(null, folder), "Host folder: " + folder);
-        }
-
-        // A file path is used as it is, whatever its name.
-        string direct = Path.Combine(scratch.Path, "new-False-legacy-True", "snippets.txt");
-        Assert.AreEqual(direct, SnippetStore.ResolveConfiguredPath(direct, null));
-    }
-
-    [TestMethod]
-    public void AFolderStoreSwitchesWhenThePreferredFileArrivesOrLeaves()
-    {
-        using ScratchDirectory scratch = ScratchDirectory.Create();
-        string legacy = Write(scratch, SnippetStore.LegacyFileName, "!legacy=old\n");
-        string current = Path.Combine(scratch.Path, SnippetStore.FileName);
-
-        SnippetPathResolution resolution = SnippetStore.ResolveConfiguredPathInfo(scratch.Path, null);
-        Assert.IsTrue(resolution.ResolveFolderNames);
-        using var store = new SnippetStore(resolution.FilePath, resolution.ResolveFolderNames);
-        Assert.AreEqual(1, store.Load().Count);
-        Assert.AreEqual(legacy, store.FilePath);
-
-        File.WriteAllText(current, "!current=new\n");
-        Assert.AreEqual(1, store.ReloadPreferredPath().Count);
-        Assert.AreEqual(current, store.FilePath);
-        Assert.IsTrue(store.Current.Map.ContainsKey("!current"));
-
-        File.Delete(current);
-        Assert.AreEqual(1, store.ReloadPreferredPath().Count);
-        Assert.AreEqual(legacy, store.FilePath);
-        Assert.IsTrue(store.Current.Map.ContainsKey("!legacy"));
-
-        SnippetPathResolution direct = SnippetStore.ResolveConfiguredPathInfo(legacy, null);
-        Assert.IsFalse(direct.ResolveFolderNames, "An explicit file path stays on that file.");
-    }
-
-    [TestMethod]
-    public void FolderAwareLoadRechecksLegacyAfterInitialResolution()
-    {
-        using ScratchDirectory scratch = ScratchDirectory.Create();
-        SnippetPathResolution resolution = SnippetStore.ResolveConfiguredPathInfo(scratch.Path, null);
-        string current = Path.Combine(scratch.Path, SnippetStore.FileName);
-        string legacy = Path.Combine(scratch.Path, SnippetStore.LegacyFileName);
-        byte[] legacyBytes = System.Text.Encoding.UTF8.GetBytes("!legacy=arrived\r\n");
-
-        File.WriteAllBytes(legacy, legacyBytes);
-
-        using var store = new SnippetStore(resolution.FilePath, resolution.ResolveFolderNames);
-        Assert.AreEqual(1, store.Load().Count);
-        Assert.AreEqual(legacy, store.FilePath);
-        Assert.IsTrue(store.Current.Map.ContainsKey("!legacy"));
-        CollectionAssert.AreEqual(legacyBytes, File.ReadAllBytes(legacy));
-        Assert.IsFalse(File.Exists(current), "The starter must not hide a legacy database that arrived after resolution.");
-    }
-
-    [TestMethod]
-    public void FolderClaimRechecksLegacyAtStarterPublicationBoundary()
-    {
-        using ScratchDirectory scratch = ScratchDirectory.Create();
-        string current = Path.Combine(scratch.Path, SnippetStore.FileName);
-        string legacy = Path.Combine(scratch.Path, SnippetStore.LegacyFileName);
-        byte[] legacyBytes = System.Text.Encoding.UTF8.GetBytes("!legacy=published-during-claim\r\n");
-
-        TextExpanderStarter.FileResult result = TextExpanderStarter.ResolveOrCreateFileInFolder(
-            scratch.Path,
-            SnippetStore.FileName,
-            SnippetStore.LegacyFileName,
-            TimeSpan.FromSeconds(1),
-            () => File.WriteAllBytes(legacy, legacyBytes));
-
-        Assert.AreEqual(legacy, result.FilePath);
-        Assert.IsFalse(result.Created);
-        CollectionAssert.AreEqual(legacyBytes, File.ReadAllBytes(legacy));
-        Assert.IsFalse(File.Exists(current), "No current-name sibling may be published beside the legacy winner.");
-    }
-
-    [TestMethod]
-    public void FinalStarterMoveWindowYieldsToANonParticipatingLegacyWriter()
-    {
-        using ScratchDirectory scratch = ScratchDirectory.Create();
-        string current = Path.Combine(scratch.Path, SnippetStore.FileName);
-        string legacy = Path.Combine(scratch.Path, SnippetStore.LegacyFileName);
-        byte[] legacyBytes = System.Text.Encoding.UTF8.GetBytes("!legacy=published-after-final-check\r\n");
-
-        TextExpanderStarter.FileResult result = TextExpanderStarter.ResolveOrCreateFileInFolder(
-            scratch.Path,
-            SnippetStore.FileName,
-            SnippetStore.LegacyFileName,
-            TimeSpan.FromSeconds(1),
-            beforeStarterPublication: null,
-            beforeStarterMove: () => File.WriteAllBytes(legacy, legacyBytes));
-
-        Assert.AreEqual(legacy, result.FilePath);
-        Assert.IsFalse(result.Created);
-        CollectionAssert.AreEqual(legacyBytes, File.ReadAllBytes(legacy));
-        Assert.IsTrue(TextExpanderStarter.IsUntouchedStarterFile(current));
-        Assert.AreEqual(3258L, new FileInfo(current).Length, "The authoritative starter bytes must stay unchanged.");
-
-        Assert.AreEqual(legacy, TextExpanderStarter.ResolveOrCreateFileInFolder(scratch.Path, SnippetStore.FileName, SnippetStore.LegacyFileName).FilePath);
-        Assert.AreEqual(legacy, SnippetStore.ResolveInFolder(scratch.Path));
-        Assert.AreEqual(legacy, TextExpanderSnippetFileNames.ResolveInFolder(scratch.Path, File.Exists));
-
-        SnippetPathResolution resolution = SnippetStore.ResolveConfiguredPathInfo(scratch.Path, null);
-        using var store = new SnippetStore(resolution.FilePath, resolution.ResolveFolderNames);
-        Assert.AreEqual(1, store.Load().Count);
-        Assert.AreEqual(legacy, store.FilePath);
-        Assert.IsTrue(store.Current.Map.ContainsKey("!legacy"));
+        var hostDefault = new SnippetPathResolution(Path.Combine(host, "PowerToysTextExpanderSnippets.json"), IsDefault: true);
+        Assert.AreEqual(hostDefault, SnippetStore.ResolveConfiguredPathInfo(null, host));
+        Assert.AreEqual(hostDefault, SnippetStore.ResolveConfiguredPathInfo("relative.json", host));
+        Assert.IsTrue(Directory.Exists(host));
     }
 
     [TestMethod]
     public void InitialLoadFailureIsExplicitAndRetriesTheDesiredLibrary()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Write(scratch, "snippets.txt", "!ready=eventually\n");
+        string path = Write(scratch, "snippets.json", "!ready=eventually");
 
         using var reloaded = new ManualResetEventSlim(false);
         int failures = 1;
-        string[] ReadLines(string file)
+        byte[] ReadBytes(string file)
         {
             if (Interlocked.Exchange(ref failures, 0) != 0)
             {
                 throw new IOException("Injected initial read failure.");
             }
 
-            return File.ReadAllLines(file);
+            return File.ReadAllBytes(file);
         }
 
-        using var store = NewStore(path, ReadLines);
+        using var store = NewStore(path, ReadBytes);
         store.Reloaded += _ => reloaded.Set();
 
         SnippetStore.TransitionResult result = store.Load();
@@ -206,12 +74,12 @@ public sealed class SnippetStoreTests
     public void FailedRepointIsExplicitAndRetriesTheDesiredPath()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string first = Write(scratch, "first.txt", "!first=old\n");
-        string second = Write(scratch, "second.txt", "!second=new\n");
+        string first = Write(scratch, "first.json", "!first=old");
+        string second = Write(scratch, "second.json", "!second=new");
 
         using var reloaded = new ManualResetEventSlim(false);
         int obstructed = 1;
-        string[] ReadLines(string path)
+        byte[] ReadBytes(string path)
         {
             if (string.Equals(path, second, StringComparison.OrdinalIgnoreCase)
                 && Interlocked.Exchange(ref obstructed, 0) != 0)
@@ -219,10 +87,10 @@ public sealed class SnippetStoreTests
                 throw new IOException("Injected repoint failure.");
             }
 
-            return File.ReadAllLines(path);
+            return File.ReadAllBytes(path);
         }
 
-        using var store = NewStore(first, ReadLines);
+        using var store = NewStore(first, ReadBytes);
         Assert.IsTrue(store.Load().Succeeded);
         store.Reloaded += _ => reloaded.Set();
 
@@ -244,13 +112,13 @@ public sealed class SnippetStoreTests
     public void FailedCaseChangeIsExplicitAndRetriesTheDesiredComparison()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Write(scratch, "snippets.txt", "Key=first\nkey=second\n");
+        string path = Write(scratch, "snippets.json", "Key=first", "key=second");
 
         using var retryStarted = new ManualResetEventSlim(false);
         using var releaseRetry = new ManualResetEventSlim(false);
         using var reloaded = new ManualResetEventSlim(false);
         int reads = 0;
-        string[] ReadLines(string file)
+        byte[] ReadBytes(string file)
         {
             int read = Interlocked.Increment(ref reads);
             if (read == 2)
@@ -267,10 +135,10 @@ public sealed class SnippetStoreTests
                 }
             }
 
-            return File.ReadAllLines(file);
+            return File.ReadAllBytes(file);
         }
 
-        using var store = NewStore(path, ReadLines);
+        using var store = NewStore(path, ReadBytes);
         Assert.IsTrue(store.Load().Succeeded);
         store.Reloaded += _ => reloaded.Set();
 
@@ -284,7 +152,7 @@ public sealed class SnippetStoreTests
         releaseRetry.Set();
         Assert.IsTrue(reloaded.Wait(TimeSpan.FromSeconds(5)));
         Assert.AreEqual(1, store.Current.Map.Count);
-        Assert.IsTrue(store.TryGetReplacement("KEY", out string replacement));
+        Assert.IsTrue(store.Current.Map.TryGetValue("KEY", out string? replacement));
         Assert.AreEqual("second", replacement);
     }
 
@@ -294,8 +162,8 @@ public sealed class SnippetStoreTests
     public void QueuedOldWatcherReloadCannotUndoANewerRepointOrCaseTransition(bool repoint)
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string first = Write(scratch, "first.txt", "Key=first\nkey=second\n");
-        string second = Write(scratch, "second.txt", "!second=new\n");
+        string first = Write(scratch, "first.json", "Key=first", "key=second");
+        string second = Write(scratch, "second.json", "!second=new");
 
         using var captured = new ManualResetEventSlim(false);
         using var release = new ManualResetEventSlim(false);
@@ -333,7 +201,7 @@ public sealed class SnippetStoreTests
         else
         {
             Assert.AreEqual(1, store.Current.Map.Count);
-            Assert.IsTrue(store.TryGetReplacement("KEY", out string replacement));
+            Assert.IsTrue(store.Current.Map.TryGetValue("KEY", out string? replacement));
             Assert.AreEqual("second", replacement);
         }
     }
@@ -346,7 +214,7 @@ public sealed class SnippetStoreTests
         for (int iteration = 0; iteration < 8; iteration++)
         {
             int run = iteration;
-            string path = Write(scratch, $"sequence-{run}.txt", "!initial=zero\n");
+            string path = Write(scratch, $"sequence-{run}.json", "!initial=zero");
             string[] contents = ["!initial=zero"];
             Action? raiseWatcherEvent = null;
             using var firstReadStarted = new ManualResetEventSlim(false);
@@ -356,7 +224,7 @@ public sealed class SnippetStoreTests
             int trackReloads = 0;
             int reloadReads = 0;
 
-            string[] ReadLines(string file)
+            byte[] ReadBytes(string file)
             {
                 string[] captured = [.. Volatile.Read(ref contents)];
                 if (Volatile.Read(ref trackReloads) != 0)
@@ -376,7 +244,7 @@ public sealed class SnippetStoreTests
                     }
                 }
 
-                return captured;
+                return SnippetJson.Bytes(captured);
             }
 
             var hooks = new SnippetStore.TestHooks
@@ -385,7 +253,7 @@ public sealed class SnippetStoreTests
                     Interlocked.CompareExchange(ref raiseWatcherEvent, handler, null),
             };
 
-            using var store = NewStore(path, ReadLines, hooks);
+            using var store = NewStore(path, ReadBytes, hooks);
             Assert.IsTrue(store.Load().Succeeded);
             Assert.IsTrue(store.StartWatching().Succeeded);
             Assert.IsNotNull(raiseWatcherEvent);
@@ -418,8 +286,8 @@ public sealed class SnippetStoreTests
     public void FallbackWatcherEventAfterRepointRetriesExhaustRefreshesAndRestartsDesiredTransition()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string first = Write(scratch, "first.txt", "!first=old\n");
-        string second = Write(scratch, "second.txt", "!second=new\n");
+        string first = Write(scratch, "first.json", "!first=old");
+        string second = Write(scratch, "second.json", "!second=new");
 
         string[] fallbackContents = ["!first=old"];
         string[] desiredContents = ["!second=new"];
@@ -432,7 +300,7 @@ public sealed class SnippetStoreTests
         int desiredAttempts = 0;
         int stopCount = 0;
 
-        string[] ReadLines(string path)
+        byte[] ReadBytes(string path)
         {
             if (string.Equals(path, second, StringComparison.OrdinalIgnoreCase))
             {
@@ -442,10 +310,10 @@ public sealed class SnippetStoreTests
                     throw new IOException("Injected unavailable desired library.");
                 }
 
-                return [.. Volatile.Read(ref desiredContents)];
+                return SnippetJson.Bytes(Volatile.Read(ref desiredContents));
             }
 
-            return [.. Volatile.Read(ref fallbackContents)];
+            return SnippetJson.Bytes(Volatile.Read(ref fallbackContents));
         }
 
         var hooks = new SnippetStore.TestHooks
@@ -454,7 +322,7 @@ public sealed class SnippetStoreTests
                 Interlocked.CompareExchange(ref raiseFallbackEvent, handler, null),
         };
 
-        using var store = NewStore(first, ReadLines, hooks, log: message =>
+        using var store = NewStore(first, ReadBytes, hooks, log: message =>
         {
             if (message.Contains("Stopped retrying", StringComparison.Ordinal))
             {
@@ -504,7 +372,7 @@ public sealed class SnippetStoreTests
     public void FallbackWatcherEventRecoversFailedCaseSensitivityAfterFileBecomesReadable()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Write(scratch, "snippets.txt", "Key=first\nkey=second\n");
+        string path = Write(scratch, "snippets.json", "Key=first", "key=second");
 
         string[] contents = ["Key=first", "key=second"];
         Action? raiseFallbackEvent = null;
@@ -515,7 +383,7 @@ public sealed class SnippetStoreTests
         int failReads = 0;
         int recoveryReads = -100;
 
-        string[] ReadLines(string file)
+        byte[] ReadBytes(string file)
         {
             if (Volatile.Read(ref failReads) != 0)
             {
@@ -532,7 +400,7 @@ public sealed class SnippetStoreTests
                 }
             }
 
-            return captured;
+            return SnippetJson.Bytes(captured);
         }
 
         var hooks = new SnippetStore.TestHooks
@@ -541,7 +409,7 @@ public sealed class SnippetStoreTests
                 Interlocked.CompareExchange(ref raiseFallbackEvent, handler, null),
         };
 
-        using var store = NewStore(path, ReadLines, hooks, log: SignalWhenLogged("Stopped retrying", stopped));
+        using var store = NewStore(path, ReadBytes, hooks, log: SignalWhenLogged("Stopped retrying", stopped));
         Assert.IsTrue(store.Load().Succeeded);
         Assert.IsTrue(store.StartWatching().Succeeded);
         Assert.IsNotNull(raiseFallbackEvent);
@@ -555,7 +423,7 @@ public sealed class SnippetStoreTests
         Interlocked.Exchange(ref recoveryReads, 0);
         store.Reloaded += _ =>
         {
-            if (store.Current.Map.Count == 1 && store.TryGetReplacement("KEY", out string value) && value == "desired")
+            if (store.Current.Map.Count == 1 && store.Current.Map.TryGetValue("KEY", out string? value) && value == "desired")
             {
                 recovered.Set();
             }
@@ -570,7 +438,7 @@ public sealed class SnippetStoreTests
         releaseDesiredRead.Set();
         Assert.IsTrue(recovered.Wait(TimeSpan.FromSeconds(5)), "The desired case-insensitive state was not committed.");
         Assert.AreEqual(1, store.Current.Map.Count);
-        Assert.IsTrue(store.TryGetReplacement("KEY", out string replacement));
+        Assert.IsTrue(store.Current.Map.TryGetValue("KEY", out string? replacement));
         Assert.AreEqual("desired", replacement);
         Assert.IsTrue(Volatile.Read(ref recoveryReads) >= 3, "Recovery must include fallback, desired-stage, and watcher-handoff reads.");
     }
@@ -579,14 +447,14 @@ public sealed class SnippetStoreTests
     public void StalePublishedWatcherEventIsSuppressedAfterNewerTransitionCommits()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string first = Write(scratch, "first.txt", "!first=old\n");
-        string second = Write(scratch, "second.txt", "!second=new\n");
+        string first = Write(scratch, "first.json", "!first=old");
+        string second = Write(scratch, "second.json", "!second=new");
 
         Action? firstWatcherEvent = null;
         int firstReadsAfterCommit = 0;
         int trackFirstReads = 0;
         using var staleCompleted = new ManualResetEventSlim(false);
-        string[] ReadLines(string path)
+        byte[] ReadBytes(string path)
         {
             if (Volatile.Read(ref trackFirstReads) != 0
                 && string.Equals(path, first, StringComparison.OrdinalIgnoreCase))
@@ -594,7 +462,7 @@ public sealed class SnippetStoreTests
                 Interlocked.Increment(ref firstReadsAfterCommit);
             }
 
-            return File.ReadAllLines(path);
+            return File.ReadAllBytes(path);
         }
 
         var hooks = new SnippetStore.TestHooks
@@ -604,7 +472,7 @@ public sealed class SnippetStoreTests
             AfterWatcherReload = _ => staleCompleted.Set(),
         };
 
-        using var store = NewStore(first, ReadLines, hooks);
+        using var store = NewStore(first, ReadBytes, hooks);
         Assert.IsTrue(store.Load().Succeeded);
         Assert.IsTrue(store.StartWatching().Succeeded);
         Assert.IsNotNull(firstWatcherEvent);
@@ -625,14 +493,14 @@ public sealed class SnippetStoreTests
     public void WatcherErrorRecoveryIsNotCancelledByCapturedStaleFileCallback()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Write(scratch, "snippets.txt", "!old=before\n");
+        string path = Write(scratch, "snippets.json", "!old=before");
 
         Action<Exception>? raiseWatcherError = null;
         Action? staleFileEvent = null;
         using var recovered = new ManualResetEventSlim(false);
         int useNewContents = 0;
-        string[] ReadLines(string file)
-            => Volatile.Read(ref useNewContents) == 0 ? ["!old=before"] : ["!new=after"];
+        byte[] ReadBytes(string file)
+            => SnippetJson.Bytes(Volatile.Read(ref useNewContents) == 0 ? "!old=before" : "!new=after");
 
         var hooks = new SnippetStore.TestHooks
         {
@@ -642,7 +510,7 @@ public sealed class SnippetStoreTests
                 Interlocked.CompareExchange(ref staleFileEvent, handler, null),
         };
 
-        using var store = NewStore(path, ReadLines, hooks, retryDelay: TimeSpan.FromMilliseconds(150));
+        using var store = NewStore(path, ReadBytes, hooks, retryDelay: TimeSpan.FromMilliseconds(150));
         Assert.IsTrue(store.Load().Succeeded);
         Assert.IsTrue(store.StartWatching().Succeeded);
         Assert.IsNotNull(raiseWatcherError);
@@ -669,14 +537,14 @@ public sealed class SnippetStoreTests
     public void StaleWatcherCallbackCannotReplaceDesiredTransitionRetry()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string first = Write(scratch, "first.txt", "!first=one\n");
-        string second = Write(scratch, "second.txt", "!second=two\n");
-        string third = Write(scratch, "third.txt", "!third=three\n");
+        string first = Write(scratch, "first.json", "!first=one");
+        string second = Write(scratch, "second.json", "!second=two");
+        string third = Write(scratch, "third.json", "!third=three");
 
         Action? staleFirstWatcherEvent = null;
         using var recovered = new ManualResetEventSlim(false);
         int failThirdRead = 0;
-        string[] ReadLines(string path)
+        byte[] ReadBytes(string path)
         {
             if (string.Equals(path, third, StringComparison.OrdinalIgnoreCase)
                 && Interlocked.Exchange(ref failThirdRead, 0) != 0)
@@ -684,7 +552,7 @@ public sealed class SnippetStoreTests
                 throw new IOException("Injected desired transition read failure.");
             }
 
-            return File.ReadAllLines(path);
+            return File.ReadAllBytes(path);
         }
 
         var hooks = new SnippetStore.TestHooks
@@ -693,7 +561,7 @@ public sealed class SnippetStoreTests
                 Interlocked.CompareExchange(ref staleFirstWatcherEvent, handler, null),
         };
 
-        using var store = NewStore(first, ReadLines, hooks, retryDelay: TimeSpan.FromMilliseconds(150));
+        using var store = NewStore(first, ReadBytes, hooks, retryDelay: TimeSpan.FromMilliseconds(150));
         Assert.IsTrue(store.Load().Succeeded);
         Assert.IsTrue(store.StartWatching().Succeeded);
         Assert.IsNotNull(staleFirstWatcherEvent);
@@ -719,48 +587,16 @@ public sealed class SnippetStoreTests
     }
 
     [TestMethod]
-    public void WatcherHandoffReloadsLegacyArrivingAfterInitialStarterResolution()
-    {
-        using ScratchDirectory scratch = ScratchDirectory.Create();
-        string current = Path.Combine(scratch.Path, SnippetStore.FileName);
-        string legacy = Path.Combine(scratch.Path, SnippetStore.LegacyFileName);
-        int published = 0;
-        var hooks = new SnippetStore.TestHooks
-        {
-            BeforeWatcherActivation = _ =>
-            {
-                if (Interlocked.Exchange(ref published, 1) == 0)
-                {
-                    File.WriteAllText(legacy, "!legacy=arrived-in-handoff\n");
-                }
-            },
-        };
-
-        SnippetPathResolution resolution = SnippetStore.ResolveConfiguredPathInfo(scratch.Path, null);
-        using var store = NewStore(resolution.FilePath, hooks: hooks, resolveFolderNames: resolution.ResolveFolderNames);
-        Assert.IsTrue(store.Load().Succeeded);
-        Assert.AreEqual(current, store.FilePath);
-        Assert.IsTrue(TextExpanderStarter.IsUntouchedStarterFile(current));
-
-        SnippetStore.TransitionResult handoff = store.StartWatching();
-
-        Assert.IsTrue(handoff.Succeeded);
-        Assert.AreEqual(legacy, store.FilePath);
-        Assert.IsTrue(store.Current.Map.ContainsKey("!legacy"));
-        Assert.IsTrue(TextExpanderStarter.IsUntouchedStarterFile(current));
-    }
-
-    [TestMethod]
     public void CandidateWatcherEventAfterHandoffReadReloadsPublishedState()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Write(scratch, "snippets.txt", "!old=before\n");
+        string path = Write(scratch, "snippets.json", "!old=before");
 
         using var reloaded = new ManualResetEventSlim(false);
         Action? raiseCandidateEvent = null;
         int useUpdatedContents = 0;
-        string[] ReadLines(string file)
-            => Volatile.Read(ref useUpdatedContents) == 0 ? ["!old=before"] : ["!new=after"];
+        byte[] ReadBytes(string file)
+            => SnippetJson.Bytes(Volatile.Read(ref useUpdatedContents) == 0 ? "!old=before" : "!new=after");
 
         var hooks = new SnippetStore.TestHooks
         {
@@ -772,7 +608,7 @@ public sealed class SnippetStoreTests
             },
         };
 
-        using var store = NewStore(path, ReadLines, hooks);
+        using var store = NewStore(path, ReadBytes, hooks);
         Assert.IsTrue(store.Load().Succeeded);
         store.Reloaded += _ =>
         {
@@ -793,7 +629,7 @@ public sealed class SnippetStoreTests
     public void CandidateWatcherEventDoesNotLeakWhenHandoffFailsAndDisposesCandidate()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Write(scratch, "snippets.txt", "!old=before\n");
+        string path = Write(scratch, "snippets.json", "!old=before");
 
         Action? raiseCandidateEvent = null;
         int reloads = 0;
@@ -826,14 +662,14 @@ public sealed class SnippetStoreTests
     public void CandidateWatcherEventsDuringHandoffCoalesceIntoOneReload()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Write(scratch, "snippets.txt", "!old=before\n");
+        string path = Write(scratch, "snippets.json", "!old=before");
 
         using var reloaded = new ManualResetEventSlim(false);
         Action? raiseCandidateEvent = null;
         int useUpdatedContents = 0;
         int reloads = 0;
-        string[] ReadLines(string file)
-            => Volatile.Read(ref useUpdatedContents) == 0 ? ["!old=before"] : ["!new=after"];
+        byte[] ReadBytes(string file)
+            => SnippetJson.Bytes(Volatile.Read(ref useUpdatedContents) == 0 ? "!old=before" : "!new=after");
 
         var hooks = new SnippetStore.TestHooks
         {
@@ -848,7 +684,7 @@ public sealed class SnippetStoreTests
             BeforeWatcherReload = _ => Interlocked.Increment(ref reloads),
         };
 
-        using var store = NewStore(path, ReadLines, hooks, debounceDelay: TimeSpan.FromMilliseconds(20));
+        using var store = NewStore(path, ReadBytes, hooks, debounceDelay: TimeSpan.FromMilliseconds(20));
         Assert.IsTrue(store.Load().Succeeded);
         store.Reloaded += _ => reloaded.Set();
 
@@ -867,13 +703,13 @@ public sealed class SnippetStoreTests
     public void FailedRepointOrCaseSensitivityHandoffKeepsPriorStateAndWatcher(bool repoint)
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string first = Write(scratch, "first.txt", "Key=first\nkey=second\n");
-        string second = Write(scratch, "second.txt", "!second=new\n");
+        string first = Write(scratch, "first.json", "Key=first", "key=second");
+        string second = Write(scratch, "second.json", "!second=new");
 
         // The transition's first read stages it; its second, at the watcher handoff, fails.
         int failHandoff = 0;
         int transitionReads = 0;
-        string[] ReadLines(string path)
+        byte[] ReadBytes(string path)
         {
             if (Volatile.Read(ref failHandoff) != 0
                 && string.Equals(path, repoint ? second : first, StringComparison.OrdinalIgnoreCase)
@@ -882,10 +718,10 @@ public sealed class SnippetStoreTests
                 throw new IOException("Injected handoff read failure.");
             }
 
-            return File.ReadAllLines(path);
+            return File.ReadAllBytes(path);
         }
 
-        using var store = NewStore(first, ReadLines, retryDelay: TimeSpan.FromSeconds(30));
+        using var store = NewStore(first, ReadBytes, retryDelay: TimeSpan.FromSeconds(30));
         Assert.IsTrue(store.Load().Succeeded);
         Assert.IsTrue(store.StartWatching().Succeeded);
         Assert.IsTrue(store.IsWatching);
@@ -898,7 +734,7 @@ public sealed class SnippetStoreTests
         Assert.IsTrue(result.HasCurrentState);
         Assert.AreEqual(first, store.FilePath);
         Assert.AreEqual(2, store.Current.Map.Count);
-        Assert.IsFalse(store.TryGetReplacement("KEY", out _), "The old case-sensitive lookup must remain live.");
+        Assert.IsFalse(store.Current.Map.TryGetValue("KEY", out _), "The old case-sensitive lookup must remain live.");
         Assert.IsFalse(store.Current.Map.ContainsKey("!second"));
         Assert.IsTrue(store.IsWatching, "The prior watcher must remain live until the full handoff commits.");
     }
@@ -907,7 +743,7 @@ public sealed class SnippetStoreTests
     public void WatcherRegistrationFailureIsExplicitAndKeepsLoadedState()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Write(scratch, "snippets.txt", "!ready=loaded\n");
+        string path = Write(scratch, "snippets.json", "!ready=loaded");
 
         int failRegistration = 0;
         var logs = new System.Collections.Concurrent.ConcurrentQueue<string>();
@@ -942,7 +778,7 @@ public sealed class SnippetStoreTests
     public void WatcherErrorRetriesRegistrationAndReloadWithoutPublishingFailure()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Write(scratch, "snippets.txt", "!old=before\n");
+        string path = Write(scratch, "snippets.json", "!old=before");
 
         using var registrationFailed = new ManualResetEventSlim(false);
         using var releaseFailure = new ManualResetEventSlim(false);
@@ -952,8 +788,8 @@ public sealed class SnippetStoreTests
         int failRegistration = 0;
         int reloadEvents = 0;
 
-        string[] ReadLines(string file)
-            => Volatile.Read(ref useNewContents) == 0 ? ["!old=before"] : ["!new=after"];
+        byte[] ReadBytes(string file)
+            => SnippetJson.Bytes(Volatile.Read(ref useNewContents) == 0 ? "!old=before" : "!new=after");
 
         var hooks = new SnippetStore.TestHooks
         {
@@ -975,7 +811,7 @@ public sealed class SnippetStoreTests
             },
         };
 
-        using var store = NewStore(path, ReadLines, hooks, maxReloadAttempts: 4);
+        using var store = NewStore(path, ReadBytes, hooks, maxReloadAttempts: 4);
         Assert.IsTrue(store.Load().Succeeded);
         Assert.IsTrue(store.StartWatching().Succeeded);
         Assert.IsNotNull(raiseWatcherError);
@@ -1011,24 +847,22 @@ public sealed class SnippetStoreTests
     }
 
     [TestMethod]
-    public void FailedPreferredReloadKeepsPathAndContentsPairedUntilRetrySucceeds()
+    public void FailedReloadKeepsTheLoadedSnippetsUntilRetrySucceeds()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string legacy = Write(scratch, SnippetStore.LegacyFileName, "!legacy=old\n");
-        string current = Path.Combine(scratch.Path, SnippetStore.FileName);
+        string path = Write(scratch, "snippets.json", "!old=before");
 
         using var attempted = new ManualResetEventSlim(false);
         using var releaseFailure = new ManualResetEventSlim(false);
         using var reloaded = new ManualResetEventSlim(false);
         var logs = new System.Collections.Concurrent.ConcurrentQueue<string>();
-        int obstructed = 1;
+        int obstructed = 0;
         int reloadEvents = 0;
         int reloadedCount = -1;
 
-        string[] ReadLines(string path)
+        byte[] ReadBytes(string file)
         {
-            if (string.Equals(path, current, StringComparison.OrdinalIgnoreCase)
-                && Volatile.Read(ref obstructed) != 0)
+            if (Volatile.Read(ref obstructed) != 0)
             {
                 attempted.Set();
                 if (!releaseFailure.Wait(TimeSpan.FromSeconds(5)))
@@ -1036,15 +870,16 @@ public sealed class SnippetStoreTests
                     throw new IOException("The deterministic reload gate timed out.");
                 }
 
-                throw new IOException("Injected preferred-file read failure.");
+                throw new IOException("Injected reload read failure.");
             }
 
-            return File.ReadAllLines(path);
+            return File.ReadAllBytes(file);
         }
 
-        using var store = NewStore(legacy, ReadLines, resolveFolderNames: true, maxReloadAttempts: 4, log: logs.Enqueue);
+        using var store = NewStore(path, ReadBytes, maxReloadAttempts: 4, log: logs.Enqueue);
         Assert.AreEqual(1, store.Load().Count);
-        File.WriteAllText(current, "!current=new\n");
+        File.WriteAllText(path, SnippetJson.Of("!current=new"));
+        Volatile.Write(ref obstructed, 1);
         store.Reloaded += count =>
         {
             reloadedCount = count;
@@ -1055,9 +890,8 @@ public sealed class SnippetStoreTests
         try
         {
             store.ScheduleReload();
-            Assert.IsTrue(attempted.Wait(TimeSpan.FromSeconds(5)), "The first preferred-file read did not start.");
-            Assert.AreEqual(legacy, store.FilePath);
-            Assert.IsTrue(store.Current.Map.ContainsKey("!legacy"));
+            Assert.IsTrue(attempted.Wait(TimeSpan.FromSeconds(5)), "The first reload read did not start.");
+            Assert.IsTrue(store.Current.Map.ContainsKey("!old"));
             Assert.IsFalse(store.Current.Map.ContainsKey("!current"));
             Assert.AreEqual(0, Volatile.Read(ref reloadEvents), "A failed reload must not look successful.");
 
@@ -1067,9 +901,8 @@ public sealed class SnippetStoreTests
             Assert.IsTrue(reloaded.Wait(TimeSpan.FromSeconds(5)), "The bounded retry did not reload after the obstruction cleared.");
             Assert.AreEqual(1, reloadedCount);
             Assert.AreEqual(1, Volatile.Read(ref reloadEvents));
-            Assert.AreEqual(current, store.FilePath);
             Assert.IsTrue(store.Current.Map.ContainsKey("!current"));
-            Assert.IsFalse(store.Current.Map.ContainsKey("!legacy"));
+            Assert.IsFalse(store.Current.Map.ContainsKey("!old"));
             Assert.IsTrue(logs.Any(message => message.Contains("Retrying", StringComparison.Ordinal)));
         }
         finally
@@ -1082,26 +915,26 @@ public sealed class SnippetStoreTests
     public void WatcherReloadStopsAfterItsBoundedFailureCount()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string legacy = Write(scratch, SnippetStore.LegacyFileName, "!legacy=old\n");
-        string current = Path.Combine(scratch.Path, SnippetStore.FileName);
+        string path = Write(scratch, "snippets.json", "!old=before");
 
         using var stopped = new ManualResetEventSlim(false);
+        int failing = 0;
         int attempts = 0;
         int reloadEvents = 0;
-        string[] ReadLines(string path)
+        byte[] ReadBytes(string file)
         {
-            if (string.Equals(path, current, StringComparison.OrdinalIgnoreCase))
+            if (Volatile.Read(ref failing) != 0)
             {
                 Interlocked.Increment(ref attempts);
                 throw new IOException("Injected persistent read failure.");
             }
 
-            return File.ReadAllLines(path);
+            return File.ReadAllBytes(file);
         }
 
-        using var store = NewStore(legacy, ReadLines, resolveFolderNames: true, log: SignalWhenLogged("Stopped retrying", stopped));
+        using var store = NewStore(path, ReadBytes, log: SignalWhenLogged("Stopped retrying", stopped));
         Assert.AreEqual(1, store.Load().Count);
-        File.WriteAllText(current, "!current=new\n");
+        Volatile.Write(ref failing, 1);
         store.Reloaded += _ => Interlocked.Increment(ref reloadEvents);
 
         store.ScheduleReload();
@@ -1111,26 +944,25 @@ public sealed class SnippetStoreTests
         Thread.Sleep(100);
         Assert.AreEqual(3, Volatile.Read(ref attempts), "No unbounded retry may remain scheduled.");
         Assert.AreEqual(0, Volatile.Read(ref reloadEvents));
-        Assert.AreEqual(legacy, store.FilePath);
-        Assert.IsTrue(store.Current.Map.ContainsKey("!legacy"));
+        Assert.IsTrue(store.Current.Map.ContainsKey("!old"));
     }
 
     [TestMethod]
     public void DisposeCancelsAPendingReloadRetry()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string legacy = Write(scratch, SnippetStore.LegacyFileName, "!legacy=old\n");
-        string current = Path.Combine(scratch.Path, SnippetStore.FileName);
+        string path = Write(scratch, "snippets.json", "!old=before");
 
         using var attempted = new ManualResetEventSlim(false);
         using var releaseFailure = new ManualResetEventSlim(false);
         using var retried = new ManualResetEventSlim(false);
         using var cancelled = new ManualResetEventSlim(false);
+        int failing = 0;
         int attempts = 0;
         int reloadEvents = 0;
-        string[] ReadLines(string path)
+        byte[] ReadBytes(string file)
         {
-            if (string.Equals(path, current, StringComparison.OrdinalIgnoreCase))
+            if (Volatile.Read(ref failing) != 0)
             {
                 int attempt = Interlocked.Increment(ref attempts);
                 if (attempt > 1)
@@ -1144,17 +976,17 @@ public sealed class SnippetStoreTests
                     throw new IOException("The deterministic dispose gate timed out.");
                 }
 
-                throw new IOException("Injected preferred-file read failure.");
+                throw new IOException("Injected reload read failure.");
             }
 
-            return File.ReadAllLines(path);
+            return File.ReadAllBytes(file);
         }
 
-        var store = NewStore(legacy, ReadLines, resolveFolderNames: true, maxReloadAttempts: 4, log: SignalWhenLogged("was disposed", cancelled));
+        var store = NewStore(path, ReadBytes, maxReloadAttempts: 4, log: SignalWhenLogged("was disposed", cancelled));
         try
         {
             Assert.AreEqual(1, store.Load().Count);
-            File.WriteAllText(current, "!current=new\n");
+            Volatile.Write(ref failing, 1);
             store.Reloaded += _ => Interlocked.Increment(ref reloadEvents);
             store.ScheduleReload();
             Assert.IsTrue(attempted.Wait(TimeSpan.FromSeconds(5)), "The failing reload did not start.");
@@ -1166,8 +998,7 @@ public sealed class SnippetStoreTests
             Assert.IsFalse(retried.IsSet, "Disposal must cancel every pending retry.");
             Assert.AreEqual(1, Volatile.Read(ref attempts));
             Assert.AreEqual(0, Volatile.Read(ref reloadEvents));
-            Assert.AreEqual(legacy, store.FilePath);
-            Assert.IsTrue(store.Current.Map.ContainsKey("!legacy"));
+            Assert.IsTrue(store.Current.Map.ContainsKey("!old"));
         }
         finally
         {
@@ -1177,127 +1008,275 @@ public sealed class SnippetStoreTests
     }
 
     [TestMethod]
-    public void ALegacyFileIsReadInPlaceAndNeverRenamed()
-    {
-        using ScratchDirectory scratch = ScratchDirectory.Create();
-        string legacy = Write(scratch, "snippets.txt", "!mine=kept\n");
-
-        string path = SnippetStore.ResolveConfiguredPath(scratch.Path, null);
-        Assert.AreEqual(legacy, path);
-        using var store = new SnippetStore(path);
-        Assert.AreEqual(1, store.Load().Count);
-        Assert.AreEqual("!mine=kept\n", File.ReadAllText(legacy));
-        Assert.IsFalse(File.Exists(Path.Combine(scratch.Path, "PowerToysTextExpanderSnippets.txt")), "No starter file next to a legacy one.");
-
-        // An empty folder gets the starter file under the new name.
-        string empty = Path.Combine(scratch.Path, "empty");
-        using var seeded = new SnippetStore(SnippetStore.ResolveConfiguredPath(empty, null));
-        Assert.AreEqual(6, seeded.Load().Count);
-        Assert.IsTrue(File.Exists(Path.Combine(empty, "PowerToysTextExpanderSnippets.txt")));
-        Assert.IsFalse(File.Exists(Path.Combine(empty, "snippets.txt")));
-    }
-
-    [TestMethod]
     public void SettingsAndTheEngineAgreeOnTheSnippetFile()
     {
-        Assert.AreEqual("PowerToysTextExpanderSnippets.txt", SnippetStore.FileName);
-        Assert.AreEqual("snippets.txt", SnippetStore.LegacyFileName);
+        Assert.AreEqual("PowerToysTextExpanderSnippets.json", SnippetStore.FileName);
         Assert.AreEqual(TextExpanderSnippetFileNames.Current, SnippetStore.FileName);
-        Assert.AreEqual(TextExpanderSnippetFileNames.Legacy, SnippetStore.LegacyFileName);
-
-        using ScratchDirectory scratch = ScratchDirectory.Create();
-        foreach (int files in new[] { 0, 1, 2, 3 })
-        {
-            string folder = Path.Combine(scratch.Path, files.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            Directory.CreateDirectory(folder);
-            if ((files & 1) != 0)
-            {
-                File.WriteAllText(Path.Combine(folder, SnippetStore.FileName), "!a=1\n");
-            }
-
-            if ((files & 2) != 0)
-            {
-                File.WriteAllText(Path.Combine(folder, SnippetStore.LegacyFileName), "!b=1\n");
-            }
-
-            Assert.AreEqual(SnippetStore.ResolveInFolder(folder), TextExpanderSnippetFileNames.ResolveInFolder(folder, File.Exists), folder);
-            Assert.AreEqual(files == 0 ? null : SnippetStore.ResolveInFolder(folder), TextExpanderSnippetFileNames.FindInFolder(folder, File.Exists), folder);
-        }
+        Assert.AreEqual(SnippetStore.FileName, Path.GetFileName(SnippetStore.ResolveDefaultPath()));
     }
 
     [TestMethod]
     public void ParsingAndRepointingKeepTheLiveStoreObject()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string first = Path.Combine(scratch.Path, "a");
-        string second = Path.Combine(scratch.Path, "b");
-        Directory.CreateDirectory(first);
-        Directory.CreateDirectory(second);
-        File.WriteAllText(Path.Combine(first, "snippets.txt"), "#one=first\n");
-        File.WriteAllText(Path.Combine(second, "snippets.txt"), "#two=second\n#three=third\n");
+        string first = Write(scratch, "a.json", "#one=first");
+        string second = Write(scratch, "b.json", "#two=second", "#three=third");
 
-        using var store = new SnippetStore(Path.Combine(first, "snippets.txt"));
+        using var store = new SnippetStore(first);
         Assert.AreEqual(1, store.Load().Count);
         Assert.IsTrue(store.Current.Map.ContainsKey("#one"));
-        SnippetStore.TransitionResult repoint = store.Repoint(Path.Combine(second, "snippets.txt"));
-        Assert.IsTrue(repoint.Succeeded);
-        Assert.IsTrue(repoint.Changed);
+        SnippetStore.TransitionResult repoint = store.Repoint(second);
+        Assert.AreEqual(SnippetStore.TransitionStatus.Succeeded, repoint.Status);
         Assert.AreEqual(2, repoint.Count);
         Assert.IsTrue(store.Current.Map.ContainsKey("#two"));
         Assert.IsFalse(store.Current.Map.ContainsKey("#one"));
-        SnippetStore.TransitionResult unchanged = store.Repoint(Path.Combine(second, "snippets.txt"));
-        Assert.IsTrue(unchanged.Succeeded);
-        Assert.IsFalse(unchanged.Changed);
+        SnippetStore.TransitionResult unchanged = store.Repoint(second);
+        Assert.AreEqual(SnippetStore.TransitionStatus.Unchanged, unchanged.Status);
     }
 
     [TestMethod]
-    public void ConfiguredPathFallsBackOnBlankAndInvalidValues()
+    public void AFileTouchedButNotChangedKeepsItsSnippets()
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        string path = Write(scratch, "a.json", "#one=first");
+        using var store = new SnippetStore(path);
+        Assert.AreEqual(1, store.Load().Count);
+        SnippetStore.Snapshot loaded = store.Current;
+
+        File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddMinutes(1));
+        Assert.AreEqual(1, store.Load().Count);
+        Assert.AreSame(loaded, store.Current, "The same bytes aren't read into snippets again.");
+
+        Assert.IsTrue(store.SetCaseSensitive(false).Succeeded);
+        Assert.AreNotSame(loaded, store.Current, "Other matching rules get snippets of their own.");
+
+        File.WriteAllText(path, SnippetJson.Of("#one=changed"));
+        Assert.AreEqual(1, store.Load().Count);
+        Assert.IsTrue(store.Current.Map.TryGetValue("#one", out string? replacement));
+        Assert.AreEqual("changed", replacement);
+    }
+
+    [TestMethod]
+    public void AWatcherReloadLetsTheSnippetsBeforeItGo()
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        string path = Write(scratch, "a.json", "#one=first");
+        using var reloaded = new ManualResetEventSlim(false);
+        using SnippetStore store = NewStore(path);
+        Assert.IsTrue(store.Load().Succeeded);
+        Assert.IsTrue(store.StartWatching().Succeeded);
+        WeakReference before = WeakCurrent(store);
+        store.Reloaded += _ =>
+        {
+            if (store.Current.Map.ContainsKey("#two"))
+            {
+                reloaded.Set();
+            }
+        };
+
+        File.WriteAllText(path, SnippetJson.Of("#two=second"));
+
+        Assert.IsTrue(reloaded.Wait(TimeSpan.FromSeconds(5)), "The watcher didn't reload the file.");
+        Assert.IsTrue(
+            SpinWait.SpinUntil(
+                () =>
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    return !before.IsAlive;
+                },
+                TimeSpan.FromSeconds(5)),
+            "The watcher keeps the snippets it started with.");
+    }
+
+    [TestMethod]
+    public void ConfiguredPathFallsBackOnlyOnBlankAndInvalidValues()
     {
         string defaultPath = SnippetStore.ResolveDefaultPath();
-        Assert.AreEqual(defaultPath, SnippetStore.ResolveConfiguredPath(null, null));
-        Assert.AreEqual(defaultPath, SnippetStore.ResolveConfiguredPath("   ", null));
+        Assert.AreEqual(defaultPath, SnippetStore.ResolveConfiguredPathInfo(null, null).FilePath);
+        Assert.AreEqual(defaultPath, SnippetStore.ResolveConfiguredPathInfo("   ", null).FilePath);
         using ScratchDirectory scratch = ScratchDirectory.Create();
         string host = Path.Combine(scratch.Path, "host");
-        Assert.AreEqual(Path.Combine(host, "PowerToysTextExpanderSnippets.txt"), SnippetStore.ResolveConfiguredPath(null, host));
-        Assert.AreEqual(defaultPath, SnippetStore.ResolveConfiguredPath(null, "::\0 not a path"));
+        string hostFile = Path.Combine(host, "PowerToysTextExpanderSnippets.json");
+        Assert.AreEqual(hostFile, SnippetStore.ResolveConfiguredPathInfo(null, host).FilePath);
+        Assert.AreEqual(defaultPath, SnippetStore.ResolveConfiguredPathInfo(null, "::\0 not a path").FilePath);
 
-        // A value the shared selector rejects, and folders the engine cannot create, fall back to the host folder.
-        string hostFile = Path.Combine(host, "PowerToysTextExpanderSnippets.txt");
-        Assert.AreEqual(hostFile, SnippetStore.ResolveConfiguredPath(@"C:\" + new string('x', 40_000), host));
-        Assert.AreEqual(hostFile, SnippetStore.ResolveConfiguredPath(Path.Combine(scratch.Path, "a<b"), host));
-        string file = Path.Combine(scratch.Path, "file.txt");
-        File.WriteAllText(file, string.Empty);
-        Assert.AreEqual(hostFile, SnippetStore.ResolveConfiguredPath(Path.Combine(file, "folder"), host));
+        // A value the shared selector rejects falls back to the host folder.
+        Assert.AreEqual(hostFile, SnippetStore.ResolveConfiguredPathInfo(@"C:\" + new string('x', 40_000), host).FilePath);
+        Assert.AreEqual(hostFile, SnippetStore.ResolveConfiguredPathInfo("relative.json", host).FilePath);
+
+        // Any other path is the snippets file, even one that can't be there: it's reported, and nothing is created.
+        string notAFolder = Path.Combine(Write(scratch, "file.json"), "inside.json");
+        Assert.AreEqual(notAFolder, SnippetStore.ResolveConfiguredPathInfo(notAFolder, host).FilePath);
+        string badName = Path.Combine(scratch.Path, "a<b", "snippets.json");
+        Assert.AreEqual(badName, SnippetStore.ResolveConfiguredPathInfo(badName, host).FilePath);
+        Assert.IsFalse(Directory.Exists(Path.Combine(scratch.Path, "a<b")));
     }
 
     [TestMethod]
-    public void ParserHandlesInlineBlocksCommentsAndDuplicateLastWriterWins()
-    {
-        Dictionary<string, string> parsed = SnippetStore.Parse([
-            "// comment",
-            "a=one",
-            "block<<<",
-            "line one",
-            "line two",
-            ">>>",
-            "a=two"]);
-        Assert.AreEqual("two", parsed["a"]);
-        Assert.AreEqual("line one\nline two", parsed["block"]);
-        Assert.AreEqual(2, parsed.Count);
-    }
-
-    [TestMethod]
-    public void LoadCreatesExactSharedStarterWhenMissing()
+    public void TheDefaultLocationGetsTheStarterInJson()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Path.Combine(scratch.Path, "snippets.txt");
-        using var store = new SnippetStore(path);
-        Assert.IsTrue(store.Load().Count >= 1);
+        string path = Path.Combine(scratch.Path, "default", SnippetStore.FileName);
+        using var store = new SnippetStore(path, isDefault: true);
+
+        Assert.AreEqual(6, store.Load().Count);
         Assert.AreEqual(TextExpanderStarter.Content, File.ReadAllText(path));
-        Assert.AreEqual(3258L, new FileInfo(path).Length);
-        Assert.AreEqual(
-            "6537B122AD12BF898194818F0686EDB9ED8B99A13031075263006CCB1C7E2CA7",
-            Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))));
+        byte[] bytes = File.ReadAllBytes(path);
+        Assert.AreNotEqual(0xEF, bytes[0], "No byte order mark.");
+        StringAssert.StartsWith(TextExpanderStarter.Content, "{" + Environment.NewLine + "  \"version\": 1," + Environment.NewLine + "  \"snippets\": [");
+
+        // Deleted, it comes back the same.
+        File.Delete(path);
+        Assert.AreEqual(6, store.Load().Count);
+        CollectionAssert.AreEqual(bytes, File.ReadAllBytes(path));
+    }
+
+    [TestMethod]
+    public void AChosenFileThatIsMissingIsNeverCreatedAndHasNoSnippets()
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        var logs = new System.Collections.Concurrent.ConcurrentQueue<string>();
+
+        // In a folder that's there, and in one that isn't, such as a OneDrive folder before OneDrive starts at sign-in.
+        string inFolder = Path.Combine(scratch.Path, "work.json");
+        string folderGone = Path.Combine(scratch.Path, "OneDrive", "Text Expander", "work.json");
+        foreach (string path in new[] { inFolder, folderGone })
+        {
+            SnippetPathResolution resolution = SnippetStore.ResolveConfiguredPathInfo(path, null);
+            Assert.IsFalse(resolution.IsDefault);
+            using SnippetStore store = NewStore(resolution.FilePath, isDefault: resolution.IsDefault, log: logs.Enqueue);
+
+            SnippetStore.TransitionResult first = store.Load();
+            SnippetStore.TransitionResult second = store.Load();
+
+            Assert.IsTrue(first.Succeeded, path);
+            Assert.AreEqual(0, first.Count);
+            Assert.IsTrue(second.Succeeded);
+            Assert.IsTrue(store.HasLoadedState, "No snippets is the state, not a failure that keeps old snippets.");
+            Assert.AreEqual(0, store.Current.Map.Count);
+            Assert.AreEqual(path, store.FilePath);
+            Assert.IsFalse(File.Exists(path), "No starter is written there.");
+        }
+
+        Assert.AreEqual(0, Directory.GetFiles(scratch.Path).Length);
+        Assert.IsFalse(Directory.Exists(Path.Combine(scratch.Path, "OneDrive")), "No folder is created either.");
+        Assert.AreEqual(2, logs.Count(message => message.Contains("has no snippets until", StringComparison.Ordinal)), "Logged once for each file.");
+    }
+
+    [TestMethod]
+    public void AChosenFileThatDisappearsLeavesNoSnippetsAndComesBackWithTheFile()
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        string path = Write(scratch, "work.json", "!kept=Kept");
+        using SnippetStore store = NewStore(path, maxReloadAttempts: 1);
+        Assert.IsTrue(store.Load().Succeeded);
+        Assert.IsTrue(store.Current.Map.ContainsKey("!kept"));
+
+        // Deleted on another PC, or moved: no snippets, rather than the old ones or a new starter.
+        File.Delete(path);
+        Assert.IsTrue(store.Load().Succeeded);
+        Assert.AreEqual(0, store.Current.Map.Count);
+        Assert.IsFalse(File.Exists(path));
+
+        File.WriteAllText(path, SnippetJson.Of("!back=Back"));
+        Assert.AreEqual(1, store.Load().Count);
+        Assert.IsTrue(store.Current.Map.ContainsKey("!back"));
+    }
+
+    [TestMethod]
+    public void TheWatcherLoadsAChosenFileThatArrivesLater()
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        string path = Path.Combine(scratch.Path, "work.json");
+        using var arrived = new ManualResetEventSlim(false);
+        using SnippetStore store = NewStore(path);
+        store.Reloaded += count =>
+        {
+            if (count == 1)
+            {
+                arrived.Set();
+            }
+        };
+
+        Assert.AreEqual(0, store.Load().Count);
+        Assert.IsTrue(store.StartWatching().Succeeded);
+        Assert.IsTrue(store.IsWatching, "The folder is there, so the file is watched for.");
+
+        File.WriteAllText(path, SnippetJson.Of("!arrived=Arrived"));
+
+        Assert.IsTrue(arrived.Wait(TimeSpan.FromSeconds(5)), "The file wasn't loaded when it arrived.");
+        Assert.IsTrue(store.Current.Map.ContainsKey("!arrived"));
+    }
+
+    [TestMethod]
+    public void RecoveryQuietlyLoadsAFileWhoseFolderArrivesLater()
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        string folder = Path.Combine(scratch.Path, "OneDrive", "Text Expander");
+        string path = Path.Combine(folder, "work.json");
+        var logs = new System.Collections.Concurrent.ConcurrentQueue<string>();
+        using var recovered = new ManualResetEventSlim(false);
+        int reads = 0;
+        byte[] ReadBytes(string file)
+        {
+            Interlocked.Increment(ref reads);
+            return File.ReadAllBytes(file);
+        }
+
+        using SnippetStore store = NewStore(path, ReadBytes, maxReloadAttempts: 1, log: logs.Enqueue, recoveryInterval: TimeSpan.FromMilliseconds(50));
+        store.Reloaded += count =>
+        {
+            if (count == 1)
+            {
+                recovered.Set();
+            }
+        };
+
+        Assert.AreEqual(0, store.Load().Count);
+        Assert.IsFalse(store.StartWatching().Succeeded, "There's no folder to watch yet.");
+        Assert.IsTrue(SpinWait.SpinUntil(() => Volatile.Read(ref reads) > 6, TimeSpan.FromSeconds(5)), "Recovery keeps trying.");
+        int logged = logs.Count;
+        Thread.Sleep(200);
+        Assert.AreEqual(logged, logs.Count, "Each try is quiet.");
+        Assert.IsFalse(Directory.Exists(folder), "Recovery creates nothing.");
+
+        Directory.CreateDirectory(folder);
+        File.WriteAllText(path, SnippetJson.Of("!synced=Synced"));
+
+        Assert.IsTrue(recovered.Wait(TimeSpan.FromSeconds(5)), "The file wasn't loaded once its folder arrived.");
+        Assert.IsTrue(store.Current.Map.ContainsKey("!synced"));
+        Assert.IsTrue(store.IsWatching);
+
+        // Loaded and watched, recovery stops reading.
+        Thread.Sleep(200);
+        int readsWhenLoaded = Volatile.Read(ref reads);
+        Thread.Sleep(300);
+        Assert.AreEqual(readsWhenLoaded, Volatile.Read(ref reads));
+    }
+
+    [TestMethod]
+    public void RecoveryLoadsAFirstFileThatWasNotJsonOnceItIs()
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        string path = Path.Combine(scratch.Path, "work.json");
+        File.WriteAllText(path, "!old=text format");
+        using var recovered = new ManualResetEventSlim(false);
+        using SnippetStore store = NewStore(path, maxReloadAttempts: 1, recoveryInterval: TimeSpan.FromMilliseconds(50));
+        store.Reloaded += _ => recovered.Set();
+
+        SnippetStore.TransitionResult load = store.Load();
+        Assert.IsFalse(load.Succeeded);
+        Assert.IsInstanceOfType<SnippetFileFormatException>(load.Error);
+        Assert.IsFalse(store.HasLoadedState);
+        Assert.IsFalse(store.StartWatching().Succeeded);
+        Assert.AreEqual("!old=text format", File.ReadAllText(path), "A file that isn't JSON is never written over.");
+
+        File.WriteAllText(path, SnippetJson.Of("!fixed=Fixed"));
+
+        Assert.IsTrue(recovered.Wait(TimeSpan.FromSeconds(5)), "The fixed file wasn't loaded.");
+        Assert.IsTrue(store.Current.Map.ContainsKey("!fixed"));
+        Assert.IsTrue(store.IsWatching);
     }
 
     [TestMethod]
@@ -1307,8 +1286,8 @@ public sealed class SnippetStoreTests
 
         for (int iteration = 0; iteration < 16; iteration++)
         {
-            string path = Path.Combine(scratch.Path, $"race-{iteration}.txt");
-            string externalText = $"!external{iteration}=kept\r\n";
+            string path = Path.Combine(scratch.Path, $"race-{iteration}.json");
+            string externalText = SnippetJson.Of($"!external{iteration}=kept");
             byte[] externalBytes = new System.Text.UTF8Encoding(false).GetBytes(externalText);
             using var start = new ManualResetEventSlim(false);
 
@@ -1353,11 +1332,10 @@ public sealed class SnippetStoreTests
     public void StarterStagingCleanupDeletesTheOwnedFileAfterAConcurrentWinner()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Path.Combine(scratch.Path, "snippets.txt");
+        string path = Path.Combine(scratch.Path, "snippets.json");
 
         TextExpanderStarter.FileResult result = TextExpanderStarter.TryCreateFile(
             path,
-            canPublish: null,
             beforeMove: () => File.WriteAllBytes(path, WinnerBytes),
             beforeStagingCleanup: null,
             beforeStagingCleanupDisposition: null);
@@ -1372,13 +1350,12 @@ public sealed class SnippetStoreTests
     public void StarterStagingReplacementBeforeDispositionSurvivesAndIsReported()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Path.Combine(scratch.Path, "snippets.txt");
+        string path = Path.Combine(scratch.Path, "snippets.json");
         byte[] replacementBytes = System.Text.Encoding.UTF8.GetBytes("!external=staging-replacement\r\n");
         string replacementPath = string.Empty;
 
         TextExpanderStarter.FileResult result = TextExpanderStarter.TryCreateFile(
             path,
-            canPublish: null,
             beforeMove: () => File.WriteAllBytes(path, WinnerBytes),
             beforeStagingCleanup: null,
             beforeStagingCleanupDisposition: stagingPath =>
@@ -1389,7 +1366,6 @@ public sealed class SnippetStoreTests
             });
 
         HandleBoundFileDeletionResult cleanup = AssertStagingCleanup(result, created: false, HandleBoundFileDeletionStatus.PathStillPresent, replacementPath);
-        Assert.IsTrue(cleanup.OwnedObjectDeleted);
         StringAssert.Contains(cleanup.Error?.Message, cleanup.Path);
         CollectionAssert.AreEqual(WinnerBytes, File.ReadAllBytes(path));
         CollectionAssert.AreEqual(replacementBytes, File.ReadAllBytes(replacementPath));
@@ -1400,13 +1376,12 @@ public sealed class SnippetStoreTests
     public void StarterPublicationSurvivesAnUnownedStagingReplacementBeforeCleanup()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Path.Combine(scratch.Path, "snippets.txt");
+        string path = Path.Combine(scratch.Path, "snippets.json");
         byte[] replacementBytes = System.Text.Encoding.UTF8.GetBytes("!external=staging-replacement\r\n");
         string replacementPath = string.Empty;
 
         TextExpanderStarter.FileResult result = TextExpanderStarter.TryCreateFile(
             path,
-            canPublish: null,
             beforeMove: null,
             beforeStagingCleanup: stagingPath =>
             {
@@ -1417,7 +1392,6 @@ public sealed class SnippetStoreTests
 
         AssertStagingCleanup(result, created: true, HandleBoundFileDeletionStatus.IdentityMismatch, replacementPath);
         Assert.AreEqual(TextExpanderStarter.Content, File.ReadAllText(path));
-        Assert.AreEqual(3258L, new FileInfo(path).Length);
         CollectionAssert.AreEqual(replacementBytes, File.ReadAllBytes(replacementPath));
     }
 
@@ -1425,7 +1399,7 @@ public sealed class SnippetStoreTests
     public void StarterStagingCleanupReportsHandleAcquisitionFailure()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Path.Combine(scratch.Path, "snippets.txt");
+        string path = Path.Combine(scratch.Path, "snippets.json");
         FileStream? blocker = null;
         string stagingPath = string.Empty;
 
@@ -1433,7 +1407,6 @@ public sealed class SnippetStoreTests
         {
             TextExpanderStarter.FileResult result = TextExpanderStarter.TryCreateFile(
                 path,
-                canPublish: null,
                 beforeMove: () =>
                 {
                     File.WriteAllBytes(path, WinnerBytes);
@@ -1452,21 +1425,20 @@ public sealed class SnippetStoreTests
             blocker?.Dispose();
         }
 
-        Assert.IsTrue(TextExpanderStarter.IsUntouchedStarterBytes(File.ReadAllBytes(stagingPath)));
+        Assert.AreEqual(TextExpanderStarter.Content, File.ReadAllText(stagingPath), "The staging file left behind still holds the starter.");
     }
 
     [TestMethod]
     public void StarterStagingCleanupReportsDispositionFailure()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Path.Combine(scratch.Path, "snippets.txt");
+        string path = Path.Combine(scratch.Path, "snippets.json");
         string stagingPath = string.Empty;
 
         try
         {
             TextExpanderStarter.FileResult result = TextExpanderStarter.TryCreateFile(
                 path,
-                canPublish: null,
                 beforeMove: () =>
                 {
                     File.WriteAllBytes(path, WinnerBytes);
@@ -1493,17 +1465,17 @@ public sealed class SnippetStoreTests
     public void StarterSnippetsUseBangTriggersAndNoRuntimeInput()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Path.Combine(scratch.Path, "snippets.txt");
-        using var store = new SnippetStore(path);
+        string path = Path.Combine(scratch.Path, SnippetStore.FileName);
+        using var store = new SnippetStore(path, isDefault: true);
         Assert.AreEqual(6, store.Load().Count);
 
-        Dictionary<string, string> starters = SnippetStore.Parse(File.ReadAllLines(path));
+        Dictionary<string, string> starters = SnippetStore.Parse(File.ReadAllBytes(path));
         CollectionAssert.AreEquivalent(StarterTriggers, starters.Keys.ToArray());
         Assert.AreEqual("{{date}}", starters["!ddate"]);
         Assert.AreEqual("{{time}}", starters["!ttime"]);
         Assert.AreEqual("{{datetime}}", starters["!ddt"]);
         Assert.AreEqual("{{isodate}}", starters["!isodate"]);
-        Assert.AreEqual(@"Best regards,\nYour Name", starters["!mysig"]);
+        Assert.AreEqual("Best regards,\nYour name", starters["!mysig"]);
         Assert.AreEqual("you@example.com", starters["!myemail"]);
 
         foreach ((string trigger, string replacement) in starters)
@@ -1518,123 +1490,47 @@ public sealed class SnippetStoreTests
             Assert.IsFalse(starters.Keys.Any(other => other != trigger && other.StartsWith(trigger, StringComparison.Ordinal)), trigger);
         }
 
-        // The header documents every variable and the cursor marker.
-        string text = File.ReadAllText(path);
-        foreach (string token in new[] { "{{date}}", "{{time}}", "{{datetime}}", "{{isodate}}", "{{date:FORMAT}}", "{{date:dddd, MMMM d}}", "{{clipboard}}", "{{prompt:Question}}", "{{prompt?:Question}}", "$|$", "\\n", "\\t", "<<<", ">>>" })
-        {
-            StringAssert.Contains(text, token);
-        }
-
         // An existing library is never replaced by the starters.
-        File.WriteAllText(path, "!mine=kept\n");
+        string mine = SnippetJson.Of("!mine=kept");
+        File.WriteAllText(path, mine);
         Assert.AreEqual(1, store.Load().Count);
-        Assert.AreEqual("!mine=kept\n", File.ReadAllText(path));
-    }
-
-    [TestMethod]
-    public void StarterFileOpensWithTheCredit()
-    {
-        string[] lines = StarterLines();
-        StringAssert.StartsWith(lines[0], "// ── PowerToys Text Expander ──");
-        Assert.AreEqual("// Built by Gary Hsu · https://github.com/howdygary", lines[1]);
-        Assert.AreEqual("// Project: https://github.com/howdygary/text-expander", lines[2]);
-        Assert.AreEqual("// Website: https://howdygary.github.io/text-expander/", lines[3]);
-    }
-
-    [TestMethod]
-    public void StarterGuideLinesUpAndItsDateTipWorks()
-    {
-        // QA-21: every description in the variables guide starts in the same column.
-        string[] lines = StarterLines();
-        int start = Array.FindIndex(lines, l => l.Contains("── Variables", StringComparison.Ordinal));
-        int end = Array.FindIndex(lines, l => l.Contains("── Tips", StringComparison.Ordinal));
-        string[] guide = lines[(start + 1)..end].Where(line => line != "//").ToArray();
-        int column = guide[0].IndexOf("today's date", StringComparison.Ordinal);
-        Assert.IsTrue(guide.Length >= 10 && column > 0);
-        foreach (string line in guide)
-        {
-            Assert.IsTrue(line.Length > column && line[column - 1] == ' ' && line[column] != ' ', line);
-        }
-
-        // The variables with nothing to show ahead of time each get an example.
-        StringAssert.Contains(string.Join('\n', guide), "{{prompt:First name}}");
-        Assert.IsTrue(guide.Any(line => line.StartsWith("// {{clipboard}}", StringComparison.Ordinal) && line.Contains("such as", StringComparison.Ordinal)));
-        Assert.IsTrue(guide.Any(line => line.StartsWith("// $|$", StringComparison.Ordinal) && line.Contains("Dear $|$", StringComparison.Ordinal)));
-
-        // The tip about words in a date format gives what it says.
-        string tip = guide.Single(line => line.Contains("{{date:'", StringComparison.Ordinal));
-        int open = tip.IndexOf("{{date:", StringComparison.Ordinal) + "{{date:".Length;
-        int close = tip.IndexOf("}}", open, StringComparison.Ordinal);
-        string said = tip[(tip.IndexOf(" gives ", StringComparison.Ordinal) + " gives ".Length)..];
-        Assert.AreEqual(said, Variables.FormatDate(new DateTime(2026, 6, 1), tip[open..close]));
-        Assert.AreNotEqual(said, Variables.FormatDate(new DateTime(2026, 6, 1), tip[open..close].Replace("'", string.Empty, StringComparison.Ordinal)), "Without the quotes the word is read as codes.");
-    }
-
-    [TestMethod]
-    public void StarterExamplesWorkOnceUncommented()
-    {
-        // Do exactly what the heading says, on every line of the examples.
-        string[] lines = StarterLines();
-        int heading = Array.FindIndex(lines, l => l.Contains("── Examples:", StringComparison.Ordinal));
-        StringAssert.Contains(lines[heading], "remove the // and the space after it", "QA-6: the instruction names exactly what the test removes.");
-        int first = heading + 1;
-        int last = Array.FindIndex(lines, l => l.Contains("── Your snippets", StringComparison.Ordinal));
-        Assert.IsTrue(first > 0 && last > first, "The examples sit between their heading and Your snippets.");
-        Assert.IsTrue(lines[first..last].Where(line => line != "//").All(line => line.StartsWith("// ", StringComparison.Ordinal)), "Every example line has the // and the space to remove.");
-        string[] uncommented = lines
-            .Select((line, i) => i >= first && i < last && line != "//" ? line["// ".Length..] : line)
-            .ToArray();
-
-        Dictionary<string, string> all = SnippetStore.Parse(uncommented);
-        CollectionAssert.AreEquivalent(StarterTriggers.Concat(ExampleTriggers).ToArray(), all.Keys.ToArray());
-        Assert.AreEqual("Hi {{prompt:First name}}, thanks for reaching out!", all["!hello"]);
-        Assert.AreEqual("[{{prompt:Link text}}]({{clipboard}})", all["!mdlink"]);
-        Assert.AreEqual("{{date:dddd, MMMM d, yyyy}}", all["!longdate"]);
-        Assert.AreEqual("{{date:HH:mm}}", all["!time24"]);
-        Assert.AreEqual("// TODO: $|$ ({{isodate}})", all["!todo"]);
-        Assert.AreEqual(@"123 Example Street\nSpringfield, ZZ 12345", all["!myaddr"]);
-        Assert.AreEqual(@"Name\tEmail\tTeam", all["!tabhead"]);
-        Assert.AreEqual("Meeting notes · {{date:dddd, MMMM d, yyyy}}\nAttendees: $|$\nNext steps:", all["!meeting"]);
-
-        foreach (string trigger in all.Keys)
-        {
-            Assert.IsTrue(SnippetFile.IsValidTrigger(trigger, out _), trigger);
-
-            // Without word mode a trigger that starts another would always fire first.
-            Assert.IsFalse(all.Keys.Any(other => other != trigger && other.StartsWith(trigger, StringComparison.Ordinal)), trigger);
-        }
-
-        // Left commented, the examples stay inert: only the six starters load.
-        Assert.AreEqual(6, SnippetStore.Parse(lines).Count);
+        Assert.AreEqual(mine, File.ReadAllText(path));
     }
 
     /// <summary>A store with fast retries and no debounce, so failure and race tests run quickly.</summary>
     private static SnippetStore NewStore(
         string path,
-        Func<string, string[]>? readAllLines = null,
+        Func<string, byte[]>? readAllBytes = null,
         SnippetStore.TestHooks? hooks = null,
-        bool resolveFolderNames = false,
+        bool isDefault = false,
         TimeSpan? retryDelay = null,
         int maxReloadAttempts = 3,
         Action<string>? log = null,
-        TimeSpan? debounceDelay = null)
+        TimeSpan? debounceDelay = null,
+        TimeSpan? recoveryInterval = null)
         => new(
             path,
-            resolveFolderNames,
+            isDefault,
             caseSensitive: true,
-            readAllLines ?? File.ReadAllLines,
+            readAllBytes ?? File.ReadAllBytes,
             debounceDelay ?? TimeSpan.Zero,
             retryDelay ?? TimeSpan.FromMilliseconds(10),
             maxReloadAttempts,
             log,
-            hooks);
+            hooks,
+            recoveryInterval);
 
-    private static string Write(ScratchDirectory scratch, string name, string content)
+    /// <summary>Writes a snippets file with <paramref name="snippets"/>, each given as trigger=replacement.</summary>
+    private static string Write(ScratchDirectory scratch, string name, params string[] snippets)
     {
         string path = Path.Combine(scratch.Path, name);
-        File.WriteAllText(path, content);
+        File.WriteAllText(path, SnippetJson.Of(snippets));
         return path;
     }
+
+    /// <summary>Not inlined, so no local of the test's own keeps the snippets alive.</summary>
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static WeakReference WeakCurrent(SnippetStore store) => new(store.Current);
 
     private static Action<string> SignalWhenLogged(string text, ManualResetEventSlim signal)
         => message =>
@@ -1644,16 +1540,6 @@ public sealed class SnippetStoreTests
                 signal.Set();
             }
         };
-
-    /// <summary>The lines of the starter file a store creates in an empty folder.</summary>
-    private static string[] StarterLines()
-    {
-        using ScratchDirectory scratch = ScratchDirectory.Create();
-        string path = Path.Combine(scratch.Path, "snippets.txt");
-        using var store = new SnippetStore(path);
-        store.Load();
-        return File.ReadAllLines(path);
-    }
 
     private static HandleBoundFileDeletionResult AssertStagingCleanup(
         TextExpanderStarter.FileResult result,
@@ -1666,8 +1552,6 @@ public sealed class SnippetStoreTests
         HandleBoundFileDeletionResult cleanup = result.StagingCleanup.Value;
         Assert.AreEqual(status, cleanup.Status);
         Assert.AreEqual(status == HandleBoundFileDeletionStatus.Deleted, cleanup.Succeeded);
-        Assert.AreEqual(cleanup.Succeeded, result.StagingCleanupSucceeded);
-        Assert.AreEqual(cleanup.Succeeded ? null : cleanup.Path, result.IncompleteStagingPath, "A staging file left behind is reported.");
         if (stagingPath is not null)
         {
             Assert.AreEqual(stagingPath, cleanup.Path);

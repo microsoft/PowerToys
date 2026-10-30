@@ -166,6 +166,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             Select(0, 0);
         }
 
+        /// <summary>Keeps the text but nothing to undo or redo, so the texts kept for those can go.</summary>
+        public void ClearHistory() => _history.Reset(_text);
+
         /// <summary>
         /// Inserts a variable at the caret, replacing any selection, but never inside another
         /// variable. Selects a question's label or a date's format so it can be typed over, unless

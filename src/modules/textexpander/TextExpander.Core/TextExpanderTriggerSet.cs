@@ -2,87 +2,40 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Microsoft.PowerToys.TextExpander
 {
     /// <summary>
-    /// The triggers <see cref="TextExpanderTriggerReach"/> looks for, looked up by span (no allocation) and by length.
+    /// The triggers <see cref="TextExpanderTriggerReach"/> looks for, matched with the runtime's <see cref="TriggerIndex"/>.
     /// </summary>
     internal sealed class TextExpanderTriggerSet
     {
         private readonly HashSet<string> _triggers;
-        private readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> _lookup;
-        private readonly Dictionary<int, int> _countByLength = new();
         private readonly bool _caseSensitive;
-        private int[] _lengths;
         private TriggerIndex _index;
 
         public TextExpanderTriggerSet(IEnumerable<string> triggers = null, bool caseSensitive = true)
         {
             _caseSensitive = caseSensitive;
             _triggers = new HashSet<string>(caseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase);
-            _lookup = _triggers.GetAlternateLookup<ReadOnlySpan<char>>();
             foreach (string trigger in triggers ?? Enumerable.Empty<string>())
             {
                 Add(trigger);
             }
         }
 
-        public int Count => _triggers.Count;
-
         public IEnumerable<string> Triggers => _triggers;
 
         public TriggerIndex Index => _index ??= TriggerIndex.Build(_triggers, _caseSensitive);
 
-        /// <summary>Gets the lengths the triggers have, longest first.</summary>
-        public int[] LengthsDescending => _lengths ??= _countByLength.Keys.OrderByDescending(length => length).ToArray();
-
         public bool Contains(string trigger) => trigger != null && _triggers.Contains(trigger);
 
-        public bool Contains(ReadOnlySpan<char> trigger) => _lookup.Contains(trigger);
-
         /// <summary>Adds a trigger. Empty ones are ignored, as the engine ignores them.</summary>
-        public bool Add(string trigger)
+        public void Add(string trigger)
         {
-            if (string.IsNullOrEmpty(trigger) || !_triggers.Add(trigger))
+            if (!string.IsNullOrEmpty(trigger) && _triggers.Add(trigger))
             {
-                return false;
+                _index = null;
             }
-
-            int count = _countByLength.GetValueOrDefault(trigger.Length);
-            _index = null;
-            _countByLength[trigger.Length] = count + 1;
-            if (count == 0)
-            {
-                _lengths = null;
-            }
-
-            return true;
-        }
-
-        public bool Remove(string trigger)
-        {
-            if (trigger == null || !_triggers.Remove(trigger))
-            {
-                return false;
-            }
-
-            int count = _countByLength[trigger.Length] - 1;
-            _index = null;
-            if (count == 0)
-            {
-                _countByLength.Remove(trigger.Length);
-                _lengths = null;
-            }
-            else
-            {
-                _countByLength[trigger.Length] = count;
-            }
-
-            return true;
         }
     }
 }

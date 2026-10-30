@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
+using Microsoft.PowerToys.TextExpander.Editor.UnitTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ViewModelTests
@@ -36,6 +37,7 @@ namespace ViewModelTests
         [TestMethod]
         public void EveryReadyMadeFormatInsertsItsTokenAndShowsWhatTheEngineTypes()
         {
+            using var culture = new CultureScope("en-US");
             CollectionAssert.AreEqual(Presets, TextExpanderDateGuide.Presets.ToArray());
             CollectionAssert.AreEqual(PresetsTyped, TextExpanderDateGuide.Presets.Select(format => TextExpanderDateGuide.Example(format, Now)).ToArray());
 
@@ -58,10 +60,21 @@ namespace ViewModelTests
         [TestMethod]
         public void TheGuidesCodesShowWhatTheEngineTypes()
         {
+            using var culture = new CultureScope("en-US");
             var codes = TextExpanderDateGuide.Rows.SelectMany(row => row).ToList();
             CollectionAssert.AreEqual(Codes, codes.Select(code => code.Code).ToArray());
             CollectionAssert.AreEqual(CodesTyped, codes.Select(code => TextExpanderDateGuide.Example(code.Code, Now)).ToArray());
             Assert.AreEqual(4, TextExpanderDateGuide.Rows.Count, "Years, months, days and times.");
+        }
+
+        [TestMethod]
+        public void TheGuideShowsWhatTheEngineTypesInTheUsersRegion()
+        {
+            using var culture = new CultureScope("de-DE");
+            Assert.AreEqual("Sonntag", TextExpanderDateGuide.Example("dddd", Now));
+            Assert.AreEqual("Oktober 18, 2026", TextExpanderDateGuide.Example("MMMM d, yyyy", Now));
+            Assert.AreEqual("10/18/2026", TextExpanderDateGuide.Example("MM/dd/yyyy", Now), "A typed / stays a /.");
+            Assert.AreEqual("Shows as: Sonntag, 18. Oktober", TextExpanderDateGuide.ShowsAs("dddd, d. MMMM", Now, Resource));
         }
 
         [TestMethod]
@@ -114,6 +127,7 @@ namespace ViewModelTests
         [TestMethod]
         public void ChipsAndFormatsAreNamedWithTheirCodeAndWhatTheyGive()
         {
+            using var culture = new CultureScope("en-US");
             (string Code, string MeaningKey, string ExampleKey) year = TextExpanderDateGuide.Rows[0][0];
             (string Code, string MeaningKey, string ExampleKey) hour = TextExpanderDateGuide.Rows[3][0];
 

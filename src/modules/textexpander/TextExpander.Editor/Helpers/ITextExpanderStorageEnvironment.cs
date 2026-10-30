@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.TextExpander.Storage;
 
 namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
@@ -19,8 +18,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         bool FileExists(string path);
 
         void CreateDirectory(string path);
-
-        byte[] ReadAllBytes(string path);
 
         void WriteNewFile(string path, byte[] bytes);
 

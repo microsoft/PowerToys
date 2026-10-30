@@ -28,7 +28,6 @@
     <InternalsVisibleTo Include="PowerToys.TextExpander.Editor.UnitTests" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />

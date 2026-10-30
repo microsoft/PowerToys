@@ -13,8 +13,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.UnitTests;
 [TestClass]
 public sealed class SharedRulesTests
 {
-    private static readonly string[] PreservedLines = { "// keep this comment", "!keep=  original  " };
-
     [TestMethod]
     public void ExhaustivePreviewAndExpansionAgreeWithoutReinterpretingRuntimeValues()
     {
@@ -82,24 +80,18 @@ public sealed class SharedRulesTests
     }
 
     [TestMethod]
-    public void ExhaustiveSnippetRoundTripsPreserveUneditedLines()
+    public void ExhaustiveSnippetRoundTripsKeepEveryReplacementExactly()
     {
-        string[] pieces = { "a", " ", "=", "<", ">", "\n", "\\n", "//", "{{date}}" };
+        string[] pieces = { "a", " ", "=", "<", ">", "\n", "\t", "\\n", "\\", "\"", "//", "{{date}}" };
         foreach (string replacement in Combinations(pieces, 3))
         {
-            if (!SnippetFile.IsValidReplacement(replacement, out _))
-            {
-                continue;
-            }
-
-            var file = SnippetFile.Parse(PreservedLines);
+            SnippetFile file = SnippetFile.Read(SnippetJson.Bytes("!keep=  original  "));
             file.Upsert(null, "!new", replacement);
-            string[] lines = file.ToLines();
-            Assert.AreEqual("// keep this comment", lines[0]);
-            Assert.AreEqual("!keep=  original  ", lines[1]);
-            SnippetFile reloaded = SnippetFile.Parse(lines);
+            byte[] saved = file.ToBytes();
+            SnippetFile reloaded = SnippetFile.Read(saved);
+            Assert.AreEqual("  original  ", reloaded.Snippets[0].Replacement);
             Assert.AreEqual(replacement, reloaded.Snippets.Single(entry => entry.Trigger == "!new").Replacement);
-            CollectionAssert.AreEqual(lines, reloaded.ToLines());
+            CollectionAssert.AreEqual(saved, reloaded.ToBytes(), "Saving again changes nothing.");
         }
     }
 

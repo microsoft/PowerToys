@@ -16,7 +16,7 @@ public sealed class StorageEnvironmentTests
 {
     private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds(20);
     private static readonly TimeSpan WaitLimit = TimeSpan.FromSeconds(5);
-    private static readonly string[] SnippetFileNames = { TextExpanderSnippetFileNames.Current, TextExpanderSnippetFileNames.Legacy };
+    private static readonly string[] SnippetFileNames = { TextExpanderSnippetFileNames.Current };
 
     [TestMethod]
     public void PollingCallsBackOnlyWhenAWatchedFileArrivesOrChanges()
@@ -32,7 +32,7 @@ public sealed class StorageEnvironmentTests
         Assert.AreEqual(0, Volatile.Read(ref calls), "Nothing changed, so there is nothing to read.");
 
         Directory.CreateDirectory(folder);
-        File.WriteAllText(file + ".tmp", "!a=A");
+        File.WriteAllText(file + ".tmp", SnippetJson.Of("!a=A"));
         File.Move(file + ".tmp", file);
         Assert.IsTrue(SpinWait.SpinUntil(() => Volatile.Read(ref calls) > 0, WaitLimit), "A file arriving is seen.");
 

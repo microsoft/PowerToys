@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TextExpander\TextExpander.csproj" />
+    <Compile Include="..\TextExpander.Editor.UnitTests\SnippetJson.cs" Link="SnippetJson.cs" />
   </ItemGroup>
 
 </Project>

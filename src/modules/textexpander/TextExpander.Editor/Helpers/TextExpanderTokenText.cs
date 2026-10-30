@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.PowerToys.TextExpander;
 
 namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 {

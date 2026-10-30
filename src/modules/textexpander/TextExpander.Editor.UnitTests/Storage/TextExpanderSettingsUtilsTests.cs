@@ -224,7 +224,6 @@ namespace CommonLibTest
             HandleBoundFileDeletionResult result = store.DeleteOwnedArtifact(path, ownedBytes);
 
             Assert.IsFalse(result.Succeeded);
-            Assert.IsTrue(result.OwnedObjectDeleted);
             Assert.AreEqual(HandleBoundFileDeletionStatus.PathStillPresent, result.Status);
             Assert.AreEqual(path, result.Path);
             StringAssert.Contains(result.Error?.Message, path);

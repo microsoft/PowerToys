@@ -9,21 +9,21 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.PowerToys.TextExpander;
 
-internal static partial class SnippetTemplate
+internal static class SnippetTemplate
 {
     private const string ValuePatternText = @"\{\{(?:(?<fixed>date|time|datetime|isodate)|date:(?<format>[^}]*)|prompt(?<optional>\?)?:(?<label>[^}]*))\}\}";
 
-    [GeneratedRegex(ValuePatternText)]
-    private static partial Regex ValuePattern();
+    // Without backtracking, a text full of unclosed "{{prompt:" takes linear time, not quadratic. The regex source
+    // generator can't build that engine, so these are constructed.
+    private static readonly Regex ValuePattern = new(ValuePatternText, RegexOptions.NonBacktracking);
 
-    [GeneratedRegex(@"\$\|\$|\{\{clipboard\}\}|" + ValuePatternText)]
-    private static partial Regex VariablePattern();
+    private static readonly Regex VariablePattern = new(@"\$\|\$|\{\{clipboard\}\}|" + ValuePatternText, RegexOptions.NonBacktracking);
 
     internal static IReadOnlyList<(int Start, int End)> FindVariables(string text)
     {
         var variables = new List<(int Start, int End)>();
         bool cursorPlaced = false;
-        foreach (Match match in VariablePattern().Matches(text))
+        foreach (Match match in VariablePattern.Matches(text))
         {
             if (match.Value == Variables.CursorMarker)
             {
@@ -46,7 +46,7 @@ internal static partial class SnippetTemplate
         var tokens = new List<SnippetToken>();
         bool cursorPlaced = false;
         int last = 0;
-        foreach (Match match in ValuePattern().Matches(text))
+        foreach (Match match in ValuePattern.Matches(text))
         {
             AddLiteral(text.AsSpan(last, match.Index - last), tokens, ref cursorPlaced);
             if (match.Groups["label"].Success)
@@ -59,13 +59,9 @@ internal static partial class SnippetTemplate
             }
             else
             {
-                tokens.Add(match.Groups["fixed"].Value switch
-                {
-                    "date" => new(SnippetTokenKind.Date, "MM/dd/yy"),
-                    "time" => new(SnippetTokenKind.Time, "hh:mm tt"),
-                    "datetime" => new(SnippetTokenKind.Date, "MM/dd/yy hh:mm tt"),
-                    _ => new(SnippetTokenKind.Date, "yyyy-MM-dd"),
-                });
+                // {{date}}, {{time}}, {{datetime}} and {{isodate}} keep their name; Variables.FormatToken formats each.
+                string name = match.Groups["fixed"].Value;
+                tokens.Add(new(name == "time" ? SnippetTokenKind.Time : SnippetTokenKind.Date, name, Fixed: true));
             }
 
             last = match.Index + match.Length;
@@ -78,26 +74,31 @@ internal static partial class SnippetTemplate
     private static void AddLiteral(ReadOnlySpan<char> text, List<SnippetToken> tokens, ref bool cursorPlaced)
     {
         var literal = new StringBuilder();
-        for (int index = 0; index < text.Length;)
+        while (!text.IsEmpty)
         {
+            // Plain text goes in whole, up to the next character that can start a token.
+            int next = text.IndexOfAny("\n\t{$");
+            if (next < 0)
+            {
+                literal.Append(text);
+                break;
+            }
+
+            literal.Append(text[..next]);
+            text = text[next..];
             SnippetTokenKind? kind = null;
             int length = 1;
-            char character = text[index];
-            if (character == '\\' && index + 1 < text.Length && text[index + 1] is 'n' or 't')
-            {
-                kind = text[index + 1] == 'n' ? SnippetTokenKind.LineBreak : SnippetTokenKind.Tab;
-                length = 2;
-            }
-            else if (character is '\n' or '\t')
+            char character = text[0];
+            if (character is '\n' or '\t')
             {
                 kind = character == '\n' ? SnippetTokenKind.LineBreak : SnippetTokenKind.Tab;
             }
-            else if (text[index..].StartsWith("{{clipboard}}", StringComparison.Ordinal))
+            else if (text.StartsWith("{{clipboard}}", StringComparison.Ordinal))
             {
                 kind = SnippetTokenKind.Clipboard;
                 length = "{{clipboard}}".Length;
             }
-            else if (!cursorPlaced && text[index..].StartsWith(Variables.CursorMarker, StringComparison.Ordinal))
+            else if (!cursorPlaced && text.StartsWith(Variables.CursorMarker, StringComparison.Ordinal))
             {
                 kind = SnippetTokenKind.Cursor;
                 length = Variables.CursorMarker.Length;
@@ -114,7 +115,7 @@ internal static partial class SnippetTemplate
                 literal.Append(character);
             }
 
-            index += length;
+            text = text[length..];
         }
 
         FlushLiteral(literal, tokens);

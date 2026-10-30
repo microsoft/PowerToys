@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
+using Microsoft.PowerToys.TextExpander.Editor.UnitTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Foundation;
 using Windows.UI;
@@ -29,7 +30,7 @@ namespace ViewModelTests
         public void PreviewShowsBubblesForValuesKnownOnlyWhenTheSnippetRuns()
         {
             AssertPreview(
-                "Hi {{prompt:First name}},\\n{{clipboard}}\\tsee {{date}} at {{time}}$|$ then $|$",
+                "Hi {{prompt:First name}},\n{{clipboard}}\tsee {{date}} at {{time}}$|$ then $|$",
                 new Segment(Kind.Text, "Hi "),
                 new Segment(Kind.Prompt, "First name"),
                 new Segment(Kind.Text, ","),
@@ -37,9 +38,9 @@ namespace ViewModelTests
                 new Segment(Kind.Clipboard),
                 new Segment(Kind.Tab),
                 new Segment(Kind.Text, "see "),
-                new Segment(Kind.Date, "10/17/26"),
+                new Segment(Kind.Date, "10/17/2026"),
                 new Segment(Kind.Text, " at "),
-                new Segment(Kind.Time, "02:05 PM"),
+                new Segment(Kind.Time, "2:05 PM"),
                 new Segment(Kind.Cursor),
                 new Segment(Kind.Text, " then $|$"));
         }
@@ -51,7 +52,7 @@ namespace ViewModelTests
                 "{{isodate}}|{{datetime}}|{{date:dddd}}|{{date:%Y-%m-%d}}|{{date:d}}|{{date:}}",
                 new Segment(Kind.Date, "2026-10-17"),
                 new Segment(Kind.Text, "|"),
-                new Segment(Kind.Date, "10/17/26 02:05 PM"),
+                new Segment(Kind.Date, "10/17/2026 2:05 PM"),
                 new Segment(Kind.Text, "|"),
                 new Segment(Kind.Date, "Saturday"),
                 new Segment(Kind.Text, "|"),
@@ -59,6 +60,24 @@ namespace ViewModelTests
                 new Segment(Kind.Text, "|"),
                 new Segment(Kind.Date, "17"),
                 new Segment(Kind.Text, "|"));
+        }
+
+        [TestMethod]
+        public void PreviewShowsDatesAndTimesInTheUsersRegionalFormat()
+        {
+            using var culture = new CultureScope("de-DE");
+            CollectionAssert.AreEqual(
+                new[]
+                {
+                    new Segment(Kind.Date, "17.10.2026"),
+                    new Segment(Kind.Text, " "),
+                    new Segment(Kind.Time, "14:05"),
+                    new Segment(Kind.Text, " "),
+                    new Segment(Kind.Date, "Samstag, 10/17"),
+                    new Segment(Kind.Text, " "),
+                    new Segment(Kind.Date, "2026-10-17"),
+                },
+                TextExpanderSnippetPreview.Build("{{date}} {{time}} {{date:dddd, MM/dd}} {{isodate}}", Now).ToArray());
         }
 
         [TestMethod]
@@ -90,7 +109,7 @@ namespace ViewModelTests
             // FUZZ-2 and QA-10: a value is never read again, so a date that prints "\n" or "$|$"
             // shows it as it is, and only the snippet's own marker places the cursor.
             AssertPreview(
-                @"[{{date:\\n}}]\n{{date:'$|$'}} $|$",
+                @"[{{date:\\n}}]" + "\n" + "{{date:'$|$'}} $|$",
                 new Segment(Kind.Text, "["),
                 new Segment(Kind.Date, @"\n"),
                 new Segment(Kind.Text, "]"),
@@ -104,7 +123,7 @@ namespace ViewModelTests
         public void PreviewOfALongSnippetCostsAboutAsMuchAsReadingIt()
         {
             // PERF-3: 100 KB with 6,000 values used to allocate about 935 MB per keystroke.
-            string replacement = string.Concat(Enumerable.Repeat("Dear {{prompt:Name}}, on {{date}} at {{time}}\\n", 2000));
+            string replacement = string.Concat(Enumerable.Repeat("Dear {{prompt:Name}}, on {{date}} at {{time}}\n", 2000));
             Assert.IsTrue(replacement.Length > 90_000);
             _ = TextExpanderSnippetPreview.Build("warm {{date}} up", Now);
 
@@ -382,20 +401,51 @@ namespace ViewModelTests
             var box = new Rect(380, 300, 440, 96);
             var token = new Rect(430, 306, 160, 19);
 
-            TextExpanderPromptPlacement placement = TextExpanderPromptPlacement.Place(token, box, window, height: 360);
+            TextExpanderPromptPlacement placement = Place(token, box, window, height: 360, compactHeight: 200);
             Assert.IsFalse(placement.Above);
             Assert.IsTrue(placement.ShowsPreview);
             Assert.AreEqual(token.Bottom + Gap, placement.Y, "A small gap under the token's line, never over it.");
             Assert.AreEqual(box.X, placement.X);
-            Assert.AreEqual(box.Width, placement.Width, "As wide as the box, so it covers the buttons under the box completely or not at all.");
+            Assert.AreEqual(box.Width, placement.Width);
             Assert.AreEqual(window.Height - Gap - placement.Y, placement.MaxHeight);
+        }
+
+        [TestMethod]
+        public void InTheTwoColumnDialogTheQuestionFlyoutStartsWhereCancelDoesAndCoversItWhole()
+        {
+            // Replacement is the right column, so it starts above Save. Lined up with the box, the flyout could only hide
+            // part of Save; from where Cancel starts, it keeps Save in view and can still show its preview.
+            var window = new Size(1000, 700);
+            var save = new Rect(120, 640, 376, 32);
+            var cancel = new Rect(504, 640, 376, 32);
+            var box = new Rect(412, 150, 468, 120);
+            var token = new Rect(430, 156, 160, 19);
+
+            TextExpanderPromptPlacement placement = TextExpanderPromptPlacement.Place(token, box, window, height: 360, compactHeight: 200, save, cancel, default);
+            Assert.AreEqual((cancel.X, box.Right - cancel.X), (placement.X, placement.Width), "Lined up with the box's right edge, where Cancel ends.");
+            Assert.IsTrue(placement.ShowsPreview);
+            Assert.AreEqual(0, placement.MinHeight);
+
+            // V3-08: a flyout that would end on Cancel grows to hide it whole.
+            TextExpanderPromptPlacement covers = TextExpanderPromptPlacement.Place(token, box, window, height: 480, compactHeight: 200, save, cancel, default);
+            Assert.IsTrue(covers.ShowsPreview);
+            Assert.AreEqual(cancel.Bottom + Gap, covers.Y + covers.MinHeight);
+
+            // A box as wide as both buttons keeps its own edges; without the buttons, the flyout keeps above the
+            // content's bottom edge, which it can't hide.
+            Assert.AreEqual((save.X, cancel.Right - save.X), TextExpanderPromptPlacement.Span(new Rect(save.X, 150, cancel.Right - save.X, 120), save, cancel, window));
+            var bottom = new Rect(save.X, save.Y, cancel.Right - save.X, 0);
+            TextExpanderPromptPlacement inside = TextExpanderPromptPlacement.Place(token, box, window, height: 360, compactHeight: 200, bottom, bottom, default);
+            Assert.AreEqual(box.X, inside.X);
+            Assert.AreEqual(bottom.Top - Gap, inside.Y + inside.MaxHeight);
         }
 
         [TestMethod]
         public void WithoutRoomBelowTheQuestionFlyoutGoesAboveTheTokenLine()
         {
             var token = new Rect(430, 560, 160, 19);
-            TextExpanderPromptPlacement placement = TextExpanderPromptPlacement.Place(token, new Rect(380, 554, 440, 96), new Size(1200, 760), height: 360);
+            var box = new Rect(380, 554, 440, 96);
+            TextExpanderPromptPlacement placement = Place(token, box, new Size(1200, 760), height: 360, compactHeight: 200);
 
             Assert.IsTrue(placement.Above);
             Assert.IsTrue(placement.ShowsPreview);
@@ -411,13 +461,13 @@ namespace ViewModelTests
             var box = new Rect(90, 199, 448, 96);
             var token = new Rect(120, 205, 160, 19);
 
-            TextExpanderPromptPlacement placement = TextExpanderPromptPlacement.Place(token, box, window, height: 360);
+            TextExpanderPromptPlacement placement = Place(token, box, window, height: 360, compactHeight: 200);
             Assert.IsFalse(placement.ShowsPreview);
             Assert.IsFalse(placement.Above, "There's a little more room below.");
             Assert.AreEqual(token.Bottom + Gap, placement.Y);
             Assert.AreEqual(window.Height - Gap - placement.Y, placement.MaxHeight, "Capped, so it scrolls rather than cover the token.");
 
-            TextExpanderPromptPlacement lower = TextExpanderPromptPlacement.Place(new Rect(120, 260, 160, 19), box, window, height: 360);
+            TextExpanderPromptPlacement lower = Place(new Rect(120, 260, 160, 19), box, window, height: 360, compactHeight: 200);
             Assert.IsTrue(lower.Above);
             Assert.IsFalse(lower.ShowsPreview);
             Assert.AreEqual(260 - Gap, lower.Y);
@@ -425,14 +475,72 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void TheQuestionFlyoutCoversSaveAndCancelCompletelyOrStopsClearOfThem()
+        {
+            // V3-08 in a box as wide as the buttons: without its preview the flyout still reached 11 px into them.
+            var save = new Rect(60, 388, 250, 32);
+            var cancel = new Rect(318, 388, 250, 32);
+            var box = new Rect(60, 140, 508, 120);
+            var token = new Rect(70, 146, 120, 19);
+
+            TextExpanderPromptPlacement covers = TextExpanderPromptPlacement.Place(token, box, new Size(628, 444), height: 360, compactHeight: 230, save, cancel, default);
+            Assert.IsFalse(covers.ShowsPreview);
+            Assert.IsFalse(covers.Above);
+            Assert.AreEqual(save.Bottom + Gap, covers.Y + covers.MinHeight, "Grown past the buttons, which it hides whole.");
+
+            // Without room to cover them, it stops short of them and scrolls.
+            TextExpanderPromptPlacement stops = TextExpanderPromptPlacement.Place(token, box, new Size(628, 424), height: 360, compactHeight: 230, save, cancel, default);
+            Assert.AreEqual(0, stops.MinHeight);
+            Assert.AreEqual(save.Top - Gap, stops.Y + stops.MaxHeight, "Ends above the buttons.");
+
+            // Nothing changes for a flyout that ends clear of them.
+            TextExpanderPromptPlacement clear = TextExpanderPromptPlacement.Place(token, box, new Size(628, 444), height: 360, compactHeight: 150, save, cancel, default);
+            Assert.AreEqual(0, clear.MinHeight);
+            Assert.AreEqual(444 - Gap - clear.Y, clear.MaxHeight);
+        }
+
+        [TestMethod]
+        public void AboveTheTokenTheQuestionFlyoutCoversInsertVariableCompletelyOrStopsClearOfIt()
+        {
+            // V3-09: flipped above a token near the end of the text, the flyout's top edge cut through Insert variable.
+            var save = new Rect(120, 540, 376, 32);
+            var cancel = new Rect(504, 540, 376, 32);
+            var box = new Rect(412, 140, 468, 240);
+            var token = new Rect(430, 352, 160, 19);
+            var window = new Size(1000, 600);
+
+            var insertVariable = new Rect(700, 100, 140, 32);
+            TextExpanderPromptPlacement covers = TextExpanderPromptPlacement.Place(token, box, window, height: 230, compactHeight: 150, save, cancel, insertVariable);
+            Assert.IsTrue(covers.Above);
+            Assert.IsTrue(covers.ShowsPreview);
+            Assert.AreEqual(insertVariable.Top - Gap, covers.Y - covers.MinHeight, "Grown over the button, which it hides whole.");
+
+            // Too near the window's top to cover: it stops under the button.
+            var higher = new Rect(700, 2, 140, 32);
+            TextExpanderPromptPlacement stops = TextExpanderPromptPlacement.Place(token, box, window, height: 340, compactHeight: 150, save, cancel, higher);
+            Assert.IsTrue(stops.Above);
+            Assert.AreEqual(0, stops.MinHeight);
+            Assert.AreEqual(higher.Bottom + Gap, stops.Y - stops.MaxHeight);
+
+            // One it would only partly hide, it stops clear of even with room to cover it.
+            var wider = new Rect(300, 100, 300, 32);
+            TextExpanderPromptPlacement partly = TextExpanderPromptPlacement.Place(new Rect(430, 470, 160, 19), box, window, height: 340, compactHeight: 150, save, cancel, wider);
+            Assert.IsTrue(partly.Above);
+            Assert.AreEqual(0, partly.MinHeight);
+            Assert.AreEqual(wider.Bottom + Gap, partly.Y - partly.MaxHeight);
+        }
+
+        [TestMethod]
         public void TheQuestionFlyoutStaysInsideTheWindow()
         {
             var window = new Size(600, 700);
-            TextExpanderPromptPlacement wide = TextExpanderPromptPlacement.Place(new Rect(40, 100, 80, 19), new Rect(0, 90, 900, 96), window, height: 300);
+            var wideBox = new Rect(0, 90, 900, 96);
+            TextExpanderPromptPlacement wide = Place(new Rect(40, 100, 80, 19), wideBox, window, height: 300, compactHeight: 200);
             Assert.AreEqual(window.Width - (2 * Gap), wide.Width);
             Assert.AreEqual(Gap, wide.X);
 
-            TextExpanderPromptPlacement right = TextExpanderPromptPlacement.Place(new Rect(500, 100, 80, 19), new Rect(400, 90, 300, 96), window, height: 300);
+            var rightBox = new Rect(400, 90, 300, 96);
+            TextExpanderPromptPlacement right = Place(new Rect(500, 100, 80, 19), rightBox, window, height: 300, compactHeight: 200);
             Assert.AreEqual(300, right.Width);
             Assert.AreEqual(window.Width - Gap - 300, right.X);
         }
@@ -509,6 +617,28 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void UndoKeepsFewerStepsOfLongTexts()
+        {
+            // About 4 million characters are kept, so ten pastes into a million-character text leave two steps.
+            string text = new('a', 1_000_000);
+            var history = new TextExpanderEditHistory(text);
+            for (int paste = 0; paste < 10; paste++)
+            {
+                text += "xy";
+                history.Record(text);
+            }
+
+            int undos = 0;
+            while (history.TryUndo(out _, out _, out _))
+            {
+                undos++;
+            }
+
+            Assert.AreEqual(2, undos);
+            Assert.AreEqual(1_000_016, history.Current.Length);
+        }
+
+        [TestMethod]
         public void PlainTextUsesTheBoxTextColorNeverTheAutomaticColor()
         {
             // Stand-ins for TextConstants.AutoColor and UndefinedColor, which need the WinUI runtime.
@@ -567,7 +697,12 @@ namespace ViewModelTests
 
         private static void AssertPreview(string replacement, params Segment[] expected)
         {
+            using var culture = new CultureScope("en-US");
             CollectionAssert.AreEqual(expected, TextExpanderSnippetPreview.Build(replacement, Now).ToArray());
         }
+
+        /// <summary>Places the flyout with none of the controls it keeps whole.</summary>
+        private static TextExpanderPromptPlacement Place(Rect token, Rect box, Size window, double height, double compactHeight)
+            => TextExpanderPromptPlacement.Place(token, box, window, height, compactHeight, default, default, default);
     }
 }

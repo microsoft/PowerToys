@@ -14,9 +14,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace ViewModelTests
 {
     /// <summary>
-    /// Rows too long for their lines. The sentence and the title keep their bubbles and cursor bar
-    /// while they fit, and show as text once WinUI trims them, since an element past the ellipsis
-    /// is drawn over the start of the line.
+    /// Rows too long for their lines. The chip keeps its bubbles and cursor bar while its lines fit, and shows as
+    /// text once WinUI trims one, since an element past the ellipsis is drawn over the start of the line.
     /// </summary>
     [TestClass]
     public class TextExpanderLongRows
@@ -31,46 +30,44 @@ namespace ViewModelTests
 
         private static readonly Dictionary<string, string> Templates = new()
         {
-            ["TextExpander_Row_Prompts"] = "Asks for {0}, then inserts the text",
-            ["TextExpander_Row_JoinPair"] = "{0} and {1}",
-            ["TextExpander_Row_JoinSeparator"] = ", ",
+            ["TextExpander_Row_AsksThenInserts"] = "asks {0} then inserts",
+            ["TextExpander_Row_SpokenPrompt"] = "asks for {0}",
             ["TextExpander_Row_SpokenCursor"] = "cursor",
             ["TextExpander_Row_AutomationName"] = "{0}: {1}",
             ["TextExpander_PreviewPromptUnnamed"] = "Your answer",
         };
 
         [TestMethod]
-        public void ALongTitleWithTheCursorCanShowAsText()
+        public void ALongChipWithTheCursorCanShowAsText()
         {
             TextExpanderRowDescription row = Describe("!zlong", LongCursorLine);
-            Assert.IsNull(row.Sentence);
 
             // With bubbles, the cursor is its bar: an element, which a trimmed line draws over its start.
-            var bubbles = TextExpanderInlines.Plan(row.TitleSegments, breaksAsMarkers: false, textOnly: false, Resource);
+            var bubbles = TextExpanderInlines.Plan(row.Chip, textOnly: false, Resource);
             Assert.AreEqual(1, bubbles.Count(piece => piece.Kind == TextExpanderInlineKind.CursorBar));
 
             // As text, nothing is an element, and the text and the cursor stay where they are.
-            var text = TextExpanderInlines.Plan(row.TitleSegments, breaksAsMarkers: false, textOnly: true, Resource);
+            var text = TextExpanderInlines.Plan(row.Chip, textOnly: true, Resource);
             Assert.IsFalse(text.Any(piece => piece.IsElement));
             Assert.AreEqual(LongCursorLine.Replace("$|$", "|", StringComparison.Ordinal), string.Concat(text.Select(piece => piece.Text)));
         }
 
         [TestMethod]
-        public void ALongSentenceCanShowAsTextWithTheSameLabels()
+        public void ALongChipWithQuestionsCanShowAsTextWithTheSameLabels()
         {
             TextExpanderRowDescription row = Describe("!zasks", LongQuestions);
-            const string Sentence = "Asks for Name of the customer's primary contact person, Their direct phone number and Preferred meeting time and time zone, then inserts the text";
-            Assert.AreEqual(Sentence, row.Sentence);
-
-            var bubbles = TextExpanderInlines.Plan(row.SentenceParts, breaksAsMarkers: false, textOnly: false, Resource);
+            var bubbles = TextExpanderInlines.Plan(row.Chip, textOnly: false, Resource);
             CollectionAssert.AreEqual(Questions, bubbles.Where(piece => piece.Kind == TextExpanderInlineKind.Bubble).Select(piece => piece.Text).ToArray());
 
-            var text = TextExpanderInlines.Plan(row.SentenceParts, breaksAsMarkers: false, textOnly: true, Resource);
+            var text = TextExpanderInlines.Plan(row.Chip, textOnly: true, Resource);
             Assert.IsFalse(text.Any(piece => piece.IsElement));
             CollectionAssert.AreEqual(Questions, text.Where(piece => piece.Kind == TextExpanderInlineKind.ValueLabel).Select(piece => piece.Text.Trim('\u00A0', '\u2009')).ToArray());
 
-            // The row's name comes from the sentence, however the line is drawn.
-            Assert.AreEqual("!zasks: " + Sentence, row.AutomationName);
+            // The row's name reads every question, however the chip is drawn.
+            foreach (string question in Questions)
+            {
+                StringAssert.Contains(row.AutomationName, "asks for " + question);
+            }
         }
 
         [TestMethod]
@@ -112,22 +109,23 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void EveryTrimmedLineInARowKeepsElementsAwayFromTheEllipsis()
+        public void EveryTrimmedLineKeepsElementsAwayFromTheEllipsis()
         {
-            var trimmed = RepositoryFiles.SnippetList().Descendants().Where(element => element.Name.LocalName == "TextExpanderBubbleText" && element.Attribute("TextTrimming") != null).ToList();
-            Assert.AreEqual(3, trimmed.Count, "The sentence, the title and the saved text under the sentence.");
-            foreach (XElement line in trimmed)
-            {
-                Assert.IsTrue((string)line.Attribute("TextOnly") == "True" || (string)line.Attribute("TextOnlyWhenTrimmed") == "True", (string)line.Attribute("Segments"));
-            }
+            // The chip shows three lines at most, each trimmed at the row's end.
+            XElement chip = RepositoryFiles.SnippetList().Descendants().Single(element => element.Name.LocalName == "TextExpanderBubbleText" && element.Attribute("TextTrimming") != null);
+            Assert.AreEqual("{x:Bind ChipSegments, Mode=OneWay}", (string)chip.Attribute("Segments"));
+            Assert.AreEqual("3", (string)chip.Attribute("MaxLines"));
+            Assert.AreEqual("NoWrap", (string)chip.Attribute("TextWrapping"));
+            Assert.AreEqual("True", (string)chip.Attribute("TextOnlyWhenTrimmed"));
 
-            // The sentence and the title keep their bubbles and cursor bar while they fit.
-            foreach (string segments in new[] { "SentenceParts", "TitleSegments" })
-            {
-                XElement line = trimmed.Single(element => ((string)element.Attribute("Segments")).Contains(segments, StringComparison.Ordinal));
-                Assert.AreEqual("True", (string)line.Attribute("TextOnlyWhenTrimmed"), segments);
-                Assert.IsNull(line.Attribute("TextOnly"), segments);
-            }
+            // The dialog's preview ends on a whole line, the last one trimmed when more follow, and shows only the lines
+            // the dialog has room for, so its scrolling doesn't cut one in half either (V3-09).
+            XDocument page = RepositoryFiles.Xml(RepositoryFiles.EditorPage);
+            XElement preview = RepositoryFiles.WithName(page, "SnippetPreviewText");
+            Assert.IsNotNull(preview.Attribute("MaxLines"));
+            Assert.AreEqual("True", (string)preview.Attribute("TextOnlyWhenTrimmed"));
+            Assert.AreEqual("SnippetDialogLayout_SizeChanged", (string)RepositoryFiles.WithName(page, "SnippetDialogScroller").Attribute("SizeChanged"));
+            Assert.AreEqual("SnippetDialogLayout_SizeChanged", (string)RepositoryFiles.WithName(page, "SnippetDialogContent").Attribute("SizeChanged"));
         }
 
         private static TextExpanderRowDescription Describe(string trigger, string replacement)

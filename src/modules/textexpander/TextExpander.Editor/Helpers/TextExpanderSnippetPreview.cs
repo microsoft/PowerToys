@@ -4,9 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
-using Microsoft.PowerToys.TextExpander;
 
 namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 {
@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             {
                 TextExpanderPreviewSegmentKind kind = token.Kind switch
                 {
-                    SnippetTokenKind.Date => IsTimeOnlyFormat(token.Value) ? TextExpanderPreviewSegmentKind.Time : TextExpanderPreviewSegmentKind.Date,
+                    SnippetTokenKind.Date => !token.Fixed && IsTimeOnlyFormat(token.Value) ? TextExpanderPreviewSegmentKind.Time : TextExpanderPreviewSegmentKind.Date,
                     SnippetTokenKind.Time => TextExpanderPreviewSegmentKind.Time,
                     SnippetTokenKind.Prompt => TextExpanderPreviewSegmentKind.Prompt,
                     SnippetTokenKind.Clipboard => TextExpanderPreviewSegmentKind.Clipboard,
@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
                     _ => TextExpanderPreviewSegmentKind.Text,
                 };
                 string value = token.Kind is SnippetTokenKind.Date or SnippetTokenKind.Time
-                    ? FormatDate(now, token.Value)
+                    ? Variables.FormatToken(now, token, CultureInfo.CurrentCulture)
                     : token.Value;
                 if (kind is TextExpanderPreviewSegmentKind.Date or TextExpanderPreviewSegmentKind.Time && value.Length == 0)
                 {
@@ -164,6 +164,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             return hasTime;
         }
 
-        internal static string FormatDate(DateTime value, string format) => Variables.FormatDate(value, format);
+        internal static string FormatDate(DateTime value, string format) => Variables.FormatDate(value, format, CultureInfo.CurrentCulture);
     }
 }

@@ -39,8 +39,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 
         public void CreateDirectory(string path) => Directory.CreateDirectory(path);
 
-        public byte[] ReadAllBytes(string path) => File.ReadAllBytes(path);
-
         public void WriteNewFile(string path, byte[] bytes)
         {
             using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);

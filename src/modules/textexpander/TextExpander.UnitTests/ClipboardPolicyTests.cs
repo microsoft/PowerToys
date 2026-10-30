@@ -28,7 +28,6 @@ public sealed class ClipboardPolicyTests
         Assert.IsFalse(loan.MayRestore(42));
         loan.Rearm(43);
         Assert.IsTrue(loan.MayRestore(43));
-        Assert.AreEqual(43U, loan.Expected);
     }
 
     [TestMethod]
@@ -39,7 +38,6 @@ public sealed class ClipboardPolicyTests
         loan.Rearm(43);
         Assert.IsTrue(loan.MayRestore(43));
         Assert.IsFalse(loan.MayRestore(44));
-        Assert.AreEqual(43U, loan.Expected);
     }
 
     [TestMethod]

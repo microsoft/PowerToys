@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.IO;
 using Microsoft.PowerToys.TextExpander.Storage;
 
 #nullable enable
@@ -11,19 +9,19 @@ using Microsoft.PowerToys.TextExpander.Storage;
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// The resolved snippet file and whether it came from a folder setting whose two supported file
-/// names must continue to be re-evaluated as another app or sync service changes files.
+/// The snippets file, and whether it's in the default location: this PC's own folder, which is created when it's
+/// missing, as is the file, with the starter. A file the user chose is read where it is, and nothing is ever created
+/// there: one that's gone, or on a drive or in a sync service that isn't ready yet, is reported instead.
 /// </summary>
-internal readonly record struct SnippetPathResolution(string FilePath, bool ResolveFolderNames)
+internal readonly record struct SnippetPathResolution(string FilePath, bool IsDefault)
 {
     /// <summary>
-    /// Selects the snippet file for the configured snippets path, by the rule the engine and editor share:
-    /// trim spaces and quotes, expand environment variables, and accept only a fully qualified path. An
-    /// existing file is used whatever its name; anything else is a folder resolved by <see cref="InFolder"/>.
-    /// Returns null for a blank or not fully qualified value (the processes share no working directory), so the
-    /// caller uses its default folder. Exceptions propagate; each caller keeps its own side effects.
+    /// Selects the snippets file for the configured snippets path, by the rule the engine and editor share: trim spaces
+    /// and quotes, expand environment variables, and accept only a fully qualified path, which is the file, whatever its
+    /// name. Returns null for a blank or not fully qualified value (the processes share no working directory), so the
+    /// caller uses the default location. Exceptions propagate; each caller keeps its own side effects.
     /// </summary>
-    public static SnippetPathResolution? FromConfiguredPath(string? configured, Func<string, string> expandEnvironmentVariables, Func<string, bool> fileExists)
+    public static SnippetPathResolution? FromConfiguredPath(string? configured, Func<string, string> expandEnvironmentVariables)
     {
         if (string.IsNullOrWhiteSpace(configured))
         {
@@ -31,16 +29,12 @@ internal readonly record struct SnippetPathResolution(string FilePath, bool Reso
         }
 
         string expanded = expandEnvironmentVariables(configured.Trim().Trim('"'));
-        if (!Path.IsPathFullyQualified(expanded))
-        {
-            return null;
-        }
-
-        string full = Path.GetFullPath(expanded);
-        return fileExists(full) ? new SnippetPathResolution(full, ResolveFolderNames: false) : InFolder(full, fileExists);
+        return Path.IsPathFullyQualified(expanded)
+            ? new SnippetPathResolution(Path.GetFullPath(expanded), IsDefault: false)
+            : null;
     }
 
-    /// <summary>Selects the snippet file in <paramref name="folder"/> by <see cref="TextExpanderSnippetFileNames.ResolveInFolder"/>.</summary>
-    public static SnippetPathResolution InFolder(string folder, Func<string, bool> fileExists)
-        => new(TextExpanderSnippetFileNames.ResolveInFolder(folder, fileExists), ResolveFolderNames: true);
+    /// <summary>Gets the snippets file in <paramref name="folder"/>, the default location.</summary>
+    public static SnippetPathResolution Default(string folder)
+        => new(Path.Combine(folder, TextExpanderSnippetFileNames.Current), IsDefault: true);
 }

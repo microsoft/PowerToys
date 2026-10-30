@@ -91,13 +91,6 @@
   <data name="Error_KeyboardHook" xml:space="preserve">
     <value>Text Expander couldn't start watching what you type. Another app may be blocking it. Restart PowerToys to try again.</value>
   </data>
-  <data name="Error_SnippetFile" xml:space="preserve">
-    <value>Text Expander couldn't load your snippets from:
-
-{0}
-
-Check that the file is available, then restart PowerToys.</value>
-  </data>
   <data name="ClipboardRestoreFailed" xml:space="preserve">
     <value>Your clipboard couldn't be restored after a snippet expanded, so what you had copied is gone.
 

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 {
@@ -13,7 +14,10 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
     /// </summary>
     internal sealed class TextExpanderEditHistory
     {
+        // The most states kept, and the most characters they hold together, though the text the history is at always
+        // stays: a few long texts would otherwise keep hundreds of megabytes.
         private const int Limit = 200;
+        private const long CharacterLimit = 4_000_000;
 
         private readonly List<string> _states = new();
         private int _index;
@@ -97,7 +101,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             {
                 _states.Add(text);
                 _index++;
-                if (_states.Count > Limit)
+                while (_index > 0 && (_states.Count > Limit || _states.Sum(state => (long)state.Length) > CharacterLimit))
                 {
                     _states.RemoveAt(0);
                     _index--;

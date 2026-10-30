@@ -2,18 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Linq;
-using System.Xml.Linq;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
-using Microsoft.PowerToys.TextExpander.Editor.UnitTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ViewModelTests
 {
     /// <summary>
-    /// A row's saved text is trimmed to one line, and WinUI draws an element that falls past the
-    /// ellipsis at the start of the line, over the text. So that line is all text.
+    /// WinUI draws an element that falls past a trimmed line's ellipsis at the start of the line, over the text.
+    /// So a trimmed line is drawn all as text, with each bubble's icon and label in its place.
     /// </summary>
     [TestClass]
     public class TextExpanderTrimmedLine
@@ -36,8 +33,6 @@ namespace ViewModelTests
 
         private static readonly string[] Glyphs = { "\uE70F", "\uE70F", "\uE77F", "\uE787", "\uE823" };
 
-        private static readonly string[] Markers = { "\u21B5", "\u2192" };
-
         private static readonly TextExpanderInlineKind[] BubbleKinds =
         {
             TextExpanderInlineKind.Text,
@@ -45,9 +40,9 @@ namespace ViewModelTests
             TextExpanderInlineKind.Bubble,
             TextExpanderInlineKind.Text,
             TextExpanderInlineKind.Bubble,
-            TextExpanderInlineKind.BreakMarker,
+            TextExpanderInlineKind.LineBreak,
             TextExpanderInlineKind.Bubble,
-            TextExpanderInlineKind.BreakMarker,
+            TextExpanderInlineKind.Text,
             TextExpanderInlineKind.Bubble,
             TextExpanderInlineKind.CursorBar,
         };
@@ -55,7 +50,7 @@ namespace ViewModelTests
         [TestMethod]
         public void TextOnlyLinesHaveNoElementsAndKeepTheBubblesLabels()
         {
-            var plan = TextExpanderInlines.Plan(EveryKind, breaksAsMarkers: true, textOnly: true, Resource);
+            var plan = TextExpanderInlines.Plan(EveryKind, textOnly: true, Resource);
 
             Assert.IsFalse(plan.Any(piece => piece.IsElement), string.Join(", ", plan.Where(piece => piece.IsElement).Select(piece => piece.Kind)));
 
@@ -64,45 +59,23 @@ namespace ViewModelTests
             CollectionAssert.AreEqual(Labels, plan.Where(piece => piece.Kind == TextExpanderInlineKind.ValueLabel).Select(piece => piece.Text.Trim('\u00A0', '\u2009')).ToArray());
             Assert.IsTrue(plan.Where(piece => piece.Kind == TextExpanderInlineKind.ValueIcon).All(piece => piece.Text.StartsWith('\u2009')));
             Assert.IsTrue(plan.Where(piece => piece.Kind == TextExpanderInlineKind.ValueLabel).All(piece => piece.Text.EndsWith('\u2009')));
-            var bubbles = TextExpanderInlines.Plan(EveryKind, breaksAsMarkers: true, textOnly: false, Resource);
+            var bubbles = TextExpanderInlines.Plan(EveryKind, textOnly: false, Resource);
             CollectionAssert.AreEqual(Labels, bubbles.Where(piece => piece.Kind == TextExpanderInlineKind.Bubble).Select(piece => piece.Text).ToArray());
 
-            // The snippet's own text is unchanged, the markers are characters, and so is the cursor.
+            // The snippet's own text, line break and tab are unchanged, and the cursor is a character.
             string text = string.Concat(plan.Where(piece => piece.Kind == TextExpanderInlineKind.Text).Select(piece => piece.Text));
-            Assert.AreEqual("Hi , see \u2009\u21B5\u2009\u2009\u2192\u2009", text);
+            Assert.AreEqual("Hi , see \t", text);
+            Assert.AreEqual(1, plan.Count(piece => piece.Kind == TextExpanderInlineKind.LineBreak));
             Assert.AreEqual("|", plan.Single(piece => piece.Kind == TextExpanderInlineKind.CursorText).Text);
         }
 
         [TestMethod]
         public void BubbleLinesAreUnchanged()
         {
-            var plan = TextExpanderInlines.Plan(EveryKind, breaksAsMarkers: true, textOnly: false, Resource);
+            // Real line breaks and tabs, as the chip and the preview show them.
+            var plan = TextExpanderInlines.Plan(EveryKind, textOnly: false, Resource);
             CollectionAssert.AreEqual(BubbleKinds, plan.Select(piece => piece.Kind).ToArray());
-            CollectionAssert.AreEqual(Markers, plan.Where(piece => piece.Kind == TextExpanderInlineKind.BreakMarker).Select(piece => piece.Text).ToArray());
-
-            // Without markers, as in the preview and the title lines: real line breaks and tabs.
-            var lines = TextExpanderInlines.Plan(EveryKind, breaksAsMarkers: false, textOnly: false, Resource);
-            Assert.AreEqual(1, lines.Count(piece => piece.Kind == TextExpanderInlineKind.LineBreak));
-            Assert.IsTrue(lines.Any(piece => piece.Kind == TextExpanderInlineKind.Text && piece.Text == "\t"));
-            Assert.AreEqual(5, lines.Count(piece => piece.Kind == TextExpanderInlineKind.Bubble));
-        }
-
-        [TestMethod]
-        public void TheRowsOneLineSavedTextIsTextOnly()
-        {
-            var lines = RepositoryFiles.SnippetList().Descendants().Where(element => element.Name.LocalName == "TextExpanderBubbleText").ToList();
-
-            // Every line trimmed to one line is all text, so no bubble can land past its ellipsis.
-            var oneLine = lines.Where(line => (string)line.Attribute("MaxLines") == "1").ToList();
-            Assert.IsTrue(oneLine.Count > 0, "The saved text under a sentence is one trimmed line.");
-            foreach (XElement line in oneLine)
-            {
-                Assert.AreEqual("True", (string)line.Attribute("TextOnly"), (string)line.Attribute("Segments"));
-            }
-
-            // The sentence wraps instead, and keeps its bubbles.
-            XElement sentence = lines.Single(line => ((string)line.Attribute("Segments") ?? string.Empty).Contains("SentenceParts", StringComparison.Ordinal));
-            Assert.IsNull(sentence.Attribute("TextOnly"));
+            Assert.AreEqual("\t", plan[7].Text);
         }
 
         private static string Resource(string key) => key switch

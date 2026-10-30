@@ -70,28 +70,21 @@ namespace BugReportToolUnitTests
         fs::path report;
         fs::path moduleFolder;
         fs::path configuredFolder;
+        fs::path namedFolder;
 
-        // A folder configured as the snippet location, holding both names and a file with a name
-        // of its own.
+        // A folder configured as the snippet location, holding the snippets file and a file with a name
+        // of its own. It's outside the TextExpander folder, where a report keeps nothing else anyway.
         void CreateConfiguredFolder()
         {
-            Assert::IsTrue(WriteText(configuredFolder / L"snippets.txt", "private configured-folder snippet") &&
-                               WriteText(configuredFolder / L"PowerToysTextExpanderSnippets.txt", "private configured-folder snippet, current name") &&
-                               WriteText(configuredFolder / L"my snippets.txt", "private configured file with its own name"),
+            Assert::IsTrue(WriteText(configuredFolder / L"PowerToysTextExpanderSnippets.json", "private configured-folder snippet") &&
+                               WriteText(configuredFolder / L"my snippets.json", "private configured file with its own name"),
                            L"Could not create configured-folder snippet fixture");
-        }
-
-        // The default folder already holds snippets.txt; this adds the current name beside it.
-        void CreateCurrentDefaultSnippet()
-        {
-            Assert::IsTrue(WriteText(moduleFolder / L"PowerToysTextExpanderSnippets.txt", "private default snippet, current name"),
-                           L"Could not create the current-name default snippet fixture");
         }
 
         fs::path CreateLinkedFolder()
         {
             fs::path linkedFolder = root / L"linked";
-            Assert::IsTrue(WriteText(linkedFolder / L"PowerToysTextExpanderSnippets.txt", "private snippets behind a link"),
+            Assert::IsTrue(WriteText(linkedFolder / L"PowerToysTextExpanderSnippets.json", "private snippets behind a link"),
                            L"Could not create the linked snippet fixture");
             return linkedFolder;
         }
@@ -132,8 +125,9 @@ namespace BugReportToolUnitTests
             settings = root / L"settings";
             report = root / L"report";
             moduleFolder = settings / L"TextExpander";
-            configuredFolder = moduleFolder / L"custom";
-            Assert::IsTrue(WriteText(moduleFolder / L"snippets.txt", "private default snippet"), L"Could not create default snippet fixture");
+            configuredFolder = settings / L"Shared";
+            namedFolder = settings / L"Named";
+            Assert::IsTrue(WriteText(moduleFolder / L"PowerToysTextExpanderSnippets.json", "{\"snippets\":[{\"trigger\":\"!private\"}]}"), L"Could not create default snippet fixture");
         }
 
         TEST_METHOD_CLEANUP(RemoveSettings)
@@ -154,8 +148,8 @@ namespace BugReportToolUnitTests
         {
             CopySettingsToReport();
             const wchar_t* message = L"Default snippet file was not excluded using a case-variant source path";
-            Assert::IsTrue(TextExpanderPrivacy::ExcludeCopiedSnippetFile(settings, report, settings / L"textexpander" / L"SNIPPETS.TXT"), message);
-            Assert::IsFalse(fs::exists(report / L"TextExpander" / L"snippets.txt"), message);
+            Assert::IsTrue(TextExpanderPrivacy::ExcludeCopiedSnippetFile(settings, report, settings / L"textexpander" / L"POWERTOYSTEXTEXPANDERSNIPPETS.JSON"), message);
+            Assert::IsFalse(fs::exists(report / L"TextExpander" / L"PowerToysTextExpanderSnippets.json"), message);
         }
 
         TEST_METHOD(CopiedSnippetFileIsExcludedFromSubfolder)
@@ -177,9 +171,9 @@ namespace BugReportToolUnitTests
                            L"An external snippet path should not prevent report preparation");
         }
 
-        // The configured location must resolve exactly as the engine resolves it. Both names are
-        // excluded wherever the engine could look, whichever of them it would read.
-        TEST_METHOD(ConfiguredLocationExcludesBothNames)
+        // The configured location must resolve exactly as the engine resolves it. The snippets file is
+        // excluded wherever the engine could look.
+        TEST_METHOD(ConfiguredLocationIsExcluded)
         {
             CreateConfiguredFolder();
             SetEnvironmentVariableW(RootVariable, settings.c_str());
@@ -188,14 +182,14 @@ namespace BugReportToolUnitTests
                 { L"wrapped folder", "{\"snippets_path\":{\"value\":" + JsonString(folder) + "}}" },
                 { L"padded and quoted folder", "{\"snippets_path\":{\"value\":" + JsonString(L"  \"" + folder + L"\"  ") + "}}" },
                 { L"unbalanced leading quote", "{\"snippets_path\":{\"value\":" + JsonString(L"\"" + folder) + "}}" },
-                { L"environment variable", "{\"snippets_path\":{\"value\":" + JsonString(L"%POWERTOYS_TE_PRIVACY_TEST_ROOT%\\TextExpander\\custom") + "}}" },
-                { L"direct file path", "{\"snippets_path\":{\"value\":" + JsonString((configuredFolder / L"snippets.txt").wstring()) + "}}" },
-                { L"direct file with its own name", "{\"snippets_path\":{\"value\":" + JsonString((configuredFolder / L"my snippets.txt").wstring()) + "}}" },
+                { L"environment variable", "{\"snippets_path\":{\"value\":" + JsonString(L"%POWERTOYS_TE_PRIVACY_TEST_ROOT%\\Shared") + "}}" },
+                { L"direct file path", "{\"snippets_path\":{\"value\":" + JsonString((configuredFolder / L"PowerToysTextExpanderSnippets.json").wstring()) + "}}" },
+                { L"direct file with its own name", "{\"snippets_path\":{\"value\":" + JsonString((configuredFolder / L"my snippets.json").wstring()) + "}}" },
                 { L"unwrapped string", "{\"snippets_path\":" + JsonString(folder) + "}" },
             };
 
             AssertExcluded(cases,
-                           { L"TextExpander\\custom\\snippets.txt", L"TextExpander\\custom\\PowerToysTextExpanderSnippets.txt" },
+                           { L"Shared\\PowerToysTextExpanderSnippets.json" },
                            L"Configured snippet file was not excluded");
         }
 
@@ -203,71 +197,24 @@ namespace BugReportToolUnitTests
         {
             CreateConfiguredFolder();
             const wchar_t* message = L"A configured snippet file with its own name was not excluded";
-            Assert::IsTrue(MakeReport("{\"snippets_path\":{\"value\":" + JsonString((configuredFolder / L"my snippets.txt").wstring()) + "}}"), message);
-            Assert::IsFalse(fs::exists(report / L"TextExpander" / L"custom" / L"my snippets.txt"), message);
+            Assert::IsTrue(MakeReport("{\"snippets_path\":{\"value\":" + JsonString((configuredFolder / L"my snippets.json").wstring()) + "}}"), message);
+            Assert::IsFalse(fs::exists(report / L"Shared" / L"my snippets.json"), message);
         }
 
-        // The engine falls back to the default folder for these, so both names there must be
+        // The engine falls back to the default folder for these, so the snippets file there must be
         // excluded.
         TEST_METHOD(DefaultFolderIsExcludedWhenNoLocationApplies)
         {
-            CreateCurrentDefaultSnippet();
             const std::vector<SettingsCase> cases{
                 { L"no snippets_path", "{}" },
                 { L"empty value", "{\"snippets_path\":{\"value\":\"\"}}" },
                 { L"relative value", "{\"snippets_path\":{\"value\":\"custom\"}}" },
                 { L"root-relative value", "{\"snippets_path\":{\"value\":\"\\\\custom\"}}" },
-                { L"empty remembered sync folder", "{\"last_sync_folder\":{\"value\":\"\"}}" },
-                { L"relative remembered sync folder", "{\"last_sync_folder\":{\"value\":\"custom\"}}" },
             };
 
             AssertExcluded(cases,
-                           { L"TextExpander\\snippets.txt", L"TextExpander\\PowerToysTextExpanderSnippets.txt" },
+                           { L"TextExpander\\PowerToysTextExpanderSnippets.json" },
                            L"Default snippet file was not excluded");
-        }
-
-        // The OneDrive folder Settings remembers for turning sync back on (last_sync_folder) holds
-        // the same snippets, so both names there are excluded too, together with the folder in use.
-        TEST_METHOD(RememberedSyncFolderIsExcluded)
-        {
-            CreateConfiguredFolder();
-            CreateCurrentDefaultSnippet();
-            SetEnvironmentVariableW(RootVariable, settings.c_str());
-            std::wstring folder = configuredFolder.wstring();
-            const std::vector<SettingsCase> cases{
-                { L"remembered folder with the PowerToys folder in use", "{\"snippets_path\":{\"value\":\"\"},\"last_sync_folder\":{\"value\":" + JsonString(folder) + "}}" },
-                { L"remembered folder only", "{\"last_sync_folder\":{\"value\":" + JsonString(folder) + "}}" },
-                { L"remembered folder through a variable", "{\"last_sync_folder\":{\"value\":" + JsonString(L"%POWERTOYS_TE_PRIVACY_TEST_ROOT%\\TextExpander\\custom") + "}}" },
-                { L"padded and quoted remembered folder", "{\"last_sync_folder\":{\"value\":" + JsonString(L"  \"" + folder + L"\"  ") + "}}" },
-                { L"unwrapped remembered folder", "{\"last_sync_folder\":" + JsonString(folder) + "}" },
-                { L"remembered file", "{\"last_sync_folder\":{\"value\":" + JsonString((configuredFolder / L"snippets.txt").wstring()) + "}}" },
-            };
-
-            AssertExcluded(cases,
-                           { L"TextExpander\\custom\\snippets.txt",
-                             L"TextExpander\\custom\\PowerToysTextExpanderSnippets.txt",
-                             L"TextExpander\\snippets.txt",
-                             L"TextExpander\\PowerToysTextExpanderSnippets.txt" },
-                           L"Remembered sync folder snippet file was not excluded");
-        }
-
-        // Both keys at once: the folder in use and the remembered one are both left out.
-        TEST_METHOD(FolderInUseAndRememberedSyncFolderAreBothExcluded)
-        {
-            CreateConfiguredFolder();
-            fs::path otherFolder = moduleFolder / L"other";
-            Assert::IsTrue(WriteText(otherFolder / L"snippets.txt", "private snippet in the folder in use") &&
-                               WriteText(otherFolder / L"PowerToysTextExpanderSnippets.txt", "private snippet in the folder in use, current name"),
-                           L"Could not create the folder-in-use snippet fixture");
-
-            AssertExcluded({ { L"both keys",
-                               "{\"snippets_path\":{\"value\":" + JsonString(otherFolder.wstring()) +
-                                   "},\"last_sync_folder\":{\"value\":" + JsonString(configuredFolder.wstring()) + "}}" } },
-                           { L"TextExpander\\other\\snippets.txt",
-                             L"TextExpander\\other\\PowerToysTextExpanderSnippets.txt",
-                             L"TextExpander\\custom\\snippets.txt",
-                             L"TextExpander\\custom\\PowerToysTextExpanderSnippets.txt" },
-                           L"The folder in use and the remembered sync folder were not both excluded");
         }
 
         // When the configured location cannot be determined, report preparation must stop.
@@ -278,9 +225,6 @@ namespace BugReportToolUnitTests
                 { L"non-string value", "{\"snippets_path\":{\"value\":42}}" },
                 { L"null value", "{\"snippets_path\":{\"value\":null}}" },
                 { L"non-object properties", "\"invalid\"" },
-                { L"missing wrapped remembered sync folder", "{\"last_sync_folder\":{}}" },
-                { L"non-string remembered sync folder", "{\"last_sync_folder\":{\"value\":42}}" },
-                { L"null remembered sync folder", "{\"snippets_path\":{\"value\":\"\"},\"last_sync_folder\":{\"value\":null}}" },
             };
 
             for (const SettingsCase& testCase : cases)
@@ -299,72 +243,59 @@ namespace BugReportToolUnitTests
             Assert::IsFalse(TextExpanderPrivacy::ExcludeConfiguredSnippetFile(settings, report), L"Malformed settings did not fail closed");
         }
 
-        // Copies Text Expander makes of a snippet file are left out too: Stop syncing's backups,
-        // keep-both copies and temporary files from saving. The module's other files stay.
-        TEST_METHOD(SnippetCopiesAreExcludedAndOtherFilesKept)
+        // Of the TextExpander folder, a report keeps only the settings, the engine's diagnostics and
+        // the logs. A snippets file of any name, such as one Move snippets database left behind, its
+        // backups, keep-both copies and temporary files, and earlier snippet folders all stay out.
+        TEST_METHOD(TextExpanderFolderKeepsOnlySettingsDiagnosticsAndLogs)
         {
-            const wchar_t* familyFiles[] = {
-                L"PowerToysTextExpanderSnippets.backup.txt",
-                L"snippets.backup.txt",
-                L"snippets.backup (2).txt",
-                L"snippets (LAPTOP).txt",
+            const wchar_t* excluded[] = {
+                L"team.json",
+                L"team.json.backup-20261029-145200",
+                L"team.json.tmp-0123456789abcdef0123456789abcdef",
+                L"team (LAPTOP).json",
+                L"PowerToysTextExpanderSnippets.json.backup-20261029-145200",
                 L".PowerToysTextExpanderSnippets.txt.0123456789abcdef0123456789abcdef.tmp",
-                L"PowerToysTextExpanderSnippets.txt.tmp-1a2b3c4d",
+                L"snippets.backup (2).txt",
+                L"snippetsmith.json",
+                L"old-folder\\PowerToysTextExpanderSnippets.txt",
+                L"old-folder\\notes.txt",
+                L"older\\nested\\snippets.txt",
+                L"Editor\\work.json",
             };
-            for (const wchar_t* name : familyFiles)
+            const wchar_t* kept[] = {
+                L"diagnostics.txt",
+                L"Logs\\1.0.0\\log.txt",
+                L"Editor\\Logs\\0.0.1.0\\Log_2026-10-29.txt",
+                L"ModuleInterface\\Logs\\v0.0.1\\log.log",
+            };
+            for (const wchar_t* name : excluded)
             {
-                Assert::IsTrue(WriteText(moduleFolder / name, "private copy of the snippets"),
-                               (std::wstring(L"Could not create the snippet copy fixture ") + name).c_str());
+                Assert::IsTrue(WriteText(moduleFolder / name, "private snippets"), (std::wstring(L"Could not create ") + name).c_str());
             }
 
-            Assert::IsTrue(WriteText(moduleFolder / L"diagnostics.txt", "snippet_count=3") &&
-                               WriteText(moduleFolder / L"snippetsmith.txt", "not a snippet file") && MakeReport("{}"),
-                           L"Snippet copies could not be excluded");
-
-            for (const wchar_t* name : familyFiles)
+            for (const wchar_t* name : kept)
             {
-                Assert::IsFalse(fs::exists(report / L"TextExpander" / name), (std::wstring(L"A copy of the snippets was not excluded: ") + name).c_str());
+                Assert::IsTrue(WriteText(moduleFolder / name, "snippet_count=3"), (std::wstring(L"Could not create ") + name).c_str());
+            }
+
+            // The snippets in use are somewhere else now.
+            Assert::IsTrue(MakeReport("{\"snippets_path\":{\"value\":" + JsonString((root / L"elsewhere" / L"work.json").wstring()) + "}}"),
+                           L"The TextExpander folder could not be left out");
+
+            for (const wchar_t* name : excluded)
+            {
+                Assert::IsFalse(fs::exists(report / L"TextExpander" / name), (std::wstring(L"A file that isn't kept was in the report: ") + name).c_str());
+            }
+
+            for (const wchar_t* name : kept)
+            {
+                Assert::IsTrue(fs::exists(report / L"TextExpander" / name), (std::wstring(L"A file that's kept was left out: ") + name).c_str());
             }
 
             Assert::IsTrue(fs::exists(report / L"TextExpander" / L"settings.json") &&
-                               fs::exists(report / L"TextExpander" / L"diagnostics.txt") &&
-                               fs::exists(report / L"TextExpander" / L"snippetsmith.txt"),
-                           L"Files that aren't snippets were excluded");
-        }
-
-        // An earlier snippet folder keeps its files, and the backups made there, after the location
-        // changes. With the default folder in use again, they are left out wherever they are in the
-        // TextExpander folder; other files stay.
-        TEST_METHOD(SnippetsInEarlierFoldersAreExcluded)
-        {
-            CreateCurrentDefaultSnippet();
-            const fs::path earlierFiles[] = {
-                moduleFolder / L"old-folder" / L"PowerToysTextExpanderSnippets.txt",
-                moduleFolder / L"old-folder" / L"PowerToysTextExpanderSnippets.txt.backup-20261028-135850",
-                moduleFolder / L"older" / L"nested" / L"snippets.txt",
-            };
-            for (const fs::path& file : earlierFiles)
-            {
-                Assert::IsTrue(WriteText(file, "private snippets in an earlier folder"), L"Could not create the earlier-folder snippet fixture");
-            }
-
-            fs::path earlierNotes = moduleFolder / L"old-folder" / L"notes.txt";
-            fs::path moduleLog = moduleFolder / L"Logs" / L"1.0.0" / L"log.txt";
-            Assert::IsTrue(WriteText(earlierNotes, "not a snippet file") && WriteText(moduleLog, "snippet_count=3") &&
-                               MakeReport("{\"snippets_path\":{\"value\":\"\"}}"),
-                           L"Snippets in an earlier folder could not be excluded");
-
-            for (const fs::path& file : earlierFiles)
-            {
-                fs::path relative = file.lexically_relative(settings);
-                Assert::IsFalse(fs::exists(report / relative), (L"Snippets in an earlier folder were not excluded: " + relative.wstring()).c_str());
-            }
-
-            Assert::IsTrue(!fs::exists(report / L"TextExpander" / L"PowerToysTextExpanderSnippets.txt") &&
-                               fs::exists(report / L"TextExpander" / L"settings.json") &&
-                               fs::exists(report / earlierNotes.lexically_relative(settings)) &&
-                               fs::exists(report / moduleLog.lexically_relative(settings)),
-                           L"The snippets in use were kept, or files that aren't snippets were excluded, alongside an earlier folder");
+                               !fs::exists(report / L"TextExpander" / L"PowerToysTextExpanderSnippets.json") &&
+                               !fs::exists(report / L"TextExpander" / L"old-folder"),
+                           L"The settings were left out, or the default snippets or an earlier folder were kept");
         }
 
         // Without a TextExpander folder there is nothing to leave out, and the report is still made.
@@ -377,18 +308,92 @@ namespace BugReportToolUnitTests
                            L"A report without a TextExpander folder was not made");
         }
 
-        // A configured file with its own name: its temporary file goes, in its own folder only, so
+        // A configured file with its own name: its backups and temporary files go, in its own folder only, so
         // a name like settings.txt never takes the module's settings.json with it.
         TEST_METHOD(ConfiguredFileCopiesAreExcludedOnlyInItsFolder)
         {
-            fs::path namedFolder = moduleFolder / L"named";
             Assert::IsTrue(WriteText(namedFolder / L"settings.txt", "private configured file") &&
                                WriteText(namedFolder / L"settings.txt.tmp-1a2b3c4d", "private temporary copy") &&
+                               WriteText(namedFolder / L"settings.txt.backup-20261029-124512", "private backup") &&
                                MakeReport("{\"snippets_path\":{\"value\":" + JsonString((namedFolder / L"settings.txt").wstring()) + "}}") &&
-                               !fs::exists(report / L"TextExpander" / L"named" / L"settings.txt") &&
-                               !fs::exists(report / L"TextExpander" / L"named" / L"settings.txt.tmp-1a2b3c4d") &&
+                               !fs::exists(report / L"Named" / L"settings.txt") &&
+                               !fs::exists(report / L"Named" / L"settings.txt.tmp-1a2b3c4d") &&
+                               !fs::exists(report / L"Named" / L"settings.txt.backup-20261029-124512") &&
                                fs::exists(report / L"TextExpander" / L"settings.json"),
                            L"A configured file's copies were not excluded, or the settings went with them");
+        }
+
+        // A configured file of any name that was moved, renamed or deleted is still a file, not a folder: the
+        // backups and temporary files left beside it go, and the folder's other files stay.
+        TEST_METHOD(MissingConfiguredFileCopiesAreExcluded)
+        {
+            for (const wchar_t* name : { L"work.json", L"work.txt", L"work" })
+            {
+                std::wstring file = name;
+                std::wstring message = L"A missing configured file's copies were not excluded, or other files went with them: " + file;
+                Assert::IsTrue(WriteText(namedFolder / (file + L".backup-20261029-124512"), "private backup") &&
+                                   WriteText(namedFolder / (file + L".tmp-1a2b3c4d"), "private temporary copy") &&
+                                   WriteText(namedFolder / L"notes.txt", "not a snippet file") &&
+                                   MakeReport("{\"snippets_path\":{\"value\":" + JsonString((namedFolder / file).wstring()) + "}}") &&
+                                   !fs::exists(report / L"Named" / (file + L".backup-20261029-124512")) &&
+                                   !fs::exists(report / L"Named" / (file + L".tmp-1a2b3c4d")) &&
+                                   fs::exists(report / L"Named" / L"notes.txt"),
+                               message.c_str());
+            }
+        }
+
+        // A configured .json file of any name, with its backups and temporary files, and the default-named
+        // snippets file beside it.
+        TEST_METHOD(ConfiguredJsonFileIsExcludedWithItsCopies)
+        {
+            const wchar_t* privateFiles[] = {
+                L"work snippets.json",
+                L"work snippets.json.backup-20261029-145200",
+                L"work snippets.json.tmp-1a2b3c4d",
+                L"PowerToysTextExpanderSnippets.json",
+            };
+            for (const wchar_t* name : privateFiles)
+            {
+                Assert::IsTrue(WriteText(namedFolder / name, "private snippets"), L"Could not create the configured .json fixture");
+            }
+
+            Assert::IsTrue(WriteText(namedFolder / L"other.json", "not a snippet file") &&
+                               MakeReport("{\"snippets_path\":{\"value\":" + JsonString((namedFolder / L"work snippets.json").wstring()) + "}}"),
+                           L"A configured .json file could not be excluded");
+            for (const wchar_t* name : privateFiles)
+            {
+                Assert::IsFalse(fs::exists(report / L"Named" / name), (std::wstring(L"A snippets file was not excluded: ") + name).c_str());
+            }
+
+            Assert::IsTrue(fs::exists(report / L"Named" / L"other.json") && fs::exists(report / L"TextExpander" / L"settings.json"),
+                           L"Files that aren't snippets were excluded with a configured .json file");
+        }
+
+        // A configured file whose name starts with a dot goes with its backups, temporary files and
+        // keep-both copies, and a file named the same but for the dot stays.
+        TEST_METHOD(DotNamedConfiguredFileIsExcludedWithItsCopies)
+        {
+            const wchar_t* privateFiles[] = {
+                L".private.json",
+                L".private.json.backup-20261029-145200",
+                L".private.json.tmp-0123456789abcdef0123456789abcdef",
+                L".private (LAPTOP).json",
+                L"..private.json.0123456789abcdef0123456789abcdef.tmp",
+            };
+            for (const wchar_t* name : privateFiles)
+            {
+                Assert::IsTrue(WriteText(namedFolder / name, "private snippets"), L"Could not create the dot-named fixture");
+            }
+
+            Assert::IsTrue(WriteText(namedFolder / L"private.json", "not the snippets file") &&
+                               MakeReport("{\"snippets_path\":{\"value\":" + JsonString((namedFolder / L".private.json").wstring()) + "}}"),
+                           L"A dot-named configured file could not be excluded");
+            for (const wchar_t* name : privateFiles)
+            {
+                Assert::IsFalse(fs::exists(report / L"Named" / name), (std::wstring(L"A snippets file was not excluded: ") + name).c_str());
+            }
+
+            Assert::IsTrue(fs::exists(report / L"Named" / L"private.json"), L"A file named like the snippets file but for the dot was excluded");
         }
 
         // A junction inside the settings that leads to the snippet folder is not followed, so the
@@ -398,7 +403,7 @@ namespace BugReportToolUnitTests
             fs::path linkedFolder = CreateLinkedFolder();
             fs::path junction = settings / L"SnippetLink";
             std::wstring makeJunction = L"cmd /c mklink /J \"" + junction.wstring() + L"\" \"" + linkedFolder.wstring() + L"\" >nul 2>nul";
-            bool created = _wsystem(makeJunction.c_str()) == 0 && fs::exists(junction / L"PowerToysTextExpanderSnippets.txt");
+            bool created = _wsystem(makeJunction.c_str()) == 0 && fs::exists(junction / L"PowerToysTextExpanderSnippets.json");
 
             bool linkLeftOut = created &&
                                MakeReport("{\"snippets_path\":{\"value\":" + JsonString(linkedFolder.wstring()) + "}}") &&

@@ -19,9 +19,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         /// <summary>The cursor's bar, an element in the line.</summary>
         CursorBar,
 
-        /// <summary>A line break or tab marker, an element in the line.</summary>
-        BreakMarker,
-
         /// <summary>A value's icon, as a character of the icon font.</summary>
         ValueIcon,
 

@@ -137,7 +137,7 @@ public sealed class SettingsOwnershipTests
         var store = new MockSettingsStore { InitialSettings = stale };
         store.SaveSettings(latest.ToJsonString(), TextExpanderSettings.ModuleName);
 
-        using var editor = new TextExpanderViewModel(store, null, false, key => key);
+        using var editor = new TextExpanderViewModel(store, false, key => key);
 
         TextExpanderSettings actual = store.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName);
         Assert.IsTrue(actual.Properties.WordBoundaryKeepsSpace);

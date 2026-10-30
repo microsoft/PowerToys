@@ -4,9 +4,7 @@
 
 #nullable enable
 
-using System;
 using System.ComponentModel;
-using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
@@ -285,7 +283,5 @@ namespace Microsoft.PowerToys.TextExpander.Storage
         Exception? Error)
     {
         public bool Succeeded => Status is HandleBoundFileDeletionStatus.Deleted or HandleBoundFileDeletionStatus.NotFound;
-
-        public bool OwnedObjectDeleted => Status is HandleBoundFileDeletionStatus.Deleted or HandleBoundFileDeletionStatus.PathStillPresent;
     }
 }

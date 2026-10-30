@@ -99,13 +99,13 @@ internal sealed class MockSettingsStore : TextExpanderSettingsUtils
         }
     }
 
-    protected override void BeforeSettingsPublicationCompensation(string stagingPath, string settingsPath, string backupPath, bool destinationExisted)
+    protected override void BeforeSettingsPublicationCompensation(string settingsPath)
         => WriteIfSet(settingsPath, WrittenBeforeCompensation);
 
-    protected override void BeforeSettingsCompensationQuarantine(string settingsPath, string quarantinePath, bool destinationExisted)
+    protected override void BeforeSettingsCompensationQuarantine(string settingsPath)
         => WriteIfSet(settingsPath, WrittenBeforeQuarantine);
 
-    protected override void BeforeUnexpectedSettingsRestore(string quarantinePath, string settingsPath, bool destinationExisted)
+    protected override void BeforeUnexpectedSettingsRestore(string settingsPath)
         => WriteIfSet(settingsPath, WrittenBeforeRestore);
 
     protected override void CompensateFailedSettingsPublication(

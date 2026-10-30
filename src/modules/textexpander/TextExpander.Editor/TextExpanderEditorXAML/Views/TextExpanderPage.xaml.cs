@@ -7,12 +7,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.PowerToys.TextExpander;
-using Microsoft.PowerToys.TextExpander.Editor.Controls;
+using CommunityToolkit.WinUI;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
 using Microsoft.PowerToys.TextExpander.Editor.ViewModels;
 using Microsoft.PowerToys.TextExpander.Storage;
@@ -21,9 +19,11 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.Windows.Storage.Pickers;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.ViewManagement;
@@ -32,6 +32,11 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
 {
     public sealed partial class TextExpanderPage : Page, INotifyPropertyChanged
     {
+        // A preview line's height, a bubble's included.
+        private const double PreviewLineHeight = 22;
+
+        private const string SnippetsFileExtension = ".json";
+
         private readonly TextExpanderReplacementEditor _replacementEditor;
         private readonly AccessibilitySettings _accessibilitySettings = new();
         private readonly UISettings _uiSettings = new();
@@ -47,8 +52,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         private bool _showDiscardWarning;
         private int _editingRevision;
         private bool _isSnippetDialogOpen;
-        private bool _keycapColumnUpdateQueued;
-        private TextBlock _triggerMeasure;
+        private bool _isTriggerInvalid;
+        private double _dialogRoom = double.NaN;
         private TextExpanderPromptEditSession _promptEditSession;
         private PromptFlyoutCloseIntent _promptFlyoutCloseIntent;
         private MenuFlyout _rowMenu;
@@ -66,23 +71,28 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             var settingsUtils = new TextExpanderSettingsUtils();
             using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
             bool isElevated = new System.Security.Principal.WindowsPrincipal(identity).IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
-            ViewModel = new TextExpanderViewModel(settingsUtils, PickSingleFolderDialog, isElevated);
+            ViewModel = new TextExpanderViewModel(settingsUtils, isElevated);
             DataContext = ViewModel;
             this.InitializeComponent();
-            InsetLikeAnInfoBarMessage(PrivacyNoticeBullets);
 
             // An InfoBar announces itself as it opens only if it already has an automation peer, which nothing
-            // makes for a collapsed one, so these two get theirs now.
+            // makes for a collapsed one, so these get theirs now.
             FrameworkElementAutomationPeer.CreatePeerForElement(SnippetErrorBar);
             FrameworkElementAutomationPeer.CreatePeerForElement(SnippetProblemBar);
+            FrameworkElementAutomationPeer.CreatePeerForElement(SnippetStatus);
+
+            // Narrator reads the privacy warning under the Replacement box along with the box's own help.
+            AutomationProperties.SetHelpText(ReplacementBox, $"{AutomationProperties.GetHelpText(ReplacementBox)} {SensitiveInfoWarning.Text}".Trim());
             BuildVariableMenu();
             BuildDateFormatGuide();
 
-            // The prompt preview shows the window's icon, which the engine project copies beside this app.
+            // The title bar and the prompt preview show the window's icon, which the engine project copies beside this app.
+            AppTitleBar.Title = ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_EditorTitle");
             string icon = Path.Combine(AppContext.BaseDirectory, "app.ico");
             if (File.Exists(icon))
             {
                 PromptPreviewIcon.Source = new BitmapImage(new Uri(icon));
+                AppTitleBar.IconSource = new ImageIconSource { ImageSource = new BitmapImage(new Uri(icon)) };
             }
 
             _replacementEditor = new TextExpanderReplacementEditor(ReplacementBox, GetVariableColors);
@@ -105,20 +115,19 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
 
             // Only while the page is shown, so Windows doesn't keep a closed page alive.
             Loaded += (_, _) => _uiSettings.ColorValuesChanged += UISettings_ColorValuesChanged;
+            Loaded += (_, _) => XamlRoot.Changed += (_, _) => FitSnippetDialog();
             Unloaded += (_, _) =>
             {
                 _uiSettings.ColorValuesChanged -= UISettings_ColorValuesChanged;
                 CancelPromptEdit();
             };
             SnippetDialog.Opened += (_, _) => _replacementEditor.Recolor();
-
-            // The keycap column fits the triggers on show, so it follows the list and the search.
-            ViewModel.FilteredSnippets.CollectionChanged += (_, _) => QueueKeycapColumnUpdate();
+            ShowSyncAdvice();
             ViewModel.PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(TextExpanderViewModel.CaseSensitive))
+                if (e.PropertyName == nameof(TextExpanderViewModel.SyncSteps))
                 {
-                    QueueKeycapColumnUpdate();
+                    ShowSyncAdvice();
                 }
 
                 if (e.PropertyName == nameof(TextExpanderViewModel.SnippetRevision))
@@ -141,30 +150,12 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                     Validate();
                 }
             };
-            QueueKeycapColumnUpdate();
 
-            // The editor's discard prompt gets the same inset as Good to know.
+            // The editor's discard prompt gets the inset an InfoBar gives its own message.
             InsetLikeAnInfoBarMessage(DiscardWarningButtons);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        /// Opens the Windows folder picker at <paramref name="startFolder"/> when it exists; null when cancelled.
-        /// </summary>
-        private async Task<string> PickSingleFolderDialog(string startFolder)
-        {
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.EditorWindow);
-            var picker = new Microsoft.Windows.Storage.Pickers.FolderPicker(Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd));
-            if (!string.IsNullOrEmpty(startFolder) && Directory.Exists(startFolder))
-            {
-                // Every time, unlike SuggestedStartFolder, which counts only until the first pick.
-                picker.SuggestedFolder = startFolder;
-            }
-
-            var result = await picker.PickSingleFolderAsync();
-            return result?.Path;
-        }
 
         /// <summary>Gets the reason the snippet cannot be saved, or null.</summary>
         public string SnippetProblem
@@ -199,6 +190,13 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         {
             get => _showDiscardWarning;
             private set => Set(ref _showDiscardWarning, value);
+        }
+
+        /// <summary>Gets a value indicating whether the trigger is what keeps the snippet from saving, which turns its box red.</summary>
+        public bool IsTriggerInvalid
+        {
+            get => _isTriggerInvalid;
+            private set => Set(ref _isTriggerInvalid, value);
         }
 
         private TextExpanderViewModel ViewModel { get; set; }
@@ -442,20 +440,24 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 return;
             }
 
-            // Measured as it will show, preview included, at the width it will have.
-            Rect box = ReplacementBox.TransformToVisual(null).TransformBounds(new Rect(0, 0, ReplacementBox.ActualWidth, ReplacementBox.ActualHeight));
+            // Measured as it will show, with its preview and without, at the width it will have.
+            Rect box = BoundsOf(ReplacementBox);
+            (Rect save, Rect cancel) = DialogButtons();
             Thickness border = ThemeThickness("FlyoutBorderThemeThickness");
-            PromptFlyoutContent.Width = Math.Max(0, TextExpanderPromptPlacement.WidthFor(box, XamlRoot.Size) - border.Left - border.Right);
-            PromptPreview.Visibility = Visibility.Visible;
-            PromptFlyoutContent.Measure(new Size(PromptFlyoutContent.Width, double.PositiveInfinity));
-            TextExpanderPromptPlacement placement = TextExpanderPromptPlacement.Place(
-                token,
-                box,
-                XamlRoot.Size,
-                PromptFlyoutContent.DesiredSize.Height + border.Top + border.Bottom);
+            PromptFlyoutContent.Width = Math.Max(0, TextExpanderPromptPlacement.Span(box, save, cancel, XamlRoot.Size).Width - border.Left - border.Right);
+            double Height(bool preview)
+            {
+                PromptPreview.Visibility = preview ? Visibility.Visible : Visibility.Collapsed;
+                PromptFlyoutContent.Measure(new Size(PromptFlyoutContent.Width, double.PositiveInfinity));
+                return PromptFlyoutContent.DesiredSize.Height + border.Top + border.Bottom;
+            }
 
-            // Capped, so the flyout never grows over the token, which WinUI would do to keep it in the window.
+            TextExpanderPromptPlacement placement = TextExpanderPromptPlacement.Place(token, box, XamlRoot.Size, Height(true), Height(false), save, cancel, BoundsOf(InsertVariableButton));
+
+            // Capped, so the flyout never grows over the token, which WinUI would do to keep it in the window, and
+            // grown when it would otherwise cut through a button.
             PromptPreview.Visibility = placement.ShowsPreview ? Visibility.Visible : Visibility.Collapsed;
+            PromptFlyoutScroller.MinHeight = Math.Max(0, placement.MinHeight - border.Top - border.Bottom);
             PromptFlyoutScroller.MaxHeight = Math.Max(0, placement.MaxHeight - border.Top - border.Bottom);
             PromptFlyout.ShowAt(ReplacementBox, new FlyoutShowOptions
             {
@@ -464,6 +466,26 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 ShowMode = FlyoutShowMode.Standard,
             });
         }
+
+        /// <summary>
+        /// Gets the dialog's Save and Cancel from its command row, since an InfoBar in the content has a CloseButton too,
+        /// or the content's bottom edge for both, which keeps the flyout in the content.
+        /// </summary>
+        private (Rect Save, Rect Cancel) DialogButtons()
+        {
+            FrameworkElement commands = SnippetDialogContent.FindAscendant("DialogSpace")?.FindDescendant("CommandSpace");
+            if (commands?.FindDescendant("PrimaryButton") is FrameworkElement save && commands.FindDescendant("CloseButton") is FrameworkElement cancel)
+            {
+                return (BoundsOf(save), BoundsOf(cancel));
+            }
+
+            Rect content = BoundsOf(SnippetDialogContent);
+            var bottom = new Rect(content.X, content.Bottom, content.Width, 0);
+            return (bottom, bottom);
+        }
+
+        private static Rect BoundsOf(FrameworkElement element)
+            => element.TransformToVisual(null).TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
 
         private void PromptFlyout_Opened(object sender, object e) => FocusPromptQuestion(selectAll: true);
 
@@ -689,8 +711,20 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             SnippetSearchBox.Focus(FocusState.Programmatic);
         }
 
+        /// <summary>Ctrl+F goes to the search in the title bar, as in Keyboard Manager, unless the snippet dialog is open.</summary>
+        private void SearchShortcut_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            if (!_isSnippetDialogOpen)
+            {
+                SnippetSearchBox.Focus(FocusState.Keyboard);
+                SnippetSearchBox.SelectAll();
+                args.Handled = true;
+            }
+        }
+
         private void ReloadSnippets_Click(object sender, RoutedEventArgs e)
         {
+            SnippetFolderFlyout.Hide();
             bool hadError = ViewModel.HasSnippetError;
             ViewModel.LoadSnippets();
             if (!ViewModel.HasSnippetError)
@@ -708,6 +742,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
 
         private async void OpenSnippetsFile_Click(object sender, RoutedEventArgs e)
         {
+            SnippetFolderFlyout.Hide();
             if (!ViewModel.CanEditSnippets)
             {
                 return;
@@ -720,15 +755,20 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             }
         }
 
+        private async void SnippetList_ItemClick(object sender, ItemClickEventArgs e)
+            => await EditSnippetAsync(e.ClickedItem as TextExpanderSnippetViewModel);
+
         private async void EditSnippet_Click(object sender, RoutedEventArgs e)
+            => await EditSnippetAsync(GetSnippetFromSender(sender));
+
+        private async Task EditSnippetAsync(TextExpanderSnippetViewModel row)
         {
             if (!ViewModel.CanEditSnippets)
             {
                 return;
             }
 
-            // Both the row and its menu's Edit come here.
-            TextExpanderSnippetViewModel snippet = await GetListedSnippetAsync(sender);
+            TextExpanderSnippetViewModel snippet = await GetListedSnippetAsync(row);
             if (snippet != null)
             {
                 await ShowSnippetDialogAsync(snippet.Id, snippet.Trigger, snippet.Replacement);
@@ -742,7 +782,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 return;
             }
 
-            TextExpanderSnippetViewModel snippet = await GetListedSnippetAsync(sender);
+            TextExpanderSnippetViewModel snippet = await GetListedSnippetAsync(GetSnippetFromSender(sender));
             if (snippet == null)
             {
                 return;
@@ -759,7 +799,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 return;
             }
 
-            TextExpanderSnippetViewModel snippet = await GetListedSnippetAsync(sender);
+            TextExpanderSnippetViewModel snippet = await GetListedSnippetAsync(GetSnippetFromSender(sender));
             if (snippet == null)
             {
                 return;
@@ -799,20 +839,18 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         }
 
         /// <summary>
-        /// Gets the snippet a row, or an item in its menu, stands for. The list is an
-        /// ItemsRepeater, which leaves DataContext unset on rows built with x:Bind, so every
-        /// clickable part of a row carries its snippet in Tag="{x:Bind}".
+        /// Gets the snippet an item in a row's menu stands for. A menu isn't in the list's tree, so each item carries
+        /// its row's snippet in Tag="{x:Bind}", which stays current as the list reuses its rows.
         /// </summary>
         private static TextExpanderSnippetViewModel GetSnippetFromSender(object sender)
-            => sender is FrameworkElement element ? TextExpanderRowSnippet.Resolve(element.Tag, element.DataContext) : null;
+            => (sender as FrameworkElement)?.Tag as TextExpanderSnippetViewModel;
 
         /// <summary>
-        /// Gets the sender's snippet, as <see cref="GetSnippetFromSender"/> does, or null after saying why its row
-        /// can't be used: a row from before a reload may have a different snippet's ID now.
+        /// Gets <paramref name="snippet"/>, or null after saying why its row can't be used: a row from before a reload
+        /// may have a different snippet's ID now.
         /// </summary>
-        private async Task<TextExpanderSnippetViewModel> GetListedSnippetAsync(object sender)
+        private async Task<TextExpanderSnippetViewModel> GetListedSnippetAsync(TextExpanderSnippetViewModel snippet)
         {
-            TextExpanderSnippetViewModel snippet = GetSnippetFromSender(sender);
             string problem = ViewModel.ValidateRow(snippet);
             if (problem == null)
             {
@@ -847,6 +885,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             _replacementEditor.SetText(replacement ?? string.Empty);
 
             SnippetDialog.XamlRoot = XamlRoot;
+            SnippetDialog.Title = ResourceLoaderInstance.ResourceLoader.GetString(id.HasValue ? "TextExpander_SnippetDialog_EditTitle" : "TextExpander_SnippetDialog_NewTitle");
+            FitSnippetDialog();
             Validate();
 
             ContentDialogResult result;
@@ -859,6 +899,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 _isSnippetDialogOpen = false;
                 _editingId = null;
                 CancelPromptEdit();
+
+                // Lets go of the texts kept for undo.
+                _replacementEditor.ClearHistory();
             }
 
             if (result == ContentDialogResult.Primary)
@@ -961,13 +1004,19 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
 
         private void SetSnippetStatus(string text, string activityId = null)
         {
-            SnippetStatus.Text = text ?? string.Empty;
-            SnippetStatus.Visibility = string.IsNullOrEmpty(SnippetStatus.Text) ? Visibility.Collapsed : Visibility.Visible;
-            if (!string.IsNullOrEmpty(activityId))
+            bool wasOpen = SnippetStatus.IsOpen;
+            SnippetStatus.Message = text ?? string.Empty;
+            SnippetStatus.IsOpen = SnippetStatus.Message.Length > 0;
+            SnippetStatus.Visibility = SnippetStatus.IsOpen ? Visibility.Visible : Visibility.Collapsed;
+
+            // The bar announces itself as it opens, but not a new message while it's open.
+            if (wasOpen && SnippetStatus.IsOpen && !string.IsNullOrEmpty(activityId))
             {
-                Announce(SnippetStatus, activityId);
+                Announce(SnippetStatus, SnippetStatus.Message, activityId);
             }
         }
+
+        private void SnippetStatus_Closed(InfoBar sender, InfoBarClosedEventArgs args) => sender.Visibility = Visibility.Collapsed;
 
         private static void Announce(TextBlock status, string activityId) => Announce(status, status.Text, activityId);
 
@@ -985,34 +1034,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         private void FocusAfterLayout(Control control)
         {
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => control.Focus(FocusState.Programmatic));
-        }
-
-        /// <summary>Recomputes the keycap column once, after a burst of list changes such as a reload or a search.</summary>
-        private void QueueKeycapColumnUpdate()
-        {
-            if (_keycapColumnUpdateQueued)
-            {
-                return;
-            }
-
-            _keycapColumnUpdateQueued = true;
-            DispatcherQueue.TryEnqueue(() =>
-            {
-                _keycapColumnUpdateQueued = false;
-
-                // Only the triggers that can be widest are measured, not every row.
-                ViewModel.KeycapColumnWidth = TextExpanderKeycapLayout.ColumnWidth(
-                    TextExpanderKeycapLayout.WidestTriggers(ViewModel.FilteredSnippets.Select(snippet => snippet.TriggerDisplay)).Select(MeasureTrigger));
-            });
-        }
-
-        /// <summary>Measures a trigger in the keycap's font, which the column has to fit.</summary>
-        private double MeasureTrigger(string trigger)
-        {
-            _triggerMeasure ??= new TextBlock { FontFamily = new FontFamily("Consolas"), FontSize = 14, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold };
-            _triggerMeasure.Text = trigger ?? string.Empty;
-            _triggerMeasure.Measure(new global::Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity));
-            return _triggerMeasure.DesiredSize.Width;
         }
 
         /// <summary>
@@ -1048,21 +1069,38 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             control.Loaded += OnLoaded;
         }
 
-        private async void ChooseSnippetsFolder_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Moves the snippets to a file picked in the Save dialog: Windows asks before replacing a file, and one that has
+        /// snippets of its own then asks whether to use them instead.
+        /// </summary>
+        private async void MoveSnippets_Click(object sender, RoutedEventArgs e)
         {
-            TextExpanderFolderChange change = await ViewModel.PickSnippetsFolderAsync();
-            if (change != null)
+            SnippetFolderFlyout.Hide();
+            var picker = new FileSavePicker(EditorWindowId())
             {
-                await ApplyFolderChangeAsync(change);
+                SuggestedFileName = Path.GetFileName(ViewModel.SnippetsFilePath),
+                DefaultFileExtension = SnippetsFileExtension,
+            };
+            picker.FileTypeChoices.Add(ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SnippetFile_FileType"), new List<string> { SnippetsFileExtension });
+            if (ViewModel.SnippetsPickerFolder is string folder && Directory.Exists(folder))
+            {
+                picker.SuggestedFolder = folder;
             }
-        }
-
-        private async Task ApplyFolderChangeAsync(TextExpanderFolderChange change)
-        {
-            TextExpanderFolderConflictChoice choice = TextExpanderFolderConflictChoice.ReplaceFolder;
-            if (change.HasExistingFile)
+            else
             {
-                TextExpanderFolderConflictChoice? selected = await ConfirmFolderConflictAsync(change);
+                picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            }
+
+            string path = (await picker.PickSaveFileAsync())?.Path;
+            if (string.IsNullOrEmpty(path))
+            {
+                return;
+            }
+
+            TextExpanderFileConflictChoice choice = TextExpanderFileConflictChoice.ReplaceFile;
+            if (ViewModel.FileHasSnippets(path))
+            {
+                TextExpanderFileConflictChoice? selected = await ConfirmFileHasSnippetsAsync(path);
                 if (!selected.HasValue)
                 {
                     return;
@@ -1071,70 +1109,138 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 choice = selected.Value;
             }
 
-            string error = ViewModel.ApplyFolderChange(change, choice, out string backup);
+            string error = ViewModel.MoveSnippetsTo(path, choice, out string status);
             if (error != null)
             {
-                if (!string.IsNullOrEmpty(backup))
-                {
-                    error += " " + string.Format(
-                        CultureInfo.CurrentCulture,
-                        ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SnippetFolder_RecoveryAvailable"),
-                        backup);
-                }
-
                 await ShowStorageErrorAsync(error);
                 return;
             }
 
-            ReportStorageChange(
-                string.Format(
-                    CultureInfo.CurrentCulture,
-                    ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SnippetFolder_Changed"),
-                    ViewModel.SnippetsFilePath),
-                backup);
+            // Moving onto the database already in use changes nothing, so the status bar stays as it was.
+            if (status != null)
+            {
+                SetSnippetStatus(status, "textExpanderSnippetStorageChanged");
+            }
         }
 
-        private async Task<TextExpanderFolderConflictChoice?> ConfirmFolderConflictAsync(TextExpanderFolderChange change)
+        /// <summary>
+        /// Uses a snippets file picked in the Open dialog, from the flyout or the error bar. A file that isn't one says so,
+        /// and Choose a different file opens the dialog again.
+        /// </summary>
+        private async void UseSnippetsFile_Click(object sender, RoutedEventArgs e)
+        {
+            SnippetFolderFlyout.Hide();
+            while (true)
+            {
+                var picker = new FileOpenPicker(EditorWindowId());
+                picker.FileTypeChoices.Add(ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SnippetFile_FileType"), new List<string> { SnippetsFileExtension });
+                if (ViewModel.SnippetsPickerFolder is string folder && Directory.Exists(folder))
+                {
+                    picker.SuggestedFolder = folder;
+                }
+                else
+                {
+                    picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+                }
+
+                string path = (await picker.PickSingleFileAsync())?.Path;
+                if (string.IsNullOrEmpty(path))
+                {
+                    return;
+                }
+
+                string error = ViewModel.UseSnippetsFile(path, out string status);
+                if (error == null)
+                {
+                    SetSnippetStatus(status, "textExpanderSnippetStorageChanged");
+                    return;
+                }
+
+                var resources = ResourceLoaderInstance.ResourceLoader;
+                if (error != string.Format(CultureInfo.CurrentCulture, resources.GetString("TextExpander_SnippetFile_NotSnippets"), Path.GetFileName(path)))
+                {
+                    await ShowStorageErrorAsync(error);
+                    return;
+                }
+
+                var refused = new ContentDialog
+                {
+                    XamlRoot = XamlRoot,
+                    Title = error,
+                    PrimaryButtonText = resources.GetString("TextExpander_SnippetFile_ChooseDifferent"),
+                    CloseButtonText = resources.GetString("TextExpander_Dialog_Close"),
+                    DefaultButton = ContentDialogButton.Primary,
+                };
+                if (await refused.ShowAsync() != ContentDialogResult.Primary)
+                {
+                    return;
+                }
+            }
+        }
+
+        /// <summary>Asks whether to use the snippets already in the file at <paramref name="path"/> or replace them; null for Cancel, the default.</summary>
+        private async Task<TextExpanderFileConflictChoice?> ConfirmFileHasSnippetsAsync(string path)
         {
             var resources = ResourceLoaderInstance.ResourceLoader;
             var confirm = new ContentDialog
             {
                 XamlRoot = XamlRoot,
-                Title = resources.GetString("TextExpander_SnippetFolder_Conflict_Title"),
+                Title = resources.GetString("TextExpander_SnippetFile_Conflict_Title"),
                 Content = new TextBlock
                 {
-                    Text = string.Format(
-                        CultureInfo.CurrentCulture,
-                        resources.GetString("TextExpander_SnippetFolder_Conflict_Message"),
-                        change.FilePath),
+                    Text = string.Format(CultureInfo.CurrentCulture, resources.GetString("TextExpander_SnippetFile_Conflict_Message"), Path.GetFileName(path)),
                     TextWrapping = TextWrapping.Wrap,
-                    IsTextSelectionEnabled = true,
                 },
-                PrimaryButtonText = resources.GetString("TextExpander_SnippetFolder_Conflict_Use"),
-                SecondaryButtonText = resources.GetString("TextExpander_SnippetFolder_Conflict_Replace"),
+                PrimaryButtonText = resources.GetString("TextExpander_SnippetFile_Conflict_Use"),
+                SecondaryButtonText = resources.GetString("TextExpander_SnippetFile_Conflict_Replace"),
                 CloseButtonText = resources.GetString("TextExpander_Dialog_Cancel"),
                 DefaultButton = ContentDialogButton.Close,
             };
 
             return await confirm.ShowAsync() switch
             {
-                ContentDialogResult.Primary => TextExpanderFolderConflictChoice.UseFolder,
-                ContentDialogResult.Secondary => TextExpanderFolderConflictChoice.ReplaceFolder,
+                ContentDialogResult.Primary => TextExpanderFileConflictChoice.UseFile,
+                ContentDialogResult.Secondary => TextExpanderFileConflictChoice.ReplaceFile,
                 _ => null,
             };
         }
 
-        private void ReportStorageChange(string message, string backup)
-        {
-            if (!string.IsNullOrEmpty(backup))
-            {
-                message += " " + string.Format(
-                    CultureInfo.CurrentCulture,
-                    ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SnippetFolder_BackupCreated"),
-                    backup);
-            }
+        private static Microsoft.UI.WindowId EditorWindowId()
+            => Microsoft.UI.Win32Interop.GetWindowIdFromWindow(WinRT.Interop.WindowNative.GetWindowHandle(App.EditorWindow));
 
-            SetSnippetStatus(message, "textExpanderSnippetStorageChanged");
+        /// <summary>
+        /// Shows the sync advice's steps under its heading: a numbered list, which a screen reader reads as "1 of 2", or
+        /// one sentence. Each step's button name is bold.
+        /// </summary>
+        private void ShowSyncAdvice()
+        {
+            IReadOnlyList<TextExpanderSyncStep> steps = ViewModel.SyncSteps;
+            SyncStepList.Children.Clear();
+            for (int i = 0; i < steps.Count; i++)
+            {
+                var sentence = new Paragraph();
+                sentence.Inlines.Add(new Run { Text = steps[i].Before });
+                sentence.Inlines.Add(new Run { Text = steps[i].Button, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold });
+                sentence.Inlines.Add(new Run { Text = steps[i].After });
+                var text = new RichTextBlock { TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = false };
+                text.Blocks.Add(sentence);
+                if (steps.Count == 1)
+                {
+                    SyncStepList.Children.Add(text);
+                    continue;
+                }
+
+                AutomationProperties.SetAutomationControlType(text, AutomationControlType.ListItem);
+                AutomationProperties.SetPositionInSet(text, i + 1);
+                AutomationProperties.SetSizeOfSet(text, steps.Count);
+                var number = new TextBlock { Text = (i + 1).ToString(CultureInfo.CurrentCulture) + ".", Width = 20 };
+                AutomationProperties.SetAccessibilityView(number, AccessibilityView.Raw);
+                Grid.SetColumn(text, 1);
+                var item = new Grid { ColumnDefinitions = { new ColumnDefinition { Width = GridLength.Auto }, new ColumnDefinition() } };
+                item.Children.Add(number);
+                item.Children.Add(text);
+                SyncStepList.Children.Add(item);
+            }
         }
 
         private async Task ShowStorageErrorAsync(string error)
@@ -1166,14 +1272,47 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             {
                 SnippetProblem = ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_EditorFileChanged");
                 IsSnippetValid = false;
+                IsTriggerInvalid = false;
                 return;
             }
 
             // Quiet while the dialog is still empty, but once there's text a missing trigger
             // says why Save is off.
-            string problem = ViewModel.ValidateSnippet(_editingId, trigger, replacement);
+            string problem = ViewModel.ValidateSnippet(_editingId, trigger);
             SnippetProblem = trigger.Length == 0 && replacement.Length == 0 ? null : problem;
             IsSnippetValid = problem == null;
+
+            // The trigger is what's wrong when it breaks a rule, or when it's taken; any other problem is the file's.
+            IsTriggerInvalid = HasSnippetProblem && (!SnippetFile.IsValidTrigger(trigger, out _) || !ViewModel.HasSnippetError);
+        }
+
+        /// <summary>
+        /// Shows eight preview lines at most, and once the dialog is too short for its content, only the whole lines that
+        /// fit, one at least, so its edge never cuts a line in half. The rest of the content doesn't depend on the preview.
+        /// </summary>
+        private void SnippetDialogLayout_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            // A dialog that scrolls is as tall as the window lets it be, so its viewport is the room there is.
+            if (SnippetDialogScroller.ScrollableHeight > 0)
+            {
+                _dialogRoom = SnippetDialogScroller.ViewportHeight;
+            }
+
+            double rest = SnippetDialogContent.ActualHeight - SnippetPreviewText.ActualHeight;
+            SnippetPreviewText.MaxLines = double.IsNaN(_dialogRoom) ? 8 : Math.Clamp((int)((_dialogRoom - rest) / PreviewLineHeight), 1, 8);
+        }
+
+        /// <summary>Sizes the dialog's content as Keyboard Manager's, 760 wide, or as wide as the window leaves room for.</summary>
+        private void FitSnippetDialog()
+        {
+            if (XamlRoot != null)
+            {
+                SnippetDialogContent.Width = Math.Clamp(XamlRoot.Size.Width - 96, 320, 760);
+            }
+
+            // A new window size or a new dialog: the preview tries eight lines again.
+            _dialogRoom = double.NaN;
+            SnippetPreviewText.MaxLines = 8;
         }
 
         /// <summary>
@@ -1184,10 +1323,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         {
             IReadOnlyList<TextExpanderPreviewSegment> segments = TextExpanderSnippetPreview.Build(replacement, DateTime.Now);
             SnippetPreviewText.Segments = segments;
-
-            // Screen readers do not reliably reach elements inside text, so the preview's name
-            // spells out the bubbles too.
-            SnippetPreviewText.AccessibleName = TextExpanderSnippetPreview.Describe(segments, TextExpanderBubbleText.DescribeBubble);
             PreviewHint.Visibility = TextExpanderSnippetPreview.HasBubbles(segments) ? Visibility.Visible : Visibility.Collapsed;
         }
 

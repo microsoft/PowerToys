@@ -19,9 +19,6 @@ internal sealed class ClipboardLoan
     /// </param>
     public ClipboardLoan(uint sequenceAfterWrite) => _expected = sequenceAfterWrite;
 
-    /// <summary>Gets the sequence number this loan currently expects to see.</summary>
-    public uint Expected => _expected;
-
     /// <summary>
     /// True when the clipboard still holds our write, so the snapshot may be put back; otherwise theirs wins.
     /// </summary>

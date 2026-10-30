@@ -6,44 +6,37 @@
 #include <cwctype>
 #include <filesystem>
 #include <string>
+#include <string_view>
 #include <system_error>
-#include <tuple>
 #include <vector>
 
 #include <common/utils/json.h>
 
 namespace TextExpanderPrivacy {
-// The snippet file's names: the engine (SnippetStore.FileName and
-// LegacyFileName) and Settings (TextExpanderSnippetFileNames) use the same two.
-// A folder can hold either, so both are excluded.
+// The snippets file's name, which the engine (SnippetStore.FileName) and the
+// editor (TextExpanderSnippetFileNames.Current) use.
 inline constexpr wchar_t SnippetFileName[] =
-    L"PowerToysTextExpanderSnippets.txt";
-inline constexpr wchar_t LegacySnippetFileName[] = L"snippets.txt";
+    L"PowerToysTextExpanderSnippets.json";
 
-// Whether a file is a snippet file, or a copy Text Expander makes of one, for a
-// snippet file named <base>.txt: backups ("snippets.backup.txt",
-// "snippets.backup (2).txt"), keep-both copies ("snippets (LAPTOP).txt") and
-// temporary files (".snippets.txt.<guid>.tmp", "snippets.txt.tmp-1a2b3c4d").
-// All start with the base, maybe after a dot, and the base ends there, so
-// "snippetsmith.txt" doesn't count.
+// Whether a file is a snippets file, or a copy Text Expander makes of one, for
+// a snippets file named <base>.json: backups
+// ("snippets.json.backup-20261029-145200"), keep-both copies
+// ("snippets (LAPTOP).json") and temporary files
+// ("snippets.json.tmp-1a2b3c4d", ".snippets.json.<guid>.tmp"). All start with
+// the base, maybe after a dot, and the base ends there, so "snippetsmith.json"
+// doesn't count. The base can start with a dot itself (".private").
 inline bool IsSnippetFileFamily(const std::wstring &fileName,
-                                const std::vector<std::wstring> &bases) {
-  std::wstring name = !fileName.empty() && fileName.front() == L'.'
-                          ? fileName.substr(1)
-                          : fileName;
-  for (const std::wstring &base : bases) {
-    if (base.empty() || name.size() < base.size() ||
-        _wcsnicmp(name.c_str(), base.c_str(), base.size()) != 0) {
-      continue;
-    }
+                                const std::wstring &base) {
+  const auto startsWithBase = [&base](std::wstring_view name) {
+    return !base.empty() && name.size() >= base.size() &&
+           _wcsnicmp(name.data(), base.c_str(), base.size()) == 0 &&
+           (name.size() == base.size() || name[base.size()] == L'.' ||
+            name[base.size()] == L' ');
+  };
 
-    if (name.size() == base.size() || name[base.size()] == L'.' ||
-        name[base.size()] == L' ') {
-      return true;
-    }
-  }
-
-  return false;
+  return startsWithBase(fileName) ||
+         (!fileName.empty() && fileName.front() == L'.' &&
+          startsWithBase(std::wstring_view(fileName).substr(1)));
 }
 
 // Copies the settings tree for a report without going through directory links
@@ -182,12 +175,6 @@ inline bool ExcludeCopiedSnippetFile(const std::filesystem::path &settingsRoot,
   return !error;
 }
 
-// Both names in a folder, since the engine reads whichever exists.
-inline std::vector<std::filesystem::path>
-SnippetFilesIn(const std::filesystem::path &folder) {
-  return {folder / SnippetFileName, folder / LegacySnippetFileName};
-}
-
 // Reads a location setting the way the engine reads snippets_path: a string,
 // bare or wrapped as
 // {"value": ...}, trimmed of spaces and quotes, with environment variables
@@ -262,8 +249,11 @@ ReadLocationSetting(const winrt::Windows::Data::Json::JsonObject &properties,
   return true;
 }
 
-// The snippet files at a configured location: both names in a folder, or a file
-// together with both names beside it.
+// The snippets files at a configured location: as in the engine and the
+// editor, the path is the snippets file, whatever its name and whether or not
+// it's there, so one that was moved, renamed or deleted still has its backups
+// and temporary files beside it left out; the default-named file beside it goes
+// too. A folder that earlier builds kept in the setting has that file in it.
 inline bool SnippetFilesAt(const std::filesystem::path &location,
                            std::vector<std::filesystem::path> &snippetFiles) {
   namespace fs = std::filesystem;
@@ -279,31 +269,27 @@ inline bool SnippetFilesAt(const std::filesystem::path &location,
     return false;
   }
 
-  if (exists && !isDirectory) {
-    snippetFiles = SnippetFilesIn(location.parent_path());
-    snippetFiles.insert(snippetFiles.begin(), location);
+  if (isDirectory) {
+    snippetFiles = {location / SnippetFileName};
   } else {
-    snippetFiles = SnippetFilesIn(location);
+    snippetFiles = {location, location.parent_path() / SnippetFileName};
   }
 
   return true;
 }
 
-// Resolves the snippet files using the engine's
-// SnippetStore.ResolveConfiguredPath rules: both names in the configured or
-// default folder, or a configured file together with both names beside it. The
-// OneDrive folder Settings remembers for turning sync back on
-// (last_sync_folder) holds the same snippets, so its files are added the same
-// way. Returns false when a location cannot be determined, so callers can
-// refuse to create a report instead of risking that it contains the user's
-// snippets.
+// Resolves the snippets files using the engine's
+// SnippetStore.ResolveConfiguredPathInfo rules: the configured file, with the
+// default-named file beside it, or the file in the default folder. Returns
+// false when a location cannot be determined, so callers can refuse to create a
+// report instead of risking that it contains the user's snippets.
 inline bool
 ResolveSnippetFiles(const std::filesystem::path &settingsRoot,
                     std::vector<std::filesystem::path> &snippetFiles) {
   namespace fs = std::filesystem;
   using namespace winrt::Windows::Data::Json;
 
-  snippetFiles = SnippetFilesIn(settingsRoot / L"TextExpander");
+  snippetFiles = {settingsRoot / L"TextExpander" / SnippetFileName};
   fs::path settingsFile = settingsRoot / L"TextExpander" / L"settings.json";
 
   std::error_code error;
@@ -334,48 +320,58 @@ ResolveSnippetFiles(const std::filesystem::path &settingsRoot,
 
   JsonObject properties = propertiesValue.GetObjectW();
   fs::path configured;
-  if (!ReadLocationSetting(properties, L"snippets_path", configured) ||
-      (!configured.empty() && !SnippetFilesAt(configured, snippetFiles))) {
-    return false;
-  }
-
-  fs::path lastSyncFolder;
-  if (!ReadLocationSetting(properties, L"last_sync_folder", lastSyncFolder)) {
-    return false;
-  }
-
-  if (!lastSyncFolder.empty()) {
-    std::vector<fs::path> lastSyncFiles;
-    if (!SnippetFilesAt(lastSyncFolder, lastSyncFiles)) {
-      return false;
-    }
-
-    snippetFiles.insert(snippetFiles.end(), lastSyncFiles.begin(),
-                        lastSyncFiles.end());
-  }
-
-  return true;
+  return ReadLocationSetting(properties, L"snippets_path", configured) &&
+         (configured.empty() || SnippetFilesAt(configured, snippetFiles));
 }
 
-// Removes snippet files and the copies Text Expander makes of them
-// (IsSnippetFileFamily) from the report: anywhere in its TextExpander folder,
-// where Stop syncing keeps backups and where an earlier snippet folder keeps
-// its files after the location changes, and in any snippet folder that is
-// inside the copied settings. A configured file with a name of its own also
-// gets copies named after it, but only in its own folder.
+// Removes from a folder of the report, if it's there, each file or folder that
+// matches, without looking inside it. Only the folder's own entries are looked
+// at unless recursive. Returns false on any error.
+template <typename Matches>
+inline bool RemoveFromReport(const std::filesystem::path &folder,
+                             bool recursive, Matches matches) {
+  namespace fs = std::filesystem;
+
+  std::error_code error;
+  bool exists = fs::exists(folder, error) && fs::is_directory(folder, error);
+  if (error || !exists) {
+    return !error;
+  }
+
+  std::vector<fs::path> removed;
+  fs::recursive_directory_iterator entry(folder, error);
+  const fs::recursive_directory_iterator end;
+  for (; !error && entry != end; entry.increment(error)) {
+    bool directory = entry->is_directory(error);
+    if (error) {
+      break;
+    }
+
+    if (matches(entry->path(), directory)) {
+      removed.push_back(entry->path());
+      entry.disable_recursion_pending();
+    } else if (!recursive) {
+      entry.disable_recursion_pending();
+    }
+  }
+
+  for (const fs::path &path : removed) {
+    if (!error) {
+      fs::remove_all(path, error);
+    }
+  }
+
+  return !error;
+}
+
+// Removes the copies Text Expander makes of each snippets file
+// (IsSnippetFileFamily) from the report, in the file's own folder, when that
+// folder is inside the copied settings.
 inline bool ExcludeSnippetFileFamilies(
     const std::filesystem::path &settingsRoot,
     const std::filesystem::path &reportRoot,
     const std::vector<std::filesystem::path> &snippetFiles) {
   namespace fs = std::filesystem;
-
-  const std::vector<std::wstring> standardBases{
-      fs::path(SnippetFileName).stem().wstring(),
-      fs::path(LegacySnippetFileName).stem().wstring()};
-  // Each folder, the names whose copies go, and whether its subfolders are
-  // searched too.
-  std::vector<std::tuple<fs::path, std::vector<std::wstring>, bool>> folders{
-      {reportRoot / L"TextExpander", standardBases, true}};
 
   std::error_code error;
   const fs::path root = fs::weakly_canonical(settingsRoot, error);
@@ -395,58 +391,41 @@ inline bool ExcludeSnippetFileFamilies(
       continue;
     }
 
-    std::vector<std::wstring> bases = standardBases;
-    bases.push_back(snippetFile.stem().wstring());
-    folders.emplace_back(reportRoot / relative, bases, false);
-  }
-
-  for (const auto &[reportFolder, bases, recursive] : folders) {
-    // A folder that isn't there has nothing to leave out.
-    bool exists = fs::exists(reportFolder, error) &&
-                  fs::is_directory(reportFolder, error);
-    if (error) {
+    const std::wstring base = snippetFile.stem().wstring();
+    if (!RemoveFromReport(
+            reportRoot / relative, false, [&base](const fs::path &path, bool) {
+              return IsSnippetFileFamily(path.filename().wstring(), base);
+            })) {
       return false;
-    }
-    if (!exists) {
-      continue;
-    }
-
-    std::vector<fs::path> family;
-    fs::recursive_directory_iterator entry(reportFolder, error);
-    if (error) {
-      return false;
-    }
-
-    const fs::recursive_directory_iterator end;
-    for (; entry != end; entry.increment(error)) {
-      if (error) {
-        return false;
-      }
-
-      // A match goes whole, so there's no need to look inside it.
-      if (IsSnippetFileFamily(entry->path().filename().wstring(), bases)) {
-        family.push_back(entry->path());
-        entry.disable_recursion_pending();
-      } else if (!recursive) {
-        entry.disable_recursion_pending();
-      }
-    }
-
-    if (error) {
-      return false;
-    }
-
-    for (const fs::path &file : family) {
-      fs::remove_all(file, error);
-      if (error) {
-        return false;
-      }
     }
   }
 
   return true;
 }
 
+// Whether a report keeps a file or folder of the TextExpander folder, given
+// relative to it. It keeps only the settings, the engine's diagnostics and the
+// logs, so a snippets file of any name there, such as one that Move snippets
+// database left behind, and its backups and temporary files, never get in.
+inline bool IsKeptInReport(const std::wstring &relative, bool directory) {
+  const auto is = [&relative](const wchar_t *name) {
+    return _wcsicmp(relative.c_str(), name) == 0;
+  };
+  const auto isIn = [&relative](const wchar_t *folder) {
+    const size_t length = wcslen(folder);
+    return _wcsnicmp(relative.c_str(), folder, length) == 0 &&
+           (relative.size() == length || relative[length] == L'\\');
+  };
+
+  return isIn(L"Logs") || isIn(L"Editor\\Logs") ||
+         isIn(L"ModuleInterface\\Logs") ||
+         (directory ? is(L"Editor") || is(L"ModuleInterface")
+                    : is(L"settings.json") || is(L"diagnostics.txt"));
+}
+
+// Leaves the user's snippets out of a report: the snippets files and the copies
+// Text Expander makes of them, wherever they are in the copied settings, and
+// everything in its TextExpander folder that IsKeptInReport doesn't keep.
 inline bool
 ExcludeConfiguredSnippetFile(const std::filesystem::path &settingsRoot,
                              const std::filesystem::path &reportRoot) {
@@ -461,6 +440,14 @@ ExcludeConfiguredSnippetFile(const std::filesystem::path &settingsRoot,
     }
   }
 
-  return ExcludeSnippetFileFamilies(settingsRoot, reportRoot, snippetFiles);
+  const std::filesystem::path moduleFolder = reportRoot / L"TextExpander";
+  return ExcludeSnippetFileFamilies(settingsRoot, reportRoot, snippetFiles) &&
+         RemoveFromReport(moduleFolder, true,
+                          [&moduleFolder](const std::filesystem::path &path,
+                                          bool directory) {
+                            return !IsKeptInReport(
+                                path.lexically_relative(moduleFolder).wstring(),
+                                directory);
+                          });
 }
 } // namespace TextExpanderPrivacy
