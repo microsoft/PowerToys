@@ -12,3 +12,5 @@ SetWindowRgn
 CreateRectRgn
 CreateRoundRectRgn
 DeleteObject
+
+DwmFlush

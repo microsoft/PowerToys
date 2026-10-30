@@ -54,11 +54,11 @@ internal sealed partial class PreviewWindow
             $"location = {e.Location}"));
 
         MouseHelper.SetCursorPosition(e.Location);
-        this.HideWindow();
+        this.DismissWindow();
     }
 
     private void PreviewPane_Cancel(object? sender, EventArgs e)
     {
-        this.HideWindow();
+        this.DismissWindow();
     }
 }

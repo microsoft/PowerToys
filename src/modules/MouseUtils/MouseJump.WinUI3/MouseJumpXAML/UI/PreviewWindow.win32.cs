@@ -60,15 +60,10 @@ internal sealed partial class PreviewWindow
 
         this.InitializeEvents();
 
-        // this window is never actually Hide()/Show()'d again after this point - we "hide" it
-        // by calling SetWindowRgn with an empty clip region in ApplyEmptyRectRegion/HideWindow,
-        // which means DWM keeps compositing it continuously in the background instead of
-        // flashing up a blank white frame for a split second on every Show().
-        //
-        // we also show it the here without activating since we're initializing the application,
-        // not responsing to a hotkey activation so we don't want to steal focus.
+        // start off clipped to an empty region so the very first Show() doesn't flash up
+        // the window's default (unstyled) content - see ShowWindowAsync. the window itself
+        // stays hidden until the first activation, so starting the module doesn't steal focus.
         this.ApplyEmptyRectRegion();
-        this.AppWindow.Show(activateWindow: false);
     }
 
     /// <summary>
@@ -98,12 +93,11 @@ internal sealed partial class PreviewWindow
     }
 
     /// <summary>
-    /// Clips this window to an empty region, making it fully invisible while it stays
-    /// actively composited by DWM. This avoids the need to use AppWindow.Show (and Hide)
-    /// which were found to cause an instantaneous flash of the un-composited window
-    /// before setting down and re-rendering the actual content. Setting the window
-    /// to an empty region has the same visual effect as hiding it while not triggering
-    /// recompositing with AppWindow.Show().
+    /// Clips this window to an empty region, making it fully invisible even while it's shown.
+    /// AppWindow.Show() on its own was found to cause an instantaneous flash of the
+    /// un-composited window before settling down and rendering the actual content, so the
+    /// window is always shown with an empty region and only revealed once its first frame
+    /// has rendered (see ShowWindowAsync).
     /// </summary>
     /// <remarks>
     /// Deliberately use <c>CreateRectRgn(0, 0, 0, 0)</c>, not <c>CreateRoundRectRgn</c> with

@@ -50,4 +50,11 @@ internal sealed partial class PreviewWindow : Window
     /// grace period the legacy WinForms version used.
     /// </summary>
     private static readonly TimeSpan ScreenshotGracePeriod = TimeSpan.FromMilliseconds(250);
+
+    /// <summary>
+    /// Maximum time to wait for the window's first frame to render after it's shown before
+    /// revealing it anyway (see <see cref="WaitForFirstFrameAsync"/>) - a handful of frames at
+    /// 60Hz, so it only ever matters if a <c>CompositionTarget.Rendering</c> tick goes missing.
+    /// </summary>
+    private static readonly TimeSpan FirstFrameTimeout = TimeSpan.FromMilliseconds(100);
 }
