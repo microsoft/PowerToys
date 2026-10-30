@@ -60,13 +60,15 @@ internal sealed partial class PreviewWindow
 
         this.InitializeEvents();
 
-        // this window is never actually Hide()/Show()'d again after this point - "hidden" is
-        // instead an empty SetWindowRgn clip (see ApplyEmptyRectRegion/HideWindow), so DWM keeps
-        // compositing it continuously in the background instead of presenting a blank first
-        // frame on every reveal. Clip to nothing *before* ever showing it, so there's no
-        // on-screen flash of its default (unstyled) content at startup either.
+        // this window is never actually Hide()/Show()'d again after this point - we "hide" it
+        // by calling SetWindowRgn with an empty clip region in ApplyEmptyRectRegion/HideWindow,
+        // which means DWM keeps compositing it continuously in the background instead of
+        // flashing up a blank white frame for a split second on every Show().
+        //
+        // we also show it the here without activating since we're initializing the application,
+        // not responsing to a hotkey activation so we don't want to steal focus.
         this.ApplyEmptyRectRegion();
-        this.AppWindow.Show();
+        this.AppWindow.Show(activateWindow: false);
     }
 
     /// <summary>
