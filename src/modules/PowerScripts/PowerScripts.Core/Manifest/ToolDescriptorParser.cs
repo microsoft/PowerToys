@@ -76,7 +76,6 @@ public static class ToolDescriptorParser
             Version = extension?.Version,
             Source = extension?.Source,
             Icon = extension?.Icon,
-            Consumers = extension?.Consumers,
             Capabilities = extension?.Capabilities ?? new(),
         };
         if (input == PowerScriptDataFormat.Files)

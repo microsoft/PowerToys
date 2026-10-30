@@ -2,15 +2,24 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text;
 using PowerScripts.Core.Manifest;
 
 namespace PowerScripts.Core.Templates;
 
 public static partial class ScriptTemplates
 {
+    private static readonly HashSet<string> ReservedParameterNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "true", "false", "null", "args", "input", "PSItem", "this", "PSBoundParameters", "PSCmdlet",
+        "ExecutionContext", "Host", "HOME", "PID", "PWD", "PSVersionTable", "PSScriptRoot", "PSCommandPath",
+        "MyInvocation", "Error", "Matches", "foreach", "switch", "ShellId", "EnabledExperimentalFeatures",
+        "IsWindows", "IsLinux", "IsMacOS", "IsCoreCLR", "PSCulture", "PSUICulture", "PSHOME",
+        "NestedPromptLevel", "StackTrace", "ConsoleFileName", "PSDebugContext", "ErrorActionPreference",
+    };
+
     public static CreatedScriptTemplate Create(string scriptsRoot, ScriptTemplateOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -36,7 +45,7 @@ public static partial class ScriptTemplates
 
         var entryName = options.Runtime == "python" ? "script.py" : "script.ps1";
         var capabilities = new JsonArray();
-        if (options.Input == "files")
+        if (options.Input == "files" || options.Parameters?.Any(parameter => parameter?.Schema?.IsFileParameter == true) == true)
         {
             capabilities.Add("fileRead");
         }
@@ -46,15 +55,74 @@ public static partial class ScriptTemplates
             capabilities.Add("fileWrite");
         }
 
+        var inputSchema = CreateSchema(options.Input, options);
+        AddParameters(inputSchema, options.Parameters);
         var descriptor = new JsonObject
         {
-            ["inputSchema"] = CreateSchema(options.Input, options),
+            ["inputSchema"] = inputSchema,
             ["outputSchema"] = CreateSchema(options.Output),
             ["x-powerscript"] = new JsonObject { ["capabilities"] = capabilities },
         };
         return CreatePackage(scriptsRoot, options.ProjectName, options.Description ?? string.Empty,
             entryName, descriptor, options.Runtime == "python" ? CreatePython(options) : CreatePowerShell(options),
             CreateGuide(options, entryName));
+    }
+
+    private static void AddParameters(JsonObject inputSchema, IReadOnlyList<ScriptTemplateParameter>? parameters)
+    {
+        if (parameters is not { Count: > 0 })
+        {
+            return;
+        }
+
+        var properties = new JsonObject();
+        var required = new JsonArray();
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var parameter in parameters)
+        {
+            if (parameter is null || string.IsNullOrEmpty(parameter.Name) ||
+                !char.IsAsciiLetter(parameter.Name[0]) ||
+                parameter.Name.Any(c => !char.IsAsciiLetterOrDigit(c) && c != '_') ||
+                ReservedParameterNames.Contains(parameter.Name) || !names.Add(parameter.Name))
+            {
+                throw new ArgumentException("Parameter names must be unique (ignoring case), start with a letter, contain only letters, digits or underscores, and not use PowerShell automatic variable names.", nameof(parameters));
+            }
+
+            if (parameter.Schema is not { Type: "string" or "integer" or "boolean" } schema)
+            {
+                throw new ArgumentException($"Parameter '{parameter.Name}' must declare a string, integer, or boolean schema.", nameof(parameters));
+            }
+
+            var definition = JsonSerializer.SerializeToNode(schema, ToolDescriptorParser.JsonOptions)!.AsObject();
+            if (schema.IsFileParameter)
+            {
+                if (parameter.FileExtensions is not null || schema.PowerScript is null)
+                {
+                    definition["x-powerscript"] = new JsonObject
+                    {
+                        ["extensions"] = JsonSerializer.SerializeToNode(ParseFileExtensions(parameter.FileExtensions)),
+                    };
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(parameter.FileExtensions))
+            {
+                throw new ArgumentException($"File extensions apply only to file-path parameters ('{parameter.Name}').", nameof(parameters));
+            }
+
+            properties.Add(parameter.Name, definition);
+            if (parameter.Required)
+            {
+                required.Add(parameter.Name);
+            }
+        }
+
+        inputSchema["properties"]!["parameters"] = new JsonObject
+        {
+            ["type"] = "object",
+            ["additionalProperties"] = false,
+            ["properties"] = properties,
+            ["required"] = required,
+        };
     }
 
     private static JsonObject CreateSchema(string shape, ScriptTemplateOptions? options = null)
@@ -123,52 +191,65 @@ public static partial class ScriptTemplates
 
     private static string CreatePowerShell(ScriptTemplateOptions options)
     {
-        var parameter = options.Input switch
+        var bindings = new List<string>();
+        var primary = options.Input switch
         {
-            "text" => "param([string]$Text = '')\n",
-            "files" => "param([string[]]$Files)\n",
-            "image" => "param([object]$Image)\n",
-            "audio" => "param([object]$Audio)\n",
-            _ => string.Empty,
+            "text" => "[string]$Text = ''",
+            "files" => "[string[]]$Files",
+            "image" => "[object]$Image",
+            "audio" => "[object]$Audio",
+            _ => null,
         };
+        if (primary is not null)
+        {
+            bindings.Add(primary);
+        }
+
+        foreach (var parameter in options.Parameters ?? Array.Empty<ScriptTemplateParameter>())
+        {
+            var type = parameter.Schema.Type switch { "integer" => "int", "boolean" => "bool", _ => "string" };
+            bindings.Add($"[{type}]${parameter.Name}");
+        }
+
+        var declaration = bindings.Count == 0 ? string.Empty : "param(" + string.Join(",\n    ", bindings) + ")\n";
         var input = options.Input switch
         {
-            "text" => "$content = $Text",
+            "text" => "$__powerscriptContent = $Text",
             "files" => """
                 if ($env:POWERSCRIPTS_FILES) {
                     $Files = @($env:POWERSCRIPTS_FILES -split "`n" | Where-Object { $_ })
                 }
-                $content = ($Files | ForEach-Object {
-                    $file = Get-Item -LiteralPath $_ -ErrorAction Stop
-                    '{0} ({1} bytes)' -f $file.Name, $file.Length
+                $__powerscriptContent = ($Files | ForEach-Object {
+                    $__powerscriptFile = Get-Item -LiteralPath $_ -ErrorAction Stop
+                    '{0} ({1} bytes)' -f $__powerscriptFile.Name, $__powerscriptFile.Length
                 }) -join [Environment]::NewLine
                 """,
             "image" or "audio" => $$"""
-                $media = ${{(options.Input == "image" ? "Image" : "Audio")}}
-                $content = (@($media) | ForEach-Object {
+                $__powerscriptMedia = ${{(options.Input == "image" ? "Image" : "Audio")}}
+                $__powerscriptContent = (@($__powerscriptMedia) | ForEach-Object {
                     '{0} ({1} bytes)' -f $_.mimeType, ([Convert]::FromBase64String($_.data)).Length
                 }) -join [Environment]::NewLine
                 """,
-            _ => "$content = 'Hello from your new PowerScript.'",
+            _ => "$__powerscriptContent = 'Hello from your new PowerScript.'",
         };
         var output = options.Output switch
         {
-            "text" => "Write-Output $content",
+            "text" => "Write-Output $__powerscriptContent",
             "files" => """
-                $path = Join-Path $env:TEMP ('powerscript-' + [Guid]::NewGuid().ToString('N') + '.txt')
-                Set-Content -LiteralPath $path -Value $content -Encoding UTF8
-                @{ files = @($path) } | ConvertTo-Json -Compress
+                $__powerscriptPath = Join-Path $env:TEMP ('powerscript-' + [Guid]::NewGuid().ToString('N') + '.txt')
+                Set-Content -LiteralPath $__powerscriptPath -Value $__powerscriptContent -Encoding UTF8
+                @{ files = @($__powerscriptPath) } | ConvertTo-Json -Compress
                 """,
             "image" or "audio" => $$"""
                 # Replace this example with your media processing; matching media input is passed through.
-                $media = {{(options.Input == options.Output ? "$" + (options.Input == "image" ? "Image" : "Audio") : "ConvertFrom-Json '" + SampleMedia(options.Output).ToJsonString() + "'")}}
-                @{ {{options.Output}} = $media } | ConvertTo-Json -Depth 8 -Compress
+                $__powerscriptMedia = {{(options.Input == options.Output ? "$" + (options.Input == "image" ? "Image" : "Audio") : "ConvertFrom-Json '" + SampleMedia(options.Output).ToJsonString() + "'")}}
+                @{ {{options.Output}} = $__powerscriptMedia } | ConvertTo-Json -Depth 8 -Compress
                 """,
             _ => "# Add work here; send diagnostics to stderr.",
         };
         return $"""
             # Edit the sibling script.ps1.tool.json to change the contract; see README.md.
-            {parameter}
+            {declaration}
             [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
             $ErrorActionPreference = 'Stop'
             {input}
@@ -215,6 +296,7 @@ public static partial class ScriptTemplates
             import tempfile
 
             request = json.load(sys.stdin)
+            {(options.Parameters is { Count: > 0 } ? "parameters = request['parameters']" : string.Empty)}
             {input}
 
             {output}
@@ -269,6 +351,11 @@ public static partial class ScriptTemplates
         `required` list and `additionalProperties: false`. Supported options are string, integer and boolean.
         String options support `enum`, `minLength`, `maxLength` and `pattern`; integers support
         `minimum` and `maximum`. Defaults are applied by PowerScripts. `format: "file-path"` enables a picker.
+        Parameters selected during creation are already declared in the descriptor and PowerShell `param(...)`.
+        In Python, read them from `parameters` using their exact names, for example `parameters.get("count")`.
+        Parameter names start with a letter, contain only letters, digits or underscores, and are unique
+        ignoring case. PowerShell automatic variable names and the active primary input name are reserved.
+        Defaults and enum values remain data in the descriptor, never executable script text.
         Use `minItems` / `maxItems` on a files array and `x-powerscript.extensions` on its string `items`.
         Omit `maxItems` for no limit. Restrictions are enforced on invocation and output, not just discovery.
         Unsupported schema keywords are rejected rather than silently ignored.
@@ -300,7 +387,7 @@ public static partial class ScriptTemplates
         ## Metadata and isolation
 
         `name`, `title`, `description`, `annotations`, `inputSchema` and `outputSchema` describe the tool.
-        Optional `capabilities`, `consumers`, `publisher`, `version`, `source` and `icon` belong
+        Optional `capabilities`, `publisher`, `version`, `source` and `icon` belong
         under root `x-powerscript`. They do not grant permissions.
         All scripts use the global MXC settings; there are no per-script settings or policy overrides.
         Python environment selection is also global. Managed Linux requires globally acknowledged

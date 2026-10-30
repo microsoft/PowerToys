@@ -50,20 +50,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public static Visibility InvertBoolToVisibility(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
 
-        public Visibility TestingLauncherVisibility =>
-#if DEBUG
-            Visibility.Visible;
-#else
-            Visibility.Collapsed;
-#endif
-
-        private void OpenLauncherButton_Click(object sender, RoutedEventArgs e)
-        {
-#if DEBUG
-            App.OpenSettingsWindow(typeof(PowerScriptLauncherWindow));
-#endif
-        }
-
         private void ScriptIcon_ImageFailed(object sender, ExceptionRoutedEventArgs e)
         {
             if (sender is FrameworkElement { DataContext: PowerScriptListItem script })

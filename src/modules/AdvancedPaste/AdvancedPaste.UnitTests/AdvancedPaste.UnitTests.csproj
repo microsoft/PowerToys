@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Assets\image_with_text_example.png" />
+    <Content Include="$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\PowerToys.AdvancedPaste.pri" Link="PowerToys.AdvancedPaste.pri" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

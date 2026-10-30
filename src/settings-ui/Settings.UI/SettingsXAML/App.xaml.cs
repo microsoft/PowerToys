@@ -38,10 +38,6 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private ShortcutConflictWindow shortcutConflictWindow;
 
-#if DEBUG
-        private PowerScriptLauncherWindow scriptLauncherWindow;
-#endif
-
         private enum Arguments
         {
             PTPipeName = 1,
@@ -114,14 +110,6 @@ namespace Microsoft.PowerToys.Settings.UI
 
         public static void OpenSettingsWindow(Type type = null, bool ensurePageIsSelected = false)
         {
-#if DEBUG
-            if (type == typeof(PowerScriptLauncherWindow))
-            {
-                ((App)Current).OpenScriptLauncher();
-                return;
-            }
-#endif
-
             if (settingsWindow == null)
             {
                 settingsWindow = new MainWindow();
@@ -242,14 +230,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 return 0;
             });
 
-#if DEBUG
-            if (StartupPage == typeof(PowerScriptLauncherWindow))
-            {
-                settingsWindow = new MainWindow(true);
-                OpenScriptLauncher();
-            }
-            else
-#endif
             if (!ShowOobe && !ShowScoobe)
             {
                 settingsWindow = new MainWindow();
@@ -362,29 +342,8 @@ namespace Microsoft.PowerToys.Settings.UI
         public static bool IsSecondaryWindowOpen()
         {
             var app = (App)Current;
-            var isOpen = app.oobeWindow != null || app.scoobeWindow != null || app.shortcutConflictWindow != null;
-#if DEBUG
-            isOpen |= app.scriptLauncherWindow != null;
-#endif
-            return isOpen;
+            return app.oobeWindow != null || app.scoobeWindow != null || app.shortcutConflictWindow != null;
         }
-
-#if DEBUG
-        private void OpenScriptLauncher()
-        {
-            if (scriptLauncherWindow == null)
-            {
-                scriptLauncherWindow = new PowerScriptLauncherWindow();
-                scriptLauncherWindow.Closed += (_, _) =>
-                {
-                    scriptLauncherWindow = null;
-                    settingsWindow?.CloseHiddenWindow();
-                };
-            }
-
-            scriptLauncherWindow.ShowLauncher();
-        }
-#endif
 
         public void OpenScoobe()
         {
@@ -460,9 +419,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "AlwaysOnTop": return typeof(AlwaysOnTopPage);
                 case "Awake": return typeof(AwakePage);
                 case "PowerScripts": return typeof(PowerScriptsPage);
-#if DEBUG
-                case "PowerScriptsLauncher": return typeof(PowerScriptLauncherWindow);
-#endif
                 case "CmdNotFound": return typeof(CmdNotFoundPage);
                 case "ColorPicker": return typeof(ColorPickerPage);
                 case "LightSwitch": return typeof(LightSwitchPage);

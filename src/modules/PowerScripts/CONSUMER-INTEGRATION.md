@@ -8,15 +8,17 @@ Host owns script loading, validation, trust, parameter validation, security poli
 
 1. **Always execute through `PowerScripts.Host.exe`.** Do not launch a script, interpreter, or
    descriptor command directly from the consumer.
-2. **Discover by resolved I/O and optional audience.** A consumer selects scripts whose `io.input`
-   and `io.output` it can supply and handle, passing its stable consumer ID to honor optional
-   targeting. Scripts do not declare the removed `surface` or `kind` fields.
-3. **Treat script IDs as opaque.** Display `name` and `description`; persist and invoke `id`.
+2. **Discover by resolved I/O.** A consumer selects scripts whose `io.input` and `io.output`
+   it can supply and handle. The catalogue is shared: there is no consumer ID, audience field,
+   or module-targeting filter. Scripts do not declare the removed `surface` or `kind` fields.
+3. **Treat script IDs as opaque.** Display `name` and `description`; invoke by `id` and persist
+   IDs only when the consumer needs saved bindings.
 4. **Keep parameter UX in the consumer.** The Host never opens a generic parameter prompt.
 5. **Do not bypass trust or MXC.** Both interactive and automatic invocations use the Host so they
    receive the same content-hash trust gate and effective security policy.
-6. **Handle PowerScripts being unavailable or disabled.** Hide or disable the integration rather
-   than treating a missing Host or an empty catalogue as an application error.
+6. **Handle PowerScripts being unavailable or disabled.** Hide or disable runtime integration
+   rather than crashing. Configuration UIs should show actionable discovery errors, not disguise
+   a failed Host as a successful empty catalogue or erase saved bindings.
 
 ## Choose the consumer contract
 
@@ -31,15 +33,17 @@ Host owns script loading, validation, trust, parameter validation, security poli
 Input and output tokens are:
 
 ```text
-none, text, files
+none, text, files, image, audio
 ```
 
 `text` carries strings, including inline HTML. `files` carries one or more paths, including images,
 audio, video, and HTML documents. File eligibility is determined by extensions and selection count,
 not whether the file came from Explorer, a file picker, or the clipboard.
 
-`text` output is always literal content, including literal HTML markup. Rich HTML and media outputs
-are `files`; a single file still uses a path list. Consumers decide whether to paste file contents
+`text` output is always literal content, including literal HTML markup. Rich HTML documents and
+file-backed media use `files`; a single file still uses a path list. Inline `image` and `audio`
+use MIME/base64 objects or schema-declared arrays; see the [media contract](README.md#inline-image-and-audio).
+Consumers decide whether to paste file contents
 (for example, a PNG bitmap or rich HTML document) or a file selection. Do not guess HTML from a
 string's contents or treat a filename-looking string as a returned file.
 
@@ -49,7 +53,7 @@ The PowerToys installer deploys the shared, self-contained Host and its private,
 under the installation's `PowerScripts` directory. Consumers must not download MXC, expose an
 executor-path setting, or perform privileged host preparation. Local Host builds restore the same
 architecture-matched dependency automatically; keep the complete build/publish output together
-(including `wxc-exec.exe`, `plm.exe`, the license, and SPDX manifest). A missing dependency is an
+(including `wxc-exec.exe`, `wxc-wslc-daemon.exe`, `wslcsdk.dll`, `plm.exe`, licenses, and SPDX manifest). A missing dependency is an
 installation/build failure, not permission to bypass isolation. MXC is preview software, not a
 security boundary; see the README for platform limits and the compatibility pin.
 
@@ -64,7 +68,8 @@ if (!client.IsAvailable)
     return;
 }
 
-var scripts = client.ListActions(consumer: "keyboard-manager");
+var scripts = await client.ListAsync(cancellationToken);
+var actions = scripts.Where(script => script.Input == PowerScriptIO.None);
 ```
 
 Useful discovery methods:
@@ -77,17 +82,20 @@ Useful discovery methods:
 - `ListForFiles(paths)` — file scripts accepting every selected extension and the selection count.
 - `script.AcceptsFiles(paths)` — the same check against an already-enumerated script.
 
-Each `List*` method accepts an optional `consumer` argument, combined with normal I/O/file matching.
-Use stable IDs such as `keyboard-manager`, `command-palette`, `advanced-paste`, `color-picker`,
-`light-switch`, and `explorer`. A script's optional `consumers` list narrows discovery only: absent
-means all compatible modules. Omit the argument only for management/full-catalogue discovery.
-Consumer IDs are not authenticated identities or permission boundaries, and targeting does not
-prevent direct `run`/`transform` with normal trust/MXC enforcement.
+The catalogue is shared; scripts do not target specific modules. Each consumer owns its script
+matching and any optional binding configuration. All invocations retain the
+same Host trust and MXC enforcement regardless of the consumer.
+
+Managed Linux container reuse is owned by the Host and its MXC daemon, not by consumers.
+Send original Windows file paths; the Host stages selected inputs and maps workspace outputs
+back to Windows. Do not assume a fresh guest filesystem or that different scripts/consumers
+are isolated from each other. Per-invocation trust, validation, and global policy still apply;
+there is no new client API or consumer-managed container lifecycle.
 
 Native consumers may invoke the Host contract directly:
 
 ```text
-PowerScripts.Host.exe list --json [--consumer <module-id>] [--input <shape>] [--output <shape>] [--no-input]
+PowerScripts.Host.exe list --json [--input <shape>] [--output <shape>] [--no-input]
 PowerScripts.Host.exe run <id> [--files <paths...>] [--set name=value...]
 PowerScripts.Host.exe transform <id>
 ```
@@ -102,6 +110,69 @@ when presenting available scripts rather than caching runtime availability indef
 Only configuration/catalogue UIs should opt into `--include-disabled`, so users can still inspect
 installed Python scripts before enabling Python. This option changes discovery only; it does not
 enable a runtime or bypass execution checks.
+
+## Automatic discovery or saved bindings
+
+**PowerScripts owns the catalogue; consumers own compatibility and presentation.** Prefer
+automatic discovery when a consumer can offer every applicable script. Saved assignments and a
+configuration picker are only necessary for consumers that need explicit bindings.
+
+Advanced Paste is the automatic-discovery example. Its Settings page has only a PowerScripts
+master toggle, off by default. When enabled, the paste window offers every available script with
+compatible clipboard input and a pasteable output. Text, files, bitmap images, and audio are
+matched against the declared contracts, including file/media restrictions. No-input scripts are
+excluded. AP stores no per-script selection or exclusion list.
+
+See `PowerScriptsService.GetApplicableScripts` and `OptionsViewModel` in Advanced Paste for
+the filtering and refresh flow. Filter before projecting action rows, rather than displaying
+incompatible scripts as disabled. Refresh both the visible actions and their count when the
+clipboard, catalogue, or master toggle changes. Parameters remain inside AP's own window;
+execution still validates availability, contracts, global policy, and trust through the Host.
+
+### Assign one script to a trigger
+
+A shortcut-based consumer owns its binding UI. Discover compatible actions through the client;
+for example, an automatic trigger that cannot collect parameters or handle output can offer:
+
+```csharp
+var scripts = await client.ListAsync(cancellationToken);
+var actions = scripts.Where(script => script.Input == PowerScriptIO.None
+    && script.Output == PowerScriptIO.None
+    && !script.Parameters.Any(parameter => parameter.IsRequired && parameter.Default is null));
+```
+
+Adapt the predicate to the consumer's capabilities. Persist only the chosen ID and any
+consumer-collected parameter values, using the module's normal IPC/save path. Review trust during
+configuration; automatic execution must refuse an untrusted or changed script rather than silently
+approving it. Revalidate parameters and contracts through the Host when invoking.
+
+Do not duplicate the installed catalogue or turn a local Remove action into a global uninstall.
+Keep an unavailable binding with an explicit warning until the user replaces or removes it; Cancel
+and discovery errors must not overwrite saved choices. Discovery needs a bounded timeout and
+cancellation, with failures shown explicitly.
+
+This version has no shared configuration picker or standalone script launcher. Consumers should
+not add a mandatory execution popup: Keyboard Manager needs no selector at shortcut time, while AP
+collects parameters inside its own window. Native/WPF consumers may use the Host contract directly;
+do not reference the Settings executable from a runtime module or add UI dependencies to the client.
+
+### New-consumer implementation checklist
+
+1. Define supported input/output shapes, file/media bounds, and parameter collection behavior.
+2. Reference `PowerScripts.Client` for execution; do not reference Core or launch interpreters.
+3. Choose automatic discovery for all applicable scripts, or consumer-owned saved bindings
+   when explicit assignment is needed. Do not require per-script configuration by default.
+4. For automatic discovery, filter against current input before presenting actions and refresh on
+   input/settings changes. For saved bindings, implement consumer-owned assignment UI using
+   the shared Host/client discovery contract.
+5. Present script names and relevant contract/parameter information. If maintaining bindings,
+   retain missing/invalid/incompatible entries with a warning and an explicit Remove action.
+6. Persist consumer settings through the module's normal IPC/save path. For picker-based bindings,
+   Cancel and discovery errors must not modify settings.
+7. Revalidate availability, current contract, parameters, and trust when invoking through the Host.
+8. Test input filtering, input changes, master enablement, runtime-disabled behavior, and trust
+   invalidation. For saved bindings, also test search-preserved selection, cancellation, stale IDs,
+   and persistence. Do not introduce a runtime picker unless that consumer needs one.
 
 ## Script presentation and icons
 
@@ -201,7 +272,7 @@ if (result.Succeeded)
 }
 ```
 
-The input transfer model contains `text`, `files`, and `parameters`. Inline HTML goes in `Text`,
+The input transfer model contains `text`, `files`, `image`, `audio`, and `parameters`. Inline HTML goes in `Text`,
 not a separate `Html` field. PowerShell text transforms receive `-Text`; Python text transforms
 read `request["text"]` from JSON stdin. File transforms receive `$Files` and
 `POWERSCRIPTS_FILES` in PowerShell, or `request["files"]` in Python.
@@ -234,6 +305,8 @@ Transform input JSON uses UTF-8, independently of the Windows console code page.
 file paths can be sent literally or as JSON Unicode escapes.
 
 Output JSON is `{}` for `none`, `{"text":"..."}` for `text`, or `{"files":["..."]}` for `files`.
+Inline media returns `{"image":...}` or `{"audio":...}` with the scalar/array shape declared in the
+output schema. Consumers must decode only supported MIME types and enforce their own rendering limits.
 Both schemas are required closed object envelopes. File paths should be absolute and accessible to
 the Windows consumer; WSL scripts should produce files on shared mounted drives so returned
 `/mnt/<drive>/...` paths can be translated back to Windows.
@@ -271,6 +344,10 @@ fields are rejected, not migrated or inferred. Schema-local extensions refine pa
 ## Validation checklist
 
 - The consumer shows only scripts matching its actual input/output capabilities.
+- The shared picker is reused for Settings selection; the consumer's default page shows configured
+  bindings with input/output metadata, not a duplicate full catalogue.
+- Cancel, discovery failure, and search filtering do not erase assignments or change global settings.
+- Missing/incompatible saved IDs remain visible with an explicit Remove action.
 - Host unavailable, disabled, timeout, malformed output, and non-zero exit paths are handled.
 - Required/default/invalid parameter cases are covered.
 - Trust approval and trust invalidation are covered for automatic consumers.

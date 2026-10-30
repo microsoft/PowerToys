@@ -28,7 +28,8 @@ public partial class PowerScriptsViewModel
         string output,
         string fileExtensions,
         int minFiles,
-        int maxFiles)
+        int maxFiles,
+        JsonArray parameters = null)
     {
         var request = new JsonObject
         {
@@ -40,6 +41,7 @@ public partial class PowerScriptsViewModel
             ["output"] = output,
             ["minFiles"] = minFiles,
             ["maxFiles"] = maxFiles,
+            ["parameters"] = parameters,
         };
         var result = JsonNode.Parse(await InvokeHostAsync(new[] { "template", "create", "--configure", "--root", ScriptsFolder }, request));
         var entry = result?["entryPath"]?.GetValue<string>();

@@ -19,5 +19,5 @@ separate copy for durable use. Consumers decide how to present or save files.
 
 All scripts use the global MXC policy. There are no per-script settings.
 Script or descriptor edits invalidate trust and require renewed consent.
-Optional root `x-powerscript` fields include discovery `consumers`, provenance,
+Optional root `x-powerscript` fields include provenance
 and a package-relative `.ico` `icon`.

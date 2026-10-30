@@ -103,6 +103,12 @@ internal static class DataPackageHelpers
 
     internal static async Task<bool> HasUsableDataAsync(this DataPackageView dataPackageView)
     {
+        if (dataPackageView.Properties.ContainsKey(Services.PowerScriptsService.PreserveFilesProperty) &&
+            dataPackageView.Contains(StandardDataFormats.StorageItems))
+        {
+            return (await dataPackageView.GetStorageItemsAsync()).Count > 0;
+        }
+
         var availableFormats = await GetAvailableFormatsAsync(dataPackageView);
 
         return availableFormats == ClipboardFormat.Text ? !string.IsNullOrEmpty(await dataPackageView.GetTextAsync()) : availableFormats != ClipboardFormat.None;
@@ -110,6 +116,11 @@ internal static class DataPackageHelpers
 
     internal static async Task TryCleanupAfterDelayAsync(this DataPackageView dataPackageView, TimeSpan delay)
     {
+        if (dataPackageView.Properties.ContainsKey(Services.PowerScriptsService.PreserveFilesProperty))
+        {
+            return;
+        }
+
         try
         {
             var tempFile = await GetSingleTempFileOrNullAsync(dataPackageView);

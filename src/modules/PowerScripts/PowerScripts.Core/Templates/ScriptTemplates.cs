@@ -19,7 +19,14 @@ public sealed record ScriptTemplateOptions(
     string Input = "none",
     string Output = "text",
     int MinFiles = 1,
-    int MaxFiles = 0);
+    int MaxFiles = 0,
+    IReadOnlyList<ScriptTemplateParameter>? Parameters = null);
+
+public sealed record ScriptTemplateParameter(
+    string Name,
+    JsonSchemaProperty Schema,
+    bool Required = false,
+    string? FileExtensions = null);
 
 public sealed record CreatedScriptTemplate(string EntryPath, string GuidePath);
 
@@ -48,7 +55,13 @@ public static partial class ScriptTemplates
                 options?.Description ?? template.Description,
                 id == "video-info" ? options?.FileExtensions ?? ".mp4,.webm,.mov,.mkv" : options?.FileExtensions,
                 Input: shape,
-                Output: id == "video-info" ? "text" : shape));
+                Output: id == "video-info" ? "text" : shape,
+                Parameters: options?.Parameters));
+        }
+
+        if (options?.Parameters is { Count: > 0 })
+        {
+            throw new ArgumentException("Custom parameters require configured creation; this educational template already defines its own arguments.", nameof(options));
         }
 
         var descriptor = JsonNode.Parse(ReadAsset(template.Id, "script.ps1.tool.json"))!.AsObject();

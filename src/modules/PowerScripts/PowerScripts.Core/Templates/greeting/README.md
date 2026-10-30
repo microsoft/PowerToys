@@ -18,6 +18,6 @@ Python scripts instead execute top-level statements and read JSON from stdin.
 
 All scripts use the global MXC policy. There are no per-script settings.
 Capability declarations describe intent and do not grant permissions.
-Optional root `x-powerscript` metadata includes `consumers`, `publisher`, `version`,
-`source`, and a package-relative `.ico` `icon`; consumers only restrict discovery.
+Optional root `x-powerscript` metadata includes `publisher`, `version`,
+`source`, and a package-relative `.ico` `icon`.
 Script or descriptor edits invalidate trust and require renewed consent.

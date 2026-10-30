@@ -113,7 +113,8 @@ namespace ViewModelTests
                 Input = hasInputMetadata ? new PowerScriptInput() : null,
             };
 
-            Assert.AreEqual($"Python \u00b7 {script.IoDisplay}", script.CatalogueSummary);
+            var generic = new PowerScriptListItem { Runtime = "Python", Io = script.Io };
+            Assert.AreEqual(generic.CatalogueSummary, script.CatalogueSummary);
         }
 
         [DataTestMethod]
@@ -128,7 +129,8 @@ namespace ViewModelTests
                 Input = new PowerScriptInput { Extensions = new() { ".mp3" } },
             };
 
-            Assert.AreEqual($"Python \u00b7 {script.IoDisplay}", script.CatalogueSummary);
+            var withoutExtensions = new PowerScriptListItem { Runtime = "Python", Io = script.Io };
+            Assert.AreEqual(withoutExtensions.CatalogueSummary, script.CatalogueSummary);
         }
 
         [TestMethod]
@@ -159,7 +161,6 @@ namespace ViewModelTests
         public void CatalogueFiltersByPrimaryInputWithoutChangingScriptInstances()
         {
             var scripts = CreateCatalogue();
-            scripts[0].Parameters.Add(new PowerScriptParameterItem { Name = "source", Type = "file", IsRequired = true });
             var noInput = PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 1);
             Assert.AreEqual(1, noInput.Count);
             Assert.AreSame(scripts[0], noInput[0], "Filtering must preserve each script's policy state.");

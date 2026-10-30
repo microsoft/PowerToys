@@ -135,6 +135,15 @@ internal static class Program
 
     private static int RunList(ScriptRegistry registry, IReadOnlyDictionary<string, List<string>> options)
     {
+        foreach (var option in options.Keys)
+        {
+            if (option.ToLowerInvariant() is not ("json" or "input" or "output" or "no-input" or "include-disabled" or "include-unconfigured" or "root"))
+            {
+                Console.Error.WriteLine($"list: unknown option '--{option}'.");
+                return 1;
+            }
+        }
+
         bool asJson = options.ContainsKey("json");
 
         // Optional discovery filters so any consumer — including native/C++ callers that only shell
@@ -144,13 +153,6 @@ internal static class Program
         //   list --no-input        only actions (consume nothing)   [alias for --input none]
         if (!TryParseListFilters(options, out var wantInput, out var wantOutput))
         {
-            return 1;
-        }
-
-        var consumer = options.TryGetValue("consumer", out var consumers) ? consumers.FirstOrDefault() : null;
-        if (consumers is not null && (consumers.Count != 1 || !ManifestValidator.IsValidConsumerId(consumer)))
-        {
-            Console.Error.WriteLine("list: --consumer requires a module id using letters, digits, '.', '_' or '-'.");
             return 1;
         }
 
@@ -168,7 +170,6 @@ internal static class Program
             })
             .Where(r => wantInput is null || r.Input == wantInput)
             .Where(r => wantOutput is null || r.Output == wantOutput)
-            .Where(r => r.Script.IsDiscoverableBy(consumer))
             .ToList();
 
         if (asJson)
@@ -202,7 +203,6 @@ internal static class Program
                     s.Source,
                     s.IconPath,
                     s.IconWarning,
-                    consumers = s.Consumers ?? new List<string>(),
                     s.HasDescriptor,
                     s.ConfigurationErrors,
                     io = new
@@ -753,7 +753,7 @@ internal static class Program
     {
         Console.WriteLine("PowerScripts.Host — run and enumerate PowerScripts.");
         Console.WriteLine();
-        Console.WriteLine("  list [--json] [--input <shape>] [--output <shape>] [--consumer <module-id>] [--no-input] [--include-disabled] [--include-unconfigured] [--root <dir>]");
+        Console.WriteLine("  list [--json] [--input <shape>] [--output <shape>] [--no-input] [--include-disabled] [--include-unconfigured] [--root <dir>]");
         Console.WriteLine("       Input and output: none | text | files.");
         Console.WriteLine("       Disabled runtimes are omitted; --include-disabled lists all installed scripts for configuration.");
         Console.WriteLine("  run <id> [--files <f1> <f2> ...] [--set name=value ...] [--no-consent] [--root <dir>]");

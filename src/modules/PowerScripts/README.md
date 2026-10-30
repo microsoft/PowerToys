@@ -5,6 +5,14 @@ Write a script once and expose it to compatible PowerToys modules through
 execution, not a standalone product launcher. Consumer integrations are developed
 separately; a future Explorer surface belongs to File Explorer Add-ons.
 
+Advanced Paste has one PowerScripts master toggle. When enabled, its paste window automatically
+shows all scripts compatible with the current clipboard, such as text-input scripts for copied
+text. There is no AP-specific script configuration or saved selection list. No-input scripts
+are excluded, and parameters are collected inside the paste window when needed.
+Consumers that need saved assignments own their binding UI and persist script IDs, not catalogue
+copies. There is no standalone script launcher or per-consumer configuration picker in this version.
+See the [consumer onboarding guide](CONSUMER-INTEGRATION.md#automatic-discovery-or-saved-bindings).
+
 ## Packages and discovery
 
 A package contains a script and its required sibling descriptor:
@@ -150,9 +158,9 @@ silently treated as enforced. Regular-expression matching has a bounded timeout.
 Defaults retain JSON types. Missing parameter bags are treated as empty bags,
 so declared defaults and required options apply consistently.
 
-Root `x-powerscript` is optional and contains only `capabilities`, `consumers`,
+Root `x-powerscript` is optional and contains only `capabilities`,
 `publisher`, `version`, `source`, and `icon`. Capabilities describe intent, not
-permissions. Consumers narrow discovery, not execution authorization.
+permissions. Each consumer module owns script selection and applicability.
 Icons are package-relative ICO files, at most 1 MiB, with no traversal,
 absolute/URL paths, or symlink/junction escapes.
 There are no runtime, function, I/O, file-filter, or MXC fields at the root.
@@ -209,6 +217,26 @@ Python environment selection, not shared trust or isolation.
 
 **Create Script** generates editable packages for all 50 runtime/input/output
 combinations. Creation never runs code, grants trust, or changes isolation.
+Add named parameters with string, integer, boolean, or file-path types, display
+names/descriptions, required flags and typed defaults. Strings optionally declare
+enum choices (one per line); integers support optional minimum/maximum bounds;
+file parameters support extension filters. Parameters become the closed
+`inputSchema.properties.parameters` object and matching PowerShell arguments;
+Python accesses them through `parameters`. Defaults remain descriptor data.
+Names must start with a letter, contain only letters/digits/underscores, be unique
+ignoring case, and avoid PowerShell automatic variables and the active primary name.
+For CLI creation, add `parameters` entries such as
+`{"name":"count","schema":{"type":"integer","minimum":1,"default":2},"required":true}`
+to the configuration request. File-path entries can also specify `fileExtensions`.
+The creation page starts blank, without metadata presets or prefilled parameters.
+Enter your own details and explicitly choose the runtime, input/output types,
+and each parameter's name and type. For file input, also enter the minimum and
+maximum file counts. Creation generates generic starter code, not specialized
+conversion or formatting implementations.
+Defaults are optional: a required parameter without a default must be supplied
+at invocation, while an optional parameter without a default may be omitted.
+An explicit default can be an empty string, zero, or false; it is not the same
+as an omitted default. Auxiliary file paths normally come from a consumer picker.
 The form's maximum-file value 0 means unlimited and generates an *omitted*
 `maxItems`; it is not serialized as `maxItems: 0`.
 The CLI equivalent is `template create --configure`, reading creation options
@@ -253,7 +281,7 @@ explicit `riskAccepted: true`; otherwise all restrictions remain enabled.
 There are no per-script exceptions.
 
 The four restrictions are filesystem (read-only source and inputs; writable
-per-run workspace), network (inbound/outbound/loopback denied), UI (isolated
+workspace), network (inbound/outbound/loopback denied), UI (isolated
 desktop, clipboard/input/system-control restrictions), and least privilege.
 Script-package immutability remains mandatory whenever MXC is enabled, even if
 the optional broad filesystem restriction is disabled. Disabling MXC removes that
@@ -311,9 +339,27 @@ reference. Cached images are reused without automatic updates. Windows Python an
 user-distribution WSL execution ignore this setting. WSL 3.0.3 has been verified;
 setup never upgrades WSL.
 PowerToys does not install Python or dependencies. Prepare the runtime image
-before supplying its reference. Scripts and inputs are mounted at execution time,
-not copied into an image build. Every execution uses a fresh container; changes
-or package installations inside that container do not persist to later runs.
+before supplying its reference. Managed Linux scripts share one warm container across
+Host invocations, using MXC's bundled `wxc-wslc-daemon.exe`. The configured catalogue is
+mounted read-only; only selected input files are copied to read-only request staging.
+Each invocation gets its own working directory and JSON request, but this is **not**
+isolation between scripts: guest filesystem changes, background processes, and access
+to other scripts' workspace files can persist across runs. Trust and schema checks
+still run for every invocation. Use the supplied `TMPDIR` for file outputs.
+
+The shared container is replaced when the catalogue, image reference, effective
+network policy, or bundled runtime changes, and invalidated after a nonzero exit or timeout.
+Expired daemon state is recovered before running user code; failed scripts are never
+automatically retried. Runs are serialized across Host processes. Image setup and
+Python checks also release the shared container before using the image store.
+The warm container intentionally survives Host exits; the pinned daemon's idle timeout
+only applies after its last container has been released, not while a warm container exists.
+PowerScripts requests prompt daemon teardown after that release so setup/checks can reopen
+the SDK's exclusively held image store; these constant image operations wait briefly for it,
+without retrying any user script.
+The pinned daemon uses MXC's default `%TEMP%\mxc-wslc-sessions` image cache; images
+prepared by older prototype builds may need **Download image** again. Script execution
+never downloads an image automatically.
 
 Managed Linux requires global MXC and filesystem protection. Unsupported Windows
 UI/least-privilege policies require acknowledged global exceptions; Python runs
@@ -333,7 +379,7 @@ to the Host or Core.Tests project. Build tests first, then use Visual Studio Tes
 Explorer or `vstest.console.exe`, not `dotnet test`.
 
 ```text
-PowerScripts.Host.exe list --json [--consumer <id>] [--input <shape>] [--output <shape>]
+PowerScripts.Host.exe list --json [--input <shape>] [--output <shape>]
 PowerScripts.Host.exe run <id> [--files <paths...>] [--set name=value...]
 PowerScripts.Host.exe transform <id>                 (JSON stdin -> JSON stdout)
 PowerScripts.Host.exe trust approve|revoke <id>

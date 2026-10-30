@@ -76,12 +76,6 @@ public static class ManifestValidator
             }
         }
 
-        if (manifest.Consumers is { } consumers &&
-            (consumers.Count == 0 || consumers.Any(c => !IsValidConsumerId(c))))
-        {
-            errors.Add("'x-powerscript.consumers' must be omitted or contain non-empty module ids using letters, digits, '.', '_' or '-'.");
-        }
-
         if (manifest.Execute is { } execute)
         {
             if (execute.Command is not { Count: > 0 } command ||
@@ -101,8 +95,6 @@ public static class ManifestValidator
 
         return errors;
     }
-
-    public static bool IsValidConsumerId(string? id) => !string.IsNullOrWhiteSpace(id) && IsValidId(id);
 
     private static bool IsValidId(string id)
     {

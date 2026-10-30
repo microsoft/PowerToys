@@ -237,20 +237,26 @@ public class HostCliTests
     }
 
     [TestMethod]
-    public void ConsumerDiscoveryFiltersAudienceAndIoWhileManagementSeesAll()
+    public void SharedCatalogueRetainsIoFilteringWithoutModuleAudience()
     {
-        Write("py_upper.py.tool.json", "{\"name\": \"py_upper\", \"description\": \"py_upper\", \"x-powerscript\": {\"consumers\": [\"color-picker\"]}, \"inputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}}");
         var all = RunHostOk("list", "--json", "--include-disabled", "--root", _root);
         Assert.AreEqual(5, ParseList(all).Count);
-        var targeted = RunHostOk("list", "--json", "--include-disabled", "--consumer", "COLOR-PICKER", "--input", "text", "--output", "text", "--root", _root);
-        CollectionAssert.AreEqual(new[] { "py_upper" }, Ids(targeted));
-        targeted = RunHostOk("list", "--json", "--include-disabled", "--consumer", "advanced-paste", "--input", "text", "--root", _root);
-        CollectionAssert.AreEqual(new[] { "md2html" }, Ids(targeted));
-        var (exit, _, error) = RunHost("list", "--json", "--consumer", "not a module", "--root", _root);
+        var text = RunHostOk("list", "--json", "--include-disabled", "--input", "text", "--output", "text", "--root", _root);
+        CollectionAssert.AreEqual(new[] { "py_upper" }, Ids(text));
+        text = RunHostOk("list", "--json", "--include-disabled", "--input", "text", "--root", _root);
+        CollectionAssert.AreEquivalent(new[] { "py_upper", "md2html" }, Ids(text));
+        foreach (var script in ParseList(all).Values)
+        {
+            Assert.IsFalse(script.TryGetProperty("consumers", out _));
+        }
+    }
+
+    [TestMethod]
+    public void RemovedModuleFilterIsRejectedInsteadOfSilentlyFilteringScripts()
+    {
+        var (exit, _, error) = RunHost("list", "--json", "--consumer", "color-picker", "--root", _root);
         Assert.AreEqual(1, exit);
-        StringAssert.Contains(error, "--consumer");
-        Write("wc.ps1.tool.json", "{\"name\": \"wc\", \"description\": \"wc\", \"x-powerscript\": {\"consumers\": [\"color-picker\"]}, \"inputSchema\": {\"type\": \"object\", \"properties\": {\"files\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"x-powerscript\": {\"extensions\": [\".md\"]}}, \"minItems\": 1}}, \"required\": [\"files\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {}, \"required\": [], \"additionalProperties\": false}}");
-        Assert.IsFalse(Ids(RunHostOk("list", "--json", "--consumer", "advanced-paste", "--root", _root)).Contains("wc"));
+        StringAssert.Contains(error, "unknown option '--consumer'");
     }
 
     [TestMethod]

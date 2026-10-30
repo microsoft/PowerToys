@@ -6225,9 +6225,6 @@ Text uses the current drawing color.</value>
   <data name="PowerScripts_MxcUnavailable.Title" xml:space="preserve">
     <value>Script sandbox is unavailable on this PC.</value>
   </data>
-  <data name="PowerScripts_SandboxRestrictionsHelp.Text" xml:space="preserve">
-    <value>Restrictions are on by default. Turning one off requires accepting reduced protection for every script that supports it. Turning the sandbox off keeps your restriction choices for next time.</value>
-  </data>
   <data name="PowerScripts_MxcFilesystem.Header" xml:space="preserve">
     <value>Protect files</value>
   </data>
@@ -6384,9 +6381,6 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_DetailsMediaMaximum" xml:space="preserve"><value>Maximum media items</value></data>
   <data name="PowerScripts_DetailsMediaLimits" xml:space="preserve"><value>Inline media limits</value></data>
   <data name="PowerScripts_DetailsMediaLimitsValue" xml:space="preserve"><value>16 MiB decoded per item; 32 MiB total; at most 64 items. Format headers are checked; no automatic conversion.</value></data>
-  <data name="PowerScripts_LauncherOutputImage" xml:space="preserve"><value>Image</value></data>
-  <data name="PowerScripts_LauncherOutputAudio" xml:space="preserve"><value>Audio</value></data>
-  <data name="PowerScripts_LauncherMediaHelp" xml:space="preserve"><value>Save a copy of each returned media item. Image and audio bytes are not automatically placed on the clipboard.</value></data>
   <data name="PowerScripts_SortNameAscending.Content" xml:space="preserve">
     <value>Name (A–Z)</value>
   </data>
@@ -6444,9 +6438,6 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_SettingsDetails.Header" xml:space="preserve">
     <value>Security and script details</value>
   </data>
-  <data name="PowerScripts_SettingsAllConsumers" xml:space="preserve">
-    <value>All compatible modules</value>
-  </data>
   <data name="PowerScripts_SettingsInvalidResponse" xml:space="preserve">
     <value>PowerScripts Host returned an invalid settings response.</value>
   </data>
@@ -6468,47 +6459,8 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_SettingsConfiguration.Description" xml:space="preserve">
     <value>Metadata comes from the .tool.json descriptor. All scripts use global runtime and isolation settings.</value>
   </data>
-  <data name="PowerScripts_LauncherCard.Header" xml:space="preserve"><value>Test scripts (Debug only)</value></data>
-  <data name="PowerScripts_LauncherCard.Description" xml:space="preserve"><value>Temporary test window for scripts with no primary input. Not a product feature; no global shortcut.</value></data>
-  <data name="PowerScripts_LauncherOpen.Content" xml:space="preserve"><value>Open launcher</value></data>
-  <data name="PowerScripts_LauncherTitle" xml:space="preserve"><value>PowerScripts test window (Debug only)</value></data>
-  <data name="PowerScripts_LauncherHeading" xml:space="preserve"><value>Run a script</value></data>
-  <data name="PowerScripts_LauncherIntro" xml:space="preserve"><value>Ctrl+Alt+Shift+P / No primary input / Experimental</value></data>
-  <data name="PowerScripts_LauncherSearch" xml:space="preserve"><value>Search scripts</value></data>
-  <data name="PowerScripts_LauncherEmpty" xml:space="preserve"><value>No matching no-input scripts. Check that PowerScripts and the required runtimes are enabled.</value></data>
-  <data name="PowerScripts_LauncherBack" xml:space="preserve"><value>Back</value></data>
-  <data name="PowerScripts_LauncherRefresh" xml:space="preserve"><value>Refresh</value></data>
-  <data name="PowerScripts_LauncherRun" xml:space="preserve"><value>Run</value></data>
-  <data name="PowerScripts_LauncherCancel" xml:space="preserve"><value>Cancel</value></data>
-  <data name="PowerScripts_LauncherParameters" xml:space="preserve"><value>parameters</value></data>
-  <data name="PowerScripts_LauncherApproval" xml:space="preserve"><value>Approval required</value></data>
-  <data name="PowerScripts_LauncherOutputNone" xml:space="preserve"><value>No output</value></data>
-  <data name="PowerScripts_LauncherOutputText" xml:space="preserve"><value>Text</value></data>
-  <data name="PowerScripts_LauncherOutputFiles" xml:space="preserve"><value>Files</value></data>
-  <data name="PowerScripts_LauncherParameterLabel" xml:space="preserve"><value>{0} ({1}, {2})</value></data>
-  <data name="PowerScripts_LauncherRequired" xml:space="preserve"><value>required</value></data>
-  <data name="PowerScripts_LauncherOptional" xml:space="preserve"><value>optional</value></data>
-  <data name="PowerScripts_LauncherDefault" xml:space="preserve"><value>Recommended: {0}</value></data>
-  <data name="PowerScripts_LauncherNotSet" xml:space="preserve"><value>Not set</value></data>
-  <data name="PowerScripts_LauncherFilePath" xml:space="preserve"><value>Choose a file or enter its Windows path</value></data>
-  <data name="PowerScripts_LauncherBrowse" xml:space="preserve"><value>Browse...</value></data>
-  <data name="PowerScripts_LauncherMissingParameter" xml:space="preserve"><value>{0} is required.</value></data>
-  <data name="PowerScripts_LauncherCompleted" xml:space="preserve"><value>Run completed</value></data>
-  <data name="PowerScripts_LauncherFailed" xml:space="preserve"><value>Run did not complete successfully</value></data>
-  <data name="PowerScripts_LauncherNoOutput" xml:space="preserve"><value>The script completed without returning output.</value></data>
-  <data name="PowerScripts_LauncherFailure" xml:space="preserve"><value>Host exit code: {0}
-
-{1}</value></data>
-  <data name="PowerScripts_LauncherCancelled" xml:space="preserve"><value>Cancelled.</value></data>
-  <data name="PowerScripts_LauncherDiscoveryTimeout" xml:space="preserve"><value>Script discovery timed out. Choose Refresh to try again.</value></data>
-  <data name="PowerScripts_LauncherRunTimeout" xml:space="preserve"><value>The script exceeded the launcher's 60-second time limit.</value></data>
-  <data name="PowerScripts_LauncherCopyText" xml:space="preserve"><value>Copy text</value></data>
-  <data name="PowerScripts_LauncherCopyFiles" xml:space="preserve"><value>Copy files</value></data>
-  <data name="PowerScripts_LauncherSaveAs" xml:space="preserve"><value>Save as...</value></data>
-  <data name="PowerScripts_LauncherCopied" xml:space="preserve"><value>Copied to the clipboard.</value></data>
-  <data name="PowerScripts_LauncherSaved" xml:space="preserve"><value>Saved a copy to {0}</value></data>
-  <data name="PowerScripts_LauncherFileHelp" xml:space="preserve"><value>Save a copy of a file, or copy these files and paste them into Explorer. Original returned files are not moved or deleted.</value></data>
-  <data name="AdvancedPaste_PowerScriptsEmpty.Message" xml:space="preserve"><value>No compatible PowerScripts found. Manage script packages in PowerScripts settings.</value></data>
+  <data name="AdvancedPaste_PowerScriptsEnabled.Header" xml:space="preserve"><value>Enable PowerScripts in Advanced Paste</value></data>
+  <data name="AdvancedPaste_PowerScriptsEnabled.Description" xml:space="preserve"><value>Automatically show scripts compatible with your current clipboard. Manage scripts and execution settings on the PowerScripts page.</value></data>
   <data name="PowerScripts_MetadataHelp.Text" xml:space="preserve"><value>These properties come from the script's .tool.json file. Edit metadata or script in an external editor, then select Refresh to see your changes. Edits require trust review before the script runs again. All scripts use the global sandbox settings.</value></data>
   <data name="PowerScripts_EditMetadata.Label" xml:space="preserve"><value>Edit metadata</value></data>
   <data name="PowerScripts_ShowInExplorer.Label" xml:space="preserve"><value>Show in File Explorer</value></data>
@@ -6537,8 +6489,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_DetailsExtensions" xml:space="preserve"><value>Accepted input file types</value></data>
   <data name="PowerScripts_DetailsMinFiles" xml:space="preserve"><value>Minimum selected files</value></data>
   <data name="PowerScripts_DetailsMaxFiles" xml:space="preserve"><value>Maximum selected files</value></data>
-  <data name="PowerScripts_DetailsDiscovery" xml:space="preserve"><value>Module discovery and declared capabilities</value></data>
-  <data name="PowerScripts_DetailsConsumers" xml:space="preserve"><value>Discoverable by</value></data>
+  <data name="PowerScripts_DetailsCapabilitiesSection" xml:space="preserve"><value>Declared capabilities</value></data>
   <data name="PowerScripts_DetailsCapabilities" xml:space="preserve"><value>Declared capabilities (not permission grants)</value></data>
   <data name="PowerScripts_DetailsParameters" xml:space="preserve"><value>Parameters</value></data>
   <data name="PowerScripts_DetailsNoParameters" xml:space="preserve"><value>No named parameters</value></data>
@@ -6572,7 +6523,6 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_DetailsAnnotations" xml:space="preserve"><value>Author-provided hints</value></data>
   <data name="PowerScripts_DetailsReadOnlyHint" xml:space="preserve"><value>Read-only operation hint</value></data>
   <data name="PowerScripts_DetailsDestructiveHint" xml:space="preserve"><value>Destructive operation hint</value></data>
-  <data name="PowerScripts_DetailsAllConsumers" xml:space="preserve"><value>All compatible modules</value></data>
   <data name="PowerScripts_DetailsAllFiles" xml:space="preserve"><value>All file types</value></data>
   <data name="PowerScripts_DetailsNoLimit" xml:space="preserve"><value>No upper limit</value></data>
   <data name="PowerScripts_DetailsNone" xml:space="preserve"><value>None</value></data>
@@ -6611,15 +6561,45 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_TemplateSetupHelp.Text" xml:space="preserve"><value>Your choices are written into the .tool.json descriptor. Image/audio input uses MIME type and base64 data; matching media output passes it through. Otherwise, media output creates a sample one-pixel PNG or silent WAV; file output creates a text file. Supported formats: PNG, JPEG, static WebP, WAV, MP3 and FLAC. Video uses files. Inline limits: 16 MiB per item, 32 MiB total. Replace the example processing after creation. Creation does not run code, approve trust or change sandbox protection.</value></data>
   <data name="PowerScripts_TemplateCancel.Content" xml:space="preserve"><value>Cancel</value></data>
   <data name="PowerScripts_TemplateCreated" xml:space="preserve"><value>Created. Read README.md in the new folder, then edit the script and descriptor. Refresh after edits; review trust before running from a consumer.</value></data>
-  <data name="PowerScripts_TemplateRuntime.Header" xml:space="preserve"><value>Runtime</value></data>
+  <data name="PowerScripts_TemplateRuntime.Header" xml:space="preserve"><value>Runtime (required)</value></data>
+  <data name="PowerScripts_TemplateRuntime.PlaceholderText" xml:space="preserve"><value>Choose a runtime</value></data>
   <data name="PowerScripts_TemplatePythonHelp.Text" xml:space="preserve"><value>Python scripts execute top-level code and read typed JSON from stdin. Enable Python execution before running them; creation does not change runtime settings.</value></data>
-  <data name="PowerScripts_TemplateInput.Header" xml:space="preserve"><value>Primary input type</value></data>
-  <data name="PowerScripts_TemplateOutput.Header" xml:space="preserve"><value>Output type</value></data>
+  <data name="PowerScripts_TemplateInput.Header" xml:space="preserve"><value>Primary input type (required)</value></data>
+  <data name="PowerScripts_TemplateInput.PlaceholderText" xml:space="preserve"><value>Choose an input type</value></data>
+  <data name="PowerScripts_TemplateOutput.Header" xml:space="preserve"><value>Output type (required)</value></data>
+  <data name="PowerScripts_TemplateOutput.PlaceholderText" xml:space="preserve"><value>Choose an output type</value></data>
   <data name="PowerScripts_TemplateNone.Content" xml:space="preserve"><value>None</value></data>
-  <data name="PowerScripts_TemplateMinimumFiles.Header" xml:space="preserve"><value>Minimum input files</value></data>
-  <data name="PowerScripts_TemplateMaximumFiles.Header" xml:space="preserve"><value>Maximum input files (0 means unlimited)</value></data>
+  <data name="PowerScripts_TemplateMinimumFiles.Header" xml:space="preserve"><value>Minimum input files (required)</value></data>
+  <data name="PowerScripts_TemplateMaximumFiles.Header" xml:space="preserve"><value>Maximum input files (required; 0 means unlimited)</value></data>
   <data name="PowerScripts_TemplateInvalidFileCount" xml:space="preserve"><value>Enter a whole-number file count. The minimum must be at least 1; maximum 0 means unlimited.</value></data>
   <data name="PowerScripts_TemplateFolderFailed" xml:space="preserve"><value>The script was created, but its folder could not be opened.</value></data>
+  <data name="PowerScripts_TemplateParameters.Text" xml:space="preserve"><value>Parameters</value></data>
+  <data name="PowerScripts_TemplateParametersHelp.Text" xml:space="preserve"><value>Add named options for consumers to collect when running your script. Choose a type, optional choices and defaults. Names must start with a letter and use only letters, digits or underscores.</value></data>
+  <data name="PowerScripts_TemplateParameterAdd.Content" xml:space="preserve"><value>Add parameter</value></data>
+  <data name="PowerScripts_TemplateParameterRemove.Content" xml:space="preserve"><value>Remove parameter</value></data>
+  <data name="PowerScripts_TemplateParameterName.Header" xml:space="preserve"><value>Name (required)</value></data>
+  <data name="PowerScripts_TemplateParameterHeader" xml:space="preserve"><value>Parameter</value></data>
+  <data name="PowerScripts_TemplateParameterType.Header" xml:space="preserve"><value>Type (required)</value></data>
+  <data name="PowerScripts_TemplateParameterType.PlaceholderText" xml:space="preserve"><value>Choose a type</value></data>
+  <data name="PowerScripts_TemplateParameterString.Content" xml:space="preserve"><value>String</value></data>
+  <data name="PowerScripts_TemplateParameterInteger.Content" xml:space="preserve"><value>Integer</value></data>
+  <data name="PowerScripts_TemplateParameterBoolean.Content" xml:space="preserve"><value>Boolean</value></data>
+  <data name="PowerScripts_TemplateParameterFile.Content" xml:space="preserve"><value>File path</value></data>
+  <data name="PowerScripts_TemplateParameterTitle.Header" xml:space="preserve"><value>Display name (optional)</value></data>
+  <data name="PowerScripts_TemplateParameterDescription.Header" xml:space="preserve"><value>Description (optional)</value></data>
+  <data name="PowerScripts_TemplateParameterRequired.Content" xml:space="preserve"><value>Required</value></data>
+  <data name="PowerScripts_TemplateParameterEnum.Header" xml:space="preserve"><value>Allowed values (enum, optional)</value></data>
+  <data name="PowerScripts_TemplateParameterEnumHelp.Text" xml:space="preserve"><value>One value per line. Leave blank to accept any string. A default must match one of these values exactly.</value></data>
+  <data name="PowerScripts_TemplateParameterMinimum.Header" xml:space="preserve"><value>Minimum (optional)</value></data>
+  <data name="PowerScripts_TemplateParameterMaximum.Header" xml:space="preserve"><value>Maximum (optional)</value></data>
+  <data name="PowerScripts_TemplateParameterExtensions.Header" xml:space="preserve"><value>Allowed file extensions (optional; for example .txt, .json)</value></data>
+  <data name="PowerScripts_TemplateParameterHasDefault.Content" xml:space="preserve"><value>Provide a default value (optional)</value></data>
+  <data name="PowerScripts_TemplateParameterDefaultHelp.Text" xml:space="preserve"><value>A required parameter without a default must be provided when running the script. File paths normally come from a file picker. An optional parameter without a default can be omitted.</value></data>
+  <data name="PowerScripts_TemplateParameterDefault.Header" xml:space="preserve"><value>Default value</value></data>
+  <data name="PowerScripts_TemplateParameterBooleanDefault.Header" xml:space="preserve"><value>Default value</value></data>
+  <data name="PowerScripts_TemplateParameterBooleanDefault.OnContent" xml:space="preserve"><value>True</value></data>
+  <data name="PowerScripts_TemplateParameterBooleanDefault.OffContent" xml:space="preserve"><value>False</value></data>
+  <data name="PowerScripts_TemplateParameterInvalidInteger" xml:space="preserve"><value>Enter a 32-bit whole number for parameter '{0}'.</value></data>
   <data name="PowerScripts_PythonEnvironmentGroup.Header" xml:space="preserve">
     <value>Python environment</value>
   </data>

@@ -3,8 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Text.Json.Nodes;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Services;
@@ -19,8 +22,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views;
 public sealed partial class PowerScriptTemplatesPage : NavigablePage
 {
     private bool _isCreating;
+    private int _nextParameterId;
 
     private PowerScriptsViewModel ViewModel { get; set; }
+
+    public ObservableCollection<PowerScriptTemplateParameter> Parameters { get; } = new();
 
     public PowerScriptTemplatesPage()
     {
@@ -61,11 +67,35 @@ public sealed partial class PowerScriptTemplatesPage : NavigablePage
     {
         if (CreateButton is not null)
         {
-            CreateButton.IsEnabled = !_isCreating && !string.IsNullOrWhiteSpace(ProjectNameTextBox.Text);
+            var hasOptions = RuntimeComboBox.SelectedItem is not null &&
+                InputComboBox.SelectedItem is not null && OutputComboBox.SelectedItem is not null;
+            var hasFileCounts = (InputComboBox.SelectedItem as ComboBoxItem)?.Tag as string != "files" ||
+                (!double.IsNaN(MinimumFilesNumberBox.Value) && !double.IsNaN(MaximumFilesNumberBox.Value));
+            CreateButton.IsEnabled = !_isCreating && !string.IsNullOrWhiteSpace(ProjectNameTextBox.Text) &&
+                hasOptions && hasFileCounts;
         }
     }
 
     private void Options_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateOptions();
+
+    private void FileCount_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args) => UpdateCreateButton();
+
+    public static Visibility BoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
+
+    public static string ParameterHeader(string name) =>
+        string.IsNullOrWhiteSpace(name) ? ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_TemplateParameterHeader") : name;
+
+    private void AddParameterButton_Click(object sender, RoutedEventArgs e) =>
+        Parameters.Add(new PowerScriptTemplateParameter(++_nextParameterId));
+
+    private void RemoveParameterButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: PowerScriptTemplateParameter parameter })
+        {
+            Parameters.Remove(parameter);
+            AddParameterButton.Focus(FocusState.Programmatic);
+        }
+    }
 
     private void UpdateOptions()
     {
@@ -74,8 +104,9 @@ public sealed partial class PowerScriptTemplatesPage : NavigablePage
             return;
         }
 
-        FileInputOptions.Visibility = SelectedToken(InputComboBox) == "files" ? Visibility.Visible : Visibility.Collapsed;
-        PythonHelp.Visibility = SelectedToken(RuntimeComboBox) == "python" ? Visibility.Visible : Visibility.Collapsed;
+        FileInputOptions.Visibility = (InputComboBox.SelectedItem as ComboBoxItem)?.Tag as string == "files" ? Visibility.Visible : Visibility.Collapsed;
+        PythonHelp.Visibility = (RuntimeComboBox.SelectedItem as ComboBoxItem)?.Tag as string == "python" ? Visibility.Visible : Visibility.Collapsed;
+        UpdateCreateButton();
     }
 
     private static string SelectedToken(ComboBox comboBox) =>
@@ -115,7 +146,8 @@ public sealed partial class PowerScriptTemplatesPage : NavigablePage
                 SelectedToken(OutputComboBox),
                 input == "files" ? ExtensionsTextBox.Text : null,
                 input == "files" ? FileCount(MinimumFilesNumberBox) : 1,
-                input == "files" ? FileCount(MaximumFilesNumberBox) : 0);
+                input == "files" ? FileCount(MaximumFilesNumberBox) : 0,
+                new JsonArray(Parameters.Select(parameter => (JsonNode)parameter.ToTemplateParameter()).ToArray()));
             TemplateStatus.Severity = InfoBarSeverity.Success;
             TemplateStatus.Message = ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_TemplateCreated") +
                 Environment.NewLine + Path.GetDirectoryName(entry);

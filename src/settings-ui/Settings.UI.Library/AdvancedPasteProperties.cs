@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -32,7 +31,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             AutoCopySelectionForCustomActionHotkey = false;
             PasteAIConfiguration = new();
             PowerScriptsEnabled = false;
-            EnabledPowerScripts = new();
         }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
@@ -114,20 +112,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public PasteAIConfiguration PasteAIConfiguration { get; set; }
 
         /// <summary>
-        /// Master toggle for surfacing PowerScripts inside Advanced Paste. When false, no PowerScripts
-        /// are offered regardless of <see cref="EnabledPowerScripts"/>.
+        /// Master toggle for surfacing clipboard-compatible PowerScripts inside Advanced Paste.
         /// </summary>
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         [JsonPropertyName("powerscripts-enabled")]
         [CmdConfigureIgnoreAttribute]
         public bool PowerScriptsEnabled { get; set; }
-
-        /// <summary>
-        /// The ids of the PowerScripts the user has chosen to make available in Advanced Paste.
-        /// </summary>
-        [JsonPropertyName("enabled-powerscripts")]
-        [CmdConfigureIgnoreAttribute]
-        public List<string> EnabledPowerScripts { get; set; }
 
         public override string ToString()
             => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.AdvancedPasteProperties);

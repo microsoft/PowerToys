@@ -30,15 +30,6 @@
                 </tkcontrols:SettingsCard>
 
                 <tkcontrols:SettingsCard
-                    x:Uid="PowerScripts_LauncherCard"
-                    IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
-                    Visibility="{x:Bind TestingLauncherVisibility}">
-                    <Button
-                        x:Uid="PowerScripts_LauncherOpen"
-                        AutomationProperties.AutomationId="PowerScriptsOpenLauncher"
-                        Click="OpenLauncherButton_Click" />
-                </tkcontrols:SettingsCard>
-                <tkcontrols:SettingsCard
                     Name="PowerScriptsFolderSettingsCard"
                     Description="{x:Bind ViewModel.ScriptsFolder, Mode=OneWay}"
                     Header="Scripts folder"
@@ -82,12 +73,6 @@
                                 ToolTipService.ToolTip="{x:Bind ViewModel.MxcSupportMessage, Mode=OneWay}"
                                 Toggled="MxcEnabledToggle_Toggled" />
                         </tkcontrols:SettingsExpander.Content>
-                        <tkcontrols:SettingsExpander.ItemsHeader>
-                            <TextBlock
-                                x:Uid="PowerScripts_SandboxRestrictionsHelp"
-                                TextWrapping="Wrap"
-                                Visibility="{x:Bind views:PowerScriptsPage.BoolToVisibility(ViewModel.IsMxcEnabled), Mode=OneWay}" />
-                        </tkcontrols:SettingsExpander.ItemsHeader>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcFilesystem" Visibility="{x:Bind views:PowerScriptsPage.BoolToVisibility(ViewModel.IsMxcEnabled), Mode=OneWay}">
                                 <ToggleSwitch

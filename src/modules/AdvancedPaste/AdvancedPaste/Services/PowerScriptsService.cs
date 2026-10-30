@@ -4,170 +4,386 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-
+using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
+using PowerScripts.Client;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Graphics.Imaging;
+using Windows.Storage;
+using Windows.Storage.Streams;
 
 namespace AdvancedPaste.Services;
 
-/// <summary>
-/// Bridges Advanced Paste to PowerScripts. PowerScripts are user-authored scripts (PowerShell or
-/// Python) that declare an <c>advancedPaste</c> surface and a transform contract
-/// from their descriptors. This service enumerates those scripts and runs
-/// one as a clipboard transform by shelling the shared <c>PowerScripts.Host.exe</c>, so every surface
-/// (a hotkey, the Explorer context menu, Advanced Paste) executes them through the same gated host.
-/// </summary>
 internal static class PowerScriptsService
 {
-    private const string HostExeName = "PowerScripts.Host.exe";
-    private const string AdvancedPasteSurface = "advancedPaste";
+    internal const string PreserveFilesProperty = "AdvancedPaste.PowerScripts.PreserveFiles";
 
-    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
-
-    /// <summary>A PowerScript that opts into the Advanced Paste surface.</summary>
-    public sealed record PowerScriptInfo(string Id, string Name, string Description, ClipboardFormat SupportedFormats);
-
-    /// <summary>
-    /// Enumerates PowerScripts that declare the <c>advancedPaste</c> surface and expose a transform
-    /// contract. Returns an empty list when PowerScripts is disabled or the host is unavailable, so
-    /// disabling PowerScripts makes its scripts disappear from Advanced Paste.
-    /// </summary>
-    public static IReadOnlyList<PowerScriptInfo> GetAdvancedPasteScripts()
+    public static async Task<IReadOnlyList<PowerScriptInfo>> GetAdvancedPasteScriptsAsync()
     {
-        if (!IsPowerScriptsEnabled())
+        var client = new PowerScriptsClient();
+        if (!IsPowerScriptsEnabled() || !client.IsAvailable)
         {
             return [];
         }
 
-        string hostPath = ResolveHostPath();
-        if (string.IsNullOrEmpty(hostPath))
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var scripts = await client.ListAsync(timeout.Token);
+        return scripts.Where(script => IsSupportedInput(script.Input) && IsSupportedOutput(script.Output)).ToArray();
+    }
+
+    internal static IReadOnlyList<PowerScriptInfo> GetApplicableScripts(
+        IEnumerable<PowerScriptInfo> scripts,
+        bool enabled,
+        PowerScriptClipboard clipboard)
+    {
+        if (!enabled)
         {
             return [];
         }
 
-        try
-        {
-            var psi = new ProcessStartInfo
-            {
-                FileName = hostPath,
-                Arguments = "list --json",
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                StandardOutputEncoding = Encoding.UTF8,
-            };
+        return scripts.Where(script => IsSupportedInput(script.Input) && CanUseClipboard(script, clipboard)).ToArray();
+    }
 
-            using var process = Process.Start(psi);
-            if (process is null)
+    private static bool IsSupportedInput(PowerScriptIO input) =>
+        input is PowerScriptIO.Text or PowerScriptIO.Files or PowerScriptIO.Image or PowerScriptIO.Audio;
+
+    internal static bool IsSupportedOutput(PowerScriptIO output) =>
+        output is PowerScriptIO.Text or PowerScriptIO.Files or PowerScriptIO.Image or PowerScriptIO.Audio;
+
+    internal static bool CanUseClipboard(PowerScriptInfo script, PowerScriptClipboard clipboard)
+    {
+        if (!IsSupportedOutput(script.Output))
+        {
+            return false;
+        }
+
+        return script.Input switch
+        {
+            PowerScriptIO.None => true,
+            PowerScriptIO.Text => clipboard.HasText,
+            PowerScriptIO.Files => script.AcceptsFiles(clipboard.Files),
+            PowerScriptIO.Image or PowerScriptIO.Audio => CanUseMedia(script, clipboard),
+            _ => false,
+        };
+    }
+
+    private static bool CanUseMedia(PowerScriptInfo script, PowerScriptClipboard clipboard)
+    {
+        var (array, minimum, maximum, mimeTypes) = MediaContract(script);
+        var count = clipboard.Files.Count > 0 ? clipboard.Files.Count : clipboard.HasBitmap && script.Input == PowerScriptIO.Image ? 1 : 0;
+        if (count == 0 || count < minimum || count > maximum || (!array && count != 1))
+        {
+            return false;
+        }
+
+        return clipboard.Files.Count > 0
+            ? clipboard.Files.All(path => mimeTypes.Contains(MimeType(path), StringComparer.Ordinal))
+            : mimeTypes.Contains("image/png", StringComparer.Ordinal) || mimeTypes.Contains("image/jpeg", StringComparer.Ordinal);
+    }
+
+    internal static (bool Array, int Minimum, int Maximum, IReadOnlyList<string> MimeTypes) MediaContract(PowerScriptInfo script)
+    {
+        var field = script.Input == PowerScriptIO.Image ? "image" : "audio";
+        var primary = script.InputSchema!.Value.GetProperty("properties").GetProperty(field);
+        var array = primary.GetProperty("type").GetString() == "array";
+        var minimum = array && primary.TryGetProperty("minItems", out var min) ? min.GetInt32() : 1;
+        var maximum = array && primary.TryGetProperty("maxItems", out var max) ? Math.Min(max.GetInt32(), 64) : array ? 64 : 1;
+        var item = array ? primary.GetProperty("items") : primary;
+        return (array, minimum, maximum, item.GetProperty("properties").GetProperty("mimeType").GetProperty("enum").EnumerateArray().Select(value => value.GetString()).ToArray());
+    }
+
+    internal static string MimeType(string path) => Path.GetExtension(path).ToLowerInvariant() switch
+    {
+        ".png" => "image/png",
+        ".jpg" or ".jpeg" => "image/jpeg",
+        ".webp" => "image/webp",
+        ".wav" => "audio/wav",
+        ".mp3" => "audio/mpeg",
+        ".flac" => "audio/flac",
+        _ => string.Empty,
+    };
+
+    internal static Dictionary<string, JsonElement> CollectParameters(
+        IReadOnlyList<PowerScriptParameter> parameters,
+        IReadOnlyDictionary<string, string> values)
+    {
+        var result = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+        foreach (var parameter in parameters)
+        {
+            if (!values.TryGetValue(parameter.Name, out var value))
             {
-                return [];
+                if (parameter.IsRequired && parameter.Default is null)
+                {
+                    throw new ArgumentException(parameter.Label ?? parameter.Name);
+                }
+
+                continue;
             }
 
-            string json = process.StandardOutput.ReadToEnd();
-            process.WaitForExit(5000);
+            if (parameter.Options.Count > 0 && !parameter.Options.Contains(value, StringComparer.Ordinal))
+            {
+                throw new ArgumentException(parameter.Label ?? parameter.Name);
+            }
 
-            var scripts = JsonSerializer.Deserialize<List<HostScript>>(json, JsonOptions) ?? [];
+            switch (parameter.Type)
+            {
+                case "bool":
+                    if (!bool.TryParse(value, out var boolean))
+                    {
+                        throw new ArgumentException(parameter.Label ?? parameter.Name);
+                    }
 
-            return scripts
-                .Where(s => s.Surfaces is not null && s.Surfaces.Contains(AdvancedPasteSurface, StringComparer.OrdinalIgnoreCase))
-                .Where(s => s.Transform is not null)
-                .Select(s => new PowerScriptInfo(s.Id, s.Name, s.Description ?? string.Empty, MapInputFormat(s.Transform.InputFormat)))
-                .ToList();
+                    result[parameter.Name] = JsonSerializer.SerializeToElement(boolean);
+                    break;
+                case "int":
+                    if (!int.TryParse(value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var number) ||
+                        (parameter.Min is int min && number < min) || (parameter.Max is int max && number > max))
+                    {
+                        throw new ArgumentException(parameter.Label ?? parameter.Name);
+                    }
+
+                    result[parameter.Name] = JsonSerializer.SerializeToElement(number);
+                    break;
+                case "file":
+                    if (!File.Exists(value))
+                    {
+                        throw new ArgumentException(parameter.Label ?? parameter.Name);
+                    }
+
+                    result[parameter.Name] = JsonSerializer.SerializeToElement(Path.GetFullPath(value));
+                    break;
+                default:
+                    result[parameter.Name] = JsonSerializer.SerializeToElement(value);
+                    break;
+            }
         }
-        catch (Exception)
-        {
-            // A missing/failed host simply yields no Advanced Paste PowerScripts.
-            return [];
-        }
+
+        return result;
     }
 
-    /// <summary>
-    /// Runs the given PowerScript as a text transform: sends <c>{"text": ...}</c> on stdin and returns
-    /// the <c>text</c> field of the host's JSON result.
-    /// </summary>
-    public static async Task<string> TransformTextAsync(string scriptId, string inputText, CancellationToken cancellationToken)
+    public static async Task<DataPackage> TransformAsync(
+        PowerScriptInfo script,
+        DataPackageView clipboard,
+        IReadOnlyDictionary<string, JsonElement> parameters,
+        CancellationToken cancellationToken,
+        PowerScriptsClient client = null)
     {
-        if (string.IsNullOrEmpty(scriptId))
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(60));
+        var token = timeout.Token;
+        var snapshot = await PowerScriptClipboard.ReadAsync(clipboard);
+        if (!CanUseClipboard(script, snapshot))
         {
-            return string.Empty;
+            throw Failure("PowerScriptsClipboardChanged");
         }
 
-        string hostPath = ResolveHostPath();
-        if (string.IsNullOrEmpty(hostPath))
+        var input = new PowerScriptTransformInput { Parameters = parameters };
+        switch (script.Input)
         {
-            return string.Empty;
+            case PowerScriptIO.Text:
+                input.Text = await clipboard.GetTextOrHtmlTextAsync();
+                break;
+            case PowerScriptIO.Files:
+                input.FilePaths = snapshot.Files;
+                break;
+            case PowerScriptIO.Image:
+            case PowerScriptIO.Audio:
+                var media = await ReadMediaAsync(script, clipboard, snapshot, token);
+                if (script.Input == PowerScriptIO.Image)
+                {
+                    input.Image = media;
+                }
+                else
+                {
+                    input.Audio = media;
+                }
+
+                break;
         }
 
-        var psi = new ProcessStartInfo
+        token.ThrowIfCancellationRequested();
+        var result = await (client ?? new PowerScriptsClient()).TransformAsync(script.Id, input, cancellationToken: token);
+        if (!result.Succeeded)
         {
-            FileName = hostPath,
-            Arguments = $"transform {scriptId}",
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            StandardOutputEncoding = Encoding.UTF8,
-        };
-
-        using var process = Process.Start(psi) ?? throw new InvalidOperationException("Failed to start PowerScripts host.");
-
-        var payload = JsonSerializer.Serialize(new TransformPayload { Text = inputText ?? string.Empty });
-        await process.StandardInput.WriteAsync(payload);
-        process.StandardInput.Close();
-
-        // Read stdout and stderr concurrently: the host writes all of stderr before any stdout, so
-        // draining only stdout would deadlock on a script that emits more than the pipe buffer to stderr.
-        var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-        var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
-        await Task.WhenAll(outputTask, errorTask);
-        await process.WaitForExitAsync(cancellationToken);
-
-        string output = await outputTask;
-
-        if (process.ExitCode != 0 || string.IsNullOrWhiteSpace(output))
-        {
-            return string.Empty;
+            throw Failure("PowerScriptsExecutionFailed", result.StdErr);
         }
 
+        if (result.Text is not null && script.Output == PowerScriptIO.Text)
+        {
+            if (result.Text.Length == 0)
+            {
+                throw Failure("PowerScriptsEmptyResult");
+            }
+
+            return DataPackageHelpers.CreateFromText(result.Text);
+        }
+
+        if (result.FilePaths is { Count: > 0 } paths && script.Output == PowerScriptIO.Files)
+        {
+            var files = new List<StorageFile>();
+            foreach (var path in paths)
+            {
+                files.Add(await StorageFile.GetFileFromPathAsync(path));
+            }
+
+            var output = new DataPackage();
+            output.SetStorageItems(files);
+            output.Properties[PreserveFilesProperty] = true;
+            return output;
+        }
+
+        var returnedMedia = script.Output == PowerScriptIO.Image ? result.Image : result.Audio;
+        if (returnedMedia is { Items.Count: > 0 })
+        {
+            if (script.Output == PowerScriptIO.Image && returnedMedia.Items.Count == 1 && !returnedMedia.IsArray)
+            {
+                var stream = new InMemoryRandomAccessStream();
+                using (var writer = new DataWriter(stream.GetOutputStreamAt(0)))
+                {
+                    writer.WriteBytes(returnedMedia.Items[0].Data);
+                    await writer.StoreAsync();
+                }
+
+                stream.Seek(0);
+                var output = new DataPackage();
+                output.SetBitmap(RandomAccessStreamReference.CreateFromStream(stream));
+                return output;
+            }
+
+            return await CreateMediaFilesAsync(returnedMedia, token);
+        }
+
+        throw Failure("PowerScriptsEmptyResult");
+    }
+
+    private static async Task<PowerScriptMedia> ReadMediaAsync(PowerScriptInfo script, DataPackageView clipboard, PowerScriptClipboard snapshot, CancellationToken token)
+    {
+        var contract = MediaContract(script);
+        var items = new List<PowerScriptMediaItem>();
+        long total = 0;
+        if (snapshot.Files.Count > 0)
+        {
+            foreach (var path in snapshot.Files)
+            {
+                await using var stream = File.OpenRead(path);
+                if (stream.Length is <= 0 or > PowerScriptMedia.MaxItemBytes || total + stream.Length > PowerScriptMedia.MaxTotalBytes)
+                {
+                    throw Failure("PowerScriptsMediaTooLarge");
+                }
+
+                var bytes = new byte[(int)stream.Length];
+                await stream.ReadExactlyAsync(bytes, token);
+                total += bytes.Length;
+                if (stream.ReadByte() != -1)
+                {
+                    throw Failure("PowerScriptsMediaTooLarge");
+                }
+
+                items.Add(new(MimeType(path), bytes));
+            }
+        }
+        else
+        {
+            using var bitmapReference = await (await clipboard.GetBitmapAsync()).OpenReadAsync();
+            var decoder = await BitmapDecoder.CreateAsync(bitmapReference);
+            if ((long)decoder.PixelWidth * decoder.PixelHeight * 4 > 128 * 1024 * 1024)
+            {
+                throw Failure("PowerScriptsMediaTooLarge");
+            }
+
+            using var bitmap = await decoder.GetSoftwareBitmapAsync();
+            using var encoded = new InMemoryRandomAccessStream();
+            var png = contract.MimeTypes.Contains("image/png", StringComparer.Ordinal);
+            var encoder = await BitmapEncoder.CreateAsync(png ? BitmapEncoder.PngEncoderId : BitmapEncoder.JpegEncoderId, encoded);
+            encoder.SetSoftwareBitmap(bitmap);
+            await encoder.FlushAsync();
+            if (encoded.Size > PowerScriptMedia.MaxItemBytes)
+            {
+                throw Failure("PowerScriptsMediaTooLarge");
+            }
+
+            using var buffer = new MemoryStream();
+            await encoded.AsStreamForRead().CopyToAsync(buffer, token);
+            items.Add(new(png ? "image/png" : "image/jpeg", buffer.ToArray()));
+        }
+
+        return contract.Array ? new PowerScriptMedia(items) : new PowerScriptMedia(items[0]);
+    }
+
+    private static async Task<DataPackage> CreateMediaFilesAsync(PowerScriptMedia media, CancellationToken token)
+    {
+        var directory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "PowerToys", "AdvancedPaste", Guid.NewGuid().ToString("N")));
+        var paths = new List<string>();
         try
         {
-            var result = JsonSerializer.Deserialize<TransformPayload>(output, JsonOptions);
-            return result?.Text ?? string.Empty;
+            for (var index = 0; index < media.Items.Count; index++)
+            {
+                var item = media.Items[index];
+                var extension = item.MimeType switch
+                {
+                    "image/png" => ".png",
+                    "image/jpeg" => ".jpg",
+                    "image/webp" => ".webp",
+                    "audio/wav" => ".wav",
+                    "audio/mpeg" => ".mp3",
+                    "audio/flac" => ".flac",
+                    _ => throw Failure("PowerScriptsEmptyResult"),
+                };
+                var path = Path.Combine(directory.FullName, $"result-{index + 1}{extension}");
+                paths.Add(path);
+                await File.WriteAllBytesAsync(path, item.Data, token);
+            }
+
+            var files = new List<StorageFile>();
+            foreach (var path in paths)
+            {
+                files.Add(await StorageFile.GetFileFromPathAsync(path));
+            }
+
+            var output = new DataPackage();
+            output.SetStorageItems(files);
+            output.Properties[PreserveFilesProperty] = true;
+            _ = CleanupMediaFilesAsync(directory.FullName, paths);
+            return output;
         }
-        catch (JsonException)
+        catch
         {
-            return string.Empty;
+            CleanupMediaFiles(directory.FullName, paths);
+            throw;
         }
     }
 
-    private static ClipboardFormat MapInputFormat(string inputFormat) =>
-        inputFormat?.ToLowerInvariant() switch
+    private static async Task CleanupMediaFilesAsync(string directory, IReadOnlyList<string> paths)
+    {
+        await Task.Delay(TimeSpan.FromHours(24));
+        CleanupMediaFiles(directory, paths);
+    }
+
+    private static void CleanupMediaFiles(string directory, IReadOnlyList<string> paths)
+    {
+        try
         {
-            "html" => ClipboardFormat.Html,
-            "image" => ClipboardFormat.Image,
-            "audio" => ClipboardFormat.Audio,
-            "video" => ClipboardFormat.Video,
-            "files" or "file" => ClipboardFormat.File,
+            foreach (var path in paths)
+            {
+                File.Delete(path);
+            }
 
-            // "text" and "none" (no clipboard input needed) both surface for text on the clipboard.
-            _ => ClipboardFormat.Text,
-        };
+            Directory.Delete(directory);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            ManagedCommon.Logger.LogError("Unable to clean up Advanced Paste PowerScripts media files.", ex);
+        }
+    }
 
-    /// <summary>
-    /// Whether PowerScripts is enabled. The module-owned <c>config.json</c> <c>enabled</c> flag is
-    /// authoritative when present (it survives the runner rewriting <c>settings.json</c>); otherwise
-    /// the PowerToys <c>settings.json</c> <c>enabled.PowerScripts</c> flag is consulted. A missing
-    /// settings file (dev/test) or an absent key is treated as enabled, matching the host's own gate,
-    /// so a disabled module never surfaces scripts while an ambiguous state keeps them working.
-    /// </summary>
+    private static PasteActionException Failure(string resource, string details = null) =>
+        new(ResourceLoaderInstance.ResourceLoader.GetString(resource), new InvalidOperationException(resource), details);
+
     private static bool IsPowerScriptsEnabled()
     {
         if (Environment.GetEnvironmentVariable("POWERSCRIPTS_IGNORE_ENABLED") == "1")
@@ -175,141 +391,28 @@ internal static class PowerScriptsService
             return true;
         }
 
-        var configOverride = ReadConfigEnabledOverride();
-        if (configOverride.HasValue)
+        var root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys");
+        foreach (var (path, moduleConfig) in new[] { (Path.Combine(root, "PowerScripts", "config.json"), true), (Path.Combine(root, "settings.json"), false) })
         {
-            return configOverride.Value;
-        }
-
-        try
-        {
-            string settingsPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Microsoft",
-                "PowerToys",
-                "settings.json");
-
-            if (!File.Exists(settingsPath))
+            if (!File.Exists(path))
             {
-                return true;
+                continue;
             }
 
-            using var stream = File.OpenRead(settingsPath);
-            using var document = JsonDocument.Parse(stream);
-            if (document.RootElement.TryGetProperty("enabled", out var enabled) &&
-                enabled.TryGetProperty("PowerScripts", out var value) &&
-                value.ValueKind is JsonValueKind.True or JsonValueKind.False)
+            using var document = JsonDocument.Parse(File.ReadAllText(path));
+            var configuration = document.RootElement;
+            if (!moduleConfig && !configuration.TryGetProperty("enabled", out configuration))
             {
-                return value.GetBoolean();
+                continue;
             }
 
-            // Absent key: the runner strips unknown modules, so treat as enabled (matches the host).
-            return true;
-        }
-        catch (Exception)
-        {
-            // A corrupt/unreadable settings file falls back to allowing the module (matches host behavior).
-            return true;
-        }
-    }
-
-    /// <summary>Reads the module-owned <c>enabled</c> override from PowerScripts' <c>config.json</c>, or null when absent.</summary>
-    private static bool? ReadConfigEnabledOverride()
-    {
-        try
-        {
-            string configPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Microsoft",
-                "PowerToys",
-                "PowerScripts",
-                "config.json");
-
-            if (!File.Exists(configPath))
+            if (configuration.TryGetProperty(moduleConfig ? "enabled" : "PowerScripts", out var enabled) &&
+                enabled.ValueKind is JsonValueKind.True or JsonValueKind.False)
             {
-                return null;
-            }
-
-            using var stream = File.OpenRead(configPath);
-            using var document = JsonDocument.Parse(stream);
-            if (document.RootElement.TryGetProperty("enabled", out var value) &&
-                value.ValueKind is JsonValueKind.True or JsonValueKind.False)
-            {
-                return value.GetBoolean();
+                return enabled.GetBoolean();
             }
         }
-        catch (Exception)
-        {
-            // A corrupt/unreadable config yields no override.
-        }
 
-        return null;
-    }
-
-    private static string ResolveHostPath()
-    {
-        string moduleDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Microsoft",
-            "PowerToys",
-            "PowerScripts");
-
-        var candidates = new List<string>
-        {
-            Path.Combine(AppContext.BaseDirectory, HostExeName),
-            Path.Combine(AppContext.BaseDirectory, "PowerScripts", HostExeName),
-            Path.Combine(moduleDir, HostExeName),
-        };
-
-        // Prototype dev fallback: when running an in-repo build the host isn't copied next to Advanced
-        // Paste, so walk up from the base directory and probe the host project's bin output.
-        var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir is not null)
-        {
-            foreach (var config in new[] { "Debug", "Release" })
-            {
-                var hostBin = Path.Combine(dir.FullName, "src", "modules", "PowerScripts", "PowerScripts.Host", "bin", config);
-                if (Directory.Exists(hostBin))
-                {
-                    var found = Directory.EnumerateFiles(hostBin, HostExeName, SearchOption.AllDirectories).FirstOrDefault();
-                    if (!string.IsNullOrEmpty(found))
-                    {
-                        candidates.Add(found);
-                    }
-                }
-            }
-
-            dir = dir.Parent;
-        }
-
-        return candidates.FirstOrDefault(File.Exists) ?? string.Empty;
-    }
-
-    private sealed class HostScript
-    {
-        public string Id { get; set; }
-
-        public string Name { get; set; }
-
-        public string Description { get; set; }
-
-        public List<string> Surfaces { get; set; }
-
-        public TransformContract Transform { get; set; }
-    }
-
-    private sealed class TransformContract
-    {
-        public string Function { get; set; }
-
-        public string InputFormat { get; set; }
-
-        public string OutputFormat { get; set; }
-    }
-
-    private sealed class TransformPayload
-    {
-        [JsonPropertyName("text")]
-        public string Text { get; set; }
+        return true;
     }
 }

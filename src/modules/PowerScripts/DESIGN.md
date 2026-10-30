@@ -19,6 +19,13 @@ validation, trust, runtime dispatch, and output normalization. Consumers own par
 UX, invocation timing, presentation, cancellation, and result lifetime. They do not
 launch scripts directly or reference the execution engine.
 
+Advanced Paste automatically offers all clipboard-compatible scripts when its consumer master
+toggle is enabled. It has no per-script assignments or exclusions; no-input scripts are not offered.
+Consumers requiring saved bindings own their assignment UI and persistence, using the shared
+Host/client contracts for discovery and execution. This version has no standalone script launcher
+or shared configuration picker. The client remains headless, with no Settings UI dependency.
+See the [onboarding recipe](CONSUMER-INTEGRATION.md#automatic-discovery-or-saved-bindings).
+
 ## Descriptor contract
 
 The sidecar follows the MCP Tool shape. `name`, optional human metadata, and both
@@ -59,7 +66,7 @@ shared trust, never-elevated execution, or isolation.
 ## Host API
 
 ```text
-Host.exe list --json [--consumer <id>] [--input <shape>] [--output <shape>]
+Host.exe list --json [--input <shape>] [--output <shape>]
 Host.exe run <id> [--files ...] [--set name=value ...]
 Host.exe transform <id>                   (UTF-8 JSON stdin/stdout)
 ```
@@ -68,7 +75,7 @@ Discovery includes schema-authoritative `inputSchema`/`outputSchema` and derived
 `io`, typed `parameters`, and file compatibility fields for existing consumers.
 The derived fields are read models, not a second authoring format.
 `none` describes primary data, not whether named options exist.
-Optional consumer IDs restrict discovery only. Management-only flags can expose
+Each consumer owns script selection and applicability. Management-only flags can expose
 disabled/unconfigured scripts but cannot make them executable.
 
 See [consumer integration](CONSUMER-INTEGRATION.md) for the client, file ownership,
@@ -88,8 +95,17 @@ it cannot be honored. Managed Linux requires MXC/filesystem protection
 and acknowledged global exceptions for unsupported UI/least-privilege policies.
 Explicit WSL recipes are refused while MXC is enabled, including platform defaults.
 
-The Debug launcher is a temporary shared-client consumer. The former standalone
-Explorer handler is removed; future file integration belongs to File Explorer Add-ons.
+Managed Linux reuses one daemon-owned WSLC container across scripts and short-lived
+Host processes. A cross-process lock serializes lifecycle changes and execution.
+The configured catalogue and staged selected inputs are read-only; all per-invocation
+workspaces share one writable mount. Guest state and processes persist across scripts:
+the container protects the host, not one script from another. Exact-content trust and
+request validation remain per invocation. Catalogue/image/policy/runtime changes replace
+the container; execution failure invalidates it, and stale handles are recovered before
+user code starts. No execution is automatically retried after admission.
+
+The former standalone Explorer handler is removed; future file integration belongs
+to File Explorer Add-ons.
 
 ## Open decisions
 

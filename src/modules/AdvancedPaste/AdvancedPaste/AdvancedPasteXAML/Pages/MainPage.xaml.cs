@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
@@ -15,6 +16,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage.Streams;
@@ -27,6 +29,7 @@ namespace AdvancedPaste.Pages
         private readonly ObservableCollection<ClipboardItem> clipboardHistory;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
         private (VirtualKey Key, DateTime Timestamp) _lastKeyEvent = (VirtualKey.None, DateTime.MinValue);
+        private Control _parameterInitialFocus;
 
         public OptionsViewModel ViewModel { get; private set; }
 
@@ -41,6 +44,40 @@ namespace AdvancedPaste.Pages
             LoadClipboardHistoryEvent(null, null);
             Clipboard.HistoryChanged += LoadClipboardHistoryEvent;
         }
+
+        internal async Task<IReadOnlyDictionary<string, JsonElement>> ShowPowerScriptParametersAsync(
+            FrameworkElement content,
+            Control initialFocus,
+            Task<IReadOnlyDictionary<string, JsonElement>> completion)
+        {
+            var previousFocus = FocusManager.GetFocusedElement(XamlRoot) as Control;
+            _parameterInitialFocus = initialFocus;
+            void FocusParameters(object sender, RoutedEventArgs args) => initialFocus.Focus(FocusState.Programmatic);
+            initialFocus.Loaded += FocusParameters;
+            PasteActionsContent.Visibility = Visibility.Collapsed;
+            PowerScriptParametersContent.Visibility = Visibility.Visible;
+            PowerScriptParametersContent.Content = content;
+            try
+            {
+                return await completion;
+            }
+            finally
+            {
+                initialFocus.Loaded -= FocusParameters;
+                _parameterInitialFocus = null;
+                PowerScriptParametersContent.Visibility = Visibility.Collapsed;
+                PowerScriptParametersContent.Content = null;
+                PasteActionsContent.Visibility = Visibility.Visible;
+                if (previousFocus?.Focus(FocusState.Programmatic) != true)
+                {
+                    (FocusManager.FindFirstFocusableElement(PasteActionsContent) as Control)?.Focus(FocusState.Programmatic);
+                }
+            }
+        }
+
+        internal Task CancelPowerScriptParametersAsync() => ViewModel.CancelPasteActionAsync();
+
+        internal void SetFocus() => (_parameterInitialFocus ?? CustomFormatTextBox.InputTxtBox).Focus(FocusState.Programmatic);
 
         private void LoadClipboardHistoryEvent(object sender, object e)
         {
@@ -156,6 +193,17 @@ namespace AdvancedPaste.Pages
                 return;
             }
 
+            if (_parameterInitialFocus is not null)
+            {
+                args.Handled = true;
+                if (sender.Key == VirtualKey.Escape)
+                {
+                    await CancelPowerScriptParametersAsync();
+                }
+
+                return;
+            }
+
             Logger.LogTrace();
 
             var thisKeyEvent = (sender.Key, Timestamp: DateTime.Now);
@@ -190,11 +238,19 @@ namespace AdvancedPaste.Pages
             }
         }
 
-        private void Page_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+        private async void Page_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
         {
             if (e.Key == VirtualKey.Escape)
             {
-                GetMainWindow()?.Close();
+                e.Handled = true;
+                if (_parameterInitialFocus is not null)
+                {
+                    await CancelPowerScriptParametersAsync();
+                }
+                else
+                {
+                    GetMainWindow()?.Close();
+                }
             }
         }
 

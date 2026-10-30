@@ -44,6 +44,8 @@ namespace AdvancedPaste.Settings
 
         public bool EnableClipboardPreview { get; private set; }
 
+        public bool PowerScriptsEnabled { get; private set; }
+
         public IReadOnlyList<PasteFormats> AdditionalActions => _additionalActions;
 
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
@@ -115,6 +117,7 @@ namespace AdvancedPaste.Settings
                                 ShowAIPaste = properties.ShowAIPaste;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
                                 EnableClipboardPreview = properties.EnableClipboardPreview;
+                                PowerScriptsEnabled = properties.PowerScriptsEnabled;
                                 PasteAIConfiguration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
 
                                 var sourceAdditionalActions = properties.AdditionalActions;

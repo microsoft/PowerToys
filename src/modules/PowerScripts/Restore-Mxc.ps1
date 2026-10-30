@@ -67,9 +67,10 @@ try {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $archive = [IO.Compression.ZipFile]::OpenRead($archivePath)
     try {
-        # No elevated host-prep tools or long-lived backend daemons.
+        # Only the WSLC daemon is needed for the shared managed-Linux session.
         foreach ($file in @(
             @{ Name = 'wxc-exec.exe'; Entry = 'wxc-exec.exe' },
+            @{ Name = 'wxc-wslc-daemon.exe'; Entry = 'wxc-wslc-daemon.exe' },
             @{ Name = 'plm.exe'; Entry = 'plm.exe' },
             @{ Name = 'Mxc.spdx.json'; Entry = '_manifest/spdx_2.2/manifest.spdx.json' }
         )) {

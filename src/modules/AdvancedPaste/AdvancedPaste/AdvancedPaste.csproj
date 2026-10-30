@@ -110,6 +110,7 @@
     <ProjectReference Include="..\..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\..\PowerScripts\PowerScripts.Client\PowerScripts.Client.csproj" />
   </ItemGroup>
 
   <!-- 

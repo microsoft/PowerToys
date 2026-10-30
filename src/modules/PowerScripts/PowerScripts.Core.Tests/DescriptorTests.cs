@@ -128,6 +128,14 @@ public class DescriptorTests
     }
 
     [TestMethod]
+    public void ModuleTargetingIsNotPartOfTheDescriptorContract()
+    {
+        var descriptor = TestTool.Descriptor();
+        descriptor["x-powerscript"] = JsonNode.Parse("""{"consumers":["color-picker"]}""");
+        Assert.ThrowsException<JsonException>(() => TestTool.Parse(descriptor));
+    }
+
+    [TestMethod]
     public void MandatoryClosedObjectSchemasAndSinglePrimaryShapeAreValidatedBeforeDiscovery()
     {
         var descriptor = TestTool.Descriptor();

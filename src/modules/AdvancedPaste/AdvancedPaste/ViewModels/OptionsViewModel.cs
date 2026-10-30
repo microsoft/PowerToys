@@ -26,6 +26,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Win32;
+using PowerScripts.Client;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using WinUIEx;
@@ -49,6 +50,8 @@ namespace AdvancedPaste.ViewModels
         private DateTimeOffset? _currentClipboardTimestamp;
         private ClipboardFormat _lastClipboardFormats = ClipboardFormat.None;
         private bool _clipboardHistoryUnavailableLogged;
+        private IReadOnlyList<PowerScriptInfo> _powerScripts = [];
+        private PowerScriptClipboard _powerScriptClipboard = PowerScriptClipboard.Empty;
 
         public DataPackageView ClipboardData { get; set; }
 
@@ -99,6 +102,10 @@ namespace AdvancedPaste.ViewModels
         public ObservableCollection<PasteFormat> StandardPasteFormats { get; } = [];
 
         public ObservableCollection<PasteFormat> CustomActionPasteFormats { get; } = [];
+
+        public int PowerScriptCount => GetApplicablePowerScripts().Count;
+
+        public bool IsPowerScriptRunning { get; private set; }
 
         public bool IsCustomAIServiceEnabled
         {
@@ -323,6 +330,7 @@ namespace AdvancedPaste.ViewModels
             OnPropertyChanged(nameof(AllowedAIProviders));
             OnPropertyChanged(nameof(ShowClipboardPreview));
             OnPropertyChanged(nameof(ShowAIPasteSection));
+            OnPropertyChanged(nameof(PowerScriptCount));
 
             NotifyActiveProviderChanged();
 
@@ -350,12 +358,11 @@ namespace AdvancedPaste.ViewModels
         private PasteFormat CreateCustomAIPasteFormat(string name, string prompt, bool isSavedQuery) =>
             PasteFormat.CreateCustomAIFormat(CustomAIFormat, name, prompt, isSavedQuery, AvailableClipboardFormats, IsCustomAIServiceEnabled);
 
-        // Enumerates user-authored PowerScripts that opt into the Advanced Paste surface, so they appear
-        // alongside the built-in paste actions. Each script's own transform contract decides which
-        // clipboard formats enable it, and disabling PowerScripts hides them all.
+        private IReadOnlyList<PowerScriptInfo> GetApplicablePowerScripts() =>
+            PowerScriptsService.GetApplicableScripts(_powerScripts, _userSettings.PowerScriptsEnabled, _powerScriptClipboard);
+
         private IEnumerable<PasteFormat> CreatePowerScriptPasteFormats() =>
-            PowerScriptsService.GetAdvancedPasteScripts()
-                               .Select(script => PasteFormat.CreatePowerScriptFormat(script.Id, script.Name, script.SupportedFormats, AvailableClipboardFormats));
+            GetApplicablePowerScripts().Select(script => PasteFormat.CreatePowerScriptFormat(script, isEnabled: true));
 
         private void UpdateAIProviderActiveFlags()
         {
@@ -450,15 +457,27 @@ namespace AdvancedPaste.ViewModels
             {
                 ClipboardData = Clipboard.GetContent();
                 AvailableClipboardFormats = ClipboardData != null ? await ClipboardData.GetAvailableFormatsAsync() : ClipboardFormat.None;
+                var snapshot = await PowerScriptClipboard.ReadAsync(ClipboardData);
+                if (snapshot.HasText != _powerScriptClipboard.HasText || snapshot.HasBitmap != _powerScriptClipboard.HasBitmap ||
+                    !snapshot.Files.SequenceEqual(_powerScriptClipboard.Files, StringComparer.OrdinalIgnoreCase))
+                {
+                    _powerScriptClipboard = snapshot;
+                    OnPropertyChanged(nameof(PowerScriptCount));
+                    EnqueueRefreshPasteFormats();
+                }
+
+                await UpdateClipboardPreviewAsync();
             }
             catch (Exception ex) when (ex is COMException or InvalidOperationException)
             {
                 // Logger.LogDebug("Failed to read clipboard content", ex);
                 ClipboardData = null;
                 AvailableClipboardFormats = ClipboardFormat.None;
+                _powerScriptClipboard = PowerScriptClipboard.Empty;
+                OnPropertyChanged(nameof(PowerScriptCount));
+                EnqueueRefreshPasteFormats();
+                await UpdateClipboardPreviewAsync();
             }
-
-            await UpdateClipboardPreviewAsync();
         }
 
         private async Task UpdateClipboardPreviewAsync()
@@ -552,6 +571,21 @@ namespace AdvancedPaste.ViewModels
             Query = string.Empty;
 
             await ReadClipboardAsync();
+
+            try
+            {
+                _powerScripts = await PowerScriptsService.GetAdvancedPasteScriptsAsync();
+            }
+            catch (Exception ex)
+            {
+                _powerScripts = [];
+                Logger.LogError("Unable to discover Advanced Paste PowerScripts.", ex);
+                PasteActionError = PasteActionError.FromException(new PasteActionException(
+                    ResourceLoaderInstance.ResourceLoader.GetString("PowerScriptsDiscoveryFailed"), ex));
+            }
+
+            OnPropertyChanged(nameof(PowerScriptCount));
+            RefreshPasteFormats();
 
             if (UpdateOpenAIKey())
             {
@@ -699,6 +733,7 @@ namespace AdvancedPaste.ViewModels
             var elapsedWatch = Stopwatch.StartNew();
             Logger.LogDebug($"Started executing {pasteFormat.Format} from source {source}");
 
+            IsPowerScriptRunning = pasteFormat.Format == PasteFormats.PowerScript;
             IsBusy = true;
             _pasteActionCancellationTokenSource = new();
             TransformProgress = double.NaN;
@@ -728,6 +763,10 @@ namespace AdvancedPaste.ViewModels
                     await CopyPasteAndHideAsync(dataPackage);
                 }
             }
+            catch (OperationCanceledException) when (_pasteActionCancellationTokenSource.IsCancellationRequested)
+            {
+                Logger.LogDebug("Paste action canceled.");
+            }
             catch (Exception ex)
             {
                 Logger.LogError("Error executing paste format", ex);
@@ -735,6 +774,7 @@ namespace AdvancedPaste.ViewModels
             }
 
             IsBusy = false;
+            IsPowerScriptRunning = false;
             _pasteActionCancellationTokenSource?.Dispose();
             _pasteActionCancellationTokenSource = null;
             elapsedWatch.Stop();

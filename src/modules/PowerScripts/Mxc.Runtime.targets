@@ -13,10 +13,10 @@
     <MxcRuntimeDirectory>$(MxcCacheDirectory)\$(MxcVersion)\$(MxcArchitecture)</MxcRuntimeDirectory>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="$(MxcRuntimeDirectory)\wxc-exec.exe;$(MxcRuntimeDirectory)\plm.exe;$(MxcRuntimeDirectory)\Mxc.spdx.json;$(MxcRuntimeDirectory)\wslcsdk.dll;$(MxcRuntimeDirectory)\Wslc.NOTICE.txt">
+    <Content Include="$(MxcRuntimeDirectory)\wxc-exec.exe;$(MxcRuntimeDirectory)\wxc-wslc-daemon.exe;$(MxcRuntimeDirectory)\plm.exe;$(MxcRuntimeDirectory)\Mxc.spdx.json;$(MxcRuntimeDirectory)\wslcsdk.dll;$(MxcRuntimeDirectory)\Wslc.NOTICE.txt">
       <Link>%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
     <Content Include="$(MSBuildThisFileDirectory)Mxc.LICENSE.txt">
       <Link>Mxc.LICENSE.txt</Link>

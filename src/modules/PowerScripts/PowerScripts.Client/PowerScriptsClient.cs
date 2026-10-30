@@ -57,17 +57,8 @@ public sealed class PowerScriptsClient
     /// Enumerates installed scripts whose runtimes are enabled (<c>list --json</c>). Returns an empty list when the host is
     /// unavailable or fails, so a missing/disabled module simply surfaces no scripts.
     /// </summary>
-    public IReadOnlyList<PowerScriptInfo> List() => List(consumer: null);
-
-    /// <summary>Enumerates compatible-runtime scripts for an optional discovery audience.</summary>
-    public IReadOnlyList<PowerScriptInfo> List(string? consumer)
+    public IReadOnlyList<PowerScriptInfo> List()
     {
-        if (consumer is not null && (string.IsNullOrWhiteSpace(consumer) ||
-            consumer.Any(c => !char.IsAsciiLetterOrDigit(c) && c is not ('.' or '_' or '-'))))
-        {
-            throw new ArgumentException("A consumer must be a non-empty module id using letters, digits, '.', '_' or '-'.", nameof(consumer));
-        }
-
         if (!IsAvailable)
         {
             return [];
@@ -78,12 +69,6 @@ public sealed class PowerScriptsClient
             var psi = CreateStartInfo(redirectStdOut: true);
             psi.ArgumentList.Add("list");
             psi.ArgumentList.Add("--json");
-            if (consumer is not null)
-            {
-                psi.ArgumentList.Add("--consumer");
-                psi.ArgumentList.Add(consumer);
-            }
-
             AppendRoot(psi);
 
             using var process = Process.Start(psi);
@@ -108,11 +93,8 @@ public sealed class PowerScriptsClient
     }
 
     /// <summary>Enumerates only the action scripts (those that take no input) — e.g. Keyboard Manager hotkeys or Command Palette commands.</summary>
-    public IReadOnlyList<PowerScriptInfo> ListActions() => ListActions(consumer: null);
-
-    /// <summary>Enumerates no-input actions for the specified discovery audience.</summary>
-    public IReadOnlyList<PowerScriptInfo> ListActions(string? consumer) =>
-        List(consumer).Where(s => s.IsAction).ToList();
+    public IReadOnlyList<PowerScriptInfo> ListActions() =>
+        List().Where(s => s.IsAction).ToList();
 
     /// <summary>
     /// Enumerates scripts asynchronously, surfacing Host failures instead of treating them as an empty catalogue.
@@ -161,39 +143,27 @@ public sealed class PowerScriptsClient
     }
 
     /// <summary>Enumerates the scripts that consume <paramref name="input"/> — e.g. <c>ListAccepting(PowerScriptIO.Text)</c> when text is on the clipboard.</summary>
-    public IReadOnlyList<PowerScriptInfo> ListAccepting(PowerScriptIO input) => ListAccepting(input, consumer: null);
-
-    /// <summary>Enumerates scripts accepting the input shape for the specified discovery audience.</summary>
-    public IReadOnlyList<PowerScriptInfo> ListAccepting(PowerScriptIO input, string? consumer) =>
-        List(consumer).Where(s => s.Accepts(input)).ToList();
+    public IReadOnlyList<PowerScriptInfo> ListAccepting(PowerScriptIO input) =>
+        List().Where(s => s.Accepts(input)).ToList();
 
     /// <summary>Enumerates the scripts that produce <paramref name="output"/>.</summary>
-    public IReadOnlyList<PowerScriptInfo> ListProducing(PowerScriptIO output) => ListProducing(output, consumer: null);
-
-    /// <summary>Enumerates scripts producing the output shape for the specified discovery audience.</summary>
-    public IReadOnlyList<PowerScriptInfo> ListProducing(PowerScriptIO output, string? consumer) =>
-        List(consumer).Where(s => s.Produces(output)).ToList();
+    public IReadOnlyList<PowerScriptInfo> ListProducing(PowerScriptIO output) =>
+        List().Where(s => s.Produces(output)).ToList();
 
     /// <summary>Enumerates the file scripts that accept <paramref name="extension"/> (e.g. <c>.md</c>). A <c>*</c> filter matches any extension.</summary>
-    public IReadOnlyList<PowerScriptInfo> ListForFileExtension(string extension) => ListForFileExtension(extension, consumer: null);
-
-    /// <summary>Enumerates matching file scripts for the specified discovery audience.</summary>
-    public IReadOnlyList<PowerScriptInfo> ListForFileExtension(string extension, string? consumer)
+    public IReadOnlyList<PowerScriptInfo> ListForFileExtension(string extension)
     {
-        return List(consumer).Where(s => s.AcceptsFileExtension(extension)).ToList();
+        return List().Where(s => s.AcceptsFileExtension(extension)).ToList();
     }
 
     /// <summary>
     /// Enumerates scripts accepting the entire selection by extensions and count. Clipboard
     /// temporary files and Explorer selections use the same contract.
     /// </summary>
-    public IReadOnlyList<PowerScriptInfo> ListForFiles(IEnumerable<string> paths) => ListForFiles(paths, consumer: null);
-
-    /// <summary>Enumerates scripts accepting the complete selection for the specified discovery audience.</summary>
-    public IReadOnlyList<PowerScriptInfo> ListForFiles(IEnumerable<string> paths, string? consumer)
+    public IReadOnlyList<PowerScriptInfo> ListForFiles(IEnumerable<string> paths)
     {
         var selection = paths.ToArray();
-        return List(consumer).Where(s => s.AcceptsFiles(selection)).ToList();
+        return List().Where(s => s.AcceptsFiles(selection)).ToList();
     }
 
     /// <summary>

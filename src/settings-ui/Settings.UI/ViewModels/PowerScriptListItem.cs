@@ -21,13 +21,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static readonly string[] MetadataProperties =
         {
-            nameof(Id), nameof(Name), nameof(Description), nameof(Consumers), nameof(HasDescriptor),
+            nameof(Id), nameof(Name), nameof(Description), nameof(HasDescriptor),
             nameof(ConfigurationErrors), nameof(HasConfigurationErrors), nameof(ConfigurationErrorDisplay),
-            nameof(ConsumersDisplay), nameof(Runtime), nameof(HasExplicitExecution), nameof(DefaultIconGlyph),
+            nameof(Runtime), nameof(HasExplicitExecution), nameof(DefaultIconGlyph),
             nameof(IconPath), nameof(IconWarning), nameof(HasIcon), nameof(HasIconWarning), nameof(IconSourcePath),
             nameof(Io), nameof(Input), nameof(Capabilities), nameof(Trusted), nameof(FolderPath), nameof(EntryFullPath),
-            nameof(Parameters), nameof(HasParameters), nameof(HasFileInput), nameof(ExtensionsDisplay), nameof(IoDisplay),
-            nameof(InputDisplay), nameof(CatalogueSummary), nameof(CardAutomationId), nameof(CapabilitiesDisplay),
+            nameof(InputDisplay), nameof(CatalogueSummary), nameof(CardAutomationId),
             nameof(RuntimeDisplay), nameof(TrustDisplay), nameof(HasFolderPath), nameof(OpenFolderAutomationId),
         };
 
@@ -41,8 +40,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string Description { get; set; } = string.Empty;
 
-        public List<string> Consumers { get; set; } = new();
-
         public bool HasDescriptor { get; set; }
 
         public List<string> ConfigurationErrors { get; set; } = new();
@@ -50,9 +47,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool HasConfigurationErrors => ConfigurationErrors is { Count: > 0 };
 
         public string ConfigurationErrorDisplay => string.Join(Environment.NewLine, ConfigurationErrors ?? new());
-
-        public string ConsumersDisplay => Consumers is { Count: > 0 }
-            ? string.Join(", ", Consumers) : GetResourceString("PowerScripts_SettingsAllConsumers");
 
         public string Runtime { get; set; } = string.Empty;
 
@@ -80,17 +74,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string EntryFullPath { get; set; } = string.Empty;
 
-        public List<PowerScriptParameterItem> Parameters { get; set; } = new();
-
-        public bool HasParameters => Parameters is { Count: > 0 };
-
-        public bool HasFileInput => string.Equals(Io?.Input, "files", StringComparison.OrdinalIgnoreCase);
-
-        public string ExtensionsDisplay => Input?.Extensions is { Count: > 0 } extensions ? string.Join(", ", extensions) : "—";
-
-        public string IoDisplay => $"{DisplayIoValue(Io?.Input)} \u2192 {DisplayIoValue(Io?.Output)}";
-
-        public string InputDisplay => !HasFileInput || Input?.Extensions is not { Count: > 0 } extensions
+        public string InputDisplay => !string.Equals(Io?.Input, "files", StringComparison.OrdinalIgnoreCase) || Input?.Extensions is not { Count: > 0 } extensions
             ? DisplayIoValue(Io?.Input)
             : extensions.Contains("*", StringComparer.Ordinal)
                 ? GetResourceString("PowerScripts_IoAllFiles")
@@ -101,8 +85,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string CatalogueSummary => $"{RuntimeDisplay} \u00b7 {InputDisplay} \u2192 {DisplayIoValue(Io?.Output)}";
 
         public string CardAutomationId => $"PowerScripts_{Id}_Card";
-
-        public string CapabilitiesDisplay => Capabilities is { Count: > 0 } ? string.Join(", ", Capabilities) : "—";
 
         public string RuntimeDisplay => string.IsNullOrEmpty(Runtime) ? "—" : Runtime;
 
@@ -145,7 +127,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Id = script.Id;
             Name = script.Name;
             Description = script.Description;
-            Consumers = script.Consumers;
             HasDescriptor = script.HasDescriptor;
             ConfigurationErrors = script.ConfigurationErrors;
             Runtime = script.Runtime;
@@ -158,7 +139,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Trusted = script.Trusted;
             FolderPath = script.FolderPath;
             EntryFullPath = script.EntryFullPath;
-            Parameters = script.Parameters;
             foreach (var property in MetadataProperties)
             {
                 OnPropertyChanged(property);

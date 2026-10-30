@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using PowerScripts.Core.Execution;
 using PowerScripts.Core.Manifest;
 
@@ -14,7 +15,8 @@ namespace PowerScripts.Core.Security;
 /// <summary>Runs Python in an MXC-managed Linux image without changing the user's WSL distribution.</summary>
 public static class MxcLinuxProcessRunner
 {
-    public static string ImageStorePath => Path.Combine(PowerScriptsPaths.ModuleDirectory, "linux-container-images");
+    // The pinned state-aware daemon uses MXC's default image store.
+    public static string ImageStorePath => Path.Combine(Path.GetTempPath(), "mxc-wslc-sessions");
 
     /// <summary>Rejects unsupported requests before any script or executor is started.</summary>
     public static string? GetPolicyError(MxcEffectivePolicy policy)
@@ -48,7 +50,7 @@ public static class MxcLinuxProcessRunner
         string image,
         int timeoutMs,
         IProcessLauncher? launcher = null,
-        Func<string>? runDirectoryFactory = null)
+        string? sessionDirectory = null)
     {
         var policyError = GetPolicyError(policy);
         if (policyError is not null)
@@ -62,52 +64,75 @@ public static class MxcLinuxProcessRunner
         }
 
         launcher ??= ProcessRunner.SecureLauncher;
+        var executor = ResolveRuntime(settings);
+        if (executor is null)
+        {
+            return MissingRuntime();
+        }
+
         string? directory = null;
+        string? requestDirectory = null;
+        MxcLinuxSession? session = null;
         var retainOutputs = false;
         try
         {
-            directory = (runDirectoryFactory ?? MxcProcessRunner.CreateRunDirectory)();
+            session = new MxcLinuxSession(sessionDirectory ?? MxcLinuxSession.DefaultDirectory, executor, launcher);
+            MxcLinuxSession.EnsureInside(context.ScriptsRoot, scriptPath);
+            _ = ValidateExistingPath(scriptPath);
+            var id = Guid.NewGuid().ToString("N");
+            directory = Path.Combine(session.WorkspacesDirectory, "mxc-" + id);
             var workspace = Path.Combine(directory, "workspace");
-            var requestDirectory = Path.Combine(directory, "request");
+            requestDirectory = Path.Combine(session.RequestsDirectory, "mxc-" + id);
             MxcProcessRunner.EnsureWorkspaceOutsideScripts(context, workspace);
             Directory.CreateDirectory(workspace);
             Directory.CreateDirectory(requestDirectory);
             var inputPath = Path.Combine(requestDirectory, "input.json");
-            File.WriteAllText(inputPath, payload, new UTF8Encoding(false));
+            File.WriteAllText(inputPath, StageInputs(payload, context, requestDirectory), new UTF8Encoding(false));
 
-            var readonlyPaths = new[] { context.ScriptDirectory, requestDirectory }
-                .Concat(context.InputPaths)
-                .Select(ValidateExistingPath)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
+            var ready = session.EnsureStarted(image, context, policy.IsEnabled(MxcPolicies.Network));
+            if (ready.ExitCode != 0)
+            {
+                return ready;
+            }
             // The pinned WSLC executor ignores process.cwd, so set it explicitly in the shell.
             var command = $"cd {Quote(ToContainerPath(workspace))} && " +
                 $"env -i PATH=/usr/local/bin:/usr/bin:/bin HOME=/tmp PYTHONDONTWRITEBYTECODE=1 PYTHONNOUSERSITE=1 PYTHONUNBUFFERED=1 " +
                 $"TMPDIR={Quote(ToContainerPath(workspace))} " +
                 $"{MxcProcessRunner.WorkspaceEnvironmentVariable}={Quote(ToContainerPath(workspace))} " +
                 $"python3 -X utf8 {Quote(ToContainerPath(scriptPath))} < {Quote(ToContainerPath(inputPath))}";
-            var config = BuildConfiguration(image, command, workspace, readonlyPaths, policy.IsEnabled(MxcPolicies.Network), timeoutMs);
-            var result = Execute(config, directory, settings, launcher, timeoutMs);
+            var result = session.Execute(command, timeoutMs);
             if (result.ExitCode != 0 || outputFormat != PowerScriptDataFormat.Files)
             {
                 return result;
             }
 
             var output = PythonTransformResult.Parse(result.StdOut, outputFormat);
-            output.FilePaths = output.FilePaths!.Select(path => MapOutputPath(path, workspace)).ToList();
+            output.FilePaths = output.FilePaths!.Select(path => MapOutputPath(path, workspace, session.WorkspacesDirectory)).ToList();
             retainOutputs = output.FilePaths.Count > 0;
-            return result with { StdOut = JsonSerializer.Serialize(output) };
+            return result with { StdOut = JsonSerializer.Serialize(new { files = output.FilePaths }) };
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception or
-            InvalidOperationException or ArgumentException or NotSupportedException or JsonException or OverflowException)
+            InvalidOperationException or ArgumentException or NotSupportedException or JsonException or OverflowException or KeyNotFoundException)
         {
             return new ProcessRunResult(2, string.Empty, $"Managed Linux execution failed: {ex.Message}");
         }
         finally
         {
-            if (directory is not null)
+            try
             {
-                Cleanup(directory, retainOutputs);
+                if (requestDirectory is not null && Directory.Exists(requestDirectory))
+                {
+                    Cleanup(requestDirectory);
+                }
+
+                if (directory is not null && !retainOutputs && Directory.Exists(directory))
+                {
+                    Cleanup(directory);
+                }
+            }
+            finally
+            {
+                session?.Dispose();
             }
         }
     }
@@ -117,13 +142,16 @@ public static class MxcLinuxProcessRunner
         string image,
         MxcSettings? settings = null,
         IProcessLauncher? launcher = null,
-        Func<string>? runDirectoryFactory = null)
+        Func<string>? runDirectoryFactory = null,
+        string? sessionDirectory = null)
     {
         if (GetImageError(image) is { } imageError)
         {
             return new ProcessRunResult(2, string.Empty, imageError);
         }
 
+        settings ??= MxcSettings.Load();
+        launcher ??= ProcessRunner.SecureLauncher;
         var directory = (runDirectoryFactory ?? MxcProcessRunner.CreateRunDirectory)();
         try
         {
@@ -136,7 +164,7 @@ public static class MxcLinuxProcessRunner
                 Array.Empty<string>(),
                 restrictNetwork: true,
                 timeoutMs: 30000);
-            return Execute(config, directory, settings ?? MxcSettings.Load(), launcher ?? ProcessRunner.SecureLauncher, 45000);
+            return RunWithFreshSession(settings, launcher, sessionDirectory, () => Execute(config, directory, settings, launcher, 45000));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception or InvalidOperationException)
         {
@@ -144,20 +172,22 @@ public static class MxcLinuxProcessRunner
         }
         finally
         {
-            Cleanup(directory, retainOutputs: false);
+            Cleanup(directory);
         }
     }
 
     /// <summary>Explicit user-initiated image preparation, outside any script's network policy.</summary>
-    public static ProcessRunResult Setup(string image, MxcSettings? settings = null, IProcessLauncher? launcher = null)
+    public static ProcessRunResult Setup(string image, MxcSettings? settings = null, IProcessLauncher? launcher = null, string? sessionDirectory = null)
     {
         if (GetImageError(image) is { } imageError)
         {
             return new ProcessRunResult(2, string.Empty, imageError);
         }
 
-        var executor = MxcProcessRunner.ResolveExecutor(settings ?? MxcSettings.Load());
-        if (executor is null || !File.Exists(Path.Combine(Path.GetDirectoryName(executor)!, "wslcsdk.dll")))
+        settings ??= MxcSettings.Load();
+        launcher ??= ProcessRunner.SecureLauncher;
+        var executor = ResolveRuntime(settings);
+        if (executor is null)
         {
             return MissingRuntime();
         }
@@ -168,7 +198,7 @@ public static class MxcLinuxProcessRunner
             start.ArgumentList.Add(argument);
         }
 
-        return (launcher ?? ProcessRunner.SecureLauncher).Run(start, null, 600000);
+        return RunWithFreshSession(settings, launcher, sessionDirectory, () => launcher.Run(start, null, 600000));
     }
 
     private static string? GetImageError(string image) =>
@@ -206,7 +236,7 @@ public static class MxcLinuxProcessRunner
         return PythonRuntime.ToWslPath(fullPath)!;
     }
 
-    internal static string MapOutputPath(string path, string workspace)
+    internal static string MapOutputPath(string path, string workspace, string? workspaceRoot = null)
     {
         if (!path.StartsWith("/mnt/", StringComparison.Ordinal) ||
             path.Length < 7 || !char.IsAsciiLetter(path[5]) || path[6] != '/')
@@ -221,8 +251,15 @@ public static class MxcLinuxProcessRunner
             throw new InvalidDataException("Managed Linux file outputs must remain inside the writable workspace.");
         }
 
-        var current = workspace;
-        foreach (var part in relative.Split(Path.DirectorySeparatorChar))
+        workspaceRoot ??= workspace;
+        MxcLinuxSession.EnsureInside(workspaceRoot, workspace);
+        var current = workspaceRoot;
+        if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
+        {
+            throw new InvalidDataException("Managed Linux workspaces cannot be symbolic links or other reparse points.");
+        }
+
+        foreach (var part in Path.GetRelativePath(workspaceRoot, windowsPath).Split(Path.DirectorySeparatorChar))
         {
             current = Path.Combine(current, part);
             if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
@@ -251,6 +288,52 @@ public static class MxcLinuxProcessRunner
         return fullPath;
     }
 
+    private static string StageInputs(string payload, ProcessExecutionContext context, string directory)
+    {
+        var mappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var path in context.InputPaths.Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            var source = ValidateExistingPath(path);
+            if (!File.Exists(source))
+            {
+                throw new InvalidDataException("Managed Linux input paths must be files, not directories.");
+            }
+
+            var inputDirectory = Path.Combine(directory, Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(inputDirectory);
+            var target = Path.Combine(inputDirectory, Path.GetFileName(source));
+            File.Copy(source, target);
+            mappings.Add(ToContainerPath(source), ToContainerPath(target));
+        }
+
+        var request = JsonNode.Parse(payload)?.AsObject()
+            ?? throw new InvalidDataException("Managed Linux input must be an object.");
+        if (request["files"] is JsonArray files)
+        {
+            for (var index = 0; index < files.Count; index++)
+            {
+                files[index] = mappings.TryGetValue(files[index]!.GetValue<string>(), out var path)
+                    ? path
+                    : throw new InvalidDataException("A managed Linux input file was not authorized for this invocation.");
+            }
+        }
+
+        if (request["parameters"] is JsonObject parameters)
+        {
+            foreach (var name in context.FileParameterNames)
+            {
+                if (parameters[name] is JsonValue value)
+                {
+                    parameters[name] = mappings.TryGetValue(value.GetValue<string>(), out var path)
+                        ? path
+                        : throw new InvalidDataException("A managed Linux file parameter was not authorized for this invocation.");
+                }
+            }
+        }
+
+        return request.ToJsonString();
+    }
+
     private static ProcessRunResult Execute(
         string config,
         string directory,
@@ -258,8 +341,8 @@ public static class MxcLinuxProcessRunner
         IProcessLauncher launcher,
         int timeoutMs)
     {
-        var executor = MxcProcessRunner.ResolveExecutor(settings);
-        if (executor is null || !File.Exists(Path.Combine(Path.GetDirectoryName(executor)!, "wslcsdk.dll")))
+        var executor = ResolveRuntime(settings);
+        if (executor is null)
         {
             return MissingRuntime();
         }
@@ -278,26 +361,72 @@ public static class MxcLinuxProcessRunner
         StandardErrorEncoding = Encoding.UTF8,
     };
 
+    private static string? ResolveRuntime(MxcSettings settings)
+    {
+        var executor = MxcProcessRunner.ResolveExecutor(settings);
+        return executor is not null &&
+            File.Exists(Path.Combine(Path.GetDirectoryName(executor)!, "wslcsdk.dll")) &&
+            File.Exists(Path.Combine(Path.GetDirectoryName(executor)!, "wxc-wslc-daemon.exe"))
+                ? executor
+                : null;
+    }
+
     private static ProcessRunResult MissingRuntime() => new(
         MxcProcessRunner.UnavailableExitCode,
         string.Empty,
-        "The bundled MXC Linux runtime or wslcsdk.dll is missing. Repair PowerToys or rebuild PowerScripts.Host.");
+        "The bundled MXC Linux runtime, wxc-wslc-daemon.exe, or wslcsdk.dll is missing. Repair PowerToys or rebuild PowerScripts.Host.");
 
     private static string Quote(string value) => "'" + value.Replace("'", "'\\''", StringComparison.Ordinal) + "'";
 
-    private static void Cleanup(string directory, bool retainOutputs)
+    private static ProcessRunResult RunWithFreshSession(MxcSettings settings, IProcessLauncher launcher, string? directory, Func<ProcessRunResult> action)
+    {
+        directory ??= MxcLinuxSession.DefaultDirectory;
+        try
+        {
+            var executor = MxcProcessRunner.ResolveExecutor(settings);
+            if (executor is null)
+            {
+                return MissingRuntime();
+            }
+
+            using var session = new MxcLinuxSession(directory, executor, launcher);
+            var reset = session.Reset();
+            if (reset.ExitCode != 0)
+            {
+                return reset;
+            }
+
+            var wait = Stopwatch.StartNew();
+            while (true)
+            {
+                var result = action();
+                if (result.ExitCode == 0 ||
+                    (!result.StdErr.Contains("0x80070020", StringComparison.OrdinalIgnoreCase) &&
+                     !result.StdOut.Contains("0x80070020", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return result;
+                }
+
+                if (wait.Elapsed >= TimeSpan.FromSeconds(10))
+                {
+                    return result with { StdErr = result.StdErr + "\nThe Linux image cache is still in use. Close other MXC Linux sessions and retry the image operation." };
+                }
+
+                // Only idempotent image setup / constant probes may wait for SDK teardown, never scripts.
+                Thread.Sleep(250);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception or InvalidOperationException or JsonException)
+        {
+            return new ProcessRunResult(2, string.Empty, $"Could not reset the shared managed Linux container: {ex.Message}");
+        }
+    }
+
+    private static void Cleanup(string directory)
     {
         try
         {
-            if (retainOutputs)
-            {
-                Directory.Delete(Path.Combine(directory, "request"), recursive: true);
-                File.Delete(Path.Combine(directory, "mxc-config.json"));
-            }
-            else
-            {
-                Directory.Delete(directory, recursive: true);
-            }
+            Directory.Delete(directory, recursive: true);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

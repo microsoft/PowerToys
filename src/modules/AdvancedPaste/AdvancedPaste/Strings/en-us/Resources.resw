@@ -372,4 +372,37 @@
     <value>Unable to load Foundry Local model: {0}</value>
     <comment>{0} is the model identifier. Do not translate {0}.</comment>
   </data>
+  <data name="PowerScriptsDiscoveryFailed" xml:space="preserve">
+    <value>PowerScripts could not be loaded. Reopen Advanced Paste to try again, or check PowerScripts in Settings.</value>
+  </data>
+  <data name="PowerScriptsClipboardChanged" xml:space="preserve">
+    <value>The clipboard does not match this script's input. Copy compatible content and try again.</value>
+  </data>
+  <data name="PowerScriptsExecutionFailed" xml:space="preserve">
+    <value>The PowerScript could not complete. Check the script's approval, runtime, parameters, and sandbox settings.</value>
+  </data>
+  <data name="PowerScriptsEmptyResult" xml:space="preserve">
+    <value>The PowerScript did not return content that Advanced Paste can paste. Your clipboard has not been replaced.</value>
+  </data>
+  <data name="PowerScriptsMediaTooLarge" xml:space="preserve">
+    <value>This media exceeds the PowerScripts limits: 16 MiB per item and 32 MiB total.</value>
+  </data>
+  <data name="PowerScriptsBrowse" xml:space="preserve"><value>Browse…</value></data>
+  <data name="PowerScriptsRun" xml:space="preserve"><value>Run script</value></data>
+  <data name="PowerScriptsCancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="PowerScriptsBack" xml:space="preserve">
+    <value>Back to paste options</value>
+  </data>
+  <data name="PowerScriptsInvalidParameter" xml:space="preserve">
+    <value>Enter a valid value for: {0}. Check the required fields, choices, integer limits, and file paths.</value>
+  </data>
+  <data name="PowerScriptsFilePickerFailed" xml:space="preserve">
+    <value>The file picker could not be opened. You can enter the full file path instead.</value>
+  </data>
+  <data name="PowerScriptsParameterHelp" xml:space="preserve">
+    <value>Required parameters are always included. Select or clear optional parameters to include or omit their values. PowerScripts still checks approval before execution.</value>
+  </data>
+  <data name="PowerScriptsIntegerRange" xml:space="preserve">
+    <value>Whole number from {0} to {1}.</value>
+  </data>
 </root>

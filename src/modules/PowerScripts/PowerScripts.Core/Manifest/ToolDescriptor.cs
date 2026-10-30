@@ -15,8 +15,8 @@ namespace PowerScripts.Core.Manifest;
 /// <c>inputSchema</c> + <c>outputSchema</c>) doubles as PowerScripts' authoring format — with no new
 /// protocol to invent and no server to run.
 ///
-/// Optional extensions provide an explicit launch recipe (<c>x-execute</c>) and discovery,
-/// provenance, and capability metadata (<c>x-powerscript</c>). Schemas are authoritative for I/O,
+/// Optional extensions provide an explicit launch recipe (<c>x-execute</c>), provenance,
+/// and capability metadata (<c>x-powerscript</c>). Schemas are authoritative for I/O,
 /// parameters, and schema-local file restrictions; the script extension determines the runtime.
 /// </summary>
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
@@ -216,10 +216,6 @@ public sealed class PowerScriptExtension
     /// <summary>Declared capabilities: the consent string and the agent permission contract.</summary>
     [JsonPropertyName("capabilities")]
     public List<string>? Capabilities { get; set; }
-
-    /// <summary>Optional discovery audience. Omitted means every compatible consumer; not execution authorization.</summary>
-    [JsonPropertyName("consumers")]
-    public List<string>? Consumers { get; set; }
 
     [JsonPropertyName("publisher")]
     public string? Publisher { get; set; }

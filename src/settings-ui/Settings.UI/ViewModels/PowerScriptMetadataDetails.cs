@@ -105,12 +105,9 @@ public static class PowerScriptMetadataDetails
             "ui" => Text("Ui"),
             _ => Value(value),
         });
-        var consumersDisplay = extension["consumers"] is JsonArray { Count: > 0 } consumers
-            ? string.Join(", ", consumers.Select(Value)) : Text("AllConsumers");
         var capabilitiesDisplay = capabilities is { Count: > 0 } ? string.Join(", ", capabilityNames) : Text("None");
-        sections.Add(new("Discovery", Text("Discovery"), new[]
+        sections.Add(new("Capabilities", Text("CapabilitiesSection"), new[]
         {
-            Row("Consumers", "Consumers", consumersDisplay),
             Row("Capabilities", "Capabilities", capabilitiesDisplay),
         }));
 

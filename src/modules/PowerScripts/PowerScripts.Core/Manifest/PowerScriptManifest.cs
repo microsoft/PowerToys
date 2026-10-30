@@ -164,12 +164,6 @@ public sealed class PowerScriptManifest
     /// </summary>
     public List<string> Capabilities { get; set; } = new();
 
-    /// <summary>Optional discovery audience; null allows every compatible consumer.</summary>
-    public List<string>? Consumers { get; set; }
-
-    public bool IsDiscoverableBy(string? consumer) =>
-        consumer is null || Consumers is null || Consumers.Contains(consumer, StringComparer.OrdinalIgnoreCase);
-
     [JsonIgnore]
     public bool HasDescriptor { get; internal set; }
 

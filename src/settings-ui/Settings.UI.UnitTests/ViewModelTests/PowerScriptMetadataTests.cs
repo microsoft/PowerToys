@@ -101,11 +101,13 @@ public class PowerScriptMetadataTests
               "outputSchema":{"type":"object","additionalProperties":false,"properties":{"text":{"type":"string","title":"Result text"}},"required":["text"]},
               "annotations":{"readOnlyHint":false,"destructiveHint":true},
               "x-execute":{"command":["python","script with spaces.py"],"stdin":"json","argMap":{"name":"--name"},"exitCodes":{"2":"Invalid input"}},
-              "x-powerscript":{"consumers":["advanced-paste"]}
+              "x-powerscript":{"capabilities":["network"]}
             }
             """)!.AsObject();
         var rows = PowerScriptMetadataDetails.Create(descriptor, key => key, ".py").SelectMany(section => section.Rows).ToDictionary(row => row.Key);
         Assert.AreEqual("Python", rows["Runtime"].Value);
+        Assert.AreEqual("PowerScripts_DetailsNetwork", rows["Capabilities"].Value);
+        Assert.IsFalse(rows.ContainsKey("Consumers"));
         Assert.IsFalse(rows.ContainsKey("Function"));
         StringAssert.Contains(rows["Command"].Value, "python");
         StringAssert.Contains(rows["Command"].Value, "script with spaces.py");

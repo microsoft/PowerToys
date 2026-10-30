@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using PowerScripts.Client;
 
 namespace AdvancedPaste.Models;
 
@@ -24,13 +25,11 @@ public sealed class PasteFormat
         IsEnabled = SupportsClipboardFormats(clipboardFormats) && (isAIServiceEnabled || !Metadata.RequiresAIService);
     }
 
-    // Per-instance constructor for PowerScripts, whose supported clipboard formats vary per script
-    // (derived from the script's own transform contract) rather than from the static enum metadata.
-    private PasteFormat(PasteFormats format, ClipboardFormat scriptSupportedFormats, ClipboardFormat availableClipboardFormats, bool perScript)
+    private PasteFormat(PowerScriptInfo script, bool isEnabled)
     {
-        _ = perScript;
-        Format = format;
-        IsEnabled = (availableClipboardFormats & scriptSupportedFormats) != ClipboardFormat.None;
+        Format = PasteFormats.PowerScript;
+        Script = script;
+        IsEnabled = isEnabled;
     }
 
     public static PasteFormat CreateStandardFormat(PasteFormats format, ClipboardFormat clipboardFormats, bool isAIServiceEnabled, Func<string, string> resourceLoader) =>
@@ -53,13 +52,12 @@ public sealed class PasteFormat
     /// Creates a paste format backed by a user-authored PowerScript. The script's own transform
     /// contract determines which clipboard formats it accepts, so enablement is computed per instance.
     /// </summary>
-    public static PasteFormat CreatePowerScriptFormat(string scriptId, string name, ClipboardFormat scriptSupportedFormats, ClipboardFormat availableClipboardFormats) =>
-        new(PasteFormats.PowerScript, scriptSupportedFormats, availableClipboardFormats, perScript: true)
+    public static PasteFormat CreatePowerScriptFormat(PowerScriptInfo script, bool isEnabled) =>
+        new(script, isEnabled)
         {
-            Name = name,
+            Name = script.Name,
             Prompt = string.Empty,
             IsSavedQuery = false,
-            ScriptId = scriptId,
         };
 
     public PasteFormatMetadataAttribute Metadata => MetadataDict[Format];
@@ -75,13 +73,18 @@ public sealed class PasteFormat
     public bool IsSavedQuery { get; private init; }
 
     /// <summary>The PowerScript id backing this format, when <see cref="Format"/> is <see cref="PasteFormats.PowerScript"/>.</summary>
-    public string ScriptId { get; private init; }
+    public string ScriptId => Script?.Id;
+
+    public PowerScriptInfo Script { get; private init; }
+
+    public string AutomationId => Script is not null ? "PowerScript_" + Script.Id : Format.ToString();
 
     public bool IsEnabled { get; private init; }
 
     public string AccessibleName => $"{Name} ({ShortcutText})";
 
-    public string ToolTip => string.IsNullOrEmpty(Prompt) ? $"{Name} ({ShortcutText})" : Prompt;
+    public string ToolTip => Script is not null ? $"PowerScripts \u00b7 {Script.Runtime} \u00b7 {Script.Input} \u2192 {Script.Output}\n{Script.Description}" :
+        string.IsNullOrEmpty(Prompt) ? $"{Name} ({ShortcutText})" : Prompt;
 
     public string Query => string.IsNullOrEmpty(Prompt) ? Name : Prompt;
 
@@ -90,5 +93,6 @@ public sealed class PasteFormat
     public static bool SupportsClipboardFormats(PasteFormats format, ClipboardFormat clipboardFormats)
         => (clipboardFormats & MetadataDict[format].SupportedClipboardFormats) != ClipboardFormat.None;
 
-    public bool SupportsClipboardFormats(ClipboardFormat clipboardFormats) => SupportsClipboardFormats(Format, clipboardFormats);
+    public bool SupportsClipboardFormats(ClipboardFormat clipboardFormats) =>
+        Script is not null ? IsEnabled : SupportsClipboardFormats(Format, clipboardFormats);
 }

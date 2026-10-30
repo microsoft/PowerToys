@@ -811,8 +811,6 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "GrabAndMove";
     case ESettingsWindowNames::PowerScripts:
         return "PowerScripts";
-    case ESettingsWindowNames::PowerScriptsLauncher:
-        return "PowerScriptsLauncher";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -955,10 +953,6 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "PowerScripts")
     {
         return ESettingsWindowNames::PowerScripts;
-    }
-    else if (value == "PowerScriptsLauncher")
-    {
-        return ESettingsWindowNames::PowerScriptsLauncher;
     }
     else if (value == "PowerDisplay")
     {

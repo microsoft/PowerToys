@@ -275,14 +275,14 @@ public static class MxcProcessRunner
         return path;
     }
 
-    private static void DeleteStaleRunDirectories(string root)
+    internal static void DeleteStaleRunDirectories(string root, TimeSpan? retention = null)
     {
         if (!Directory.Exists(root))
         {
             return;
         }
 
-        var cutoff = DateTime.UtcNow - RetainedOutputLifetime;
+        var cutoff = DateTime.UtcNow - (retention ?? RetainedOutputLifetime);
         foreach (var directory in Directory.EnumerateDirectories(root, "mxc-*"))
         {
             try
@@ -294,7 +294,7 @@ public static class MxcProcessRunner
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                // Cleanup is best effort and must not prevent a new isolated run.
+                Console.Error.WriteLine($"PowerScripts could not remove the stale MXC run directory '{directory}': {ex.Message}");
             }
         }
     }

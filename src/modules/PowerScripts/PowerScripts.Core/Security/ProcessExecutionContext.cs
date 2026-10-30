@@ -18,6 +18,8 @@ public sealed class ProcessExecutionContext
 
     public IReadOnlyList<string> InputPaths { get; init; } = Array.Empty<string>();
 
+    public IReadOnlyList<string> FileParameterNames { get; init; } = Array.Empty<string>();
+
     public static ProcessExecutionContext FromManifest(
         PowerScriptManifest manifest,
         IEnumerable<string?>? inputPaths = null,
@@ -27,6 +29,7 @@ public sealed class ProcessExecutionContext
             ScriptId = manifest.Id,
             ScriptDirectory = manifest.FolderPath,
             ScriptsRoot = string.IsNullOrWhiteSpace(manifest.ScriptsRoot) ? manifest.FolderPath : manifest.ScriptsRoot,
+            FileParameterNames = manifest.Parameters.Where(parameter => parameter.IsFile).Select(parameter => parameter.Name).ToArray(),
             InputPaths = (inputPaths ?? Array.Empty<string?>())
                 .Concat(GetFileParameterPaths(manifest, parameters))
                 .Where(path => !string.IsNullOrWhiteSpace(path))

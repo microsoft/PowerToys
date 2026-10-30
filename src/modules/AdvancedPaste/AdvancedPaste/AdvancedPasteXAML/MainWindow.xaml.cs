@@ -42,7 +42,7 @@ namespace AdvancedPaste
             {
                 double GetHeight(int maxCustomActionCount) =>
                     baseHeight +
-                    new PasteFormatsToHeightConverter().GetHeight(coreActionCount + _userSettings.AdditionalActions.Count) +
+                    new PasteFormatsToHeightConverter().GetHeight(coreActionCount + _userSettings.AdditionalActions.Count + _optionsViewModel.PowerScriptCount) +
                     new PasteFormatsToHeightConverter() { MaxItems = maxCustomActionCount }.GetHeight(_optionsViewModel.IsCustomAIServiceEnabled ? _userSettings.CustomActions.Count : 0);
 
                 MinHeight = GetHeight(1);
@@ -54,7 +54,7 @@ namespace AdvancedPaste
             _userSettings.Changed += (_, _) => UpdateHeight();
             _optionsViewModel.PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(_optionsViewModel.IsCustomAIServiceEnabled))
+                if (e.PropertyName is nameof(_optionsViewModel.IsCustomAIServiceEnabled) or nameof(_optionsViewModel.PowerScriptCount))
                 {
                     UpdateHeight();
                 }
@@ -87,7 +87,7 @@ namespace AdvancedPaste
 
         private void OnActivated(object sender, WindowActivatedEventArgs args)
         {
-            if (_userSettings.CloseAfterLosingFocus && args.WindowActivationState == WindowActivationState.Deactivated)
+            if (_userSettings.CloseAfterLosingFocus && !_optionsViewModel.IsPowerScriptRunning && args.WindowActivationState == WindowActivationState.Deactivated)
             {
                 Hide();
             }
@@ -125,7 +125,7 @@ namespace AdvancedPaste
 
         public void SetFocus()
         {
-            MainPage.CustomFormatTextBox.InputTxtBox.Focus(FocusState.Programmatic);
+            MainPage.SetFocus();
         }
 
         public void ClearInputText()

@@ -923,44 +923,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return string.Empty;
         }
 
-        internal static IReadOnlyList<PowerScriptListItem> LoadScriptsFromHost()
-        {
-            string hostPath = ResolveHostPath();
-            if (string.IsNullOrEmpty(hostPath))
-            {
-                return Array.Empty<PowerScriptListItem>();
-            }
-
-            try
-            {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = hostPath,
-                    Arguments = "list --json --include-disabled",
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                };
-
-                using var process = Process.Start(psi);
-                if (process is null)
-                {
-                    return Array.Empty<PowerScriptListItem>();
-                }
-
-                string json = process.StandardOutput.ReadToEnd();
-                process.WaitForExit(5000);
-
-                return JsonSerializer.Deserialize<List<PowerScriptListItem>>(json, JsonOptions)
-                    ?? new List<PowerScriptListItem>();
-            }
-            catch (Exception)
-            {
-                // Prototype: a missing/failed host simply yields an empty list.
-                return Array.Empty<PowerScriptListItem>();
-            }
-        }
-
         private static MxcSupportSnapshot LoadMxcSupportFromHost()
         {
             string hostPath = ResolveHostPath();

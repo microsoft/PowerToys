@@ -6,6 +6,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+using AdvancedPaste.Controls;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Services.CustomActions;
@@ -31,6 +32,9 @@ public sealed class PasteFormatExecutor(IKernelService kernelService, ICustomAct
         WriteTelemetry(format, source);
 
         var clipboardData = Clipboard.GetContent();
+        var parameters = format == PasteFormats.PowerScript
+            ? await PowerScriptParametersPage.ShowAsync(pasteFormat.Script, cancellationToken)
+            : null;
 
         // Run on thread-pool; although we use Async routines consistently, some actions still occasionally take a long time without yielding.
         return await Task.Run(async () =>
@@ -38,7 +42,7 @@ public sealed class PasteFormatExecutor(IKernelService kernelService, ICustomAct
             {
                 PasteFormats.KernelQuery => await _kernelService.TransformClipboardAsync(pasteFormat.Prompt, clipboardData, pasteFormat.IsSavedQuery, cancellationToken, progress),
                 PasteFormats.CustomTextTransformation => DataPackageHelpers.CreateFromText((await _customActionTransformService.TransformAsync(pasteFormat.Prompt, await clipboardData.GetTextOrHtmlTextAsync(), await clipboardData.GetImageAsPngBytesAsync(), cancellationToken, progress))?.Content ?? string.Empty),
-                PasteFormats.PowerScript => DataPackageHelpers.CreateFromText(await PowerScriptsService.TransformTextAsync(pasteFormat.ScriptId, await clipboardData.GetTextOrHtmlTextAsync(), cancellationToken)),
+                PasteFormats.PowerScript => await PowerScriptsService.TransformAsync(pasteFormat.Script, clipboardData, parameters, cancellationToken),
                 _ => await TransformHelpers.TransformAsync(format, clipboardData, cancellationToken, progress),
             });
     }
