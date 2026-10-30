@@ -9,6 +9,12 @@ namespace Microsoft.CmdPal.Ext.Apps;
 
 public sealed class AppItem
 {
+    /// <summary>Gets or sets the stable application identity, separate from persisted command IDs.</summary>
+    public string CatalogId { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets command IDs retained from released app representations.</summary>
+    public IReadOnlyList<string> CommandIds { get; set; } = [];
+
     public string Name { get; set; } = string.Empty;
 
     public string Subtitle { get; set; } = string.Empty;

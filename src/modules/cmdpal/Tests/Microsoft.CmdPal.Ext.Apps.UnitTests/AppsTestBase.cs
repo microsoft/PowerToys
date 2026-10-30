@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -29,8 +31,10 @@ public abstract class AppsTestBase
     [TestInitialize]
     public virtual async Task Setup()
     {
+        _settingsPath = Path.Combine(Path.GetTempPath(), $"early-apps-{Guid.NewGuid():N}.settings.json");
+        Settings = new AllAppsSettings(_settingsPath);
         MockCache = new MockAppCache();
-        Page = new AllAppsPage(MockCache);
+        Page = new AllAppsPage(MockCache, Settings);
 
         // Ensure initialization is complete
         await MockCache.RefreshAsync();
@@ -43,6 +47,9 @@ public abstract class AppsTestBase
     public virtual void Cleanup()
     {
         MockCache?.Dispose();
+        Settings.WaitForAliasSavesAsync().GetAwaiter().GetResult();
+        File.Delete(_settingsPath);
+        File.Delete(AllAppsSettings.AppCommandAliasesPath(_settingsPath));
     }
 
     /// <summary>
@@ -64,4 +71,8 @@ public abstract class AppsTestBase
         await MockCache.RefreshAsync();
         EnsurePageInitialized();
     }
+
+    protected AllAppsSettings Settings { get; private set; } = null!;
+
+    private string _settingsPath = string.Empty;
 }

@@ -53,7 +53,7 @@ public class AllAppsCommandProviderTests : AppsTestBase
         // Setup
         var mockApp = TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe");
         MockCache.AddWin32Program(mockApp);
-        var page = new AllAppsPage(MockCache);
+        var page = new AllAppsPage(MockCache, Settings);
 
         var provider = new AllAppsCommandProvider(page);
 

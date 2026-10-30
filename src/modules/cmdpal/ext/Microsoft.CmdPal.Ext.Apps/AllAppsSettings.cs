@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
@@ -16,6 +18,8 @@ namespace Microsoft.CmdPal.Ext.Apps;
 
 public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
 {
+    private readonly object _commandAliasesLock = new();
+
     // "none" instead of "0": the original default was accidentally "0", so existing
     // users may have "0" stored. Using "none" lets us distinguish intentional "show
     // no results" from the old accidental default (which is now treated as "use default").
@@ -158,8 +162,13 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
     }
 
     public AllAppsSettings()
+        : this(SettingsJsonPath())
     {
-        FilePath = SettingsJsonPath();
+    }
+
+    public AllAppsSettings(string filePath)
+    {
+        FilePath = filePath;
 
         Settings.Add(_enableStartMenuSource);
         Settings.Add(_includeNonAppsInStartMenu);
@@ -173,5 +182,38 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         LoadSettings();
 
         Settings.SettingsChanged += (s, a) => this.SaveSettings();
+    }
+
+    private AppCommandAliasStore? _commandAliasStore;
+
+    /// <summary>Retains released IDs in the alias file used by the catalog migration.</summary>
+    internal IReadOnlyDictionary<string, string> RetainAppCommandAliases(IEnumerable<AppItem> apps)
+    {
+        lock (_commandAliasesLock)
+        {
+            _commandAliasStore ??= new AppCommandAliasStore(AppCommandAliasesPath(FilePath));
+            var aliases = AppCatalogCommandAliases.Retain(_commandAliasStore.GetSnapshot(), apps);
+            _commandAliasStore.SetSnapshot(aliases);
+            return aliases;
+        }
+    }
+
+    internal Task WaitForAliasSavesAsync()
+    {
+        lock (_commandAliasesLock)
+        {
+            return _commandAliasStore?.WaitForSavesAsync() ?? Task.CompletedTask;
+        }
+    }
+
+    internal static string AppCommandAliasesPath(string settingsPath)
+    {
+        var name = Path.GetFileNameWithoutExtension(settingsPath);
+        if (name.EndsWith(".settings", StringComparison.OrdinalIgnoreCase))
+        {
+            name = name[..^".settings".Length];
+        }
+
+        return Path.Combine(Path.GetDirectoryName(settingsPath) ?? string.Empty, $"{name}.aliases.json");
     }
 }

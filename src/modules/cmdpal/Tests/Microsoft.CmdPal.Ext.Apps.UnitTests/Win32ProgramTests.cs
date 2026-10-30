@@ -50,6 +50,7 @@ public class Win32ProgramTests
             Assert.AreEqual(shortcutPath, program.LnkFilePath);
 
             Assert.AreEqual("/c echo shortcut", program.Arguments);
+            Assert.AreEqual(Environment.SystemDirectory, program.WorkingDirectory);
         }
         finally
         {
@@ -57,5 +58,15 @@ public class Win32ProgramTests
             Marshal.FinalReleaseComObject(shell);
             File.Delete(shortcutPath);
         }
+    }
+
+    [TestMethod]
+    public void DeduplicatePrograms_UrlPayloadDiffersByCase_KeepsBothPrograms()
+    {
+        var first = TestDataHelper.CreateTestWin32Program("Game", "com.epicgames.launcher://apps/Example?action=launch");
+        first.AppType = Win32Program.ApplicationType.InternetShortcutApplication;
+        var second = TestDataHelper.CreateTestWin32Program("Game", "com.epicgames.launcher://apps/example?action=launch");
+        second.AppType = Win32Program.ApplicationType.InternetShortcutApplication;
+        Assert.AreEqual(2, Win32Program.DeduplicatePrograms([first, second]).Count);
     }
 }

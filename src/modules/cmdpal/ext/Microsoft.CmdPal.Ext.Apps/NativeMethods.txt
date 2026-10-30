@@ -24,3 +24,9 @@ GetDIBits
 GetDC
 ReleaseDC
 SIIGBF
+IPropertyStore
+SHGetPropertyStoreFromParsingName
+PKEY_Link_TargetParsingPath
+PKEY_AppUserModel_ID
+PropVariantClear
+PropVariantToStringAlloc

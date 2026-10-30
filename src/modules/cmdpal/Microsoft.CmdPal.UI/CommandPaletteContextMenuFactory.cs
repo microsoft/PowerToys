@@ -27,19 +27,23 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly ICmdPalProtocolActivation _protocolActivation;
     private readonly IAppStateService _appStateService;
+    private readonly AllAppsPage _allAppsPage;
     private readonly IMonitorService? _monitorService;
 
+    /// <summary>Initializes a new instance of the <see cref="CommandPaletteContextMenuFactory"/> class. Creates host context commands using shared app resolution for pins and history.</summary>
     public CommandPaletteContextMenuFactory(
         ISettingsService settingsService,
         TopLevelCommandManager topLevelCommandManager,
         ICmdPalProtocolActivation protocolActivation,
         IAppStateService appStateService,
-        IMonitorService? monitorService = null)
+        IMonitorService? monitorService = null,
+        AllAppsPage? allAppsPage = null)
     {
         _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
         _protocolActivation = protocolActivation;
         _appStateService = appStateService;
+        _allAppsPage = allAppsPage ?? AllAppsCommandProvider.Page;
         _monitorService = monitorService;
     }
 
@@ -136,7 +140,11 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                 moreCommands.Add(new Separator());
             }
 
-            moreCommands.Add(new CommandContextItem(new RemoveFromRecentCommand(recentCommandItem.CommandId, _appStateService))
+            var appSource = sourceModel is AppListItem
+                || sourceModel is TopLevelViewModel { CommandProviderId: AllAppsCommandProvider.WellKnownId }
+                ? _allAppsPage
+                : null;
+            moreCommands.Add(new CommandContextItem(new RemoveFromRecentCommand(recentCommandItem.CommandId, _appStateService, appSource))
             {
                 IsCritical = true,
             });
@@ -396,28 +404,40 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
     {
         private readonly string _commandId;
         private readonly IAppStateService _appStateService;
+        private readonly AllAppsPage? _allAppsPage;
 
         public override IconInfo Icon => Icons.DeleteIcon;
 
         public override string Name => RS_.GetString("recent_commands_remove_name");
 
-        public RemoveFromRecentCommand(string commandId, IAppStateService appStateService)
+        /// <summary>Initializes a new instance of the <see cref="RemoveFromRecentCommand"/> class. Creates a history-removal command that also removes equivalent saved app IDs.</summary>
+        public RemoveFromRecentCommand(string commandId, IAppStateService appStateService, AllAppsPage? allAppsPage)
         {
             _commandId = commandId;
             _appStateService = appStateService;
+            _allAppsPage = allAppsPage;
         }
 
         public override CommandResult Invoke()
         {
+            var appSnapshot = _allAppsPage?.GetSnapshot();
+            Func<string, string>? canonicalId = appSnapshot is null
+                ? null
+                : savedId => appSnapshot.GetVisibleApp(savedId)?.Command?.Id ?? savedId;
             var current = _appStateService.State.RecentCommands;
-            if (ReferenceEquals(current, current.WithoutHistoryItem(_commandId)))
+            var withoutItem = canonicalId is null
+                ? current.WithoutHistoryItem(_commandId)
+                : current.WithoutHistoryItem(_commandId, canonicalId);
+            if (ReferenceEquals(current, withoutItem))
             {
                 return CommandResult.KeepOpen();
             }
 
             _appStateService.UpdateState(state => state with
             {
-                RecentCommands = state.RecentCommands.WithoutHistoryItem(_commandId),
+                RecentCommands = canonicalId is null
+                    ? state.RecentCommands.WithoutHistoryItem(_commandId)
+                    : state.RecentCommands.WithoutHistoryItem(_commandId, canonicalId),
             });
             return CommandResult.KeepOpen();
         }
