@@ -119,11 +119,12 @@ public class Win32AppPayloadTests
         try
         {
             var settings = new AllAppsSettings(settingsPath);
+            using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
             settings.Settings.Update(new JsonObject
             {
                 ["apps.ExcludedAppNames"] = new JsonArray(JsonValue.Create(pattern)),
             }.ToJsonString());
-            using var visibility = new SettingsAppVisibilityStore(settings);
+            var visibility = new AppVisibilityStore(TestDataHelper.GetVisibilityPath(settings.FilePath));
             var item = new AppCatalogItem(
                 "win32:app",
                 0,
@@ -138,7 +139,7 @@ public class Win32AppPayloadTests
                     Description = "Description only",
                 });
 
-            Assert.AreEqual(expectedHidden ? AppVisibility.HiddenByPattern : AppVisibility.Visible, visibility.GetVisibility(item));
+            Assert.AreEqual(expectedHidden ? AppVisibility.HiddenByPattern : AppVisibility.Visible, TestDataHelper.GetVisibility(visibility, item, settings: settings, aliases: settingsAliases));
         }
         finally
         {
