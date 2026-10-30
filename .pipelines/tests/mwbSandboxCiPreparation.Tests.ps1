@@ -841,8 +841,8 @@ Describe 'MWB gated preparation source contracts' {
         $script | Should Match "\`$task.Principal.RunLevel -ne 'Limited'"
         $script | Should Match "\`$task.Principal.LogonType -ne 'Interactive'"
         $script | Should Match '-MwbRecoveryJournal \$journalPath -TimeoutMinutes 4'
-        $script | Should Match 'AddSeconds\(90\)'
-        $script | Should Match 'New-TimeSpan -Minutes 20'
+        $script | Should Match 'Wait-MwbProvisioningReady -RunId'
+        $script | Should Match 'New-TimeSpan -Minutes 22'
     }
 
     It 'writes the prerequisite report before any BLOCKED_INFRASTRUCTURE preflight throw or run-root creation' {

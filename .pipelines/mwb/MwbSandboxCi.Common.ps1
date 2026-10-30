@@ -56,6 +56,58 @@ function Get-MwbUiTestSelection {
     }
 }
 
+function Wait-MwbProvisioningReady {
+    param(
+        [Parameter(Mandatory)][guid] $RunId,
+        [Parameter(Mandatory)][string] $ProductRoot,
+        [Parameter(Mandatory)][scriptblock] $ReadState
+    )
+
+    $preparingPayload = $false
+    $deadline = (Get-Date -AsUTC).AddSeconds(90)
+    while ($true) {
+        $state = & $ReadState
+        $now = Get-Date -AsUTC
+        if ($now -ge $deadline) {
+            if ($preparingPayload) {
+                throw 'BLOCKED_INFRASTRUCTURE: payload fingerprinting and trust preparation did not finish within 300 seconds.'
+            }
+            throw 'BLOCKED_INFRASTRUCTURE: provisioning worker did not start within 90 seconds.'
+        }
+        if ($null -ne $state.Started) {
+            if ($state.Started.RunId -cne $RunId.ToString() -or
+                $state.Started.ProductRoot -ine $ProductRoot -or $state.Started.Status -cne 'Started') {
+                throw 'BLOCKED_INFRASTRUCTURE: provisioning startup acknowledgement does not match this run and payload.'
+            }
+            if (-not $preparingPayload) {
+                $preparingPayload = $true
+                $deadline = $now.AddSeconds(300)
+                Write-Host 'Provisioning worker started; payload fingerprinting and trust preparation have a separate 300-second deadline.'
+            }
+        }
+        if ($null -ne $state.Marker) {
+            if ($state.Marker.RunId -ceq $RunId.ToString()) {
+                if ($state.Marker.ProductRoot -ine $ProductRoot) {
+                    throw 'BLOCKED_INFRASTRUCTURE: provisioning marker does not match this payload.'
+                }
+                if ($state.Marker.Status -in @('WaitingForSandbox', 'Ready')) {
+                    return $state.Marker
+                }
+                if ($state.Marker.Status -ne 'PreparingTrust') {
+                    throw "BLOCKED_INFRASTRUCTURE: privileged setup status is $($state.Marker.Status)."
+                }
+            }
+            elseif ($state.Marker.Status -ne 'Removed') {
+                throw 'BLOCKED_INFRASTRUCTURE: provisioning marker belongs to another run.'
+            }
+        }
+        if ($state.TaskHasRun -and -not $state.TaskRunning) {
+            throw "BLOCKED_INFRASTRUCTURE: provisioning exited before readiness (scheduler result $($state.TaskResult))."
+        }
+        Start-Sleep -Seconds 1
+    }
+}
+
 function Invoke-MwbCiPhase {
     param(
         [Parameter(Mandatory)][string] $ScriptPath,
