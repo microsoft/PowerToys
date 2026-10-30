@@ -71,10 +71,16 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
                 _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { Backdrop = value } });
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(BackdropIndex));
+                OnPropertyChanged(nameof(IsMicaBackdrop));
+                OnPropertyChanged(nameof(SupportsColorization));
                 DebouncedReapply();
             }
         }
     }
+
+    public bool IsMicaBackdrop => Backdrop is DockBackdrop.Mica or DockBackdrop.MicaAlt;
+
+    public bool SupportsColorization => !IsMicaBackdrop;
 
     public ColorizationMode ColorizationMode
     {

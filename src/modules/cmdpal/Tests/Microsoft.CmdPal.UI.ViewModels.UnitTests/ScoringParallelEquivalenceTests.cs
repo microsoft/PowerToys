@@ -8,6 +8,7 @@ using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.CmdPal.UI.ViewModels.UnitTests.ScoringTestCatalog;
@@ -37,16 +38,16 @@ public sealed partial class ScoringParallelEquivalenceTests
 
     public TestContext TestContext { get; set; } = null!;
 
-    private static ScoringFunction<IListItem> BuildScoringFunction(
+    private static ScoringFunction<InProcObject<IListItem>> BuildScoringFunction(
         IRecentCommandsManager history,
         IPrecomputedFuzzyMatcher matcher)
-        => (in FuzzyQuery query, IListItem item) =>
+        => (in FuzzyQuery query, InProcObject<IListItem> item) =>
             MainListPage.ScoreTopLevelItem(query, item, history, matcher, null);
 
     private static void AssertOrderedResultsIdentical(
         string context,
-        RoScored<IListItem>[] reference,
-        RoScored<IListItem>[] candidate)
+        RoScored<InProcObject<IListItem>>[] reference,
+        RoScored<InProcObject<IListItem>>[] candidate)
     {
         Assert.AreEqual(reference.Length, candidate.Length, $"[{context}] result count must match the sequential reference.");
 
@@ -78,7 +79,7 @@ public sealed partial class ScoringParallelEquivalenceTests
         var matcher = CreateMatcher();
         var history = SeedHistory(apps, HistorySeedCount);
         var scoringFn = BuildScoringFunction(history, matcher);
-        var source = apps.Cast<IListItem>().ToArray();
+        var source = apps.Select(item => new InProcObject<IListItem>(item)).ToArray();
 
         // Mirror the product: build the frecency index once before the parallel pass reads it.
         history.PrewarmIndex();
@@ -106,7 +107,7 @@ public sealed partial class ScoringParallelEquivalenceTests
         var matcher = CreateMatcher();
         var history = SeedHistory(apps, HistorySeedCount);
         var scoringFn = BuildScoringFunction(history, matcher);
-        var source = apps.Cast<IListItem>().ToArray();
+        var source = apps.Select(item => new InProcObject<IListItem>(item)).ToArray();
 
         history.PrewarmIndex();
 
@@ -144,7 +145,7 @@ public sealed partial class ScoringParallelEquivalenceTests
         var matcher = CreateMatcher();
         var history = SeedHistory(apps, HistorySeedCount);
         var scoringFn = BuildScoringFunction(history, matcher);
-        var source = apps.Cast<IListItem>().ToArray();
+        var source = apps.Select(item => new InProcObject<IListItem>(item)).ToArray();
 
         history.PrewarmIndex();
 
@@ -170,7 +171,7 @@ public sealed partial class ScoringParallelEquivalenceTests
         var matcher = CreateMatcher();
         var history = SeedHistory(commands, HistorySeedCount);
         var scoringFn = BuildScoringFunction(history, matcher);
-        var source = commands.Cast<IListItem>().ToArray();
+        var source = commands.Select(item => new InProcObject<IListItem>(item)).ToArray();
 
         history.PrewarmIndex();
 
@@ -195,7 +196,7 @@ public sealed partial class ScoringParallelEquivalenceTests
         var matcher = CreateMatcher();
         var history = SeedHistory(apps, HistorySeedCount);
         var scoringFn = BuildScoringFunction(history, matcher);
-        var source = apps.Cast<IListItem>().ToArray();
+        var source = apps.Select(item => new InProcObject<IListItem>(item)).ToArray();
 
         history.PrewarmIndex();
 
@@ -220,22 +221,22 @@ public sealed partial class ScoringParallelEquivalenceTests
         var apps = BuildCatalog(AppCount, "app");
         var matcher = CreateMatcher();
         var history = SeedHistory(apps, HistorySeedCount);
-        var source = apps.Cast<IListItem>().ToArray();
+        var source = apps.Select(item => new InProcObject<IListItem>(item)).ToArray();
 
         history.PrewarmIndex();
 
         // A non-default weight, so the value has to actually flow through to the packed score.
         const ProviderSearchWeight weight = ProviderSearchWeight.Higher;
-        Func<IListItem, ProviderSearchWeight> perItemLookup = _ => weight;
-        Func<IListItem, ProviderSearchWeight> constantLookup = _ => weight;
+        Func<InProcObject<IListItem>, ProviderSearchWeight> perItemLookup = _ => weight;
+        Func<InProcObject<IListItem>, ProviderSearchWeight> constantLookup = _ => weight;
 
         // Captured once before the loop, exactly as the product captures scoringNow. The reference
         // path below omits it, so it reads the current time per call.
         var capturedNow = DateTimeOffset.UtcNow;
 
-        ScoringFunction<IListItem> liveReadScorer = (in FuzzyQuery query, IListItem item) =>
+        ScoringFunction<InProcObject<IListItem>> liveReadScorer = (in FuzzyQuery query, InProcObject<IListItem> item) =>
             MainListPage.ScoreTopLevelItem(query, item, history, matcher, perItemLookup);
-        ScoringFunction<IListItem> capturedContextScorer = (in FuzzyQuery query, IListItem item) =>
+        ScoringFunction<InProcObject<IListItem>> capturedContextScorer = (in FuzzyQuery query, InProcObject<IListItem> item) =>
             MainListPage.ScoreTopLevelItem(query, item, history, matcher, constantLookup, capturedNow);
 
         foreach (var raw in Queries)
