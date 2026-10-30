@@ -40,27 +40,11 @@ public sealed partial class ListItemsView : UserControl, IPageInteractionTarget,
     private static readonly CompositeFormat _numberedShortcutAcceleratorFormat =
         CompositeFormat.Parse(RS_.GetString("ListItemNumberedShortcutAcceleratorFormat"));
 
-    private const string ResultsChangedActivityId = "CommandPaletteResultsChanged";
-
-    // Long enough to let fast typing settle, short enough to feel immediate.
-    private static readonly TimeSpan ResultsAnnouncementDelay = TimeSpan.FromMilliseconds(300);
-
-    private static readonly CompositeFormat _resultsCountFormat =
-        CompositeFormat.Parse(RS_.GetString("ListItemsView_ResultsCountAnnouncementFormat"));
-
-    private static readonly CompositeFormat _resultsWithSelectedItemFormat =
-        CompositeFormat.Parse(RS_.GetString("ListItemsView_ResultsWithSelectedItemAnnouncementFormat"));
-
     private readonly Dictionary<SelectorItem, (ListViewBase Owner, ListItemRealizationRegistration Registration)> _realizedItems = new(64);
 
     private readonly AccessKeyModeController _accessKeyMode;
 
     private InputSource _lastInputSource;
-
-    private Microsoft.UI.Dispatching.DispatcherQueueTimer? _resultsAnnouncementTimer;
-    private (string SearchText, string? FilterId)? _resultsAnnouncementBaseline;
-    private string? _lastResultsAnnouncement;
-    private (string SearchText, string? FilterId, string? SelectedTitle, bool HasResults)? _lastResultsAnnouncementState;
 
     private int _itemsUpdatedVersion;
     private int _keyboardNavigationVersion;
@@ -159,7 +143,6 @@ public sealed partial class ListItemsView : UserControl, IPageInteractionTarget,
     {
         _isLoaded = false;
         _lastInputSource = InputSource.None;
-        _resultsAnnouncementTimer?.Stop();
         _accessKeyMode.IsActiveChanged -= AccessKeyMode_IsActiveChanged;
         SetNumberedShortcutCuesVisibility(false);
 
@@ -345,9 +328,6 @@ public sealed partial class ListItemsView : UserControl, IPageInteractionTarget,
             _scrollOnNextSelectionChange = false;
             ScrollToItem(li);
         }
-
-        // The selection announcement supersedes a pending results announcement.
-        _resultsAnnouncementTimer?.Stop();
 
         // Automation notification for screen readers
         var listViewPeer = ListViewAutomationPeer.CreatePeerForElement(ItemView);
@@ -1060,7 +1040,6 @@ public sealed partial class ListItemsView : UserControl, IPageInteractionTarget,
             @this.CancelPendingGridActions();
             @this.CancelPendingContextMenuOpen();
             @this.ReleaseRealizedItems();
-            @this.ResetResultsAnnouncement(e.NewValue as ListViewModel);
 
             if (e.OldValue is ListViewModel old)
             {
@@ -1130,102 +1109,6 @@ public sealed partial class ListItemsView : UserControl, IPageInteractionTarget,
         var version = Interlocked.Increment(ref _itemsUpdatedVersion);
         ProcessItemsUpdated(sender, args, version);
         QueueViewportFillCheck();
-        QueueResultsAnnouncement();
-    }
-
-    private void ResetResultsAnnouncement(ListViewModel? page)
-    {
-        _resultsAnnouncementTimer?.Stop();
-        _lastResultsAnnouncement = null;
-        _lastResultsAnnouncementState = null;
-        _resultsAnnouncementBaseline = page is null ? null : (page.SearchTextBox, page.Filters?.CurrentFilterId);
-    }
-
-    // Debounced so that fast typing announces only the settled results.
-    private void QueueResultsAnnouncement()
-    {
-        if (_resultsAnnouncementTimer is null)
-        {
-            _resultsAnnouncementTimer = DispatcherQueue.CreateTimer();
-            _resultsAnnouncementTimer.IsRepeating = false;
-            _resultsAnnouncementTimer.Interval = ResultsAnnouncementDelay;
-            _resultsAnnouncementTimer.Tick += (_, _) => AnnounceResults();
-        }
-
-        _resultsAnnouncementTimer.Stop();
-        _resultsAnnouncementTimer.Start();
-    }
-
-    private void AnnounceResults()
-    {
-        var vm = ViewModel;
-        if (vm is null || !_isLoaded)
-        {
-            return;
-        }
-
-        // Stay quiet for the initial population of a page; the user hasn't searched yet.
-        var searchText = vm.SearchTextBox;
-        var filterId = vm.Filters?.CurrentFilterId;
-        if (_lastResultsAnnouncement is null && (searchText, filterId) == _resultsAnnouncementBaseline)
-        {
-            return;
-        }
-
-        var resultCount = 0;
-        foreach (var item in vm.FilteredItems)
-        {
-            if (item.IsInteractive)
-            {
-                resultCount++;
-            }
-        }
-
-        var selectedTitle = resultCount > 0 ? (ItemView.SelectedItem as ListItemViewModel)?.Title : null;
-
-        // Late results for the same query (e.g. fallbacks) only change the count;
-        // re-announcing them would interrupt the previous announcement.
-        var state = (searchText, filterId, selectedTitle, resultCount > 0);
-        if (_lastResultsAnnouncementState == state)
-        {
-            return;
-        }
-
-        var announcement = SearchResultsAnnouncement.Compose(
-            resultCount,
-            selectedTitle,
-            RS_.GetString("ListItemsView_NoResultsAnnouncement"),
-            RS_.GetString("ListItemsView_OneResultAnnouncement"),
-            _resultsCountFormat,
-            _resultsWithSelectedItemFormat,
-            CultureInfo.CurrentCulture);
-
-        if (announcement == _lastResultsAnnouncement)
-        {
-            return;
-        }
-
-        // This UserControl has no automation peer, so raise on whichever
-        // element is currently shown: the list or the empty-state title.
-        FrameworkElement? target = vm.ShowEmptyContent ? EmptyContentTitle : ItemView;
-        if (target is null || !target.IsLoaded)
-        {
-            return;
-        }
-
-        var peer = FrameworkElementAutomationPeer.FromElement(target) ?? FrameworkElementAutomationPeer.CreatePeerForElement(target);
-        if (peer is null)
-        {
-            return;
-        }
-
-        _lastResultsAnnouncement = announcement;
-        _lastResultsAnnouncementState = state;
-        peer.RaiseNotificationEvent(
-            AutomationNotificationKind.ActionCompleted,
-            AutomationNotificationProcessing.MostRecent,
-            announcement,
-            ResultsChangedActivityId);
     }
 
     private void ProcessItemsUpdated(ListViewModel sender, ItemsUpdatedEventArgs args, long version)
