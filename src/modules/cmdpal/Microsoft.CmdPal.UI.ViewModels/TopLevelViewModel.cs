@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
@@ -21,6 +22,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem, IExtendedAttributesProvider, IPrecomputedListItem, ICommandContextSource
 {
+    private static readonly IExtensionObject<IFallbackHandler2> EmptyFallbackQueryHandler = new ExtensionObject<IFallbackHandler2>(null);
+
     private readonly ISettingsService _settingsService;
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
@@ -95,9 +98,11 @@ public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem,
 
     internal virtual bool IsFallbackV2 => false;
 
-    internal virtual IFallbackHandler2? FallbackQueryHandler => null;
+    internal virtual IExtensionObject<IFallbackHandler2> FallbackQueryHandler => EmptyFallbackQueryHandler;
 
-    internal bool IsPassiveFallback => IsFallbackV2 && FallbackQueryHandler is null;
+    internal bool HasFallbackQueryHandler => FallbackQueryHandler.HasValue;
+
+    internal bool IsPassiveFallback => IsFallbackV2 && !HasFallbackQueryHandler;
 
     internal string FallbackKey => $"{CommandProviderId}\0{Id}";
 

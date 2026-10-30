@@ -36,7 +36,9 @@ public sealed partial class FallbackCommandHostTests
             Assert.IsTrue(source.IsFallback);
             Assert.IsTrue(source.IsFallbackV2);
             Assert.AreEqual(!hasQueryHandler, source.IsPassiveFallback);
-            Assert.AreSame(fallback.QueryHandler, source.FallbackQueryHandler);
+            Assert.AreEqual(hasQueryHandler, source.HasFallbackQueryHandler);
+            Assert.AreEqual(hasQueryHandler, source.FallbackQueryHandler.HasValue);
+            Assert.AreSame(fallback.QueryHandler, source.FallbackQueryHandler.Unsafe);
             Assert.AreEqual("fallback", source.Id);
             Assert.AreEqual("Test fallback", source.DisplayTitle);
             Assert.IsTrue(source.IsEnabled);
@@ -353,6 +355,8 @@ public sealed partial class FallbackCommandHostTests
             source.SafeUpdateFallbackTextSynchronous("query", "query-id", CancellationToken.None);
             Assert.IsFalse(source.IsFallbackV2);
             Assert.IsFalse(source.IsPassiveFallback);
+            Assert.IsFalse(source.HasFallbackQueryHandler);
+            Assert.IsFalse(source.FallbackQueryHandler.HasValue);
             Assert.AreEqual(1, fallback.UpdateCount);
             Assert.AreSame(fallback.Command, source.CommandViewModel.Model.Unsafe);
             Assert.IsFalse(source.PreparePassiveFallback("query", "query-id", CancellationToken.None));
@@ -391,6 +395,10 @@ public sealed partial class FallbackCommandHostTests
         try
         {
             Assert.IsFalse(source.IsPassiveFallback);
+            var handler = source.FallbackQueryHandler;
+            Assert.IsTrue(source.HasFallbackQueryHandler);
+            Assert.IsTrue(handler.HasValue);
+            Assert.AreSame(handler, source.FallbackQueryHandler);
             Assert.IsFalse(source.PreparePassiveFallback("query", "query-id", CancellationToken.None));
             source.InitializeProperties();
             Assert.AreEqual(1, fallback.QueryHandlerReadCount);
@@ -400,6 +408,23 @@ public sealed partial class FallbackCommandHostTests
         {
             source.Cleanup();
         }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task FallbackCleanup_HidesQueryHandlerWithoutReadingExtension(bool hasQueryHandler)
+    {
+        var fallback = new RecordingFallback { QueryHandler = hasQueryHandler ? new RecordingQueryHandler() : null };
+        await using var services = CreateServices();
+        var source = await LoadFallbackAsync(fallback, services);
+
+        source.Cleanup();
+
+        Assert.IsFalse(source.HasFallbackQueryHandler);
+        Assert.IsFalse(source.FallbackQueryHandler.HasValue);
+        Assert.IsNull(source.FallbackQueryHandler.Unsafe);
+        Assert.AreEqual(1, fallback.QueryHandlerReadCount);
     }
 
     private static void PrepareQuery(TopLevelViewModel source, CancellationToken token)
