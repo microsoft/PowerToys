@@ -760,7 +760,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             using var currentIdentity = WindowsIdentity.GetCurrent();
             for (var connection = 0; connection < connections; connection++)
             {
-                await using var server = RestrictedNamedPipeServer.Create(pipeName, currentIdentity.User!);
+                await using var server = await CreateSettingsServerAsync(pipeName, currentIdentity.User!, cancellationToken);
                 await server.WaitForConnectionAsync(cancellationToken);
                 using var serverRpc = JsonRpc.Attach(server, target);
                 await serverRpc.Completion.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
@@ -768,6 +768,24 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 {
                     // Pipe EOF does not mean the queued notification handler has completed.
                     await notificationDelivery.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
+                }
+            }
+        }
+
+        private static async Task<NamedPipeServerStream> CreateSettingsServerAsync(string pipeName, SecurityIdentifier allowedUser, CancellationToken cancellationToken)
+        {
+            const int ErrorPipeBusy = 231;
+            while (true)
+            {
+                try
+                {
+                    return RestrictedNamedPipeServer.Create(pipeName, allowedUser);
+                }
+                catch (Win32Exception error) when (error.NativeErrorCode == ErrorPipeBusy)
+                {
+                    // The previous single-instance pipe stays open until its pending I/O completes.
+                    // IpcChannel.StartVerifiedIpcServer retries Create the same way.
+                    await Task.Delay(50, cancellationToken);
                 }
             }
         }
