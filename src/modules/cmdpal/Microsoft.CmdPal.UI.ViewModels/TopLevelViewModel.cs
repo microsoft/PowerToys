@@ -22,7 +22,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem, IExtendedAttributesProvider, IPrecomputedListItem, ICommandContextSource
 {
-    private static readonly IExtensionObject<IFallbackHandler2> EmptyFallbackQueryHandler = new ExtensionObject<IFallbackHandler2>(null);
+    private static readonly ExtensionObject<IFallbackHandler2> EmptyFallbackQueryHandler = new(null);
 
     private readonly ISettingsService _settingsService;
     private readonly IServiceProvider _serviceProvider;
@@ -98,7 +98,7 @@ public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem,
 
     internal virtual bool IsFallbackV2 => false;
 
-    internal virtual IExtensionObject<IFallbackHandler2> FallbackQueryHandler => EmptyFallbackQueryHandler;
+    internal virtual ExtensionObject<IFallbackHandler2> FallbackQueryHandler => EmptyFallbackQueryHandler;
 
     internal bool HasFallbackQueryHandler => FallbackQueryHandler.HasValue;
 

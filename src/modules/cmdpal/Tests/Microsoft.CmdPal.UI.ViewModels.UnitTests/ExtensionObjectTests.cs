@@ -123,23 +123,6 @@ public sealed class ExtensionObjectTests
         }
     }
 
-    [TestMethod]
-    public void ReadOnlyInterface_PreservesPresenceAndTargetWithoutCallingIntoExtension()
-    {
-        var target = new ThrowingEquality();
-        IExtensionObject<ThrowingEquality> wrapper = new ExtensionObject<ThrowingEquality>(target);
-        IExtensionObject<ThrowingEquality> empty = new ExtensionObject<ThrowingEquality>(null);
-
-        Assert.IsFalse(empty.HasValue);
-        Assert.IsNull(empty.Unsafe);
-        Assert.IsTrue(wrapper.HasValue);
-        if (wrapper.HasValue)
-        {
-            Assert.AreSame(target, wrapper.Unsafe);
-            Assert.AreEqual(typeof(ThrowingEquality), wrapper.Unsafe.GetType());
-        }
-    }
-
     private sealed class AlwaysEqual
     {
         public override bool Equals(object? obj) => true;
