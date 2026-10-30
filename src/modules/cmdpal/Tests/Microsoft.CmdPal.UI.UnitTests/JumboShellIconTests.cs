@@ -33,10 +33,7 @@ public class JumboShellIconTests
             shortcut.IconLocation = $"{iconPath},0";
             shortcut.Save();
 
-            using var appIcon = await AppIconProtocolProcessor.Instance.PrepareAsync(
-                AppIconProtocol.CreateJumbo(shortcutPath),
-                requestedSize,
-                ElementTheme.Default);
+            using var appIcon = await AppIconProtocolProcessor.Instance.PrepareAsync(AppIconProtocol.CreateJumbo(shortcutPath), requestedSize, new IconRenderContext(ElementTheme.Default, default));
             using var prepared = appIcon.TakePreparedIcon();
             Assert.IsNotNull(prepared?.SoftwareBitmap);
             var bitmap = prepared.SoftwareBitmap;
