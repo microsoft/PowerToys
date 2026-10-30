@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
@@ -17,6 +16,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
 internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
 {
     private readonly IReadOnlyList<string> _directories;
+    private readonly IReadOnlyList<string> _excludedDirectories;
     private readonly List<string> _suffixes;
 
     public abstract string Id { get; }
@@ -49,6 +49,10 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
     public string ConfigurationKey
         => $"{IsEnabled}|{Profile}|{MaximumDepth}|{string.Join(';', _suffixes)}|{string.Join(';', _directories)}{ExclusionKey}";
 
+    private string ExclusionKey => _excludedDirectories.Count == 0
+        ? string.Empty
+        : $"|exclude:{string.Join(';', _excludedDirectories)}";
+
     public IReadOnlyList<string> WatchPaths
     {
         get
@@ -73,6 +77,21 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
         }
     }
 
+    /// <summary>Initializes a new instance of the <see cref="DirectoryWin32ProgramSource"/> class. Captures discovery roots, supported suffixes, and folders excluded from enumeration.</summary>
+    protected DirectoryWin32ProgramSource(
+        IReadOnlyList<string> directories,
+        IReadOnlyList<string> suffixes,
+        IReadOnlyList<string>? excludedDirectories = null)
+    {
+        ArgumentNullException.ThrowIfNull(directories);
+        ArgumentNullException.ThrowIfNull(suffixes);
+
+        _directories = directories;
+        _excludedDirectories = excludedDirectories ?? [];
+        _suffixes = new List<string>(suffixes);
+    }
+
+    /// <inheritdoc />
     public IEnumerable<string> GetPaths()
     {
         foreach (var candidate in GetCandidates())
@@ -81,11 +100,12 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
         }
     }
 
+    /// <inheritdoc />
     public IEnumerable<Win32ProgramCandidate> GetCandidates(Action<string, Exception>? onError = null, CancellationToken cancellationToken = default)
     {
         foreach (var directory in WatchPaths)
         {
-            foreach (var path in Win32Program.EnumerateProgramPaths(directory, _suffixes, MaximumDepth, onError, IsExcludedPath, cancellationToken))
+            foreach (var path in Win32FileEnumerator.EnumerateFiles(directory, _suffixes, MaximumDepth, onError, IsExcludedPath, cancellationToken))
             {
                 if (!IsExcludedPath(path))
                 {
@@ -95,6 +115,7 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
         }
     }
 
+    /// <inheritdoc />
     public IEnumerable<string> GetPathsForChange(
         string path,
         Action<string, Exception>? onError = null,
@@ -112,61 +133,61 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
             yield break;
         }
 
-        FileAttributes attributes;
-        try
-        {
-            attributes = File.GetAttributes(normalizedPath);
-        }
-        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
-        {
-            onMissing?.Invoke(normalizedPath);
-            yield break;
-        }
-        catch (Exception ex)
-        {
-            onError?.Invoke(normalizedPath, ex);
-            yield break;
-        }
-
-        if ((attributes & FileAttributes.Directory) == 0)
-        {
-            if (HasSupportedSuffix(normalizedPath) && IsCandidateFileInSource(normalizedPath))
-            {
-                yield return normalizedPath;
-            }
-
-            yield break;
-        }
-
         var emittedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var configuredDirectory in _directories)
         {
             var sourceRoot = PathHelpers.NormalizePath(configuredDirectory);
-            string enumerationRoot;
-            int maximumDepth;
-            if (TryGetDirectoryDepth(sourceRoot, normalizedPath, out var dirtyDirectoryDepth))
+            var isWithinSource = TryGetDirectoryDepth(sourceRoot, normalizedPath, out var dirtyPathDepth);
+            if (isWithinSource)
             {
-                if (dirtyDirectoryDepth > MaximumDepth)
+                if (dirtyPathDepth > 0
+                    && (dirtyPathDepth - 1 > MaximumDepth
+                        || !CanEnumerateDirectory(sourceRoot, Path.GetDirectoryName(normalizedPath)!, onError, onMissing, cancellationToken)))
                 {
                     continue;
                 }
-
-                enumerationRoot = normalizedPath;
-                maximumDepth = MaximumDepth == int.MaxValue
-                    ? int.MaxValue
-                    : MaximumDepth - dirtyDirectoryDepth;
             }
-            else if (TryGetDirectoryDepth(normalizedPath, sourceRoot, out _))
-            {
-                enumerationRoot = sourceRoot;
-                maximumDepth = MaximumDepth;
-            }
-            else
+            else if (!TryGetDirectoryDepth(normalizedPath, sourceRoot, out _))
             {
                 continue;
             }
 
-            foreach (var candidatePath in Win32Program.EnumerateProgramPaths(enumerationRoot, _suffixes, maximumDepth, onError, IsExcludedPath, cancellationToken))
+            FileAttributes attributes;
+            try
+            {
+                attributes = Win32FileEnumerator.FileWrapper.GetAttributes(normalizedPath);
+                if (isWithinSource && dirtyPathDepth > 0 && (attributes & FileAttributes.Directory) != 0
+                    && (dirtyPathDepth > MaximumDepth || Win32FileEnumerator.ShouldSkipSubdirectory(normalizedPath, attributes)))
+                {
+                    continue;
+                }
+            }
+            catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+            {
+                onMissing?.Invoke(normalizedPath);
+                yield break;
+            }
+            catch (Exception ex)
+            {
+                onError?.Invoke(normalizedPath, ex);
+                yield break;
+            }
+
+            if ((attributes & FileAttributes.Directory) == 0)
+            {
+                if (isWithinSource && HasSupportedSuffix(normalizedPath))
+                {
+                    yield return normalizedPath;
+                }
+
+                yield break;
+            }
+
+            var enumerationRoot = isWithinSource ? normalizedPath : sourceRoot;
+            var maximumDepth = isWithinSource && MaximumDepth != int.MaxValue
+                ? MaximumDepth - dirtyPathDepth
+                : MaximumDepth;
+            foreach (var candidatePath in Win32FileEnumerator.EnumerateFiles(enumerationRoot, _suffixes, maximumDepth, onError, IsExcludedPath, cancellationToken))
             {
                 if (!IsExcludedPath(candidatePath) && emittedPaths.Add(candidatePath))
                 {
@@ -176,6 +197,8 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
         }
     }
 
+    /// <inheritdoc />
+    /// <remarks>Excluded folders still invalidate existing items so reconciliation can remove them.</remarks>
     public bool IsRelevantPath(string path)
     {
         if (string.IsNullOrWhiteSpace(path))
@@ -222,24 +245,56 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
         return false;
     }
 
-    private bool IsCandidateFileInSource(string path)
+    private bool IsExcludedPath(string path)
     {
-        var parentDirectory = Path.GetDirectoryName(path);
-        if (string.IsNullOrEmpty(parentDirectory))
+        foreach (var directory in _excludedDirectories)
         {
-            return false;
-        }
-
-        foreach (var configuredDirectory in _directories)
-        {
-            if (TryGetDirectoryDepth(PathHelpers.NormalizePath(configuredDirectory), parentDirectory, out var depth)
-                && depth <= MaximumDepth)
+            if (!string.IsNullOrWhiteSpace(directory) && TryGetDirectoryDepth(directory, path, out _))
             {
                 return true;
             }
         }
 
         return false;
+    }
+
+    private static bool CanEnumerateDirectory(
+        string sourceRoot,
+        string directory,
+        Action<string, Exception>? onError,
+        Action<string>? onMissing,
+        CancellationToken cancellationToken)
+    {
+        // Explicit roots remain scannable regardless of their attributes or ancestors.
+        if (string.Equals(directory, sourceRoot, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        foreach (var segment in Path.GetRelativePath(sourceRoot, directory).Split(Path.DirectorySeparatorChar))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            sourceRoot = Path.Combine(sourceRoot, segment);
+            try
+            {
+                if (Win32FileEnumerator.ShouldSkipSubdirectory(sourceRoot, Win32FileEnumerator.FileWrapper.GetAttributes(sourceRoot)))
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+            {
+                onMissing?.Invoke(sourceRoot);
+                return false;
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                onError?.Invoke(sourceRoot, ex);
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private bool HasSupportedSuffix(string path)
@@ -316,34 +371,5 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
         {
             return $"{path}:unavailable";
         }
-    }
-
-    private readonly IReadOnlyList<string> _excludedDirectories;
-
-    private string ExclusionKey => _excludedDirectories.Count == 0
-        ? string.Empty
-        : $"|exclude:{string.Join(';', _excludedDirectories)}";
-
-    protected DirectoryWin32ProgramSource(
-        IReadOnlyList<string> directories,
-        IReadOnlyList<string> suffixes,
-        IReadOnlyList<string>? excludedDirectories = null)
-    {
-        _directories = directories ?? throw new ArgumentNullException(nameof(directories));
-        _excludedDirectories = excludedDirectories ?? [];
-        _suffixes = new List<string>(suffixes ?? throw new ArgumentNullException(nameof(suffixes)));
-    }
-
-    private bool IsExcludedPath(string path)
-    {
-        foreach (var directory in _excludedDirectories)
-        {
-            if (!string.IsNullOrWhiteSpace(directory) && TryGetDirectoryDepth(directory, path, out _))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

@@ -172,6 +172,14 @@
   <data name="custom_shortcut_folders_description" xml:space="preserve">
     <value>Search these folders and their subfolders for application shortcuts.</value>
   </data>
+  <data name="scan_all_desktop_subfolders" xml:space="preserve">
+    <value>Scan desktop folders beyond {0} levels</value>
+    <comment>Enables scanning at any depth. {0} is the default maximum number of subfolder levels below the root.</comment>
+  </data>
+  <data name="scan_all_custom_shortcut_subfolders" xml:space="preserve">
+    <value>Scan custom shortcut folders beyond {0} levels</value>
+    <comment>Enables scanning at any depth. {0} is the default maximum number of subfolder levels below the root.</comment>
+  </data>
   <data name="run_as_administrator" xml:space="preserve">
     <value>Run as administrator</value>
   </data>

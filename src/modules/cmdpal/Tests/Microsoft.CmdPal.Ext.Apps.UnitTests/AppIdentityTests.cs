@@ -69,8 +69,8 @@ public class AppIdentityTests
     [TestMethod]
     public void CommandResolution_AcceptsEquivalentSpellingButRejectsMisleadingNames()
     {
-        var app = new AppItem { CatalogId = @"win32:C:\Apps\my-app.exe|args:", Name = "Display name", ExePath = @"C:\Apps\my-app.exe" };
-        var legacyId = AppCommand.GenerateId(app.Name, app.Subtitle, app.ExePath);
+        var app = new AppItem { CatalogId = @"win32:C:\Apps\my-app.exe|args:", Name = "Display name", LaunchTarget = @"C:\Apps\my-app.exe" };
+        var legacyId = AppCommand.GenerateId(app.Name, app.Subtitle, app.LaunchTarget);
         app.CommandIds = [legacyId, .. AppIdentity.GetCommandIds(app.CatalogId)];
         var row = new AppListItem(app, useThumbnails: false);
         var snapshot = new AppListItemSnapshot([row], []);
@@ -90,7 +90,7 @@ public class AppIdentityTests
     [TestMethod]
     public void CommandResolution_RetainsExplicitHistoricalNamesAndAmbiguityMarkers()
     {
-        var app = new AppItem { CatalogId = @"win32:C:\Apps\new.exe|args:", Name = "App", ExePath = @"C:\Apps\new.exe" };
+        var app = new AppItem { CatalogId = @"win32:C:\Apps\new.exe|args:", Name = "App", LaunchTarget = @"C:\Apps\new.exe" };
         var row = new AppListItem(app, useThumbnails: false);
         var historicalId = AppIdentity.ForCommand(@"win32:C:\Apps\old.exe|args:");
         var ambiguousId = AppIdentity.ForCommand("win32:ambiguous");
@@ -122,14 +122,14 @@ public class AppIdentityTests
     public void PackagedCommandResolution_AcceptsEquivalentCasingWithoutChangingPublishedIdentity(string requestedId)
     {
         const string aumid = "Contoso.App_123!Main";
-        var app = new AppItem { CatalogId = AppIdentity.ForPackaged(aumid), Name = "App", UserModelId = aumid, IsPackaged = true };
+        var app = new AppItem { CatalogId = AppIdentity.ForPackaged(aumid), Name = "App", AppUserModelId = aumid, IsPackaged = true };
         var row = new AppListItem(app, useThumbnails: false);
         var snapshot = new AppListItemSnapshot([row], []);
 
         Assert.AreSame(row, snapshot.GetVisibleApp(requestedId));
         Assert.AreEqual(requestedId, snapshot.GetCommandItem(requestedId)?.Command?.Id);
         Assert.AreEqual("app-v1-packaged-Contoso.App_123!Main", row.Command!.Id);
-        Assert.AreEqual(aumid, app.UserModelId);
+        Assert.AreEqual(aumid, app.AppUserModelId);
         foreach (var hiddenSnapshot in new[] { new AppListItemSnapshot([], [row]), new AppListItemSnapshot([], [], [row]) })
         {
             Assert.IsNull(hiddenSnapshot.GetVisibleApp(requestedId));
@@ -177,7 +177,7 @@ public class AppIdentityTests
         {
             CatalogId = AppIdentity.ForPackaged(aumid),
             Name = "App",
-            UserModelId = aumid,
+            AppUserModelId = aumid,
             IsPackaged = true,
             CommandIds = [legacyId],
         };
@@ -266,7 +266,7 @@ public class AppIdentityTests
         Assert.AreSame(mergedRow, snapshot.GetVisibleApp(requestedId));
         Assert.AreEqual(requestedId, snapshot.GetCommandItem(requestedId)?.Command?.Id);
         Assert.AreEqual(AppIdentity.ForCommand(packaged.Identity), mergedRow.Command!.Id);
-        Assert.AreEqual(packagedAumid, mergedRow.App.UserModelId);
+        Assert.AreEqual(packagedAumid, mergedRow.App.AppUserModelId);
     }
 
     [TestMethod]
@@ -320,5 +320,35 @@ public class AppIdentityTests
         Assert.IsNull(snapshot.GetCommandItem(legacyId));
         Assert.AreSame(firstRow, snapshot.GetVisibleApp(firstRow.Command!.Id));
         Assert.AreSame(secondRow, snapshot.GetVisibleApp(secondRow.Command!.Id));
+    }
+
+    [TestMethod]
+    [DataRow(@"C:\Tools\console.exe", "", "")]
+    [DataRow(@"C:\Tools\console.exe", "c:/TOOLS/", "")]
+    [DataRow(@"%SystemRoot%\System32\cmd.exe", @"%SystemRoot%\System32\", "")]
+    [DataRow(@"C:\Tools\console.exe", "c:/Projects/Work/", @"c:\Projects\Work")]
+    [DataRow(@"C:\Tools\console.lnk", @"C:\Tools", @"C:\Tools")]
+    [DataRow(@"C:\Tools\console.exe", ".", ".")]
+    [DataRow(@"C:\Tools\console.exe", @".\Work", @".\Work")]
+    [DataRow(@"C:\Tools\console.exe", "C:Work", "C:Work")]
+    public void GetDistinctWorkingDirectory_NormalizesOnlyDefaultExecutableDirectories(string target, string directory, string expected)
+    {
+        Assert.AreEqual(expected, AppIdentity.GetDistinctWorkingDirectory(target, directory));
+    }
+
+    [TestMethod]
+    [DataRow("com.squirrel.GitHubDesktop.GitHubDesktop", @"C:\Apps\GitHubDesktop\app-2.7.2", true)]
+    [DataRow("COM.SQUIRREL.GITHUBDESKTOP.GITHUBDESKTOP", "c:/apps/GitHubDesktop/app-3.6.3/", true)]
+    [DataRow("", @"C:\Apps\GitHubDesktop\app-2.7.2", false)]
+    [DataRow("Contoso.GitHubDesktop", @"C:\Apps\GitHubDesktop\app-2.7.2", false)]
+    [DataRow("com.squirrel.Other.GitHubDesktop", @"C:\Apps\GitHubDesktop\app-2.7.2", false)]
+    [DataRow("com.squirrel.GitHubDesktop.Other", @"C:\Apps\GitHubDesktop\app-2.7.2", false)]
+    [DataRow("com.squirrel.GitHubDesktop.GitHubDesktop", @"C:\Projects\app-2.7.2", false)]
+    [DataRow("com.squirrel.GitHubDesktop.GitHubDesktop", @"C:\Apps\GitHubDesktop\app-2.7.2\Work", false)]
+    [DataRow("com.squirrel.GitHubDesktop.GitHubDesktop", @"C:\Apps\GitHubDesktop\app-Work", false)]
+    public void GetDistinctWorkingDirectory_RecognizesOnlySquirrelInstallerVersionDirectories(string explicitId, string directory, bool isDefault)
+    {
+        var distinctDirectory = AppIdentity.GetDistinctWorkingDirectory(@"C:\Apps\GitHubDesktop\GitHubDesktop.exe", directory, explicitId);
+        Assert.AreEqual(isDefault, string.IsNullOrEmpty(distinctDirectory));
     }
 }

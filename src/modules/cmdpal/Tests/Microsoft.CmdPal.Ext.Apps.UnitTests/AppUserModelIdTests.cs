@@ -71,11 +71,11 @@ public class AppUserModelIdTests
             Assert.AreEqual("Explicit AppID shortcut", link.Description);
             Assert.AreEqual(iconLocation, link.IconLocation);
 
-            var program = Win32Program.LoadFromPath(shortcutPath, asRunCommand: false);
+            var program = Win32AppReader.LoadFromPath(shortcutPath, asRunCommand: false);
             Assert.IsTrue(program.Valid);
             Assert.AreEqual(explicitId, program.ExplicitAppUserModelId);
             Assert.AreEqual(string.Empty, program.PackagedAppUserModelId);
-            Assert.IsTrue(string.Equals(targetPath, program.FullPath, StringComparison.OrdinalIgnoreCase));
+            Assert.IsTrue(string.Equals(targetPath, program.TargetPath, StringComparison.OrdinalIgnoreCase));
             Assert.AreEqual(shortcutPath, program.LnkFilePath);
 
             var payload = Win32AppPayload.From(program);
@@ -83,14 +83,14 @@ public class AppUserModelIdTests
             Assert.AreEqual(link.Arguments, payload.Arguments);
             Assert.AreEqual(link.WorkingDirectory, payload.WorkingDirectory);
             Assert.AreEqual(link.Description, payload.Description);
-            Assert.AreEqual(link.IconLocation, payload.IcoPath);
+            Assert.AreEqual(link.IconLocation, payload.IconLocation);
             Assert.IsNull(((IAppCatalogPayload)payload).GetCanonicalIdentityHint());
             var app = payload.ToAppItem();
-            Assert.AreEqual(explicitId, app.UserModelId);
+            Assert.AreEqual(explicitId, app.AppUserModelId);
             Assert.IsFalse(app.IsPackaged);
-            Assert.AreEqual(shortcutPath, app.ExePath);
-            Assert.AreEqual(program.FullPath, app.FullExecutablePath);
-            Assert.AreEqual(link.Arguments, app.Arguments);
+            Assert.AreEqual(shortcutPath, app.LaunchTarget);
+            Assert.AreEqual(program.TargetPath, app.ResolvedTarget);
+            Assert.AreEqual(link.Arguments, app.LaunchArguments);
         }
         finally
         {
@@ -148,7 +148,7 @@ public class AppUserModelIdTests
             var expectedExplicitId = omitExplicitId ? string.Empty : program.ExplicitAppUserModelId;
             Assert.AreEqual(expectedExplicitId, payload.ExplicitAppUserModelId);
             Assert.AreEqual(program.PackagedAppUserModelId, payload.PackagedAppUserModelId);
-            Assert.AreEqual(program.FullPath, payload.FullPath);
+            Assert.AreEqual(program.TargetPath, payload.TargetPath);
             Assert.AreEqual(program.LnkFilePath, payload.LnkFilePath);
             Assert.AreEqual(program.Arguments, payload.Arguments);
             Assert.AreEqual(program.WorkingDirectory, payload.WorkingDirectory);
@@ -156,9 +156,10 @@ public class AppUserModelIdTests
             CollectionAssert.AreEqual(item.CommandIds.ToArray(), loadedItem.CommandIds.ToArray());
             CollectionAssert.AreEqual(item.IdentityAliases.ToArray(), loadedItem.IdentityAliases.ToArray());
             var app = loadedItem.ToAppItem();
-            Assert.AreEqual(hasPackagedId ? program.PackagedAppUserModelId : expectedExplicitId, app.UserModelId);
+            Assert.AreEqual(program.Arguments, app.LaunchArguments);
+            Assert.AreEqual(hasPackagedId ? program.PackagedAppUserModelId : expectedExplicitId, app.AppUserModelId);
             Assert.IsFalse(app.IsPackaged);
-            Assert.AreEqual(program.LnkFilePath, app.ExePath);
+            Assert.AreEqual(program.LnkFilePath, app.LaunchTarget);
             Assert.AreEqual(new AppCommand(item.ToAppItem()).Id, new AppCommand(app).Id);
         }
         finally
@@ -184,7 +185,7 @@ public class AppUserModelIdTests
             Assert.IsNull(enriched.Payload.GetCanonicalIdentityHint());
             Assert.AreEqual(original.Payload.GetCanonicalTargetPath(), enriched.Payload.GetCanonicalTargetPath());
             CollectionAssert.Contains(enriched.MatchTerms.ToArray(), explicitId);
-            Assert.AreEqual(explicitId, enriched.ToAppItem().UserModelId);
+            Assert.AreEqual(explicitId, enriched.ToAppItem().AppUserModelId);
         }
     }
 
@@ -203,7 +204,6 @@ public class AppUserModelIdTests
 
         Assert.AreEqual(2, items.Count);
         Assert.AreEqual(2, items.Select(item => item.Identity).Distinct(StringComparer.OrdinalIgnoreCase).Count());
-        Assert.AreEqual(2, Win32Program.DeduplicatePrograms([first, second]).Count);
         Assert.IsTrue(items.All(item => item.Payload.GetCanonicalIdentityHint() is null));
     }
 
@@ -256,14 +256,14 @@ public class AppUserModelIdTests
         }
     }
 
-    private static Win32Program CreateProgram(string shortcutPath)
+    private static Win32AppMetadata CreateProgram(string shortcutPath)
     {
-        var program = TestDataHelper.CreateTestWin32Program("Console", @"C:\Tools\console.exe");
+        var program = TestDataHelper.CreateTestWin32Metadata("Console", @"C:\Tools\console.exe");
         program.LnkFilePath = shortcutPath;
         return program;
     }
 
-    private static async Task<IReadOnlyList<AppCatalogItem>> LoadItemsAsync(params Win32Program[] programs)
+    private static async Task<IReadOnlyList<AppCatalogItem>> LoadItemsAsync(params Win32AppMetadata[] programs)
     {
         using var source = new Win32AppSource(
             new TestProgramSource(programs.Select(program => program.LnkFilePath).ToArray()),

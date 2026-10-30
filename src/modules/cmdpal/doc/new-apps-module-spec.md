@@ -64,11 +64,27 @@ independent of retry and source-replacement policy.
 | ----------------------- | --------------- | ------------------------------------------------------- |
 | Packaged applications   | Enabled         | Enabled manifest applications and package metadata.     |
 | Start Menu              | Enabled         | Recursive; includes non-application entries by default. |
-| Desktop                 | Enabled         | Recursive; excludes non-application entries by default. |
+| Desktop                 | Enabled         | Root + default depth; excludes non-application entries. |
 | Registry App Paths      | Disabled        | Optional executable discovery.                          |
 | PATH                    | Disabled        | Optional command discovery.                             |
-| Custom shortcut folders | User-configured | Recursive; includes non-application entries.            |
+| Custom shortcut folders | User-configured | Root + default depth; includes non-application entries. |
 | Portable app folders    | User-configured | `.exe` files in the root and immediate subfolders.      |
+
+Desktop and custom shortcut folders have separate unlimited-depth settings:
+**Scan desktop folders beyond {depth} levels** and **Scan custom shortcut folders beyond {depth} levels**.
+Both are off by default. `depth` comes from `AllAppsSettings.DefaultShortcutFolderMaximumDepth`,
+which bounds discovery and supplies the localized labels' `{0}` format argument.
+Start Menu discovery remains unlimited, and portable folders retain their one-level limit.
+The bounded default avoids scanning deep development and archive trees while allowing users
+to opt into finding shortcuts at any depth. The source configuration and cache keys include
+the depth, so changing either option replaces affected sources and refreshes their contributions.
+Full scans and incremental folder updates use the same depth boundary. Filesystem watchers
+still observe all descendants; events beyond the discovery depth are filtered afterward.
+Both scans skip hidden and system subfolders and directory links (symlinks, junctions and mount
+points), including ancestors of a dirty file or folder. Cloud placeholders such as OneDrive
+folders remain scannable. Explicitly configured roots remain scannable regardless of their own
+attributes or ancestors. Excluded folders still invalidate existing rows so reconciliation can
+remove them.
 
 Automatic Start Menu discovery excludes Windows' user and shared Startup folders and their
 descendants. Startup shortcuts often add background-launch arguments, creating an extra app
@@ -121,6 +137,13 @@ All Apps and Home, below exact titles and user-assigned command aliases. This pr
 applies only to an exact metadata match. Missing or disabled aliases have no owner; a failed
 cache scan retains the last map. A changed map reranks active queries without rebuilding rows,
 commands or provider entries. Ownership is not persisted in the catalog.
+
+Win32 origins enumerate candidate paths and source-specific search terms. `Win32AppReader`
+reads each file into transient `Win32AppMetadata`; `Win32AppSource` captures the retained
+data in an immutable `Win32AppPayload`. Identity and deduplication belong to the catalog,
+so discovery metadata has no separate equality, query filtering or deduplication policy.
+Shortcut launch paths, arguments and working directories remain intact; resolved targets
+supply identity and search metadata rather than replacing shortcut activation.
 
 ### 2.1 Deduplication
 
@@ -519,6 +542,13 @@ classDiagram
         String CacheKey
     }
     class Win32AppSource
+    class Win32AppReader
+    class Win32AppMetadata
+    class Win32AppPayload
+    Win32AppSource ..> Win32AppReader : reads candidate files
+    Win32AppReader ..> Win32AppMetadata : returns transient metadata
+    Win32AppSource ..> Win32AppPayload : captures immutable launch data
+    Win32AppMetadata ..> Win32AppPayload : supplies retained metadata
     class PackagedAppSource
     Win32AppSource ..|> IAppSource
     PackagedAppSource ..|> IAppSource

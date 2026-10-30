@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Utils;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
@@ -20,6 +21,13 @@ public sealed class AppSearch
     private readonly bool _matchExecutableStem;
     private readonly string? _activeExecutionAliasAumid;
 
+    public int QueryLength => _query.Original.Length;
+
+    /// <summary>Initializes a new instance of the <see cref="AppSearch"/> class. Captures a query, matcher, and executable-name priority policy for reuse across application rows.</summary>
+    /// <param name="query">The query whose trimmed text is precomputed.</param>
+    /// <param name="matcher">The matcher used for the query and application targets.</param>
+    /// <param name="executableNameMatchMode">Controls exact executable-name priority without disabling ordinary fuzzy matches.</param>
+    /// <param name="activeExecutionAliasAumid">The selected execution-alias owner, or null when the query is not a known alias.</param>
     public AppSearch(
         string query,
         IPrecomputedFuzzyMatcher matcher,
@@ -33,12 +41,11 @@ public sealed class AppSearch
         _searchPaths = _query.Original.AsSpan().IndexOfAny('\\', '/', ':') >= 0;
         _matchExecutableNames = executableNameMatchMode != ExecutableNameMatchMode.Disabled;
         _matchExecutableStem = executableNameMatchMode == ExecutableNameMatchMode.FilenameAndStem
-            && !Win32Program.IsExecutablePath(_query.Original);
+            && !PathHelpers.IsExecutablePath(_query.Original);
         _activeExecutionAliasAumid = activeExecutionAliasAumid;
     }
 
-    public int QueryLength => _query.Original.Length;
-
+    /// <summary>Computes fuzzy scores and exact-match signals without applying Home or All Apps ordering.</summary>
     public Match Evaluate(AppListItem item)
     {
         var targets = item.GetSearchTargets(_matcher);
@@ -78,7 +85,7 @@ public sealed class AppSearch
         var exactTitleMatch = string.Equals(_query.Original, targets.Title.Original, StringComparison.OrdinalIgnoreCase);
         var preferredExecutionAliasMatch = exactMetadataMatch
             && !string.IsNullOrEmpty(_activeExecutionAliasAumid)
-            && string.Equals(_activeExecutionAliasAumid, item.App.UserModelId, StringComparison.OrdinalIgnoreCase);
+            && string.Equals(_activeExecutionAliasAumid, item.App.AppUserModelId, StringComparison.OrdinalIgnoreCase);
         return new Match(titleScore, descriptionScore, metadataScore, _minimumMatchScore, exactMetadataMatch, exactExecutableMatch, exactTitleMatch, preferredExecutionAliasMatch);
     }
 

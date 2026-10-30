@@ -70,8 +70,6 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         set => base.Details = value;
     }
 
-    public string AppIdentifier => _app.AppIdentifier;
-
     public AppItem App => _app;
 
     internal IReadOnlyList<string> SearchTerms { get; }
@@ -87,10 +85,10 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         Subtitle = app.Subtitle;
         var terms = new[]
         {
-            app.ExePath,
-            app.FullExecutablePath ?? string.Empty,
-            app.DirPath,
-            app.UserModelId,
+            app.LaunchTarget,
+            app.ResolvedTarget ?? string.Empty,
+            app.DirectoryPath,
+            app.AppUserModelId,
             app.PackageFamilyName ?? string.Empty,
         }
         .Concat(app.MatchTerms)
@@ -101,7 +99,7 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         SearchTerms = terms.SelectMany(term =>
         {
             var searchTerm = Path.IsPathFullyQualified(term) ? PathHelpers.GetAppSearchPath(term) : term;
-            return Win32Program.IsExecutablePath(term)
+            return PathHelpers.IsExecutablePath(term)
                 ? new[] { searchTerm, Path.GetFileName(term), Path.GetFileNameWithoutExtension(term) }
                 : [searchTerm];
         })
@@ -111,10 +109,10 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 
         // Only the actual launch/target paths identify an executable. Retained metadata
         // may name other files, and arguments identify a specialized launch rather than the executable alone.
-        ExecutableNames = string.IsNullOrWhiteSpace(app.Arguments)
-            ? new[] { app.ExePath, app.FullExecutablePath ?? string.Empty }
+        ExecutableNames = string.IsNullOrWhiteSpace(app.LaunchArguments)
+            ? new[] { app.LaunchTarget, app.ResolvedTarget ?? string.Empty }
                 .Concat(app.ExecutableSourcePaths)
-                .Where(path => Path.IsPathFullyQualified(path) && Win32Program.IsExecutablePath(path))
+                .Where(path => Path.IsPathFullyQualified(path) && PathHelpers.IsExecutablePath(path))
                 .Select(path => Path.GetFileName(path))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray()
@@ -135,7 +133,7 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         }
         catch (Exception ex)
         {
-            Logger.LogWarning($"Failed to load details for {AppIdentifier}\n{ex}");
+            Logger.LogWarning($"Failed to load details for {_app.Name} ({_app.CatalogId})\n{ex}");
         }
     }
 
@@ -158,17 +156,18 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
     {
         // Build metadata, with app type, path, etc.
         var metadata = new List<DetailsElement>();
-        metadata.Add(new DetailsElement() { Key = "Type", Data = new DetailsTags() { Tags = [new Tag(_app.Type)] } });
+        metadata.Add(new DetailsElement() { Key = "Type", Data = new DetailsTags() { Tags = [new Tag(_app.AppTypeLabel)] } });
         if (!_app.IsPackaged)
         {
-            metadata.Add(new DetailsElement() { Key = "Path", Data = new DetailsLink() { Text = _app.ExePath } });
+            metadata.Add(new DetailsElement() { Key = "Path", Data = new DetailsLink() { Text = _app.LaunchTarget } });
         }
 
 #if DEBUG
-        metadata.Add(new DetailsElement() { Key = "[DEBUG] AppIdentifier", Data = new DetailsLink() { Text = _app.AppIdentifier } });
-        metadata.Add(new DetailsElement() { Key = "[DEBUG] ExePath", Data = new DetailsLink() { Text = _app.ExePath } });
-        metadata.Add(new DetailsElement() { Key = "[DEBUG] IcoPath", Data = new DetailsLink() { Text = _app.IcoPath } });
-        metadata.Add(new DetailsElement() { Key = "[DEBUG] JumboIconPath", Data = new DetailsLink() { Text = _app.JumboIconPath ?? "(null)" } });
+        metadata.Add(new DetailsElement() { Key = "[DEBUG] CatalogId", Data = new DetailsLink() { Text = _app.CatalogId } });
+        metadata.Add(new DetailsElement() { Key = "[DEBUG] LaunchTarget", Data = new DetailsLink() { Text = _app.LaunchTarget } });
+        metadata.Add(new DetailsElement() { Key = "[DEBUG] LaunchArguments", Data = new DetailsLink() { Text = _app.LaunchArguments } });
+        metadata.Add(new DetailsElement() { Key = "[DEBUG] IconSource", Data = new DetailsLink() { Text = _app.IconSource } });
+        metadata.Add(new DetailsElement() { Key = "[DEBUG] JumboIconSource", Data = new DetailsLink() { Text = _app.JumboIconSource ?? "(null)" } });
 #endif
 
         // Icon
@@ -185,7 +184,7 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
     private static IconInfo CreateIcon(AppItem app, bool useThumbnails)
     {
         var fallbackPath = GetIconFallbackPath(app);
-        var iconPath = !string.IsNullOrEmpty(app.IcoPath) ? app.IcoPath : fallbackPath;
+        var iconPath = !string.IsNullOrEmpty(app.IconSource) ? app.IconSource : fallbackPath;
         if (string.IsNullOrEmpty(iconPath))
         {
             return Icons.GenericAppIcon;
@@ -200,27 +199,27 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
     private static IconInfo? CreateHeroIcon(AppItem app)
     {
         var fallbackPath = GetIconFallbackPath(app);
-        if (!string.IsNullOrEmpty(app.JumboIconPath))
+        if (!string.IsNullOrEmpty(app.JumboIconSource))
         {
             return new IconInfo(
                 app.IsPackaged
-                    ? app.JumboIconPath
-                    : AppIconProtocol.CreateJumbo(app.JumboIconPath, app.IcoPath, fallbackPath));
+                    ? app.JumboIconSource
+                    : AppIconProtocol.CreateJumbo(app.JumboIconSource, app.IconSource, fallbackPath));
         }
 
-        if (!app.IsPackaged && app.ExePath.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase))
+        if (!app.IsPackaged && app.LaunchTarget.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase))
         {
             // Let Shell preserve the shortcut's configured icon and native padding.
             // Direct jumbo resource extraction can enlarge small artwork to 256 pixels.
-            return new IconInfo(AppIconProtocol.CreateJumbo(app.ExePath, app.IcoPath, fallbackPath));
+            return new IconInfo(AppIconProtocol.CreateJumbo(app.LaunchTarget, app.IconSource, fallbackPath));
         }
 
-        if (!string.IsNullOrEmpty(app.IcoPath))
+        if (!string.IsNullOrEmpty(app.IconSource))
         {
             return new IconInfo(
                 app.IsPackaged
-                    ? app.IcoPath
-                    : AppIconProtocol.CreateJumbo(app.IcoPath, fallbackPath));
+                    ? app.IconSource
+                    : AppIconProtocol.CreateJumbo(app.IconSource, fallbackPath));
         }
 
         if (!string.IsNullOrEmpty(fallbackPath))
@@ -236,24 +235,32 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 
     private static string GetIconFallbackPath(AppItem app)
     {
-        return app.ExePath.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(app.FullExecutablePath)
-            ? app.FullExecutablePath
-            : app.ExePath;
+        return app.LaunchTarget.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(app.ResolvedTarget)
+            ? app.ResolvedTarget
+            : app.LaunchTarget;
     }
 
     public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher)
-        => _titleCache.GetOrUpdate(matcher, Title);
+    {
+        return _titleCache.GetOrUpdate(matcher, Title);
+    }
 
     public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher)
-        => _subtitleCache.GetOrUpdate(matcher, Subtitle);
+    {
+        return _subtitleCache.GetOrUpdate(matcher, Subtitle);
+    }
 
+    /// <summary>Gets a complete matcher-specific bundle of title, description, and metadata search targets.</summary>
+    /// <remarks>The bundle is replaced atomically when its matcher schema or presentation text changes.</remarks>
     internal AppSearch.Targets GetSearchTargets(IPrecomputedFuzzyMatcher matcher)
     {
         var title = Title;
         var description = _app.Subtitle;
         var targets = Volatile.Read(ref _searchTargets);
-        if (targets is null || targets.SchemaId != matcher.SchemaId
-            || targets.Title.Original != title || targets.Description.Original != description)
+        if (targets is null
+            || targets.SchemaId != matcher.SchemaId
+            || targets.Title.Original != title
+            || targets.Description.Original != description)
         {
             var metadata = SearchTerms.Select(matcher.PrecomputeTarget).ToArray();
             targets = new AppSearch.Targets(
