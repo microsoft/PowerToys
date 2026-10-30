@@ -763,6 +763,25 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        internal bool ReverseRemoteScrollWheel
+        {
+            get
+            {
+                lock (_loadingSettingsLock)
+                {
+                    return _properties.ReverseRemoteScrollWheel;
+                }
+            }
+
+            set
+            {
+                lock (_loadingSettingsLock)
+                {
+                    _properties.ReverseRemoteScrollWheel = value;
+                }
+            }
+        }
+
         internal string LastPersonalizeLogonScr
         {
             get
