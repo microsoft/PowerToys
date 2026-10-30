@@ -8,35 +8,49 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 using MEL = Microsoft.Extensions.Logging;
+using PublishedState = Microsoft.CmdPal.Ext.Apps.Catalog.AppCatalogPublicationBuilder.PublishedState;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 
 public sealed partial class AppCatalog : IAppCatalog
 {
-    private const int MaxIncrementalPathChangesPerSource = 256;
+    public event EventHandler<AppCatalogChangedEventArgs>? Changed;
 
-    private static readonly TimeSpan DefaultInvalidationDelay = TimeSpan.FromSeconds(2);
+    public event EventHandler? RefreshStateChanged;
+
+    public event EventHandler<AppVisibilityChangedEventArgs>? VisibilityChanged;
+
+    private static readonly TimeSpan DefaultInvalidationDelay = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan CachedSourceReconciliationDelay = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan BackgroundReconciliationInterval = TimeSpan.FromMinutes(10);
+    private static readonly TimeSpan[] RetryDelays = [TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(40)];
 
     private readonly Lock _stateLock = new();
     private readonly IAppSourceProvider _sourceProvider;
     private readonly Dictionary<string, IAppSource> _sourcesById = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SourceRefreshRequest> _pendingRefreshes = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SourceRefreshRequest> _debouncedRefreshes = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, SourceRefreshRequest> _pausedBackgroundRefreshes = new(StringComparer.Ordinal);
     private readonly Dictionary<string, TaskCompletionSource> _initialSourcePublications = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, SourceRetryState> _sourceRetries = new(StringComparer.Ordinal);
     private readonly IAppCatalogCache _cache;
     private readonly IAppVisibilityStore _visibilityStore;
     private readonly IReadOnlyList<IAppCatalogFilter> _filters;
     private readonly MEL.ILogger<AppCatalog> _logger;
+    private readonly AppCatalogPublicationBuilder _publicationBuilder;
     private readonly TimeProvider _timeProvider;
     private readonly TimeSpan _invalidationDelay;
+    private readonly Func<bool> _diagnosticsEnabled;
     private readonly CancellationTokenSource _disposeCancellation = new();
     private readonly CancellationToken _disposeToken;
+    private readonly ITimer _retryTimer;
+    private readonly ITimer _reconciliationTimer;
+
+    private CancellationTokenSource? _backgroundCancellation;
 
     private IReadOnlyList<IAppSource> _sources;
 
@@ -44,9 +58,21 @@ public sealed partial class AppCatalog : IAppCatalog
     private Task? _initializationTask;
     private Task? _refreshTask;
     private long _sourceProviderGeneration;
+    private long _diagnosticBatchSequence;
     private bool _isRefreshing;
     private bool _disposed;
     private bool _invalidationFlushScheduled;
+
+    public bool IsRefreshing
+    {
+        get
+        {
+            lock (_stateLock)
+            {
+                return _isRefreshing;
+            }
+        }
+    }
 
     internal AppCatalog(
         IAppSourceProvider sourceProvider,
@@ -55,7 +81,8 @@ public sealed partial class AppCatalog : IAppCatalog
         IReadOnlyList<IAppCatalogFilter>? filters = null,
         TimeProvider? timeProvider = null,
         TimeSpan? invalidationDelay = null,
-        MEL.ILogger<AppCatalog>? logger = null)
+        MEL.ILogger<AppCatalog>? logger = null,
+        Func<bool>? diagnosticsEnabled = null)
     {
         _sourceProvider = sourceProvider ?? throw new ArgumentNullException(nameof(sourceProvider));
         _sources = _sourceProvider.GetSources();
@@ -63,9 +90,13 @@ public sealed partial class AppCatalog : IAppCatalog
         _visibilityStore = visibilityStore ?? throw new ArgumentNullException(nameof(visibilityStore));
         _filters = filters ?? [];
         _logger = logger ?? NullLogger<AppCatalog>.Instance;
+        _publicationBuilder = new(_visibilityStore, _filters, _logger);
         _timeProvider = timeProvider ?? TimeProvider.System;
         _invalidationDelay = invalidationDelay ?? DefaultInvalidationDelay;
+        _diagnosticsEnabled = diagnosticsEnabled ?? (() => false);
         _disposeToken = _disposeCancellation.Token;
+        _retryTimer = _timeProvider.CreateTimer(_ => QueueRetries(), null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+        _reconciliationTimer = _timeProvider.CreateTimer(_ => ReconcileInBackground(), null, BackgroundReconciliationInterval, BackgroundReconciliationInterval);
 
         foreach (var source in _sources)
         {
@@ -86,24 +117,10 @@ public sealed partial class AppCatalog : IAppCatalog
         _visibilityStore.Changed += OnFilterChanged;
     }
 
-    public event EventHandler<AppCatalogChangedEventArgs>? Changed;
-
-    public event EventHandler? RefreshStateChanged;
-
-    public event EventHandler<AppVisibilityChangedEventArgs>? VisibilityChanged;
-
-    public bool IsRefreshing
+    public AppCatalogSnapshot GetSnapshot()
     {
-        get
-        {
-            lock (_stateLock)
-            {
-                return _isRefreshing;
-            }
-        }
+        return Volatile.Read(ref _publishedState).Snapshot;
     }
-
-    public AppCatalogSnapshot GetSnapshot() => Volatile.Read(ref _publishedState).Snapshot;
 
     public Task InitializeAsync()
     {
@@ -128,9 +145,23 @@ public sealed partial class AppCatalog : IAppCatalog
 
     private async Task InitializeCoreAsync()
     {
+        var diagnostics = ShouldLogDiagnostics();
+        var started = diagnostics ? _timeProvider.GetTimestamp() : 0;
         var sources = GetSourcesSnapshot();
+        if (diagnostics)
+        {
+            LogDiagnosticStartup(_logger, "started", 0, sources.Count, 0, 0);
+        }
+
         var context = AppCatalogCacheContext.Create(sources, _timeProvider.GetUtcNow());
+        var cacheStarted = diagnostics ? _timeProvider.GetTimestamp() : 0;
         var cache = await _cache.LoadAsync(context, _disposeToken).ConfigureAwait(false);
+        if (diagnostics)
+        {
+            var durationMs = _timeProvider.GetElapsedTime(cacheStarted).TotalMilliseconds;
+            LogDiagnosticStartup(_logger, "cache-read", durationMs, sources.Count, cache?.Sources.Count ?? 0, 0);
+        }
+
         if (cache is not null)
         {
             var snapshots = new Dictionary<string, IReadOnlyList<AppCatalogItem>>(StringComparer.Ordinal);
@@ -141,7 +172,15 @@ public sealed partial class AppCatalog : IAppCatalog
                 cachedSources.Add(source.SourceId);
             }
 
-            PublishCachedSnapshots(snapshots, sources);
+            var publicationStarted = diagnostics ? _timeProvider.GetTimestamp() : 0;
+            PublishCachedSnapshots(snapshots, sources, out var buildMs);
+            if (diagnostics)
+            {
+                var durationMs = _timeProvider.GetElapsedTime(publicationStarted).TotalMilliseconds;
+                var visibleCount = GetSnapshot().Items.Count;
+                LogDiagnosticStartup(_logger, "cached-publication", durationMs, sources.Count, cachedSources.Count, visibleCount);
+                LogDiagnosticCachePublication(_logger, buildMs, visibleCount);
+            }
 
             List<IAppSource> missingSources = [];
             List<IAppSource> cachedSourcesToReconcile = [];
@@ -168,11 +207,24 @@ public sealed partial class AppCatalog : IAppCatalog
                 await RefreshInitialSourcesAsync(missingSources).ConfigureAwait(false);
             }
 
+            if (diagnostics)
+            {
+                var durationMs = _timeProvider.GetElapsedTime(started).TotalMilliseconds;
+                var visibleCount = GetSnapshot().Items.Count;
+                LogDiagnosticStartup(_logger, "ready", durationMs, sources.Count, cachedSources.Count, visibleCount);
+            }
+
             return;
         }
 
         await InitializeSourcesAsync(sources).ConfigureAwait(false);
         await RefreshInitialSourcesAsync(GetSourcesSnapshot()).ConfigureAwait(false);
+        if (diagnostics)
+        {
+            var durationMs = _timeProvider.GetElapsedTime(started).TotalMilliseconds;
+            var visibleCount = GetSnapshot().Items.Count;
+            LogDiagnosticStartup(_logger, "ready", durationMs, sources.Count, 0, visibleCount);
+        }
     }
 
     private async Task InitializeSourcesAsync(IReadOnlyList<IAppSource> sources)
@@ -184,20 +236,39 @@ public sealed partial class AppCatalog : IAppCatalog
                 continue;
             }
 
+            var diagnostics = ShouldLogDiagnostics();
+            var started = diagnostics ? _timeProvider.GetTimestamp() : 0;
+            var outcome = "ready";
+            if (diagnostics)
+            {
+                LogDiagnosticSourceInitialization(_logger, source.Id, "started", 0);
+            }
+
             try
             {
                 await source.InitializeAsync(_disposeToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (_disposeToken.IsCancellationRequested)
             {
+                outcome = "canceled";
                 return;
             }
             catch (ObjectDisposedException) when (!IsActiveSource(source))
             {
+                outcome = "retired";
             }
             catch (Exception ex)
             {
+                outcome = "failed";
                 LogSourceInitializationFailed(_logger, source.Id, ex);
+            }
+            finally
+            {
+                if (diagnostics)
+                {
+                    var durationMs = _timeProvider.GetElapsedTime(started).TotalMilliseconds;
+                    LogDiagnosticSourceInitialization(_logger, source.Id, outcome, durationMs);
+                }
             }
         }
     }
@@ -232,7 +303,7 @@ public sealed partial class AppCatalog : IAppCatalog
             // Establish watchers before reconciling changes that occurred while the cache was being shown.
             await InitializeSourcesAsync(sources).ConfigureAwait(false);
             await Task.Delay(CachedSourceReconciliationDelay, _disposeToken).ConfigureAwait(false);
-            await QueueFullRefresh(sources).ConfigureAwait(false);
+            await QueueFullRefresh(sources, background: true).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (_disposeCancellation.IsCancellationRequested)
         {
@@ -254,10 +325,10 @@ public sealed partial class AppCatalog : IAppCatalog
         }
     }
 
-    private Task QueueFullRefresh(IReadOnlyList<IAppSource> sources, bool waitForPublication = false)
+    private Task QueueFullRefresh(IReadOnlyList<IAppSource> sources, bool waitForPublication = false, bool background = false)
     {
         Task refreshTask;
-        List<Task>? publicationTasks = waitForPublication ? [] : null;
+        List<Task>? publicationTasks = waitForPublication || !background ? [] : null;
         var refreshStarted = false;
 
         lock (_stateLock)
@@ -271,10 +342,14 @@ public sealed partial class AppCatalog : IAppCatalog
                     continue;
                 }
 
-                _debouncedRefreshes.Remove(source.Id);
-                var request = GetOrAddRefreshRequest(_pendingRefreshes, activeSource);
+                if (!background)
+                {
+                    _debouncedRefreshes.Remove(source.Id);
+                }
+
+                var request = GetOrAddRefreshRequest(_pendingRefreshes, activeSource, background);
                 request.RequireFullRefresh();
-                if (publicationTasks is not null)
+                if (waitForPublication)
                 {
                     if (!_initialSourcePublications.TryGetValue(source.Id, out var publication))
                     {
@@ -282,7 +357,11 @@ public sealed partial class AppCatalog : IAppCatalog
                         _initialSourcePublications.Add(source.Id, publication);
                     }
 
-                    publicationTasks.Add(publication.Task);
+                    publicationTasks!.Add(publication.Task);
+                }
+                else if (publicationTasks is not null)
+                {
+                    publicationTasks.Add(request.GetPublicationTask());
                 }
             }
 
@@ -295,7 +374,7 @@ public sealed partial class AppCatalog : IAppCatalog
         }
 
         // Initial publication follows a source ID through replacements, even while the refresh loop is idle.
-        // Explicit refreshes also wait for later invalidations to drain.
+        // Explicit refreshes wait for their own requests, while later recovery continues independently.
         return publicationTasks is null
             ? refreshTask
             : Task.WhenAll(publicationTasks).WaitAsync(_disposeToken);
@@ -304,6 +383,7 @@ public sealed partial class AppCatalog : IAppCatalog
     private async Task RefreshUntilCurrentAsync()
     {
         var completedNormally = false;
+        List<SourceRefreshRequest> currentRequests = [];
         try
         {
             while (true)
@@ -318,51 +398,183 @@ public sealed partial class AppCatalog : IAppCatalog
                         return;
                     }
 
-                    requests = new List<SourceRefreshRequest>(_pendingRefreshes.Values);
-                    _pendingRefreshes.Clear();
+                    var foregroundPending = _pendingRefreshes.Values.Any(request => !request.Background);
+                    requests = _pendingRefreshes.Values.Where(request => request.Background != foregroundPending).ToList();
+                    currentRequests = requests;
+                    foreach (var request in requests)
+                    {
+                        _pendingRefreshes.Remove(request.Source.Id);
+                    }
+
                     snapshots = _publishedState.SourceSnapshots;
                 }
 
-                List<(IAppSource Source, IReadOnlyList<AppCatalogItem> Items, bool FullyReconciled)> refreshedSources = [];
+                var diagnostics = ShouldLogDiagnostics();
+                var batchId = diagnostics ? Interlocked.Increment(ref _diagnosticBatchSequence) : 0;
+                var batchStarted = diagnostics ? _timeProvider.GetTimestamp() : 0;
+                var snapshotsChanged = false;
+                List<string> fullyReconciledSourceIds = [];
 
                 foreach (var request in requests)
                 {
+                    using var backgroundCancellation = request.Background ? CancellationTokenSource.CreateLinkedTokenSource(_disposeToken) : null;
+                    lock (_stateLock)
+                    {
+                        if (!_sourcesById.TryGetValue(request.Source.Id, out var active) || !ReferenceEquals(active, request.Source))
+                        {
+                            request.CompletePublication();
+                            continue;
+                        }
+
+                        if (request.Background && (_pendingRefreshes.Values.Any(pending => !pending.Background)
+                            || _debouncedRefreshes.Values.Any(pending => !pending.Background)))
+                        {
+                            RequeueBackgroundUnderLock(request);
+                            continue;
+                        }
+
+                        _backgroundCancellation = backgroundCancellation;
+                    }
+
+                    var requestToken = backgroundCancellation?.Token ?? _disposeToken;
                     var hadSnapshot = snapshots.TryGetValue(request.Source.Id, out var currentItems);
                     currentItems ??= [];
+                    var sourceStarted = diagnostics ? _timeProvider.GetTimestamp() : 0;
+                    var requestedIncremental = hadSnapshot && !request.RequiresFullRefresh && request.PathChanges.Count > 0;
+                    if (diagnostics)
+                    {
+                        var queuedMs = request.QueuedAt is { } queuedAt ? _timeProvider.GetElapsedTime(queuedAt, sourceStarted).TotalMilliseconds : (double?)null;
+                        LogDiagnosticSourceStarted(_logger, batchId, request.Source.Id, request.Background, requestedIncremental, request.PathChanges.Count, queuedMs);
+                    }
 
                     try
                     {
                         IReadOnlyList<AppCatalogItem> refreshedItems;
-                        var incremental = hadSnapshot && !request.RequiresFullRefresh && request.PathChanges.Count > 0;
+                        var incremental = requestedIncremental;
                         if (incremental)
                         {
                             refreshedItems = await request.Source
-                                .ApplyChangesAsync(currentItems, request.PathChanges, _disposeToken)
+                                .ApplyChangesAsync(currentItems, request.PathChanges, requestToken, request.Background)
                                 .ConfigureAwait(false);
                         }
                         else
                         {
                             refreshedItems = await request.Source
-                                .LoadAsync(_disposeToken)
+                                .LoadAsync(requestToken, request.Background, request.PathChanges)
                                 .ConfigureAwait(false);
                         }
 
-                        refreshedSources.Add((request.Source, refreshedItems, !incremental));
+                        var sourceLoadedAt = diagnostics ? _timeProvider.GetTimestamp() : 0;
+                        requestToken.ThrowIfCancellationRequested();
+                        var scan = refreshedItems as AppSourceScanResult;
+                        incremental = incremental && scan?.IsFullScan != true;
+                        var complete = scan?.IsComplete != false;
+                        if (!complete)
+                        {
+                            // Preserve uncertainty only where reads failed, while applying confirmed source changes.
+                            var retained = new Dictionary<string, AppCatalogItem>(StringComparer.OrdinalIgnoreCase);
+                            foreach (var item in currentItems)
+                            {
+                                var retainedItem = scan!.GetRetainedItem(item);
+                                if (retainedItem is not null)
+                                {
+                                    retained[retainedItem.Identity] = retainedItem;
+                                }
+                            }
+
+                            foreach (var item in refreshedItems)
+                            {
+                                retained[item.Identity] = item;
+                            }
+
+                            refreshedItems = new List<AppCatalogItem>(retained.Values);
+                        }
+
+                        lock (_stateLock)
+                        {
+                            if (!request.Background && !incremental)
+                            {
+                                _pausedBackgroundRefreshes.Remove(request.Source.Id);
+                            }
+
+                            var retrySource = (!complete && scan?.FailedPaths is null) || scan?.RetryPaths.Contains(string.Empty) == true;
+                            UpdateRetriesUnderLock(request.Source, scan?.RetryPaths ?? [], scan?.ReusedRejectedPaths ?? [], retrySource, incremental ? request.PathChanges : null);
+                        }
+
+                        if (diagnostics)
+                        {
+                            var durationMs = _timeProvider.GetElapsedTime(sourceStarted, sourceLoadedAt).TotalMilliseconds;
+                            LogDiagnosticSourceCompleted(_logger, batchId, request.Source.Id, durationMs, incremental, refreshedItems.Count, complete, scan?.FailedPaths?.Count, scan?.RetryPaths.Count ?? 0);
+                        }
+
+                        try
+                        {
+                            var publication = PublishSourceSnapshot(request.Source, refreshedItems, !incremental && complete, diagnostics, batchId, sourceLoadedAt);
+                            snapshotsChanged |= publication.Changed;
+                            if (publication.Reconciled)
+                            {
+                                fullyReconciledSourceIds.Add(request.Source.Id);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // A publication failure must not trigger another source scan.
+                            LogCatalogRefreshFailed(_logger, ex);
+                            CompleteInitialPublication(request.Source);
+                        }
                     }
                     catch (OperationCanceledException) when (_disposeCancellation.IsCancellationRequested)
                     {
+                        if (diagnostics)
+                        {
+                            var durationMs = _timeProvider.GetElapsedTime(sourceStarted).TotalMilliseconds;
+                            LogDiagnosticSourceStopped(_logger, batchId, request.Source.Id, "canceled", durationMs);
+                        }
+
                         return;
+                    }
+                    catch (OperationCanceledException) when (backgroundCancellation?.IsCancellationRequested == true)
+                    {
+                        if (diagnostics)
+                        {
+                            var durationMs = _timeProvider.GetElapsedTime(sourceStarted).TotalMilliseconds;
+                            LogDiagnosticSourceStopped(_logger, batchId, request.Source.Id, "preempted", durationMs);
+                        }
+
+                        lock (_stateLock)
+                        {
+                            RequeueBackgroundUnderLock(request);
+                        }
                     }
                     catch (Exception ex)
                     {
+                        if (diagnostics)
+                        {
+                            var durationMs = _timeProvider.GetElapsedTime(sourceStarted).TotalMilliseconds;
+                            LogDiagnosticSourceStopped(_logger, batchId, request.Source.Id, "failed", durationMs);
+                        }
+
                         LogSourceRefreshFailed(_logger, request.Source.Id, ex);
+                        lock (_stateLock)
+                        {
+                            ScheduleRetryUnderLock(request.Source, string.Empty);
+                            ArmRetryTimerUnderLock();
+                        }
+
+                        CompleteInitialPublication(request.Source);
+                    }
+                    finally
+                    {
+                        lock (_stateLock)
+                        {
+                            if (ReferenceEquals(_backgroundCancellation, backgroundCancellation))
+                            {
+                                _backgroundCancellation = null;
+                            }
+                        }
                     }
                 }
 
-                IReadOnlyList<AppCatalogItemChange> changes = [];
-                var snapshotsChanged = false;
-                List<string> fullyReconciledSourceIds = [];
-                List<TaskCompletionSource> initialPublications = [];
                 lock (_stateLock)
                 {
                     if (_disposed)
@@ -370,59 +582,14 @@ public sealed partial class AppCatalog : IAppCatalog
                         return;
                     }
 
-                    var updated = new Dictionary<string, IReadOnlyList<AppCatalogItem>>(
-                        _publishedState.SourceSnapshots,
-                        StringComparer.Ordinal);
-                    foreach (var refreshed in refreshedSources)
-                    {
-                        if (!_sourcesById.TryGetValue(refreshed.Source.Id, out var activeSource)
-                            || !ReferenceEquals(activeSource, refreshed.Source))
-                        {
-                            continue;
-                        }
-
-                        if (refreshed.FullyReconciled)
-                        {
-                            fullyReconciledSourceIds.Add(refreshed.Source.Id);
-                        }
-
-                        if (!updated.TryGetValue(refreshed.Source.Id, out var currentItems)
-                            || !AppCatalogItem.HaveSamePersistedContent(currentItems, refreshed.Items))
-                        {
-                            updated[refreshed.Source.Id] = refreshed.Items;
-                            snapshotsChanged = true;
-                        }
-                    }
-
-                    snapshots = updated;
-                    if (snapshotsChanged)
-                    {
-                        changes = PublishSnapshotsUnderLock(snapshots);
-                    }
-
-                    foreach (var request in requests)
-                    {
-                        if (_sourcesById.TryGetValue(request.Source.Id, out var activeSource)
-                            && ReferenceEquals(activeSource, request.Source)
-                            && _initialSourcePublications.Remove(request.Source.Id, out var publication))
-                        {
-                            initialPublications.Add(publication);
-                        }
-                    }
+                    snapshots = _publishedState.SourceSnapshots;
                 }
 
-                if (changes.Count > 0)
+                var cacheAttempted = snapshotsChanged || fullyReconciledSourceIds.Count > 0;
+                var cacheMs = 0.0;
+                if (cacheAttempted)
                 {
-                    RaiseChanged(changes);
-                }
-
-                foreach (var publication in initialPublications)
-                {
-                    publication.TrySetResult();
-                }
-
-                if (snapshotsChanged || fullyReconciledSourceIds.Count > 0)
-                {
+                    var cacheStarted = diagnostics ? _timeProvider.GetTimestamp() : 0;
                     try
                     {
                         var context = AppCatalogCacheContext.Create(GetSourcesSnapshot(), _timeProvider.GetUtcNow());
@@ -440,6 +607,19 @@ public sealed partial class AppCatalog : IAppCatalog
                     {
                         LogCacheSaveFailed(_logger, ex);
                     }
+                    finally
+                    {
+                        if (diagnostics)
+                        {
+                            cacheMs = _timeProvider.GetElapsedTime(cacheStarted).TotalMilliseconds;
+                        }
+                    }
+                }
+
+                if (diagnostics)
+                {
+                    var durationMs = _timeProvider.GetElapsedTime(batchStarted).TotalMilliseconds;
+                    LogDiagnosticBatchCompleted(_logger, batchId, durationMs, cacheAttempted, cacheMs);
                 }
 
                 var refreshCompleted = false;
@@ -454,9 +634,15 @@ public sealed partial class AppCatalog : IAppCatalog
                     }
                 }
 
+                foreach (var request in requests)
+                {
+                    request.CompletePublication();
+                }
+
                 if (refreshCompleted)
                 {
                     RaiseRefreshStateChanged();
+                    ScheduleInvalidationFlush();
                     return;
                 }
             }
@@ -470,6 +656,11 @@ public sealed partial class AppCatalog : IAppCatalog
         }
         finally
         {
+            foreach (var request in currentRequests)
+            {
+                request.CompletePublication();
+            }
+
             var notify = false;
             Task? recoveryTask = null;
             lock (_stateLock)
@@ -522,6 +713,73 @@ public sealed partial class AppCatalog : IAppCatalog
         }
     }
 
+    private (bool Changed, bool Reconciled) PublishSourceSnapshot(
+        IAppSource source,
+        IReadOnlyList<AppCatalogItem> items,
+        bool fullyReconciled,
+        bool diagnostics,
+        long batchId,
+        long loadedAt)
+    {
+        IReadOnlyList<AppCatalogItemChange> changes = [];
+        var snapshotsChanged = false;
+        var publicationStarted = diagnostics ? _timeProvider.GetTimestamp() : 0;
+        double? buildMs = null;
+        AppCatalogSnapshot publicationSnapshot;
+        lock (_stateLock)
+        {
+            if (_disposed || !_sourcesById.TryGetValue(source.Id, out var active) || !ReferenceEquals(active, source))
+            {
+                return (false, false);
+            }
+
+            if (!_publishedState.SourceSnapshots.TryGetValue(source.Id, out var currentItems)
+                || !AppCatalogItem.HaveSamePersistedContent(currentItems, items))
+            {
+                var snapshots = new Dictionary<string, IReadOnlyList<AppCatalogItem>>(_publishedState.SourceSnapshots, StringComparer.Ordinal)
+                {
+                    [source.Id] = items,
+                };
+                changes = PublishSnapshotsUnderLock(snapshots, out buildMs);
+                snapshotsChanged = true;
+            }
+
+            publicationSnapshot = _publishedState.Snapshot;
+        }
+
+        var publicationFinished = diagnostics ? _timeProvider.GetTimestamp() : 0;
+        if (changes.Count > 0)
+        {
+            RaiseChanged(changes);
+        }
+
+        if (diagnostics)
+        {
+            var publicationMs = _timeProvider.GetElapsedTime(publicationStarted, publicationFinished).TotalMilliseconds;
+            var observerMs = _timeProvider.GetElapsedTime(publicationFinished).TotalMilliseconds;
+            var delayMs = _timeProvider.GetElapsedTime(loadedAt, publicationFinished).TotalMilliseconds;
+            LogDiagnosticPublication(_logger, batchId, source.Id, changes.Count, publicationMs, buildMs, observerMs, publicationSnapshot.Items.Count, publicationSnapshot.HiddenItems.Count + publicationSnapshot.PatternHiddenItems.Count);
+            LogDiagnosticPublicationDelay(_logger, batchId, source.Id, delayMs);
+        }
+
+        CompleteInitialPublication(source);
+        return (snapshotsChanged, fullyReconciled);
+    }
+
+    private void CompleteInitialPublication(IAppSource source)
+    {
+        TaskCompletionSource? publication = null;
+        lock (_stateLock)
+        {
+            if (_sourcesById.TryGetValue(source.Id, out var active) && ReferenceEquals(active, source))
+            {
+                _initialSourcePublications.Remove(source.Id, out publication);
+            }
+        }
+
+        publication?.TrySetResult();
+    }
+
     private Task StartRefreshUnderLock(out bool refreshStarted)
     {
         refreshStarted = false;
@@ -535,10 +793,23 @@ public sealed partial class AppCatalog : IAppCatalog
         return _refreshTask;
     }
 
+    private void RequeueBackgroundUnderLock(SourceRefreshRequest request)
+    {
+        if (_disposed || !_sourcesById.TryGetValue(request.Source.Id, out var active) || !ReferenceEquals(active, request.Source))
+        {
+            return;
+        }
+
+        // Keep recovery separate so a targeted foreground request does not become a full source scan.
+        GetOrAddRefreshRequest(_pausedBackgroundRefreshes, request.Source, background: true).Merge(request);
+    }
+
     private void PublishCachedSnapshots(
         IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>> snapshots,
-        IReadOnlyList<IAppSource> initializedSources)
+        IReadOnlyList<IAppSource> initializedSources,
+        out double? buildMs)
     {
+        buildMs = null;
         IReadOnlyList<AppCatalogItemChange> changes;
         lock (_stateLock)
         {
@@ -559,7 +830,7 @@ public sealed partial class AppCatalog : IAppCatalog
                 }
             }
 
-            changes = PublishSnapshotsUnderLock(combined);
+            changes = PublishSnapshotsUnderLock(combined, out buildMs);
         }
 
         if (changes.Count > 0)
@@ -646,110 +917,15 @@ public sealed partial class AppCatalog : IAppCatalog
     }
 
     private IReadOnlyList<AppCatalogItemChange> PublishSnapshotsUnderLock(
-        IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>> snapshots)
+        IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>> snapshots,
+        out double? buildMs)
     {
-        var publication = BuildPublication(snapshots, _publishedState);
+        var diagnostics = ShouldLogDiagnostics();
+        var started = diagnostics ? _timeProvider.GetTimestamp() : 0;
+        var publication = _publicationBuilder.Build(snapshots, _publishedState);
+        buildMs = diagnostics ? _timeProvider.GetElapsedTime(started).TotalMilliseconds : null;
         Volatile.Write(ref _publishedState, publication.State);
         return publication.Changes;
-    }
-
-    private Publication BuildPublication(
-        IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>> snapshots,
-        PublishedState previousState)
-    {
-        var merged = MergeSnapshots(snapshots);
-        var catalogItems = new Dictionary<string, AppCatalogItem>(StringComparer.OrdinalIgnoreCase);
-        var publishedApps = new Dictionary<string, AppItem>(StringComparer.OrdinalIgnoreCase);
-        var visibilityById = new Dictionary<string, AppVisibility>(StringComparer.OrdinalIgnoreCase);
-        List<AppItem> visibleItems = [];
-        List<AppItem> hiddenItems = [];
-        List<AppItem> patternHiddenItems = [];
-        List<AppCatalogItemChange> changes = [];
-
-        foreach (var item in merged.Values)
-        {
-            if (!IsIncluded(item))
-            {
-                continue;
-            }
-
-            var existed = previousState.CatalogItems.TryGetValue(item.Identity, out var previousCatalogItem);
-            AppItem? app = null;
-            var unchanged = existed
-                && previousCatalogItem!.CanReuseMaterializedApp(item)
-                && previousState.PublishedApps.TryGetValue(item.Identity, out app);
-
-            if (!unchanged)
-            {
-                try
-                {
-                    app = item.ToAppItem();
-                }
-                catch (Exception ex)
-                {
-                    LogCachedApplicationMaterializationFailed(_logger, item.Identity, ex);
-                    continue;
-                }
-            }
-
-            var visibility = _visibilityStore.GetVisibility(item);
-            var hidden = visibility != AppVisibility.Visible;
-            catalogItems[item.Identity] = item;
-            publishedApps[item.Identity] = app!;
-            visibilityById[item.Identity] = visibility;
-            if (visibility == AppVisibility.HiddenByPattern)
-            {
-                patternHiddenItems.Add(app!);
-            }
-            else if (visibility == AppVisibility.Hidden)
-            {
-                hiddenItems.Add(app!);
-            }
-            else
-            {
-                visibleItems.Add(app!);
-            }
-
-            previousState.VisibilityById.TryGetValue(item.Identity, out var previousVisibility);
-            if (!existed)
-            {
-                changes.Add(new AppCatalogItemChange(AppCatalogChangeKind.Added, item.Identity, app, hidden));
-            }
-            else if (!unchanged || visibility != previousVisibility)
-            {
-                changes.Add(new AppCatalogItemChange(AppCatalogChangeKind.Updated, item.Identity, app, hidden));
-            }
-        }
-
-        foreach (var previous in previousState.CatalogItems)
-        {
-            if (!catalogItems.ContainsKey(previous.Key))
-            {
-                changes.Add(new AppCatalogItemChange(AppCatalogChangeKind.Removed, previous.Key, null, hidden: false));
-            }
-        }
-
-        return new Publication(
-            new PublishedState(
-                snapshots,
-                new AppCatalogSnapshot(visibleItems.AsReadOnly(), hiddenItems.AsReadOnly(), patternHiddenItems.AsReadOnly()),
-                catalogItems,
-                publishedApps,
-                visibilityById),
-            changes.AsReadOnly());
-    }
-
-    private bool IsIncluded(AppCatalogItem item)
-    {
-        foreach (var filter in _filters)
-        {
-            if (!filter.Includes(item))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private void OnFilterChanged(object? sender, EventArgs e)
@@ -769,7 +945,7 @@ public sealed partial class AppCatalog : IAppCatalog
                     return;
                 }
 
-                changes = PublishSnapshotsUnderLock(_publishedState.SourceSnapshots);
+                changes = PublishSnapshotsUnderLock(_publishedState.SourceSnapshots, out _);
             }
 
             if (changes.Count > 0)
@@ -781,95 +957,6 @@ public sealed partial class AppCatalog : IAppCatalog
         {
             LogCatalogReprojectionFailed(_logger, ex);
         }
-    }
-
-    private Dictionary<string, AppCatalogItem> MergeSnapshots(
-        IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>> snapshots)
-    {
-        var canonicalIdentityByTarget = BuildCanonicalIdentityByTarget(snapshots);
-        var merged = new Dictionary<string, AppCatalogItem>(StringComparer.OrdinalIgnoreCase);
-        foreach (var snapshot in snapshots.Values)
-        {
-            foreach (var item in snapshot)
-            {
-                if (string.IsNullOrWhiteSpace(item.Identity))
-                {
-                    continue;
-                }
-
-                var canonicalItem = CanonicalizeItem(item, canonicalIdentityByTarget);
-                if (!merged.TryGetValue(canonicalItem.Identity, out var existing))
-                {
-                    merged.Add(canonicalItem.Identity, canonicalItem);
-                    continue;
-                }
-
-                try
-                {
-                    merged[canonicalItem.Identity] = existing.MergeProvenance(canonicalItem);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    LogCatalogMergeConflict(_logger, canonicalItem.Identity, ex);
-                }
-            }
-        }
-
-        return merged;
-    }
-
-    private static Dictionary<string, string?> BuildCanonicalIdentityByTarget(
-        IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>> snapshots)
-    {
-        var canonicalIdentityByTarget = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
-        foreach (var snapshot in snapshots.Values)
-        {
-            foreach (var item in snapshot)
-            {
-                var canonicalIdentity = item.Payload.GetCanonicalIdentityHint();
-                var targetPath = item.Payload.GetCanonicalTargetPath();
-                if (string.IsNullOrWhiteSpace(canonicalIdentity)
-                    || string.IsNullOrWhiteSpace(targetPath))
-                {
-                    continue;
-                }
-
-                var target = PathHelpers.NormalizePath(targetPath);
-                if (!canonicalIdentityByTarget.TryAdd(target, canonicalIdentity)
-                    && !string.Equals(
-                        canonicalIdentityByTarget[target],
-                        canonicalIdentity,
-                        StringComparison.OrdinalIgnoreCase))
-                {
-                    canonicalIdentityByTarget[target] = null;
-                }
-            }
-        }
-
-        return canonicalIdentityByTarget;
-    }
-
-    private static AppCatalogItem CanonicalizeItem(
-        AppCatalogItem item,
-        IReadOnlyDictionary<string, string?> canonicalIdentityByTarget)
-    {
-        var canonicalIdentity = item.Payload.GetCanonicalIdentityHint();
-        if (!string.IsNullOrWhiteSpace(canonicalIdentity))
-        {
-            return item.WithIdentity(canonicalIdentity);
-        }
-
-        var targetPath = item.Payload.GetCanonicalTargetPath();
-        if (string.IsNullOrWhiteSpace(targetPath)
-            || !canonicalIdentityByTarget.TryGetValue(
-                PathHelpers.NormalizePath(targetPath),
-                out canonicalIdentity)
-            || canonicalIdentity is null)
-        {
-            return item;
-        }
-
-        return item.WithIdentity(canonicalIdentity);
     }
 
     private void OnSourceProviderChanged(object? sender, EventArgs e)
@@ -928,8 +1015,14 @@ public sealed partial class AppCatalog : IAppCatalog
                 {
                     existing.Value.Invalidated -= OnSourceInvalidated;
                     removedSources.Add(existing.Value);
-                    _pendingRefreshes.Remove(existing.Key);
+                    if (_pendingRefreshes.Remove(existing.Key, out var pending))
+                    {
+                        pending.CompletePublication();
+                    }
+
                     _debouncedRefreshes.Remove(existing.Key);
+                    _pausedBackgroundRefreshes.Remove(existing.Key);
+                    _sourceRetries.Remove(existing.Key);
                     if (!sourcesById.ContainsKey(existing.Key)
                         && _initialSourcePublications.Remove(existing.Key, out var publication))
                     {
@@ -969,7 +1062,7 @@ public sealed partial class AppCatalog : IAppCatalog
 
             if (snapshotsChanged)
             {
-                changes = PublishSnapshotsUnderLock(snapshots);
+                changes = PublishSnapshotsUnderLock(snapshots, out _);
             }
         }
 
@@ -1035,11 +1128,198 @@ public sealed partial class AppCatalog : IAppCatalog
         }
     }
 
+    private void UpdateRetriesUnderLock(
+        IAppSource source,
+        IReadOnlyList<string> retryPaths,
+        IReadOnlyList<string> reusedRejectedPaths,
+        bool incomplete,
+        IReadOnlyList<AppSourcePathChange>? checkedPaths)
+    {
+        if (_disposed || !_sourcesById.TryGetValue(source.Id, out var active) || !ReferenceEquals(active, source))
+        {
+            return;
+        }
+
+        var rejected = new HashSet<string>(retryPaths, StringComparer.OrdinalIgnoreCase);
+        rejected.UnionWith(reusedRejectedPaths);
+        if (_sourceRetries.TryGetValue(source.Id, out var state))
+        {
+            foreach (var path in state.Paths.Keys.ToArray())
+            {
+                var checkedPath = checkedPaths is null || checkedPaths.Any(change => string.Equals(change.Path, path, StringComparison.OrdinalIgnoreCase));
+                if ((path.Length == 0 && !incomplete && checkedPaths is null) || (path.Length > 0 && checkedPath && !rejected.Contains(path)))
+                {
+                    state.Paths.Remove(path);
+                }
+                else if (rejected.Contains(path) && state.Paths[path].DueAtUtc == DateTimeOffset.MaxValue)
+                {
+                    // A full scan can lose a retry's dirty-path hint when the request reaches its limit.
+                    ScheduleRetryUnderLock(source, path);
+                }
+            }
+        }
+
+        if (incomplete)
+        {
+            ScheduleRetryUnderLock(source, string.Empty);
+        }
+
+        foreach (var path in retryPaths)
+        {
+            ScheduleRetryUnderLock(source, path);
+        }
+
+        ArmRetryTimerUnderLock();
+    }
+
+    private void ScheduleRetryUnderLock(IAppSource source, string path)
+    {
+        if (_disposed || !_sourcesById.TryGetValue(source.Id, out var active) || !ReferenceEquals(active, source))
+        {
+            return;
+        }
+
+        if (!_sourceRetries.TryGetValue(source.Id, out var state))
+        {
+            state = new SourceRetryState(source);
+            _sourceRetries.Add(source.Id, state);
+        }
+
+        state.Paths.TryGetValue(path, out var retry);
+        if (retry?.Attempt >= RetryDelays.Length || retry?.DueAtUtc < DateTimeOffset.MaxValue)
+        {
+            return;
+        }
+
+        // Exhausted candidates remain here until a successful scan or the next reconciliation.
+        // Repeated notifications must not continually renew their retry budget.
+        if (path.Length > 0 && retry is null && state.Paths.Count >= SourceRefreshRequest.MaximumPathChanges)
+        {
+            return;
+        }
+
+        var attempt = retry?.Attempt ?? 0;
+        state.Paths[path] = new PendingRetry(attempt, _timeProvider.GetUtcNow() + RetryDelays[attempt]);
+    }
+
+    private void ArmRetryTimerUnderLock()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        var dueAt = DateTimeOffset.MaxValue;
+        foreach (var state in _sourceRetries.Values)
+        {
+            foreach (var retry in state.Paths.Values)
+            {
+                if (retry.DueAtUtc < dueAt)
+                {
+                    dueAt = retry.DueAtUtc;
+                }
+            }
+        }
+
+        var delay = dueAt == DateTimeOffset.MaxValue ? Timeout.InfiniteTimeSpan : dueAt - _timeProvider.GetUtcNow();
+        _retryTimer.Change(delay < TimeSpan.Zero && delay != Timeout.InfiniteTimeSpan ? TimeSpan.Zero : delay, Timeout.InfiniteTimeSpan);
+    }
+
+    private void QueueRetries()
+    {
+        try
+        {
+            var refreshStarted = false;
+            lock (_stateLock)
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                var now = _timeProvider.GetUtcNow();
+                foreach (var state in _sourceRetries.Values)
+                {
+                    foreach (var path in state.Paths.Keys.ToArray())
+                    {
+                        var retry = state.Paths[path];
+                        if (retry.DueAtUtc > now)
+                        {
+                            continue;
+                        }
+
+                        state.Paths[path] = new PendingRetry(retry.Attempt + 1, DateTimeOffset.MaxValue);
+                        var request = GetOrAddRefreshRequest(_pendingRefreshes, state.Source, background: true);
+                        if (path.Length == 0)
+                        {
+                            request.RequireFullRefresh();
+                        }
+                        else
+                        {
+                            request.Add(AppSourceInvalidatedEventArgs.ForPath(new AppSourcePathChange(WatcherChangeTypes.Changed, path)), background: true);
+                        }
+                    }
+                }
+
+                ArmRetryTimerUnderLock();
+                if (_pendingRefreshes.Count > 0)
+                {
+                    _ = StartRefreshUnderLock(out refreshStarted);
+                }
+            }
+
+            if (refreshStarted)
+            {
+                RaiseRefreshStateChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            LogRefreshRecoveryFailed(_logger, ex);
+        }
+    }
+
+    private void ReconcileInBackground()
+    {
+        try
+        {
+            IReadOnlyList<IAppSource> sources;
+            lock (_stateLock)
+            {
+                if (_disposed || _initializationTask is null)
+                {
+                    return;
+                }
+
+                // Keep live retry deadlines; reconciliation renews only exhausted budgets.
+                foreach (var state in _sourceRetries.Values)
+                {
+                    foreach (var path in state.Paths.Where(pair => pair.Value.Attempt >= RetryDelays.Length).Select(pair => pair.Key).ToArray())
+                    {
+                        state.Paths.Remove(path);
+                    }
+                }
+
+                ArmRetryTimerUnderLock();
+                sources = _sources;
+            }
+
+            _ = QueueFullRefresh(sources, background: true);
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+        catch (Exception ex)
+        {
+            LogRefreshRecoveryFailed(_logger, ex);
+        }
+    }
+
     private void ScheduleInvalidationFlush()
     {
         lock (_stateLock)
         {
-            if (_disposed || _invalidationFlushScheduled)
+            if (_disposed || _invalidationFlushScheduled || (_debouncedRefreshes.Count == 0 && _pausedBackgroundRefreshes.Count == 0))
             {
                 return;
             }
@@ -1054,7 +1334,7 @@ public sealed partial class AppCatalog : IAppCatalog
     {
         try
         {
-            await Task.Delay(_invalidationDelay, _disposeToken).ConfigureAwait(false);
+            await Task.Delay(_invalidationDelay, _timeProvider, _disposeToken).ConfigureAwait(false);
             QueueDebouncedRefreshes(endScheduledWindow: true);
         }
         catch (OperationCanceledException)
@@ -1075,17 +1355,27 @@ public sealed partial class AppCatalog : IAppCatalog
                 _invalidationFlushScheduled = false;
             }
 
-            if (_disposed || _debouncedRefreshes.Count == 0)
+            if (_disposed || (_debouncedRefreshes.Count == 0 && _pausedBackgroundRefreshes.Count == 0))
             {
                 return;
             }
 
             foreach (var pending in _debouncedRefreshes.Values)
             {
-                GetOrAddRefreshRequest(_pendingRefreshes, pending.Source).Merge(pending);
+                GetOrAddRefreshRequest(_pendingRefreshes, pending.Source, pending.Background).Merge(pending);
             }
 
             _debouncedRefreshes.Clear();
+            if (!_pendingRefreshes.Values.Any(pending => !pending.Background))
+            {
+                foreach (var paused in _pausedBackgroundRefreshes.Values)
+                {
+                    GetOrAddRefreshRequest(_pendingRefreshes, paused.Source, background: true).Merge(paused);
+                }
+
+                _pausedBackgroundRefreshes.Clear();
+            }
+
             _ = StartRefreshUnderLock(out refreshStarted);
         }
 
@@ -1095,15 +1385,41 @@ public sealed partial class AppCatalog : IAppCatalog
         }
     }
 
-    private static SourceRefreshRequest GetOrAddRefreshRequest(
+    private SourceRefreshRequest GetOrAddRefreshRequest(
         Dictionary<string, SourceRefreshRequest> requests,
-        IAppSource source)
+        IAppSource source,
+        bool background = false)
     {
+        if (ReferenceEquals(requests, _pendingRefreshes))
+        {
+            if (background && ((requests.TryGetValue(source.Id, out var foreground) && !foreground.Background)
+                || (_debouncedRefreshes.TryGetValue(source.Id, out var debounced) && !debounced.Background)))
+            {
+                return GetOrAddRefreshRequest(_pausedBackgroundRefreshes, source, background: true);
+            }
+
+            if (!background && requests.TryGetValue(source.Id, out var pendingBackground) && pendingBackground.Background)
+            {
+                RequeueBackgroundUnderLock(pendingBackground);
+                requests.Remove(source.Id);
+            }
+        }
+
+        if (!background && _backgroundCancellation is not null)
+        {
+            // Cancellation callbacks run outside the catalog lock; the worker yields at its next checkpoint.
+            _ = _backgroundCancellation.CancelAsync();
+        }
+
         if (!requests.TryGetValue(source.Id, out var request)
             || !ReferenceEquals(request.Source, source))
         {
-            request = new SourceRefreshRequest(source);
+            request = new SourceRefreshRequest(source, background, ShouldLogDiagnostics() ? _timeProvider.GetTimestamp() : null);
             requests[source.Id] = request;
+        }
+        else
+        {
+            request.IncludePriority(background);
         }
 
         return request;
@@ -1170,10 +1486,14 @@ public sealed partial class AppCatalog : IAppCatalog
             VisibilityChanged = null;
             _pendingRefreshes.Clear();
             _debouncedRefreshes.Clear();
+            _pausedBackgroundRefreshes.Clear();
             _initialSourcePublications.Clear();
+            _sourceRetries.Clear();
             sources = _sources;
         }
 
+        _retryTimer.Dispose();
+        _reconciliationTimer.Dispose();
         _disposeCancellation.Cancel();
         _sourceProvider.Changed -= OnSourceProviderChanged;
         _sourceProvider.Dispose();
@@ -1196,143 +1516,17 @@ public sealed partial class AppCatalog : IAppCatalog
         GC.SuppressFinalize(this);
     }
 
-    [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Failed to initialize application source '{SourceId}'.")]
-    private static partial void LogSourceInitializationFailed(MEL.ILogger logger, string sourceId, Exception exception);
+    private sealed record PendingRetry(int Attempt, DateTimeOffset DueAtUtc);
 
-    [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Failed to refresh application source '{SourceId}'.")]
-    private static partial void LogSourceRefreshFailed(MEL.ILogger logger, string sourceId, Exception exception);
-
-    [LoggerMessage(EventId = 3, Level = LogLevel.Error, Message = "Failed to save the application catalog cache.")]
-    private static partial void LogCacheSaveFailed(MEL.ILogger logger, Exception exception);
-
-    [LoggerMessage(EventId = 4, Level = LogLevel.Error, Message = "Application catalog refresh failed.")]
-    private static partial void LogCatalogRefreshFailed(MEL.ILogger logger, Exception exception);
-
-    [LoggerMessage(EventId = 5, Level = LogLevel.Error, Message = "Application catalog refresh-state notification failed.")]
-    private static partial void LogRefreshStateNotificationFailed(MEL.ILogger logger, Exception exception);
-
-    [LoggerMessage(EventId = 6, Level = LogLevel.Error, Message = "Application catalog refresh recovery failed.")]
-    private static partial void LogRefreshRecoveryFailed(MEL.ILogger logger, Exception exception);
-
-    [LoggerMessage(EventId = 7, Level = LogLevel.Warning, Message = "Failed to materialize cached application '{Identity}'.")]
-    private static partial void LogCachedApplicationMaterializationFailed(MEL.ILogger logger, string identity, Exception exception);
-
-    [LoggerMessage(EventId = 8, Level = LogLevel.Error, Message = "Application source provider returned duplicate ID '{SourceId}'.")]
-    private static partial void LogDuplicateSourceId(MEL.ILogger logger, string sourceId);
-
-    [LoggerMessage(EventId = 9, Level = LogLevel.Error, Message = "Application catalog policy reprojection failed.")]
-    private static partial void LogCatalogReprojectionFailed(MEL.ILogger logger, Exception exception);
-
-    [LoggerMessage(EventId = 10, Level = LogLevel.Warning, Message = "Ignored a conflicting representation of canonical application '{Identity}'.")]
-    private static partial void LogCatalogMergeConflict(MEL.ILogger logger, string identity, Exception exception);
-
-    [LoggerMessage(EventId = 11, Level = LogLevel.Error, Message = "Application catalog change notification failed.")]
-    private static partial void LogCatalogChangeNotificationFailed(MEL.ILogger logger, Exception exception);
-
-    private sealed class SourceRefreshRequest
+    private sealed class SourceRetryState
     {
-        private readonly List<AppSourcePathChange> _pathChanges = [];
-        private readonly Dictionary<string, int> _pathChangeIndexes = new(StringComparer.OrdinalIgnoreCase);
+        public IAppSource Source { get; }
 
-        public SourceRefreshRequest(IAppSource source)
+        public Dictionary<string, PendingRetry> Paths { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+        public SourceRetryState(IAppSource source)
         {
             Source = source;
         }
-
-        public IAppSource Source { get; }
-
-        public bool RequiresFullRefresh { get; private set; }
-
-        public IReadOnlyList<AppSourcePathChange> PathChanges => _pathChanges;
-
-        public void Add(AppSourceInvalidatedEventArgs invalidation)
-        {
-            if (invalidation.RequiresFullRefresh)
-            {
-                RequireFullRefresh();
-            }
-            else if (!RequiresFullRefresh && invalidation.PathChange is not null)
-            {
-                AddPathChange(invalidation.PathChange);
-            }
-        }
-
-        public void Merge(SourceRefreshRequest other)
-        {
-            if (other.RequiresFullRefresh)
-            {
-                RequireFullRefresh();
-                return;
-            }
-
-            if (RequiresFullRefresh)
-            {
-                return;
-            }
-
-            foreach (var pathChange in other.PathChanges)
-            {
-                AddPathChange(pathChange);
-            }
-        }
-
-        public void RequireFullRefresh()
-        {
-            RequiresFullRefresh = true;
-            _pathChanges.Clear();
-            _pathChangeIndexes.Clear();
-        }
-
-        private void AddPathChange(AppSourcePathChange change)
-        {
-            if (!string.IsNullOrWhiteSpace(change.OldPath))
-            {
-                AddOrReplacePathChange(new AppSourcePathChange(WatcherChangeTypes.Deleted, change.OldPath));
-            }
-
-            AddOrReplacePathChange(new AppSourcePathChange(change.ObservedKind, change.Path));
-        }
-
-        private void AddOrReplacePathChange(AppSourcePathChange change)
-        {
-            if (RequiresFullRefresh)
-            {
-                return;
-            }
-
-            if (_pathChangeIndexes.TryGetValue(change.Path, out var index))
-            {
-                _pathChanges[index] = change;
-                return;
-            }
-
-            if (_pathChanges.Count >= MaxIncrementalPathChangesPerSource)
-            {
-                RequireFullRefresh();
-                return;
-            }
-
-            _pathChangeIndexes.Add(change.Path, _pathChanges.Count);
-            _pathChanges.Add(change);
-        }
     }
-
-    private sealed record PublishedState(
-        IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>> SourceSnapshots,
-        AppCatalogSnapshot Snapshot,
-        IReadOnlyDictionary<string, AppCatalogItem> CatalogItems,
-        IReadOnlyDictionary<string, AppItem> PublishedApps,
-        IReadOnlyDictionary<string, AppVisibility> VisibilityById)
-    {
-        public static PublishedState Empty { get; } = new(
-            new Dictionary<string, IReadOnlyList<AppCatalogItem>>(StringComparer.Ordinal),
-            new AppCatalogSnapshot([], []),
-            new Dictionary<string, AppCatalogItem>(StringComparer.OrdinalIgnoreCase),
-            new Dictionary<string, AppItem>(StringComparer.OrdinalIgnoreCase),
-            new Dictionary<string, AppVisibility>(StringComparer.OrdinalIgnoreCase));
-    }
-
-    private sealed record Publication(
-        PublishedState State,
-        IReadOnlyList<AppCatalogItemChange> Changes);
 }

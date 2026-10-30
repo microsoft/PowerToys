@@ -16,6 +16,9 @@ internal static class ShellLinkReader
 {
     private const string AppsFolderPrefix = "shell:AppsFolder\\";
 
+    /// <summary>Reads a shell link's target, arguments, working directory, icon, and app identity with nonexclusive sharing.</summary>
+    /// <returns>The shortcut metadata, or null when the link cannot be loaded as a supported shortcut.</returns>
+    /// <remarks>COM activation and access or sharing failures propagate so discovery can distinguish rejected links from unreadable ones.</remarks>
     public static unsafe ShellLinkInfo? Read(string path)
     {
         const int MAX_PATH = 260;
@@ -24,19 +27,35 @@ internal static class ShellLinkReader
         PInvoke.CoCreateInstance(typeof(ShellLink).GUID, null, CLSCTX.CLSCTX_INPROC_SERVER, out link).ThrowOnFailure();
         using var linkHandle = new SafeComHandle((IntPtr)link);
 
-        const int STGMREAD = 0;
+        const STGM readSharing = STGM.STGM_READ | STGM.STGM_SHARE_DENY_NONE;
 
         IPersistFile* persistFile = null;
         Guid iid = typeof(IPersistFile).GUID;
         var queryResult = ((IUnknown*)link)->QueryInterface(&iid, (void**)&persistFile);
         using var persistFileHandle = new SafeComHandle((IntPtr)persistFile);
-        if (queryResult.Failed || persistFile is null || persistFile->Load(path, STGMREAD).Failed)
+        if (queryResult.Failed || persistFile is null)
         {
             return null;
         }
 
+        var loadResult = persistFile->Load(path, readSharing);
+        if (loadResult.Failed)
+        {
+            // Let discovery distinguish read contention from an invalid shortcut.
+            if (loadResult.Value is unchecked((int)0x80070020) or unchecked((int)0x80070021) or unchecked((int)0x80070005)
+                or unchecked((int)0x80030020) or unchecked((int)0x80030021) or unchecked((int)0x80030005))
+            {
+                loadResult.ThrowOnFailure();
+            }
+
+            return null;
+        }
+
         const uint SLR_NO_UI = 0x1;
-        link->Resolve(HWND.Null, SLR_NO_UI);
+        const uint SLR_NOSEARCH = 0x10;
+
+        // Keep link tracking for moved targets without searching nearby folders or other volumes.
+        link->Resolve(HWND.Null, SLR_NO_UI | SLR_NOSEARCH);
 
         var buffer = stackalloc char[MAX_PATH];
         buffer[0] = '\0';

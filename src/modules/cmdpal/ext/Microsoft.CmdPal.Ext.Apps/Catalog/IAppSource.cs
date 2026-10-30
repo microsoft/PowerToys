@@ -38,12 +38,22 @@ internal interface IAppSource : IDisposable
     /// <remarks>
     /// Discovery remains in <see cref="LoadAsync"/>. This hook is for resources such as file-system watchers.
     /// </remarks>
-    Task InitializeAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    Task InitializeAsync(CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
 
     /// <summary>
-    /// Produces a complete authoritative snapshot for this source.
+    /// Scans this source and returns confirmed applications with any incomplete-read coverage.
     /// </summary>
-    Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken);
+    /// <remarks>
+    /// A plain list is a complete authoritative result. Return <see cref="AppSourceScanResult"/> when reads
+    /// were incomplete or candidate paths need a delayed retry; it also identifies old data that must be retained.
+    /// Full scans set <see cref="AppSourceScanResult.IsFullScan"/>, including when reached through dirty-path reconciliation.
+    /// Background recovery may reuse unchanged candidates and must lower the priority of synchronous discovery work.
+    /// Supplied dirty paths must bypass cached candidate results even when the whole source is enumerated.
+    /// </remarks>
+    Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken, bool background = false, IReadOnlyList<AppSourcePathChange>? dirtyPaths = null);
 
     /// <summary>
     /// Reconciles dirty paths against the last committed source snapshot.
@@ -52,10 +62,14 @@ internal interface IAppSource : IDisposable
     /// Notifications are not ordered state transitions. Implementations must inspect current source state and make
     /// repeated reconciliation idempotent. The default implementation performs a full load, so a source remains
     /// correct without incremental support.
+    /// A promoted full scan reports <see cref="AppSourceScanResult.IsFullScan"/> so retry and cache bookkeeping use its actual scope.
     /// </remarks>
     Task<IReadOnlyList<AppCatalogItem>> ApplyChangesAsync(
         IReadOnlyList<AppCatalogItem> currentItems,
         IReadOnlyList<AppSourcePathChange> changes,
-        CancellationToken cancellationToken)
-        => LoadAsync(cancellationToken);
+        CancellationToken cancellationToken,
+        bool background = false)
+    {
+        return LoadAsync(cancellationToken, background, changes);
+    }
 }
