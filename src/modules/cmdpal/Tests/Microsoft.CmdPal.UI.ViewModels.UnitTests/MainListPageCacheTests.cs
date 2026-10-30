@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps;
-using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -109,15 +108,13 @@ public sealed class MainListPageCacheTests
         commandManager.TopLevelCommands.Add(first);
         commandManager.TopLevelCommands.Add(second);
 
-        var apps = CreateEmptyApps();
         using var page = new MainListPage(
             commandManager,
             null!,
             fuzzyMatcherProvider.Object,
             settingsService.Object,
             appStateService.Object,
-            apps.Page,
-            apps.Provider);
+            CreateEmptyAppListItemSource());
 
         Task<IListItem[]>? rebuild = null;
         try
@@ -182,15 +179,13 @@ public sealed class MainListPageCacheTests
         var command = CreateTopLevelCommand("command", "Command", services.Object, pageContext, providerContext);
         commandManager.TopLevelCommands.Add(command);
 
-        var apps = CreateEmptyApps();
         using var page = new MainListPage(
             commandManager,
             null!,
             fuzzyMatcherProvider.Object,
             settingsService.Object,
             appStateService.Object,
-            apps.Page,
-            apps.Provider);
+            CreateEmptyAppListItemSource());
 
         try
         {
@@ -231,16 +226,11 @@ public sealed class MainListPageCacheTests
         }
     }
 
-    private static (AllAppsPage Page, AllAppsCommandProvider Provider) CreateEmptyApps()
+    private static IAppListItemSource CreateEmptyAppListItemSource()
     {
-        // Mock virtual settings I/O so these cache tests never load or save user settings.
-        var settings = new Mock<AllAppsSettings>().Object;
-        var catalog = new Mock<IAppCatalog>();
-        catalog.SetupGet(appCatalog => appCatalog.Items).Returns(Array.Empty<AppItem>());
-        catalog.Setup(appCatalog => appCatalog.InitializeAsync()).Returns(Task.CompletedTask);
-        var page = new AllAppsPage(catalog.Object, settings);
-        Assert.IsTrue(SpinWait.SpinUntil(() => !page.IsLoading, TimeSpan.FromSeconds(5)));
-        return (page, new AllAppsCommandProvider(page, settings));
+        var source = new Mock<IAppListItemSource>();
+        source.Setup(itemSource => itemSource.GetSnapshot()).Returns(new AppListItemSnapshot([], []));
+        return source.Object;
     }
 
     private static TopLevelViewModel CreateTopLevelCommand(

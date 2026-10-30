@@ -5,8 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Microsoft.CmdPal.Ext.Apps.Programs;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 
@@ -97,6 +99,10 @@ internal sealed class AppCatalogItem
         var app = Payload.ToAppItem();
         app.CatalogId = Identity;
         app.MatchTerms = MatchTerms;
+        app.ExecutableSourcePaths = Provenance.References
+            .Select(reference => reference.ItemId)
+            .Where(path => Path.IsPathFullyQualified(path) && Win32Program.IsExecutablePath(path))
+            .ToArray();
         app.CommandIds = CommandIds.Concat(IdentityAliases.SelectMany(AppIdentity.GetCommandIds)).Distinct(StringComparer.Ordinal).ToArray();
         return app;
     }

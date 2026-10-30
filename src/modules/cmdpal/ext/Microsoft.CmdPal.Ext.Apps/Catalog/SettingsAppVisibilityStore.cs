@@ -3,64 +3,103 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Enumeration;
+using System.Linq;
+using System.Threading;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 
-internal sealed class SettingsAppVisibilityStore : IAppVisibilityStore
+internal sealed partial class SettingsAppVisibilityStore : IAppVisibilityStore
 {
     private readonly AllAppsSettings _settings;
+    private ExclusionPatterns _patterns;
 
     public SettingsAppVisibilityStore(AllAppsSettings settings)
     {
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        _patterns = ReadPatterns();
+        _settings.Settings.SettingsChanged += OnSettingsChanged;
     }
 
-    public bool IsHidden(AppCatalogItem item)
+    public event EventHandler? Changed;
+
+    public AppVisibility GetVisibility(AppCatalogItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        foreach (var hiddenApp in _settings.DisabledProgramSources)
+        var patterns = Volatile.Read(ref _patterns);
+        var matches = item.Payload switch
         {
-            if (string.Equals(hiddenApp.UniqueIdentifier, item.Identity, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
+            Win32AppPayload app => Matches(patterns.Names, app.Name)
+                || MatchesPath(patterns.Paths, app.FullPath)
+                || MatchesPath(patterns.Paths, app.LnkFilePath)
+                || MatchesPath(patterns.Paths, app.AppExecutionAliasTargetPath),
+            PackagedAppSnapshot app => Matches(patterns.Names, app.Name)
+                || MatchesPath(patterns.Paths, app.PackageLocation),
+            _ => false,
+        };
 
-        return false;
+        // Merged representations retain their shortcut and executable paths in provenance and search terms.
+        matches = matches || (patterns.Paths.Length > 0
+            && (item.Provenance.References.Any(source => Path.IsPathFullyQualified(source.ItemId) && MatchesPath(patterns.Paths, source.ItemId))
+                || item.MatchTerms.Any(term => Path.IsPathFullyQualified(term) && MatchesPath(patterns.Paths, term))));
+
+        return matches ? AppVisibility.HiddenByPattern
+            : item.IdentityAliases.Any(_settings.IsAppHidden) ? AppVisibility.Hidden : AppVisibility.Visible;
     }
 
     public bool SetHidden(AppCatalogItem item, bool hidden)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        if (hidden)
+        var changed = _settings.SetAppHidden(item.Identity, hidden);
+        if (!hidden)
         {
-            if (IsHidden(item))
+            foreach (var identity in item.IdentityAliases)
             {
-                return false;
-            }
-
-            _settings.DisabledProgramSources.Add(new DisabledProgramSource { UniqueIdentifier = item.Identity });
-            return true;
-        }
-
-        var changed = false;
-        for (var index = _settings.DisabledProgramSources.Count - 1; index >= 0; index--)
-        {
-            if (string.Equals(
-                _settings.DisabledProgramSources[index].UniqueIdentifier,
-                item.Identity,
-                StringComparison.OrdinalIgnoreCase))
-            {
-                _settings.DisabledProgramSources.RemoveAt(index);
-                changed = true;
+                changed |= _settings.SetAppHidden(identity, hidden: false);
             }
         }
 
         return changed;
     }
 
-    public void Persist() => _settings.SaveSettings();
+    public void Persist()
+    {
+        _settings.SaveSettings();
+    }
+
+    private static bool Matches(IReadOnlyList<string> patterns, string? value)
+        => !string.IsNullOrEmpty(value)
+            && patterns.Any(pattern => FileSystemName.MatchesSimpleExpression(pattern, value, ignoreCase: true));
+
+    // Backslashes escape characters in MatchesSimpleExpression, so normalize Windows separators first.
+    private static bool MatchesPath(IReadOnlyList<string> patterns, string? path)
+        => patterns.Count > 0 && Matches(patterns, path?.Replace('\\', '/'));
+
+    private ExclusionPatterns ReadPatterns() => new(
+        [.. _settings.ExcludedAppNames.Select(pattern => pattern.Trim()).Where(pattern => pattern.Length > 0)],
+        [.. _settings.ExcludedAppPaths.Select(pattern => pattern.Trim().Replace('\\', '/')).Where(pattern => pattern.Length > 0)]);
+
+    private void OnSettingsChanged(object sender, Settings args)
+    {
+        var updated = ReadPatterns();
+        var previous = Interlocked.Exchange(ref _patterns, updated);
+        if (!previous.Names.SequenceEqual(updated.Names, StringComparer.OrdinalIgnoreCase)
+            || !previous.Paths.SequenceEqual(updated.Paths, StringComparer.OrdinalIgnoreCase))
+        {
+            Changed?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    public void Dispose()
+    {
+        _settings.Settings.SettingsChanged -= OnSettingsChanged;
+        Changed = null;
+    }
+
+    private sealed record ExclusionPatterns(string[] Names, string[] Paths);
 }

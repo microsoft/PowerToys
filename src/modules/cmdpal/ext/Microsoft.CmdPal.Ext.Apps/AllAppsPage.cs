@@ -4,12 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using ManagedCommon;
-using Microsoft.CmdPal.Ext.Apps.Catalog;
+using System.Globalization;
+using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -17,139 +14,224 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
-public sealed partial class AllAppsPage : ListPage
+public sealed partial class AllAppsPage : DynamicListPage, IDisposable
 {
-    private readonly Lock _listLock = new();
-    private readonly IAppCatalog _appCatalog;
-    private readonly AllAppsSettings _settings;
+    private const CompareOptions TitleCompareOptions = CompareOptions.IgnoreCase | CompareOptions.NumericOrdering;
+    private static readonly CompareInfo TitleCompareInfo = CultureInfo.CurrentCulture.CompareInfo;
 
-    private AppListItem[] _allAppListItems = [];
-    private volatile AppListItemSnapshot _commandSnapshot = new([], []);
-    private bool _rebuildRequested;
-    private Task? _rebuildTask;
-
-    public AllAppsPage(IAppCatalog appCatalog, AllAppsSettings settings)
+    private readonly IAppListItemSource _appListItemSource;
+    private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
+    private readonly AllAppsFilters _filters;
+    private readonly ListItem _refreshingBanner = new(new NoOpCommand())
     {
-        _appCatalog = appCatalog ?? throw new ArgumentNullException(nameof(appCatalog));
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-        this.Name = Resources.all_apps;
-        this.Icon = Icons.AllAppsIcon;
-        this.ShowDetails = true;
-        this.IsLoading = true;
-        this.PlaceholderText = Resources.search_installed_apps_placeholder;
+        Title = Resources.refreshing_app_list,
+        Icon = Icons.Reloading,
+    };
 
-        _appCatalog.Changed += OnCatalogChanged;
-        _ = InitializePageAsync();
+    private readonly Separator _allAppsSeparator = new(Resources.all_apps);
+    private readonly Separator _manuallyHiddenSeparator = new(Resources.hidden_manually);
+    private readonly Separator _patternHiddenSeparator = new(Resources.hidden_by_exclusion_patterns);
+    private readonly ListItem _noAppsPlaceholder = new(new NoOpCommand())
+    {
+        Title = Resources.no_apps_found,
+        Icon = Icons.AllAppsIcon,
+    };
+
+    private InterlockedBoolean _disposed;
+
+    public AllAppsPage(IAppListItemSource appListItemSource, IFuzzyMatcherProvider fuzzyMatcherProvider)
+    {
+        _appListItemSource = appListItemSource ?? throw new ArgumentNullException(nameof(appListItemSource));
+        _fuzzyMatcherProvider = fuzzyMatcherProvider ?? throw new ArgumentNullException(nameof(fuzzyMatcherProvider));
+        _appListItemSource.Changed += OnAppListItemSourceChanged;
+        var isSourceLoading = _appListItemSource.IsLoading;
+        Name = Resources.all_apps;
+        Title = GetTitle(isSourceLoading);
+        Icon = Icons.AllAppsIcon;
+        ShowDetails = true;
+        IsLoading = isSourceLoading;
+        PlaceholderText = Resources.search_installed_apps_placeholder;
+
+        _filters = new AllAppsFilters();
+        _filters.PropChanged += OnFiltersChanged;
+        Filters = _filters;
+
+        MoreCommands =
+        [
+            new CommandContextItem(
+                new AnonymousCommand(() => _ = _appListItemSource.RefreshAsync())
+                {
+                    Name = Resources.refresh_app_list,
+                    Icon = Icons.Refresh,
+                    Result = CommandResult.KeepOpen(),
+                }),
+        ];
     }
+
+    public IContextItem[] MoreCommands { get; }
 
     public override IListItem[] GetItems()
     {
-        lock (_listLock)
+        var appItems = GetFilteredAppItems();
+        if (!_appListItemSource.IsLoading)
         {
-            return _allAppListItems;
+            return appItems.Length == 0 ? [_noAppsPlaceholder] : appItems;
+        }
+
+        if (appItems.Length == 0)
+        {
+            return [_refreshingBanner];
+        }
+
+        return _filters.CurrentFilterId == AllAppsFilters.HiddenFilterId
+            ? [_refreshingBanner, .. appItems]
+            : [_refreshingBanner, _allAppsSeparator, .. appItems];
+    }
+
+    public override void UpdateSearchText(string oldSearch, string newSearch)
+    {
+        if (!_disposed.Value && !string.Equals(oldSearch, newSearch, StringComparison.Ordinal))
+        {
+            RaiseItemsChanged(0);
         }
     }
 
-    private void BuildListItems()
+    private void OnFiltersChanged(object sender, IPropChangedEventArgs args)
     {
-        lock (_listLock)
+        if (!_disposed.Value && args.PropertyName == nameof(Filters.CurrentFilterId))
         {
-            var stopwatch = Stopwatch.StartNew();
-
-            _allAppListItems = GetPrograms();
-            var aliases = _settings.RetainAppCommandAliases(_allAppListItems.Select(item => item.App));
-            _commandSnapshot = new AppListItemSnapshot(_allAppListItems, [], commandAliases: aliases);
-
-            stopwatch.Stop();
-            Logger.LogTrace($"{nameof(AllAppsPage)}.{nameof(BuildListItems)} took: {stopwatch.ElapsedMilliseconds} ms");
+            RaiseItemsChanged(0);
         }
     }
 
-    private async Task InitializePageAsync()
+    private void OnAppListItemSourceChanged(object? sender, EventArgs args)
     {
-        try
+        if (_disposed.Value)
         {
-            await _appCatalog.InitializeAsync().ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Failed to initialize the application index", ex);
+            return;
         }
 
-        QueueListRebuild();
-    }
-
-    private void OnCatalogChanged(object? sender, AppCatalogChangedEventArgs e)
-    {
-        QueueListRebuild();
-    }
-
-    private void QueueListRebuild()
-    {
-        lock (_listLock)
-        {
-            _rebuildRequested = true;
-            this.IsLoading = true;
-
-            if (_rebuildTask is null)
-            {
-                _rebuildTask = Task.Run(RebuildUntilCurrent);
-            }
-        }
-
+        var isSourceLoading = _appListItemSource.IsLoading;
+        IsLoading = isSourceLoading;
+        Title = GetTitle(isSourceLoading);
         RaiseItemsChanged();
     }
 
-    private void RebuildUntilCurrent()
+    private IListItem[] GetFilteredAppItems()
     {
-        while (true)
+        var filterId = _filters.CurrentFilterId;
+        var snapshot = _appListItemSource.GetSnapshot();
+        var query = SearchText;
+        var search = string.IsNullOrWhiteSpace(query) ? null : new AppSearch(query, _fuzzyMatcherProvider.Current);
+        if (filterId != AllAppsFilters.HiddenFilterId)
         {
-            lock (_listLock)
-            {
-                _rebuildRequested = false;
-            }
-
-            try
-            {
-                BuildListItems();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Failed to rebuild the application list", ex);
-            }
-
-            lock (_listLock)
-            {
-                if (_rebuildRequested)
-                {
-                    continue;
-                }
-
-                _rebuildTask = null;
-                this.IsLoading = false;
-            }
-
-            RaiseItemsChanged();
-            return;
-        }
-    }
-
-    private AppListItem[] GetPrograms()
-    {
-        var items = new List<AppListItem>();
-        var hideAppDescriptions = _settings.HideAppDescriptions;
-
-        foreach (var app in _appCatalog.Items)
-        {
-            var item = new AppListItem(app, useThumbnails: true);
-            item.Subtitle = hideAppDescriptions ? string.Empty : item.App.Subtitle;
-            items.Add(item);
+            return FilterAppItems(snapshot.VisibleItems, filterId, search);
         }
 
-        items.Sort((a, b) => string.Compare(a.Title, b.Title, StringComparison.Ordinal));
+        var manuallyHidden = FilterAppItems(snapshot.HiddenItems, filterId, search);
+        var patternHidden = FilterAppItems(snapshot.PatternHiddenItems, filterId, search);
+        List<IListItem> items = [];
+        if (manuallyHidden.Length > 0)
+        {
+            items.Add(_manuallyHiddenSeparator);
+            items.AddRange(manuallyHidden);
+        }
+
+        if (patternHidden.Length > 0)
+        {
+            items.Add(_patternHiddenSeparator);
+            items.AddRange(patternHidden);
+        }
 
         return [.. items];
     }
 
-    public AppListItemSnapshot GetSnapshot() => _commandSnapshot;
+    private static AppListItem[] FilterAppItems(IReadOnlyList<AppListItem> candidates, string filterId, AppSearch? search)
+    {
+        if (search is null)
+        {
+            var matches = new List<AppListItem>(candidates.Count);
+            foreach (var candidate in candidates)
+            {
+                if (MatchesTypeFilter(candidate, filterId))
+                {
+                    matches.Add(candidate);
+                }
+            }
+
+            return [.. matches];
+        }
+
+        var scoredItems = new List<ScoredAppListItem>(candidates.Count);
+        foreach (var candidate in candidates)
+        {
+            if (!MatchesTypeFilter(candidate, filterId))
+            {
+                continue;
+            }
+
+            var match = search.Evaluate(candidate);
+            if (match.HasMatch)
+            {
+                scoredItems.Add(new ScoredAppListItem(candidate, match));
+            }
+        }
+
+        scoredItems.Sort(static (left, right) =>
+        {
+            var titleComparison = right.Match.IsExactTitleMatch.CompareTo(left.Match.IsExactTitleMatch);
+            if (titleComparison != 0)
+            {
+                return titleComparison;
+            }
+
+            var executableComparison = right.Match.IsExactExecutableMatch.CompareTo(left.Match.IsExactExecutableMatch);
+            if (executableComparison != 0)
+            {
+                return executableComparison;
+            }
+
+            var scoreComparison = right.Match.LexicalScore.CompareTo(left.Match.LexicalScore);
+            return scoreComparison != 0
+                ? scoreComparison
+                : TitleCompareInfo.Compare(left.Item.Title, right.Item.Title, TitleCompareOptions);
+        });
+
+        var results = new AppListItem[scoredItems.Count];
+        for (var i = 0; i < scoredItems.Count; i++)
+        {
+            results[i] = scoredItems[i].Item;
+        }
+
+        return results;
+    }
+
+    private static bool MatchesTypeFilter(AppListItem item, string filterId)
+    {
+        return filterId switch
+        {
+            AllAppsFilters.Win32FilterId => !item.App.IsPackaged,
+            AllAppsFilters.PackagedFilterId => item.App.IsPackaged,
+            _ => true,
+        };
+    }
+
+    private static string GetTitle(bool isRefreshing)
+        => isRefreshing ? $"{Resources.all_apps} ({Resources.refreshing_page_title_suffix})" : Resources.all_apps;
+
+    /// <summary>Associates an application list item with its page-search score.</summary>
+    private readonly record struct ScoredAppListItem(AppListItem Item, AppSearch.Match Match);
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (!_disposed.Set())
+        {
+            return;
+        }
+
+        _appListItemSource.Changed -= OnAppListItemSourceChanged;
+        _filters.PropChanged -= OnFiltersChanged;
+        GC.SuppressFinalize(this);
+    }
 }

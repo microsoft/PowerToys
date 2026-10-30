@@ -92,5 +92,5 @@ public class PowerToysRootPageServiceTests
         return extension.Object;
     }
 
-    private static PowerToysRootPageService CreateService() => new(null!, null!, null!, null!, null!, null!, null!);
+    private static PowerToysRootPageService CreateService() => new(null!, null!, null!, null!, null!, null!);
 }

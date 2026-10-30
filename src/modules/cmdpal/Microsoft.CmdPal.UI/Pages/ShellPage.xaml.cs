@@ -11,7 +11,6 @@ using CommunityToolkit.WinUI;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Common.Text;
-using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
@@ -38,6 +37,7 @@ using Microsoft.UI.Xaml.Media.Animation;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
+using IAppListItemSource = Microsoft.CmdPal.Ext.Apps.IAppListItemSource;
 using KeyChordHelpers = Microsoft.CommandPalette.Extensions.Toolkit.KeyChordHelpers;
 using VirtualKey = Windows.System.VirtualKey;
 using VirtualKeyModifiers = Windows.System.VirtualKeyModifiers;
@@ -232,7 +232,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             settings.QuickAccessShelfPinnedCommandLimit,
             settings.RecentCommandsDisplayLimit,
             _mainTaskScheduler,
-            App.Current.Services.GetRequiredService<AllAppsPage>());
+            App.Current.Services.GetRequiredService<IAppListItemSource>());
         QuickAccessShelf.PropertyChanged += QuickAccessShelf_PropertyChanged;
         QuickAccessShelf.RebuildCompleted += QuickAccessShelf_RebuildCompleted;
 

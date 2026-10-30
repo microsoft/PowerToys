@@ -35,6 +35,8 @@ public sealed class MockAppCatalog : IAppCatalog
 
     public int RefreshCallCount { get; private set; }
 
+    public Task RefreshCompletion { get; set; } = Task.CompletedTask;
+
     public AppCatalogSnapshot GetSnapshot() => new(Items, HiddenItems);
 
     public Task InitializeAsync()
@@ -50,9 +52,11 @@ public sealed class MockAppCatalog : IAppCatalog
 
     public async Task RefreshAsync()
     {
+        var completion = RefreshCompletion;
         RefreshCallCount++;
         SetRefreshing(true);
         await Task.Yield();
+        await completion;
         SetRefreshing(false);
     }
 
@@ -76,21 +80,23 @@ public sealed class MockAppCatalog : IAppCatalog
 
     public Task SetAppHiddenAsync(string catalogId, bool hidden)
     {
-        var source = hidden ? _items : _hiddenItems;
-        var destination = hidden ? _hiddenItems : _items;
-        for (var i = 0; i < source.Count; i++)
+        if (TryMoveApp(catalogId, hidden, out _))
         {
-            if (string.Equals(source[i].CatalogId, catalogId, StringComparison.OrdinalIgnoreCase))
-            {
-                var app = source[i];
-                source.RemoveAt(i);
-                destination.Add(app);
-                VisibilityChanged?.Invoke(this, new AppVisibilityChangedEventArgs(catalogId, hidden));
-                break;
-            }
+            VisibilityChanged?.Invoke(this, new AppVisibilityChangedEventArgs(catalogId, hidden));
         }
 
         return Task.CompletedTask;
+    }
+
+    public void PublishVisibilityAsCatalogChange(string catalogId, bool hidden)
+    {
+        if (TryMoveApp(catalogId, hidden, out var app))
+        {
+            Changed?.Invoke(
+                this,
+                new AppCatalogChangedEventArgs(
+                    [new AppCatalogItemChange(AppCatalogChangeKind.Updated, catalogId, app, hidden)]));
+        }
     }
 
     public void ClearAll()
@@ -114,6 +120,25 @@ public sealed class MockAppCatalog : IAppCatalog
             this,
             new AppCatalogChangedEventArgs(
                 [new AppCatalogItemChange(AppCatalogChangeKind.Added, app.CatalogId, app, hidden: false)]));
+    }
+
+    private bool TryMoveApp(string catalogId, bool hidden, out AppItem? app)
+    {
+        var source = hidden ? _items : _hiddenItems;
+        var destination = hidden ? _hiddenItems : _items;
+        for (var i = 0; i < source.Count; i++)
+        {
+            if (string.Equals(source[i].CatalogId, catalogId, StringComparison.OrdinalIgnoreCase))
+            {
+                app = source[i];
+                source.RemoveAt(i);
+                destination.Add(app);
+                return true;
+            }
+        }
+
+        app = null;
+        return false;
     }
 
     private static void AddRemovals(List<AppCatalogItemChange> changes, IReadOnlyList<AppItem> items)

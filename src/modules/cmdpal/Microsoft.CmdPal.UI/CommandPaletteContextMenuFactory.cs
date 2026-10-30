@@ -27,7 +27,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly ICmdPalProtocolActivation _protocolActivation;
     private readonly IAppStateService _appStateService;
-    private readonly AllAppsPage _allAppsPage;
+    private readonly IAppListItemSource _appListItemSource;
     private readonly IMonitorService? _monitorService;
 
     /// <summary>Initializes a new instance of the <see cref="CommandPaletteContextMenuFactory"/> class. Creates host context commands using shared app resolution for pins and history.</summary>
@@ -36,14 +36,14 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         TopLevelCommandManager topLevelCommandManager,
         ICmdPalProtocolActivation protocolActivation,
         IAppStateService appStateService,
-        AllAppsPage allAppsPage,
+        IAppListItemSource appListItemSource,
         IMonitorService? monitorService = null)
     {
         _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
         _protocolActivation = protocolActivation;
         _appStateService = appStateService;
-        _allAppsPage = allAppsPage;
+        _appListItemSource = appListItemSource;
         _monitorService = monitorService;
     }
 
@@ -142,7 +142,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
             var appSource = sourceModel is AppListItem
                 || sourceModel is TopLevelViewModel { CommandProviderId: AllAppsCommandProvider.WellKnownId }
-                ? _allAppsPage
+                ? _appListItemSource
                 : null;
             moreCommands.Add(new CommandContextItem(new RemoveFromRecentCommand(recentCommandItem.CommandId, _appStateService, appSource))
             {
@@ -404,23 +404,23 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
     {
         private readonly string _commandId;
         private readonly IAppStateService _appStateService;
-        private readonly AllAppsPage? _allAppsPage;
+        private readonly IAppListItemSource? _appListItemSource;
 
         public override IconInfo Icon => Icons.DeleteIcon;
 
         public override string Name => RS_.GetString("recent_commands_remove_name");
 
         /// <summary>Initializes a new instance of the <see cref="RemoveFromRecentCommand"/> class. Creates a history-removal command that also removes equivalent saved app IDs.</summary>
-        public RemoveFromRecentCommand(string commandId, IAppStateService appStateService, AllAppsPage? allAppsPage)
+        public RemoveFromRecentCommand(string commandId, IAppStateService appStateService, IAppListItemSource? appListItemSource)
         {
             _commandId = commandId;
             _appStateService = appStateService;
-            _allAppsPage = allAppsPage;
+            _appListItemSource = appListItemSource;
         }
 
         public override CommandResult Invoke()
         {
-            var appSnapshot = _allAppsPage?.GetSnapshot();
+            var appSnapshot = _appListItemSource?.GetSnapshot();
             Func<string, string>? canonicalId = appSnapshot is null
                 ? null
                 : savedId => appSnapshot.GetVisibleApp(savedId)?.Command?.Id ?? savedId;

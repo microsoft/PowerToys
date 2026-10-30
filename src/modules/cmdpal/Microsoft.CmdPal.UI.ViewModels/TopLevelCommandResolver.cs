@@ -21,14 +21,14 @@ internal static class TopLevelCommandResolver
         IEnumerable<PinnedCommandSettings> pinnedCommands,
         IEnumerable<string> recentCommandIds,
         IEnumerable<TopLevelViewModel> availableCommands,
-        InProcObject<IListPage> allAppsPage,
+        AppListItemSnapshot appSnapshot,
         bool includeApps,
         int pinnedCommandLimit = int.MaxValue,
         int recentCommandLimit = SettingsModel.DefaultRecentCommandsDisplayLimit,
         bool includeRegular = true,
         bool recentCommandsFirst = false)
     {
-        var appSnapshot = GetAppsSnapshot(allAppsPage);
+        ArgumentNullException.ThrowIfNull(appSnapshot);
         var pins = pinnedCommands.ToArray();
         var pinnedAppCommandIds = pins.Where(pin => pin.ProviderId == AllAppsCommandProvider.WellKnownId)
             .Select(pin => pin.CommandId)
@@ -272,12 +272,5 @@ internal static class TopLevelCommandResolver
         }
 
         return new Sections<TCommand>(pinned, recent, regular);
-    }
-
-    internal static AppListItemSnapshot GetAppsSnapshot(InProcObject<IListPage> page)
-    {
-        return page.Safe is AllAppsPage appsPage
-            ? appsPage.GetSnapshot()
-            : new AppListItemSnapshot(page.Safe.GetItems().OfType<Microsoft.CmdPal.Ext.Apps.Programs.AppListItem>().ToArray(), []);
     }
 }

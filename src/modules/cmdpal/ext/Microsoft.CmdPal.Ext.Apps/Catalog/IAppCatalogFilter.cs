@@ -11,8 +11,9 @@ namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 /// </summary>
 /// <remarks>
 /// Filters must not perform I/O. A change re-projects the current inventory without refreshing sources or rewriting cache.
+/// The catalog owns the supplied filters and disposes them with the catalog.
 /// </remarks>
-internal interface IAppCatalogFilter
+internal interface IAppCatalogFilter : IDisposable
 {
     /// <summary>
     /// Raised when the policy result may have changed for existing items.
