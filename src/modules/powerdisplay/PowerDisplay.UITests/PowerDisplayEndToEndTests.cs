@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -85,6 +86,7 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
         AssertNoCrashMarkers();
         Directory.CreateDirectory(ModuleDirectory);
         File.WriteAllText(SettingsPath, InitialSettings);
+        LaunchRunnerThroughExplorer();
     }
 
     [TestInitialize]
@@ -392,6 +394,39 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
         if (failures.Count > 0)
         {
             throw new AggregateException("Could not restore Power Display test state.", failures);
+        }
+    }
+
+    private void LaunchRunnerThroughExplorer()
+    {
+        Step("Launching Runner through Explorer without inheriting the test host's elevated token");
+        var executable = SessionHelper.GetExecutablePath(PowerToysModule.Runner);
+        var launcher = Path.Combine(Path.GetTempPath(), $"PowerDisplay.UITests-{Guid.NewGuid():N}.vbs");
+        var script =
+            $"Set shell = CreateObject(\"WScript.Shell\"){Environment.NewLine}" +
+            $"shell.CurrentDirectory = \"{Path.GetDirectoryName(executable)!.Replace("\"", "\"\"")}\"{Environment.NewLine}" +
+            $"shell.Run \"\"\"{executable.Replace("\"", "\"\"")}\"\" --open-settings\", 0, False{Environment.NewLine}";
+        try
+        {
+            // Explorer supplies its user token; the hidden launcher cannot steal foreground.
+            File.WriteAllText(launcher, script, Encoding.Unicode);
+            using var process = Process.Start(new ProcessStartInfo
+            {
+                FileName = "explorer.exe",
+                Arguments = $"\"{launcher}\"",
+                UseShellExecute = true,
+            }) ?? throw new InvalidOperationException("Explorer did not accept the Power Display test launcher.");
+
+            Assert.IsNotNull(
+                WindowsFinder.WaitForWindowByApp(
+                    "PowerToys.Settings",
+                    window => window.Title.Contains("PowerToys", StringComparison.OrdinalIgnoreCase),
+                    timeoutMS: 150_000),
+                "The shell-launched Runner did not open Settings.");
+        }
+        finally
+        {
+            File.Delete(launcher);
         }
     }
 

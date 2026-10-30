@@ -23,13 +23,20 @@ internal static class PowerDisplayTray
         ShellMenu.Dismiss();
         KeyboardHelper.SendKeys(Key.LWin, Key.B);
         ParkCursor();
-        var explorer = Session.FromProcess("explorer");
+        var taskbar = WindowsFinder.WaitForWindowByApp("explorer", window => window.ClassName == "Shell_TrayWnd");
+        Assert.IsNotNull(taskbar, "Explorer did not expose its primary taskbar.");
         Stopwatch? lastChevronClick = null;
         WindowsFinder.WindowInfo? Overflow() => WindowsFinder.ListByApp("explorer").FirstOrDefault(window =>
             window.ClassName is "NotifyIconOverflowWindow" or "TopLevelWindowForOverflowXamlIsland" &&
             !WindowHelper.IsWindowCloaked(new IntPtr(window.Hwnd)));
+        Session? OverflowSession() => Overflow() is { } window
+            ? WindowsFinder.WaitForWindowByApp("explorer", candidate => candidate.Hwnd == window.Hwnd, timeoutMS: 500)
+            : null;
+
+        // A clean desktop has a taskbar but no ordinary Explorer app window for CLI -a matching.
         var result = WaitHelper.WaitForStable(
-            () => explorer.FindAll<Element>(By.Name("Power Display"), 0)
+            () => new[] { taskbar, OverflowSession() }.OfType<Session>()
+                .SelectMany(surface => surface.FindAll<Element>(By.Name("Power Display"), 0))
                 .Where(element => element.Name == "Power Display" && element.ControlType == "Button" &&
                     element.Width > 0 && element.Height > 0 && element.Displayed)
                 .DistinctBy(element => element.Selector).ToArray(),
@@ -60,7 +67,7 @@ internal static class PowerDisplayTray
                 else if (lastChevronClick is null || lastChevronClick.ElapsedMilliseconds >= 3_000)
                 {
                     var chevron = ChevronNames
-                        .SelectMany(name => explorer.FindAll<Element>(By.Name(name), 0))
+                        .SelectMany(name => taskbar.FindAll<Element>(By.Name(name), 0))
                         .FirstOrDefault(element => element.ControlType == "Button" && element.Width > 0 && element.Height > 0 && element.Displayed);
                     if (chevron is not null)
                     {
@@ -73,7 +80,7 @@ internal static class PowerDisplayTray
             shouldRetryException: ShellMenu.IsTransientElementException);
         if (!result.Succeeded)
         {
-            Assert.Fail($"The Shell did not expose one hit-testable Power Display notification icon. Last transient error: {result.LastException}. Shell tree: {explorer.Inspect(depth: 12)}");
+            Assert.Fail($"The Shell did not expose one hit-testable Power Display notification icon. Last transient error: {result.LastException}. Taskbar: {taskbar.Inspect(depth: 12)}. Overflow: {OverflowSession()?.Inspect(depth: 12)}");
         }
 
         return result.LastObservation!.Single();
