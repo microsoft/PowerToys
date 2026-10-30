@@ -37,6 +37,12 @@ namespace Microsoft.PowerToys.Settings.UI
         /// </summary>
         public IList<IList<PowerToysReleaseInfo>> ReleaseGroups { get; private set; }
 
+        internal const int MaxReleaseFetchAttempts = 3;
+
+        internal static readonly TimeSpan InitialReleaseFetchRetryDelay = TimeSpan.FromSeconds(1);
+
+        private static readonly TimeSpan ReleaseFetchTimeout = TimeSpan.FromSeconds(30);
+
         private bool _isLoading;
 
         public ScoobeWindow()
@@ -145,10 +151,12 @@ namespace Microsoft.PowerToys.Settings.UI
                 PreAuthenticate = true,
             };
 
-            using var httpClient = new HttpClient(proxyClientHandler);
+            using var httpClient = new HttpClient(proxyClientHandler) { Timeout = ReleaseFetchTimeout };
             httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "PowerToys");
 
-            string json = await httpClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases?per_page=100");
+            string json = await RetryWithBackoffAsync(
+                () => httpClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases?per_page=100"),
+                Task.Delay);
             var allReleases = JsonSerializer.Deserialize<IList<PowerToysReleaseInfo>>(json, SourceGenerationContextContext.Default.IListPowerToysReleaseInfo);
 
             if (allReleases is null || allReleases.Count == 0)
@@ -160,6 +168,35 @@ namespace Microsoft.PowerToys.Settings.UI
                 .OrderByDescending(r => r.PublishedDate)
                 .ToList();
         }
+
+        internal static async Task<T> RetryWithBackoffAsync<T>(Func<Task<T>> operation, Func<TimeSpan, Task> delay)
+        {
+            var retryDelay = InitialReleaseFetchRetryDelay;
+            for (int attempt = 1; ; attempt++)
+            {
+                try
+                {
+                    return await operation();
+                }
+                catch (Exception ex) when (attempt < MaxReleaseFetchAttempts && IsTransientFetchFailure(ex))
+                {
+                    Logger.LogWarning($"Loading releases failed (attempt {attempt} of {MaxReleaseFetchAttempts}), retrying in {retryDelay.TotalSeconds}s: {ex.Message}");
+                    await delay(retryDelay);
+                    retryDelay *= 2;
+                }
+            }
+        }
+
+        // Rate limiting (403) and other client errors won't resolve within seconds, so only retry
+        // network failures, timeouts, and server-side errors.
+        internal static bool IsTransientFetchFailure(Exception ex) => ex switch
+        {
+            HttpRequestException { StatusCode: null } => true,
+            HttpRequestException { StatusCode: HttpStatusCode code } =>
+                code is HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests || (int)code >= 500,
+            TaskCanceledException => true,
+            _ => false,
+        };
 
         internal static IList<IList<PowerToysReleaseInfo>> CreateReleaseGroups(IList<PowerToysReleaseInfo> releases, bool showPrereleases)
         {

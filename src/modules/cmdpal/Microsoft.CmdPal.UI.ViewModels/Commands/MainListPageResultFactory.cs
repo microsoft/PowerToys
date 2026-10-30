@@ -5,6 +5,7 @@
 #pragma warning disable IDE0007 // Use implicit type
 
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -17,10 +18,10 @@ internal static class MainListPageResultFactory
     /// applying an application result limit and filtering fallback items as needed.
     /// </summary>
     public static IListItem[] Create(
-        IList<RoScored<IListItem>>? filteredItems,
-        IList<RoScored<IListItem>>? scoredFallbackItems,
-        IList<RoScored<IListItem>>? filteredApps,
-        IList<RoScored<IListItem>>? fallbackItems,
+        IList<RoScored<InProcObject<IListItem>>>? filteredItems,
+        IList<RoScored<InProcObject<IListItem>>>? scoredFallbackItems,
+        IList<RoScored<InProcObject<IListItem>>>? filteredApps,
+        IList<RoScored<InProcObject<IListItem>>>? fallbackItems,
         IListItem resultsSeparator,
         IListItem fallbacksSeparator,
         int appResultLimit,
@@ -41,8 +42,8 @@ internal static class MainListPageResultFactory
         int len3 = Math.Min(filteredApps?.Count ?? 0, appResultLimit);
 
         var nonEmptyFallbackItems = fallbackItems?
-            .Where(scored => !string.IsNullOrWhiteSpace(scored.Item.Title))
-            .Select(scored => scored.Item)
+            .Where(scored => !string.IsNullOrWhiteSpace(scored.Item.Safe.Title))
+            .Select(scored => scored.Item.Safe)
             .ToArray() ?? [];
         int nonEmptyFallbackCount = nonEmptyFallbackItems.Length;
         int fallbackResultCount = fallbackResultItems?.Count ?? 0;
@@ -79,15 +80,15 @@ internal static class MainListPageResultFactory
 
             if (score1 >= score2 && score1 >= score3)
             {
-                result[writePos++] = filteredItems[idx1++].Item;
+                result[writePos++] = filteredItems[idx1++].Item.Safe;
             }
             else if (score2 >= score3)
             {
-                result[writePos++] = scoredFallbackItems[idx2++].Item;
+                result[writePos++] = scoredFallbackItems[idx2++].Item.Safe;
             }
             else
             {
-                result[writePos++] = filteredApps[idx3++].Item;
+                result[writePos++] = filteredApps[idx3++].Item.Safe;
             }
         }
 
@@ -96,11 +97,11 @@ internal static class MainListPageResultFactory
         {
             if (filteredItems![idx1].Score >= scoredFallbackItems![idx2].Score)
             {
-                result[writePos++] = filteredItems[idx1++].Item;
+                result[writePos++] = filteredItems[idx1++].Item.Safe;
             }
             else
             {
-                result[writePos++] = scoredFallbackItems[idx2++].Item;
+                result[writePos++] = scoredFallbackItems[idx2++].Item.Safe;
             }
         }
 
@@ -108,11 +109,11 @@ internal static class MainListPageResultFactory
         {
             if (filteredItems![idx1].Score >= filteredApps![idx3].Score)
             {
-                result[writePos++] = filteredItems[idx1++].Item;
+                result[writePos++] = filteredItems[idx1++].Item.Safe;
             }
             else
             {
-                result[writePos++] = filteredApps[idx3++].Item;
+                result[writePos++] = filteredApps[idx3++].Item.Safe;
             }
         }
 
@@ -120,28 +121,28 @@ internal static class MainListPageResultFactory
         {
             if (scoredFallbackItems![idx2].Score >= filteredApps![idx3].Score)
             {
-                result[writePos++] = scoredFallbackItems[idx2++].Item;
+                result[writePos++] = scoredFallbackItems[idx2++].Item.Safe;
             }
             else
             {
-                result[writePos++] = filteredApps[idx3++].Item;
+                result[writePos++] = filteredApps[idx3++].Item.Safe;
             }
         }
 
         // Drain remaining items from a non-empty list.
         while (idx1 < len1)
         {
-            result[writePos++] = filteredItems![idx1++].Item;
+            result[writePos++] = filteredItems![idx1++].Item.Safe;
         }
 
         while (idx2 < len2)
         {
-            result[writePos++] = scoredFallbackItems![idx2++].Item;
+            result[writePos++] = scoredFallbackItems![idx2++].Item.Safe;
         }
 
         while (idx3 < len3)
         {
-            result[writePos++] = filteredApps![idx3++].Item;
+            result[writePos++] = filteredApps![idx3++].Item.Safe;
         }
 
         if (fallbackResultItems is not null)

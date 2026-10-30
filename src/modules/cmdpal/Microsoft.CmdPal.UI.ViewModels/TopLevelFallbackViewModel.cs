@@ -58,7 +58,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
         ICommandProviderContext commandProviderContext,
         ProviderSettings providerSettings,
         IServiceProvider serviceProvider,
-        IFallbackCommandItem model,
+        IFallbackCommandItem? model,
         IContextMenuFactory? contextMenuFactory)
         : base(item, TopLevelType.Fallback, extensionHost, commandProviderContext, providerSettings, serviceProvider, contextMenuFactory)
     {

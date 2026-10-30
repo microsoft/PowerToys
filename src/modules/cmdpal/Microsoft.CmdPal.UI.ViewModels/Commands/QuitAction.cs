@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -19,6 +20,7 @@ public partial class QuitCommand : InvokableCommand, IFallbackHandler
 
     public override ICommandResult Invoke()
     {
+        CoreLogger.LogInfo("Command Palette exit requested: built-in Quit command.");
         WeakReferenceMessenger.Default.Send<QuitMessage>();
         return CommandResult.KeepOpen();
     }

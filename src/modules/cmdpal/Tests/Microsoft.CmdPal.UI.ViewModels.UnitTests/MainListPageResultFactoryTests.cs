@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -66,34 +67,34 @@ public partial class MainListPageResultFactoryTests
         public void Dispose() => DisposeCount++;
     }
 
-    private static RoScored<IListItem> S(string title, int score)
+    private static RoScored<InProcObject<IListItem>> S(string title, int score)
     {
-        return new RoScored<IListItem>(score: score, item: new MockListItem { Title = title });
+        return new RoScored<InProcObject<IListItem>>(score: score, item: new(new MockListItem { Title = title }));
     }
 
     [TestMethod]
     public void Merge_PrioritizesListsCorrectly()
     {
-        var filtered = new List<RoScored<IListItem>>
+        var filtered = new List<RoScored<InProcObject<IListItem>>>
         {
             S("F1", 100),
             S("F2", 50),
         };
 
-        var scoredFallback = new List<RoScored<IListItem>>
+        var scoredFallback = new List<RoScored<InProcObject<IListItem>>>
         {
             S("SF1", 100),
             S("SF2", 60),
         };
 
-        var apps = new List<RoScored<IListItem>>
+        var apps = new List<RoScored<InProcObject<IListItem>>>
         {
             S("A1", 100),
             S("A2", 55),
         };
 
         // Fallbacks are not scored.
-        var fallbacks = new List<RoScored<IListItem>>
+        var fallbacks = new List<RoScored<InProcObject<IListItem>>>
         {
             S("FB1", 0),
             S("FB2", 0),
@@ -127,7 +128,7 @@ public partial class MainListPageResultFactoryTests
     [TestMethod]
     public void Merge_AppliesAppLimit()
     {
-        var apps = new List<RoScored<IListItem>>
+        var apps = new List<RoScored<InProcObject<IListItem>>>
         {
             S("A1", 100),
             S("A2", 90),
@@ -152,7 +153,7 @@ public partial class MainListPageResultFactoryTests
     [TestMethod]
     public void Merge_AppLimitOfOne_ReturnsOnlyTopApp()
     {
-        var apps = new List<RoScored<IListItem>>
+        var apps = new List<RoScored<InProcObject<IListItem>>>
         {
             S("A1", 100),
             S("A2", 90),
@@ -176,7 +177,7 @@ public partial class MainListPageResultFactoryTests
     [TestMethod]
     public void Merge_AppLimitOfZero_ReturnsNoApps()
     {
-        var apps = new List<RoScored<IListItem>>
+        var apps = new List<RoScored<InProcObject<IListItem>>>
         {
             S("A1", 100),
             S("A2", 90),
@@ -197,13 +198,13 @@ public partial class MainListPageResultFactoryTests
     [TestMethod]
     public void Merge_AppLimitOfOne_WithOtherResults_AppsAreLimited()
     {
-        var filtered = new List<RoScored<IListItem>>
+        var filtered = new List<RoScored<InProcObject<IListItem>>>
         {
             S("F1", 100),
             S("F2", 50),
         };
 
-        var apps = new List<RoScored<IListItem>>
+        var apps = new List<RoScored<InProcObject<IListItem>>>
         {
             S("A1", 90),
             S("A2", 80),
@@ -229,7 +230,7 @@ public partial class MainListPageResultFactoryTests
     [TestMethod]
     public void Merge_FiltersEmptyFallbacks()
     {
-        var fallbacks = new List<RoScored<IListItem>>
+        var fallbacks = new List<RoScored<InProcObject<IListItem>>>
         {
             S("FB1", 0),
             S(string.Empty, 0),
@@ -270,11 +271,11 @@ public partial class MainListPageResultFactoryTests
     [TestMethod]
     public void Merge_PlacesFallbackResultBlocksBeforeCommandFallbacks()
     {
-        var filtered = new List<RoScored<IListItem>>
+        var filtered = new List<RoScored<InProcObject<IListItem>>>
         {
             S("Direct", 100),
         };
-        var fallbacks = new List<RoScored<IListItem>>
+        var fallbacks = new List<RoScored<InProcObject<IListItem>>>
         {
             S("Command fallback", 0),
         };

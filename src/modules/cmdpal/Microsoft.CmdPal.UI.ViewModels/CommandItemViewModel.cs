@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -207,7 +208,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
-        Command.InitializeProperties();
+        InitializeOwnedCommandProperties();
 
         var icon = model.Icon;
         if (icon is not null)
@@ -351,6 +352,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
+        // A host adapter can report the same borrowed command more than once.
         command.PropertyChanged -= Command_PropertyChanged;
         command.PropertyChanged += Command_PropertyChanged;
         if (IsCleanedUp || !ReferenceEquals(command, Command))
@@ -392,7 +394,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                     return;
                 }
 
-                Command.InitializeProperties();
+                InitializeOwnedCommandProperties();
                 SubscribeToCommand(Command);
 
                 // Extensions based on Command Palette SDK < 0.3 CommandItem class won't notify when Title changes because Command
@@ -526,7 +528,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         var commandModel = command.Model.Unsafe;
-        var contextItem = commandModel is null ? new CommandContextItem(command.Name) : new CommandContextItem(commandModel);
+
+        // Set the cached title first so the SDK item does not resolve it through ICommand.Name.
+        var contextItem = new CommandContextItem(command.Name) { Command = commandModel };
         var defaultContextItem = new CommandContextItemViewModel(contextItem, PageContext, FallbackContext)
         {
             _itemTitle = Name,
@@ -678,6 +682,14 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
         ReleaseReplaced(replaced, command);
         return !IsCleanedUp;
+    }
+
+    private void InitializeOwnedCommandProperties()
+    {
+        if (_commandState.Owned)
+        {
+            _commandState.Command.InitializeProperties();
+        }
     }
 
     /// <summary>

@@ -111,7 +111,7 @@ public sealed class MainListPageCacheTests
             fuzzyMatcherProvider.Object,
             settingsService.Object,
             appStateService.Object,
-            new ListPage());
+            new(new ListPage()));
 
         try
         {
@@ -176,7 +176,7 @@ public sealed class MainListPageCacheTests
             fuzzyMatcherProvider.Object,
             settingsService.Object,
             appStateService.Object,
-            new ListPage());
+            new(new ListPage()));
 
         try
         {
@@ -243,7 +243,7 @@ public sealed class MainListPageCacheTests
             new FuzzyMatcherProvider(new PrecomputedFuzzyMatcherOptions()),
             settingsService,
             appStateService,
-            new ListPage());
+            new(new ListPage()));
         try
         {
             page.SearchText = "alpha";
