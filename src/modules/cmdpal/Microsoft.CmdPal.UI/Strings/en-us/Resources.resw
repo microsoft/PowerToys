@@ -512,6 +512,30 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Alt+{0} to run; Alt+Shift+{0} to select</value>
     <comment>Tooltip shortcut text for running or selecting a quick access item. {0} is a digit from 1 through 9.</comment>
   </data>
+  <data name="ListItemsView_ItemsList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Results</value>
+    <comment>Accessible name of the list that shows the commands matching the search text.</comment>
+  </data>
+  <data name="ListItemsView_ItemsGrid.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Results</value>
+    <comment>Accessible name of the grid that shows the commands matching the search text.</comment>
+  </data>
+  <data name="ListItemsView_NoResultsAnnouncement" xml:space="preserve">
+    <value>No results</value>
+    <comment>Screen reader announcement when the search text matches no commands.</comment>
+  </data>
+  <data name="ListItemsView_OneResultAnnouncement" xml:space="preserve">
+    <value>1 result</value>
+    <comment>Screen reader announcement when the search text matches exactly one command.</comment>
+  </data>
+  <data name="ListItemsView_ResultsCountAnnouncementFormat" xml:space="preserve">
+    <value>{0} results</value>
+    <comment>Screen reader announcement of the number of matching commands. {0} is the number of results (2 or more).</comment>
+  </data>
+  <data name="ListItemsView_ResultsWithSelectedItemAnnouncementFormat" xml:space="preserve">
+    <value>{0}, {1}</value>
+    <comment>Screen reader announcement after the results change. {0} is the result count text, for example "3 results". {1} is the title of the selected result.</comment>
+  </data>
   <data name="ListItemNumberedShortcutAcceleratorFormat" xml:space="preserve">
     <value>Alt+{0}</value>
     <comment>UI Automation accelerator key for a numbered list item. {0} is a digit from 1 through 9. Localize the modifier key name and separator as appropriate.</comment>
