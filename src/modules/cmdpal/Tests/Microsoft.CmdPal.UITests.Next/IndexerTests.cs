@@ -22,8 +22,9 @@ public class IndexerTests : CommandPaletteTestBase
     private static string browseFolderPath = string.Empty;
     private static string browseChildFileName = string.Empty;
     private long containingFolderWindowHandle;
+    private long openedFolderWindowHandle;
+    private long propertiesWindowHandle;
     private long consoleWindowHandle;
-    private int[] consoleProcessIds = [];
 
     internal static void CreateIndexedFixture(TestContext context)
     {
@@ -67,6 +68,7 @@ public class IndexerTests : CommandPaletteTestBase
             {
                 IndexerOption = IndexerOption.OnlyUseIndexer,
                 FolderDepth = FolderDepth.Deep,
+                ApplicationSearchFilter = $"System.FileName:=\"{testFileName}\" OR System.FileName:=\"{browseChildFileName}\"",
             };
             var readiness = WaitHelper.WaitForStable(
                 observe: () => folder.CreateFileQueryWithOptions(options).GetFilesAsync()
@@ -116,31 +118,19 @@ public class IndexerTests : CommandPaletteTestBase
         WindowControl.TryCloseByApp(
             "Notepad",
             window => window.Title.Contains(testFileBaseName, StringComparison.OrdinalIgnoreCase));
-        WindowControl.TryCloseByApp(
-            "explorer",
-            window => window.Title.Contains(TestFolderName, StringComparison.OrdinalIgnoreCase));
-        WindowControl.TryCloseByApp(
-            "explorer",
-            window => window.Title.Contains("Properties", StringComparison.OrdinalIgnoreCase));
+        if (openedFolderWindowHandle != 0)
+        {
+            WindowControl.TryCloseWindow(openedFolderWindowHandle);
+        }
+
+        if (propertiesWindowHandle != 0)
+        {
+            WindowControl.TryCloseWindow(propertiesWindowHandle);
+        }
+
         if (consoleWindowHandle != 0)
         {
             WindowControl.TryCloseWindow(consoleWindowHandle, timeoutMS: 2_000);
-        }
-
-        foreach (var processId in consoleProcessIds)
-        {
-            try
-            {
-                using var process = System.Diagnostics.Process.GetProcessById(processId);
-                process.Kill();
-            }
-            catch (ArgumentException)
-            {
-                // Already exited after its window closed.
-            }
-            catch (InvalidOperationException)
-            {
-            }
         }
     }
 
@@ -194,11 +184,16 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 45_000));
     }
 
-    private Session? WaitForExplorerWindow(int timeoutMS = 10_000) =>
-        WindowsFinder.WaitForWindow(
-            window => window.ProcessName.Equals("explorer", StringComparison.OrdinalIgnoreCase) &&
-                      window.Title.Contains(TestFolderName, StringComparison.OrdinalIgnoreCase),
-            timeoutMS: timeoutMS);
+    private void AssertFixtureFolderOpened(IReadOnlySet<long> windowsBefore)
+    {
+        var explorer = WindowsFinder.WaitForWindow(
+            window => !windowsBefore.Contains(window.Hwnd) &&
+                      window.ProcessName.Equals("explorer", StringComparison.OrdinalIgnoreCase) &&
+                      window.Title.Contains(Path.GetFileName(browseFolderPath), StringComparison.OrdinalIgnoreCase),
+            timeoutMS: 20_000);
+        Assert.IsNotNull(explorer, "File Explorer did not open the test-owned indexed folder.");
+        openedFolderWindowHandle = explorer.WindowHandle;
+    }
 
     [TestMethod]
     [TestCategory("CmdPal")]
@@ -253,13 +248,12 @@ public class IndexerTests : CommandPaletteTestBase
     public void IndexerOpenFolderTest()
     {
         EnterIndexerExtension();
-        SetFilesExtensionSearchBox(TestFolderName);
-
-        FindExactResult(TestFolderName).MouseClick();
-        Step("Opening Downloads through the primary command");
+        FindIndexedItem(Path.GetFileName(browseFolderPath)).MouseClick();
+        var windowsBefore = SnapshotWindowHandles();
+        Step("Opening the test-owned folder through the primary command");
         CommandPaletteSession.Find<Button>(By.AccessibilityId("PrimaryCommandButton")).Click();
 
-        Assert.IsNotNull(WaitForExplorerWindow(), "File Explorer did not open Downloads.");
+        AssertFixtureFolderOpened(windowsBefore);
     }
 
     [TestMethod]
@@ -267,11 +261,12 @@ public class IndexerTests : CommandPaletteTestBase
     public void IndexerDoubleClickOpenFolderTest()
     {
         EnterIndexerExtension();
-        SetFilesExtensionSearchBox(TestFolderName);
-
-        Step("Double-clicking the Downloads result");
-        DoubleClickResult(TestFolderName);
-        Assert.IsNotNull(WaitForExplorerWindow(), "File Explorer did not open Downloads.");
+        var folderName = Path.GetFileName(browseFolderPath);
+        FindIndexedItem(folderName);
+        var windowsBefore = SnapshotWindowHandles();
+        Step("Double-clicking the test-owned folder result");
+        DoubleClickResult(folderName);
+        AssertFixtureFolderOpened(windowsBefore);
     }
 
     [TestMethod]
@@ -378,7 +373,7 @@ public class IndexerTests : CommandPaletteTestBase
                 return isConsole;
             },
             timeoutMS: 45_000);
-        consoleProcessIds = GetProcessIds("cmd").Where(id => !cmdProcessesBefore.Contains(id)).ToArray();
+        var consoleProcessIds = GetProcessIds("cmd").Where(id => !cmdProcessesBefore.Contains(id)).ToArray();
         consoleWindowHandle = consoleWindow?.Hwnd ?? 0;
 
         Assert.IsNotNull(consoleSession, "No new console window titled with the cmd.exe path opened.");
@@ -392,13 +387,17 @@ public class IndexerTests : CommandPaletteTestBase
         EnterIndexerExtension();
         FindIndexedItem(testFileName).MouseClick();
         OpenContextMenu();
+        var windowsBefore = SnapshotWindowHandles();
         Step("Opening Properties for the selected file");
         CommandPaletteSession.Find<NavigationViewItem>("Properties").Click();
 
         var propertiesWindow = WindowsFinder.WaitForWindow(
-            window => window.Title.Contains("Properties", StringComparison.OrdinalIgnoreCase),
+            window => !windowsBefore.Contains(window.Hwnd) &&
+                      window.Title.Contains(testFileBaseName, StringComparison.OrdinalIgnoreCase) &&
+                      window.Title.Contains("Properties", StringComparison.OrdinalIgnoreCase),
             timeoutMS: 15_000);
         Assert.IsNotNull(propertiesWindow, "The properties window did not open for the selected file.");
+        propertiesWindowHandle = propertiesWindow.WindowHandle;
     }
 
     // Only answer the shell's "How do you want to open this file?" picker, which is hosted by

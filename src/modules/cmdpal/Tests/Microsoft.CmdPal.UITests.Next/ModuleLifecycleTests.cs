@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.IO.Compression;
+using System.Xml.Linq;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Management.Deployment;
@@ -30,12 +32,6 @@ public class ModuleLifecycleTests : UITestBase
     internal static void PrepareCommandPalettePackage(TestContext context)
     {
         var manager = new PackageManager();
-        if (manager.FindPackagesForUser(string.Empty, PackageName, Publisher).Any())
-        {
-            context.WriteLine("Preserving the Command Palette package already installed for the test user.");
-            return;
-        }
-
         var runtimeDirectory = Path.Combine(
             Path.GetDirectoryName(SessionHelper.GetExecutablePath(PowerToysModule.Runner))!, "WinUI3Apps", "CmdPal");
         var packages = Directory.GetFiles(runtimeDirectory, "*.msix", SearchOption.TopDirectoryOnly);
@@ -45,6 +41,31 @@ public class ModuleLifecycleTests : UITestBase
         }
 
         Assert.HasCount(1, packages, "The runtime must include exactly one signed Command Palette MSIX.");
+        using (var archive = ZipFile.OpenRead(packages[0]))
+        {
+            var manifest = archive.GetEntry("AppxManifest.xml");
+            Assert.IsNotNull(manifest, "The Command Palette MSIX has no manifest.");
+            using var stream = manifest.Open();
+            var document = XDocument.Load(stream);
+            Assert.IsNotNull(document.Root);
+            var versionText = document.Root.Element(document.Root.Name.Namespace + "Identity")?.Attribute("Version")?.Value;
+            Assert.IsNotNull(versionText, "The Command Palette MSIX has no package version.");
+            var expectedVersion = Version.Parse(versionText);
+            var existing = manager.FindPackagesForUser(string.Empty, PackageName, Publisher)
+                .FirstOrDefault(package => !package.IsResourcePackage);
+            if (existing is not null)
+            {
+                var id = existing.Id;
+                var installedVersion = new Version(id.Version.Major, id.Version.Minor, id.Version.Build, id.Version.Revision);
+                Assert.AreEqual(
+                    expectedVersion,
+                    installedVersion,
+                    $"The existing Command Palette package '{id.FullName}' differs from the runtime MSIX. Use a clean test profile; the suite will not replace a pre-existing package.");
+                context.WriteLine($"Preserving the existing Command Palette package '{id.FullName}' from '{existing.InstalledLocation.Path}'.");
+                return;
+            }
+        }
+
         context.WriteLine($"Installing Command Palette for the UI-test assembly: {packages[0]}");
         manager.AddPackageAsync(new Uri(packages[0]), null, DeploymentOptions.ForceApplicationShutdown)
             .AsTask().GetAwaiter().GetResult();

@@ -24,6 +24,7 @@ internal sealed class CmdPalDiagnosticTrace : IDisposable
     private readonly Stopwatch elapsed = Stopwatch.StartNew();
     private readonly Task sampler;
     private string phase = "starting";
+    private bool disposed;
 
     public CmdPalDiagnosticTrace(TestContext context, Session session)
     {
@@ -84,6 +85,11 @@ internal sealed class CmdPalDiagnosticTrace : IDisposable
 
     public void Dispose()
     {
+        if (disposed)
+        {
+            return;
+        }
+
         stop.Cancel();
         try
         {
@@ -93,7 +99,12 @@ internal sealed class CmdPalDiagnosticTrace : IDisposable
         }
         finally
         {
-            writer.Dispose();
+            lock (gate)
+            {
+                disposed = true;
+                writer.Dispose();
+            }
+
             stop.Dispose();
             context.AddResultFile(path);
         }
@@ -109,16 +120,31 @@ internal sealed class CmdPalDiagnosticTrace : IDisposable
         var ids = processes.Where(process => process.Name == "Microsoft.CmdPal.UI")
             .Select(process => process.Id).Append(session.ProcessId).Distinct().ToArray();
         var windows = WindowControl.EnumerateProcessWindows(ids)
-            .Select(window => new
+            .Select(window =>
             {
-                Hwnd = window.Hwnd.ToInt64(),
-                window.ProcessId,
-                window.ClassName,
-                window.Title,
-                window.Width,
-                window.Height,
-                window.IsVisible,
-                IsCloaked = WindowHelper.IsWindowCloaked(window.Hwnd),
+                bool? isCloaked = null;
+                string? error = null;
+                try
+                {
+                    isCloaked = WindowHelper.IsWindowCloaked(window.Hwnd);
+                }
+                catch (InvalidOperationException exception)
+                {
+                    error = exception.Message;
+                }
+
+                return new
+                {
+                    Hwnd = window.Hwnd.ToInt64(),
+                    window.ProcessId,
+                    window.ClassName,
+                    window.Title,
+                    window.Width,
+                    window.Height,
+                    window.IsVisible,
+                    IsCloaked = isCloaked,
+                    Error = error,
+                };
             }).ToArray();
         var foreground = WindowControl.GetForegroundWindowInfo();
         Write(
@@ -169,6 +195,11 @@ internal sealed class CmdPalDiagnosticTrace : IDisposable
     {
         lock (gate)
         {
+            if (disposed)
+            {
+                return;
+            }
+
             writer.WriteLine(JsonSerializer.Serialize(new
             {
                 Utc = DateTimeOffset.UtcNow,

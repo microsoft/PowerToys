@@ -437,8 +437,7 @@ public sealed class SessionHelper
 
                             // Strict title match wins immediately — disambiguates from sibling
                             // windows owned by the same process (e.g. Settings + PopupHost).
-                            if (!string.IsNullOrEmpty(expectedTitle) &&
-                                title.Contains(expectedTitle, StringComparison.OrdinalIgnoreCase))
+                            if (MatchesMainWindow(processName, expectedTitle, pn, title))
                             {
                                 return new Session(scope, hwnd, title, pid, pn);
                             }
@@ -472,4 +471,10 @@ public sealed class SessionHelper
 
         return null;
     }
+
+    internal static bool MatchesMainWindow(string expectedProcess, string expectedTitle, string processName, string title) =>
+        !string.IsNullOrEmpty(expectedProcess) &&
+        !string.IsNullOrEmpty(expectedTitle) &&
+        processName.Contains(expectedProcess, StringComparison.OrdinalIgnoreCase) &&
+        title.Contains(expectedTitle, StringComparison.OrdinalIgnoreCase);
 }

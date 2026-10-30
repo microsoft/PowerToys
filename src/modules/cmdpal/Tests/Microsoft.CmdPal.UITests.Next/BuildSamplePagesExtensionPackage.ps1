@@ -56,7 +56,9 @@ try {
     }
 }
 finally {
-    Remove-Item -LiteralPath $mappingPath -Force -ErrorAction Stop
+    if (Test-Path -LiteralPath $mappingPath) {
+        Remove-Item -LiteralPath $mappingPath -Force -ErrorAction Stop
+    }
 }
 
 Write-Host "Created unsigned UI-test package: $PackagePath"

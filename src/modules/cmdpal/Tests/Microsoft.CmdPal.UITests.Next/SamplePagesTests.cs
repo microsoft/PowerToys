@@ -49,15 +49,13 @@ public class SamplePagesTests : CommandPaletteTestBase
             File.Exists(frameworkPath),
             $"Windows App Runtime framework package is missing at '{frameworkPath}'. Build the test project, which copies it.");
 
-        var frameworkOperation = HasWindowsAppRuntimeFramework(packageManager)
-            ? null
-            : packageManager.AddPackageAsync(new Uri(frameworkPath), null, DeploymentOptions.None);
+        var frameworkOperation = packageManager.AddPackageAsync(new Uri(frameworkPath), null, DeploymentOptions.None);
         try
         {
-            frameworkOperation?.AsTask().GetAwaiter().GetResult();
+            frameworkOperation.AsTask().GetAwaiter().GetResult();
         }
         catch (Exception ex) when (
-            ex.HResult == unchecked((int)0x80073D06) && HasWindowsAppRuntimeFramework(packageManager))
+            ex.HResult == unchecked((int)0x80073D06))
         {
             context.WriteLine("A compatible newer Windows App Runtime framework was registered during deployment.");
         }
@@ -139,19 +137,6 @@ public class SamplePagesTests : CommandPaletteTestBase
 
     private static Windows.ApplicationModel.Package? FindInstalledPackage(PackageManager packageManager) =>
         packageManager.FindPackagesForUser(string.Empty, PackageName, PackagePublisher).FirstOrDefault();
-
-    private static bool HasWindowsAppRuntimeFramework(PackageManager packageManager)
-    {
-        var architecture = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture switch
-        {
-            System.Runtime.InteropServices.Architecture.Arm64 => Windows.System.ProcessorArchitecture.Arm64,
-            _ => Windows.System.ProcessorArchitecture.X64,
-        };
-
-        return packageManager
-            .FindPackagesForUser(string.Empty, "Microsoft.WindowsAppRuntime.2", PackagePublisher)
-            .Any(p => p.Id.Architecture == architecture && new Version(p.Id.Version.Major, p.Id.Version.Minor) >= new Version(2, 2));
-    }
 
     private static string TryGetErrorText(Windows.Foundation.IAsyncOperationWithProgress<DeploymentResult, DeploymentProgress> operation)
     {

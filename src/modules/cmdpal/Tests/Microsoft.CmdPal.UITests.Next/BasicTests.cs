@@ -62,9 +62,10 @@ public class BasicTests : CommandPaletteTestBase
         Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 45_000));
 
         SetTimeAndDateExtensionSearchBox("year");
-        Step($"Waiting for the Time/Date result for year {DateTime.Now.Year}");
-        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>(
-            DateTime.Now.Year.ToString(CultureInfo.InvariantCulture)));
+        var culture = CultureInfo.CurrentCulture;
+        var expectedYear = culture.Calendar.GetYear(DateTime.Now).ToString(culture);
+        Step($"Waiting for the Time/Date result for year {expectedYear}");
+        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>(expectedYear));
     }
 
     [TestMethod]
@@ -81,11 +82,14 @@ public class BasicTests : CommandPaletteTestBase
             var now = DateTime.Now;
             var culture = CultureInfo.CurrentCulture;
             var expected = query == "year"
-                ? now.Year.ToString(culture)
-                : culture.Calendar.GetWeekOfYear(
-                    now,
-                    culture.DateTimeFormat.CalendarWeekRule,
-                    culture.DateTimeFormat.FirstDayOfWeek).ToString(culture);
+                ? culture.Calendar.GetYear(now).ToString(culture)
+                : (culture.DateTimeFormat.CalendarWeekRule == CalendarWeekRule.FirstFourDayWeek &&
+                   culture.DateTimeFormat.FirstDayOfWeek == DayOfWeek.Monday
+                    ? ISOWeek.GetWeekOfYear(now)
+                    : culture.Calendar.GetWeekOfYear(
+                        now,
+                        culture.DateTimeFormat.CalendarWeekRule,
+                        culture.DateTimeFormat.FirstDayOfWeek)).ToString(culture);
             ClipboardHelper.Clear();
             InvokeResultWithEnter(expected);
             Assert.AreEqual(expected, ClipboardHelper.WaitForText(string.Empty, timeoutMS: 10_000));
@@ -149,6 +153,7 @@ public class BasicTests : CommandPaletteTestBase
         SetSearchBox("power");
         var powerSettings = CommandPaletteSession.Find<NavigationViewItem>("Power and sleep");
         Step("Opening the selected Windows Settings page");
+        var windowsBefore = SnapshotWindowsSettings();
         try
         {
             InvokeResultWithEnter(powerSettings.Name);
@@ -156,7 +161,7 @@ public class BasicTests : CommandPaletteTestBase
         }
         finally
         {
-            WindowControl.TryCloseByApp("SystemSettings");
+            CloseCreatedWindowsSettings(windowsBefore);
         }
     }
 

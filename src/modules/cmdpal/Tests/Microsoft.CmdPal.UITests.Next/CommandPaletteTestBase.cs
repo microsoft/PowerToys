@@ -58,8 +58,8 @@ public class CommandPaletteTestBase : UITestBase
                 return;
             }
 
-            var mainWindow = WindowsFinder.ListByApp(processName)
-                .SingleOrDefault(window => window.Title == "Command Palette");
+            var mainWindow = WindowsFinder.ListAll()
+                .FirstOrDefault(window => window.ProcessId == Session.ProcessId && window.Title == "Command Palette");
             Step($"Foreground={WindowControl.GetForegroundWindowInfo()}; main={mainWindow}; initial HWND={Session.WindowHandle}");
             if (mainWindow is not null &&
                 !WindowHelper.IsWindowCloaked(new IntPtr(mainWindow.Hwnd)) &&
@@ -251,6 +251,23 @@ public class CommandPaletteTestBase : UITestBase
             ready.Succeeded,
             $"The command did not open a fully loaded Windows Settings application. {ready.LastException?.Message}");
     }
+
+    protected static HashSet<long> SnapshotWindowsSettings() =>
+        WindowsFinder.ListAll().Where(IsWindowsSettingsWindow).Select(window => window.Hwnd).ToHashSet();
+
+    protected static void CloseCreatedWindowsSettings(IReadOnlySet<long> windowsBefore)
+    {
+        foreach (var window in WindowsFinder.ListAll().Where(IsWindowsSettingsWindow))
+        {
+            if (!windowsBefore.Contains(window.Hwnd))
+            {
+                WindowControl.TryCloseWindow(window.Hwnd);
+            }
+        }
+    }
+
+    private static bool IsWindowsSettingsWindow(WindowsFinder.WindowInfo window) =>
+        window.Title == "Settings" && window.ProcessName is "SystemSettings" or "ApplicationFrameHost";
 
     protected void OpenSettingsWindow()
     {

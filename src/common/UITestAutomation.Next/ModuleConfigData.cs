@@ -20,10 +20,12 @@ namespace Microsoft.PowerToys.UITest.Next;
 ///   (e.g. <c>ColorPicker.UITests</c>), because a standalone module exe has no runner behind it.</description></item>
 ///   <item><description><see cref="Runner"/> — launches <c>PowerToys.exe</c> directly (the tray/runner host).</description></item>
 ///   <item><description><b>Editor scopes</b> (<see cref="FancyZonesEditor"/>, <see cref="Hosts"/>,
-///   <see cref="Workspaces"/>, <see cref="PowerRename"/>, <see cref="CommandPalette"/>,
+///   <see cref="Workspaces"/>, <see cref="PowerRename"/>,
 ///   <see cref="ScreenRuler"/>, <see cref="RegistryPreview"/>) — launch their own exe standalone.
 ///   These are designed to run as self-contained editor windows, so binding directly to the
 ///   editor's window is correct.</description></item>
+///   <item><description><see cref="CommandPalette"/> — launches loose builds directly, or activates
+///   the registered MSIX application when the executable belongs to that package.</description></item>
 ///   <item><description><see cref="ColorPicker"/>, <see cref="LightSwitch"/> — overlay/background
 ///   modules that are <i>not</i> meant to be launched standalone by a test; drive them through the
 ///   <see cref="PowerToysSettings"/> scope (toggle + activation hotkey) instead. The entries exist
@@ -54,6 +56,8 @@ public enum PowerToysModule
 /// holds the exe (locally <c>&lt;root&gt;\&lt;plat&gt;\&lt;cfg&gt;</c>, in CI the downloaded build artifact) —
 /// and finally the installed path as a last resort. This lets the same tests run against an installed
 /// PowerToys or a dev / CI-artifact build without any environment configuration.
+/// Command Palette falls back to its registered Microsoft.CommandPalette package when the installed
+/// loose executable is absent; a missing package executable throws <see cref="FileNotFoundException"/>.
 /// </remarks>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "ModuleConfigData.cs keeps the legacy UITestAutomation file name for parity; it holds the PowerToysModule enum and its path resolver together.")]
 internal static class ModulePaths
