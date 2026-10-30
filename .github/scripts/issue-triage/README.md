@@ -65,10 +65,13 @@ that retain `Needs-Author-Feedback` for seven days without activity.
   issue; comments and reopen events do not trigger it.
 - Per-user rate limits, daily AI-credit limits, and per-issue concurrency bound
   repeated issue creation or edits.
-- The agent has no general shell or GitHub API tools. Its only shell command is
-  the structured safe-output CLI proxy, and Copilot's file-write tool is
-  explicitly denied to work around gh-aw v0.86.2 treating `edit: false` as
-  writable.
+- When a cancelled run has no usage accounting, the daily guardrail counts its
+  full 10-credit per-run maximum as a conservative estimate instead of treating
+  it as zero or blocking every subsequent run. Permission and rate-limit errors
+  still fail closed.
+- The agent has no shell or GitHub API tools. It publishes through the typed
+  `safeoutputs` MCP tool, preserving JSON booleans without CLI serialization.
+  Copilot's file-write tool is explicitly denied.
 - Threat detection fails closed; publication requires an explicit successful
   detection result.
 - The publishing job rebuilds evidence from the current issue and accepts only
@@ -91,3 +94,13 @@ Run the focused tests with:
 ```console
 python -m unittest discover .github\scripts\issue-triage\tests -v
 ```
+
+Regenerate the workflow with the gh-aw v1.0.1 compiler and matching runtime:
+
+```console
+gh aw compile issue-triage --validate --actionlint
+```
+
+Keep the compiler and `github/gh-aw-actions/setup` version in sync. Updating
+only the setup action can leave generated configuration incompatible with its
+runtime, including omitting the per-run maximum from the daily credit guardrail.
