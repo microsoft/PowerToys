@@ -31,11 +31,7 @@ public class Slider : Element
     /// <summary>Set the value directly via <c>winapp ui set-value</c> (RangeValuePattern).</summary>
     public Slider SetValue(double value)
     {
-        EnsureBound();
-        WinappCli.InvokeAssertSuccess(
-            "ui", "set-value", Selector,
-            value.ToString(CultureInfo.InvariantCulture),
-            Owner!.TargetFlag, Owner!.TargetValue);
+        WinappCli.InvokeAssertSuccess(BuildSetValueArguments(value.ToString(CultureInfo.InvariantCulture)));
         return this;
     }
 }

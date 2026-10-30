@@ -18,17 +18,60 @@ namespace Microsoft.PowerToys.ZoomIt.UITests;
 public sealed partial class ZoomItTests
 {
     private const string CaptureRectangleClass = "ZoomitSelectRectangle";
-    private static readonly string[] TrayCommands = ["Break Timer", "Draw", "Zoom", "Record"];
+    private static readonly string[] TrayMenuCaptions = ["Settings", string.Empty, "Break Timer", "Draw", "Zoom", "Record", string.Empty, "Exit"];
     private static readonly string[] TrayChevronNames = ["hidden icon", "Notification Chevron", "NotificationChevron"];
     private readonly string captureEvidenceId = Guid.NewGuid().ToString("N");
 
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    public void TrayIconLeftAndRightClickShowExactlyFourActions(bool rightClick)
+    public void TrayIconLeftAndRightClickShowExpectedActions(bool rightClick)
     {
         OpenTrayMenu(rightClick);
         SaveDesktop(rightClick ? "tray-right-click" : "tray-left-click");
+        ShellMenu.Dismiss();
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void TraySettingsOpensZoomItPage(bool minimizeSettings)
+    {
+        var settings = Session.FromProcess("PowerToys.Settings");
+        settings.Find<NavigationViewItem>(By.AccessibilityId("GeneralNavItem")).Invoke(msPostAction: 0);
+        Assert.IsTrue(settings.Has(By.AccessibilityId("GeneralPageRunAtStartUp"), 15_000), "General Settings did not appear before testing tray navigation.");
+        if (minimizeSettings)
+        {
+            WindowHelper.MinimizeWindow(new IntPtr(Session.WindowHandle));
+        }
+
+        ClickTrayCommand("Settings");
+        Assert.IsTrue(settings.Has(By.AccessibilityId("ZoomItEnableToggleControlHeaderText"), 15_000), "The tray Settings action did not navigate to the ZoomIt page.");
+        var window = WindowsFinder.WaitForWindowByApp(
+            "PowerToys.Settings",
+            candidate => candidate.Title.Contains("PowerToys Settings", StringComparison.Ordinal) && candidate.Width > 500 && candidate.Height > 300,
+            10_000);
+        Assert.IsNotNull(window, "The tray Settings action did not show PowerToys Settings.");
+        Assert.IsTrue(WindowControl.WaitForForeground(new IntPtr(window.WindowHandle), 10_000), "The tray Settings action must bring PowerToys Settings to the foreground.");
+        ZoomItUi.WaitForProcess(true);
+        SaveDesktop(minimizeSettings ? "tray-settings-restored" : "tray-settings-navigation");
+    }
+
+    [TestMethod]
+    public void TrayExitStopsOnlyZoomItAndAllowsReenabling()
+    {
+        ClickTrayCommand("Exit");
+        ZoomItUi.WaitForProcess(false);
+        WaitForTrayIcon(false);
+        ShellMenu.Dismiss();
+        Assert.IsTrue(SessionHelper.IsRunning(PowerToysModule.Runner), "Exiting ZoomIt must not stop the PowerToys runner.");
+        Assert.IsTrue(SessionHelper.IsRunning(PowerToysModule.PowerToysSettings), "Exiting ZoomIt must not stop PowerToys Settings.");
+        SaveDesktop("tray-exit");
+
+        ui.SetToggle("ZoomItEnableToggleControlHeaderText", false);
+        ui.SetToggle("ZoomItEnableToggleControlHeaderText", true);
+        ZoomItUi.WaitForProcess(true);
+        WaitForTrayIcon(true);
         ShellMenu.Dismiss();
     }
 
@@ -266,11 +309,17 @@ public sealed partial class ZoomItTests
 
     private Element? WaitForTrayIcon(bool expected)
     {
+        const int requiredConsecutiveMatches = 3;
         ui.Step($"Waiting for the real Shell ZoomIt tray icon to be {(expected ? "present" : "absent")}");
         ShellMenu.Dismiss();
         KeyboardHelper.SendKeys(Key.LWin, Key.B);
         var screen = System.Windows.Forms.SystemInformation.PrimaryMonitorSize;
-        MouseHelper.MoveTo(screen.Width / 2, screen.Height / 2);
+
+        // Keep the cursor off the taskbar and the right half of the screen. On Windows 10, a
+        // cursor left on the chevron can end up over News and Interests when the notification
+        // area resizes; its hover feed then covers the overflow until the cursor leaves.
+        void ParkCursor() => MouseHelper.MoveTo(screen.Width / 4, screen.Height / 2);
+        ParkCursor();
         var explorer = Session.FromProcess("explorer");
         WindowsFinder.WindowInfo? OverflowWindow() => WindowsFinder.ListByApp("explorer").FirstOrDefault(window =>
             window.ClassName is "NotifyIconOverflowWindow" or "TopLevelWindowForOverflowXamlIsland" &&
@@ -278,37 +327,65 @@ public sealed partial class ZoomItTests
         Element? FindChevron() => TrayChevronNames
             .SelectMany(name => explorer.FindAll<Element>(By.Name(name), 0))
             .FirstOrDefault(item => item.ControlType == "Button" && item.Width > 0 && item.Height > 0 && item.Displayed);
-        var hasOverflow = FindChevron() is not null;
-        var opening = false;
+        var hasOverflow = false;
+        var lastChevronClick = (System.Diagnostics.Stopwatch?)null;
+        var lastMismatch = "none";
+
+        bool Matches(Element[]? icons)
+        {
+            var expectedCount = expected ? 1 : 0;
+            if (icons is null || icons.Length != expectedCount)
+            {
+                lastMismatch = $"expected {expectedCount} ZoomIt icon(s), found {icons?.Length.ToString(CultureInfo.InvariantCulture) ?? "none"}";
+                return false;
+            }
+
+            if (hasOverflow && OverflowWindow() is null)
+            {
+                lastMismatch = $"found {icons.Length} icon(s), but the notification overflow flyout is not open";
+                return false;
+            }
+
+            if (expected)
+            {
+                var x = icons[0].X + (icons[0].Width / 2);
+                var y = icons[0].Y + (icons[0].Height / 2);
+                if (!WindowsFinder.ListByApp("explorer").Any(window =>
+                    window.ClassName is "Shell_TrayWnd" or "Shell_SecondaryTrayWnd" or "NotifyIconOverflowWindow" or "TopLevelWindowForOverflowXamlIsland" &&
+                    WindowControl.IsPointOwnedByWindow(new IntPtr(window.Hwnd), x, y)))
+                {
+                    lastMismatch = $"found 1 icon at ({x}, {y}), but that point is not hit-testable in the taskbar or overflow";
+                    return false;
+                }
+            }
+
+            return true;
+        }
 
         var result = WaitHelper.WaitForStable(
             () =>
             {
-                if (OverflowWindow() is not null)
-                {
-                    opening = false;
-                }
-
+                // The chevron can appear or disappear as the restored icon lands in the taskbar or overflow.
+                hasOverflow = FindChevron() is not null || OverflowWindow() is not null;
                 return FindTrayIcons(explorer);
             },
-            icons => icons is not null && icons.Length == (expected ? 1 : 0) &&
-                (!hasOverflow || OverflowWindow() is not null) &&
-                (!expected || WindowsFinder.ListByApp("explorer").Any(window =>
-                    window.ClassName is "Shell_TrayWnd" or "Shell_SecondaryTrayWnd" or "NotifyIconOverflowWindow" or "TopLevelWindowForOverflowXamlIsland" &&
-                    WindowControl.IsPointOwnedByWindow(new IntPtr(window.Hwnd), icons[0].X + (icons[0].Width / 2), icons[0].Y + (icons[0].Height / 2)))),
+            Matches,
             30_000,
-            3,
+            requiredConsecutiveMatches,
             pollIntervalMS: 250,
             recover: _ =>
             {
                 var overflow = OverflowWindow();
                 if (overflow is not null)
                 {
+                    lastChevronClick = null;
+
                     // An open flyout can be behind the source window; do not toggle it closed.
                     WindowControl.TryBringToForeground(new IntPtr(overflow.Hwnd));
                 }
-                else if (!opening && FindChevron() is { } chevron)
+                else if ((lastChevronClick is null || lastChevronClick.ElapsedMilliseconds >= 3_000) && FindChevron() is { } chevron)
                 {
+                    // Retry when a previous chevron click raced the shell and never opened the flyout.
                     var x = chevron.X + (chevron.Width / 2);
                     var y = chevron.Y + (chevron.Height / 2);
                     if (WindowsFinder.ListByApp("explorer").Any(window =>
@@ -317,7 +394,8 @@ public sealed partial class ZoomItTests
                     {
                         ui.Step($"Opening the notification overflow with '{chevron.Name}'.");
                         MouseHelper.LeftClickAt(x, y);
-                        opening = true;
+                        lastChevronClick = System.Diagnostics.Stopwatch.StartNew();
+                        ParkCursor();
                     }
                 }
             },
@@ -327,7 +405,10 @@ public sealed partial class ZoomItTests
             ui.Step($"Shell notification tree: {explorer.Inspect(depth: 12)}");
         }
 
-        Assert.IsTrue(result.Succeeded, $"Expected {(expected ? "one" : "no")} ZoomIt notification icon in the taskbar or opened overflow, found {result.LastObservation?.Length}.");
+        var failureMessage = $"Expected {(expected ? "one" : "no")} ZoomIt notification icon in the taskbar or opened overflow. " +
+            $"Last mismatch: {lastMismatch}. Consecutive matches: {result.ConsecutiveMatches}/{requiredConsecutiveMatches}. " +
+            $"Last transient error: {result.LastException?.Message ?? "none"}.";
+        Assert.IsTrue(result.Succeeded, failureMessage);
         return result.LastObservation!.SingleOrDefault();
     }
 
@@ -361,10 +442,10 @@ public sealed partial class ZoomItTests
         Assert.IsNotNull(menu, "Clicking the Shell ZoomIt icon did not open its real popup menu.");
         var entries = WaitHelper.WaitForStable(
             () => ShellMenu.TryReadClassicItemCaptions(new IntPtr(menu.WindowHandle)),
-            captions => captions is not null && captions.SequenceEqual(TrayCommands, StringComparer.Ordinal),
+            captions => captions is not null && captions.SequenceEqual(TrayMenuCaptions, StringComparer.Ordinal),
             10_000,
             2);
-        Assert.IsTrue(entries.Succeeded, $"Expected exactly [{string.Join(", ", TrayCommands)}], including order and no extra entries or separators; actual [{string.Join(", ", entries.LastObservation ?? [])}].");
+        Assert.IsTrue(entries.Succeeded, $"Expected exactly [{string.Join(", ", TrayMenuCaptions)}], including order and separators; actual [{string.Join(", ", entries.LastObservation ?? [])}].");
         return menu;
     }
 

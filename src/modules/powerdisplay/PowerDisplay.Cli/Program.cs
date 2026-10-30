@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using System.Globalization;
 using System.IO;
@@ -13,11 +14,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using PowerDisplay.Cli.Commands;
 using PowerDisplay.Cli.Ipc;
 using PowerDisplay.Cli.Options;
 using PowerDisplay.Cli.Output;
 using PowerDisplay.Cli.Properties;
+using PowerDisplay.Cli.Telemetry;
 using PowerDisplay.Contracts;
 
 namespace PowerDisplay.Cli;
@@ -80,31 +83,85 @@ public static class Program
             return 1;
         }
 
-        if (!string.IsNullOrEmpty(parseResult.GetValueForOption(CliOptions.MonitorId)))
+        if (!string.IsNullOrEmpty(parseResult.GetValue(CliOptions.MonitorId)))
         {
             return 1;
         }
 
-        var numbers = parseResult.GetValueForOption(CliOptions.MonitorNumber);
+        var numbers = parseResult.GetValue(CliOptions.MonitorNumber);
         return numbers is { Length: > 1 } ? numbers.Length : 1;
     }
 
-    public static async Task<int> Main(string[] args)
+    public static Task<int> Main(string[] args)
+        => RunWithTelemetryAsync(args, RunAsync, static telemetryEvent => PowerToysTelemetry.Log.WriteEvent(telemetryEvent));
+
+    internal static async Task<int> RunWithTelemetryAsync(
+        string[] args,
+        Func<string[], Task<int>> run,
+        Action<PowerDisplayCLICommandEvent> writeTelemetry)
+    {
+        var exitCode = CliExitCodes.InternalError;
+        try
+        {
+            exitCode = await run(args);
+            return exitCode;
+        }
+        finally
+        {
+            try
+            {
+                writeTelemetry(new PowerDisplayCLICommandEvent
+                {
+                    CommandName = GetTelemetryCommandName(args),
+                    Successful = exitCode == CliExitCodes.Ok,
+                });
+            }
+            catch (Exception)
+            {
+                // Telemetry must not change the command's result or console output.
+            }
+        }
+    }
+
+    internal static string GetTelemetryCommandName(string[] args)
+    {
+        if (args.Length == 0)
+        {
+            return "none";
+        }
+
+        // Match only known command names; never send user-supplied values or response-file paths.
+        return args[0].ToLowerInvariant() switch
+        {
+            CliCommandNames.List => CliCommandNames.List,
+            CliCommandNames.Get => CliCommandNames.Get,
+            CliCommandNames.Set => CliCommandNames.Set,
+            CliCommandNames.Up => CliCommandNames.Up,
+            CliCommandNames.Down => CliCommandNames.Down,
+            CliCommandNames.Capabilities => CliCommandNames.Capabilities,
+            CliCommandNames.Profiles => CliCommandNames.Profiles,
+            CliCommandNames.ApplyProfile => CliCommandNames.ApplyProfile,
+            "--help" or "-h" or "-?" or "/?" => "help",
+            "--version" => "version",
+            _ => "unknown",
+        };
+    }
+
+    private static async Task<int> RunAsync(string[] args)
     {
         // Emit UTF-8 so non-ASCII glyphs in human-readable output (the → arrow, ° degree sign,
         // … ellipsis) and any UTF-8 JSON render correctly instead of as '?' on legacy code pages.
         TrySetUtf8Output();
 
         var root = new PowerDisplayRootCommand();
-        var parser = new Parser(root);
-        var parseResult = parser.Parse(args);
+        var parseResult = root.Parse(args);
 
         // Help / version short-circuit through the default invocation pipeline (which owns
         // the version + help renderers). Done BEFORE the logger is created so a pure
         // --help/--version invocation has no file-system side effects.
         if (parseResult.Tokens.Count == 0 || HasHelpToken(parseResult))
         {
-            return await root.InvokeAsync(args);
+            return await InvokeWithDefaultsAsync(root, args);
         }
 
         if (IsVersionRequest(parseResult))
@@ -113,7 +170,7 @@ public static class Program
             // original args. This also covers `apply-profile --version`, where the version token was
             // greedily bound to the profile-name argument (see IsVersionRequest) and replaying args
             // would instead dispatch "apply a profile literally named --version".
-            return await root.InvokeAsync(VersionArgs);
+            return await InvokeWithDefaultsAsync(root, VersionArgs);
         }
 
         // Select the renderer before handling parse errors so `--json` callers receive the same
@@ -255,8 +312,8 @@ public static class Program
             // ── get ───────────────────────────────────────────────────────────
             case CliCommandNames.Get:
             {
-                var monitorId = parseResult.GetValueForOption(CliOptions.MonitorId);
-                var settingFilter = parseResult.GetValueForOption(CliOptions.SettingFilter);
+                var monitorId = parseResult.GetValue(CliOptions.MonitorId);
+                var settingFilter = parseResult.GetValue(CliOptions.SettingFilter);
 
                 if (!TryGetSingleMonitorNumber(parseResult, output, CliCommandNames.Get, out var monitorNumber))
                 {
@@ -285,21 +342,21 @@ public static class Program
             // ── set ───────────────────────────────────────────────────────────
             case CliCommandNames.Set:
             {
-                var monitorNumbers = parseResult.GetValueForOption(CliOptions.MonitorNumber) ?? System.Array.Empty<int>();
-                var monitorId = parseResult.GetValueForOption(CliOptions.MonitorId);
+                var monitorNumbers = parseResult.GetValue(CliOptions.MonitorNumber) ?? System.Array.Empty<int>();
+                var monitorId = parseResult.GetValue(CliOptions.MonitorId);
 
                 SetCommandInputs MakeSetInputs(int? number) => new()
                 {
                     MonitorNumber = number,
                     MonitorId = monitorId,
-                    Brightness = parseResult.GetValueForOption(CliOptions.Brightness),
-                    Contrast = parseResult.GetValueForOption(CliOptions.Contrast),
-                    Volume = parseResult.GetValueForOption(CliOptions.Volume),
-                    ColorTemperature = parseResult.GetValueForOption(CliOptions.ColorTemperature),
-                    InputSource = parseResult.GetValueForOption(CliOptions.InputSource),
-                    PowerState = parseResult.GetValueForOption(CliOptions.PowerState),
-                    Orientation = parseResult.GetValueForOption(CliOptions.Orientation),
-                    ConfirmPowerOff = parseResult.GetValueForOption(CliOptions.ConfirmPowerOff),
+                    Brightness = parseResult.GetValue(CliOptions.Brightness),
+                    Contrast = parseResult.GetValue(CliOptions.Contrast),
+                    Volume = parseResult.GetValue(CliOptions.Volume),
+                    ColorTemperature = parseResult.GetValue(CliOptions.ColorTemperature),
+                    InputSource = parseResult.GetValue(CliOptions.InputSource),
+                    PowerState = parseResult.GetValue(CliOptions.PowerState),
+                    Orientation = parseResult.GetValue(CliOptions.Orientation),
+                    ConfirmPowerOff = parseResult.GetValue(CliOptions.ConfirmPowerOff),
                 };
 
                 // CLI-side syntactic validation: exactly one setting must be specified. The setting is
@@ -329,18 +386,18 @@ public static class Program
             case CliCommandNames.Up:
             case CliCommandNames.Down:
             {
-                var monitorNumbers = parseResult.GetValueForOption(CliOptions.MonitorNumber) ?? System.Array.Empty<int>();
-                var monitorId = parseResult.GetValueForOption(CliOptions.MonitorId);
+                var monitorNumbers = parseResult.GetValue(CliOptions.MonitorNumber) ?? System.Array.Empty<int>();
+                var monitorId = parseResult.GetValue(CliOptions.MonitorId);
                 var commandName = parseResult.CommandResult.Command.Name;
 
                 AdjustCommandInputs MakeAdjustInputs(int? number) => new()
                 {
                     MonitorNumber = number,
                     MonitorId = monitorId,
-                    Brightness = parseResult.GetValueForOption(CliOptions.BrightnessFlag),
-                    Contrast = parseResult.GetValueForOption(CliOptions.ContrastFlag),
-                    Volume = parseResult.GetValueForOption(CliOptions.VolumeFlag),
-                    Step = parseResult.GetValueForOption(CliOptions.Step),
+                    Brightness = parseResult.GetValue(CliOptions.BrightnessFlag),
+                    Contrast = parseResult.GetValue(CliOptions.ContrastFlag),
+                    Volume = parseResult.GetValue(CliOptions.VolumeFlag),
+                    Step = parseResult.GetValue(CliOptions.Step),
                 };
 
                 // CLI-side syntactic validation: exactly one continuous setting must be specified.
@@ -368,8 +425,8 @@ public static class Program
             // ── capabilities ──────────────────────────────────────────────────
             case CliCommandNames.Capabilities:
             {
-                var monitorId = parseResult.GetValueForOption(CliOptions.MonitorId);
-                var settingFilter = parseResult.GetValueForOption(CliOptions.SettingFilter);
+                var monitorId = parseResult.GetValue(CliOptions.MonitorId);
+                var settingFilter = parseResult.GetValue(CliOptions.SettingFilter);
 
                 if (!TryGetSingleMonitorNumber(parseResult, output, CliCommandNames.Capabilities, out var monitorNumber))
                 {
@@ -392,15 +449,23 @@ public static class Program
             // ── apply-profile ─────────────────────────────────────────────────
             case CliCommandNames.ApplyProfile:
             {
-                var profileId = parseResult.GetValueForArgument(CliOptions.ProfileId);
+                var profileId = parseResult.GetValue(CliOptions.ProfileId);
                 return await dispatcher.SendApplyProfileAsync(
                     CliRequestBuilder.BuildApplyProfile(profileId),
                     cancellationToken);
             }
 
             default:
-                return await root.InvokeAsync(args);
+                return await InvokeWithDefaultsAsync(root, args);
         }
+    }
+
+    // Re-adds the built-in options PowerDisplayRootCommand removes; --version first keeps the help order.
+    private static Task<int> InvokeWithDefaultsAsync(RootCommand root, string[] args)
+    {
+        root.Options.Add(new VersionOption());
+        root.Options.Add(new HelpOption());
+        return root.Parse(args).InvokeAsync();
     }
 
     // Carry-forward: the app discards -n when -i is also supplied; surface that warning
@@ -420,7 +485,7 @@ public static class Program
     // commands (set/up/down) apply to multiple monitors. Returns false (and emits the error) on a batch.
     private static bool TryGetSingleMonitorNumber(ParseResult parseResult, ICliOutput output, string command, out int? monitorNumber)
     {
-        var numbers = parseResult.GetValueForOption(CliOptions.MonitorNumber) ?? System.Array.Empty<int>();
+        var numbers = parseResult.GetValue(CliOptions.MonitorNumber) ?? System.Array.Empty<int>();
         if (numbers.Length > 1)
         {
             output.WriteError(ArgumentError(command, Resources.Error_SingleMonitorOnly));
@@ -511,9 +576,9 @@ public static class Program
     // process-global Console writers. JSON mode intentionally ignores --quiet because it never emits
     // warnings; text mode preserves the existing quiet behavior.
     internal static ICliOutput CreateOutput(ParseResult parseResult, TextWriter stdout, TextWriter stderr)
-        => parseResult.GetValueForOption(CliOptions.Json)
+        => parseResult.GetValue(CliOptions.Json)
             ? new JsonCliOutput(stdout, stderr)
-            : new TextCliOutput(stdout, stderr, parseResult.GetValueForOption(CliOptions.Quiet));
+            : new TextCliOutput(stdout, stderr, parseResult.GetValue(CliOptions.Quiet));
 
     // Single ARGUMENT_ERROR envelope shape, shared by the syntactic-validation sites in
     // DispatchAsync and by BuildParseErrorResult. Setting/Hint default to null (omitted from JSON).

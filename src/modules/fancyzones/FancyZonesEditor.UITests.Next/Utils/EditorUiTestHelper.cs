@@ -2,12 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using FancyZonesEditorCommon.Data;
-using Microsoft.PowerToys.UITest.Next;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using FancyZonesEditorCommon.Data;
+using Microsoft.PowerToys.UITest.Next;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FancyZonesEditor.UITests.Utils;
 
@@ -319,12 +319,14 @@ public static class EditorUiTestHelper
 
         Step(testBase, $"Waiting for context menu item '{menuItem}'");
         Element? foundItem = null;
-        var itemAppeared = session.WaitFor(() =>
-        {
-            var candidates = session.FindAll<Element>(By.Name(menuItem), 500);
-            foundItem = candidates.FirstOrDefault(IsMenuItem);
-            return foundItem is not null;
-        }, 10_000);
+        var itemAppeared = session.WaitFor(
+            () =>
+            {
+                var candidates = session.FindAll<Element>(By.Name(menuItem), 500);
+                foundItem = candidates.FirstOrDefault(IsMenuItem);
+                return foundItem is not null;
+            },
+            10_000);
 
         Assert.IsTrue(itemAppeared && foundItem is not null, $"Context menu item '{menuItem}' was not found after right-clicking '{layoutName}'.");
         return foundItem!;
@@ -431,11 +433,10 @@ public static class EditorUiTestHelper
             timeoutMS: 10_000,
             requiredConsecutiveMatches: 2,
             pollIntervalMS: 100);
-        Assert.IsTrue(
-            expectedState.Succeeded,
-            confirm
-                ? "The custom-layout collection did not shrink after confirming deletion."
-                : "The custom-layout collection changed after cancelling deletion.");
+        string layoutsMessage = confirm
+            ? "The custom-layout collection did not shrink after confirming deletion."
+            : "The custom-layout collection changed after cancelling deletion.";
+        Assert.IsTrue(expectedState.Succeeded, layoutsMessage);
 
         if (beforeHotkeys.HasValue && expectedState.LastObservation.HasValue)
         {
@@ -458,11 +459,10 @@ public static class EditorUiTestHelper
                 timeoutMS: 10_000,
                 requiredConsecutiveMatches: 2,
                 pollIntervalMS: 100);
-            Assert.IsTrue(
-                hotkeyState.Succeeded,
-                confirm
-                    ? "Layout hotkeys were not updated after confirming deletion."
-                    : "Layout hotkeys changed after cancelling deletion.");
+            string hotkeysMessage = confirm
+                ? "Layout hotkeys were not updated after confirming deletion."
+                : "Layout hotkeys changed after cancelling deletion.";
+            Assert.IsTrue(hotkeyState.Succeeded, hotkeysMessage);
         }
     }
 

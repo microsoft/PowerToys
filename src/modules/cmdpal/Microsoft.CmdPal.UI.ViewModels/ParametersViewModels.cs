@@ -438,6 +438,11 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
             if (PageContext.TryGetTarget(out var pageContext))
             {
                 _listViewModel = new ListViewModel(list, pageContext.Scheduler, _extensionHost, _providerContext, _contextMenuFactory);
+                if (pageContext is PageViewModel page)
+                {
+                    _listViewModel.DockRoute = page.DockRoute;
+                }
+
                 _listViewModel.InitializeProperties();
             }
         }
@@ -513,8 +518,9 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
             return;
         }
 
-        PerformCommandMessage m = new(this._commandViewModel.Model);
-        WeakReferenceMessenger.Default.Send(m);
+        var sourcePage = PageContext.TryGetTarget(out var pageContext) ? pageContext as PageViewModel : null;
+        var message = new PerformCommandMessage(this._commandViewModel, sourcePage);
+        WeakReferenceMessenger.Default.Send(message);
     }
 
     protected override void UnsafeCleanup()
@@ -574,22 +580,48 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         get => _activeListViewModel;
         private set
         {
-            if (_activeListViewModel != value)
+            if (ReferenceEquals(_activeListViewModel, value))
             {
-                _activeListViewModel?.SuspendForNavigation();
-                _activeListViewModel = value;
+                return;
+            }
+
+            _activeListViewModel?.SuspendForNavigation();
+            if (_activeListViewModel is not null)
+            {
+                _activeListViewModel.CommandBarContextChanged -= ActiveList_CommandBarContextChanged;
+                _activeListViewModel.DetailsChanged -= ActiveList_DetailsChanged;
+                _activeListViewModel.SearchSuggestionChanged -= ActiveList_SearchSuggestionChanged;
+            }
+
+            _activeListViewModel = value;
+
+            if (_activeListViewModel is not null)
+            {
+                _activeListViewModel.CommandBarContextChanged += ActiveList_CommandBarContextChanged;
+                _activeListViewModel.DetailsChanged += ActiveList_DetailsChanged;
+                _activeListViewModel.SearchSuggestionChanged += ActiveList_SearchSuggestionChanged;
                 if (IsPageActive)
                 {
-                    _ = value?.ResumeAfterNavigation();
+                    _ = _activeListViewModel.ResumeAfterNavigation();
                 }
-
-                UpdateProperty(nameof(ActiveListViewModel));
-                UpdateProperty(nameof(HasActiveList));
             }
+
+            if (IsPageActive)
+            {
+                SetCommandBarContext(_activeListViewModel is null && ShowCommand ? Command : null);
+                SetDetails(null);
+                SetSearchSuggestion(_activeListViewModel?.TextToSuggest ?? string.Empty);
+            }
+
+            UpdateProperty(nameof(ActiveListViewModel));
+            UpdateProperty(nameof(HasActiveList));
         }
     }
 
     public bool HasActiveList => _activeListViewModel != null;
+
+    internal override bool OwnsCommandSource(PageViewModel source) =>
+        base.OwnsCommandSource(source) || ReferenceEquals(ActiveListViewModel, source);
 
     private CommandParameterRunViewModel? _activeListParam;
 
@@ -598,6 +630,30 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         CoreLogger.LogDebug($"[ParametersPageVM] SetActiveListParameter: {(param != null ? "setting" : "clearing")} (was {(_activeListParam != null ? "set" : "null")})");
         _activeListParam = param;
         ActiveListViewModel = param?.ListViewModel;
+    }
+
+    private void ActiveList_CommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, ActiveListViewModel))
+        {
+            SetCommandBarContext(e.Context);
+        }
+    }
+
+    private void ActiveList_DetailsChanged(object? sender, PageDetailsChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, ActiveListViewModel))
+        {
+            SetDetails(e.Details);
+        }
+    }
+
+    private void ActiveList_SearchSuggestionChanged(object? sender, PageSearchSuggestionChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, ActiveListViewModel))
+        {
+            SetSearchSuggestion(e.Suggestion);
+        }
     }
 
     private readonly Lock _listLock = new();
@@ -742,7 +798,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 OnPropertyChanged(nameof(Items)); // This _could_ be promoted to a dedicated ItemsUpdated event if needed
                 UpdateCommand();
 
-                WeakReferenceMessenger.Default.Send(new FocusSearchBoxMessage());
+                RequestSearchFocus();
             });
     }
 
@@ -786,7 +842,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         DoOnActivePage(
            () =>
            {
-               WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(Command));
+               SetCommandBarContext(Command);
            });
     }
 
@@ -870,8 +926,8 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     {
         if (ShowCommand)
         {
-            PerformCommandMessage m = new(this.Command.Command.Model);
-            WeakReferenceMessenger.Default.Send(m);
+            var message = new PerformCommandMessage(this.Command.Command, this);
+            WeakReferenceMessenger.Default.Send(message);
         }
     }
 
@@ -892,7 +948,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 {
                     if (found)
                     {
-                        WeakReferenceMessenger.Default.Send(new FocusParamMessage(pv));
+                        RequestParameterFocus(pv);
                         return;
                     }
                     else if (firstWithoutValue is null && pv.NeedsValue)
@@ -904,7 +960,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
             if (firstWithoutValue is not null)
             {
-                WeakReferenceMessenger.Default.Send(new FocusParamMessage(firstWithoutValue));
+                RequestParameterFocus(firstWithoutValue);
             }
         }
     }

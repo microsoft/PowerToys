@@ -62,7 +62,7 @@ bool                    g_Clipboard = false;
 TCHAR                   g_LastFilePath[MAX_PATH] = {0};
 HHOOK                   g_hHook = nullptr;
 size_t                  g_TextLen = 0;
-wchar_t*                g_ClipboardCache = nullptr;
+std::unique_ptr<wchar_t[]> g_ClipboardCache;
 std::wstring            g_Text = L"";
 std::vector<size_t>     g_TextSegments;
 std::wstring            g_BaselineIndentation = L"";
@@ -440,7 +440,6 @@ DWORD GetClipboardSequence()
     DWORD sequence;
     if( !OpenClipboard( nullptr ) )
     {
-        CloseClipboard();
         return 0;
     }
     sequence = GetClipboardSequenceNumber();
@@ -453,42 +452,41 @@ DWORD GetClipboardSequence()
 // GetClipboard
 //
 //----------------------------------------------------------------------------
-wchar_t* GetClipboard()
+std::unique_ptr<wchar_t[]> GetClipboard()
 {
-    // Confirm clipboard accessibility and data format
-    if( !OpenClipboard( nullptr ) && !IsClipboardFormatAvailable( CF_UNICODETEXT ) )
+    if( !OpenClipboard( nullptr ) )
     {
-        CloseClipboard();
+        return nullptr;
+    }
+    auto closeClipboard = wil::scope_exit( [] { CloseClipboard(); } );
+    if( !IsClipboardFormatAvailable( CF_UNICODETEXT ) )
+    {
         return nullptr;
     }
     HANDLE hData = GetClipboardData( CF_UNICODETEXT );
     if( hData == nullptr )
     {
-        CloseClipboard();
         return nullptr;
     }
 
     // Confirm clipboard size doesn't exceed MAX_INPUT_SIZE
     size_t size = GlobalSize( hData );
-    if( size <= 0 || size > MAX_INPUT_SIZE )
+    if( size < sizeof(wchar_t) || size > MAX_INPUT_SIZE )
     {
-        GlobalUnlock( hData );
-        CloseClipboard();
         return nullptr;
     }
 
     const wchar_t* pData = static_cast<wchar_t*>(GlobalLock( hData ));
     if( pData == nullptr )
     {
-        GlobalUnlock( hData );
-        CloseClipboard();
         return nullptr;
     }
+    auto unlockData = wil::scope_exit( [hData] { GlobalUnlock( hData ); } );
 
-    wchar_t* data = new wchar_t[size / sizeof(wchar_t)];
-    wcscpy( data, pData );
-    GlobalUnlock( hData );
-    CloseClipboard();
+    const size_t textLen = wcsnlen_s( pData, size / sizeof(wchar_t) );
+    auto data = std::make_unique<wchar_t[]>( textLen + 1 );
+    memcpy( data.get(), pData, textLen * sizeof(wchar_t) );
+    data[textLen] = L'\0';
     return data;
 }
 
@@ -544,7 +542,7 @@ void GetBaselineIndentation()
     size_t len = 0;
     size_t lastLen = 0;
     bool resetCursor = true;
-    wchar_t* seekBuffer = nullptr;
+    std::unique_ptr<wchar_t[]> seekBuffer;
     static const WORD VK_C = static_cast<WORD>(LOBYTE( VkKeyScan( L'c' ) ));
 
     // VS fakes newline indentation until the user adds input. Notepad has no virtual
@@ -572,14 +570,13 @@ void GetBaselineIndentation()
         std::this_thread::sleep_for( std::chrono::milliseconds( CLIPBOARD_REFRESH ) );
 
         len = 0;
-        delete[] seekBuffer;
         seekBuffer = GetClipboard();        
         if( seekBuffer == nullptr )
         {
             resetCursor = false;
             break;
         }
-        len = wcslen( seekBuffer );
+        len = wcslen( seekBuffer.get() );
 
         if( g_LastClipboardSeq == GetClipboardSequence() )
         {
@@ -620,8 +617,6 @@ void GetBaselineIndentation()
             g_BaselineIndentation.push_back( seekBuffer[i] );
         }
     }
-
-    delete[] seekBuffer;
 }
 
 //----------------------------------------------------------------------------
@@ -1153,7 +1148,7 @@ void DemoTypeController()
 
     if( g_ClipboardCache != nullptr )
     {
-        SetClipboard( g_ClipboardCache );
+        SetClipboard( g_ClipboardCache.get() );
         g_LastClipboardSeq = GetClipboardSequence();
     }
 
@@ -1296,7 +1291,7 @@ void ResetDemoTypeClipboard()
 //----------------------------------------------------------------------------
 bool GetDemoTypeClipboard()
 {
-    const int safetyPrefixLen = 7;
+    const size_t safetyPrefixLen = 7;
     const wchar_t safetyPrefix[] = L"[start]";
 
     // Check if we can reuse the clipboard cache
@@ -1307,25 +1302,17 @@ bool GetDemoTypeClipboard()
     }
     g_LastClipboardSeq = sequenceNum;
 
-    delete[] g_ClipboardCache;
     g_ClipboardCache = GetClipboard();
 
-    // Confirm clipboard data begins with the safety prefix
-    if( g_ClipboardCache == nullptr || g_ClipboardCache[0] != g_ClipboardCache[0] || g_ClipboardCache[safetyPrefixLen] == '\0' )
+    // Preserve the existing prefix match, which ignores its first character.
+    if( g_ClipboardCache == nullptr
+     || wcsnlen_s( g_ClipboardCache.get(), safetyPrefixLen + 1 ) <= safetyPrefixLen
+     || wcsncmp( g_ClipboardCache.get() + 1, safetyPrefix + 1, safetyPrefixLen - 1 ) != 0 )
     {
         ResetDemoTypeClipboard();
         return false;
     }
-    for( int i = 1; i < safetyPrefixLen; i++ )
-    {
-        if( g_ClipboardCache[i] != safetyPrefix[i] || g_ClipboardCache[i] == '\0' )
-        {
-            ResetDemoTypeClipboard();
-            return false;
-        }
-    }
-    
-    g_Text.assign( g_ClipboardCache + safetyPrefixLen );
+    g_Text.assign( g_ClipboardCache.get() + safetyPrefixLen );
     g_Clipboard = true;
     g_Index = 0;
     return CleanDemoTypeText();
@@ -1502,16 +1489,15 @@ int StartDemoType( const TCHAR* filePath, const DWORD speedSlider, const BOOLEAN
         // Check if the file has been updated since last read
         if( !g_Text.empty() )
         {
-            HANDLE hFile = CreateFile( filePath, GENERIC_READ, FILE_SHARE_READ,
-                nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr );
-            if( hFile == INVALID_HANDLE_VALUE )
+            wil::unique_hfile hFile{ CreateFile( filePath, GENERIC_READ, FILE_SHARE_READ,
+                nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr ) };
+            if( !hFile )
             {
-                CloseHandle( hFile );
                 return ERROR_LOADING_FILE;
             }
 
             FILETIME latestFileWrite;
-            if( GetFileTime( hFile, nullptr, nullptr, &latestFileWrite ) )
+            if( GetFileTime( hFile.get(), nullptr, nullptr, &latestFileWrite ) )
             {
                 if( CompareFileTime( &latestFileWrite, &lastFileWrite ) == 1 )
                 {
@@ -1519,7 +1505,6 @@ int StartDemoType( const TCHAR* filePath, const DWORD speedSlider, const BOOLEAN
                     lastFileWrite = latestFileWrite;
                 }
             }
-            CloseHandle( hFile );
         }
 
         if( g_Text.empty() )

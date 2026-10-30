@@ -136,6 +136,7 @@ public class SettingsLinkResolverTests
     [DataRow(SettingsPageTags.General, "activation-section", false, SettingsLinkIds.General.Activation)]
     [DataRow(SettingsPageTags.Appearance, "THEME", false, SettingsLinkIds.Appearance.Theme)]
     [DataRow(SettingsPageTags.Appearance, "layout-section", false, SettingsLinkIds.Appearance.Layout)]
+    [DataRow(SettingsPageTags.Appearance, "compact-position", false, SettingsLinkIds.Appearance.CompactPosition)]
     [DataRow(SettingsPageTags.Dock, "focus-shortcut", false, SettingsLinkIds.Dock.FocusShortcut)]
     [DataRow(SettingsPageTags.Dock, "theme", false, SettingsLinkIds.Dock.Theme)]
     [DataRow(SettingsPageTags.Dock, "behavior-section", false, SettingsLinkIds.Dock.BehaviorSection)]

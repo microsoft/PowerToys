@@ -5,14 +5,16 @@
 .DESCRIPTION
     This script intentionally exposes no publish operation. It preserves text
     outside the managed preview-agent body markers and uploads only explicitly
-    generated release assets.
+    generated release assets. SourceBranch selects Release preview (stable)
+    or Dev preview (main), independently of the original build intent.
 
 .EXAMPLE
-    .\upsert-draft-preview-release.ps1 -Tag v0.101.2181.0 -TargetCommit 0123... -BodyPath .\release-notes.md -AssetsDirectory .\assets
+    .\upsert-draft-preview-release.ps1 -Tag v0.101.2181 -SourceBranch refs/heads/main -TargetCommit 0123... -BodyPath .\release-notes.md -AssetsDirectory .\assets
 #>
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][string]$Tag,
+    [Parameter(Mandatory)][ValidatePattern('^v[0-9]+\.[0-9]+\.[0-9]+$')][string]$Tag,
+    [Parameter(Mandatory)][ValidateSet("refs/heads/main", "refs/heads/stable")][string]$SourceBranch,
     [Parameter(Mandatory)][string]$TargetCommit,
     [Parameter(Mandatory)][string]$BodyPath,
     [Parameter(Mandatory)][string]$AssetsDirectory,
@@ -28,10 +30,11 @@ $ErrorActionPreference = "Stop"
 
 . (Join-Path $PSScriptRoot "preview-release-assets.ps1")
 . (Join-Path $PSScriptRoot "github-tag-target.ps1")
+. (Join-Path $PSScriptRoot "release-title.ps1")
 
 $beginMarker = "<!-- BEGIN POWERTOYS PREVIEW AGENT -->"
 $endMarker = "<!-- END POWERTOYS PREVIEW AGENT -->"
-$releaseTitle = "Preview $Tag"
+$releaseTitle = Get-PowerToysReleaseTitle -Tag $Tag -SourceBranch $SourceBranch -Prerelease
 
 function Get-ManagedBlock {
     param([Parameter(Mandatory)][string]$Body)
@@ -39,10 +42,17 @@ function Get-ManagedBlock {
     $start = $Body.IndexOf($beginMarker, [StringComparison]::Ordinal)
     $end = $Body.IndexOf($endMarker, [StringComparison]::Ordinal)
     if ($start -ge 0 -and $end -gt $start) {
-        return $Body.Substring($start, ($end + $endMarker.Length) - $start)
+        $block = $Body.Substring($start, ($end + $endMarker.Length) - $start)
+    }
+    else {
+        $block = "$beginMarker`n$($Body.Trim())`n$endMarker"
     }
 
-    return "$beginMarker`n$($Body.Trim())`n$endMarker"
+    $heading = [regex]::new('(?m)^# [^\r\n]*\r?$')
+    if ($heading.IsMatch($block)) {
+        return $heading.Replace($block, "# $releaseTitle", 1)
+    }
+    return $block.Replace($beginMarker, "$beginMarker`n# $releaseTitle`n")
 }
 
 function Merge-ReleaseBody {
@@ -199,7 +209,7 @@ try {
         if ([string]$verified.targetCommitish -ne $TargetCommit) {
             throw "Release '$Tag' target '$($verified.targetCommitish)' does not match '$TargetCommit'."
         }
-        if ([string]$verified.name -ne $releaseTitle) {
+        if ([string]$verified.name -cne $releaseTitle) {
             throw "Release '$Tag' title '$($verified.name)' does not match '$releaseTitle'."
         }
     }

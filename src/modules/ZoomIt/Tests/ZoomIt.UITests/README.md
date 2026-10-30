@@ -9,7 +9,7 @@ It launches ZoomIt through the PowerToys runner, not as the standalone Sysintern
 | Checklist | Automated scenario and observable result |
 |---|---|
 | Enable ZoomIt | Settings off/on changes the actual process lifecycle; the configured shortcut then produces a magnified image. |
-| 1 | Left- and right-clicking the real notification icon each opens exactly Break Timer, Draw, Zoom, and Record. |
+| 1 | Left- and right-clicking the real notification icon each opens Settings, a separator, Break Timer, Draw, Zoom, Record, a separator, and Exit, in that order. Settings navigates from General to ZoomIt's PowerToys page, including when Settings is minimized. Exit removes the icon and stops only ZoomIt; Settings can then re-enable it. |
 | 2-3 | The Settings switch removes and restores the Shell icon, including the notification overflow. |
 | 4 | Static zoom doubles a known marker, freezes subsequent source updates, and exits with both Escape and the configured shortcut. |
 | 5 | Live Zoom magnifies the marker and displays subsequent source updates; its shortcut exits. |
@@ -113,6 +113,10 @@ bitmaps; full-screen scan timings are recorded without imposing a machine-speed 
 Successful screenshots, clipboard images, recordings, decoded frames, and microphone
 inventories are stored beside MSTest's deployment directory so they survive successful-run
 cleanup. Failure media is captured before teardown.
+Tray-icon readiness failures retain the last mismatch even if a later observation matches,
+and report the final consecutive-match count and any last transient Shell error.
+The tray wait parks the cursor away from the taskbar after opening the overflow, so the
+Windows 10 News and Interests hover feed cannot cover the overflow icons.
 
 For delivery, run the complete suite on Windows 10 and Windows 11 with both default and
 constrained VM profiles, then validate `[ZoomIt.UITests]` in UI Test Automation CI.

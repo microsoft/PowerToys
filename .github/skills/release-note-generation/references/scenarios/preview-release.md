@@ -23,6 +23,29 @@ During release preparation, preview builds may come from either `main` or `stabl
 
 Reject builds from other branches, failed or incomplete builds, non-release definitions, unresolved versions or commits, and missing or invalid assets.
 
+## Tag and artifact versions
+
+Use the first three numeric components of the resolved build version for the GitHub tag, prefixed with `v`: `0.102.2991.0` becomes `v0.102.2991`. The metadata script returns this as `$context.tag`. Do not construct the tag from the full `$context.version` or add a `-preview` suffix.
+
+Keep the four-component `$context.version` for ADO artifact lookup, installer and GPO filenames, hashes, and build audit metadata. Installer download URLs use the three-component tag and the unchanged four-component filename. Older PowerToys updaters reject four-component release tags; this format remains parseable if the release is later promoted through the separate release-management process. This workflow still creates only draft prereleases and never sets a release as Latest.
+
+## Release title and body heading
+
+Use the shared title helper with the requested GitHub release type and the immutable build's source branch, rather than constructing a display title from the tag:
+
+```powershell
+. .\.github\skills\release-note-generation\scripts\release-title.ps1
+$releaseTitle = Get-PowerToysReleaseTitle -Tag $context.tag -SourceBranch $context.sourceBranch -Prerelease
+```
+
+| Release type | Build source | Title |
+| --- | --- | --- |
+| Stable release (separate workflow) | `stable` | `Release v<four-component version>` |
+| Prerelease | `stable` | `Release preview v<four-component version>` |
+| Prerelease | `main` | `Dev preview v<four-component version>` |
+
+For build `0.102.2991.0`, display `Release preview v0.102.2991.0` from `stable`, or `Dev preview v0.102.2991.0` from `main`, in both the release title and body H1. The tag remains `v0.102.2991`. Pass `$context.sourceBranch` explicitly to creation and verification; do not infer it from a local checkout, target commit, or build intent/channel. Promotion to a stable release is a separate operation with title `Release v0.102.2991.0`.
+
 ## Workflow
 
 1. Resolve and validate build metadata:
@@ -37,7 +60,7 @@ Reject builds from other branches, failed or incomplete builds, non-release defi
 
    ```powershell
    $baseline = .\.github\skills\release-note-generation\scripts\get-previous-published-release.ps1 `
-     -TargetTag "v$($context.version)" `
+     -TargetTag $context.tag `
      -QueuedAt $context.queuedAt `
      -OutputPath '<run directory>\previous-release.json'
    ```
@@ -70,6 +93,7 @@ Reject builds from other branches, failed or incomplete builds, non-release defi
    - Put unlabeled PRs under `General`.
    - Use conservative title-based wording when summary confidence is low.
    - Place `Installer Hashes` immediately after the title and short public introduction, before `Highlights` and all change sections.
+   - Use `# $releaseTitle` from the shared helper for the release-note H1, matching the GitHub draft's four-component display title.
    - Include removed PRs under `Differences from the previous preview`.
    - Include unattributed commits under `Changes needing final review`.
    - Enclose the generated body in the managed markers documented in [preview draft safety](../preview-draft-safety.md).
@@ -90,16 +114,27 @@ Reject builds from other branches, failed or incomplete builds, non-release defi
    .\.github\skills\release-note-generation\scripts\prepare-release-assets.ps1 `
      -BuildId $context.buildId `
      -Version $context.version `
+     -ReleaseTag $context.tag `
      -DestinationFolder '<run directory>\assets'
    ```
 
    Keep the generated `assets-manifest.json` in the local audit package. Do not upload it as a GitHub release asset.
 
-8. In dry-run mode, write the complete local review report and stop without contacting GitHub:
+8. In dry-run mode, first prepare the managed notes with the same shared-title normalization as the live upsert, then verify the complete local package. Both commands below run without contacting GitHub. Keep the verifier strict: calling it directly on a stale heading must still fail.
 
    ```powershell
+   .\.github\skills\release-note-generation\scripts\upsert-draft-preview-release.ps1 `
+     -Tag $context.tag `
+     -SourceBranch $context.sourceBranch `
+     -TargetCommit $context.sourceCommit `
+     -BodyPath '<run directory>\release-notes.md' `
+     -AssetsDirectory '<run directory>\assets' `
+     -MergedBodyOutputPath '<run directory>\release-notes.md' `
+     -DryRun | Out-Null
+
    .\.github\skills\release-note-generation\scripts\verify-draft-preview-release.ps1 `
-     -Tag "v$($context.version)" `
+     -Tag $context.tag `
+     -SourceBranch $context.sourceBranch `
      -TargetCommit $context.sourceCommit `
      -AssetsDirectory '<run directory>\assets' `
      -BodyPath '<run directory>\release-notes.md' `
@@ -114,7 +149,8 @@ Reject builds from other branches, failed or incomplete builds, non-release defi
 
    ```powershell
    .\.github\skills\release-note-generation\scripts\upsert-draft-preview-release.ps1 `
-     -Tag "v$($context.version)" `
+     -Tag $context.tag `
+     -SourceBranch $context.sourceBranch `
      -TargetCommit $context.sourceCommit `
      -BodyPath '<run directory>\release-notes.md' `
      -AssetsDirectory '<run directory>\assets'
@@ -124,7 +160,8 @@ Reject builds from other branches, failed or incomplete builds, non-release defi
 
     ```powershell
     .\.github\skills\release-note-generation\scripts\verify-draft-preview-release.ps1 `
-      -Tag "v$($context.version)" `
+      -Tag $context.tag `
+      -SourceBranch $context.sourceBranch `
       -TargetCommit $context.sourceCommit `
       -AssetsDirectory '<run directory>\assets' `
       -ContextPath '<run directory>\release-context.json' `

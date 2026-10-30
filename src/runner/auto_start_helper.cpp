@@ -46,24 +46,22 @@ static std::wstring get_auto_start_task_sddl()
     // Local System and Administrators always get full control.
     std::wstring sddl = L"D:(A;;FA;;;SY)(A;;FA;;;BA)";
 
-    HANDLE hToken = NULL;
-    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
+    wil::unique_handle hToken;
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, hToken.put()))
     {
         BYTE tokenInfo[sizeof(TOKEN_USER) + SECURITY_MAX_SID_SIZE];
         DWORD tokenInfoLength = 0;
-        if (GetTokenInformation(hToken, TokenUser, tokenInfo, sizeof(tokenInfo), &tokenInfoLength))
+        if (GetTokenInformation(hToken.get(), TokenUser, tokenInfo, sizeof(tokenInfo), &tokenInfoLength))
         {
             auto pTokenUser = reinterpret_cast<TOKEN_USER*>(tokenInfo);
-            LPWSTR stringSid = NULL;
-            if (ConvertSidToStringSidW(pTokenUser->User.Sid, &stringSid))
+            wil::unique_hlocal_string stringSid;
+            if (ConvertSidToStringSidW(pTokenUser->User.Sid, stringSid.put()))
             {
                 sddl += L"(A;;FA;;;";
-                sddl += stringSid;
+                sddl += stringSid.get();
                 sddl += L")";
-                LocalFree(stringSid);
             }
         }
-        CloseHandle(hToken);
     }
 
     return sddl;

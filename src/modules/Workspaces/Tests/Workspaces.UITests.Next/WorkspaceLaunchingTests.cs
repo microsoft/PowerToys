@@ -136,6 +136,7 @@ namespace Microsoft.Workspaces.UITests
             OpenEditor();
             EditWorkspace(name);
             Step("Launching the saved workspace from Launch and Edit.");
+            Assert.IsFalse(File.Exists(WorkspaceTestState.TemporaryPath), "Launching a saved workspace must not require a temporary draft.");
             Editor.Find<Button>(By.AccessibilityId("LaunchEditButton")).Invoke(msPostAction: 0);
             var original = State.Fixture.WaitForWindow(originalTitle);
             AssertPositioned(original, app);
@@ -407,10 +408,10 @@ namespace Microsoft.Workspaces.UITests
                 60_000,
                 requiredConsecutiveMatches: 3,
                 pollIntervalMS: 150);
-            Assert.IsTrue(
-                result.Succeeded,
+            string placementMessage =
                 $"Workspaces did not place '{window.WindowTitle}' as configured: {application}. " +
-                $"Actual bounds: {WindowHelper.GetWindowBounds(handle)}, minimized: {NativeMethods.IsIconic(handle)}, maximized: {WindowHelper.IsWindowMaximized(handle)}.");
+                $"Actual bounds: {WindowHelper.GetWindowBounds(handle)}, minimized: {NativeMethods.IsIconic(handle)}, maximized: {WindowHelper.IsWindowMaximized(handle)}.";
+            Assert.IsTrue(result.Succeeded, placementMessage);
         }
     }
 }

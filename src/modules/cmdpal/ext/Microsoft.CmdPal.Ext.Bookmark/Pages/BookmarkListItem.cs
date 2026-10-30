@@ -179,9 +179,20 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
         // TODO: unify across all built-in extensions
         var bookmarkTargetType = classification.Kind;
 
-        // TODO: add "Run as administrator" for executables/shortcuts
         if (!classification.IsPlaceholder)
         {
+            if ((bookmarkTargetType == CommandKind.Shortcut ||
+                (bookmarkTargetType is CommandKind.FileExecutable or CommandKind.PathCommand or CommandKind.FileDocument &&
+                    RunAsAdministratorCommand.IsSupportedFileType(classification.Target))) &&
+                classification.Launch == LaunchMethod.ShellExecute &&
+                File.Exists(classification.Target))
+            {
+                contextMenu.Add(new CommandContextItem(new RunAsAdministratorCommand(classification.Target, classification.Arguments, classification.WorkingDirectory))
+                {
+                    RequestedShortcut = KeyChords.RunAsAdministrator,
+                });
+            }
+
             if (bookmarkTargetType == CommandKind.FileDocument && File.Exists(classification.Target))
             {
                 contextMenu.Add(new CommandContextItem(new OpenWithCommand(classification.Input)));

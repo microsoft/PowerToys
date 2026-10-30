@@ -13,12 +13,14 @@
 void OutputDebug(const TCHAR* format, ...);
 #include "CaptureFrameWait.h"
 #include "Utility.h"
+#include "ZoomItMessages.h"
 #include <winrt/Windows.Graphics.Imaging.h>
 #include <winrt/Windows.Media.h>
 #include <cstdlib>
 #include <filesystem>
 #include <shlwapi.h>   // For SHCreateStreamOnFileEx
 #include <mmsystem.h>   // For timeBeginPeriod/timeEndPeriod
+#include <codecapi.h>
 
 #pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "winmm.lib")
@@ -39,14 +41,6 @@ extern class ClassRegistry reg;
 extern REG_SETTING RegSettings[];
 extern HINSTANCE g_hInstance;
 extern HWND g_hWndMain;
-
-// Must match the definition in ZoomIt.h.
-#ifndef WM_USER_RECORDING_STARTED
-#define WM_USER_RECORDING_STARTED (WM_USER + 111)
-#endif
-#ifndef WM_USER_RECORDING_NO_FRAMES
-#define WM_USER_RECORDING_NO_FRAMES (WM_USER + 112)
-#endif
 
 HWND hDlgTrimDialog = nullptr;
 
@@ -300,12 +294,12 @@ static bool LoadGifFrames(const std::wstring& gifPath, VideoRecordingSession::Tr
 
             // Fallback: try opening with FILE_SHARE_READ | FILE_SHARE_WRITE to handle locked files
             OutputDebugStringW(L"[GIF Trim] Trying CreateStreamOnFile fallback...\n");
-            HANDLE hFile = CreateFileW(gifPath.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-            if (hFile != INVALID_HANDLE_VALUE)
+            wil::unique_hfile hFile{ CreateFileW(gifPath.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr) };
+            if (hFile)
             {
                 winrt::com_ptr<IStream> fileStream;
                 // Create an IStream over the file handle using SHCreateStreamOnFileEx
-                CloseHandle(hFile);
+                hFile.reset();
                 hr = SHCreateStreamOnFileEx(gifPath.c_str(), STGM_READ | STGM_SHARE_DENY_NONE, 0, FALSE, nullptr, fileStream.put());
                 if (SUCCEEDED(hr) && fileStream)
                 {
@@ -1190,6 +1184,11 @@ VideoRecordingSession::VideoRecordingSession(
     video.Width(outputWidth);
     video.Height(outputHeight);
     video.Bitrate(static_cast<uint32_t>(outputWidth * outputHeight * frameRate * 2 * 0.07));
+    // The default CBR mode lets the encoder skip frames once full-screen changes (such as zoom
+    // animations over detailed content) overflow its rate buffer, leaving visible holes in playback.
+    // Unconstrained VBR still targets the average bitrate but encodes every submitted frame.
+    video.Properties().Insert(winrt::guid{ GUID{ STATIC_CODECAPI_AVEncCommonRateControlMode } },
+        winrt::Windows::Foundation::PropertyValue::CreateUInt32(eAVEncCommonRateControlMode_UnconstrainedVBR));
     video.FrameRate().Numerator(frameRate);
     video.FrameRate().Denominator(1);
     video.PixelAspectRatio().Numerator(1);
@@ -1283,10 +1282,23 @@ winrt::IAsyncAction VideoRecordingSession::StartAsync()
             }
             RecDiag( L"StartAsync: audio initialized\n" );
 
+            const WPARAM unavailableAudio =
+                (m_audioGenerator->MicrophoneUnavailable() ? 1 : 0) |
+                (m_audioGenerator->SystemAudioUnavailable() ? 2 : 0);
+            if (unavailableAudio && !PostMessage(g_hWndMain, WM_USER_RECORDING_AUDIO_UNAVAILABLE, unavailableAudio, 0))
+            {
+                RecDiag(L"StartAsync: failed to notify user of unavailable audio (error %lu)\n", GetLastError());
+            }
+
+            if (!m_audioGenerator->HasAudio())
+            {
+                m_audioGenerator.reset();
+            }
+        }
+
+        if (m_audioGenerator) {
             // Set up the audio encoding profile now that the audio graph is
-            // fully initialized.  GetEncodingProperties() requires
-            // m_audioOutputNode to be valid, which is only guaranteed after
-            // InitializeAsync completes.
+            // fully initialized, or the loopback-only output format is known.
             auto audioProps = m_audioGenerator->GetEncodingProperties();
             m_encodingProfile.Audio(winrt::AudioEncodingProperties::CreateAac(
                 audioProps.SampleRate(), audioProps.ChannelCount(), 192000));
@@ -1415,12 +1427,9 @@ void VideoRecordingSession::OnMediaStreamSourceStarting(
     winrt::MediaStreamSource const&,
     winrt::MediaStreamSourceStartingEventArgs const& args)
 {
-    // Close the stale frame captured in the constructor (~1-2 seconds
-    // ago) and grab a FRESH frame via TryGetNextFrame.  This gives us
-    // both current visual content and a current SystemRelativeTime,
-    // avoiding the frozen-first-frame artefact.  WGC delivers a new
-    // frame within one vblank (~16 ms) after the old frame is released
-    // back to the pool, so a 200 ms timeout is very generous.
+    // Encoding/audio setup can take seconds. Discard those startup frames
+    // before choosing the shared video/audio time origin.
+    m_frameWait->DiscardPendingFrames();
     RecDiag( L"OnStarting: calling TryGetNextFrame(200) for fresh frame...\n" );
     auto frame = m_frameWait->TryGetNextFrame( 200 );
 
@@ -1682,6 +1691,8 @@ void VideoRecordingSession::OnMediaStreamSourceSampleRequested(
             winrt::check_hresult(m_previewSwapChain->Present1(0, 0, &presentParameters));
 
             auto sample = winrt::MediaStreamSample::CreateFromDirect3D11Surface(sampleSurface, timeStamp);
+            // Zero-duration samples can be discarded during frame-rate conversion.
+            sample.Duration(winrt::TimeSpan{ m_frameIntervalTicks });
             m_lastVideoTimestamp = timeStamp;
 
             if( !m_hasVideoSample.exchange( true ) )
@@ -1974,15 +1985,16 @@ std::wstring VideoRecordingSession::ShowSaveDialogWithTrim(
     }
 
     // Set up event handler
-    CTrimFileDialogEvents* pEvents = new CTrimFileDialogEvents(hParent, originalVideoPath,
-        &trimmedVideoPath, &trimStart, &trimEnd, &shouldTrim);
+    wil::com_ptr<CTrimFileDialogEvents> pEvents;
+    pEvents.attach(new CTrimFileDialogEvents(hParent, originalVideoPath,
+        &trimmedVideoPath, &trimStart, &trimEnd, &shouldTrim));
     DWORD dwCookie;
-    saveDialog->Advise(pEvents, &dwCookie);
+    saveDialog->Advise(pEvents.get(), &dwCookie);
 
     HRESULT hr = saveDialog->Show(hParent);
 
     saveDialog->Unadvise(dwCookie);
-    pEvents->Release();
+    pEvents.reset();
 
     if (FAILED(hr))
     {
@@ -7021,6 +7033,9 @@ static winrt::IAsyncOperation<winrt::hstring> RenderCompositionToFileAsync(
             video.Width(width);
             video.Height(height);
             video.Bitrate(static_cast<uint32_t>(width * height * 30.0 * 2 * 0.07));
+            // Avoid CBR frame skipping on re-encode (see recording profile).
+            video.Properties().Insert(winrt::guid{ GUID{ STATIC_CODECAPI_AVEncCommonRateControlMode } },
+                winrt::Windows::Foundation::PropertyValue::CreateUInt32(eAVEncCommonRateControlMode_UnconstrainedVBR));
             video.FrameRate().Numerator(30);
             video.FrameRate().Denominator(1);
             video.PixelAspectRatio().Numerator(1);

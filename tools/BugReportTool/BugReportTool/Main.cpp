@@ -1,3 +1,4 @@
+#include <cwchar>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -328,7 +329,18 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     try
     {
-        copy(settingsRootPath, reportDir, copy_options::recursive);
+        create_directory(reportDir, settingsRootPath);
+        for (const auto& entry : directory_iterator(settingsRootPath))
+        {
+            const auto filename = entry.path().filename();
+            // Runner holds this synchronization file exclusively for its entire lifetime.
+            if (_wcsicmp(filename.c_str(), L"settings.json.cli-lock") == 0)
+            {
+                continue;
+            }
+
+            copy(entry.path(), reportDir / filename, copy_options::recursive);
+        }
 
         // Remove updates folder contents
         DeleteFolder(reportDir / "Updates");

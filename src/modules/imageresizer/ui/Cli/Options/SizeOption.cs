@@ -3,22 +3,25 @@
 // See the LICENSE file in the project root for more information.
 
 using System.CommandLine;
+using System.Globalization;
 
 namespace ImageResizer.Cli.Options
 {
     public sealed class SizeOption : Option<int?>
     {
-        private static readonly string[] _aliases = ["--size"];
-
         public SizeOption()
-            : base(_aliases, Properties.Resources.CLI_Option_Size)
+            : base("--size")
         {
-            AddValidator(result =>
+            Description = Properties.Resources.CLI_Option_Size;
+            Validators.Add(result =>
             {
-                var value = result.GetValueOrDefault<int?>();
-                if (value.HasValue && value.Value < 0)
+                // Reading the value of an unparsable token throws inside a validator, so parse it the
+                // same way System.CommandLine does and let it report its own error for invalid input.
+                if (result.Tokens.Count == 1
+                    && int.TryParse(result.Tokens[0].Value, NumberStyles.Integer, CultureInfo.CurrentCulture, out int value)
+                    && value < 0)
                 {
-                    result.ErrorMessage = "Size index must be a non-negative integer.";
+                    result.AddError("Size index must be a non-negative integer.");
                 }
             });
         }
