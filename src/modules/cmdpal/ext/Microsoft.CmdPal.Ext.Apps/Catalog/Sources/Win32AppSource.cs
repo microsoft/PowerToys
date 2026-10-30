@@ -12,8 +12,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Helpers;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Catalog.Payloads;
 using Microsoft.CmdPal.Ext.Apps.Utils;
+using Microsoft.CmdPal.Ext.Apps.Win32;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 

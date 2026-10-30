@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 

@@ -9,7 +9,8 @@ using System.Linq;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.AppList;
+using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -18,26 +19,6 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 internal static partial class ScoringTestCatalog
 {
-    internal sealed partial class CatalogItem : ListItem, IPrecomputedListItem
-    {
-        private FuzzyTargetCache _titleCache;
-        private FuzzyTargetCache _subtitleCache;
-
-        internal CatalogItem(string title, string subtitle, string id)
-            : base(new NoOpCommand() { Id = id })
-        {
-            Title = title;
-            Subtitle = subtitle;
-            Id = id;
-        }
-
-        internal string Id { get; }
-
-        public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher) => _titleCache.GetOrUpdate(matcher, Title);
-
-        public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher) => _subtitleCache.GetOrUpdate(matcher, Subtitle);
-    }
-
     private static readonly string[] Nouns =
     [
         "Calculator", "Calendar", "Camera", "Canvas", "Command", "Control", "Cloud", "Cast",
@@ -60,7 +41,10 @@ internal static partial class ScoringTestCatalog
         "A simple and fast text editor", "Play and organize your media library",
     ];
 
-    internal static IPrecomputedFuzzyMatcher CreateMatcher() => new PrecomputedFuzzyMatcher(new PrecomputedFuzzyMatcherOptions());
+    internal static IPrecomputedFuzzyMatcher CreateMatcher()
+    {
+        return new PrecomputedFuzzyMatcher(new PrecomputedFuzzyMatcherOptions());
+    }
 
     internal static CatalogItem[] BuildCatalog(int count, string idPrefix)
     {
@@ -119,5 +103,31 @@ internal static partial class ScoringTestCatalog
         }
 
         return history;
+    }
+
+    internal sealed partial class CatalogItem : ListItem, IPrecomputedListItem
+    {
+        private FuzzyTargetCache _titleCache;
+        private FuzzyTargetCache _subtitleCache;
+
+        internal string Id { get; }
+
+        internal CatalogItem(string title, string subtitle, string id)
+            : base(new NoOpCommand() { Id = id })
+        {
+            Title = title;
+            Subtitle = subtitle;
+            Id = id;
+        }
+
+        public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher)
+        {
+            return _titleCache.GetOrUpdate(matcher, Title);
+        }
+
+        public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher)
+        {
+            return _subtitleCache.GetOrUpdate(matcher, Subtitle);
+        }
     }
 }

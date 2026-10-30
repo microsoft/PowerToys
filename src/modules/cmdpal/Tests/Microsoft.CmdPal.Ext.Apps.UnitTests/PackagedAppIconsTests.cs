@@ -6,7 +6,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common;
-using Microsoft.CmdPal.Ext.Apps.Helpers;
+using Microsoft.CmdPal.Ext.Apps.Packaged;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 

@@ -11,8 +11,10 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.Ext.Apps.AppList;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Catalog.Payloads;
+using Microsoft.CmdPal.Ext.Apps.Pages;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -836,12 +838,15 @@ public class AppSearchTests
             new AppItem { Name = name, AppUserModelId = aumid, IsPackaged = true, MatchTerms = ["wt.exe"] });
     }
 
-    private static AppListItem CreateItem(params string[] terms) => new(
-        new AppItem
-        {
-            Name = "Editor",
-            MatchTerms = terms,
-        });
+    private static AppListItem CreateItem(params string[] terms)
+    {
+        return new(
+            new AppItem
+            {
+                Name = "Editor",
+                MatchTerms = terms,
+            });
+    }
 
     private sealed class CountingMatcher : IPrecomputedFuzzyMatcher
     {

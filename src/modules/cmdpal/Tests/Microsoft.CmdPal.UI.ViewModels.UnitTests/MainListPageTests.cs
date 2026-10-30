@@ -14,8 +14,9 @@ using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.Ext.Apps.AppList;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Pages;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -1014,8 +1015,14 @@ public partial class MainListPageTests
             DisplayName = "Apps";
         }
 
-        public override ICommandItem[] TopLevelCommands() => _page is null ? [] : [new CommandItem(_page) { Title = "Browse apps" }];
+        public override ICommandItem[] TopLevelCommands()
+        {
+            return _page is null ? [] : [new CommandItem(_page) { Title = "Browse apps" }];
+        }
 
-        public override ICommandItem? GetCommandItem(string id) => _snapshot?.GetCommandItem(id);
+        public override ICommandItem? GetCommandItem(string id)
+        {
+            return _snapshot?.GetCommandItem(id);
+        }
     }
 }
