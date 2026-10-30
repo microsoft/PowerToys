@@ -385,7 +385,7 @@ public partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedA
     {
         var providerSettings = _settingsService.Settings.ProviderSettings.TryGetValue(CommandProviderId, out var current)
             ? current
-            : _providerSettings;
+            : ProviderSettings;
         return providerSettings.FallbackCommands.TryGetValue(Id, out var settings) ? settings : null;
     }
 
