@@ -3,6 +3,7 @@
 # See the LICENSE file in the project root for more information.
 
 #Requires -Version 7.0
+. "$PSScriptRoot\..\mwb\MwbSandboxCi.Common.ps1"
 $scriptPath = Join-Path $PSScriptRoot '..\mwb\mwbSandboxExperiment.ps1'
 $tokens = $null
 $parseErrors = $null
@@ -119,6 +120,10 @@ throw 'MWB fixture: exact pre-marker failure'
         Get-Content -LiteralPath (Join-Path $logRoot 'stdout.log') -Raw | Should Match 'Initializer entered before marker'
         Get-Content -LiteralPath (Join-Path $logRoot 'stderr.log') -Raw | Should Match 'MWB fixture: exact pre-marker failure'
         Test-Path -LiteralPath (Join-Path $directory 'host-provisioning.json') | Should Be $false
+        $started = Get-Content -LiteralPath (Join-Path $directory 'provisioning-started.json') -Raw | ConvertFrom-Json
+        $started.RunId | Should Be '01234567-89ab-cdef-0123-456789abcdef'
+        $started.ProductRoot | Should Be (Join-Path $directory 'product & files')
+        $started.Status | Should Be 'Started'
     }
 
     It 'captures initializer parser failures before any initializer code runs' {
@@ -230,6 +235,132 @@ exit 0
     }
 }
 
+Describe 'MWB separate provisioning readiness budgets' {
+    BeforeEach {
+        $script:provisioningRunId = [guid]::NewGuid()
+        $script:provisioningProduct = 'C:\fixture\product'
+        $script:provisioningEpoch = [datetime]'2026-10-29T00:00:00Z'
+        $script:provisioningClock = $script:provisioningEpoch
+        $script:provisioningState = [pscustomobject]@{
+            Started = $null
+            Marker = $null
+            TaskRunning = $true
+            TaskHasRun = $true
+            TaskResult = 267009
+        }
+        $script:provisioningStarted = [pscustomobject]@{
+            RunId = $script:provisioningRunId.ToString()
+            ProductRoot = $script:provisioningProduct
+            Status = 'Started'
+        }
+        Mock Get-Date { $script:provisioningClock }
+        Mock Start-Sleep { $script:provisioningClock = $script:provisioningClock.AddSeconds(30) }
+    }
+
+    It 'allows fingerprinting beyond the startup deadline without accepting a stale removed marker' {
+        $script:provisioningState.Started = $script:provisioningStarted
+        $script:provisioningState.Marker = [pscustomobject]@{
+            RunId = [guid]::NewGuid().ToString()
+            Status = 'Removed'
+        }
+        $marker = Wait-MwbProvisioningReady -RunId $script:provisioningRunId `
+            -ProductRoot $script:provisioningProduct -ReadState {
+                if (($script:provisioningClock - $script:provisioningEpoch).TotalSeconds -ge 120) {
+                    $script:provisioningState.Marker = [pscustomobject]@{
+                        RunId = $script:provisioningRunId.ToString()
+                        ProductRoot = $script:provisioningProduct
+                        Status = 'WaitingForSandbox'
+                    }
+                }
+                $script:provisioningState
+            }
+        $marker.Status | Should Be 'WaitingForSandbox'
+        ($script:provisioningClock - $script:provisioningEpoch).TotalSeconds | Should Be 120
+    }
+
+    It 'still bounds a worker that never acknowledges startup' {
+        $script:provisioningState.TaskRunning = $false
+        $script:provisioningState.TaskHasRun = $false
+        { Wait-MwbProvisioningReady -RunId $script:provisioningRunId `
+            -ProductRoot $script:provisioningProduct -ReadState { $script:provisioningState } } |
+            Should Throw 'did not start within 90 seconds'
+        ($script:provisioningClock - $script:provisioningEpoch).TotalSeconds | Should Be 90
+    }
+
+    It 'does not treat startup or PreparingTrust as readiness or renew the preparation deadline' -TestCases @(
+        @{ Status = $null }
+        @{ Status = 'PreparingTrust' }
+    ) {
+        param($Status)
+        $script:provisioningState.Started = $script:provisioningStarted
+        if ($Status) {
+            $script:provisioningState.Marker = [pscustomobject]@{
+                RunId = $script:provisioningRunId.ToString()
+                ProductRoot = $script:provisioningProduct
+                Status = $Status
+            }
+        }
+        { Wait-MwbProvisioningReady -RunId $script:provisioningRunId `
+            -ProductRoot $script:provisioningProduct -ReadState { $script:provisioningState } } |
+            Should Throw 'did not finish within 300 seconds'
+        ($script:provisioningClock - $script:provisioningEpoch).TotalSeconds | Should Be 300
+    }
+
+    It 'does not let a late startup acknowledgement extend an expired startup deadline' {
+        { Wait-MwbProvisioningReady -RunId $script:provisioningRunId `
+            -ProductRoot $script:provisioningProduct -ReadState {
+                $script:provisioningClock = $script:provisioningClock.AddSeconds(90)
+                $script:provisioningState.Started = $script:provisioningStarted
+                $script:provisioningState
+            } } | Should Throw 'did not start within 90 seconds'
+    }
+
+    It 'rejects a startup acknowledgement with a changed identity or status' -TestCases @(
+        @{ Field = 'RunId' }
+        @{ Field = 'ProductRoot' }
+        @{ Field = 'Status' }
+    ) {
+        param($Field)
+        $script:provisioningStarted.$Field = 'changed'
+        $script:provisioningState.Started = $script:provisioningStarted
+        { Wait-MwbProvisioningReady -RunId $script:provisioningRunId `
+            -ProductRoot $script:provisioningProduct -ReadState { $script:provisioningState } } |
+            Should Throw 'startup acknowledgement does not match'
+    }
+
+    It 'fails immediately when the worker exits while trust preparation is incomplete' {
+        $script:provisioningState.Started = $script:provisioningStarted
+        $script:provisioningState.TaskRunning = $false
+        $script:provisioningState.TaskResult = 37
+        $script:provisioningState.Marker = [pscustomobject]@{
+            RunId = $script:provisioningRunId.ToString()
+            ProductRoot = $script:provisioningProduct
+            Status = 'PreparingTrust'
+        }
+        { Wait-MwbProvisioningReady -RunId $script:provisioningRunId `
+            -ProductRoot $script:provisioningProduct -ReadState { $script:provisioningState } } |
+            Should Throw 'scheduler result 37'
+        ($script:provisioningClock - $script:provisioningEpoch).TotalSeconds | Should Be 0
+    }
+
+    It 'does not accept a ready marker from another run or payload' -TestCases @(
+        @{ Field = 'RunId' }
+        @{ Field = 'ProductRoot' }
+    ) {
+        param($Field)
+        $script:provisioningState.Started = $script:provisioningStarted
+        $script:provisioningState.Marker = [pscustomobject]@{
+            RunId = $script:provisioningRunId.ToString()
+            ProductRoot = $script:provisioningProduct
+            Status = 'Ready'
+        }
+        $script:provisioningState.Marker.$Field = 'changed'
+        { Wait-MwbProvisioningReady -RunId $script:provisioningRunId `
+            -ProductRoot $script:provisioningProduct -ReadState { $script:provisioningState } } |
+            Should Throw 'BLOCKED_INFRASTRUCTURE'
+    }
+}
+
 Describe 'MWB bounded public provisioning diagnostics' {
     BeforeEach {
         $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
@@ -253,6 +384,20 @@ Describe 'MWB bounded public provisioning diagnostics' {
         Assert-MockCalled Assert-MwbProtectedDirectory -Times 1 -Exactly -ParameterFilter { $Path -eq $logRoot }
         Assert-MockCalled Assert-MwbProtectedDirectory -Times 1 -Exactly -ParameterFilter { $Path -eq $stderrPath }
         Assert-MockCalled Assert-MwbProtectedDirectory -Times 1 -Exactly -ParameterFilter { $Path -eq $stdoutPath }
+    }
+
+    It 'publishes phase progress without printing raw stdout or stderr' {
+        @('private-authentication-state',
+            'MWB provisioning: Inspecting public test trust (1.2s)',
+            'MWB provisioning: Hashing Sandbox runtime archive (3.4s)',
+            'MWB provisioning: unknown private phase (4.5s)') |
+            Set-Content -LiteralPath $stdoutPath
+        'private-stderr-state' | Set-Content -LiteralPath $stderrPath
+        Write-MwbProvisioningDiagnostics $directory
+        $output = $script:diagnosticLines -join "`n"
+        $output | Should Match 'Inspecting public test trust \(1[.,]2s\)'
+        $output | Should Match 'Hashing Sandbox runtime archive \(3[.,]4s\)'
+        $output | Should Not Match 'private-authentication-state|private-stderr-state|unknown private phase'
     }
 
     It 'explicitly reports unavailable logs when the launcher never started' {
@@ -351,17 +496,14 @@ Describe 'MWB diagnostic task ownership contract' {
         $ast.Extent.Text | Should Match "New-MwbProtectedDirectory \(Join-Path \`$runRoot 'provisioning-logs'\)"
     }
 
-    It 'prints diagnostics before each controlled provisioning status, early exit, or timeout failure' {
-        $failures = @($ast.FindAll({
+    It 'prints diagnostics before propagating a readiness failure' {
+        $wait = $ast.Find({
             param($node)
-            $node -is [Management.Automation.Language.ThrowStatementAst] -and
-                $node.Extent.Text -match 'BLOCKED_INFRASTRUCTURE: (privileged setup status|provisioning exited|provisioning did not publish)'
-        }, $true))
-        $failures.Count | Should Be 4
-        foreach ($failure in $failures) {
-            $preceding = $ast.Extent.Text.Substring(0, $failure.Extent.StartOffset)
-            $preceding | Should Match 'Write-MwbProvisioningDiagnostics \$runRoot\s+$'
-        }
+            $node -is [Management.Automation.Language.TryStatementAst] -and
+                $node.Body.Extent.Text -match 'Wait-MwbProvisioningReady'
+        }, $true)
+        $wait.CatchClauses.Count | Should Be 1
+        $wait.CatchClauses[0].Body.Extent.Text | Should Match 'Write-MwbProvisioningDiagnostics \$runRoot\s+throw'
     }
 }
 

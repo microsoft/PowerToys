@@ -56,6 +56,58 @@ function Get-MwbUiTestSelection {
     }
 }
 
+function Wait-MwbProvisioningReady {
+    param(
+        [Parameter(Mandatory)][guid] $RunId,
+        [Parameter(Mandatory)][string] $ProductRoot,
+        [Parameter(Mandatory)][scriptblock] $ReadState
+    )
+
+    $preparingPayload = $false
+    $deadline = (Get-Date -AsUTC).AddSeconds(90)
+    while ($true) {
+        $state = & $ReadState
+        $now = Get-Date -AsUTC
+        if ($now -ge $deadline) {
+            if ($preparingPayload) {
+                throw 'BLOCKED_INFRASTRUCTURE: payload fingerprinting and trust preparation did not finish within 300 seconds.'
+            }
+            throw 'BLOCKED_INFRASTRUCTURE: provisioning worker did not start within 90 seconds.'
+        }
+        if ($null -ne $state.Started) {
+            if ($state.Started.RunId -cne $RunId.ToString() -or
+                $state.Started.ProductRoot -ine $ProductRoot -or $state.Started.Status -cne 'Started') {
+                throw 'BLOCKED_INFRASTRUCTURE: provisioning startup acknowledgement does not match this run and payload.'
+            }
+            if (-not $preparingPayload) {
+                $preparingPayload = $true
+                $deadline = $now.AddSeconds(300)
+                Write-Host 'Provisioning worker started; payload fingerprinting and trust preparation have a separate 300-second deadline.'
+            }
+        }
+        if ($null -ne $state.Marker) {
+            if ($state.Marker.RunId -ceq $RunId.ToString()) {
+                if ($state.Marker.ProductRoot -ine $ProductRoot) {
+                    throw 'BLOCKED_INFRASTRUCTURE: provisioning marker does not match this payload.'
+                }
+                if ($state.Marker.Status -in @('WaitingForSandbox', 'Ready')) {
+                    return $state.Marker
+                }
+                if ($state.Marker.Status -ne 'PreparingTrust') {
+                    throw "BLOCKED_INFRASTRUCTURE: privileged setup status is $($state.Marker.Status)."
+                }
+            }
+            elseif ($state.Marker.Status -ne 'Removed') {
+                throw 'BLOCKED_INFRASTRUCTURE: provisioning marker belongs to another run.'
+            }
+        }
+        if ($state.TaskHasRun -and -not $state.TaskRunning) {
+            throw "BLOCKED_INFRASTRUCTURE: provisioning exited before readiness (scheduler result $($state.TaskResult))."
+        }
+        Start-Sleep -Seconds 1
+    }
+}
+
 function Invoke-MwbCiPhase {
     param(
         [Parameter(Mandatory)][string] $ScriptPath,
@@ -528,6 +580,28 @@ function New-MwbCiSignedRuntime {
         ManagedFilesUnchanged = $true
     })
     [pscustomobject]@{ Files = $files; RuntimeManifest = $runtime }
+}
+
+function ConvertTo-MwbProvisioningProgress {
+    param([string] $Line)
+
+    $phases = @('Validating staged payload', 'Checking staged process inventory',
+        'Checking Sandbox feature', 'Validating Sandbox preview', 'Checking firewall conflicts',
+        'Fingerprinting payload', 'Inspecting public test trust', 'Hashing MWB executable',
+        'Hashing MWB assembly', 'Hashing Sandbox runtime archive', 'Recording provisioning ownership',
+        'Writing provisioning marker', 'Waiting for Sandbox network', 'Importing owned public test trust')
+    if ($Line.Length -gt 256 -or
+        $Line -cnotmatch '\AMWB provisioning: (?<Phase>[A-Za-z ]+) \((?<Elapsed>[0-9]{1,6}(?:,[0-9]{3}){0,2}\.[0-9])s\)\z' -or
+        $Matches.Phase -cnotin $phases) {
+        return
+    }
+    $phase = $Matches.Phase
+    $elapsed = 0.0
+    if (-not [double]::TryParse($Matches.Elapsed, [Globalization.NumberStyles]::Number,
+            [Globalization.CultureInfo]::InvariantCulture, [ref]$elapsed) -or $elapsed -gt 3600) {
+        return
+    }
+    [pscustomobject]@{ Phase = $phase; ElapsedSeconds = $elapsed }
 }
 
 # Match the trusted family required by WinAppSandbox.AssertPrerequisites.

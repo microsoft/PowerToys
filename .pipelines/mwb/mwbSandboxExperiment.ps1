@@ -168,10 +168,18 @@ function Write-MwbProvisioningDiagnostics {
         }
         Assert-MwbProtectedDirectory $path
         try {
-            # Even apparently harmless excerpts can contain wrapped authentication state.
-            # Public diagnostics contain file metadata only; raw logs stay administrator-only.
+            # Raw logs can contain authentication state. Publish only validated phase enums/timings.
             $length = (Get-Item -LiteralPath $path -Force).Length
             Write-Host "MWB provisioning ${name}: present; bytes=$length; raw content remains in protected local storage."
+            if ($name -ceq 'stdout.log') {
+                foreach ($line in Get-Content -LiteralPath $path -TotalCount 256) {
+                    $progress = ConvertTo-MwbProvisioningProgress $line
+                    if ($null -ne $progress) {
+                        Write-Host ('MWB provisioning progress: {0} ({1:F1}s)' -f
+                            $progress.Phase, $progress.ElapsedSeconds)
+                    }
+                }
+            }
         }
         catch [IO.IOException], [UnauthorizedAccessException] {
             Write-Host "MWB provisioning ${name}: cannot read the protected log ($($_.Exception.GetType().Name))."
@@ -335,45 +343,48 @@ if ($Mode -eq 'Prepare') {
 
     $action = New-ScheduledTaskAction -Execute $powerShell -Argument $arguments
     $principal = New-ScheduledTaskPrincipal -UserId 'S-1-5-18' -LogonType ServiceAccount -RunLevel Highest
-    $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 20) `
+    $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 22) `
         -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
     Register-ScheduledTask -TaskName $taskName -Action $action -Principal $principal -Settings $settings | Out-Null
     Start-ScheduledTask -TaskName $taskName
-    $deadline = [DateTime]::UtcNow.AddSeconds(90)
-    do {
-        if (Test-Path -LiteralPath $markerPath -PathType Leaf) {
-            # A previous successfully removed record may remain until the new provisioner writes.
+    try {
+        $null = Wait-MwbProvisioningReady -RunId $RunId -ProductRoot $hostProductRoot -ReadState {
+            $startedPath = Join-Path $runRoot 'provisioning-started.json'
+            $started = $null
+            if (Test-Path -LiteralPath $startedPath -PathType Leaf) {
+                Assert-MwbProtectedDirectory $runRoot
+                Assert-MwbProtectedDirectory $startedPath
+                $started = Get-Content -LiteralPath $startedPath -Raw | ConvertFrom-Json
+            }
             $current = $null
-            try {
-                $current = Get-Content -LiteralPath $markerPath -Raw | ConvertFrom-Json
+            if (Test-Path -LiteralPath $markerPath -PathType Leaf) {
+                try {
+                    $current = Get-Content -LiteralPath $markerPath -Raw | ConvertFrom-Json
+                }
+                catch [ArgumentException] {
+                    # The provisioner writes its small marker in place; retry an incomplete write.
+                }
             }
-            catch [ArgumentException] {
-                # The provisioner writes its small marker in place; retry an incomplete write.
+            $task = Get-ScheduledTask -TaskName $taskName
+            $info = Get-ScheduledTaskInfo -TaskName $taskName
+            [pscustomobject]@{
+                Started = $started
+                Marker = $current
+                TaskRunning = $task.State -eq 'Running'
+                TaskHasRun = $info.LastRunTime.Year -ge 2000
+                TaskResult = $info.LastTaskResult
             }
-            if ($null -eq $current -or ($current.RunId -cne $RunId.ToString() -and $current.Status -eq 'Removed') -or
-                ($current.RunId -ceq $RunId.ToString() -and $current.Status -eq 'PreparingTrust')) {
-                Start-Sleep -Seconds 1
-                continue
-            }
-            # The initial marker is enough. On Win10, only the test can start Sandbox's Default Switch.
-            $marker = Read-MwbProvisioningMarker $hostProductRoot $userSid.Value
-            if ($marker.Status -in @('WaitingForSandbox', 'Ready')) {
-                Write-Host "Privileged setup $($marker.Status); dispatch may start Sandbox as $interactiveUser."
-                return
-            }
-            Write-MwbProvisioningDiagnostics $runRoot
-            throw "BLOCKED_INFRASTRUCTURE: privileged setup status is $($marker.Status)."
         }
-        $task = Get-ScheduledTask -TaskName $taskName
-        $info = Get-ScheduledTaskInfo -TaskName $taskName
-        if ($task.State -ne 'Running' -and $info.LastRunTime.Year -ge 2000) {
-            Write-MwbProvisioningDiagnostics $runRoot
-            throw "BLOCKED_INFRASTRUCTURE: provisioning exited before its initial marker (scheduler result $($info.LastTaskResult))."
-        }
-        Start-Sleep -Seconds 1
-    } while ([DateTime]::UtcNow -lt $deadline)
+    }
+    catch {
+        Write-MwbProvisioningDiagnostics $runRoot
+        throw
+    }
+    # Win10 needs the Limited test user to start Sandbox before its inner switch can exist.
+    $marker = Read-MwbProvisioningMarker $hostProductRoot $userSid.Value
     Write-MwbProvisioningDiagnostics $runRoot
-    throw 'BLOCKED_INFRASTRUCTURE: provisioning did not publish its initial marker within 90 seconds.'
+    Write-Host "Privileged setup $($marker.Status); dispatch may start Sandbox as $interactiveUser."
+    return
 }
 
 if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
