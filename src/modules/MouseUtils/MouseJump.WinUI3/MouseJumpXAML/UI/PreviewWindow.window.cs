@@ -232,8 +232,8 @@ internal sealed partial class PreviewWindow
     }
 
     /// <summary>
-    /// Hides the window in response to the user explicitly dismissing it (Escape, right-click
-    /// or a successful jump).
+    /// Hides the window in response to the user dismissing it (Escape, right-click, a successful
+    /// jump, or switching to another window).
     /// </summary>
     /// <remarks>
     /// Unlike <see cref="HideWindow"/>, this genuinely hides the HWND as well - clipping it to

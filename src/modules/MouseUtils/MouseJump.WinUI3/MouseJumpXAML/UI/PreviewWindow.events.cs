@@ -33,7 +33,7 @@ internal sealed partial class PreviewWindow
                 this.FocusPreviewPane();
                 break;
             case WindowActivationState.Deactivated:
-                this.HideWindow();
+                this.DismissWindow();
                 break;
             default:
                 throw new InvalidOperationException();
