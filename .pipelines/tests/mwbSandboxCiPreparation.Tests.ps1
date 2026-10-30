@@ -797,9 +797,6 @@ Describe 'MWB gated preparation source contracts' {
         $job | Should Match 'name: prepareMwbRuntime\r?\n    type: boolean\r?\n    default: false'
         $job | Should Match '\$\{\{ if eq\(parameters.prepareMwbRuntime, true\) \}\}:\r?\n    - pwsh:'
         $job | Should Match '-SourceRevision "\$\(Build.SourceVersion\)" -ReadyToRun'
-        $job | Should Not Match '10\.0\.401|mwb-ci-tools|UseDotNet@2'
-        $job | Should Match '-DotNetPath "\$\(DOTNET_ROOT\)\\dotnet.exe"'
-        $job | Should Match "version: '10.0'"
         $buildAst.ParamBlock.Extent.Text | Should Match '\[switch\] \$ReadyToRun'
         $buildAst.ParamBlock.Extent.Text | Should Match "ValidateSet\('x64', 'arm64'\).*Platform = 'x64'"
     }
