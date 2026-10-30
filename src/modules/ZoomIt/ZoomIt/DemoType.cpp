@@ -12,6 +12,7 @@
 
 #include "pch.h"
 #include "DemoType.h"
+#include "Utility.h"
 
 #define MAX_INDENT_DEPTH    100
 
@@ -97,95 +98,6 @@ bool IsWindowNotepad( const HWND hwnd )
         }
     }
     return false;
-}
-
-//----------------------------------------------------------------------------
-//
-// GetProcessIntegrityLevel
-//
-// Returns the integrity level RID of the process, or 0 if it can't be read.
-//
-//----------------------------------------------------------------------------
-DWORD GetProcessIntegrityLevel( const HANDLE hProcess )
-{
-    DWORD integrityLevel = 0;
-    HANDLE hToken = nullptr;
-    if( OpenProcessToken( hProcess, TOKEN_QUERY, &hToken ) )
-    {
-        BYTE buffer[sizeof( TOKEN_MANDATORY_LABEL ) + SECURITY_MAX_SID_SIZE];
-        DWORD size = 0;
-        if( GetTokenInformation( hToken, TokenIntegrityLevel, buffer, sizeof( buffer ), &size ) )
-        {
-            const PSID sid = reinterpret_cast<TOKEN_MANDATORY_LABEL*>(buffer)->Label.Sid;
-            integrityLevel = *GetSidSubAuthority( sid, *GetSidSubAuthorityCount( sid ) - 1 );
-        }
-        CloseHandle( hToken );
-    }
-    return integrityLevel;
-}
-
-//----------------------------------------------------------------------------
-//
-// GetInputIntegrityLimit
-//
-// The highest integrity level ZoomIt could send input to without uiAccess.
-// A uiAccess process gets a raised integrity level even when not elevated,
-// so cap it at medium unless the process is actually elevated.
-//
-//----------------------------------------------------------------------------
-DWORD GetInputIntegrityLimit()
-{
-    DWORD level = GetProcessIntegrityLevel( GetCurrentProcess() );
-    TOKEN_ELEVATION elevation = {};
-    HANDLE hToken = nullptr;
-    if( OpenProcessToken( GetCurrentProcess(), TOKEN_QUERY, &hToken ) )
-    {
-        DWORD size = 0;
-        GetTokenInformation( hToken, TokenElevation, &elevation, sizeof( elevation ), &size );
-        CloseHandle( hToken );
-    }
-    if( !elevation.TokenIsElevated && level > SECURITY_MANDATORY_MEDIUM_RID )
-    {
-        level = SECURITY_MANDATORY_MEDIUM_RID;
-    }
-    return level;
-}
-
-//----------------------------------------------------------------------------
-//
-// IsForegroundAboveOurIntegrity
-//
-// ZoomIt runs with uiAccess when installed in a secure location, which lets
-// SendInput bypass UIPI. Keep DemoType's input limited to windows a process
-// without uiAccess could reach: skip windows whose process has a higher
-// integrity level, or whose level can't be determined.
-//
-//----------------------------------------------------------------------------
-bool IsForegroundAboveOurIntegrity()
-{
-    static HWND lastHwnd = nullptr;
-    static bool lastResult = false;
-
-    const HWND hwnd = GetForegroundWindow();
-    if( hwnd == lastHwnd )
-    {
-        return lastResult;
-    }
-
-    static const DWORD ourLevel = GetInputIntegrityLimit();
-    DWORD targetLevel = 0;
-    DWORD pid = 0;
-    GetWindowThreadProcessId( hwnd, &pid );
-    const HANDLE hProcess = OpenProcess( PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid );
-    if( hProcess != nullptr )
-    {
-        targetLevel = GetProcessIntegrityLevel( hProcess );
-        CloseHandle( hProcess );
-    }
-
-    lastHwnd = hwnd;
-    lastResult = targetLevel == 0 || ourLevel == 0 || targetLevel > ourLevel;
-    return lastResult;
 }
 
 //----------------------------------------------------------------------------
