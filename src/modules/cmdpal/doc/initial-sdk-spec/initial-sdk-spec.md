@@ -2594,6 +2594,10 @@ Width encodings:
 
 ## Addenda X: Fallbacks v2
 
+_with credit to [@jiripolasek](https://github.com/jiripolasek), [whose
+work](https://github.com/microsoft/PowerToys/commit/d80d09509dce6d50134fcd3cd6a3613ce5d41cdf)
+helped inspire this final design_.
+  
 The original DevPal design required each fallback to return exactly one result.
 File search therefore used a nested page. User feedback shows that users want
 files, settings, and open windows in the top-level search results.
