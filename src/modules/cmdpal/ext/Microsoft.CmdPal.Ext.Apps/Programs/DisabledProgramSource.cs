@@ -4,6 +4,9 @@
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
-public class DisabledProgramSource : ProgramSource
+/// <summary>Stores a stable catalog or legacy source identity for an application hidden by the user.</summary>
+public class DisabledProgramSource
 {
+    /// <summary>Gets or sets the identity retained as the user's hidden preference.</summary>
+    public string UniqueIdentifier { get; set; } = string.Empty;
 }

@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -17,6 +18,8 @@ namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 
 public sealed partial class AppCatalog : IAppCatalog
 {
+    private const int MaxIncrementalPathChangesPerSource = 256;
+
     private static readonly TimeSpan DefaultInvalidationDelay = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan CachedSourceReconciliationDelay = TimeSpan.FromSeconds(30);
 
@@ -699,9 +702,10 @@ public sealed partial class AppCatalog : IAppCatalog
         }
     }
 
-    private static Dictionary<string, AppCatalogItem> MergeSnapshots(
+    private Dictionary<string, AppCatalogItem> MergeSnapshots(
         IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>> snapshots)
     {
+        var canonicalIdentityByTarget = BuildCanonicalIdentityByTarget(snapshots);
         var merged = new Dictionary<string, AppCatalogItem>(StringComparer.OrdinalIgnoreCase);
         foreach (var snapshot in snapshots.Values)
         {
@@ -712,13 +716,79 @@ public sealed partial class AppCatalog : IAppCatalog
                     continue;
                 }
 
-                merged[item.Identity] = merged.TryGetValue(item.Identity, out var existing)
-                    ? existing.MergeProvenance(item)
-                    : item;
+                var canonicalItem = CanonicalizeItem(item, canonicalIdentityByTarget);
+                if (!merged.TryGetValue(canonicalItem.Identity, out var existing))
+                {
+                    merged.Add(canonicalItem.Identity, canonicalItem);
+                    continue;
+                }
+
+                try
+                {
+                    merged[canonicalItem.Identity] = existing.MergeProvenance(canonicalItem);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    LogCatalogMergeConflict(_logger, canonicalItem.Identity, ex);
+                }
             }
         }
 
         return merged;
+    }
+
+    private static Dictionary<string, string?> BuildCanonicalIdentityByTarget(
+        IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>> snapshots)
+    {
+        var canonicalIdentityByTarget = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        foreach (var snapshot in snapshots.Values)
+        {
+            foreach (var item in snapshot)
+            {
+                var canonicalIdentity = item.Payload.GetCanonicalIdentityHint();
+                var targetPath = item.Payload.GetCanonicalTargetPath();
+                if (string.IsNullOrWhiteSpace(canonicalIdentity)
+                    || string.IsNullOrWhiteSpace(targetPath))
+                {
+                    continue;
+                }
+
+                var target = PathHelpers.NormalizePath(targetPath);
+                if (!canonicalIdentityByTarget.TryAdd(target, canonicalIdentity)
+                    && !string.Equals(
+                        canonicalIdentityByTarget[target],
+                        canonicalIdentity,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    canonicalIdentityByTarget[target] = null;
+                }
+            }
+        }
+
+        return canonicalIdentityByTarget;
+    }
+
+    private static AppCatalogItem CanonicalizeItem(
+        AppCatalogItem item,
+        IReadOnlyDictionary<string, string?> canonicalIdentityByTarget)
+    {
+        var canonicalIdentity = item.Payload.GetCanonicalIdentityHint();
+        if (!string.IsNullOrWhiteSpace(canonicalIdentity))
+        {
+            return item.WithIdentity(canonicalIdentity);
+        }
+
+        var targetPath = item.Payload.GetCanonicalTargetPath();
+        if (string.IsNullOrWhiteSpace(targetPath)
+            || !canonicalIdentityByTarget.TryGetValue(
+                PathHelpers.NormalizePath(targetPath),
+                out canonicalIdentity)
+            || canonicalIdentity is null)
+        {
+            return item;
+        }
+
+        return item.WithIdentity(canonicalIdentity);
     }
 
     private static bool HasSameSourceSnapshot(
@@ -1124,9 +1194,20 @@ public sealed partial class AppCatalog : IAppCatalog
 
         private void AddOrReplacePathChange(AppSourcePathChange change)
         {
+            if (RequiresFullRefresh)
+            {
+                return;
+            }
+
             if (_pathChangeIndexes.TryGetValue(change.Path, out var index))
             {
                 _pathChanges[index] = change;
+                return;
+            }
+
+            if (_pathChanges.Count >= MaxIncrementalPathChangesPerSource)
+            {
+                RequireFullRefresh();
                 return;
             }
 
@@ -1161,6 +1242,9 @@ public sealed partial class AppCatalog : IAppCatalog
 
     [LoggerMessage(EventId = 9, Level = LogLevel.Error, Message = "Application catalog policy reprojection failed.")]
     private static partial void LogCatalogReprojectionFailed(MEL.ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 10, Level = LogLevel.Warning, Message = "Ignored a conflicting representation of canonical application '{Identity}'.")]
+    private static partial void LogCatalogMergeConflict(MEL.ILogger logger, string identity, Exception exception);
 
     private sealed record PublishedState(
         IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>> SourceSnapshots,

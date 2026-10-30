@@ -63,6 +63,16 @@ public partial class Win32Program
 
     public string Arguments { get; set; } = string.Empty;
 
+    public string WorkingDirectory { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets metadata resolved from this program when it is an app execution alias.
+    /// </summary>
+    internal ReparsePoint.AppExecutionAliasInfo? AppExecutionAlias { get; set; }
+
+    /// <summary>Gets or sets the packaged application identity represented by this program.</summary>
+    internal string PackagedAppUserModelId { get; set; } = string.Empty;
+
     public ApplicationType AppType { get; set; }
 
     // Wrappers for File Operations
@@ -446,23 +456,26 @@ public partial class Win32Program
             : null;
     }
 
-    private static IEnumerable<string> ProgramPaths(string directory, IList<string> suffixes, bool recursiveSearch = true)
+    private static IEnumerable<string> ProgramPaths(string directory, IList<string> suffixes, int maximumDepth = int.MaxValue)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(maximumDepth);
+
         if (!Directory.Exists(directory))
         {
             return [];
         }
 
         var files = new List<string>();
-        var folderQueue = new Queue<string>();
-        folderQueue.Enqueue(directory);
+        var folderQueue = new Queue<(string Path, int Depth)>();
+        folderQueue.Enqueue((directory, 0));
 
         // Keep track of already visited directories to avoid cycles.
         var alreadyVisited = new HashSet<string>();
 
         do
         {
-            var currentDirectory = folderQueue.Dequeue();
+            var current = folderQueue.Dequeue();
+            var currentDirectory = current.Path;
 
             if (alreadyVisited.Contains(currentDirectory))
             {
@@ -496,8 +509,7 @@ public partial class Win32Program
 
             try
             {
-                // If the search is set to be non-recursive, then do not enqueue the child directories.
-                if (!recursiveSearch)
+                if (current.Depth >= maximumDepth)
                 {
                     continue;
                 }
@@ -510,7 +522,7 @@ public partial class Win32Program
                     RecurseSubdirectories = false,
                 }))
                 {
-                    folderQueue.Enqueue(childDirectory);
+                    folderQueue.Enqueue((childDirectory, current.Depth + 1));
                 }
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
@@ -527,8 +539,8 @@ public partial class Win32Program
         return files;
     }
 
-    internal static IEnumerable<string> EnumerateProgramPaths(string directory, IList<string> suffixes, bool recursiveSearch = true)
-        => ProgramPaths(directory, suffixes, recursiveSearch);
+    internal static IEnumerable<string> EnumerateProgramPaths(string directory, IList<string> suffixes, int maximumDepth = int.MaxValue)
+        => ProgramPaths(directory, suffixes, maximumDepth);
 
     private static string Extension(string path)
     {
@@ -540,6 +552,22 @@ public partial class Win32Program
             : string.Empty;
     }
 
+    /// <summary>Determines whether a source path directly names a supported executable type.</summary>
+    internal static bool IsExecutablePath(string path)
+        => ExecutableApplicationExtensions.Contains(Extension(path));
+
+    /// <summary>Determines whether an application type uses its executable target as catalog identity.</summary>
+    internal static bool UsesExecutableTargetIdentity(ApplicationType appType)
+        => appType is ApplicationType.Win32Application
+            or ApplicationType.RunCommand
+            or ApplicationType.WebApplication;
+
+    /// <summary>Normalizes launch profiles without distinguishing default executable or installer directories.</summary>
+    internal static string GetDistinctWorkingDirectory(string targetPath, string workingDirectory, string? explicitAppUserModelId = null)
+    {
+        return AppIdentity.GetDistinctWorkingDirectory(targetPath, workingDirectory, explicitAppUserModelId);
+    }
+
     // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
     private static List<string> PathEnvironmentProgramPaths(IList<string> suffixes)
     {
@@ -547,8 +575,6 @@ public partial class Win32Program
         var pathEnvVariable = Environment.GetEnvironmentVariable("PATH");
         var searchPaths = pathEnvVariable?.Split(Path.PathSeparator);
         var toFilterAllPaths = new List<string>();
-        var isRecursiveSearch = true;
-
         if (searchPaths is not null)
         {
             foreach (var path in searchPaths)
@@ -557,7 +583,7 @@ public partial class Win32Program
                 {
                     // to expand any environment variables present in the path
                     var directory = Environment.ExpandEnvironmentVariables(path);
-                    var paths = ProgramPaths(directory, suffixes, !isRecursiveSearch);
+                    var paths = ProgramPaths(directory, suffixes, maximumDepth: 0);
                     toFilterAllPaths.AddRange(paths);
                 }
             }
@@ -837,20 +863,32 @@ public partial class Win32Program
         }
     }
 
-    public string WorkingDirectory { get; set; } = string.Empty;
+    /// <summary>Gets or sets the explicit Windows application ID declared by this shortcut.</summary>
+    internal string ExplicitAppUserModelId { get; set; } = string.Empty;
 
-    public string ExplicitAppUserModelId { get; set; } = string.Empty;
+    private static bool IsSquirrelVersionDirectory(string targetPath, string targetDirectory, string workingDirectory, string? explicitAppUserModelId)
+    {
+        if (string.IsNullOrEmpty(explicitAppUserModelId)
+            || !string.Equals(Path.GetExtension(targetPath), ".exe", StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(Path.GetDirectoryName(workingDirectory), targetDirectory, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
 
-    public string PackagedAppUserModelId { get; set; } = string.Empty;
+        // ponytail: numeric release folders only; extend parsing when prerelease shortcuts need deduplication.
+        var directoryName = Path.GetFileName(workingDirectory);
+        if (!directoryName.StartsWith("app-", StringComparison.OrdinalIgnoreCase)
+            || !Version.TryParse(directoryName.AsSpan(4), out _))
+        {
+            return false;
+        }
 
-    internal ReparsePoint.AppExecutionAliasInfo? AppExecutionAlias { get; set; }
+        // Squirrel's root launcher chooses the installed version and its working directory itself.
+        var expectedId = $"com.squirrel.{Path.GetFileName(targetDirectory).Replace(" ", string.Empty)}.{Path.GetFileNameWithoutExtension(targetPath).Replace(" ", string.Empty)}";
+        return string.Equals(explicitAppUserModelId, expectedId, StringComparison.OrdinalIgnoreCase);
+    }
 
     internal LaunchTarget Target => AppType == ApplicationType.InternetShortcutApplication
         ? LaunchTarget.Url(FullPath)
         : LaunchTarget.FilePath(FullPath);
-
-    internal static string GetDistinctWorkingDirectory(string targetPath, string workingDirectory, string? explicitAppUserModelId = null)
-    {
-        return AppIdentity.GetDistinctWorkingDirectory(targetPath, workingDirectory, explicitAppUserModelId);
-    }
 }
