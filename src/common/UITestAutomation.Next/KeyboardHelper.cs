@@ -93,6 +93,7 @@ public enum Key : byte
 /// hotkeys for the PowerToys runner: hold LWIN down via <c>keybd_event</c>, then send the
 /// remaining chord via <see cref="System.Windows.Forms.SendKeys.SendWait"/> which uses
 /// SendInput with proper modifier tracking, then release LWIN.
+/// An explicit <see cref="UmdfHidInput"/> scope routes these helpers through the virtual HID device instead.
 /// </summary>
 public static class KeyboardHelper
 {
@@ -113,11 +114,17 @@ public static class KeyboardHelper
 #pragma warning restore SA1310
 
     /// <summary>
-    /// Press all keys in order, then release them in reverse order, in a single <c>SendInput</c> batch.
+    /// Press all keys in order, then release them in reverse order. The default backend uses a
+    /// single <c>SendInput</c> batch; UMDF input sends the corresponding HID report transitions.
     /// </summary>
     public static void SendChord(params Key[] keys)
     {
         var inputs = CreateChordInputPlan(keys);
+        if (UmdfHidInput.Active is { } hid)
+        {
+            hid.SendKeys(keys);
+            return;
+        }
 
         // Queue the complete chord atomically. Releasing a SendKeys modifier after the module
         // starts its own Ctrl+V can otherwise turn the product's paste into a literal 'v'.
@@ -156,6 +163,12 @@ public static class KeyboardHelper
     public static void SendKeys(params Key[] keys)
     {
         var (chord, heldKeys) = CreateChordPlan(keys);
+        if (UmdfHidInput.Active is { } hid)
+        {
+            hid.SendKeys(keys);
+            return;
+        }
+
         foreach (var key in heldKeys)
         {
             PressKey(key);
@@ -250,12 +263,28 @@ public static class KeyboardHelper
     public static bool IsKeyDown(Key key) => (GetAsyncKeyState((byte)key) & 0x8000) != 0;
 
     /// <summary>Press (and hold) a key via <c>keybd_event</c>. Pair with <see cref="ReleaseKey"/>.</summary>
-    public static void PressKey(Key key) =>
+    public static void PressKey(Key key)
+    {
+        if (UmdfHidInput.Active is { } hid)
+        {
+            hid.SetKey(key, true);
+            return;
+        }
+
         keybd_event((byte)key, 0, IsExtended(key) ? KEYEVENTF_EXTENDEDKEY : 0u, UIntPtr.Zero);
+    }
 
     /// <summary>Release a key previously pressed with <see cref="PressKey"/>.</summary>
-    public static void ReleaseKey(Key key) =>
+    public static void ReleaseKey(Key key)
+    {
+        if (UmdfHidInput.Active is { } hid)
+        {
+            hid.SetKey(key, false);
+            return;
+        }
+
         keybd_event((byte)key, 0, KEYEVENTF_KEYUP | (IsExtended(key) ? KEYEVENTF_EXTENDEDKEY : 0u), UIntPtr.Zero);
+    }
 
     /// <summary>Press + release a single key.</summary>
     public static void SendKey(Key key)
@@ -275,7 +304,7 @@ public static class KeyboardHelper
         }
     }
 
-    private static bool IsExtended(Key key) => key is
+    internal static bool IsExtended(Key key) => key is
         Key.LWin or Key.RCtrl or
         Key.Left or Key.Up or Key.Right or Key.Down or
         Key.Home or Key.End or Key.PageUp or Key.PageDown or
