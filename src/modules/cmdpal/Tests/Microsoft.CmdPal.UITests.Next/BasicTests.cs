@@ -136,12 +136,15 @@ public class BasicTests : CommandPaletteTestBase
     [TestCategory("CmdPal")]
     public void BasicWindowsSettingsTest()
     {
+        using var diagnostics = BeginNavigationDiagnostics();
         SetSearchBox("Windows settings");
 
         var settingsItem = CommandPaletteSession.Find<NavigationViewItem>("Windows Settings");
         Assert.AreEqual("Windows Settings", settingsItem.Name);
         Step("Opening the Windows settings extension");
-        DoubleClickResult(settingsItem);
+        InvokeResultWithEnter(settingsItem.Name);
+        Step("Waiting for the Windows Settings destination page's Back control");
+        Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 45_000));
 
         SetSearchBox("power");
         var powerSettings = CommandPaletteSession.Find<NavigationViewItem>("Power and sleep");
@@ -191,7 +194,9 @@ public class BasicTests : CommandPaletteTestBase
         var servicesItem = CommandPaletteSession.Find<NavigationViewItem>("Manage Windows services");
         Assert.AreEqual("Manage Windows services", servicesItem.Name);
         Step("Opening the Windows Services extension");
-        DoubleClickResult(servicesItem);
+        InvokeResultWithEnter(servicesItem.Name);
+        Step("Waiting for the Windows Services destination page's Back control");
+        Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 45_000));
 
         SetSearchBox("hyper-v");
         Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("Hyper-V Heartbeat Service"));
@@ -206,7 +211,9 @@ public class BasicTests : CommandPaletteTestBase
         var systemCommandsItem = CommandPaletteSession.Find<NavigationViewItem>("Windows system commands");
         Assert.AreEqual("Windows system commands", systemCommandsItem.Name);
         Step("Opening the Windows System Commands extension");
-        DoubleClickResult(systemCommandsItem);
+        InvokeResultWithEnter(systemCommandsItem.Name);
+        Step("Waiting for the Windows System Commands destination page's Back control");
+        Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 45_000));
 
         SetSearchBox("Sleep");
         Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("Put computer to sleep"));
