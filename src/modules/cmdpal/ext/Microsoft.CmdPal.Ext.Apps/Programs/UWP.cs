@@ -23,6 +23,11 @@ public partial class UWP
 
     private static readonly IPath Path = new FileSystem().Path;
 
+    private static readonly XNamespace Uap3Namespace = "http://schemas.microsoft.com/appx/manifest/uap/windows10/3";
+    private static readonly XNamespace Uap5Namespace = "http://schemas.microsoft.com/appx/manifest/uap/windows10/5";
+    private static readonly XNamespace Uap8Namespace = "http://schemas.microsoft.com/appx/manifest/uap/windows10/8";
+    private static readonly XNamespace DesktopNamespace = "http://schemas.microsoft.com/appx/manifest/desktop/windows10";
+
     private static readonly Dictionary<string, PackageVersion> _versionFromNamespace = new()
     {
         { "http://schemas.microsoft.com/appx/manifest/foundation/windows10", PackageVersion.Windows10 },
@@ -65,8 +70,10 @@ public partial class UWP
         LocationLocalized = ShellLocalization.Instance.GetLocalizedPath(installedLocation);
         var path = Path.Combine(installedLocation, "AppxManifest.xml");
 
-        var namespaces = XmlNamespaces(path);
+        var manifest = XDocument.Load(path);
+        var namespaces = XmlNamespaces(manifest);
         InitPackageVersion(namespaces);
+        var executionAliases = GetExecutionAliases(manifest);
 
         const uint noAttribute = 0x80;
         const uint STGMREAD = 0x00000000;
@@ -81,7 +88,20 @@ public partial class UWP
             foreach (var appInManifest in appsInManifest)
             {
                 using var appHandle = new SafeComHandle(appInManifest);
-                var uwpApp = new UWPApplication((IAppxManifestApplication*)appInManifest, this);
+                var manifestApp = (IAppxManifestApplication*)appInManifest;
+                var uwpApp = new UWPApplication(manifestApp, this);
+                var idResult = manifestApp->GetStringValue("ID", out var idPtr);
+                try
+                {
+                    if (idResult.Succeeded && executionAliases.TryGetValue(idPtr.ToString(), out var aliases))
+                    {
+                        uwpApp.ExecutionAliases = aliases;
+                    }
+                }
+                finally
+                {
+                    PInvoke.CoTaskMemFree(idPtr);
+                }
 
                 if (!string.IsNullOrEmpty(uwpApp.UserModelId) &&
                     !string.IsNullOrEmpty(uwpApp.DisplayName) &&
@@ -99,14 +119,13 @@ public partial class UWP
         }
     }
 
-    private static string[] XmlNamespaces(string path)
+    private static string[] XmlNamespaces(XDocument manifest)
     {
-        var z = XDocument.Load(path);
-        if (z.Root is not null)
+        if (manifest.Root is not null)
         {
             var namespaces = new HashSet<string>();
 
-            var attributes = z.Root.Attributes();
+            var attributes = manifest.Root.Attributes();
             foreach (var attribute in attributes)
             {
                 if (attribute.IsNamespaceDeclaration)
@@ -129,6 +148,63 @@ public partial class UWP
         {
             return [];
         }
+    }
+
+    private static Dictionary<string, IReadOnlyList<string>> GetExecutionAliases(XDocument manifest)
+    {
+        var result = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+        var root = manifest.Root;
+        if (root is null)
+        {
+            return result;
+        }
+
+        var ns = root.Name.Namespace;
+        foreach (var application in root.Element(ns + "Applications")?.Elements(ns + "Application") ?? [])
+        {
+            var id = (string?)application.Attribute("Id");
+            if (string.IsNullOrEmpty(id))
+            {
+                continue;
+            }
+
+            var aliases = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var extension in application.Element(ns + "Extensions")?.Elements() ?? [])
+            {
+                if ((extension.Name != Uap3Namespace + "Extension" && extension.Name != Uap5Namespace + "Extension")
+                    || (string?)extension.Attribute("Category") != "windows.appExecutionAlias")
+                {
+                    continue;
+                }
+
+                foreach (var aliasElement in extension.Element(extension.Name.Namespace + "AppExecutionAlias")?.Elements() ?? [])
+                {
+                    if (aliasElement.Name != DesktopNamespace + "ExecutionAlias"
+                        && aliasElement.Name != Uap5Namespace + "ExecutionAlias"
+                        && aliasElement.Name != Uap8Namespace + "ExecutionAlias")
+                    {
+                        continue;
+                    }
+
+                    var alias = (string?)aliasElement.Attribute("Alias");
+                    if (!string.IsNullOrWhiteSpace(alias)
+                        && alias.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+                        && alias.IndexOfAny(Path.GetInvalidFileNameChars()) < 0)
+                    {
+                        aliases.Add(alias);
+                    }
+                }
+            }
+
+            if (aliases.Count > 0)
+            {
+                var names = new string[aliases.Count];
+                aliases.CopyTo(names);
+                result[id] = names;
+            }
+        }
+
+        return result;
     }
 
     private void InitPackageVersion(string[] namespaces)

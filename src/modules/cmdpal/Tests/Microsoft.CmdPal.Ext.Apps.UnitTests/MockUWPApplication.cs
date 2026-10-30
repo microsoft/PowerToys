@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 
@@ -31,6 +32,12 @@ public class MockUWPApplication : IUWPApplication
     /// Gets or sets the user model ID.
     /// </summary>
     public string UserModelId { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the manifest-declared executable.</summary>
+    public string Executable { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets manifest-declared execution alias filenames.</summary>
+    public IReadOnlyList<string> ExecutionAliases { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the background color.

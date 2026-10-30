@@ -98,7 +98,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
         history ??= EmptyHistory();
 
         return items
-            .Select(item => (item.Title, Score: MainListPage.ScoreTopLevelItem(q, new(item), history, matcher, providerWeightLookup)))
+            .Select(item => (item.Title, Score: MainListPage.ScoreTopLevelItem(q, new(item), history, matcher, null, providerWeightLookup)))
             .Where(x => x.Score > 0)
             .OrderByDescending(x => x.Score)
             .Select(x => x.Title)
@@ -252,8 +252,8 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
         var history = EmptyHistory();
 
         // Baseline: with no provider weighting the two tie exactly.
-        var baseAlpha = MainListPage.ScoreTopLevelItem(q, new(alpha), history, matcher);
-        var baseBravo = MainListPage.ScoreTopLevelItem(q, new(bravo), history, matcher);
+        var baseAlpha = MainListPage.ScoreTopLevelItem(q, new(alpha), history, matcher, null);
+        var baseBravo = MainListPage.ScoreTopLevelItem(q, new(bravo), history, matcher, null);
         Assert.AreEqual(baseAlpha, baseBravo, "The two identically-titled items should tie before provider weighting");
 
         Func<InProcObject<IListItem>, ProviderSearchWeight> lookup = item =>
@@ -262,7 +262,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
                 : ProviderSearchWeight.Normal;
 
         var ranked = items
-            .Select(item => (item.ProviderId, Score: MainListPage.ScoreTopLevelItem(q, new(item), history, matcher, lookup)))
+            .Select(item => (item.ProviderId, Score: MainListPage.ScoreTopLevelItem(q, new(item), history, matcher, null, lookup)))
             .OrderByDescending(x => x.Score)
             .Select(x => x.ProviderId)
             .ToList();

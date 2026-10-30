@@ -36,8 +36,11 @@ public interface IAppListItemSource : IDisposable
     /// </summary>
     AppListItemSnapshot GetSnapshot();
 
+    /// <summary>Requests a background refresh of cached execution-alias ownership without waiting.</summary>
+    void RequestExecutionAliasRefresh();
+
     /// <summary>
-    /// Requests a full background refresh of the application catalog.
+    /// Requests a foreground full refresh of the application catalog and waits for that request to be handled.
     /// </summary>
     Task RefreshAsync();
 }

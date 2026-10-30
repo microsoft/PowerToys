@@ -33,6 +33,12 @@ public class UWPApplication : IUWPApplication
 
     public string UserModelId { get; set; }
 
+    /// <summary>Gets or sets the manifest-declared executable used as search metadata.</summary>
+    public string Executable { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets manifest-declared execution alias filenames used as search metadata.</summary>
+    public IReadOnlyList<string> ExecutionAliases { get; set; } = [];
+
     public string BackgroundColor { get; set; }
 
     public string EntryPoint { get; set; }
@@ -75,6 +81,16 @@ public class UWPApplication : IUWPApplication
 
         manifestApp->GetStringValue("EntryPoint", out var tmpEntryPointPtr);
         EntryPoint = ComFreeHelper.GetStringAndFree(hr, tmpEntryPointPtr);
+
+        var executableResult = manifestApp->GetStringValue("Executable", out var executablePtr);
+        try
+        {
+            Executable = executableResult.Succeeded ? executablePtr.ToString() ?? string.Empty : string.Empty;
+        }
+        finally
+        {
+            PInvoke.CoTaskMemFree(executablePtr);
+        }
 
         Package = package ?? throw new ArgumentNullException(nameof(package));
 

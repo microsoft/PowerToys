@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -30,6 +31,7 @@ public partial class MainListPageTests
     private static readonly string[] MetadataQueries = ["LegacyAliasNeedle", "ResolvedTargetNeedle", "LaunchNeedle", "PackagedIdentityNeedle", "FamilyNeedle", "DescriptionNeedle", "wt", "wt.exe", "vv"];
     private static readonly string[] NonAppQueries = ["c", "Application", "Apps"];
     private static readonly string[] InfrastructureQueries = ["start", "program", "windows", "micro", "apps"];
+    private static readonly string[] DisabledAppsQueries = ["wt", "WT.EXE", "Terminal"];
 
     [TestMethod]
     [DataRow(false, false)]
@@ -151,6 +153,163 @@ public partial class MainListPageTests
             Assert.IsTrue(home.GetItems().Any(item => item.Command?.Id == developerPrompt.Command!.Id), "Argument-bearing profiles must remain searchable.");
             Assert.IsTrue(allApps.GetItems().Contains(developerPrompt));
             Assert.AreEqual(1, home.GetItems().Count(item => item.Command?.Id == commandPrompt.Command!.Id));
+            return Task.CompletedTask;
+        });
+    }
+
+    [TestMethod]
+    [DataRow("cmd", false, false)]
+    [DataRow("CMD.EXE", true, false)]
+    [DataRow("cmd", false, true)]
+    [DataRow("CMD.EXE", true, true)]
+    public async Task Search_ExecutableModePublicationReranksActiveHomeQuery(string query, bool filenameMatches, bool pinned)
+    {
+        var apps = new[]
+        {
+            new AppItem
+            {
+                Name = "Command Prompt",
+                ExePath = @"C:\Start Menu\Command Prompt.lnk",
+                FullExecutablePath = @"C:\Windows\System32\cmd.exe",
+            },
+            new AppItem
+            {
+                Name = "Developer Command Prompt",
+                ExePath = @"C:\Start Menu\Developer Command Prompt.lnk",
+                FullExecutablePath = @"C:\Windows\System32\cmd.exe",
+                Arguments = "/k setup.bat",
+            },
+            new AppItem { Name = "cmd.exe helper", ExePath = @"C:\Tools\Helper.exe" },
+        };
+        var rows = apps.Select(app => new AppListItem(app, useThumbnails: false)).ToArray();
+        var snapshot = new AppListItemSnapshot(rows, []);
+        var commandPromptId = snapshot.VisibleItems[0].Command!.Id;
+        var helperId = snapshot.VisibleItems[2].Command!.Id;
+        var originalIds = snapshot.VisibleItems.Select(item => item.Command!.Id).ToArray();
+        var source = new Mock<IAppListItemSource>();
+        source.Setup(service => service.GetSnapshot()).Returns(() => snapshot);
+        source.SetupGet(service => service.TopLevelResultLimit).Returns(10);
+        await WithSearchPages(snapshot, pinned, appListItemSource: source, check: async (home, allApps, _) =>
+        {
+            home.SearchText = allApps.SearchText = query;
+            Assert.AreEqual(commandPromptId, home.GetItems().First(item => item is not Separator).Command!.Id);
+
+            foreach (var (mode, expectedFirstId) in new[]
+            {
+                (ExecutableNameMatchMode.FilenameOnly, filenameMatches ? commandPromptId : helperId),
+                (ExecutableNameMatchMode.Disabled, helperId),
+                (ExecutableNameMatchMode.FilenameAndStem, commandPromptId),
+            })
+            {
+                snapshot = new AppListItemSnapshot(rows, [], executableNameMatchMode: mode);
+                source.Raise(service => service.Changed += null, source.Object, EventArgs.Empty);
+                await WaitForConditionAsync(() => home.GetItems().First(item => item is not Separator).Command!.Id == expectedFirstId);
+
+                Assert.AreEqual(query, home.SearchText);
+                Assert.AreEqual(expectedFirstId, home.GetItems().First(item => item is not Separator).Command!.Id, mode.ToString());
+                Assert.AreEqual(expectedFirstId, allApps.GetItems().OfType<AppListItem>().First().Command!.Id, mode.ToString());
+                CollectionAssert.AreEquivalent(originalIds, home.GetItems().Where(item => originalIds.Contains(item.Command?.Id)).Select(item => item.Command!.Id).ToArray());
+                CollectionAssert.AreEqual(originalIds, snapshot.VisibleItems.Select(item => item.Command!.Id).ToArray());
+                Assert.AreSame(rows, snapshot.VisibleItems);
+            }
+
+            source.Verify(service => service.RefreshAsync(), Times.Never);
+        });
+    }
+
+    [TestMethod]
+    [DataRow("wt", false)]
+    [DataRow("wt", true)]
+    [DataRow("WT.EXE", false)]
+    [DataRow("WT.EXE", true)]
+    public async Task Search_ExecutionAliasOwnershipPublicationReranksUnchangedHomeQuery(string query, bool pinned)
+    {
+        var stable = new AppListItem(
+            new AppItem { Name = "Terminal", UserModelId = "Terminal_123!App", IsPackaged = true, MatchTerms = ["wt.exe"] },
+            useThumbnails: false);
+        var preview = new AppListItem(
+            new AppItem { Name = "Terminal Preview", UserModelId = "TerminalPreview_123!App", IsPackaged = true, MatchTerms = ["wt.exe"] },
+            useThumbnails: false);
+        AppListItem[] rows = [stable, preview];
+        AppListItem[] hiddenRows = [];
+        AppListItem[] patternHiddenRows = [];
+        var owners = ImmutableDictionary.Create<string, string>(StringComparer.OrdinalIgnoreCase)
+            .Add("wt.exe", stable.App.UserModelId);
+        var initialSnapshot = new AppListItemSnapshot(
+            rows,
+            hiddenRows,
+            patternHiddenRows,
+            executableNameMatchMode: ExecutableNameMatchMode.Disabled,
+            executionAliasOwners: owners);
+        var snapshot = initialSnapshot;
+        var originalIds = rows.Select(item => item.Command!.Id).ToArray();
+        var source = new Mock<IAppListItemSource>();
+        source.Setup(service => service.GetSnapshot()).Returns(() => snapshot);
+        source.SetupGet(service => service.TopLevelResultLimit).Returns(10);
+        await WithSearchPages(snapshot, pinned, appListItemSource: source, check: async (home, _, _) =>
+        {
+            home.SearchText = query;
+            Assert.AreEqual(stable.Command!.Id, home.GetItems().First(item => item is not Separator).Command!.Id);
+            source.Verify(service => service.RequestExecutionAliasRefresh(), Times.AtLeastOnce);
+
+            foreach (var activeOwner in new[] { preview, stable })
+            {
+                var previousSnapshot = snapshot;
+                owners = owners.SetItem("wt.exe", activeOwner.App.UserModelId);
+                snapshot = new AppListItemSnapshot(
+                    rows,
+                    hiddenRows,
+                    patternHiddenRows,
+                    executableNameMatchMode: ExecutableNameMatchMode.Disabled,
+                    executionAliasOwners: owners);
+                Assert.AreSame(previousSnapshot.VisibleItems, snapshot.VisibleItems);
+                Assert.AreSame(previousSnapshot.HiddenItems, snapshot.HiddenItems);
+                Assert.AreSame(previousSnapshot.PatternHiddenItems, snapshot.PatternHiddenItems);
+                Assert.AreNotSame(previousSnapshot.ExecutionAliasOwners, snapshot.ExecutionAliasOwners);
+                source.Raise(service => service.Changed += null, source.Object, EventArgs.Empty);
+                await WaitForConditionAsync(() => home.GetItems().FirstOrDefault(item => item is not Separator)?.Command?.Id == activeOwner.Command!.Id);
+
+                Assert.AreEqual(query, home.SearchText);
+                CollectionAssert.AreEquivalent(originalIds, home.GetItems().Where(item => originalIds.Contains(item.Command?.Id)).Select(item => item.Command!.Id).ToArray());
+                Assert.AreSame(rows, snapshot.VisibleItems);
+                CollectionAssert.AreEqual(rows, snapshot.VisibleItems.ToArray());
+            }
+
+            Assert.AreEqual(stable.App.UserModelId, initialSnapshot.ExecutionAliasOwners["wt.exe"], "Published ownership maps remain immutable.");
+            source.Verify(service => service.RefreshAsync(), Times.Never);
+        });
+    }
+
+    [TestMethod]
+    public async Task Search_AppsDisabledDoesNotRequestExecutionAliasRefresh()
+    {
+        var terminal = new AppListItem(
+            new AppItem { Name = "Terminal", UserModelId = "Terminal_123!App", IsPackaged = true, MatchTerms = ["wt.exe"] },
+            useThumbnails: false);
+        AppListItem[] rows = [terminal];
+        var owners = ImmutableDictionary.Create<string, string>(StringComparer.OrdinalIgnoreCase)
+            .Add("wt.exe", terminal.App.UserModelId);
+        var snapshot = new AppListItemSnapshot(rows, [], executionAliasOwners: owners);
+        var source = new Mock<IAppListItemSource>();
+        source.Setup(service => service.GetSnapshot()).Returns(() => snapshot);
+        source.SetupGet(service => service.TopLevelResultLimit).Returns(10);
+        await WithSearchPages(snapshot, false, appListItemSource: source, appsEnabled: false, check: (home, _, manager) =>
+        {
+            Assert.IsFalse(manager.IsProviderActive(AllAppsCommandProvider.WellKnownId));
+            foreach (var query in DisabledAppsQueries)
+            {
+                home.SearchText = query;
+                Assert.IsFalse(home.GetItems().Any(item => item.Command?.Id == terminal.Command!.Id));
+            }
+
+            owners = owners.SetItem("wt.exe", "TerminalPreview_123!App");
+            snapshot = new AppListItemSnapshot(rows, [], executionAliasOwners: owners);
+            source.Raise(service => service.Changed += null, source.Object, EventArgs.Empty);
+
+            Assert.AreEqual("Terminal", home.SearchText);
+            Assert.IsFalse(home.GetItems().Any(item => item.Command?.Id == terminal.Command!.Id));
+            source.Verify(service => service.RequestExecutionAliasRefresh(), Times.Never);
+            source.Verify(service => service.RefreshAsync(), Times.Never);
             return Task.CompletedTask;
         });
     }
@@ -414,17 +573,138 @@ public partial class MainListPageTests
 
         var matcher = new PrecomputedFuzzyMatcher();
         var query = matcher.PrecomputeQuery("Needle");
-        var exactScore = MainListPage.ScoreTopLevelItem(query, new(exact), history, matcher);
-        var metadataScore = MainListPage.ScoreTopLevelItem(query, new(metadata), history, matcher);
+        var appSearch = new AppSearch(query.Original, matcher, ExecutableNameMatchMode.FilenameAndStem);
+        var exactScore = MainListPage.ScoreTopLevelItem(query, new(exact), history, matcher, appSearch);
+        var metadataScore = MainListPage.ScoreTopLevelItem(query, new(metadata), history, matcher, appSearch);
         Assert.AreEqual(RankTier.ExactTitle, MainListRanker.TierOf(exactScore));
         Assert.AreEqual(RankTier.Fuzzy, MainListRanker.TierOf(metadataScore));
         Assert.IsTrue(exactScore > metadataScore);
-        Assert.AreEqual(0, MainListPage.ScoreTopLevelItem(matcher.PrecomputeQuery("zebra"), new(metadata), history, matcher));
+        query = matcher.PrecomputeQuery("zebra");
+        appSearch = new AppSearch(query.Original, matcher, ExecutableNameMatchMode.FilenameAndStem);
+        Assert.AreEqual(0, MainListPage.ScoreTopLevelItem(query, new(metadata), history, matcher, appSearch));
 
         query = matcher.PrecomputeQuery("note");
-        Assert.IsTrue(new AppSearch("note", matcher).Evaluate(weakTitle).HasMatch);
-        Assert.IsTrue(MainListPage.ScoreTopLevelItem(query, new(weakTitle), history, matcher) > 0);
-        Assert.IsTrue(MainListPage.ScoreTopLevelItem(query, new(description), history, matcher) > 0);
+        appSearch = new AppSearch(query.Original, matcher, ExecutableNameMatchMode.FilenameAndStem);
+        Assert.IsTrue(appSearch.Evaluate(weakTitle).HasMatch);
+        Assert.IsTrue(MainListPage.ScoreTopLevelItem(query, new(weakTitle), history, matcher, appSearch) > 0);
+        Assert.IsTrue(MainListPage.ScoreTopLevelItem(query, new(description), history, matcher, appSearch) > 0);
+    }
+
+    [TestMethod]
+    [DataRow("cmd", ExecutableNameMatchMode.FilenameAndStem, RankTier.ExactMetadata)]
+    [DataRow("cmd", ExecutableNameMatchMode.FilenameOnly, RankTier.Fuzzy)]
+    [DataRow("cmd", ExecutableNameMatchMode.Disabled, RankTier.Fuzzy)]
+    [DataRow("cmd.exe", ExecutableNameMatchMode.FilenameAndStem, RankTier.ExactMetadata)]
+    [DataRow("cmd.exe", ExecutableNameMatchMode.FilenameOnly, RankTier.ExactMetadata)]
+    [DataRow("cmd.exe", ExecutableNameMatchMode.Disabled, RankTier.Fuzzy)]
+    public void AppScores_PreparedSearchControlsExecutableMode(string queryText, ExecutableNameMatchMode mode, RankTier expectedTier)
+    {
+        var app = new AppListItem(
+            new AppItem
+            {
+                Name = "Shell",
+                ExePath = @"C:\Start Menu\Shell.lnk",
+                FullExecutablePath = @"C:\Windows\System32\cmd.exe",
+            },
+            useThumbnails: false);
+        var matcher = new PrecomputedFuzzyMatcher();
+        var query = matcher.PrecomputeQuery(queryText);
+        var appSearch = new AppSearch(queryText, matcher, mode);
+
+        var score = MainListPage.ScoreTopLevelItem(query, new(app), new RecentCommandsManager(), matcher, appSearch);
+
+        Assert.AreEqual(expectedTier, MainListRanker.TierOf(score));
+        Assert.IsTrue(score > 0, "Executable metadata remains searchable when priority is disabled.");
+    }
+
+    [TestMethod]
+    [DataRow("wt", ExecutableNameMatchMode.FilenameAndStem, RankTier.ExactMetadata)]
+    [DataRow("wt", ExecutableNameMatchMode.FilenameOnly, RankTier.Fuzzy)]
+    [DataRow("wt", ExecutableNameMatchMode.Disabled, RankTier.Fuzzy)]
+    [DataRow("wt.exe", ExecutableNameMatchMode.FilenameAndStem, RankTier.ExactMetadata)]
+    [DataRow("wt.exe", ExecutableNameMatchMode.FilenameOnly, RankTier.ExactMetadata)]
+    [DataRow("WT.EXE", ExecutableNameMatchMode.Disabled, RankTier.Fuzzy)]
+    public void AppScores_ActiveExecutionAliasBeatsOtherClaimantAndExecutableDespiteHistory(
+        string queryText,
+        ExecutableNameMatchMode mode,
+        RankTier executableTier)
+    {
+        var stable = new AppListItem(
+            new AppItem { Name = "Terminal", UserModelId = "Terminal_123!App", IsPackaged = true, MatchTerms = ["wt.exe"] },
+            useThumbnails: false);
+        var preview = new AppListItem(
+            new AppItem { Name = "Terminal Preview", UserModelId = "TerminalPreview_123!App", IsPackaged = true, MatchTerms = ["wt.exe"] },
+            useThumbnails: false);
+        var executable = new AppListItem(
+            new AppItem { Name = "Standalone Console", ExePath = @"C:\Tools\wt.exe", FullExecutablePath = @"C:\Tools\wt.exe" },
+            useThumbnails: false);
+        var exactTitle = CreateApp(queryText);
+        var history = new RecentCommandsManager();
+        for (var i = 0; i < 100; i++)
+        {
+            history = history.WithHistoryItem(stable.Command!.Id).WithHistoryItem(executable.Command!.Id);
+        }
+
+        var matcher = new PrecomputedFuzzyMatcher();
+        var query = matcher.PrecomputeQuery(queryText);
+        var search = new AppSearch(queryText, matcher, mode, preview.App.UserModelId);
+        var stableScore = MainListPage.ScoreTopLevelItem(query, new(stable), history, matcher, search);
+        var previewScore = MainListPage.ScoreTopLevelItem(query, new(preview), history, matcher, search);
+        var executableScore = MainListPage.ScoreTopLevelItem(query, new(executable), history, matcher, search);
+        var exactTitleScore = MainListPage.ScoreTopLevelItem(query, new(exactTitle), history, matcher, search);
+
+        Assert.IsTrue(stableScore > 0, "Inactive claimants remain searchable.");
+        Assert.AreEqual(RankTier.PreferredExecutionAlias, MainListRanker.TierOf(previewScore));
+        Assert.AreEqual(executableTier, MainListRanker.TierOf(executableScore));
+        Assert.IsTrue(previewScore > stableScore, "The Windows-selected owner must beat prior use of the other claimant.");
+        Assert.IsTrue(previewScore > executableScore, "The Windows-selected owner must beat prior use of an unrelated executable with the same name.");
+        Assert.AreEqual(RankTier.ExactTitle, MainListRanker.TierOf(exactTitleScore));
+        Assert.IsTrue(exactTitleScore > previewScore, "An exact title remains stronger than the Windows-selected alias owner.");
+    }
+
+    [TestMethod]
+    [DataRow("python", ExecutableNameMatchMode.FilenameAndStem)]
+    [DataRow("python.exe", ExecutableNameMatchMode.FilenameAndStem)]
+    [DataRow("PYTHON.EXE", ExecutableNameMatchMode.FilenameOnly)]
+    public void AppScores_ActiveStoreAliasBeatsExactPythonExecutableDespiteHistory(string queryText, ExecutableNameMatchMode mode)
+    {
+        var storePython = new AppListItem(
+            new AppItem { Name = "Store Python", UserModelId = "StorePython_123!App", IsPackaged = true, MatchTerms = ["python.exe"] },
+            useThumbnails: false);
+        var pythonOrg = new AppListItem(
+            new AppItem { Name = "Python.org", ExePath = @"C:\Python\python.exe", FullExecutablePath = @"C:\Python\python.exe" },
+            useThumbnails: false);
+        var history = new RecentCommandsManager();
+        for (var i = 0; i < 100; i++)
+        {
+            history = history.WithHistoryItem(pythonOrg.Command!.Id);
+        }
+
+        var matcher = new PrecomputedFuzzyMatcher();
+        var query = matcher.PrecomputeQuery(queryText);
+        var search = new AppSearch(queryText, matcher, mode, storePython.App.UserModelId);
+        Assert.IsTrue(search.Evaluate(pythonOrg).IsExactExecutableMatch, "The competing executable must exercise ordinary exact-executable priority.");
+        Assert.IsFalse(search.Evaluate(pythonOrg).IsPreferredExecutionAliasMatch);
+        Assert.IsTrue(search.Evaluate(storePython).IsPreferredExecutionAliasMatch);
+
+        var pythonOrgScore = MainListPage.ScoreTopLevelItem(query, new(pythonOrg), history, matcher, search);
+        var storePythonScore = MainListPage.ScoreTopLevelItem(query, new(storePython), history, matcher, search);
+
+        Assert.AreEqual(RankTier.ExactMetadata, MainListRanker.TierOf(pythonOrgScore));
+        Assert.AreEqual(RankTier.PreferredExecutionAlias, MainListRanker.TierOf(storePythonScore));
+        Assert.IsTrue(storePythonScore > pythonOrgScore, "The active Store alias owner must beat the unrelated python.org executable despite its usage history.");
+    }
+
+    [TestMethod]
+    public void AppScores_NonemptyQueryRequiresPreparedSearch()
+    {
+        var app = CreateApp("Editor");
+        var matcher = new PrecomputedFuzzyMatcher();
+        var query = matcher.PrecomputeQuery("Editor");
+
+        var exception = Assert.ThrowsExactly<ArgumentNullException>(() => MainListPage.ScoreTopLevelItem(query, new(app), new RecentCommandsManager(), matcher, null));
+
+        Assert.AreEqual("appSearch", exception.ParamName);
     }
 
     [TestMethod]
@@ -499,9 +779,17 @@ public partial class MainListPageTests
         },
         useThumbnails: false);
 
-    private static async Task WithSearchPages(AppListItemSnapshot snapshot, bool pinFirstApp, Func<MainListPage, AllAppsPage, TopLevelCommandManager, Task> check, string? pinnedCommandId = null, Mock<IAppStateService>? appStateService = null)
+    private static async Task WithSearchPages(AppListItemSnapshot snapshot, bool pinFirstApp, Func<MainListPage, AllAppsPage, TopLevelCommandManager, Task> check, string? pinnedCommandId = null, Mock<IAppStateService>? appStateService = null, Mock<IAppListItemSource>? appListItemSource = null, bool appsEnabled = true)
     {
         var settings = new SettingsModel();
+        if (!appsEnabled)
+        {
+            settings = settings with
+            {
+                ProviderSettings = settings.ProviderSettings.SetItem(AllAppsCommandProvider.WellKnownId, new ProviderSettings(false)),
+            };
+        }
+
         if (pinFirstApp)
         {
             settings = settings.TryPinCommand(AllAppsCommandProvider.WellKnownId, pinnedCommandId ?? snapshot.VisibleItems[0].Command!.Id);
@@ -515,9 +803,13 @@ public partial class MainListPageTests
             .AddSingleton(TaskScheduler.Default)
             .AddSingleton(settingsService.Object)
             .BuildServiceProvider();
-        var source = new Mock<IAppListItemSource>();
-        source.Setup(service => service.GetSnapshot()).Returns(snapshot);
-        source.SetupGet(service => service.TopLevelResultLimit).Returns(10);
+        var source = appListItemSource ?? new Mock<IAppListItemSource>();
+        if (appListItemSource is null)
+        {
+            source.Setup(service => service.GetSnapshot()).Returns(snapshot);
+            source.SetupGet(service => service.TopLevelResultLimit).Returns(10);
+        }
+
         var matcherProvider = new FuzzyMatcherProvider(new());
         using var allApps = new AllAppsPage(source.Object, matcherProvider);
         var wrapper = new CommandProviderWrapper(new AppsProvider(snapshot, allApps), TaskScheduler.Default);

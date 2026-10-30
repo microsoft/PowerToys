@@ -38,6 +38,73 @@ public class AllAppsPageTests : AppsTestBase
     }
 
     [TestMethod]
+    [DataRow("cmd", false)]
+    [DataRow("CMD.EXE", true)]
+    public void AppListItemSource_ExecutableModeChangeReranksActiveQueryWithoutRefreshing(string query, bool filenameMatches)
+    {
+        var settingsForm = (SettingsForm)Settings.Settings.ToContent().Single();
+        settingsForm.SubmitForm("{\"apps.ExecutableNameMatchMode\":\"filenameAndStem\"}", "{}");
+        var commandPrompt = TestDataHelper.CreateTestWin32Program("Command Prompt", @"C:\Windows\System32\cmd.exe");
+        commandPrompt.LnkFilePath = @"C:\Start Menu\Command Prompt.lnk";
+        var developerPrompt = TestDataHelper.CreateTestWin32Program("Developer Command Prompt", commandPrompt.FullPath);
+        developerPrompt.LnkFilePath = @"C:\Start Menu\Developer Command Prompt.lnk";
+        developerPrompt.Arguments = "/k setup.bat";
+        MockCatalog.AddWin32Program(commandPrompt);
+        MockCatalog.AddWin32Program(developerPrompt);
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("cmd.exe helper", @"C:\Tools\Helper.exe"));
+        var originalSnapshot = AppListItemSource.GetSnapshot();
+        var originalRows = originalSnapshot.VisibleItems.ToDictionary(item => item.Command!.Id);
+        var commandPromptId = originalRows.Values.Single(item => item.Title == commandPrompt.Name).Command!.Id;
+        var helperId = originalRows.Values.Single(item => item.Title == "cmd.exe helper").Command!.Id;
+        var notifications = 0;
+        AppListItemSource.Changed += (_, _) => notifications++;
+        using var provider = new AllAppsCommandProvider(Page, AppListItemSource, Settings);
+        var providerNotifications = 0;
+        provider.ItemsChanged += (_, _) => providerNotifications++;
+        Page.SearchText = query;
+
+        Assert.AreEqual(commandPromptId, Page.GetItems().OfType<AppListItem>().First().Command!.Id);
+
+        foreach (var (value, mode, expectedFirstId) in new[]
+        {
+            ("filenameOnly", ExecutableNameMatchMode.FilenameOnly, filenameMatches ? commandPromptId : helperId),
+            ("disabled", ExecutableNameMatchMode.Disabled, helperId),
+            ("default", ExecutableNameMatchMode.FilenameOnly, filenameMatches ? commandPromptId : helperId),
+        })
+        {
+            var previousSnapshot = AppListItemSource.GetSnapshot();
+            settingsForm.SubmitForm($"{{\"apps.ExecutableNameMatchMode\":\"{value}\"}}", "{}");
+
+            Assert.AreEqual(query, Page.SearchText);
+            Assert.AreEqual(expectedFirstId, Page.GetItems().OfType<AppListItem>().First().Command!.Id, value);
+            var currentSnapshot = AppListItemSource.GetSnapshot();
+            var currentRows = currentSnapshot.VisibleItems;
+            Assert.AreNotSame(previousSnapshot, currentSnapshot);
+            Assert.AreEqual(mode, currentSnapshot.ExecutableNameMatchMode);
+            Assert.AreSame(originalSnapshot.VisibleItems, currentSnapshot.VisibleItems);
+            Assert.AreSame(originalSnapshot.HiddenItems, currentSnapshot.HiddenItems);
+            Assert.AreSame(originalSnapshot.PatternHiddenItems, currentSnapshot.PatternHiddenItems);
+            CollectionAssert.AreEquivalent(originalRows.Keys.ToArray(), currentRows.Select(item => item.Command!.Id).ToArray());
+            foreach (var item in currentRows)
+            {
+                Assert.AreSame(originalRows[item.Command!.Id], item, "Mode changes preserve rows and their search caches.");
+                Assert.AreSame(originalRows[item.Command.Id].Command, item.Command);
+            }
+
+            Assert.IsTrue(Page.GetItems().OfType<AppListItem>().Any(item => item.Title == developerPrompt.Name), "Argument-bearing profiles remain searchable.");
+        }
+
+        var unchangedSnapshot = AppListItemSource.GetSnapshot();
+        settingsForm.SubmitForm("{\"apps.ExecutableNameMatchMode\":\"filenameOnly\"}", "{}");
+
+        Assert.AreSame(unchangedSnapshot, AppListItemSource.GetSnapshot());
+        Assert.AreEqual(3, notifications);
+        Assert.AreEqual(0, providerNotifications, "Search policy changes must not reload provider commands.");
+        Assert.AreEqual(0, MockCatalog.RefreshCallCount);
+        Assert.AreEqual(1, MockCatalog.InitializeCallCount);
+    }
+
+    [TestMethod]
     public void AppListItemSource_UnrelatedSettingDoesNotReprojectOrNotify()
     {
         MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));

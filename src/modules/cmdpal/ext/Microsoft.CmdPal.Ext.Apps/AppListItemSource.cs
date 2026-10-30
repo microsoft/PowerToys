@@ -32,6 +32,7 @@ public sealed partial class AppListItemSource : IAppListItemSource
     private readonly IAppCatalog _appCatalog;
     private readonly AllAppsSettings _settings;
     private readonly MEL.ILogger<AppListItemSource> _logger;
+    private readonly AppExecutionAliasCache? _executionAliasCache;
 
     private PublishedState _publishedState = new(new AppListItemSnapshot([], []), IsLoading: true, HideDescriptions: false, ResultLimit: 0);
     private CommandContextItem? _editExclusionPatterns;
@@ -57,18 +58,38 @@ public sealed partial class AppListItemSource : IAppListItemSource
     /// <param name="appCatalog">The canonical application catalog to project.</param>
     /// <param name="settings">Settings that control presentation-only projection choices.</param>
     /// <param name="logger">The diagnostic logger for projection failures.</param>
+    /// <param name="executionAliasCache">The optional, independently owned background alias cache.</param>
     public AppListItemSource(
         IAppCatalog appCatalog,
         AllAppsSettings settings,
-        MEL.ILogger<AppListItemSource> logger)
+        MEL.ILogger<AppListItemSource> logger,
+        AppExecutionAliasCache? executionAliasCache = null)
     {
         _appCatalog = appCatalog ?? throw new ArgumentNullException(nameof(appCatalog));
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _publishedState = _publishedState with { HideDescriptions = _settings.HideAppDescriptions, ResultLimit = _settings.EffectiveSearchResultLimit };
+        _executionAliasCache = executionAliasCache;
+        lock (_stateLock)
+        {
+            if (_executionAliasCache is not null)
+            {
+                _executionAliasCache.Changed += OnExecutionAliasOwnersChanged;
+            }
+
+            _publishedState = _publishedState with
+            {
+                Snapshot = _executionAliasCache is null
+                    ? _publishedState.Snapshot
+                    : _publishedState.Snapshot.WithExecutionAliasOwners(_executionAliasCache.GetSnapshot()),
+                HideDescriptions = _settings.HideAppDescriptions,
+                ResultLimit = _settings.EffectiveSearchResultLimit,
+            };
+        }
+
         _appCatalog.Changed += OnCatalogChanged;
         _appCatalog.VisibilityChanged += OnCatalogVisibilityChanged;
         _settings.Settings.SettingsChanged += OnSettingsChanged;
+        _executionAliasCache?.RequestRefresh();
         _ = InitializeAsync();
     }
 
@@ -83,6 +104,38 @@ public sealed partial class AppListItemSource : IAppListItemSource
 
     /// <inheritdoc />
     public int TopLevelResultLimit => _settings.EffectiveSearchResultLimit;
+
+    /// <inheritdoc />
+    public void RequestExecutionAliasRefresh()
+    {
+        if (!_disposed.Value)
+        {
+            _executionAliasCache?.RequestRefresh();
+        }
+    }
+
+    private void OnExecutionAliasOwnersChanged(object? sender, EventArgs args)
+    {
+        lock (_stateLock)
+        {
+            if (_disposed.Value)
+            {
+                return;
+            }
+
+            var state = _publishedState;
+            var owners = _executionAliasCache!.GetSnapshot();
+            var snapshot = state.Snapshot.WithExecutionAliasOwners(owners);
+            if (ReferenceEquals(snapshot, state.Snapshot))
+            {
+                return;
+            }
+
+            Volatile.Write(ref _publishedState, state with { Snapshot = snapshot });
+        }
+
+        RaiseChanged();
+    }
 
     /// <inheritdoc />
     public async Task RefreshAsync()
@@ -131,7 +184,9 @@ public sealed partial class AppListItemSource : IAppListItemSource
     private void OnSettingsChanged(object sender, Settings args)
     {
         var state = Volatile.Read(ref _publishedState);
-        if (state.HideDescriptions != _settings.HideAppDescriptions || state.ResultLimit != _settings.EffectiveSearchResultLimit)
+        if (state.HideDescriptions != _settings.HideAppDescriptions
+            || state.ResultLimit != _settings.EffectiveSearchResultLimit
+            || state.Snapshot.ExecutableNameMatchMode != _settings.ExecutableNameMatchMode)
         {
             SynchronizeWithCatalog();
         }
@@ -199,6 +254,7 @@ public sealed partial class AppListItemSource : IAppListItemSource
         var snapshot = state.Snapshot;
         var hideDescriptions = _settings.HideAppDescriptions;
         var resultLimit = _settings.EffectiveSearchResultLimit;
+        var executableNameMatchMode = _settings.ExecutableNameMatchMode;
         var presentationChanged = state.HideDescriptions != hideDescriptions;
         var existingItems = new Dictionary<string, (AppListItem Item, AppVisibility Visibility)>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in snapshot.VisibleItems)
@@ -221,7 +277,9 @@ public sealed partial class AppListItemSource : IAppListItemSource
             BuildList(catalogSnapshot.Items, AppVisibility.Visible, hideDescriptions, existingItems, presentationChanged ? null : snapshot.VisibleItems),
             BuildList(catalogSnapshot.HiddenItems, AppVisibility.Hidden, hideDescriptions, existingItems, presentationChanged ? null : snapshot.HiddenItems),
             BuildList(catalogSnapshot.PatternHiddenItems, AppVisibility.HiddenByPattern, hideDescriptions, existingItems, presentationChanged ? null : snapshot.PatternHiddenItems),
-            commandAliases);
+            commandAliases,
+            executableNameMatchMode,
+            snapshot.ExecutionAliasOwners);
 
         var resolutionChanged = !updated.HasSameCommandResolution(snapshot);
 
@@ -229,12 +287,12 @@ public sealed partial class AppListItemSource : IAppListItemSource
             && ReferenceEquals(updated.HiddenItems, snapshot.HiddenItems)
             && ReferenceEquals(updated.PatternHiddenItems, snapshot.PatternHiddenItems))
         {
-            if (!resolutionChanged && !presentationChanged && state.ResultLimit == resultLimit)
+            if (!resolutionChanged && !presentationChanged && state.ResultLimit == resultLimit && snapshot.ExecutableNameMatchMode == executableNameMatchMode)
             {
                 return;
             }
 
-            if (!resolutionChanged)
+            if (!resolutionChanged && snapshot.ExecutableNameMatchMode == executableNameMatchMode)
             {
                 updated = snapshot;
             }
@@ -245,6 +303,11 @@ public sealed partial class AppListItemSource : IAppListItemSource
             if (_disposed.Value)
             {
                 return;
+            }
+
+            if (_executionAliasCache is not null)
+            {
+                updated = updated.WithExecutionAliasOwners(_executionAliasCache.GetSnapshot());
             }
 
             Volatile.Write(ref _publishedState, _publishedState with { Snapshot = updated, HideDescriptions = hideDescriptions, ResultLimit = resultLimit });
@@ -362,6 +425,11 @@ public sealed partial class AppListItemSource : IAppListItemSource
         _appCatalog.Changed -= OnCatalogChanged;
         _appCatalog.VisibilityChanged -= OnCatalogVisibilityChanged;
         _settings.Settings.SettingsChanged -= OnSettingsChanged;
+        if (_executionAliasCache is not null)
+        {
+            _executionAliasCache.Changed -= OnExecutionAliasOwnersChanged;
+        }
+
         Changed = null;
         _settings.WaitForAliasSavesAsync().GetAwaiter().GetResult();
         GC.SuppressFinalize(this);
