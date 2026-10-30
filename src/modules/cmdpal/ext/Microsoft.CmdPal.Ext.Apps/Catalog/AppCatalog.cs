@@ -28,6 +28,7 @@ public sealed partial class AppCatalog : IAppCatalog
     private readonly Dictionary<string, IAppSource> _sourcesById = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SourceRefreshRequest> _pendingRefreshes = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SourceRefreshRequest> _debouncedRefreshes = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, TaskCompletionSource> _initialSourcePublications = new(StringComparer.Ordinal);
     private readonly IAppCatalogCache _cache;
     private readonly IAppVisibilityStore _visibilityStore;
     private readonly IReadOnlyList<IAppCatalogFilter> _filters;
@@ -35,6 +36,7 @@ public sealed partial class AppCatalog : IAppCatalog
     private readonly TimeProvider _timeProvider;
     private readonly TimeSpan _invalidationDelay;
     private readonly CancellationTokenSource _disposeCancellation = new();
+    private readonly CancellationToken _disposeToken;
 
     private IReadOnlyList<IAppSource> _sources;
 
@@ -63,6 +65,7 @@ public sealed partial class AppCatalog : IAppCatalog
         _logger = logger ?? NullLogger<AppCatalog>.Instance;
         _timeProvider = timeProvider ?? TimeProvider.System;
         _invalidationDelay = invalidationDelay ?? DefaultInvalidationDelay;
+        _disposeToken = _disposeCancellation.Token;
 
         foreach (var source in _sources)
         {
@@ -126,24 +129,8 @@ public sealed partial class AppCatalog : IAppCatalog
     private async Task InitializeCoreAsync()
     {
         var sources = GetSourcesSnapshot();
-        foreach (var source in sources)
-        {
-            try
-            {
-                await source.InitializeAsync(_disposeCancellation.Token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (_disposeCancellation.IsCancellationRequested)
-            {
-                return;
-            }
-            catch (Exception ex)
-            {
-                LogSourceInitializationFailed(_logger, source.Id, ex);
-            }
-        }
-
         var context = AppCatalogCacheContext.Create(sources, _timeProvider.GetUtcNow());
-        var cache = await _cache.LoadAsync(context, _disposeCancellation.Token).ConfigureAwait(false);
+        var cache = await _cache.LoadAsync(context, _disposeToken).ConfigureAwait(false);
         if (cache is not null)
         {
             var snapshots = new Dictionary<string, IReadOnlyList<AppCatalogItem>>(StringComparer.Ordinal);
@@ -172,25 +159,79 @@ public sealed partial class AppCatalog : IAppCatalog
 
             if (cachedSourcesToReconcile.Count > 0)
             {
-                _ = ReconcileCachedSourcesAfterDelayAsync(cachedSourcesToReconcile);
+                _ = Task.Run(() => ReconcileCachedSourcesAfterDelayAsync(cachedSourcesToReconcile), _disposeToken);
             }
 
             if (missingSources.Count > 0)
             {
-                await QueueFullRefresh(missingSources).ConfigureAwait(false);
+                await InitializeSourcesAsync(missingSources).ConfigureAwait(false);
+                await RefreshInitialSourcesAsync(missingSources).ConfigureAwait(false);
             }
 
             return;
         }
 
-        await RefreshAsync().ConfigureAwait(false);
+        await InitializeSourcesAsync(sources).ConfigureAwait(false);
+        await RefreshInitialSourcesAsync(GetSourcesSnapshot()).ConfigureAwait(false);
+    }
+
+    private async Task InitializeSourcesAsync(IReadOnlyList<IAppSource> sources)
+    {
+        foreach (var source in sources)
+        {
+            if (!IsActiveSource(source))
+            {
+                continue;
+            }
+
+            try
+            {
+                await source.InitializeAsync(_disposeToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (_disposeToken.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (ObjectDisposedException) when (!IsActiveSource(source))
+            {
+            }
+            catch (Exception ex)
+            {
+                LogSourceInitializationFailed(_logger, source.Id, ex);
+            }
+        }
+    }
+
+    private bool IsActiveSource(IAppSource source)
+    {
+        lock (_stateLock)
+        {
+            return !_disposed && _sourcesById.TryGetValue(source.Id, out var activeSource)
+                && ReferenceEquals(activeSource, source);
+        }
+    }
+
+    private async Task RefreshInitialSourcesAsync(IReadOnlyList<IAppSource> sources)
+    {
+        try
+        {
+            await QueueFullRefresh(sources, waitForPublication: true).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (_disposeToken.IsCancellationRequested)
+        {
+        }
+        catch (ObjectDisposedException)
+        {
+        }
     }
 
     private async Task ReconcileCachedSourcesAfterDelayAsync(IReadOnlyList<IAppSource> sources)
     {
         try
         {
-            await Task.Delay(CachedSourceReconciliationDelay, _disposeCancellation.Token).ConfigureAwait(false);
+            // Establish watchers before reconciling changes that occurred while the cache was being shown.
+            await InitializeSourcesAsync(sources).ConfigureAwait(false);
+            await Task.Delay(CachedSourceReconciliationDelay, _disposeToken).ConfigureAwait(false);
             await QueueFullRefresh(sources).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (_disposeCancellation.IsCancellationRequested)
@@ -198,6 +239,10 @@ public sealed partial class AppCatalog : IAppCatalog
         }
         catch (ObjectDisposedException)
         {
+        }
+        catch (Exception ex)
+        {
+            LogCatalogRefreshFailed(_logger, ex);
         }
     }
 
@@ -209,9 +254,10 @@ public sealed partial class AppCatalog : IAppCatalog
         }
     }
 
-    private Task QueueFullRefresh(IReadOnlyList<IAppSource> sources)
+    private Task QueueFullRefresh(IReadOnlyList<IAppSource> sources, bool waitForPublication = false)
     {
         Task refreshTask;
+        List<Task>? publicationTasks = waitForPublication ? [] : null;
         var refreshStarted = false;
 
         lock (_stateLock)
@@ -220,13 +266,24 @@ public sealed partial class AppCatalog : IAppCatalog
             foreach (var source in sources)
             {
                 if (!_sourcesById.TryGetValue(source.Id, out var activeSource)
-                    || !ReferenceEquals(activeSource, source))
+                    || (!waitForPublication && !ReferenceEquals(activeSource, source)))
                 {
                     continue;
                 }
 
                 _debouncedRefreshes.Remove(source.Id);
-                GetOrAddRefreshRequest(_pendingRefreshes, source).RequireFullRefresh();
+                var request = GetOrAddRefreshRequest(_pendingRefreshes, activeSource);
+                request.RequireFullRefresh();
+                if (publicationTasks is not null)
+                {
+                    if (!_initialSourcePublications.TryGetValue(source.Id, out var publication))
+                    {
+                        publication = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                        _initialSourcePublications.Add(source.Id, publication);
+                    }
+
+                    publicationTasks.Add(publication.Task);
+                }
             }
 
             refreshTask = StartRefreshUnderLock(out refreshStarted);
@@ -237,7 +294,11 @@ public sealed partial class AppCatalog : IAppCatalog
             RaiseRefreshStateChanged();
         }
 
-        return refreshTask;
+        // Initial publication follows a source ID through replacements, even while the refresh loop is idle.
+        // Explicit refreshes also wait for later invalidations to drain.
+        return publicationTasks is null
+            ? refreshTask
+            : Task.WhenAll(publicationTasks).WaitAsync(_disposeToken);
     }
 
     private async Task RefreshUntilCurrentAsync()
@@ -276,13 +337,13 @@ public sealed partial class AppCatalog : IAppCatalog
                         if (incremental)
                         {
                             refreshedItems = await request.Source
-                                .ApplyChangesAsync(currentItems, request.PathChanges, _disposeCancellation.Token)
+                                .ApplyChangesAsync(currentItems, request.PathChanges, _disposeToken)
                                 .ConfigureAwait(false);
                         }
                         else
                         {
                             refreshedItems = await request.Source
-                                .LoadAsync(_disposeCancellation.Token)
+                                .LoadAsync(_disposeToken)
                                 .ConfigureAwait(false);
                         }
 
@@ -301,6 +362,7 @@ public sealed partial class AppCatalog : IAppCatalog
                 IReadOnlyList<AppCatalogItemChange> changes = [];
                 var snapshotsChanged = false;
                 List<string> fullyReconciledSourceIds = [];
+                List<TaskCompletionSource> initialPublications = [];
                 lock (_stateLock)
                 {
                     if (_disposed)
@@ -337,11 +399,26 @@ public sealed partial class AppCatalog : IAppCatalog
                     {
                         changes = PublishSnapshotsUnderLock(snapshots);
                     }
+
+                    foreach (var request in requests)
+                    {
+                        if (_sourcesById.TryGetValue(request.Source.Id, out var activeSource)
+                            && ReferenceEquals(activeSource, request.Source)
+                            && _initialSourcePublications.Remove(request.Source.Id, out var publication))
+                        {
+                            initialPublications.Add(publication);
+                        }
+                    }
                 }
 
                 if (changes.Count > 0)
                 {
                     RaiseChanged(changes);
+                }
+
+                foreach (var publication in initialPublications)
+                {
+                    publication.TrySetResult();
                 }
 
                 if (snapshotsChanged || fullyReconciledSourceIds.Count > 0)
@@ -353,7 +430,7 @@ public sealed partial class AppCatalog : IAppCatalog
                             snapshots,
                             fullyReconciledSourceIds,
                             context,
-                            _disposeCancellation.Token).ConfigureAwait(false);
+                            _disposeToken).ConfigureAwait(false);
                     }
                     catch (OperationCanceledException) when (_disposeCancellation.IsCancellationRequested)
                     {
@@ -399,6 +476,13 @@ public sealed partial class AppCatalog : IAppCatalog
             {
                 if (!completedNormally && !_disposed && _refreshTask is not null)
                 {
+                    // A failed refresh must not leave startup waiting for a publication it cannot produce.
+                    foreach (var publication in _initialSourcePublications.Values)
+                    {
+                        publication.TrySetResult();
+                    }
+
+                    _initialSourcePublications.Clear();
                     _refreshTask = null;
                     if (_pendingRefreshes.Count > 0)
                     {
@@ -514,16 +598,11 @@ public sealed partial class AppCatalog : IAppCatalog
             MovePublishedAppUnderLock(publishedState, sourceIndex, hidden);
         }
 
-        try
-        {
-            RaiseVisibilityChanged(catalogId, hidden);
-        }
-        finally
-        {
-            // TODO: Persist visibility changes fire-and-forget so disk I/O never extends the user-visible operation.
-            // Persistence failures must still be observed and logged.
-            _visibilityStore.Persist();
-        }
+        RaiseVisibilityChanged(catalogId, hidden);
+
+        // TODO: Persist visibility changes fire-and-forget so disk I/O never extends the user-visible operation.
+        // Persistence failures must still be observed and logged.
+        _visibilityStore.Persist();
     }
 
     private void MovePublishedAppUnderLock(PublishedState publishedState, int sourceIndex, bool hidden)
@@ -823,6 +902,7 @@ public sealed partial class AppCatalog : IAppCatalog
     {
         List<IAppSource> addedSources = [];
         List<IAppSource> removedSources = [];
+        List<TaskCompletionSource> removedPublications = [];
         IReadOnlyList<AppCatalogItemChange> changes = [];
         var sourcesById = new Dictionary<string, IAppSource>(StringComparer.Ordinal);
         foreach (var source in sources)
@@ -850,6 +930,11 @@ public sealed partial class AppCatalog : IAppCatalog
                     removedSources.Add(existing.Value);
                     _pendingRefreshes.Remove(existing.Key);
                     _debouncedRefreshes.Remove(existing.Key);
+                    if (!sourcesById.ContainsKey(existing.Key)
+                        && _initialSourcePublications.Remove(existing.Key, out var publication))
+                    {
+                        removedPublications.Add(publication);
+                    }
                 }
             }
 
@@ -898,21 +983,12 @@ public sealed partial class AppCatalog : IAppCatalog
             RaiseChanged(changes);
         }
 
-        foreach (var source in addedSources)
+        foreach (var publication in removedPublications)
         {
-            try
-            {
-                await source.InitializeAsync(_disposeCancellation.Token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (_disposeCancellation.IsCancellationRequested)
-            {
-                return;
-            }
-            catch (Exception ex)
-            {
-                LogSourceInitializationFailed(_logger, source.Id, ex);
-            }
+            publication.TrySetResult();
         }
+
+        await InitializeSourcesAsync(addedSources).ConfigureAwait(false);
 
         if (addedSources.Count > 0)
         {
@@ -978,7 +1054,7 @@ public sealed partial class AppCatalog : IAppCatalog
     {
         try
         {
-            await Task.Delay(_invalidationDelay, _disposeCancellation.Token).ConfigureAwait(false);
+            await Task.Delay(_invalidationDelay, _disposeToken).ConfigureAwait(false);
             QueueDebouncedRefreshes(endScheduledWindow: true);
         }
         catch (OperationCanceledException)
@@ -1037,7 +1113,7 @@ public sealed partial class AppCatalog : IAppCatalog
     {
         if (!_disposed)
         {
-            Changed?.Invoke(this, new AppCatalogChangedEventArgs(changes));
+            RaiseNotification(Changed, new AppCatalogChangedEventArgs(changes));
         }
     }
 
@@ -1053,7 +1129,23 @@ public sealed partial class AppCatalog : IAppCatalog
     {
         if (!_disposed)
         {
-            VisibilityChanged?.Invoke(this, new AppVisibilityChangedEventArgs(catalogId, hidden));
+            RaiseNotification(VisibilityChanged, new AppVisibilityChangedEventArgs(catalogId, hidden));
+        }
+    }
+
+    private void RaiseNotification<TEventArgs>(EventHandler<TEventArgs>? handlers, TEventArgs args)
+        where TEventArgs : EventArgs
+    {
+        foreach (var handler in Delegate.EnumerateInvocationList(handlers))
+        {
+            try
+            {
+                handler(this, args);
+            }
+            catch (Exception ex)
+            {
+                LogCatalogChangeNotificationFailed(_logger, ex);
+            }
         }
     }
 
@@ -1078,6 +1170,7 @@ public sealed partial class AppCatalog : IAppCatalog
             VisibilityChanged = null;
             _pendingRefreshes.Clear();
             _debouncedRefreshes.Clear();
+            _initialSourcePublications.Clear();
             sources = _sources;
         }
 
@@ -1102,6 +1195,39 @@ public sealed partial class AppCatalog : IAppCatalog
         _disposeCancellation.Dispose();
         GC.SuppressFinalize(this);
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Failed to initialize application source '{SourceId}'.")]
+    private static partial void LogSourceInitializationFailed(MEL.ILogger logger, string sourceId, Exception exception);
+
+    [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Failed to refresh application source '{SourceId}'.")]
+    private static partial void LogSourceRefreshFailed(MEL.ILogger logger, string sourceId, Exception exception);
+
+    [LoggerMessage(EventId = 3, Level = LogLevel.Error, Message = "Failed to save the application catalog cache.")]
+    private static partial void LogCacheSaveFailed(MEL.ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 4, Level = LogLevel.Error, Message = "Application catalog refresh failed.")]
+    private static partial void LogCatalogRefreshFailed(MEL.ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 5, Level = LogLevel.Error, Message = "Application catalog refresh-state notification failed.")]
+    private static partial void LogRefreshStateNotificationFailed(MEL.ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 6, Level = LogLevel.Error, Message = "Application catalog refresh recovery failed.")]
+    private static partial void LogRefreshRecoveryFailed(MEL.ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 7, Level = LogLevel.Warning, Message = "Failed to materialize cached application '{Identity}'.")]
+    private static partial void LogCachedApplicationMaterializationFailed(MEL.ILogger logger, string identity, Exception exception);
+
+    [LoggerMessage(EventId = 8, Level = LogLevel.Error, Message = "Application source provider returned duplicate ID '{SourceId}'.")]
+    private static partial void LogDuplicateSourceId(MEL.ILogger logger, string sourceId);
+
+    [LoggerMessage(EventId = 9, Level = LogLevel.Error, Message = "Application catalog policy reprojection failed.")]
+    private static partial void LogCatalogReprojectionFailed(MEL.ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 10, Level = LogLevel.Warning, Message = "Ignored a conflicting representation of canonical application '{Identity}'.")]
+    private static partial void LogCatalogMergeConflict(MEL.ILogger logger, string identity, Exception exception);
+
+    [LoggerMessage(EventId = 11, Level = LogLevel.Error, Message = "Application catalog change notification failed.")]
+    private static partial void LogCatalogChangeNotificationFailed(MEL.ILogger logger, Exception exception);
 
     private sealed class SourceRefreshRequest
     {
@@ -1190,36 +1316,6 @@ public sealed partial class AppCatalog : IAppCatalog
             _pathChanges.Add(change);
         }
     }
-
-    [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Failed to initialize application source '{SourceId}'.")]
-    private static partial void LogSourceInitializationFailed(MEL.ILogger logger, string sourceId, Exception exception);
-
-    [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Failed to refresh application source '{SourceId}'.")]
-    private static partial void LogSourceRefreshFailed(MEL.ILogger logger, string sourceId, Exception exception);
-
-    [LoggerMessage(EventId = 3, Level = LogLevel.Error, Message = "Failed to save the application catalog cache.")]
-    private static partial void LogCacheSaveFailed(MEL.ILogger logger, Exception exception);
-
-    [LoggerMessage(EventId = 4, Level = LogLevel.Error, Message = "Application catalog refresh failed.")]
-    private static partial void LogCatalogRefreshFailed(MEL.ILogger logger, Exception exception);
-
-    [LoggerMessage(EventId = 5, Level = LogLevel.Error, Message = "Application catalog refresh-state notification failed.")]
-    private static partial void LogRefreshStateNotificationFailed(MEL.ILogger logger, Exception exception);
-
-    [LoggerMessage(EventId = 6, Level = LogLevel.Error, Message = "Application catalog refresh recovery failed.")]
-    private static partial void LogRefreshRecoveryFailed(MEL.ILogger logger, Exception exception);
-
-    [LoggerMessage(EventId = 7, Level = LogLevel.Warning, Message = "Failed to materialize cached application '{Identity}'.")]
-    private static partial void LogCachedApplicationMaterializationFailed(MEL.ILogger logger, string identity, Exception exception);
-
-    [LoggerMessage(EventId = 8, Level = LogLevel.Error, Message = "Application source provider returned duplicate ID '{SourceId}'.")]
-    private static partial void LogDuplicateSourceId(MEL.ILogger logger, string sourceId);
-
-    [LoggerMessage(EventId = 9, Level = LogLevel.Error, Message = "Application catalog policy reprojection failed.")]
-    private static partial void LogCatalogReprojectionFailed(MEL.ILogger logger, Exception exception);
-
-    [LoggerMessage(EventId = 10, Level = LogLevel.Warning, Message = "Ignored a conflicting representation of canonical application '{Identity}'.")]
-    private static partial void LogCatalogMergeConflict(MEL.ILogger logger, string identity, Exception exception);
 
     private sealed record PublishedState(
         IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>> SourceSnapshots,
