@@ -212,6 +212,7 @@
                         Spacing="8">
                         <TextBlock
                             Margin="0,-8,0,0"
+                            AutomationProperties.HeadingLevel="Level1"
                             Style="{StaticResource TitleTextBlockStyle}"
                             Text="{x:Bind ViewModel.DisplayTitle, Mode=OneWay}" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -220,6 +221,7 @@
                                 x:Uid="Settings_GalleryItemPage_AuthorLink"
                                 Padding="0"
                                 AutomationProperties.AutomationId="CmdPal_GalleryItemPage_AuthorLink"
+                                AutomationProperties.Name="{x:Bind ViewModel.DisplayAuthorName, Mode=OneWay}"
                                 Command="{x:Bind ViewModel.OpenAuthorPageCommand, Mode=OneWay}"
                                 Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasAuthorUrl), Mode=OneWay, FallbackValue=Collapsed}">
                                 <StackPanel Orientation="Horizontal" Spacing="4">
@@ -229,6 +231,7 @@
                             </HyperlinkButton>
                             <TextBlock Text="•" />
                             <HyperlinkButton
+                                x:Uid="Settings_GalleryItemPage_ViewRepository"
                                 Grid.Row="3"
                                 Padding="0"
                                 AutomationProperties.AutomationId="CmdPal_GalleryItemPage_ViewRepository"
@@ -338,6 +341,7 @@
                             <TextBlock
                                 x:Uid="Settings_GalleryItemPage_Screenshots_Header"
                                 Margin="16,12,16,12"
+                                AutomationProperties.HeadingLevel="Level2"
                                 FontWeight="SemiBold" />
                             <Rectangle
                                 Grid.Row="1"
@@ -347,6 +351,7 @@
 
                             <ItemsView
                                 x:Name="ScreenshotsItemsView"
+                                x:Uid="Settings_GalleryItemPage_ScreenshotsItemsView"
                                 Grid.Row="2"
                                 Padding="16"
                                 IsItemInvokedEnabled="True"
@@ -403,6 +408,7 @@
                                 <TextBlock
                                     x:Uid="Settings_GalleryItemPage_Description_Header"
                                     Margin="16,12,16,12"
+                                    AutomationProperties.HeadingLevel="Level2"
                                     FontWeight="SemiBold" />
                                 <Rectangle
                                     Grid.Row="1"
