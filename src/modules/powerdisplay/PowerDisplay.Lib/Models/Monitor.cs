@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using PowerDisplay.Common.Interfaces;
@@ -30,6 +31,9 @@ namespace PowerDisplay.Common.Models
         private int _currentInputSource; // VCP 0x60 value
         private int _currentPowerState = 0x01; // Default to On (VCP 0xD6 value)
         private int _orientation;
+        private int _currentRefreshRate = -1;
+        private IReadOnlyList<int> _availableRefreshRates = Array.Empty<int>();
+        private bool _sharesDisplaySource;
 
         /// <summary>
         /// Gets or sets unique identifier for all purposes: UI lookups, IPC, persistent storage, and handle management.
@@ -335,6 +339,49 @@ namespace PowerDisplay.Common.Models
                 if (_orientation != value)
                 {
                     _orientation = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int CurrentRefreshRate
+        {
+            get => _currentRefreshRate;
+            set
+            {
+                if (_currentRefreshRate != value)
+                {
+                    _currentRefreshRate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public IReadOnlyList<int> AvailableRefreshRates
+        {
+            get => _availableRefreshRates;
+            set
+            {
+                _availableRefreshRates = value ?? Array.Empty<int>();
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(SupportsRefreshRate));
+            }
+        }
+
+        public bool SupportsRefreshRate => AvailableRefreshRates.Count > 1;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether another active display shares this monitor's
+        /// display source (Duplicate mode). Refresh rate can't be changed per display then.
+        /// </summary>
+        public bool SharesDisplaySource
+        {
+            get => _sharesDisplaySource;
+            set
+            {
+                if (_sharesDisplaySource != value)
+                {
+                    _sharesDisplaySource = value;
                     OnPropertyChanged();
                 }
             }
