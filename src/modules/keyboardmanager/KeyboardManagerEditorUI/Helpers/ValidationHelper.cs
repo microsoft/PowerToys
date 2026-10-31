@@ -216,13 +216,25 @@ namespace KeyboardManagerEditorUI.Helpers
                 .Where(kvp => kvp.Value.IsActive)
                 .Where(kvp => editingId == null || kvp.Key != editingId)
                 .Count(kvp => KeyboardManagerInterop.AreShortcutsEqual(kvp.Value.Shortcut.OriginalKeys, shortcutKeysString) &&
-                              (string.IsNullOrEmpty(kvp.Value.Shortcut.TargetApp) || string.IsNullOrEmpty(appName) || kvp.Value.Shortcut.TargetApp == appName));
+                              DoApplicationScopesOverlap(kvp.Value.Shortcut.TargetApp, appName));
 
             // With the edited row's identity we exclude exactly that row above, so any remaining match is
             // a genuine duplicate against a *different* row. Without it, fall back to the old tolerance
             // (edit mode may still match its own not-yet-excluded row once).
             int upperLimit = editingId != null ? 0 : (isEditMode ? 1 : 0);
             return matches > upperLimit;
+        }
+
+        /// <summary>
+        /// A global mapping overlaps every app-specific mapping. App identities
+        /// are Windows executable names, which must be compared without a
+        /// culture-sensitive or case-sensitive string comparison.
+        /// </summary>
+        internal static bool DoApplicationScopesOverlap(string? existingApp, string? requestedApp)
+        {
+            return string.IsNullOrEmpty(existingApp) ||
+                   string.IsNullOrEmpty(requestedApp) ||
+                   string.Equals(existingApp, requestedApp, StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool IsSelfMapping(List<string> originalKeys, List<string> remappedKeys, KeyboardMappingService mappingService)
@@ -286,7 +298,12 @@ namespace KeyboardManagerEditorUI.Helpers
             bool isEditMode = false,
             string? editingId = null)
         {
-            if (originalKeys.Count < 2)
+            if (originalKeys == null || originalKeys.Count == 0)
+            {
+                return ValidationErrorType.EmptyOriginalKeys;
+            }
+
+            if (originalKeys.Count == 1)
             {
                 return ValidationErrorType.OneKeyMapping;
             }
