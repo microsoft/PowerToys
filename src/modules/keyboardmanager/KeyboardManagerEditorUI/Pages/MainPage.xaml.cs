@@ -115,6 +115,8 @@ namespace KeyboardManagerEditorUI.Pages
         // Cached composite formats for the (localized) bulk-delete strings, parsed lazily on first use.
         private CompositeFormat? _deleteSelectedFormat;
         private CompositeFormat? _bulkDeleteConfirmationFormat;
+        private CompositeFormat? _orphanedKeysWarningFormat;
+        private CompositeFormat? _orphanedKeysWarningPluralFormat;
 
         // Options shown in the app-filter combo box: [All apps], [Global only], then each distinct app name.
         public ObservableCollection<string> AppFilterOptions { get; } = new();
@@ -444,7 +446,7 @@ namespace KeyboardManagerEditorUI.Pages
         {
             RemappingDialog.PrimaryButtonClick += RemappingDialog_PrimaryButtonClick;
             UnifiedMappingControl.ValidationStateChanged += UnifiedMappingControl_ValidationStateChanged;
-            RemappingDialog.IsPrimaryButtonEnabled = UnifiedMappingControl.IsInputComplete();
+            UnifiedMappingControl_ValidationStateChanged(UnifiedMappingControl, EventArgs.Empty);
 
             await RemappingDialog.ShowAsync();
 
@@ -459,26 +461,26 @@ namespace KeyboardManagerEditorUI.Pages
         {
             if (!UnifiedMappingControl.IsInputComplete())
             {
+                UnifiedMappingControl.SetAdvisoryWarning(null);
                 RemappingDialog.IsPrimaryButtonEnabled = false;
                 return;
             }
 
-            if (_mappingService != null)
+            List<string> triggerKeys = UnifiedMappingControl.GetTriggerKeys();
+            if (_mappingService != null && triggerKeys?.Count > 0)
             {
-                List<string> triggerKeys = UnifiedMappingControl.GetTriggerKeys();
-                if (triggerKeys?.Count > 0)
+                ValidationErrorType error = ValidateMapping(UnifiedMappingControl.CurrentActionType, triggerKeys);
+                if (error != ValidationErrorType.NoError)
                 {
-                    ValidationErrorType error = ValidateMapping(UnifiedMappingControl.CurrentActionType, triggerKeys);
-                    if (error != ValidationErrorType.NoError)
-                    {
-                        UnifiedMappingControl.ShowValidationErrorFromType(error);
-                        RemappingDialog.IsPrimaryButtonEnabled = false;
-                        return;
-                    }
+                    UnifiedMappingControl.SetAdvisoryWarning(null);
+                    UnifiedMappingControl.ShowValidationErrorFromType(error);
+                    RemappingDialog.IsPrimaryButtonEnabled = false;
+                    return;
                 }
             }
 
             UnifiedMappingControl.HideValidationMessage();
+            UnifiedMappingControl.SetAdvisoryWarning(triggerKeys?.Count > 0 ? GetOrphanedKeysWarning(triggerKeys) : null);
             RemappingDialog.IsPrimaryButtonEnabled = true;
         }
 
@@ -567,6 +569,59 @@ namespace KeyboardManagerEditorUI.Pages
             };
         }
 
+        private string? GetOrphanedKeysWarning(List<string> triggerKeys)
+        {
+            // Only single-key remaps (to a key, text or Disable) can leave a key without an assignment.
+            if (UnifiedMappingControl.CurrentActionType is not (UnifiedMappingControl.ActionType.KeyOrShortcut or UnifiedMappingControl.ActionType.Text or UnifiedMappingControl.ActionType.Disable) ||
+                _mappingService == null ||
+                !TryGetEditingContext(out string? replacingId, out bool exactMatch, out ShortcutSettings? existingSettings) ||
+                CreateShortcutKeyMapping(_mappingService, triggerKeys, exactMatch) is not ShortcutKeyMapping replacementMapping)
+            {
+                return null;
+            }
+
+            var otherMappings = SettingsManager.EditorSettings.ShortcutSettingsDictionary
+                .Where(entry => entry.Value.IsActive && !entry.Key.Equals(replacingId, StringComparison.OrdinalIgnoreCase))
+                .Select(entry => entry.Value.Shortcut)
+                .ToList();
+            ShortcutKeyMapping? replacedMapping = existingSettings?.IsActive == true ? existingSettings.Shortcut : null;
+
+            IReadOnlyList<int> orphanedKeys = ValidationHelper.GetOrphanedKeysCausedBy(otherMappings, replacedMapping, replacementMapping);
+            if (orphanedKeys.Count == 0)
+            {
+                return null;
+            }
+
+            string orphanedKeyNames = string.Join(", ", orphanedKeys.Select(key => _mappingService.GetKeyDisplayName(key)));
+            CompositeFormat format = orphanedKeys.Count == 1
+                ? _orphanedKeysWarningFormat ??= CompositeFormat.Parse(ResourceHelper.GetString("OrphanedKeysWarning_Message"))
+                : _orphanedKeysWarningPluralFormat ??= CompositeFormat.Parse(ResourceHelper.GetString("OrphanedKeysWarning_Message_Plural"));
+            return string.Format(CultureInfo.CurrentCulture, format, orphanedKeyNames);
+        }
+
+        private bool TryGetEditingContext(out string? replacingId, out bool exactMatch, out ShortcutSettings? existingSettings)
+        {
+            replacingId = null;
+            exactMatch = false;
+            existingSettings = null;
+
+            if (!_isEditMode)
+            {
+                return true;
+            }
+
+            if (_editingItem?.Item is not IToggleableShortcut existingMapping ||
+                string.IsNullOrEmpty(existingMapping.Id) ||
+                !SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(existingMapping.Id, out existingSettings))
+            {
+                return false;
+            }
+
+            replacingId = existingMapping.Id;
+            exactMatch = existingSettings.Shortcut.ExactMatch;
+            return true;
+        }
+
         private bool SaveMappingTransaction(List<string> triggerKeys)
         {
             if (_mappingService == null)
@@ -595,22 +650,16 @@ namespace KeyboardManagerEditorUI.Pages
 
                 string? replacingId = null;
                 bool exactMatch = false;
+                ShortcutSettings? existingSettings = null;
 
-                if (_isEditMode)
+                if (!TryGetEditingContext(out replacingId, out exactMatch, out existingSettings))
                 {
-                    if (_editingItem?.Item is not IToggleableShortcut existingMapping ||
-                        string.IsNullOrEmpty(existingMapping.Id) ||
-                        !SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(existingMapping.Id, out ShortcutSettings? existingSettings))
-                    {
-                        return false;
-                    }
+                    return false;
+                }
 
-                    replacingId = existingMapping.Id;
-                    exactMatch = existingSettings.Shortcut.ExactMatch;
-                    if (existingSettings.IsActive && !DeleteMapping(candidateService, existingSettings.Shortcut))
-                    {
-                        return false;
-                    }
+                if (existingSettings?.IsActive == true && !DeleteMapping(candidateService, existingSettings.Shortcut))
+                {
+                    return false;
                 }
 
                 ShortcutKeyMapping? replacementMapping = CreateShortcutKeyMapping(candidateService, triggerKeys, exactMatch);
