@@ -12,10 +12,7 @@ For a general overview of how Monaco is used in PowerToys, see the [Monaco Edito
 
 ### Update Monaco Editor
 
-1. Download Monaco editor with [npm](https://www.npmjs.com/): Run `npm i monaco-editor` in the command prompt.
-2. Delete everything except the `min` folder (the minimised code) from the downloaded files.
-3. Copy the `min` folder into the `/src/Monaco/monacoSRC` folder of the PowerToys project.
-4. Generate the JSON file as described in the generate [monaco_languages.json file](#monaco_languagesjson) section.
+To update Monaco to a new version edit the `$pkgVersion` variable in [`downloadMonaco.ps1`](/src/common/FilePreviewCommon/downloadMonaco.ps1).
 
 ### Add a new language definition
 
