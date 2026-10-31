@@ -83,15 +83,11 @@ void NewSettings::InitializeWithDefaultSettings()
 
 void NewSettings::RefreshEnabledState()
 {
-    // Load json general settings from data file, if it was modified since we last checked
-    FILETIME last_modified_timestamp{};
-    if (!(LastModifiedTime(general_settings_json_file_path, &last_modified_timestamp) &&
-          CompareFileTime(&last_modified_timestamp, &general_settings_last_loaded_timestamp) == 1))
+    const auto current_stamp = file_change_stamp::from_file(general_settings_json_file_path);
+    if (!file_change_stamp::has_changed(general_settings_last_loaded_stamp, current_stamp))
     {
         return;
     }
-
-    general_settings_last_loaded_timestamp = last_modified_timestamp;
 
     auto json = json::from_file(general_settings_json_file_path);
     if (!json)
@@ -106,6 +102,8 @@ void NewSettings::RefreshEnabledState()
         json::JsonObject powertoy_new_enabled_state;
         json::get(json_general_settings, L"enabled", powertoy_new_enabled_state, json::JsonObject{});
         json::get(powertoy_new_enabled_state, newplus::constants::non_localizable::powertoy_key, new_settings.enabled, false);
+        // Retry a temporarily unreadable replacement on the next query.
+        general_settings_last_loaded_stamp = current_stamp;
     }
     catch (const winrt::hresult_error&)
     {
