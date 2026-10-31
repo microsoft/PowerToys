@@ -16,6 +16,9 @@ internal sealed class TextHistory
 
     public TextHistory(Func<string?> read) => this.read = read;
 
+    /// <summary>Gets <see cref="Environment.TickCount64"/> when reading began, the zero of the times shown.</summary>
+    public long StartTick { get; } = Environment.TickCount64;
+
     public string? Read()
     {
         var text = read();

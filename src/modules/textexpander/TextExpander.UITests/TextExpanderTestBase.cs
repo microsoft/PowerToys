@@ -291,12 +291,13 @@ public abstract class TextExpanderTestBase : UITestBase
 
             if (result.Succeeded)
             {
-                Step($"Target shows '{TextExpanderFiles.Visible(result.LastObservation)}' ({shown})");
+                Step($"Target shows '{TextExpanderFiles.Visible(result.LastObservation)}' ({shown}; keys in ms since typing: {Target.DescribeKeys(shown.StartTick)})");
                 return;
             }
 
             last = result.LastObservation;
-            diagnostics = $"Target since typing: {shown}. {EngineDiagnostics.DescribeCpu(cpu)}; {EngineDiagnostics.DescribeWinapp()}. " +
+            diagnostics = $"Target since typing: {shown}. Keys the target took, in ms since typing: {Target.DescribeKeys(shown.StartTick)}. " +
+                $"{EngineDiagnostics.DescribeCpu(cpu)}; {EngineDiagnostics.DescribeWinapp()}. " +
                 $"Engine: {DescribeEngine()}; {EngineDiagnostics.Read()}. Foreground: {WindowControl.GetForegroundWindowInfo()}.";
             Step($"Target shows '{TextExpanderFiles.Visible(last)}'. {diagnostics}");
             if (last != typed)

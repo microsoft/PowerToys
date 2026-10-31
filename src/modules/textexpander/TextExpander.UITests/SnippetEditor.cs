@@ -123,12 +123,33 @@ internal sealed class SnippetEditor
     }
 
     /// <summary>Opens a row for editing by clicking it, as a person does.</summary>
+    /// <remarks>
+    /// The click goes to the editor's main window, brought in front by its handle: a process-wide session brings the
+    /// process's first window forward, which needn't be the main one.
+    /// </remarks>
     public void OpenRow(string trigger)
     {
-        step($"Clicking the '{trigger}' row");
+        if (WindowControl.GetForegroundWindowHandle() != Handle)
+        {
+            WindowControl.TryBringToForeground(Handle);
+        }
+
+        Assert.IsTrue(
+            WindowControl.WaitForForeground(Handle, timeoutMS: 10_000, requiredConsecutiveMatches: 2),
+            $"The snippet editor did not come in front. Foreground: {WindowControl.GetForegroundWindowInfo()}. Editor windows: {DescribeWindows()}.");
+
         var row = WaitForRowElement(trigger);
-        row.Click(msPostAction: 0);
-        WaitForDialog("Edit snippet");
+        var (x, y) = (row.X + (row.Width / 2), row.Y + (row.Height / 2));
+        Assert.IsTrue(
+            WindowControl.IsPointOwnedByWindow(Handle, x, y),
+            $"The '{trigger}' row at ({x}, {y}) is covered. Foreground: {WindowControl.GetForegroundWindowInfo()}. Editor windows: {DescribeWindows()}.");
+
+        step($"Clicking the '{trigger}' row at ({x}, {y})");
+        MouseHelper.LeftClickAt(x, y);
+        WaitForDialog(
+            "Edit snippet",
+            () => $"Clicked ({x}, {y}) in the row's bounds ({row.X}, {row.Y}, {row.Width}x{row.Height}). " +
+                $"Foreground: {WindowControl.GetForegroundWindowInfo()}. Editor windows: {DescribeWindows()}.");
     }
 
     /// <summary>Runs one of a row's More options commands: Edit, Duplicate or Delete.</summary>
@@ -239,11 +260,24 @@ internal sealed class SnippetEditor
         return row;
     }
 
-    private void WaitForDialog(string title)
+    /// <summary>Lists the editor process's top-level windows, for a failure message.</summary>
+    private string DescribeWindows()
+    {
+        try
+        {
+            return string.Join(" | ", WindowsFinder.ListByApp(ProcessId.ToString(CultureInfo.InvariantCulture)).Select(window => window.ToString()));
+        }
+        catch (Exception ex)
+        {
+            return $"<windows unavailable: {ex.Message}>";
+        }
+    }
+
+    private void WaitForDialog(string title, Func<string>? describeFailure = null)
     {
         Assert.IsTrue(
             Session.WaitFor(() => IsDialogOpen, 15_000, pollIntervalMS: 250),
-            $"The '{title}' dialog did not open.");
+            $"The '{title}' dialog did not open. {describeFailure?.Invoke()}");
         Assert.IsTrue(Session.WaitForExactName(title, 5_000), $"The snippet dialog is not titled '{title}'.");
     }
 }

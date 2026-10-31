@@ -19,13 +19,14 @@ internal sealed class TypingTarget : IDisposable
     private const uint SwpNoSize = 0x0001;
     private const uint SwpNoMove = 0x0002;
     private const uint SwpNoActivate = 0x0010;
+    private const int ThreadPriorityTimeCritical = 15;
     private static readonly IntPtr HwndTopmost = new(-1);
     private static readonly IntPtr HwndNotTopmost = new(-2);
 
     private readonly TaskCompletionSource<Forms.Form> ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly Thread thread;
     private readonly Action<string> log;
-    private Forms.RichTextBox? editor;
+    private TargetBox? editor;
     private Forms.Form? form;
     private Exception? threadFailure;
     private int stopRequested;
@@ -62,7 +63,14 @@ internal sealed class TypingTarget : IDisposable
         Invoke(() => (WindowControl.GetForegroundWindowHandle(), editor!.Focused, form!.WindowState == Forms.FormWindowState.Minimized));
 
     /// <summary>Empties the box without typing, so Text Expander sees no keys.</summary>
-    public void Clear() => Invoke(() => editor!.Clear());
+    public void Clear() => Invoke(() =>
+    {
+        editor!.Clear();
+        editor.ClearKeys();
+    });
+
+    /// <summary>Describes the keys the box has taken since it was cleared, in ms from <paramref name="sinceTick"/>.</summary>
+    public string DescribeKeys(long sinceTick) => editor?.DescribeKeys(sinceTick) ?? "<no box>";
 
     /// <summary>
     /// Clicks into the box, as a person does before typing, and puts the caret at the end. A click also clears what
@@ -265,10 +273,22 @@ internal sealed class TypingTarget : IDisposable
     [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
     private static extern bool SetWindowPos(IntPtr window, IntPtr insertAfter, int x, int y, int width, int height, uint flags);
 
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+    private static extern IntPtr GetCurrentThread();
+
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+    [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+    private static extern bool SetThreadPriority(IntPtr thread, int priority);
+
     private void Run()
     {
         try
         {
+            // The test process also records the screen. Like a separate app's, the box must take its keys as they
+            // come: the engine puts the clipboard back at most 350 ms after its Ctrl+V, and a paste read later
+            // inserts what was there before.
+            _ = SetThreadPriority(GetCurrentThread(), ThreadPriorityTimeCritical);
+
             var bounds = Forms.Screen.PrimaryScreen!.WorkingArea;
             using var window = new TargetForm
             {
@@ -281,7 +301,7 @@ internal sealed class TypingTarget : IDisposable
             window.Location = new System.Drawing.Point(
                 bounds.Left + ((bounds.Width - window.Width) / 2),
                 bounds.Top + (bounds.Height * 3 / 5) - (window.Height / 2));
-            using var box = new Forms.RichTextBox
+            using var box = new TargetBox
             {
                 AccessibleName = "Typed text",
                 Dock = Forms.DockStyle.Fill,
@@ -317,6 +337,49 @@ internal sealed class TypingTarget : IDisposable
     private sealed class TargetForm : Forms.Form
     {
         protected override bool ShowWithoutActivation => true;
+    }
+
+    /// <summary>The box, noting each key it takes and when, so a failed expansion shows when the engine's keys arrived.</summary>
+    private sealed class TargetBox : Forms.RichTextBox
+    {
+        private const int WmKeyDown = 0x0100;
+        private const int WmSysKeyDown = 0x0104;
+        private const int WmPaste = 0x0302;
+
+        private readonly object sync = new();
+        private readonly List<(long Tick, string Key)> keys = [];
+
+        public void ClearKeys()
+        {
+            lock (sync)
+            {
+                keys.Clear();
+            }
+        }
+
+        public string DescribeKeys(long sinceTick)
+        {
+            lock (sync)
+            {
+                return keys.Count == 0
+                    ? "none"
+                    : string.Join(" ", keys.TakeLast(40).Select(key => $"{key.Key}@{key.Tick - sinceTick}"));
+            }
+        }
+
+        protected override void WndProc(ref Forms.Message m)
+        {
+            if (m.Msg is WmKeyDown or WmSysKeyDown or WmPaste)
+            {
+                var key = m.Msg == WmPaste ? "WM_PASTE" : ((Forms.Keys)(int)m.WParam).ToString();
+                lock (sync)
+                {
+                    keys.Add((Environment.TickCount64, key));
+                }
+            }
+
+            base.WndProc(ref m);
+        }
     }
 
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
