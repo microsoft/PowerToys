@@ -28,6 +28,7 @@ public sealed class SettingsResourceCommandTest : BaseDscTest
             nameof(ModuleType.Awake),
             nameof(ModuleType.ColorPicker),
             nameof(ModuleType.CropAndLock),
+            nameof(ModuleType.CursorBrake),
             nameof(ModuleType.EnvironmentVariables),
             nameof(ModuleType.FancyZones),
             nameof(ModuleType.FileLocksmith),
