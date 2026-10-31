@@ -50,7 +50,7 @@ internal static class DataPackageHelpers
         var storageFile = await StorageFile.GetFileFromPathAsync(fileName);
 
         DataPackage dataPackage = new();
-        dataPackage.SetStorageItems([storageFile]);
+        dataPackage.SetStorageItems(new IStorageItem[] { storageFile });
         return dataPackage;
     }
 

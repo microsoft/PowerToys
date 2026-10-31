@@ -7,7 +7,6 @@ using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Foundation.Metadata;
 
 namespace Microsoft.CmdPal.Ext.Indexer;
 
@@ -21,7 +20,7 @@ public partial class IndexerCommandsProvider : CommandProvider
         DisplayName = Resources.IndexerCommandsProvider_DisplayName;
         Icon = Icons.FileExplorerIcon;
 
-        if (IndexerListItem.IsActionsFeatureEnabled && ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
+        if (IndexerListItem.IsActionsFeatureEnabled && IndexerListItem.IsActionsContractPresent)
         {
             _ = ActionRuntimeManager.InstanceAsync;
         }

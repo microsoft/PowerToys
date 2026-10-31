@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
@@ -19,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public const string LogoAssetName = "PowerToys";
 
-        public static IReadOnlyList<WelcomeHeroModule> All { get; } =
+        public static IReadOnlyList<WelcomeHeroModule> All { get; } = Array.AsReadOnly<WelcomeHeroModule>(
         [
             new("CommandPalette", "CmdPal", "Shell_CmdPal/Content"),
             new("AdvancedPaste", "AdvancedPaste", "Shell_AdvancedPaste/Content"),
@@ -56,7 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             new("MouseHighlighter", "MouseUtils", "MouseUtils_MouseHighlighter/Header"),
             new("MouseCrosshairs", "MouseUtils", "MouseUtils_MousePointerCrosshairs/Header"),
             new("CursorWrap", "MouseUtils", "MouseUtils_CursorWrap/Header"),
-        ];
+        ]);
 
         public static string GetAssetUri(string assetName) => $"ms-appx:///{AssetFolder}{assetName}.png";
     }
