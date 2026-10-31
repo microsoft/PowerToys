@@ -95,6 +95,7 @@ namespace CommonSharedConstants
     const wchar_t MOUSE_HIGHLIGHTER_TRIGGER_EVENT[] = L"Local\\MouseHighlighterTriggerEvent-1e3c9c3d-3fdf-4f9a-9a52-31c9b3c3a8f4";
     const wchar_t MOUSE_CROSSHAIRS_TRIGGER_EVENT[] = L"Local\\MouseCrosshairsTriggerEvent-0d4c7f92-0a5c-4f5c-b64b-8a2a2f7e0b21";
     const wchar_t CURSOR_WRAP_TRIGGER_EVENT[] = L"Local\\CursorWrapTriggerEvent-1f8452b5-4e6e-45b3-8b09-13f14a5900c9";
+    const wchar_t SEAMLESS_CURSOR_CALIBRATE_EVENT[] = L"Local\\SeamlessCursorCalibrateEvent-aa153420-f675-49de-934c-18308d802166";
 
     // Path to the event used by RegistryPreview
     const wchar_t REGISTRY_PREVIEW_TRIGGER_EVENT[] = L"Local\\RegistryPreviewEvent-4C559468-F75A-4E7F-BC4F-9C9688316687";

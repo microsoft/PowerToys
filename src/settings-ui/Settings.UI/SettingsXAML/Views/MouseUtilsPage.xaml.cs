@@ -45,6 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SettingsRepository<MousePointerCrosshairsSettings>.GetInstance(settingsUtils),
                 SettingsRepository<CursorWrapSettings>.GetInstance(settingsUtils),
                 SettingsRepository<MouseButtonLockSettings>.GetInstance(settingsUtils),
+                SettingsRepository<SeamlessCursorSettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
 
             DataContext = ViewModel;
@@ -53,6 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.MouseUtils_MouseJump_Panel.ViewModel = ViewModel;
 
             Loaded += (s, e) => ViewModel.OnPageLoaded();
+            Unloaded += (s, e) => ViewModel.OnPageUnloaded();
         }
 
         public void RefreshEnabledState()

@@ -22,6 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.MousePointerCrosshairs => "MouseUtils_MousePointerCrosshairs/Header",
                 ModuleType.CursorWrap => "MouseUtils_CursorWrap/Header",
                 ModuleType.MouseButtonLock => "MouseUtils_MouseButtonLock/Header",
+                ModuleType.SeamlessCursor => "MouseUtils_SeamlessCursor/Header",
                 ModuleType.GeneralSettings => "QuickAccessTitle/Title",
                 _ => $"{moduleType}/ModuleTitle",
             };
@@ -39,6 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.PowerAccent => "ms-appx:///Assets/Settings/Icons/QuickAccent.png",
                 ModuleType.MousePointerCrosshairs => "ms-appx:///Assets/Settings/Icons/MouseCrosshairs.png",
                 ModuleType.MeasureTool => "ms-appx:///Assets/Settings/Icons/ScreenRuler.png",
+                ModuleType.SeamlessCursor => "ms-appx:///Assets/Settings/Icons/MouseUtils.png",
                 ModuleType.PowerLauncher => "ms-appx:///Assets/Settings/Icons/PowerToysRun.png",
                 ModuleType.GeneralSettings => "ms-appx:///Assets/Settings/Icons/PowerToys.png",
                 _ => $"ms-appx:///Assets/Settings/Icons/{moduleType}.png",
@@ -78,6 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.PowerAccent => generalSettingsConfig.Enabled.PowerAccent,
                 ModuleType.RegistryPreview => generalSettingsConfig.Enabled.RegistryPreview,
                 ModuleType.MeasureTool => generalSettingsConfig.Enabled.MeasureTool,
+                ModuleType.SeamlessCursor => generalSettingsConfig.Enabled.SeamlessCursor,
                 ModuleType.ShortcutGuide => generalSettingsConfig.Enabled.ShortcutGuide,
                 ModuleType.PowerOCR => generalSettingsConfig.Enabled.PowerOcr,
                 ModuleType.PowerDisplay => generalSettingsConfig.Enabled.PowerDisplay,
@@ -122,6 +125,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 case ModuleType.PowerAccent: generalSettingsConfig.Enabled.PowerAccent = isEnabled; break;
                 case ModuleType.RegistryPreview: generalSettingsConfig.Enabled.RegistryPreview = isEnabled; break;
                 case ModuleType.MeasureTool: generalSettingsConfig.Enabled.MeasureTool = isEnabled; break;
+                case ModuleType.SeamlessCursor: generalSettingsConfig.Enabled.SeamlessCursor = isEnabled; break;
                 case ModuleType.ShortcutGuide: generalSettingsConfig.Enabled.ShortcutGuide = isEnabled; break;
                 case ModuleType.PowerOCR: generalSettingsConfig.Enabled.PowerOcr = isEnabled; break;
                 case ModuleType.PowerDisplay: generalSettingsConfig.Enabled.PowerDisplay = isEnabled; break;
@@ -170,6 +174,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.PowerDisplay => PowerDisplaySettings.ModuleName,
                 ModuleType.RegistryPreview => RegistryPreviewSettings.ModuleName,
                 ModuleType.MeasureTool => MeasureToolSettings.ModuleName,
+                ModuleType.SeamlessCursor => SeamlessCursorSettings.ModuleName,
                 ModuleType.ShortcutGuide => ShortcutGuideSettings.ModuleName,
                 ModuleType.PowerOCR => PowerOcrSettings.ModuleName,
                 ModuleType.Workspaces => WorkspacesSettings.ModuleName,
