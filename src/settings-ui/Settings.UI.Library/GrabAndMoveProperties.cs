@@ -17,6 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ExcludedApps = new StringProperty();
             ExcludedAppsForModifier = new StringProperty();
             ModifierKey = new IntProperty(0); // 0 = Alt, 1 = Win
+            BringToFrontOnGrab = new BoolProperty(false);
         }
 
         [JsonPropertyName("modifierKey")]
@@ -33,6 +34,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("doNotActivateOnGameMode")]
         public BoolProperty DoNotActivateOnGameMode { get; set; }
+
+        [JsonPropertyName("bringToFrontOnGrab")]
+        public BoolProperty BringToFrontOnGrab { get; set; }
 
         [JsonPropertyName("excluded_apps")]
         public StringProperty ExcludedApps { get; set; }
