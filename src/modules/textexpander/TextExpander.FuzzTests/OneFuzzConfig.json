@@ -1,0 +1,77 @@
+{
+  "configVersion": 3,
+  "entries": [
+    {
+      "fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "dll": "TextExpander.FuzzTests.dll",
+        "class": "TextExpander.FuzzTests.FuzzTests",
+        "method": "FuzzSnippetFile",
+        "FuzzingTargetBinaries": [
+          "PowerToys.TextExpander.Core.dll"
+        ]
+      },
+      "adoTemplate": {
+        "org": "microsoft",
+        "project": "OS",
+        "AssignedTo": "leilzh@microsoft.com",
+        "AreaPath": "OS\\Windows Client and Services\\WinPD\\DFX-Developer Fundamentals and Experiences\\DEFT\\SALT",
+        "IterationPath": "OS\\Future"
+      },
+      "jobNotificationEmail": "PowerToys@microsoft.com",
+      "skip": false,
+      "rebootAfterSetup": false,
+      "oneFuzzJobs": [
+        {
+          "projectName": "TextExpander",
+          "targetName": "TextExpander-dotnet-fuzzer-SnippetFile"
+        }
+      ],
+      "jobDependencies": [
+        "TextExpander.FuzzTests.dll",
+        "TextExpander.FuzzTests.pdb",
+        "PowerToys.TextExpander.Core.dll",
+        "PowerToys.TextExpander.Core.pdb",
+        "Microsoft.Windows.SDK.NET.dll",
+        "WinRT.Runtime.dll"
+      ],
+      "SdlWorkItemId": 49911822
+    },
+    {
+      "fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "dll": "TextExpander.FuzzTests.dll",
+        "class": "TextExpander.FuzzTests.FuzzTests",
+        "method": "FuzzExpandSnippet",
+        "FuzzingTargetBinaries": [
+          "PowerToys.TextExpander.Core.dll"
+        ]
+      },
+      "adoTemplate": {
+        "org": "microsoft",
+        "project": "OS",
+        "AssignedTo": "leilzh@microsoft.com",
+        "AreaPath": "OS\\Windows Client and Services\\WinPD\\DFX-Developer Fundamentals and Experiences\\DEFT\\SALT",
+        "IterationPath": "OS\\Future"
+      },
+      "jobNotificationEmail": "PowerToys@microsoft.com",
+      "skip": false,
+      "rebootAfterSetup": false,
+      "oneFuzzJobs": [
+        {
+          "projectName": "TextExpander",
+          "targetName": "TextExpander-dotnet-fuzzer-ExpandSnippet"
+        }
+      ],
+      "jobDependencies": [
+        "TextExpander.FuzzTests.dll",
+        "TextExpander.FuzzTests.pdb",
+        "PowerToys.TextExpander.Core.dll",
+        "PowerToys.TextExpander.Core.pdb",
+        "Microsoft.Windows.SDK.NET.dll",
+        "WinRT.Runtime.dll"
+      ],
+      "SdlWorkItemId": 49911822
+    }
+  ]
+}

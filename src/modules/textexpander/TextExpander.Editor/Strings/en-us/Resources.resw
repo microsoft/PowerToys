@@ -1,0 +1,786 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+    <data name="More_Options_ButtonTooltip.Text" xml:space="preserve">
+    <value>More options</value>
+  </data>
+  <data name="TextExpander_PrivacyNotice.Text" xml:space="preserve">
+    <value>Good to know</value>
+    <comment>Title of the note behind the (i) button: facts about where snippets expand and how undo works</comment>
+  </data>
+  <data name="TextExpander_PrivacyNotice_Expansion.Text" xml:space="preserve">
+    <value>Snippets don't expand in apps running as administrator or in standard Windows password boxes. They can still expand in password fields on websites and in some apps.</value>
+    <comment>First bullet of the "Good to know" note</comment>
+  </data>
+  <data name="TextExpander_PrivacyNotice_Undo.Text" xml:space="preserve">
+    <value>Right after a snippet expands, Ctrl+Z changes it back to what you typed, except for snippets that use your clipboard or ask you to type something.</value>
+    <comment>Second bullet of the "Good to know" note. Snippets that "ask you to type something" are the ones with {{prompt:…}}.</comment>
+  </data>
+  <data name="TextExpander_PrivacyNotice_SensitiveInfo.Text" xml:space="preserve">
+    <value>Don't save passwords, Social Security numbers, credit card numbers or other sensitive info in snippets. They're saved as plain text and aren't encrypted.</value>
+    <comment>Privacy warning, the first bullet of the "Good to know" note. You may replace "Social Security numbers" with the national ID number people use in your market</comment>
+  </data>
+  <data name="TextExpander_PrivacyNotice_InputMethod.Text" xml:space="preserve">
+    <value>If you type with an input method editor (IME), for example for Japanese, Chinese or Korean, switch it to direct input or English before you type a trigger.</value>
+    <comment>Third bullet of the "Good to know" note. An input method editor turns keystrokes into characters, as for Japanese, Chinese or Korean; use the name Windows uses in your language</comment>
+  </data>
+  <data name="TextExpander_GoodToKnowButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Good to know</value>
+    <comment>Screen reader name of the button that opens the "Good to know" note; the same as the note's title</comment>
+  </data>
+  <data name="TextExpander_GoodToKnowButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Good to know</value>
+    <comment>Tooltip of the button that opens the "Good to know" note; the same as the note's title</comment>
+  </data>
+  <data name="TextExpander_ElevatedEditingNotice.Title" xml:space="preserve">
+    <value>Can't edit snippets while PowerToys runs as administrator</value>
+  </data>
+  <data name="TextExpander_ElevatedEditingNotice.Message" xml:space="preserve">
+    <value>To edit snippets, restart PowerToys without administrator rights. If Always run as administrator is on in General, turn it off first.</value>
+    <comment>"Always run as administrator" is the name of a setting on the General page.</comment>
+  </data>
+  <data name="TextExpander_ElevatedSnippetAccessDenied" xml:space="preserve">
+    <value>Restart PowerToys without administrator rights to edit snippets.</value>
+  </data>
+  <data name="TextExpander_SnippetFile_SyncHeading" xml:space="preserve">
+    <value>Use your snippets on all your PCs</value>
+    <comment>Bold heading of the sync advice in the snippets database menu, while the snippets database isn't inside OneDrive. Two numbered steps follow it. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SyncStepMove" xml:space="preserve">
+    <value>Select {0} and save it in OneDrive or another synced folder.</value>
+    <comment>Step 1 under "Use your snippets on all your PCs". {0} is the name of the "Move snippets database…" button, shown bold. "It" is the snippets database. "Snippets database" means the user's JSON file of snippets. OneDrive is a product name.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SyncStepUse" xml:space="preserve">
+    <value>On each of your other PCs, select {0} and pick that database.</value>
+    <comment>Step 2 under "Use your snippets on all your PCs". {0} is the name of the "Sync from another PC…" button, shown bold. "That database" is the snippets database saved in step 1. "Snippets database" (or "database") means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SyncHeadingOneDrive" xml:space="preserve">
+    <value>Use these snippets on your other PCs</value>
+    <comment>Bold heading of the sync advice in the snippets database menu, while the snippets database is inside OneDrive. One sentence follows it. Text Expander only compares the database's path with the OneDrive folder; it doesn't check the sync itself. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SyncStepOneDrive" xml:space="preserve">
+    <value>On each PC, select {0} and pick this database.</value>
+    <comment>Follows "Use these snippets on your other PCs". {0} is the name of the "Sync from another PC…" button, shown bold. "This database" is the snippets database in use, in OneDrive. "Snippets database" (or "database") means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SummaryDefault" xml:space="preserve">
+    <value>Saved on this PC · {0} snippets</value>
+    <comment>{0} is the number of snippets, two or more, or zero.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SummaryDefault_One" xml:space="preserve">
+    <value>Saved on this PC · {0} snippet</value>
+    <comment>{0} is the number 1.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SummaryDefaultCountUnavailable" xml:space="preserve">
+    <value>Saved on this PC</value>
+    <comment>Shown when the snippets database can't be read, so there is no count. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SummaryCustom" xml:space="preserve">
+    <value>Saved in {1} · {0} snippets</value>
+    <comment>{0} is the number of snippets, two or more, or zero. {1} is the name of the folder the snippets database is in, such as Documents. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SummaryCustom_One" xml:space="preserve">
+    <value>Saved in {1} · {0} snippet</value>
+    <comment>{0} is the number 1. {1} is the name of the folder the snippets database is in, such as Documents. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SummaryCustomCountUnavailable" xml:space="preserve">
+    <value>Saved in {0}</value>
+    <comment>{0} is the name of the folder the snippets database is in, such as Documents. On the button that opens the snippets database menu, and shown when the database can't be read, so there is no count. "Snippets database" (or "database") means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SummaryOneDrive" xml:space="preserve">
+    <value>Saved in OneDrive · {0} snippets</value>
+    <comment>The snippets database is inside OneDrive. OneDrive is a product name. {0} is the number of snippets, two or more, or zero. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SummaryOneDrive_One" xml:space="preserve">
+    <value>Saved in OneDrive · {0} snippet</value>
+    <comment>The snippets database is inside OneDrive. OneDrive is a product name. {0} is the number 1. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SummaryOneDriveCountUnavailable" xml:space="preserve">
+    <value>Saved in OneDrive</value>
+    <comment>The snippets database is inside OneDrive. OneDrive is a product name. On the button that opens the snippets database menu, and shown when the database can't be read, so there is no count. "Snippets database" (or "database") means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SummaryElevated" xml:space="preserve">
+    <value>Not available while PowerToys runs as administrator</value>
+  </data>
+  <data name="TextExpander_SnippetFile_Move.Content" xml:space="preserve">
+    <value>Move snippets database…</value>
+    <comment>Button: opens the Windows Save dialog to choose a new place for the snippets database, such as a folder OneDrive syncs. Text Expander writes the snippets there and uses that database; the previous one stays where it was. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_Use.Content" xml:space="preserve">
+    <value>Sync from another PC…</value>
+    <comment>Button: opens the Windows Open dialog to choose an existing snippets database, such as the one another PC saved in OneDrive. Text Expander uses that database from then on and writes nothing. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_OpenButton.Content" xml:space="preserve">
+    <value>Open in text editor</value>
+    <comment>Button in the snippets database menu: opens the snippets database in the app Windows uses for JSON files, or in Notepad when no app is set for them. "Snippets database" means the user's JSON file of snippets. JSON is a file format name.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_OpenMissing" xml:space="preserve">
+    <value>The snippets database can't be found or accessed. Select Refresh, or choose it again.</value>
+    <comment>"Refresh" is the button beside Open in text editor. "It" is the snippets database. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_OpenFailed" xml:space="preserve">
+    <value>Windows couldn't open the snippets database. Check that a default app is available for JSON files, then try again.</value>
+    <comment>Shown when Open in text editor can't open the snippets database, a .json file, in the app Windows uses for JSON files, or in Notepad when no app is set for them. "Snippets database" means the user's JSON file of snippets. JSON is a file format name and is not translated.</comment>
+  </data>
+  <data name="TextExpander_OpenSnippetsErrorDialog_Title" xml:space="preserve">
+    <value>Can't open the snippets database</value>
+    <comment>Title of the dialog shown when Open in text editor fails. The reason follows it. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFolder_ReloadButton.Content" xml:space="preserve">
+    <value>Refresh</value>
+    <comment>Button in the snippets database menu: reads the snippets database again. The same in every state; it doesn't sync anything itself. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFolder_ReloadButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Read the snippets database again. Text Expander also does this automatically when the database changes.</value>
+    <comment>Tooltip of the Refresh button. "Snippets database" (or "database") means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_Conflict_Title" xml:space="preserve">
+    <value>This database already has snippets</value>
+    <comment>Title of the dialog shown when Move snippets database… picked a snippets database that already has snippets, after Windows asked to replace it. "Database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_Conflict_Message" xml:space="preserve">
+    <value>Use the snippets in {0}, or replace them with this PC's snippets. Text Expander backs up the database before replacing it.</value>
+    <comment>{0} is the snippets database's file name, such as PowerToysTextExpanderSnippets.json. "Database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_Conflict_Use" xml:space="preserve">
+    <value>Use its snippets</value>
+    <comment>Button: uses the database's own snippets instead, and writes nothing, as Sync from another PC… does. "Database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_Conflict_Replace" xml:space="preserve">
+    <value>Replace them</value>
+    <comment>Button: backs up the database, then writes this PC's snippets over it. "Database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFolder_Reloaded" xml:space="preserve">
+    <value>Snippets refreshed.</value>
+    <comment>Status after the user selected Refresh and the snippets database was read again. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SavedDefault" xml:space="preserve">
+    <value>Your {0} snippets are now saved on this PC.</value>
+    <comment>Status after Move snippets database… wrote them to a snippets database in the folder on this PC that Text Expander uses by default. {0} is the number of snippets, two or more, or zero. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SavedDefault_One" xml:space="preserve">
+    <value>Your {0} snippet is now saved on this PC.</value>
+    <comment>Status after Move snippets database… wrote it to a snippets database in the folder on this PC that Text Expander uses by default. {0} is the number 1. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SavedOneDrive" xml:space="preserve">
+    <value>Your {0} snippets are now saved in OneDrive.</value>
+    <comment>Status after Move snippets database… wrote them to a snippets database inside OneDrive. OneDrive is a product name. {0} is the number of snippets, two or more, or zero. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SavedOneDrive_One" xml:space="preserve">
+    <value>Your {0} snippet is now saved in OneDrive.</value>
+    <comment>Status after Move snippets database… wrote it to a snippets database inside OneDrive. OneDrive is a product name. {0} is the number 1. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SavedCustom" xml:space="preserve">
+    <value>Your {0} snippets are now saved in {1}.</value>
+    <comment>Status after Move snippets database… wrote them to a snippets database. {0} is the number of snippets, two or more, or zero. {1} is the name of the database's folder, such as Documents. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SavedCustom_One" xml:space="preserve">
+    <value>Your {0} snippet is now saved in {1}.</value>
+    <comment>Status after Move snippets database… wrote it to a snippets database. {0} is the number 1. {1} is the name of the database's folder, such as Documents. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_ReplacedBackedUp" xml:space="preserve">
+    <value>The database you replaced was backed up.</value>
+    <comment>Follows "Your … snippets are now saved in …" when Move snippets database… replaced a snippets database, which it backed up first, beside itself. "Database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_UsingDefault" xml:space="preserve">
+    <value>Now using the {0} snippets on this PC.</value>
+    <comment>Status after Sync from another PC… switched to a snippets database in the folder on this PC that Text Expander uses by default. {0} is the number of snippets, two or more, or zero. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_UsingDefault_One" xml:space="preserve">
+    <value>Now using the {0} snippet on this PC.</value>
+    <comment>Status after Sync from another PC… switched to a snippets database in the folder on this PC that Text Expander uses by default. {0} is the number 1. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_UsingOneDrive" xml:space="preserve">
+    <value>Now using the {0} snippets in OneDrive.</value>
+    <comment>Status after Sync from another PC… switched to a snippets database inside OneDrive. OneDrive is a product name. {0} is the number of snippets, two or more, or zero. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_UsingOneDrive_One" xml:space="preserve">
+    <value>Now using the {0} snippet in OneDrive.</value>
+    <comment>Status after Sync from another PC… switched to a snippets database inside OneDrive. OneDrive is a product name. {0} is the number 1. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_UsingCustom" xml:space="preserve">
+    <value>Now using the {0} snippets in {1}.</value>
+    <comment>Status after Sync from another PC… switched to a snippets database. {0} is the number of snippets, two or more, or zero. {1} is the name of the database's folder, such as Documents. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_UsingCustom_One" xml:space="preserve">
+    <value>Now using the {0} snippet in {1}.</value>
+    <comment>Status after Sync from another PC… switched to a snippets database. {0} is the number 1. {1} is the name of the database's folder, such as Documents. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_NotSnippets" xml:space="preserve">
+    <value>{0} doesn't look like a snippets database</value>
+    <comment>Title of a dialog with no other text, shown when Sync from another PC… picked a file that isn't a snippets database: not JSON, or without a list of snippets. Text Expander didn't switch to it. {0} is the file's name, such as settings.json. "Snippets database" means the user's JSON file of snippets. No period: it's a title.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_FileType" xml:space="preserve">
+    <value>Snippets database (*.json)</value>
+    <comment>File type in the Save and Open dialogs of Move snippets database… and Sync from another PC…. "Snippets database" means the user's JSON file of snippets. Keep "(*.json)", the file name pattern; JSON is a file format name.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_ChooseDifferent" xml:space="preserve">
+    <value>Choose a different database</value>
+    <comment>Default button of the "… doesn't look like a snippets database" dialog: opens the Windows Open dialog again. "Database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFolder_Error_Title" xml:space="preserve">
+    <value>Couldn't update the snippets database</value>
+    <comment>Title of the dialog shown when Move snippets database… or Sync from another PC… fails. The reason follows it. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFolder_SettingsSaveFailed" xml:space="preserve">
+    <value>PowerToys couldn't save the new snippets database setting, so Text Expander still uses the database it used before.</value>
+    <comment>Shown when switching to another snippets database fails because the PowerToys setting that stores its location couldn't be saved. Nothing changed. "Snippets database" (or "database") means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFolder_SettingsCommittedAfterError" xml:space="preserve">
+    <value>PowerToys saved the new snippets database setting, but couldn't finish the settings update cleanly. The new database is in use. Check the settings file at {0}, and keep these recovery files until you have verified it: {1}.</value>
+    <comment>{0} is the full path to settings.json. {1} is a semicolon-separated list of settings recovery files, or the settings path when no separate recovery file exists. "Snippets database" (or "database") means the user's JSON file of snippets. The settings file and recovery files are PowerToys settings files.</comment>
+  </data>
+  <data name="TextExpander_SnippetFolder_SettingsStateUncertain" xml:space="preserve">
+    <value>PowerToys couldn't verify which snippets database setting is stored. No snippets databases were removed. Restart PowerToys, check the settings file at {0}, and keep these recovery files until the snippets database in use is confirmed: {1}.</value>
+    <comment>{0} is the full path to settings.json. {1} is a semicolon-separated list of settings recovery files. "Snippets database" means the user's JSON file of snippets. The settings file and recovery files are PowerToys settings files.</comment>
+  </data>
+  <data name="TextExpander_Dialog_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="TextExpander_Dialog_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="TextExpander_Row_CaseInsensitiveAutomation" xml:space="preserve">
+    <value>Case-insensitive trigger: {0} or {1}</value>
+    <comment>{0} is the lowercase trigger and {1} is the uppercase trigger.</comment>
+  </data>
+  <data name="TextExpander_Row_Inserts" xml:space="preserve">
+    <value>inserts</value>
+    <comment>In the snippet list, between a snippet's trigger and the text it inserts, like "maps to" in Keyboard Manager. Lowercase, as it follows the trigger</comment>
+  </data>
+  <data name="TextExpander_Row_AsksThenInserts" xml:space="preserve">
+    <value>asks {0} then inserts</value>
+    <comment>In the snippet list, between the trigger of a snippet that asks questions and the text it inserts. {0} is the questions, each shown as a bubble. Lowercase, as it follows the trigger</comment>
+  </data>
+  <data name="TextExpander_AddSnippetButton.Text" xml:space="preserve">
+    <value>New snippet</value>
+  </data>
+  <data name="TextExpander_NoSnippets.Text" xml:space="preserve">
+    <value>No snippets yet</value>
+  </data>
+  <data name="TextExpander_SnippetError_CantOpen" xml:space="preserve">
+    <value>Can't open your snippets</value>
+    <comment>Title of the error shown when the snippets database can't be read or saved, or isn't a snippets database. The reason follows it. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetError_NotJson" xml:space="preserve">
+    <value>Your snippets database has a mistake on line {0}. Fix it in a text editor, then select Retry.</value>
+    <comment>Follows "Can't open your snippets" when the snippets database isn't valid JSON, for example after a hand edit. {0} is the line number where the mistake was found. Text Expander doesn't save over it. "Retry" is the button next to this message. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetError_NoList" xml:space="preserve">
+    <value>Your snippets database is missing its "snippets" list. Fix it in a text editor, then select Retry.</value>
+    <comment>Follows "Can't open your snippets" when the snippets database is JSON but has no list named "snippets". "snippets" in quotes is the name used in the file and is not translated. Text Expander doesn't save over it. "Retry" is the button next to this message. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetError_CantFind" xml:space="preserve">
+    <value>Can't find your snippets database</value>
+    <comment>Title of the error shown when the snippets database the user chose isn't where it was. Text Expander doesn't create a new one there. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetError_CantFindHelp" xml:space="preserve">
+    <value>It was moved, renamed or deleted. Put it back and select Retry, or choose it again.</value>
+    <comment>Follows "Can't find your snippets database", with its path. "It" is the snippets database. "Retry" is the button next to this message, and "Sync from another PC…" follows it. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetError_CantReachOneDrive" xml:space="preserve">
+    <value>Can't reach your snippets in OneDrive</value>
+    <comment>Title of the error shown when the snippets database inside OneDrive can't be reached, for example because OneDrive isn't running. OneDrive is a product name. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetError_CantReachOneDriveHelp" xml:space="preserve">
+    <value>Check that OneDrive is running and you're signed in, then select Retry. To keep working now, choose another database.</value>
+    <comment>Follows "Can't reach your snippets in OneDrive". OneDrive is a product name. "Retry" is the button next to this message, and "Sync from another PC…" follows it. "Database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetError_CantReachCustom" xml:space="preserve">
+    <value>Can't reach your snippets in {0}</value>
+    <comment>Title of the error shown when the snippets database's folder can't be reached, for example because it was deleted or its drive isn't connected. {0} is the name of the folder, such as Documents. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetError_CantReachCustomHelp" xml:space="preserve">
+    <value>Check that the drive or network folder is available, then select Retry. To keep working now, choose another database.</value>
+    <comment>Follows "Can't reach your snippets in {0}". "Retry" is the button next to this message, and "Sync from another PC…" follows it. "Database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_EditSnippet.Text" xml:space="preserve">
+    <value>Edit</value>
+    <comment>First item in a snippet's More options menu; opens the snippet in the editor</comment>
+  </data>
+  <data name="TextExpander_DuplicateSnippet.Text" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
+  <data name="TextExpander_DeleteSnippet.Text" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="TextExpander_DeleteSnippetDialog_Title" xml:space="preserve">
+    <value>Delete snippet?</value>
+  </data>
+  <data name="TextExpander_DeleteSnippetDialog_Content" xml:space="preserve">
+    <value>"{0}" will stop expanding. You can't undo this.</value>
+    <comment>{0} is the snippet's trigger, such as !mysig.</comment>
+  </data>
+  <data name="TextExpander_DeleteSnippetDialog_PrimaryButtonText" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="TextExpander_DeleteSnippetDialog_CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="TextExpander_SaveSnippetsErrorDialog_Title" xml:space="preserve">
+    <value>Can't save your snippets</value>
+  </data>
+  <data name="TextExpander_SaveSnippetsErrorDialog_CloseButtonText" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="TextExpander_SnippetDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="TextExpander_SnippetDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="TextExpander_SnippetDialog_NewTitle" xml:space="preserve">
+    <value>New snippet</value>
+    <comment>Title of the dialog that adds a snippet</comment>
+  </data>
+  <data name="TextExpander_SnippetDialog_EditTitle" xml:space="preserve">
+    <value>Edit snippet</value>
+    <comment>Title of the dialog that changes a snippet</comment>
+  </data>
+  <data name="TextExpander_Dialog_Trigger.Text" xml:space="preserve">
+    <value>Trigger</value>
+  </data>
+  <data name="TextExpander_Dialog_TriggerBox.PlaceholderText" xml:space="preserve">
+    <value>Type a trigger</value>
+    <comment>Shown dimmed in the empty trigger box. A hint, so it shouldn't look like a trigger</comment>
+  </data>
+  <data name="TextExpander_Dialog_TriggerHint.Text" xml:space="preserve">
+    <value>Start with a symbol such as ! so it won't fire in the middle of a word.</value>
+  </data>
+  <data name="TextExpander_Dialog_Replacement.Text" xml:space="preserve">
+    <value>Replacement</value>
+  </data>
+  <data name="TextExpander_Dialog_ReplacementBox.PlaceholderText" xml:space="preserve">
+    <value>The text this expands into. Press Enter for a new line.</value>
+  </data>
+  <data name="TextExpander_Dialog_InsertVariable.Content" xml:space="preserve">
+    <value>Insert variable</value>
+  </data>
+  <data name="TextExpander_Variable_Cursor" xml:space="preserve">
+    <value>Cursor position</value>
+    <comment>Insert variable menu: where the cursor ends up after the snippet is typed</comment>
+  </data>
+  <data name="TextExpander_Variable_Date" xml:space="preserve">
+    <value>Date</value>
+    <comment>Insert variable menu: today's date</comment>
+  </data>
+  <data name="TextExpander_Variable_Time" xml:space="preserve">
+    <value>Time</value>
+    <comment>Insert variable menu: the current time</comment>
+  </data>
+  <data name="TextExpander_Variable_DateTime" xml:space="preserve">
+    <value>Date and time</value>
+    <comment>Insert variable menu: today's date and the current time</comment>
+  </data>
+  <data name="TextExpander_Variable_IsoDate" xml:space="preserve">
+    <value>ISO date</value>
+    <comment>Insert variable menu: today's date written year first, such as 2026-06-01</comment>
+  </data>
+  <data name="TextExpander_Variable_CustomDate" xml:space="preserve">
+    <value>Custom date format</value>
+    <comment>Insert variable menu: a date in a format the user writes</comment>
+  </data>
+  <data name="TextExpander_Variable_Clipboard" xml:space="preserve">
+    <value>Clipboard contents</value>
+    <comment>Insert variable menu: the text the user copied last</comment>
+  </data>
+  <data name="TextExpander_Variable_Prompt" xml:space="preserve">
+    <value>Ask a question…</value>
+    <comment>Insert variable menu: adds a question the snippet asks each time it expands. The ellipsis says that more choices follow</comment>
+  </data>
+  <data name="TextExpander_Variable_Prompt_Help" xml:space="preserve">
+    <value>Ask for text when the snippet runs.</value>
+    <comment>Tooltip of "Ask a question…" in the Insert variable menu</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Ask when the snippet runs</value>
+    <comment>Screen reader name of the panel that sets up a question a snippet asks each time it runs; the same as the panel's title</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_Title.Text" xml:space="preserve">
+    <value>Ask when the snippet runs</value>
+    <comment>Title of the panel, opened from Insert variable > Ask a question…, that sets up a question a snippet asks each time it runs</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_Question.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Question</value>
+    <comment>Screen reader name of the box for the question the snippet asks; the box has no visible label</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_Question.PlaceholderText" xml:space="preserve">
+    <value>Ticket number</value>
+    <comment>An example question. It shows in the empty question box, dimmed in the preview of the window that asks it, and in the snippet's {{prompt:…}} variable until a question is typed. Don't use the } character</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_Required.OnContent" xml:space="preserve">
+    <value>Required</value>
+    <comment>Label of a toggle switch, shown whether it is on or off. On, the snippet waits until an answer is typed</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_Required.OffContent" xml:space="preserve">
+    <value>Required</value>
+    <comment>The same label as TextExpander_PromptFlyout_Required.OnContent, shown while the switch is off</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_Preview.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Preview of the window shown when the snippet runs</value>
+    <comment>Screen reader name of a small picture of the window that asks the question; it can't be used</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_PreviewTitle.Text" xml:space="preserve">
+    <value>PowerToys Text Expander</value>
+    <comment>Title in the preview of the window that asks the question; translate it as that window's own title. {Locked="PowerToys"}</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_PreviewOk.Content" xml:space="preserve">
+    <value>OK</value>
+    <comment>A button in the preview of the window that asks the question; translate it as that window's OK button</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_PreviewCancel.Content" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>A button in the preview of the window that asks the question; translate it as that window's Cancel button</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_Add" xml:space="preserve">
+    <value>Add</value>
+    <comment>Button that puts a new question into the snippet</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_Update" xml:space="preserve">
+    <value>Update</value>
+    <comment>Button that saves the changes to a question already in the snippet, in place of "Add"</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_Cancel.Content" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Button that closes the panel without changing the snippet</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_QuestionRequired" xml:space="preserve">
+    <value>Type a question.</value>
+    <comment>Shown under the empty question box after Add or Enter</comment>
+  </data>
+  <data name="TextExpander_PromptFlyout_InvalidQuestion" xml:space="preserve">
+    <value>A question can't contain }.</value>
+    <comment>Shown under the question box after Add or Enter when the question has a closing brace, which would end the snippet's variable early. Keep the } character</comment>
+  </data>
+  <data name="TextExpander_VariableWithSample" xml:space="preserve">
+    <value>{0}  —  {1}</value>
+    <comment>An Insert variable menu item. {0} is the variable's name, such as "Date"; {1} is what it gives right now, such as "10/18/26".</comment>
+  </data>
+  <data name="TextExpander_DateFormats_Custom" xml:space="preserve">
+    <value>Custom format…</value>
+    <comment>Last item under Insert variable &gt; Custom date format. Inserts a date whose format the user writes, with a guide to the codes.</comment>
+  </data>
+  <data name="TextExpander_DatePreset_Name" xml:space="preserve">
+    <value>{0}, format {1}</value>
+    <comment>Accessible name of a ready-made date format under Insert variable &gt; Custom date format. {0} is how it comes out today, such as "Sunday, October 18"; {1} is its format code, such as "dddd, MMMM d". The codes, such as yyyy, are not translated.</comment>
+  </data>
+  <data name="TextExpander_DateGuide_Title.Text" xml:space="preserve">
+    <value>Date format codes</value>
+    <comment>Heading of the guide under the replacement box while the caret is in a {{date:…}} variable</comment>
+  </data>
+  <data name="TextExpander_DateGuide_ShowsAs" xml:space="preserve">
+    <value>Shows as: {0}</value>
+    <comment>{0} is how the date format at the caret comes out now, such as "Sunday, October 18"</comment>
+  </data>
+  <data name="TextExpander_DateGuide_Tip.Text" xml:space="preserve">
+    <value>Put words outside the braces, like Today is {{date:dddd}}.</value>
+    <comment>{{date:dddd}} is a snippet variable and is not translated</comment>
+  </data>
+  <data name="TextExpander_DateGuide_MoreCodes.Content" xml:space="preserve">
+    <value>More codes</value>
+    <comment>Link to Microsoft Learn's list of custom date and time format codes</comment>
+  </data>
+  <data name="TextExpander_DateCode_Name" xml:space="preserve">
+    <value>{0}, {1}, {2}</value>
+    <comment>Accessible name of a code in the date format guide. {0} is the code, such as yyyy; {1} says what it is, such as "year"; {2} is what it gives today, such as 2026. The codes, such as yyyy, are not translated.</comment>
+  </data>
+  <data name="TextExpander_DateCode_Year" xml:space="preserve">
+    <value>year</value>
+    <comment>What the date format code yyyy gives</comment>
+  </data>
+  <data name="TextExpander_DateCode_YearShort" xml:space="preserve">
+    <value>year, two digits</value>
+    <comment>What the date format code yy gives</comment>
+  </data>
+  <data name="TextExpander_DateCode_Month" xml:space="preserve">
+    <value>month</value>
+    <comment>What the date format code MMMM gives, such as October</comment>
+  </data>
+  <data name="TextExpander_DateCode_MonthShort" xml:space="preserve">
+    <value>month, short</value>
+    <comment>What the date format code MMM gives, such as Oct</comment>
+  </data>
+  <data name="TextExpander_DateCode_MonthNumberTwoDigits" xml:space="preserve">
+    <value>month number, two digits</value>
+    <comment>What the date format code MM gives, such as 03</comment>
+  </data>
+  <data name="TextExpander_DateCode_MonthNumber" xml:space="preserve">
+    <value>month number</value>
+    <comment>What the date format code M gives, such as 3</comment>
+  </data>
+  <data name="TextExpander_DateCode_Weekday" xml:space="preserve">
+    <value>weekday</value>
+    <comment>What the date format code dddd gives, such as Sunday</comment>
+  </data>
+  <data name="TextExpander_DateCode_WeekdayShort" xml:space="preserve">
+    <value>weekday, short</value>
+    <comment>What the date format code ddd gives, such as Sun</comment>
+  </data>
+  <data name="TextExpander_DateCode_DayTwoDigits" xml:space="preserve">
+    <value>day, two digits</value>
+    <comment>What the date format code dd gives, such as 08</comment>
+  </data>
+  <data name="TextExpander_DateCode_Day" xml:space="preserve">
+    <value>day</value>
+    <comment>What the date format code d gives, such as 8</comment>
+  </data>
+  <data name="TextExpander_DateCode_Hour12" xml:space="preserve">
+    <value>hour, 12-hour clock</value>
+    <comment>What the date format code h gives</comment>
+  </data>
+  <data name="TextExpander_DateCode_Hour24" xml:space="preserve">
+    <value>hour, 24-hour clock</value>
+    <comment>What the date format code HH gives</comment>
+  </data>
+  <data name="TextExpander_DateCode_Minutes" xml:space="preserve">
+    <value>minutes</value>
+    <comment>What the date format code mm gives</comment>
+  </data>
+  <data name="TextExpander_DateCode_AmPm" xml:space="preserve">
+    <value>AM or PM</value>
+    <comment>What the date format code tt gives</comment>
+  </data>
+  <data name="TextExpander_DateCode_Hour12Example" xml:space="preserve">
+    <value>{0} (12-hour)</value>
+    <comment>Shown next to the code h. {0} is the hour now on a 12-hour clock, such as 4</comment>
+  </data>
+  <data name="TextExpander_DateCode_Hour24Example" xml:space="preserve">
+    <value>{0} (24-hour)</value>
+    <comment>Shown next to the code HH. {0} is the hour now on a 24-hour clock, such as 16</comment>
+  </data>
+  <data name="TextExpander_Dialog_Preview.Text" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="TextExpander_Dialog_TriggerBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Trigger</value>
+  </data>
+  <data name="TextExpander_Dialog_ReplacementBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Replacement</value>
+  </data>
+  <data name="TextExpander_Dialog_SensitiveInfo.Text" xml:space="preserve">
+    <value>Don't save passwords or other sensitive info in snippets. They aren't encrypted.</value>
+    <comment>Privacy warning under the Replacement box in the snippet dialog: snippets are saved as plain text. The short form of TextExpander_PrivacyNotice_SensitiveInfo; if that one names your market's national ID number instead of Social Security numbers, keep the two consistent</comment>
+  </data>
+  <data name="TextExpander_Dialog_ReplacementBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
+    <value>To change a question, click it or press F2.</value>
+    <comment>Screen reader help for the Replacement box. A question is a {{prompt:…}} variable in the text; F2 is the key</comment>
+  </data>
+  <data name="TextExpander_Search.PlaceholderText" xml:space="preserve">
+    <value>Search snippets</value>
+    <comment>Hint in the empty search box in the title bar. The search matches triggers and the text they insert</comment>
+  </data>
+  <data name="TextExpander_Search.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Search snippets</value>
+  </data>
+  <data name="TextExpander_ClearSearch.Content" xml:space="preserve">
+    <value>Clear search</value>
+  </data>
+  <data name="TextExpander_SnippetCount" xml:space="preserve">
+    <value>Showing {0} of {1} snippets</value>
+    <comment>The count in the snippet list's heading during a search. {0} is the number of snippets the search shows; {1} is the total, two or more, or zero.</comment>
+  </data>
+  <data name="TextExpander_SnippetCount_One" xml:space="preserve">
+    <value>Showing {0} of {1} snippet</value>
+    <comment>The count in the snippet list's heading during a search. {0} is the number the search shows, 0 or 1; {1} is the total, 1.</comment>
+  </data>
+  <data name="TextExpander_SnippetTotal" xml:space="preserve">
+    <value>{0} snippets</value>
+    <comment>The count in the snippet list's heading when there is no search. {0} is the number of snippets, two or more, or zero.</comment>
+  </data>
+  <data name="TextExpander_SnippetTotal_One" xml:space="preserve">
+    <value>{0} snippet</value>
+    <comment>The count in the snippet list's heading when there is no search. {0} is the number 1.</comment>
+  </data>
+  <data name="TextExpander_SnippetsHeading.Text" xml:space="preserve">
+    <value>Snippets</value>
+    <comment>Heading of the snippet list</comment>
+  </data>
+  <data name="TextExpander_NoSearchResults.Text" xml:space="preserve">
+    <value>No snippets match your search. Try different words or clear the search.</value>
+  </data>
+  <data name="TextExpander_DuplicateTrigger" xml:space="preserve">
+    <value>Another snippet already uses the trigger "{0}".</value>
+    <comment>{0} is the duplicate trigger.</comment>
+  </data>
+  <data name="TextExpander_Problem_EmptyTrigger" xml:space="preserve">
+    <value>Type a trigger to save this snippet.</value>
+  </data>
+  <data name="TextExpander_Problem_TriggerHasLineBreak" xml:space="preserve">
+    <value>A trigger can't have a line break.</value>
+  </data>
+  <data name="TextExpander_Problem_TriggerStartsWithHiddenCharacter" xml:space="preserve">
+    <value>This trigger starts with a hidden character, usually from pasting. Type the trigger instead.</value>
+  </data>
+  <data name="TextExpander_Problem_TriggerHasOuterSpace" xml:space="preserve">
+    <value>A trigger can't start or end with a space.</value>
+  </data>
+  <data name="TextExpander_StarterHint.Text" xml:space="preserve">
+    <value>Create your first snippet, or choose an example to customize. Nothing is added until you save.</value>
+  </data>
+  <data name="TextExpander_StarterSignature.Content" xml:space="preserve">
+    <value>Email signature (!mysig)</value>
+  </data>
+  <data name="TextExpander_StarterEmail.Content" xml:space="preserve">
+    <value>Email address (!myemail)</value>
+  </data>
+  <data name="TextExpander_StarterDate.Content" xml:space="preserve">
+    <value>Today's date (!isodate)</value>
+  </data>
+  <data name="TextExpander_StarterSignature_Text" xml:space="preserve">
+    <value>Best regards,
+Your name</value>
+    <comment>Example text that the "Email signature (!mysig)" button puts in a new snippet for the user to customize. It matches the starter file's !mysig snippet. "Your name" is a placeholder the user replaces with their own name. Keep the line break.</comment>
+  </data>
+  <data name="TextExpander_DiscardWarning.Title" xml:space="preserve">
+    <value>Discard your changes?</value>
+  </data>
+  <data name="TextExpander_KeepEditing.Content" xml:space="preserve">
+    <value>Keep editing</value>
+  </data>
+  <data name="TextExpander_DiscardChanges.Content" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="TextExpander_PreviewHint.Text" xml:space="preserve">
+    <value>Bubbles are filled in when the snippet runs.</value>
+  </data>
+  <data name="TextExpander_PreviewClipboard" xml:space="preserve">
+    <value>Clipboard</value>
+    <comment>Label of the bubble in the snippet preview that stands for whatever is on the clipboard</comment>
+  </data>
+  <data name="TextExpander_PreviewClipboard_Description" xml:space="preserve">
+    <value>Clipboard, filled in when the snippet runs</value>
+    <comment>Read by screen readers for the clipboard bubble in the snippet preview</comment>
+  </data>
+  <data name="TextExpander_PreviewPrompt_Description" xml:space="preserve">
+    <value>{0}, asked for when the snippet runs</value>
+    <comment>Read by screen readers for a question bubble in the snippet preview. {0} is the question's label, such as "First name"</comment>
+  </data>
+  <data name="TextExpander_PreviewPromptUnnamed" xml:space="preserve">
+    <value>Your answer</value>
+    <comment>Shown in the snippet preview for a question that has no label</comment>
+  </data>
+  <data name="TextExpander_PreviewValue_Description" xml:space="preserve">
+    <value>{0}, filled in when the snippet runs</value>
+    <comment>Read by screen readers for a date or time bubble in the snippet preview. {0} is today's date or the current time, such as "10/17/26"</comment>
+  </data>
+  <data name="TextExpander_PreviewCursor_Description" xml:space="preserve">
+    <value>The cursor ends up here</value>
+    <comment>Read by screen readers for the cursor marker in the snippet preview</comment>
+  </data>
+  <data name="TextExpander_Row_SpokenLines" xml:space="preserve">
+    <value>{0}, {1} lines</value>
+    <comment>Read by screen readers for a snippet with several lines, since the list shows three at most. {0} is the snippet, read aloud; {1} is the number of lines, two or more</comment>
+  </data>
+  <data name="TextExpander_Row_NeverExpandsDuplicate" xml:space="preserve">
+    <value>Another "{0}" further down the list is used instead.</value>
+    <comment>Why a snippet never expands, shown under its "Never expands" badge. {0} is the snippet's trigger, which appears again later in the list</comment>
+  </data>
+  <data name="TextExpander_Row_NeverExpandsFiresFirst" xml:space="preserve">
+    <value>"{0}" fires first. Rename one of them.</value>
+    <comment>Why a snippet never expands, shown under its "Never expands" badge. {0} is another snippet's trigger that is complete partway through typing this one</comment>
+  </data>
+  <data name="TextExpander_Row_NeverExpandsFiresFirstWordWait" xml:space="preserve">
+    <value>"{0}" fires first. Rename one, or turn on Wait for space or punctuation in PowerToys Settings.</value>
+    <comment>Why a snippet never expands, shown under its "Never expands" badge. {0} is another snippet's trigger. "Wait for space or punctuation" is the name of a setting on the Text Expander page in PowerToys Settings</comment>
+  </data>
+  <data name="TextExpander_Row_NeverExpandsWhenYouType" xml:space="preserve">
+    <value>"{0}" fires first when you type "{1}". Rename one of them.</value>
+    <comment>Why a snippet never expands, shown under its "Never expands" badge. {0} is another snippet's trigger; {1} is the punctuation or symbol in this trigger that makes {0} fire</comment>
+  </data>
+  <data name="TextExpander_Row_NeverExpandsWhenYouTypeSpace" xml:space="preserve">
+    <value>"{0}" fires first when you type a space. Rename one of them.</value>
+    <comment>Why a snippet never expands, shown under its "Never expands" badge. {0} is another snippet's trigger</comment>
+  </data>
+  <data name="TextExpander_Row_NeverExpands.Text" xml:space="preserve">
+    <value>Never expands</value>
+    <comment>Badge on a snippet in the list that can never expand; the reason follows it</comment>
+  </data>
+  <data name="TextExpander_Row_NeverExpandsSpoken" xml:space="preserve">
+    <value>Never expands: {0}</value>
+    <comment>Read by screen readers for a snippet that can never expand. {0} says why</comment>
+  </data>
+  <data name="TextExpander_Row_SpokenNewLine" xml:space="preserve">
+    <value>new line</value>
+    <comment>Read by screen readers in place of a line break in a snippet</comment>
+  </data>
+  <data name="TextExpander_Row_SpokenTab" xml:space="preserve">
+    <value>tab</value>
+    <comment>Read by screen readers in place of a tab in a snippet</comment>
+  </data>
+  <data name="TextExpander_Row_SpokenClipboard" xml:space="preserve">
+    <value>what you copied</value>
+    <comment>Read by screen readers in place of the clipboard in a snippet</comment>
+  </data>
+  <data name="TextExpander_Row_SpokenPrompt" xml:space="preserve">
+    <value>asks for {0}</value>
+    <comment>Read by screen readers in place of a question in a snippet. {0} is the question's label</comment>
+  </data>
+  <data name="TextExpander_Row_SpokenCursor" xml:space="preserve">
+    <value>cursor</value>
+    <comment>Read by screen readers in place of the cursor marker in a snippet</comment>
+  </data>
+  <data name="TextExpander_Row_AutomationName" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>Screen reader name of a snippet in the list. {0} is the trigger; {1} is what the snippet types, read aloud, or why it never expands</comment>
+  </data>
+  <data name="TextExpander_Row_AutomationNameWarning" xml:space="preserve">
+    <value>{0}: {1}. {2}</value>
+    <comment>Screen reader name of a snippet in the list. {0} is the trigger; {1} is what the snippet types, read aloud; {2} says it never expands, and why</comment>
+  </data>
+  <data name="TextExpander_SnippetSaved" xml:space="preserve">
+    <value>Snippet saved.</value>
+  </data>
+  <data name="TextExpander_SnippetDeleted" xml:space="preserve">
+    <value>Snippet deleted.</value>
+  </data>
+  <data name="TextExpander_EditorFileChanged" xml:space="preserve">
+    <value>Your snippets changed while you were editing, for example on another PC. Copy anything you want to keep, select Cancel, then open this snippet again.</value>
+    <comment>Shown in the snippet dialog, whose Save button is turned off. "Cancel" is the button that closes the dialog.</comment>
+  </data>
+  <data name="TextExpander_RetrySnippets.Content" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="TextExpander_SnippetCountUnavailable" xml:space="preserve">
+    <value>Snippet count unavailable</value>
+  </data>
+  <data name="TextExpander_SearchStillActive" xml:space="preserve">
+    <value>Search is still active. Clear search to see all snippets.</value>
+  </data>
+  <data name="TextExpander_FileAppeared" xml:space="preserve">
+    <value>A snippets database was just created somewhere else, so the list was updated. Check for duplicate triggers, then save again.</value>
+    <comment>Shown instead of saving when a snippets database appeared where Text Expander was about to create one. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_FileChangedBeforeSave" xml:space="preserve">
+    <value>Your snippets database was changed somewhere else, so this change wasn't saved. The list has been updated. Try again.</value>
+    <comment>Shown instead of saving when the snippets database changed after Text Expander read it, for example on another PC. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_NewerVersion" xml:space="preserve">
+    <value>Your snippets database was saved by a newer version of PowerToys, so this version can't change it. Update PowerToys on this PC, then try again.</value>
+    <comment>Shown instead of saving a change when the snippets database comes from a newer version of PowerToys, for example one on another PC, because saving could lose what that version keeps. Nothing was changed. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_CantSaveText" xml:space="preserve">
+    <value>Your snippets database has text that Text Expander can't save. Fix it in a text editor, then try again.</value>
+    <comment>Shown instead of saving a change when the snippets database holds text that can't be written back, such as half of an emoji left by another app in a part Text Expander doesn't use. Its snippets still work, and nothing was changed. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_EditorTitle" xml:space="preserve">
+    <value>PowerToys Text Expander - Manage snippets</value>
+    <comment>Title of the snippet editor window. {Locked="PowerToys"}</comment>
+  </data>
+  <data name="Attribution_TextExpander.Content" xml:space="preserve">
+    <value>Created by Gary Hsu</value>
+    <comment>Gary Hsu is a person's name. Do not localize the name; localize the attribution wording.</comment>
+  </data>
+  <data name="TextExpander_MoreOptions.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More options</value>
+  </data>
+</root>

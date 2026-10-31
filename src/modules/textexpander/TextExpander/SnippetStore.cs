@@ -1,0 +1,1336 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Security.Cryptography;
+using Microsoft.PowerToys.TextExpander.Storage;
+
+namespace Microsoft.PowerToys.TextExpander;
+
+/// <summary>
+/// Loads and watches the snippets file, reading it as the snippet editor does.
+/// </summary>
+internal sealed class SnippetStore : IDisposable
+{
+    /// <summary>The snippets file's name in the default location.</summary>
+    internal const string FileName = TextExpanderSnippetFileNames.Current;
+
+    /// <summary>Immutable snapshot so the keyboard hook can read without locking.</summary>
+    public sealed class Snapshot
+    {
+        public required Dictionary<string, string> Map { get; init; }
+
+        /// <summary>Gets the suffix index over the triggers.</summary>
+        public required TriggerIndex Triggers { get; init; }
+
+        public required int MaxTriggerLength { get; init; }
+
+        /// <summary>Gets the SHA-256 hash of the file the snapshot was read from, or null when there was no file.</summary>
+        public byte[]? Hash { get; init; }
+
+        public static readonly Snapshot Empty = new()
+        {
+            Map = new Dictionary<string, string>(StringComparer.Ordinal),
+            Triggers = TriggerIndex.Empty,
+            MaxTriggerLength = 0,
+        };
+    }
+
+    private sealed class StoreState
+    {
+        public StoreState(long generation, string filePath, bool isDefault, bool caseSensitive, Snapshot snapshot)
+        {
+            Generation = generation;
+            FilePath = filePath;
+            IsDefault = isDefault;
+            CaseSensitive = caseSensitive;
+            Snapshot = snapshot;
+        }
+
+        public long Generation { get; }
+
+        public string FilePath { get; }
+
+        public bool IsDefault { get; }
+
+        public bool CaseSensitive { get; }
+
+        public Snapshot Snapshot { get; }
+    }
+
+    private sealed class TransitionTarget
+    {
+        public TransitionTarget(long generation, string filePath, bool isDefault, bool caseSensitive)
+        {
+            Generation = generation;
+            FilePath = filePath;
+            IsDefault = isDefault;
+            CaseSensitive = caseSensitive;
+        }
+
+        public long Generation { get; }
+
+        public string FilePath { get; }
+
+        public bool IsDefault { get; }
+
+        public bool CaseSensitive { get; }
+    }
+
+    private sealed class PublishedState
+    {
+        public PublishedState(StoreState state, WatcherRegistration? watcher, bool hasLoadedState)
+        {
+            State = state;
+            Watcher = watcher;
+            HasLoadedState = hasLoadedState;
+        }
+
+        public StoreState State { get; }
+
+        public WatcherRegistration? Watcher { get; }
+
+        public bool HasLoadedState { get; }
+    }
+
+    private sealed class WatcherRegistration : IDisposable
+    {
+        private int _pendingFileEvent;
+        private int _disposed;
+
+        public WatcherRegistration(long identity, long transitionGeneration, FileSystemWatcher watcher)
+        {
+            Identity = identity;
+            TransitionGeneration = transitionGeneration;
+            Watcher = watcher;
+        }
+
+        public long Identity { get; }
+
+        public long TransitionGeneration { get; }
+
+        public FileSystemWatcher Watcher { get; }
+
+        public bool RecordFileEvent()
+        {
+            if (Volatile.Read(ref _disposed) != 0)
+            {
+                return false;
+            }
+
+            Interlocked.Exchange(ref _pendingFileEvent, 1);
+            return Volatile.Read(ref _disposed) == 0;
+        }
+
+        public bool ConsumePendingFileEvent()
+            => Volatile.Read(ref _disposed) == 0
+                && Interlocked.Exchange(ref _pendingFileEvent, 0) != 0;
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) == 0)
+            {
+                Interlocked.Exchange(ref _pendingFileEvent, 0);
+                Watcher.Dispose();
+            }
+        }
+    }
+
+    private enum ReloadRequestKind
+    {
+        DesiredTransition,
+        PublishedWatcher,
+    }
+
+    private sealed class ReloadRequest
+    {
+        public ReloadRequest(
+            long sequence,
+            ReloadRequestKind kind,
+            long desiredGeneration,
+            WatcherRegistration? watcher,
+            int failureCount,
+            TimeSpan delay)
+        {
+            Sequence = sequence;
+            Kind = kind;
+            DesiredGeneration = desiredGeneration;
+            Watcher = watcher;
+            FailureCount = failureCount;
+            Delay = delay;
+        }
+
+        public long Sequence { get; }
+
+        public ReloadRequestKind Kind { get; }
+
+        public long DesiredGeneration { get; }
+
+        public WatcherRegistration? Watcher { get; }
+
+        public int FailureCount { get; }
+
+        public TimeSpan Delay { get; }
+    }
+
+    private readonly record struct ReloadRetry(
+        ReloadRequestKind Kind,
+        long DesiredGeneration,
+        WatcherRegistration? Watcher,
+        TransitionResult Failure);
+
+    internal enum TransitionStatus
+    {
+        Succeeded,
+        Unchanged,
+        Failed,
+        Superseded,
+    }
+
+    internal readonly record struct TransitionResult(
+        TransitionStatus Status,
+        int Count,
+        string AttemptedPath,
+        Exception? Error,
+        bool HasCurrentState = true)
+    {
+        public bool Succeeded => Status is TransitionStatus.Succeeded or TransitionStatus.Unchanged;
+    }
+
+    internal sealed class TestHooks
+    {
+        public Action<long>? BeforeWatcherReload { get; init; }
+
+        public Action<long>? AfterWatcherReload { get; init; }
+
+        public Action<long>? BeforeWatcherActivation { get; init; }
+
+        public Action<long>? AfterWatcherHandoffRead { get; init; }
+
+        public Action<long, Action<Exception>>? WatcherErrorHandlerRegistered { get; init; }
+
+        public Action<long, Action>? WatcherFileEventHandlerRegistered { get; init; }
+    }
+
+    private static readonly TimeSpan DefaultDebounceDelay = TimeSpan.FromMilliseconds(250);
+    private static readonly TimeSpan DefaultRetryDelay = TimeSpan.FromMilliseconds(250);
+    private static readonly TimeSpan DefaultRecoveryInterval = TimeSpan.FromSeconds(30);
+    private const int DefaultMaxReloadAttempts = 4;
+
+    private readonly object _requestLock = new();
+    private readonly object _transitionLock = new();
+    private readonly object _debounceLock = new();
+    private readonly Func<string, byte[]> _readAllBytes;
+    private readonly TimeSpan _debounceDelay;
+    private readonly TimeSpan _retryDelay;
+    private readonly TimeSpan _recoveryInterval;
+    private readonly int _maxReloadAttempts;
+    private readonly Action<string> _log;
+    private readonly TestHooks? _testHooks;
+    private volatile PublishedState _published;
+    private volatile TransitionTarget _desired;
+    private Timer? _debounce;
+    private Timer? _recovery;
+    private long _nextGeneration;
+    private long _nextWatcherIdentity;
+    private long _nextReloadSequence;
+    private ReloadRequest? _scheduledReload;
+    private bool _reloadWorkerActive;
+    private int _watchingRequested;
+    private int _recovering;
+    private string? _missingFileLogged;
+    private int _disposed;
+
+    public string FilePath => _published.State.FilePath;
+
+    /// <summary>Gets a value indicating whether the snippets file is the default one, not one the user chose.</summary>
+    public bool IsDefaultPath => _published.State.IsDefault;
+
+    public Snapshot Current => _published.State.Snapshot;
+
+    public bool HasLoadedState => _published.HasLoadedState;
+
+    public bool IsWatching => _published.Watcher?.Watcher.EnableRaisingEvents == true;
+
+    /// <summary>Raised after a successful reload. Fires on a thread pool thread.</summary>
+    public event Action<int>? Reloaded;
+
+    public SnippetStore(string filePath, bool isDefault = false, bool caseSensitive = true)
+        : this(
+            filePath,
+            isDefault,
+            caseSensitive,
+            ReadAllBytesShared,
+            DefaultDebounceDelay,
+            DefaultRetryDelay,
+            DefaultMaxReloadAttempts,
+            message => System.Diagnostics.Trace.TraceWarning(message))
+    {
+    }
+
+    /// <param name="recoveryInterval">
+    /// How often, once watching, to try again to load a snippets file that couldn't be loaded or watched, such as one in
+    /// OneDrive before it starts at sign-in, or in a folder that isn't there yet. Thirty seconds when null.
+    /// </param>
+    internal SnippetStore(
+        string filePath,
+        bool isDefault,
+        bool caseSensitive,
+        Func<string, byte[]> readAllBytes,
+        TimeSpan debounceDelay,
+        TimeSpan retryDelay,
+        int maxReloadAttempts,
+        Action<string>? log = null,
+        TestHooks? testHooks = null,
+        TimeSpan? recoveryInterval = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+        ArgumentNullException.ThrowIfNull(readAllBytes);
+        ArgumentOutOfRangeException.ThrowIfLessThan(debounceDelay, TimeSpan.Zero);
+        ArgumentOutOfRangeException.ThrowIfLessThan(retryDelay, TimeSpan.Zero);
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxReloadAttempts, 1);
+
+        var initialState = new StoreState(0, filePath, isDefault, caseSensitive, Snapshot.Empty);
+        _published = new PublishedState(initialState, watcher: null, hasLoadedState: false);
+        _desired = new TransitionTarget(0, filePath, isDefault, caseSensitive);
+        _readAllBytes = readAllBytes;
+        _debounceDelay = debounceDelay;
+        _retryDelay = retryDelay;
+        _recoveryInterval = recoveryInterval ?? DefaultRecoveryInterval;
+        _maxReloadAttempts = maxReloadAttempts;
+        _log = log ?? (_ => { });
+        _testHooks = testHooks;
+    }
+
+    // ── Path resolution ──────────────────────────────────────
+
+    /// <summary>
+    /// Resolves the snippets file for a configured file with <see cref="SnippetPathResolution.FromConfiguredPath"/>,
+    /// falling back silently when nothing usable was configured: to <paramref name="hostDataFolder"/> under a host,
+    /// whose installer owns the folder beside the executable, and otherwise to <see cref="ResolveDefaultPath"/>.
+    /// </summary>
+    internal static SnippetPathResolution ResolveConfiguredPathInfo(string? configuredPath, string? hostDataFolder)
+    {
+        try
+        {
+            // A chosen file is used where it is, and nothing is created there.
+            if (SnippetPathResolution.FromConfiguredPath(configuredPath, Environment.ExpandEnvironmentVariables) is { } configured)
+            {
+                return configured;
+            }
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException or IOException or UnauthorizedAccessException)
+        {
+            // An unusable setting must not prevent the host/default library from loading.
+        }
+
+        return new SnippetPathResolution(
+            string.IsNullOrWhiteSpace(hostDataFolder) ? ResolveDefaultPath() : ResolveHostPath(hostDataFolder!),
+            IsDefault: true);
+    }
+
+    /// <summary>
+    /// The snippets file inside the host data folder, falling back to the PowerToys per-user folder if that folder cannot be created.
+    /// </summary>
+    private static string ResolveHostPath(string hostDataFolder)
+    {
+        try
+        {
+            string full = Path.GetFullPath(hostDataFolder);
+            Directory.CreateDirectory(full);
+            return Path.Combine(full, FileName);
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException or IOException or UnauthorizedAccessException)
+        {
+            return ResolveDefaultPath();
+        }
+    }
+
+    /// <summary>
+    /// Resolves the PowerToys per-user snippets file used when no settings path is available.
+    /// </summary>
+    public static string ResolveDefaultPath()
+    {
+        string appData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "TextExpander");
+        Directory.CreateDirectory(appData);
+        return SnippetPathResolution.Default(appData).FilePath;
+    }
+
+    // ── Loading ──────────────────────────────────────────────
+    public TransitionResult Load()
+    {
+        TransitionTarget target;
+        lock (_requestLock)
+        {
+            TransitionTarget desired = _desired;
+            target = PublishTransition(desired.FilePath, desired.IsDefault, desired.CaseSensitive);
+        }
+
+        return ExecuteTransition(target);
+    }
+
+    private TransitionResult TryStageStateLocked(TransitionTarget target, out StoreState? candidate)
+        => TryStageStateLocked(target, () => IsCurrent(target), out candidate);
+
+    private TransitionResult TryStageStateLocked(
+        TransitionTarget target,
+        Func<bool> isStillCurrent,
+        out StoreState? candidate)
+    {
+        candidate = null;
+        string candidatePath = target.FilePath;
+        try
+        {
+            Snapshot snapshot = ReadSnippets(target);
+
+            if (Volatile.Read(ref _disposed) != 0)
+            {
+                return Failed(candidatePath, new ObjectDisposedException(nameof(SnippetStore)));
+            }
+
+            if (!isStillCurrent())
+            {
+                return Superseded(target, candidatePath);
+            }
+
+            candidate = new StoreState(
+                target.Generation,
+                candidatePath,
+                target.IsDefault,
+                target.CaseSensitive,
+                snapshot);
+            return new TransitionResult(TransitionStatus.Succeeded, snapshot.Map.Count, candidatePath, Error: null);
+        }
+        catch (Exception ex) when (IsLoadError(ex))
+        {
+            // Preserve the complete previous path, metadata, and snippet snapshot. The explicit
+            // failed result keeps synchronous callers from mistaking that old count for success.
+            return Failed(candidatePath, ex);
+        }
+    }
+
+    /// <summary>
+    /// Reads the snippets in <paramref name="target"/>'s file. Only the default location gets its folder, and the starter
+    /// when it has no file. A chosen file that's missing, or whose folder is, gives no snippets until it's there: it was
+    /// moved or deleted, maybe on another PC, or its drive or sync service isn't ready yet, and creating it there would
+    /// put the starter where a sync service copies it to the user's other PCs. A file touched but not changed, as a sync
+    /// service does, keeps the snippets already read from it.
+    /// </summary>
+    private Snapshot ReadSnippets(TransitionTarget target)
+    {
+        string path = target.FilePath;
+        if (target.IsDefault)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            TextExpanderStarter.TryCreateFile(path);
+        }
+
+        byte[] bytes;
+        try
+        {
+            bytes = _readAllBytes(path);
+        }
+        catch (Exception ex) when (!target.IsDefault && ex is FileNotFoundException or DirectoryNotFoundException)
+        {
+            if (!string.Equals(Interlocked.Exchange(ref _missingFileLogged, path), path, StringComparison.OrdinalIgnoreCase))
+            {
+                _log($"Text Expander has no snippets until the snippets file '{path}' is there: {ex.Message}");
+            }
+
+            return BuildSnapshot(new Dictionary<string, string>(target.CaseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase), target.CaseSensitive, hash: null);
+        }
+
+        Interlocked.Exchange(ref _missingFileLogged, null);
+        byte[] hash = SHA256.HashData(bytes);
+        StoreState loaded = _published.State;
+        if (loaded.Snapshot.Hash is { } loadedHash
+            && loadedHash.AsSpan().SequenceEqual(hash)
+            && loaded.CaseSensitive == target.CaseSensitive
+            && string.Equals(loaded.FilePath, path, StringComparison.OrdinalIgnoreCase))
+        {
+            return loaded.Snapshot;
+        }
+
+        return BuildSnapshot(Parse(bytes, target.CaseSensitive), target.CaseSensitive, hash);
+    }
+
+    private static Snapshot BuildSnapshot(Dictionary<string, string> map, bool caseSensitive, byte[]? hash)
+    {
+        var index = TriggerIndex.Build(map.Keys, caseSensitive);
+        return new Snapshot { Map = map, Triggers = index, MaxTriggerLength = index.MaxTriggerLength, Hash = hash };
+    }
+
+    private TransitionResult ExecutePublishedWatcherReloadLocked(WatcherRegistration watcher)
+    {
+        PublishedState current = _published;
+        if (!ReferenceEquals(current.Watcher, watcher))
+        {
+            return Superseded(
+                new TransitionTarget(
+                    watcher.TransitionGeneration,
+                    current.State.FilePath,
+                    current.State.IsDefault,
+                    current.State.CaseSensitive),
+                current.State.FilePath);
+        }
+
+        var target = new TransitionTarget(
+            current.State.Generation,
+            current.State.FilePath,
+            current.State.IsDefault,
+            current.State.CaseSensitive);
+        TransitionResult result = TryStageStateLocked(
+            target,
+            () => ReferenceEquals(_published.Watcher, watcher),
+            out StoreState? candidate);
+        if (!result.Succeeded || candidate is null)
+        {
+            return result;
+        }
+
+        if (!ReferenceEquals(_published.Watcher, watcher))
+        {
+            return Superseded(target, candidate.FilePath);
+        }
+
+        _published = new PublishedState(candidate, watcher, hasLoadedState: true);
+        return result;
+    }
+
+    private TransitionResult ExecuteTransition(TransitionTarget target)
+    {
+        TransitionResult result;
+        lock (_transitionLock)
+        {
+            result = ExecuteTransitionLocked(target);
+        }
+
+        if (!result.Succeeded && result.Status != TransitionStatus.Superseded)
+        {
+            ScheduleRetryAfterFailure(target, result);
+        }
+
+        return result;
+    }
+
+    private TransitionResult ExecuteTransitionLocked(TransitionTarget target)
+    {
+        if (Volatile.Read(ref _disposed) != 0)
+        {
+            return Failed(target.FilePath, new ObjectDisposedException(nameof(SnippetStore)));
+        }
+
+        if (!IsCurrent(target))
+        {
+            return Superseded(target, target.FilePath);
+        }
+
+        TransitionResult result = TryStageStateLocked(target, out StoreState? candidate);
+        if (!result.Succeeded || candidate is null)
+        {
+            return result;
+        }
+
+        PublishedState previous = _published;
+        WatcherRegistration? watcher = previous.Watcher;
+        bool watcherAlreadyCoversTarget = watcher?.Watcher.EnableRaisingEvents == true
+            && previous.State.Generation == target.Generation;
+        bool needsCandidateWatcher = Volatile.Read(ref _watchingRequested) != 0
+            && !watcherAlreadyCoversTarget;
+
+        if (needsCandidateWatcher)
+        {
+            result = TryRegisterCandidateWatcherLocked(target, candidate, out watcher);
+            if (!result.Succeeded || watcher is null)
+            {
+                watcher?.Dispose();
+                return result;
+            }
+
+            // The file can change after the read above and before the watcher is active, so read it once more under the
+            // same generation before publishing.
+            result = TryStageStateLocked(target, out StoreState? handoffCandidate);
+            if (!result.Succeeded || handoffCandidate is null)
+            {
+                watcher.Dispose();
+                return result;
+            }
+
+            candidate = handoffCandidate;
+            try
+            {
+                _testHooks?.AfterWatcherHandoffRead?.Invoke(target.Generation);
+            }
+            catch (Exception ex) when (IsLoadError(ex))
+            {
+                watcher.Dispose();
+                return Failed(candidate.FilePath, ex);
+            }
+        }
+
+        if (Volatile.Read(ref _disposed) != 0)
+        {
+            if (needsCandidateWatcher)
+            {
+                watcher?.Dispose();
+            }
+
+            return Failed(candidate.FilePath, new ObjectDisposedException(nameof(SnippetStore)));
+        }
+
+        if (!IsCurrent(target))
+        {
+            if (needsCandidateWatcher)
+            {
+                watcher?.Dispose();
+            }
+
+            return Superseded(target, candidate.FilePath);
+        }
+
+        var next = new PublishedState(candidate, watcher, hasLoadedState: true);
+        _published = next;
+        bool candidateEventPending = needsCandidateWatcher
+            && watcher is not null
+            && watcher.ConsumePendingFileEvent();
+        if (!ReferenceEquals(previous.Watcher, watcher))
+        {
+            previous.Watcher?.Dispose();
+        }
+
+        if (candidateEventPending)
+        {
+            ScheduleReload(watcher!);
+        }
+
+        return new TransitionResult(
+            TransitionStatus.Succeeded,
+            candidate.Snapshot.Map.Count,
+            candidate.FilePath,
+            Error: null);
+    }
+
+    private TransitionTarget PublishTransition(string filePath, bool isDefault, bool caseSensitive)
+    {
+        long generation = ++_nextGeneration;
+        var target = new TransitionTarget(generation, filePath, isDefault, caseSensitive);
+        _desired = target;
+        CancelScheduledDesiredReload();
+        return target;
+    }
+
+    private void CancelScheduledDesiredReload()
+    {
+        lock (_debounceLock)
+        {
+            if (_scheduledReload?.Kind == ReloadRequestKind.DesiredTransition)
+            {
+                _scheduledReload = null;
+                if (!_reloadWorkerActive)
+                {
+                    _debounce?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+                }
+            }
+        }
+    }
+
+    private bool IsCurrent(TransitionTarget target)
+        => _desired.Generation == target.Generation;
+
+    private static bool SameConfiguration(
+        string firstPath,
+        bool firstIsDefault,
+        bool firstCaseSensitive,
+        string secondPath,
+        bool secondIsDefault,
+        bool secondCaseSensitive)
+        => firstIsDefault == secondIsDefault
+            && firstCaseSensitive == secondCaseSensitive
+            && string.Equals(firstPath, secondPath, StringComparison.OrdinalIgnoreCase);
+
+    private static bool SameConfiguration(StoreState state, TransitionTarget target)
+        => SameConfiguration(
+            state.FilePath,
+            state.IsDefault,
+            state.CaseSensitive,
+            target.FilePath,
+            target.IsDefault,
+            target.CaseSensitive);
+
+    private static bool IsLoadError(Exception ex)
+        => ex is IOException or UnauthorizedAccessException or System.Security.SecurityException
+            or ArgumentException or NotSupportedException or PathTooLongException;
+
+    private TransitionResult Failed(string attemptedPath, Exception error)
+    {
+        PublishedState current = _published;
+        return new TransitionResult(
+            TransitionStatus.Failed,
+            current.State.Snapshot.Map.Count,
+            attemptedPath,
+            error,
+            current.HasLoadedState);
+    }
+
+    private TransitionResult Superseded(TransitionTarget target, string attemptedPath)
+    {
+        PublishedState current = _published;
+        return new TransitionResult(
+            TransitionStatus.Superseded,
+            current.State.Snapshot.Map.Count,
+            attemptedPath,
+            new OperationCanceledException($"Text Expander snippet transition {target.Generation} was superseded."),
+            current.HasLoadedState);
+    }
+
+    /// <summary>Reads with permissive sharing so an open editor does not block us.</summary>
+    private static byte[] ReadAllBytesShared(string path)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        if (stream.Length > Array.MaxLength)
+        {
+            throw new IOException($"The snippets file '{path}' is too large to read.");
+        }
+
+        // A file still being written can end before its length said, which throws EndOfStreamException, an IOException.
+        byte[] bytes = new byte[stream.Length];
+        stream.ReadExactly(bytes);
+        return bytes;
+    }
+
+    /// <summary>
+    /// Reads a snippets file (<see cref="SnippetFile.Read"/>) into the runtime map, where the last of two snippets with
+    /// the same trigger wins.
+    /// </summary>
+    internal static Dictionary<string, string> Parse(ReadOnlySpan<byte> utf8Json, bool caseSensitive = true)
+    {
+        var result = new Dictionary<string, string>(caseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase);
+        foreach (SnippetFile.Entry entry in SnippetFile.Read(utf8Json).Snippets)
+        {
+            result.Remove(entry.Trigger);
+            result[entry.Trigger] = entry.Replacement;
+        }
+
+        return result;
+    }
+
+    // ── Matching ─────────────────────────────────────────────
+
+    /// <summary>
+    /// Changes whether trigger matching distinguishes capitalization, then rebuilds the immutable
+    /// lookup from the desired file. A failed transition keeps the previous complete state live
+    /// while bounded retries continue toward the requested setting.
+    /// </summary>
+    public TransitionResult SetCaseSensitive(bool caseSensitive)
+    {
+        TransitionTarget target;
+        lock (_requestLock)
+        {
+            TransitionTarget desired = _desired;
+            PublishedState current = _published;
+            if (desired.CaseSensitive == caseSensitive
+                && current.HasLoadedState
+                && current.State.Generation == desired.Generation
+                && SameConfiguration(current.State, desired))
+            {
+                return new TransitionResult(
+                    TransitionStatus.Unchanged,
+                    current.State.Snapshot.Map.Count,
+                    current.State.FilePath,
+                    Error: null);
+            }
+
+            target = PublishTransition(desired.FilePath, desired.IsDefault, caseSensitive);
+        }
+
+        return ExecuteTransition(target);
+    }
+
+    // ── Watching ─────────────────────────────────────────────
+    public TransitionResult StartWatching()
+    {
+        Interlocked.Exchange(ref _watchingRequested, 1);
+        lock (_debounceLock)
+        {
+            if (Volatile.Read(ref _disposed) == 0)
+            {
+                _recovery ??= new Timer(_ => Recover(), null, _recoveryInterval, _recoveryInterval);
+            }
+        }
+
+        return ExecuteTransition(_desired);
+    }
+
+    /// <summary>
+    /// Loads the desired snippets file again, quietly, while it isn't loaded and watched: it couldn't be read or watched,
+    /// as when it's in OneDrive before OneDrive starts or its folder isn't there, so no watcher reports when it can be.
+    /// </summary>
+    private void Recover()
+    {
+        if (Volatile.Read(ref _disposed) != 0 || Interlocked.Exchange(ref _recovering, 1) != 0)
+        {
+            return;
+        }
+
+        try
+        {
+            TransitionTarget desired = _desired;
+            PublishedState published = _published;
+            if (published.Watcher is not null
+                && published.HasLoadedState
+                && published.State.Generation == desired.Generation
+                && SameConfiguration(published.State, desired))
+            {
+                return;
+            }
+
+            TransitionResult result;
+            lock (_transitionLock)
+            {
+                result = ExecuteTransitionLocked(desired);
+            }
+
+            if (result.Succeeded)
+            {
+                Reloaded?.Invoke(result.Count);
+            }
+        }
+        catch (Exception ex)
+        {
+            _log($"Text Expander could not recover its snippets file: {ex.Message}");
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _recovering, 0);
+        }
+    }
+
+    /// <summary>
+    /// Points this store at a different snippet file, reloading and re-watching. Mutates this instance because
+    /// the keyboard hook captured it; consumers see either the complete old path/snapshot/watcher or the
+    /// complete new set. Failure leaves the old state live while bounded retries retain this target.
+    /// </summary>
+    public TransitionResult Repoint(string newPath, bool isDefault = false)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(newPath);
+
+        TransitionTarget target;
+        lock (_requestLock)
+        {
+            TransitionTarget desired = _desired;
+            PublishedState current = _published;
+            if (SameConfiguration(
+                    desired.FilePath,
+                    desired.IsDefault,
+                    desired.CaseSensitive,
+                    newPath,
+                    isDefault,
+                    desired.CaseSensitive)
+                && current.HasLoadedState
+                && current.State.Generation == desired.Generation
+                && SameConfiguration(current.State, desired))
+            {
+                return new TransitionResult(
+                    TransitionStatus.Unchanged,
+                    current.State.Snapshot.Map.Count,
+                    current.State.FilePath,
+                    Error: null);
+            }
+
+            target = PublishTransition(newPath, isDefault, desired.CaseSensitive);
+        }
+
+        return ExecuteTransition(target);
+    }
+
+    private TransitionResult TryRegisterCandidateWatcherLocked(
+        TransitionTarget target,
+        StoreState state,
+        out WatcherRegistration? watcher)
+    {
+        watcher = null;
+        if (Volatile.Read(ref _watchingRequested) == 0 || Volatile.Read(ref _disposed) != 0)
+        {
+            return Failed(state.FilePath, new ObjectDisposedException(nameof(SnippetStore)));
+        }
+
+        // Not logged here: the caller reports the failed transition, and recovery tries again quietly.
+        string? dir = Path.GetDirectoryName(state.FilePath);
+        if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir))
+        {
+            return Failed(state.FilePath, new DirectoryNotFoundException($"The Text Expander snippet folder '{dir}' is not available."));
+        }
+
+        FileSystemWatcher? fileWatcher = null;
+        try
+        {
+            fileWatcher = new FileSystemWatcher(dir)
+            {
+                // Watch the directory: editors that save by renaming a temporary file over the original
+                // destroy a file-level watch.
+                Filter = Path.GetFileName(state.FilePath),
+                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Size,
+                IncludeSubdirectories = false,
+            };
+
+            watcher = new WatcherRegistration(++_nextWatcherIdentity, state.Generation, fileWatcher);
+            WatcherRegistration registration = watcher;
+            void ScheduleFileReload()
+            {
+                if (registration.RecordFileEvent())
+                {
+                    ScheduleReload(registration);
+                }
+            }
+
+            // The handlers keep the file's name, not the state: that would keep its snippets after every reload.
+            string fileName = Path.GetFileName(state.FilePath);
+            FileSystemEventHandler onFileEvent = (_, e) =>
+            {
+                if (IsRelevantFileName(fileName, e.Name)
+                    || (e is RenamedEventArgs renamed && IsRelevantFileName(fileName, renamed.OldName)))
+                {
+                    ScheduleFileReload();
+                }
+            };
+
+            RenamedEventHandler onRenamed = (_, e) =>
+            {
+                if (IsRelevantFileName(fileName, e.Name) || IsRelevantFileName(fileName, e.OldName))
+                {
+                    ScheduleFileReload();
+                }
+            };
+
+            fileWatcher.Changed += onFileEvent;
+            fileWatcher.Created += onFileEvent;
+            fileWatcher.Deleted += onFileEvent;
+            fileWatcher.Renamed += onRenamed;
+            Action<Exception> reportError = error => OnWatcherError(registration, error);
+            fileWatcher.Error += (_, e) => reportError(e.GetException());
+            _testHooks?.WatcherErrorHandlerRegistered?.Invoke(state.Generation, reportError);
+            _testHooks?.WatcherFileEventHandlerRegistered?.Invoke(registration.Identity, ScheduleFileReload);
+
+            _testHooks?.BeforeWatcherActivation?.Invoke(state.Generation);
+
+            ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+
+            fileWatcher.EnableRaisingEvents = true;
+            return new TransitionResult(
+                TransitionStatus.Succeeded,
+                state.Snapshot.Map.Count,
+                state.FilePath,
+                Error: null);
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or IOException or UnauthorizedAccessException
+                                      or System.Security.SecurityException or System.ComponentModel.Win32Exception
+                                      or InvalidOperationException)
+        {
+            watcher?.Dispose();
+            fileWatcher?.Dispose();
+            watcher = null;
+            _log($"Text Expander could not watch '{state.FilePath}': {ex.Message}");
+            return Failed(state.FilePath, ex);
+        }
+    }
+
+    private void RetireWatcher()
+    {
+        PublishedState current = _published;
+        WatcherRegistration? watcher = current.Watcher;
+        if (watcher is null)
+        {
+            return;
+        }
+
+        _published = new PublishedState(current.State, watcher: null, current.HasLoadedState);
+        watcher?.Dispose();
+    }
+
+    private static bool IsRelevantFileName(string fileName, string? name)
+        => string.Equals(name, fileName, StringComparison.OrdinalIgnoreCase);
+
+    private void OnWatcherError(WatcherRegistration watcher, Exception error)
+    {
+        bool removed = false;
+        string attemptedPath = _desired.FilePath;
+        lock (_transitionLock)
+        {
+            PublishedState current = _published;
+            if (ReferenceEquals(current.Watcher, watcher))
+            {
+                attemptedPath = current.State.FilePath;
+                _published = new PublishedState(current.State, watcher: null, current.HasLoadedState);
+                removed = true;
+            }
+        }
+
+        if (!removed)
+        {
+            return;
+        }
+
+        watcher.Dispose();
+        _log($"Text Expander stopped watcher {watcher.Identity} for transition {watcher.TransitionGeneration}: {error.Message}");
+
+        TransitionTarget target = _desired;
+        if (Volatile.Read(ref _disposed) == 0)
+        {
+            ScheduleRetryAfterFailure(target, Failed(attemptedPath, error));
+        }
+    }
+
+    /// <summary>
+    /// Coalesces save-event bursts while assigning every request its own monotonic sequence.
+    /// An older completion can therefore clear only itself, never an event that arrived while it
+    /// was reading.
+    /// </summary>
+    internal void ScheduleReload()
+    {
+        TransitionTarget target = _desired;
+        ScheduleReload(
+            ReloadRequestKind.DesiredTransition,
+            target.Generation,
+            watcher: null,
+            failureCount: 0,
+            delay: _debounceDelay);
+    }
+
+    private void ScheduleReload(WatcherRegistration watcher)
+    {
+        lock (_debounceLock)
+        {
+            if (Volatile.Read(ref _disposed) != 0
+                || !ReferenceEquals(_published.Watcher, watcher))
+            {
+                return;
+            }
+
+            ScheduleReloadLocked(
+                ReloadRequestKind.PublishedWatcher,
+                desiredGeneration: _desired.Generation,
+                watcher: watcher,
+                failureCount: 0,
+                delay: _debounceDelay);
+        }
+    }
+
+    private void ScheduleReload(
+        ReloadRequestKind kind,
+        long desiredGeneration,
+        WatcherRegistration? watcher,
+        int failureCount,
+        TimeSpan delay)
+    {
+        lock (_debounceLock)
+        {
+            if (Volatile.Read(ref _disposed) != 0)
+            {
+                return;
+            }
+
+            ScheduleReloadLocked(kind, desiredGeneration, watcher, failureCount, delay);
+        }
+    }
+
+    private void ScheduleReloadLocked(
+        ReloadRequestKind kind,
+        long desiredGeneration,
+        WatcherRegistration? watcher,
+        int failureCount,
+        TimeSpan delay)
+    {
+        _scheduledReload = CreateReloadRequestLocked(kind, desiredGeneration, watcher, failureCount, delay);
+        ArmReloadTimerLocked(delay);
+    }
+
+    private ReloadRequest CreateReloadRequestLocked(
+        ReloadRequestKind kind,
+        long desiredGeneration,
+        WatcherRegistration? watcher,
+        int failureCount,
+        TimeSpan delay)
+        => new(++_nextReloadSequence, kind, desiredGeneration, watcher, failureCount, delay);
+
+    private void ArmReloadTimerLocked(TimeSpan delay)
+    {
+        _debounce ??= new Timer(
+            _ => ReloadScheduledTransition(),
+            null,
+            Timeout.Infinite,
+            Timeout.Infinite);
+        _debounce.Change(delay, Timeout.InfiniteTimeSpan);
+    }
+
+    private void ReloadScheduledTransition()
+    {
+        ReloadRequest? request;
+        lock (_debounceLock)
+        {
+            if (Volatile.Read(ref _disposed) != 0 || _scheduledReload is null || _reloadWorkerActive)
+            {
+                return;
+            }
+
+            request = _scheduledReload;
+            _reloadWorkerActive = true;
+        }
+
+        long hookGeneration = request.Watcher?.TransitionGeneration ?? request.DesiredGeneration;
+        int? reloadedCount = null;
+        ReloadRetry? retry = null;
+        try
+        {
+            _testHooks?.BeforeWatcherReload?.Invoke(hookGeneration);
+            ProcessReloadRequest(request, out reloadedCount, out retry);
+        }
+        catch (Exception ex)
+        {
+            _log($"Text Expander reload request {request.Sequence} failed unexpectedly: {ex.Message}");
+        }
+        finally
+        {
+            CompleteReloadRequest(request, retry);
+            try
+            {
+                if (reloadedCount is int count)
+                {
+                    Reloaded?.Invoke(count);
+                }
+            }
+            finally
+            {
+                _testHooks?.AfterWatcherReload?.Invoke(hookGeneration);
+            }
+        }
+    }
+
+    private void ProcessReloadRequest(
+        ReloadRequest request,
+        out int? reloadedCount,
+        out ReloadRetry? retry)
+    {
+        reloadedCount = null;
+        retry = null;
+        if (Volatile.Read(ref _disposed) != 0)
+        {
+            return;
+        }
+
+        if (request.Kind == ReloadRequestKind.DesiredTransition)
+        {
+            TransitionTarget target = _desired;
+            if (target.Generation != request.DesiredGeneration)
+            {
+                return;
+            }
+
+            TransitionResult result;
+            lock (_transitionLock)
+            {
+                result = ExecuteTransitionLocked(target);
+            }
+
+            if (result.Succeeded)
+            {
+                reloadedCount = result.Count;
+            }
+            else if (result.Status == TransitionStatus.Failed)
+            {
+                retry = new ReloadRetry(
+                    ReloadRequestKind.DesiredTransition,
+                    target.Generation,
+                    Watcher: null,
+                    Failure: result);
+            }
+
+            return;
+        }
+
+        WatcherRegistration? watcher = request.Watcher;
+        if (watcher is null)
+        {
+            return;
+        }
+
+        lock (_transitionLock)
+        {
+            TransitionResult publishedResult = ExecutePublishedWatcherReloadLocked(watcher);
+            if (publishedResult.Status == TransitionStatus.Superseded)
+            {
+                return;
+            }
+
+            bool publishedReloadFailed = publishedResult.Status == TransitionStatus.Failed;
+            if (publishedResult.Succeeded)
+            {
+                reloadedCount = publishedResult.Count;
+            }
+
+            TransitionTarget desired = _desired;
+            PublishedState published = _published;
+            bool desiredIsPublished = published.HasLoadedState
+                && published.State.Generation == desired.Generation
+                && SameConfiguration(published.State, desired);
+            if (!desiredIsPublished && Volatile.Read(ref _disposed) == 0)
+            {
+                TransitionResult desiredResult = ExecuteTransitionLocked(desired);
+                if (desiredResult.Succeeded)
+                {
+                    reloadedCount = desiredResult.Count;
+                    return;
+                }
+
+                if (desiredResult.Status == TransitionStatus.Failed)
+                {
+                    retry = publishedReloadFailed
+                        ? new ReloadRetry(ReloadRequestKind.PublishedWatcher, desired.Generation, watcher, desiredResult)
+                        : new ReloadRetry(ReloadRequestKind.DesiredTransition, desired.Generation, Watcher: null, Failure: desiredResult);
+                    return;
+                }
+            }
+
+            if (publishedReloadFailed)
+            {
+                retry = new ReloadRetry(
+                    ReloadRequestKind.PublishedWatcher,
+                    desired.Generation,
+                    watcher,
+                    publishedResult);
+            }
+        }
+    }
+
+    private void CompleteReloadRequest(ReloadRequest request, ReloadRetry? retry)
+    {
+        bool disposed;
+        bool retryScheduled = false;
+        int failureAttempt = 0;
+        TransitionResult? failure = retry?.Failure;
+
+        lock (_debounceLock)
+        {
+            disposed = Volatile.Read(ref _disposed) != 0;
+            if (_scheduledReload?.Sequence == request.Sequence)
+            {
+                if (!disposed && retry is ReloadRetry retryValue && ReloadRetryIsCurrent(retryValue))
+                {
+                    failureAttempt = request.FailureCount + 1;
+                    if (failureAttempt < _maxReloadAttempts)
+                    {
+                        _scheduledReload = CreateReloadRequestLocked(
+                            retryValue.Kind,
+                            retryValue.DesiredGeneration,
+                            retryValue.Watcher,
+                            failureAttempt,
+                            _retryDelay);
+                        retryScheduled = true;
+                    }
+                    else
+                    {
+                        _scheduledReload = null;
+                    }
+                }
+                else
+                {
+                    _scheduledReload = null;
+                }
+            }
+
+            _reloadWorkerActive = false;
+            if (!disposed && _scheduledReload is ReloadRequest pending)
+            {
+                ArmReloadTimerLocked(pending.Delay);
+            }
+            else
+            {
+                _debounce?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+            }
+        }
+
+        if (disposed && failure is TransitionResult disposedFailure)
+        {
+            _log($"Text Expander stopped retrying '{disposedFailure.AttemptedPath}' because the snippet store was disposed.");
+        }
+        else if (failureAttempt > 0 && failure is TransitionResult failed)
+        {
+            LogReloadFailure(failed, failureAttempt, retryScheduled);
+        }
+    }
+
+    private bool ReloadRetryIsCurrent(ReloadRetry retry)
+        => retry.Kind == ReloadRequestKind.DesiredTransition
+            ? _desired.Generation == retry.DesiredGeneration
+            : retry.Watcher is not null && ReferenceEquals(_published.Watcher, retry.Watcher);
+
+    private void ScheduleRetryAfterFailure(TransitionTarget target, TransitionResult result)
+    {
+        bool disposed;
+        bool retryScheduled = false;
+        bool targetIsCurrent;
+        lock (_debounceLock)
+        {
+            disposed = Volatile.Read(ref _disposed) != 0;
+            targetIsCurrent = _desired.Generation == target.Generation;
+            if (!disposed && targetIsCurrent)
+            {
+                WatcherRegistration? pendingWatcher = _scheduledReload?.Watcher;
+                bool preserveWatcherRequest = pendingWatcher is not null
+                    && ReferenceEquals(_published.Watcher, pendingWatcher);
+                if (preserveWatcherRequest || _maxReloadAttempts > 1)
+                {
+                    _scheduledReload = CreateReloadRequestLocked(
+                        preserveWatcherRequest ? ReloadRequestKind.PublishedWatcher : ReloadRequestKind.DesiredTransition,
+                        target.Generation,
+                        preserveWatcherRequest ? pendingWatcher : null,
+                        preserveWatcherRequest ? 0 : 1,
+                        _retryDelay);
+                    retryScheduled = true;
+                    ArmReloadTimerLocked(_retryDelay);
+                }
+            }
+        }
+
+        if (disposed)
+        {
+            _log($"Text Expander stopped retrying '{result.AttemptedPath}' because the snippet store was disposed.");
+        }
+        else if (targetIsCurrent)
+        {
+            LogReloadFailure(result, attempt: 1, retryScheduled);
+        }
+    }
+
+    private void LogReloadFailure(TransitionResult result, int attempt, bool retryScheduled)
+    {
+        string action = retryScheduled
+            ? $"Retrying in {_retryDelay.TotalMilliseconds:0} ms."
+            : _published.Watcher is not null
+                ? "Stopped retrying until another file-system event or configuration change."
+                : "Stopped retrying until the configuration changes.";
+        _log($"Text Expander could not update '{result.AttemptedPath}' (attempt {attempt} of {_maxReloadAttempts}): {result.Error?.Message} {action}");
+    }
+
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
+        Interlocked.Exchange(ref _watchingRequested, 0);
+        lock (_transitionLock)
+        {
+            RetireWatcher();
+        }
+
+        lock (_debounceLock)
+        {
+            _debounce?.Dispose();
+            _debounce = null;
+            _recovery?.Dispose();
+            _recovery = null;
+            _scheduledReload = null;
+        }
+    }
+}

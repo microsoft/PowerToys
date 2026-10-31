@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+    <data name="Prompt_Title" xml:space="preserve">
+    <value>PowerToys Text Expander</value>
+    <comment>Title of the window that asks for the answer to a snippet's question. {Locked="PowerToys"}</comment>
+  </data>
+  <data name="Prompt_UnnamedLabel" xml:space="preserve">
+    <value>Your answer</value>
+    <comment>Label above the answer box when the snippet's question has no wording of its own</comment>
+  </data>
+  <data name="Prompt_Ok" xml:space="preserve">
+    <value>OK</value>
+    <comment>Button that inserts the answer</comment>
+  </data>
+  <data name="Prompt_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Button that cancels the snippet, so nothing is inserted</comment>
+  </data>
+  <data name="Prompt_RequiredError" xml:space="preserve">
+    <value>Enter an answer to continue.</value>
+    <comment>Inline validation shown when a snippet prompt requires an answer and the answer box is empty</comment>
+  </data>
+  <data name="Message_Title" xml:space="preserve">
+    <value>PowerToys Text Expander</value>
+    <comment>Title of Text Expander's message boxes. {Locked="PowerToys"}</comment>
+  </data>
+  <data name="Error_Elevated" xml:space="preserve">
+    <value>Text Expander can't run as administrator. Restart PowerToys without administrator rights.</value>
+  </data>
+  <data name="Error_MessageWindow" xml:space="preserve">
+    <value>Text Expander couldn't start because Windows didn't let it create a window it needs. Restart PowerToys to try again.</value>
+  </data>
+  <data name="Error_KeyboardHook" xml:space="preserve">
+    <value>Text Expander couldn't start watching what you type. Another app may be blocking it. Restart PowerToys to try again.</value>
+  </data>
+  <data name="ClipboardRestoreFailed" xml:space="preserve">
+    <value>Your clipboard couldn't be restored after a snippet expanded, so what you had copied is gone.
+
+To keep snippets from using the clipboard, open PowerToys Settings &gt; Text Expander &gt; Advanced, and set Insertion method to Always type.</value>
+    <comment>"Advanced" and "Insertion method" are names on the Text Expander page in PowerToys Settings; "Always type" is one of its choices.</comment>
+  </data>
+  <data name="Diagnostics_Title" xml:space="preserve">
+    <value>Text Expander diagnostics</value>
+    <comment>Heading of the diagnostics report, for support</comment>
+  </data>
+  <data name="Diagnostics_NotRunning" xml:space="preserve">
+    <value>Text Expander isn't running, so there's nothing to report.</value>
+  </data>
+  <data name="Diagnostics_NoAnswer" xml:space="preserve">
+    <value>Text Expander is running but didn't answer.</value>
+  </data>
+</root>
