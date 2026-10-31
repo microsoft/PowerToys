@@ -207,6 +207,12 @@
       </DataExecutionPrevention>
     </Link>
   </ItemDefinitionGroup>
+  <!-- uiAccess requires a trusted signature, so only signed pipeline builds embed the uiAccess manifest. -->
+  <ItemDefinitionGroup Condition="'$(ZoomItUIAccess)'=='true'">
+    <ResourceCompile>
+      <PreprocessorDefinitions>ZOOMIT_UIACCESS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\ZoomItBreak\BreakTimer.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>

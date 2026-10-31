@@ -9,6 +9,7 @@
 #include "pch.h"
 #include "PasteChaperone.h"
 #include "ClipboardPayload.h"
+#include "Utility.h"
 
 #include <memory>
 #include <new>
@@ -249,6 +250,15 @@ namespace
 
         if( !PasteTargetStillActive() )
         {
+            return false;
+        }
+
+        // With uiAccess, SendInput would reach elevated windows that UIPI
+        // otherwise blocks; keep the paste to windows it could reach before.
+        if( IsWindowAboveOurIntegrity( g_State->PasteTarget ) )
+        {
+            OutputDebug( L"[Snip/PasteChaperone] Skipping paste into higher integrity target=%p\n",
+                         g_State->PasteTarget );
             return false;
         }
 
