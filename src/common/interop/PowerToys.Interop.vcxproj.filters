@@ -48,6 +48,9 @@
     <ClInclude Include="pipe_caller_auth.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\utils\named_pipe_peer_auth.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="async_message_queue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
