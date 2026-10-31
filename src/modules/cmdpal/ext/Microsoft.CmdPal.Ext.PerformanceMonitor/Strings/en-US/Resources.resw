@@ -185,6 +185,67 @@
   <data name="NetworkUsage_Widget_Template.Network_Name" xml:space="preserve">
     <value>Name</value>
   </data>
+  <data name="NetworkUsage_Widget_Template.Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="NetworkUsage_Widget_Template.Type" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="NetworkUsage_Widget_Template.Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Network_Adapter_Physical" xml:space="preserve">
+    <value>Physical</value>
+  </data>
+  <data name="Network_Adapter_Virtual" xml:space="preserve">
+    <value>Virtual</value>
+  </data>
+  <data name="Network_Adapter_Type_Ethernet" xml:space="preserve">
+    <value>Ethernet</value>
+  </data>
+  <data name="Network_Adapter_Type_Virtual" xml:space="preserve">
+    <value>Virtual</value>
+    <comment>Type label for proprietary virtual interfaces, including adapters used by VPN software.</comment>
+  </data>
+  <data name="Network_Adapter_Type_WiFi" xml:space="preserve">
+    <value>Wi-Fi</value>
+  </data>
+  <data name="Network_Adapter_Type_Ppp" xml:space="preserve">
+    <value>PPP</value>
+  </data>
+  <data name="Network_Adapter_Type_Tunnel" xml:space="preserve">
+    <value>Tunnel</value>
+  </data>
+  <data name="Network_Adapter_Type_MobileBroadband" xml:space="preserve">
+    <value>Mobile broadband</value>
+  </data>
+  <data name="Network_Adapter_Type_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="Network_Adapter_Type_Other" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="Network_Adapter_Status_Connected" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="Network_Adapter_Status_Disconnected" xml:space="preserve">
+    <value>Disconnected</value>
+  </data>
+  <data name="Network_Adapter_Status_Testing" xml:space="preserve">
+    <value>Testing</value>
+  </data>
+  <data name="Network_Adapter_Status_Dormant" xml:space="preserve">
+    <value>Dormant</value>
+  </data>
+  <data name="Network_Adapter_Status_NotPresent" xml:space="preserve">
+    <value>Not present</value>
+  </data>
+  <data name="Network_Adapter_Status_LowerLayerDown" xml:space="preserve">
+    <value>Underlying adapter disconnected</value>
+  </data>
+  <data name="Network_Adapter_Status_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
   <data name="Previous_Network_Title" xml:space="preserve">
     <value>Previous network</value>
   </data>
@@ -200,9 +261,6 @@
   </data>
   <data name="All_Physical_Network_Adapters" xml:space="preserve">
     <value>All physical network adapters</value>
-  </data>
-  <data name="NetworkUsage_Widget_Template.Ethernet_Heading" xml:space="preserve">
-    <value>Ethernet</value>
   </data>
   <data name="DiskUsage_Widget_Template.Disk_Usage" xml:space="preserve">
     <value>Active time</value>
@@ -460,6 +518,18 @@
   </data>
   <data name="Network_Speed_Unit_BinaryBytesPerSec" xml:space="preserve">
     <value>Binary bytes per second (KiB/s, MiB/s, GiB/s)</value>
+  </data>
+  <data name="Exclude_Virtual_Network_Adapters_Setting_Title" xml:space="preserve">
+    <value>Exclude virtual network adapters</value>
+  </data>
+  <data name="Exclude_Virtual_Network_Adapters_Setting_Description" xml:space="preserve">
+    <value>Hide virtual connections such as Hyper-V and VPN adapters. Leave off to monitor them individually. The total always includes only physical adapters.</value>
+  </data>
+  <data name="Exclude_Disconnected_Network_Adapters_Setting_Title" xml:space="preserve">
+    <value>Exclude disconnected network adapters</value>
+  </data>
+  <data name="Exclude_Disconnected_Network_Adapters_Setting_Description" xml:space="preserve">
+    <value>Hide adapters that are not connected from the list and totals. Connected adapters remain visible even when idle.</value>
   </data>
   <data name="Disk_Speed_Unit_Setting_Title" xml:space="preserve">
     <value>Disk speed unit</value>
