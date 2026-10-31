@@ -96,13 +96,53 @@ public sealed class ClipboardPolicyTests
         long now = 0;
         void Sleep(int ms) => now += Math.Max(ms, timerTick);
 
-        Injector.WaitForPasteToSettle(() => false, Sleep, () => now);
+        Assert.IsTrue(Injector.WaitForPasteToSettle(() => false, Sleep, () => now));
         Assert.AreEqual(360, now, "Never read: the 350 ms budget, to the next tick.");
 
         // Opened by the target at the first check and closed by the next.
         now = 0;
         int checks = 0;
-        Injector.WaitForPasteToSettle(() => ++checks == 1, Sleep, () => now);
+        Assert.IsTrue(Injector.WaitForPasteToSettle(() => ++checks == 1, Sleep, () => now));
         Assert.AreEqual(170, now, "Read: the 150 ms floor, then the 20 ms grace period.");
+    }
+
+    [TestMethod]
+    public void TheClipboardWaitsForATargetThatIsntTakingMessages()
+    {
+        // A target busy for 800 ms still had the Ctrl+V queued when the clipboard went back at 350 ms, so it pasted what
+        // the user had copied instead of the snippet.
+        const int timerTick = 15;
+        long now = 0;
+        void Sleep(int ms) => now += Math.Max(ms, timerTick);
+
+        Assert.IsTrue(Injector.WaitForPasteToSettle(() => false, Sleep, () => now, () => now >= 800));
+        Assert.AreEqual(960, now, "Busy until 810 ms, then the 150 ms floor for its Ctrl+V.");
+
+        // It reads the paste as soon as it answers again, and has it once the clipboard is closed.
+        now = 0;
+        bool read = false;
+        bool ReadOnceAnswering()
+        {
+            if (read || now < 800)
+            {
+                return false;
+            }
+
+            read = true;
+            return true;
+        }
+
+        Assert.IsTrue(Injector.WaitForPasteToSettle(ReadOnceAnswering, Sleep, () => now, () => now >= 800));
+        Assert.AreEqual(845, now, "Read at 810 ms, closed by 825 ms, then the grace period.");
+
+        // Still busy at the cap: the snippet stays, since its paste may yet come.
+        now = 0;
+        Assert.IsFalse(Injector.WaitForPasteToSettle(() => false, Sleep, () => now, () => false));
+        Assert.AreEqual(5010, now, "The 5 s cap, to the next tick.");
+
+        // A target that's taking messages but not seen reading gets the clipboard back at the budget, as before.
+        now = 0;
+        Assert.IsTrue(Injector.WaitForPasteToSettle(() => false, Sleep, () => now, () => true));
+        Assert.AreEqual(360, now);
     }
 }

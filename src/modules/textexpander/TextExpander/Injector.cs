@@ -40,6 +40,16 @@ internal static class Injector
     /// </summary>
     public static int PasteSettleMs { get; set; } = 350;
 
+    /// <summary>
+    /// Gets or sets how long a target that isn't taking messages (busy or hung) may keep its paste pending. Its Ctrl+V is
+    /// still queued, so the clipboard waits: handed back now, it would paste what the user copied instead of the snippet.
+    /// Past this, the snippet stays on the clipboard and the user is told.
+    /// </summary>
+    public static int PasteBusyCapMs { get; set; } = 5000;
+
+    /// <summary>Gets or sets how long to wait for a target's answer when asking whether it's taking messages.</summary>
+    public static int ResponsiveProbeMs { get; set; } = 50;
+
     /// <summary>Gets or sets how often to check whether the target has picked the paste up.</summary>
     public static int PasteSettlePollMs { get; set; } = 5;
 
@@ -424,6 +434,7 @@ internal static class Injector
         // Taken right after our own write: any later change is someone else's, and restoring over it
         // would destroy what the user copied during the settle.
         var loan = new ClipboardLoan(Clipboard.SequenceNumber);
+        bool handBack = true;
         try
         {
             // Verified, not assumed: SetClipboardData can succeed and still leave other data on the clipboard.
@@ -434,50 +445,69 @@ internal static class Injector
 
             (bool pasted, bool sentAny) = send();
 
-            // The target reads the clipboard asynchronously; restoring at once would paste the previous contents.
-            if (sentAny)
-            {
-                WaitForPasteToSettle(targetWindow);
-            }
+            // The target reads the clipboard asynchronously; restoring at once would paste the previous contents. One
+            // still busy at the cap keeps the snippet, since its Ctrl+V may yet come.
+            handBack = !sentAny || WaitForPasteToSettle(targetWindow);
 
             // Not sent at all: focus moved, a click may have moved the caret, or deciding again dropped it. The trigger is intact.
             return !sentAny ? PasteOutcome.TargetLost : pasted ? PasteOutcome.Pasted : PasteOutcome.FailedAfterErase;
         }
         finally
         {
-            RestoreClipboard(saved, loan);
+            if (handBack)
+            {
+                RestoreClipboard(saved, loan);
+            }
+            else if (!saved.IsEmpty)
+            {
+                InjectionDiagnostics.RecordClipboardRestoreFailure();
+                _clipboardLost = true;
+            }
         }
     }
 
     /// <summary>
     /// Waits for the target to take the paste: its process opening and then closing the clipboard is direct
     /// evidence the paste was consumed. Anything not attributable to the target falls back to waiting
-    /// <see cref="PasteSettleMs"/>.
+    /// <see cref="PasteSettleMs"/>, and longer while the target isn't taking messages. Returns false if it still
+    /// isn't after <see cref="PasteBusyCapMs"/>: the clipboard must not be handed back under a pending paste.
     /// </summary>
-    private static void WaitForPasteToSettle(IntPtr targetWindow)
+    private static bool WaitForPasteToSettle(IntPtr targetWindow)
     {
         long start = System.Diagnostics.Stopwatch.GetTimestamp();
-        WaitForPasteToSettle(() => Clipboard.IsOpenByTarget(targetWindow), Thread.Sleep, () => (long)System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds);
+        return WaitForPasteToSettle(() => Clipboard.IsOpenByTarget(targetWindow), Thread.Sleep, () => (long)System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds, () => IsTakingMessages(targetWindow));
     }
 
     /// <summary>
-    /// The wait behind <see cref="WaitForPasteToSettle(IntPtr)"/>, with the clock and the clipboard check passed in
-    /// for tests. Timed by the clock, not by counting polls: a short sleep lasts a whole timer tick (about 15 ms),
-    /// so counted 5 ms polls held the clipboard for over a second.
+    /// Whether <paramref name="window"/>'s thread answers a message within <see cref="ResponsiveProbeMs"/>. A window
+    /// that's gone counts as answering: nothing is left to paste into.
     /// </summary>
-    internal static void WaitForPasteToSettle(Func<bool> isOpenByTarget, Action<int> sleep, Func<long> elapsedMs)
+    private static bool IsTakingMessages(IntPtr window)
+        => window == IntPtr.Zero
+            || !Native.IsWindow(window)
+            || Native.SendMessageTimeoutW(window, Native.WM_NULL, IntPtr.Zero, IntPtr.Zero, Native.SMTO_BLOCK | Native.SMTO_ABORTIFHUNG, (uint)Math.Max(1, ResponsiveProbeMs), out _) != IntPtr.Zero;
+
+    /// <summary>
+    /// The wait behind <see cref="WaitForPasteToSettle(IntPtr)"/>, with the clock and the target checks passed in
+    /// for tests. Timed by the clock, not by counting polls: a short sleep lasts a whole timer tick (about 15 ms),
+    /// so counted 5 ms polls held the clipboard for over a second. Returns whether the clipboard may be handed back.
+    /// </summary>
+    internal static bool WaitForPasteToSettle(Func<bool> isOpenByTarget, Action<int> sleep, Func<long> elapsedMs, Func<bool>? isTakingMessages = null)
     {
         int budget = PasteSettleMs;
         if (budget <= 0)
         {
-            return;
+            return true;
         }
 
         int poll = Math.Max(1, PasteSettlePollMs);
         int floor = Math.Min(PasteSettleFloorMs, budget);
+        long cap = Math.Max(budget, PasteBusyCapMs);
+        long readBy = budget;
         bool observedRead = false;
+        bool wasBusy = false;
 
-        for (long waited = elapsedMs(); waited < budget; waited = elapsedMs())
+        for (long waited = elapsedMs(); ; waited = elapsedMs())
         {
             if (isOpenByTarget())
             {
@@ -491,7 +521,31 @@ internal static class Injector
                     sleep(PasteSettleGraceMs);
                 }
 
-                return;
+                return true;
+            }
+
+            // Not seen reading by now. A target taking messages had its chance; a busy one still has the Ctrl+V queued,
+            // to be handled right after it answers again, so the read gets the floor from then.
+            if (waited >= readBy)
+            {
+                if (isTakingMessages?.Invoke() != false)
+                {
+                    if (!wasBusy)
+                    {
+                        return true;
+                    }
+
+                    wasBusy = false;
+                    readBy = waited + floor;
+                }
+                else if (waited >= cap)
+                {
+                    return false;
+                }
+                else
+                {
+                    wasBusy = true;
+                }
             }
 
             sleep(poll);
