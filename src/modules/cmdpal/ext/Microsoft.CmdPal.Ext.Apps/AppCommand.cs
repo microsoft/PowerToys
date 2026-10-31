@@ -88,6 +88,11 @@ internal sealed partial class AppCommand : InvokableCommand
 
     private string GenerateId()
     {
+        if (_app.IsPackaged)
+        {
+            return _app.UserModelId;
+        }
+
         // Use WyHash64 to generate stable ID hashes.
         // manually seeding with 0, so that the hash is stable across launches
         var result = WyHash64.ComputeHash64(_app.Name + _app.Subtitle + _app.ExePath, seed: 0);
