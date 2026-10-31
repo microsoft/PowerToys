@@ -44,6 +44,7 @@ Describe 'UI test signing selection' {
         'Hosts.UITests.Next',
         'ImageResizer.UITests',
         'LightSwitch.UITests.Next',
+        'Microsoft.CmdPal.UITests.Next',
         'MouseWithoutBorders.UITests',
         'MouseUtils.UITests',
         'MouseUtils.UITests.Next',
@@ -82,6 +83,7 @@ Describe 'UI test signing selection' {
         'GrabAndMove.UITests.Extra',
         'ImageResizer.UITests.Extra',
         'LightSwitch.UITests.Next.Extra',
+        'Microsoft.CmdPal.UITests.Next.Extra',
         'MouseWithoutBorders.UITests.Extra',
         'ScreenRuler.UITests.Next.Extra',
         'ShortcutGuide.UITests.Extra',
@@ -106,6 +108,18 @@ Describe 'UI test signing selection' {
         ($result.Files -contains 'PowerToys.exe') | Should Be $true
         ($result.Files -contains 'PowerToys.Settings.exe') | Should Be $true
         $result.Packages.Count | Should Be 0
+    }
+
+    It 'scopes the SamplePages package to CmdPal on <Platform>' -TestCases @(
+        'x64Win10', 'x64Win11', 'ARM64' | ForEach-Object { @{ Platform = $_ } }
+    ) {
+        param($Platform)
+        $selected = Get-UITestSigningSelection -Modules 'Microsoft.CmdPal.UITests.Next' -Platform $Platform
+        ($selected.Packages -contains 'SamplePagesExtension.msix') | Should Be $true
+        $unrelated = Get-UITestSigningSelection -Modules 'Microsoft.CmdPal.UITests.Next.Extra' -Platform $Platform
+        ($unrelated.Packages -contains 'SamplePagesExtension.msix') | Should Be $false
+        $all = Get-UITestSigningSelection -Platform $Platform
+        ($all.Packages -contains 'SamplePagesExtension.msix') | Should Be $true
     }
 
     # Regression: an ImageResizer-only PR selection must not rely on another suite to sign the

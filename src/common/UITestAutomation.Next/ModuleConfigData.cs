@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Windows.Management.Deployment;
+
 namespace Microsoft.PowerToys.UITest.Next;
 
 /// <summary>
@@ -18,10 +20,12 @@ namespace Microsoft.PowerToys.UITest.Next;
 ///   (e.g. <c>ColorPicker.UITests</c>), because a standalone module exe has no runner behind it.</description></item>
 ///   <item><description><see cref="Runner"/> — launches <c>PowerToys.exe</c> directly (the tray/runner host).</description></item>
 ///   <item><description><b>Editor scopes</b> (<see cref="FancyZonesEditor"/>, <see cref="Hosts"/>,
-///   <see cref="Workspaces"/>, <see cref="PowerRename"/>, <see cref="CommandPalette"/>,
+///   <see cref="Workspaces"/>, <see cref="PowerRename"/>,
 ///   <see cref="ScreenRuler"/>, <see cref="RegistryPreview"/>) — launch their own exe standalone.
 ///   These are designed to run as self-contained editor windows, so binding directly to the
 ///   editor's window is correct.</description></item>
+///   <item><description><see cref="CommandPalette"/> — launches loose builds directly, or activates
+///   the registered MSIX application when the executable belongs to that package.</description></item>
 ///   <item><description><see cref="ColorPicker"/>, <see cref="LightSwitch"/> — overlay/background
 ///   modules that are <i>not</i> meant to be launched standalone by a test; drive them through the
 ///   <see cref="PowerToysSettings"/> scope (toggle + activation hotkey) instead. The entries exist
@@ -52,6 +56,8 @@ public enum PowerToysModule
 /// holds the exe (locally <c>&lt;root&gt;\&lt;plat&gt;\&lt;cfg&gt;</c>, in CI the downloaded build artifact) —
 /// and finally the installed path as a last resort. This lets the same tests run against an installed
 /// PowerToys or a dev / CI-artifact build without any environment configuration.
+/// Command Palette falls back to its registered Microsoft.CommandPalette package when the installed
+/// loose executable is absent; a missing package executable throws <see cref="FileNotFoundException"/>.
 /// </remarks>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "ModuleConfigData.cs keeps the legacy UITestAutomation file name for parity; it holds the PowerToysModule enum and its path resolver together.")]
 internal static class ModulePaths
@@ -68,7 +74,7 @@ internal static class ModulePaths
             [PowerToysModule.Hosts] = new("PowerToys.Hosts.exe", "WinUI3Apps", "PowerToys.Hosts", "Hosts File Editor"),
             [PowerToysModule.Workspaces] = new("PowerToys.WorkspacesEditor.exe", null, "PowerToys.WorkspacesEditor", "Workspaces Editor"),
             [PowerToysModule.PowerRename] = new("PowerToys.PowerRename.exe", "WinUI3Apps", "PowerToys.PowerRename", "PowerRename"),
-            [PowerToysModule.CommandPalette] = new("Microsoft.CmdPal.UI.exe", "WinUI3Apps\\CmdPal", "Microsoft.CmdPal.UI", "PowerToys Command Palette"),
+            [PowerToysModule.CommandPalette] = new("Microsoft.CmdPal.UI.exe", "WinUI3Apps\\CmdPal", "Microsoft.CmdPal.UI", "Command Palette"),
             [PowerToysModule.ScreenRuler] = new("PowerToys.MeasureToolUI.exe", "WinUI3Apps", "PowerToys.MeasureToolUI", "PowerToys.ScreenRuler"),
             [PowerToysModule.LightSwitch] = new("PowerToys.LightSwitch.exe", "LightSwitchService", "PowerToys.LightSwitch", "PowerToys.LightSwitch"),
             [PowerToysModule.RegistryPreview] = new("PowerToys.RegistryPreview.exe", "WinUI3Apps", "PowerToys.RegistryPreview", "RegistryPreview"),
@@ -97,7 +103,7 @@ internal static class ModulePaths
         // 2. Installer mode forces the installed layout.
         if (EnvironmentConfig.UseInstallerForTest)
         {
-            return installed;
+            return ResolveInstalledExecutablePath(module, installed, FindPackagedCommandPaletteExecutable);
         }
 
         // 3. Dev / CI-artifact mode: the build output that holds the exe is an ancestor of the test
@@ -107,9 +113,29 @@ internal static class ModulePaths
             return dev;
         }
 
-        // 4. Last resort: an installed build if present (returns the installed path either way so a
-        //    launch failure names a concrete location).
-        return installed;
+        // 4. Last resort: an installed build, including CmdPal's registered MSIX layout.
+        return ResolveInstalledExecutablePath(module, installed, FindPackagedCommandPaletteExecutable);
+    }
+
+    internal static string ResolveInstalledExecutablePath(
+        PowerToysModule module,
+        string installedPath,
+        Func<string?> findPackagedCommandPaletteExecutable)
+    {
+        if (module != PowerToysModule.CommandPalette || File.Exists(installedPath))
+        {
+            return installedPath;
+        }
+
+        var packagedPath = findPackagedCommandPaletteExecutable();
+        if (!string.IsNullOrEmpty(packagedPath) && File.Exists(packagedPath))
+        {
+            return packagedPath;
+        }
+
+        throw new FileNotFoundException(
+            "The installed Command Palette executable was not found in its registered Microsoft.CommandPalette package.",
+            installedPath);
     }
 
     /// <summary>Process name as winappcli's <c>-a</c> flag accepts it (case-insensitive substring).</summary>
@@ -127,6 +153,27 @@ internal static class ModulePaths
         string.IsNullOrEmpty(meta.SubDir)
             ? Path.Combine(root, meta.ExeName)
             : Path.Combine(root, meta.SubDir, meta.ExeName);
+
+    private static string? FindPackagedCommandPaletteExecutable()
+    {
+        // Installers register CmdPal's MSIX instead of laying its executable out beside the runner.
+        var package = FindPackagedCommandPalette();
+        return package is null ? null : Path.Combine(package.InstalledLocation.Path, Meta[PowerToysModule.CommandPalette].ExeName);
+    }
+
+    internal static Windows.ApplicationModel.Package? FindPackagedCommandPalette() =>
+        new PackageManager()
+            .FindPackagesForUser(
+                string.Empty,
+                "Microsoft.CommandPalette",
+                "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US")
+            .Where(package => !package.IsResourcePackage)
+            .OrderByDescending(package => new Version(
+                package.Id.Version.Major,
+                package.Id.Version.Minor,
+                package.Id.Version.Build,
+                package.Id.Version.Revision))
+            .FirstOrDefault();
 
     private static bool TryComposeDevBuild(ModuleMeta meta, out string path)
     {
