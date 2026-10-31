@@ -92,18 +92,8 @@ public class IndexerTests : CommandPaletteTestBase
         }
     }
 
-    internal static void RemoveIndexedFixture()
-    {
-        if (!string.IsNullOrEmpty(testFilePath))
-        {
-            File.Delete(testFilePath);
-        }
-
-        if (Directory.Exists(browseFolderPath))
-        {
-            Directory.Delete(browseFolderPath, recursive: true);
-        }
-    }
+    internal static void RemoveIndexedFixture() =>
+        IndexedFixtureCleanup.Remove(testFilePath, browseFolderPath, browseChildFileName);
 
     [TestCleanup]
     public async Task CleanupIndexerTest()
