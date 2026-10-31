@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Peek.FilePreviewer.Previewers;
@@ -44,6 +45,7 @@ namespace Peek.FilePreviewer.Controls
             typeof(ArchivePreviewer),
             new PropertyMetadata(null));
 
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This dependency-property wrapper must remain writable so XAML and runtime bindings can replace the collection.")]
         public ObservableCollection<ArchiveItem>? Source
         {
             get { return (ObservableCollection<ArchiveItem>)GetValue(SourceProperty); }

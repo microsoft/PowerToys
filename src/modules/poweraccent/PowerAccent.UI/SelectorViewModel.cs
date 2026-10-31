@@ -15,7 +15,7 @@ public partial class SelectorViewModel : ObservableObject
     // properties to emit correct WinRT marshalling for a WinUI 3 app (otherwise MVVMTK0045).
     // Partial properties cannot carry field initializers, so initial values are set in the ctor.
     [ObservableProperty]
-    public partial ObservableCollection<string> Characters { get; set; }
+    public partial ObservableCollection<string> Characters { get; private set; }
 
     [ObservableProperty]
     public partial string Description { get; set; }

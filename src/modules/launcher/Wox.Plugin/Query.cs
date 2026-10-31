@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Wox.Plugin
@@ -168,6 +169,7 @@ namespace Wox.Plugin
 
         public override string ToString() => RawQuery;
 
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Already-compiled third-party PowerToys Run plugins call this public setter; preserve its binary signature.")]
         public Dictionary<string, UserSelectedRecord.UserSelectedRecordItem> SelectedItems { get; set; }
 
         [Obsolete("Use Search instead, this method will be removed in v1.3.0")]

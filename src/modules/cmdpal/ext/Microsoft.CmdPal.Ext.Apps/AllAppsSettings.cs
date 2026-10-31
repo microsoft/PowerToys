@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -46,8 +47,10 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
 
     public DateTime LastIndexTime { get; set; }
 
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This JSON DTO retains its writable deserialization contract, including existing omitted-member defaults and explicit-null behavior.")]
     public List<ProgramSource> ProgramSources { get; set; } = [];
 
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This JSON DTO retains its writable deserialization contract, including existing omitted-member defaults and explicit-null behavior.")]
     public List<DisabledProgramSource> DisabledProgramSources { get; set; } = [];
 
     public List<string> ProgramSuffixes { get; set; } = ["bat", "appref-ms", "exe", "lnk", "url"];

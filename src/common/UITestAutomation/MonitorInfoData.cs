@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -31,6 +32,7 @@ namespace Microsoft.PowerToys.UITest
 
         public struct ParamsWrapper
         {
+            [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This JSON DTO retains its writable deserialization contract, including existing omitted-member defaults and explicit-null behavior.")]
             public List<MonitorInfoDataWrapper> Monitors { get; set; }
         }
     }

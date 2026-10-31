@@ -42,7 +42,7 @@ namespace WorkspacesEditor.ViewModels
         private PwaHelper _pwaHelper;
         private bool _isExistingProjectLaunched;
 
-        public ObservableCollection<Project> Workspaces { get; set; } = new ObservableCollection<Project>();
+        public ObservableCollection<Project> Workspaces { get; internal set; } = new ObservableCollection<Project>();
 
         public IEnumerable<Project> WorkspacesView
         {
