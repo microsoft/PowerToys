@@ -12,6 +12,13 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
 
+// Not in the telemetry provider group, so diagnostic data collection doesn't enable it.
+TRACELOGGING_DEFINE_PROVIDER(
+    g_hPerformanceProvider,
+    "Microsoft.PowerToys.Performance",
+    // {9d83a68b-e53f-5d64-0e80-e3a9faf69485}
+    (0x9d83a68b, 0xe53f, 0x5d64, 0x0e, 0x80, 0xe3, 0xa9, 0xfa, 0xf6, 0x94, 0x85));
+
 void Trace::EventLaunch(const std::wstring& versionNumber, bool isProcessElevated)
 {
     TraceLoggingWriteWrapper(
@@ -114,4 +121,23 @@ void Trace::TrayIconRightClick(bool quickAccessEnabled)
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+void Trace::RegisterPerformanceProvider()
+{
+    TraceLoggingRegister(g_hPerformanceProvider);
+}
+
+void Trace::UnregisterPerformanceProvider()
+{
+    TraceLoggingUnregister(g_hPerformanceProvider);
+}
+
+void Trace::StartupStage(const char* stage, uint64_t msSinceProcessStart)
+{
+    TraceLoggingWrite(
+        g_hPerformanceProvider,
+        "Runner_StartupStage",
+        TraceLoggingString(stage, "Stage"),
+        TraceLoggingUInt64(msSinceProcessStart, "MsSinceProcessStart"));
 }
