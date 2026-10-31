@@ -70,12 +70,38 @@ public partial class CommandContextItemViewModel : CommandItemViewModel, IContex
         }
 
         IsCritical = contextItem.IsCritical;
+        RequestedShortcut = NormalizeRequestedShortcut(contextItem.RequestedShortcut);
+    }
 
-        var requestedShortcut = contextItem.RequestedShortcut;
+    protected override void FetchProperty(string propertyName)
+    {
+        var contextItem = Model.Unsafe;
+        if (contextItem is null || IsCleanedUp)
+        {
+            return;
+        }
 
+        switch (propertyName)
+        {
+            case nameof(IsCritical):
+                IsCritical = contextItem.IsCritical;
+                UpdateProperty(nameof(IsCritical));
+                break;
+            case nameof(RequestedShortcut):
+                RequestedShortcut = NormalizeRequestedShortcut(contextItem.RequestedShortcut);
+                UpdateProperty(nameof(RequestedShortcut), nameof(HasRequestedShortcut), nameof(DisplayShortcut));
+                break;
+            default:
+                base.FetchProperty(propertyName);
+                break;
+        }
+    }
+
+    private static KeyChord? NormalizeRequestedShortcut(KeyChord requestedShortcut)
+    {
         // Enter and Ctrl+Enter belong to the host; neither lookup nor hints may expose extension requests for them.
-        RequestedShortcut = requestedShortcut.Vkey == (int)VirtualKey.Enter &&
-            requestedShortcut.Modifiers is VirtualKeyModifiers.None or VirtualKeyModifiers.Control ? null : requestedShortcut;
+        return requestedShortcut.Vkey == (int)VirtualKey.Enter
+               && requestedShortcut.Modifiers is VirtualKeyModifiers.None or VirtualKeyModifiers.Control ? null : requestedShortcut;
     }
 }
 
