@@ -106,10 +106,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         // Initialize the monitor manager
         _monitorManager = new MonitorManager(_stateManager);
-        var batteryDisplayService = new DisplayRefreshRateService();
-        _batteryRefreshRateService = new BatteryRefreshRateService(
-            batteryDisplayService.SetRefreshRate,
-            monitor => batteryDisplayService.GetCurrentRefreshRate(monitor.GdiDeviceName));
 
         // Load UI display settings (profile switcher, identify button, color temp switcher)
         LoadUIDisplaySettings();
@@ -121,10 +117,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _displayChangeWatcher = new DisplayChangeWatcher(_dispatcherQueue, TimeSpan.FromSeconds(delaySeconds));
         _displayChangeWatcher.DisplayChanged += OnDisplayChanged;
         _displayChangeWatcher.DisplayChanging += OnDisplayChanging;
-        _displayChangeWatcher.EnergySaverStatusChanged += OnPowerStatusChanged;
-
-        Windows.System.Power.PowerManager.PowerSupplyStatusChanged += OnPowerStatusChanged;
-        Windows.System.Power.PowerManager.EnergySaverStatusChanged += OnPowerStatusChanged;
 
         // Start initial discovery
         _ = InitializeAsync(_cancellationTokenSource.Token);
@@ -396,11 +388,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     public void Dispose()
     {
-        _batteryRefreshRateDisposed = true;
-        Windows.System.Power.PowerManager.PowerSupplyStatusChanged -= OnPowerStatusChanged;
-        Windows.System.Power.PowerManager.EnergySaverStatusChanged -= OnPowerStatusChanged;
-        _batteryRefreshRateService.Apply(_batteryRefreshRateMonitors, BatteryRefreshRateMode.Off, false, 0);
-
         // Cancel all async operations first
         _cancellationTokenSource?.Cancel();
 
@@ -421,7 +408,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
             {
                 _displayChangeWatcher.DisplayChanging -= OnDisplayChanging;
                 _displayChangeWatcher.DisplayChanged -= OnDisplayChanged;
-                _displayChangeWatcher.EnergySaverStatusChanged -= OnPowerStatusChanged;
                 _displayChangeWatcher.Dispose();
             }
         }

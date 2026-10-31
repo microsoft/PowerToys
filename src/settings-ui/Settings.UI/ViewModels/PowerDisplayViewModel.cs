@@ -465,75 +465,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public List<int> MouseWheelIncrementOptions => _mouseWheelIncrementOptions;
 
-        public List<int> BatteryRefreshRateOptions => _settings.Properties.InternalDisplayRefreshRates;
-
-        public bool CanUseBatteryRefreshRate => BatteryRefreshRateOptions.Count > 0;
-
-        public bool CanSetBatteryRefreshRate => CanUseBatteryRefreshRate && BatteryRefreshRateModeIndex != (int)BatteryRefreshRateMode.Off;
-
-        private static readonly BatteryRefreshRateMode[] BatteryRefreshRateModes =
-        {
-            BatteryRefreshRateMode.Off,
-            BatteryRefreshRateMode.OnBattery,
-            BatteryRefreshRateMode.OnEnergySaverMode,
-            BatteryRefreshRateMode.OnBatteryOrEnergySaver,
-            BatteryRefreshRateMode.OnBatteryAndEnergySaver,
-        };
-
-        public int BatteryRefreshRateModeIndex
-        {
-            get => Math.Max(0, Array.IndexOf(BatteryRefreshRateModes, _settings.Properties.BatteryRefreshRateMode));
-            set
-            {
-                if (value < 0 || value >= BatteryRefreshRateModes.Length)
-                {
-                    OnPropertyChanged();
-                    return;
-                }
-
-                var mode = BatteryRefreshRateModes[value];
-                if (mode != BatteryRefreshRateMode.Off && !CanUseBatteryRefreshRate)
-                {
-                    OnPropertyChanged();
-                    return;
-                }
-
-                if (SetSettingsProperty(_settings.Properties.BatteryRefreshRateMode, mode, v => _settings.Properties.BatteryRefreshRateMode = v))
-                {
-                    OnPropertyChanged(nameof(CanSetBatteryRefreshRate));
-                    SignalSettingsUpdated();
-                }
-            }
-        }
-
-        public int BatteryRefreshRateIndex
-        {
-            get
-            {
-                var options = BatteryRefreshRateOptions;
-                if (options.Count == 0)
-                {
-                    return -1;
-                }
-
-                var index = options.IndexOf(_settings.Properties.BatteryRefreshRate);
-                return index >= 0 ? index : options.IndexOf(options.Min());
-            }
-
-            set
-            {
-                if (_isReloading || value < 0 || value >= BatteryRefreshRateOptions.Count)
-                {
-                    return;
-                }
-
-                if (SetSettingsProperty(_settings.Properties.BatteryRefreshRate, BatteryRefreshRateOptions[value], v => _settings.Properties.BatteryRefreshRate = v))
-                {
-                    SignalSettingsUpdated();
-                }
-            }
-        }
-
         public ObservableCollection<MonitorInfo> Monitors
         {
             get => _monitors;
@@ -834,12 +765,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // with _monitors (user toggles will be visible to save). Legacy entries
                 // use the freshly-read instances; we never bind them to UI.
                 _settings.Properties.Monitors = _monitors.Concat(legacyFromDisk).ToList();
-
-                _settings.Properties.InternalDisplayRefreshRates = updatedSettings.Properties.InternalDisplayRefreshRates;
-                OnPropertyChanged(nameof(BatteryRefreshRateOptions));
-                OnPropertyChanged(nameof(CanUseBatteryRefreshRate));
-                OnPropertyChanged(nameof(CanSetBatteryRefreshRate));
-                OnPropertyChanged(nameof(BatteryRefreshRateIndex));
 
                 Logger.LogInfo($"Successfully reloaded {updatedMonitors.Count} monitors");
             }
