@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.WinUI;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
@@ -25,6 +26,7 @@ public sealed partial class DockWindowManager : IDisposable
     private readonly IMonitorService _monitorService;
     private readonly ISettingsService _settingsService;
     private readonly DispatcherQueue _dispatcherQueue;
+    private readonly WindowsEventsListener _windowsEventsListener = new();
     private readonly Dictionary<string, (DockWindow Window, DockViewModel ViewModel)> _docks = new(StringComparer.OrdinalIgnoreCase);
     private bool _disposed;
     private int _syncing;
@@ -52,6 +54,7 @@ public sealed partial class DockWindowManager : IDisposable
 
         _monitorService.MonitorsChanged += OnMonitorsChanged;
         _settingsService.SettingsChanged += OnSettingsChanged;
+        _windowsEventsListener.ForegroundWindowChanged += OnForegroundWindowChanged;
     }
 
     /// <summary>
@@ -81,6 +84,7 @@ public sealed partial class DockWindowManager : IDisposable
         }
 
         _docks.Clear();
+        _windowsEventsListener.Stop();
     }
 
     /// <summary>
@@ -178,6 +182,15 @@ public sealed partial class DockWindowManager : IDisposable
                 dock.Window.Close();
                 dock.ViewModel.Dispose();
             }
+        }
+
+        if (_docks.Count == 0)
+        {
+            _windowsEventsListener.Stop();
+        }
+        else if (!_windowsEventsListener.Start())
+        {
+            Logger.LogError("Failed to register the desktop foreground hook.");
         }
 
         if (!refreshDockWindows)
@@ -287,10 +300,18 @@ public sealed partial class DockWindowManager : IDisposable
         _disposed = true;
         _monitorService.MonitorsChanged -= OnMonitorsChanged;
         _settingsService.SettingsChanged -= OnSettingsChanged;
+        _windowsEventsListener.ForegroundWindowChanged -= OnForegroundWindowChanged;
 
         _monitorsChangedDebounceTimer.Stop();
 
-        HideDocks();
+        try
+        {
+            HideDocks();
+        }
+        finally
+        {
+            _windowsEventsListener.Dispose();
+        }
     }
 
     private void CreateDockForMonitor(string monitorDeviceId, DockSettings dockSettings)
@@ -315,6 +336,22 @@ public sealed partial class DockWindowManager : IDisposable
         var scheduler = serviceProvider.GetRequiredService<TaskScheduler>();
 
         return new DockViewModel(tlcManager, contextMenuFactory, scheduler, _settingsService, monitorDeviceId);
+    }
+
+    private void OnForegroundWindowChanged(object? sender, ForegroundWindowChangedEventArgs args)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            foreach (var (_, (window, _)) in _docks)
+            {
+                window.UpdateTopmostState(bringToFront: args.IsDesktopWindow);
+            }
+        });
     }
 
     private void OnMonitorsChanged(object? sender, EventArgs e)
