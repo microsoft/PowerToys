@@ -586,6 +586,10 @@
                                 <CheckBox x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsAutoHide" IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoHide, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
 
+                            <tkcontrols:SettingsCard Name="MouseUtilsMousePointerCrosshairsSpanAllMonitors" x:Uid="MouseUtils_MousePointerCrosshairs_SpanAllMonitors">
+                                <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.MousePointerCrosshairsSpanAllMonitors, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+
                             <tkcontrols:SettingsCard Name="MouseUtilsMousePointerCrosshairsIsCrosshairsFixedLengthEnabled" x:Uid="MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled">
                                 <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.MousePointerCrosshairsIsFixedLengthEnabled, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
