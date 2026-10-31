@@ -21,8 +21,10 @@ namespace Microsoft.CmdPal.UI.Controls;
 public sealed partial class ContentFormControl : UserControl
 {
     private readonly IncrementalAdaptiveCardUpdater _cardUpdater;
+    private readonly AdaptiveCardRenderer _renderer;
     private static bool _customElementParsersRegistered;
     private ContentFormViewModel? _viewModel;
+    private AdaptiveHostConfig _hostConfig;
 
     // LOAD-BEARING: if you don't hang onto a reference to the RenderedAdaptiveCard
     // then the GC might clean it up sometime, even while the card is in the UI
@@ -50,12 +52,13 @@ public sealed partial class ContentFormControl : UserControl
     public ContentFormControl()
     {
         this.InitializeComponent();
-        var lightTheme = ActualTheme == Microsoft.UI.Xaml.ElementTheme.Light;
+        _hostConfig = AdaptiveCardsConfig.Create(ActualTheme);
         var renderer = new AdaptiveCardRenderer()
         {
-            HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark,
+            HostConfig = _hostConfig,
             OverrideStyles = CardOverrideStyles,
         };
+        _renderer = renderer;
         RegisterRenderer<AdaptiveStringListInputElement, AdaptiveStringListInputElementRenderer>(renderer);
         RegisterRenderer<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementRenderer>(renderer);
         RegisterRenderer<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementRenderer>(renderer);
@@ -66,8 +69,28 @@ public sealed partial class ContentFormControl : UserControl
             AdaptiveCardParserRegistrations.ElementParsers,
             AdaptiveCardParserRegistrations.ActionParsers);
 
-        // TODO in the future, we should handle ActualThemeChanged and replace
-        // our rendered card with one for that theme. But today is not that day
+        // The theme can differ once the control joins a window with its own requested theme.
+        Loaded += (_, _) => RefreshHostConfig();
+        ActualThemeChanged += (_, _) => RefreshHostConfig();
+    }
+
+    /// <summary>Re-renders the card for the current theme, since host config colors are baked into it.</summary>
+    private void RefreshHostConfig()
+    {
+        var hostConfig = AdaptiveCardsConfig.Create(ActualTheme);
+        if (ReferenceEquals(hostConfig, _hostConfig))
+        {
+            return;
+        }
+
+        _hostConfig = hostConfig;
+        _renderer.HostConfig = hostConfig;
+        var card = _viewModel?.Card;
+        ResetCard();
+        if (card is not null)
+        {
+            RequestDisplayCard(card);
+        }
     }
 
     private static void RegisterParser<TElement, TParser>()
