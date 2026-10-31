@@ -449,6 +449,7 @@ Describe 'UI-test pipeline non-elevated dispatch' {
     It 'fails infrastructure instead of using the DLL when <Suite> is absent' -TestCases @(
         @{ Suite = 'AdvancedPaste.UITests.Next' }
         @{ Suite = 'CropAndLock.UITests' }
+        @{ Suite = 'TextExpander.UITests' }
         @{ Suite = 'Workspaces.UITests.Next' }
     ) {
         param($Suite)

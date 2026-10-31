@@ -20,6 +20,7 @@ textexpander/
 ├── TextExpander.Editor/          # Standalone WinUI snippet-management app
 ├── TextExpander.Editor.UnitTests/# Editor, storage, and ownership tests
 ├── TextExpander.FuzzTests/       # OneFuzz targets for the snippets file and expansion
+├── TextExpander.UITests/         # End-to-end UI tests: Settings, editor and expansion
 └── TextExpander.UnitTests/       # Engine and shared-rule unit tests
 ```
 
@@ -494,3 +495,28 @@ The engine can also be started directly for debugging: `PowerToys.TextExpander.e
 A second engine can run beside PowerToys' own with `--instance:<name>` and a settings file of its own, whose
 folder then holds its snippets. In Debug builds, setting `POWERTOYS_TEXTEXPANDER_PROMPT_THEME` to `Light` or
 `Dark` for that process shows the prompt window in that theme without changing Windows'.
+
+## UI tests
+
+`TextExpander.UITests` drives PowerToys through UI Automation with the `UITestAutomation.Next` harness
+(winappcli). Each test starts PowerToys with only Text Expander enabled, after seeding the module's
+`settings.json` and the default snippets database, and restores the files that were there afterwards. Triggers
+are typed with real key presses into a text box in the test's own window, and the result is read from that box.
+
+- `TextExpanderSettingsTests`: the enable switch stops and starts the engine, the **Advanced** options are saved to
+  `settings.json`, and **Manage snippets** opens one editor, also while Text Expander is off.
+- `TextExpanderEditorTests`: the list and the **Saved on this PC** menu, the starter database, adding a snippet,
+  trigger validation and the discard question, editing, duplicating and deleting, search, and changes made to the
+  file by another app.
+- `TextExpanderExpansionTests`: expansion after a space or punctuation, Ctrl+Z, `$|$` with a line break and
+  `{{isodate}}`, required and cancelled questions, **Always paste** (the clipboard is put back) and **Always type**,
+  the editor's exclusion, and changes from the editor and Settings applying without a restart.
+
+When an expansion doesn't happen, the failure message shows what the target held after typing, how busy the CPU
+was, and the engine's counters, which the test asks for as `PowerToys.TextExpander.exe --diagnostics-file` does.
+
+The tests must run without administrator rights: the engine refuses input to elevated windows, and elevated
+Settings disables **Manage snippets**. The UI Test Automation pipeline runs `TextExpander.UITests` through
+`.pipelines/runUiTestAsUser.ps1` and signs the Runner and Settings so a Release Runner accepts Settings' enable
+and disable. They replace your Text Expander settings and snippets while they run, so run them in a VM or on a
+test machine (see the `ui-tests-local-vm` skill), for example with `TextExpander.UITests.exe --filter "TestCategory=TextExpander"`.

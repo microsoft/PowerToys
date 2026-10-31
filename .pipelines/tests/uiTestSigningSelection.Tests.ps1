@@ -51,6 +51,7 @@ Describe 'UI test signing selection' {
         'PowerRename.UITests.Next',
         'RegistryPreview.UITests',
         'ScreenRuler.UITests.Next',
+        'TextExpander.UITests',
         'Workspaces.UITests.Next',
         'ZoomIt.UITests'
     )
@@ -77,6 +78,7 @@ Describe 'UI test signing selection' {
         'ImageResizer.UITests.Extra',
         'LightSwitch.UITests.Next.Extra',
         'ScreenRuler.UITests.Next.Extra',
+        'TextExpander.UITests.Extra',
         'Workspaces.Editor.UITests',
         'ZoomIt.UITests.Extra' | ForEach-Object { @{ Module = $_ } }
     ) {
