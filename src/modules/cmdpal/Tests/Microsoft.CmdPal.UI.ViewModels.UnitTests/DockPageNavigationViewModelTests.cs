@@ -143,6 +143,44 @@ public sealed partial class DockPageNavigationViewModelTests
     }
 
     [TestMethod]
+    public async Task TrayRootHasBackButtonWithoutAddingAPageToTheStack()
+    {
+        var route = NewRoute();
+        using var navigation = CreateNavigation(route, hasExternalBackTarget: true);
+
+        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), new TestProviderContext("tray-provider"))));
+        Assert.IsTrue(navigation.HasBackButton);
+        Assert.IsTrue(navigation.CurrentPage!.HasBackButton);
+        Assert.IsFalse(navigation.CurrentPage.IsRootPage);
+        Assert.IsFalse(navigation.CanGoBack);
+        Assert.IsFalse(await navigation.GoBackAsync());
+
+        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation)));
+        Assert.IsTrue(navigation.CanGoBack);
+        Assert.IsTrue(await navigation.GoBackAsync());
+        Assert.IsTrue(navigation.HasBackButton);
+        Assert.IsFalse(navigation.CanGoBack);
+        Assert.AreEqual(0, navigation.BackStackDepth);
+    }
+
+    [TestMethod]
+    public async Task HandleCommandResult_GoBackFromTrayRootRequestsRootBack()
+    {
+        var route = NewRoute();
+        using var navigation = CreateNavigation(route, hasExternalBackTarget: true);
+        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty)));
+        var rootBackRequested = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var closeRequests = 0;
+        navigation.RootBackRequested += (_, _) => rootBackRequested.TrySetResult();
+        navigation.CloseRequested += (_, _) => closeRequests++;
+
+        Assert.IsTrue(navigation.HandleCommandResult(navigation.CurrentPage!, CommandResult.GoBack()));
+
+        await rootBackRequested.Task.WaitAsync(WaitTimeout);
+        Assert.AreEqual(0, closeRequests);
+    }
+
+    [TestMethod]
     public async Task NavigateAsync_KeepsSupportedPagesInOneRoute()
     {
         var route = NewRoute();
@@ -154,6 +192,7 @@ public sealed partial class DockPageNavigationViewModelTests
         Assert.IsInstanceOfType<ListViewModel>(navigation.CurrentPage);
         Assert.IsTrue(navigation.CurrentPage.IsRootPage);
         Assert.IsFalse(navigation.CurrentPage.HasBackButton);
+        Assert.IsFalse(navigation.HasBackButton);
         Assert.AreEqual(route, navigation.CurrentPage.DockRoute);
 
         Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestContentPage { Name = "Content" }, navigation)));
@@ -555,12 +594,14 @@ public sealed partial class DockPageNavigationViewModelTests
     private static DockPageNavigationViewModel CreateNavigation(
         DockCommandRoute route,
         TaskScheduler? scheduler = null,
-        IPageViewModelFactoryService? factory = null) =>
+        IPageViewModelFactoryService? factory = null,
+        bool hasExternalBackTarget = false) =>
         new(
             route,
             scheduler ?? TaskScheduler.Default,
             factory ?? new CommandPalettePageViewModelFactory(TaskScheduler.Default, DefaultContextMenuFactory.Instance),
-            new TestAppHostService());
+            new TestAppHostService(),
+            hasExternalBackTarget);
 
     // The dock's first request: it has an owning provider, but no source page.
     private static PerformCommandMessage CreateOwnerMessage(

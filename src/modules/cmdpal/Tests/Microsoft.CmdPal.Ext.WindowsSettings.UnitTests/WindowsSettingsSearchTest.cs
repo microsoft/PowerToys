@@ -33,6 +33,15 @@ public class WindowsSettingsSearchTest
     };
 
     [TestMethod]
+    public void SettingsCommandsHaveStableDestinationIds()
+    {
+        var page = CreatePage(_accessibilityDisplay, _systemDisplay);
+        var results = page.Query("Display");
+        Assert.AreEqual(_systemDisplay.Command, results[0].Command.Id);
+        Assert.AreEqual(_accessibilityDisplay.Command, results[1].Command.Id);
+    }
+
+    [TestMethod]
     public void QueryKeepsDistinctDestinationsWithTheSameTitle()
     {
         var page = CreatePage(_accessibilityDisplay, _systemDisplay);
