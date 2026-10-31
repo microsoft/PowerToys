@@ -7,7 +7,6 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
-using MouseJump.Common.Helpers;
 using MouseJump.WinUI3.Helpers;
 using MouseJump.WinUI3.UI;
 
@@ -22,6 +21,10 @@ namespace MouseJump.WinUI3;
 /// <summary>
 /// Provides application-specific behavior to supplement the default Application class.
 /// </summary>
+/// <remarks>
+/// Lives under the "/MouseJumpXAML" folder to avoid collisions with the compiled *.xbf files
+/// from xaml files in other modules when they all get copied to the shared build output folder.
+/// </remarks>
 public partial class App : Application, IDisposable
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();

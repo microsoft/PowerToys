@@ -275,7 +275,18 @@ public class MouseJumpTests : UITestBase
                 timeoutMS: 5_000);
             if (preview is not null)
             {
-                WindowControl.WaitForForeground(new IntPtr(preview.WindowHandle), 2_000);
+                var previewHwnd = new IntPtr(preview.WindowHandle);
+                WindowControl.WaitForForeground(previewHwnd, 2_000);
+
+                // the preview is shown and activated while still clipped to an empty window
+                // region, and only revealed once its first frame has rendered - until then it
+                // can't be clicked or captured, so being foreground isn't enough
+                var revealed = WaitHelper.WaitForStable(
+                    () => WindowHelper.IsWindowRegionEmpty(previewHwnd),
+                    isEmpty => !isEmpty,
+                    2_000,
+                    pollIntervalMS: 20);
+                Assert.IsTrue(revealed.Succeeded, "Mouse Jump preview was shown but its window region was never revealed.");
                 return preview;
             }
         }
