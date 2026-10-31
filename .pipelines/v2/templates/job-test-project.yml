@@ -368,6 +368,7 @@ jobs:
         'MouseUtils.UITests',
         'MouseUtils.UITests.Next',
         'PowerAccent.UITests',
+        'PowerDisplay.UITests',
         'PowerRename.UITests',
         'PowerRename.UITests.Next',
         'RegistryPreview.UITests',
