@@ -218,6 +218,8 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
     public static class NativeSupport
     {
+        private const string CoreWindowClassName = "Windows.UI.Core.CoreWindow";
+
         [StructLayout(LayoutKind.Sequential)]
         private struct Point
         {
@@ -423,12 +425,12 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
         public static bool IsStartMenuWindow(IntPtr window)
         {
-            return GetStartMenuIdentity(window) != null;
+            return IsUncloakedCoreWindow(window) && IsStartMenuProcess(ProcessIdentity.Capture(WindowProcessId(window)));
         }
 
         public static bool IsStartMenuIdentity(string className, string processPath, int sessionId, int currentSessionId)
         {
-            if (className != "Windows.UI.Core.CoreWindow" || currentSessionId <= 0 || sessionId != currentSessionId)
+            if (className != CoreWindowClassName || currentSessionId <= 0 || sessionId != currentSessionId)
             {
                 return false;
             }
@@ -442,17 +444,17 @@ namespace Microsoft.MouseWithoutBorders.UITests
                 @"SystemApps\Microsoft.Windows.Search_cw5n1h2txyewy\SearchApp.exe"), StringComparison.OrdinalIgnoreCase);
         }
 
-        private static ProcessIdentity GetStartMenuIdentity(IntPtr window)
+        private static bool IsUncloakedCoreWindow(IntPtr window)
         {
             if (window == IntPtr.Zero || !IsWindowVisible(window))
             {
-                return null;
+                return false;
             }
 
             var className = new StringBuilder(256);
-            if (GetClassName(window, className, className.Capacity) == 0 || className.ToString() != "Windows.UI.Core.CoreWindow")
+            if (GetClassName(window, className, className.Capacity) == 0 || className.ToString() != CoreWindowClassName)
             {
-                return null;
+                return false;
             }
 
             // A closed shell window can retain WS_VISIBLE and regain foreground when the
@@ -465,15 +467,14 @@ namespace Microsoft.MouseWithoutBorders.UITests
                     Marshal.GetExceptionForHR(hresult));
             }
 
-            if (cloaked != 0)
-            {
-                return null;
-            }
+            return cloaked == 0;
+        }
 
-            var identity = ProcessIdentity.Capture(WindowProcessId(window));
+        private static bool IsStartMenuProcess(ProcessIdentity identity)
+        {
             using (var current = Process.GetCurrentProcess())
             {
-                return IsStartMenuIdentity(className.ToString(), identity.Path, identity.SessionId, current.SessionId) ? identity : null;
+                return IsStartMenuIdentity(CoreWindowClassName, identity.Path, identity.SessionId, current.SessionId);
             }
         }
 
@@ -485,8 +486,13 @@ namespace Microsoft.MouseWithoutBorders.UITests
             }
 
             IntPtr foreground = GetForegroundWindow();
-            var identity = GetStartMenuIdentity(foreground);
-            if (identity == null)
+            if (!IsUncloakedCoreWindow(foreground))
+            {
+                return false;
+            }
+
+            var identity = ProcessIdentity.Capture(WindowProcessId(foreground));
+            if (!IsStartMenuProcess(identity))
             {
                 return false;
             }
@@ -680,7 +686,13 @@ namespace Microsoft.MouseWithoutBorders.UITests
             {
                 using (Process process = Process.GetProcessById(id))
                 {
-                    return process.MainModule.FileName;
+                    var module = process.MainModule;
+                    if (module == null)
+                    {
+                        throw new InvalidOperationException("Process has no main module.");
+                    }
+
+                    return module.FileName;
                 }
             }
             catch (Exception fallbackFailure)
