@@ -7,6 +7,7 @@ using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 
@@ -59,7 +60,7 @@ internal sealed class PowerToysRootPageService : IRootPageService
         {
             if (context is IListItem listItem)
             {
-                _mainListPage.Value.UpdateHistory(listItem);
+                _mainListPage.Value.UpdateHistory(new InProcObject<IListItem>(listItem));
             }
         }
         catch (Exception ex)

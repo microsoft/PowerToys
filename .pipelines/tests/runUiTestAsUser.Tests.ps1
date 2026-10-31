@@ -135,6 +135,7 @@ Describe 'runUiTestAsUser' {
             TF_BUILD = 'True'
             useInstallerForTest = 'true'
             POWERTOYS_INSTALL_DIR = 'C:\PowerToys'
+            POWERTOYS_MWB_RUN_ROOT = 'C:\Results\mwb-run'
         }
         $request | ConvertTo-Json | Set-Content -LiteralPath $requestPath
 
@@ -155,6 +156,38 @@ Describe 'runUiTestAsUser' {
         $status = Get-Content (Join-Path $runDirectory 'status.json') -Raw | ConvertFrom-Json
         $status.Error | Should Be 'Invalid UI-test request: expected a JSON object.'
         Test-Path (Join-Path $runDirectory 'desktop.txt') | Should Be $false
+    }
+
+    It 'rejects malformed MWB recovery <Case> before entering the desktop' -TestCases @(
+        @{ Case = 'non-string'; Value = 1 }
+        @{ Case = 'relative path'; Value = 'cleanup-journal.json' }
+        @{ Case = 'network path'; Value = '\\server\cleanup-journal.json' }
+        @{ Case = 'arbitrary file'; Value = 'C:\Results\run.ps1' }
+    ) {
+        param($Case, $Value)
+        $request.TestExecutable = Join-Path $TestDrive 'MouseWithoutBorders.UITests.exe'
+        $request.MwbRecoveryJournal = $Value
+        $request | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $requestPath
+
+        & $powerShell -NoProfile -NonInteractive -File $scriptPath -RequestPath $requestPath
+
+        $LASTEXITCODE | Should Be 1
+        $status = Get-Content (Join-Path $runDirectory 'status.json') -Raw | ConvertFrom-Json
+        $status.Error | Should Match '^Invalid UI-test request: MwbRecoveryJournal'
+        Test-Path (Join-Path $runDirectory 'desktop.txt') | Should Be $false
+    }
+
+    It 'checks the original Limited identity before running a recovery script' {
+        $request.TestExecutable = Join-Path $TestDrive 'MouseWithoutBorders.UITests.exe'
+        $request.MwbRecoveryJournal = Join-Path $TestDrive 'cleanup-journal.json'
+        $request | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $requestPath
+
+        & $powerShell -NoProfile -NonInteractive -File $scriptPath -RequestPath $requestPath
+
+        $LASTEXITCODE | Should Be 1
+        $status = Get-Content (Join-Path $runDirectory 'status.json') -Raw | ConvertFrom-Json
+        $status.Error | Should Match 'requested non-elevated interactive user'
+        Test-Path (Join-Path $runDirectory 'stdout.log') | Should Be $false
     }
 
     It 'rejects a missing executable before scheduling any desktop work' {
@@ -287,7 +320,63 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
         Assert-MockCalled New-ScheduledTaskPrincipal -Times 1 -Exactly -Scope It -ParameterFilter {
             $LogonType -eq 'Interactive' -and $RunLevel -eq 'Limited'
         }
+        Assert-MockCalled New-ScheduledTaskSettingsSet -Times 1 -Exactly -Scope It -ParameterFilter {
+            $Priority -eq 4
+        }
         Assert-MockCalled Unregister-ScheduledTask -Times 1 -Exactly -Scope It
+    }
+
+    It 'correlates the MWB task and public results with the supplied run ID' {
+        $taskRunId = [guid]::NewGuid()
+        & $scriptPath -TestExecutable $testExecutable -ResultsDirectory $state.ResultsDirectory -TaskRunId $taskRunId
+
+        $LASTEXITCODE | Should Be 0
+        $state.CapturedRequest.RunId | Should Be $taskRunId.ToString('N')
+        (Split-Path $state.CapturedRequest.RunDirectory -Leaf) |
+            Should Be "ui-$($taskRunId.ToString('N').Substring(0, 12))"
+        Assert-MockCalled New-ScheduledTaskAction -Times 1 -Exactly -Scope It -ParameterFilter {
+            $Argument -like '-ExecutionPolicy Bypass -NoLogo *'
+        }
+    }
+
+    It 'grants only the public recovery directory and restores both DACLs: <Case>' -TestCases @(
+        @{ Case = 'success'; FailRegistration = $false }
+        @{ Case = 'registration failure'; FailRegistration = $true }
+    ) {
+        param($Case, $FailRegistration)
+        $payload = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path (Join-Path $payload 'Payload') -Force | Out-Null
+        $mwbExecutable = Join-Path $payload 'MouseWithoutBorders.UITests.exe'
+        'not an executable' | Set-Content -LiteralPath $mwbExecutable
+        'throw "must not execute in controller"' | Set-Content -LiteralPath (Join-Path $payload 'Payload\Recover-Host.ps1')
+        $publicRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $publicRoot | Out-Null
+        $journal = Join-Path $publicRoot 'cleanup-journal.json'
+        # Controller must not parse or execute this test-owned content.
+        'not JSON' | Set-Content -LiteralPath $journal
+        $state.FailRegistration = $FailRegistration
+        $invoke = {
+            & $scriptPath -TestExecutable $mwbExecutable -ResultsDirectory $state.ResultsDirectory `
+                -MwbRecoveryJournal $journal -TimeoutMinutes 4
+        }
+        if ($FailRegistration) {
+            $invoke | Should Throw 'registration failed'
+        } else {
+            & $invoke
+            $LASTEXITCODE | Should Be 0
+            $state.CapturedRequest.MwbRecoveryJournal | Should Be $journal
+            Assert-MockCalled New-ScheduledTaskPrincipal -Times 1 -Exactly -Scope It -ParameterFilter {
+                $LogonType -eq 'Interactive' -and $RunLevel -eq 'Limited'
+            }
+            Assert-MockCalled New-ScheduledTaskSettingsSet -Times 1 -Exactly -Scope It -ParameterFilter {
+                $Priority -eq 4
+            }
+        }
+        $state.AclWrites.Count | Should Be 4
+        $state.AclWrites[1].Path | Should Be $publicRoot
+        $state.AclWrites[3].Path | Should Be $publicRoot
+        $state.AclWrites[2].Dacl | Should Be $state.OriginalDacl
+        $state.AclWrites[3].Dacl | Should Be $state.OriginalDacl
     }
 
     It 'waits for a terminal task even when status already exists' {
@@ -448,7 +537,9 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
 Describe 'UI-test pipeline non-elevated dispatch' {
     It 'fails infrastructure instead of using the DLL when <Suite> is absent' -TestCases @(
         @{ Suite = 'AdvancedPaste.UITests.Next' }
+        @{ Suite = 'AltWindowCycle.UITests' }
         @{ Suite = 'CropAndLock.UITests' }
+        @{ Suite = 'GrabAndMove.UITests' }
         @{ Suite = 'TextExpander.UITests' }
         @{ Suite = 'Workspaces.UITests.Next' }
     ) {
@@ -494,12 +585,15 @@ Describe 'UI-test pipeline non-elevated dispatch' {
 
     It 'scopes Workspaces authenticated Settings IPC signing without changing other families' -TestCases @(
         @{ Modules = @('AdvancedPaste.UITests.Next'); AllModules = $false; Expected = $true }
+        @{ Modules = @('AltWindowCycle.UITests'); AllModules = $false; Expected = $true }
+        @{ Modules = @('AltWindowCycle.UITests.Extra'); AllModules = $false; Expected = $false }
         @{ Modules = @('Workspaces.UITests.Next'); AllModules = $false; Expected = $true }
         @{ Modules = @('Workspaces.Editor.UITests'); AllModules = $false; Expected = $false }
         @{ Modules = @('Other.Workspaces.UITests.Next'); AllModules = $false; Expected = $false }
         @{ Modules = @('Workspaces.UITests.Next.Other'); AllModules = $false; Expected = $false }
         @{ Modules = @('RegistryPreview.UITests'); AllModules = $false; Expected = $true }
         @{ Modules = @('CropAndLock.UITests'); AllModules = $false; Expected = $true }
+        @{ Modules = @('GrabAndMove.UITests'); AllModules = $false; Expected = $true }
         @{ Modules = @(); AllModules = $true; Expected = $true }
     ) {
         param($Modules, $AllModules, $Expected)

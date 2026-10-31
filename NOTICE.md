@@ -1712,7 +1712,6 @@ SOFTWARE.
 - AdaptiveCards.Rendering.WinUI3
 - AdaptiveCards.Templating
 - Appium.WebDriver
-- CoenM.ImageSharp.ImageHash
 - CommunityToolkit.Common
 - CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock
 - CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView

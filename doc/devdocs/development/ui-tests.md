@@ -39,6 +39,10 @@ not on a working machine.
 - Exit an existing PowerToys instance before a host-desktop run. The harness owns the runner and
   module lifecycle.
 
+The `.Next` value-setting wrappers pass target options before `--`, followed by the literal
+selector and value. Keep this boundary when adding wrappers: application arguments such as
+`--payload "text"` and negative numeric values must not be parsed as winapp options.
+
 ### Legacy tests
 
 - Install Windows Application Driver v1.2.1 from https://github.com/microsoft/WinAppDriver/releases/tag/v1.2.1 to the default directory (`C:\Program Files (x86)\Windows Application Driver`)
@@ -78,6 +82,121 @@ a larger value for a module or project-wide run.
 - Open `PowerToys.slnx` in Visual Studio and build the solution.
 
 - Run tests in the Test Explorer (`Test > Test Explorer` or `Ctrl+E, T`).
+
+### Optional virtual HID input
+
+Some modules intentionally reject injected input. In a dedicated test VM with the PowerToys
+UMDF virtual HID test driver already provisioned, opt the existing helpers into real device input.
+
+For Grab and Move's complete local build, self-signing, provisioning, execution and cleanup
+workflow, see the [module-specific testing guide](../modules/grabandmove.md#ui-tests).
+
+For example:
+
+```csharp
+using var input = UmdfHidInput.Activate();
+KeyboardHelper.PressKey(Key.Alt);
+try
+{
+    MouseHelper.Drag(300, 300, 396, 364);
+}
+finally
+{
+    KeyboardHelper.ReleaseKey(Key.Alt);
+}
+```
+
+The scope is process-wide; input tests must not run in parallel. Disposal releases held device
+keys/buttons and restores the default helpers. Activation fails if the driver is missing, with no
+`SendInput` fallback. The current report descriptor supports six simultaneous non-modifier keys,
+primary-monitor mouse coordinates, and whole wheel detents (120 units).
+
+Run driver-backed gestures on an active, unlocked **console** test desktop, not inside RDP or
+Hyper-V Enhanced Session. The current backend is not an RDP-session input injector: the device
+can open while its input never reaches that session's cursor. Use a physical console or Hyper-V
+Basic Session; a host-side RDP connection is fine when tests execute in a guest's console desktop.
+
+Call `MouseHelper.MoveTo` explicitly before click, wheel, or relative movement sequences. The HID
+backend retains the last requested position because feature-report completion can precede the OS
+cursor update; it does not track physical/injected mouse movement during the scope. Keyboard-only
+scopes do not reposition the mouse. Restore any original off-primary position after disposing the
+scope, when the default mouse backend is active again.
+
+Driver provisioning is separate, elevated test infrastructure; tests themselves run non-elevated.
+The test package targets UMDF 2.31 on Windows 10 2004+ and Windows 11 and is never shipped in the
+PowerToys installer. The Microsoft sample-derived driver is MS-PL licensed; its attribution and
+license accompany the test artifacts. ARM64 requires a separate, isolated CI image preconfigured
+with TESTSIGNING enabled. Other ARM64 suites and all x64 suites retain their ordinary images.
+
+> **Security:** provision this driver only in disposable, isolated test VMs without real credentials.
+> While installed, local code can emit hardware-style keyboard/mouse input, including input to
+> elevated desktops. Do not install it on a developer workstation. Do not change ordinary test
+> images' boot/signing policies. Only the dedicated ARM64 image is provisioned for TESTSIGNING by
+> its owner; the pipeline never enables it, disables Secure Boot/HVCI, or reboots to change policy.
+> Remove the device, package and temporary trust immediately after testing. Activation never
+> installs a driver or changes machine trust.
+
+Build the test-only package on the build host (Visual Studio C++ tools and the SDK are required):
+
+```pwsh
+.\.pipelines\umdf-hid-smoke\Build-Smoke.ps1 `
+  -WorkRoot C:\HidBuild\work -OutputRoot C:\HidBuild\artifacts -Platforms x64 -DriverOnly
+```
+
+Copy the `x64` artifact directory and `Manage-SmokeDriver.ps1` into the dedicated VM. In the VM's
+separate administrator control session, provision the package with a persistent ownership journal:
+
+```pwsh
+.\Manage-SmokeDriver.ps1 -Action Install -ArtifactDirectory C:\HidTest\x64 `
+  -StatePath C:\HidTest\state.json -ResultsDirectory C:\HidTest\results
+```
+
+Run the built module executable in the logged-on **standard-user** desktop, using the normal
+runtime/winappcli setup described above:
+
+```pwsh
+.\GrabAndMove.UITests.exe --report-trx --results-directory C:\HidTest\test-results
+```
+
+Always clean up from the administrator control session, including after a failed install/test:
+
+```pwsh
+.\Manage-SmokeDriver.ps1 -Action Cleanup `
+  -StatePath C:\HidTest\state.json -ResultsDirectory C:\HidTest\results
+```
+
+Cleanup only removes journaled test trust and owned present devices/packages, and retains the
+journal on failure. Preserve that journal until cleanup succeeds. CI provisions automatically for
+the x64 Grab and Move suite. Implicit ARM64 selections skip that suite with an infrastructure
+warning while the dedicated image is unconfigured; explicitly requesting it reports
+`BLOCKED_INFRASTRUCTURE` rather than a passing zero-test run.
+
+#### Dedicated ARM64 Grab and Move CI image
+
+The `umdfHidArm64Image` template parameter is declared by
+`.pipelines\v2\templates\pipeline-ui-tests-automation.yml` and `pipeline-ci-build.yml`, then passed
+explicitly through the stage/job templates so it is available during structural expansion:
+
+- Manual internal UI-test runs default to `SHINE-W11-Preview-Testing-arm64-TestSigning` through
+  `ImageOverride`. The image parameter permits only that name or `disabled` to turn off routing;
+  root templates translate `disabled` to the internal empty-image convention.
+- PR CI enables the image only in the verified internal collection (`SHINE-INT-Testing-arm64`).
+  The shared CI template defaults to disabled; public `shine-oss` PR CI explicitly keeps it
+  disabled until the image is provisioned and verified there. Implicit ARM64 selections then
+  skip Grab and Move with a warning while other suites still run.
+- Image isolation is explicit: ordinary jobs retain the pool's default image. Do not make the
+  TESTSIGNING image the pool default. Registering the image in an OSS pool alone does not opt
+  public CI into it; its root pipeline configuration must also be updated.
+- The dedicated English-language Windows 11 ARM64 image needs TESTSIGNING enabled before boot,
+  an elevated agent, and the same logged-on standard-user desktop/UI-test prerequisites as the
+  ordinary test image. The job checks the architecture and existing boot configuration; it
+  does not alter them. Actual driver-load readiness is still checked separately.
+
+Once configured, PR selection, full builds and official/specific-build runs route only
+`GrabAndMove.UITests` to a separate `_UmdfHid` job. All/mixed selections keep every other suite on
+the ordinary pool. Official/specific-build runs retain both machine-level and per-user jobs.
+Native ARM64 driver artifacts are built on the ordinary build agents, never installed there.
+The experimental ARM64 transport-smoke path also explicitly selects the TESTSIGNING image.
 
 ## Running `.Next` tests in persistent local VMs
 
@@ -146,14 +265,21 @@ desktop, PowerShell Direct, payload, shell-extension signing, and evidence failu
 
 The PowerToys UI test pipeline provides flexible options for building and testing:
 
+Full builds with test compilation enabled and UI-tests-only builds first run the
+MWB/shared winapp CLI PowerShell infrastructure tests using Pester 3.4.0 under
+PowerShell 7. The build publishes NUnit results and fails if any selected test is
+missing, skipped or failed. Optional `NativeCompiler` integration tests require
+explicit tool/runtime paths and are excluded from this fast gate.
+
 ### Pipeline Options
 
 - **buildSource**: Select the build type for testing:
-  - `latestMainOfficialBuild`: Downloads and uses the latest official PowerToys build from main branch
+  - `latestMainOfficialBuild`: Downloads and uses the latest official PowerToys build from main branch; does not support Mouse Without Borders Sandbox tests
   - `buildNow`: Builds PowerToys from current source code and uses it for testing
-  - `specificBuildId`: Downloads a specific PowerToys build using the build ID specified in `specificBuildId` parameter
+  - `buildNowSlim`: Builds the same current-source product, but downloads and installs its installer rather than the whole artifact
+  - `specificBuildId`: Downloads a specific PowerToys build using the build ID specified in `specificBuildId` parameter; does not support Mouse Without Borders Sandbox tests
 
-  **Default value**: `latestMainOfficialBuild`
+  **Default value**: `buildNow`
 
 - **specificBuildId**: When `buildSource` is set to `specificBuildId`, specify the exact PowerToys build ID to download and test against.
 
@@ -173,6 +299,26 @@ The PowerToys UI test pipeline provides flexible options for building and testin
   - Leave empty to build and run all UI test modules
 
   **Important**: The `uiTestModules` parameter values must match both the test project names (for `.csproj` selection during build) and the test assembly names (for `.dll` execution during testing).
+
+  **Mouse Without Borders**: Selecting `MouseWithoutBorders.UITests` automatically
+  prepares its current-source x64 Release runtime bundle and runs the dedicated
+  Sandbox suite; there is no separate enable/disable switch. Empty all-modules
+  selections include it on `buildNow` and `buildNowSlim`. An explicit MWB selection
+  with an official build is blocked; an empty all-modules official selection skips
+  MWB with a warning and still runs the other suites. ARM64 Sandbox execution is
+  skipped independently of the other ARM64 suites. PR builds prepare the bundle
+  only when the affected-project resolver selects MWB. To omit MWB, select the
+  other desired modules explicitly.
+
+  MWB executes inside **Run UI Tests** and shares **Publish UI Test Results** with
+  the other suites. Its isolated setup/standard-user execution preserves the
+  existing timeouts and privilege boundaries. **Restore UI-test prerequisites**
+  always attempts recovery and cleanup, even after failure or cancellation.
+  Selection/skip reasons are logged; no separate selection artifact is uploaded.
+  Allowlisted prerequisite reports are published as **UI-test diagnostics** only
+  for failed, canceled or incomplete runs, including setup failures without TRX.
+  Successful runs retain their normal test-result attachments without an extra
+  prerequisite artifact.
 
 ### Build Modes
 
@@ -275,6 +421,31 @@ public void TestEmptyView()
     VisualAssert.AreEqual(this.TestContext, this.Find("Entries"), "NonEmptyView");
 }
 ```
+
+### Visual assertions in UITestAutomation.Next
+
+The `.Next` harness compares complete, equal-sized window captures using local
+structural similarity (SSIM), with a default threshold of **95%**. It does not
+resize images, crop their frames, or mask pixels. The existing embedded baseline
+images are used unchanged, and capture retries remain bounded to 15 seconds.
+The legacy harness shown above retains its original comparison behavior.
+
+The score is the pixel-weighted mean of non-overlapping 8-by-8 blocks, including
+partial blocks at the image edges. Each RGB channel uses local mean, variance
+and covariance with the standard 8-bit SSIM stabilizers `(0.01 * 255)^2` and
+`(0.03 * 255)^2`. Alpha is compared independently; the lower of the RGB and alpha
+scores is used, so an opaque capture cannot pass by becoming transparent.
+Dimension mismatches are retried during settling and reported explicitly if they
+persist.
+
+This replaces the `.Next` harness's former 64-bit average hash. That hash's
+1.5625-percentage-point steps were not percentages of matching pixels: a small
+frame-color change could alter the global average and flip unrelated hash bits,
+while uniform black and white images could have identical hashes. Local SSIM
+keeps changes local and detects missing preview structure. Regression tests cover
+blank images, removed content, inverted structure, color and alpha changes,
+dimension mismatches, and partial edge blocks. Peek PNG uses the same 95%
+threshold as the other previews; there is no architecture-specific exception.
 
 ## Extra tools and information
 

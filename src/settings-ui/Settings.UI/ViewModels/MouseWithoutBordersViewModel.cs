@@ -183,7 +183,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private async Task WaitForRestartAsync(bool useService)
         {
-            using (await _ipcSemaphore.EnterAsync())
+            using (await SettingsSyncRequests.Semaphore.EnterAsync())
             using (var syncHelper = await GetSettingsSyncHelperAsync())
             {
                 var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Restarted Mouse Without Borders is unavailable.");
@@ -202,7 +202,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     throw new InvalidOperationException($"Restarted Mouse Without Borders has an unexpected identity: {rejectionReason}");
                 }
 
-                await endpoint.RequestMachineSocketStateAsync().WaitAsync(TimeSpan.FromSeconds(10));
+                await endpoint.RequestMachineSocketStateAsync().WaitAsync(SettingsSyncRequests.Timeout);
             }
         }
 
@@ -297,9 +297,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 #pragma warning restore CS0649
             }
 
+            // Shutdown can terminate the process before it replies.
             void Shutdown();
 
-            void Reconnect();
+            // Await server completion before disposing the per-request RPC channel.
+            Task Reconnect();
 
             Task<string> GenerateNewKey();
 
@@ -314,7 +316,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static Task _machinePollingThreadTask;
 
-        private static VisualStudio.Threading.AsyncSemaphore _ipcSemaphore = new VisualStudio.Threading.AsyncSemaphore(1);
+        internal static class SettingsSyncRequests
+        {
+            internal static readonly VisualStudio.Threading.AsyncSemaphore Semaphore = new(1);
+            internal static readonly TimeSpan Timeout = TimeSpan.FromSeconds(15);
+
+            internal static async Task ExecuteAsync<TConnection>(
+                Func<Task<TConnection>> connect,
+                Func<TConnection, Task> command,
+                TimeSpan timeout)
+                where TConnection : IDisposable
+            {
+                using (await Semaphore.EnterAsync())
+                {
+                    using (var connection = await connect())
+                    {
+                        await command(connection).WaitAsync(timeout);
+                    }
+                }
+            }
+        }
 
         private sealed partial class SyncHelper : IDisposable
         {
@@ -326,7 +347,39 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             public NamedPipeClientStream Stream { get; }
 
-            public ISettingsSyncHelper Endpoint { get; private set; }
+            public ISettingsSyncHelper Endpoint { get; }
+
+            public static async Task<SyncHelper> ConnectAsync(string pipeName, string expectedServerExecutableFileName, string expectedUserSid, int expectedSessionId)
+            {
+                var stream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+                try
+                {
+                    await stream.ConnectAsync(10000);
+                    if (!NamedPipePeerVerification.TryVerifyServer(
+                            stream,
+                            expectedServerExecutableFileName,
+                            expectedUserSid,
+                            expectedSessionId,
+                            allowLocalSystem: true,
+                            out var rejectionReason))
+                    {
+                        throw new UnauthorizedAccessException($"Rejected SettingsSync server: {rejectionReason}");
+                    }
+
+                    return new SyncHelper(stream);
+                }
+                catch
+                {
+                    await stream.DisposeAsync();
+                    throw;
+                }
+            }
+
+            public Task ShutdownAsync()
+            {
+                // Await notification delivery, not a reply from the terminating process.
+                return ((IJsonRpcClientProxy)Endpoint).JsonRpc.NotifyAsync(nameof(ISettingsSyncHelper.Shutdown));
+            }
 
             public void Dispose()
             {
@@ -336,6 +389,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
                 finally
                 {
+                    // RPC disposal can finish asynchronously; this helper owns the pipe.
                     Stream.Dispose();
                 }
             }
@@ -346,31 +400,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var sessionId = Process.GetCurrentProcess().SessionId;
             using var currentIdentity = WindowsIdentity.GetCurrent();
             var currentUserSid = currentIdentity.User?.Value ?? throw new InvalidOperationException("Settings process has no user SID.");
-            var stream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
-            try
-            {
-                await stream.ConnectAsync(10000);
-                if (!NamedPipePeerVerification.TryVerifyServer(
-                        stream,
-                        executableName,
-                        currentUserSid,
-                        sessionId,
-                        allowLocalSystem: true,
-                        out var rejectionReason))
-                {
-                    throw new UnauthorizedAccessException($"Rejected SettingsSync server: {rejectionReason}");
-                }
-
-                return new SyncHelper(stream);
-            }
-            catch
-            {
-                await stream.DisposeAsync();
-                throw;
-            }
+            return await SyncHelper.ConnectAsync(pipeName, executableName, currentUserSid, sessionId);
         }
 
-        private async Task<SyncHelper> GetSettingsSyncHelperAsync()
+        private async Task<SyncHelper> GetSettingsSyncHelperAsync(bool requireConnection = false)
         {
             try
             {
@@ -385,13 +418,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Logger.LogError($"Couldn't create SettingsSync: {ex}");
                 }
 
+                if (requireConnection)
+                {
+                    throw;
+                }
+
                 return null;
             }
         }
 
         public async Task SubmitShutdownRequestAsync()
         {
-            using (await _ipcSemaphore.EnterAsync())
+            using (await SettingsSyncRequests.Semaphore.EnterAsync())
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
@@ -404,25 +442,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public async Task SubmitReconnectRequestAsync()
+        public Task SubmitReconnectRequestAsync()
         {
-            using (await _ipcSemaphore.EnterAsync())
+            if (_isServiceModeChanging)
             {
-                if (_isServiceModeChanging)
-                {
-                    return;
-                }
-
-                using (var syncHelper = await GetSettingsSyncHelperAsync())
-                {
-                    syncHelper?.Endpoint?.Reconnect();
-                    var task = syncHelper?.Stream.FlushAsync();
-                    if (task != null)
-                    {
-                        await task;
-                    }
-                }
+                return Task.CompletedTask;
             }
+
+            return SettingsSyncRequests.ExecuteAsync(
+                () => GetSettingsSyncHelperAsync(requireConnection: true),
+                helper => _isServiceModeChanging ? Task.CompletedTask : helper.Endpoint.Reconnect(),
+                SettingsSyncRequests.Timeout);
         }
 
         public async Task SubmitNewKeyRequestAsync()
@@ -441,11 +471,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(HasPairingError));
             try
             {
-                using (await _ipcSemaphore.EnterAsync())
-                using (var syncHelper = await GetSettingsSyncHelperAsync())
+                using (await SettingsSyncRequests.Semaphore.EnterAsync())
+                using (var syncHelper = await GetSettingsSyncHelperAsync(requireConnection: true))
                 {
                     var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
-                    var generatedKey = await endpoint.GenerateNewKey().WaitAsync(TimeSpan.FromSeconds(10));
+                    var generatedKey = await endpoint.GenerateNewKey().WaitAsync(SettingsSyncRequests.Timeout);
                     if (string.IsNullOrWhiteSpace(generatedKey) || PairingKeyCodec.IsEncryptedValue(generatedKey))
                     {
                         throw new InvalidOperationException("Pairing key was not returned.");
@@ -513,7 +543,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             using var syncHelper = await GetSettingsSyncHelperAsync();
             var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
-            return await endpoint.GetCurrentPairingKey().WaitAsync(TimeSpan.FromSeconds(10));
+            return await endpoint.GetCurrentPairingKey().WaitAsync(SettingsSyncRequests.Timeout);
         }
 
         private async Task LoadPairingKeyCoreAsync(Func<Task<string>> readPairingKey)
@@ -527,7 +557,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var pairingUiVersion = _pairingUiVersion;
             try
             {
-                using (await _ipcSemaphore.EnterAsync())
+                using (await SettingsSyncRequests.Semaphore.EnterAsync())
                 {
                     if (pairingUiVersion != _pairingUiVersion)
                     {
@@ -615,11 +645,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(HasPairingError));
             try
             {
-                using (await _ipcSemaphore.EnterAsync())
-                using (var syncHelper = await GetSettingsSyncHelperAsync())
+                using (await SettingsSyncRequests.Semaphore.EnterAsync())
+                using (var syncHelper = await GetSettingsSyncHelperAsync(requireConnection: true))
                 {
                     var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
-                    await endpoint.ConnectToMachine(pcName, securityKey).WaitAsync(TimeSpan.FromSeconds(10));
+                    await endpoint.ConnectToMachine(pcName, securityKey).WaitAsync(SettingsSyncRequests.Timeout);
                     if (_disposed || pairingUiVersion != _pairingUiVersion || UseService != useService || (useService && !IsElevated))
                     {
                         return false;
@@ -652,7 +682,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private async Task<ISettingsSyncHelper.MachineSocketState[]> PollMachineSocketStateAsync()
         {
-            using (await _ipcSemaphore.EnterAsync())
+            using (await SettingsSyncRequests.Semaphore.EnterAsync())
             {
                 if (_isServiceModeChanging)
                 {
@@ -664,7 +694,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     var task = syncHelper?.Endpoint?.RequestMachineSocketStateAsync();
                     if (task != null)
                     {
-                        return await task.WaitAsync(TimeSpan.FromSeconds(10));
+                        return await task.WaitAsync(SettingsSyncRequests.Timeout);
                     }
                     else
                     {
@@ -761,7 +791,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                         try
                         {
-                            await Task.Delay(500, token);
+                            await Task.Delay(TimeSpan.FromSeconds(2), token);
                         }
                         catch (OperationCanceledException) when (token.IsCancellationRequested)
                         {
@@ -867,29 +897,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     availableMachines.Add(availableMachineName);
                 }
 
-                // Start by removing the machines from the matrix that are no longer available to pick.
-                for (int i = 0; i < loadMachineMatrixString.Count; i++)
-                {
-                    if (!availableMachines.Contains(loadMachineMatrixString[i]))
-                    {
-                        editedTheMatrix = true;
-                        loadMachineMatrixString[i] = string.Empty;
-                    }
-                }
-
-                // If an available machine is not in the matrix already, fill it in the first available spot.
-                foreach (string availableMachineName in availableMachines)
-                {
-                    if (!loadMachineMatrixString.Contains(availableMachineName))
-                    {
-                        int availableIndex = loadMachineMatrixString.FindIndex(name => string.IsNullOrEmpty(name));
-                        if (availableIndex >= 0)
-                        {
-                            loadMachineMatrixString[availableIndex] = availableMachineName;
-                            editedTheMatrix = true;
-                        }
-                    }
-                }
+                editedTheMatrix = MouseWithoutBordersMachineMatrix.Reconcile(loadMachineMatrixString, availableMachines);
             }
 
             // Dragging while elevated crashes on WinUI3: https://github.com/microsoft/microsoft-ui-xaml/issues/7690
