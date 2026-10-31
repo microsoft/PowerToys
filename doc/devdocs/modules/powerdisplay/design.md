@@ -35,7 +35,8 @@
 9. [Future Considerations](#future-considerations)
    - [Already Implemented](#already-implemented)
    - [Potential Future Enhancements](#potential-future-enhancements)
-10. [References](#references)
+10. [UI Tests](#ui-tests)
+11. [References](#references)
 
 ---
 
@@ -1705,6 +1706,67 @@ sequenceDiagram
 1. **Advanced Color Management**: Integration with Windows Color Management APIs (HDR, ICC profiles)
 2. **PIP/PBP Control**: Picture-in-Picture and Picture-by-Picture configuration (VcpCapabilities already parses window capabilities)
 3. **Power State Control**: Monitor power on/off via VCP code 0xD6
+
+---
+
+## UI Tests
+
+`src\modules\powerdisplay\PowerDisplay.UITests` uses `Microsoft.PowerToys.UITest.Next`
+and the repository-pinned winappcli. It covers module lifecycle, the notification icon,
+shortcut activation, monitor discovery and refresh, identification overlays, flyout
+Settings navigation, and brightness round-trip when supported hardware is available.
+
+Build from the repository root with the existing build scripts. Wait for exit code 0
+before launching the suite:
+
+```powershell
+& .\tools\build\build-essentials.cmd -Platform x64 -Configuration Debug
+& .\tools\build\build.cmd -Path src\modules\powerdisplay\PowerDisplayModuleInterface -Platform x64 -Configuration Debug
+& .\tools\build\build.cmd -Path src\modules\powerdisplay\PowerDisplay -Platform x64 -Configuration Debug
+& .\tools\build\build.cmd -Path src\modules\powerdisplay\PowerDisplay.UITests -Platform x64 -Configuration Debug
+```
+
+Run the produced Microsoft.Testing.Platform executable on a live interactive desktop:
+
+```powershell
+& .\x64\Debug\tests\PowerDisplay.UITests\net10.0-windows10.0.26100.0\PowerDisplay.UITests.exe `
+    --report-trx --report-trx-filename PowerDisplay.UITests.trx `
+    --results-directory .\TestResults\PowerDisplay
+```
+
+For focused iteration, add
+`--filter "Name=FlyoutSettingsButtonNavigatesToPowerDisplay"`.
+Use `.github\skills\ui-tests-local-vm` for persistent Hyper-V execution and the full
+Windows 10/Windows 11 default and constrained resource matrix; use
+`.github\skills\ui-tests-pipeline-ci` for the authorized post-local CI handoff.
+
+### Test environment and state
+
+- Use a disposable test desktop: the suite stops any running PowerToys processes,
+  temporarily enables only Power Display, and changes module settings. Settings,
+  profiles, monitor state, and affected Light Switch settings are restored afterward.
+- Runner, Settings, and Power Display must run non-elevated. The suite hands Runner
+  launch to Explorer so an elevated CI test host does not pass its token to the product.
+  An existing profile configured to always run as administrator fails the integrity
+  assertions. The launcher requires VBScript and the `.vbs` file association.
+- After stopping stale processes, the suite refuses to run while `discovery.lock` or
+  `crash_detected.flag` remains. It preserves crash evidence rather than deleting or
+  bypassing quarantine.
+- Release validation must use the existing Runner/Settings companion-signing setup
+  for authenticated Settings IPC. A visible switch change is not accepted without
+  the immediate runtime effect.
+
+### Hardware coverage
+
+Hyper-V and CI guests can expose Windows displays without DDC/CI or WMI brightness
+control. In that environment, the suite verifies the stable unsupported-monitor UI
+and explicitly reports that no physical brightness write was exercised.
+
+On supported hardware, the brightness case identifies the exact monitor by its stable,
+case-insensitive ID, changes brightness, checks persisted state and a fresh discovery
+readback, and restores the original value. Physical brightness and mixed-DPI,
+multi-monitor validation require suitable hardware; virtual-desktop green results
+must not be presented as that hardware sign-off.
 
 ---
 
