@@ -220,7 +220,7 @@ namespace Awake.Core
                     break;
 
                 case AwakeMode.EXPIRABLE:
-                    iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_TRAY_UNTIL} {ExpireAt:MMM d, h:mm tt}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}";
+                    iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_TRAY_UNTIL} {ExpireAt:M}, {ExpireAt:t}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}";
                     icon = TrayHelper.ExpirableIcon;
                     break;
 
