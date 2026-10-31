@@ -83,6 +83,7 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
 
     protected override void PrepareTestState()
     {
+        StopProduct();
         AssertNoCrashMarkers();
         Directory.CreateDirectory(ModuleDirectory);
         File.WriteAllText(SettingsPath, InitialSettings);
@@ -204,6 +205,9 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
     {
         Step("Navigating away so the flyout must select the Power Display page");
         Session.Find<NavigationViewItem>(By.AccessibilityId("DashboardNavItem")).Click(msPostAction: 0);
+        Assert.IsTrue(
+            Session.WaitFor(() => !Session.Has(By.Name("Enable Power Display"), 0), timeoutMS: 10_000),
+            "Dashboard navigation did not leave the Power Display settings page.");
         var flyout = OpenFlyout();
         Step("Opening Settings from the flyout");
         flyout.Find<Button>(By.AccessibilityId("SettingsBtn")).Invoke(msPostAction: 0);
@@ -229,7 +233,10 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
         var slider = sliders.FirstOrDefault(control => control.IsEnabled);
         Assert.IsNotNull(slider, "Brightness controls must be enabled after discovery with linked levels disabled.");
         var monitorId = slider.AutomationId;
-        Assert.IsTrue(ReadMonitors().Any(monitor => monitor.GetProperty("id").GetString() == monitorId), "The brightness slider did not identify a discovered monitor.");
+        Assert.IsTrue(
+            ReadMonitors().Any(monitor => string.Equals(monitor.GetProperty("id").GetString(), monitorId, StringComparison.OrdinalIgnoreCase)),
+            "The brightness slider did not identify a discovered monitor.");
+        slider = FindMonitorBrightnessSlider(flyout, monitorId);
         var original = ReadBrightness(slider);
         var target = original <= 90 ? original + 5 : original - 5;
         try
@@ -239,7 +246,7 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
             Assert.IsTrue(slider.WaitForValue(target.ToString(CultureInfo.InvariantCulture), timeoutMS: 10_000), "The slider did not accept the requested brightness.");
             AssertSavedBrightness(monitorId, target);
             Refresh(flyout);
-            Assert.AreEqual(target, ReadBrightness(flyout.Find<Slider>(By.AccessibilityId(monitorId))), "Rediscovery did not read the requested brightness back from the monitor.");
+            Assert.AreEqual(target, ReadBrightness(FindMonitorBrightnessSlider(flyout, monitorId)), "Rediscovery did not read the requested brightness back from the monitor.");
         }
         finally
         {
@@ -249,10 +256,10 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
                 flyout = OpenFlyout();
             }
 
-            flyout.Find<Slider>(By.AccessibilityId(monitorId)).SetValue(original);
+            FindMonitorBrightnessSlider(flyout, monitorId).SetValue(original);
             AssertSavedBrightness(monitorId, original);
             Refresh(flyout);
-            Assert.AreEqual(original, ReadBrightness(flyout.Find<Slider>(By.AccessibilityId(monitorId))), "The original hardware brightness was not restored.");
+            Assert.AreEqual(original, ReadBrightness(FindMonitorBrightnessSlider(flyout, monitorId)), "The original hardware brightness was not restored.");
         }
     }
 
@@ -277,6 +284,15 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
     private static Slider[] BrightnessSliders(Session flyout) =>
         flyout.FindAll<Slider>(By.Name("Brightness"), 0)
             .Where(control => control.Name == "Brightness").OrderBy(control => control.Y).ToArray();
+
+    private static Slider FindMonitorBrightnessSlider(Session flyout, string monitorId)
+    {
+        var matches = flyout.FindAll<Slider>(By.AccessibilityId(monitorId))
+            .Where(slider => string.Equals(slider.AutomationId, monitorId, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        Assert.AreEqual(1, matches.Length, $"Expected one brightness slider for exact monitor ID '{monitorId}'.");
+        return matches[0];
+    }
 
     private static double ReadBrightness(Slider slider) =>
         double.Parse(slider.GetValue(), CultureInfo.InvariantCulture);
@@ -327,7 +343,9 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
 
                 using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
                 using var document = JsonDocument.Parse(stream);
-                return document.RootElement.GetProperty("monitors").TryGetProperty(monitorId, out var monitor) &&
+                var monitor = document.RootElement.GetProperty("monitors").EnumerateObject()
+                    .FirstOrDefault(property => string.Equals(property.Name, monitorId, StringComparison.OrdinalIgnoreCase)).Value;
+                return monitor.ValueKind == JsonValueKind.Object &&
                     monitor.TryGetProperty("brightness", out var brightness) && brightness.ValueKind == JsonValueKind.Number
                     ? brightness.GetDouble() : (double?)null;
             },
@@ -354,10 +372,13 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
         {
             if (processes.Length > 0)
             {
-                NamedEventHelper.WaitAndSignal(TerminateEvent, timeoutMS: 10_000);
+                var signaled = NamedEventHelper.WaitAndSignal(TerminateEvent, timeoutMS: 10_000);
+                var failureMessage = signaled
+                    ? "Power Display did not exit cooperatively; refusing to kill it during discovery."
+                    : "Power Display's termination event was unavailable and its process did not exit; refusing to kill it during discovery.";
                 foreach (var process in processes)
                 {
-                    Assert.IsTrue(process.WaitForExit(20_000), "Power Display did not exit cooperatively; refusing to kill it during discovery.");
+                    Assert.IsTrue(process.WaitForExit(20_000), failureMessage);
                 }
             }
         }
@@ -422,7 +443,7 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
                     "PowerToys.Settings",
                     window => window.Title.Contains("PowerToys", StringComparison.OrdinalIgnoreCase),
                     timeoutMS: 150_000),
-                "The shell-launched Runner did not open Settings.");
+                "The shell-launched Runner did not open Settings. Verify VBScript and the .vbs file association, and inspect Runner startup logs.");
         }
         finally
         {
