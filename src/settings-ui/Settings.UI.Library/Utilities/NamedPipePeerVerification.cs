@@ -269,7 +269,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
                 return false;
             }
 
-            return !ownHasEmbeddedSignature || HaveSameTrustedMicrosoftSigner(ownImagePath, peerImagePath);
+            // Signed product components are signed separately and carry their own leaf certificates.
+            return !ownHasEmbeddedSignature ||
+                (HasTrustedMicrosoftSignature(ownImagePath) && HasTrustedMicrosoftSignature(peerImagePath));
         }
 
         private static bool TryHasEmbeddedAuthenticodeSignature(string imagePath, out bool hasEmbeddedSignature)
@@ -302,36 +304,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             {
                 return false;
             }
-        }
-
-        private static bool HaveSameTrustedMicrosoftSigner(string firstImagePath, string secondImagePath)
-        {
-            X509Certificate2 firstSigner = null;
-            X509Certificate2 secondSigner = null;
-
-            try
-            {
-                if (!TryGetTrustedMicrosoftSignerCertificate(firstImagePath, out firstSigner) ||
-                    !TryGetTrustedMicrosoftSignerCertificate(secondImagePath, out secondSigner))
-                {
-                    return false;
-                }
-
-                return HaveMatchingSignerCertificate(firstSigner, secondSigner);
-            }
-            finally
-            {
-                firstSigner?.Dispose();
-                secondSigner?.Dispose();
-            }
-        }
-
-        private static bool HaveMatchingSignerCertificate(X509Certificate2 firstSigner, X509Certificate2 secondSigner)
-        {
-            ArgumentNullException.ThrowIfNull(firstSigner);
-            ArgumentNullException.ThrowIfNull(secondSigner);
-
-            return CryptographicOperations.FixedTimeEquals(firstSigner.RawData, secondSigner.RawData);
         }
 
         private static bool HasTrustedMicrosoftSignature(string imagePath)

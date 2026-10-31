@@ -459,14 +459,34 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         }
 
         [TestMethod]
-        public void SignerCertificateEqualityRejectsDistinctCertificatesWithSameSubject_FallbackWithoutSecondTrustedFixture()
+        public void DistinctValidMicrosoftSignerCertificatesPassSigningPolicy()
         {
-            using var firstKey = RSA.Create(2048);
-            using var secondKey = RSA.Create(2048);
-            using var first = CreateSubjectCertificate("CN=Microsoft Corporation Unit Test", firstKey);
-            using var second = CreateSubjectCertificate("CN=Microsoft Corporation Unit Test", secondKey);
+            var signedBinary = GetKnownEmbeddedMicrosoftSignedDependencyPath();
+            var otherSignedBinary = FindDistinctTrustedMicrosoftSignedPeer(signedBinary);
+            var signedLeaf = ReadSignerCertificate(signedBinary);
+            var otherLeaf = ReadSignerCertificate(otherSignedBinary);
 
-            Assert.IsFalse(HaveMatchingSignerCertificate(first, second));
+            Assert.IsFalse(
+                CryptographicOperations.FixedTimeEquals(signedLeaf.RawData, otherLeaf.RawData),
+                "Pairing verification must be exercised with distinct Microsoft leaf certificates.");
+            Assert.IsTrue(
+                MeetsSigningPolicy(signedBinary, otherSignedBinary),
+                "Distinct Microsoft leaf certificates must not be rejected as untrusted-signature.");
+            Assert.IsTrue(MeetsSigningPolicy(otherSignedBinary, signedBinary));
+            Assert.IsFalse(MeetsSigningPolicy(signedBinary, typeof(MouseWithoutBordersIpcSecurityTests).Assembly.Location));
+
+            var artifactDirectory = CreateTestArtifactDirectory();
+            var tamperedBinary = Path.Combine(artifactDirectory, Path.GetFileName(signedBinary));
+            try
+            {
+                File.Copy(signedBinary, tamperedBinary, overwrite: true);
+                TamperFile(tamperedBinary);
+                Assert.IsFalse(MeetsSigningPolicy(otherSignedBinary, tamperedBinary));
+            }
+            finally
+            {
+                CleanupArtifactDirectory(artifactDirectory);
+            }
         }
 
         [TestMethod]
@@ -944,6 +964,81 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             return path;
         }
 
+        private static string FindDistinctTrustedMicrosoftSignedPeer(string knownSignedPath)
+        {
+            var knownSigner = ReadSignerCertificate(knownSignedPath);
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                Path.GetFullPath(knownSignedPath),
+            };
+
+            foreach (var candidate in EnumerateSignerCandidatePaths())
+            {
+                if (!seen.Add(Path.GetFullPath(candidate)) || !File.Exists(candidate))
+                {
+                    continue;
+                }
+
+                (byte[] RawData, string Subject) signer;
+                try
+                {
+                    signer = ReadSignerCertificate(candidate);
+                }
+                catch (Exception exception) when (exception is CryptographicException or IOException or UnauthorizedAccessException)
+                {
+                    continue;
+                }
+
+                if (!signer.Subject.Contains("Microsoft Corporation", StringComparison.OrdinalIgnoreCase) ||
+                    CryptographicOperations.FixedTimeEquals(knownSigner.RawData, signer.RawData) ||
+                    !HasTrustedMicrosoftSignature(candidate))
+                {
+                    continue;
+                }
+
+                return candidate;
+            }
+
+            Assert.Fail($"No Microsoft-signed peer with a distinct leaf certificate was found beside {knownSignedPath}.");
+            return string.Empty;
+        }
+
+        private static IEnumerable<string> EnumerateSignerCandidatePaths()
+        {
+            yield return Path.Combine(Environment.SystemDirectory, @"WindowsPowerShell\v1.0\powershell.exe");
+            yield return Path.Combine(Environment.SystemDirectory, "notepad.exe");
+            yield return Path.Combine(Environment.SystemDirectory, "cmd.exe");
+
+            foreach (var name in new[]
+            {
+                "coreclr.dll",
+                "System.Private.CoreLib.dll",
+                "clrjit.dll",
+                "hostfxr.dll",
+                "hostpolicy.dll",
+                "Microsoft.Web.WebView2.Core.dll",
+                "Microsoft.ui.xaml.dll",
+                "StreamJsonRpc.dll",
+            })
+            {
+                yield return Path.Combine(AppContext.BaseDirectory, name);
+            }
+
+            foreach (var path in Directory.EnumerateFiles(AppContext.BaseDirectory, "*.dll"))
+            {
+                yield return path;
+            }
+        }
+
+        private static (byte[] RawData, string Subject) ReadSignerCertificate(string path)
+        {
+#pragma warning disable SYSLIB0057 // Embedded Authenticode signer extraction has no X509CertificateLoader equivalent.
+            using var signedFile = X509Certificate.CreateFromSignedFile(path);
+            using var signer = new X509Certificate2(signedFile);
+#pragma warning restore SYSLIB0057
+            return (signer.RawData, signer.Subject);
+        }
+
         private static string CreateTestArtifactDirectory()
         {
             var path = Path.Combine(
@@ -987,11 +1082,11 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             return (bool)method!.Invoke(null, new object[] { path })!;
         }
 
-        private static bool HaveMatchingSignerCertificate(X509Certificate2 firstSigner, X509Certificate2 secondSigner)
+        private static bool MeetsSigningPolicy(string ownImagePath, string peerImagePath)
         {
-            var method = typeof(NamedPipePeerVerification).GetMethod("HaveMatchingSignerCertificate", BindingFlags.NonPublic | BindingFlags.Static);
+            var method = typeof(NamedPipePeerVerification).GetMethod("MeetsSigningPolicy", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.IsNotNull(method);
-            return (bool)method!.Invoke(null, new object[] { firstSigner, secondSigner })!;
+            return (bool)method!.Invoke(null, new object[] { ownImagePath, peerImagePath })!;
         }
 
         private static bool HaveEqualOrNestedDirectories(string firstDirectory, string secondDirectory)
@@ -1059,18 +1154,6 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(enhancedKeyUsage, true));
 
             return request.Create(intermediate, intermediate.NotBefore.ToUniversalTime(), intermediate.NotAfter.ToUniversalTime(), RandomNumberGenerator.GetBytes(16));
-        }
-
-        private static X509Certificate2 CreateSubjectCertificate(string subject, RSA key)
-        {
-            var request = new CertificateRequest(
-                subject,
-                key,
-                HashAlgorithmName.SHA256,
-                RSASignaturePadding.Pkcs1);
-            request.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, true));
-            request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
-            return request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(7));
         }
 
         private sealed class DelayedSettingsCommandTarget
