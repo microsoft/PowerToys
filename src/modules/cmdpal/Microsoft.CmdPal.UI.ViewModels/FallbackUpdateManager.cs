@@ -95,7 +95,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                 }
 
                 var command = commands[i];
-                var counter = _inflightFallbacks.GetOrAdd(command.Id, static _ => new InflightCounter());
+                var counter = _inflightFallbacks.GetOrAdd(command.FallbackKey, static _ => new InflightCounter());
                 if (!counter.TryClaim(MaxInflightPerFallback))
                 {
                     // At capacity — store this query as a pending retry so it runs

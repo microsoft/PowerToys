@@ -618,7 +618,23 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         var fallbackRankings = new List<Scored<FallbackSettingsViewModel>>(fallbacks.Count);
         foreach (var fallback in fallbacks)
         {
-            var index = currentRankings.IndexOf(fallback.Id);
+            var index = currentRankings.IndexOf(fallback.RankId);
+
+            // settings migration note: Prior to cmdpal v0.14, fallback ranks
+            // were stored per ID. After that, we also store the provider ID as
+            // the RankId.
+            //
+            // This code here handles migrating the old key if we don't find the
+            // new one.
+            if (index < 0)
+            {
+                index = currentRankings.IndexOf(fallback.Id);
+                if (index >= 0)
+                {
+                    needsSave = true;
+                }
+            }
+
             var score = fallbacks.Count;
 
             if (index >= 0)
@@ -766,7 +782,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
 
     public void ApplyFallbackSort()
     {
-        _settingsService.UpdateSettings(s => s with { FallbackRanks = FallbackRankings.Select(s2 => s2.Id).ToArray() });
+        _settingsService.UpdateSettings(s => s with { FallbackRanks = FallbackRankings.Select(s2 => s2.RankId).ToArray() });
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FallbackRankings)));
     }
 

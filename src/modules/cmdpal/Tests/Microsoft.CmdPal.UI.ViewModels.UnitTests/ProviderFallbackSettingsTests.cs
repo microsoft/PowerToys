@@ -5,8 +5,10 @@
 using System;
 using System.Collections.Immutable;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -35,6 +37,7 @@ public partial class ProviderFallbackSettingsTests
         var fallbackSettings = settingsService.Settings.ProviderSettings[ProviderId].FallbackCommands[FallbackId];
         Assert.IsTrue(fallbackSettings.IsEnabled);
         Assert.IsTrue(fallbackSettings.IncludeInGlobalResults);
+        Assert.IsTrue(wrapper.FallbackItems[0].IncludeInGlobalResults);
         CollectionAssert.Contains(settingsService.Settings.GetGlobalFallbacks(), FallbackId);
     }
 
@@ -56,6 +59,56 @@ public partial class ProviderFallbackSettingsTests
         await wrapper.LoadTopLevelCommands(services);
 
         Assert.IsFalse(settingsService.Settings.ProviderSettings[ProviderId].FallbackCommands[FallbackId].IncludeInGlobalResults);
+    }
+
+    [TestMethod]
+    public async Task DuplicateFallbackIds_KeepProviderIdentityAndGlobalSettings()
+    {
+        const string otherProviderId = "other-provider";
+        var settingsService = new FakeSettingsService();
+        settingsService.Settings = settingsService.Settings with
+        {
+            ProviderSettings = settingsService.Settings.ProviderSettings.SetItem(
+                otherProviderId,
+                new ProviderSettings
+                {
+                    FallbackCommands = ImmutableDictionary<string, FallbackSettings>.Empty.Add(
+                        FallbackId,
+                        new FallbackSettings { IncludeInGlobalResults = false }),
+                }),
+        };
+        await using var services = CreateServices(settingsService);
+        var first = new CommandProviderWrapper(new TestCommandProvider(), TaskScheduler.Default);
+        var second = new CommandProviderWrapper(new TestCommandProvider(otherProviderId), TaskScheduler.Default);
+        await first.LoadTopLevelCommands(services);
+        await second.LoadTopLevelCommands(services);
+
+        Assert.AreEqual($"{ProviderId}\0{FallbackId}", first.FallbackItems[0].FallbackKey);
+        Assert.AreEqual($"{otherProviderId}\0{FallbackId}", second.FallbackItems[0].FallbackKey);
+        Assert.IsTrue(first.FallbackItems[0].IncludeInGlobalResults);
+        Assert.IsFalse(second.FallbackItems[0].IncludeInGlobalResults);
+    }
+
+    [TestMethod]
+    public async Task FallbackRanking_PrefersProviderQualifiedIdAndPreservesLegacyRank()
+    {
+        var settingsService = new FakeSettingsService();
+        await using var services = CreateServices(settingsService);
+        var first = new CommandProviderWrapper(new TestCommandProvider(), TaskScheduler.Default);
+        var second = new CommandProviderWrapper(new TestCommandProvider("other-provider"), TaskScheduler.Default);
+        await first.LoadTopLevelCommands(services);
+        await second.LoadTopLevelCommands(services);
+        var score = typeof(MainListPage).GetMethod("ScoreFallbackItem", BindingFlags.NonPublic | BindingFlags.Static)!;
+        string[] ranks = [second.FallbackItems[0].FallbackKey, first.FallbackItems[0].FallbackKey];
+
+        Assert.AreEqual(3, score.Invoke(null, [second.FallbackItems[0], ranks]));
+        Assert.AreEqual(2, score.Invoke(null, [first.FallbackItems[0], ranks]));
+        Assert.AreEqual(2, score.Invoke(null, [first.FallbackItems[0], new[] { FallbackId }]));
+
+        using var provider = new ProviderSettingsViewModel(first, new ProviderSettings(), settingsService);
+        var fallback = new FallbackSettingsViewModel(first.FallbackItems[0], new FallbackSettings(), provider, settingsService);
+        Assert.AreEqual(first.FallbackItems[0].FallbackKey, fallback.RankId);
+        Assert.AreEqual(FallbackId, fallback.Id);
     }
 
     [TestMethod]
@@ -145,9 +198,9 @@ public partial class ProviderFallbackSettingsTests
     {
         private readonly FallbackCommandItem _fallback = new(new NoOpCommand(), "Test fallback", FallbackId);
 
-        public TestCommandProvider()
+        public TestCommandProvider(string providerId = ProviderId)
         {
-            Id = ProviderId;
+            Id = providerId;
             DisplayName = "Test provider";
         }
 
