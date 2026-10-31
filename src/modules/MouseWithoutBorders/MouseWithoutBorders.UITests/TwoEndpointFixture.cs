@@ -242,12 +242,14 @@ internal sealed class TwoEndpointFixture : IDisposable
         using var identity = WindowsIdentity.GetCurrent();
         userSid = identity.User!.Value;
         Assert.AreEqual(userSid, provision["TestUserSid"]?.GetValue<string>(), "Provisioning belongs to another user.");
-        Assert.IsTrue(string.Equals(productRoot, provision["ProductRoot"]?.GetValue<string>()?.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase),
+        Assert.IsTrue(
+            string.Equals(productRoot, provision["ProductRoot"]?.GetValue<string>()?.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase),
             "Provisioning ProductRoot does not match POWERTOYS_INSTALL_DIR.");
         runId = Guid.Parse(provision["RunId"]!.GetValue<string>()).ToString();
         prerequisites.SetRunId(runId);
         Assert.IsTrue(!string.IsNullOrWhiteSpace(provision["RuleName"]?.GetValue<string>()), "Missing scoped firewall rule identity.");
-        Assert.IsTrue(provision["Status"]?.GetValue<string>() is "WaitingForSandbox" or "Ready",
+        Assert.IsTrue(
+            provision["Status"]?.GetValue<string>() is "WaitingForSandbox" or "Ready",
             "BLOCKED_INFRASTRUCTURE: privileged provisioning must be WaitingForSandbox or Ready before the test.");
         var backend = SandboxBackendSelection.Resolve(
             provision["SandboxBackend"]?.GetValue<string>(),
@@ -256,11 +258,13 @@ internal sealed class TwoEndpointFixture : IDisposable
         {
             LegacySandbox.AssertNoneRunning();
         }
+
         foreach (var process in Process.GetProcesses())
         {
             using (process)
             {
-                Assert.IsFalse(process.ProcessName == "PowerToys" || process.ProcessName.StartsWith("PowerToys.", StringComparison.OrdinalIgnoreCase),
+                Assert.IsFalse(
+                    process.ProcessName == "PowerToys" || process.ProcessName.StartsWith("PowerToys.", StringComparison.OrdinalIgnoreCase),
                     "Refusing an existing PowerToys process; the baseline must be clean.");
             }
         }
@@ -286,9 +290,13 @@ internal sealed class TwoEndpointFixture : IDisposable
             ?? throw new InvalidOperationException("Provisioning must stage the guest product archive.");
         using (var archive = File.OpenRead(guestArchive))
         {
-            Assert.AreEqual(provision["GuestArchiveSha256"]!.GetValue<string>(),
-                Convert.ToHexString(SHA256.HashData(archive)), true, "The staged guest product archive changed.");
+            Assert.AreEqual(
+                provision["GuestArchiveSha256"]!.GetValue<string>(),
+                Convert.ToHexString(SHA256.HashData(archive)),
+                true,
+                "The staged guest product archive changed.");
         }
+
         var hardDeadlineUtc = DateTime.UtcNow + (backend == "WinApp" ? SandboxTimeouts.ModernRun : SandboxTimeouts.LegacyRun);
         foreach (var endpoint in new[] { host, guest })
         {
@@ -324,6 +332,7 @@ internal sealed class TwoEndpointFixture : IDisposable
                 "Sandbox winapp.exe changed after privileged provisioning.");
             sandbox = new WinAppSandbox(runId, controlRoot, runRoot, sandboxWinApp, SaveJournal, context, prerequisites);
         }
+
         // Keep liveness outside MTP/native recording, and isolate mapped guest writes
         // from host publication so one stalled path cannot starve both endpoints.
         using var owner = Process.GetCurrentProcess();
@@ -369,17 +378,24 @@ internal sealed class TwoEndpointFixture : IDisposable
             using var stream = File.OpenRead(Path.Combine(productRoot, path));
             return Convert.ToHexString(SHA256.HashData(stream));
         });
-        Assert.AreEqual(hashes["PowerToys.Settings.UI.Lib.dll"], hashes[@"WinUI3Apps\PowerToys.Settings.UI.Lib.dll"],
+        Assert.AreEqual(
+            hashes["PowerToys.Settings.UI.Lib.dll"],
+            hashes[@"WinUI3Apps\PowerToys.Settings.UI.Lib.dll"],
             "Root and WinUI3Apps settings-library builds differ.");
         if (provision["TestSigningTrust"] is not null)
         {
-            Assert.AreEqual(provision["TestSigningTrust"]!["Sha256"]!.GetValue<string>(), hashes["mwb-test-signer.cer"], true,
+            Assert.AreEqual(
+                provision["TestSigningTrust"]!["Sha256"]!.GetValue<string>(),
+                hashes["mwb-test-signer.cer"],
+                true,
                 "The public test certificate changed after protected provisioning.");
         }
+
+        var configuration = provision["Configuration"]?.GetValue<string>()
+            ?? throw new InvalidDataException("Protected provisioning must identify the payload configuration.");
         foreach (var path in new[] { "PowerToys.MouseWithoutBorders.dll", "PowerToys.MouseWithoutBordersHelper.dll", @"WinUI3Apps\PowerToys.Settings.dll" })
         {
-            AssertConfiguredAssembly(Path.Combine(productRoot, path), provision["Configuration"]?.GetValue<string>()
-                ?? throw new InvalidDataException("Protected provisioning must identify the payload configuration."));
+            AssertConfiguredAssembly(Path.Combine(productRoot, path), configuration);
         }
 
         if (provision["Status"]?.GetValue<string>() == "Ready" ||
@@ -387,9 +403,15 @@ internal sealed class TwoEndpointFixture : IDisposable
         {
             Assert.IsNotNull(provision["ExecutableSha256"], "Provisioning must fingerprint the staged MWB executable.");
             Assert.IsNotNull(provision["LibrarySha256"], "Provisioning must fingerprint the staged MWB assembly.");
-            Assert.AreEqual(provision["ExecutableSha256"]!.GetValue<string>(), hashes["PowerToys.MouseWithoutBorders.exe"], true,
+            Assert.AreEqual(
+                provision["ExecutableSha256"]!.GetValue<string>(),
+                hashes["PowerToys.MouseWithoutBorders.exe"],
+                true,
                 "MWB executable changed after privileged provisioning.");
-            Assert.AreEqual(provision["LibrarySha256"]!.GetValue<string>(), hashes["PowerToys.MouseWithoutBorders.dll"], true,
+            Assert.AreEqual(
+                provision["LibrarySha256"]!.GetValue<string>(),
+                hashes["PowerToys.MouseWithoutBorders.dll"],
+                true,
                 "MWB assembly changed after privileged provisioning.");
         }
 
@@ -457,12 +479,16 @@ internal sealed class TwoEndpointFixture : IDisposable
                 var current = RunFiles.Read(markerPath);
                 Assert.AreEqual(runId, current["RunId"]?.GetValue<string>(), "BLOCKED_INFRASTRUCTURE: provisioning RunId changed.");
                 Assert.AreEqual(userSid, current["TestUserSid"]?.GetValue<string>(), "BLOCKED_INFRASTRUCTURE: provisioning user changed.");
-                Assert.AreEqual(initialProvision["RuleName"]?.GetValue<string>(), current["RuleName"]?.GetValue<string>(),
+                Assert.AreEqual(
+                    initialProvision["RuleName"]?.GetValue<string>(),
+                    current["RuleName"]?.GetValue<string>(),
                     "BLOCKED_INFRASTRUCTURE: provisioning rule identity changed.");
-                Assert.IsTrue(string.Equals(productRoot, current["ProductRoot"]?.GetValue<string>()?.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase),
+                Assert.IsTrue(
+                    string.Equals(productRoot, current["ProductRoot"]?.GetValue<string>()?.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase),
                     "BLOCKED_INFRASTRUCTURE: provisioning product identity changed.");
                 var currentStatus = current["Status"]?.GetValue<string>();
-                Assert.IsTrue(currentStatus is "WaitingForSandbox" or "Ready",
+                Assert.IsTrue(
+                    currentStatus is "WaitingForSandbox" or "Ready",
                     $"BLOCKED_INFRASTRUCTURE: privileged setup reported {currentStatus}; inspect its protected marker.");
                 if (currentStatus == "WaitingForSandbox")
                 {
@@ -473,7 +499,10 @@ internal sealed class TwoEndpointFixture : IDisposable
                 {
                     if (initialProvision[hashName] is not null)
                     {
-                        Assert.AreEqual(initialProvision[hashName]!.GetValue<string>(), current[hashName]?.GetValue<string>(), true,
+                        Assert.AreEqual(
+                            initialProvision[hashName]!.GetValue<string>(),
+                            current[hashName]?.GetValue<string>(),
+                            true,
                             "BLOCKED_INFRASTRUCTURE: provisioned payload identity changed while waiting for Sandbox.");
                     }
                 }
@@ -490,7 +519,9 @@ internal sealed class TwoEndpointFixture : IDisposable
         var candidates = guestReady["Addresses"]!.AsArray()
             .Where(node => InSubnet(node!["IPAddress"]!.GetValue<string>(), subnet) &&
                 node["IPAddress"]!.GetValue<string>() != hostAddress).ToArray();
-        Assert.AreEqual(1, candidates.Length,
+        Assert.AreEqual(
+            1,
+            candidates.Length,
             $"NETWORK_CHANGED: the guest must have exactly one address in provisioned Sandbox subnet {subnet}; inspect guest ready.json and reprovision the actual Default Switch.");
         guestAddress = candidates[0]!["IPAddress"]!.GetValue<string>();
         var guestInterface = candidates[0]!["InterfaceIndex"]!.GetValue<int>();
@@ -498,7 +529,9 @@ internal sealed class TwoEndpointFixture : IDisposable
             .Where(node => node!["InterfaceIndex"]!.GetValue<int>() == guestInterface)
             .Select(node => node!["NextHop"]!.GetValue<string>()).Distinct().ToArray();
         Assert.AreEqual(1, gateways.Length, "NETWORK_CHANGED: the selected guest interface must have one unambiguous default gateway.");
-        Assert.AreEqual(hostAddress, gateways[0],
+        Assert.AreEqual(
+            hostAddress,
+            gateways[0],
             $"NETWORK_CHANGED: guest gateway {gateways[0]} does not match provisioned HostAddress {hostAddress}; neither MWB endpoint was started.");
         RunFiles.Write(Path.Combine(runRoot, "topology.json"), new
         {
@@ -512,19 +545,26 @@ internal sealed class TwoEndpointFixture : IDisposable
     {
         var global = CreateGlobalSettings(payloadRoot);
         hostPeersStarted = true;
-        var started = host!.Request("Start", new JsonObject
-        {
-            ["PeerName"] = guestName, ["PeerAddress"] = guestAddress, ["GlobalSettings"] = global.DeepClone(),
-            ["ExpectedLocalAddress"] = provision["HostAddress"]!.DeepClone(),
-        }, timeoutSeconds: SandboxTimeouts.EndpointStartRequestSeconds);
+        var started = host!.Request(
+            "Start",
+            new JsonObject
+            {
+                ["PeerName"] = guestName, ["PeerAddress"] = guestAddress, ["GlobalSettings"] = global.DeepClone(),
+                ["ExpectedLocalAddress"] = provision["HostAddress"]!.DeepClone(),
+            },
+            timeoutSeconds: SandboxTimeouts.EndpointStartRequestSeconds);
         settings = Session.FromProcess(started["SettingsProcessId"]!.GetValue<int>().ToString(CultureInfo.InvariantCulture), timeoutMS: 30_000);
         guestPeersStarted = true;
+
         // Enclose the fifteen-minute readiness budget and the mapped-folder reply.
-        guest!.Request("Start", new JsonObject
-        {
-            ["PeerName"] = hostName, ["PeerAddress"] = provision["HostAddress"]!.DeepClone(), ["GlobalSettings"] = global.DeepClone(),
-            ["ExpectedLocalAddress"] = guestAddress,
-        }, timeoutSeconds: SandboxTimeouts.EndpointStartRequestSeconds);
+        guest!.Request(
+            "Start",
+            new JsonObject
+            {
+                ["PeerName"] = hostName, ["PeerAddress"] = provision["HostAddress"]!.DeepClone(), ["GlobalSettings"] = global.DeepClone(),
+                ["ExpectedLocalAddress"] = guestAddress,
+            },
+            timeoutSeconds: SandboxTimeouts.EndpointStartRequestSeconds);
     }
 
     internal static JsonObject CreateGlobalSettings(string payloadRoot)
@@ -560,37 +600,47 @@ internal sealed class TwoEndpointFixture : IDisposable
         var previous = RunFiles.Read(path)["properties"]!["SecurityKey"]!["value"]!.GetValue<string>();
         buttons[0].Invoke(msPostAction: 0);
         string key = string.Empty;
-        RunFiles.Wait(() =>
-        {
-            key = RunFiles.Read(path)["properties"]!["SecurityKey"]!["value"]!.GetValue<string>();
-            return key.Length > 0 && key != previous;
-        }, TimeSpan.FromSeconds(20), "Settings New key did not change the persisted key.");
+        RunFiles.Wait(
+            () =>
+            {
+                key = RunFiles.Read(path)["properties"]!["SecurityKey"]!["value"]!.GetValue<string>();
+                return key.Length > 0 && key != previous;
+            },
+            TimeSpan.FromSeconds(20),
+            "Settings New key did not change the persisted key.");
         host!.Request("VerifyPeerMapping");
         var connection = guest!.Request("Connect", new JsonObject { ["Key"] = key, ["PeerName"] = hostName }, timeoutSeconds: 600);
-        Assert.IsTrue(connection["Acknowledged"]?.GetValue<bool>() == true,
+        Assert.IsTrue(
+            connection["Acknowledged"]?.GetValue<bool>() == true,
             "Settings Connect must be acknowledged by the guest's persisted matching key and peer before testing transport.");
     }
 
     private void VerifyTransport()
     {
         var stable = 0;
-        RunFiles.Wait(() =>
-        {
-            var hostTransport = host!.Request("Transport");
-            var guestTransport = guest!.Request("Transport");
-            RunFiles.Write(Path.Combine(runRoot, "host-transport.json"), hostTransport);
-            RunFiles.Write(Path.Combine(runRoot, "guest-transport.json"), guestTransport);
-            Assert.AreEqual((int)Key.F1, hostTransport["SwitchKey"]!.GetValue<int>(), "The isolated baseline must use F1-F4 machine switching.");
-            bool established = HasPeer(hostTransport, guestAddress) &&
-                HasPeer(guestTransport, provision["HostAddress"]!.GetValue<string>()) &&
-                HasRoutingLayout(hostTransport) && HasRoutingLayout(guestTransport);
-            stable = established ? stable + 1 : 0;
-            return stable >= 2;
-        }, TimeSpan.FromSeconds(90), "Both owned MWB PIDs must have peer transport and the expected host/guest routing slots.");
+        RunFiles.Wait(
+            () =>
+            {
+                var hostTransport = host!.Request("Transport");
+                var guestTransport = guest!.Request("Transport");
+                RunFiles.Write(Path.Combine(runRoot, "host-transport.json"), hostTransport);
+                RunFiles.Write(Path.Combine(runRoot, "guest-transport.json"), guestTransport);
+                Assert.AreEqual((int)Key.F1, hostTransport["SwitchKey"]!.GetValue<int>(), "The isolated baseline must use F1-F4 machine switching.");
+                bool established = HasPeer(hostTransport, guestAddress) &&
+                    HasPeer(guestTransport, provision["HostAddress"]!.GetValue<string>()) &&
+                    HasRoutingLayout(hostTransport) && HasRoutingLayout(guestTransport);
+                stable = established ? stable + 1 : 0;
+                return stable >= 2;
+            },
+            TimeSpan.FromSeconds(90),
+            "Both owned MWB PIDs must have peer transport and the expected host/guest routing slots.");
+
         // ItemsControl itself has no UIA peer; its bound device labels do.
-        RunFiles.Wait(() => settings!.FindAll<TextBlock>(By.Name(guestName), timeoutMS: 1000)
-            .Any(element => string.Equals(element.Name, guestName, StringComparison.OrdinalIgnoreCase)),
-            TimeSpan.FromSeconds(15), "Settings devices did not display the paired guest.");
+        RunFiles.Wait(
+            () => settings!.FindAll<TextBlock>(By.Name(guestName), timeoutMS: 1000)
+                .Any(element => string.Equals(element.Name, guestName, StringComparison.OrdinalIgnoreCase)),
+            TimeSpan.FromSeconds(15),
+            "Settings devices did not display the paired guest.");
     }
 
     private void VerifyLocalInput()
@@ -601,8 +651,10 @@ internal sealed class TwoEndpointFixture : IDisposable
         FocusHost();
         SelectMachine(Key.F1);
         TypeToken("local1357924680");
-        RunFiles.Wait(() => Observe(host)["Text"]!.GetValue<string>() == "local1357924680",
-            TimeSpan.FromSeconds(10), "Local control token was not received by the host.");
+        RunFiles.Wait(
+            () => Observe(host)["Text"]!.GetValue<string>() == "local1357924680",
+            TimeSpan.FromSeconds(10),
+            "Local control token was not received by the host.");
         var guestState = Observe(guest);
         Assert.AreEqual(string.Empty, guestState["Text"]!.GetValue<string>(), "Local control leaked to the guest.");
         Assert.AreEqual(0, guestState["Clicks"]!.GetValue<int>());
@@ -614,8 +666,10 @@ internal sealed class TwoEndpointFixture : IDisposable
         FocusHost();
         SelectMachine(Key.F2);
         TypeToken("remote2468135790");
-        RunFiles.Wait(() => Observe(guest)["Text"]!.GetValue<string>() == "remote2468135790",
-            TimeSpan.FromSeconds(15), "Remote token never reached the independent guest receiver.");
+        RunFiles.Wait(
+            () => Observe(guest)["Text"]!.GetValue<string>() == "remote2468135790",
+            TimeSpan.FromSeconds(15),
+            "Remote token never reached the independent guest receiver.");
         Assert.AreEqual("local1357924680", Observe(host!)["Text"]!.GetValue<string>(), "Remote token leaked into the foreground host receiver.");
         var before = Observe(guest);
         var hostClicks = Observe(host!)["Clicks"]!.GetValue<int>();
@@ -625,46 +679,58 @@ internal sealed class TwoEndpointFixture : IDisposable
         MouseHelper.MoveBy(30, 30, steps: 3);
         int stableClickTarget = 0;
         int blockedClickProbes = 0;
-        RunFiles.Wait(() =>
-        {
-            var current = Observe(guest);
-            return current["CursorX"]!.GetValue<int>() != beforeX || current["CursorY"]!.GetValue<int>() != beforeY;
-        }, TimeSpan.FromSeconds(10), "Real host mouse movement did not reach the guest.");
-        RunFiles.Wait(() =>
-        {
-            var current = Observe(guest);
-            Assert.AreEqual(guestReceiverHwnd, current["ForegroundHwnd"]!.GetValue<long>(),
-                "No remote probe movement sent: the exact guest receiver must retain foreground.");
-            int x = current["CursorX"]!.GetValue<int>();
-            int y = current["CursorY"]!.GetValue<int>();
-            int left = current["ClickLeft"]!.GetValue<int>();
-            int right = current["ClickRight"]!.GetValue<int>();
-            int top = current["ClickTop"]!.GetValue<int>();
-            int bottom = current["ClickBottom"]!.GetValue<int>();
-            if (x > left + 30 && x < right - 30 && y > top + 30 && y < bottom - 30)
+        RunFiles.Wait(
+            () =>
             {
-                // A delayed MWB cursor overlay can still intercept the button
-                // even when the receiver is foreground and the cursor is inside.
-                if (ReceiverObservation.IsPhysicalClickTarget(current, guestReceiverHwnd))
+                var current = Observe(guest);
+                return current["CursorX"]!.GetValue<int>() != beforeX || current["CursorY"]!.GetValue<int>() != beforeY;
+            },
+            TimeSpan.FromSeconds(10),
+            "Real host mouse movement did not reach the guest.");
+        RunFiles.Wait(
+            () =>
+            {
+                var current = Observe(guest);
+                Assert.AreEqual(
+                    guestReceiverHwnd,
+                    current["ForegroundHwnd"]!.GetValue<long>(),
+                    "No remote probe movement sent: the exact guest receiver must retain foreground.");
+                int x = current["CursorX"]!.GetValue<int>();
+                int y = current["CursorY"]!.GetValue<int>();
+                int left = current["ClickLeft"]!.GetValue<int>();
+                int right = current["ClickRight"]!.GetValue<int>();
+                int top = current["ClickTop"]!.GetValue<int>();
+                int bottom = current["ClickBottom"]!.GetValue<int>();
+                if (x > left + 30 && x < right - 30 && y > top + 30 && y < bottom - 30)
                 {
-                    stableClickTarget++;
-                    return stableClickTarget >= 2;
+                    // A delayed MWB cursor overlay can still intercept the button
+                    // even when the receiver is foreground and the cursor is inside.
+                    if (ReceiverObservation.IsPhysicalClickTarget(current, guestReceiverHwnd))
+                    {
+                        stableClickTarget++;
+                        return stableClickTarget >= 2;
+                    }
+
+                    stableClickTarget = 0;
+                    var probe = ReceiverObservation.ClickProbePosition(left, top, right, bottom, blockedClickProbes++);
+                    RequireHostForeground();
+                    MouseHelper.MoveBy(
+                        Math.Clamp(probe.X - x, -100, 100),
+                        Math.Clamp(probe.Y - y, -100, 100),
+                        steps: 4);
+                    return false;
                 }
 
                 stableClickTarget = 0;
-                var probe = ReceiverObservation.ClickProbePosition(left, top, right, bottom, blockedClickProbes++);
                 RequireHostForeground();
-                MouseHelper.MoveBy(Math.Clamp(probe.X - x, -100, 100),
-                    Math.Clamp(probe.Y - y, -100, 100), steps: 4);
+                MouseHelper.MoveBy(
+                    Math.Clamp(((left + right) / 2) - x, -100, 100),
+                    Math.Clamp(((top + bottom) / 2) - y, -100, 100),
+                    steps: 4);
                 return false;
-            }
-
-            stableClickTarget = 0;
-            RequireHostForeground();
-            MouseHelper.MoveBy(Math.Clamp(((left + right) / 2) - x, -100, 100),
-                Math.Clamp(((top + bottom) / 2) - y, -100, 100), steps: 4);
-            return false;
-        }, TimeSpan.FromSeconds(20), "Remote cursor did not settle on the receiver's unobstructed physical click surface.");
+            },
+            TimeSpan.FromSeconds(20),
+            "Remote cursor did not settle on the receiver's unobstructed physical click surface.");
         Assert.AreEqual(guestReceiverHwnd, Observe(guest)["ForegroundHwnd"]!.GetValue<long>(), "Guest receiver lost foreground before click.");
         RequireHostForeground();
         MouseHelper.LeftClick();
@@ -687,6 +753,7 @@ internal sealed class TwoEndpointFixture : IDisposable
         while (negative.Elapsed < TimeSpan.FromSeconds(5));
 
         var card = settings!.Find(By.AccessibilityId("MouseWithoutBordersShareClipboard"));
+
         // Element.Find currently searches the whole session. Inspect this exact subtree instead:
         // the page has several unnamed ToggleSwitch controls and a TransferFile CheckBox.
         var toggles = Descendants(InspectSubtree(card)).Where(element =>
@@ -696,6 +763,7 @@ internal sealed class TwoEndpointFixture : IDisposable
         Assert.IsFalse(toggle.IsOn, "Host clipboard sharing must begin disabled.");
         toggle.Invoke(msPostAction: 0);
         Assert.IsTrue(toggle.WaitForProperty("ToggleState", "On", 10_000), "Host clipboard sharing UI did not enable.");
+
         // Enclose all three bounded UIA calls, persistence confirmation, and the mapped reply.
         guest!.Request("ClipboardSharing", new JsonObject { ["Enabled"] = true }, timeoutSeconds: 300);
         var hostSource = Publish(host!);
@@ -711,16 +779,20 @@ internal sealed class TwoEndpointFixture : IDisposable
         var digest = endpoint.Request("PublishClipboard")["Digest"]!.GetValue<string>();
         Assert.AreEqual(64, digest.Length, "The source must acknowledge its generated synthetic clipboard digest.");
         var publication = Stopwatch.StartNew();
-        RunFiles.Wait(() => ClipboardMatches(ReadClipboardDigest(Observe(endpoint)), digest, publication.Elapsed),
-            TimeSpan.FromSeconds(15), "The source did not publish its acknowledged synthetic clipboard.");
+        RunFiles.Wait(
+            () => ClipboardMatches(ReadClipboardDigest(Observe(endpoint)), digest, publication.Elapsed),
+            TimeSpan.FromSeconds(15),
+            "The source did not publish its acknowledged synthetic clipboard.");
         return digest;
     }
 
     private string RequireClipboardDigest(EndpointChannel endpoint)
     {
         string? digest = null;
-        RunFiles.Wait(() => (digest = ReadClipboardDigest(Observe(endpoint))) is not null,
-            TimeSpan.FromSeconds(15), "Clipboard remained unavailable for the sharing-off assertion.");
+        RunFiles.Wait(
+            () => (digest = ReadClipboardDigest(Observe(endpoint))) is not null,
+            TimeSpan.FromSeconds(15),
+            "Clipboard remained unavailable for the sharing-off assertion.");
         return digest!;
     }
 
@@ -835,13 +907,15 @@ internal sealed class TwoEndpointFixture : IDisposable
 
     private void RequireHostForeground()
     {
-        Assert.IsTrue(WindowControl.WaitForForeground(new IntPtr(hostReceiverHwnd), timeoutMS: 5000, requiredConsecutiveMatches: 3),
+        Assert.IsTrue(
+            WindowControl.WaitForForeground(new IntPtr(hostReceiverHwnd), timeoutMS: 5000, requiredConsecutiveMatches: 3),
             $"No input sent: exact host receiver HWND must own foreground, not Sandbox. Actual: {WindowControl.GetForegroundWindowInfo()}");
     }
 
     private void SelectMachine(Key machine)
     {
         RequireHostForeground();
+
         // MWB resets its simulated-input guard on the next mouse hook event.
         // Establish real pointer activity before a keyboard-only routing command.
         MouseHelper.MoveBy(1, 0, steps: 1);
