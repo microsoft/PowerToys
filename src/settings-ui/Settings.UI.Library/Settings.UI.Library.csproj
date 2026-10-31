@@ -11,6 +11,9 @@
         <None Include="backup_restore_settings.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <EmbeddedResource Include="backup_restore_settings.json">
+            <LogicalName>PowerToys.Settings.BackupRestoreSettings.json</LogicalName>
+        </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>
@@ -18,6 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\SettingsBackupRestore.Security\SettingsBackupRestore.Security.csproj" />
         <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
         <ProjectReference Include="..\..\modules\ZoomIt\ZoomItSettingsInterop\ZoomItSettingsInterop.vcxproj" />
         <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
