@@ -2,32 +2,36 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
+
 namespace Microsoft.CmdPal.Common.Helpers;
 
 /// <summary>
-/// An async gate that ensures only one value computation runs at a time.
-/// If ExecuteAsync is called while already executing, it cancels the current computation
-/// and starts the operation again (superseding behavior).
-/// Once a value is successfully computed, it is applied (via the provided <see cref="Action{T}"/>).
-/// The apply step uses its own lock so that long-running apply logic does not block the
-/// computation / superseding pipeline, while still remaining serialized with respect to
-/// other apply calls.
+/// Serializes computation and application. A new request cancels older requests and their work.
+/// Only the latest result is applied; an application already in progress is allowed to finish.
 /// </summary>
 /// <typeparam name="T">The type of the computed value.</typeparam>
-public sealed partial class SupersedingAsyncValueGate<T> : IDisposable
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+public sealed partial class SupersedingAsyncValueGate<T> : IDisposable, IAsyncDisposable
 {
     private readonly Func<CancellationToken, Task<T>> _valueFactory;
     private readonly Action<T> _apply;
-    private readonly Lock _lock = new();              // Controls scheduling / superseding
-    private readonly Lock _applyLock = new();         // Serializes application of results
-    private int _callId;
-    private TaskCompletionSource<T>? _currentTcs;
-    private CancellationTokenSource? _currentCancellationSource;
-    private Task? _executingTask;
+    private readonly Lock _lock = new();
+    private readonly Lock _applyLock = new();
+    private Request? _current;
+    private Request? _pending;
+    private Request? _running;
+    private TaskCompletionSource? _idle;
+    private bool _workerActive;
+    private bool _disposed;
 
-    public SupersedingAsyncValueGate(
-        Func<CancellationToken, Task<T>> valueFactory,
-        Action<T> apply)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SupersedingAsyncValueGate{T}"/> class.
+    /// </summary>
+    /// <param name="valueFactory">Computes a value using a token canceled on supersession or disposal.</param>
+    /// <param name="apply">Applies a committed value synchronously on the worker, outside the scheduling lock.</param>
+    /// <exception cref="ArgumentNullException">Either callback is <see langword="null"/>.</exception>
+    public SupersedingAsyncValueGate(Func<CancellationToken, Task<T>> valueFactory, Action<T> apply)
     {
         ArgumentNullException.ThrowIfNull(valueFactory);
         ArgumentNullException.ThrowIfNull(apply);
@@ -36,154 +40,218 @@ public sealed partial class SupersedingAsyncValueGate<T> : IDisposable
     }
 
     /// <summary>
-    /// Executes the configured value computation. If another execution is running, this call will
-    /// cancel the current execution and restart the computation. The returned task completes when
-    /// (and only if) the computation associated with this invocation completes (or is canceled / superseded).
+    /// Requests a new computation.
     /// </summary>
-    /// <param name="cancellationToken">Optional external cancellation token.</param>
-    /// <returns>The computed value for this invocation.</returns>
-    public async Task<T> ExecuteAsync(CancellationToken cancellationToken = default)
+    /// <param name="cancellationToken">Cancels only the caller's wait, not computation or application.</param>
+    /// <returns>
+    /// A task that returns the computed value after application completes. It is canceled when the caller's wait or
+    /// factory is canceled, or the request is superseded or the gate is disposed before application commits.
+    /// Requests after disposal also return a canceled task. Otherwise, factory or application exceptions fault the task,
+    /// including <see cref="OperationCanceledException"/> thrown by application.
+    /// </returns>
+    /// <remarks>
+    /// To share a computation, call without a token and use Task.WaitAsync for each caller.
+    /// </remarks>
+    public Task<T> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        TaskCompletionSource<T> tcs;
-
+        Task<T> task;
         lock (_lock)
         {
-            // Supersede any in-flight computation.
-            _currentCancellationSource?.Cancel();
-            _currentTcs?.TrySetException(new OperationCanceledException("Superseded by newer call"));
-
-            tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-            _currentTcs = tcs;
-            _callId++;
-
-            if (_executingTask is null)
+            if (_disposed)
             {
-                _executingTask = Task.Run(ExecuteLoop, CancellationToken.None);
+                return Task.FromCanceled<T>(new CancellationToken(true));
+            }
+
+            _current?.Completion.TrySetCanceled(CancellationToken.None);
+            _current = _pending = new Request();
+            task = _current.Completion.Task;
+            CancelRunning();
+
+            if (!_workerActive)
+            {
+                _workerActive = true;
+                _idle = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                _ = Task.Run(RunAsync, CancellationToken.None);
             }
         }
 
-        using var ctr = cancellationToken.Register(state => ((TaskCompletionSource<T>)state!).TrySetCanceled(cancellationToken), tcs);
-        return await tcs.Task.ConfigureAwait(false);
+        return task.WaitAsync(cancellationToken);
     }
 
-    private async Task ExecuteLoop()
+    /// <summary>
+    /// Waits for computation, application and cancellation callbacks to finish.
+    /// </summary>
+    /// <returns>A task that completes when the current worker and cancellation callbacks have finished.</returns>
+    /// <remarks>
+    /// Do not wait for idleness from the factory, application or cancellation callbacks; the gate waits for them to finish.
+    /// </remarks>
+    public Task WhenIdleAsync()
     {
-        try
+        lock (_lock)
         {
-            while (true)
+            return _idle?.Task ?? Task.CompletedTask;
+        }
+    }
+
+    private async Task RunAsync()
+    {
+        while (true)
+        {
+            Request request;
+            lock (_lock)
             {
-                TaskCompletionSource<T>? currentTcs;
-                CancellationTokenSource? currentCts;
-                int currentCallId;
-
-                lock (_lock)
+                if (_pending is null)
                 {
-                    currentTcs = _currentTcs;
-                    currentCallId = _callId;
+                    _workerActive = false;
+                    _idle!.TrySetResult();
+                    return;
+                }
 
-                    if (currentTcs is null)
+                request = _running = _pending;
+                _pending = null;
+                request.Cancellation = new();
+            }
+
+            try
+            {
+                var value = await _valueFactory(request.Cancellation.Token).ConfigureAwait(false);
+                lock (_applyLock)
+                {
+                    lock (_lock)
                     {
-                        break; // Nothing pending.
+                        if (_current != request)
+                        {
+                            continue;
+                        }
+
+                        // Commit application before releasing the scheduling lock.
+                        _current = null;
                     }
 
-                    _currentCancellationSource?.Dispose();
-                    _currentCancellationSource = new();
-                    currentCts = _currentCancellationSource;
+                    try
+                    {
+                        _apply(value);
+                        request.Completion.TrySetResult(value);
+                    }
+                    catch (Exception ex)
+                    {
+                        request.Completion.TrySetException(ex);
+                    }
+                }
+            }
+            catch (OperationCanceledException ex)
+            {
+                request.Completion.TrySetCanceled(ex.CancellationToken);
+            }
+            catch (Exception ex)
+            {
+                request.Completion.TrySetException(ex);
+            }
+            finally
+            {
+                Task cancellation;
+                lock (_lock)
+                {
+                    if (_current == request)
+                    {
+                        _current = null;
+                    }
+
+                    _running = null;
+                    cancellation = request.CancellationTask ?? Task.CompletedTask;
                 }
 
                 try
                 {
-                    var value = await _valueFactory(currentCts.Token).ConfigureAwait(false);
-                    CompleteSuccessIfCurrent(currentTcs, currentCallId, value);
+                    await cancellation.ConfigureAwait(false);
                 }
-                catch (OperationCanceledException)
+                catch (Exception)
                 {
-                    CompleteIfCurrent(currentTcs, currentCallId, t => t.TrySetCanceled(currentCts.Token));
+                    // A cancellation callback must not strand the replacement request.
                 }
-                catch (Exception ex)
-                {
-                    CompleteIfCurrent(currentTcs, currentCallId, t => t.TrySetException(ex));
-                }
-            }
-        }
-        finally
-        {
-            lock (_lock)
-            {
-                _currentTcs = null;
-                _currentCancellationSource?.Dispose();
-                _currentCancellationSource = null;
-                _executingTask = null;
+
+                request.Cancellation.Dispose();
             }
         }
     }
 
-    private void CompleteSuccessIfCurrent(TaskCompletionSource<T> candidate, int id, T value)
+    private void CancelRunning()
     {
-        var shouldApply = false;
-        lock (_lock)
+        if (_running is { } running)
         {
-            if (_currentTcs == candidate && _callId == id)
-            {
-                // Mark as consumed so a new computation can start immediately.
-                _currentTcs = null;
-                shouldApply = true;
-            }
-        }
-
-        if (!shouldApply)
-        {
-            return; // Superseded meanwhile.
-        }
-
-        Exception? applyException = null;
-        try
-        {
-            lock (_applyLock)
-            {
-                _apply(value);
-            }
-        }
-        catch (Exception ex)
-        {
-            applyException = ex;
-        }
-
-        if (applyException is null)
-        {
-            candidate.TrySetResult(value);
-        }
-        else
-        {
-            candidate.TrySetException(applyException);
+            // CancelAsync marks the token now but invokes callbacks asynchronously.
+            running.CancellationTask ??= running.Cancellation!.CancelAsync();
         }
     }
 
-    private void CompleteIfCurrent(
-        TaskCompletionSource<T> candidate,
-        int id,
-        Action<TaskCompletionSource<T>> complete)
-    {
-        lock (_lock)
-        {
-            if (_currentTcs == candidate && _callId == id)
-            {
-                complete(candidate);
-                _currentTcs = null;
-            }
-        }
-    }
-
+    /// <summary>
+    /// Cancels pending work and waits for an active application to finish. No later result is applied.
+    /// </summary>
+    /// <remarks>
+    /// Do not call while holding a lock or running on a thread needed by application.
+    /// Await <see cref="DisposeAsync"/> instead after releasing such locks.
+    /// </remarks>
     public void Dispose()
     {
-        lock (_lock)
+        StopAcceptingRequests();
+
+        lock (_applyLock)
         {
-            _currentCancellationSource?.Cancel();
-            _currentCancellationSource?.Dispose();
-            _currentTcs?.TrySetException(new ObjectDisposedException(nameof(SupersedingAsyncValueGate<T>)));
-            _currentTcs = null;
+            // Wait for a committed application to finish.
         }
 
         GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Cancels pending work and asynchronously waits for computation, application and callbacks.
+    /// </summary>
+    /// <returns>A task that completes when the gate is idle after disposal.</returns>
+    /// <remarks>
+    /// Await after releasing locks needed by the work or cancellation callbacks; do not block on the result.
+    /// Do not wait for disposal from the factory, application or cancellation callbacks; disposal waits for them to finish.
+    /// </remarks>
+    public ValueTask DisposeAsync()
+    {
+        StopAcceptingRequests();
+        GC.SuppressFinalize(this);
+        return new ValueTask(WhenIdleAsync());
+    }
+
+    private void StopAcceptingRequests()
+    {
+        lock (_lock)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _current?.Completion.TrySetCanceled();
+            _current = _pending = null;
+            CancelRunning();
+        }
+    }
+
+    private string GetDebuggerDisplay()
+    {
+        // Do not take locks here; the debugger may have suspended their owner.
+        return $"Disposed = {_disposed}, WorkerActive = {_workerActive}, Current = {_current is not null}, Pending = {_pending is not null}, Running = {_running is not null}";
+    }
+
+    [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+    private sealed class Request
+    {
+        public TaskCompletionSource<T> Completion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public CancellationTokenSource? Cancellation { get; set; }
+
+        public Task? CancellationTask { get; set; }
+
+        private string GetDebuggerDisplay()
+        {
+            return $"Completion = {Completion.Task.Status}, CancellationRequested = {Cancellation?.IsCancellationRequested ?? false}, Callbacks = {CancellationTask?.Status.ToString() ?? "None"}";
+        }
     }
 }
