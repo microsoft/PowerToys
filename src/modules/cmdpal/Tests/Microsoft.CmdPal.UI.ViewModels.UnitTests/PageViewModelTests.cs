@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Text;
@@ -55,6 +56,30 @@ public partial class PageViewModelTests
         public void SetInitialSearchText(string value) => SetInitialSearchTextBox(value);
 
         public void SetProviderContext(ICommandProviderContext value) => ProviderContext = value;
+    }
+
+    [TestMethod]
+    public async Task InitializeAsync_DisconnectedPageDoesNotReadExtensionMetadataInErrorHandler()
+    {
+        var model = new Mock<IPage>();
+        var exception = Marshal.GetExceptionForHR(unchecked((int)0x800706BA))!;
+        model.SetupGet(page => page.Id).Throws(exception);
+        model.SetupGet(page => page.Name).Throws(exception);
+        var scheduler = new QueuedTaskScheduler();
+        var page = new PageViewModel(model.Object, scheduler, new TestAppExtensionHost(), CommandProviderContext.Empty);
+
+        try
+        {
+            Assert.IsFalse(await page.InitializeAsync());
+            scheduler.RunAll();
+
+            Assert.IsFalse(string.IsNullOrEmpty(page.ErrorMessage));
+            model.VerifyGet(model => model.Name, Times.Never);
+        }
+        finally
+        {
+            await page.CleanupAsync();
+        }
     }
 
     [TestMethod]
