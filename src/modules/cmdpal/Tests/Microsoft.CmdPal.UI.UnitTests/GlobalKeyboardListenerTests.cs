@@ -157,6 +157,36 @@ public partial class GlobalKeyboardListenerTests
     }
 
     [TestMethod]
+    public void UnchangedWindowsKeyAction_PreservesPendingPress()
+    {
+        using var harness = new Harness();
+        harness.Listener.SetWindowsKeyAction(string.Empty);
+        harness.Hook.Key(0x5B);
+        harness.Listener.SetWindowsKeyAction(string.Empty);
+
+        Assert.AreEqual(1, harness.Hook.Key(0x5B, message: 0x0101));
+        CollectionAssert.AreEqual(new[] { string.Empty }, harness.Commands);
+    }
+
+    [TestMethod]
+    public void ClearingWindowsKeyAction_PreservesOtherShortcutsAndCancelsPendingPress()
+    {
+        using var harness = new Harness();
+        harness.Listener.SetWindowsKeyAction(string.Empty);
+        harness.Listener.SetHotkeyAction(false, true, false, false, 0x4B, "command");
+        harness.Hook.Key(0x5B);
+        harness.Listener.SetWindowsKeyAction(null);
+        harness.Listener.SetWindowsKeyAction(string.Empty);
+
+        Assert.AreEqual(42, harness.Hook.Key(0x5B, message: 0x0101));
+        Assert.IsEmpty(harness.Commands);
+        harness.Hook.SetModifiers(ctrl: true);
+        Assert.AreEqual(1, harness.Hook.Key(0x4B));
+        Assert.HasCount(1, harness.Commands);
+        Assert.AreEqual("command", harness.Commands[0]);
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void ClearingOrStoppingResetsPendingWindowsKey(bool stop)
@@ -297,6 +327,25 @@ public partial class GlobalKeyboardListenerTests
 
         Assert.AreEqual(42, harness.Hook.Key(0));
         Assert.AreEqual(0, harness.Commands.Count);
+    }
+
+    [TestMethod]
+    public void RemovingOneHotkey_PreservesOtherRegistrations()
+    {
+        using var harness = new Harness();
+        harness.Listener.SetHotkeyAction(false, true, false, false, 0x4B, "removed");
+        harness.Listener.SetHotkeyAction(false, true, false, false, 0x4C, "retained");
+        harness.Hook.SetModifiers(ctrl: true);
+
+        harness.Listener.RemoveHotkeyAction(false, true, false, false, 0x4B);
+
+        Assert.AreEqual(42, harness.Hook.Key(0x4B));
+        Assert.AreEqual(1, harness.Hook.Key(0x4C));
+        Assert.AreEqual("retained", harness.Commands.Single());
+
+        harness.Listener.SetHotkeyAction(false, true, false, false, 0x4B, "replacement");
+        Assert.AreEqual(1, harness.Hook.Key(0x4B));
+        Assert.AreEqual("replacement", harness.Commands.Last());
     }
 
     [TestMethod]

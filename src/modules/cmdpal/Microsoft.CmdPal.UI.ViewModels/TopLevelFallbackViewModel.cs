@@ -25,7 +25,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
 
     public override string DisplayTitle => _displayTitle;
 
-    public override bool IsEnabled => !ProviderSettings.FallbackCommands.TryGetValue(_fallbackId, out var settings) || settings.IsEnabled;
+    public override bool IsEnabled => IsEnabledWithSettings(ProviderSettings);
 
     internal TopLevelFallbackViewModel(
         CommandItemViewModel item,
@@ -101,5 +101,10 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
         // re-scores fallbacks off this signal, so a change like "server01" -> "server02"
         // must still trigger a refresh or the fallback keeps its stale score and position.
         return !string.Equals(oldTitle, newTitle, StringComparison.Ordinal);
+    }
+
+    internal bool IsEnabledWithSettings(ProviderSettings providerSettings)
+    {
+        return !providerSettings.FallbackCommands.TryGetValue(_fallbackId, out var settings) || settings.IsEnabled;
     }
 }

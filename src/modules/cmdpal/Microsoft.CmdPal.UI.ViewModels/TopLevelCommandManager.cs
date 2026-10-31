@@ -728,7 +728,13 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     {
         // A loaded wrapper can retain IsActive after its provider is disabled.
         var settings = _serviceProvider.GetRequiredService<ISettingsService>().Settings;
-        return !settings.ProviderSettings.TryGetValue(providerId, out var providerSettings) || providerSettings.IsEnabled;
+        return IsProviderEnabled(settings, providerId, out _);
+    }
+
+    internal static bool IsProviderEnabled(SettingsModel settings, string providerId, out ProviderSettings? providerSettings)
+    {
+        return !settings.ProviderSettings.TryGetValue(providerId, out providerSettings)
+               || providerSettings.IsEnabled;
     }
 
     public async Task<CommandResolution?> ResolveCommandAsync(
