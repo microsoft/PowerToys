@@ -16,6 +16,7 @@ namespace NonLocalizable
         const static wchar_t* SpacingID = L"spacing";
         const static wchar_t* ZoneCountID = L"zone-count";
         const static wchar_t* SensitivityRadiusID = L"sensitivity-radius";
+        const static wchar_t* DefaultZoneIndexSetID = L"default-zone-set";
     }
 }
 
