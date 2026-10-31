@@ -21,7 +21,7 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <controls:SettingsGroup x:Uid="General_VersionAndUpdate" Margin="0,-32,0,0">
-                    <tkcontrols:SettingsExpander HeaderIcon="{ui:FontIcon Glyph=&#xE895;}">
+                    <tkcontrols:SettingsExpander AutomationProperties.Name="{x:Bind ViewModel.PowerToysVersion, Mode=OneWay}" HeaderIcon="{ui:FontIcon Glyph=&#xE895;}">
                         <tkcontrols:SettingsExpander.Header>
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <TextBlock VerticalAlignment="Center" Text="{x:Bind ViewModel.PowerToysVersion, Mode=OneWay}" />
