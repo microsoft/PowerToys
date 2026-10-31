@@ -1,3 +1,5 @@
+import json
+import re
 import unittest
 from pathlib import Path
 
@@ -22,26 +24,71 @@ class WorkflowContractTests(unittest.TestCase):
             self.assertIn(expected_path, generated)
 
     def test_copilot_can_publish_without_general_write_or_shell_access(self):
+        source = WORKFLOW_SOURCE.read_text(encoding="utf-8")
         generated = WORKFLOW_LOCK.read_text(encoding="utf-8")
 
-        self.assertIn("shell(safeoutputs:*)", generated)
+        self.assertIn("  bash: false", source)
+        self.assertIn("  cli-proxy: false", source)
+        self.assertIn("--allow-tool safeoutputs", generated)
         self.assertIn("--deny-tool write", generated)
-        for command in (
-            "cat",
-            "date",
-            "echo",
-            "grep",
-            "head",
-            "ls",
-            "printf",
-            "pwd",
-            "sort",
-            "tail",
-            "uniq",
-            "wc",
-            "yq",
-        ):
-            self.assertIn(f"--deny-tool '\\''shell({command})'\\''", generated)
+        self.assertNotRegex(generated, r"--allow-tool\s+\S*shell")
+        self.assertNotIn("mcp_cli_tools_with_safeoutputs_prompt.md", generated)
+
+    def test_missing_information_remains_a_typed_boolean(self):
+        source = WORKFLOW_SOURCE.read_text(encoding="utf-8")
+        generated = WORKFLOW_LOCK.read_text(encoding="utf-8")
+
+        self.assertIn("never a quoted string", source)
+        self.assertRegex(
+            generated,
+            r'"has_missing_information":\s*\{\s*"description":\s*"[^"]+",'
+            r'\s*"type":\s*"boolean"',
+        )
+
+    def test_daily_guardrail_receives_conservative_per_run_budget(self):
+        source = WORKFLOW_SOURCE.read_text(encoding="utf-8")
+        generated = WORKFLOW_LOCK.read_text(encoding="utf-8")
+        per_run = re.search(r"^max-ai-credits: (\d+)$", source, re.MULTILINE)
+        daily = re.search(r"^max-daily-ai-credits: (\d+)$", source, re.MULTILINE)
+        self.assertIsNotNone(per_run)
+        self.assertIsNotNone(daily)
+        self.assertGreater(int(per_run.group(1)), 0)
+        guardrail = generated.split(
+            "      - name: Check daily workflow token guardrail\n", 1
+        )[1].split("      - name:", 1)[0]
+
+        self.assertIn(f'GH_AW_MAX_AI_CREDITS: "{per_run.group(1)}"', guardrail)
+        self.assertIn(f'GH_AW_MAX_DAILY_AI_CREDITS: "{daily.group(1)}"', guardrail)
+        self.assertNotIn("continue-on-error:", guardrail)
+
+    def test_compiler_and_runtime_versions_match(self):
+        generated = WORKFLOW_LOCK.read_text(encoding="utf-8")
+        metadata = json.loads(
+            re.search(r"^# gh-aw-metadata: (.+)$", generated, re.MULTILINE).group(1)
+        )
+        manifest = json.loads(
+            re.search(r"^# gh-aw-manifest: (.+)$", generated, re.MULTILINE).group(1)
+        )
+        setup = next(
+            action
+            for action in manifest["actions"]
+            if action["repo"] == "github/gh-aw-actions/setup"
+        )
+        self.assertEqual(setup["version"], metadata["compiler_version"])
+        runtime_pins = re.findall(
+            r"^\s+uses: github/gh-aw-actions/setup@(\w+) # (\S+)$",
+            generated,
+            re.MULTILINE,
+        )
+        self.assertTrue(runtime_pins)
+        self.assertEqual(set(runtime_pins), {(setup["sha"], setup["version"])})
+        action_lock = json.loads(
+            (GITHUB_DIR / "aw" / "actions-lock.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            action_lock["entries"][f'{setup["repo"]}@{setup["version"]}'],
+            setup,
+        )
 
     def test_workflow_never_manages_version_labels(self):
         source = WORKFLOW_SOURCE.read_text(encoding="utf-8")

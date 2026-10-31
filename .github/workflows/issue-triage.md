@@ -17,32 +17,6 @@ engine:
   args:
     - "--deny-tool"
     - "write"
-    - "--deny-tool"
-    - "shell(cat)"
-    - "--deny-tool"
-    - "shell(date)"
-    - "--deny-tool"
-    - "shell(echo)"
-    - "--deny-tool"
-    - "shell(grep)"
-    - "--deny-tool"
-    - "shell(head)"
-    - "--deny-tool"
-    - "shell(ls)"
-    - "--deny-tool"
-    - "shell(printf)"
-    - "--deny-tool"
-    - "shell(pwd)"
-    - "--deny-tool"
-    - "shell(sort)"
-    - "--deny-tool"
-    - "shell(tail)"
-    - "--deny-tool"
-    - "shell(uniq)"
-    - "--deny-tool"
-    - "shell(wc)"
-    - "--deny-tool"
-    - "shell(yq)"
 model: small
 max-turns: 5
 max-ai-credits: 10
@@ -54,10 +28,10 @@ permissions:
   issues: read
   copilot-requests: write
 tools:
-  bash: [safeoutputs]
+  bash: false
   edit: false
   github: false
-  cli-proxy: true
+  cli-proxy: false
 steps:
   - name: Set up Python
     uses: actions/setup-python@v7.0.0
@@ -753,6 +727,11 @@ you start. Never call `noop`. Your final action must always be exactly one
 `publish_triage_summary` call, including when the issue is complete, no
 duplicate exists, and no author action is needed.
 
+Use the typed `safeoutputs` MCP tool exposed in your tool list, not a shell
+command or CLI proxy. Pass `has_missing_information` as a JSON boolean
+(`true` or `false`), never a quoted string. Do not construct shell commands,
+temporary files, or JSON serialization helpers to publish the result.
+
 ## Duplicate judgment
 
 - Consider only candidates supplied in `/tmp/gh-aw/issue-context.md`.
@@ -825,7 +804,7 @@ Call `publish_triage_summary` exactly once with:
 
 The deterministic publisher independently verifies the latest stable release.
 An outdated version is advisory and must not change missing-information status.
-- `has_missing_information`: true or false.
+- `has_missing_information`: the JSON boolean true or false, not a string.
 - `missing_information`: one concise sentence listing the important gaps, or
   `None`.
 - `duplicate_candidates_json`: a JSON string containing an array of zero to
