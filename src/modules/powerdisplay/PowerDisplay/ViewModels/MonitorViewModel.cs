@@ -71,8 +71,20 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial bool ShowRotation { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the user enabled the refresh-rate control in Settings.
+    /// </summary>
     [ObservableProperty]
-    public partial bool ShowRefreshRate { get; set; }
+    [NotifyPropertyChangedFor(nameof(ShowRefreshRate))]
+    public partial bool IsRefreshRateEnabled { get; set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the refresh-rate control is shown. Besides the user's choice
+    /// this depends on the current display mode, which can change while PowerDisplay runs: there
+    /// must be more than one rate, and the monitor must have its own display source (in Duplicate
+    /// mode the rate can't be set per display).
+    /// </summary>
+    public bool ShowRefreshRate => IsRefreshRateEnabled && SupportsRefreshRate && !_monitor.SharesDisplaySource;
 
     private bool _showPowerState;
 
@@ -247,7 +259,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         ShowContrast = monitor.SupportsContrast;
         ShowVolume = monitor.SupportsVolume;
         ShowInputSource = false;
-        ShowRefreshRate = monitor.SupportsRefreshRate;
+        IsRefreshRateEnabled = monitor.SupportsRefreshRate;
         UpdateRefreshRateOptions();
         _showPowerState = false;
         _showColorTemperature = false;
@@ -443,7 +455,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         RefreshRateOptions.Clear();
         foreach (var rate in AvailableRefreshRates)
         {
-            RefreshRateOptions.Add(new RefreshRateOption(rate, rate == CurrentRefreshRate, SelectRefreshRateCommand));
+            RefreshRateOptions.Add(new RefreshRateOption(rate));
         }
     }
 
@@ -460,9 +472,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             }
         }
     }
-
-    [RelayCommand]
-    private Task SelectRefreshRate(int refreshRate) => SetRefreshRateAsync(refreshRate);
 
     public async Task SetRefreshRateAsync(int refreshRate)
     {
@@ -975,15 +984,27 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(IsRotation3));
             OnPropertyChanged(nameof(SelectedRotationIndex));
         }
-        else if (e.PropertyName == nameof(Monitor.CurrentRefreshRate) ||
-                 e.PropertyName == nameof(Monitor.AvailableRefreshRates) ||
-                 e.PropertyName == nameof(Monitor.SupportsRefreshRate))
+        else if (e.PropertyName == nameof(Monitor.CurrentRefreshRate))
         {
             OnPropertyChanged(nameof(CurrentRefreshRate));
+            OnPropertyChanged(nameof(SelectedRefreshRate));
+        }
+        else if (e.PropertyName == nameof(Monitor.AvailableRefreshRates))
+        {
+            // Options don't depend on the current rate, so only rebuild them when the list
+            // changes; re-raise the selection afterwards so the ComboBox re-selects it.
             OnPropertyChanged(nameof(AvailableRefreshRates));
             UpdateRefreshRateOptions();
-            OnPropertyChanged(nameof(SupportsRefreshRate));
             OnPropertyChanged(nameof(SelectedRefreshRate));
+        }
+        else if (e.PropertyName == nameof(Monitor.SupportsRefreshRate))
+        {
+            OnPropertyChanged(nameof(SupportsRefreshRate));
+            OnPropertyChanged(nameof(ShowRefreshRate));
+        }
+        else if (e.PropertyName == nameof(Monitor.SharesDisplaySource))
+        {
+            OnPropertyChanged(nameof(ShowRefreshRate));
         }
     }
 

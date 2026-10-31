@@ -395,7 +395,7 @@ public partial class MainViewModel
                 TryRestore(updateTasks, colorTemp, monitorVm.ShowColorTemperature, monitorVm.SetColorTemperatureAsync);
                 TryRestore(updateTasks, contrast, monitorVm.ShowContrast, monitorVm.SetContrastAsync);
                 TryRestore(updateTasks, volume, monitorVm.ShowVolume, monitorVm.SetVolumeAsync);
-                TryRestore(updateTasks, refreshRate, monitorVm.SupportsRefreshRate, monitorVm.SetRefreshRateAsync);
+                TryRestore(updateTasks, refreshRate, monitorVm.ShowRefreshRate, monitorVm.SetRefreshRateAsync);
             }
 
             if (updateTasks.Count > 0)
@@ -429,7 +429,7 @@ public partial class MainViewModel
             monitorVm.ShowVolume = monitorSettings.EnableVolume && monitorVm.SupportsVolume;
             monitorVm.ShowInputSource = monitorSettings.EnableInputSource && monitorVm.SupportsInputSource;
             monitorVm.ShowRotation = monitorSettings.EnableRotation;
-            monitorVm.ShowRefreshRate = monitorSettings.EnableRefreshRate && monitorVm.SupportsRefreshRate;
+            monitorVm.IsRefreshRateEnabled = monitorSettings.EnableRefreshRate;
             monitorVm.ShowColorTemperature = monitorSettings.EnableColorTemperature && monitorVm.SupportsColorTemperature;
             monitorVm.ShowPowerState = monitorSettings.EnablePowerState && monitorVm.SupportsPowerState;
         }

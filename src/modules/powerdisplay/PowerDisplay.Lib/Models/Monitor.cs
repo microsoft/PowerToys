@@ -33,6 +33,7 @@ namespace PowerDisplay.Common.Models
         private int _orientation;
         private int _currentRefreshRate = -1;
         private IReadOnlyList<int> _availableRefreshRates = Array.Empty<int>();
+        private bool _sharesDisplaySource;
 
         /// <summary>
         /// Gets or sets unique identifier for all purposes: UI lookups, IPC, persistent storage, and handle management.
@@ -368,6 +369,23 @@ namespace PowerDisplay.Common.Models
         }
 
         public bool SupportsRefreshRate => AvailableRefreshRates.Count > 1;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether another active display shares this monitor's
+        /// display source (Duplicate mode). Refresh rate can't be changed per display then.
+        /// </summary>
+        public bool SharesDisplaySource
+        {
+            get => _sharesDisplaySource;
+            set
+            {
+                if (_sharesDisplaySource != value)
+                {
+                    _sharesDisplaySource = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         /// <inheritdoc />
         int IMonitorData.MonitorNumber
