@@ -114,6 +114,7 @@ Autorun
 AUTOTICKS
 AUTOUPDATE
 AWAYMODE
+axaml
 azcliversion
 azman
 azureaiinference
@@ -168,6 +169,7 @@ Browsable
 BROWSEINFO
 bsd
 BSOD
+bsrc
 bthprops
 bti
 BTNFACE
@@ -2082,6 +2084,7 @@ VFT
 vget
 vgetq
 viewmodels
+vimeo
 virama
 VIRTKEY
 VISEGRADRELAY
@@ -2261,6 +2264,8 @@ ycombinator
 yinle
 yinyue
 yoko
+youtu
+youtube
 YVIRTUALSCREEN
 zamora
 Zenbook

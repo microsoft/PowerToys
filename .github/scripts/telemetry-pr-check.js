@@ -9,6 +9,8 @@
  */
 
 const fs = require('node:fs');
+const workflowOptions = Object.freeze({ postComment: process.env.POST_COMMENT === 'true' });
+const outputContext = { messages: [] };
 const REVIEWER_LOGIN = 'chatasweetie';
 const REVIEWER_MENTION = `@${REVIEWER_LOGIN}`;
 
@@ -222,6 +224,7 @@ async function ensureReviewerRequested(apiBaseUrl, repository, pullNumber, pullR
     return;
   }
 
+  if (!workflowOptions.postComment) return;
   const url = `${apiBaseUrl}/repos/${repository}/pulls/${pullNumber}/requested_reviewers`;
   try {
     await apiRequest(url, 'POST', { reviewers: [REVIEWER_LOGIN] });
@@ -293,7 +296,9 @@ function hasDataAndPrivacyChange(files) {
   });
 }
 
-async function upsertPrComment(apiBaseUrl, repository, pullNumber, body) {
+async function upsertPrComment(apiBaseUrl, repository, pullNumber, body, create = true) {
+  outputContext.messages.push(body);
+  if (!workflowOptions.postComment) return;
   const existing = await findExistingTelemetryComment(apiBaseUrl, repository, pullNumber);
 
   if (existing) {
@@ -303,12 +308,14 @@ async function upsertPrComment(apiBaseUrl, repository, pullNumber, body) {
     return;
   }
 
+  if (!create) return;
   const createUrl = `${apiBaseUrl}/repos/${repository}/issues/${pullNumber}/comments`;
   await apiRequest(createUrl, 'POST', { body });
   console.log('Created telemetry comment on PR.');
 }
 
 async function main() {
+  outputContext.messages.length = 0;
   const eventPath = requireEnv('GITHUB_EVENT_PATH');
   const repository = requireEnv('GITHUB_REPOSITORY');
   const apiBaseUrl = process.env.GITHUB_API_URL || 'https://api.github.com';
@@ -328,12 +335,9 @@ async function main() {
   console.log(`Repository: ${repository}`);
   console.log(`PR number: ${pullNumber}`);
 
+  const pullRequest = await getPullRequest(parsedApiBaseUrl.origin, repository, pullNumber);
+  if (pullRequest.draft || pullRequest.state !== 'open') return;
   const files = await getAllPullFiles(parsedApiBaseUrl.origin, repository, pullNumber);
-
-  if (files.length === 0) {
-    console.log('No changed files found for PR; skipping telemetry comment update.');
-    return;
-  }
 
   const matches = detectTelemetryChanges(files);
   const dataAndPrivacyChanged = hasDataAndPrivacyChange(files);
@@ -344,6 +348,8 @@ async function main() {
 
   if (matches.length === 0) {
     console.log('No telemetry-related additions/modifications detected.');
+    await upsertPrComment(parsedApiBaseUrl.origin, repository, pullNumber,
+      `${COMMENT_MARKER}\nNo telemetry-related additions/modifications detected.`, false);
     return;
   }
 
@@ -354,7 +360,6 @@ async function main() {
   }
 
   try {
-    const pullRequest = await getPullRequest(parsedApiBaseUrl.origin, repository, pullNumber);
     await ensureReviewerRequested(parsedApiBaseUrl.origin, repository, pullNumber, pullRequest);
   } catch (error) {
     console.warn(
@@ -367,11 +372,16 @@ async function main() {
     ? COMMENT_BODY_WITH_PRIVACY_UPDATE
     : COMMENT_BODY_WITHOUT_PRIVACY_UPDATE;
 
-  await upsertPrComment(apiBaseUrl, repository, pullNumber, commentBody);
+  await upsertPrComment(parsedApiBaseUrl.origin, repository, pullNumber, commentBody);
 }
 
 main().catch((error) => {
   console.error('Telemetry PR check failed.');
   console.error(error instanceof Error ? error.stack || error.message : error);
-  process.exit(1);
+  process.exitCode = 1;
+}).finally(() => {
+  if (!outputContext.messages.length) return;
+  const summary = outputContext.messages.join('\n');
+  console.log(summary);
+  if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${summary}\n`);
 });
