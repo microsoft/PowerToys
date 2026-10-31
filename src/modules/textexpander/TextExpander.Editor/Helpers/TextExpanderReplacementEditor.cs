@@ -593,7 +593,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 
                 case VirtualKey.Tab when !control && !alt:
                     // RichEdit would insert a tab; the plain text box moved focus, which keyboard
-                    // users need to reach Save. A tab can still be written as \t.
+                    // users need to reach Save. A tab can still be pasted, or written in the
+                    // snippets database as JSON's \t.
                     e.Handled = MoveFocus(backward: shift);
                     return;
 

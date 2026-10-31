@@ -512,9 +512,9 @@ public sealed class InputAndUndoPolicyTests
         using SnippetStore store = LoadStore(scratch, "!abc=EXPANDED");
         using var hook = new KeyboardHook(store);
         var calls = new List<string>();
-        Program.ReplaceText replace = (backspaces, text, _, _, right, guard, generation, inserted) =>
+        Program.ReplaceText replace = (backspaces, text, _, _, right, guard, generation, inserted, givenBack) =>
         {
-            calls.Add($"{backspaces} \"{text}\" {right} {guard == hook.Guard} {generation} {inserted is not null}");
+            calls.Add($"{backspaces} \"{text}\" {right} {guard == hook.Guard} {generation} {inserted is not null} {givenBack}");
             inserted?.Invoke();
             return true;
         };
@@ -532,7 +532,7 @@ public sealed class InputAndUndoPolicyTests
         Assert.IsFalse(hook.ProcessKey(Native.VK_LEFT, 0, ctrl: false, alt: false, shift: false, win: false));
         Assert.IsFalse(Program.TryExpand(hook, late with { TargetWindow = IntPtr.Zero }, replace));
 
-        Assert.AreEqual($"4 \"EXPANDED \" 0 True {work.InputGeneration} True, 9 \"!abc \" 0 True {undo.InputGeneration} False", string.Join(", ", calls));
+        Assert.AreEqual($"4 \"EXPANDED \" 0 True {work.InputGeneration} True 1, 9 \"!abc \" 0 True {undo.InputGeneration} False 0", string.Join(", ", calls), "Only the space added after the expansion is given back.");
     }
 
     [TestMethod]
@@ -546,7 +546,7 @@ public sealed class InputAndUndoPolicyTests
         Assert.AreEqual(1, store.Load().Count);
         using var hook = new KeyboardHook(store);
         var calls = new List<string>();
-        Program.ReplaceText replace = (_, _, _, left, _, _, _, inserted) =>
+        Program.ReplaceText replace = (_, _, _, left, _, _, _, inserted, _) =>
         {
             calls.Add($"{left} {inserted is not null}");
             return true;
@@ -556,6 +556,43 @@ public sealed class InputAndUndoPolicyTests
         Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
         Assert.IsTrue(Program.TryExpand(hook, work with { TargetWindow = IntPtr.Zero }, replace));
         Assert.AreEqual("0 True", calls.Single());
+    }
+
+    [TestMethod]
+    [DataRow("abcd", false)]
+    [DataRow("abcde", true)]
+    public void TheSpaceGivenBackDoesntCountTowardTheMinimumLengthToPaste(string replacement, bool pasted)
+    {
+        // With Automatic and the minimum of 5, a 4-character snippet and the space after it came to 5 and were pasted,
+        // though Settings says one-line snippets shorter than that are typed.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=" + replacement);
+        using var hook = new KeyboardHook(store);
+        var box = new FakeTextBox("Before ", hook);
+        TypeInto(hook, box, "!abc ");
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+
+        InjectionBackend backend = Injector.Backend;
+        int threshold = Injector.ClipboardThresholdChars;
+        bool usedClipboard = false;
+        try
+        {
+            Injector.Backend = InjectionBackend.Auto;
+            Injector.ClipboardThresholdChars = 5;
+            Assert.IsTrue(Program.TryExpand(hook, work with { TargetWindow = IntPtr.Zero }, Into(box, (text, window, send) =>
+            {
+                usedClipboard = true;
+                return box.Paste(text, window, send);
+            })));
+        }
+        finally
+        {
+            Injector.Backend = backend;
+            Injector.ClipboardThresholdChars = threshold;
+        }
+
+        Assert.AreEqual(pasted, usedClipboard, replacement);
+        Assert.AreEqual($"Before {replacement} |", box.ToString());
     }
 
     [TestMethod]
@@ -650,6 +687,87 @@ public sealed class InputAndUndoPolicyTests
         Assert.IsTrue(KeyboardHook.ReachesTarget(browser, IntPtr.Zero, IsOurs));
         Assert.IsTrue(KeyboardHook.ReachesTarget(IntPtr.Zero, IntPtr.Zero, IsOurs), "No window counts as another app's.");
         Assert.IsFalse(KeyboardHook.ReachesTarget(prompt, IntPtr.Zero, IsOurs));
+    }
+
+    [TestMethod]
+    [DataRow("{{prompt:First name}}", true, true, "!hello ")]
+    [DataRow("{{prompt?:First name}}", true, true, "!hello ")]
+    [DataRow("{{prompt:First name}}", true, false, "!hello ")]
+    [DataRow("{{prompt?:First name}}", false, true, "!hello")]
+    public void CancellingAQuestionCancelsTheWholeSnippet(string question, bool wordMode, bool keepTerminator, string typed)
+    {
+        // Esc, Cancel or the close button left that spot blank and asked the next question, so "Hi , thanks for reaching
+        // out!" went in. Now nothing more is asked, nothing is erased or inserted, and the keystroke the hook swallowed,
+        // the space or the trigger's last character, goes back. A key typed right after lands after it.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!hello=Hi " + question + ", thanks for reaching out! {{prompt:Team}}");
+        using var hook = new KeyboardHook(store);
+        var box = new FakeTextBox("Before ", hook);
+        Program.ReplaceText insert = Into(box);
+        var asked = new List<string>();
+        var calls = new List<string>();
+
+        bool originalWordMode = WordBoundary.Required;
+        bool originalKeep = WordBoundary.KeepTerminator;
+        try
+        {
+            WordBoundary.Required = wordMode;
+            WordBoundary.KeepTerminator = keepTerminator;
+            TypeInto(hook, box, typed);
+            Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+            Assert.AreEqual("Before " + typed[..^1] + "|", box.ToString(), "The hook swallowed the last keystroke.");
+
+            Assert.IsFalse(Program.TryExpand(
+                hook,
+                work with { TargetWindow = IntPtr.Zero },
+                (backspaces, text, target, left, right, guard, generation, inserted, givenBack) =>
+                {
+                    calls.Add($"{backspaces} \"{text}\" {inserted is null} {givenBack}");
+
+                    // Typed right after Esc: held, so it lands after the keystroke given back.
+                    box.UserTypes("x");
+                    return insert(backspaces, text, target, left, right, guard, generation, inserted, givenBack);
+                },
+                isKeyDown: _ => false,
+                ask: (request, _, _) =>
+                {
+                    asked.Add(request.Label);
+                    return PromptText.Result(accepted: false, "typed, then cancelled");
+                }));
+        }
+        finally
+        {
+            WordBoundary.Required = originalWordMode;
+            WordBoundary.KeepTerminator = originalKeep;
+        }
+
+        Assert.AreEqual("First name", string.Join(" | ", asked), "Nothing more is asked.");
+        Assert.AreEqual($"0 \"{typed[^1]}\" True 1", calls.Single(), "Nothing is erased, the swallowed keystroke goes back, and there's no undo.");
+        Assert.AreEqual("Before " + typed + "x|", box.ToString(), "What was typed reads as typed, then the key typed after.");
+    }
+
+    [TestMethod]
+    public void CancellingWhileAModifierIsStillDownGivesNothingBack()
+    {
+        // Alt still held a second after Alt+F4 closed the question: the keystroke given back would go out with Alt let go
+        // and pressed again around it, so letting go of Alt would then open the app's menu. It's dropped instead.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!hello=Hi {{prompt:First name}}, thanks for reaching out!");
+        using var hook = new KeyboardHook(store);
+        var box = new FakeTextBox("Before ", hook);
+        TypeInto(hook, box, "!hello ");
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+        int calls = 0;
+
+        Assert.IsFalse(Program.TryExpand(
+            hook,
+            work with { TargetWindow = IntPtr.Zero },
+            (_, _, _, _, _, _, _, _, _) => ++calls > 0,
+            isKeyDown: vk => vk == Native.VK_MENU,
+            ask: (_, _, _) => null));
+
+        Assert.AreEqual(0, calls, "Nothing goes back while Alt is down.");
+        Assert.AreEqual("Before !hello|", box.ToString());
     }
 
     [TestMethod]
@@ -847,4 +965,26 @@ public sealed class InputAndUndoPolicyTests
             Injector.Backend = original;
         }
     }
+
+    /// <summary>
+    /// Runs <see cref="Program.TryExpand"/>'s insertions through the injector into <paramref name="box"/>, pasting with
+    /// <paramref name="paste"/> or the box's own Ctrl+V.
+    /// </summary>
+    private static Program.ReplaceText Into(FakeTextBox box, Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, PasteOutcome>? paste = null)
+        => (backspaces, text, target, left, right, guard, generation, inserted, givenBack) => Injector.ReplaceCore(
+            backspaces,
+            text,
+            target,
+            left,
+            _ => true,
+            guard,
+            generation,
+            () => new IntPtr(1),
+            paste ?? box.Paste,
+            box.Dispatch,
+            cursorRightUnits: right,
+            getAsyncKeyState: _ => 0,
+            sleep: _ => { },
+            inserted: inserted,
+            givenBack: givenBack);
 }

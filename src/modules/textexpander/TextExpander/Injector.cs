@@ -153,8 +153,12 @@ internal static class Injector
     /// nothing is erased or inserted.
     /// </param>
     /// <param name="inserted">Runs once it's all in, before the keys held meanwhile go back: a Ctrl+Z among them undoes it.</param>
-    public static bool Replace(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, int cursorRightUnits, InsertionGuard guard, long inputGeneration, Action? inserted)
-        => ReplaceCore(backspaceCount, text, targetWindow, cursorLeftUnits, InputTarget.CanDrive, guard, inputGeneration, cursorRightUnits: cursorRightUnits, inserted: inserted);
+    /// <param name="givenBack">
+    /// How many characters at the end of <paramref name="text"/> are the user's own keystrokes given back, such as
+    /// the space that released the trigger. They don't count toward <see cref="ClipboardThresholdChars"/>.
+    /// </param>
+    public static bool Replace(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, int cursorRightUnits, InsertionGuard guard, long inputGeneration, Action? inserted, int givenBack)
+        => ReplaceCore(backspaceCount, text, targetWindow, cursorLeftUnits, InputTarget.CanDrive, guard, inputGeneration, cursorRightUnits: cursorRightUnits, inserted: inserted, givenBack: givenBack);
 
     internal static bool ReplaceCore(
         int backspaceCount,
@@ -170,7 +174,8 @@ internal static class Injector
         int cursorRightUnits = 0,
         Func<int, short>? getAsyncKeyState = null,
         Action<int>? sleep = null,
-        Action? inserted = null)
+        Action? inserted = null,
+        int givenBack = 0)
     {
         ArgumentNullException.ThrowIfNull(canDrive);
 
@@ -193,7 +198,7 @@ internal static class Injector
             sleep(PreBackspaceDelayMs);
         }
 
-        bool pasting = text.Length > 0 && InjectionPolicy.ShouldUseClipboard(text, ClipboardThresholdChars, Backend);
+        bool pasting = text.Length > 0 && InjectionPolicy.ShouldUseClipboard(text, ClipboardThresholdChars, Backend, givenBack);
         PasteOutcome outcome = pasting ? PasteOutcome.TargetLost : PasteOutcome.NotAttempted;
         bool sentAny = false;
         bool guarded = false;

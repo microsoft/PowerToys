@@ -379,20 +379,20 @@ internal static class Program
         }
         finally
         {
-            // However the work ended, keys held since a prompt was answered go back to their window, or are dropped if
-            // it isn't in front.
+            // However the work ended, keys held since a prompt was answered or cancelled go back to their window, or are
+            // dropped if it isn't in front.
             _hook!.Guard.Abandon();
         }
     }
 
     /// <summary>Erases and types for <see cref="TryExpand"/>: <see cref="Injector.Replace"/>, or a test's fake.</summary>
-    internal delegate bool ReplaceText(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, int cursorRightUnits, InsertionGuard guard, long inputGeneration, Action? inserted);
+    internal delegate bool ReplaceText(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, int cursorRightUnits, InsertionGuard guard, long inputGeneration, Action? inserted, int givenBack);
 
     /// <summary>
-    /// Expands or undoes <paramref name="work"/>. Tests pass a fake <paramref name="replace"/> and
-    /// <paramref name="isKeyDown"/>, so nothing is typed or read from the keyboard.
+    /// Expands or undoes <paramref name="work"/>. Tests pass a fake <paramref name="replace"/>, <paramref name="isKeyDown"/>
+    /// and <paramref name="ask"/>, so nothing is typed, read from the keyboard or asked.
     /// </summary>
-    internal static bool TryExpand(KeyboardHook hook, PendingExpansion work, ReplaceText? replace = null, Func<int, bool>? isKeyDown = null)
+    internal static bool TryExpand(KeyboardHook hook, PendingExpansion work, ReplaceText? replace = null, Func<int, bool>? isKeyDown = null, Func<PromptRequest, IntPtr, Action?, string?>? ask = null)
     {
         replace ??= Injector.Replace;
 
@@ -415,7 +415,7 @@ internal static class Program
             }
 
             // A $|$ left the caret inside the expansion; it goes back to the end before the expansion is erased.
-            return replace(Injector.CountDeletableUnits(work.Replacement), work.Trigger, work.TargetWindow, cursorLeftUnits: 0, cursorRightUnits: work.CursorLeft, hook.Guard, work.InputGeneration, inserted: null);
+            return replace(Injector.CountDeletableUnits(work.Replacement), work.Trigger, work.TargetWindow, cursorLeftUnits: 0, cursorRightUnits: work.CursorLeft, hook.Guard, work.InputGeneration, inserted: null, givenBack: 0);
         }
 
         // Before any prompt, so nobody answers questions for an expansion that can no longer happen.
@@ -424,9 +424,23 @@ internal static class Program
             return false;
         }
 
-        (string text, int cursor) = Variables.NeedsPrompt(work.Replacement)
-            ? ExpandWithPrompts(hook, work.Replacement, work.TargetWindow)
+        bool giveBack = false;
+        (string Text, int Cursor)? expanded = Variables.NeedsPrompt(work.Replacement)
+            ? ExpandWithPrompts(hook, work.Replacement, work.TargetWindow, ask ?? PromptDialog.Show, isKeyDown, out giveBack)
             : Variables.ExpandWithPromptRequests(work.Replacement, static _ => string.Empty, Clipboard.GetText);
+        if (expanded is null)
+        {
+            // A question was cancelled: nothing is erased or inserted, and the keystroke the hook swallowed goes back, so
+            // what was typed stays as typed. Not while a modifier is still down: it would leave the app in menu mode.
+            if (giveBack)
+            {
+                _ = replace(0, (work.TypedText ?? work.Trigger)[^1..], work.TargetWindow, cursorLeftUnits: 0, cursorRightUnits: 0, hook.Guard, work.InputGeneration, inserted: null, givenBack: 1);
+            }
+
+            return false;
+        }
+
+        (string text, int cursor) = expanded.Value;
         if (work.Terminator is char terminator)
         {
             text += terminator;
@@ -449,18 +463,24 @@ internal static class Program
         Action? record = Variables.UsesSensitiveRuntimeInput(work.Replacement)
             ? null
             : () => hook.RecordExpansion(work.TypedText ?? work.Trigger, text, work.TargetWindow, work.InputGeneration, cursorLeft);
-        return replace(Injector.CountDeletableUnits(work.TypedPrefix), text, work.TargetWindow, cursorLeft, cursorRightUnits: 0, hook.Guard, work.InputGeneration, record);
+        return replace(Injector.CountDeletableUnits(work.TypedPrefix), text, work.TargetWindow, cursorLeft, cursorRightUnits: 0, hook.Guard, work.InputGeneration, record, givenBack: work.Terminator is null ? 0 : 1);
     }
 
-    private static (string Text, int Cursor) ExpandWithPrompts(KeyboardHook hook, string replacement, IntPtr target)
+    /// <summary>
+    /// Asks the snippet's questions, one at a time, and expands it. Null if one is cancelled; <paramref name="giveBack"/>
+    /// then says whether the keystroke the hook swallowed can go back.
+    /// </summary>
+    private static (string Text, int Cursor)? ExpandWithPrompts(KeyboardHook hook, string replacement, IntPtr target, Func<PromptRequest, IntPtr, Action?, string?> ask, Func<int, bool>? isKeyDown, out bool giveBack)
     {
         // Once the last answer is accepted, keys typed right away are held for the expansion, so they land after it.
         int prompts = SnippetTemplate.Parse(replacement).Count(token => token.Kind == SnippetTokenKind.Prompt);
+        bool cancelled = false;
+        bool released = false;
         hook.SuspendFor(target);
         (string Text, int Cursor) expanded;
         try
         {
-            expanded = Variables.ExpandWithPromptRequests(replacement, request => PromptDialog.Show(request, target, --prompts == 0 ? () => hook.Guard.Hold(target) : null), Clipboard.GetText);
+            expanded = Variables.ExpandWithPromptRequests(replacement, Answer, () => cancelled ? null : Clipboard.GetText());
         }
         finally
         {
@@ -476,7 +496,33 @@ internal static class Program
             WindowFocus.WaitUntilInFront(target, PromptRefocusTimeoutMs);
         }
 
-        return expanded;
+        giveBack = cancelled && released;
+        return cancelled ? null : expanded;
+
+        // Esc, Cancel or the close button cancels the whole snippet: nothing more is asked, nor is the clipboard read.
+        // Keys typed from then on are held too, so they land after the keystroke given back, but only once no modifier
+        // is down: Alt+F4's Alt, let go of while held, would go back after the insertion pressed it again, opening the
+        // app's menu. A modifier still down after a second means nothing goes back.
+        string? Answer(PromptRequest request)
+        {
+            if (cancelled)
+            {
+                return null;
+            }
+
+            string? answer = ask(request, target, --prompts == 0 ? () => hook.Guard.Hold(target) : null);
+            if (answer is null)
+            {
+                cancelled = true;
+                released = Injector.WaitForModifierRelease(Injector.UndoModifierReleaseTimeoutMs, isKeyDown);
+                if (released)
+                {
+                    hook.Guard.Hold(target);
+                }
+            }
+
+            return answer;
+        }
     }
 
     private static void ShowDiagnostics()

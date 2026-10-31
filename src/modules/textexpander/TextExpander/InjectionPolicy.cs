@@ -62,13 +62,15 @@ internal static class InjectionPolicy
 
     /// <summary>
     /// True when <paramref name="text"/> should go via the clipboard. Multi-line text always does: synthesized
-    /// Return presses trigger auto-indent and auto-complete.
+    /// Return presses trigger auto-indent and auto-complete. Its last <paramref name="givenBack"/> characters, the
+    /// user's own keystrokes given back, such as the space that released the trigger, don't count toward
+    /// <paramref name="thresholdChars"/>, and text that is only those, as after a cancelled question, is always typed.
     /// </summary>
-    public static bool ShouldUseClipboard(string text, int thresholdChars, InjectionBackend backend)
+    public static bool ShouldUseClipboard(string text, int thresholdChars, InjectionBackend backend, int givenBack = 0)
     {
         ArgumentNullException.ThrowIfNull(text);
 
-        if (backend == InjectionBackend.Typing || text.Length == 0)
+        if (backend == InjectionBackend.Typing || text.Length <= givenBack)
         {
             return false;
         }
@@ -78,7 +80,7 @@ internal static class InjectionPolicy
             return true;
         }
 
-        return text.Contains('\n') || text.Length >= Math.Max(1, thresholdChars);
+        return text.Contains('\n') || text.Length - givenBack >= Math.Max(1, thresholdChars);
     }
 
     /// <summary>Reads a backend name, falling back to <paramref name="fallback"/> on a typo rather than refusing to start.</summary>

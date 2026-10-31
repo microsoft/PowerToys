@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.TextExpander;
 /// </summary>
 internal static class PromptDialog
 {
-    /// <summary>Returns the answer, or null when cancelled, which leaves that spot blank.</summary>
+    /// <summary>Returns the answer, or null when cancelled, which cancels the whole snippet.</summary>
     /// <param name="label">The snippet's question.</param>
     /// <param name="target">The window being typed into; the prompt opens on its screen.</param>
     /// <param name="accepted">Runs on the prompt's thread as an answer is accepted, before the prompt goes.</param>

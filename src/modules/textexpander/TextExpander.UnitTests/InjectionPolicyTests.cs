@@ -19,6 +19,16 @@ public sealed class InjectionPolicyTests
         Assert.IsTrue(InjectionPolicy.ShouldUseClipboard("a\nb", 5, InjectionBackend.Auto));
         Assert.IsFalse(InjectionPolicy.ShouldUseClipboard("line\nbreak", 5, InjectionBackend.Typing));
         Assert.IsTrue(InjectionPolicy.ShouldUseClipboard("brb", 5, InjectionBackend.Clipboard));
+
+        // The space given back after a snippet doesn't count toward the length; the rest is unchanged.
+        Assert.IsFalse(InjectionPolicy.ShouldUseClipboard("1234 ", 5, InjectionBackend.Auto, givenBack: 1));
+        Assert.IsTrue(InjectionPolicy.ShouldUseClipboard("12345 ", 5, InjectionBackend.Auto, givenBack: 1));
+        Assert.IsTrue(InjectionPolicy.ShouldUseClipboard("a\nb ", 5, InjectionBackend.Auto, givenBack: 1));
+        Assert.IsTrue(InjectionPolicy.ShouldUseClipboard("b ", 5, InjectionBackend.Clipboard, givenBack: 1));
+        Assert.IsFalse(InjectionPolicy.ShouldUseClipboard("12345 ", 5, InjectionBackend.Typing, givenBack: 1));
+
+        // Only a keystroke given back, after a cancelled question, is typed even with Always paste.
+        Assert.IsFalse(InjectionPolicy.ShouldUseClipboard(" ", 5, InjectionBackend.Clipboard, givenBack: 1));
     }
 
     [TestMethod]

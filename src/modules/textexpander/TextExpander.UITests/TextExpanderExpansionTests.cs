@@ -99,11 +99,14 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
         AssertTargetShows("Ticket te4217 is resolved. ");
     }
 
-    /// <summary>Esc cancels a question, and the snippet goes in with that place left blank.</summary>
-    [TestMethod("TextExpander.Expansion.CancelledQuestionLeavesItsPlaceBlank")]
+    /// <summary>
+    /// Esc on a question cancels the whole snippet: nothing is inserted, and the space that released the trigger goes
+    /// back, so the box shows exactly what was typed.
+    /// </summary>
+    [TestMethod("TextExpander.Expansion.CancellingAQuestionCancelsTheSnippet")]
     [TestCategory("TextExpander")]
     [TestCategory("TextExpander.Expansion")]
-    public void CancelledQuestionLeavesItsPlaceBlank()
+    public void CancellingAQuestionCancelsTheSnippet()
     {
         var prompt = TypeTriggerForPrompt(Note.Trigger + " ");
         Assert.IsTrue(prompt.WaitForForeground(), $"The question window did not come in front. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
@@ -112,7 +115,8 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
         Step("Pressing Esc");
         TextInput.Escape();
         Assert.IsTrue(prompt.WaitForClosed(), "The question window did not close after Esc.");
-        AssertTargetShows("Note: . ");
+        AssertTargetShows(Note.Trigger + " ");
+        AssertStaysAsTyped(() => Target.Text, Note.Trigger + " ", observeMS: 2_000, "the target");
     }
 
     /// <summary>With Always paste, the snippet goes in through the clipboard, and what the user had copied is put back.</summary>

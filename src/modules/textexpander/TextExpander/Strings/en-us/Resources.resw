@@ -72,7 +72,7 @@
   </data>
   <data name="Prompt_Cancel" xml:space="preserve">
     <value>Cancel</value>
-    <comment>Button that leaves the answer blank and goes on</comment>
+    <comment>Button that cancels the snippet, so nothing is inserted</comment>
   </data>
   <data name="Prompt_RequiredError" xml:space="preserve">
     <value>Enter an answer to continue.</value>

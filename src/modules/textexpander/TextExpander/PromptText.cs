@@ -27,7 +27,7 @@ internal static class PromptText
 
     /// <summary>
     /// Gets what the snippet receives: after OK, the typed text, even when nothing was typed; after
-    /// Cancel, Esc or the close button, null, which leaves that spot blank and goes on to the next.
+    /// Cancel, Esc or the close button, null, which cancels the whole snippet.
     /// </summary>
     public static string? Result(bool accepted, string? typed) => accepted ? typed ?? string.Empty : null;
 

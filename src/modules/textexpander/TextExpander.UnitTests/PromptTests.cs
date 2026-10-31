@@ -13,7 +13,7 @@ public sealed class PromptTests
     private static readonly string[] AskedInOrder = ["Name", "Team", "Name"];
 
     [TestMethod]
-    public void OkReturnsWhatWasTypedAndCancelLeavesTheSpotBlank()
+    public void OkReturnsWhatWasTypedAndCancelReturnsNull()
     {
         Assert.AreEqual("Ada", PromptText.Result(accepted: true, "Ada"));
         Assert.AreEqual(@"C:\temp", PromptText.Result(accepted: true, @"C:\temp"), "Returned as typed; Variables inserts it literally.");
@@ -60,7 +60,7 @@ public sealed class PromptTests
     }
 
     [TestMethod]
-    public void PromptsAreAskedOneAtATimeInOrderAndACancelBlanksOnlyItsSpot()
+    public void PromptsAreAskedOneAtATimeInOrder()
     {
         var asked = new List<string>();
         string text = Variables.Expand(
@@ -68,11 +68,11 @@ public sealed class PromptTests
             label =>
             {
                 asked.Add(label);
-                return PromptText.Result(accepted: label != "Team", "Ada");
+                return PromptText.Result(accepted: true, label == "Team" ? "Docs" : "Ada");
             });
 
         CollectionAssert.AreEqual(AskedInOrder, asked);
-        Assert.AreEqual("To Ada from , re Ada", text);
+        Assert.AreEqual("To Ada from Docs, re Ada", text);
     }
 
     [TestMethod]
