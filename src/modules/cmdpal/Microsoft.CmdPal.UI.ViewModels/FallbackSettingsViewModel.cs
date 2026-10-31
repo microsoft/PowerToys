@@ -86,4 +86,7 @@ public partial class FallbackSettingsViewModel : ObservableObject
         Icon = new(fallback.InitialIcon);
         Icon.InitializeProperties();
     }
+
+    // ListViewItem uses this as its UI Automation name.
+    public override string ToString() => DisplayName;
 }
