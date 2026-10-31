@@ -138,7 +138,7 @@ public sealed class TextExpanderEditorTests : TextExpanderTestBase
         AssertDatabase(DefaultSnippets);
     }
 
-    /// <summary>A row opens for editing with a click; More options duplicates it into a new snippet, or deletes it after asking.</summary>
+    /// <summary>A row opens for editing with Enter; More options duplicates it into a new snippet, or deletes it after asking.</summary>
     [TestMethod("TextExpander.Editor.EditsDuplicatesAndDeletesSnippets")]
     [TestCategory("TextExpander")]
     [TestCategory("TextExpander.Editor")]

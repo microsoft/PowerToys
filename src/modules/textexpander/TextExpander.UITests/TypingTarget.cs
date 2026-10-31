@@ -233,7 +233,8 @@ internal sealed class TypingTarget : IDisposable
             pollIntervalMS: 100);
     }
 
-    private static string DescribeWindowAt(IntPtr window, int x, int y)
+    /// <summary>Describes <paramref name="window"/> and the window found at a screen point, for the log.</summary>
+    internal static string DescribeWindowAt(IntPtr window, int x, int y)
     {
         GetWindowRect(window, out var rect);
         var exStyle = GetWindowLongW(window, -20);
@@ -242,8 +243,21 @@ internal sealed class TypingTarget : IDisposable
         _ = GetWindowThreadProcessId(root, out var rootProcess);
         var className = new System.Text.StringBuilder(256);
         _ = GetClassNameW(root, className, className.Capacity);
+        GetWindowRect(root, out var rootRect);
+        string processName;
+        try
+        {
+            using var process = System.Diagnostics.Process.GetProcessById((int)rootProcess);
+            processName = process.ProcessName;
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            processName = "<gone>";
+        }
+
         return $"target visible {IsWindowVisible(window)}, rect ({rect.Left}, {rect.Top})-({rect.Right}, {rect.Bottom}), topmost {(exStyle & 0x8) != 0}; " +
-            $"window there 0x{root:X} class {className} process {rootProcess}";
+            $"window there 0x{root:X} class {className} process {rootProcess} ({processName}), rect ({rootRect.Left}, {rootRect.Top})-({rootRect.Right}, {rootRect.Bottom}), " +
+            $"extended style 0x{GetWindowLongW(root, -20):X}";
     }
 
     [System.Runtime.InteropServices.DllImport("user32.dll")]

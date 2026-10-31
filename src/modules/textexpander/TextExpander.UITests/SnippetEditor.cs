@@ -122,10 +122,10 @@ internal sealed class SnippetEditor
         WaitForDialog("New snippet");
     }
 
-    /// <summary>Opens a row for editing by clicking it, as a person does.</summary>
+    /// <summary>Opens a row for editing as a keyboard user does: focus on the row, then Enter, which clicks it.</summary>
     /// <remarks>
-    /// The click goes to the editor's main window, brought in front by its handle: a process-wide session brings the
-    /// process's first window forward, which needn't be the main one.
+    /// Not with the mouse: on the Windows 10 test agents another window covers the middle of the rows once the editor is
+    /// in front, so a click there never reaches the list. Which window that is gets logged.
     /// </remarks>
     public void OpenRow(string trigger)
     {
@@ -140,16 +140,26 @@ internal sealed class SnippetEditor
 
         var row = WaitForRowElement(trigger);
         var (x, y) = (row.X + (row.Width / 2), row.Y + (row.Height / 2));
-        Assert.IsTrue(
-            WindowControl.IsPointOwnedByWindow(Handle, x, y),
-            $"The '{trigger}' row at ({x}, {y}) is covered. Foreground: {WindowControl.GetForegroundWindowInfo()}. Editor windows: {DescribeWindows()}.");
+        if (!WindowControl.IsPointOwnedByWindow(Handle, x, y))
+        {
+            step($"The '{trigger}' row's middle ({x}, {y}) is covered: {TypingTarget.DescribeWindowAt(Handle, x, y)}");
+        }
 
-        step($"Clicking the '{trigger}' row at ({x}, {y})");
-        MouseHelper.LeftClickAt(x, y);
+        step($"Opening the '{trigger}' row with Enter");
+        row.Focus();
+
+        // Where winappcli can't read HasKeyboardFocus it reports nothing, and the Enter goes ahead.
+        var focus = WaitHelper.WaitForStable(
+            () => row.GetProperty("HasKeyboardFocus"),
+            value => !string.Equals(value, "False", StringComparison.OrdinalIgnoreCase),
+            timeoutMS: 5_000,
+            pollIntervalMS: 250);
+        Assert.IsTrue(focus.Succeeded, $"The '{trigger}' row did not take keyboard focus. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        step($"The row reports HasKeyboardFocus '{focus.LastObservation}'");
+        TextInput.Enter();
         WaitForDialog(
             "Edit snippet",
-            () => $"Clicked ({x}, {y}) in the row's bounds ({row.X}, {row.Y}, {row.Width}x{row.Height}). " +
-                $"Foreground: {WindowControl.GetForegroundWindowInfo()}. Editor windows: {DescribeWindows()}.");
+            () => $"Foreground: {WindowControl.GetForegroundWindowInfo()}. Editor windows: {DescribeWindows()}.");
     }
 
     /// <summary>Runs one of a row's More options commands: Edit, Duplicate or Delete.</summary>
