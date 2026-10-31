@@ -4,10 +4,12 @@
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 #pragma warning restore IDE0073
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -21,23 +23,36 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace ImageResizer.Properties
 {
     [TestClass]
-    public class SettingsTests
+    [DoNotParallelize]
+    public sealed class SettingsTests : IDisposable
     {
+        private static readonly Func<string, string> _getString = key => key;
+        private static readonly string[] _defaultPresetNames = { "Small", "Medium", "Large", "Phone" };
+        private static readonly string[] _phoneToWebPresetNames = { "Small", "Medium", "Large", "Web" };
+        private static readonly int[] _phoneToWebPresetIds = { 0, 1, 2, 4 };
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
             WriteIndented = true,
         };
 
+        private static Func<string, string> _originalGetString;
+        private readonly string _originalSettingsPath;
+        private readonly TestDirectory _directory;
+        private readonly string _settingsPath;
+
         public SettingsTests()
         {
-            // Change settings.json path to a temp file
-            Settings.SettingsPath = ".\\test_settings.json";
+            _originalSettingsPath = Settings.SettingsPath;
+            _directory = new TestDirectory();
+            _settingsPath = Path.Combine(_directory, "settings.json");
+            Settings.SettingsPath = _settingsPath;
         }
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            ResourceLoaderInstance.GetString = key => key;
+            _originalGetString = ResourceLoaderInstance.GetString;
+            ResourceLoaderInstance.GetString = _getString;
         }
 
         [TestMethod]
@@ -57,6 +72,41 @@ namespace ImageResizer.Properties
                 () => settings.Sizes.Add(new ResizeSize()));
 
             Assert.AreEqual(NotifyCollectionChangedAction.Add, result.Arguments.Action);
+        }
+
+        [TestMethod]
+        public void SelectedSizeSetterSelectsContainedPreset()
+        {
+            var settings = new Settings
+            {
+                SelectedSizeIndex = 0,
+            };
+            var expectedPreset = settings.Sizes[1];
+
+            settings.SelectedSize = expectedPreset;
+
+            Assert.AreEqual(1, settings.SelectedSizeIndex);
+            Assert.AreSame(expectedPreset, settings.SelectedSize);
+        }
+
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void SelectedSizeSetterSelectsCustomForAbsentSize(bool useNullSize)
+        {
+            var settings = new Settings
+            {
+                SelectedSizeIndex = 0,
+            };
+            var expectedCustomSize = settings.CustomSize;
+            var expectedCustomIndex = settings.Sizes.Count;
+            var requestedSize = useNullSize ? null : new ResizeSize();
+            Assert.IsFalse(settings.Sizes.Contains(requestedSize));
+
+            settings.SelectedSize = requestedSize;
+
+            Assert.AreEqual(expectedCustomIndex, settings.SelectedSizeIndex);
+            Assert.AreSame(expectedCustomSize, settings.SelectedSize);
         }
 
         [TestMethod]
@@ -108,9 +158,178 @@ namespace ImageResizer.Properties
         }
 
         [TestMethod]
+        public void AllSizesReflectsPhoneRemovalWebAdditionAndClear()
+        {
+            var settings = new Settings();
+            var expected = settings.AllSizes.ToList();
+            CollectionAssert.AreEqual(
+                _defaultPresetNames,
+                expected.Take(4).Select(size => size.Name).ToArray());
+            Assert.AreSame(settings.CustomSize, expected[4]);
+            var phone = settings.Sizes[3];
+            var web = new ResizeSize(4, "Web", ResizeFit.Fit, 1024, 768, ResizeUnit.Pixel);
+            var changes = new List<NotifyCollectionChangedEventArgs>();
+            var properties = new List<string>();
+            ((INotifyCollectionChanged)settings.AllSizes).CollectionChanged += (sender, e) => changes.Add(e);
+            ((INotifyPropertyChanged)settings.AllSizes).PropertyChanged += (sender, e) => properties.Add(e.PropertyName);
+
+            settings.Sizes.RemoveAt(3);
+            expected.RemoveAt(3);
+            CollectionAssert.AreEqual(expected, settings.AllSizes.ToList());
+            Assert.AreEqual(NotifyCollectionChangedAction.Remove, changes[0].Action);
+            Assert.AreSame(phone, changes[0].OldItems[0]);
+            Assert.AreEqual(3, changes[0].OldStartingIndex);
+
+            settings.Sizes.Add(web);
+            expected.Insert(3, web);
+            CollectionAssert.AreEqual(expected, settings.AllSizes.ToList());
+            Assert.AreEqual(NotifyCollectionChangedAction.Add, changes[1].Action);
+            Assert.AreSame(web, changes[1].NewItems[0]);
+            Assert.AreEqual(3, changes[1].NewStartingIndex);
+            Assert.AreEqual(2, properties.Count(name => name == "Count"));
+            Assert.AreEqual(2, properties.Count(name => name == "Item[]"));
+
+            settings.Sizes.Clear();
+
+            CollectionAssert.AreEqual(expected.Skip(4).ToList(), settings.AllSizes.ToList());
+            Assert.AreSame(settings.CustomSize, settings.AllSizes.First());
+            CollectionAssert.AreEqual(
+                new[] { NotifyCollectionChangedAction.Remove, NotifyCollectionChangedAction.Add, NotifyCollectionChangedAction.Reset },
+                changes.Select(change => change.Action).ToArray());
+            Assert.AreEqual(3, properties.Count(name => name == "Count"));
+            Assert.AreEqual(3, properties.Count(name => name == "Item[]"));
+        }
+
+        [TestMethod]
+        public void AllSizesForwardsPresetReplacement()
+        {
+            var settings = new Settings();
+            var allSizes = settings.AllSizes;
+            var originalPresets = settings.Sizes.ToArray();
+            var originalView = allSizes.ToList();
+            var replacement = new ResizeSize(4, "Web", ResizeFit.Fit, 1024, 768, ResizeUnit.Pixel);
+            var expected = new[] { originalPresets[0], replacement, originalPresets[2], originalPresets[3] }
+                .Concat(originalView.Skip(originalPresets.Length)).ToList();
+            var sourceChanges = new List<NotifyCollectionChangedEventArgs>();
+            var changes = new List<NotifyCollectionChangedEventArgs>();
+            var collectionSenders = new List<object>();
+            var sourceProperties = new List<PropertyChangedEventArgs>();
+            var properties = new List<PropertyChangedEventArgs>();
+            var propertySenders = new List<object>();
+            var chronology = new List<string>();
+            settings.Sizes.CollectionChanged += (sender, e) => sourceChanges.Add(e);
+            ((INotifyPropertyChanged)settings.Sizes).PropertyChanged += (sender, e) => sourceProperties.Add(e);
+            ((INotifyCollectionChanged)allSizes).CollectionChanged += (sender, e) =>
+            {
+                changes.Add(e);
+                collectionSenders.Add(sender);
+                chronology.Add("collection");
+            };
+            ((INotifyPropertyChanged)allSizes).PropertyChanged += (sender, e) =>
+            {
+                properties.Add(e);
+                propertySenders.Add(sender);
+                chronology.Add("property");
+            };
+
+            settings.Sizes[1] = replacement;
+
+            Assert.AreEqual(1, sourceChanges.Count);
+            Assert.AreEqual(1, changes.Count);
+            Assert.AreEqual(1, collectionSenders.Count);
+            Assert.AreSame(allSizes, collectionSenders[0]);
+            Assert.AreSame(sourceChanges[0], changes[0]);
+            Assert.AreEqual(NotifyCollectionChangedAction.Replace, changes[0].Action);
+            Assert.AreEqual(1, changes[0].OldItems.Count);
+            Assert.AreEqual(1, changes[0].NewItems.Count);
+            Assert.AreSame(originalPresets[1], changes[0].OldItems[0]);
+            Assert.AreSame(replacement, changes[0].NewItems[0]);
+            Assert.AreEqual(1, changes[0].OldStartingIndex);
+            Assert.AreEqual(1, changes[0].NewStartingIndex);
+            Assert.AreEqual(1, sourceProperties.Count);
+            Assert.AreEqual(1, properties.Count);
+            Assert.AreEqual(1, propertySenders.Count);
+            Assert.AreSame(allSizes, propertySenders[0]);
+            Assert.AreSame(sourceProperties[0], properties[0]);
+            Assert.AreEqual("Item[]", properties[0].PropertyName);
+            Assert.AreEqual(2, chronology.Count);
+            Assert.AreEqual("property", chronology[0]);
+            Assert.AreEqual("collection", chronology[1]);
+            var actual = allSizes.ToList();
+            Assert.AreEqual(originalView.Count, actual.Count);
+            CollectionAssert.AreEqual(expected, actual);
+            CollectionAssert.DoesNotContain(actual, originalPresets[1]);
+        }
+
+        [DataTestMethod]
+        [DataRow(0, 3)]
+        [DataRow(3, 0)]
+        public void AllSizesForwardsPresetMove(int oldIndex, int newIndex)
+        {
+            var settings = new Settings();
+            var allSizes = settings.AllSizes;
+            var originalPresets = settings.Sizes.ToArray();
+            var originalView = allSizes.ToList();
+            var movedPreset = originalPresets[oldIndex];
+            var expectedPresets = oldIndex == 0
+                ? new[] { originalPresets[1], originalPresets[2], originalPresets[3], originalPresets[0] }
+                : new[] { originalPresets[3], originalPresets[0], originalPresets[1], originalPresets[2] };
+            var expected = expectedPresets.Concat(originalView.Skip(originalPresets.Length)).ToList();
+            var sourceChanges = new List<NotifyCollectionChangedEventArgs>();
+            var changes = new List<NotifyCollectionChangedEventArgs>();
+            var collectionSenders = new List<object>();
+            var sourceProperties = new List<PropertyChangedEventArgs>();
+            var properties = new List<PropertyChangedEventArgs>();
+            var propertySenders = new List<object>();
+            var chronology = new List<string>();
+            settings.Sizes.CollectionChanged += (sender, e) => sourceChanges.Add(e);
+            ((INotifyPropertyChanged)settings.Sizes).PropertyChanged += (sender, e) => sourceProperties.Add(e);
+            ((INotifyCollectionChanged)allSizes).CollectionChanged += (sender, e) =>
+            {
+                changes.Add(e);
+                collectionSenders.Add(sender);
+                chronology.Add("collection");
+            };
+            ((INotifyPropertyChanged)allSizes).PropertyChanged += (sender, e) =>
+            {
+                properties.Add(e);
+                propertySenders.Add(sender);
+                chronology.Add("property");
+            };
+
+            settings.Sizes.Move(oldIndex, newIndex);
+
+            Assert.AreEqual(1, sourceChanges.Count);
+            Assert.AreEqual(1, changes.Count);
+            Assert.AreEqual(1, collectionSenders.Count);
+            Assert.AreSame(allSizes, collectionSenders[0]);
+            Assert.AreSame(sourceChanges[0], changes[0]);
+            Assert.AreEqual(NotifyCollectionChangedAction.Move, changes[0].Action);
+            Assert.AreEqual(1, changes[0].OldItems.Count);
+            Assert.AreEqual(1, changes[0].NewItems.Count);
+            Assert.AreSame(movedPreset, changes[0].OldItems[0]);
+            Assert.AreSame(movedPreset, changes[0].NewItems[0]);
+            Assert.AreEqual(oldIndex, changes[0].OldStartingIndex);
+            Assert.AreEqual(newIndex, changes[0].NewStartingIndex);
+            Assert.AreEqual(1, sourceProperties.Count);
+            Assert.AreEqual(1, properties.Count);
+            Assert.AreEqual(1, propertySenders.Count);
+            Assert.AreSame(allSizes, propertySenders[0]);
+            Assert.AreSame(sourceProperties[0], properties[0]);
+            Assert.AreEqual("Item[]", properties[0].PropertyName);
+            Assert.AreEqual(2, chronology.Count);
+            Assert.AreEqual("property", chronology[0]);
+            Assert.AreEqual("collection", chronology[1]);
+            var actual = allSizes.ToList();
+            Assert.AreEqual(originalView.Count, actual.Count);
+            CollectionAssert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
         public void AllSizesHandlesPropertyEventsForCustomSize()
         {
             var originalCustomSize = new CustomSize();
+            var replacementCustomSize = new CustomSize(ResizeFit.Stretch, 500, 300, ResizeUnit.Pixel);
             var settings = new Settings
             {
                 CustomSize = originalCustomSize,
@@ -119,15 +338,65 @@ namespace ImageResizer.Properties
             settings.Sizes.Clear();
             var ncc = (INotifyCollectionChanged)settings.AllSizes;
 
-            var result = AssertEx.Raises<NotifyCollectionChangedEventArgs>(
-                h => ncc.CollectionChanged += h,
-                h => ncc.CollectionChanged -= h,
-                () => settings.CustomSize = new CustomSize());
+            var changes = new List<NotifyCollectionChangedEventArgs>();
+            var callbackSizes = new List<ResizeSize>();
+            ncc.CollectionChanged += (sender, e) =>
+            {
+                changes.Add(e);
+                callbackSizes.Add(settings.AllSizes.First());
+            };
+
+            settings.CustomSize = replacementCustomSize;
 
             // Reset is used instead of Replace to avoid ArgumentOutOfRangeException
             // when notifying changes for virtual items (CustomSize/AiSize) that exist
             // outside the bounds of the underlying _sizes collection.
-            Assert.AreEqual(NotifyCollectionChangedAction.Reset, result.Arguments.Action);
+            Assert.AreEqual(1, changes.Count);
+            Assert.AreEqual(NotifyCollectionChangedAction.Reset, changes[0].Action);
+            Assert.AreEqual(1, callbackSizes.Count);
+            Assert.AreSame(replacementCustomSize, callbackSizes[0]);
+            Assert.AreSame(replacementCustomSize, settings.AllSizes.First());
+            CollectionAssert.DoesNotContain(settings.AllSizes.ToList(), originalCustomSize);
+        }
+
+        [TestMethod]
+        public void AllSizesResetsWhenSameCustomSizeIsAssigned()
+        {
+            var settings = new Settings();
+            var currentCustomSize = settings.CustomSize;
+            settings.Sizes.Clear();
+            var changes = new List<NotifyCollectionChangedEventArgs>();
+            var callbackSizes = new List<ResizeSize>();
+            ((INotifyCollectionChanged)settings.AllSizes).CollectionChanged += (sender, e) =>
+            {
+                changes.Add(e);
+                callbackSizes.Add(settings.AllSizes.First());
+            };
+
+            settings.CustomSize = currentCustomSize;
+
+            Assert.AreEqual(1, changes.Count);
+            Assert.AreEqual(NotifyCollectionChangedAction.Reset, changes[0].Action);
+            Assert.AreEqual(1, callbackSizes.Count);
+            Assert.AreSame(currentCustomSize, callbackSizes[0]);
+            Assert.AreSame(currentCustomSize, settings.AllSizes.First());
+        }
+
+        [DataTestMethod]
+        [DataRow(null)]
+        [DataRow("")]
+        [DataRow(" ")]
+        public void FileNameRejectsBlankValuesWithoutChangingStateOrNotifying(string invalidFileName)
+        {
+            var settings = new Settings { FileName = "retained-%1" };
+            var notifications = new List<string>();
+            settings.PropertyChanged += (sender, e) => notifications.Add(e.PropertyName);
+
+            var exception = Assert.ThrowsExactly<ArgumentNullException>(() => settings.FileName = invalidFileName);
+
+            Assert.AreEqual(nameof(Settings.FileName), exception.ParamName);
+            Assert.AreEqual("retained-%1", settings.FileName);
+            Assert.AreEqual(0, notifications.Count);
         }
 
         [TestMethod]
@@ -322,6 +591,150 @@ namespace ImageResizer.Properties
 
             // Assert
             Assert.IsTrue(System.IO.File.Exists(Settings.SettingsPath));
+        }
+
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void SaveReloadConsumesWrappedOptionsFileNameAndSelection(bool keepDateModified)
+        {
+            const string fileName = "%1 - %2 - %3 - %4 - %5 - %6";
+            var saved = new Settings
+            {
+                SelectedSizeIndex = 3,
+                ShrinkOnly = true,
+                Replace = true,
+                IgnoreOrientation = false,
+                RemoveMetadata = true,
+                JpegQualityLevel = 73,
+                PngInterlaceOption = PngInterlaceOption.On,
+                TiffCompressOption = TiffCompressOption.None,
+                FileName = fileName,
+                KeepDateModified = keepDateModified,
+                FallbackEncoder = new Guid("1b7cfaf4-713f-473c-bbcd-6137425faeaf"),
+                CustomSize = new CustomSize(ResizeFit.Stretch, 500, 300, ResizeUnit.Pixel),
+            };
+
+            saved.Save();
+
+            using var document = JsonDocument.Parse(System.IO.File.ReadAllBytes(_settingsPath));
+            var root = document.RootElement;
+            Assert.AreEqual("Image Resizer", root.GetProperty("name").GetString());
+            Assert.AreEqual("1", root.GetProperty("version").GetString());
+            var properties = root.GetProperty("properties");
+            Assert.AreEqual(3, properties.GetProperty("imageresizer_selectedSizeIndex").GetProperty("value").GetInt32());
+            Assert.IsTrue(properties.GetProperty("imageresizer_shrinkOnly").GetProperty("value").GetBoolean());
+            Assert.IsTrue(properties.GetProperty("imageresizer_replace").GetProperty("value").GetBoolean());
+            Assert.IsFalse(properties.GetProperty("imageresizer_ignoreOrientation").GetProperty("value").GetBoolean());
+            Assert.IsTrue(properties.GetProperty("imageresizer_removeMetadata").GetProperty("value").GetBoolean());
+            Assert.AreEqual(73, properties.GetProperty("imageresizer_jpegQualityLevel").GetProperty("value").GetInt32());
+            Assert.AreEqual(1, properties.GetProperty("imageresizer_pngInterlaceOption").GetProperty("value").GetInt32());
+            Assert.AreEqual(1, properties.GetProperty("imageresizer_tiffCompressOption").GetProperty("value").GetInt32());
+            Assert.AreEqual(fileName, properties.GetProperty("imageresizer_fileName").GetProperty("value").GetString());
+            Assert.AreEqual(keepDateModified, properties.GetProperty("imageresizer_keepDateModified").GetProperty("value").GetBoolean());
+            Assert.AreEqual(saved.FallbackEncoder, properties.GetProperty("imageresizer_fallbackEncoder").GetProperty("value").GetGuid());
+
+            var consumed = new Settings { KeepDateModified = !keepDateModified };
+            consumed.Reload();
+
+            Assert.IsTrue(consumed.ShrinkOnly);
+            Assert.IsTrue(consumed.Replace);
+            Assert.IsFalse(consumed.IgnoreOrientation);
+            Assert.IsTrue(consumed.RemoveMetadata);
+            Assert.AreEqual(73, consumed.JpegQualityLevel);
+            Assert.AreEqual(saved.PngInterlaceOption, consumed.PngInterlaceOption);
+            Assert.AreEqual(saved.TiffCompressOption, consumed.TiffCompressOption);
+            Assert.AreEqual(fileName, consumed.FileName);
+            Assert.AreEqual("{0} - {1} - {2} - {3} - {4} - {5}", consumed.FileNameFormat);
+            Assert.AreEqual(keepDateModified, consumed.KeepDateModified);
+            Assert.AreEqual(saved.FallbackEncoder, consumed.FallbackEncoder);
+            Assert.AreEqual(3, consumed.SelectedSizeIndex);
+            Assert.AreSame(consumed.Sizes[3], consumed.SelectedSize);
+            Assert.AreEqual("Phone", consumed.SelectedSize.Name);
+            Assert.AreEqual(ResizeFit.Stretch, consumed.CustomSize.Fit);
+            Assert.AreEqual(500d, consumed.CustomSize.Width);
+            Assert.AreEqual(300d, consumed.CustomSize.Height);
+            Assert.AreEqual(ResizeUnit.Pixel, consumed.CustomSize.Unit);
+        }
+
+        [TestMethod]
+        public void ReloadConsumesPhoneToWebEditWhileRetainingActiveSelection()
+        {
+            var settings = new Settings();
+            settings.Save();
+            settings.Reload();
+            settings.SelectedSizeIndex = 2;
+            var notifications = new List<string>();
+            settings.PropertyChanged += (sender, e) => notifications.Add(e.PropertyName);
+            var allSizes = settings.AllSizes;
+            var edited = new Settings();
+            edited.Sizes.RemoveAt(3);
+            edited.Sizes.Add(new ResizeSize(4, "Web", ResizeFit.Fit, 1024, 768, ResizeUnit.Pixel));
+            edited.Save();
+
+            using var document = JsonDocument.Parse(System.IO.File.ReadAllBytes(_settingsPath));
+            var presets = document.RootElement.GetProperty("properties").GetProperty("imageresizer_sizes").GetProperty("value");
+            CollectionAssert.AreEqual(
+                _phoneToWebPresetNames,
+                presets.EnumerateArray().Select(size => size.GetProperty("name").GetString()).ToArray());
+            var web = presets[3];
+            Assert.AreEqual(4, web.GetProperty("Id").GetInt32());
+            Assert.AreEqual(1, web.GetProperty("fit").GetInt32());
+            Assert.AreEqual(1024d, web.GetProperty("width").GetDouble());
+            Assert.AreEqual(768d, web.GetProperty("height").GetDouble());
+            Assert.AreEqual(3, web.GetProperty("unit").GetInt32());
+
+            settings.Reload();
+
+            Assert.AreSame(allSizes, settings.AllSizes);
+            CollectionAssert.AreEqual(
+                _phoneToWebPresetNames,
+                allSizes.Take(4).Select(size => size.Name).ToArray());
+            CollectionAssert.AreEqual(_phoneToWebPresetIds, settings.Sizes.Select(size => size.Id).ToArray());
+            Assert.IsFalse(allSizes.Any(size => size.Name == "Phone"));
+            Assert.AreSame(settings.CustomSize, allSizes.ElementAt(4));
+            Assert.AreEqual(ResizeFit.Fit, settings.Sizes[3].Fit);
+            Assert.AreEqual(1024d, settings.Sizes[3].Width);
+            Assert.AreEqual(768d, settings.Sizes[3].Height);
+            Assert.AreEqual(ResizeUnit.Pixel, settings.Sizes[3].Unit);
+            Assert.AreEqual(2, settings.SelectedSizeIndex);
+            Assert.AreSame(settings.Sizes[2], settings.SelectedSize);
+            Assert.AreEqual(2, settings.SelectedSize.Id);
+            CollectionAssert.Contains(notifications, nameof(Settings.SelectedSizeIndex));
+            CollectionAssert.Contains(notifications, nameof(Settings.SelectedSize));
+        }
+
+        [DataTestMethod]
+        [DataRow(false, 2)]
+        [DataRow(true, 0)]
+        public void ReloadRetainsActivePresetIdWhenItsIndexChanges(bool reorder, int expectedIndex)
+        {
+            var settings = new Settings();
+            settings.Save();
+            settings.Reload();
+            settings.SelectedSizeIndex = 3;
+            var edited = new Settings();
+            if (reorder)
+            {
+                edited.Sizes.Move(3, 0);
+            }
+            else
+            {
+                edited.Sizes.RemoveAt(0);
+            }
+
+            edited.Save();
+
+            settings.Reload();
+
+            Assert.AreEqual(expectedIndex, settings.SelectedSizeIndex);
+            Assert.AreSame(settings.Sizes[expectedIndex], settings.SelectedSize);
+            Assert.AreEqual(3, settings.SelectedSize.Id);
+            Assert.AreEqual("Phone", settings.SelectedSize.Name);
+            CollectionAssert.AreEqual(
+                edited.Sizes.Select(size => size.Id).ToArray(),
+                settings.AllSizes.Take(edited.Sizes.Count).Select(size => size.Id).ToArray());
+            Assert.AreSame(settings.CustomSize, settings.AllSizes.ElementAt(edited.Sizes.Count));
         }
 
         [TestMethod]
@@ -542,6 +955,84 @@ namespace ImageResizer.Properties
         }
 
         [TestMethod]
+        public void ReloadSelectsLoadedCustomWhenAllPresetsRemovedDuringSession()
+        {
+            Assert.AreEqual(AiAvailabilityState.NotSupported, App.AiAvailabilityState);
+            var settings = new Settings();
+            settings.Save();
+            settings.Reload();
+            settings.SelectedSizeIndex = 1;
+            var selectedPreset = settings.Sizes[1];
+            Assert.AreSame(selectedPreset, settings.SelectedSize);
+            var originalCustomSize = settings.CustomSize;
+
+            var wrapper = JsonSerializer.Deserialize<SettingsWrapper>(System.IO.File.ReadAllText(_settingsPath));
+            wrapper.Properties.Sizes.Clear();
+            wrapper.Properties.CustomSize = new CustomSize(ResizeFit.Stretch, 500, 300, ResizeUnit.Pixel);
+            wrapper.Properties.SelectedSizeIndex = 1;
+            System.IO.File.WriteAllText(_settingsPath, JsonSerializer.Serialize(wrapper, _serializerOptions));
+
+            settings.Reload();
+
+            Assert.AreEqual(0, settings.Sizes.Count);
+            Assert.AreEqual(0, settings.SelectedSizeIndex);
+            Assert.AreSame(settings.CustomSize, settings.SelectedSize);
+            Assert.AreNotSame(originalCustomSize, settings.CustomSize);
+            Assert.AreNotSame(selectedPreset, settings.SelectedSize);
+            Assert.AreEqual(ResizeFit.Stretch, settings.SelectedSize.Fit);
+            Assert.AreEqual(500d, settings.SelectedSize.Width);
+            Assert.AreEqual(300d, settings.SelectedSize.Height);
+            Assert.AreEqual(ResizeUnit.Pixel, settings.SelectedSize.Unit);
+            var allSizes = settings.AllSizes.ToList();
+            Assert.AreEqual(1, allSizes.Count);
+            Assert.AreSame(settings.CustomSize, allSizes[0]);
+        }
+
+        [TestMethod]
+        public void ReloadRetainsActiveCustomSelectionWhenPresetCountChanges()
+        {
+            var settings = new Settings();
+            settings.Save();
+            settings.Reload();
+            var oldPresetCount = settings.Sizes.Count;
+            var oldAllSizesCount = settings.AllSizes.Count();
+            var originalCustomSize = settings.CustomSize;
+            settings.SelectedSizeIndex = oldPresetCount;
+            Assert.AreSame(originalCustomSize, settings.SelectedSize);
+            var removedPreset = settings.Sizes.Last();
+            var remainingIds = settings.Sizes.Take(oldPresetCount - 1).Select(size => size.Id).ToArray();
+            var remainingNames = settings.Sizes.Take(oldPresetCount - 1).Select(size => size.Name).ToArray();
+
+            var wrapper = JsonSerializer.Deserialize<SettingsWrapper>(System.IO.File.ReadAllText(_settingsPath));
+            wrapper.Properties.Sizes.RemoveAt(oldPresetCount - 1);
+            wrapper.Properties.CustomSize = new CustomSize(ResizeFit.Stretch, 500, 300, ResizeUnit.Pixel);
+            wrapper.Properties.SelectedSizeIndex = 0;
+            System.IO.File.WriteAllText(_settingsPath, JsonSerializer.Serialize(wrapper, _serializerOptions));
+
+            settings.Reload();
+
+            Assert.AreEqual(oldPresetCount - 1, settings.Sizes.Count);
+            Assert.AreEqual(settings.Sizes.Count, settings.SelectedSizeIndex);
+            Assert.AreNotEqual(oldPresetCount, settings.SelectedSizeIndex);
+            Assert.AreNotEqual(0, settings.SelectedSizeIndex);
+            Assert.AreNotSame(originalCustomSize, settings.CustomSize);
+            Assert.AreSame(settings.CustomSize, settings.SelectedSize);
+            Assert.AreEqual(ResizeFit.Stretch, settings.SelectedSize.Fit);
+            Assert.AreEqual(500d, settings.SelectedSize.Width);
+            Assert.AreEqual(300d, settings.SelectedSize.Height);
+            Assert.AreEqual(ResizeUnit.Pixel, settings.SelectedSize.Unit);
+            CollectionAssert.AreEqual(remainingIds, settings.Sizes.Select(size => size.Id).ToArray());
+            CollectionAssert.AreEqual(remainingNames, settings.Sizes.Select(size => size.Name).ToArray());
+            var expectedAllSizes = settings.Sizes.ToList();
+            expectedAllSizes.Add(settings.CustomSize);
+            var allSizes = settings.AllSizes.ToList();
+            CollectionAssert.AreEqual(expectedAllSizes, allSizes.Take(settings.Sizes.Count + 1).ToList());
+            Assert.AreEqual(oldAllSizesCount - 1, allSizes.Count);
+            Assert.IsFalse(allSizes.Any(size => size.Name == removedPreset.Name));
+            CollectionAssert.DoesNotContain(allSizes, originalCustomSize);
+        }
+
+        [TestMethod]
         public void ReloadHandlesInvalidSelectedSizeIndex()
         {
             var settings = new Settings();
@@ -573,6 +1064,103 @@ namespace ImageResizer.Properties
             settings.Reload();
 
             Assert.AreEqual(settings.Sizes.Count, settings.SelectedSizeIndex, "Negative SelectedSizeIndex should fall back to Custom Size.");
+        }
+
+        [TestMethod]
+        public void ReloadMalformedJsonRestoresDefaultsAndRetainsActiveCustomSelection()
+        {
+            var settings = new Settings();
+            settings.Save();
+            settings.Reload();
+            settings.Sizes.Clear();
+            settings.Sizes.Add(new ResizeSize(99, "Edited", ResizeFit.Stretch, 500, 300, ResizeUnit.Pixel));
+            settings.CustomSize = new CustomSize(ResizeFit.Stretch, 500, 300, ResizeUnit.Pixel);
+            settings.SelectedSizeIndex = settings.Sizes.Count;
+            var originalCustomSize = settings.CustomSize;
+            Assert.AreSame(originalCustomSize, settings.SelectedSize);
+            settings.ShrinkOnly = true;
+            settings.Replace = true;
+            settings.IgnoreOrientation = false;
+            settings.RemoveMetadata = true;
+            settings.JpegQualityLevel = 17;
+            settings.PngInterlaceOption = PngInterlaceOption.On;
+            settings.TiffCompressOption = TiffCompressOption.None;
+            settings.FileName = "changed-%1";
+            settings.KeepDateModified = true;
+            settings.FallbackEncoder = new Guid("1b7cfaf4-713f-473c-bbcd-6137425faeaf");
+            Assert.IsNull(Logger.CurrentLogFile, $"Unexpected logging destination: {Logger.CurrentLogFile}");
+            System.IO.File.WriteAllText(_settingsPath, "{");
+
+            settings.Reload();
+
+            CollectionAssert.AreEqual(_defaultPresetNames, settings.Sizes.Select(size => size.Name).ToArray());
+            CollectionAssert.AreEqual(Enumerable.Range(0, 4).ToArray(), settings.Sizes.Select(size => size.Id).ToArray());
+            Assert.AreEqual(4, settings.SelectedSizeIndex);
+            Assert.AreSame(settings.CustomSize, settings.SelectedSize);
+            Assert.AreNotSame(originalCustomSize, settings.CustomSize);
+            Assert.AreEqual(ResizeFit.Fit, settings.SelectedSize.Fit);
+            Assert.AreEqual(1024d, settings.SelectedSize.Width);
+            Assert.AreEqual(640d, settings.SelectedSize.Height);
+            Assert.AreEqual(ResizeUnit.Pixel, settings.SelectedSize.Unit);
+            CollectionAssert.AreEqual(_defaultPresetNames, settings.AllSizes.Take(4).Select(size => size.Name).ToArray());
+            Assert.AreSame(settings.CustomSize, settings.AllSizes.ElementAt(4));
+            Assert.IsFalse(settings.ShrinkOnly);
+            Assert.IsFalse(settings.Replace);
+            Assert.IsTrue(settings.IgnoreOrientation);
+            Assert.IsFalse(settings.RemoveMetadata);
+            Assert.AreEqual(90, settings.JpegQualityLevel);
+            Assert.AreEqual(PngInterlaceOption.Default, settings.PngInterlaceOption);
+            Assert.AreEqual(TiffCompressOption.Default, settings.TiffCompressOption);
+            Assert.AreEqual("%1 (%2)", settings.FileName);
+            Assert.IsFalse(settings.KeepDateModified);
+            Assert.AreEqual(new Guid("19e4a5aa-5662-4fc5-a0c0-1758028e1057"), settings.FallbackEncoder);
+            Assert.IsNull(Logger.CurrentLogFile);
+        }
+
+        [DataTestMethod]
+        [DataRow("null")]
+        [DataRow("{\"properties\":null}")]
+        public void ReloadNullSnapshotThrowsWithoutChangingLoadedState(string json)
+        {
+            var settings = new Settings
+            {
+                ShrinkOnly = true,
+                JpegQualityLevel = 73,
+                FileName = "retained-%1",
+                CustomSize = new CustomSize(ResizeFit.Stretch, 500, 300, ResizeUnit.Pixel),
+            };
+            settings.Save();
+            settings.Reload();
+            settings.SelectedSizeIndex = 1;
+            var originalSizes = settings.Sizes;
+            var originalPresets = settings.Sizes.ToList();
+            var originalCustomSize = settings.CustomSize;
+            var originalSelectedSize = settings.SelectedSize;
+            var originalAllSizes = settings.AllSizes;
+            var originalAllSizesItems = settings.AllSizes.ToList();
+            var notifications = new List<string>();
+            settings.PropertyChanged += (sender, e) => notifications.Add(e.PropertyName);
+            System.IO.File.WriteAllText(_settingsPath, json);
+            var originalBytes = System.IO.File.ReadAllBytes(_settingsPath);
+
+            Assert.ThrowsExactly<NullReferenceException>(() => settings.Reload());
+
+            Assert.AreSame(originalSizes, settings.Sizes);
+            CollectionAssert.AreEqual(originalPresets, settings.Sizes.ToList());
+            Assert.AreSame(originalCustomSize, settings.CustomSize);
+            Assert.AreEqual(ResizeFit.Stretch, settings.CustomSize.Fit);
+            Assert.AreEqual(500d, settings.CustomSize.Width);
+            Assert.AreEqual(300d, settings.CustomSize.Height);
+            Assert.AreEqual(ResizeUnit.Pixel, settings.CustomSize.Unit);
+            Assert.AreEqual(1, settings.SelectedSizeIndex);
+            Assert.AreSame(originalSelectedSize, settings.SelectedSize);
+            Assert.AreSame(originalAllSizes, settings.AllSizes);
+            CollectionAssert.AreEqual(originalAllSizesItems, settings.AllSizes.ToList());
+            Assert.IsTrue(settings.ShrinkOnly);
+            Assert.AreEqual(73, settings.JpegQualityLevel);
+            Assert.AreEqual("retained-%1", settings.FileName);
+            Assert.AreEqual(0, notifications.Count);
+            CollectionAssert.AreEqual(originalBytes, System.IO.File.ReadAllBytes(_settingsPath));
         }
 
         [TestMethod]
@@ -648,19 +1236,15 @@ namespace ImageResizer.Properties
         {
             var settings = new Settings();
             settings.SelectedSizeIndex = 0;
+            var expectedSize = settings.Sizes[0];
+            var notifications = new List<string>();
+            settings.PropertyChanged += (sender, e) => notifications.Add(e.PropertyName);
 
-            bool isNotified = false;
-            settings.PropertyChanged += (sender, e) =>
-            {
-                if (e.PropertyName == nameof(settings.SelectedSizeIndex))
-                {
-                    isNotified = true;
-                }
-            };
+            settings.SelectedSizeIndex = 0;
 
-            settings.SelectedSizeIndex = 0; // Setting to the same value
-
-            Assert.IsFalse(isNotified, "PropertyChanged should not be raised when setting the same value.");
+            Assert.AreEqual(0, notifications.Count);
+            Assert.AreEqual(0, settings.SelectedSizeIndex);
+            Assert.AreSame(expectedSize, settings.SelectedSize);
         }
 
         [TestMethod]
@@ -668,19 +1252,26 @@ namespace ImageResizer.Properties
         {
             var settings = new Settings();
             settings.SelectedSizeIndex = 0;
-
-            bool isNotified = false;
+            var expectedSize = settings.Sizes[1];
+            var notifications = new List<(object Sender, string Name, int Index, ResizeSize Size)>();
             settings.PropertyChanged += (sender, e) =>
+                notifications.Add((sender, e.PropertyName, settings.SelectedSizeIndex, settings.SelectedSize));
+
+            settings.SelectedSizeIndex = 1;
+
+            Assert.AreEqual(2, notifications.Count);
+            CollectionAssert.AreEqual(
+                new[] { nameof(Settings.SelectedSizeIndex), nameof(Settings.SelectedSize) },
+                notifications.Select(notification => notification.Name).ToArray());
+            foreach (var notification in notifications)
             {
-                if (e.PropertyName == nameof(settings.SelectedSizeIndex))
-                {
-                    isNotified = true;
-                }
-            };
+                Assert.AreSame(settings, notification.Sender);
+                Assert.AreEqual(1, notification.Index);
+                Assert.AreSame(expectedSize, notification.Size);
+            }
 
-            settings.SelectedSizeIndex = 1; // Setting to a different value
-
-            Assert.IsTrue(isNotified, "PropertyChanged should be raised when setting a different value.");
+            Assert.AreEqual(1, settings.SelectedSizeIndex);
+            Assert.AreSame(expectedSize, settings.SelectedSize);
         }
 
         [TestMethod]
@@ -747,16 +1338,33 @@ namespace ImageResizer.Properties
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            // No App instance to dispose in WinUI3 test environment
+            if (ReferenceEquals(ResourceLoaderInstance.GetString, _getString))
+            {
+                ResourceLoaderInstance.GetString = _originalGetString;
+            }
         }
 
         [TestCleanup]
         public void TestCleanUp()
         {
-            if (System.IO.File.Exists(Settings.SettingsPath))
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            try
             {
-                System.IO.File.Delete(Settings.SettingsPath);
+                _directory.Dispose();
             }
+            finally
+            {
+                if (Settings.SettingsPath == _settingsPath)
+                {
+                    Settings.SettingsPath = _originalSettingsPath;
+                }
+            }
+
+            GC.SuppressFinalize(this);
         }
     }
 }
