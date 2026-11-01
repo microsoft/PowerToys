@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Drawing;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Forms = System.Windows.Forms;
 
 namespace Microsoft.PowerToys.Awake.UITests;
 
@@ -13,11 +15,11 @@ namespace Microsoft.PowerToys.Awake.UITests;
 [TestCategory("AwakeCLI")]
 public sealed class AwakeCliTests : UITestBase
 {
+    private static readonly string[] HelpOptions = ["--use-pt-config", "--display-on", "--time-limit", "--pid", "--expire-at", "--use-parent-pid"];
     private static IDisposable? snapshot;
     private AwakeTerminal? terminal;
     private AwakeUi ui = null!;
-    private string originalClipboard = string.Empty;
-    private bool clipboardCaptured;
+    private ClipboardSnapshot? clipboardSnapshot;
 
     public AwakeCliTests()
         : base(PowerToysModule.PowerToysSettings, enableModules: [])
@@ -43,10 +45,8 @@ public sealed class AwakeCliTests : UITestBase
     {
         ui = new AwakeUi(TestContext);
         ui.WaitForProcess(false);
-        ui.Step("Waiting for background execution-state requests to clear before standalone CLI testing.");
-        AwakeUi.WaitForPowerState(false, false, timeoutMS: 180_000);
-        originalClipboard = ClipboardHelper.GetText();
-        clipboardCaptured = true;
+        ui.WaitForPassiveBaseline();
+        clipboardSnapshot = new ClipboardSnapshot();
         terminal = new AwakeTerminal(TestContext);
     }
 
@@ -62,12 +62,7 @@ public sealed class AwakeCliTests : UITestBase
         }
         finally
         {
-            if (clipboardCaptured)
-            {
-                Assert.IsTrue(
-                    originalClipboard.Length == 0 ? ClipboardHelper.Clear() : ClipboardHelper.SetText(originalClipboard),
-                    "Could not restore the original clipboard text.");
-            }
+            clipboardSnapshot?.Dispose();
         }
     }
 
@@ -76,30 +71,70 @@ public sealed class AwakeCliTests : UITestBase
     [DataRow("-h")]
     public void HelpShowsDocumentedOptionsInTerminal(string argument)
     {
-        terminal!.Start(argument, captureOutput: true);
+        terminal!.Start(argument, waitForCommandExit: true);
         Assert.AreEqual(0, terminal.WaitForExit());
-        foreach (var option in new[] { "--use-pt-config", "--display-on", "--time-limit", "--pid", "--expire-at", "--use-parent-pid" })
-        {
-            terminal.WaitForVisibleText(option);
-        }
+        terminal.WaitForVisibleText(HelpOptions);
 
         ui.WaitForProcess(false);
         AwakeUi.WaitForPowerState(false, false);
     }
 
     [TestMethod]
-    [DataRow("--time-limit -1", "--time-limit")]
-    [DataRow("--pid not-a-pid", "--pid")]
-    [DataRow("--expire-at not-a-date", "--expire-at")]
-    public void InvalidOptionsShowErrorsAndDoNotKeepAwake(string arguments, string option)
+    [DataRow("--time-limit -1", "Interval in --time-limit could not be parsed correctly")]
+    [DataRow("--pid not-a-pid", "PID value in --pid could not be parsed correctly")]
+    [DataRow("--expire-at not-a-date", "Date and time value in --expire-at could not be parsed correctly")]
+    public void InvalidOptionsShowErrorsAndDoNotKeepAwake(string arguments, string diagnostic)
     {
-        terminal!.Start(arguments, captureOutput: true);
+        terminal!.Start(arguments, waitForCommandExit: true);
         Assert.AreNotEqual(0, terminal.WaitForExit());
-        terminal.WaitForVisibleText(option);
-        terminal.WaitForVisibleText("could not be parsed correctly");
-        StringAssert.Contains(terminal.ReadOutput(), "could not be parsed correctly");
+        terminal.WaitForVisibleText(diagnostic);
         ui.WaitForProcess(false);
         AwakeUi.WaitForPowerState(false, false);
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void TerminalInputCanRestoreImageAndFileClipboardContents(bool image)
+    {
+        var path = SessionHelper.GetExecutablePath(PowerToysModule.Runner);
+        ClipboardSnapshot.OnSta(() =>
+        {
+            if (image)
+            {
+                using var bitmap = new Bitmap(2, 2);
+                bitmap.SetPixel(0, 0, Color.Red);
+                Forms.Clipboard.SetImage(bitmap);
+            }
+            else
+            {
+                Forms.Clipboard.SetFileDropList(new System.Collections.Specialized.StringCollection { path });
+            }
+
+            return true;
+        });
+        using (var fixtureSnapshot = new ClipboardSnapshot())
+        {
+            terminal!.Start("--help", waitForCommandExit: true);
+            Assert.AreEqual(0, terminal.WaitForExit());
+        }
+
+        ClipboardSnapshot.OnSta(() =>
+        {
+            if (image)
+            {
+                using var restored = Forms.Clipboard.GetImage();
+                Assert.IsNotNull(restored, "The terminal fixture did not restore the clipboard image.");
+                using var bitmap = new Bitmap(restored);
+                Assert.AreEqual(Color.Red.ToArgb(), bitmap.GetPixel(0, 0).ToArgb(), "The restored clipboard image changed.");
+            }
+            else
+            {
+                CollectionAssert.Contains(Forms.Clipboard.GetFileDropList(), path, "The terminal fixture did not restore copied files.");
+            }
+
+            return true;
+        });
     }
 
     [TestMethod]
@@ -128,6 +163,9 @@ public sealed class AwakeCliTests : UITestBase
         terminal!.Start("-t 20 -d");
         ui.WaitForProcess(true);
         AwakeUi.WaitForPowerState(true, true);
+        var activeTime = Stopwatch.StartNew();
+        Assert.IsTrue(terminal.AwakeProcess.WaitForExit(40_000), "The 20-second CLI timer did not exit.");
+        Assert.IsTrue(activeTime.Elapsed >= TimeSpan.FromSeconds(15), $"The 20-second CLI timer exited prematurely after {activeTime.Elapsed}.");
         Assert.AreEqual(0, terminal.WaitForExit(40_000));
         ui.WaitForProcess(false);
         AwakeUi.WaitForPowerState(false, false);
@@ -139,6 +177,9 @@ public sealed class AwakeCliTests : UITestBase
         terminal!.Start("--time-limit 300", expirationDelaySeconds: 30);
         ui.WaitForProcess(true);
         AwakeUi.WaitForPowerState(true, false);
+        var activeTime = Stopwatch.StartNew();
+        Assert.IsTrue(terminal.AwakeProcess.WaitForExit(50_000), "The 30-second CLI expiration did not exit.");
+        Assert.IsTrue(activeTime.Elapsed >= TimeSpan.FromSeconds(20), $"The 30-second CLI expiration exited prematurely after {activeTime.Elapsed}.");
         Assert.AreEqual(0, terminal.WaitForExit(50_000), "The absolute expiration must take precedence over the longer time limit.");
         ui.WaitForProcess(false);
         AwakeUi.WaitForPowerState(false, false);

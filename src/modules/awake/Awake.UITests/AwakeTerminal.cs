@@ -34,7 +34,6 @@ internal sealed class AwakeTerminal : IDisposable
 
         var startup = $"$Host.UI.RawUI.WindowTitle={Quote(title)}; $ErrorActionPreference='Stop'; " +
             $"$pidFile={Quote(pidPath)}; $exitFile={Quote(exitPath)}; " +
-            $"$stdoutFile={Quote(Path.Combine(directory, "stdout.txt"))}; $stderrFile={Quote(Path.Combine(directory, "stderr.txt"))}; " +
             $"function prompt {{ 'AWAKE_READY> ' }}; " +
             $"Start-Transcript -Path {Quote(outputPath)}; Write-Host 'AWAKE_TERMINAL_READY'";
         var startInfo = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, @"WindowsPowerShell\v1.0\powershell.exe"))
@@ -47,9 +46,11 @@ internal sealed class AwakeTerminal : IDisposable
         }
 
         shell = Process.Start(startInfo) ?? throw new InvalidOperationException("Could not open the PowerShell terminal.");
+        Session? openedTerminal = null;
         try
         {
-            terminal = WindowsFinder.WaitForWindowByTitle(title, 60_000)
+            openedTerminal = WindowsFinder.WaitForWindowByTitle(title, 60_000);
+            terminal = openedTerminal
                 ?? throw new InvalidOperationException("The Awake CLI terminal did not appear.");
             WindowHelper.MaximizeWindow(new IntPtr(terminal.WindowHandle));
             Assert.IsTrue(
@@ -61,19 +62,21 @@ internal sealed class AwakeTerminal : IDisposable
                 "The terminal shell did not finish initialization.");
             WaitForVisibleText("AWAKE_READY>");
         }
-        catch
+        catch (Exception initializationFailure)
         {
-            try
+            var failures = new List<Exception>();
+            CollectCleanupFailure(() => StopProcess(shell, "failed terminal"), failures);
+            if (openedTerminal is not null)
             {
-                if (!shell.HasExited)
-                {
-                    shell.Kill();
-                    Assert.IsTrue(shell.WaitForExit(10_000), "The failed terminal fixture did not stop.");
-                }
+                CollectCleanupFailure(
+                    () => Assert.IsTrue(WindowControl.TryCloseWindow(openedTerminal.WindowHandle), "The failed terminal window did not close."),
+                    failures);
             }
-            finally
+
+            CollectCleanupFailure(shell.Dispose, failures);
+            if (failures.Count > 0)
             {
-                shell.Dispose();
+                throw new AggregateException("Terminal initialization and cleanup failed.", new[] { initializationFailure }.Concat(failures));
             }
 
             throw;
@@ -84,7 +87,7 @@ internal sealed class AwakeTerminal : IDisposable
 
     internal Process AwakeProcess => awake ?? throw new InvalidOperationException("No Awake command has been submitted.");
 
-    internal void Start(string arguments, bool captureOutput = false, int? expirationDelaySeconds = null)
+    internal void Start(string arguments, bool waitForCommandExit = false, int? expirationDelaySeconds = null)
     {
         var executable = Path.Combine(Path.GetDirectoryName(SessionHelper.GetExecutablePath(PowerToysModule.Runner))!, "PowerToys.Awake.exe");
         Assert.IsTrue(File.Exists(executable), $"The build under test is missing {executable}.");
@@ -97,18 +100,11 @@ internal sealed class AwakeTerminal : IDisposable
             nativeArguments = $"('--expire-at \"'+[DateTimeOffset]::Now.AddSeconds({seconds}).ToString('O')+'\" '+{Quote(arguments)})";
         }
 
-        var redirects = captureOutput
-            ? " -Wait -RedirectStandardOutput $stdoutFile -RedirectStandardError $stderrFile"
-            : " -NoNewWindow";
-        var command = $"$awake=Start-Process -FilePath {Quote(executable)} -ArgumentList {nativeArguments} -PassThru{redirects}; " +
+        var waitArgument = waitForCommandExit ? " -Wait" : string.Empty;
+        var command = $"$awake=Start-Process -FilePath {Quote(executable)} -ArgumentList {nativeArguments} -PassThru -NoNewWindow{waitArgument}; " +
             "[void]$awake.Handle; $awake.Id | Set-Content $pidFile; $awake.WaitForExit(); " +
             "if ($null -eq $awake.ExitCode) { throw 'Awake exit code is unavailable.' }; " +
             "$awake.ExitCode | Set-Content $exitFile; ";
-        if (captureOutput)
-        {
-            command += "Get-Content $stdoutFile; Get-Content $stderrFile; ";
-        }
-
         command += "Write-Host ('AWAKE_EXIT:'+$awake.ExitCode)";
         context.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Submitting to terminal: PowerToys.Awake.exe {arguments}");
         Send(command);
@@ -119,7 +115,7 @@ internal sealed class AwakeTerminal : IDisposable
             shouldRetryException: exception => exception is IOException);
         Assert.IsTrue(result.Succeeded, $"The terminal did not launch Awake and publish its PID. Output: {ReadOutput()}");
         var processId = int.Parse(result.LastObservation!, CultureInfo.InvariantCulture);
-        if (!captureOutput && !File.Exists(exitPath))
+        if (!waitForCommandExit && !File.Exists(exitPath))
         {
             awake = Process.GetProcessById(processId);
             _ = awake.SafeHandle;
@@ -139,8 +135,10 @@ internal sealed class AwakeTerminal : IDisposable
         return code;
     }
 
-    internal void WaitForVisibleText(string expected)
+    internal void WaitForVisibleText(params string[] expected)
     {
+        ArgumentNullException.ThrowIfNull(expected);
+        ArgumentOutOfRangeException.ThrowIfZero(expected.Length);
         JsonElement lastTree = default;
         var result = WaitHelper.WaitForStable(
             () =>
@@ -154,11 +152,12 @@ internal sealed class AwakeTerminal : IDisposable
                     .Select(node => terminal.Find<Element>(By.Slug(node.GetProperty("selector").GetString()!)).GetValue())
                     .ToArray();
             },
-            values => values is not null && values.Any(value => value.ReplaceLineEndings(string.Empty).Contains(expected, StringComparison.Ordinal)),
+            values => values is not null && values.Any(value =>
+                expected.All(text => value.ReplaceLineEndings(string.Empty).Contains(text, StringComparison.Ordinal))),
             15_000,
             2,
             shouldRetryException: ShellMenu.IsTransientElementException);
-        Assert.IsTrue(result.Succeeded, $"Terminal UI did not show '{expected}'. Readouts: {string.Join("\n", result.LastObservation ?? [])}. Tree: {lastTree}");
+        Assert.IsTrue(result.Succeeded, $"Terminal UI did not show [{string.Join(", ", expected)}]. Readouts: {string.Join("\n", result.LastObservation ?? [])}. Tree: {lastTree}");
     }
 
     internal string ReadOutput()
@@ -177,30 +176,55 @@ internal sealed class AwakeTerminal : IDisposable
 
     public void Dispose()
     {
-        if (File.Exists(outputPath))
-        {
-            context.AddResultFile(outputPath);
-        }
-
+        var failures = new List<Exception>();
         if (awake is not null)
         {
-            if (!awake.HasExited)
-            {
-                awake.Kill();
-                Assert.IsTrue(awake.WaitForExit(10_000), "The test-owned Awake process did not stop.");
-            }
-
-            awake.Dispose();
+            CollectCleanupFailure(() => StopProcess(awake, "Awake"), failures);
+            CollectCleanupFailure(awake.Dispose, failures);
         }
 
-        if (!shell.HasExited)
+        CollectCleanupFailure(() => StopProcess(shell, "terminal"), failures);
+        CollectCleanupFailure(
+            () => Assert.IsTrue(WindowControl.TryCloseWindow(terminal.WindowHandle), "The test-owned terminal window did not close."),
+            failures);
+        CollectCleanupFailure(shell.Dispose, failures);
+        if (File.Exists(outputPath))
         {
-            shell.Kill();
-            Assert.IsTrue(shell.WaitForExit(10_000), "The test-owned terminal did not stop.");
+            CollectCleanupFailure(() => context.AddResultFile(outputPath), failures);
         }
 
-        shell.Dispose();
-        Assert.IsTrue(WindowControl.TryCloseWindow(terminal.WindowHandle), "The test-owned terminal window did not close.");
+        if (failures.Count > 0)
+        {
+            throw new AggregateException("Could not completely clean up the Awake terminal fixture.", failures);
+        }
+    }
+
+    private static void StopProcess(Process process, string description)
+    {
+        try
+        {
+            if (!process.HasExited)
+            {
+                process.Kill();
+            }
+        }
+        catch (InvalidOperationException) when (process.HasExited)
+        {
+        }
+
+        Assert.IsTrue(process.WaitForExit(10_000), $"The test-owned {description} process did not stop.");
+    }
+
+    private static void CollectCleanupFailure(Action action, List<Exception> failures)
+    {
+        try
+        {
+            action();
+        }
+        catch (Exception failure)
+        {
+            failures.Add(failure);
+        }
     }
 
     private static string Quote(string value) => "'" + value.Replace("'", "''", StringComparison.Ordinal) + "'";

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -41,6 +42,7 @@ public sealed class AwakeSettingsTests : UITestBase
         ui = new AwakeUi(TestContext);
         ui.Navigate();
         ui.WaitForProcess(true);
+        ui.WaitForPassiveBaseline();
     }
 
     [TestCleanup]
@@ -58,12 +60,16 @@ public sealed class AwakeSettingsTests : UITestBase
     [TestMethod]
     public void EnableDisableControlsTheRuntime()
     {
+        ui.SelectMode(AwakeUi.Indefinite, 1);
+        AwakeUi.WaitForPowerState(true, false);
         ui.Enable(false);
         Assert.IsFalse(ui.ModeCombo().IsEnabled, "Disabled Awake must disable mode configuration.");
         Assert.IsFalse(ui.DisplayToggle().IsEnabled, "Disabled Awake must disable display configuration.");
         AwakeUi.WaitForPowerState(false, false);
         ui.Enable(true);
         Assert.IsTrue(ui.ModeCombo().IsEnabled, "Enabling Awake must enable its mode selector.");
+        AwakeUi.WaitForPowerState(true, false);
+        ui.SelectMode(AwakeUi.Passive, 0);
         AwakeUi.WaitForPowerState(false, false);
     }
 
@@ -115,7 +121,9 @@ public sealed class AwakeSettingsTests : UITestBase
         ui.SelectMode(AwakeUi.Timed, 2);
         ui.SetDisplay(true);
         AwakeUi.WaitForPowerState(true, true);
+        var activeTime = Stopwatch.StartNew();
         ui.WaitForSettings(properties => properties["mode"]!.GetValue<int>() == 0, "timer completion returned to passive", 80_000);
+        Assert.IsTrue(activeTime.Elapsed >= TimeSpan.FromSeconds(45), $"The one-minute integrated timer ended prematurely after {activeTime.Elapsed}.");
         Assert.IsTrue(ui.ModeCombo().WaitForValue(AwakeUi.Passive, timeoutMS: 15_000), "The Settings mode selector did not reflect timer completion.");
         AwakeUi.WaitForPowerState(false, false);
         ui.WaitForProcess(true);

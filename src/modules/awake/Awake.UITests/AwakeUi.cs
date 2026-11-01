@@ -57,8 +57,29 @@ internal sealed class AwakeUi(TestContext context)
 
     internal static void RestoreSettings(IDisposable? snapshot)
     {
-        StopProcesses();
-        snapshot?.Dispose();
+        var failures = new List<Exception>();
+        try
+        {
+            StopProcesses();
+        }
+        catch (Exception failure)
+        {
+            failures.Add(failure);
+        }
+
+        try
+        {
+            snapshot?.Dispose();
+        }
+        catch (Exception failure)
+        {
+            failures.Add(failure);
+        }
+
+        if (failures.Count > 0)
+        {
+            throw new AggregateException("Could not completely restore the Awake test settings.", failures);
+        }
     }
 
     internal static void StopProcesses()
@@ -70,6 +91,12 @@ internal sealed class AwakeUi(TestContext context)
     }
 
     internal void Step(string message) => context.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
+
+    internal void WaitForPassiveBaseline()
+    {
+        Step("Waiting for unrelated startup power requests to clear before testing passive Awake.");
+        WaitForPowerState(false, false, timeoutMS: 180_000);
+    }
 
     internal void Navigate()
     {
