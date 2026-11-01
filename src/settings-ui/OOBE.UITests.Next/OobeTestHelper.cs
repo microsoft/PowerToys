@@ -29,13 +29,23 @@ internal static class OobeTestHelper
     internal static Session OpenWelcome(Session settings)
     {
         settings.Find<NavigationViewItem>(By.AccessibilityId("GeneralNavItem")).Invoke(msPostAction: 0);
-        var link = settings.Find<NavigationViewItem>(By.AccessibilityId("OOBENavItem"));
-        link.ScrollIntoView();
-        RequireForeground(settings);
+        Session? welcome = null;
+        for (var attempt = 0; attempt < 3 && welcome is null; attempt++)
+        {
+            var link = settings.Find<NavigationViewItem>(By.AccessibilityId("OOBENavItem"));
+            link.ScrollIntoView();
+            RequireForeground(settings);
 
-        // This footer handles Tapped, not SelectionChanged; UIA Select alone does not open OOBE.
-        link.MouseClick(msPostAction: 0);
-        var welcome = WaitForSettingsWindow(WelcomeTitle);
+            // Tapped opens OOBE idempotently; a cold window can drop the first physical click.
+            link.MouseClick(msPostAction: 0);
+            welcome = WindowsFinder.WaitForWindowByApp(
+                SettingsProcess,
+                window => string.Equals(window.Title, WelcomeTitle, StringComparison.OrdinalIgnoreCase),
+                timeoutMS: 10_000);
+        }
+
+        Assert.IsNotNull(welcome, "The Settings Welcome link did not open OOBE after three attempts.");
+        WindowHelper.MaximizeWindow(new IntPtr(welcome.WindowHandle));
         Assert.IsTrue(welcome.Has(By.AccessibilityId("WelcomeTitle"), 30_000), "The Getting started page was not ready.");
         return welcome;
     }
