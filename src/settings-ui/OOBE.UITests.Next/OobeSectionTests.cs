@@ -39,6 +39,7 @@ public sealed class OobeSectionTests : UITestBase
         sharedWelcome = null;
     }
 
+    // Mirrors the module entries in Settings.UI\SettingsXAML\OobeWindow.xaml.
     [TestMethod]
     [TestCategory("OOBE")]
     [DataRow("Advanced Paste")]
@@ -75,8 +76,7 @@ public sealed class OobeSectionTests : UITestBase
     public void ModulePageRendersInsideOobe(string section)
     {
         Step($"Rendering '{section}' inside OOBE");
-        OobeTestHelper.SelectSection(welcome, section);
-        var heading = welcome.Find<TextBlock>(By.AccessibilityId("TitleTxt"));
+        var heading = OobeTestHelper.SelectSection(welcome, section);
         Assert.IsTrue(heading.WaitForProperty("IsOffscreen", "False", 5_000), $"'{section}' has no visible OOBE heading.");
         var description = welcome.Find<TextBlock>(By.AccessibilityId("DescriptionTxt"));
         Assert.IsFalse(string.IsNullOrWhiteSpace(description.GetValue()), $"'{section}' has no OOBE description.");
@@ -109,6 +109,17 @@ public sealed class OobeSectionTests : UITestBase
     [TestCategory("OOBE")]
     public void WhatsNewFooterOpensReleaseNotesWindow()
     {
+        Step("Ensuring the What's New window is not already open");
+        Assert.IsTrue(
+            WindowControl.TryCloseByApp(
+                OobeTestHelper.SettingsProcess,
+                window => string.Equals(window.Title, OobeTestHelper.WhatsNewTitle, StringComparison.OrdinalIgnoreCase),
+                timeoutMS: 15_000),
+            "Could not close a stale What's New window before testing the OOBE footer.");
+        Assert.IsFalse(
+            WindowsFinder.ListByApp(OobeTestHelper.SettingsProcess)
+                .Any(window => string.Equals(window.Title, OobeTestHelper.WhatsNewTitle, StringComparison.OrdinalIgnoreCase)),
+            "The What's New footer test requires no preexisting release-notes window.");
         Step("Opening What's new from OOBE");
         var link = welcome.Find<NavigationViewItem>(By.AccessibilityId("WhatIsNewNavItem"));
         link.ScrollIntoView();

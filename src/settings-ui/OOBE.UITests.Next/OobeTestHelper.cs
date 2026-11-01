@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -50,15 +51,36 @@ internal static class OobeTestHelper
         return welcome;
     }
 
-    internal static void SelectSection(Session welcome, string section)
+    internal static TextBlock SelectSection(Session welcome, string section)
     {
         var item = welcome.FindAll<NavigationViewItem>(By.Name(section), timeoutMS: 30_000)
             .Single(i => string.Equals(i.Name, section, StringComparison.OrdinalIgnoreCase));
         item.Invoke(msPostAction: 0);
         Assert.IsTrue(item.WaitForProperty("IsSelected", "True", 15_000), $"OOBE did not select '{section}'.");
-        Assert.IsTrue(
-            welcome.Find<TextBlock>(By.AccessibilityId("TitleTxt"), 30_000).WaitForValue(section, timeoutMS: 15_000),
-            $"OOBE did not render the '{section}' page.");
+        var heading = welcome.Find<TextBlock>(By.AccessibilityId("TitleTxt"), 30_000);
+        Assert.IsTrue(heading.WaitForValue(section, timeoutMS: 15_000), $"OOBE did not render the '{section}' page.");
+        return heading;
+    }
+
+    internal static void EnableUpdateOnboarding()
+    {
+        var path = Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, "settings.json");
+        var settings = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        settings["show_whats_new_after_updates"] = true;
+        File.WriteAllText(path, settings.ToJsonString());
+    }
+
+    internal static void AssertWindowStaysClosed(string title)
+    {
+        var appeared = false;
+        var result = WaitHelper.WaitForStable(
+            () => appeared |= WindowsFinder.ListByApp(SettingsProcess)
+                .Any(window => string.Equals(window.Title, title, StringComparison.OrdinalIgnoreCase)),
+            shown => !shown,
+            timeoutMS: 5_000,
+            requiredConsecutiveMatches: 11,
+            pollIntervalMS: 200);
+        Assert.IsTrue(result.Succeeded, $"Unexpected onboarding window '{title}' appeared.");
     }
 
     internal static void CloseWindow(Session window)
