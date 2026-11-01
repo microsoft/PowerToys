@@ -10,7 +10,6 @@ SetLastError
 
 ShowWindow
 SetForegroundWindow
-SetFocus
 SetActiveWindow
 
 AttachThreadInput

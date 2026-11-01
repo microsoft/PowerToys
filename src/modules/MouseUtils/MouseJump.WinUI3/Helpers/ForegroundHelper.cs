@@ -38,17 +38,10 @@ internal static class ForegroundHelper
             Logger.LogWarning($"{nameof(PInvoke.SetForegroundWindow)} failed after retry. Continuing without focus.");
         }
 
-        PInvoke.SetLastError(0);
-        var setFocusResult = PInvoke.SetFocus(hWnd);
-        if (setFocusResult.IsNull)
-        {
-            var lastError = Marshal.GetLastPInvokeError();
-            if (lastError != 0)
-            {
-                Logger.LogWarning($"{nameof(PInvoke.SetFocus)} failed with error {lastError}. Continuing.");
-            }
-        }
-
+        // don't call SetFocus(hWnd) here - activating the window has already given keyboard
+        // focus to the WinUI content's child window, and SetFocus on the top-level window
+        // moves it back off the content, so Escape and the navigation keys never reach the
+        // preview. See https://github.com/microsoft/PowerToys/issues/50533.
         PInvoke.SetLastError(0);
         var setActiveResult = PInvoke.SetActiveWindow(hWnd);
         if (setActiveResult.IsNull)
