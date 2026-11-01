@@ -145,7 +145,7 @@ internal sealed class AwakeTerminal : IDisposable
                     .Select(node => terminal.Find<Element>(By.Slug(node.GetProperty("selector").GetString()!)).GetValue())
                     .ToArray();
             },
-            values => values is not null && values.Any(value => value.Contains(expected, StringComparison.Ordinal)),
+            values => values is not null && values.Any(value => value.ReplaceLineEndings(string.Empty).Contains(expected, StringComparison.Ordinal)),
             15_000,
             2,
             shouldRetryException: ShellMenu.IsTransientElementException);
