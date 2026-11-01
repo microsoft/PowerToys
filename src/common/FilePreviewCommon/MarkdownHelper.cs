@@ -53,7 +53,12 @@ namespace Microsoft.PowerToys.FilePreviewCommon
             var softlineBreak = new Markdig.Extensions.Hardlines.SoftlineBreakAsHardlineExtension();
 
             MarkdownPipelineBuilder pipelineBuilder;
-            pipelineBuilder = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseEmojiAndSmiley().UseYamlFrontMatter().UseMathematics();
+            // EmojiAndSmiley is intentionally not used: its ASCII smiley mapping matches
+            // sequences like ":*" inside strong emphasis delimiters (for example
+            // "**Version :**"), which breaks bold rendering — see #51796. GitHub-flavored
+            // markdown has no bare-punctuation smileys either, so dropping the extension
+            // also aligns the preview with how the same file renders on GitHub.
+            pipelineBuilder = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseYamlFrontMatter().UseMathematics();
             pipelineBuilder.Extensions.Add(extension);
             pipelineBuilder.Extensions.Add(softlineBreak);
 
