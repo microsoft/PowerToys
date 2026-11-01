@@ -84,14 +84,23 @@ internal sealed class AwakeTerminal : IDisposable
 
     internal Process AwakeProcess => awake ?? throw new InvalidOperationException("No Awake command has been submitted.");
 
-    internal void Start(string arguments, bool captureOutput = false)
+    internal void Start(string arguments, bool captureOutput = false, int? expirationDelaySeconds = null)
     {
         var executable = Path.Combine(Path.GetDirectoryName(SessionHelper.GetExecutablePath(PowerToysModule.Runner))!, "PowerToys.Awake.exe");
         Assert.IsTrue(File.Exists(executable), $"The build under test is missing {executable}.");
+        var nativeArguments = Quote(arguments);
+        if (expirationDelaySeconds is int seconds)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(seconds);
+
+            // Compute the deadline after the asynchronous UI paste, when the shell executes it.
+            nativeArguments = $"('--expire-at \"'+[DateTimeOffset]::Now.AddSeconds({seconds}).ToString('O')+'\" '+{Quote(arguments)})";
+        }
+
         var redirects = captureOutput
             ? " -Wait -RedirectStandardOutput $stdoutFile -RedirectStandardError $stderrFile"
             : " -NoNewWindow";
-        var command = $"$awake=Start-Process -FilePath {Quote(executable)} -ArgumentList {Quote(arguments)} -PassThru{redirects}; " +
+        var command = $"$awake=Start-Process -FilePath {Quote(executable)} -ArgumentList {nativeArguments} -PassThru{redirects}; " +
             "[void]$awake.Handle; $awake.Id | Set-Content $pidFile; $awake.WaitForExit(); " +
             "if ($null -eq $awake.ExitCode) { throw 'Awake exit code is unavailable.' }; " +
             "$awake.ExitCode | Set-Content $exitFile; ";

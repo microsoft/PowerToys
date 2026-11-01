@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using System.Globalization;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -137,8 +136,7 @@ public sealed class AwakeCliTests : UITestBase
     [TestMethod]
     public void StandaloneExpirationTakesPrecedenceOverTimeLimit()
     {
-        var expiration = DateTimeOffset.Now.AddSeconds(30).ToString("O", CultureInfo.InvariantCulture);
-        terminal!.Start($"--expire-at \"{expiration}\" --time-limit 300");
+        terminal!.Start("--time-limit 300", expirationDelaySeconds: 30);
         ui.WaitForProcess(true);
         AwakeUi.WaitForPowerState(true, false);
         Assert.AreEqual(0, terminal.WaitForExit(50_000), "The absolute expiration must take precedence over the longer time limit.");
@@ -197,6 +195,8 @@ public sealed class AwakeCliTests : UITestBase
         terminal!.Start($"--use-pt-config --pid {terminal.ShellId} --display-on --time-limit 1");
         ui.WaitForProcess(true);
         AwakeUi.WaitForPowerState(false, false);
+        ui.TrayIcon(name => name.EndsWith("Off", StringComparison.Ordinal) && !name.Contains("Screen:", StringComparison.Ordinal));
+        ShellMenu.Dismiss();
         ui.Step("Updating the configuration-bound CLI session to indefinite without restarting.");
         AwakeUi.UpdateProperties(properties => properties["mode"] = 1);
         ui.WaitForSettings(properties => properties["mode"]!.GetValue<int>() == 1, "CLI config indefinite");

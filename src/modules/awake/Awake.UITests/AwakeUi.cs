@@ -361,16 +361,31 @@ internal sealed class AwakeUi(TestContext context)
     internal static void ClickMenuItem(Session menu, Element item)
     {
         // Focusing the popup HWND dismisses Awake's MNS_AUTO_DISMISS menu. Keep its owner active.
-        // The Shell's retained tray tooltip can cover the middle of the menu row.
-        var x = item.X + Math.Min(8, item.Width / 2);
+        // The retained Shell tooltip can cover either side or the middle of the menu row.
+        var padding = Math.Min(8, item.Width / 2);
+        int[] candidates = [item.X + padding, item.X + item.Width - padding, item.X + (item.Width / 2)];
         var y = item.Y + (item.Height / 2);
-        MouseHelper.MoveTo(x, y);
         var ready = WaitHelper.WaitForStable(
-            () => WindowControl.IsPointOwnedByWindow(new IntPtr(menu.WindowHandle), x, y),
+            () =>
+            {
+                foreach (var candidate in candidates)
+                {
+                    if (WindowControl.IsPointOwnedByWindow(new IntPtr(menu.WindowHandle), candidate, y))
+                    {
+                        MouseHelper.MoveTo(candidate, y);
+                        if (WindowControl.IsPointOwnedByWindow(new IntPtr(menu.WindowHandle), candidate, y))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            },
             owned => owned,
             10_000,
             2);
-        Assert.IsTrue(ready.Succeeded, $"The native Awake menu does not own the click point ({x}, {y}).");
+        Assert.IsTrue(ready.Succeeded, $"The native Awake menu has no unoccluded click point on row y={y} at x=[{string.Join(", ", candidates)}].");
         MouseHelper.LeftClick();
     }
 
