@@ -1,0 +1,32 @@
+diff --git a/video/IndirectDisplay/IddSampleDriver/Driver.cpp b/video/IndirectDisplay/IddSampleDriver/Driver.cpp
+--- a/video/IndirectDisplay/IddSampleDriver/Driver.cpp
++++ b/video/IndirectDisplay/IddSampleDriver/Driver.cpp
+@@ -18,2 +18,2 @@
+ #include "Driver.h"
+-#include "Driver.tmh"
++#include "Fixture.h"
+@@ -26 +26 @@
+-static constexpr DWORD IDD_SAMPLE_MONITOR_COUNT = 3; // If monitor count > ARRAYSIZE(s_SampleMonitors), we create edid-less monitors
++static constexpr DWORD IDD_SAMPLE_MONITOR_COUNT = 2;
+@@ -225,1 +225,4 @@
+     IddConfig.EvtIddCxMonitorUnassignSwapChain = IddSampleMonitorUnassignSwapChain;
++    IddConfig.EvtIddCxMonitorI2CTransmit = FixtureTransmit;
++    IddConfig.EvtIddCxMonitorI2CReceive = FixtureReceive;
++    IddConfig.EvtIddCxDeviceIoControl = FixtureIoControl;
+@@ -256,1 +259,4 @@
+     Status = IddCxDeviceInitialize(Device);
++    if (!NT_SUCCESS(Status)) return Status;
++    Status = FixtureInitialize(Device);
++    if (!NT_SUCCESS(Status)) return Status;
+@@ -585,1 +590,2 @@
+-    CoCreateGuid(&MonitorInfo.MonitorContainerId);
++    MonitorInfo.MonitorContainerId = { 0x51800000 + ConnectorIndex, 0x4abc, 0x4321,
++        { 0x90, 0x10, 0x50, 0x54, 0x49, 0x44, 0x44, 0x01 } };
+@@ -593,1 +600,7 @@
+         pMonitorContextWrapper->pContext = new IndirectMonitorContext(MonitorCreateOut.MonitorObject);
++        Status = FixtureAttach(MonitorCreateOut.MonitorObject, ConnectorIndex);
++        if (!NT_SUCCESS(Status))
++        {
++            WdfObjectDelete(MonitorCreateOut.MonitorObject);
++            return;
++        }

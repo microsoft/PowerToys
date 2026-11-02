@@ -1,0 +1,21 @@
+Test-only feasibility spike for microsoft/PowerToys#51800.
+
+The adapter, EDIDs, mode enumeration and swap-chain processing are built from:
+https://github.com/microsoft/Windows-driver-samples
+Revision: bb68ed5e770bce04dc5395ec9258dafab034184d
+Directory: video/IndirectDisplay/IddSampleDriver
+License: Microsoft Public License (MS-PL), copied into each artifact.
+
+idd-fixture.patch adds two monitors, stable container IDs, I2C callbacks and a
+read-only diagnostic device interface. Fixture.cpp and Probe.cpp are MIT-licensed
+PowerToys test infrastructure. No shipping module, installer or API is modified.
+
+Native Dxva2 accepts monitor handle value zero for this IDD. Zero-valued native
+handles alone are NOT evidence of a production blocker: the unchanged production
+MonitorManager's normal enumeration/retry path discovers both fixture monitors.
+The separate production probe verifies that path directly. No product filtering
+is bypassed.
+
+This POC deliberately tests the native Dxva2 routing gate before adding UI tests.
+The sample's Dell/Lenovo EDIDs are not representations of physical hardware.
+No claim of physical-panel backlight, WMI or mixed-DPI coverage is made.

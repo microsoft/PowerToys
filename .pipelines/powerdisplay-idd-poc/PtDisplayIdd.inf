@@ -1,0 +1,55 @@
+; Test-only package. Never included in the PowerToys installer.
+[Version]
+Signature="$Windows NT$"
+Class=Display
+ClassGUID={4D36E968-E325-11CE-BFC1-08002BE10318}
+ClassVer=2.0
+Provider=%Provider%
+CatalogFile=PtDisplayIdd.cat
+DriverVer=11/01/2026,0.0.1.0
+PnpLockDown=1
+
+[Manufacturer]
+%Provider%=Models,NTamd64.10.0...19041
+[Models.NTamd64.10.0...19041]
+%Device%=Install,ROOT\PtDisplayIddPoc
+
+[SourceDisksFiles]
+PtDisplayIdd.dll=1
+[SourceDisksNames]
+1=%Device%
+[DestinationDirs]
+CopyDriver=12,UMDF
+[CopyDriver]
+PtDisplayIdd.dll
+
+[Install.NT]
+CopyFiles=CopyDriver
+[Install.NT.HW]
+AddReg=Hardware
+[Hardware]
+HKR,,"UpperFilters",0x00010000,"IndirectKmd"
+HKR,"WUDF","DeviceGroupId",0x00000000,"PowerToysDisplayIddPoc"
+HKR,,"Security",0x00000000,"D:P(A;;GA;;;SY)(A;;GA;;;BA)(A;;GR;;;BU)"
+
+[Install.NT.Services]
+AddService=WUDFRd,0x000001fa,WUDFRD_Service
+[WUDFRD_Service]
+DisplayName="Windows Driver Foundation - User-mode Driver Framework Reflector"
+ServiceType=1
+StartType=3
+ErrorControl=1
+ServiceBinary=%12%\WUDFRd.sys
+
+[Install.NT.Wdf]
+UmdfService=PtDisplayIdd,Service
+UmdfServiceOrder=PtDisplayIdd
+UmdfKernelModeClientPolicy=AllowKernelModeClients
+[Service]
+UmdfLibraryVersion=2.25.0
+ServiceBinary=%12%\UMDF\PtDisplayIdd.dll
+UmdfExtensions=IddCx0102
+
+[Strings]
+Provider="PowerToys isolated test fixture"
+Device="PowerToys IDD POC"

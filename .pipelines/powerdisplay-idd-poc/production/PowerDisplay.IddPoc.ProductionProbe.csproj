@@ -1,0 +1,14 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\PowerDisplay.IddPoc.ProductionProbe\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\modules\powerdisplay\PowerDisplay.Lib\PowerDisplay.Lib.csproj" />
+  </ItemGroup>
+</Project>
