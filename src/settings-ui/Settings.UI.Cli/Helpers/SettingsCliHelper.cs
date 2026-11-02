@@ -104,6 +104,7 @@ internal static class SettingsCliHelper
             "powerrename" => GpoApi.GetConfiguredPowerRenameEnabledValue(),
             "powerlauncher" => GpoApi.GetConfiguredPowerLauncherEnabledValue(),
             "poweraccent" => GpoApi.GetConfiguredQuickAccentEnabledValue(),
+            "textexpander" => GpoApi.GetConfiguredTextExpanderEnabledValue(),
             "workspaces" => GpoApi.GetConfiguredWorkspacesEnabledValue(),
             "registrypreview" => GpoApi.GetConfiguredRegistryPreviewEnabledValue(),
             "measuretool" => GpoApi.GetConfiguredScreenRulerEnabledValue(),

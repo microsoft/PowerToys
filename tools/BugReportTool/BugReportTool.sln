@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BugReportTool", "BugReportT
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SettingsAPI", "..\..\src\common\SettingsAPI\SettingsAPI.vcxproj", "{6955446D-23F7-4023-9BB3-8657F904AF99}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BugReportTool.UnitTests", "BugReportTool.UnitTests\BugReportTool.UnitTests.vcxproj", "{593A1A9A-4906-4909-8CE5-9FED76D7BB47}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -31,6 +33,14 @@ Global
 		{6955446D-23F7-4023-9BB3-8657F904AF99}.Release|ARM64.Build.0 = Release|ARM64
 		{6955446D-23F7-4023-9BB3-8657F904AF99}.Release|x64.ActiveCfg = Release|x64
 		{6955446D-23F7-4023-9BB3-8657F904AF99}.Release|x64.Build.0 = Release|x64
+		{593A1A9A-4906-4909-8CE5-9FED76D7BB47}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{593A1A9A-4906-4909-8CE5-9FED76D7BB47}.Debug|ARM64.Build.0 = Debug|ARM64
+		{593A1A9A-4906-4909-8CE5-9FED76D7BB47}.Debug|x64.ActiveCfg = Debug|x64
+		{593A1A9A-4906-4909-8CE5-9FED76D7BB47}.Debug|x64.Build.0 = Debug|x64
+		{593A1A9A-4906-4909-8CE5-9FED76D7BB47}.Release|ARM64.ActiveCfg = Release|ARM64
+		{593A1A9A-4906-4909-8CE5-9FED76D7BB47}.Release|ARM64.Build.0 = Release|ARM64
+		{593A1A9A-4906-4909-8CE5-9FED76D7BB47}.Release|x64.ActiveCfg = Release|x64
+		{593A1A9A-4906-4909-8CE5-9FED76D7BB47}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,1062 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.TextExpander.Editor.Views.TextExpanderPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.TextExpander.Editor.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:vm="using:Microsoft.PowerToys.TextExpander.Editor.ViewModels"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <!--  Keyboard Manager's key (OriginalKeyVisualStyle), with the trigger in a monospace face so ; ! and : stay legible.  -->
+        <Style x:Key="TriggerKeycapStyle" TargetType="Border">
+            <Setter Property="MinWidth" Value="26" />
+            <Setter Property="MaxWidth" Value="220" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Padding" Value="7,0" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Background" Value="{ThemeResource ControlFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        </Style>
+        <!--  Keyboard Manager's accent chip (RemappedIconLabelControlStyle), for what a snippet inserts.  -->
+        <Style x:Key="RowChipStyle" TargetType="Border">
+            <Setter Property="MinHeight" Value="26" />
+            <Setter Property="Padding" Value="6,4,8,4" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        </Style>
+        <Style x:Key="RowIconStyle" TargetType="FontIcon">
+            <Setter Property="Margin" Value="0,2,0,0" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
+        </Style>
+        <!--  Keyboard Manager's ItemDividerStyle: a line under each row, across the list item's padding.  -->
+        <Style x:Key="RowDividerStyle" TargetType="Rectangle">
+            <Setter Property="Grid.RowSpan" Value="2" />
+            <Setter Property="Grid.ColumnSpan" Value="4" />
+            <Setter Property="Height" Value="1" />
+            <Setter Property="Margin" Value="-16,0,-12,-12" />
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+            <Setter Property="Fill" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+        </Style>
+        <Style
+            x:Key="FlyoutCaptionStyle"
+            BasedOn="{StaticResource CaptionTextBlockStyle}"
+            TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <!--  The date format guide's chips, built in code: the code as the editor shows variables, then what it gives, in secondary caption text.  -->
+        <Style x:Key="TextExpanderDateCodeStyle" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontFamily" Value="Consolas" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style
+            x:Key="TextExpanderDateExampleStyle"
+            BasedOn="{StaticResource CaptionTextBlockStyle}"
+            TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+        </Style>
+        <!--  Keyboard Manager's arrow between what is typed and what it becomes (KeyboardManagerEditorUI App.xaml).  -->
+        <x:String x:Key="ArrowIconData">M12.001 2C17.5238 2 22.001 6.47715 22.001 12C22.001 17.5228 17.5238 22 12.001 22C6.47813 22 2.00098 17.5228 2.00098 12C2.00098 6.47715 6.47813 2 12.001 2ZM12.7813 7.46897L12.6972 7.39635C12.4362 7.2027 12.078 7.20031 11.8146 7.38918L11.7206 7.46897L11.648 7.55308C11.4544 7.81407 11.452 8.17229 11.6409 8.43568L11.7206 8.52963L14.4403 11.2493H7.75027L7.6485 11.2561C7.31571 11.3013 7.05227 11.5647 7.00712 11.8975L7.00027 11.9993L7.00712 12.1011C7.05227 12.4339 7.31571 12.6973 7.6485 12.7424L7.75027 12.7493H14.4403L11.72 15.4697L11.6474 15.5538C11.4295 15.8474 11.4536 16.264 11.7198 16.5303C11.9861 16.7967 12.4027 16.8209 12.6964 16.6032L12.7805 16.5306L16.782 12.5306L16.8547 12.4464C17.0484 12.1854 17.0508 11.8272 16.8619 11.5638L16.7821 11.4698L12.7813 7.46897L12.6972 7.39635L12.7813 7.46897Z</x:String>
+    </Page.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  Keyboard Manager's title bar: icon, title and the search, which Ctrl+F reaches. The page sets the icon and title.  -->
+        <TitleBar
+            x:Name="AppTitleBar"
+            x:FieldModifier="internal"
+            IsTabStop="False">
+            <TitleBar.Content>
+                <TextBox
+                    x:Name="SnippetSearchBox"
+                    x:Uid="TextExpander_Search"
+                    MinWidth="220"
+                    MaxWidth="360"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AutomationId="TextExpander_SnippetSearch"
+                    IsEnabled="{x:Bind ViewModel.CanEditSnippets}"
+                    Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <TextBox.KeyboardAccelerators>
+                        <KeyboardAccelerator
+                            Key="F"
+                            Invoked="SearchShortcut_Invoked"
+                            Modifiers="Control" />
+                    </TextBox.KeyboardAccelerators>
+                </TextBox>
+            </TitleBar.Content>
+        </TitleBar>
+
+        <!--  Keyboard Manager's slot for what blocks the list or reports on it, above the toolbar. Each collapses when closed.  -->
+        <StackPanel Grid.Row="1">
+            <InfoBar
+                x:Uid="TextExpander_ElevatedEditingNotice"
+                Margin="16,16,16,0"
+                IsClosable="False"
+                IsOpen="{x:Bind ViewModel.IsElevated}"
+                Severity="Warning"
+                Visibility="{x:Bind ViewModel.IsElevated}" />
+            <!--  Under the message: a missing snippets file's path, then the actions side by side.  -->
+            <InfoBar
+                x:Name="SnippetErrorBar"
+                Title="{x:Bind ViewModel.SnippetErrorTitle, Mode=OneWay}"
+                Margin="16,16,16,0"
+                IsClosable="False"
+                IsOpen="{x:Bind ViewModel.HasSnippetError, Mode=OneWay}"
+                Message="{x:Bind ViewModel.SnippetError, Mode=OneWay}"
+                Severity="Error"
+                Visibility="{x:Bind ViewModel.HasSnippetError, Mode=OneWay}">
+                <StackPanel Margin="0,0,0,16">
+                    <TextBlock
+                        Margin="0,0,0,8"
+                        AutomationProperties.Name="{x:Bind ViewModel.SnippetsFilePath, Mode=OneWay}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        IsTextSelectionEnabled="True"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.SnippetsFileDisplayPath, Mode=OneWay}"
+                        TextWrapping="NoWrap"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.SnippetsFilePath, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.IsSnippetsFileMissing, Mode=OneWay}" />
+                    <StackPanel
+                        Margin="0,4,0,0"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <Button
+                            x:Uid="TextExpander_RetrySnippets"
+                            AutomationProperties.AutomationId="Button_TextExpander_RetrySnippets"
+                            Click="ReloadSnippets_Click" />
+                        <Button
+                            x:Uid="TextExpander_SnippetFile_Use"
+                            AutomationProperties.AutomationId="Button_TextExpander_ErrorUseSnippetsFile"
+                            Click="UseSnippetsFile_Click"
+                            Visibility="{x:Bind ViewModel.IsSnippetsFileUnavailable, Mode=OneWay}" />
+                    </StackPanel>
+                </StackPanel>
+            </InfoBar>
+            <InfoBar
+                x:Name="SnippetStatus"
+                Margin="16,16,16,0"
+                Closed="SnippetStatus_Closed"
+                Severity="Success"
+                Visibility="Collapsed" />
+        </StackPanel>
+
+        <Grid
+            Grid.Row="2"
+            Padding="16"
+            AutomationProperties.LandmarkType="Main"
+            RowSpacing="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!--  The one accent button, then where the snippets are saved and Good to know, as Keyboard Manager's toolbar.  -->
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Button
+                    AutomationProperties.AutomationId="Button_TextExpander_AddSnippet"
+                    AutomationProperties.LabeledBy="{x:Bind AddSnippetLabel}"
+                    Click="AddSnippet_Click"
+                    IsEnabled="{x:Bind ViewModel.CanAddSnippets, Mode=OneWay}"
+                    Style="{StaticResource AccentButtonStyle}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE710;" />
+                        <TextBlock x:Name="AddSnippetLabel" x:Uid="TextExpander_AddSnippetButton" />
+                    </StackPanel>
+                </Button>
+                <DropDownButton
+                    x:Name="SnippetFolderButton"
+                    Grid.Column="2"
+                    AutomationProperties.AutomationId="Button_TextExpander_SnippetFolder"
+                    AutomationProperties.Name="{x:Bind ViewModel.SnippetFolderLabel, Mode=OneWay}"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    IsEnabled="{x:Bind ViewModel.CanEditSnippets}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE8B7;" />
+                        <TextBlock Text="{x:Bind ViewModel.SnippetFolderLabel, Mode=OneWay}" />
+                    </StackPanel>
+                    <DropDownButton.Flyout>
+                        <!--
+                            FL4: what the file is and what to do with it, how to use it on other PCs, then the two ways to
+                            change it, as a dialog's buttons. The active file is the source of truth; a sync service may sync
+                            its folder independently.
+                        -->
+                        <Flyout x:Name="SnippetFolderFlyout" Placement="BottomEdgeAlignedRight">
+                            <StackPanel Width="422" Spacing="16">
+                                <StackPanel Spacing="6">
+                                    <TextBlock
+                                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                                        Text="{x:Bind ViewModel.SnippetFileSummary, Mode=OneWay}"
+                                        TextWrapping="Wrap" />
+                                    <!--  One middle-trimmed line; the tooltip and screen readers get the whole path.  -->
+                                    <TextBlock
+                                        x:Name="SnippetFolderPath"
+                                        AutomationProperties.Name="{x:Bind ViewModel.SnippetsFilePath, Mode=OneWay}"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        IsTextSelectionEnabled="True"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Text="{x:Bind ViewModel.SnippetsFileDisplayPath, Mode=OneWay}"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextWrapping="NoWrap"
+                                        ToolTipService.ToolTip="{x:Bind ViewModel.SnippetsFilePath, Mode=OneWay}" />
+                                    <!--  Lined up with the path's text. Each button's text comes from its x:Uid; the template puts the icon before it.  -->
+                                    <StackPanel
+                                        Margin="-11,0,0,0"
+                                        Orientation="Horizontal"
+                                        Spacing="4">
+                                        <Button
+                                            x:Uid="TextExpander_SnippetFile_OpenButton"
+                                            AutomationProperties.AutomationId="Button_TextExpander_OpenSnippetFile"
+                                            Click="OpenSnippetsFile_Click"
+                                            Style="{StaticResource SubtleButtonStyle}">
+                                            <Button.ContentTemplate>
+                                                <DataTemplate x:DataType="x:String">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <FontIcon FontSize="14" Glyph="&#xE8E5;" />
+                                                        <TextBlock Text="{x:Bind}" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </Button.ContentTemplate>
+                                        </Button>
+                                        <Button
+                                            x:Uid="TextExpander_SnippetFolder_ReloadButton"
+                                            AutomationProperties.AutomationId="Button_TextExpander_ReloadSnippets"
+                                            Click="ReloadSnippets_Click"
+                                            Style="{StaticResource SubtleButtonStyle}">
+                                            <Button.ContentTemplate>
+                                                <DataTemplate x:DataType="x:String">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <FontIcon FontSize="14" Glyph="&#xE72C;" />
+                                                        <TextBlock Text="{x:Bind}" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </Button.ContentTemplate>
+                                        </Button>
+                                    </StackPanel>
+                                </StackPanel>
+                                <Rectangle
+                                    Height="1"
+                                    Margin="-16,0"
+                                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                                <!--  How to use the snippets on other PCs: a heading, then steps that ShowSyncAdvice builds, numbered when there are several.  -->
+                                <StackPanel x:Name="SnippetsSyncAdvice" Spacing="8">
+                                    <TextBlock
+                                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                                        Text="{x:Bind ViewModel.SyncHeading, Mode=OneWay}"
+                                        TextWrapping="Wrap" />
+                                    <StackPanel x:Name="SyncStepList" Spacing="8" />
+                                </StackPanel>
+                                <!--  A dialog's footer, to the flyout's edges: equal buttons, as wide as the wider one needs, on the right.  -->
+                                <Border
+                                    Margin="-16,0,-16,-17"
+                                    Padding="16"
+                                    Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="0,1,0,0"
+                                    CornerRadius="0,0,8,8">
+                                    <tkcontrols:UniformGrid
+                                        HorizontalAlignment="Right"
+                                        ColumnSpacing="8"
+                                        Columns="2">
+                                        <Button
+                                            x:Uid="TextExpander_SnippetFile_Move"
+                                            MinWidth="172"
+                                            HorizontalAlignment="Stretch"
+                                            AutomationProperties.AutomationId="Button_TextExpander_MoveSnippets"
+                                            Click="MoveSnippets_Click"
+                                            IsEnabled="{x:Bind ViewModel.CanAddSnippets, Mode=OneWay}" />
+                                        <Button
+                                            x:Uid="TextExpander_SnippetFile_Use"
+                                            MinWidth="172"
+                                            HorizontalAlignment="Stretch"
+                                            AutomationProperties.AutomationId="Button_TextExpander_UseSnippetsFile"
+                                            Click="UseSnippetsFile_Click" />
+                                    </tkcontrols:UniformGrid>
+                                </Border>
+                            </StackPanel>
+                        </Flyout>
+                    </DropDownButton.Flyout>
+                </DropDownButton>
+                <Rectangle
+                    Grid.Column="3"
+                    Width="1"
+                    Height="20"
+                    Margin="4,0"
+                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                <Button
+                    x:Uid="TextExpander_GoodToKnowButton"
+                    Grid.Column="4"
+                    AutomationProperties.AutomationId="Button_TextExpander_GoodToKnow"
+                    Style="{StaticResource SubtleButtonStyle}">
+                    <FontIcon FontSize="16" Glyph="&#xE946;" />
+                    <Button.Flyout>
+                        <!--  Reference, not a setting, so it waits behind the button. One fact per bullet; a wrapped line lines up with its text.  -->
+                        <Flyout x:Name="GoodToKnowFlyout" Placement="BottomEdgeAlignedRight">
+                            <StackPanel Width="326" Spacing="12">
+                                <TextBlock
+                                    x:Uid="TextExpander_PrivacyNotice"
+                                    AutomationProperties.HeadingLevel="Level2"
+                                    Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                <Grid ColumnSpacing="8" RowSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock AutomationProperties.AccessibilityView="Raw" Text="&#x2022;" />
+                                    <TextBlock
+                                        x:Uid="TextExpander_PrivacyNotice_SensitiveInfo"
+                                        Grid.Column="1"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        Text="&#x2022;" />
+                                    <TextBlock
+                                        x:Uid="TextExpander_PrivacyNotice_Expansion"
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        Text="&#x2022;" />
+                                    <TextBlock
+                                        x:Uid="TextExpander_PrivacyNotice_Undo"
+                                        Grid.Row="2"
+                                        Grid.Column="1"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock
+                                        Grid.Row="3"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        Text="&#x2022;" />
+                                    <TextBlock
+                                        x:Uid="TextExpander_PrivacyNotice_InputMethod"
+                                        Grid.Row="3"
+                                        Grid.Column="1"
+                                        TextWrapping="Wrap" />
+                                </Grid>
+                                <Rectangle
+                                    Height="1"
+                                    Margin="-16,4,-16,0"
+                                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                                <HyperlinkButton
+                                    x:Uid="Attribution_TextExpander"
+                                    Padding="0"
+                                    NavigateUri="https://howdygary.github.io/text-expander/" />
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+            </Grid>
+
+            <!--  One card, as Keyboard Manager's list: the heading and count, then the rows, or what to do when there are none.  -->
+            <Grid
+                Grid.Row="1"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{ThemeResource OverlayCornerRadius}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid Margin="16,16,16,8" Visibility="{x:Bind ViewModel.ShowsSnippetCount, Mode=OneWay}">
+                    <TextBlock
+                        x:Name="SnippetsHeading"
+                        x:Uid="TextExpander_SnippetsHeading"
+                        AutomationProperties.HeadingLevel="Level1"
+                        Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBlock
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        AutomationProperties.LiveSetting="Polite"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.SnippetCountText, Mode=OneWay}" />
+                </Grid>
+                <Rectangle
+                    Grid.Row="1"
+                    Height="1"
+                    Fill="{ThemeResource CardStrokeColorDefaultBrush}"
+                    Visibility="{x:Bind ViewModel.ShowsSnippetCount, Mode=OneWay}" />
+
+                <!--
+                    Virtualized, so only the rows in view are built however long the list is. One Tab stop: the arrow keys move
+                    row by row, and a click or Enter edits the row. Each row's name for screen readers is its item's text.
+                -->
+                <ListView
+                    x:Name="SnippetList"
+                    Grid.Row="2"
+                    AutomationProperties.AutomationId="TextExpander_SnippetList"
+                    AutomationProperties.LabeledBy="{x:Bind SnippetsHeading}"
+                    IsItemClickEnabled="True"
+                    ItemClick="SnippetList_ItemClick"
+                    ItemsSource="{x:Bind ViewModel.FilteredSnippets, Mode=OneWay}"
+                    SelectionMode="None">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TextExpanderSnippetViewModel">
+                            <!--  The trigger as a key, the questions it asks, then what it inserts: Keyboard Manager's "keys maps to keys".  -->
+                            <Grid
+                                Padding="0,12"
+                                ColumnSpacing="8"
+                                RowSpacing="6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Rectangle Style="{StaticResource RowDividerStyle}" />
+                                <Border Style="{StaticResource TriggerKeycapStyle}" ToolTipService.ToolTip="{x:Bind TriggerDisplay, Mode=OneWay}">
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontFamily="Consolas"
+                                        FontSize="13"
+                                        Text="{x:Bind TriggerDisplay, Mode=OneWay}"
+                                        TextTrimming="CharacterEllipsis" />
+                                </Border>
+                                <controls:TextExpanderBubbleText
+                                    Grid.Column="1"
+                                    Margin="0,3,0,0"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Segments="{x:Bind LeadSegments, Mode=OneWay}" />
+                                <!--  A line too long for the chip is trimmed; one with bubbles then shows as text, since WinUI draws a bubble past the ellipsis over the line's start.  -->
+                                <Border
+                                    Grid.Column="2"
+                                    Background="{ThemeResource CustomAccentBackgroundBrush}"
+                                    Style="{StaticResource RowChipStyle}">
+                                    <Grid ColumnSpacing="6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <FontIcon
+                                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                            Glyph="{x:Bind KindGlyph, Mode=OneWay}"
+                                            Style="{StaticResource RowIconStyle}" />
+                                        <controls:TextExpanderBubbleText
+                                            Grid.Column="1"
+                                            FontSize="12"
+                                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                            MaxLines="3"
+                                            OnAccent="True"
+                                            Segments="{x:Bind ChipSegments, Mode=OneWay}"
+                                            TextOnlyWhenTrimmed="True"
+                                            TextTrimming="CharacterEllipsis"
+                                            TextWrapping="NoWrap" />
+                                    </Grid>
+                                </Border>
+                                <!--  Destructive row actions belong behind a flyout on clickable rows, which also prevents competing ContentDialogs on one XamlRoot.  -->
+                                <Button
+                                    x:Uid="TextExpander_MoreOptions"
+                                    Grid.Column="3"
+                                    Margin="0,-3,0,0"
+                                    VerticalAlignment="Top"
+                                    AutomationProperties.AutomationId="Button_TextExpander_MoreOptions"
+                                    Content="&#xE712;"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    Style="{StaticResource SubtleButtonStyle}"
+                                    Tag="{x:Bind}">
+                                    <Button.Flyout>
+                                        <MenuFlyout Opening="RowMenu_Opening">
+                                            <MenuFlyoutItem
+                                                x:Uid="TextExpander_EditSnippet"
+                                                AutomationProperties.AutomationId="MenuItem_TextExpander_EditSnippet"
+                                                Click="EditSnippet_Click"
+                                                Icon="{ui:FontIcon Glyph=&#xE70F;}"
+                                                Tag="{x:Bind}" />
+                                            <MenuFlyoutItem
+                                                x:Uid="TextExpander_DuplicateSnippet"
+                                                AutomationProperties.AutomationId="MenuItem_TextExpander_DuplicateSnippet"
+                                                Click="DuplicateSnippet_Click"
+                                                Icon="{ui:FontIcon Glyph=&#xE8C8;}"
+                                                Tag="{x:Bind}" />
+                                            <MenuFlyoutSeparator />
+                                            <MenuFlyoutItem
+                                                x:Uid="TextExpander_DeleteSnippet"
+                                                AutomationProperties.AutomationId="MenuItem_TextExpander_DeleteSnippet"
+                                                Click="DeleteSnippet_Click"
+                                                Icon="{ui:FontIcon Glyph=&#xE74D;}"
+                                                Tag="{x:Bind}" />
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                    <ToolTipService.ToolTip>
+                                        <TextBlock x:Uid="More_Options_ButtonTooltip" />
+                                    </ToolTipService.ToolTip>
+                                </Button>
+                                <!--  Never expands, and why. The icon means color is never the only cue.  -->
+                                <Grid
+                                    Grid.Row="1"
+                                    Grid.ColumnSpan="3"
+                                    ColumnSpacing="8"
+                                    Visibility="{x:Bind HasWarning, Mode=OneWay}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border
+                                        Padding="6,1"
+                                        VerticalAlignment="Top"
+                                        Background="{ThemeResource SystemFillColorCautionBackgroundBrush}"
+                                        CornerRadius="{StaticResource ControlCornerRadius}">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <FontIcon
+                                                Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                                Glyph="&#xE7BA;"
+                                                Style="{StaticResource RowIconStyle}" />
+                                            <TextBlock x:Uid="TextExpander_Row_NeverExpands" Style="{StaticResource CaptionTextBlockStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Margin="0,1,0,0"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Text="{x:Bind Warning, Mode=OneWay}"
+                                        TextWrapping="Wrap" />
+                                </Grid>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <!--  No snippets: Keyboard Manager's centered state, with the examples to start from.  -->
+                <StackPanel
+                    Grid.RowSpan="3"
+                    Padding="16"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="8"
+                    Visibility="{x:Bind ViewModel.HasNoSnippets, Mode=OneWay}">
+                    <FontIcon
+                        AutomationProperties.AccessibilityView="Raw"
+                        FontSize="24"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Glyph="&#xE70B;" />
+                    <TextBlock
+                        x:Uid="TextExpander_NoSnippets"
+                        HorizontalAlignment="Center"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        x:Uid="TextExpander_StarterHint"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+                    <tkcontrols:WrapPanel
+                        Margin="0,12,0,0"
+                        HorizontalAlignment="Center"
+                        HorizontalSpacing="8"
+                        VerticalSpacing="8">
+                        <Button
+                            x:Uid="TextExpander_StarterSignature"
+                            Click="StarterSnippet_Click"
+                            Tag="!mysig" />
+                        <Button
+                            x:Uid="TextExpander_StarterEmail"
+                            Click="StarterSnippet_Click"
+                            Tag="!myemail" />
+                        <Button
+                            x:Uid="TextExpander_StarterDate"
+                            Click="StarterSnippet_Click"
+                            Tag="!isodate" />
+                    </tkcontrols:WrapPanel>
+                </StackPanel>
+
+                <!--  No results: Keyboard Manager's search state, with Clear search.  -->
+                <StackPanel
+                    Grid.Row="2"
+                    Padding="16"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="8"
+                    Visibility="{x:Bind ViewModel.HasNoMatchingSnippets, Mode=OneWay}">
+                    <FontIcon
+                        AutomationProperties.AccessibilityView="Raw"
+                        FontSize="24"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Glyph="&#xE721;" />
+                    <TextBlock
+                        x:Uid="TextExpander_NoSearchResults"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+                    <Button
+                        x:Uid="TextExpander_ClearSearch"
+                        HorizontalAlignment="Center"
+                        AutomationProperties.AutomationId="Button_TextExpander_ClearSearch"
+                        Click="ClearSearch_Click" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+
+        <ContentDialog
+            x:Name="SnippetDialog"
+            x:Uid="TextExpander_SnippetDialog"
+            Closing="SnippetDialog_Closing"
+            DefaultButton="Primary"
+            IsPrimaryButtonEnabled="{x:Bind IsSnippetValid, Mode=OneWay}"
+            PrimaryButtonClick="SnippetDialog_PrimaryButtonClick">
+            <ContentDialog.Resources>
+                <!--  Room for Keyboard Manager's two columns. The page fits the content to the window.  -->
+                <x:Double x:Key="ContentDialogMaxWidth">808</x:Double>
+            </ContentDialog.Resources>
+            <ScrollViewer x:Name="SnippetDialogScroller" SizeChanged="SnippetDialogLayout_SizeChanged">
+                <!--  Keyboard Manager's mapping: Trigger, an arrow, then Replacement; the preview and messages span the bottom.  -->
+                <Grid
+                    x:Name="SnippetDialogContent"
+                    ColumnSpacing="24"
+                    SizeChanged="SnippetDialogLayout_SizeChanged">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MaxWidth="232" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Spacing="8">
+                        <TextBlock x:Uid="TextExpander_Dialog_Trigger" FontWeight="SemiBold" />
+                        <!--  Keyboard Manager's recording well, as a box the trigger is typed in. Red while the trigger is what's wrong.  -->
+                        <Grid>
+                            <TextBox
+                                x:Name="TriggerBox"
+                                x:Uid="TextExpander_Dialog_TriggerBox"
+                                MinHeight="86"
+                                Padding="10,26,10,0"
+                                AutomationProperties.AutomationId="TextExpander_Trigger"
+                                AutomationProperties.FullDescription="{x:Bind SnippetProblem, Mode=OneWay}"
+                                FontFamily="Consolas"
+                                FontSize="20"
+                                GotFocus="SnippetField_GotFocus"
+                                TextAlignment="Center"
+                                TextChanged="SnippetField_Changed" />
+                            <Border
+                                BorderBrush="{ThemeResource SystemFillColorCriticalBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource ControlCornerRadius}"
+                                IsHitTestVisible="False"
+                                Visibility="{x:Bind IsTriggerInvalid, Mode=OneWay}" />
+                        </Grid>
+                        <TextBlock
+                            x:Uid="TextExpander_Dialog_TriggerHint"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <Grid Grid.Column="1" RowSpacing="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Rectangle
+                            Width="1"
+                            HorizontalAlignment="Center"
+                            Fill="{ThemeResource TextFillColorDisabledBrush}" />
+                        <Viewbox
+                            Grid.Row="1"
+                            Width="12"
+                            Height="12">
+                            <PathIcon Data="{StaticResource ArrowIconData}" Foreground="{ThemeResource TextFillColorDisabledBrush}" />
+                        </Viewbox>
+                        <Rectangle
+                            Grid.Row="2"
+                            Width="1"
+                            HorizontalAlignment="Center"
+                            Fill="{ThemeResource TextFillColorDisabledBrush}" />
+                    </Grid>
+
+                    <StackPanel Grid.Column="2" Spacing="8">
+                        <Grid>
+                            <TextBlock
+                                x:Uid="TextExpander_Dialog_Replacement"
+                                VerticalAlignment="Center"
+                                FontWeight="SemiBold" />
+                            <DropDownButton
+                                x:Name="InsertVariableButton"
+                                x:Uid="TextExpander_Dialog_InsertVariable"
+                                HorizontalAlignment="Right"
+                                AutomationProperties.AutomationId="Button_TextExpander_InsertVariable">
+                                <DropDownButton.Flyout>
+                                    <MenuFlyout x:Name="VariableFlyout" Placement="Bottom" />
+                                </DropDownButton.Flyout>
+                            </DropDownButton>
+                        </Grid>
+                        <!--
+                            A RichEditBox only so the variables can be colored. The page's
+                            TextExpanderReplacementEditor keeps it plain text, with \n line breaks.
+                        -->
+                        <RichEditBox
+                            x:Name="ReplacementBox"
+                            x:Uid="TextExpander_Dialog_ReplacementBox"
+                            MinHeight="120"
+                            MaxHeight="240"
+                            AcceptsReturn="True"
+                            AutomationProperties.AutomationId="TextExpander_Replacement"
+                            ClipboardCopyFormat="PlainText"
+                            DisabledFormattingAccelerators="All"
+                            GotFocus="SnippetField_GotFocus"
+                            IsSpellCheckEnabled="False"
+                            IsTextPredictionEnabled="False"
+                            TextWrapping="Wrap">
+                            <FlyoutBase.AttachedFlyout>
+                                <!--
+                                    Styled after a teaching tip on the token, but a Flyout: a TeachingTip doesn't open when it can't
+                                    fit around its target, and after a light dismiss canceled to keep an invalid question open, it no
+                                    longer catches clicks outside, so the replacement could change under the pending edit.
+                                -->
+                                <Flyout
+                                    x:Name="PromptFlyout"
+                                    Closed="PromptFlyout_Closed"
+                                    Closing="PromptFlyout_Closing"
+                                    Opened="PromptFlyout_Opened"
+                                    Placement="BottomEdgeAlignedLeft"
+                                    ShouldConstrainToRootBounds="True">
+                                    <!--  The page sizes and places the content against the token (TextExpanderPromptPlacement).  -->
+                                    <Flyout.FlyoutPresenterStyle>
+                                        <Style TargetType="FlyoutPresenter">
+                                            <Setter Property="MaxWidth" Value="Infinity" />
+                                            <Setter Property="Padding" Value="0" />
+                                            <Setter Property="Background" Value="{ThemeResource TeachingTipBackgroundBrush}" />
+                                        </Style>
+                                    </Flyout.FlyoutPresenterStyle>
+                                    <ScrollViewer
+                                        x:Name="PromptFlyoutScroller"
+                                        x:Uid="TextExpander_PromptFlyout"
+                                        AutomationProperties.AutomationId="TextExpander_PromptFlyout"
+                                        VerticalScrollBarVisibility="Auto">
+                                        <StackPanel
+                                            x:Name="PromptFlyoutContent"
+                                            Padding="12"
+                                            PreviewKeyDown="PromptFlyoutContent_PreviewKeyDown">
+                                            <TextBlock
+                                                x:Uid="TextExpander_PromptFlyout_Title"
+                                                AutomationProperties.HeadingLevel="Level2"
+                                                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                                TextWrapping="Wrap" />
+                                            <TextBox
+                                                x:Name="PromptQuestionBox"
+                                                x:Uid="TextExpander_PromptFlyout_Question"
+                                                Margin="0,12,0,0"
+                                                AutomationProperties.AutomationId="TextExpander_PromptQuestion"
+                                                TextChanged="PromptQuestionBox_TextChanged" />
+                                            <TextBlock
+                                                x:Name="PromptQuestionError"
+                                                Margin="0,4,0,0"
+                                                AutomationProperties.LiveSetting="Assertive"
+                                                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                                TextWrapping="Wrap"
+                                                Visibility="Collapsed" />
+                                            <ToggleSwitch
+                                                x:Name="PromptRequired"
+                                                x:Uid="TextExpander_PromptFlyout_Required"
+                                                Margin="0,4,0,0"
+                                                AutomationProperties.AutomationId="Toggle_TextExpander_PromptRequired"
+                                                IsOn="True"
+                                                Toggled="PromptRequired_Toggled" />
+                                            <!--
+                                                The window the snippet asks in, drawn at its own width and scaled down: the question over an
+                                                empty box, with OK off while a required answer is blank. Only to look at, so it takes no input
+                                                or focus. A ScrollViewer, unlike a panel, has an automation peer to carry the preview's name.
+                                            -->
+                                            <ScrollViewer
+                                                x:Name="PromptPreview"
+                                                x:Uid="TextExpander_PromptFlyout_Preview"
+                                                Margin="0,8,0,0"
+                                                IsHitTestVisible="False"
+                                                VerticalScrollBarVisibility="Disabled">
+                                                <Border
+                                                    Padding="10"
+                                                    Background="{ThemeResource PromptPreviewBackdropBrush}"
+                                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="{StaticResource ControlCornerRadius}">
+                                                    <!--  The mockup's size, however wide the flyout.  -->
+                                                    <Viewbox MaxWidth="288">
+                                                        <Grid
+                                                            Width="420"
+                                                            Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                                                            BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="{StaticResource OverlayCornerRadius}">
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition Height="Auto" />
+                                                            </Grid.RowDefinitions>
+                                                            <Border
+                                                                Grid.RowSpan="2"
+                                                                Background="{ThemeResource LayerFillColorAltBrush}"
+                                                                CornerRadius="7,7,0,0" />
+                                                            <Grid
+                                                                Height="32"
+                                                                Padding="16,0,0,0"
+                                                                ColumnSpacing="12">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="46" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <Image
+                                                                    x:Name="PromptPreviewIcon"
+                                                                    Width="16"
+                                                                    Height="16"
+                                                                    AutomationProperties.AccessibilityView="Raw" />
+                                                                <TextBlock
+                                                                    x:Uid="TextExpander_PromptFlyout_PreviewTitle"
+                                                                    Grid.Column="1"
+                                                                    VerticalAlignment="Center"
+                                                                    Style="{ThemeResource CaptionTextBlockStyle}" />
+                                                                <FontIcon
+                                                                    Grid.Column="2"
+                                                                    AutomationProperties.AccessibilityView="Raw"
+                                                                    FontSize="10"
+                                                                    Glyph="&#xE8BB;" />
+                                                            </Grid>
+                                                            <StackPanel
+                                                                Grid.Row="1"
+                                                                Margin="24,12,24,24"
+                                                                Spacing="8">
+                                                                <Grid>
+                                                                    <TextBlock x:Name="PromptPreviewLabel" TextWrapping="Wrap" />
+                                                                    <TextBlock
+                                                                        x:Name="PromptPreviewPlaceholder"
+                                                                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                                        Text="{x:Bind PromptQuestionBox.PlaceholderText}"
+                                                                        TextWrapping="Wrap" />
+                                                                </Grid>
+                                                                <!--  The answer box, focused, as the window opens.  -->
+                                                                <Border
+                                                                    Height="32"
+                                                                    Background="{ThemeResource TextControlBackgroundFocused}"
+                                                                    BorderBrush="{ThemeResource TextControlBorderBrushFocused}"
+                                                                    BorderThickness="{ThemeResource TextControlBorderThemeThicknessFocused}"
+                                                                    CornerRadius="{StaticResource ControlCornerRadius}" />
+                                                            </StackPanel>
+                                                            <Grid
+                                                                Grid.Row="2"
+                                                                Padding="24"
+                                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                                BorderThickness="0,1,0,0"
+                                                                ColumnSpacing="8">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <Button
+                                                                    x:Name="PromptPreviewOk"
+                                                                    x:Uid="TextExpander_PromptFlyout_PreviewOk"
+                                                                    HorizontalAlignment="Stretch"
+                                                                    AutomationProperties.AccessibilityView="Raw"
+                                                                    IsEnabled="False"
+                                                                    IsTabStop="False"
+                                                                    Style="{StaticResource AccentButtonStyle}" />
+                                                                <Button
+                                                                    x:Uid="TextExpander_PromptFlyout_PreviewCancel"
+                                                                    Grid.Column="1"
+                                                                    HorizontalAlignment="Stretch"
+                                                                    AutomationProperties.AccessibilityView="Raw"
+                                                                    IsTabStop="False" />
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Viewbox>
+                                                </Border>
+                                            </ScrollViewer>
+                                            <Grid Margin="0,12,0,0" ColumnSpacing="8">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <!--  Add for a new question, Update when one is reopened; the page sets which.  -->
+                                                <Button
+                                                    x:Name="PromptAddButton"
+                                                    HorizontalAlignment="Stretch"
+                                                    AutomationProperties.AutomationId="Button_TextExpander_PromptAdd"
+                                                    Click="PromptAdd_Click"
+                                                    Style="{StaticResource AccentButtonStyle}" />
+                                                <Button
+                                                    x:Uid="TextExpander_PromptFlyout_Cancel"
+                                                    Grid.Column="1"
+                                                    HorizontalAlignment="Stretch"
+                                                    AutomationProperties.AutomationId="Button_TextExpander_PromptCancel"
+                                                    Click="PromptCancel_Click" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                </Flyout>
+                            </FlyoutBase.AttachedFlyout>
+                        </RichEditBox>
+                        <!--  A privacy warning where snippets are written. The box's help text carries it for screen readers.  -->
+                        <Grid ColumnSpacing="6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon
+                                Margin="0,2,0,0"
+                                VerticalAlignment="Top"
+                                AutomationProperties.AccessibilityView="Raw"
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Glyph="&#xEA18;" />
+                            <TextBlock
+                                x:Name="SensitiveInfoWarning"
+                                x:Uid="TextExpander_Dialog_SensitiveInfo"
+                                Grid.Column="1"
+                                Style="{StaticResource FlyoutCaptionStyle}" />
+                        </Grid>
+
+                        <!--
+                            The date format guide: shown while the caret is in a {{date:…}} variable, such as right after
+                            Custom format…. Its chips, added in code, put a code in at the caret.
+                        -->
+                        <StackPanel
+                            x:Name="DateFormatGuide"
+                            Margin="0,4,0,0"
+                            Spacing="6"
+                            Visibility="Collapsed">
+                            <TextBlock
+                                x:Uid="TextExpander_DateGuide_Title"
+                                FontWeight="SemiBold"
+                                Style="{ThemeResource CaptionTextBlockStyle}" />
+                            <StackPanel x:Name="DateFormatCodes" Spacing="4" />
+                            <TextBlock
+                                x:Name="DateFormatShowsAs"
+                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                x:Uid="TextExpander_DateGuide_Tip"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                TextWrapping="Wrap" />
+                            <HyperlinkButton
+                                x:Uid="TextExpander_DateGuide_MoreCodes"
+                                Padding="0"
+                                FontSize="12"
+                                NavigateUri="https://learn.microsoft.com/dotnet/standard/base-types/custom-date-and-time-format-strings" />
+                        </StackPanel>
+
+                        <!--  RichEdit takes colors rather than brushes, so the editor reads the theme's from here.  -->
+                        <Border
+                            x:Name="VariableColorProbe"
+                            Background="{ThemeResource TextControlBackgroundFocused}"
+                            BorderBrush="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Visibility="Collapsed">
+                            <Border x:Name="VariableColorProbeBase" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" />
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel
+                        Grid.Row="1"
+                        Grid.ColumnSpan="3"
+                        Margin="0,20,0,0"
+                        Spacing="8">
+                        <TextBlock x:Uid="TextExpander_Dialog_Preview" FontWeight="SemiBold" />
+                        <Border
+                            Padding="12,10"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource ControlCornerRadius}">
+                            <!--  Whole lines only: as many as the dialog has room for, one to eight, the last ending in "…" when more follow.  -->
+                            <controls:TextExpanderBubbleText
+                                x:Name="SnippetPreviewText"
+                                MaxLines="8"
+                                TextOnlyWhenTrimmed="True"
+                                TextTrimming="CharacterEllipsis" />
+                        </Border>
+                        <TextBlock
+                            x:Name="PreviewHint"
+                            x:Uid="TextExpander_PreviewHint"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            TextWrapping="Wrap"
+                            Visibility="Collapsed" />
+                    </StackPanel>
+
+                    <!--  Keyboard Manager's validation: one red bar across the dialog, and Save stays off while it shows.  -->
+                    <InfoBar
+                        x:Name="SnippetProblemBar"
+                        Grid.Row="2"
+                        Grid.ColumnSpan="3"
+                        Margin="0,16,0,0"
+                        IsClosable="False"
+                        IsOpen="{x:Bind HasSnippetProblem, Mode=OneWay}"
+                        Message="{x:Bind SnippetProblem, Mode=OneWay}"
+                        Severity="Error"
+                        Visibility="{x:Bind HasSnippetProblem, Mode=OneWay}" />
+
+                    <!--  About closing, so last, right above Save and Cancel. The buttons wrap in a narrow window.  -->
+                    <InfoBar
+                        x:Name="DiscardWarning"
+                        x:Uid="TextExpander_DiscardWarning"
+                        Grid.Row="3"
+                        Grid.ColumnSpan="3"
+                        Margin="0,16,0,0"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ShowDiscardWarning, Mode=OneWay}"
+                        Severity="Warning"
+                        Visibility="{x:Bind ShowDiscardWarning, Mode=OneWay}">
+                        <InfoBar.Content>
+                            <!--
+                                The constructor insets the buttons the way InfoBar insets its own message. Keep editing's
+                                margin spaces them: WrapPanel adds HorizontalSpacing after the last button too, which would
+                                push both buttons further in from the right.
+                            -->
+                            <tkcontrols:WrapPanel
+                                x:Name="DiscardWarningButtons"
+                                HorizontalAlignment="Right"
+                                VerticalSpacing="8">
+                                <Button
+                                    x:Name="KeepEditingButton"
+                                    x:Uid="TextExpander_KeepEditing"
+                                    Margin="0,0,8,0"
+                                    Click="KeepEditing_Click" />
+                                <Button x:Uid="TextExpander_DiscardChanges" Click="DiscardChanges_Click" />
+                            </tkcontrols:WrapPanel>
+                        </InfoBar.Content>
+                    </InfoBar>
+                </Grid>
+            </ScrollViewer>
+        </ContentDialog>
+    </Grid>
+</Page>

@@ -1,9 +1,12 @@
 AAAAs
 abcdefghjkmnpqrstuvxyz
+abcopied
 abgr
 ABORTIFHUNG
 ABOUTBOX
+abu
 Abug
+abx
 Acceleratorkeys
 ACCEPTFILES
 ACCESSDENIED
@@ -18,6 +21,7 @@ activationaction
 adaptivecards
 ADDSTRING
 ADDUNDORECORD
+adlam
 ADMINS
 adml
 admx
@@ -33,6 +37,7 @@ AGGREGATABLE
 AHK
 AIUI
 akv
+alif
 ALIGNRIGHT
 ALLAPPS
 ALLCHILDREN
@@ -397,6 +402,7 @@ DENORMAL
 depersist
 deprioritized
 DESELECTOTHERS
+deseret
 DESIGNINFO
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
@@ -420,6 +426,7 @@ dfx
 DIALOGEX
 diffs
 digicert
+dimanche
 DINORMAL
 DISABLEASACTIONKEY
 DISABLENOSCROLL
@@ -497,6 +504,7 @@ EDITSHORTCUTS
 EDITTEXT
 eep
 eku
+emailthe
 emojis
 ENABLEDELAYEDEXPANSION
 ENABLEDPOPUP
@@ -557,6 +565,7 @@ extensionsdk
 EXTRALIGHT
 EXTRINSICPROPERTIES
 eyetracker
+fabrikam
 Fairlight
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
@@ -621,6 +630,7 @@ gacutil
 Gaeilge
 Gaidhlig
 gameid
+garay
 GC'ed
 GCLP
 gdi
@@ -879,6 +889,7 @@ isbi
 ISCC
 isdl
 isfinite
+isnt
 iss
 issecret
 ISSEPARATOR
@@ -1027,6 +1038,7 @@ lstrcmp
 lstrcmpi
 lstrcpyn
 lstrlen
+ltd
 LTEXT
 LTM
 LTRREADING
@@ -1209,6 +1221,7 @@ newplus
 NEWPLUSCONTEXTMENU
 NEWPLUSSHELLEXTENSIONWIN
 newrow
+nfour
 nicksnettravels
 NIF
 nightlight
@@ -1279,6 +1292,7 @@ NPH
 npmjs
 NPU
 NResize
+nsnippets
 NTAPI
 ntdll
 ntfs
@@ -1292,6 +1306,7 @@ numberbox
 nwc
 ocr
 Ocrsettings
+octobre
 odbccp
 Oemcomma
 OEMCONVERT
@@ -1302,6 +1317,7 @@ OFN
 ofs
 OICI
 OICIIO
+oktober
 olditem
 oldpath
 oldtheme
@@ -1441,6 +1457,7 @@ powerrenameinput
 POWERRENAMETEST
 POWERTOYNAME
 powertoyssetup
+powertoystextexpandersnippets
 powertoysusersetup
 Powrprof
 ppenum
@@ -1632,6 +1649,7 @@ rstringalnum
 rstringalpha
 rstringdigit
 rtb
+rthree
 RTLREADING
 runas
 rundll
@@ -1647,6 +1665,7 @@ sacl
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
 SAMESHORTCUTPREVIOUSLYMAPPED
+samstag
 samsung
 sancov
 SAVEFAILED
@@ -1786,6 +1805,7 @@ snk
 snwprintf
 softline
 softpub
+sonntag
 SOURCECLIENTAREAONLY
 sourced
 sourcedoc
@@ -1904,6 +1924,7 @@ targetver
 taskbar
 taskkill
 taskschd
+tbl
 TCHAR
 TCIF
 TCITEM
@@ -1936,6 +1957,7 @@ thickframe
 THISCOMPONENT
 threadpool
 throughs
+thx
 TILEDWINDOW
 TILLSON
 timedate
@@ -2009,6 +2031,7 @@ ums
 uncompilable
 UNCPRIORITY
 UNDNAME
+undos
 unescaped
 unforgeable
 ungroup
@@ -2140,6 +2163,7 @@ wic
 wifi
 wikimedia
 wikipedia
+wilber
 winapi
 winapp
 winappcli

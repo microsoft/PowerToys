@@ -1,0 +1,190 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+    <data name="Prompt_Title" xml:space="preserve">
+    <value>PowerToys Text Expander</value>
+    <comment>Title of the window that asks for the answer to a snippet's question. {Locked="PowerToys"}</comment>
+  </data>
+  <data name="Prompt_UnnamedLabel" xml:space="preserve">
+    <value>Your answer</value>
+    <comment>Label above the answer box when the snippet's question has no wording of its own</comment>
+  </data>
+  <data name="Prompt_Ok" xml:space="preserve">
+    <value>OK</value>
+    <comment>Button that inserts the answer</comment>
+  </data>
+  <data name="Prompt_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Button that cancels the snippet, so nothing is inserted</comment>
+  </data>
+  <data name="Prompt_RequiredError" xml:space="preserve">
+    <value>Enter an answer to continue.</value>
+    <comment>Inline validation shown when a snippet prompt requires an answer and the answer box is empty</comment>
+  </data>
+  <data name="Message_Title" xml:space="preserve">
+    <value>PowerToys Text Expander</value>
+    <comment>Title of Text Expander's message boxes. {Locked="PowerToys"}</comment>
+  </data>
+  <data name="Error_Elevated" xml:space="preserve">
+    <value>Text Expander can't run as administrator. Restart PowerToys without administrator rights.</value>
+  </data>
+  <data name="Error_MessageWindow" xml:space="preserve">
+    <value>Text Expander couldn't start because Windows didn't let it create a window it needs. Restart PowerToys to try again.</value>
+  </data>
+  <data name="Error_KeyboardHook" xml:space="preserve">
+    <value>Text Expander couldn't start watching what you type. Another app may be blocking it. Restart PowerToys to try again.</value>
+  </data>
+  <data name="ClipboardRestoreFailed" xml:space="preserve">
+    <value>Your clipboard couldn't be restored after a snippet expanded, so what you had copied is gone.
+
+To keep snippets from using the clipboard, open PowerToys Settings &gt; Text Expander &gt; Advanced, and set Insertion method to Always type.</value>
+    <comment>"Advanced" and "Insertion method" are names on the Text Expander page in PowerToys Settings; "Always type" is one of its choices.</comment>
+  </data>
+  <data name="Diagnostics_Title" xml:space="preserve">
+    <value>Text Expander diagnostics</value>
+    <comment>Heading of the diagnostics report, for support</comment>
+  </data>
+  <data name="Diagnostics_NotRunning" xml:space="preserve">
+    <value>Text Expander isn't running, so there's nothing to report.</value>
+  </data>
+  <data name="Diagnostics_NoAnswer" xml:space="preserve">
+    <value>Text Expander is running but didn't answer.</value>
+  </data>
+  <data name="Diagnostics_Health_Pasting" xml:space="preserve">
+    <value>OK — replacements are being pasted.</value>
+    <comment>Verdict at the top of the diagnostics report: snippets are being pasted, as they should be.</comment>
+  </data>
+  <data name="Diagnostics_Health_Untested" xml:space="preserve">
+    <value>Not yet exercised — every expansion so far was short enough to type. Expand a snippet of five or more characters and look again.</value>
+    <comment>Verdict at the top of the diagnostics report: every snippet so far was typed because it was short, so pasting hasn't been tried yet.</comment>
+  </data>
+  <data name="Diagnostics_Health_TypingByChoice" xml:space="preserve">
+    <value>Typing, as configured — POWERTOYS_TEXT_EXPANDER_INJECTION_BACKEND is set to type.</value>
+    <comment>Verdict at the top of the diagnostics report: snippets are typed, not pasted, because typing was chosen. {Locked="POWERTOYS_TEXT_EXPANDER_INJECTION_BACKEND","type"} POWERTOYS_TEXT_EXPANDER_INJECTION_BACKEND is an environment variable, and the last word, "type", is its value.</comment>
+  </data>
+  <data name="Diagnostics_Health_ClipboardOwnershipDeclined" xml:space="preserve">
+    <value>PASTE PATH INACTIVE — the clipboard only ever opened unowned, so Windows declined cross-thread clipboard ownership and every write refused. Expansions still work, by typing, but the paste path is doing nothing. The clipboard work needs to move onto the message-pump thread that owns the window.</value>
+    <comment>Verdict at the top of the diagnostics report, in capitals for emphasis: pasting never worked, because Windows never let Text Expander own the clipboard, so every snippet was typed instead. Meant for support and developers.</comment>
+  </data>
+  <data name="Diagnostics_Health_PasteUnavailable" xml:space="preserve">
+    <value>PASTE UNAVAILABLE — pastes are being attempted and refused. Check whether the target window is elevated, or whether the clipboard holds something that cannot be restored (an image from an app that publishes only a bitmap handle).</value>
+    <comment>Verdict at the top of the diagnostics report, in capitals for emphasis. "Elevated" means running as administrator.</comment>
+  </data>
+  <data name="Diagnostics_Health_Unknown" xml:space="preserve">
+    <value>Unknown — no expansion has run yet.</value>
+    <comment>Verdict at the top of the diagnostics report before any snippet has expanded.</comment>
+  </data>
+  <data name="Diagnostics_Status" xml:space="preserve">
+    <value>Status   : {0}</value>
+    <comment>First line of the diagnostics report. {0} is the verdict, one of the Diagnostics_Health texts. The spaces line up this line's colon with the next lines' in English; a translation doesn't need to keep them.</comment>
+  </data>
+  <data name="Diagnostics_Backend" xml:space="preserve">
+    <value>Backend  : {0} (paste at {1} chars or more)</value>
+    <comment>Line of the diagnostics report. {0} is how snippets are inserted, as a name that isn't translated: Auto, Clipboard or Typing. {1} is the number of characters from which a snippet is pasted rather than typed. The spaces line up the colons in English; a translation doesn't need to keep them.</comment>
+  </data>
+  <data name="Diagnostics_Last" xml:space="preserve">
+    <value>Last     : {0}, clipboard {1}</value>
+    <comment>Line of the diagnostics report. {0} is how the last expansion ended, as a name that isn't translated (such as Pasted or TargetLost), or Diagnostics_Last_NoExpansion. {1} is how the clipboard last opened, as a name that isn't translated (Owned, Unowned or Failed), or Diagnostics_Last_NeverOpened. The spaces line up the colons in English; a translation doesn't need to keep them.</comment>
+  </data>
+  <data name="Diagnostics_Last_NoExpansion" xml:space="preserve">
+    <value>no expansion yet</value>
+    <comment>Shown for {0} in Diagnostics_Last ("Last : {0}, clipboard {1}") before any snippet has expanded.</comment>
+  </data>
+  <data name="Diagnostics_Last_NeverOpened" xml:space="preserve">
+    <value>never opened</value>
+    <comment>Shown for {1} in Diagnostics_Last ("Last : {0}, clipboard {1}") when the clipboard hasn't been opened yet, so it reads "clipboard never opened".</comment>
+  </data>
+  <data name="Diagnostics_Pasted" xml:space="preserve">
+    <value>Pasted   : {0}</value>
+    <comment>Line of the diagnostics report. {0} is the number of snippets pasted. The spaces line up the colons in English; a translation doesn't need to keep them.</comment>
+  </data>
+  <data name="Diagnostics_Typed" xml:space="preserve">
+    <value>Typed    : {0}  (completed)</value>
+    <comment>Line of the diagnostics report. {0} is the number of snippets typed to the end. The spaces line up the colons in English; a translation doesn't need to keep them.</comment>
+  </data>
+  <data name="Diagnostics_TypingRoutes" xml:space="preserve">
+    <value>Typing routes: too short {0}, paste refused {1}</value>
+    <comment>Line of the diagnostics report: why snippets were typed rather than pasted. {0} is how many were too short to paste; {1} is how many were typed because the paste was refused.</comment>
+  </data>
+  <data name="Diagnostics_Abandoned" xml:space="preserve">
+    <value>Abandoned: {0}  (focus moved or failed after erase; failed after erase {1})</value>
+    <comment>Line of the diagnostics report. {0} is how many expansions were given up, because focus moved to another window or the insertion failed after the trigger was erased; {1} is how many of them failed after the erase.</comment>
+  </data>
+  <data name="Diagnostics_CutShort" xml:space="preserve">
+    <value>Cut short: {0}  (focus moved, or a key or click, mid-typing)</value>
+    <comment>Line of the diagnostics report. {0} is how many typed snippets stopped part-way because focus moved to another window, or a key or click reached the app.</comment>
+  </data>
+  <data name="Diagnostics_SendInputFailures" xml:space="preserve">
+    <value>SendInput failures: {0}</value>
+    <comment>Line of the diagnostics report. {Locked="SendInput"} SendInput is the Windows function that sends keystrokes. {0} is how often it sent fewer keystrokes than asked.</comment>
+  </data>
+  <data name="Diagnostics_ClipboardOpens" xml:space="preserve">
+    <value>Clipboard opens: {0} owned, {1} unowned, {2} failed</value>
+    <comment>Line of the diagnostics report: how the clipboard opened. {0} is how often it opened with Text Expander as its owner, {1} without an owner, and {2} how often it couldn't be opened.</comment>
+  </data>
+  <data name="Diagnostics_ClipboardRestoresLost" xml:space="preserve">
+    <value>Clipboard restores lost: {0}</value>
+    <comment>Line of the diagnostics report. {0} is how often the user's clipboard couldn't be put back after a paste.</comment>
+  </data>
+  <data name="Diagnostics_ClipboardRestoresSkipped" xml:space="preserve">
+    <value>Clipboard restores skipped: {0}  (a newer copy was kept)</value>
+    <comment>Line of the diagnostics report. {0} is how often the user's clipboard wasn't put back after a paste because something newer had been copied, which was kept.</comment>
+  </data>
+</root>

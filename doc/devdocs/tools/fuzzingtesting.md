@@ -223,6 +223,7 @@ PowerToys has implemented fuzzing for several modules:
 - Hosts File Editor
 - Registry Preview
 - Fancy Zones
+- Text Expander
 
 Modules that still need fuzzing implementation:
 - Environmental Variables

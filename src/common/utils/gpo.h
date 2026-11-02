@@ -60,6 +60,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_RENAME = L"ConfigureEnabledUtilityPowerRename";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER = L"ConfigureEnabledUtilityPowerLauncher";
     const std::wstring POLICY_CONFIGURE_ENABLED_QUICK_ACCENT = L"ConfigureEnabledUtilityQuickAccent";
+    const std::wstring POLICY_CONFIGURE_ENABLED_TEXT_EXPANDER = L"ConfigureEnabledUtilityTextExpander";
     const std::wstring POLICY_CONFIGURE_ENABLED_SCREEN_RULER = L"ConfigureEnabledUtilityScreenRuler";
     const std::wstring POLICY_CONFIGURE_ENABLED_SHORTCUT_GUIDE = L"ConfigureEnabledUtilityShortcutGuide";
     const std::wstring POLICY_CONFIGURE_ENABLED_TEXT_EXTRACTOR = L"ConfigureEnabledUtilityTextExtractor";
@@ -461,6 +462,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredQuickAccentEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_QUICK_ACCENT);
+    }
+
+    inline gpo_rule_configured_t getConfiguredTextExpanderEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_TEXT_EXPANDER);
     }
 
     inline gpo_rule_configured_t getConfiguredScreenRulerEnabledValue()

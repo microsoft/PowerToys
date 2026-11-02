@@ -1,0 +1,111 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+namespace Microsoft.PowerToys.TextExpander;
+
+/// <summary>How a replacement reaches the focused window.</summary>
+internal enum InjectionBackend
+{
+    /// <summary>Paste anything long enough to be at risk, type the rest.</summary>
+    Auto,
+
+    /// <summary>Always paste. For targets that lose synthetic keystrokes under load.</summary>
+    Clipboard,
+
+    /// <summary>Always type. For targets that refuse a paste, or when the clipboard is precious.</summary>
+    Typing,
+}
+
+/// <summary>Decides how a given replacement should be injected; free of Win32 so the rule can be tested.</summary>
+internal static class InjectionPolicy
+{
+    /// <summary>
+    /// Replacements at least this long are pasted rather than typed. A paste is a single Ctrl+V;
+    /// typing stays for short text and targets that reject paste.
+    /// </summary>
+    public const int DefaultClipboardThresholdChars = 5;
+
+    /// <summary>
+    /// Escape hatch for apps that refuse a synthetic Ctrl+V: <c>type</c> forces typing, <c>clipboard</c> always pastes.
+    /// </summary>
+    public const string BackendVariable = "POWERTOYS_TEXT_EXPANDER_INJECTION_BACKEND";
+
+    /// <summary>Overrides <see cref="DefaultClipboardThresholdChars"/>.</summary>
+    public const string ThresholdVariable = "POWERTOYS_TEXT_EXPANDER_CLIPBOARD_THRESHOLD";
+
+    /// <summary>
+    /// Set to <c>1</c> to stop treating Keyboard Manager remaps as typing (see <see cref="HostInputTags.AcceptRemappedInput"/>).
+    /// </summary>
+    public const string IgnoreRemappedVariable = "POWERTOYS_TEXT_EXPANDER_IGNORE_REMAPPED_INPUT";
+
+    /// <summary>
+    /// Makes a trigger wait for a word terminator before firing. On by default to prevent a
+    /// trigger from going off while the user is still typing a longer word.
+    /// </summary>
+    public const string RequireWordBoundaryVariable = "POWERTOYS_TEXT_EXPANDER_REQUIRE_WORD_BOUNDARY";
+
+    /// <summary>
+    /// Whether the terminator that released a trigger is handed back (on by default). Only meaningful with
+    /// the word-boundary mode on.
+    /// </summary>
+    public const string WordBoundaryKeepSpaceVariable = "POWERTOYS_TEXT_EXPANDER_WORD_BOUNDARY_KEEP_SPACE";
+
+    /// <summary>Reads a boolean escape hatch; anything unrecognized leaves the default alone.</summary>
+    public static bool ParseFlag(string? value, bool fallback)
+        => value?.Trim().ToLowerInvariant() switch
+        {
+            "1" or "true" or "yes" or "on" => true,
+            "0" or "false" or "no" or "off" => false,
+            _ => fallback,
+        };
+
+    /// <summary>
+    /// True when <paramref name="text"/> should go via the clipboard. Multi-line text always does: synthesized
+    /// Return presses trigger auto-indent and auto-complete. Its last <paramref name="givenBack"/> characters, the
+    /// user's own keystrokes given back, such as the space that released the trigger, don't count toward
+    /// <paramref name="thresholdChars"/>, and text that is only those, as after a cancelled question, is always typed.
+    /// </summary>
+    public static bool ShouldUseClipboard(string text, int thresholdChars, InjectionBackend backend, int givenBack = 0)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+
+        if (backend == InjectionBackend.Typing || text.Length <= givenBack)
+        {
+            return false;
+        }
+
+        if (backend == InjectionBackend.Clipboard)
+        {
+            return true;
+        }
+
+        return text.Contains('\n') || text.Length - givenBack >= Math.Max(1, thresholdChars);
+    }
+
+    /// <summary>Reads a backend name, falling back to <paramref name="fallback"/> on a typo rather than refusing to start.</summary>
+    public static InjectionBackend ParseBackend(string? value, InjectionBackend fallback)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return fallback;
+        }
+
+        return value.Trim().ToLowerInvariant() switch
+        {
+            "auto" => InjectionBackend.Auto,
+            "clipboard" or "paste" => InjectionBackend.Clipboard,
+            "type" or "typing" or "inject" or "keyboard" => InjectionBackend.Typing,
+            _ => fallback,
+        };
+    }
+
+    /// <summary>
+    /// Reads a threshold, rejecting anything below one character. Zero would mean pasting even
+    /// an empty replacement; "never paste" is spelled <see cref="InjectionBackend.Typing"/>.
+    /// </summary>
+    public static int ParseThreshold(string? value, int fallback)
+        => int.TryParse(value?.Trim(), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out int parsed) && parsed >= 1
+            ? parsed
+            : fallback;
+}
