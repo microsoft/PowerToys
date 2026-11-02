@@ -11,13 +11,26 @@ namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 
 public partial class OpenSettingsCommand : InvokableCommand
 {
+    public const string SettingsCommandId = "com.microsoft.cmdpal.opensettings"; /* #no-spell-check-line */
+
+    public const string ExtensionSettingsCommandId = "com.microsoft.cmdpal.openextensionsettings"; /* #no-spell-check-line */
+
+    private const string SettingsGlyph = "\uE713";
+
     public OpenSettingsCommand()
         : this(
             settingsPageTag: string.Empty,
             name: Properties.Resources.builtin_open_settings_name,
-            glyph: "\uE713",
-            id: "com.microsoft.cmdpal.opensettings") /* #no-spell-check-line */
+            glyph: SettingsGlyph,
+            id: SettingsCommandId)
     {
+    }
+
+    public OpenSettingsCommand(OpenSettingsMessage destination, string name, string id)
+        : this(string.Empty, name, SettingsGlyph, id)
+    {
+        ArgumentNullException.ThrowIfNull(destination);
+        _destination = destination;
     }
 
     protected OpenSettingsCommand(
@@ -26,17 +39,17 @@ public partial class OpenSettingsCommand : InvokableCommand
         string glyph,
         string id)
     {
-        _settingsPageTag = settingsPageTag;
+        _destination = new OpenSettingsMessage(settingsPageTag);
         Name = name;
         Icon = new IconInfo(glyph);
         Id = id;
     }
 
-    private readonly string _settingsPageTag;
+    private readonly OpenSettingsMessage _destination;
 
     public override ICommandResult Invoke()
     {
-        WeakReferenceMessenger.Default.Send(new OpenSettingsMessage(_settingsPageTag));
+        WeakReferenceMessenger.Default.Send(_destination);
         return CommandResult.KeepOpen();
     }
 }

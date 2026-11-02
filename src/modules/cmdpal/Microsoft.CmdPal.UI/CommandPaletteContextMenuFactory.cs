@@ -8,7 +8,9 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -199,6 +201,29 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             // var moreResults = DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(moreCommands.ToArray(), commandItem);
             contextItems.AddRange(moreCommands);
         }
+    }
+
+    public void AddMoreCommandsToPage(PageViewModel page, List<IContextItem> contextItems)
+    {
+        var providerId = page.ProviderContext.ProviderId;
+        if (_topLevelCommandManager.LookupProvider(providerId) is null)
+        {
+            return;
+        }
+
+        // TODO: Placeholder, discuss what we should include automagically
+        if (contextItems.Count > 0)
+        {
+            contextItems.Add(new Separator());
+        }
+
+        var destination = new OpenSettingsMessage(
+            SettingsLinkId: SettingsLinkIds.Extensions.Extension.Page,
+            ExtensionProviderId: providerId);
+        contextItems.Add(new CommandContextItem(new OpenSettingsCommand(
+            destination,
+            RS_.GetString("PageMenu_ExtensionSettings_Name"),
+            OpenSettingsCommand.ExtensionSettingsCommandId)));
     }
 
     private void TryAddCommandLink(

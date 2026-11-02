@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -21,7 +20,6 @@ internal sealed partial class ItemActionController : IContextMenuOwner, IDisposa
     private readonly Func<ICommandBarContext?> _currentContext;
     private readonly Func<bool> _canAct;
     private readonly ContextMenuHost _menuHost;
-    private readonly IMessenger _messenger;
     private bool _isDisposed;
 
     /// <summary>
@@ -30,44 +28,17 @@ internal sealed partial class ItemActionController : IContextMenuOwner, IDisposa
     /// <param name="currentContext">Returns the live selection, independently of debounced bar updates.</param>
     /// <param name="canAct">Reports whether the shell currently allows item actions.</param>
     /// <param name="menuHost">The palette's menu host.</param>
-    /// <param name="messenger">The messenger used for command activation.</param>
     internal ItemActionController(
         Func<ICommandBarContext?> currentContext,
         Func<bool> canAct,
-        ContextMenuHost menuHost,
-        IMessenger messenger)
+        ContextMenuHost menuHost)
     {
         _currentContext = currentContext;
         _canAct = canAct;
         _menuHost = menuHost;
-        _messenger = messenger;
     }
 
     private bool CanAct => !_isDisposed && _canAct();
-
-    /// <summary>
-    /// Handles extension shortcuts during preview key routing, before the search box consumes them.
-    /// </summary>
-    /// <returns>True when the key is consumed by command invocation or a deferred submenu request.</returns>
-    public bool TryHandleShortcut(KeyChord chord)
-    {
-        if (!CanAct || _currentContext() is not { } context ||
-            context.FindKeybinding(chord) is not { } command)
-        {
-            return false;
-        }
-
-        if (command.HasSubmenu)
-        {
-            ShowContextMenuAfterKeyEvent(context, command);
-        }
-        else
-        {
-            _messenger.Send(new PerformCommandMessage(command));
-        }
-
-        return true;
-    }
 
     /// <summary>
     /// Handles Ctrl+K during normal key routing. Page interaction targets handle Enter and Ctrl+Enter.
@@ -114,9 +85,17 @@ internal sealed partial class ItemActionController : IContextMenuOwner, IDisposa
 
     /// <summary>
     /// Defers opening until the triggering key finishes routing. The open is cancelled when superseded,
-    /// closed, disabled, or when <paramref name="context"/> is no longer the live selection.
+    /// closed, disabled, or when <paramref name="context"/> is no longer current.
     /// </summary>
-    public void ShowContextMenuAfterKeyEvent(ICommandBarContext context, CommandContextItemViewModel? initialSubmenu = null)
+    /// <param name="context">The menu to open, such as the selected item's menu or the current page menu.</param>
+    /// <param name="initialSubmenu">A root command whose submenu opens first; the open is cancelled if <paramref name="context"/> no longer contains it.</param>
+    /// <param name="anchor">The placement override, or null to use the palette's default anchor.</param>
+    /// <param name="isContextCurrent">Revalidates <paramref name="context"/> when the open is dispatched, or null to require the live selection.</param>
+    public void ShowContextMenuAfterKeyEvent(
+        IContextMenuContext context,
+        CommandContextItemViewModel? initialSubmenu = null,
+        ContextMenuAnchor? anchor = null,
+        Func<bool>? isContextCurrent = null)
     {
         if (!CanAct)
         {
@@ -126,7 +105,9 @@ internal sealed partial class ItemActionController : IContextMenuOwner, IDisposa
         _menuHost.ShowAfterKeyEvent(
             () =>
             {
-                if (!CanAct || !ReferenceEquals(context, _currentContext()))
+                if (!CanAct ||
+                    !(isContextCurrent?.Invoke() ?? ReferenceEquals(context, _currentContext())) ||
+                    (initialSubmenu is not null && !context.AllCommands.Contains(initialSubmenu)))
                 {
                     return null;
                 }
@@ -134,6 +115,7 @@ internal sealed partial class ItemActionController : IContextMenuOwner, IDisposa
                 return new ContextMenuRequest(context)
                 {
                     InitialSubmenu = initialSubmenu,
+                    Anchor = anchor,
                 };
             });
     }
