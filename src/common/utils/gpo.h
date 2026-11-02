@@ -57,6 +57,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_AUTO_HIDE_CURSOR = L"ConfigureEnabledUtilityAutoHideCursor";
     const std::wstring POLICY_CONFIGURE_ENABLED_CURSOR_WRAP = L"ConfigureEnabledUtilityCursorWrap";
     const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_BUTTON_LOCK = L"ConfigureEnabledUtilityMouseButtonLock";
+    const std::wstring POLICY_CONFIGURE_ENABLED_CURSOR_BRAKE = L"ConfigureEnabledUtilityCursorBrake";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_RENAME = L"ConfigureEnabledUtilityPowerRename";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER = L"ConfigureEnabledUtilityPowerLauncher";
     const std::wstring POLICY_CONFIGURE_ENABLED_QUICK_ACCENT = L"ConfigureEnabledUtilityQuickAccent";
@@ -446,6 +447,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredMouseButtonLockEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MOUSE_BUTTON_LOCK);
+    }
+
+    inline gpo_rule_configured_t getConfiguredCursorBrakeEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_CURSOR_BRAKE);
     }
 
     inline gpo_rule_configured_t getConfiguredPowerRenameEnabledValue()

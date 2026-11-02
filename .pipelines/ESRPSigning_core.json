@@ -201,6 +201,7 @@
             "PowerToys.MousePointerCrosshairs.dll",
             "PowerToys.CursorWrap.dll",
             "PowerToys.MouseButtonLock.dll",
+            "PowerToys.CursorBrake.dll",
 
             "PowerToys.MouseWithoutBorders.dll",
             "PowerToys.MouseWithoutBorders.exe",
