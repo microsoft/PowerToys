@@ -541,7 +541,22 @@ jobs:
         testResultsFiles: '**/*.trx'
       condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64'))
 
-    # Native dlls
+    # Exclude the test assemblies recorded in the MSBuild TRX files from the VSTest run below,
+    # so tests already executed by Microsoft.Testing.Platform during the build don't run twice.
+    - pwsh: |-
+        $assemblies = @(Get-ChildItem -Path '$(Build.SourcesDirectory)' -Filter '*.trx' -File -Recurse |
+          ForEach-Object { ([xml](Get-Content -LiteralPath $_.FullName -Raw)).TestRun.TestDefinitions.UnitTest.storage } |
+          Where-Object { $_ } |
+          ForEach-Object { [IO.Path]::GetFileNameWithoutExtension($_) } |
+          Sort-Object -Unique)
+        Write-Host "Excluding $($assemblies.Count) test assemblies already run by MSBuild:"
+        $assemblies | ForEach-Object { Write-Host "  $_" }
+        $exclusions = ($assemblies | ForEach-Object { "!**\$_.dll" }) -join '%0A'
+        Write-Host "##vso[task.setvariable variable=MSBuildTestedAssemblyExclusions]$exclusions"
+      displayName: Exclude tests already run by MSBuild
+      condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64'))
+
+    # Native dlls, plus any test assemblies MSBuild did not run
     - task: VSTest@2
       condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64')) # No arm64 agents to run the tests.
       displayName: 'Native Tests'
@@ -554,6 +569,7 @@ jobs:
           **\KeyboardManagerEditorTest.dll
           **\*UnitTest*.dll
           !**\obj\**
+          $(MSBuildTestedAssemblyExclusions)
 
   - pwsh: |-
       $Packages = Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI_*.msix"
