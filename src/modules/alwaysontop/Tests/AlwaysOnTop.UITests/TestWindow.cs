@@ -11,6 +11,7 @@ internal sealed class TestWindow : IDisposable
 {
     private const int GwlExStyle = -20;
     private const long WsExTopmost = 0x00000008L;
+    private const long WsExLayered = 0x00080000L;
     private const string PinnedProperty = "AlwaysOnTop_Pinned";
 
     private readonly ManualResetEventSlim ready = new();
@@ -69,6 +70,22 @@ internal sealed class TestWindow : IDisposable
 
     internal bool IsTopmost =>
         (GetWindowLongPtrW(RequireLiveHandle(), GwlExStyle).ToInt64() & WsExTopmost) != 0;
+
+    internal bool IsLayered =>
+        (GetWindowLongPtrW(RequireLiveHandle(), GwlExStyle).ToInt64() & WsExLayered) != 0;
+
+    internal byte LayeredAlpha
+    {
+        get
+        {
+            if (!GetLayeredWindowAttributes(RequireLiveHandle(), out _, out var alpha, out _))
+            {
+                throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+            }
+
+            return alpha;
+        }
+    }
 
     internal bool IsMinimized => IsIconic(RequireLiveHandle());
 
@@ -178,6 +195,10 @@ internal sealed class TestWindow : IDisposable
 
     [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW", SetLastError = true)]
     private static extern IntPtr GetWindowLongPtrW(IntPtr hWnd, int nIndex);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetLayeredWindowAttributes(IntPtr hWnd, out uint colorKey, out byte alpha, out uint flags);
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
     private static extern IntPtr GetPropW(IntPtr hWnd, string lpString);

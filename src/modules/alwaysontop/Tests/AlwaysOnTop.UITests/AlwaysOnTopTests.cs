@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -150,6 +151,68 @@ public sealed class AlwaysOnTopTests : UITestBase
         TogglePin(expected: false);
         AssertPinState(expected: false);
         AssertBorderState(expected: false);
+    }
+
+    [TestMethod]
+    [TestCategory("AlwaysOnTop")]
+    public void PinAndUnpinPreservesApplicationOpacity()
+    {
+        fixture = TestWindow.Create("Always On Top application opacity fixture");
+        fixture.Invoke(() =>
+        {
+            fixture.GetForm().Opacity = 0.75;
+        });
+        Assert.IsTrue(fixture.IsLayered, "The fixture must start with application-owned transparency.");
+        var originalAlpha = fixture.LayeredAlpha;
+
+        TogglePin(expected: true);
+        TogglePin(expected: false);
+
+        Assert.IsTrue(fixture.IsLayered, "Unpinning removed the application's layered style.");
+        Assert.AreEqual(originalAlpha, fixture.LayeredAlpha, "Unpinning changed the application's opacity.");
+    }
+
+    [TestMethod]
+    [TestCategory("AlwaysOnTop")]
+    public void ExcludingPinnedApplicationRestoresOpacity()
+    {
+        using var originalSettings = SettingsConfigHelper.PreserveModuleSettings(AlwaysOnTopSettingsSeed.ModuleName);
+        fixture = TestWindow.Create("Always On Top excluded opacity fixture");
+        fixture.Invoke(() =>
+        {
+            fixture.GetForm().Opacity = 0.75;
+        });
+        var originalAlpha = fixture.LayeredAlpha;
+        AlwaysOnTopSettingsSeed.Apply(("decrease-opacity-hotkey", new JsonObject
+        {
+            ["win"] = true,
+            ["ctrl"] = true,
+            ["alt"] = false,
+            ["shift"] = false,
+            ["code"] = (int)Key.F9,
+            ["key"] = string.Empty,
+        }));
+        WaitForSettingsReloadWithoutObservableSignal();
+        TogglePin(expected: true);
+
+        Step("Reducing the pinned fixture's opacity");
+        fixture.Focus();
+        KeyboardHelper.SendKeys(Key.LWin, Key.Ctrl, Key.F9);
+        var reduced = WaitHelper.WaitForStable(
+            () => fixture.LayeredAlpha,
+            alpha => alpha < originalAlpha,
+            timeoutMS: 7_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 100,
+            shouldRetryException: ex => ex is System.ComponentModel.Win32Exception);
+        Assert.IsTrue(reduced.Succeeded, "The opacity shortcut did not reduce the fixture's alpha.");
+
+        Step("Excluding the fixture after changing its opacity");
+        AlwaysOnTopSettingsSeed.Apply(("excluded-apps", fixture.ProcessFileName));
+        AssertPinState(expected: false, timeoutMs: 10_000);
+        AssertBorderState(expected: false, timeoutMs: 10_000);
+        Assert.IsTrue(fixture.IsLayered, "Excluding the fixture removed its original layered style.");
+        Assert.AreEqual(originalAlpha, fixture.LayeredAlpha, "Excluding the fixture did not restore its original alpha.");
     }
 
     [TestMethod]
