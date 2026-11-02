@@ -12,6 +12,7 @@
 
 #include "pch.h"
 #include "DemoType.h"
+#include "Utility.h"
 
 #define MAX_INDENT_DEPTH    100
 
@@ -218,6 +219,12 @@ bool IsNotPrintable( wchar_t ch )
 //----------------------------------------------------------------------------
 void SendKeyInput( const WORD vK, const wchar_t ch, const bool keyup = false )
 {
+    // Key-ups always go through so a modifier never stays stuck down.
+    if( !keyup && IsForegroundAboveOurIntegrity() )
+    {
+        return;
+    }
+
     INPUT input = {0};
     input.type = INPUT_KEYBOARD;
 
