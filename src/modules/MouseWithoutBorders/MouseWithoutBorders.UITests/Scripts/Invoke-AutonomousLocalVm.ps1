@@ -100,6 +100,7 @@ function Get-MwbHostPowerEvidence {
 }
 
 $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..\..\..'))
+. (Join-Path $repoRoot '.pipelines\mwb\MwbSandboxCi.Common.ps1')
 $skillRoot = Join-Path $repoRoot '.github\skills\ui-tests-local-vm\scripts'
 $controller = Join-Path $skillRoot 'Invoke-LocalVmUiTest.ps1'
 $backend = if ($SandboxBackend -eq 'Auto') {
@@ -271,34 +272,40 @@ try {
         if ($CertificateHash) { $arguments += ' -ExpectedTestSigningCertificateSha256 {0}' -f $CertificateHash }
         $action = New-ScheduledTaskAction -Execute 'C:\Program Files\PowerShell\7\pwsh.exe' -Argument $arguments
         $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest
-        $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 18)
+        $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 22)
         $null = Register-ScheduledTask -TaskName $TaskName -Action $action -Principal $principal -Settings $settings
         Start-ScheduledTask -TaskName $TaskName
     } -ArgumentList $guestTools, $taskName, $StandardUser, $runId, $sandboxArchive, $backend, $sandboxWinApp, $Configuration, $certificateHash
     $taskRegistered = $true
-    $deadline = [DateTime]::UtcNow.AddSeconds(90)
-    do {
-        $marker = Invoke-Command -Session $session -ScriptBlock {
+    $marker = Wait-MwbProvisioningReady -RunId $runId -ProductRoot 'C:\PowerToysUiTestRun\PowerToys' -ReadState {
+        Invoke-Command -Session $session -ScriptBlock {
+            param($Tools, $Name)
+            $ErrorActionPreference = 'Stop'
+            $startedPath = Join-Path $Tools 'provisioning-started.json'
+            $started = $null
+            if (Test-Path -LiteralPath $startedPath) {
+                $started = Get-Content -LiteralPath $startedPath -Raw | ConvertFrom-Json
+            }
             $path = 'C:\ProgramData\PowerToysMwbExperiment\host-provisioning.json'
-            if (Test-Path -LiteralPath $path) { [IO.File]::ReadAllText($path) | ConvertFrom-Json }
-        }
-        if ($marker -and $marker.RunId -eq $runId -and $marker.Status -ne 'PreparingTrust') { break }
-        $task = Invoke-Command -Session $session -ScriptBlock {
-            param($Name)
+            $current = $null
+            if (Test-Path -LiteralPath $path) {
+                try { $current = [IO.File]::ReadAllText($path) | ConvertFrom-Json }
+                catch [ArgumentException] {
+                    # Retry a partially written ownership marker.
+                }
+            }
             $info = Get-ScheduledTaskInfo -TaskName $Name
             [pscustomobject]@{
-                State = (Get-ScheduledTask -TaskName $Name).State.ToString()
-                LastRunTime = $info.LastRunTime
-                LastTaskResult = $info.LastTaskResult
+                Started = $started
+                Marker = $current
+                TaskRunning = (Get-ScheduledTask -TaskName $Name).State -eq 'Running'
+                TaskHasRun = $info.LastRunTime.Year -ge 2000
+                TaskResult = $info.LastTaskResult
             }
-        } -ArgumentList $taskName
-        if ($task.State -ne 'Running' -and $task.LastRunTime.Year -ge 2000) {
-            throw "Privileged setup exited before its marker (result $($task.LastTaskResult)). Protected diagnostics: $guestTools\provisioning-logs"
-        }
-        Start-Sleep -Milliseconds 500
-    } while ([DateTime]::UtcNow -lt $deadline)
+        } -ArgumentList $guestTools, $taskName
+    }
     if (-not $marker -or $marker.RunId -ne $runId -or $marker.Status -notin 'Ready', 'WaitingForSandbox') {
-        throw "Privileged setup did not initialize a ready marker within 90 seconds (state $($task.State), result $($task.LastTaskResult)). Protected diagnostics: $guestTools\provisioning-logs"
+        throw "Privileged setup did not initialize a verified ready marker. Protected diagnostics: $guestTools\provisioning-logs"
     }
     $provisioned = $true
     $result = & $controller @parameters

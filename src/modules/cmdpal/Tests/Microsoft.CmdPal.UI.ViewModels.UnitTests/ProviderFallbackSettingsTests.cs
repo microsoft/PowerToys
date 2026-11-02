@@ -100,11 +100,13 @@ public partial class ProviderFallbackSettingsTests
         await first.LoadTopLevelCommands(services);
         await second.LoadTopLevelCommands(services);
         var score = typeof(MainListPage).GetMethod("ScoreFallbackItem", BindingFlags.NonPublic | BindingFlags.Static)!;
+        var firstItem = new InProcObject<IListItem>(first.FallbackItems[0]);
+        var secondItem = new InProcObject<IListItem>(second.FallbackItems[0]);
         string[] ranks = [second.FallbackItems[0].FallbackKey, first.FallbackItems[0].FallbackKey];
 
-        Assert.AreEqual(3, score.Invoke(null, [new InProcObject<IListItem>(second.FallbackItems[0]), ranks]));
-        Assert.AreEqual(2, score.Invoke(null, [new InProcObject<IListItem>(first.FallbackItems[0]), ranks]));
-        Assert.AreEqual(2, score.Invoke(null, [new InProcObject<IListItem>(first.FallbackItems[0]), new[] { FallbackId }]));
+        Assert.AreEqual(3, score.Invoke(null, [secondItem, ranks]));
+        Assert.AreEqual(2, score.Invoke(null, [firstItem, ranks]));
+        Assert.AreEqual(2, score.Invoke(null, [firstItem, new[] { FallbackId }]));
 
         using var provider = new ProviderSettingsViewModel(first, new ProviderSettings(), settingsService);
         var fallback = new FallbackSettingsViewModel(first.FallbackItems[0], new FallbackSettings(), provider);

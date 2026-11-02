@@ -22,7 +22,7 @@ internal sealed partial class SampleResultFallback : FallbackResultsItem
     }
 
     protected override async Task<IFallbackCommandResult> QueryAsync(
-        IFallbackQueryArgs args,
+        FallbackQueryArgs args,
         CancellationToken cancellationToken,
         IProgress<IFallbackCommandResult> progress)
     {
