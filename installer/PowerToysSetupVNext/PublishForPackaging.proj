@@ -1,0 +1,21 @@
+<Project DefaultTargets="Publish">
+  <PropertyGroup>
+    <PowerToysRoot Condition="'$(PowerToysRoot)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..'))</PowerToysRoot>
+    <PublishForPackagingProperties>PowerToysRoot=$(PowerToysRoot);AppxBundle=Never;VCRTForwarders-IncludeDebugCRT=false;PublishProfile=InstallationPublishProfile.pubxml;TargetFramework=net10.0-windows10.0.26100.0</PublishForPackagingProperties>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectToPublish Include="$(PowerToysRoot)\src\settings-ui\Settings.UI\PowerToys.Settings.csproj" />
+    <ProjectToPublish Include="$(PowerToysRoot)\src\modules\launcher\PowerLauncher\PowerLauncher.csproj" />
+    <ProjectToPublish Include="$(PowerToysRoot)\src\modules\previewpane\MonacoPreviewHandler\MonacoPreviewHandler.csproj" />
+    <ProjectToPublish Include="$(PowerToysRoot)\src\modules\previewpane\MarkdownPreviewHandler\MarkdownPreviewHandler.csproj" />
+    <ProjectToPublish Include="$(PowerToysRoot)\src\modules\previewpane\SvgPreviewHandler\SvgPreviewHandler.csproj" />
+    <ProjectToPublish Include="$(PowerToysRoot)\src\modules\previewpane\SvgThumbnailProvider\SvgThumbnailProvider.csproj" />
+    <ProjectToPublish Include="$(PowerToysRoot)\src\modules\FileLocksmith\FileLocksmithUI\FileLocksmithUI.csproj" />
+  </ItemGroup>
+
+  <Target Name="Publish">
+    <Error Condition="!Exists('%(ProjectToPublish.Identity)')" Text="Project to publish not found: %(ProjectToPublish.Identity)" />
+    <MSBuild Projects="@(ProjectToPublish)" Targets="Publish" Properties="$(PublishForPackagingProperties)" BuildInParallel="true" />
+  </Target>
+</Project>

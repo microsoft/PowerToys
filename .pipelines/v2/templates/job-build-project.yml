@@ -112,16 +112,6 @@ parameters:
   - name: metaPackageName
     type: string
     default: 'Microsoft.WindowsAppSDK'
-  - name: csProjectsToPublish
-    type: object
-    default:
-      - 'src/settings-ui/Settings.UI/PowerToys.Settings.csproj'
-      - 'src/modules/launcher/PowerLauncher/PowerLauncher.csproj'
-      - 'src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandler.csproj'
-      - 'src/modules/previewpane/MarkdownPreviewHandler/MarkdownPreviewHandler.csproj'
-      - 'src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj'
-      - 'src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.csproj'
-      - 'src/modules/FileLocksmith/FileLocksmithUI/FileLocksmithUI.csproj'
   - name: timeoutInMinutes
     type: number
     default: 240
@@ -260,8 +250,6 @@ jobs:
 
   - pwsh: |-
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\PowerToys.slnx'
-      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\BugReportTool\BugReportTool.sln'
-      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\StylesReportTool\StylesReportTool.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.slnx'
     displayName: Verify ARM64 configurations
 
@@ -440,67 +428,19 @@ jobs:
       targetFolder: $(JobOutputDirectory)/sdk/winmd
 
   - task: VSBuild@1
-    displayName: Build BugReportTool
+    displayName: Publish projects for Packaging
     inputs:
-      solution: '**/tools/BugReportTool/BugReportTool.sln'
+      solution: installer/PowerToysSetupVNext/PublishForPackaging.proj
       vsVersion: 18.0
       msbuildArgs: >-
-        -restore -graph
-        /p:RestorePackagesConfig=true
-        /p:CIBuild=true
-        /bl:$(LogOutputDirectory)\build-bug-report.binlog
-        ${{ parameters.additionalBuildOptions }}
-        $(MSBuildCacheParameters)
+        /target:Publish
+        /p:PowerToysRoot=$(Build.SourcesDirectory)
+        /bl:$(LogOutputDirectory)\publish-for-packaging.binlog
         $(RestoreAdditionalProjectSourcesArg)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
-    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-  - task: VSBuild@1
-    displayName: Build StylesReportTool
-    inputs:
-      solution: '**/tools/StylesReportTool/StylesReportTool.sln'
-      vsVersion: 18.0
-      msbuildArgs: >-
-        -restore -graph
-        /p:RestorePackagesConfig=true
-        /p:CIBuild=true
-        /bl:$(LogOutputDirectory)\build-styles-report.binlog
-        ${{ parameters.additionalBuildOptions }}
-        $(MSBuildCacheParameters)
-        $(RestoreAdditionalProjectSourcesArg)
-      platform: $(BuildPlatform)
-      configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
-      maximumCpuCount: true
-    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-  - ${{ each project in parameters.csProjectsToPublish }}:
-    - task: VSBuild@1
-      displayName: Publish ${{ project }} for Packaging
-      inputs:
-        solution: ${{ project }}
-        vsVersion: 18.0
-        msbuildArgs: >-
-          /target:Publish
-          /graph
-          /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
-          /p:VCRTForwarders-IncludeDebugCRT=false
-          /p:PowerToysRoot=$(Build.SourcesDirectory)
-          /p:PublishProfile=InstallationPublishProfile.pubxml
-          /p:TargetFramework=net10.0-windows10.0.26100.0
-          /bl:$(LogOutputDirectory)\publish-${{ join('_',split(project, '/')) }}.binlog
-          $(RestoreAdditionalProjectSourcesArg)
-        platform: $(BuildPlatform)
-        configuration: $(BuildConfiguration)
-        msbuildArchitecture: x64
-        maximumCpuCount: true
 
   ### HACK: On ARM64 builds, building an app with Windows App SDK copies the x64 WebView2 dll instead of the ARM64 one. This task makes sure the right dll is used.
   - task: CopyFiles@2
