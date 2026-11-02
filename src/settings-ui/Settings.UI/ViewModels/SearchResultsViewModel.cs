@@ -14,29 +14,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class SearchResultsViewModel : INotifyPropertyChanged
     {
-        private ObservableCollection<SettingEntry> _moduleResults = new();
-        private ObservableCollection<SettingsGroup> _groupedSettingsResults = new();
         private bool _hasNoResults;
 
-        public ObservableCollection<SettingEntry> ModuleResults
-        {
-            get => _moduleResults;
-            set
-            {
-                _moduleResults = value;
-                OnPropertyChanged();
-            }
-        }
+        public ObservableCollection<SettingEntry> ModuleResults { get; } = new();
 
-        public ObservableCollection<SettingsGroup> GroupedSettingsResults
-        {
-            get => _groupedSettingsResults;
-            set
-            {
-                _groupedSettingsResults = value;
-                OnPropertyChanged();
-            }
-        }
+        public ObservableCollection<SettingsGroup> GroupedSettingsResults { get; } = new();
 
         public bool HasNoResults
         {
@@ -116,7 +98,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ObservableCollection<SettingEntry> Settings
         {
             get => _settings;
-            set
+            init
             {
                 _settings = value;
                 OnPropertyChanged();
