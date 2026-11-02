@@ -33,5 +33,5 @@ public class Settings : ISettingsInterface
 
     public bool DateWithWeekday { get; set; }
 
-    public List<string> CustomFormats { get; set; }
+    public List<string> CustomFormats { get; internal set; }
 }

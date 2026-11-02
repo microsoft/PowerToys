@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using ManagedCommon;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -61,6 +62,7 @@ public sealed partial class ColorPickerButton : UserControl
         set { SetValue(IsValueEditorEnabledProperty, value); }
     }
 
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This dependency-property wrapper must remain writable so XAML and runtime bindings can replace the collection.")]
     public ObservableCollection<Color> PaletteColors
     {
         get { return (ObservableCollection<Color>)GetValue(PaletteColorsProperty); }

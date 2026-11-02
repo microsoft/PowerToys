@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using static FancyZonesEditorCommon.Data.AppZoneHistory.AppZoneHistoryWrapper;
 using static FancyZonesEditorCommon.Data.CustomLayouts;
@@ -45,11 +46,13 @@ namespace FancyZonesEditorCommon.Data
 
             public string AppPath { get; set; }
 
+            [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This JSON DTO retains its writable deserialization contract, including existing omitted-member defaults and explicit-null behavior.")]
             public List<ZoneHistoryWrapper> History { get; set; }
         }
 
         public struct AppZoneHistoryListWrapper
         {
+            [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This JSON DTO retains its writable deserialization contract, including existing omitted-member defaults and explicit-null behavior.")]
             public List<AppZoneHistoryWrapper> AppZoneHistory { get; set; }
         }
 
