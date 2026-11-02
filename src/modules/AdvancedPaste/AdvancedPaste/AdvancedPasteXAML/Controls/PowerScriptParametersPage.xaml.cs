@@ -21,8 +21,20 @@ using Windows.System;
 
 namespace AdvancedPaste.Controls;
 
-internal static class PowerScriptParametersPage
+public sealed partial class PowerScriptParametersPage : UserControl
 {
+    public PowerScriptParametersPage()
+    {
+        InitializeComponent();
+        ParameterHelp.Text = Text("PowerScriptsParameterHelp");
+        RunLabel.Text = Text("PowerScriptsRun");
+        AutomationProperties.SetName(BackButton, Text("PowerScriptsBack"));
+        AutomationProperties.SetName(HelpButton, Text("PowerScriptsParameterHelpButton"));
+        AutomationProperties.SetName(RunButton, Text("PowerScriptsRun"));
+        ToolTipService.SetToolTip(BackButton, Text("PowerScriptsBack"));
+        ToolTipService.SetToolTip(HelpButton, Text("PowerScriptsParameterHelpButton"));
+    }
+
     public static async Task<IReadOnlyDictionary<string, JsonElement>> ShowAsync(PowerScriptInfo script, CancellationToken token)
     {
         if (script.Parameters.Count == 0)
@@ -31,31 +43,44 @@ internal static class PowerScriptParametersPage
         }
 
         var window = ((App)Application.Current).GetMainWindow();
+        var page = new PowerScriptParametersPage();
+        page.ScriptTitle.Text = script.Name;
+        ToolTipService.SetToolTip(page.ScriptTitle, script.Name);
         var completion = new TaskCompletionSource<IReadOnlyDictionary<string, JsonElement>>(TaskCreationOptions.RunContinuationsAsynchronously);
         var integerRangeFormat = CompositeFormat.Parse(Text("PowerScriptsIntegerRange"));
         var invalidParameterFormat = CompositeFormat.Parse(Text("PowerScriptsInvalidParameter"));
-        var fields = new StackPanel { Spacing = 12 };
-        fields.Children.Add(new TextBlock { Text = Text("PowerScriptsParameterHelp"), TextWrapping = TextWrapping.Wrap });
+        var fields = page.ParameterFields;
+        var captionStyle = (Style)Application.Current.Resources["CaptionTextBlockStyle"];
+        var descriptionStyle = (Style)page.Resources["ParameterDescriptionTextStyle"];
         var readers = new Dictionary<string, Func<string>>(StringComparer.Ordinal);
         var includes = new Dictionary<string, CheckBox>(StringComparer.Ordinal);
-        var errors = new TextBlock { TextWrapping = TextWrapping.Wrap, Visibility = Visibility.Collapsed };
-        AutomationProperties.SetAutomationId(errors, "PowerScriptParameterError");
+        var errors = page.ValidationError;
         Control initialFocus = null;
         foreach (var parameter in script.Parameters)
         {
-            var group = new StackPanel { Spacing = 8 };
+            var group = new StackPanel { Spacing = 4 };
+            var label = new TextBlock { Text = parameter.Label ?? parameter.Name, Style = captionStyle, TextWrapping = TextWrapping.Wrap };
             var include = new CheckBox
             {
-                Content = parameter.Label ?? parameter.Name,
+                Content = parameter.IsRequired ? null : label,
                 IsChecked = parameter.IsRequired || parameter.Default is not null,
                 IsEnabled = !parameter.IsRequired,
             };
             AutomationProperties.SetAutomationId(include, "PowerScriptParameterInclude_" + parameter.Name);
+            AutomationProperties.SetName(include, parameter.Label ?? parameter.Name);
             includes.Add(parameter.Name, include);
-            group.Children.Add(include);
+            if (parameter.IsRequired)
+            {
+                group.Children.Add(label);
+            }
+            else
+            {
+                group.Children.Add(include);
+            }
+
             if (!string.IsNullOrEmpty(parameter.Description))
             {
-                group.Children.Add(new TextBlock { Text = parameter.Description, TextWrapping = TextWrapping.Wrap });
+                group.Children.Add(new TextBlock { Text = parameter.Description, Style = descriptionStyle });
             }
 
             if (parameter.Type == "int" && (parameter.Min is not null || parameter.Max is not null))
@@ -63,11 +88,12 @@ internal static class PowerScriptParametersPage
                 group.Children.Add(new TextBlock
                 {
                     Text = string.Format(CultureInfo.CurrentCulture, integerRangeFormat, parameter.Min ?? int.MinValue, parameter.Max ?? int.MaxValue),
-                    TextWrapping = TextWrapping.Wrap,
+                    Style = descriptionStyle,
                 });
             }
 
             Control editor;
+            Button browse = null;
             if (parameter.Options.Count > 0)
             {
                 var combo = new ComboBox
@@ -100,7 +126,7 @@ internal static class PowerScriptParametersPage
                 editor = text;
                 if (parameter.Type == "file")
                 {
-                    var browse = new Button { Content = Text("PowerScriptsBrowse") };
+                    browse = new Button { Content = Text("PowerScriptsBrowse") };
                     AutomationProperties.SetAutomationId(browse, "PowerScriptParameterBrowse_" + parameter.Name);
                     browse.Click += async (_, _) =>
                     {
@@ -123,72 +149,37 @@ internal static class PowerScriptParametersPage
                             errors.Visibility = Visibility.Visible;
                         }
                     };
-                    group.Children.Add(browse);
                 }
             }
 
             AutomationProperties.SetAutomationId(editor, "PowerScriptParameter_" + parameter.Name);
             AutomationProperties.SetName(editor, parameter.Label ?? parameter.Name);
+            AutomationProperties.SetIsRequiredForForm(editor, parameter.IsRequired);
             editor.IsEnabled = include.IsChecked == true;
             initialFocus ??= editor.IsEnabled ? editor : include;
             include.Checked += (_, _) => editor.IsEnabled = true;
             include.Unchecked += (_, _) => editor.IsEnabled = false;
-            group.Children.Add(editor);
+            if (browse is null)
+            {
+                group.Children.Add(editor);
+            }
+            else
+            {
+                var fileEditor = new Grid { ColumnSpacing = 8 };
+                fileEditor.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                fileEditor.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                fileEditor.Children.Add(editor);
+                Grid.SetColumn(browse, 1);
+                fileEditor.Children.Add(browse);
+                group.Children.Add(fileEditor);
+            }
+
             fields.Children.Add(group);
         }
 
-        var back = new Button
-        {
-            Content = new FontIcon { Glyph = "\uE72B" },
-            Style = (Style)Application.Current.Resources["SubtleButtonStyle"],
-        };
-        AutomationProperties.SetAutomationId(back, "PowerScriptParametersBack");
-        AutomationProperties.SetName(back, Text("PowerScriptsBack"));
-        ToolTipService.SetToolTip(back, Text("PowerScriptsBack"));
+        var back = page.BackButton;
         back.Click += async (_, _) => await window.MainPage.CancelPowerScriptParametersAsync();
-        var header = new Grid { ColumnSpacing = 8 };
-        header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        header.Children.Add(back);
-        var title = new TextBlock
-        {
-            Text = script.Name,
-            Style = (Style)Application.Current.Resources["SubtitleTextBlockStyle"],
-            TextWrapping = TextWrapping.Wrap,
-            VerticalAlignment = VerticalAlignment.Center,
-        };
-        Grid.SetColumn(title, 1);
-        header.Children.Add(title);
-
-        var heading = new StackPanel { Spacing = 12 };
-        heading.Children.Add(header);
-        heading.Children.Add(errors);
-        var scroll = new ScrollViewer
-        {
-            Content = fields,
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-        };
-        AutomationProperties.SetAutomationId(scroll, "PowerScriptParametersScroll");
-        var run = new Button
-        {
-            Content = Text("PowerScriptsRun"),
-            HorizontalAlignment = HorizontalAlignment.Right,
-            Style = (Style)Application.Current.Resources["AccentButtonStyle"],
-        };
-        AutomationProperties.SetAutomationId(run, "PowerScriptParametersRun");
-        run.Click += (_, _) => Submit();
-
-        var content = new Grid { Margin = new Thickness(20, 0, 20, 16), RowSpacing = 12 };
-        content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        content.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-        content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        content.Children.Add(heading);
-        Grid.SetRow(scroll, 1);
-        content.Children.Add(scroll);
-        Grid.SetRow(run, 2);
-        content.Children.Add(run);
-        AutomationProperties.SetAutomationId(content, "PowerScriptParametersPage");
+        page.RunButton.Click += (_, _) => Submit();
 
         void Submit()
         {
@@ -211,7 +202,7 @@ internal static class PowerScriptParametersPage
 
         using var cancellation = token.Register(() => completion.TrySetCanceled(token));
         token.ThrowIfCancellationRequested();
-        var result = await window.MainPage.ShowPowerScriptParametersAsync(content, initialFocus ?? back, completion.Task);
+        var result = await window.MainPage.ShowPowerScriptParametersAsync(page, initialFocus ?? back, completion.Task);
         token.ThrowIfCancellationRequested();
         return result;
     }

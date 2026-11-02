@@ -402,6 +402,9 @@
   <data name="PowerScriptsParameterHelp" xml:space="preserve">
     <value>Required parameters are always included. Select or clear optional parameters to include or omit their values. PowerScripts still checks approval before execution.</value>
   </data>
+  <data name="PowerScriptsParameterHelpButton" xml:space="preserve">
+    <value>About script parameters</value>
+  </data>
   <data name="PowerScriptsIntegerRange" xml:space="preserve">
     <value>Whole number from {0} to {1}.</value>
   </data>
