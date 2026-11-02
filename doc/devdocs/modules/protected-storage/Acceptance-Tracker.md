@@ -1,6 +1,6 @@
 # Workspaces Protected Storage 验收台账
 
-最后更新：2026-11-02（UTC+08:00；E41定位管理员list的OwnerContextRequired/1346及错误信息映射缺陷）
+最后更新：2026-11-02（UTC+08:00；E42确认6007签名构建最终失败：x64 ICE环境错误，ARM64产物已发布）
 
 **这是验收状态的唯一维护入口。每执行完一项，就更新本文件；不能只在聊天里报告通过。**
 
@@ -79,7 +79,7 @@ PERF-02/03）；数据一致性1条（DATA-09）；部署核对1条（LOCAL-01�
 | 项目 | 当前记录 |
 |---|---|
 | 待验收代码 | `feature/workspaces-protected-storage-main-20261028`；产品基线 `b132ee3fbf` 加E35时间保留修复 `890cc68af1`；E36已增量发布到本地Debug6006 Editor并实际验证，managed DLL SHA256前缀 `6207D44B809AD83A` |
-| 正式签名构建 | E38：主签名流水线 [162529587](https://dev.azure.com/microsoft/Dart/_build/results?buildId=162529587)，代码 `6bd56af147`，版本 `0.101.6007.0`。11-02 16:03 x64在Carrier ICE阶段失败（WIX0217，Windows Installer Service不可访问），ARM64仍运行；尚无已确认完整installer集合，不关闭B02 |
+| 正式签名构建 | E38/E42：[162529587](https://dev.azure.com/microsoft/Dart/_build/results?buildId=162529587)于11-02 17:00:23结束，整体FAILED；代码`6bd56af147`、版本`0.101.6007.0`。x64在Carrier ICE阶段失败；ARM64成功并发布machine/user installer及carrier。缺x64安装包及已安装验收，不关闭B02 |
 | 主线基线 | `8056ba09721708bceee6176291b24af7ebabb0b3`；包含 PR #51114，合并提交 `06e6ae43e225cac51c2f282b0eebc42c6f995c97` |
 | 集成 worktree | `D:\PowerToys-Workspaces-Integration` |
 | 待测本地包 | x64 Debug **`0.101.6006.0`，已匹配部署**；入口 `D:\PowerToys-Workspaces-Integration\x64\Debug\PowerToys.exe`；E33 核对实际客户端和 runtime，不再受旧6005部署阻塞 |
@@ -144,7 +144,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | 编号 | 事实 | 影响与解除条件 |
 |---|---|---|
 | B01（已解除） | 早前提权取消后服务留在 6002；14:39 发现新 6003 客户端反复被旧 catalog 拒绝 | 2026-10-28 14:49 已授权保留数据更新，核对新 ready/catalog 和不变的数据哈希（E13/E15）。未执行的用例转为 NOT RUN，不自动变为 PASS |
-| B02 | 尚未在本台账提供并核验包含本次集成代码的正式签名安装包及升级配对版本 | P 环境安装/升级/卸载不能用本地 helper 或历史 3000/3001 CI 结果替代 |
+| B02 | E42已核对6007 ARM64发布manifest和版本/提交元数据；x64 job失败，尚缺x64 installer、升级配对及实际已安装资格 | ARM64产物存在不代表P-AU/P-AM已执行；P环境安装/升级/卸载不能用本地helper或历史3000/3001结果替代 |
 | B03（历史探测取消） | 6004 隔离 High Arranger 探测曾返回 1223；之后用户已完成 6004 服务更新（E21） | High/OTS 完整资格仍需独立证据；不再把部署列为 6004 阻塞。6005 更新单独记录 |
 | B04（已解除） | E31 的6006更新曾返回1223；E33 开始时已观察到匹配的6006客户端/runtime | 本轮实际业务验证已执行；不把历史授权取消继续当作当前部署阻塞 |
 | B05 | E33 当前会话与Runner均非管理员；WIP skill要求跳过管理员变体 | High目标/OTS仍需另行授权的适用环境；未为覆盖率发起UAC |
@@ -621,7 +621,7 @@ B02及所有P环境验收仍保持原状态；最终产物必须另行核验。
 不是E41本机CLI的owner-context错误；尚未确认为具体MSI authoring违规。
 ARM64任务及整体run仍在执行，未宣称最终产物可用，未禁用ICE或自动重复排队。
 原始证据为`nov02-installer-6007-x64-failure-timeline.json`、
-`nov02-installer-6007-x64-carrier.log`；后续仍需跟踪最终状态。
+`nov02-installer-6007-x64-carrier.log`。上述为当时观察；最终状态和产物核对见E42。
 
 ### E39：2026-11-02，构建期间补齐本地工程复测
 
@@ -742,6 +742,73 @@ C:\Users\bozhang\OneDrive - Microsoft\PowerToys\Module-Signoff\Workspaces-UAC-20
 `medium-diagnostic.json`、`high-diagnostic.json`、原始CLI stdout/stderr、
 `before.json`/`after.json`及构建日志；探针源为`nov02-high-list-probe.cpp`，
 驱动为`nov02-high-list-diagnostic.ps1`。账户SID仅留在本地证据，不写入公开台账。
+
+### E42：2026-11-02，6007签名构建终态及x64 ICE失败诊断
+
+[ADO 162529587](https://dev.azure.com/microsoft/Dart/_build/results?buildId=162529587)
+在**17:00:23（UTC+08:00）**结束，整体`failed`。源码仍为
+`6bd56af1472cd876abc6c2608fbf9888767d24d3`，版本`0.101.6007.0`，
+没有自动重跑、重排build、关闭ICE或修改本机Debug6006。
+监控schedule #4已停止；不存在等待中的构建资格结论。
+
+| 任务 | 最终结果 | 实际范围 |
+|---|---|---|
+| x64 Release | FAILED | 唯一失败task为`Build Protected Storage Carrier`，log229；后续carrier签名、Broker/Setup发布及主installer stage跳过 |
+| ARM64 Release | SUCCEEDED | carrier构建/ICE、各层签名、生产verifier、主安装器构建和发布均成功；是x64构建机交叉编译，不是ARM64实际安装/运行 |
+| Build SDK / SDL sources | SUCCEEDED | 不能抵消x64安装包失败 |
+
+**失败边界：** x64的WiX `build`先成功产生中间carrier MSI，随后
+`wix.exe msi validate`运行ICE01、ICE02等时报`WIX0217`，
+实际Windows Installer消息为错误1719：
+`The Windows Installer Service could not be accessed`。
+这不是C++/.NET编译失败、签名失败或已明确指出某张MSI表违规的ICE finding。
+WIX0217中的external UI logger措辞也不能代替其内层1719错误。
+
+下载并检查了x64的62,254,906字节failure artifact（27个日志文件），
+包含真实`windows-installer-service.json`和`windows-installer-events.json`，
+而不只查看控制台最后一行：
+
+| 对照 | x64失败agent | ARM64成功agent |
+|---|---|---|
+| 环境 | `SHINE-INT-L 1` | `SHINE-INT-L 2`，另一台VM |
+| 镜像/agent版本 | `SHINE-VS18-Latest 74.0.0` / `5.281.1` | 相同 |
+| 校验前msiserver | Stopped / Manual | Stopped / Manual |
+| 事后msiserver | Running / LocalSystem / exit0 | Stopped / Manual / exit0 |
+| MsiInstaller事件 | 多条11719 / Error1719；同时有1033完成摘要 | 11707成功及1033摘要 |
+| WiX执行工具 | `WixToolset.Sdk 5.0.2`的net472/x64工具 | 同一工具；ARM64 carrier实际执行ICE并以0 warning/0 error完成 |
+
+因此**不能把“Stopped/Manual”直接当成根因，也不能保证Start-Service就能修好**：
+Windows Installer本来可按需启动，成功job也从Stopped开始；失败job事后已Running。
+事件1033的status0是本次校验会话的摘要，不能覆盖前面的1719/失败task，
+更不能当作业务产品已安装验收成功。
+
+目前最有力的判断是**失败agent上的Windows Installer/ICE执行环境问题**；
+但具体触发原因（服务访问、执行上下文或该VM的Installer状态）尚未从现有日志证明，
+也不能仅凭ARM64成功完全排除x64特定因素。下一步应在新agent上只重跑同提交的
+x64失败job且保留ICE；若重现，再补详细MSI验证日志、SCM事件和实际token/执行环境。
+本轮只诊断，没有实施这个重跑或修改authoring。
+
+**实际已发布产物：** `build-arm64-Release`的服务端manifest列出：
+
+| 文件 | 字节数 | 构建记录的SHA256 |
+|---|---:|---|
+| `PowerToysSetup-0.101.6007.0-arm64.exe` | 310090080 | `C87DF33ADF7FB5DE98AC970FB067AD4210FF4A6727B91F197EF546B49C1C1723` |
+| `PowerToysUserSetup-0.101.6007.0-arm64.exe` | 311581984 | `3D5582784F6DA351150EF5FC0A0870879E011D8B87327E4C08251A2BC158A1B7` |
+| `ProtectedStorage\PowerToys.ProtectedStorage.Carrier.msi` | 2494464 | release.json记录`73f26afdd9b2327a5cc77ac850b642dad84b0042da2ddc8f6e5de24524f4f70c` |
+
+ARM64 `release-metadata.json`的buildId/sourceCommit/version和请求一致；
+carrier `release.json`为ARM64、PE6007、`microsoft-production-v1`。
+这些是发布manifest、构建hash日志及元数据核对，**没有下载运行两个EXE或进行本机独立
+Authenticode/安装验证**。artifact内metadata的`result=succeeded`不改变整个run的FAILED。
+没有`build-x64-Release`正常产物，只有`build-x64-Release-failure-1`日志。
+正式126项状态保持不变，P-AU/P-AM及B02不自动通过。
+
+原始证据均在会话files目录：
+`nov02-installer-6007-terminal.json`、`nov02-installer-6007-terminal-timeline.json`、
+`nov02-installer-6007-final-artifacts.json`、`nov02-installer-6007-arm64-manifest.json`、
+两种架构的carrier/preflight/agent-init日志、
+`nov02-ci-x64-failure\windows-installer-*.json`、
+`nov02-installer-6007-arm64-windows-installer-*.json`及ARM64 release元数据。
 
 ### 本次证据
 
