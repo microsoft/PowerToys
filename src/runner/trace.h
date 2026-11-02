@@ -18,4 +18,11 @@ public:
     static void TrayIconLeftClick(bool quickAccessEnabled);
     static void TrayIconDoubleClick(bool quickAccessEnabled);
     static void TrayIconRightClick(bool quickAccessEnabled);
+
+    // Startup markers for performance tools. They use the separate Microsoft.PowerToys.Performance
+    // provider, which isn't in the telemetry provider group, so diagnostic data collection doesn't
+    // pick them up, and they're written whether or not diagnostic data is turned on.
+    static void RegisterPerformanceProvider();
+    static void UnregisterPerformanceProvider();
+    static void StartupStage(const char* stage, uint64_t msSinceProcessStart);
 };

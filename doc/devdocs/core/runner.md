@@ -136,6 +136,10 @@ The flyout window is then activated and brought to the foreground using native W
 5. Check GPO policies to determine which modules can start
 6. Start enabled modules that aren't disabled by policy
 
+## Startup Stage Markers
+
+The runner records when it reaches five startup stages, in ms since process creation: `SettingsLoaded`, `TrayIconReady`, `ModulesLoaded`, `EnabledModulesStarted`, and `Ready` (right before the message loop). Each stage is a `Runner_StartupStage` event on the `Microsoft.PowerToys.Performance` TraceLogging provider, which isn't part of telemetry. Once the runner is ready, it also logs all stages as one `Startup stages` line. [`tools/performance`](/tools/performance/README.md) measures and traces them.
+
 ## Finding and Messaging the Tray Icon
 
 The tray icon class is used when sending messages to the runner. For example, to close the runner:
@@ -170,7 +174,7 @@ Contains helper code for registering and unregistering PowerToys to run when the
 Contains helper code to get stack traces in builds. Can be used by adding a call to `init_global_error_handlers` in [`WinMain`](./main.cpp).
 
 #### [`trace.cpp`](/src/runner/trace.cpp)
-Contains code for telemetry.
+Contains code for telemetry, and the startup stage markers described in [Startup Stage Markers](#startup-stage-markers).
 
 #### [`svgs`](/src/runner/svgs/)
 Contains the SVG assets used by the PowerToys modules.
