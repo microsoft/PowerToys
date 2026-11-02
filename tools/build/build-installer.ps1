@@ -378,11 +378,6 @@ try {
         Write-Warning "[DSC] DSC manifest generator script not found at: $dscScriptPath"
     }
 
-    if (-not $SkipBuild) {
-        RestoreThenBuild 'tools\BugReportTool\BugReportTool.sln' $commonArgs $Platform $Configuration
-        RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln' $commonArgs $Platform $Configuration
-    }
-
     $cliShimPath = Join-Path $buildOutputPath 'CliShim\PowerToys.CliShim.exe'
     if (-not (Test-Path -LiteralPath $cliShimPath -PathType Leaf)) {
         Write-Error "CLI shim not found at '$cliShimPath'. Build PowerToys.slnx (tools\CliShim\CliShim.vcxproj) before building the installer."
