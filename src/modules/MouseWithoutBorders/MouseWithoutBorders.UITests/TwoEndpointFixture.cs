@@ -22,6 +22,8 @@ namespace Microsoft.MouseWithoutBorders.UITests;
 
 internal sealed class TwoEndpointFixture : IDisposable
 {
+    private static readonly string[] ProvisionedPayloadHashNames = ["ExecutableSha256", "LibrarySha256"];
+
     private readonly TestContext context;
     private readonly WinAppSandboxPrerequisiteReport prerequisites;
     private readonly Action<string> attachEvidence;
@@ -467,7 +469,7 @@ internal sealed class TwoEndpointFixture : IDisposable
                     return false;
                 }
 
-                foreach (var hashName in new[] { "ExecutableSha256", "LibrarySha256" })
+                foreach (var hashName in ProvisionedPayloadHashNames)
                 {
                     if (initialProvision[hashName] is not null)
                     {

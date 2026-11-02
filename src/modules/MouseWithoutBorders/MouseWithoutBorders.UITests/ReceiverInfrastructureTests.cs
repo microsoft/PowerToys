@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
@@ -21,7 +23,7 @@ public sealed class ReceiverInfrastructureTests
     {
         using var receiver = new ReceiverController("Host", Guid.NewGuid().ToString());
         receiver.FocusInput();
-        var session = Session.FromProcess(Environment.ProcessId.ToString(), timeoutMS: 10_000);
+        var session = Session.FromProcess(Environment.ProcessId.ToString(CultureInfo.InvariantCulture), timeoutMS: 10_000);
         var input = session.Find<Element>(By.AccessibilityId("InputReceiver"), timeoutMS: 10_000);
 
         Assert.AreEqual("MWB input receiver", input.Name);
@@ -62,12 +64,13 @@ public sealed class ReceiverInfrastructureTests
     [TestCategory("MwbInfrastructure")]
     public void ClipboardObservationDistinguishesContentionFromReadableData()
     {
-        var busy = ClipboardObservation.Read(() => throw new ExternalException("Clipboard is owned.", unchecked((int)0x800401D0)));
+        var busy = ClipboardObservation.Read(() => throw Marshal.GetExceptionForHR(unchecked((int)0x800401D0), new IntPtr(-1))!);
         Assert.IsFalse(busy.Available);
         Assert.AreEqual(string.Empty, busy.Digest);
         Assert.AreEqual(unchecked((int)0x800401D0), busy.ErrorHResult);
-        var unrelated = new ExternalException("Unrelated clipboard failure.", unchecked((int)0x80004005));
-        Assert.AreSame(unrelated, Assert.ThrowsExactly<ExternalException>(() => ClipboardObservation.Read(() => throw unrelated)));
+        var unrelated = new Win32Exception(5, "Unrelated clipboard failure.");
+        Assert.AreEqual(unchecked((int)0x80004005), unrelated.ErrorCode);
+        Assert.AreSame(unrelated, Assert.ThrowsExactly<Win32Exception>(() => ClipboardObservation.Read(() => throw unrelated)));
 
         var observation = new JsonObject
         {
