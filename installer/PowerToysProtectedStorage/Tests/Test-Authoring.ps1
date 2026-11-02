@@ -113,7 +113,7 @@ if ($Compile) {
                 if ($null -ne $object) { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($object) }
             }
         }
-        $validationLog = "$installer\build.$($Configuration.ToLowerInvariant()).$($Platform.ToLowerInvariant()).all.log"
+        $validationLog = "$repo\artifacts\logs\PowerToysProtectedStorage\build.$($Configuration.ToLowerInvariant()).$($Platform.ToLowerInvariant()).all.log"
         if (Select-String -LiteralPath $validationLog -Pattern 'WIX1105' -Quiet) {
             Write-Warning 'Authoring compiled and MSI tables verified, but local system policy prevented ICE execution. CI must run full ICE validation; WIX1105 is fatal there.'
         }
