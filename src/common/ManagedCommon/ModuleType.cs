@@ -35,6 +35,7 @@ namespace ManagedCommon
         PowerDisplay,
         RegistryPreview,
         MeasureTool,
+        SeamlessCursor,
         ShortcutGuide,
         PowerOCR,
         Workspaces,

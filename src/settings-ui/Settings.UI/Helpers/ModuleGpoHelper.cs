@@ -46,6 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.Workspaces: return GPOWrapper.GetConfiguredWorkspacesEnabledValue();
                 case ModuleType.RegistryPreview: return GPOWrapper.GetConfiguredRegistryPreviewEnabledValue();
                 case ModuleType.MeasureTool: return GPOWrapper.GetConfiguredScreenRulerEnabledValue();
+                case ModuleType.SeamlessCursor: return GPOWrapper.GetConfiguredSeamlessCursorEnabledValue();
                 case ModuleType.ShortcutGuide: return GPOWrapper.GetConfiguredShortcutGuideEnabledValue();
                 case ModuleType.PowerOCR: return GPOWrapper.GetConfiguredTextExtractorEnabledValue();
                 case ModuleType.PowerDisplay: return GPOWrapper.GetConfiguredPowerDisplayEnabledValue();
@@ -90,6 +91,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.Workspaces => typeof(WorkspacesPage),
                 ModuleType.RegistryPreview => typeof(RegistryPreviewPage),
                 ModuleType.MeasureTool => typeof(MeasureToolPage),
+                ModuleType.SeamlessCursor => typeof(MouseUtilsPage),
                 ModuleType.ShortcutGuide => typeof(ShortcutGuidePage),
                 ModuleType.PowerOCR => typeof(PowerOcrPage),
                 ModuleType.PowerDisplay => typeof(PowerDisplayPage),
