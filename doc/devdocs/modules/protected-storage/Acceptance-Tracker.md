@@ -1,6 +1,6 @@
 # Workspaces Protected Storage 验收台账
 
-最后更新：2026-11-02（UTC+08:00；E42确认6007签名构建最终失败：x64 ICE环境错误，ARM64产物已发布）
+最后更新：2026-11-02（UTC+08:00；E43补充x64 ICE历史对照与重跑可重复性边界，未重跑构建）
 
 **这是验收状态的唯一维护入口。每执行完一项，就更新本文件；不能只在聊天里报告通过。**
 
@@ -809,6 +809,61 @@ Authenticode/安装验证**。artifact内metadata的`result=succeeded`不改变�
 两种架构的carrier/preflight/agent-init日志、
 `nov02-ci-x64-failure\windows-installer-*.json`、
 `nov02-installer-6007-arm64-windows-installer-*.json`及ARM64 release元数据。
+
+### E43：2026-11-02，ICE 1719根因与重跑是否可能通过的进一步调查
+
+用户质疑“换agent重跑”是否只是猜测。本轮继续读取历史ADO日志、实际Git对象和
+WiX5.0.2源码，没有排队或重跑任何job，也没有调整ICE、权限或生产实现。
+结论比E42更具体，但**仍未证明失败时Windows Installer内部为什么返回1719**。
+
+| 对照 | 已核实的事实 | 可以／不能推出什么 |
+|---|---|---|
+| 3001，build158832978，09-28 | x64 Carrier task/log303真实执行`wix.exe msi validate`，0 warning/0 error | 同一Carrier设计曾通过x64 ICE；不是本次未验证的猜测 |
+| 3002，build160176684，10-11 | x64 Carrier task/log303同样真实ICE通过；整体partiallySucceeded不改变该task通过的事实 | 第二个x64正向样本；不是只拿ARM64成功类推 |
+| 三个版本源码比较 | 3001、3002、6007的Product.wxs、PowerToysProtectedStorage.wixproj、steps-build-protected-storage.yml三份Git blob逐一相同 | 这三个关键输入没有引入变化；不表示整个payload／工具镜像完全一致 |
+| 镜像变化 | 3002为SHINE-VS18-Latest62.0.0，6007为74.0.0；前者也非交互、msiserver校验前Stopped/Manual | 旧成功并不能保证74镜像上的同一job一定成功 |
+| 当天main，build162530035 | 同74.0.0镜像、agent5.281.1、非交互；x64主machine/user MSI的WiX5.0.2实际validate均0错误 | 不能把74镜像判断成“所有x64 MSI都会失败”；主MSI不是同一Carrier，仍不是严格复现对照 |
+
+当天main的主MSI只按已有配置抑制ICE40；本次失败包含ICE01/02等97个不同action，
+所以main成功不是因为把本次失败的所有ICE都关闭了。11-01的main对照
+build162463271用的是73.0.0镜像，只作较弱历史参考；不能误写成74.0.0。
+
+**97条错误的来源：** WiX5.0.2的
+[WindowsInstallerValidator](https://github.com/wixtoolset/wix/blob/v5.0.2/src/wix/WixToolset.Core.Native/WindowsInstallerValidator.cs)
+从`_ICESequence`取得action，逐个调用`session.DoAction`。
+它的外部UI回调期望tab分隔的ICE结果；收到普通Windows Installer 1719消息时，
+`ParseValidationMessage`按“不符合ICE消息格式”生成WIX0217。循环继续执行后续action，
+故同一种底层失败被重复记录97次，**不是97个独立的MSI表authoring缺陷**。
+[ValidateDatabaseCommand](https://github.com/wixtoolset/wix/blob/v5.0.2/src/wix/WixToolset.Core.WindowsInstaller/Validate/ValidateDatabaseCommand.cs)
+使用临时数据库副本，finally删除验证副本。该校验不是执行本产品的常规安装旅程。
+
+上游[WiX issue5473](https://github.com/wixtoolset/issues/issues/5473)记录过
+同样1719/ICE错误与非交互低权限账号有关；
+[issue4877](https://github.com/wixtoolset/issues/issues/4877)记录过服务上下文失败、
+交互上下文成功。这些仅说明错误可由执行环境触发，**不是本次Windows Server2025
+agent的根因证据**。两个job显示相同用户名类型，不能据此推断其实际token／授权状态相同。
+
+当前证据缺口：failure artifact有wrapper log、binlog、事后service快照及最后30条
+Application/MsiInstaller事件，但没有逐步MSI内部verbose trace、SCM/System相关事件、
+校验进程的实际token/elevation记录，也没有保留失败的x64中间MSI作为可重复输入。
+因此不能在现存材料上证明具体是权限、服务访问／启动交互，还是VM状态导致1719；
+不能把“服务已Running”当作排除这些条件的证明。
+
+**对重跑的判断：有可能通过，不是必然继续失败；没有依据承诺成功概率。**
+历史同authoring的x64成功和当天同镜像的x64验证成功支持这一判断，
+但本次同提交／同Carrier仍没有受控重跑。若重跑成功，只证明这个失败非必现，
+不自动完成root-cause归因。
+
+后续更有价值的是一次**带诊断的x64专项重跑**：保持ICE，保留失败中间MSI和验证trace，
+记录实际caller token、service/SCM事件，再用同一MSI比较原执行环境与新agent；
+区分单VM瞬态问题和可重复的Carrier／环境组合问题。不能用“反复重跑直到绿”
+替代修复或作为验收证据。本轮未实施诊断增强或重跑，正式验收状态不变。
+
+新增本地证据：
+`nov02-ice-history-comparison.json`（三文件Git blob一致性、97个ICE计数）、
+`nov02-history-3001-x64-carrier.log`、`nov02-history-3002-x64-carrier.log`、
+`nov02-history-3002-x64-agent-init.log`/`preflight.log`、
+`nov02-main-today-x64-agent-init.log`及当天machine/user MSI日志。
 
 ### 本次证据
 
