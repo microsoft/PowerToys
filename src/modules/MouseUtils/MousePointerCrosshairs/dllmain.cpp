@@ -35,6 +35,7 @@ namespace
     const wchar_t JSON_KEY_CROSSHAIRS_AUTO_HIDE[] = L"crosshairs_auto_hide";
     const wchar_t JSON_KEY_CROSSHAIRS_IS_FIXED_LENGTH_ENABLED[] = L"crosshairs_is_fixed_length_enabled";
     const wchar_t JSON_KEY_CROSSHAIRS_FIXED_LENGTH[] = L"crosshairs_fixed_length";
+    const wchar_t JSON_KEY_CROSSHAIRS_SPAN_ALL_MONITORS[] = L"crosshairs_span_all_monitors";
     const wchar_t JSON_KEY_CROSSHAIRS_ORIENTATION[] = L"crosshairs_orientation";
     const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
     const wchar_t JSON_KEY_GLIDE_TRAVEL_SPEED[] = L"gliding_travel_speed";
@@ -731,6 +732,19 @@ private:
                         if (propertyObj.HasKey(L"value"))
                         {
                             inclusiveCrosshairsSettings.crosshairsIsFixedLengthEnabled = propertyObj.GetNamedBoolean(L"value");
+                        }
+                    }
+                }
+                catch (...) { /* Use default value */ }
+
+                try
+                {
+                    if (propertiesObject.HasKey(JSON_KEY_CROSSHAIRS_SPAN_ALL_MONITORS))
+                    {
+                        auto propertyObj = propertiesObject.GetNamedObject(JSON_KEY_CROSSHAIRS_SPAN_ALL_MONITORS);
+                        if (propertyObj.HasKey(JSON_KEY_VALUE))
+                        {
+                            inclusiveCrosshairsSettings.crosshairsSpanAllMonitors = propertyObj.GetNamedBoolean(JSON_KEY_VALUE);
                         }
                     }
                 }
