@@ -204,6 +204,57 @@ internal static class MouseUtilsTestHelper
             ((foreground.B * alpha) + (background.B * inverse) + 127) / 255);
     }
 
+    internal static void AssertSystemCursorVisible(bool expectedVisible)
+    {
+        var result = WaitHelper.WaitForStable(
+            IsSystemCursorVisible,
+            visible => visible == expectedVisible,
+            timeoutMS: expectedVisible ? 1_500 : 10_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 100);
+        Assert.IsTrue(result.Succeeded, $"The system arrow was expected to be {(expectedVisible ? "visible" : "transparent")}.");
+    }
+
+    private static bool IsSystemCursorVisible()
+    {
+        var cursor = LoadCursor(IntPtr.Zero, new IntPtr(32512));
+        Assert.AreNotEqual(IntPtr.Zero, cursor, "Could not load the system arrow.");
+        using var bitmap = new Bitmap(64, 64);
+        using (var graphics = Graphics.FromImage(bitmap))
+        {
+            graphics.Clear(Color.Magenta);
+            var dc = graphics.GetHdc();
+            try
+            {
+                Assert.IsTrue(DrawIconEx(dc, 0, 0, cursor, 64, 64, 0, IntPtr.Zero, 3), "Could not draw the system arrow.");
+            }
+            finally
+            {
+                graphics.ReleaseHdc(dc);
+            }
+        }
+
+        for (var y = 0; y < bitmap.Height; y++)
+        {
+            for (var x = 0; x < bitmap.Width; x++)
+            {
+                if (bitmap.GetPixel(x, y).ToArgb() != Color.Magenta.ToArgb())
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    [DllImport("user32.dll", EntryPoint = "LoadCursorW", SetLastError = true)]
+    private static extern IntPtr LoadCursor(IntPtr instance, IntPtr cursorName);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool DrawIconEx(IntPtr dc, int x, int y, IntPtr icon, int width, int height, int step, IntPtr brush, int flags);
+
     internal static Color GetStablePixel(int x, int y)
     {
         Color? previous = null;
