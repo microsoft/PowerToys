@@ -672,7 +672,8 @@ public sealed partial class MainListPage : DynamicListPage,
                 }
             }
 
-            _fallbackUpdateManager.BeginUpdate(SearchText, [.. specialFallbacks, .. commonFallbacks], token);
+            TopLevelViewModel[] fallbacks = [.. specialFallbacks, .. commonFallbacks];
+            _fallbackUpdateManager.BeginUpdate(SearchText, fallbacks, token);
 
             if (token.IsCancellationRequested)
             {
