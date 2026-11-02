@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<winui:WindowEx
+    x:Class="Microsoft.CmdPal.UI.Tray.TrayPaletteWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:vm="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:winui="using:WinUIEx">
+    <Grid x:Name="Root">
+        <Grid.Resources>
+            <Style x:Key="TrayContextMenuFlyoutStyle" BasedOn="{StaticResource DefaultFlyoutPresenterStyle}" TargetType="FlyoutPresenter">
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Background" Value="{ThemeResource DesktopAcrylicTransparentBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            </Style>
+            <Style x:Key="TrayFooterButtonStyle" BasedOn="{StaticResource SubtleButtonStyle}" TargetType="Button">
+                <Setter Property="Padding" Value="6" />
+                <Setter Property="Width" Value="32" />
+                <Setter Property="Height" Value="32" />
+                <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
+            </Style>
+            <Flyout
+                x:Name="ItemContextMenu"
+                Closed="ItemContextMenu_Closed"
+                FlyoutPresenterStyle="{StaticResource TrayContextMenuFlyoutStyle}"
+                Opened="ItemContextMenu_Opened"
+                ShouldConstrainToRootBounds="False"
+                SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
+                <controls:ContextMenu x:Name="ContextControl" />
+            </Flyout>
+        </Grid.Resources>
+        <Grid x:Name="QuickActions" Width="360">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="48" />
+            </Grid.RowDefinitions>
+            <Grid
+                Padding="12"
+                Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="0,0,0,1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <GridView
+                        x:Name="CommandsGrid"
+                        Width="336"
+                        Padding="0"
+                        AllowDrop="True"
+                        AutomationProperties.AutomationId="TrayPalette_Commands"
+                        CanDragItems="True"
+                        CanReorderItems="True"
+                        ContainerContentChanging="CommandsGrid_ContainerContentChanging"
+                        ContextRequested="CommandsGrid_ContextRequested"
+                        DragItemsCompleted="CommandsGrid_DragItemsCompleted"
+                        DragItemsStarting="CommandsGrid_DragItemsStarting"
+                        IsItemClickEnabled="True"
+                        ItemClick="CommandsGrid_ItemClick"
+                        ItemsSource="{x:Bind ViewModel.Items}"
+                        SelectionMode="None">
+                        <GridView.ItemContainerTransitions>
+                            <TransitionCollection />
+                        </GridView.ItemContainerTransitions>
+                        <GridView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsWrapGrid ItemHeight="100" ItemWidth="112" MaximumRowsOrColumns="3" Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </GridView.ItemsPanel>
+                        <GridView.ItemContainerStyle>
+                            <Style TargetType="GridViewItem">
+                                <Setter Property="Margin" Value="0" />
+                                <Setter Property="MinWidth" Value="0" />
+                                <Setter Property="MinHeight" Value="0" />
+                                <Setter Property="Padding" Value="8,4,8,8" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            </Style>
+                        </GridView.ItemContainerStyle>
+                        <GridView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:TrayPaletteItemViewModel">
+                                <StackPanel Width="96" Spacing="8" ToolTipService.ToolTip="{x:Bind Item.Title, Mode=OneWay}">
+                                    <Border
+                                        Height="48"
+                                        Background="{ThemeResource ControlFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{ThemeResource ControlCornerRadius}">
+                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal" Spacing="12">
+                                            <controls:IconBox
+                                                Width="24"
+                                                Height="24"
+                                                AutomationProperties.AccessibilityView="Raw"
+                                                SourceKey="{x:Bind Item.Icon, Mode=OneWay}"
+                                                SourceRequested="{x:Bind help:IconProvider.SourceRequested32}" />
+                                            <FontIcon FontSize="12" Glyph="&#xE76C;" Visibility="{x:Bind IsPage}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <TextBlock
+                                        Width="96"
+                                        MaxLines="1"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Text="{x:Bind Item.Title, Mode=OneWay}"
+                                        TextAlignment="Center"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextWrapping="NoWrap" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridView.ItemTemplate>
+                    </GridView>
+                    <ProgressRing Width="24" Height="24" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+                    <TextBlock x:Uid="TrayPalette_Empty" Margin="8" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="Wrap" Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}" />
+                </Grid>
+                <TextBlock x:Uid="TrayPalette_LoadError" Grid.Row="1" Margin="0,8,0,0" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="Wrap" Visibility="{x:Bind ViewModel.HasLoadError, Mode=OneWay}" />
+            </Grid>
+            <StackPanel
+                Grid.Row="1"
+                Margin="0,0,12,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="8">
+                <Button
+                    x:Uid="TrayPalette_OpenPalette"
+                    AutomationProperties.AutomationId="TrayPalette_OpenPalette"
+                    Click="OpenPalette_Click"
+                    Style="{StaticResource TrayFooterButtonStyle}">
+                    <ImageIcon Width="16" Height="16" Source="ms-appx:///Assets/icon.svg" />
+                </Button>
+                <Button
+                    x:Uid="TrayPalette_OpenSettings"
+                    AutomationProperties.AutomationId="TrayPalette_OpenSettings"
+                    Click="OpenSettings_Click"
+                    Style="{StaticResource TrayFooterButtonStyle}">
+                    <AnimatedIcon>
+                        <AnimatedIcon.Source>
+                            <animatedVisuals:AnimatedSettingsVisualSource />
+                        </AnimatedIcon.Source>
+                        <AnimatedIcon.FallbackIconSource>
+                            <SymbolIconSource Symbol="Setting" />
+                        </AnimatedIcon.FallbackIconSource>
+                    </AnimatedIcon>
+                </Button>
+            </StackPanel>
+        </Grid>
+        <ContentControl
+            x:Name="PageHost"
+            Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Stretch"
+            Visibility="Collapsed" />
+    </Grid>
+</winui:WindowEx>

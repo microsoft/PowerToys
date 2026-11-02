@@ -28,6 +28,7 @@ internal sealed partial class OpenSettingsCommand : InvokableCommand
         Name = Resources.OpenSettings;
         Icon = Icons.CopyIcon;
         _entry = entry;
+        Id = entry.Command;
     }
 
     private static bool DoOpenSettingsAction(WindowsSetting entry)
