@@ -87,6 +87,10 @@ WM_KEYDOWN
 WM_KEYUP
 WM_SYSKEYDOWN
 WM_SYSKEYUP
+MsgWaitForMultipleObjectsEx
+PeekMessage
+TranslateMessage
+DispatchMessage
 
 GetWindowLong
 SetWindowLong
