@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using HtmlAgilityPack;
@@ -51,8 +52,16 @@ public static class MarkdownConverter
 
             if (node.NodeType == HtmlNodeType.Text)
             {
-                node.InnerHtml = Regex.Replace(node.InnerHtml, @"\s{2,}", " ");
-                node.InnerHtml = Regex.Replace(node.InnerHtml, @"[\r\n]+", string.Empty);
+                // Code keeps its whitespace verbatim.
+                if (!node.Ancestors().Any(IsCodeElement))
+                {
+                    // A line break inside text separates words. Whitespace-only nodes are
+                    // source formatting between elements and keep the previous handling.
+                    var isWhitespaceOnly = string.IsNullOrWhiteSpace(node.InnerHtml);
+                    node.InnerHtml = Regex.Replace(node.InnerHtml, @"\s{2,}", " ");
+                    node.InnerHtml = Regex.Replace(node.InnerHtml, @"[\r\n]+", isWhitespaceOnly ? string.Empty : " ");
+                }
+
                 continue;
             }
 
@@ -63,4 +72,8 @@ public static class MarkdownConverter
             }
         }
     }
+
+    private static bool IsCodeElement(HtmlNode node) =>
+        node.Name.Equals("pre", StringComparison.OrdinalIgnoreCase) ||
+        node.Name.Equals("code", StringComparison.OrdinalIgnoreCase);
 }
