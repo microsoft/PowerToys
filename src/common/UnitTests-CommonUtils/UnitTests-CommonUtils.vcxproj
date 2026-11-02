@@ -70,6 +70,7 @@
     <ClCompile Include="Package.Tests.cpp" />
     <ClCompile Include="ProcessApi.Tests.cpp" />
     <ClCompile Include="ProcessWaiter.Tests.cpp" />
+    <ClCompile Include="ThumbnailProvider.Tests.cpp" />
     <ClCompile Include="Registry.Tests.cpp" />
     <ClCompile Include="Resources.Tests.cpp" />
     <ClCompile Include="TestStubs.cpp" />
@@ -83,6 +84,42 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TestHelpers.h" />
+    <ClInclude Include="ThumbnailProviderTestProtocol.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="ThumbnailProviderTestHelper.vcxproj">
+      <Project>{F82A86E7-7C58-48C1-A923-5D735E17D5AB}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\modules\previewpane\BgcodeThumbnailProvider\BgcodeThumbnailProvider.csproj">
+      <Project>{9BC1C986-1E97-4D07-A7B1-CE226C239EFA}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <ProjectReference Include="..\..\modules\previewpane\GcodeThumbnailProvider\GcodeThumbnailProvider.csproj">
+      <Project>{809AA252-E17A-4FA2-B0A1-0450976B763F}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <ProjectReference Include="..\..\modules\previewpane\PdfThumbnailProvider\PdfThumbnailProvider.csproj">
+      <Project>{11491FD8-F921-48BF-880C-7FEA185B80A1}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <ProjectReference Include="..\..\modules\previewpane\QoiThumbnailProvider\QoiThumbnailProvider.csproj">
+      <Project>{D949EC7D-48A9-4279-95D5-078E7FD1F048}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <ProjectReference Include="..\..\modules\previewpane\StlThumbnailProvider\StlThumbnailProvider.csproj">
+      <Project>{F7C8C0F1-5431-4347-89D0-8E5354F93CF2}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <ProjectReference Include="..\..\modules\previewpane\SvgThumbnailProvider\SvgThumbnailProvider.csproj">
+      <Project>{8FFE09DA-FA4F-4EE1-B3A2-AD5497FBD1AD}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="UnitTests-CommonUtils.rc" />
