@@ -124,6 +124,12 @@ internal sealed class InsertionGuard : IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets a value indicating whether the user's keys are being held, so none reaches the app while the paste keeps its Ctrl
+    /// down. Not while the insertion goes in unguarded.
+    /// </summary>
+    public bool Holding => _mode == Mode.Holding;
+
     /// <summary>Gets the input generation now.</summary>
     public long InputGeneration => _inputGeneration();
 

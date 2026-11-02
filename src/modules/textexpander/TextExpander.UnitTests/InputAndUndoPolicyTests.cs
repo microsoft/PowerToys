@@ -469,8 +469,9 @@ public sealed class InputAndUndoPolicyTests
     public void ThePasteGoesOutBetweenTheMarkers()
     {
         // The paste pressed Ctrl, V and let go of Ctrl in separate calls with pauses between them; a key typed in
-        // between became Ctrl+A or Ctrl+S, and the paste replaced the whole document or opened Save As. An earlier $|$
-        // left the caret before the "c", so it goes back to the end first.
+        // between became Ctrl+A or Ctrl+S, and the paste replaced the whole document or opened Save As. They still go out
+        // apart, as Ctrl waits for the target to read the clipboard, but between the markers, where the guard holds the
+        // user's keys. An earlier $|$ left the caret before the "c", so it goes back to the end first.
         using var box = new FakeTextBox("Before !abc") { Caret = 10, Clipboard = "the user's" };
         InjectionBackend original = Injector.Backend;
         try
@@ -489,14 +490,15 @@ public sealed class InputAndUndoPolicyTests
                 box.Dispatch,
                 cursorRightUnits: 1,
                 getAsyncKeyState: _ => 0,
-                sleep: _ => { }));
+                sleep: _ => { },
+                isOpenByTarget: box.TookPaste));
         }
         finally
         {
             Injector.Backend = original;
         }
 
-        Assert.AreEqual("Mark | Right BS BS BS BS | Ctrl-down V Ctrl-up | Left Left Left Left | Mark", string.Join(" | ", box.Batches.Select(FakeTextBox.Describe)));
+        Assert.AreEqual("Mark | Right BS BS BS BS | Ctrl-down | V | Ctrl-up | Left Left Left Left | Mark", string.Join(" | ", box.Batches.Select(FakeTextBox.Describe)));
         Assert.AreEqual("Before Ab |XYZ ", box.ToString());
         Assert.AreEqual("the user's", box.Clipboard);
     }
@@ -984,5 +986,6 @@ public sealed class InputAndUndoPolicyTests
             getAsyncKeyState: _ => 0,
             sleep: _ => { },
             inserted: inserted,
-            givenBack: givenBack);
+            givenBack: givenBack,
+            isOpenByTarget: box.TookPaste);
 }

@@ -19,7 +19,11 @@ internal sealed class FakeTextBox : IDisposable
 
     private readonly ScratchDirectory? _scratch;
     private readonly SnippetStore? _store;
+    private readonly Queue<Native.KBDLLHOOKSTRUCT> _waiting = new();
     private bool _ctrl;
+    private bool _ctrlNow;
+    private int _pastes;
+    private int _pastesSeen;
 
     /// <summary>Takes key events through <paramref name="hook"/>, or through a hook of its own when it's null.</summary>
     public FakeTextBox(string text, KeyboardHook? hook = null)
@@ -70,6 +74,13 @@ internal sealed class FakeTextBox : IDisposable
 
     /// <summary>Gets or sets what happens after each key event reaches the box.</summary>
     public Action<Native.KBDLLHOOKSTRUCT>? AfterKey { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the box takes key events late, as Windows 11 Notepad does while it's still
+    /// busy with an erase: they go through the hook when sent, but reach the box only at <see cref="Pump"/>, and a V then
+    /// reads Ctrl as it is at that moment rather than as it was when the V was sent. Backspaces don't read it.
+    /// </summary>
+    public bool Late { get; set; }
 
     /// <summary>A key event as the hook sees it when it was sent this way.</summary>
     public static Native.KBDLLHOOKSTRUCT ToHookEvent(Native.INPUT input)
@@ -195,6 +206,26 @@ internal sealed class FakeTextBox : IDisposable
         }
     }
 
+    /// <summary>
+    /// Whether the box has taken a Ctrl+V since this was last asked: the injector's sign that the target has read the
+    /// clipboard, as its process holding the clipboard open is for a real window.
+    /// </summary>
+    public bool TookPaste()
+    {
+        bool took = _pastes != _pastesSeen;
+        _pastesSeen = _pastes;
+        return took;
+    }
+
+    /// <summary>Lets a <see cref="Late"/> box take the key events waiting for it.</summary>
+    public void Pump()
+    {
+        while (_waiting.TryDequeue(out Native.KBDLLHOOKSTRUCT key))
+        {
+            Apply(key);
+        }
+    }
+
     /// <summary>Takes a key event as the system would: the hook first, then the text box.</summary>
     public void Take(Native.KBDLLHOOKSTRUCT key)
     {
@@ -221,6 +252,25 @@ internal sealed class FakeTextBox : IDisposable
             return;
         }
 
+        // The key state as the system has it once the hooks have let a key through, whenever the box gets to it.
+        if (key.VkCode is Native.VK_CONTROL or Native.VK_LCONTROL or Native.VK_RCONTROL)
+        {
+            _ctrlNow = down;
+        }
+
+        if (Late)
+        {
+            _waiting.Enqueue(key);
+            return;
+        }
+
+        Apply(key);
+    }
+
+    /// <summary>The box takes a key event that got through the hook.</summary>
+    private void Apply(Native.KBDLLHOOKSTRUCT key)
+    {
+        bool down = (key.Flags & Native.LLKHF_UP) == 0;
         if (key.VkCode == Native.VK_PACKET)
         {
             if (down)
@@ -249,8 +299,12 @@ internal sealed class FakeTextBox : IDisposable
                 case Native.VK_RETURN:
                     Insert("\n");
                     break;
-                case Native.VK_V when _ctrl:
+                case Native.VK_V when Late ? _ctrlNow : _ctrl:
                     Insert(Clipboard);
+                    _pastes++;
+                    break;
+                case Native.VK_V:
+                    Insert("v");
                     break;
             }
         }

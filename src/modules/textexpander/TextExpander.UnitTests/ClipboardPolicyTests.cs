@@ -160,4 +160,41 @@ public sealed class ClipboardPolicyTests
         Assert.AreEqual(now, keptOn.LastOrDefault(-1));
         Assert.IsTrue(keptOn.Zip(keptOn.Skip(1)).All(pair => pair.Second - pair.First <= timerTick), "Never longer apart than a check.");
     }
+
+    [TestMethod]
+    public void ThePastesCtrlIsHeldUntilTheTargetReadsOrTheClipboardWouldGoBack()
+    {
+        // Windows 11 Notepad, still busy with the erase, got to the V 70 to 290 ms after it was sent and read Ctrl as it was
+        // then. Ctrl stays down until the target is seen reading the clipboard, and no longer than the settle waits for it.
+        const int timerTick = 15;
+        long now = 0;
+        void Sleep(int ms) => now += Math.Max(ms, timerTick);
+
+        Assert.AreEqual(new PasteHold(ReadSeen: false, 360), Injector.HoldForRead(() => false, () => true, Sleep, () => now), "Never seen: the 350 ms budget, to the next tick.");
+
+        now = 0;
+        Assert.AreEqual(new PasteHold(ReadSeen: true, 90), Injector.HoldForRead(() => now >= 80, () => true, Sleep, () => now), "Seen at the first check after the read.");
+
+        // A key of the user's could now reach the app with Ctrl down: let go at once.
+        now = 0;
+        Assert.AreEqual(new PasteHold(ReadSeen: false, 30), Injector.HoldForRead(() => false, () => now < 30, Sleep, () => now));
+    }
+
+    [TestMethod]
+    public void TheSettleCarriesOnFromThePastesCtrlHold()
+    {
+        // Timed from the V, as the hold was. Held to the budget unseen, the clipboard goes back at once rather than after
+        // another 350 ms, so the hold adds nothing to the borrow.
+        const int timerTick = 15;
+        long now = 360;
+        void Sleep(int ms) => now += Math.Max(ms, timerTick);
+
+        Assert.IsTrue(Injector.WaitForPasteToSettle(() => false, Sleep, () => now, () => true));
+        Assert.AreEqual(360, now);
+
+        // A read seen during the hold counts: the floor, counted from the V, then the grace period.
+        now = 90;
+        Assert.IsTrue(Injector.WaitForPasteToSettle(() => false, Sleep, () => now, readSeen: true));
+        Assert.AreEqual(170, now);
+    }
 }

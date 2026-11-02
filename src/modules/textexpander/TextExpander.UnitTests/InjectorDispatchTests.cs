@@ -39,19 +39,163 @@ public sealed class InjectorDispatchTests
         Assert.AreEqual(1, calls);
         Assert.IsFalse(box.Guard.Swallows(FakeTextBox.UserKey('z', up: false)));
 
-        // Cut off after Ctrl went down: it's let go of, and the end marker ends the guard.
+        // Cut off after Ctrl and the V went down: Ctrl is let go of, and the end marker ends the guard.
         Assert.IsFalse(Replace(box, 2, "EXPANDED", InjectionBackend.Clipboard, inputs =>
         {
-            Native.INPUT[] sent = inputs.Length == 4 && inputs[1].U.Ki.WVk == Native.VK_V ? inputs[..2] : inputs;
+            Native.INPUT[] sent = inputs.Length == 2 && inputs[0].U.Ki.WVk == Native.VK_V ? inputs[..1] : inputs;
             _ = box.Dispatch(sent);
             return (uint)sent.Length;
         }));
-        Assert.AreEqual("Mark | BS BS | Ctrl-down V-down | Ctrl-up | Mark", string.Join(" | ", box.Batches.Select(FakeTextBox.Describe)));
+        Assert.AreEqual("Mark | BS BS | Ctrl-down | V-down | Ctrl-up | Mark", Calls(box));
         Assert.AreEqual("Before !aEXPANDED|", box.ToString());
         Assert.AreEqual("the user's", box.Clipboard);
         Assert.IsFalse(box.Guard.Swallows(FakeTextBox.UserKey('z', up: false)));
         Assert.AreEqual(2, InjectionDiagnostics.SendInputFailures);
+
+        // Ctrl's key-up cut off: sent once more, and the paste doesn't count.
+        using var cut = new FakeTextBox("Before !abc") { Clipboard = "the user's" };
+        int ctrlUps = 0;
+        Assert.IsFalse(Replace(cut, 2, "EXPANDED", InjectionBackend.Clipboard, inputs =>
+        {
+            bool ctrlUp = inputs.Length == 1 && inputs[0].U.Ki.WVk == Native.VK_CONTROL && (inputs[0].U.Ki.DwFlags & Native.KEYEVENTF_KEYUP) != 0;
+            return ctrlUp && ctrlUps++ == 0 ? 0 : cut.Dispatch(inputs);
+        }));
+        Assert.AreEqual(2, ctrlUps);
+        Assert.AreEqual("Mark | BS BS | Ctrl-down | V | Ctrl-up | Mark", Calls(cut));
+        Assert.AreEqual(3, InjectionDiagnostics.SendInputFailures);
+        Assert.IsFalse(cut.Guard.Swallows(FakeTextBox.UserKey('z', up: false)));
         InjectionDiagnostics.Reset();
+    }
+
+    [TestMethod]
+    public void ATargetStillBusyWithTheEraseGetsThePasteRatherThanAV()
+    {
+        // Windows 11 Notepad, still applying the Backspaces when the paste's V arrived, read Ctrl as it was once it got to
+        // the V. Sent with the V in one call, Ctrl had gone up by then, and a "v" went in instead of the snippet. Ctrl stays
+        // down until the target is seen reading the clipboard.
+        using var box = new FakeTextBox("Before !abc") { Late = true, Clipboard = "the user's" };
+        Assert.IsTrue(Replace(box, 4, "EXPANDED ", InjectionBackend.Clipboard, box.Dispatch, sleep: _ => box.Pump()));
+        box.Pump();
+        Assert.AreEqual("Before EXPANDED |", box.ToString());
+        Assert.AreEqual("Mark | BS BS BS BS | Ctrl-down | V | Ctrl-up | Mark", Calls(box));
+    }
+
+    [TestMethod]
+    public void CtrlIsLetGoOfWhenTheClipboardWouldGoBackIfTheReadIsNeverSeen()
+    {
+        // Windows 11 Notepad holds the clipboard open for well under a millisecond, so its read is seldom seen. Ctrl stays
+        // down for as long as the snippet waits on the clipboard for that read, counted from the V.
+        using var box = new FakeTextBox("Before !abc") { Clipboard = "the user's" };
+        long now = 0;
+        var sentAt = new List<long>();
+        box.BeforeCall = _ => sentAt.Add(now);
+        Assert.IsTrue(Replace(box, 4, "EXPANDED ", InjectionBackend.Clipboard, box.Dispatch, sleep: ms => now += ms, isOpenByTarget: () => false, clock: () => now));
+        Assert.AreEqual("Mark | BS BS BS BS | Ctrl-down | V | Ctrl-up | Mark", Calls(box));
+        Assert.AreEqual(Injector.PasteSettleMs, sentAt[4] - sentAt[3], "From the V to Ctrl's key-up.");
+        Assert.AreEqual("Before EXPANDED |", box.ToString());
+    }
+
+    [TestMethod]
+    public void ThePasteWaitsAfterTheEraseBeforeCtrlGoesDown()
+    {
+        // Windows 11 Notepad keeps working on an edit for a while after it, and dropped a Ctrl+V that came meanwhile, pasting
+        // nothing.
+        using var box = new FakeTextBox("Before !abc") { Clipboard = "the user's" };
+        long now = 0;
+        var sentAt = new List<long>();
+        box.BeforeCall = _ => sentAt.Add(now);
+        Assert.IsTrue(Replace(box, 4, "EXPANDED ", InjectionBackend.Clipboard, box.Dispatch, sleep: ms => now += ms, clock: () => now));
+        Assert.AreEqual("Mark | BS BS BS BS | Ctrl-down | V | Ctrl-up | Mark", Calls(box));
+        Assert.AreEqual(Injector.PrePasteDelayMs, sentAt[2] - sentAt[1], "From the erase to Ctrl.");
+        Assert.AreEqual(0, sentAt[3] - sentAt[2], "Ctrl and the V together.");
+        Assert.AreEqual("Before EXPANDED |", box.ToString());
+    }
+
+    [TestMethod]
+    public void CtrlIsLetGoOfAtOnceWhenTheWindowLosesTheFront()
+    {
+        // Once another window is in front, the guard drops what it held and the user's next keys go there: with Ctrl still
+        // down, they would go in as shortcuts.
+        using var box = new FakeTextBox("Before !abc") { Clipboard = "the user's" };
+        IntPtr front = new(1);
+        var sleeps = new List<int>();
+        box.AfterKey = key =>
+        {
+            if (key.VkCode == Native.VK_V)
+            {
+                front = new IntPtr(2);
+            }
+        };
+
+        _ = Replace(box, 4, "EXPANDED ", InjectionBackend.Clipboard, box.Dispatch, sleep: sleeps.Add, isOpenByTarget: () => false, foreground: () => front);
+        Assert.AreEqual("Mark | BS BS BS BS | Ctrl-down | V | Ctrl-up | Mark", Calls(box));
+        Assert.AreEqual($"{Injector.PreBackspaceDelayMs} {Injector.PrePasteDelayMs}", string.Join(" ", sleeps), "Only the pauses before the erase and before the paste: no wait with Ctrl down.");
+    }
+
+    [TestMethod]
+    public void AKeyTypedWhileCtrlIsDownGoesInAfterThePasteNotAsAShortcut()
+    {
+        // The paste once went out in separate calls, and a key typed between them became Ctrl+A or Ctrl+S. Ctrl now stays
+        // down for a while, so only while the guard holds the user's keys: they go in after the paste, as typed.
+        using var box = new FakeTextBox("Before !abc") { Clipboard = "the user's" };
+        bool typed = false;
+        Assert.IsTrue(Replace(
+            box,
+            4,
+            "EXPANDED ",
+            InjectionBackend.Clipboard,
+            box.Dispatch,
+            sleep: _ =>
+            {
+                if (!typed && box.Batches.Count == 4)
+                {
+                    typed = true;
+                    box.UserTypes("a");
+                }
+            },
+            isOpenByTarget: () => typed));
+        Assert.AreEqual("Mark | BS BS BS BS | Ctrl-down | V | Ctrl-up | Mark | a Mark", Calls(box));
+        Assert.AreEqual("Before EXPANDED a|", box.ToString());
+    }
+
+    [TestMethod]
+    public void AnInsertionGoingInUnguardedDoesntHoldCtrl()
+    {
+        // Another hook swallowed the markers before ours saw them, so nothing holds the user's keys: the chord goes out in
+        // one call, as before, rather than keep Ctrl down for them to go in with.
+        using var box = new FakeTextBox("Before !abc") { Clipboard = "the user's" };
+        box.Guard.MarkerWaitMs = 0;
+        var sleeps = new List<int>();
+        uint WithoutMarkers(Native.INPUT[] inputs)
+        {
+            _ = box.Dispatch([.. inputs.Where(input => input.U.Ki.WVk != InsertionGuard.MarkerVk)]);
+            return (uint)inputs.Length;
+        }
+
+        Assert.IsTrue(Replace(box, 4, "EXPANDED ", InjectionBackend.Clipboard, WithoutMarkers, sleep: sleeps.Add, isOpenByTarget: () => false));
+        Assert.AreEqual("BS BS BS BS | Ctrl-down V Ctrl-up", string.Join(" | ", box.Batches.Where(batch => batch.Length > 0).Select(FakeTextBox.Describe)));
+        Assert.AreEqual($"{Injector.PreBackspaceDelayMs} {Injector.PrePasteDelayMs}", string.Join(" ", sleeps), "No wait with Ctrl down.");
+        Assert.AreEqual("Before EXPANDED |", box.ToString());
+    }
+
+    [TestMethod]
+    public void AClickBeforeTheVStopsThePaste()
+    {
+        // The V goes out in a call of its own, so like every other call it waits on a check: a click, which isn't held,
+        // may have moved the caret or focus, and the paste would land there. Ctrl is let go of.
+        using var box = new FakeTextBox("Before !abc") { Clipboard = "the user's" };
+        box.BeforeCall = calls =>
+        {
+            if (calls == 2)
+            {
+                box.Hook.Click();
+            }
+        };
+
+        Assert.IsFalse(Replace(box, 4, "EXPANDED ", InjectionBackend.Clipboard, box.Dispatch));
+        Assert.AreEqual("Mark | BS BS BS BS | Ctrl-down | Ctrl-up | Mark", Calls(box));
+        Assert.AreEqual("Before |", box.ToString());
+        Assert.AreEqual("the user's", box.Clipboard);
     }
 
     [TestMethod]
@@ -134,14 +278,16 @@ public sealed class InjectorDispatchTests
         }
     }
 
-    private static bool Replace(FakeTextBox box, int erase, string text, InjectionBackend backend, Func<Native.INPUT[], uint> dispatch)
+    private static string Calls(FakeTextBox box) => string.Join(" | ", box.Batches.Select(FakeTextBox.Describe));
+
+    private static bool Replace(FakeTextBox box, int erase, string text, InjectionBackend backend, Func<Native.INPUT[], uint> dispatch, Action<int>? sleep = null, Func<bool>? isOpenByTarget = null, Func<long>? clock = null, Func<IntPtr>? foreground = null)
     {
         InjectionBackend original = Injector.Backend;
         try
         {
             box.Batches.Clear();
             Injector.Backend = backend;
-            return Injector.ReplaceCore(erase, text, IntPtr.Zero, 0, _ => true, box.Guard, box.Hook.InputGeneration, () => new IntPtr(1), box.Paste, dispatch, getAsyncKeyState: _ => 0, sleep: _ => { });
+            return Injector.ReplaceCore(erase, text, IntPtr.Zero, 0, _ => true, box.Guard, box.Hook.InputGeneration, foreground ?? (() => new IntPtr(1)), box.Paste, dispatch, getAsyncKeyState: _ => 0, sleep: sleep ?? (_ => { }), isOpenByTarget: isOpenByTarget ?? box.TookPaste, clock: clock);
         }
         finally
         {

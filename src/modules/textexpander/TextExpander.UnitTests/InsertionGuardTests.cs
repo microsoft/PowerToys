@@ -320,8 +320,8 @@ public sealed class InsertionGuardTests
 
         int recordedAt = -1;
         Assert.IsTrue(Run(box, 6, "alex@contoso.com ", backend: InjectionBackend.Clipboard, inserted: () => recordedAt = box.Batches.Count));
-        Assert.AreEqual("Mark | BS BS BS BS BS BS | Ctrl-down V Ctrl-up | Mark | LCtrl-down V LCtrl-up Mark", Calls(box));
-        Assert.AreEqual(3, recordedAt, "Kept before the end marker.");
+        Assert.AreEqual("Mark | BS BS BS BS BS BS | Ctrl-down | V | Ctrl-up | Mark | LCtrl-down V LCtrl-up Mark", Calls(box));
+        Assert.AreEqual(5, recordedAt, "Kept before the end marker.");
         Assert.AreEqual("alex@contoso.com the user's|", box.ToString());
     }
 
@@ -363,7 +363,7 @@ public sealed class InsertionGuardTests
         Assert.IsTrue(Run(box, 2, "SNIPPET ", backend: InjectionBackend.Clipboard, paste: PasteIntoBusyTarget));
         Assert.AreEqual("SNIPPET |", atHandBack, "Nothing went back before the user's clipboard.");
         Assert.AreEqual("SNIPPET ORIGINAL|", box.ToString());
-        Assert.AreEqual("Mark | BS BS | Ctrl-down V Ctrl-up | Mark | LCtrl-down V LCtrl-up Mark", Calls(box));
+        Assert.AreEqual("Mark | BS BS | Ctrl-down | V | Ctrl-up | Mark | LCtrl-down V LCtrl-up Mark", Calls(box));
     }
 
     [TestMethod]
@@ -480,7 +480,7 @@ public sealed class InsertionGuardTests
             Assert.IsFalse(box.Hook.ProcessKey(Native.VK_LCONTROL, 0, ctrl: false, alt: false, shift: false, win: false));
             return refused ? PasteOutcome.RefusedBeforeErase : box.Paste(text, target, send, keepAlive);
         }));
-        Assert.AreEqual($"Mark | Mark | LCtrl-up BS BS | {(refused ? "a | b" : "Ctrl-down V Ctrl-up")} | Mark | LCtrl-down Mark", Calls(box));
+        Assert.AreEqual($"Mark | Mark | LCtrl-up BS BS | {(refused ? "a | b" : "Ctrl-down | V | Ctrl-up")} | Mark | LCtrl-down Mark", Calls(box));
         Assert.AreEqual("ab|", box.ToString());
     }
 
@@ -792,7 +792,7 @@ public sealed class InsertionGuardTests
         try
         {
             Injector.Backend = backend;
-            return Injector.ReplaceCore(erase, text, target, cursorLeft, _ => true, box.Guard, box.Hook.InputGeneration, foreground ?? (() => new IntPtr(1)), paste ?? box.Paste, dispatch ?? box.Dispatch, getAsyncKeyState: keys ?? (_ => 0), sleep: sleep ?? (_ => { }), inserted: inserted);
+            return Injector.ReplaceCore(erase, text, target, cursorLeft, _ => true, box.Guard, box.Hook.InputGeneration, foreground ?? (() => new IntPtr(1)), paste ?? box.Paste, dispatch ?? box.Dispatch, getAsyncKeyState: keys ?? (_ => 0), sleep: sleep ?? (_ => { }), inserted: inserted, isOpenByTarget: box.TookPaste);
         }
         finally
         {

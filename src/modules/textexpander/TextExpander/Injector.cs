@@ -35,8 +35,9 @@ internal static class Injector
         InjectionPolicy.DefaultClipboardThresholdChars;
 
     /// <summary>
-    /// Gets or sets the upper bound on how long to let the target consume the paste before the clipboard is
-    /// restored. Reached only when the target's read is never observed (see <see cref="WaitForPasteToSettle(IntPtr, Action)"/>).
+    /// Gets or sets the upper bound, counted from the paste's V, on how long to let the target consume the paste before the
+    /// clipboard is restored, and so on how long the paste keeps Ctrl down (see <see cref="HoldForRead"/>). Reached only when
+    /// the target's read is never observed (see <see cref="WaitForPasteToSettle(IntPtr, Action, PasteHold)"/>).
     /// </summary>
     public static int PasteSettleMs { get; set; } = 350;
 
@@ -84,6 +85,14 @@ internal static class Injector
     /// still processing the trigger's last keystrokes.
     /// </summary>
     public static int PreBackspaceDelayMs { get; set; } = 15;
+
+    /// <summary>
+    /// Gets or sets the pause between the erase and the paste's Ctrl+V. Windows 11 Notepad keeps working on an edit for a
+    /// while after it, and dropped a Ctrl+V that came meanwhile, pasting nothing, at times along with a Backspace still
+    /// waiting. With the engine typing into Notepad, 5 in 100 pastes went wrong after 50 ms and 5 in 70 after 150 ms; after
+    /// 300 ms, 1 in 175, a stray Backspace with the paste in.
+    /// </summary>
+    public static int PrePasteDelayMs { get; set; } = 300;
 
     /// <summary>
     /// How long an undo waits for the user to let go of Ctrl (and any other modifier) before it is
@@ -182,15 +191,22 @@ internal static class Injector
         Func<int, short>? getAsyncKeyState = null,
         Action<int>? sleep = null,
         Action? inserted = null,
-        int givenBack = 0)
+        int givenBack = 0,
+        Func<bool>? isOpenByTarget = null,
+        Func<long>? clock = null)
     {
         ArgumentNullException.ThrowIfNull(canDrive);
 
         getForegroundWindow ??= Native.GetForegroundWindow;
-        tryPaste ??= TryPaste;
         dispatch ??= Dispatch;
         getAsyncKeyState ??= Native.GetAsyncKeyState;
         sleep ??= Thread.Sleep;
+        isOpenByTarget ??= () => Clipboard.IsOpenByTarget(targetWindow);
+        clock ??= static () => (long)System.Diagnostics.Stopwatch.GetElapsedTime(0).TotalMilliseconds;
+
+        // How the paste's Ctrl hold went, for the settle that carries on from it.
+        PasteHold hold = default;
+        tryPaste ??= (pasteText, window, send, keepAlive) => TryPaste(pasteText, window, send, keepAlive, () => hold);
 
         // Clicks aren't held: one from now on stops the insertion. They're counted apart from the input generation, which
         // is taken again once held keys go back mid-typing, so a click then isn't taken in with them.
@@ -359,21 +375,62 @@ internal static class Injector
             return true;
         }
 
+        // Ctrl goes down in a call of its own and stays down after the V until the target is seen reading the clipboard, or
+        // until the settle's deadline for that read: Windows 11 Notepad, still busy with the erase when the V arrived, read Ctrl
+        // as it was when it got to the V, after it had gone up, and typed a "v". Held only while the guard holds the user's
+        // keys, which would otherwise go in with it, and while the window is in front.
         bool PasteChord()
         {
+            // After the target's done with the erase.
+            if (backspaceCount + cursorRightUnits > 0 && PrePasteDelayMs > 0)
+            {
+                sleep(PrePasteDelayMs);
+            }
+
             if (!OnTarget())
             {
                 return false;
             }
 
-            if (Send([KeyDown(Native.VK_CONTROL), KeyDown(Native.VK_V), KeyUp(Native.VK_V), KeyUp(Native.VK_CONTROL)]))
+            // Unguarded, nothing holds the user's keys: the chord goes out in one call, as short as it can be.
+            if (!guard.Holding)
             {
-                return true;
+                if (Send([KeyDown(Native.VK_CONTROL), KeyDown(Native.VK_V), KeyUp(Native.VK_V), KeyUp(Native.VK_CONTROL)]))
+                {
+                    return true;
+                }
+
+                // Cut off: never leave Ctrl down.
+                _ = dispatch([KeyUp(Native.VK_CONTROL)]);
+                return false;
             }
 
-            // Cut off: never leave Ctrl down.
-            _ = dispatch([KeyUp(Native.VK_CONTROL)]);
-            return false;
+            IntPtr window = getForegroundWindow();
+            bool pasted = false;
+            try
+            {
+                // The V is a call of its own, so the target is checked before it too. The hold is timed from it.
+                if (Send([KeyDown(Native.VK_CONTROL)]) && OnTarget())
+                {
+                    long sentAt = clock();
+                    if (Send([KeyDown(Native.VK_V), KeyUp(Native.VK_V)]))
+                    {
+                        hold = HoldForRead(isOpenByTarget, () => guard.Renew() && guard.Holding && getForegroundWindow() == window, sleep, () => clock() - sentAt);
+                        pasted = true;
+                    }
+                }
+            }
+            finally
+            {
+                // However it ends, Ctrl is let go of, with one more try if its key-up didn't go out.
+                if (!Send([KeyUp(Native.VK_CONTROL)]))
+                {
+                    _ = dispatch([KeyUp(Native.VK_CONTROL)]);
+                    pasted = false;
+                }
+            }
+
+            return pasted;
         }
 
         // A character per call, paced: Windows 11 Notepad drops and smears characters that arrive faster.
@@ -453,8 +510,9 @@ internal static class Injector
     /// takeover is verified; only then does <paramref name="send"/> erase the trigger and paste, checking the target
     /// before each call. The paste settles, with <paramref name="keepAlive"/> keeping the guard on, and the clipboard
     /// goes back before the end marker, so a Ctrl+V among the keys held meanwhile pastes what the user copied too.
+    /// <paramref name="hold"/> tells the settle how the paste's Ctrl hold went, once <paramref name="send"/> is done.
     /// </summary>
-    private static PasteOutcome TryPaste(string text, IntPtr targetWindow, Func<(bool Whole, bool SentAny)> send, Action keepAlive)
+    private static PasteOutcome TryPaste(string text, IntPtr targetWindow, Func<(bool Whole, bool SentAny)> send, Action keepAlive, Func<PasteHold> hold)
     {
         // Null when the clipboard can't be read, is too large to copy, or holds something we couldn't put back.
         using ClipboardSnapshot? saved = Clipboard.Snapshot();
@@ -485,7 +543,7 @@ internal static class Injector
 
             // The target reads the clipboard asynchronously; restoring at once would paste the previous contents. One
             // still busy at the cap keeps the snippet, since its Ctrl+V may yet come.
-            handBack = !sentAny || WaitForPasteToSettle(targetWindow, keepAlive);
+            handBack = !sentAny || WaitForPasteToSettle(targetWindow, keepAlive, hold());
 
             // Not sent at all: focus moved, a click may have moved the caret, or deciding again dropped it. The trigger is intact.
             return !sentAny ? PasteOutcome.TargetLost : pasted ? PasteOutcome.Pasted : PasteOutcome.FailedAfterErase;
@@ -508,12 +566,40 @@ internal static class Injector
     /// Waits for the target to take the paste: its process opening and then closing the clipboard is direct
     /// evidence the paste was consumed. Anything not attributable to the target falls back to waiting
     /// <see cref="PasteSettleMs"/>, and longer while the target isn't taking messages. Returns false if it still
-    /// isn't after <see cref="PasteBusyCapMs"/>: the clipboard must not be handed back under a pending paste.
+    /// isn't after <see cref="PasteBusyCapMs"/>: the clipboard must not be handed back under a pending paste. Counted
+    /// from the V, as the paste's Ctrl <paramref name="hold"/> was, and a read seen during the hold counts.
     /// </summary>
-    private static bool WaitForPasteToSettle(IntPtr targetWindow, Action keepAlive)
+    private static bool WaitForPasteToSettle(IntPtr targetWindow, Action keepAlive, PasteHold hold)
     {
         long start = System.Diagnostics.Stopwatch.GetTimestamp();
-        return WaitForPasteToSettle(() => Clipboard.IsOpenByTarget(targetWindow), Thread.Sleep, () => (long)System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds, () => IsTakingMessages(targetWindow), keepAlive);
+        return WaitForPasteToSettle(() => Clipboard.IsOpenByTarget(targetWindow), Thread.Sleep, () => hold.ElapsedMs + (long)System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds, () => IsTakingMessages(targetWindow), keepAlive, hold.ReadSeen);
+    }
+
+    /// <summary>
+    /// Keeps the paste's Ctrl down until the target is seen reading the clipboard, or for <see cref="PasteSettleMs"/> after
+    /// the V at most: by then a target taking messages has had its chance and the user's clipboard goes back. Ends at once
+    /// when <paramref name="keepHolding"/> turns false, as a key of the user's could then reach the app with Ctrl down.
+    /// Windows 11 Notepad holds the clipboard open for well under a millisecond, so the polls seldom see its read; the
+    /// deadline ends the hold then. Timed by <paramref name="elapsedMs"/>, counted from the V. A busy target's paste is
+    /// still waited for by the settle, but without Ctrl, which would otherwise stay down for seconds.
+    /// </summary>
+    internal static PasteHold HoldForRead(Func<bool> isOpenByTarget, Func<bool> keepHolding, Action<int> sleep, Func<long> elapsedMs)
+    {
+        int poll = Math.Max(1, PasteSettlePollMs);
+        for (long waited = elapsedMs(); ; waited = elapsedMs())
+        {
+            if (isOpenByTarget())
+            {
+                return new PasteHold(ReadSeen: true, waited);
+            }
+
+            if (waited >= PasteSettleMs || !keepHolding())
+            {
+                return new PasteHold(ReadSeen: false, waited);
+            }
+
+            sleep(poll);
+        }
     }
 
     /// <summary>
@@ -526,12 +612,13 @@ internal static class Injector
             || Native.SendMessageTimeoutW(window, Native.WM_NULL, IntPtr.Zero, IntPtr.Zero, Native.SMTO_BLOCK | Native.SMTO_ABORTIFHUNG, (uint)Math.Max(1, ResponsiveProbeMs), out _) != IntPtr.Zero;
 
     /// <summary>
-    /// The wait behind <see cref="WaitForPasteToSettle(IntPtr, Action)"/>, with the clock and the target checks passed in
-    /// for tests. Timed by the clock, not by counting polls: a short sleep lasts a whole timer tick (about 15 ms),
+    /// The wait behind <see cref="WaitForPasteToSettle(IntPtr, Action, PasteHold)"/>, with the clock and the target checks
+    /// passed in for tests. Timed by the clock, not by counting polls: a short sleep lasts a whole timer tick (about 15 ms),
     /// so counted 5 ms polls held the clipboard for over a second. Returns whether the clipboard may be handed back.
     /// <paramref name="keepAlive"/> runs at every check, so the guard outlasts the wait, which sends nothing of ours.
+    /// <paramref name="readSeen"/> is whether the target was already seen reading the clipboard while the paste held Ctrl.
     /// </summary>
-    internal static bool WaitForPasteToSettle(Func<bool> isOpenByTarget, Action<int> sleep, Func<long> elapsedMs, Func<bool>? isTakingMessages = null, Action? keepAlive = null)
+    internal static bool WaitForPasteToSettle(Func<bool> isOpenByTarget, Action<int> sleep, Func<long> elapsedMs, Func<bool>? isTakingMessages = null, Action? keepAlive = null, bool readSeen = false)
     {
         int budget = PasteSettleMs;
         if (budget <= 0)
@@ -543,7 +630,7 @@ internal static class Injector
         int floor = Math.Min(PasteSettleFloorMs, budget);
         long cap = Math.Max(budget, PasteBusyCapMs);
         long readBy = budget;
-        bool observedRead = false;
+        bool observedRead = readSeen;
         bool wasBusy = false;
 
         for (long waited = elapsedMs(); ; waited = elapsedMs())
