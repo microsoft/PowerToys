@@ -1,6 +1,6 @@
 # Workspaces Protected Storage 验收台账
 
-最后更新：2026-11-02（UTC+08:00；E38已启动签名构建，E39完成两项本地工程复测）
+最后更新：2026-11-02（UTC+08:00；E40同账号提升实测：普通入口通过，High CLI执行失败，取消刺激未确认）
 
 **这是验收状态的唯一维护入口。每执行完一项，就更新本文件；不能只在聊天里报告通过。**
 
@@ -19,38 +19,40 @@
 | 状态 | 条数 |
 |---|---:|
 | PASS | 26 |
-| PARTIAL | 21 |
+| PARTIAL | 22 |
+| FAIL | 1 |
 | RETEST | 0 |
-| BLOCKED | 2 |
-| NOT RUN | 77 |
+| BLOCKED | 1 |
+| NOT RUN | 76 |
 | 合计 | 126 |
 
 26条PASS由AUTO 14条、UNIT 6条、LOCAL-01、PERF-02/03及E37关闭的
 DATA-09、DATA-17、CLI-01组成；仍不代表核心架构和正式安装验收已完成。
-显式标P0的45条中，整项PASS 3条、PARTIAL 15条、RETEST 0条、BLOCKED 2条、
-NOT RUN 25条。当前两个正式BLOCKED为DATA-14（提权专项）和REL-01（PM决策）；
+显式标P0的45条中，整项PASS 3条、PARTIAL 16条、FAIL 1条、RETEST 0条、BLOCKED 1条、
+NOT RUN 24条。当前正式BLOCKED为REL-01（PM决策）；E40将DATA-14补到PARTIAL，
+并记录CLI-03的实际FAIL；
 不要与E33的三个BLOCKED子项混淆。
 R06已有E36定向实机PASS，但DATA-10包含更多条件，仍只计PARTIAL。
 
 ### 分类总览：126条条件，不是126场独立测试
 
-目前有100条尚未整项关闭，但其中只有77条记为NOT RUN；另有21条已部分覆盖、
-2条受阻，不能全部当作“从零开始”。E39已关闭原来的2条RETEST。台账混合了工程门禁、
+目前有100条尚未整项关闭，但其中只有76条记为NOT RUN；另有22条已部分覆盖、
+1条FAIL、1条受阻，不能全部当作“从零开始”。E39已关闭原来的2条RETEST。台账混合了工程门禁、
 自动化合同、实机行为、错误分支、环境矩阵和产品决策，因此26/126不是工作量完成百分比。
 
 下面按**主要验证目标**将每个正式ID归入一个类别，互不重复、没有删减或新增要求。
-“未关闭”包含PARTIAL/RETEST/BLOCKED/NOT RUN；“未跑”仅指NOT RUN。
+“未关闭”包含PARTIAL/FAIL/RETEST/BLOCKED/NOT RUN；“未跑”仅指NOT RUN。
 
 | 类别 | 总条数 | 整项PASS | 未关闭 | 其中未跑 |
 |---|---:|---:|---:|---:|
 | 工程基线与自动化 | 27 | 20 | 7 | 3 |
 | 日常功能、交互和性能 | 19 | 4 | 15 | 6 |
-| 跨权限执行与运行上下文 | 7 | 0 | 7 | 6 |
+| 跨权限执行与运行上下文 | 7 | 0 | 7 | 5 |
 | 写保护、授权和用户隔离 | 9 | 0 | 9 | 5 |
 | 数据迁移、一致性与恢复 | 17 | 1 | 16 | 14 |
 | 安装、升级、卸载与生命周期 | 36 | 1 | 35 | 34 |
 | 生产信任、环境与发布门槛 | 11 | 0 | 11 | 9 |
-| 合计 | 126 | 26 | 100 | 77 |
+| 合计 | 126 | 26 | 100 | 76 |
 
 | 类别 | 唯一归属的正式ID |
 |---|---|
@@ -83,10 +85,10 @@ PERF-02/03）；数据一致性1条（DATA-09）；部署核对1条（LOCAL-01�
 | 待测本地包 | x64 Debug **`0.101.6006.0`，已匹配部署**；入口 `D:\PowerToys-Workspaces-Integration\x64\Debug\PowerToys.exe`；E33 核对实际客户端和 runtime，不再受旧6005部署阻塞 |
 | 原代码备份 | `backup/workspaces-protected-storage-20261028`，提交 `c576e95f70d4247efeb68afe1c50bc5f7e57f4e2`；含原 worktree 全部已跟踪/未跟踪源码改动 |
 | 原 worktree | `D:\PowerToys-Workspaces-E2E`；原 HEAD `146518e3a3c3120257799b89e061b304f81fdab7`、索引和源码保留 |
-| 最近确认的运行环境 | E37，11-02：客户端/catalog/runtime6006匹配，Editor DLL仍为时间修复版；普通权限Session2。开始时前台不可用但UIA可用，用户恢复桌面后另记有效桌面基线；两个显示器均144 DPI，不是混合DPI验收 |
+| 最近确认的运行环境 | E40，11-02：客户端/catalog/runtime6006匹配，Editor DLL仍为时间修复版；普通控制器Session2，用户明确授权同账号UAC。实测普通CLI、High CLI、Medium host及High Arranger/目标；目标窗口144 DPI，不是混合DPI/OTS验收 |
 | 新包部署状态 | 本轮开始前已完成6006部署；本轮没有 Repair/Reset/Purge、重建VA、迁移或再次请求UAC。E31 的1223仅保留为历史记录 |
-| 数据保护结果 | E37经真实Import恢复原两条记录，全部字段、完整业务JSON及payload字节均与本轮起点一致；模块settings、测试legacy文件、有效桌面基线恢复；测试进程/夹具目录无残留。没有直接覆盖protected blob/index |
-| 当前验收结论 | E37范围内12子项PASS、2提升变体BLOCKED、1清单定义FAIL（错误要求owner读取私有Code，不是产品缺陷）；未观察到新的产品FAIL。原始跟踪器仍有3条未解析activation记录等记录完整性hold，整体WITHHELD。High/OTS及生产安装矩阵未关闭；旧归档不改写 |
+| 数据保护结果 | E40先完整备份，收尾经Cancel冲突/Reload/真实Import恢复原两条记录，全字段及payload字节一致；settings、桌面恢复，测试进程/夹具目录无残留，服务和Debug文件未变。没有直接覆盖protected blob/index |
+| 当前验收结论 | E40为3子项PASS、1产品FAIL、2BLOCKED；普通入口同账号提升和错误权限窗口不复用通过，High CLI仅创建Medium host后退出1，未完成目标启动。取消轮实际成功启动，未确认“点否”刺激，不能算取消通过。整体WITHHELD；OTS、High GUI及正式安装矩阵仍未关闭 |
 
 `6003`、`6004`、`6005`、`6006` 都是合入 main 后的**本地 E2E 测试构建**，使用
 `ProtectedStorage.LocalLifecycle.exe` 和本地测试 bundle，不是正式 carrier MSI 部署。
@@ -154,6 +156,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | R04 | 服务删除不等于 VA profile 已卸载；旧测试曾报告 profile 仍 loaded | 清理应报告准确残留，不强制卸载 hive；REM-06/CLEAN-02 单独判断 |
 | R05 | 6004 `move-existing-windows=true` 时只匹配名称/路径/PWA，没有比较实际 token elevation；普通 Notepad14436 可满足 elevated 条目，绕过新启动路径 | 6005 在既有窗口选择和新窗口认领处均要求 elevation 匹配；仅用 limited process query，查询失败不当作普通窗口，不引入身份握手或 DACL 修改 |
 | R06（L64定向实机PASS） | E35修复复制构造函数；E36实际新建自有工作区，再连续两次改名、Save、Reload、重开 | 创建时间三次均 `1793347374`，last-launched三次均0，除改名外全部字段一致；不是只读内存或单测结论。Debug6006 Editor已包含修复；既有零值不自动恢复 |
+| R08（E40新实测FAIL） | 同账号High CLI24816创建Medium Launcher26380，随后退出1；未观察到该次Arranger/目标，fixture无新目标报告，history未更新 | CLI-03记FAIL。仅证明创建Medium host，不代表handoff后的执行成功；直接RunAs未捕获stdout，现有日志不足以定位内部原因，不能直接归咎于服务认证或UAC。未改产品代码掩盖结果 |
 | R07 | E33 重新捕获后快捷方式复选框显示未勾选，现有快捷方式仍在；Revert后恢复勾选 | `DataContext` 赋值后才调用 `CheckShortcutPresence`，对应属性无变更通知；该顺序可追溯到2024-08-23初始PR #34324（`579619952d`），当前main仍保留。本轮未证明快捷方式被删除，也未修产品代码 |
 | Q02 | 首次管理员授权时机、fail-closed 范围和 UX 仍需 PM 结论 | 当前不得启用不受保护 fallback；技术检查通过不等于 PM 已批准 |
 
@@ -231,7 +234,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | DATA-11 / P0 | Capture/取消；preview 归属正确、有大小/生命周期限制、可回收，不写可篡改临时计划 | PARTIAL | E33：6006实际Capture/取消/重新捕获；四个自有应用身份、DPI、最小化/最大化状态匹配，包含晚创建窗口；无LocalE2E legacy live文件。跨owner/大小/过期仍未测 |
 | DATA-12 / P0 | 已保存/未保存工作区 Launch & Edit；使用准确 preview，重新捕获/保存/取消符合预期 | PARTIAL | E33：已保存自有卡Launch & edit完成后重新捕获新增窗口，Revert恢复4行，Cancel返回列表；未保存卡/重新捕获后Save等完整组合未覆盖，显示问题见R07 |
 | DATA-13 / P0 | Editor/快捷方式/CLI 启动普通工作区；目标、参数、布局、move-existing、最小化/最大化正确 | PARTIAL | E33：自有快捷方式启动3个Win32 fixture及包Paint，实际普通token、PNG参数、DPI布局/最小化正确；move-existing开关的同一原窗口行为正确。全入口/全部状态组合未覆盖 |
-| DATA-14 / P0 | Medium 执行核心 -> High Arranger；同账号提升和 OTS 分别测试；原 owner/会话/精确计划不变，目标应用 elevation 正确 | BLOCKED | E33：当前进程/Runner非管理员，按WIP skill跳过管理员变体，未请求UAC；不是6006不能提权的实测结论。同账号/OTS仍须专项验证；6005 E27授权等待超时和6004 E22错误复用保留为历史 |
+| DATA-14 / P0 | Medium 执行核心 -> High Arranger；同账号提升和 OTS 分别测试；原 owner/会话/精确计划不变，目标应用 elevation 正确 | PARTIAL | E40：用户授权后，普通CLI20828 -> High Arranger24616，普通目标8420/High目标18376均同owner/session2并按保存布局排列，exit0；已有普通同映像29704保持原窗/位置，没有冒充High目标。OTS及其他入口未测；E27/E22历史保留 |
 | DATA-15 / P0 | 安装元数据与 last-launched 经可观察 CAS 写回；不覆盖新编辑，不在 destructor 静默 I/O，不因重试重复启动 | PARTIAL | E37：实际CLI报告persistenceStatus=updated并产生非零last-launched；随后编辑Save/Reload保留创建时间和该非零时间，且真实CAS冲突未覆盖native写回。安装元数据变更、写回失败/未知结果等组合未完整覆盖 |
 | DATA-16 / P1 | CmdPal/ModuleServices 枚举与启动使用同一 repository/owner；读取不预配，无 legacy escape | NOT RUN | 部署前置已满足；相关正式 host 还需新 catalog/构建证据 |
 | DATA-17 / P1 | Export 得到一致显式副本；Import 确认后完整替换，坏 JSON 整体拒绝；副本不是 live source | PASS | L64 E37：实际Export全字段一致，修改那个导出文件不改live；真实确认Import完整替换自有fixture；截断JSON和错误集合类型均拒绝，index/记录不变；修正同一输入后Retry成功。原集合最后也经Import恢复并验证完整payload |
@@ -243,9 +246,9 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 |---|---|---|---|
 | CLI-01 / P0 | 普通终端 list/filter/details/JSON 与 Editor 同一集合；不修改 index/blob，不读旧明文 | PASS | L64 E37：text/JSON及按ID/名称details匹配；最终6次读取前后全部index/blob文件名与字节完全相同。错误选项/缺失名称另验证exit2/3；合法空集合放回legacy后CLI仍读protected空集合 |
 | CLI-02 / P0 | GUI 和 CLI 的 Medium 入口使用共享执行核心；CLI 同步等最终 arrangement 结果，失败/部分成功不报全成功 | PARTIAL | E37：CLI普通启动exit0/completed/arranged/updated，真实新目标为普通token、参数及144 DPI位置匹配；deadline为exit9/timeout，未伪报成功。全部GUI入口和部分应用失败矩阵仍未覆盖 |
-| CLI-03 / P0 | High GUI/CLI launch 先交给同用户/会话的 Medium host；按保存的 elevation 标志启动，不因高权限终端把所有目标提权 | NOT RUN | 部署前置已满足；High -> Medium 与 Medium -> High Arranger 是两条独立链路 |
+| CLI-03 / P0 | High GUI/CLI launch 先交给同用户/会话的 Medium host；按保存的 elevation 标志启动，不因高权限终端把所有目标提权 | FAIL | L64 E40：实际High CLI24816和Medium host26380同owner/session2，但CLI退出1，未完成目标启动/排列且history未更新；High GUI/Runner未测试。不是“全部目标被错误提权”，而是后续执行失败；内部原因未定，见R08 |
 | CLI-04 / P1 | 拒绝错误 owner/会话、失效进程/映像、非法 private host 输入；普通调用不能注入任意 workspace snapshot | NOT RUN | 部署前置已满足；保护存储和 plan 的身份要求不得因合并而悄悄移除 |
-| CLI-05 / P1 | GUI Cancel/Ctrl+C/deadline/owner exit/第二次启动；停止后续应用，保留已启动应用，释放锁，结果未知不自动重放 | PARTIAL | E37：2秒deadline约2826ms返回timeout/exit9；首个已启动的延迟fixture存活，第二个未启动，清理后新独立启动成功。未把未知结果自动重放；Ctrl+C/GUI Cancel/owner exit/并发第二请求等仍待测 |
+| CLI-05 / P1 | GUI Cancel/Ctrl+C/deadline/owner exit/第二次启动；停止后续应用，保留已启动应用，释放锁，结果未知不自动重放 | PARTIAL | E37的deadline/已有进程保留/新会话证据保留。E40计划取消UAC，但实际exit0并启动High目标，用户操作无法确认，未发生可证实的denial；不能改为取消PASS。该新启动仅证明此前High失败后会话可再次使用 |
 | CLI-06 / P1 | 控制台应用独立控制台；CLI stdin/stdout/JSON、退出码、code page、隐私遥测合同保持主线行为 | NOT RUN | 部署前置已满足；错误/警告不得污染 JSON 流，参数/工作区内容不进遥测 |
 | CLI-07 / P0 | 普通与提升终端分别验证 list 的 owner 上下文和错误反馈 | NOT RUN | 部署前置已满足；不能只用 launch 的降权结果推断 list |
 
@@ -634,6 +637,48 @@ B02及所有P环境验收仍保持原状态；最终产物必须另行核验。
 AUTO-02、AUTO-05由RETEST转PASS，整项PASS由24变为26，RETEST由2变为0。
 正式签名/ICE/安装、High/OTS、跨owner和迁移恢复的缺口均保持；Compile输出
 不是可发布的Setup，不能用于预配或作为E38的正式installer。
+
+### E40：2026-11-02，用户配合同账号UAC的真实执行测试
+
+用户明确同意处理UAC并要求开始。本轮另建Scenario B运行
+`bc0df1507cde4e5098b74f12ab9f5573`，沿用指定WIP skill/profile；
+只对这些明确授权的同账号提升场景覆盖默认缺少权限的skip，不扩展到OTS、
+账号创建、服务维护、信任库或机器重启。先核对6006客户端/catalog/runtime及
+时间修复DLL，保存完整原始数据，再通过Editor Import放入两个专用工作区。
+fixture只创建空白窗口，报告自身token/坐标，并通过精确PID关闭标记自行退出；
+不执行调用者指定的程序或修改业务数据。
+
+| 场景 | 实际观察 | 判定和边界 |
+|---|---|---|
+| 普通入口混合权限 | Medium CLI20828；High Arranger24616；Medium目标8420及High目标18376，全部同owner/session2；exit0/completed，两应用arranged，history updated | PASS；144 DPI下两个目标物理矩形分别(180,240)-(1080,840)、(1170,240)-(2070,840)，匹配保存输入 |
+| 错误权限窗口复用 | 提前启动同一`WsUacElevated.exe`的普通PID29704/HWND855584；启动后原身份/位置不变，另有High PID18376 | PASS；不是仅检查保存的`is-elevated`标志 |
+| High入口的宿主创建 | 用户授权的真实High CLI24816创建Medium Launcher26380，二者同owner/session2 | 仅此子条件PASS，不能据此推断执行完成 |
+| High入口后续执行 | CLI退出1；未观察到该次Arranger或fixture目标，无新的目标报告，history不变；现有日志没有足够内部错误细节 | 产品FAIL；CLI-03/R08。直接RunAs没有捕获stdout，不能臆测具体错误码/拒绝位置；未作产品修复 |
+| 计划中的UAC取消 | 已提示用户对Arranger点否，但实际新CLI31868、High Arranger32388、普通目标12328/High目标31352完成启动，exit0 | 取消刺激未确认。用户澄清工具返回暂不可用，因此denial和“denial之后恢复”均BLOCKED；没有继续追加UAC，也不把这次成功当成取消被绕过 |
+
+六个子项为 **3 PASS / 1 FAIL / 2 BLOCKED**；父项为
+**1 PASS / 1 FAIL / 1 BLOCKED**，总体WITHHELD。High和取消项还保留对应正常路径
+截图证据缺口。普通入口的原始产品确认截图经审阅后补挂到同一原始attempt的判断，
+没有补拍、重写观察或冒充新执行。High失败后新普通入口成功的事实可证明会话未永久卡住，
+但不能替代未发生的UAC取消恢复测试。
+
+收尾首次Import因CLI已写回history、Editor持有旧revision而出现真实CAS冲突。
+保留原失败/等待超时记录，观察确认具体Conflict和保存数据后，
+按产品提示Cancel → Reload → 重新Import原始payload，恢复成功。
+原两条工作区所有字段及完整2225字节业务payload均一致，
+SHA256仍为`582212232F6DFF41B693A89873D1F24701EBA83CDAFB1FE4A1C3B98D40C0BBB8`。
+Editor及全部自有fixture已退出，fixture目录删除，settings和原桌面恢复；
+runtime ready及Debug客户端哈希未变。未直接覆盖protected blob/index。
+
+主表DATA-14由BLOCKED转PARTIAL（同账号通过，OTS未测），CLI-03由NOT RUN转FAIL；
+26条整项PASS不变。首次fixture编译的窄化警告修正、收尾CAS驱动恢复和截图引用补全
+都按原始历史保留，不把它们算作产品缺陷，也不借此清除High执行失败。
+
+本轮归档：
+
+```text
+C:\Users\bozhang\OneDrive - Microsoft\PowerToys\Module-Signoff\Workspaces-UAC-20261102\report.md
+```
 
 ### 本次证据
 
