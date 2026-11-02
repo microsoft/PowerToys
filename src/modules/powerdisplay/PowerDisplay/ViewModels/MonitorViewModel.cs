@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
@@ -69,6 +70,21 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     public partial bool ShowRotation { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the user enabled the refresh-rate control in Settings.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowRefreshRate))]
+    public partial bool IsRefreshRateEnabled { get; set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the refresh-rate control is shown. Besides the user's choice
+    /// this depends on the current display mode, which can change while PowerDisplay runs: there
+    /// must be more than one rate, and the monitor must have its own display source (in Duplicate
+    /// mode the rate can't be set per display).
+    /// </summary>
+    public bool ShowRefreshRate => IsRefreshRateEnabled && SupportsRefreshRate && !_monitor.SharesDisplaySource;
 
     private bool _showPowerState;
 
@@ -243,6 +259,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         ShowContrast = monitor.SupportsContrast;
         ShowVolume = monitor.SupportsVolume;
         ShowInputSource = false;
+        IsRefreshRateEnabled = monitor.SupportsRefreshRate;
+        UpdateRefreshRateOptions();
         _showPowerState = false;
         _showColorTemperature = false;
 
@@ -425,6 +443,62 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// Gets the current rotation/orientation of the monitor (0=normal, 1=90°, 2=180°, 3=270°)
     /// </summary>
     public int CurrentRotation => _monitor.Orientation;
+
+    public int CurrentRefreshRate => _monitor.CurrentRefreshRate;
+
+    public IReadOnlyList<int> AvailableRefreshRates => _monitor.AvailableRefreshRates;
+
+    public ObservableCollection<RefreshRateOption> RefreshRateOptions { get; } = new();
+
+    private void UpdateRefreshRateOptions()
+    {
+        RefreshRateOptions.Clear();
+        foreach (var rate in AvailableRefreshRates)
+        {
+            RefreshRateOptions.Add(new RefreshRateOption(rate));
+        }
+    }
+
+    public bool SupportsRefreshRate => _monitor.SupportsRefreshRate;
+
+    public int? SelectedRefreshRate
+    {
+        get => CurrentRefreshRate;
+        set
+        {
+            if (value.HasValue)
+            {
+                _ = SetRefreshRateAsync(value.Value);
+            }
+        }
+    }
+
+    public async Task SetRefreshRateAsync(int refreshRate)
+    {
+        if (!AvailableRefreshRates.Contains(refreshRate) || CurrentRefreshRate == refreshRate)
+        {
+            return;
+        }
+
+        try
+        {
+            var result = await _monitorManager.SetRefreshRateAsync(Id, refreshRate);
+            if (!result.IsSuccess)
+            {
+                Logger.LogWarning($"[{Id}] Failed to set refresh rate: {result.ErrorMessage}");
+                OnPropertyChanged(nameof(SelectedRefreshRate));
+            }
+            else
+            {
+                _mainViewModel?.SaveMonitorSettingDirect(_monitor.Id, "RefreshRate", refreshRate);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[{Id}] Exception setting refresh rate: {ex.Message}");
+            OnPropertyChanged(nameof(SelectedRefreshRate));
+        }
+    }
 
     /// <summary>
     /// Gets a value indicating whether the current rotation is 0° (normal/default).
@@ -909,6 +983,28 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(IsRotation2));
             OnPropertyChanged(nameof(IsRotation3));
             OnPropertyChanged(nameof(SelectedRotationIndex));
+        }
+        else if (e.PropertyName == nameof(Monitor.CurrentRefreshRate))
+        {
+            OnPropertyChanged(nameof(CurrentRefreshRate));
+            OnPropertyChanged(nameof(SelectedRefreshRate));
+        }
+        else if (e.PropertyName == nameof(Monitor.AvailableRefreshRates))
+        {
+            // Options don't depend on the current rate, so only rebuild them when the list
+            // changes; re-raise the selection afterwards so the ComboBox re-selects it.
+            OnPropertyChanged(nameof(AvailableRefreshRates));
+            UpdateRefreshRateOptions();
+            OnPropertyChanged(nameof(SelectedRefreshRate));
+        }
+        else if (e.PropertyName == nameof(Monitor.SupportsRefreshRate))
+        {
+            OnPropertyChanged(nameof(SupportsRefreshRate));
+            OnPropertyChanged(nameof(ShowRefreshRate));
+        }
+        else if (e.PropertyName == nameof(Monitor.SharesDisplaySource))
+        {
+            OnPropertyChanged(nameof(ShowRefreshRate));
         }
     }
 

@@ -94,6 +94,7 @@ public class PowerDisplay
     [DataRow(nameof(MonitorInfo.EnableVolume))]
     [DataRow(nameof(MonitorInfo.EnableInputSource))]
     [DataRow(nameof(MonitorInfo.EnableRotation))]
+    [DataRow(nameof(MonitorInfo.EnableRefreshRate))]
     [DataRow(nameof(MonitorInfo.EnableColorTemperature))]
     [DataRow(nameof(MonitorInfo.EnablePowerState))]
     [DataRow(nameof(MonitorInfo.IsHidden))]
