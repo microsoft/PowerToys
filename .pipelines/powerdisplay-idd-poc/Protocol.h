@@ -5,6 +5,29 @@
 
 inline constexpr GUID FixtureInterface = { 0x51800002, 0x10ab, 0x4abc, { 0x90, 0x10, 0x50, 0x54, 0x49, 0x44, 0x44, 0x01 } };
 inline constexpr ULONG SnapshotIoctl = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_READ_DATA);
+inline constexpr ULONG ControlIoctl = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x801, METHOD_BUFFERED, FILE_WRITE_DATA);
+inline constexpr ULONG ProtocolVersion = 2;
+
+enum class FixtureMode : ULONG
+{
+    Normal,
+    NoBrightness,
+    CommunicationFailure
+};
+
+enum class FixtureOperation : ULONG
+{
+    SetConnected,
+    SetMode
+};
+
+struct FixtureCommand
+{
+    ULONG Version;
+    ULONG Connector;
+    FixtureOperation Operation;
+    ULONG Value;
+};
 
 struct MonitorSnapshot
 {
@@ -20,6 +43,11 @@ struct MonitorSnapshot
     BYTE LastTransmit[16];
     ULONG LastReceiveAddress;
     ULONG LastReceiveLength;
+    ULONG Connected;
+    FixtureMode Mode;
+    ULONG Failures;
+    ULONG Arrivals;
+    ULONG Departures;
 };
 
 struct FixtureSnapshot

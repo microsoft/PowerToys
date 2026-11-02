@@ -38,7 +38,7 @@ parameters:
 
 jobs:
   # A GrabAndMove-only request needs no ordinary ARM64 job when the isolated route is enabled.
-  - ${{ if or(eq(parameters.umdfHidArm64Image, ''), parameters.autoSelectUiTests, not(and(eq(length(parameters.uiTestModules), 1), containsValue(parameters.uiTestModules, 'GrabAndMove.UITests')))) }}:
+  - ${{ if or(eq(parameters.umdfHidArm64Image, ''), parameters.autoSelectUiTests, not(and(eq(length(parameters.uiTestModules), 1), or(containsValue(parameters.uiTestModules, 'GrabAndMove.UITests'), containsValue(parameters.uiTestModules, 'PowerDisplay.UITests'))))) }}:
     - template: job-test-project.yml
       parameters:
         platform: ${{ parameters.platform }}
@@ -76,3 +76,22 @@ jobs:
           condition: ${{ parameters.condition }}
         installMode: ${{ parameters.installMode }}
         jobSuffix: ${{ parameters.jobSuffix }}_UmdfHid
+
+  - ${{ if and(ne(parameters.umdfHidArm64Image, ''), or(parameters.autoSelectUiTests, eq(length(parameters.uiTestModules), 0), containsValue(parameters.uiTestModules, 'PowerDisplay.UITests'))) }}:
+    - template: job-test-project.yml
+      parameters:
+        platform: ${{ parameters.platform }}
+        configuration: ${{ parameters.configuration }}
+        buildSource: ${{ parameters.buildSource }}
+        specificBuildId: ${{ parameters.specificBuildId }}
+        useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+        uiTestModules: [PowerDisplay.UITests]
+        umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
+        umdfHidArm64Dedicated: true
+        dependsOn: ${{ parameters.dependsOn }}
+        ${{ if eq(parameters.autoSelectUiTests, true) }}:
+          condition: and(${{ coalesce(parameters.condition, 'succeeded()') }}, eq(dependencies.Resolve.outputs['resolve.hasUmdfDisplayUiTests'], 'true'))
+        ${{ else }}:
+          condition: ${{ parameters.condition }}
+        installMode: ${{ parameters.installMode }}
+        jobSuffix: ${{ parameters.jobSuffix }}_UmdfDisplay

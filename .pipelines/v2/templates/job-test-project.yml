@@ -108,6 +108,11 @@ jobs:
         -AutoSelect ('${{ parameters.autoSelectUiTests }}' -eq 'True') `
         -RouteArm64 ('${{ parameters.routeUmdfHidArm64 }}' -eq 'True') `
         -DedicatedArm64 ('${{ parameters.umdfHidArm64Dedicated }}' -eq 'True')
+      $displaySelection = Get-UmdfHidUiTestSelection -Modules $modules -Platform '$(TestPlatform)' `
+        -FixtureModule 'PowerDisplay.UITests' `
+        -AutoSelect ('${{ parameters.autoSelectUiTests }}' -eq 'True') `
+        -RouteArm64 ('${{ parameters.routeUmdfHidArm64 }}' -eq 'True') `
+        -DedicatedArm64 ('${{ parameters.umdfHidArm64Dedicated }}' -eq 'True')
       if ('${{ parameters.umdfHidArm64Dedicated }}' -eq 'True') {
         $bootConfiguration = & bcdedit.exe /enum '{current}'
         if ($LASTEXITCODE) { throw 'BLOCKED_INFRASTRUCTURE: cannot read the dedicated image boot configuration.' }
@@ -118,6 +123,11 @@ jobs:
       }
       Write-Host "##vso[task.setvariable variable=ExcludeUmdfHidSuite]$($hidSelection.Exclude.ToString().ToLowerInvariant())"
       Write-Host "##vso[task.setvariable variable=UmdfHidSelectionBlocked]$($hidSelection.Blocked.ToString().ToLowerInvariant())"
+      Write-Host "##vso[task.setvariable variable=ExcludeUmdfDisplaySuite]$($displaySelection.Exclude.ToString().ToLowerInvariant())"
+      Write-Host "##vso[task.setvariable variable=UmdfDisplaySelectionBlocked]$($displaySelection.Blocked.ToString().ToLowerInvariant())"
+      if ($displaySelection.Skipped) {
+        Write-Host "##vso[task.logissue type=warning]PowerDisplay.UITests requires the isolated ARM64 UMDF image; it is not run on the ordinary ARM64 image."
+      }
       if ($hidSelection.Skipped) {
         Write-Host "##vso[task.logissue type=warning]Skipping implicitly selected GrabAndMove.UITests on $(TestPlatform): the dedicated ARM64 UMDF image is not configured. Other suites remain selected."
       }
@@ -135,6 +145,7 @@ jobs:
       Write-Host "##vso[task.setvariable variable=MwbUiTestsPassed]false"
       Write-Host "##vso[task.setvariable variable=UiTestCleanupComplete]false"
       Write-Host "##vso[task.setvariable variable=UmdfHidRequested]false"
+      Write-Host "##vso[task.setvariable variable=UmdfDisplayRequested]false"
       if ($selection.Reason -eq 'SkippedRequiresCurrentBuildBundle') {
         Write-Host "##vso[task.logissue type=warning]Skipping implicit MWB selection: its Sandbox suite requires buildNow or buildNowSlim. Other suites will run against the selected official build."
       }
@@ -255,6 +266,7 @@ jobs:
             $(UiTestArtifactPattern)
             mwb-sandbox-ci/**
             umdf-hid/**
+            powerdisplay-idd/**
   - ${{ else }}:
       # buildNow (whole tree, run in place) and the official path (small tests-only artifact) both
       # download the full named artifact via the Azure CLI ArtifactTool (bulk dedup, parallel). The
@@ -528,8 +540,12 @@ jobs:
       if ($env:EXCLUDE_UMDF_HID_SUITE -eq 'true') {
         $entries = @($entries | Where-Object Name -ne 'GrabAndMove.UITests.runtimeconfig.json')
       }
+      if ($env:EXCLUDE_UMDF_DISPLAY_SUITE -eq 'true') {
+        $entries = @($entries | Where-Object Name -ne 'PowerDisplay.UITests.runtimeconfig.json')
+      }
 
-      if ($runGenericUiTests -and -not $entries -and ($matchedEntries -eq 0 -or $env:EXCLUDE_UMDF_HID_SUITE -ne 'true')) {
+      if ($runGenericUiTests -and -not $entries -and ($matchedEntries -eq 0 -or
+          ($env:EXCLUDE_UMDF_HID_SUITE -ne 'true' -and $env:EXCLUDE_UMDF_DISPLAY_SUITE -ne 'true'))) {
         Write-Host "##vso[task.logissue type=error]No UI test runners matched (modules: '$modulesRaw') under $artifactRoot"
         exit 1
       }
@@ -537,7 +553,7 @@ jobs:
       $resultsDir = "$(Common.TestResultsDirectory)"
       New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
 
-      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'Workspaces.UITests.Next')
+      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'PowerDisplay.UITests', 'Workspaces.UITests.Next')
       . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
       $locationStatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\LightSwitchLocation.json"
       $failed = 0
@@ -550,6 +566,21 @@ jobs:
         Write-Host "##[group]Run UI tests: $base"
         Push-Location $dir
         try {
+          if ($base -eq 'PowerDisplay.UITests') {
+            Write-Host "##vso[task.setvariable variable=UmdfDisplayRequested]true"
+            $displayArguments = @{
+              StatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\UmdfDisplay.json"
+              ResultsDirectory = Join-Path $resultsDir 'umdf-display'
+              IsolatedGuest = $true
+            }
+            if (Test-Path -LiteralPath $displayArguments.StatePath) {
+              & "$(Build.SourcesDirectory)\.pipelines\powerdisplay-idd-poc\Manage-Poc.ps1" -Action Cleanup @displayArguments
+            }
+            $displayArtifact = Join-Path $artifactRoot 'powerdisplay-idd\$(BuildPlatform)'
+            & "$(Build.SourcesDirectory)\.pipelines\powerdisplay-idd-poc\Manage-Poc.ps1" `
+              -Action Install -ArtifactDirectory $displayArtifact @displayArguments
+            $env:POWERTOYS_POWERDISPLAY_IDD_PROBE = Join-Path $displayArtifact 'driver\IddProbe.exe'
+          }
           if ($base -eq 'GrabAndMove.UITests') {
             Write-Host "##vso[task.setvariable variable=UmdfHidRequested]true"
             $hidArguments = @{
@@ -592,6 +623,18 @@ jobs:
           $suiteFailed = $true
         } finally {
           try {
+            if ($base -eq 'PowerDisplay.UITests') {
+              try {
+                if (Test-Path -LiteralPath $displayArguments.StatePath) {
+                  & "$(Build.SourcesDirectory)\.pipelines\powerdisplay-idd-poc\Manage-Poc.ps1" -Action Cleanup @displayArguments
+                }
+              } catch {
+                Write-Host "##vso[task.logissue type=error]Virtual monitor cleanup failed: $($_.Exception.Message)"
+                $suiteFailed = $true
+              } finally {
+                Remove-Item Env:\POWERTOYS_POWERDISPLAY_IDD_PROBE -ErrorAction SilentlyContinue
+              }
+            }
             if ($base -eq 'GrabAndMove.UITests') {
               try {
                 & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Manage-SmokeDriver.ps1" `
@@ -644,6 +687,10 @@ jobs:
         Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: explicitly selected GrabAndMove.UITests requires the configured dedicated ARM64 UMDF pool/image. No boot policies are changed; other selected suites run independently."
         $failed++
       }
+      if ($env:UMDF_DISPLAY_SELECTION_BLOCKED -eq 'true') {
+        Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: PowerDisplay.UITests requires the isolated architecture-matched UMDF image. No boot policies are changed."
+        $failed++
+      }
       if ($failed -gt 0) {
         Write-Host "##vso[task.logissue type=error]$failed UI test project(s) reported failures."
         exit 1
@@ -661,6 +708,8 @@ jobs:
       MWB_SELECTION_BLOCKED: $(MwbSelectionBlocked)
       EXCLUDE_UMDF_HID_SUITE: $(ExcludeUmdfHidSuite)
       UMDF_HID_SELECTION_BLOCKED: $(UmdfHidSelectionBlocked)
+      EXCLUDE_UMDF_DISPLAY_SUITE: $(ExcludeUmdfDisplaySuite)
+      UMDF_DISPLAY_SELECTION_BLOCKED: $(UmdfDisplaySelectionBlocked)
       ${{ if eq(parameters.autoSelectUiTests, true) }}:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 
@@ -668,6 +717,16 @@ jobs:
       $ErrorActionPreference = 'Stop'
       $failures = 0
       $hidState = "$(Agent.WorkFolder)\PowerToysUiTestState\UmdfHidSmoke.json"
+      $displayState = "$(Agent.WorkFolder)\PowerToysUiTestState\UmdfDisplay.json"
+      if (Test-Path -LiteralPath $displayState) {
+        try {
+          & "$(Build.SourcesDirectory)\.pipelines\powerdisplay-idd-poc\Manage-Poc.ps1" `
+            -Action Cleanup -IsolatedGuest -StatePath $displayState -ResultsDirectory "$(Common.TestResultsDirectory)\umdf-display"
+        } catch {
+          Write-Host "##vso[task.logissue type=error]Virtual monitor prerequisite cleanup failed: $($_.Exception.Message)"
+          $failures++
+        }
+      }
       if (Test-Path -LiteralPath $hidState) {
         try {
           & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Manage-SmokeDriver.ps1" `
@@ -702,6 +761,13 @@ jobs:
       RUN_MWB_SANDBOX: $(RunMwbSandbox)
 
   # Preserve pre-TRX/cancellation evidence before potentially lengthy recording uploads.
+  - task: PublishPipelineArtifact@1
+    displayName: Publish virtual monitor readiness and cleanup evidence
+    condition: and(always(), eq(variables['UmdfDisplayRequested'], 'true'))
+    inputs:
+      targetPath: '$(Common.TestResultsDirectory)\umdf-display'
+      artifactName: umdf-display-$(TestPlatform)-$(System.JobId)
+
   - task: PublishPipelineArtifact@1
     displayName: Publish virtual HID readiness and cleanup evidence
     condition: and(always(), eq(variables['UmdfHidRequested'], 'true'))

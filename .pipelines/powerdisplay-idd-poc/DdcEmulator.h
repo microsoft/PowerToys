@@ -12,6 +12,7 @@ struct DdcEmulator
     std::array<BYTE, 64> Reply{};
     size_t ReplyLength = 0;
     static constexpr char Capabilities[] = "(prot(monitor)type(lcd)model(PT-IDD-POC)cmds(01 03 F3)vcp(10)mccs_ver(2.2))";
+    static constexpr char UnsupportedCapabilities[] = "(prot(monitor)type(lcd)model(PT-IDD-POC)cmds(01 03 F3)vcp()mccs_ver(2.2))";
 
     void SetReply(const BYTE* payload, size_t count)
     {
@@ -39,6 +40,11 @@ struct DdcEmulator
             memcpy(Snapshot.LastTransmit, data, length < sizeof(Snapshot.LastTransmit) ? length : sizeof(Snapshot.LastTransmit));
         }
         ReplyLength = 0;
+        if (Snapshot.Mode == FixtureMode::CommunicationFailure)
+        {
+            ++Snapshot.Failures;
+            return false;
+        }
         // The native callbacks use wire addresses despite the SevenBitI2CAddress field name.
         if (address != 0x6e || !data || length < 4 || length > 64)
         {
@@ -61,11 +67,12 @@ struct DdcEmulator
         if (data[2] == 0x01 && count == 2)
         {
             ++Snapshot.Gets;
-            const BYTE payload[] = { 0x02, static_cast<BYTE>(data[3] == 0x10 ? 0 : 1), data[3], 0, 0, 100, 0, static_cast<BYTE>(Snapshot.Brightness) };
+            const BYTE payload[] = { 0x02, static_cast<BYTE>(data[3] == 0x10 && Snapshot.Mode != FixtureMode::NoBrightness ? 0 : 1), data[3], 0, 0, 100, 0, static_cast<BYTE>(Snapshot.Brightness) };
             SetReply(payload, sizeof(payload));
             return true;
         }
-        if (data[2] == 0x03 && count == 4 && data[3] == 0x10 && data[4] == 0 && data[5] <= 100)
+        if (data[2] == 0x03 && count == 4 && data[3] == 0x10 && data[4] == 0 && data[5] <= 100 &&
+            Snapshot.Mode != FixtureMode::NoBrightness)
         {
             ++Snapshot.Sets;
             Snapshot.Brightness = data[5];
@@ -74,15 +81,17 @@ struct DdcEmulator
         if (data[2] == 0xf3 && count == 3)
         {
             const size_t offset = (static_cast<size_t>(data[3]) << 8) | data[4];
-            if (offset > sizeof(Capabilities) - 1)
+            const char* capabilities = Snapshot.Mode == FixtureMode::NoBrightness ? UnsupportedCapabilities : Capabilities;
+            const size_t size = strlen(capabilities);
+            if (offset > size)
             {
                 return false;
             }
             ++Snapshot.Capabilities;
             BYTE payload[35] = { 0xe3, data[3], data[4] };
-            const size_t remaining = sizeof(Capabilities) - 1 - offset;
+            const size_t remaining = size - offset;
             const size_t bytes = (remaining < 32) ? remaining : 32;
-            memcpy(payload + 3, Capabilities + offset, bytes);
+            memcpy(payload + 3, capabilities + offset, bytes);
             SetReply(payload, bytes + 3);
             return true;
         }
@@ -94,6 +103,11 @@ struct DdcEmulator
         ++Snapshot.Receives;
         Snapshot.LastReceiveAddress = address;
         Snapshot.LastReceiveLength = static_cast<ULONG>(length);
+        if (Snapshot.Mode == FixtureMode::CommunicationFailure)
+        {
+            ++Snapshot.Failures;
+            return false;
+        }
         if (address != 0x6f || !data || length == 0 || length > 64 || ReplyLength == 0)
         {
             return false;

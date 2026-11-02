@@ -18,15 +18,50 @@ diff --git a/video/IndirectDisplay/IddSampleDriver/Driver.cpp b/video/IndirectDi
 +    if (!NT_SUCCESS(Status)) return Status;
 +    Status = FixtureInitialize(Device);
 +    if (!NT_SUCCESS(Status)) return Status;
-@@ -585,1 +590,2 @@
+@@ -538,1 +544,1 @@
+-void IndirectDeviceContext::FinishInit(UINT ConnectorIndex)
++NTSTATUS IndirectDeviceContext::FinishInit(UINT ConnectorIndex)
+@@ -549,1 +555,5 @@
+     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&Attr, IndirectMonitorContextWrapper);
++    Attr.EvtCleanupCallback = [](WDFOBJECT Object)
++    {
++        WdfObjectGet_IndirectMonitorContextWrapper(Object)->Cleanup();
++    };
+@@ -585,1 +595,2 @@
 -    CoCreateGuid(&MonitorInfo.MonitorContainerId);
 +    MonitorInfo.MonitorContainerId = { 0x51800000 + ConnectorIndex, 0x4abc, 0x4321,
 +        { 0x90, 0x10, 0x50, 0x54, 0x49, 0x44, 0x44, 0x01 } };
-@@ -593,1 +600,7 @@
+@@ -593,1 +604,7 @@
          pMonitorContextWrapper->pContext = new IndirectMonitorContext(MonitorCreateOut.MonitorObject);
 +        Status = FixtureAttach(MonitorCreateOut.MonitorObject, ConnectorIndex);
 +        if (!NT_SUCCESS(Status))
 +        {
 +            WdfObjectDelete(MonitorCreateOut.MonitorObject);
-+            return;
++            return Status;
 +        }
+@@ -600,3 +617,8 @@
+         Status = IddCxMonitorArrival(MonitorCreateOut.MonitorObject, &ArrivalOut);
++        if (NT_SUCCESS(Status))
++            FixtureMonitorArrived(MonitorCreateOut.MonitorObject, ConnectorIndex);
++        else
++            WdfObjectDelete(MonitorCreateOut.MonitorObject);
+     }
++    return Status;
+ }
+@@ -646,2 +668,6 @@
+     if (NT_SUCCESS(pInArgs->AdapterInitStatus))
+     {
++        FixtureAdapterReady(AdapterObject, [](IDDCX_ADAPTER adapter, UINT connector) -> NTSTATUS
++        {
++            return WdfObjectGet_IndirectDeviceContextWrapper(adapter)->pContext->FinishInit(connector);
++        });
+@@ -650,1 +676,2 @@
+-            pDeviceContextWrapper->pContext->FinishInit(i);
++            const auto status = pDeviceContextWrapper->pContext->FinishInit(i);
++            if (!NT_SUCCESS(status)) return status;
+diff --git a/video/IndirectDisplay/IddSampleDriver/Driver.h b/video/IndirectDisplay/IddSampleDriver/Driver.h
+--- a/video/IndirectDisplay/IddSampleDriver/Driver.h
++++ b/video/IndirectDisplay/IddSampleDriver/Driver.h
+@@ -101,1 +101,1 @@
+-            void FinishInit(UINT ConnectorIndex);
++            NTSTATUS FinishInit(UINT ConnectorIndex);

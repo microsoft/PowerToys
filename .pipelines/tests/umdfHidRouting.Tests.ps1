@@ -54,7 +54,9 @@ Describe 'Dedicated ARM64 virtual HID routing' {
         $wrapper | Should Match "resolve.hasNonUmdfHidUiTests'\], 'true'"
         $wrapper | Should Match 'routeUmdfHidArm64: \$\{\{ ne\(parameters.umdfHidArm64Image'
         # Preserve the producer's artifact-name casing, rather than silently forcing ARM64.
-        ([regex]::Matches($wrapper, 'platform: \$\{\{ parameters.platform \}\}')).Count | Should Be 2
+        $dedicated | Should Match 'uiTestModules: \[PowerDisplay.UITests\]'
+        $dedicated | Should Match 'jobSuffix: \$\{\{ parameters.jobSuffix \}\}_UmdfDisplay'
+        ([regex]::Matches($wrapper, 'platform: \$\{\{ parameters.platform \}\}')).Count | Should Be 3
     }
 
     It 'separates all full/reused-product and PR ARM64 entry points' {
@@ -93,6 +95,8 @@ Describe 'Dedicated ARM64 virtual HID routing' {
         @{ Modules = @('GrabAndMove.UITests'); Hid = 'true'; Other = 'false' }
         @{ Modules = @('Other.UITests'); Hid = 'false'; Other = 'true' }
         @{ Modules = @('GrabAndMove.UITests', 'Other.UITests'); Hid = 'true'; Other = 'true' }
+        @{ Modules = @('PowerDisplay.UITests'); Hid = 'false'; Other = 'false' }
+        @{ Modules = @('GrabAndMove.UITests', 'PowerDisplay.UITests'); Hid = 'true'; Other = 'false' }
     ) {
         param($Modules, $Hid, $Other)
         $resolve = Get-Content (Join-Path $templates 'job-resolve-ui-tests.yml') -Raw

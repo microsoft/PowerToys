@@ -30,7 +30,7 @@ AddReg=Hardware
 [Hardware]
 HKR,,"UpperFilters",0x00010000,"IndirectKmd"
 HKR,"WUDF","DeviceGroupId",0x00000000,"PowerToysDisplayIddPoc"
-HKR,,"Security",0x00000000,"D:P(A;;GA;;;SY)(A;;GA;;;BA)(A;;GR;;;BU)"
+HKR,,"Security",0x00000000,"D:P(A;;GA;;;SY)(A;;GA;;;BA)(A;;GRGW;;;BU)"
 
 [Install.NT.Services]
 AddService=WUDFRd,0x000001fa,WUDFRD_Service

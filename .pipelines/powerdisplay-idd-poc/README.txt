@@ -1,8 +1,9 @@
-Power Display IDD feasibility POC (issue #51800)
-==============================================
+Power Display virtual monitor fixture (issue #51800)
+===================================================
 
-This is a test-only feasibility spike, not the complete virtual-monitor fixture
-or a shipping PowerToys component. It does not modify product code, installers,
+This is a test-only UMDF/IddCx fixture, not a shipping PowerToys component.
+The initial feasibility milestone is commit 2d94623123. Follow-ups add controlled
+hot-plug and fault modes plus the module's actual UI tests. It does not modify product code, installers,
 boot policy, host trust, or ordinary CI images.
 
 Result
@@ -16,7 +17,7 @@ The signed UMDF/IddCx package loads with Secure Boot enabled and TESTSIGNING
 absent. It creates two distinct sample-EDID monitors with fixed container IDs.
 Dxva2 capabilities and VCP 0x10 set/readback reach the real IddCx callbacks.
 Independent brightness values 31 and 73 are observed by the driver; the probe
-restores the original 40 and 60. Six protocol test groups pass on each OS.
+restores the original 40 and 60. The extended emulator has eight protocol groups.
 x64 and ARM64 Release builds/catalog generation pass. ARM64 runtime is untested.
 
 The production probe uses the unchanged Power Display MonitorManager:
@@ -99,6 +100,60 @@ known-good-observation cache; it does not inject a monitor/DDC backend. Producti
 Logger output is captured on stderr without COM-dependent app log-path setup.
 These probes emit assertion-bearing JSON; they are not an MSTest/UI suite.
 
+Monitor controls and state
+--------------------------
+
+Protocol version 2 exposes the following commands through the test-only device
+interface. The package grants read/write access to the guest's standard users;
+installation and owned cleanup still require the separate elevated channel.
+
+  IddProbe.exe --connected 0 0     Disconnect connector 0
+  IddProbe.exe --connected 0 1     Reconnect the same monitor
+  IddProbe.exe --mode 1 0          Normal DDC/CI
+  IddProbe.exe --mode 1 1          No advertised/supported brightness capability
+  IddProbe.exe --mode 1 2          Fail I2C transmit/receive with a failure counter
+
+Only connectors 0 and 1 are valid. Invalid commands fail explicitly. Arrival
+and departure use IddCxMonitorArrival/IddCxMonitorDeparture, not disabled windows
+or a substituted product backend. Brightness, mode and counters survive a
+monitor's departure/arrival within the running driver; a new adapter/device
+starts a new fixture lifetime. Snapshot JSON includes Connected, Mode, Failures,
+Arrivals, Departures, successful Get/Set counts and the last I2C request.
+
+Full module UI suite
+--------------------
+
+Build the existing PowerDisplay.UITests project with tools\build\build.cmd.
+Run its executable on the standard-user console with the fixture installed:
+
+  $env:POWERTOYS_POWERDISPLAY_IDD_PROBE = 'C:\IddPoc\artifact\driver\IddProbe.exe'
+  $env:POWERTOYS_INSTALL_DIR = 'C:\PowerToysUiTestRun\PowerToys'
+  PowerDisplay.UITests.exe --report-trx --results-directory C:\IddPoc\ui-results
+
+The complete suite contains 13 tests, including five cases tagged
+PowerDisplayVirtualMonitors. Those cases FAIL if the fixture is missing; they
+never silently skip or use a fake monitor controller. They verify independent
+brightness with driver callbacks, stable IDs/readback after Refresh, per-monitor
+hot-plug, the no-supported-monitors state, unsupported brightness and rejection
+of a hardware write without persisting false success. The existing Identify
+test checks one overlay on each connected Windows display, including the
+fixture displays. Require all 13 executed and passed, with zero skipped.
+
+Settings intentionally retains disconnected monitor records for 30 days.
+The live inventory assertion reads actual flyout controls, not that retained
+cache. Numeric slider reads use the Windows UIA RangeValuePattern because the
+pinned winapp get-value returns a Slider's accessible text rather than its
+range value. Actions remain real UIA slider writes; the test's WPF reference
+provides UIAutomationClient only and does not change the product UI stack.
+
+Use the ui-tests-local-vm workflow for full Windows 10/11 Default (4 vCPU/8 GB)
+and Constrained (1 vCPU/4 GB) passes. Inspect the ACTUAL VM resource settings,
+not just the request label, when reusing an already running guest. The internal
+UI-test pipeline builds/provisions the fixture for PowerDisplay.UITests and
+routes ARM64 to the existing isolated TESTSIGNING image in a separate
+_UmdfDisplay job. It never changes boot policy and always exports owned cleanup
+evidence. ARM64 build success alone is not an ARM64 load/routing verdict.
+
 Always run elevated owned cleanup, including after a failed test:
 
   pwsh C:\IddPoc\Manage-Poc.ps1 -Action Cleanup -IsolatedGuest `
@@ -110,15 +165,11 @@ topology/trust recovery, then stop the guest and remove only that checkpoint.
 An interrupted run retains its journal for cleanup with the original bundle.
 Do not delete the journal or remove unrelated packages/certificates.
 
-Remaining issue gates
----------------------
+Coverage boundaries
+--------------------
 
-No Power Display UI signoff, per-monitor hot-plug control, identify-overlay
-coverage, persistence across driver restart, failure-mode injection, constrained
-resource matrix or remote CI is claimed. Arrival occurs at adapter startup and
-departure at owned device removal. No ARM64 driver-load result is claimed.
-The full UI matrix/publication gate is not reached.
-
-This POC establishes native transport and production discovery feasibility.
-The remaining fixture/test-suite work is separate from this spike. No injectable
+This fixture does not prove a physical panel's backlight, the WMI hardware path,
+physical mixed-DPI signoff or persistence across driver/device restart. Runtime
+and CI claims require their corresponding TRX, payload hashes, PnP/signing-policy
+evidence and cleanup reports; compilation is not a substitute. No injectable
 monitor backend, production filter bypass or shipping behavior change is used.

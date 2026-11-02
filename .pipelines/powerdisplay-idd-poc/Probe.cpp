@@ -62,7 +62,7 @@ namespace
         std::cout << "{\"Created\":true}\n";
     }
 
-    void OpenFixture(Handle& handle)
+    void OpenFixture(Handle& handle, bool control = false)
     {
         DeviceSet devices{ SetupDiGetClassDevsW(&FixtureInterface, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE) };
         Require(devices.Value != INVALID_HANDLE_VALUE, "Find fixture interface");
@@ -75,7 +75,7 @@ namespace
         auto* detail = reinterpret_cast<SP_DEVICE_INTERFACE_DETAIL_DATA_W*>(buffer.data());
         detail->cbSize = sizeof(*detail);
         Require(SetupDiGetDeviceInterfaceDetailW(devices.Value, &iface, detail, length, nullptr, nullptr), "Get fixture interface");
-        handle.Value = CreateFileW(detail->DevicePath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
+        handle.Value = CreateFileW(detail->DevicePath, control ? GENERIC_READ | GENERIC_WRITE : GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
         Require(handle.Value != INVALID_HANDLE_VALUE, "Open fixture");
     }
 
@@ -84,8 +84,15 @@ namespace
         FixtureSnapshot value{};
         DWORD bytes = 0;
         Require(DeviceIoControl(device, SnapshotIoctl, nullptr, 0, &value, sizeof(value), &bytes, nullptr), "Read callback evidence");
-        Require(bytes == sizeof(value) && value.Version == 1, "Validate snapshot version");
+        Require(bytes == sizeof(value) && value.Version == ProtocolVersion, "Validate snapshot version");
         return value;
+    }
+
+    void Control(HANDLE device, ULONG connector, FixtureOperation operation, ULONG value)
+    {
+        FixtureCommand command{ ProtocolVersion, connector, operation, value };
+        DWORD bytes = 0;
+        Require(DeviceIoControl(device, ControlIoctl, &command, sizeof(command), nullptr, 0, &bytes, nullptr), "Apply fixture command");
     }
 
     void WriteSnapshot(const FixtureSnapshot& value)
@@ -113,7 +120,11 @@ namespace
                 std::cout << static_cast<UINT>(m.LastTransmit[j]);
             }
             std::cout << "],\"LastReceiveAddress\":" << m.LastReceiveAddress
-                      << ",\"LastReceiveLength\":" << m.LastReceiveLength << '}';
+                      << ",\"LastReceiveLength\":" << m.LastReceiveLength
+                      << ",\"Connected\":" << (m.Connected ? "true" : "false")
+                      << ",\"Mode\":" << static_cast<ULONG>(m.Mode)
+                      << ",\"Failures\":" << m.Failures << ",\"Arrivals\":" << m.Arrivals
+                      << ",\"Departures\":" << m.Departures << '}';
         }
         std::cout << "]}";
     }
@@ -297,7 +308,7 @@ int wmain(int argc, wchar_t** argv)
 {
     try
     {
-        Require(argc == 2, "Use --create, --snapshot, --self-test, --diagnose, or --probe");
+        Require(argc >= 2, "Use --create, --snapshot, --self-test, --diagnose, --probe, --connected, or --mode");
         if (wcscmp(argv[1], L"--self-test") == 0)
         {
             RunProtocolTests();
@@ -309,8 +320,19 @@ int wmain(int argc, wchar_t** argv)
         else
         {
             Handle fixture;
-            OpenFixture(fixture);
-            if (wcscmp(argv[1], L"--snapshot") == 0)
+            const bool connected = wcscmp(argv[1], L"--connected") == 0;
+            const bool mode = wcscmp(argv[1], L"--mode") == 0;
+            OpenFixture(fixture, connected || mode);
+            if (connected || mode)
+            {
+                Require(argc == 4 && wcslen(argv[2]) == 1 && argv[2][0] >= L'0' && argv[2][0] <= L'1' &&
+                            wcslen(argv[3]) == 1 && argv[3][0] >= L'0' && argv[3][0] <= (connected ? L'1' : L'2'),
+                        "Invalid connector or fixture control value");
+                Control(fixture.Value, argv[2][0] - L'0', connected ? FixtureOperation::SetConnected : FixtureOperation::SetMode, argv[3][0] - L'0');
+                WriteSnapshot(Snapshot(fixture.Value));
+                std::cout << '\n';
+            }
+            else if (wcscmp(argv[1], L"--snapshot") == 0)
             {
                 WriteSnapshot(Snapshot(fixture.Value));
                 std::cout << '\n';

@@ -69,6 +69,12 @@ parameters:
   - name: prepareUmdfHid
     type: boolean
     default: false
+  - name: prepareUmdfDisplay
+    type: boolean
+    default: false
+  - name: umdfDisplayCondition
+    type: string
+    default: succeeded()
   - name: umdfHidCondition
     type: string
     default: succeeded()
@@ -772,6 +778,11 @@ jobs:
     - template: steps-build-umdf-hid.yml
       parameters:
         condition: ${{ parameters.umdfHidCondition }}
+
+  - ${{ if eq(parameters.prepareUmdfDisplay, true) }}:
+    - template: steps-build-umdf-display.yml
+      parameters:
+        condition: ${{ parameters.umdfDisplayCondition }}
 
   - ${{ if eq(parameters.publishArtifacts, true) }}:
     - publish: $(JobOutputDirectory)

@@ -8,14 +8,16 @@ function Get-UmdfHidUiTestSelection {
         [string]$Platform,
         [bool]$AutoSelect = $false,
         [bool]$RouteArm64 = $false,
-        [bool]$DedicatedArm64 = $false
+        [bool]$DedicatedArm64 = $false,
+        [ValidateSet('GrabAndMove.UITests', 'PowerDisplay.UITests')]
+        [string]$FixtureModule = 'GrabAndMove.UITests'
     )
     if ($DedicatedArm64 -and ($Platform -ne 'ARM64' -or $AutoSelect -or
-        $Modules.Count -ne 1 -or $Modules[0] -ne 'GrabAndMove.UITests')) {
-        throw 'The dedicated ARM64 UMDF job must select exactly GrabAndMove.UITests without PR auto-selection.'
+        $Modules.Count -ne 1 -or $Modules[0] -notin @('GrabAndMove.UITests', 'PowerDisplay.UITests'))) {
+        throw 'The dedicated ARM64 UMDF job must select exactly one supported fixture suite without PR auto-selection.'
     }
 
-    $explicit = 'GrabAndMove.UITests' -in $Modules
+    $explicit = $FixtureModule -in $Modules
     $selected = $Modules.Count -eq 0 -or $explicit
     $supported = $Platform -in @('x64', 'x64Win10', 'x64Win11') -or $DedicatedArm64
     $routed = $selected -and $Platform -eq 'ARM64' -and $RouteArm64 -and -not $DedicatedArm64

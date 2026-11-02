@@ -138,6 +138,9 @@ try {
             throw "Invalid package signature: $file"
         }
     }
+    & (Join-Path $driver 'IddProbe.exe') --self-test |
+        Set-Content (Join-Path $ResultsDirectory 'protocol-tests.json')
+    if ($LASTEXITCODE) { throw 'The architecture-matched fixture protocol tests failed.' }
     & (Join-Path $driver 'IddProbe.exe') --create
     if ($LASTEXITCODE) { throw 'Root-device creation failed.' }
     & pnputil.exe /add-driver (Join-Path $driver 'PtDisplayIdd.inf') /install
@@ -151,6 +154,13 @@ try {
         Start-Sleep -Milliseconds 500
     } while ((Get-Date) -lt $deadline)
     $secureBoot = try { Confirm-SecureBootUEFI } catch { Write-Warning $_; $_.Exception.Message }
+    $publishedInfs = @(Find-OwnedInfs)
+    $selectedInf = if ($device -and $device.Status -eq 'OK') {
+        (Get-PnpDeviceProperty -InstanceId $device.InstanceId -KeyName DEVPKEY_Device_DriverInfPath).Data
+    } else { $null }
+    $driverVersion = if ($device -and $device.Status -eq 'OK') {
+        (Get-PnpDeviceProperty -InstanceId $device.InstanceId -KeyName DEVPKEY_Device_DriverVersion).Data
+    } else { $null }
     [ordered]@{
         Build = $build
         Hashes = $hashes
@@ -161,13 +171,32 @@ try {
         InstallExit = $installExit
         Devices = $devices | Select-Object InstanceId, Status
         ProblemCode = $problem
-        PublishedInfs = @(Find-OwnedInfs)
+        PublishedInfs = $publishedInfs
+        SelectedInf = $selectedInf
+        DriverVersion = $driverVersion
     } | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $ResultsDirectory 'install.json')
     if ($installExit -ne 0 -or -not $device -or $device.Status -ne 'OK' -or $problem -ne 0) {
         throw "BLOCKED: IDD load failed; install=$installExit status=$($device.Status) problem=$problem."
     }
-    & (Join-Path $driver 'IddProbe.exe') --snapshot | Set-Content (Join-Path $ResultsDirectory 'initial-snapshot.json')
-    if ($LASTEXITCODE) { throw 'BLOCKED: Read-only callback evidence interface unavailable.' }
+    if ($selectedInf -notin $publishedInfs -or $driverVersion -ne $build.DriverVersion) {
+        throw 'BLOCKED: Windows did not bind the newly owned architecture-matched fixture package.'
+    }
+    $snapshotPath = Join-Path $ResultsDirectory 'initial-snapshot.json'
+    $deadline = (Get-Date).AddSeconds(30)
+    do {
+        $snapshotJson = & (Join-Path $driver 'IddProbe.exe') --snapshot 2> (Join-Path $ResultsDirectory 'snapshot-readiness-error.txt')
+        $snapshotExit = $LASTEXITCODE
+        $ready = $false
+        if ($snapshotExit -eq 0) {
+            $snapshot = $snapshotJson | ConvertFrom-Json
+            $ready = $snapshot.Version -eq 2 -and @($snapshot.Monitors).Count -eq 2 -and
+                @($snapshot.Monitors | Where-Object { -not $_.Connected }).Count -eq 0
+        }
+        $snapshotJson | Set-Content $snapshotPath
+        if ($ready) { break }
+        Start-Sleep -Milliseconds 250
+    } while ((Get-Date) -lt $deadline)
+    if (-not $ready) { throw 'BLOCKED: The fixture did not finish adapter initialization and both monitor arrivals.' }
 }
 catch {
     $failure = $_

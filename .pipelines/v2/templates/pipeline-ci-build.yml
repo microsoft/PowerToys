@@ -94,6 +94,7 @@ stages:
             buildTests: true
             prepareMwbRuntime: ${{ and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}
             prepareUmdfHid: ${{ and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(parameters.umdfHidArm64Image, 'disabled')))) }}
+            prepareUmdfDisplay: ${{ and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(parameters.umdfHidArm64Image, 'disabled')))) }}
             ${{ if and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(parameters.umdfHidArm64Image, 'disabled')))) }}:
               dependsOn:
                 - Resolve
@@ -102,8 +103,10 @@ stages:
               variables:
                 MwbSandboxSelected: $[ dependencies.Resolve.outputs['resolve.hasMwbUiTests'] ]
                 UmdfHidSelected: $[ dependencies.Resolve.outputs['resolve.hasUmdfHidUiTests'] ]
+                UmdfDisplaySelected: $[ dependencies.Resolve.outputs['resolve.hasUmdfDisplayUiTests'] ]
               mwbRuntimeCondition: and(succeeded(), eq(variables['MwbSandboxSelected'], 'true'))
               umdfHidCondition: and(succeeded(), eq(variables['UmdfHidSelected'], 'true'))
+              umdfDisplayCondition: and(succeeded(), eq(variables['UmdfDisplaySelected'], 'true'))
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
             ${{ if eq(parameters.useLatestWinAppSDK, true) }}:

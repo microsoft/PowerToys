@@ -94,11 +94,28 @@ Describe 'Virtual HID suite selection' {
     ) {
         param($Case, $Platform, $Modules, $Auto)
         { Get-UmdfHidUiTestSelection -Modules $Modules -Platform $Platform -AutoSelect $Auto -DedicatedArm64 $true } |
-            Should Throw 'must select exactly GrabAndMove.UITests'
+            Should Throw 'must select exactly one supported fixture suite'
     }
 
     It 'accepts the preconfigured dedicated English-language ARM64 image' {
         Assert-UmdfHidArm64TestEnvironment -OsArchitecture ARM64 -BootConfiguration "Windows Boot Loader`r`ntestsigning             Yes`r`n"
+    }
+
+    It 'routes Power Display through its own dedicated ARM64 fixture job' {
+        $selection = Get-UmdfHidUiTestSelection -Modules 'PowerDisplay.UITests' -FixtureModule 'PowerDisplay.UITests' -Platform ARM64 -RouteArm64 $true
+        $selection.Routed | Should Be $true
+        $selection.Run | Should Be $false
+        $selection.Blocked | Should Be $false
+        $dedicated = Get-UmdfHidUiTestSelection -Modules 'PowerDisplay.UITests' -FixtureModule 'PowerDisplay.UITests' -Platform ARM64 -DedicatedArm64 $true
+        $dedicated.Run | Should Be $true
+        (Get-UmdfHidUiTestSelection -Modules 'PowerDisplay.UITests' -Platform ARM64 -DedicatedArm64 $true).Run | Should Be $false
+    }
+
+    It 'blocks explicit Power Display selection when its ARM64 isolated image is unavailable' {
+        $selection = Get-UmdfHidUiTestSelection -Modules 'PowerDisplay.UITests' -FixtureModule 'PowerDisplay.UITests' -Platform ARM64
+        $selection.Blocked | Should Be $true
+        $selection.Exclude | Should Be $true
+        (Get-UmdfHidUiTestSelection -Modules 'PowerDisplay.UITests' -FixtureModule 'PowerDisplay.UITests' -Platform x64Win10).Run | Should Be $true
     }
 
     It 'rejects an unprepared dedicated image <Case>' -TestCases @(

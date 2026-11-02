@@ -17,7 +17,61 @@ namespace
 
     // This prototype creates exactly one adapter per UMDF host.
     std::mutex gate;
+    std::mutex controlGate;
     DdcEmulator states[2];
+    IDDCX_MONITOR monitors[2]{};
+    IDDCX_ADAPTER fixtureAdapter{};
+    FixtureArrivalCallback arriveMonitor{};
+
+    NTSTATUS ApplyCommand(const FixtureCommand& command)
+    {
+        if (command.Version != ProtocolVersion || command.Connector >= 2 ||
+            (command.Operation != FixtureOperation::SetConnected && command.Operation != FixtureOperation::SetMode) ||
+            (command.Operation == FixtureOperation::SetConnected && command.Value > 1) ||
+            (command.Operation == FixtureOperation::SetMode && command.Value > static_cast<ULONG>(FixtureMode::CommunicationFailure)))
+        {
+            return STATUS_INVALID_PARAMETER;
+        }
+        std::lock_guard controlLock(controlGate);
+        IDDCX_MONITOR monitor{};
+        IDDCX_ADAPTER adapter{};
+        FixtureArrivalCallback callback{};
+        {
+            std::lock_guard lock(gate);
+            auto& state = states[command.Connector];
+            if (command.Operation == FixtureOperation::SetMode)
+            {
+                state.Snapshot.Mode = static_cast<FixtureMode>(command.Value);
+                state.ReplyLength = 0;
+                return STATUS_SUCCESS;
+            }
+            monitor = monitors[command.Connector];
+            if ((monitor != nullptr) == (command.Value != 0))
+            {
+                return STATUS_SUCCESS;
+            }
+            adapter = fixtureAdapter;
+            callback = arriveMonitor;
+        }
+        if (!adapter || !callback)
+        {
+            return STATUS_DEVICE_NOT_READY;
+        }
+        // Arrival/departure can wait for I2C callbacks; never hold their state lock.
+        if (command.Value != 0)
+        {
+            return callback(adapter, command.Connector);
+        }
+        const auto status = IddCxMonitorDeparture(monitor);
+        if (NT_SUCCESS(status))
+        {
+            std::lock_guard lock(gate);
+            monitors[command.Connector] = nullptr;
+            states[command.Connector].Snapshot.Connected = 0;
+            ++states[command.Connector].Snapshot.Departures;
+        }
+        return status;
+    }
 }
 
 NTSTATUS FixtureInitialize(WDFDEVICE device)
@@ -28,8 +82,26 @@ NTSTATUS FixtureInitialize(WDFDEVICE device)
         states[i] = {};
         states[i].Snapshot.Connector = i;
         states[i].Snapshot.Brightness = 40 + i * 20;
+        monitors[i] = nullptr;
     }
+    fixtureAdapter = nullptr;
+    arriveMonitor = nullptr;
     return WdfDeviceCreateDeviceInterface(device, &FixtureInterface, nullptr);
+}
+
+void FixtureAdapterReady(IDDCX_ADAPTER adapter, FixtureArrivalCallback arrive)
+{
+    std::lock_guard lock(gate);
+    fixtureAdapter = adapter;
+    arriveMonitor = arrive;
+}
+
+void FixtureMonitorArrived(IDDCX_MONITOR monitor, UINT connector)
+{
+    std::lock_guard lock(gate);
+    monitors[connector] = monitor;
+    states[connector].Snapshot.Connected = 1;
+    ++states[connector].Snapshot.Arrivals;
 }
 
 NTSTATUS FixtureAttach(IDDCX_MONITOR monitor, UINT connector)
@@ -74,6 +146,13 @@ _Use_decl_annotations_ void FixtureIoControl(WDFDEVICE device, WDFREQUEST reques
 {
     UNREFERENCED_PARAMETER(device);
     UNREFERENCED_PARAMETER(outputLength);
+    if (code == ControlIoctl && inputLength == sizeof(FixtureCommand))
+    {
+        FixtureCommand* command = nullptr;
+        const auto status = WdfRequestRetrieveInputBuffer(request, sizeof(FixtureCommand), reinterpret_cast<void**>(&command), nullptr);
+        WdfRequestComplete(request, NT_SUCCESS(status) ? ApplyCommand(*command) : status);
+        return;
+    }
     if (code != SnapshotIoctl || inputLength != 0)
     {
         WdfRequestComplete(request, STATUS_INVALID_DEVICE_REQUEST);
@@ -88,7 +167,7 @@ _Use_decl_annotations_ void FixtureIoControl(WDFDEVICE device, WDFREQUEST reques
     }
     {
         std::lock_guard lock(gate);
-        *snapshot = { 1, { states[0].Snapshot, states[1].Snapshot } };
+        *snapshot = { ProtocolVersion, { states[0].Snapshot, states[1].Snapshot } };
     }
     WdfRequestCompleteWithInformation(request, STATUS_SUCCESS, sizeof(*snapshot));
 }
