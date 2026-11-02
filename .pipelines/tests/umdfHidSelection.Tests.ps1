@@ -137,17 +137,8 @@ Describe 'Virtual HID suite selection' {
         @{ Platform = 'ARM64'; Expected = 5 }
     ) {
         param($Platform, $Expected)
-        $tokens = $null
-        $errors = $null
-        $build = [Management.Automation.Language.Parser]::ParseFile(
-            (Join-Path $PSScriptRoot '..\umdf-hid-smoke\Build-Smoke.ps1'), [ref]$tokens, [ref]$errors)
-        $statements = @($build.EndBlock.Statements | Where-Object {
-            $_.Extent.Text.StartsWith('$ids = ') -or
-            ($_.Extent.Text.StartsWith('if ($Platforms -contains ''ARM64'')'))
-        })
-        $statements.Count | Should Be 2
-        $Platforms = @($Platform)
-        . ([scriptblock]::Create(($statements.Extent.Text -join "`n")))
+        . (Join-Path $PSScriptRoot '..\umdf\UmdfBuild.Common.ps1')
+        $ids = @(Get-UmdfPackageIds -Platforms $Platform)
         $ids.Count | Should Be $Expected
         $ids -contains 'Microsoft.Windows.WDK.x64' | Should Be $true
         ($ids -contains 'Microsoft.Windows.WDK.arm64') | Should Be ($Platform -eq 'ARM64')

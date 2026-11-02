@@ -11,12 +11,11 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
+$common = Join-Path $PSScriptRoot '..\umdf\UmdfDriver.Common.ps1'
+if (-not (Test-Path -LiteralPath $common)) { $common = Join-Path $PSScriptRoot 'UmdfDriver.Common.ps1' }
+. $common
 function Test-Administrator {
-    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-    try {
-        ([Security.Principal.WindowsPrincipal]::new($identity)).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    }
-    finally { $identity.Dispose() }
+    Test-UmdfAdministrator
 }
 
 if (-not $IsolatedGuest) { throw 'Explicit isolated-guest approval is required.' }
@@ -30,14 +29,10 @@ $subject = 'CN=PowerToys Isolated IDD POC'
 New-Item $ResultsDirectory, (Split-Path $StatePath -Parent) -ItemType Directory -Force | Out-Null
 
 function Get-FixtureDevices {
-    @(Get-PnpDevice -PresentOnly | Where-Object InstanceId -Like 'ROOT\DISPLAY\*' | Where-Object {
-        $hardwareId -in (Get-PnpDeviceProperty -InstanceId $_.InstanceId -KeyName DEVPKEY_Device_HardwareIds).Data
-    })
+    @(Get-UmdfOwnedDevices -HardwareId $hardwareId -InstancePattern 'ROOT\DISPLAY\*')
 }
 function Save-Journal {
-    $temporary = "$StatePath.tmp"
-    $state | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $temporary
-    Move-Item -LiteralPath $temporary -Destination $StatePath -Force
+    Save-UmdfJournal -State $state -StatePath $StatePath
 }
 function Find-OwnedInfs {
     @(Get-ChildItem "$env:WINDIR\INF" -Filter 'oem*.inf' -File | Where-Object {
@@ -47,35 +42,14 @@ function Find-OwnedInfs {
 
 if ($Action -eq 'Cleanup') {
     if (-not (Test-Path -LiteralPath $StatePath)) { throw 'No ownership journal; nothing may be removed.' }
-    $state = Get-Content -LiteralPath $StatePath -Raw | ConvertFrom-Json
-    if ($state.HardwareId -ne $hardwareId -or $state.Subject -ne $subject -or
-        $state.Thumbprint -notmatch '^[A-Fa-f0-9]{40}$' -or
-        $state.ImportedStores -isnot [Array] -or $state.BeforeInfs -isnot [Array] -or
-        @($state.ImportedStores | Where-Object { $_ -notin @('Root', 'TrustedPublisher') }).Count -or
-        @($state.BeforeInfs | Where-Object { $_ -notmatch '^oem[0-9]+\.inf$' }).Count) {
-        throw 'Invalid ownership journal.'
-    }
+    $state = Read-UmdfJournal -StatePath $StatePath -HardwareId $hardwareId -Subject $subject -InfProperty BeforeInfs
     $errors = [Collections.Generic.List[string]]::new()
-    foreach ($device in Get-FixtureDevices) {
-        & pnputil.exe /remove-device $device.InstanceId
-        if ($LASTEXITCODE -notin @(0, 3010)) { $errors.Add("Device removal failed: $LASTEXITCODE") }
-    }
-    foreach ($name in Find-OwnedInfs) {
-        & pnputil.exe /delete-driver $name /uninstall /force
-        if ($LASTEXITCODE -notin @(0, 3010) -or (Test-Path "$env:WINDIR\INF\$name")) {
-            $errors.Add("Package remains: $name")
-        }
-    }
+    Remove-UmdfDevices -Devices @(Get-FixtureDevices) -Errors $errors
+    Remove-UmdfPackages -InfNames @(Find-OwnedInfs) -HardwareId $hardwareId -Errors $errors
     if (@(Get-FixtureDevices).Count) { $errors.Add('Fixture device remains.') }
     # Keep test trust while a package still needs cleanup.
     if ($errors.Count -eq 0) {
-        foreach ($store in $state.ImportedStores) {
-            $path = "Cert:\LocalMachine\$store\$($state.Thumbprint)"
-            if (Test-Path $path) {
-                if ((Get-Item $path).Subject -ne $subject) { throw 'Refusing to remove unrelated trust.' }
-                Remove-Item $path
-            }
-        }
+        Remove-UmdfTestTrust -State $state -Subject $subject
     }
     [ordered]@{ Removed = $errors.Count -eq 0; Errors = @($errors) } |
         ConvertTo-Json | Set-Content (Join-Path $ResultsDirectory 'cleanup.json')
@@ -89,31 +63,14 @@ if ((Test-Path -LiteralPath $StatePath) -or @(Get-FixtureDevices).Count) {
     throw 'An earlier journal/device requires cleanup.'
 }
 $driver = Join-Path (Resolve-Path $ArtifactDirectory).Path 'driver'
+Assert-UmdfFileManifest -Directory $driver -ManifestPath (Join-Path $ArtifactDirectory 'driver-hashes.json') `
+    -RequiredFiles PtDisplayIdd.dll, PtDisplayIdd.inf, PtDisplayIdd.cat, PtDisplayIdd.cer, IddProbe.exe
 $hashes = @(Get-Content (Join-Path $ArtifactDirectory 'driver-hashes.json') -Raw | ConvertFrom-Json)
-foreach ($required in @('PtDisplayIdd.dll', 'PtDisplayIdd.inf', 'PtDisplayIdd.cat', 'PtDisplayIdd.cer', 'IddProbe.exe')) {
-    $entry = @($hashes | Where-Object { (Split-Path $_.Path -Leaf) -eq $required })
-    if ($entry.Count -ne 1 -or (Get-FileHash (Join-Path $driver $required) -Algorithm SHA256).Hash -ne $entry[0].Hash) {
-        throw "Missing or mismatched artifact hash: $required"
-    }
-}
 $production = [IO.Path]::GetFullPath((Join-Path (Resolve-Path $ArtifactDirectory).Path 'production'))
 $productionHashes = @(Get-Content (Join-Path $ArtifactDirectory 'production-hashes.json') -Raw | ConvertFrom-Json)
-if (@($productionHashes | Where-Object Path -EQ 'PowerDisplay.IddPoc.ProductionProbe.exe').Count -ne 1 -or
-    @($productionHashes | Where-Object Path -EQ 'PowerDisplay.Lib.dll').Count -ne 1) {
-    throw 'The production probe manifest is incomplete.'
-}
-foreach ($file in $productionHashes) {
-    if ([IO.Path]::IsPathRooted($file.Path)) { throw "The production probe manifest path must be relative: $($file.Path)" }
-    $path = [IO.Path]::GetFullPath((Join-Path $production $file.Path))
-    if (-not $path.StartsWith("$production\", [StringComparison]::OrdinalIgnoreCase) -or
-        (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ne $file.Hash) {
-        throw "Missing or mismatched production probe hash: $($file.Path)"
-    }
-}
-$certificate = [Security.Cryptography.X509Certificates.X509Certificate2]::new((Join-Path $driver 'PtDisplayIdd.cer'))
-if ($certificate.Subject -ne $subject -or $certificate.NotAfter -lt (Get-Date) -or $certificate.HasPrivateKey) {
-    throw 'Unexpected, expired, or non-public test certificate.'
-}
+Assert-UmdfFileManifest -Directory $production -ManifestPath (Join-Path $ArtifactDirectory 'production-hashes.json') `
+    -RequiredFiles PowerDisplay.IddPoc.ProductionProbe.exe, PowerDisplay.Lib.dll -Relative -Kind 'production probe'
+$certificate = Read-UmdfPublicCertificate -Path (Join-Path $driver 'PtDisplayIdd.cer') -Subject $subject
 $build = Get-Content (Join-Path $ArtifactDirectory 'build.json') -Raw | ConvertFrom-Json
 if ($build.Platform -ne [Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()) {
     throw 'Driver architecture does not match the execution guest.'
@@ -129,19 +86,9 @@ Save-Journal
 $started = Get-Date
 try {
     foreach ($store in @('Root', 'TrustedPublisher')) {
-        if (-not (Test-Path "Cert:\LocalMachine\$store\$($certificate.Thumbprint)")) {
-            $state.ImportedStores += $store
-            Save-Journal
-            & certutil.exe -f -addstore $store (Join-Path $driver 'PtDisplayIdd.cer')
-            if ($LASTEXITCODE) { throw "Certificate import failed: $store" }
-        }
+        Add-UmdfTestTrust -State $state -StatePath $StatePath -CertificatePath (Join-Path $driver 'PtDisplayIdd.cer') -Store $store
     }
-    foreach ($file in @('PtDisplayIdd.dll', 'PtDisplayIdd.cat', 'IddProbe.exe')) {
-        $signature = Get-AuthenticodeSignature (Join-Path $driver $file)
-        if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Thumbprint -ne $certificate.Thumbprint) {
-            throw "Invalid package signature: $file"
-        }
-    }
+    Assert-UmdfPackageSignatures -DriverDirectory $driver -Files PtDisplayIdd.dll, PtDisplayIdd.cat, IddProbe.exe -Thumbprint $certificate.Thumbprint
     & (Join-Path $driver 'IddProbe.exe') --self-test |
         Set-Content (Join-Path $ResultsDirectory 'protocol-tests.json')
     if ($LASTEXITCODE) { throw 'The architecture-matched fixture protocol tests failed.' }
@@ -204,15 +151,9 @@ try {
 }
 catch {
     $failure = $_
-    foreach ($log in @('Microsoft-Windows-CodeIntegrity/Operational', 'Microsoft-Windows-Kernel-PnP/Configuration')) {
-        try {
-            Get-WinEvent -FilterHashtable @{ LogName = $log; StartTime = $started } -ErrorAction Stop |
-                Select-Object Id, TimeCreated, Message | ConvertTo-Json -Depth 4 |
-                Set-Content (Join-Path $ResultsDirectory (($log -replace '[/\\]', '-') + '.json'))
-        }
-        catch { Write-Warning "Diagnostic log unavailable: $log`: $_" }
+    Export-UmdfDriverDiagnostics -ResultsDirectory $ResultsDirectory -Started $started -EventLogs @{
+        'Microsoft-Windows-CodeIntegrity-Operational.json' = 'Microsoft-Windows-CodeIntegrity/Operational'
+        'Microsoft-Windows-Kernel-PnP-Configuration.json' = 'Microsoft-Windows-Kernel-PnP/Configuration'
     }
-    Get-Content "$env:WINDIR\INF\setupapi.dev.log" -Tail 350 |
-        Set-Content (Join-Path $ResultsDirectory 'setupapi-tail.log')
     throw $failure
 }

@@ -103,12 +103,12 @@ jobs:
       if ('${{ parameters.autoSelectUiTests }}' -eq 'True') {
         $modules = @($env:AUTO_UI_TEST_MODULES -split ';' | Where-Object { $_ })
       }
-      . "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\UmdfHidCi.Common.ps1"
-      $hidSelection = Get-UmdfHidUiTestSelection -Modules $modules -Platform '$(TestPlatform)' `
+      . "$(Build.SourcesDirectory)\.pipelines\umdf\UmdfCi.Common.ps1"
+      $hidSelection = Get-UmdfUiTestSelection -Modules $modules -Platform '$(TestPlatform)' `
         -AutoSelect ('${{ parameters.autoSelectUiTests }}' -eq 'True') `
         -RouteArm64 ('${{ parameters.routeUmdfHidArm64 }}' -eq 'True') `
         -DedicatedArm64 ('${{ parameters.umdfHidArm64Dedicated }}' -eq 'True')
-      $displaySelection = Get-UmdfHidUiTestSelection -Modules $modules -Platform '$(TestPlatform)' `
+      $displaySelection = Get-UmdfUiTestSelection -Modules $modules -Platform '$(TestPlatform)' `
         -FixtureModule 'PowerDisplay.UITests' `
         -AutoSelect ('${{ parameters.autoSelectUiTests }}' -eq 'True') `
         -RouteArm64 ('${{ parameters.routeUmdfHidArm64 }}' -eq 'True') `
@@ -116,7 +116,7 @@ jobs:
       if ('${{ parameters.umdfHidArm64Dedicated }}' -eq 'True') {
         $bootConfiguration = & bcdedit.exe /enum '{current}'
         if ($LASTEXITCODE) { throw 'BLOCKED_INFRASTRUCTURE: cannot read the dedicated image boot configuration.' }
-        Assert-UmdfHidArm64TestEnvironment `
+        Assert-UmdfArm64TestEnvironment `
           -OsArchitecture ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()) `
           -BootConfiguration ($bootConfiguration -join "`n")
         Write-Host "Dedicated ARM64 UMDF image: $env:UMDF_HID_ARM64_IMAGE (TESTSIGNING is preconfigured; no boot settings are changed)."
@@ -552,6 +552,7 @@ jobs:
 
       $resultsDir = "$(Common.TestResultsDirectory)"
       New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
+      . "$(Build.SourcesDirectory)\.pipelines\umdf\UmdfCi.Common.ps1"
 
       $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'PowerDisplay.UITests', 'Workspaces.UITests.Next')
       . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
@@ -563,34 +564,15 @@ jobs:
         $exe = Join-Path $dir "$base.exe"
         $dll = Join-Path $dir "$base.dll"
         $suiteFailed = $false
+        $fixtureContext = $null
         Write-Host "##[group]Run UI tests: $base"
         Push-Location $dir
         try {
-          if ($base -eq 'PowerDisplay.UITests') {
-            Write-Host "##vso[task.setvariable variable=UmdfDisplayRequested]true"
-            $displayArguments = @{
-              StatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\UmdfDisplay.json"
-              ResultsDirectory = Join-Path $resultsDir 'umdf-display'
-              IsolatedGuest = $true
-            }
-            if (Test-Path -LiteralPath $displayArguments.StatePath) {
-              & "$(Build.SourcesDirectory)\.pipelines\powerdisplay-idd-poc\Manage-Poc.ps1" -Action Cleanup @displayArguments
-            }
-            $displayArtifact = Join-Path $artifactRoot 'powerdisplay-idd\$(BuildPlatform)'
-            & "$(Build.SourcesDirectory)\.pipelines\powerdisplay-idd-poc\Manage-Poc.ps1" `
-              -Action Install -ArtifactDirectory $displayArtifact @displayArguments
-            $env:POWERTOYS_POWERDISPLAY_IDD_PROBE = Join-Path $displayArtifact 'driver\IddProbe.exe'
-          }
-          if ($base -eq 'GrabAndMove.UITests') {
-            Write-Host "##vso[task.setvariable variable=UmdfHidRequested]true"
-            $hidArguments = @{
-              StatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\UmdfHidSmoke.json"
-              ResultsDirectory = Join-Path $resultsDir 'umdf-hid'
-            }
-            & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Manage-SmokeDriver.ps1" `
-              -Action Cleanup @hidArguments
-            & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Manage-SmokeDriver.ps1" `
-              -Action Install -ArtifactDirectory (Join-Path $artifactRoot 'umdf-hid\$(BuildPlatform)') @hidArguments
+          if ($base -in (Get-UmdfFixtures).Suite) {
+            $fixtureContext = Get-UmdfFixtureContext -Suite $base -RepositoryRoot "$(Build.SourcesDirectory)" `
+              -ArtifactRoot $artifactRoot -Platform "$(BuildPlatform)" `
+              -StateDirectory "$(Agent.WorkFolder)\PowerToysUiTestState" -ResultsDirectory $resultsDir
+            Start-UmdfFixture -Context $fixtureContext
           }
           if ($base -eq 'LightSwitch.UITests.Next') {
             try {
@@ -623,24 +605,11 @@ jobs:
           $suiteFailed = $true
         } finally {
           try {
-            if ($base -eq 'PowerDisplay.UITests') {
+            if ($null -ne $fixtureContext) {
               try {
-                if (Test-Path -LiteralPath $displayArguments.StatePath) {
-                  & "$(Build.SourcesDirectory)\.pipelines\powerdisplay-idd-poc\Manage-Poc.ps1" -Action Cleanup @displayArguments
-                }
+                Stop-UmdfFixture -Context $fixtureContext
               } catch {
-                Write-Host "##vso[task.logissue type=error]Virtual monitor cleanup failed: $($_.Exception.Message)"
-                $suiteFailed = $true
-              } finally {
-                Remove-Item Env:\POWERTOYS_POWERDISPLAY_IDD_PROBE -ErrorAction SilentlyContinue
-              }
-            }
-            if ($base -eq 'GrabAndMove.UITests') {
-              try {
-                & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Manage-SmokeDriver.ps1" `
-                  -Action Cleanup @hidArguments
-              } catch {
-                Write-Host "##vso[task.logissue type=error]Virtual HID cleanup failed: $($_.Exception.Message)"
+                Write-Host "##vso[task.logissue type=error]UMDF fixture cleanup failed for ${base}: $($_.Exception.Message)"
                 $suiteFailed = $true
               }
             }
@@ -716,25 +685,14 @@ jobs:
   - pwsh: |
       $ErrorActionPreference = 'Stop'
       $failures = 0
-      $hidState = "$(Agent.WorkFolder)\PowerToysUiTestState\UmdfHidSmoke.json"
-      $displayState = "$(Agent.WorkFolder)\PowerToysUiTestState\UmdfDisplay.json"
-      if (Test-Path -LiteralPath $displayState) {
-        try {
-          & "$(Build.SourcesDirectory)\.pipelines\powerdisplay-idd-poc\Manage-Poc.ps1" `
-            -Action Cleanup -IsolatedGuest -StatePath $displayState -ResultsDirectory "$(Common.TestResultsDirectory)\umdf-display"
-        } catch {
-          Write-Host "##vso[task.logissue type=error]Virtual monitor prerequisite cleanup failed: $($_.Exception.Message)"
-          $failures++
-        }
-      }
-      if (Test-Path -LiteralPath $hidState) {
-        try {
-          & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Manage-SmokeDriver.ps1" `
-            -Action Cleanup -StatePath $hidState -ResultsDirectory "$(Common.TestResultsDirectory)\umdf-hid"
-        } catch {
-          Write-Host "##vso[task.logissue type=error]Virtual HID prerequisite cleanup failed: $($_.Exception.Message)"
-          $failures++
-        }
+      . "$(Build.SourcesDirectory)\.pipelines\umdf\UmdfCi.Common.ps1"
+      try {
+        Restore-UmdfFixtures -RepositoryRoot "$(Build.SourcesDirectory)" `
+          -ArtifactRoot "$(Pipeline.Workspace)\$(TestArtifactsName)" -Platform "$(BuildPlatform)" `
+          -StateDirectory "$(Agent.WorkFolder)\PowerToysUiTestState" -ResultsDirectory "$(Common.TestResultsDirectory)"
+      } catch {
+        Write-Host "##vso[task.logissue type=error]$($_.Exception.Message)"
+        $failures++
       }
       if ($env:RUN_MWB_SANDBOX -eq 'true') {
         try {
@@ -761,19 +719,13 @@ jobs:
       RUN_MWB_SANDBOX: $(RunMwbSandbox)
 
   # Preserve pre-TRX/cancellation evidence before potentially lengthy recording uploads.
-  - task: PublishPipelineArtifact@1
-    displayName: Publish virtual monitor readiness and cleanup evidence
-    condition: and(always(), eq(variables['UmdfDisplayRequested'], 'true'))
-    inputs:
-      targetPath: '$(Common.TestResultsDirectory)\umdf-display'
-      artifactName: umdf-display-$(TestPlatform)-$(System.JobId)
-
-  - task: PublishPipelineArtifact@1
-    displayName: Publish virtual HID readiness and cleanup evidence
-    condition: and(always(), eq(variables['UmdfHidRequested'], 'true'))
-    inputs:
-      targetPath: '$(Common.TestResultsDirectory)\umdf-hid'
-      artifactName: umdf-hid-$(TestPlatform)-$(System.JobId)
+  - ${{ each fixture in split('Display,Hid', ',') }}:
+    - task: PublishPipelineArtifact@1
+      displayName: Publish UMDF ${{ fixture }} readiness and cleanup evidence
+      condition: and(always(), eq(variables['Umdf${{ fixture }}Requested'], 'true'))
+      inputs:
+        targetPath: '$(Common.TestResultsDirectory)\umdf-${{ lower(fixture) }}'
+        artifactName: umdf-${{ lower(fixture) }}-$(TestPlatform)-$(System.JobId)
 
   - task: PublishPipelineArtifact@1
     displayName: Publish UI-test diagnostics

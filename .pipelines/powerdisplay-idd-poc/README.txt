@@ -56,7 +56,9 @@ inputs without building/signing. The script pins the Microsoft driver sample and
 WDK/SDK packages, verifies NuGet signatures and uses tools\build\build.cmd.
 Use -PackageCache <verified-packages-directory> to reuse extracted packages;
 the signed nupkgs are still verified and an incomplete cache fails explicitly.
-Mixed/all-module CI builds reuse the preceding HID fixture's package cache.
+Both fixture builders use the neutral versioned cache
+<WorkRoot parent>\umdf-dependencies\<WDK version> by default. Each fixture keeps
+its own patched sample checkout; build order does not determine cache reuse.
 
 The output is out\<architecture>\{driver,production,driver-hashes.json,
 production-hashes.json,build.json}. The production directory is a console probe
@@ -77,8 +79,11 @@ Create an owned checkpoint BEFORE installation to preserve exact topology and
 trust even if provisioning or execution is interrupted. Never change host or
 ordinary guest boot policy to make this package load.
 
-Stage the architecture artifact as C:\IddPoc\artifact and these two scripts as
-C:\IddPoc\Manage-Poc.ps1 and C:\IddPoc\Test-Transport.ps1.
+Stage the architecture artifact as C:\IddPoc\artifact and the two entry scripts as
+C:\IddPoc\Manage-Poc.ps1 and C:\IddPoc\Test-Transport.ps1. Also copy
+.pipelines\umdf\UmdfDriver.Common.ps1 beside Manage-Poc.ps1. In a repository
+checkout, the manager loads the same helper from its normal sibling directory.
+Keep the helper, manager and bundle at the same source revision.
 
 From the separate elevated guest provisioning channel:
 
@@ -172,6 +177,13 @@ Export evidence before restoring the owned checkpoint. Restore it for exact
 topology/trust recovery, then stop the guest and remove only that checkpoint.
 An interrupted run retains its journal for cleanup with the original bundle.
 Do not delete the journal or remove unrelated packages/certificates.
+
+Shared build/CI/driver primitives live under .pipelines\umdf. Existing build
+arguments, artifact names, private certificate subjects and journal fields remain
+compatible. Readiness remains display-specific; cleanup removes the display root
+before its package. Shared cleanup never removes journal-owned trust while driver
+or device removal has failed. ARM64 routing still creates one isolated job per
+fixture suite; it never broadens the TESTSIGNING image to ordinary suites.
 
 Coverage boundaries
 --------------------

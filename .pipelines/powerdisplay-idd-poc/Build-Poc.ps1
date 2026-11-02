@@ -11,70 +11,16 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
-$revision = 'bb68ed5e770bce04dc5395ec9258dafab034184d'
-$version = '10.0.28000.2526'
+. (Join-Path $PSScriptRoot '..\umdf\UmdfBuild.Common.ps1')
 $work = [IO.Path]::GetFullPath($WorkRoot)
 $output = [IO.Path]::GetFullPath($OutputRoot)
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 New-Item $work, $output -ItemType Directory -Force | Out-Null
-$sample = Join-Path $work 'sample'
-if (-not (Test-Path (Join-Path $sample '.git'))) {
-    & git init -q $sample
-    if ($LASTEXITCODE) { throw 'git init failed.' }
-    & git -C $sample remote add origin https://github.com/microsoft/Windows-driver-samples.git
-    if ($LASTEXITCODE) { throw 'git remote failed.' }
-    & git -C $sample sparse-checkout set video/IndirectDisplay
-    if ($LASTEXITCODE) { throw 'git sparse-checkout failed.' }
-    & git -C $sample fetch --depth 1 origin $revision
-    if ($LASTEXITCODE) { throw 'Pinned sample fetch failed.' }
-    & git -C $sample checkout --detach FETCH_HEAD
-    if ($LASTEXITCODE) { throw 'Pinned sample checkout failed.' }
-}
-if ((& git -C $sample rev-parse HEAD) -ne $revision -or $LASTEXITCODE) {
-    throw 'Unexpected upstream sample revision.'
-}
-$patch = Join-Path $PSScriptRoot 'idd-fixture.patch'
-& git -C $sample apply --unidiff-zero --reverse --check $patch 2>$null
-if ($LASTEXITCODE) {
-    & git -C $sample apply --unidiff-zero --check $patch
-    if ($LASTEXITCODE) { throw 'Fixture patch does not match the pinned sample.' }
-    & git -C $sample apply --unidiff-zero $patch
-    if ($LASTEXITCODE) { throw 'Fixture patch failed.' }
-}
-
-$nuget = Join-Path $work 'nuget.exe'
-if (-not (Test-Path $nuget)) {
-    Invoke-WebRequest https://dist.nuget.org/win-x86-commandline/v6.14.0/nuget.exe -OutFile $nuget
-}
-$signature = Get-AuthenticodeSignature $nuget
-if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'Microsoft') {
-    throw 'NuGet executable is not signed by Microsoft.'
-}
-$packages = if ($PackageCache) { [IO.Path]::GetFullPath($PackageCache) } else { Join-Path $work 'packages' }
-$downloads = Join-Path $work 'downloads'
-New-Item $downloads -ItemType Directory -Force | Out-Null
-$ids = @('Microsoft.Windows.SDK.CPP', 'Microsoft.Windows.SDK.CPP.x64', 'Microsoft.Windows.WDK.x64')
-if ($Platform -eq 'ARM64') { $ids += 'Microsoft.Windows.SDK.CPP.arm64', 'Microsoft.Windows.WDK.arm64' }
-foreach ($id in $ids) {
-    $name = "$id.$version.nupkg"
-    $file = if ($PackageCache) { Join-Path $packages "$id.$version\$name" } else { Join-Path $downloads $name }
-    if (-not (Test-Path $file)) {
-        if ($PackageCache) { throw "The requested verified package cache is incomplete: $name" }
-        Invoke-WebRequest "https://www.nuget.org/api/v2/package/$id/$version" -OutFile $file
-    }
-    & $nuget verify -All $file | Out-File (Join-Path $work 'dependency-verification.log') -Append
-    if ($LASTEXITCODE) { throw "Package signature verification failed: $id" }
-}
-if (-not $PackageCache) {
-    $config = Join-Path $work 'NuGet.Config'
-    $source = [Security.SecurityElement]::Escape($downloads)
-    "<configuration><packageSources><clear/><add key=`"VerifiedMicrosoft`" value=`"$source`"/></packageSources></configuration>" | Set-Content $config
-    $manifest = Join-Path $work 'packages.config'
-    $entries = ($ids | ForEach-Object { "<package id=`"$_`" version=`"$version`"/>" }) -join ''
-    "<packages>$entries</packages>" | Set-Content $manifest
-    & $nuget restore $manifest -PackagesDirectory $packages -ConfigFile $config -NonInteractive -Verbosity quiet
-    if ($LASTEXITCODE) { throw 'WDK/SDK restore failed.' }
-}
+$configuration = Get-UmdfBuildConfiguration
+$sample = Initialize-UmdfSample -WorkRoot $work -Revision $configuration.UpstreamRevision `
+    -SparsePath video/IndirectDisplay -PatchPath (Join-Path $PSScriptRoot 'idd-fixture.patch')
+$tools = Initialize-UmdfBuildTools -WorkRoot $work -WdkVersion $configuration.WdkVersion -Platforms $Platform -PackageCache $PackageCache
+$packages = $tools.Packages
 if ($PrepareOnly) { return }
 
 $names = @('IddSampleRoot', 'IddPackagesRoot', 'IddOutputDir', 'IddIntermediateDir')
@@ -96,35 +42,16 @@ try {
     Copy-Item (Join-Path $PSScriptRoot 'MS-PL.txt') (Join-Path $driver 'MS-PL.txt')
     Copy-Item (Join-Path $repo 'LICENSE') (Join-Path $driver 'MIT-LICENSE.txt')
     Copy-Item (Join-Path $PSScriptRoot 'UPSTREAM.txt') $driver
-    $signTool = Get-ChildItem (Join-Path $packages "Microsoft.Windows.SDK.CPP.$version") -Recurse -Filter signtool.exe |
-        Where-Object FullName -Match '\\x64\\' | Select-Object -First 1 -ExpandProperty FullName
-    $inf2cat = Get-ChildItem (Join-Path $packages "Microsoft.Windows.WDK.x64.$version") -Recurse -Filter inf2cat.exe |
-        Select-Object -First 1 -ExpandProperty FullName
-    if (-not $signTool -or -not $inf2cat) { throw 'Official signing tools were not found.' }
-    $certificate = New-SelfSignedCertificate -Subject 'CN=PowerToys Isolated IDD POC' `
-        -CertStoreLocation Cert:\CurrentUser\My -Type CodeSigningCert -HashAlgorithm SHA256 `
-        -KeyExportPolicy NonExportable -NotAfter (Get-Date).AddDays(7)
-    try {
-        Export-Certificate -Cert $certificate -FilePath (Join-Path $driver 'PtDisplayIdd.cer') | Out-Null
-        foreach ($binary in @('PtDisplayIdd.dll', 'IddProbe.exe')) {
-            & $signTool sign /s My /sha1 $certificate.Thumbprint /fd SHA256 (Join-Path $driver $binary)
-            if ($LASTEXITCODE) { throw "Binary signing failed: $binary" }
-        }
-        $catalogOs = if ($Platform -eq 'ARM64') { '10_VB_ARM64,10_CO_ARM64' } else { '10_VB_X64,10_CO_X64' }
-        & $inf2cat "/driver:$driver" "/os:$catalogOs" /uselocaltime
-        if ($LASTEXITCODE) { throw 'Catalog generation failed.' }
-        & $signTool sign /s My /sha1 $certificate.Thumbprint /fd SHA256 (Join-Path $driver 'PtDisplayIdd.cat')
-        if ($LASTEXITCODE) { throw 'Catalog signing failed.' }
-    }
-    finally { Remove-Item "Cert:\CurrentUser\My\$($certificate.Thumbprint)" -DeleteKey }
-    Get-ChildItem $driver -File | Get-FileHash -Algorithm SHA256 | Select-Object Path, Hash |
-        ConvertTo-Json | Set-Content (Join-Path $destination 'driver-hashes.json')
+    $thumbprint = Complete-UmdfDriverPackage -DriverDirectory $driver -Platform $Platform `
+        -Subject 'CN=PowerToys Isolated IDD POC' -CertificateName PtDisplayIdd.cer `
+        -Binaries PtDisplayIdd.dll, IddProbe.exe -CatalogName PtDisplayIdd.cat -SignTool $tools.SignTool -Inf2Cat $tools.Inf2Cat
+    Write-UmdfFileHashes -Directory $driver -ManifestPath (Join-Path $destination 'driver-hashes.json')
     [ordered]@{
-        UpstreamRevision = $revision
-        WdkVersion = $version
+        UpstreamRevision = $configuration.UpstreamRevision
+        WdkVersion = $configuration.WdkVersion
         Platform = $Platform
         DriverVersion = '0.0.1.0'
-        SigningThumbprint = $certificate.Thumbprint
+        SigningThumbprint = $thumbprint
     } | ConvertTo-Json | Set-Content (Join-Path $destination 'build.json')
 
     $productionProject = Join-Path $PSScriptRoot 'production\PowerDisplay.IddPoc.ProductionProbe.csproj'
@@ -132,20 +59,11 @@ try {
     if ($LASTEXITCODE) { throw 'Production discovery probe restore failed.' }
     & (Join-Path $repo 'tools\build\build.cmd') -Path (Split-Path $productionProject -Parent) -Platform $Platform -Configuration Release
     if ($LASTEXITCODE) { throw 'Production discovery probe build failed.' }
-    $productionOutput = & dotnet msbuild $productionProject "-p:Platform=$Platform" -p:Configuration=Release -getProperty:TargetDir -nologo
-    if ($LASTEXITCODE -or -not [IO.Path]::IsPathFullyQualified($productionOutput) -or
-        -not (Test-Path (Join-Path $productionOutput 'PowerDisplay.IddPoc.ProductionProbe.exe'))) {
-        throw 'Could not resolve the built production probe output directory.'
-    }
+    $productionOutput = Get-UmdfManagedOutput -Project $productionProject -Platform $Platform -ExpectedExecutable PowerDisplay.IddPoc.ProductionProbe.exe
     $production = Join-Path $destination 'production'
     New-Item $production -ItemType Directory -Force | Out-Null
     Copy-Item "$productionOutput\*" $production -Recurse -Force
-    Get-ChildItem $production -File -Recurse | ForEach-Object {
-        [ordered]@{
-            Path = [IO.Path]::GetRelativePath($production, $_.FullName)
-            Hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
-        }
-    } | ConvertTo-Json | Set-Content (Join-Path $destination 'production-hashes.json')
+    Write-UmdfFileHashes -Directory $production -ManifestPath (Join-Path $destination 'production-hashes.json') -Relative
 }
 finally {
     foreach ($name in $names) { [Environment]::SetEnvironmentVariable($name, $previous[$name], 'Process') }

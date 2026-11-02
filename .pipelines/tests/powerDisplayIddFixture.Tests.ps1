@@ -3,6 +3,7 @@
 # See the LICENSE file in the project root for more information.
 
 $sourcePath = Join-Path $PSScriptRoot '..\powerdisplay-idd-poc\Manage-Poc.ps1'
+. (Join-Path $PSScriptRoot '..\umdf\UmdfDriver.Common.ps1')
 $tokens = $null
 $parseErrors = $null
 $ast = [Management.Automation.Language.Parser]::ParseFile($sourcePath, [ref]$tokens, [ref]$parseErrors)
@@ -83,12 +84,14 @@ Describe 'Virtual display fixture ownership and approval' {
         $script:devices = @()
         $script:nativeExit = 0
         $script:leaveDevice = $false
+        $script:nativeCalls = [Collections.Generic.List[string]]::new()
         $IsolatedGuest = $true
         Mock Test-Administrator { $true }
         Mock Get-CimInstance { [pscustomobject]@{ Manufacturer = 'Microsoft Corporation'; Model = 'Virtual Machine' } }
         Mock Get-PnpDevice { $script:devices }
         Mock Get-PnpDeviceProperty { [pscustomobject]@{ Data = @($hardwareId) } }
         Mock pnputil.exe {
+            $script:nativeCalls.Add($args[0])
             $global:LASTEXITCODE = $script:nativeExit
             if ($args[0] -eq '/delete-driver' -and $script:nativeExit -eq 0) {
                 Remove-Item -LiteralPath (Join-Path $env:WINDIR "INF\$($args[1])")
@@ -177,6 +180,7 @@ Describe 'Virtual display fixture ownership and approval' {
         Test-Path (Join-Path $env:WINDIR 'INF\oem1.inf') | Should Be $true
         Test-Path (Join-Path $env:WINDIR 'INF\oem8.inf') | Should Be $true
         $script:devices.Count | Should Be 1
+        $script:nativeCalls.ToArray() | Should Be @('/remove-device', '/delete-driver')
         Assert-MockCalled pnputil.exe -Times 2 -Exactly -Scope It
         Assert-MockCalled Remove-Item -Times 1 -Exactly -Scope It -ParameterFilter { $Path -eq "Cert:\LocalMachine\TrustedPublisher\$('A' * 40)" }
     }
