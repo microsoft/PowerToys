@@ -1,6 +1,6 @@
 # Workspaces Protected Storage 验收台账
 
-最后更新：2026-11-02（UTC+08:00；已执行本地Debug权限/业务/CLI批次E37）
+最后更新：2026-11-02（UTC+08:00；E38已启动签名构建，E39完成两项本地工程复测）
 
 **这是验收状态的唯一维护入口。每执行完一项，就更新本文件；不能只在聊天里报告通过。**
 
@@ -18,14 +18,14 @@
 
 | 状态 | 条数 |
 |---|---:|
-| PASS | 24 |
+| PASS | 26 |
 | PARTIAL | 21 |
-| RETEST | 2 |
+| RETEST | 0 |
 | BLOCKED | 2 |
 | NOT RUN | 77 |
 | 合计 | 126 |
 
-24条PASS由AUTO 12条、UNIT 6条、LOCAL-01、PERF-02/03及E37关闭的
+26条PASS由AUTO 14条、UNIT 6条、LOCAL-01、PERF-02/03及E37关闭的
 DATA-09、DATA-17、CLI-01组成；仍不代表核心架构和正式安装验收已完成。
 显式标P0的45条中，整项PASS 3条、PARTIAL 15条、RETEST 0条、BLOCKED 2条、
 NOT RUN 25条。当前两个正式BLOCKED为DATA-14（提权专项）和REL-01（PM决策）；
@@ -34,23 +34,23 @@ R06已有E36定向实机PASS，但DATA-10包含更多条件，仍只计PARTIAL�
 
 ### 分类总览：126条条件，不是126场独立测试
 
-目前有102条尚未整项关闭，但其中只有77条记为NOT RUN；另有21条已部分覆盖、
-2条需复测、2条受阻，不能全部当作“从零开始”。台账混合了工程门禁、自动化合同、
-实机行为、错误分支、环境矩阵和产品决策，因此24/126不是工作量完成百分比。
+目前有100条尚未整项关闭，但其中只有77条记为NOT RUN；另有21条已部分覆盖、
+2条受阻，不能全部当作“从零开始”。E39已关闭原来的2条RETEST。台账混合了工程门禁、
+自动化合同、实机行为、错误分支、环境矩阵和产品决策，因此26/126不是工作量完成百分比。
 
 下面按**主要验证目标**将每个正式ID归入一个类别，互不重复、没有删减或新增要求。
 “未关闭”包含PARTIAL/RETEST/BLOCKED/NOT RUN；“未跑”仅指NOT RUN。
 
 | 类别 | 总条数 | 整项PASS | 未关闭 | 其中未跑 |
 |---|---:|---:|---:|---:|
-| 工程基线与自动化 | 27 | 18 | 9 | 3 |
+| 工程基线与自动化 | 27 | 20 | 7 | 3 |
 | 日常功能、交互和性能 | 19 | 4 | 15 | 6 |
 | 跨权限执行与运行上下文 | 7 | 0 | 7 | 6 |
 | 写保护、授权和用户隔离 | 9 | 0 | 9 | 5 |
 | 数据迁移、一致性与恢复 | 17 | 1 | 16 | 14 |
 | 安装、升级、卸载与生命周期 | 36 | 1 | 35 | 34 |
 | 生产信任、环境与发布门槛 | 11 | 0 | 11 | 9 |
-| 合计 | 126 | 24 | 102 | 77 |
+| 合计 | 126 | 26 | 100 | 77 |
 
 | 类别 | 唯一归属的正式ID |
 |---|---|
@@ -66,7 +66,7 @@ R06已有E36定向实机PASS，但DATA-10包含更多条件，仍只计PARTIAL�
 INST-01～06、UPD-01～15、REM-01～11共32条属于正式安装/升级/卸载条件，
 不能要求当前Debug样本先把它们全部关闭。
 
-已通过的24条集中在：工程/自动化18条；日常功能4条（DATA-17、CLI-01、
+已通过的26条集中在：工程/自动化20条；日常功能4条（DATA-17、CLI-01、
 PERF-02/03）；数据一致性1条（DATA-09）；部署核对1条（LOCAL-01）。
 “整项0 PASS”不等于完全没测：写保护类已有4条PARTIAL，普通owner拒写和
 未注册caller拒绝已实测；日常功能另有9条PARTIAL。跨权限、跨owner及生产生命周期
@@ -77,6 +77,7 @@ PERF-02/03）；数据一致性1条（DATA-09）；部署核对1条（LOCAL-01�
 | 项目 | 当前记录 |
 |---|---|
 | 待验收代码 | `feature/workspaces-protected-storage-main-20261028`；产品基线 `b132ee3fbf` 加E35时间保留修复 `890cc68af1`；E36已增量发布到本地Debug6006 Editor并实际验证，managed DLL SHA256前缀 `6207D44B809AD83A` |
+| 正式签名构建 | E38：已触发主签名流水线 [162529587](https://dev.azure.com/microsoft/Dart/_build/results?buildId=162529587)，代码 `6bd56af147`，版本 `0.101.6007.0`，x64/ARM64 Release；排队后已确认运行，尚未确认安装包产出，不关闭B02 |
 | 主线基线 | `8056ba09721708bceee6176291b24af7ebabb0b3`；包含 PR #51114，合并提交 `06e6ae43e225cac51c2f282b0eebc42c6f995c97` |
 | 集成 worktree | `D:\PowerToys-Workspaces-Integration` |
 | 待测本地包 | x64 Debug **`0.101.6006.0`，已匹配部署**；入口 `D:\PowerToys-Workspaces-Integration\x64\Debug\PowerToys.exe`；E33 核对实际客户端和 runtime，不再受旧6005部署阻塞 |
@@ -163,10 +164,10 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | ID | 检查与通过标准 | 当前状态 | 最近结果 / 证据 |
 |---|---|---|---|
 | AUTO-01 | 新 worktree 完整构建同版本 Runner、Settings、Quick Access、Editor、Launcher、LauncherUI、SnapshotTool、Arranger、CLI 和本地服务 bundle | PASS | 2026-10-29；6006，E30；不宣称全包零警告/完整符号，仍有既有XAML警告 |
-| AUTO-02 | 本次集成的默认原生 Workspaces 单测全部通过，含 repository、CLI 合同、元数据及缺少 protected preview 的拒绝行为 | RETEST | 6004 的 193 个不同用例通过记录保留 E18；6005 运行受影响 AppUtils 21 项（AUTO-12），不是重跑全部默认/opt-in 套件 |
+| AUTO-02 | 本次集成的默认原生 Workspaces 单测全部通过，含 repository、CLI 合同、元数据及缺少 protected preview 的拒绝行为 | PASS | E39：当前提交重新构建x64 Release默认套件，193 passed、0 failed/skipped；显式关闭opt-in live slice。旧E18/E24记录保留 |
 | AUTO-03 | 托管存储/协议/迁移/repository 测试通过 | PASS | 2026-10-29；49 passed，0 failed/skipped，E19；旧 E03/E11 记录保留 |
 | AUTO-04 | 最终目标代码的 native storage 套件及 20,000 次 framing mutation 全部通过 | PASS | 2026-10-29；3,018 assertions + 20,000 mutations，E19。少的一条是已删除 peer helper 的参数断言；服务端映像和权限检查没有删除 |
-| AUTO-05 | 原生 Setup/Lifecycle/Broker/MsiAction 编译及安装器契约检查通过 | RETEST | 旧 E05 的 4,129 检查和 helper 编译结果保留；本轮仅重跑 storage native、更新 inventory 的 authoring/mock，未重新编译整个生产 helper 图 |
+| AUTO-05 | 原生 Setup/Lifecycle/Broker/MsiAction 编译及安装器契约检查通过 | PASS | E39：四个native helper重新编译，4,129 installer contracts通过；另核对非安装fixture MSI的RemoveFile/Media表。WIX1105明确保留：本机ICE未执行，不替代生产签名/安装或REL-02 |
 | AUTO-06 | 发布流程的 mocked gates、最终文件字节/哈希、固定 policy/version、篡改拒绝检查通过 | PASS | 2026-10-29；E19，含新 inventory；仍是 process-scoped mock，不是实际发布/servicing |
 | AUTO-07 | 本地测试 CMS 正常签名接受，内容改变或不同 signer 拒绝 | PASS | 2026-10-29；6006 E30，`expiredFixture=False`；不代替生产时间戳/吊销检查 |
 | AUTO-08 | 新 CLI 的 `--version`、`--help` 正常退出且报告当前候选版本 | PASS | 2026-10-29；6004，E20；未连接 6004 服务执行 list/launch |
@@ -352,7 +353,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 **前置工程门禁：** 按受影响项目批量构建、跑单测/协议/authoring检查，并把同一份
 结果映射到对应AUTO/UNIT/BUILD条件；不要为了每个ID分别重跑相同套件。
-当前工程类18/27已整项通过，剩余本地复测和生产配置/打包缺口分开补。
+当前工程类20/27已整项通过，剩余生产配置/打包等缺口分开补。
 任何实机包先核对实际客户端/runtime/catalog及程序集，不为切换case反复清VA或Reset。
 
 | 工作包 | 一次准备后串起来执行的主要场景 | 主要对应要求 | 当前缺口和环境 |
@@ -383,9 +384,10 @@ D/E的正式条件等对应包/环境准备好后执行；不要求Debug阶段�
 减少的是重复搭环境、重复执行和重复采证，不是删除未验证的边界。原ID、状态和历史证据
 保持可追溯；只有明确重复或不适用的要求经过范围确认后才归并/标N/A，不能靠删行提高通过率。
 REL-01是PM决策，REL-02是汇总发布门槛，ENV-04是覆盖矩阵；它们不是额外的一次点击测试。
-汇报时同时给出“条件状态”“工作包已覆盖/缺失场景”“前置环境”，不要只报24/126。
+汇报时同时给出“条件状态”“工作包已覆盖/缺失场景”“前置环境”，不要只报26/126。
 
-本次分类/重排没有执行新测试、没有改变任何正式ID的状态，也不改写E33/E36/E37封存报告。
+分类/重排本身没有执行新测试或改变状态；后续E39工程复测另记新证据和状态，
+不改写E33/E36/E37封存报告。
 
 三类 UAC 分开记录：主程序机器安装授权、storage 首次设置/特权恢复授权、工作区目标应用提权。
 另有 Workspaces 目标 EXE 签名确认 UI，它也不是 Windows UAC。
@@ -582,6 +584,56 @@ frontend/target收据和exit0证据。旧receipt和未完成artifact注册记录
 ```text
 C:\Users\bozhang\OneDrive - Microsoft\PowerToys\Module-Signoff\Workspaces-L64-20261102\report.md
 ```
+
+### E38：2026-11-02，推送集成分支并启动正式安装包构建
+
+用户要求本地验证与主构建流水线并行推进。先提交已经通过E35/E36/E37验证的
+时间保留修复和回归测试（`890cc68af1`），再提交验收记录与分类整理
+（`6bd56af1472cd876abc6c2608fbf9888767d24d3`）。集成分支已推送到
+`microsoft/PowerToys` 和 `LegendaryBlair/PowerToys` 的同名feature分支；
+没有合入或直接推送main。
+
+通过现有 `PowerToys Signed YAML Release Build`（definition `76541`，
+`.pipelines/v2/release.yml`）启动
+[ADO 162529587](https://dev.azure.com/microsoft/Dart/_build/results?buildId=162529587)：
+
+| 字段 | 已核对值 |
+|---|---|
+| Source branch / commit | `refs/heads/feature/workspaces-protected-storage-main-20261028` / `6bd56af1472cd876abc6c2608fbf9888767d24d3` |
+| 版本、配置、架构 | `0.101.6007.0`；Release；x64和ARM64 |
+| 发布范围 | `private-validation` / `private`；不发布公开symbols，不触发preview发布 |
+| 启动结果 | build API确认`inProgress`且branch/commit匹配；timeline已开始Build阶段 |
+| 原始证据 | `nov02-installer-6007-queued.json`、`nov02-installer-6007-timeline.json` |
+
+`az pipelines run`返回的是run对象，源码身份位于
+`resources.repositories.self.refName/version`；不能把它的空
+`sourceBranch/sourceVersion`误判为错误分支或重复排队。已另用build API核对。
+本条只证明成功触发且构建身份正确，不证明签名/ICE/安装产物或实际安装通过。
+B02及所有P环境验收仍保持原状态；最终产物必须另行核验。
+
+### E39：2026-11-02，构建期间补齐本地工程复测
+
+在E38签名构建运行期间，针对当前产品源码 `6bd56af147` 执行独立x64 Release
+工程门禁，不创建新的WIP GUI验收run，不重开或修改封存的E33/E36/E37。
+使用仓库build wrapper；测试项目构建成功后用VS `vstest.console.exe`，
+没有运行 `dotnet test`、本地部署helper或已安装产品维护。
+
+| 工程门禁 | 实际结果 | 证据 |
+|---|---|---|
+| 默认原生Workspaces套件 | 显式 `WorkspacesCliLiveTests=false`；重新编译后193/193通过，0失败/跳过 | `nov02-engineering-results\native-build.log`、`native-default.trx`、`native-test.log` |
+| Native生产helper编译/契约 | `Build-Carrier.ps1 -Platform x64 -Configuration Release -Version 0.101.6007.0 -ReleaseStage Compile -RunTests`；Setup/Lifecycle/ProvisionBroker/MsiAction编译和4,129契约检查通过 | `nov02-engineering-results\carrier-compile.log` |
+| Carrier authoring和MSI表 | 编译非安装fixture MSI，核对RemoveFile/Media；本机WIX1105阻止ICE，不能记ICE PASS | `nov02-engineering-results\carrier-authoring-fixed.log` |
+| 本地测试环境保留 | Debug6006 Editor EXE/DLL及CLI的前后SHA256相同；Authoring临时目录已清理；无服务、账号、证书或MSI注册变更 | `nov02-engineering-results\debug-bits-before.json`、`debug-bits-after.json`及契约检查输出 |
+
+首次authoring执行已编译MSI并检查表，但读取旧的项目目录日志路径时报不存在。
+当前wrapper将日志放在 `artifacts\logs\<project>`，因此修正
+`Tests\Test-Authoring.ps1` 的单个路径（提交 `ead90ba490`）后重跑成功，
+且准确输出“本机ICE未执行”。旧执行日志保留为 `carrier-authoring.log`。
+这只是本地测试脚本修复，不改变产品或发布流水线；不因此取消/重复排队E38。
+
+AUTO-02、AUTO-05由RETEST转PASS，整项PASS由24变为26，RETEST由2变为0。
+正式签名/ICE/安装、High/OTS、跨owner和迁移恢复的缺口均保持；Compile输出
+不是可发布的Setup，不能用于预配或作为E38的正式installer。
 
 ### 本次证据
 
