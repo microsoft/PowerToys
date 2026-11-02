@@ -90,9 +90,10 @@ is global. Trust remains bound to exact body/descriptor content.
 
 Python has one Linux/WSL choice: global MXC on selects managed WSLC; MXC off selects
 the configured user distribution. Neither route silently falls back to the other.
-Windows and managed Linux enforce the selected global policy or fail closed if
-it cannot be honored. Managed Linux requires MXC/filesystem protection
-and acknowledged global exceptions for unsupported UI/least-privilege policies.
+Windows and managed Linux enforce the applicable global policies or fail closed if
+they cannot be honored. Managed Linux requires MXC/filesystem protection.
+UI/least-privilege policies apply only to Windows and are ignored by managed Linux;
+their saved settings remain unchanged.
 Explicit WSL recipes are refused while MXC is enabled, including platform defaults.
 
 Managed Linux reuses one daemon-owned WSLC container across scripts and short-lived

@@ -171,9 +171,7 @@ public partial class PowerScriptsViewModel
                     .Replace("{0}", LinuxContainerImage, StringComparison.Ordinal);
             isolation = GetResourceString("PowerScripts_ExecutionLinuxControls")
                 .Replace("{0}", network, StringComparison.Ordinal);
-            if (!script.IsMxcEffectivelyEnabled || !script.IsFilesystemRestrictionEffective ||
-                script.IsUiRestrictionEffective || script.IsLeastPrivilegeRestrictionEffective ||
-                !_mxcRiskAccepted)
+            if (!script.IsMxcEffectivelyEnabled || !script.IsFilesystemRestrictionEffective)
             {
                 blocked = GetResourceString("PowerScripts_ExecutionLinuxBlocked");
             }

@@ -33,17 +33,16 @@ public class MxcLinuxTests
     }
 
     [TestMethod]
-    [DataRow(true, false)]
-    [DataRow(false, true)]
-    [DataRow(false, false)]
-    public void Unsupported_Or_Unaccepted_Policies_Never_Launch(bool enabled, bool acceptExceptions)
+    [DataRow(true)]
+    [DataRow(false)]
+    public void Missing_Required_Isolation_Never_Launches(bool enabled)
     {
         var context = Context();
         var settings = new MxcSettings
         {
             Enabled = enabled,
-            RiskAccepted = acceptExceptions,
-            DisabledPolicies = new() { MxcPolicies.Ui, MxcPolicies.LeastPrivilege },
+            RiskAccepted = true,
+            DisabledPolicies = new() { MxcPolicies.Filesystem },
         };
         var policy = MxcPolicyResolver.Resolve(settings);
         var launcher = new RecordingLauncher(_ => throw new AssertFailedException("Unsupported execution must never start."));
@@ -58,34 +57,50 @@ public class MxcLinuxTests
     }
 
     [TestMethod]
-    public void AcceptedGlobalExceptionsAreSufficientWithoutAnyScriptSettings()
+    [DataRow(true, true)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(false, false)]
+    public void Windows_Only_Controls_Do_Not_Block_Linux_Or_Change_Global_Settings(bool protectUi, bool leastPrivilege)
     {
-        var settings = new MxcSettings
+        var settings = RuntimeSettings();
+        if (!protectUi)
         {
-            Enabled = true,
-            RiskAccepted = true,
-            DisabledPolicies = new() { MxcPolicies.Ui, MxcPolicies.LeastPrivilege },
-        };
-        var policy = MxcPolicyResolver.Resolve(settings);
-        Assert.IsNull(MxcLinuxProcessRunner.GetPolicyError(policy));
-    }
+            settings.DisabledPolicies.Add(MxcPolicies.Ui);
+        }
 
-    [TestMethod]
-    [DataRow(MxcPolicies.Filesystem)]
-    [DataRow(MxcPolicies.Ui)]
-    [DataRow(MxcPolicies.LeastPrivilege)]
-    public void Unsupported_Effective_Control_Is_Refused_Before_Executor_Starts(string control)
-    {
-        var enabled = control == MxcPolicies.Filesystem
-            ? new[] { MxcPolicies.Network }
-            : new[] { MxcPolicies.Filesystem, MxcPolicies.Network, control };
-        var policy = new MxcEffectivePolicy { Enabled = true, EnabledPolicies = enabled };
-        var launcher = new RecordingLauncher(_ => throw new AssertFailedException("Unsupported policy must not execute."));
-        var result = MxcLinuxProcessRunner.Run(
-            "missing.py", "{}", PowerScriptDataFormat.Text,
-            Context(), policy, new MxcSettings(), new PythonWslSettings().ContainerImage, 1000, launcher);
-        Assert.AreEqual(125, result.ExitCode);
-        Assert.AreEqual(0, launcher.Calls);
+        if (!leastPrivilege)
+        {
+            settings.DisabledPolicies.Add(MxcPolicies.LeastPrivilege);
+        }
+
+        settings.RiskAccepted = settings.DisabledPolicies.Count > 0;
+        var launcher = new RecordingLauncher(start =>
+        {
+            using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
+            Assert.IsFalse(config.RootElement.TryGetProperty("ui", out _));
+            Assert.IsFalse(config.RootElement.TryGetProperty("processContainer", out _));
+            var phase = TestPhase(config);
+            if (phase == "provision")
+            {
+                Assert.AreEqual("block", config.RootElement.GetProperty("network").GetProperty("defaultPolicy").GetString());
+                Assert.AreEqual(2, config.RootElement.GetProperty("filesystem").GetProperty("readonlyPaths").GetArrayLength());
+            }
+
+            return PhaseResult(phase);
+        });
+
+        var result = RunText(settings, launcher);
+
+        Assert.AreEqual(0, result.ExitCode, result.StdErr);
+        Assert.AreEqual(3, launcher.Calls);
+        var policy = MxcPolicyResolver.Resolve(settings);
+        Assert.IsTrue(policy.Enabled);
+        Assert.IsTrue(policy.IsEnabled(MxcPolicies.Filesystem));
+        Assert.IsTrue(policy.IsEnabled(MxcPolicies.Network));
+        Assert.AreEqual(protectUi, policy.IsEnabled(MxcPolicies.Ui));
+        Assert.AreEqual(leastPrivilege, policy.IsEnabled(MxcPolicies.LeastPrivilege));
+        Assert.AreEqual(!protectUi || !leastPrivilege, settings.RiskAccepted);
     }
 
     [TestMethod]
@@ -103,11 +118,7 @@ public class MxcLinuxTests
         File.WriteAllText(Path.Combine(_root, "wxc-wslc-daemon.exe"), "test daemon");
         var runDirectory = Path.Combine(_root, "run");
         var context = Context(scriptDirectory, selected);
-        var policy = MxcPolicyResolver.Resolve(new MxcSettings
-        {
-            RiskAccepted = true,
-            DisabledPolicies = new() { MxcPolicies.Ui, MxcPolicies.LeastPrivilege },
-        });
+        var policy = MxcPolicyResolver.Resolve(new MxcSettings());
         var launcher = new RecordingLauncher(start =>
         {
             Assert.AreEqual("--experimental", start.ArgumentList[0]);
@@ -202,12 +213,7 @@ public class MxcLinuxTests
     public void Invalid_Image_Is_Refused_By_Setup_Probe_And_Execution_Without_Fallback(string image)
     {
         var launcher = new RecordingLauncher(_ => throw new AssertFailedException("Invalid images must not execute."));
-        var settings = new MxcSettings
-        {
-            Enabled = true,
-            RiskAccepted = true,
-            DisabledPolicies = new() { MxcPolicies.Ui, MxcPolicies.LeastPrivilege },
-        };
+        var settings = new MxcSettings();
         var results = new[]
         {
             MxcLinuxProcessRunner.Setup(image, settings, launcher),
@@ -277,21 +283,23 @@ public class MxcLinuxTests
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
-    public void Linux_Mode_Uses_Wslc_Without_Falling_Back_To_The_User_Distribution(bool enabled)
+    public void Missing_Managed_Linux_Filesystem_Protection_Does_Not_Fall_Back_To_The_User_Distribution()
     {
         var script = Path.Combine(_root, "script.py");
         File.WriteAllText(script, "raise RuntimeError('Must not run outside WSLC')");
         var manifest = TestTool.Parse(TestTool.Descriptor(), script);
-        var settings = new MxcSettings { Enabled = enabled, RiskAccepted = false };
+        var settings = new MxcSettings
+        {
+            RiskAccepted = true,
+            DisabledPolicies = new() { MxcPolicies.Filesystem },
+        };
         var result = new PythonRuntime(
             new PythonSettings { Mode = PythonRuntimeMode.Wsl, Wsl = new() { Distribution = "must-not-use-this-distribution" } },
             settings).Run(manifest, new PythonTransformInput());
 
         Assert.AreEqual(ProcessRunner.UnsupportedIsolationExitCode, result.ExitCode);
         Assert.AreEqual(MxcLinuxProcessRunner.GetPolicyError(MxcPolicyResolver.Resolve(settings)), result.StdErr);
-        StringAssert.Contains(result.StdErr, "managed Linux image");
+        StringAssert.Contains(result.StdErr, "filesystem restriction");
     }
 
     [TestMethod]
@@ -421,6 +429,7 @@ public class MxcLinuxTests
         if (change == "network")
         {
             settings.DisabledPolicies.Add(MxcPolicies.Network);
+            settings.RiskAccepted = true;
         }
         else if (change == "runtime")
         {
@@ -588,8 +597,6 @@ public class MxcLinuxTests
         return new MxcSettings
         {
             ExecutorPath = Path.Combine(_root, "wxc-exec.exe"),
-            RiskAccepted = true,
-            DisabledPolicies = new() { MxcPolicies.Ui, MxcPolicies.LeastPrivilege },
         };
     }
 

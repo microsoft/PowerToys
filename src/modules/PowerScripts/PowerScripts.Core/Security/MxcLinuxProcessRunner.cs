@@ -31,12 +31,6 @@ public static class MxcLinuxProcessRunner
             return "Managed Linux containers require the global filesystem restriction.";
         }
 
-        if (policy.IsEnabled(MxcPolicies.Ui) || policy.IsEnabled(MxcPolicies.LeastPrivilege))
-        {
-            return "Blocked by isolation requirements: the managed Linux image cannot enforce the Windows UI and least-privilege policies and runs as guest root. " +
-                "Review the global MXC settings and explicitly accept those two unsupported-policy exceptions.";
-        }
-
         return null;
     }
 

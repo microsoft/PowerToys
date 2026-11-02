@@ -6727,7 +6727,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>allowed</value>
   </data>
   <data name="PowerScripts_ExecutionLinuxBlocked" xml:space="preserve">
-    <value>Blocked by global sandbox settings. Managed Linux requires sandbox and file protection, with explicitly accepted global exceptions for the Windows-only desktop and process-privilege restrictions.</value>
+    <value>Blocked by global sandbox settings. Managed Linux requires sandbox and file protection. Windows-only desktop and process-privilege restrictions do not apply to Linux.</value>
   </data>
   <data name="PowerScripts_ExecutionLinuxSetupRequired" xml:space="preserve">
     <value>The managed Linux environment is not ready or has not been checked. Use Check Python in PowerScripts settings, or Download image if it is not cached.</value>
@@ -6739,7 +6739,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>Review sandbox restrictions for Linux</value>
   </data>
   <data name="PowerScripts_LinuxPolicyHelp.Message" xml:space="preserve">
-    <value>Sandbox and file protection are required. Desktop and process-privilege restrictions are Windows only; Python runs as guest root. Use the supported Linux policies below, review networking, and explicitly accept the risk before applying. The exceptions also reduce protection for Windows scripts. Choosing the preset alone saves nothing.</value>
+    <value>Sandbox and file protection are required. Desktop and process-privilege restrictions apply only to Windows scripts and can stay enabled while running Linux. Python runs as guest root, not as a Windows administrator. Review the network restriction before running scripts.</value>
   </data>
   <data name="PowerScripts_LinuxUseSupported.Content" xml:space="preserve">
     <value>Use supported Linux policies</value>

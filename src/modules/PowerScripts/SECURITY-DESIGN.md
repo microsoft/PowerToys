@@ -15,8 +15,9 @@ The security review selected a hybrid of the two proposals:
   accepting the reduced-isolation risk.
 - Descriptors cannot configure or recommend security policy. Every script uses the global policy;
   there are no per-script overrides or local policy records.
-- Managed Linux requires MXC and filesystem protection. Its unsupported Windows UI and
-  least-privilege policies require explicitly acknowledged global exceptions; Python runs as guest root.
+- Managed Linux requires MXC and filesystem protection. Windows UI and least-privilege
+  policies do not apply to Linux; their switches remain effective for Windows scripts.
+  Python runs as guest root, not as a Windows administrator.
 - Managed Linux scripts share a warm WSLC container and its mutable guest state, background
   processes, and workspace mount. This is a host boundary, not a boundary between scripts.
   Only selected external files are staged read-only; no whole-drive mounts are added for reuse.

@@ -264,9 +264,8 @@ returned files are never moved/deleted. Cancellation and a 60-second limit apply
 Settings presents isolation as **Run scripts in sandbox environment**, with a
 parent On/Off switch and restriction children shown only when on. Turning it off
 preserves the saved restriction choices. **Protect desktop interaction** and
-**Limit process privileges** are marked **Windows only**. Managed Linux requires
-explicitly accepted global exceptions for both; those exceptions also reduce
-protection for Windows scripts.
+**Limit process privileges** are marked **Windows only**. Managed Linux ignores
+these two restrictions; they can remain enabled to protect Windows scripts.
 
 All scripts use the global `mxc` configuration:
 
@@ -362,8 +361,8 @@ prepared by older prototype builds may need **Download image** again. Script exe
 never downloads an image automatically.
 
 Managed Linux requires global MXC and filesystem protection. Unsupported Windows
-UI/least-privilege policies require acknowledged global exceptions; Python runs
-as guest root, not Windows administrator. Networking is globally blocked or allowed.
+UI/least-privilege policies do not apply to Linux and do not block its execution.
+Python runs as guest root, not Windows administrator. Networking is globally blocked or allowed.
 Only the package, request, selected files, and declared file parameters are
 projected read-only; Windows writes are limited to the run workspace.
 Return existing workspace files created with `tempfile`/`TMPDIR`; symlinks,
