@@ -57,6 +57,12 @@ namespace
 namespace
 {
     DWORD mainThreadId = {};
+
+    // Thread-pool callback that frees the tables a profile swap replaced (see RetireConfiguration).
+    void CALLBACK DeleteRetiredConfiguration(PTP_CALLBACK_INSTANCE, PVOID context)
+    {
+        delete static_cast<State*>(context);
+    }
 }
 
 KeyboardManager::KeyboardManager()
@@ -77,41 +83,14 @@ KeyboardManager::KeyboardManager()
             Logger::error(L"Failed to watch settings changes. {}", get_last_error_or_default(err));
         }
 
-        loadingSettings = true;
-        bool loadedSuccessfully = false;
         try
         {
-            LoadSettings();
-            loadedSuccessfully = true;
+            OnSettingsChanged();
         }
         catch (...)
         {
             Logger::error("Failed to load settings");
         }
-
-        loadingSettings = false;
-
-        if (!loadedSuccessfully)
-            return;
-
-        const bool newHasRemappings = HasRegisteredRemappingsUnchecked();
-        // We didn't have any bindings before and we have now
-        if (newHasRemappings && !hookHandle)
-            PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
-
-        // All bindings were removed
-        if (!newHasRemappings && hookHandle)
-            StopLowlevelKeyboardHook();
-
-        // The set of "Alone" (dual-key) remaps may have changed without changing whether ANY binding
-        // exists, so reconcile the companion mouse hook. Route an install through the same StartHook
-        // message (SetWindowsHookEx must run on the hook thread); a removal is safe inline, mirroring
-        // the StopLowlevelKeyboardHook call above.
-        const bool needMouseHook = !state.aloneSingleKeyReMap.empty();
-        if (needMouseHook && hookHandle && !mouseHookHandle)
-            PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
-        else if (!needMouseHook && mouseHookHandle)
-            StopLowlevelMouseHook();
     };
 
     editorIsRunningEvent = CreateEvent(nullptr, true, false, KeyboardManagerConstants::EditorWindowEventName.c_str());
@@ -131,64 +110,13 @@ KeyboardManager::KeyboardManager()
 
 void KeyboardManager::OnRawKeyEvent(const RawInputKeyboardTracker::KeyEvent& keyEvent)
 {
-    // Injected input (hDevice == NULL, incl. KBM's own remap output) is not physical: it neither
-    // moves the held-key set nor triggers a switch.
-    if (keyEvent.injected)
-    {
-        return;
-    }
-
-    // --- Physical held-key tracking, so an auto-switch can be deferred until no key is down. ---
-    const auto now = std::chrono::steady_clock::now();
-    if (keyEvent.keyDown)
-    {
-        heldKeys[keyEvent.vkey] = now; // idempotent; auto-repeat just refreshes the timestamp
-    }
-    else
-    {
-        heldKeys.erase(keyEvent.vkey);
-    }
-
-    // Recover from a lost key-up (see HeldKeyStaleTimeout): drop any key that has received no event
-    // within the stale window. Because this runs on every event, continued typing self-heals a
-    // phantom hold within HeldKeyStaleTimeout; a truly-held key keeps repeating and is not pruned.
-    for (auto it = heldKeys.begin(); it != heldKeys.end();)
-    {
-        it = (now - it->second > HeldKeyStaleTimeout) ? heldKeys.erase(it) : std::next(it);
-    }
-
-    // A switch was deferred until the keys were released; fire it now that nothing is held, so a
-    // key-down and its matching key-up are always resolved under the same profile. Keys remapped by
-    // the active profile never reach raw input, so the hook's view (hookHeldKeys) must be empty too.
-    // If the last key released is such a remapped key, no raw event follows its key-up; the switch
-    // then fires on the next physical keystroke's key-up, which is still resolved under one profile.
-    if (!deferredSwitchTarget.empty() && heldKeys.empty() && !AnyHookKeyHeld(now))
-    {
-        const std::wstring target = deferredSwitchTarget;
-        deferredSwitchTarget.clear();
-
-        bool alreadyActive = false;
-        {
-            std::lock_guard<std::mutex> lock(activeProfileMutex);
-            if (activeProfileName == target)
-            {
-                alreadyActive = true;
-            }
-            else
-            {
-                requestedProfile = target;
-            }
-        }
-
-        if (!alreadyActive)
-        {
-            Logger::trace(L"Auto-switch: held keys released -> switching to profile '{}'", target);
-            SwitchActiveProfile(target);
-        }
-    }
-
-    // The remaining auto-switch hysteresis is driven by key-downs only.
-    if (!keyEvent.keyDown)
+    // Injected input (hDevice == NULL, incl. KBM's own remap output) is not physical and never
+    // triggers a switch. Hysteresis is driven by key-downs only.
+    //
+    // The switch is requested right away: the reload it triggers is staged, and the low-level hook
+    // applies it only at a fresh key-down while no physical key is held (ProfileSwapGate), so a key
+    // held on any keyboard is still released under the profile it was pressed under.
+    if (keyEvent.injected || !keyEvent.keyDown)
     {
         return;
     }
@@ -255,25 +183,16 @@ void KeyboardManager::OnRawKeyEvent(const RawInputKeyboardTracker::KeyEvent& key
         requested = requestedProfile;
     }
 
-    if (target == current)
+    // Where the engine is heading: the requested/staged profile while a switch is in flight, else the
+    // live one. Matching it means there is nothing to do (this also dedupes requests during the
+    // reload and staging window). Typing on the live profile's keyboard while a switch away from it
+    // is pending does not match, so it requests the live profile again, which supersedes the pending
+    // stage (with the same hysteresis as any other switch).
+    const std::wstring& heading = requested.empty() ? current : requested;
+    if (target == heading)
     {
-        // Already on the right profile; reset any pending or deferred switch (the user is back on the
-        // current profile's keyboard, so a switch away that hasn't fired yet is now stale).
         pendingTarget.clear();
         pendingCount = 0;
-        deferredSwitchTarget.clear();
-        {
-            std::lock_guard<std::mutex> lock(activeProfileMutex);
-            requestedProfile.clear();
-        }
-        return;
-    }
-
-    // A switch to this profile was already requested and no reload has completed since; wait for
-    // it rather than re-issuing. LoadSettings clears requestedProfile on every reload, so a switch
-    // to a different profile by another path can no longer leave a stale request wedged here.
-    if (target == requested)
-    {
         return;
     }
 
@@ -294,12 +213,15 @@ void KeyboardManager::OnRawKeyEvent(const RawInputKeyboardTracker::KeyEvent& key
     }
 
     pendingCount = 0;
+    pendingTarget.clear();
 
-    // Defer the switch until every physical key is released (handled at the top of this function),
-    // so the active profile never changes mid-hold. The triggering keystroke is itself still held
-    // here, so in the common case the switch fires on that key's own key-up a few milliseconds later.
-    deferredSwitchTarget = target;
-    Logger::trace(L"Auto-switch: keyboard {} -> deferring switch to profile '{}' until keys released", keyEvent.devicePath, target);
+    {
+        std::lock_guard<std::mutex> lock(activeProfileMutex);
+        requestedProfile = target;
+    }
+
+    Logger::trace(L"Auto-switch: keyboard {} -> requesting profile '{}'", keyEvent.devicePath, target);
+    SwitchActiveProfile(target);
 }
 
 void KeyboardManager::LoadDeviceProfiles()
@@ -533,12 +455,9 @@ void KeyboardManager::LoadSettings()
     {
         std::lock_guard<std::mutex> lock(activeProfileMutex);
         activeProfileName = state.currentConfig;
-
-        // A reload just completed, so any pending auto-switch request is now resolved — fulfilled
-        // if the active profile landed on the requested one, or superseded if it changed by another
-        // path. Clearing it here is what lets auto-switch return to a profile after a manual switch.
         requestedProfile.clear();
     }
+    profileSwapGate.SetAppliedProfile(state.currentConfig);
     LoadDeviceProfiles();
 
     try
@@ -561,37 +480,217 @@ void KeyboardManager::LoadSettings()
     }
 }
 
-void KeyboardManager::TrackHookKeyEvent(const DWORD vkCode, const bool keyDown) noexcept
+std::unique_ptr<State> KeyboardManager::LoadConfiguration(MappingConfiguration::LoadOutcome& outcome)
 {
+    auto configuration = std::make_unique<State>();
+    if (configuration->LoadSettings(&outcome))
+    {
+        return configuration;
+    }
+
+    // Same single retry as the in-place load always had: a writer may be mid-write.
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    auto retry = std::make_unique<State>();
+    MappingConfiguration::LoadOutcome retryOutcome = MappingConfiguration::LoadOutcome::Failed;
+    retry->LoadSettings(&retryOutcome);
+
+    // Keep the first result if the retry could not read anything (e.g. the first load only skipped a
+    // malformed entry and the retry hit a write in progress).
+    if (retryOutcome != MappingConfiguration::LoadOutcome::Failed || outcome == MappingConfiguration::LoadOutcome::Failed)
+    {
+        outcome = retryOutcome;
+        configuration = std::move(retry);
+    }
+
+    return configuration;
+}
+
+void KeyboardManager::OnSettingsChanged()
+{
+    MappingConfiguration::LoadOutcome outcome = MappingConfiguration::LoadOutcome::Failed;
+    std::unique_ptr<State> loaded = LoadConfiguration(outcome);
+
+    LoadDeviceProfiles();
+
+    if (outcome == MappingConfiguration::LoadOutcome::Failed)
+    {
+        // Transient failure: keep the live tables (and any pending stage). Clear an in-flight
+        // auto-switch request so the tracker's dedupe does not block a retry from the same keyboard.
+        Logger::error(L"Settings reload failed; keeping the current remaps");
+        std::lock_guard<std::mutex> lock(activeProfileMutex);
+        requestedProfile.clear();
+        return;
+    }
+
     try
     {
-        std::lock_guard<std::mutex> lock(hookHeldKeysMutex);
-        if (keyDown)
-        {
-            hookHeldKeys[vkCode] = std::chrono::steady_clock::now();
-        }
-        else
-        {
-            hookHeldKeys.erase(vkCode);
-        }
+        // Send telemetry about configured key/shortcut to key/shortcut mappings, OS an app specific level.
+        Trace::SendKeyAndShortcutRemapLoadedConfiguration(*loaded);
     }
     catch (...)
     {
-        // Never let held-key bookkeeping throw out of the hook; worst case auto-switch is not deferred.
+        try
+        {
+            Logger::error("Failed to send telemetry for the configured remappings.");
+            Trace::ErrorSendingKeyAndShortcutRemapLoadedConfiguration();
+        }
+        catch (...)
+        {
+        }
+    }
+
+    const auto applyInPlace = [this](State& configuration) {
+        // Same profile (an editor edit): replace the tables right away, as the in-place reload always
+        // did. The hook passes input through while loadingSettings is set. Runtime state other than
+        // the "Alone" keys is kept, as before.
+        loadingSettings = true;
+        state.AdoptConfiguration(configuration, false);
+        state.ClearAllAloneKeyState();
+        loadingSettings = false;
+    };
+
+    const auto onStaged = [this](const std::wstring& stagedProfile) {
+        std::lock_guard<std::mutex> lock(activeProfileMutex);
+        requestedProfile = stagedProfile;
+    };
+
+    const auto result = profileSwapGate.Offer(outcome, std::move(loaded), applyInPlace, onStaged);
+    if (result == ProfileSwapGate::OfferResult::Staged)
+    {
+        Logger::trace(L"Profile change to '{}' staged; it is applied at the next key-down with no key held", profileSwapGate.StagedProfile());
+
+        // Without a keyboard hook nothing is remapped, so nothing can be held "under" the live profile:
+        // let the hook thread apply the stage now (ReconcileHooks).
+        if (!hookHandle)
+        {
+            PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
+        }
+
+        return;
+    }
+
+    {
+        std::lock_guard<std::mutex> lock(activeProfileMutex);
+        requestedProfile.clear();
+    }
+
+    const bool newHasRemappings = HasRegisteredRemappingsUnchecked();
+    // We didn't have any bindings before and we have now
+    if (newHasRemappings && !hookHandle)
+        PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
+
+    // All bindings were removed
+    if (!newHasRemappings && hookHandle)
+        StopLowlevelKeyboardHook();
+
+    // The set of "Alone" (dual-key) remaps may have changed without changing whether ANY binding
+    // exists, so reconcile the companion mouse hook. Route an install through the same StartHook
+    // message (SetWindowsHookEx must run on the hook thread); a removal is safe inline, mirroring
+    // the StopLowlevelKeyboardHook call above.
+    const bool needMouseHook = !state.aloneSingleKeyReMap.empty();
+    if (needMouseHook && hookHandle && !mouseHookHandle)
+        PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
+    else if (!needMouseHook && mouseHookHandle)
+        StopLowlevelMouseHook();
+}
+
+void KeyboardManager::AdoptStagedConfiguration(std::unique_ptr<State> staged)
+{
+    state.AdoptConfiguration(*staged, true);
+
+    {
+        std::lock_guard<std::mutex> lock(activeProfileMutex);
+        activeProfileName = state.currentConfig;
+        if (requestedProfile == activeProfileName)
+        {
+            requestedProfile.clear();
+        }
+    }
+
+    // Install/remove the keyboard and mouse hooks for the new tables. Posted, so it runs on this
+    // (hook) thread after the current hook callback returns.
+    PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
+
+    Logger::trace(L"Profile '{}' applied", state.currentConfig);
+
+    RetireConfiguration(std::move(staged));
+}
+
+void KeyboardManager::RetireConfiguration(std::unique_ptr<State> configuration)
+{
+    if (!configuration)
+    {
+        return;
+    }
+
+    State* raw = configuration.release();
+    if (!TrySubmitThreadpoolCallback(DeleteRetiredConfiguration, raw, nullptr))
+    {
+        delete raw;
     }
 }
 
-bool KeyboardManager::AnyHookKeyHeld(const std::chrono::steady_clock::time_point now)
+std::vector<ProfileSwapGate::KeySnapshot> KeyboardManager::SnapshotKeysDown()
 {
-    std::lock_guard<std::mutex> lock(hookHeldKeysMutex);
-    // Same lost-key-up recovery as heldKeys: a held key keeps auto-repeating, so only an event-less
-    // entry (up swallowed by the secure desktop, sleep, unplug, ...) ages out.
-    for (auto it = hookHeldKeys.begin(); it != hookHeldKeys.end();)
+    std::vector<ProfileSwapGate::KeySnapshot> keys;
+
+    // From VK_BACK up: 0x01-0x07 are mouse buttons and VK_CANCEL. Skip the generic Shift/Ctrl/Alt:
+    // the low-level hook reports the left/right variants, which are checked separately.
+    for (int vk = VK_BACK; vk <= 0xFE; ++vk)
     {
-        it = (now - it->second > HeldKeyStaleTimeout) ? hookHeldKeys.erase(it) : std::next(it);
+        if (vk == VK_SHIFT || vk == VK_CONTROL || vk == VK_MENU)
+        {
+            continue;
+        }
+
+        if (GetAsyncKeyState(vk) & 0x8000)
+        {
+            const UINT scanCode = MapVirtualKeyW(static_cast<UINT>(vk), MAPVK_VK_TO_VSC_EX);
+            keys.push_back({ static_cast<DWORD>(vk), scanCode & 0xFF, (scanCode & 0xFF00) == 0xE000 });
+        }
     }
 
-    return !hookHeldKeys.empty();
+    return keys;
+}
+
+void KeyboardManager::ReconcileHooks()
+{
+    if (!hookHandle && profileSwapGate.HasStage())
+    {
+        // No keyboard hook means the live profile remaps nothing, so no key is held "under" it: apply
+        // the stage now. Keys down right now reached the system unremapped; they are recorded as
+        // pass-through orphans so their key-ups also pass through instead of being resolved by the
+        // new profile.
+        profileSwapGate.ApplyStageWithoutHook(SnapshotKeysDown(), [this](std::unique_ptr<State> staged) {
+            AdoptStagedConfiguration(std::move(staged));
+        });
+    }
+
+    if (HasRegisteredRemappingsUnchecked())
+    {
+        StartLowlevelKeyboardHook();
+    }
+    else
+    {
+        StopLowlevelKeyboardHook();
+    }
+}
+
+intptr_t KeyboardManager::HandlePhysicalKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
+{
+    try
+    {
+        return profileSwapGate.OnPhysicalKeyEvent(
+            data,
+            [this](LowlevelKeyboardEvent* event) { return HandleKeyboardHookEvent(event); },
+            [this](std::unique_ptr<State> staged) { AdoptStagedConfiguration(std::move(staged)); });
+    }
+    catch (...)
+    {
+        // Bookkeeping failed (e.g. out of memory). Pass the event on rather than risk handling it twice.
+        return 0;
+    }
 }
 
 LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const LPARAM lParam)
@@ -602,15 +701,25 @@ LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const
         event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
         event.wParam = wParam;
 
-        // Physical keys only (injected input, incl. KBM's own remap output, carries LLKHF_INJECTED).
-        // Recorded before remapping so keys the active profile suppresses are counted as held too.
-        if (!(event.lParam->flags & LLKHF_INJECTED))
-        {
-            keyboardManagerObjectPtr->TrackHookKeyEvent(event.lParam->vkCode, wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN);
-        }
+        // Read before the numpad-origin encoding below changes vkCode.
+        const bool physical = !(event.lParam->flags & LLKHF_INJECTED);
         event.lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event.lParam->vkCode, event.lParam->flags & LLKHF_EXTENDED);
 
-        if (keyboardManagerObjectPtr->HandleKeyboardHookEvent(&event) == 1)
+        // Physical keys go through the profile-swap gate (held-key tracking, staged profile changes,
+        // orphans); injected input, incl. KBM's own remap output, carries LLKHF_INJECTED and is
+        // handled by the live tables directly (the gate only notes injected key-ups of held keys).
+        intptr_t result = 0;
+        if (physical)
+        {
+            result = keyboardManagerObjectPtr->HandlePhysicalKeyboardHookEvent(&event);
+        }
+        else
+        {
+            keyboardManagerObjectPtr->profileSwapGate.OnInjectedKeyEvent(&event);
+            result = keyboardManagerObjectPtr->HandleKeyboardHookEvent(&event);
+        }
+
+        if (result == 1)
         {
             // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
             if (event.lParam->vkCode == VK_NUMLOCK && (event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN) && event.lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
@@ -694,6 +803,12 @@ void KeyboardManager::StartLowlevelKeyboardHook()
             show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Keyboard Manager");
             auto errorMessage = get_last_error_message(errorCode);
             Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"StartLowlevelKeyboardHook::SetWindowsHookEx");
+        }
+        else
+        {
+            // The hook saw none of the events while it was not installed, so its held-key set is stale.
+            // Keys down right now were pressed without the hook: their key-ups pass through.
+            profileSwapGate.ResetHeldKeys(SnapshotKeysDown());
         }
     }
 

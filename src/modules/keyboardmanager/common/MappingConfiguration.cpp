@@ -474,10 +474,13 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
     return result;
 }
 
-bool MappingConfiguration::LoadSettings()
+bool MappingConfiguration::LoadSettings(LoadOutcome* outcome)
 {
     Logger::trace(L"SettingsHelper::LoadSettings()");
     configurationNameResolved = false;
+    LoadOutcome ignoredOutcome;
+    LoadOutcome& loadOutcome = outcome ? *outcome : ignoredOutcome;
+    loadOutcome = LoadOutcome::Failed;
     try
     {
         PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::load_from_settings_file(KeyboardManagerConstants::ModuleName);
@@ -516,6 +519,7 @@ bool MappingConfiguration::LoadSettings()
                 ClearSingleKeyAloneRemaps();
                 ClearOSLevelShortcuts();
                 ClearAppSpecificShortcuts();
+                loadOutcome = LoadOutcome::ConfirmedAbsent;
             }
             else
             {
@@ -537,6 +541,7 @@ bool MappingConfiguration::LoadSettings()
         result = LoadShortcutRemaps(*configFile, KeyboardManagerConstants::RemapShortcutsToTextSettingName) && result;
         result = LoadSingleKeyToTextRemaps(*configFile) && result;
 
+        loadOutcome = LoadOutcome::Loaded;
         return result;
     }
     catch (...)
@@ -545,6 +550,20 @@ bool MappingConfiguration::LoadSettings()
     }
 
     return false;
+}
+
+void MappingConfiguration::SwapMappings(MappingConfiguration& other) noexcept
+{
+    singleKeyReMap.swap(other.singleKeyReMap);
+    aloneSingleKeyReMap.swap(other.aloneSingleKeyReMap);
+    scanMap.swap(other.scanMap);
+    singleKeyToTextReMap.swap(other.singleKeyToTextReMap);
+    osLevelShortcutReMap.swap(other.osLevelShortcutReMap);
+    osLevelShortcutReMapSortedKeys.swap(other.osLevelShortcutReMapSortedKeys);
+    appSpecificShortcutReMap.swap(other.appSpecificShortcutReMap);
+    appSpecificShortcutReMapSortedKeys.swap(other.appSpecificShortcutReMapSortedKeys);
+    currentConfig.swap(other.currentConfig);
+    std::swap(configurationNameResolved, other.configurationNameResolved);
 }
 
 bool MappingConfiguration::IsConfigurationNameResolved() const

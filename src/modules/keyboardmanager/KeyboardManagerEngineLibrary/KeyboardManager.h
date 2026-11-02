@@ -10,12 +10,14 @@
 #include <common/utils/EventWaiter.h>
 #include <keyboardmanager/common/Input.h>
 #include "State.h"
+#include "ProfileSwapGate.h"
 #include "RawInputKeyboardTracker.h"
 #include "ProfileCycleHotkey.h"
 
 class KeyboardManager
 {
 public:
+    // Posted to the hook thread to run ReconcileHooks.
     static const inline DWORD StartHookMessageID = WM_APP + 1;
 
     // Constructor
@@ -50,6 +52,10 @@ public:
     void StartLowlevelKeyboardHook();
     void StopLowlevelKeyboardHook();
 
+    // Hook thread (StartHookMessageID): apply a staged profile change if no keyboard hook is installed,
+    // then install or remove the keyboard/mouse hooks to match the live remap tables.
+    void ReconcileHooks();
+
     bool HasRegisteredRemappings() const;
 
 private:
@@ -83,6 +89,13 @@ private:
 
     // Variable which stores all the state information to be shared between the UI and back-end
     State state;
+
+    // Decides when a reload that changes the active profile may replace `state`'s tables: on the hook
+    // thread, at a fresh physical key-down while no physical key is held (see ProfileSwapGate.h).
+    ProfileSwapGate profileSwapGate{
+        [] { return std::chrono::steady_clock::now(); },
+        [](DWORD vkCode) { return (GetAsyncKeyState(static_cast<int>(vkCode)) & 0x8000) != 0; }
+    };
 
     // Object of class which implements InputInterface. Required for calling library functions while enabling testing
     KeyboardManagerInput::Input inputHandler;
@@ -126,7 +139,8 @@ private:
     std::unordered_map<std::wstring, std::wstring> deviceProfileMap;
     std::mutex deviceMapMutex;
 
-    // The currently active profile name, updated on every settings load. Read on the tracker thread.
+    // The profile whose tables are live in `state`. Set by the initial load, by a same-profile reload,
+    // and on the hook thread right after a staged profile is adopted. Read on the tracker thread.
     std::wstring activeProfileName;
     std::mutex activeProfileMutex;
 
@@ -134,44 +148,12 @@ private:
     std::wstring pendingTarget;
     int pendingCount = 0;
 
-    // Physical keys currently held down (VK -> time of last key-down), maintained from raw input on
-    // the tracker thread. An auto-switch is deferred while this is non-empty so the active profile
-    // never changes mid-hold: the low-level hook resolves each key-up under whatever profile is
-    // active at up-time, so switching while a key is down would inject the new profile's mapping for
-    // a key whose down the app already saw under the old one (a stuck key / spurious remap).
-    // Deliberately device-agnostic (keyed by VK, not by keyboard): remapping is global — the hook
-    // applies the active profile to every keyboard's keys — so a key held on *any* keyboard is
-    // vulnerable to that mismatch, and all physical keys must be released before it is safe to switch.
-    std::unordered_map<USHORT, std::chrono::steady_clock::time_point> heldKeys;
-
-    // The same held-key set as seen by the low-level hook, which is the only place a key remapped by
-    // the active profile is visible: the hook suppresses it, so it never reaches raw input and is
-    // missing from heldKeys. Without this, holding a remapped key (e.g. Q -> Ctrl) on one keyboard
-    // while typing on another let the switch fire mid-hold and left the injected Ctrl stuck.
-    // Written on the hook thread, read on the tracker thread; guarded by hookHeldKeysMutex.
-    std::unordered_map<DWORD, std::chrono::steady_clock::time_point> hookHeldKeys;
-    std::mutex hookHeldKeysMutex;
-
-    // Hook thread: record a physical (non-injected) key-down / key-up in hookHeldKeys.
-    void TrackHookKeyEvent(DWORD vkCode, bool keyDown) noexcept;
-
-    // Tracker thread: true while the hook still sees a physical key held (stale entries pruned).
-    bool AnyHookKeyHeld(std::chrono::steady_clock::time_point now);
-
-    // A profile switch requested while keys were held, fired once heldKeys empties. Tracker-thread-only.
-    std::wstring deferredSwitchTarget;
-
-    // How long a held key may receive no further event before its key-up is presumed lost (secure
-    // desktop / lock / sleep / session switch / device unplug) and the key is dropped from heldKeys,
-    // so a missed up can't pin auto-switch indefinitely. A genuinely held key keeps auto-repeating
-    // (refreshing its timestamp) and so is never pruned; only an event-less key ages out.
-    static constexpr std::chrono::seconds HeldKeyStaleTimeout{ 3 };
-
-    // The profile a switch was last requested for, while waiting for the reload to apply it
-    // (dedupes repeated SwitchActiveProfile calls during the async reload window). Guarded by
-    // activeProfileMutex because LoadSettings clears it when any reload completes — otherwise an
-    // external profile change (manual picker / cycle hotkey / editor) would leave a stale request
-    // that permanently blocks auto-switching back to that profile.
+    // The profile the engine is heading to but has not adopted yet: set when the tracker requests a
+    // switch and when a reload stages a profile change; cleared once that profile is adopted, when a
+    // reload fails (so the tracker can retry), and when a same-profile reload is applied. The tracker
+    // compares a keyboard's profile with this (or with activeProfileName when it is empty), which both
+    // dedupes requests while a switch is in flight and lets typing on the current profile's keyboard
+    // cancel a pending switch away from it. Guarded by activeProfileMutex.
     std::wstring requestedProfile;
 
     // Last keyboard seen, logged on change to help discover device paths for the profile map.
@@ -183,8 +165,27 @@ private:
     // Mouse hook procedure definition (companion to HookProc for the "Alone" dual-key feature)
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam);
 
-    // Load settings from the file.
+    // Initial load of the settings, in place (before any hook or reload callback exists).
     void LoadSettings();
+
+    // Settings-changed callback (settings watcher thread). Parses the configuration into a separate
+    // State, then lets profileSwapGate apply it in place (same profile) or stage it (profile change).
+    void OnSettingsChanged();
+
+    // Load the active profile into a fresh State, retrying once after 500 ms if the load was not clean.
+    static std::unique_ptr<State> LoadConfiguration(MappingConfiguration::LoadOutcome& outcome);
+
+    // Hook thread, under the gate lock: make a staged configuration live and record the new profile.
+    void AdoptStagedConfiguration(std::unique_ptr<State> staged);
+
+    // Free a configuration's tables on a thread-pool thread instead of the hook thread.
+    static void RetireConfiguration(std::unique_ptr<State> configuration);
+
+    // Keys GetAsyncKeyState reports down right now (left/right modifier variants only).
+    static std::vector<ProfileSwapGate::KeySnapshot> SnapshotKeysDown();
+
+    // Hook thread: a physical (non-injected) event, routed through profileSwapGate.
+    intptr_t HandlePhysicalKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;
 
     // Function called by the hook procedure to handle the events. This is the starting point function for remapping
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;

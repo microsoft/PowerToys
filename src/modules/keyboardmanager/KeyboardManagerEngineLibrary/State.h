@@ -23,6 +23,14 @@ private:
     std::unordered_set<DWORD> aloneCombinationKeys;  // real key-down injected (combination started)
 
 public:
+    // Make `configuration`'s remap tables the live ones by exchanging containers with it (O(1), no
+    // copies); `configuration` receives the previous tables so the caller can free them elsewhere.
+    // With resetRuntimeState, also forget all runtime state tied to the previous tables (the
+    // activated app-specific target, injection-failure markers, "Alone" pending/combination keys,
+    // numpad pressed state). Shortcut invocation state lives inside the tables, so it moves out with
+    // them either way. Must run on the low-level hook thread (or while no hook is installed).
+    void AdoptConfiguration(MappingConfiguration& configuration, bool resetRuntimeState) noexcept;
+
     // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
     std::optional<SingleKeyRemapTable::iterator> GetSingleKeyRemap(const DWORD& originalKey);
 
