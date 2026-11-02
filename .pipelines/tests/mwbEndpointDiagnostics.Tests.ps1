@@ -409,7 +409,7 @@ Describe 'MWB bounded nonsecret guest-command stages' {
         $method | Should Match 'CopyFromScreen'
         $method | Should Match 'NativeSupport.Desktop\(\).Ready'
         $method | Should Not Match 'FocusWindow|Clipboard|SetForegroundWindow|DrawToBitmap'
-        $receiver | Should Match 'public void CaptureFailureDesktop\(string path\) \{ Receiver.CaptureFailureDesktop\(path\); \}'
+        $receiver | Should Match 'public void CaptureFailureDesktop\(string path\)\s*\{\s*Receiver\.CaptureFailureDesktop\(path\);\s*\}'
     }
 
     It 'observes native mouse routing without injecting or reporting window text' {
