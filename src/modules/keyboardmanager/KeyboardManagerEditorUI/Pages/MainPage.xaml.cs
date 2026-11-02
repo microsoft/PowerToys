@@ -1300,7 +1300,7 @@ namespace KeyboardManagerEditorUI.Pages
                 ? SettingsManager.TryRemoveShortcutKeyMapping(mappingId)
                 : ExecuteMappingTransaction(
                     candidate => DeleteMapping(candidate, settings.Shortcut),
-                    () => SettingsManager.TryRemoveShortcutKeyMapping(mappingId));
+                    profileName => SettingsManager.TryRemoveShortcutKeyMapping(mappingId, profileName));
         }
 
         private bool SetMappingActiveStateTransaction(string mappingId, bool isActive)
@@ -1323,12 +1323,15 @@ namespace KeyboardManagerEditorUI.Pages
 
             return ExecuteMappingTransaction(
                 candidate => isActive ? AddMapping(candidate, settings.Shortcut) : DeleteMapping(candidate, settings.Shortcut),
-                () => SettingsManager.TrySetShortcutKeyMappingActiveState(mappingId, isActive));
+                profileName => SettingsManager.TrySetShortcutKeyMappingActiveState(mappingId, isActive, profileName));
         }
 
+        // commitMetadata receives the profile the candidate service was built against
+        // (candidateService.ConfigurationName). The native save lands in that profile's config, so the
+        // metadata must be attributed to it too, even if the engine auto-switches in between.
         private bool ExecuteMappingTransaction(
             Func<KeyboardMappingService, bool> updateCandidate,
-            Func<bool> commitMetadata)
+            Func<string?, bool> commitMetadata)
         {
             if (_mappingService == null)
             {
@@ -1356,7 +1359,7 @@ namespace KeyboardManagerEditorUI.Pages
                     return false;
                 }
 
-                if (!commitMetadata())
+                if (!commitMetadata(candidateService.ConfigurationName))
                 {
                     RestoreOriginalMappingSettings(originalService);
                     return false;
