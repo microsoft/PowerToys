@@ -40,6 +40,13 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
     public string Id => _rootItem.Command.Id;
 
+    internal bool CanReuseFor(CommandItemViewModel rootItem, DockBandSettings settings, bool defaultShowLabels) =>
+        !_cleanupStarted.Value &&
+        ReferenceEquals(_rootItem, rootItem) &&
+        _bandSettings == settings &&
+        _showTitles == settings.ResolveShowTitles(defaultShowLabels) &&
+        _showSubtitles == settings.ResolveShowSubtitles(defaultShowLabels);
+
     /// <summary>
     /// Gets or sets a value indicating whether titles are shown for items in this band.
     /// This is a preview value - call <see cref="SaveLabelSettings"/> to persist or
@@ -237,6 +244,9 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         var dockSettings = settingsService.Settings.DockSettings;
         _showTitles = settings.ResolveShowTitles(dockSettings.ShowLabels);
         _showSubtitles = settings.ResolveShowSubtitles(dockSettings.ShowLabels);
+#if DEBUG
+        DockMemoryExperiment.Created(this);
+#endif
     }
 
     public static ICommandItem[] GetItemsForDisplay(CommandItemViewModel rootItem)
@@ -415,6 +425,9 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
     public override void InitializeProperties()
     {
+#if DEBUG
+        DockMemoryExperiment.Initialized();
+#endif
         if (_cleanupStarted.Value)
         {
             return;
@@ -483,6 +496,9 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
             return;
         }
 
+#if DEBUG
+        DockMemoryExperiment.Cleaned();
+#endif
         base.UnsafeCleanup();
 
         IListPage? subscribedList;

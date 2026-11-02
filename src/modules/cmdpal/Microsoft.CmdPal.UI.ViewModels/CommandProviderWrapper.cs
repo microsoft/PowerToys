@@ -323,6 +323,10 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
                 {
                     topLevelList.Add(pinnedItem);
                 }
+                else
+                {
+                    pinnedItem.Cleanup();
+                }
             }
         }
 
