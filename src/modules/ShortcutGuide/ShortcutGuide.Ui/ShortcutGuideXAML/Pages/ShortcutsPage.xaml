@@ -43,7 +43,7 @@
             SubtitleTemplate="{StaticResource SubtitleTemplate}" />
     </Page.Resources>
     <Grid>
-        <ScrollViewer>
+        <ScrollViewer IsTabStop="False">
             <ItemsRepeater
                 x:Name="MainItemsRepeater"
                 Margin="0,0,0,24"
