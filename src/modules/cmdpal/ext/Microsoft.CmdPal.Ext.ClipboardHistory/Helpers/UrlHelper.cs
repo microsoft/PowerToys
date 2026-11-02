@@ -92,7 +92,7 @@ internal static class UrlHelper
             }
         }
 
-        if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
+        if (!Uri.IsWellFormedUriString(url, UriKind.Absolute) || IsHostWithPort(url))
         {
             if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
                 !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) &&
@@ -104,5 +104,17 @@ internal static class UrlHelper
         }
 
         return url;
+    }
+
+    /// <summary>
+    /// Uri parses "example.com:8080/path" as scheme "example.com". If adding "https://"
+    /// turns that scheme into the host, the input is a host with a port, not a scheme.
+    /// </summary>
+    private static bool IsHostWithPort(string url)
+    {
+        return Uri.TryCreate(url, UriKind.Absolute, out var uri)
+            && !url.Contains("://", StringComparison.Ordinal)
+            && Uri.TryCreate("https://" + url, UriKind.Absolute, out var httpsUri)
+            && string.Equals(httpsUri.Host, uri.Scheme, StringComparison.OrdinalIgnoreCase);
     }
 }
