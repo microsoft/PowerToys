@@ -254,9 +254,9 @@ public sealed class SessionHelper
     /// <summary>
     /// Issue a single detached launch for <paramref name="scope"/>: the runner with
     /// <c>--open-settings</c> for the Settings scope (the runner owns the Settings UI — see
-    /// <see cref="EnsureRunning"/> remarks), or the scope's own exe otherwise.
+    /// <see cref="EnsureRunning"/> remarks), or the scope's executable or registered application.
     /// </summary>
-    private static void LaunchScope(PowerToysModule scope)
+    public static void LaunchScope(PowerToysModule scope)
     {
         if (scope == PowerToysModule.PowerToysSettings)
         {
@@ -264,7 +264,24 @@ public sealed class SessionHelper
         }
         else
         {
-            LaunchViaShell(ModulePaths.ExePathFor(scope), null);
+            var executable = ModulePaths.ExePathFor(scope);
+            if (scope == PowerToysModule.CommandPalette)
+            {
+                var package = ModulePaths.FindPackagedCommandPalette();
+                if (package is not null &&
+                    string.Equals(Path.GetDirectoryName(executable), package.InstalledLocation.Path, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Windows 10 requires app activation rather than executing the WindowsApps file.
+                    var entries = package.GetAppListEntriesAsync().AsTask().GetAwaiter().GetResult();
+                    Assert.HasCount(1, entries, "The installed Command Palette package must expose exactly one application.");
+                    Assert.IsTrue(
+                        entries[0].LaunchAsync().AsTask().GetAwaiter().GetResult(),
+                        "Windows did not activate the installed Command Palette application.");
+                    return;
+                }
+            }
+
+            LaunchViaShell(executable, null);
         }
     }
 
@@ -420,8 +437,7 @@ public sealed class SessionHelper
 
                             // Strict title match wins immediately — disambiguates from sibling
                             // windows owned by the same process (e.g. Settings + PopupHost).
-                            if (!string.IsNullOrEmpty(expectedTitle) &&
-                                title.Contains(expectedTitle, StringComparison.OrdinalIgnoreCase))
+                            if (MatchesMainWindow(processName, expectedTitle, pn, title))
                             {
                                 return new Session(scope, hwnd, title, pid, pn);
                             }
@@ -455,4 +471,10 @@ public sealed class SessionHelper
 
         return null;
     }
+
+    internal static bool MatchesMainWindow(string expectedProcess, string expectedTitle, string processName, string title) =>
+        !string.IsNullOrEmpty(expectedProcess) &&
+        !string.IsNullOrEmpty(expectedTitle) &&
+        processName.Contains(expectedProcess, StringComparison.OrdinalIgnoreCase) &&
+        title.Contains(expectedTitle, StringComparison.OrdinalIgnoreCase);
 }
