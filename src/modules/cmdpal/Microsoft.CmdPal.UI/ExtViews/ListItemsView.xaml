@@ -197,6 +197,7 @@
         </Style>
 
         <Style x:Key="GridGroupHeaderStyle" TargetType="GridViewHeaderItem">
+            <Setter Property="AutomationProperties.HeadingLevel" Value="Level2" />
             <Setter Property="IsHitTestVisible" Value="False" />
             <Setter Property="IsTabStop" Value="False" />
             <Setter Property="Padding" Value="0" />
@@ -332,6 +333,7 @@
             <Setter Property="IsTabStop" Value="False" />
             <Setter Property="IsHoldingEnabled" Value="False" />
             <Setter Property="AllowDrop" Value="False" />
+            <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
             <Setter Property="Padding" Value="16,0,12,0" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -472,6 +474,7 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock
                     Grid.Column="0"
+                    AutomationProperties.HeadingLevel="Level2"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Style="{ThemeResource CaptionTextBlockStyle}"
                     Text="{x:Bind Section}" />
@@ -635,6 +638,7 @@
                     <controls:Case Value="False">
                         <ListView
                             x:Name="ItemsList"
+                            x:Uid="ListItemsView_ItemsList"
                             Padding="0,2,0,0"
                             CanDragItems="True"
                             ContainerContentChanging="Items_ContainerContentChanging"
@@ -662,6 +666,7 @@
                     <controls:Case Value="True">
                         <GridView
                             x:Name="ItemsGrid"
+                            x:Uid="ListItemsView_ItemsGrid"
                             Padding="16,16,8,8"
                             CanDragItems="True"
                             ChoosingGroupHeaderContainer="Grid_ChoosingGroupHeaderContainer"
@@ -722,8 +727,10 @@
                         SourceKey="{x:Bind ViewModel.EmptyContent.Icon, Mode=OneWay}"
                         SourceRequested="{x:Bind help:IconProvider.SourceRequested64}" />
                     <TextBlock
+                        x:Name="EmptyContentTitle"
                         Margin="0,4,0,0"
                         HorizontalAlignment="Center"
+                        AutomationProperties.HeadingLevel="Level2"
                         FontWeight="SemiBold"
                         Text="{x:Bind ViewModel.EmptyContent.Title, Mode=OneWay}"
                         TextAlignment="Center"

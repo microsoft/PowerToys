@@ -76,12 +76,15 @@
                             </cpcontrols:ContentIcon>
                         </controls:SettingsCard.HeaderIcon>
                         <controls:SettingsCard.Header>
-                            <TextBlock>
+                            <TextBlock x:Name="EnableHeaderText">
                                 <Run x:Uid="ExtensionEnable" Text="Enable" />
                                 <Run Text="{x:Bind ViewModel.DisplayName}" />
                             </TextBlock>
                         </controls:SettingsCard.Header>
-                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_ExtensionPage_Enable" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            AutomationProperties.AutomationId="CmdPal_ExtensionPage_Enable"
+                            AutomationProperties.LabeledBy="{x:Bind EnableHeaderText}"
+                            IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </controls:SettingsCard>
                     <controls:SwitchPresenter
                         HorizontalAlignment="Stretch"

@@ -135,6 +135,13 @@ public sealed partial class ContentFormControl : UserControl
         {
             await _cardUpdater.UpdateAsync(card);
             AttachRenderedCard(_cardUpdater.RenderedCard);
+
+            // Incremental updates can add toggles after the first layout pass, so
+            // re-apply the label fix once the updated tree has been built.
+            if (_cardUpdater.RenderedCard?.FrameworkElement is FrameworkElement root)
+            {
+                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => FixToggleAccessibilityNames(root));
+            }
         }
         catch (Exception ex)
         {
@@ -226,7 +233,7 @@ public sealed partial class ContentFormControl : UserControl
             if (child is CheckBox or ToggleSwitch && child is FrameworkElement toggle)
             {
                 var existingName = AutomationProperties.GetName(toggle);
-                if (string.IsNullOrEmpty(existingName))
+                if (string.IsNullOrWhiteSpace(existingName))
                 {
                     // In Adaptive Cards, the label TextBlock is a sibling to the CheckBox's
                     // container within a shared Grid parent. Walk up to find that Grid, then

@@ -13,7 +13,7 @@
         MinWidth="420"
         PrimaryButtonText="OK">
         <ContentDialog.Title>
-            <TextBlock x:Uid="ManageFallbackRank" />
+            <TextBlock x:Uid="ManageFallbackRank" AutomationProperties.HeadingLevel="Level1" />
         </ContentDialog.Title>
         <ContentDialog.Resources>
             <x:Double x:Key="ContentDialogMaxWidth">800</x:Double>
