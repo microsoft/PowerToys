@@ -983,7 +983,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private static string GetResourceString(string resourceName) =>
+        internal static string GetResourceString(string resourceName) =>
             ResourceLoaderInstance.ResourceLoader.GetString(resourceName);
 
         private sealed class MxcSupportSnapshot

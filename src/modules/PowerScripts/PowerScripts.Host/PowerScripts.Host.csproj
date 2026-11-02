@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PowerScripts.Core\PowerScripts.Core.csproj" />
+    <ProjectReference Include="..\PowerScripts.Client\PowerScripts.Client.csproj" />
   </ItemGroup>
   <Import Project="..\Mxc.Runtime.targets" />
 </Project>

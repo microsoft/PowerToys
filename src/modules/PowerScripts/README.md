@@ -371,6 +371,17 @@ Unavailable preparation or incompatible policy never switches environments.
 The bundled native WSLC runtime can reject non-ASCII projected input paths before
 Python starts; such invocations fail explicitly.
 
+## Activity
+
+Settings > PowerScripts > Activity shows the latest 200 invocations, including the calling module,
+script, start time, status and duration. History stays on this device and never stores input,
+parameters or output. Clear history preserves running invocations. Interrupted Hosts (including
+consumer cancellation) are identified without inventing a completion time or reason.
+
+Every integration must identify itself using the client constructor or `--consumer`; this is
+self-reported attribution, never authorization. See the [consumer contract](CONSUMER-INTEGRATION.md#caller-identity-and-activity)
+for identity rules, native-call migration, privacy, retention and lifecycle semantics.
+
 ## Build and integrate
 
 Use `tools\build\build.ps1 -Platform x64 -Configuration Debug` with `-Path` pointing
@@ -379,8 +390,10 @@ Explorer or `vstest.console.exe`, not `dotnet test`.
 
 ```text
 PowerScripts.Host.exe list --json [--input <shape>] [--output <shape>]
-PowerScripts.Host.exe run <id> [--files <paths...>] [--set name=value...]
-PowerScripts.Host.exe transform <id>                 (JSON stdin -> JSON stdout)
+PowerScripts.Host.exe run <id> --consumer command-line [--files <paths...>] [--set name=value...]
+PowerScripts.Host.exe transform <id> --consumer command-line (JSON stdin -> JSON stdout)
+PowerScripts.Host.exe activity list
+PowerScripts.Host.exe activity clear
 PowerScripts.Host.exe trust approve|revoke <id>
 ```
 

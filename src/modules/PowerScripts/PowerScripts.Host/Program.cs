@@ -6,6 +6,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text;
 using PowerScripts.Core;
+using PowerScripts.Client;
+using PowerScripts.Core.Activity;
 using PowerScripts.Core.Execution;
 using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Registry;
@@ -19,13 +21,13 @@ namespace PowerScripts.Host;
 /// The shared PowerScripts executor / catalogue CLI.
 ///
 /// This is the single invocation entry point every surface points at:
-///   - Keyboard Manager maps a hotkey to:        PowerScripts.Host.exe run &lt;id&gt;
-///   - The Explorer context menu invokes:         PowerScripts.Host.exe run &lt;id&gt; --files &lt;paths&gt;
+///   - Keyboard Manager maps a hotkey to:        PowerScripts.Host.exe run &lt;id&gt; --consumer keyboard-manager
+///   - A native file consumer invokes:          PowerScripts.Host.exe run &lt;id&gt; --consumer my-module --files &lt;paths&gt;
 ///   - The KBM editor / agents enumerate via:     PowerScripts.Host.exe list --json
 ///
 /// Usage:
 ///   PowerScripts.Host list [--json] [--include-disabled] [--root &lt;dir&gt;]
-///   PowerScripts.Host run &lt;id&gt; [--files &lt;f1&gt; &lt;f2&gt; ...] [--set name=value ...] [--root &lt;dir&gt;]
+///   PowerScripts.Host run &lt;id&gt; --consumer &lt;module-id&gt; [--files &lt;f1&gt; &lt;f2&gt; ...] [--set name=value ...] [--root &lt;dir&gt;]
 /// </summary>
 internal static class Program
 {
@@ -42,6 +44,11 @@ internal static class Program
 
             var (positional, options) = ParseArgs(args.Skip(1).ToArray());
             var root = options.TryGetValue("root", out var r) ? r.FirstOrDefault() : null;
+
+            if (args[0].Equals("activity", StringComparison.OrdinalIgnoreCase))
+            {
+                return RunActivity(positional, options);
+            }
 
             if (args[0].Equals("template", StringComparison.OrdinalIgnoreCase))
             {
@@ -118,8 +125,8 @@ internal static class Program
             return args[0].ToLowerInvariant() switch
             {
                 "list" => RunList(registry, options),
-                "run" => RunScript(registry, positional, options),
-                "transform" => RunTransform(registry, positional, options),
+                "run" => RunTracked(registry, positional, options, () => RunScript(registry, positional, options)),
+                "transform" => RunTracked(registry, positional, options, () => RunTransform(registry, positional, options)),
                 "mxc-support" => RunMxcSupport(options.ContainsKey("json")),
                 "trust" => RunTrust(registry, positional),
                 "-h" or "--help" or "help" => PrintUsage(),
@@ -293,6 +300,68 @@ internal static class Program
         }
 
         return 0;
+    }
+
+    private static int RunActivity(
+        IReadOnlyList<string> positional,
+        IReadOnlyDictionary<string, List<string>> options)
+    {
+        if (positional.Count != 1 || options.Count != 0 || positional[0] is not ("list" or "clear"))
+        {
+            Console.Error.WriteLine("activity: use 'activity list' or 'activity clear' without options.");
+            return 1;
+        }
+
+        var store = new ActivityStore();
+        if (positional[0] == "clear")
+        {
+            store.ClearCompleted();
+        }
+
+        Console.WriteLine(JsonSerializer.Serialize(store.List(), ActivityStore.JsonOptions));
+        return 0;
+    }
+
+    private static int RunTracked(
+        ScriptRegistry registry,
+        IReadOnlyList<string> positional,
+        IReadOnlyDictionary<string, List<string>> options,
+        Func<int> execute)
+    {
+        if (!options.TryGetValue("consumer", out var consumers) ||
+            consumers.Count != 1 || !PowerScriptConsumer.IsValid(consumers[0]))
+        {
+            Console.Error.WriteLine("Execution requires --consumer <id>: 1-64 lowercase ASCII letters, digits or hyphens, beginning with a letter. Use 'command-line' for manual runs.");
+            return 1;
+        }
+
+        var manifest = positional.Count == 1 ? registry.Get(positional[0]) : null;
+        if (manifest is null)
+        {
+            Console.Error.WriteLine("Execution requires exactly one installed script ID. Try 'list'.");
+            return 1;
+        }
+
+        var store = new ActivityStore();
+        var record = store.Start(manifest.Id, manifest.Name, consumers[0]);
+        var exitCode = 2;
+        try
+        {
+            exitCode = execute();
+            return exitCode;
+        }
+        finally
+        {
+            // A killed Host cannot execute finally; Activity resolves its stale record as interrupted.
+            try
+            {
+                store.Complete(record, exitCode);
+            }
+            catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException or JsonException or TimeoutException)
+            {
+                throw new IOException("Unable to persist PowerScripts Activity completion. The invocation may already have executed; do not retry automatically.", exception);
+            }
+        }
     }
 
     private static int RunScript(
@@ -756,8 +825,9 @@ internal static class Program
         Console.WriteLine("  list [--json] [--input <shape>] [--output <shape>] [--no-input] [--include-disabled] [--include-unconfigured] [--root <dir>]");
         Console.WriteLine("       Input and output: none | text | files.");
         Console.WriteLine("       Disabled runtimes are omitted; --include-disabled lists all installed scripts for configuration.");
-        Console.WriteLine("  run <id> [--files <f1> <f2> ...] [--set name=value ...] [--no-consent] [--root <dir>]");
-        Console.WriteLine("  transform <id> [--no-consent]       (run as a data transform; JSON payload on stdin, JSON result on stdout)");
+        Console.WriteLine("  run <id> --consumer <module-id> [--files <f1> <f2> ...] [--set name=value ...] [--no-consent] [--root <dir>]");
+        Console.WriteLine("  transform <id> --consumer <module-id> [--no-consent] (JSON payload on stdin, JSON result on stdout)");
+        Console.WriteLine("  activity list | clear              (local metadata-only history; clear preserves in-flight runs)");
         Console.WriteLine("  mxc-support [--json]                (probe whether MXC is available on this host)");
         Console.WriteLine("  linux-container-status             (check the managed Python image without downloading)");
         Console.WriteLine("  linux-container-setup              (explicitly download/cache the managed Python image)");

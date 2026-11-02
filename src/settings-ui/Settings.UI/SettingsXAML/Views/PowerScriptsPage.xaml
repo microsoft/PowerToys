@@ -58,6 +58,13 @@
                     </StackPanel>
                 </tkcontrols:SettingsCard>
 
+                <tkcontrols:SettingsCard
+                    x:Uid="PowerScripts_ActivityCard"
+                    AutomationProperties.AutomationId="PowerScriptsActivityButton"
+                    Click="ActivityButton_Click"
+                    HeaderIcon="{ui:FontIcon Glyph=&#xE81C;}"
+                    IsClickEnabled="True" />
+
                 <controls:SettingsGroup IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="PowerScripts_MxcEnabled"
@@ -70,8 +77,8 @@
                                 AutomationProperties.AutomationId="PowerScriptsMxcEnabledToggle"
                                 IsEnabled="{x:Bind ViewModel.CanChangeMxcEnabled, Mode=OneWay}"
                                 IsOn="{x:Bind ViewModel.IsMxcEnabled, Mode=OneWay}"
-                                ToolTipService.ToolTip="{x:Bind ViewModel.MxcSupportMessage, Mode=OneWay}"
-                                Toggled="MxcEnabledToggle_Toggled" />
+                                Toggled="MxcEnabledToggle_Toggled"
+                                ToolTipService.ToolTip="{x:Bind ViewModel.MxcSupportMessage, Mode=OneWay}" />
                         </tkcontrols:SettingsExpander.Content>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcFilesystem" Visibility="{x:Bind views:PowerScriptsPage.BoolToVisibility(ViewModel.IsMxcEnabled), Mode=OneWay}">
@@ -187,11 +194,11 @@
                                 IsEnabled="{x:Bind ViewModel.CanEditLinuxContainerImage, Mode=OneWay}"
                                 Text="{x:Bind ViewModel.LinuxContainerImage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             <InfoBar
+                                Title="{x:Bind ViewModel.LinuxContainerStatusTitle, Mode=OneWay}"
                                 AutomationProperties.AutomationId="PowerScriptsLinuxStatusBanner"
                                 IsClosable="False"
                                 IsOpen="True"
-                                Severity="{x:Bind ViewModel.LinuxContainerStatusSeverity, Mode=OneWay}"
-                                Title="{x:Bind ViewModel.LinuxContainerStatusTitle, Mode=OneWay}">
+                                Severity="{x:Bind ViewModel.LinuxContainerStatusSeverity, Mode=OneWay}">
                                 <Grid ColumnSpacing="8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />

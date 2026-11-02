@@ -742,7 +742,7 @@ namespace KeyboardManagerEditorUI.Pages
                 OriginalKeys = originalKeysString,
                 TargetKeys = originalKeysString,
                 ProgramPath = hostPath,
-                ProgramArgs = $"run {script.Id} --no-consent",
+                ProgramArgs = $"run {script.Id} --consumer keyboard-manager --no-consent",
                 StartInDirectory = string.Empty,
                 IfRunningAction = ProgramAlreadyRunningAction.StartAnother,
                 Visibility = StartWindowType.Hidden,

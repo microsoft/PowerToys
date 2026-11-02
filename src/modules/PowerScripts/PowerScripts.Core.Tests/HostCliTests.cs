@@ -13,6 +13,7 @@ using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerScripts.Client;
 using PowerScripts.Core;
+using PowerScripts.Core.Activity;
 using PowerScripts.Core.Storage;
 using PowerScripts.Core.Manifest;
 
@@ -122,6 +123,52 @@ public class HostCliTests
         if (Directory.Exists(_root))
         {
             Directory.Delete(_root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("run")]
+    [DataRow("transform")]
+    public void ExecutionRequiresConsumerIdentity(string command)
+    {
+        var (exit, _) = RunHostInProcess(command, "act_hello", "--no-consent", "--root", _root);
+        Assert.AreEqual(1, exit);
+        (exit, _) = RunHostInProcess(command, "act_hello", "--consumer", "Advanced Paste", "--no-consent", "--root", _root);
+        Assert.AreEqual(1, exit);
+        (exit, _) = RunHostInProcess(command, "act_hello", "--consumer", "advanced-paste", "command-line", "--no-consent", "--root", _root);
+        Assert.AreEqual(1, exit);
+    }
+
+    [TestMethod]
+    [DoNotParallelize]
+    [DataRow("run")]
+    [DataRow("transform")]
+    public void RefusedExecutionIsAttributedWithoutRecordingInput(string command)
+    {
+        var originalStore = SettingsStore.Current;
+        var directory = Directory.CreateDirectory(Path.Combine(_root, "private-settings")).FullName;
+        try
+        {
+            SettingsStore.Current = new FileSettingsStore(directory);
+            PowerScriptsPaths.SaveEnabled(true);
+            var (exit, _) = RunHostInProcess(command, "act_hello", "--consumer", "advanced-paste",
+                "--no-consent", "--root", _root);
+            Assert.AreEqual(3, exit);
+            var activity = new ActivityStore(directory).List().Single();
+            Assert.AreEqual("advanced-paste", activity.ConsumerId);
+            Assert.AreEqual("act_hello", activity.ScriptId);
+            Assert.AreEqual(ActivityStatus.Failed, activity.Status);
+            Assert.AreEqual(3, activity.ExitCode);
+            var (listExit, json) = RunHostInProcess("activity", "list");
+            Assert.AreEqual(0, listExit);
+            StringAssert.Contains(json, "\"consumerId\":\"advanced-paste\"");
+            var (clearExit, _) = RunHostInProcess("activity", "clear");
+            Assert.AreEqual(0, clearExit);
+            Assert.AreEqual(0, new ActivityStore(directory).List().Count);
+        }
+        finally
+        {
+            SettingsStore.Current = originalStore;
         }
     }
 
@@ -520,7 +567,7 @@ public class HostCliTests
     {
         Write("bad-output.ps1", "Write-Output '" + payload + "'");
         Write("bad-output.ps1.tool.json", "{\"name\": \"bad-output\", \"description\": \"bad-output\", \"inputSchema\": {\"type\": \"object\", \"properties\": {}, \"required\": [], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {\"files\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}}}, \"required\": [\"files\"], \"additionalProperties\": false}}");
-        var client = new PowerScriptsClient(_hostPath, _root);
+        var client = new PowerScriptsClient("test-harness", _hostPath, _root);
         try
         {
             Assert.IsTrue(client.TrustApprove("bad-output"));
@@ -542,7 +589,7 @@ public class HostCliTests
     {
         Write("no-output.ps1", "Write-Output 'action completed'");
         Write("no-output.ps1.tool.json", "{\"name\": \"no-output\", \"description\": \"no-output\", \"inputSchema\": {\"type\": \"object\", \"properties\": {}, \"required\": [], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {}, \"required\": [], \"additionalProperties\": false}}");
-        var client = new PowerScriptsClient(_hostPath, _root);
+        var client = new PowerScriptsClient("test-harness", _hostPath, _root);
         try
         {
             Assert.IsTrue(client.TrustApprove("no-output"));
@@ -575,7 +622,7 @@ public class HostCliTests
         {
             Encoder = escapeUnicode ? JavaScriptEncoder.Default : JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         });
-        var client = new PowerScriptsClient(_hostPath, _root);
+        var client = new PowerScriptsClient("test-harness", _hostPath, _root);
         try
         {
             Assert.IsTrue(client.TrustApprove("unicode-text"));
@@ -608,7 +655,7 @@ public class HostCliTests
         {
             Encoder = escapeUnicode ? JavaScriptEncoder.Default : JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         });
-        var client = new PowerScriptsClient(_hostPath, _root);
+        var client = new PowerScriptsClient("test-harness", _hostPath, _root);
         try
         {
             Assert.IsTrue(client.TrustApprove("unicode-files"));
@@ -652,6 +699,12 @@ public class HostCliTests
         foreach (var a in args)
         {
             psi.ArgumentList.Add(a);
+        }
+
+        if (args[0] is "run" or "transform")
+        {
+            psi.ArgumentList.Add("--consumer");
+            psi.ArgumentList.Add("test-harness");
         }
 
         psi.Environment[ModuleState.IgnoreEnabledEnvironmentVariable] = "1";

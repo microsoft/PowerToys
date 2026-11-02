@@ -15,7 +15,7 @@ namespace PowerScripts.Client;
 ///
 /// <para>Typical use:</para>
 /// <code>
-/// var client = new PowerScriptsClient();
+/// var client = new PowerScriptsClient("my-module");
 /// if (!client.IsAvailable) return;                       // PowerScripts not installed
 /// foreach (var s in client.ListActions())                // no-input action scripts
 /// {
@@ -34,15 +34,23 @@ public sealed class PowerScriptsClient
 {
     private readonly string? _hostPath;
     private readonly string? _scriptsRoot;
+    private readonly string _consumerId;
 
     /// <summary>
-    /// Creates a client. Pass <paramref name="hostPath"/> to point at a specific
+    /// Creates a client attributed to the required, stable <paramref name="consumerId"/> module ID.
+    /// Attribution is informational, not authentication. Pass <paramref name="hostPath"/> to point at a specific
     /// <c>PowerScripts.Host.exe</c> (otherwise it is auto-discovered), and <paramref name="scriptsRoot"/>
     /// to scan a specific folder (otherwise the host's configured/default root is used — handy for
     /// tests and demos where you want to choose the folder).
     /// </summary>
-    public PowerScriptsClient(string? hostPath = null, string? scriptsRoot = null)
+    public PowerScriptsClient(string consumerId, string? hostPath = null, string? scriptsRoot = null)
     {
+        if (!PowerScriptConsumer.IsValid(consumerId))
+        {
+            throw new ArgumentException("Consumer ID must be 1-64 lowercase ASCII letters, digits or hyphens, beginning with a letter.", nameof(consumerId));
+        }
+
+        _consumerId = consumerId;
         _hostPath = string.IsNullOrWhiteSpace(hostPath) ? ResolveHostPath() : hostPath;
         _scriptsRoot = string.IsNullOrWhiteSpace(scriptsRoot) ? null : scriptsRoot;
     }
@@ -187,6 +195,8 @@ public sealed class PowerScriptsClient
         var psi = CreateStartInfo(redirectStdOut: true, redirectStdErr: true);
         psi.ArgumentList.Add("run");
         psi.ArgumentList.Add(id);
+        psi.ArgumentList.Add("--consumer");
+        psi.ArgumentList.Add(_consumerId);
 
         if (files is not null)
         {
@@ -265,6 +275,8 @@ public sealed class PowerScriptsClient
         var psi = CreateStartInfo(redirectStdIn: true, redirectStdOut: true, redirectStdErr: true);
         psi.ArgumentList.Add("transform");
         psi.ArgumentList.Add(id);
+        psi.ArgumentList.Add("--consumer");
+        psi.ArgumentList.Add(_consumerId);
         if (noConsent)
         {
             psi.ArgumentList.Add("--no-consent");

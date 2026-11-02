@@ -104,6 +104,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        private void ActivityButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!NavigationService.Navigate<PowerScriptsActivityPage>(ViewModel))
+            {
+                ShowScriptSettingsError(new InvalidOperationException(
+                    ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_SettingsNavigationFailed")));
+            }
+        }
+
         private void CreateScriptButton_Click(object sender, RoutedEventArgs e)
         {
             if (!NavigationService.Navigate<PowerScriptTemplatesPage>(ViewModel))

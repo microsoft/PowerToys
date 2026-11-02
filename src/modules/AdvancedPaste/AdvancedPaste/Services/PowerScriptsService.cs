@@ -25,7 +25,7 @@ internal static class PowerScriptsService
 
     public static async Task<IReadOnlyList<PowerScriptInfo>> GetAdvancedPasteScriptsAsync()
     {
-        var client = new PowerScriptsClient();
+        var client = new PowerScriptsClient(PowerScriptConsumer.AdvancedPaste);
         if (!IsPowerScriptsEnabled() || !client.IsAvailable)
         {
             return [];
@@ -207,7 +207,7 @@ internal static class PowerScriptsService
         }
 
         token.ThrowIfCancellationRequested();
-        var result = await (client ?? new PowerScriptsClient()).TransformAsync(script.Id, input, cancellationToken: token);
+        var result = await (client ?? new PowerScriptsClient(PowerScriptConsumer.AdvancedPaste)).TransformAsync(script.Id, input, cancellationToken: token);
         if (!result.Succeeded)
         {
             throw Failure("PowerScriptsExecutionFailed", result.StdErr);

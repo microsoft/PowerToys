@@ -15,14 +15,14 @@ public class ClientTests
     [TestMethod]
     public async Task AsyncDiscoverySurfacesMissingHostInsteadOfAnEmptyCatalogue()
     {
-        var client = new PowerScriptsClient(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "host.exe"));
+        var client = new PowerScriptsClient("test-harness", Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "host.exe"));
         await Assert.ThrowsExceptionAsync<FileNotFoundException>(() => client.ListAsync());
     }
 
     [TestMethod]
     public async Task CancelledDiscoveryDoesNotStartTheHost()
     {
-        var client = new PowerScriptsClient(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "host.exe"));
+        var client = new PowerScriptsClient("test-harness", Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "host.exe"));
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         await Assert.ThrowsExceptionAsync<OperationCanceledException>(() => client.ListAsync(cancellation.Token));
@@ -205,7 +205,7 @@ public class ClientTests
         var root = Path.Combine(Path.GetTempPath(), "ps-png-client-" + Guid.NewGuid().ToString("N"));
         var id = "png-" + Guid.NewGuid().ToString("N");
         Directory.CreateDirectory(root);
-        var client = new PowerScriptsClient(hostPath, scriptsRoot: root);
+        var client = new PowerScriptsClient("test-harness", hostPath, scriptsRoot: root);
         string? produced = null;
         try
         {
@@ -296,7 +296,7 @@ public class ClientTests
     public void Client_WithoutHost_IsUnavailable_AndReturnsEmpty()
     {
         // A client pointed at a non-existent host degrades gracefully rather than throwing.
-        var client = new PowerScriptsClient(hostPath: Path.Combine(Path.GetTempPath(), "does-not-exist.exe"));
+        var client = new PowerScriptsClient("test-harness", hostPath: Path.Combine(Path.GetTempPath(), "does-not-exist.exe"));
         Assert.IsFalse(client.IsAvailable);
         Assert.AreEqual(0, client.List().Count);
         Assert.IsFalse(client.TrustApprove("x"));
@@ -330,7 +330,7 @@ public class ClientTests
                    "properties":{"text":{"type":"string"}},"required":["text"]}}
                 """);
 
-            var client = new PowerScriptsClient(hostPath, scriptsRoot: root);
+            var client = new PowerScriptsClient("test-harness", hostPath, scriptsRoot: root);
             Assert.IsTrue(client.IsAvailable);
 
             var scripts = client.List();
@@ -347,7 +347,7 @@ public class ClientTests
         }
         finally
         {
-            new PowerScriptsClient(hostPath, scriptsRoot: root).TrustRevoke("it_hello");
+            new PowerScriptsClient("test-harness", hostPath, scriptsRoot: root).TrustRevoke("it_hello");
             Directory.Delete(root, recursive: true);
         }
     }

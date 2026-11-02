@@ -6744,4 +6744,27 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_LinuxUseSupported.Content" xml:space="preserve">
     <value>Use supported Linux policies</value>
   </data>
+  <data name="PowerScripts_ActivityTitle" xml:space="preserve"><value>Activity</value></data>
+  <data name="PowerScripts_ActivityCard.Header" xml:space="preserve"><value>Activity</value></data>
+  <data name="PowerScripts_ActivityCard.Description" xml:space="preserve"><value>See recent script runs and the module that started them.</value></data>
+  <data name="PowerScripts_ActivityHelp.Text" xml:space="preserve"><value>The latest 200 invocations, newest first. Refreshes every 5 seconds while open. Only script names, IDs, calling modules, times and results are kept on this device. Inputs, parameters and outputs are never recorded. Sources are caller-supplied, not verified identities.</value></data>
+  <data name="PowerScripts_ActivityRefresh.Content" xml:space="preserve"><value>Refresh</value></data>
+  <data name="PowerScripts_ActivityClear.Content" xml:space="preserve"><value>Clear history</value></data>
+  <data name="PowerScripts_ActivityClearTitle" xml:space="preserve"><value>Clear script history?</value></data>
+  <data name="PowerScripts_ActivityClearConfirm" xml:space="preserve"><value>Clear history</value></data>
+  <data name="PowerScripts_ActivityClearHelp" xml:space="preserve"><value>Remove completed and interrupted invocations. Running invocations are kept. This does not cancel scripts or change trust approvals.</value></data>
+  <data name="PowerScripts_ActivityEmpty.Text" xml:space="preserve"><value>No script activity yet.</value></data>
+  <data name="PowerScripts_ActivityList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Recent script activity</value></data>
+  <data name="PowerScripts_ActivityError.Title" xml:space="preserve"><value>Activity could not be updated. Previously loaded entries may be out of date.</value></data>
+  <data name="PowerScripts_ActivityAdvancedPaste" xml:space="preserve"><value>Advanced Paste</value></data>
+  <data name="PowerScripts_ActivityKeyboardManager" xml:space="preserve"><value>Keyboard Manager</value></data>
+  <data name="PowerScripts_ActivityCommandLine" xml:space="preserve"><value>Command line</value></data>
+  <data name="PowerScripts_ActivityDetails" xml:space="preserve"><value>{0} | {1} | {2}</value></data>
+  <data name="PowerScripts_ActivityRunning" xml:space="preserve"><value>Running</value></data>
+  <data name="PowerScripts_ActivitySucceeded" xml:space="preserve"><value>Succeeded</value></data>
+  <data name="PowerScripts_ActivityFailed" xml:space="preserve"><value>Failed or refused</value></data>
+  <data name="PowerScripts_ActivityInterrupted" xml:space="preserve"><value>Interrupted (cancelled or Host stopped; completion time unavailable)</value></data>
+  <data name="PowerScripts_ActivityUnknown" xml:space="preserve"><value>Status unavailable</value></data>
+  <data name="PowerScripts_ActivityExitCode" xml:space="preserve"><value>{0} (exit code {1})</value></data>
+  <data name="PowerScripts_ActivityDuration" xml:space="preserve"><value>{0} | {1:N1} s</value></data>
 </root>

@@ -41,7 +41,7 @@ public sealed class PowerScriptsAdapterIntegrationTests
         }
 
         _root = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "AdvancedPasteConsumer-" + Guid.NewGuid().ToString("N"))).FullName;
-        _client = new(host, _root);
+        _client = new(PowerScriptConsumer.AdvancedPaste, host, _root);
     }
 
     [TestCleanup]

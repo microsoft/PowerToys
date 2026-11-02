@@ -9,8 +9,9 @@ Host owns script loading, validation, trust, parameter validation, security poli
 1. **Always execute through `PowerScripts.Host.exe`.** Do not launch a script, interpreter, or
    descriptor command directly from the consumer.
 2. **Discover by resolved I/O.** A consumer selects scripts whose `io.input` and `io.output`
-   it can supply and handle. The catalogue is shared: there is no consumer ID, audience field,
-   or module-targeting filter. Scripts do not declare the removed `surface` or `kind` fields.
+   it can supply and handle. The catalogue is shared: scripts have no audience field or
+   module-targeting filter. Invocation consumer IDs are attribution only, not discovery filters.
+   Scripts do not declare the removed `surface` or `kind` fields.
 3. **Treat script IDs as opaque.** Display `name` and `description`; invoke by `id` and persist
    IDs only when the consumer needs saved bindings.
 4. **Keep parameter UX in the consumer.** The Host never opens a generic parameter prompt.
@@ -19,6 +20,9 @@ Host owns script loading, validation, trust, parameter validation, security poli
 6. **Handle PowerScripts being unavailable or disabled.** Hide or disable runtime integration
    rather than crashing. Configuration UIs should show actionable discovery errors, not disguise
    a failed Host as a successful empty catalogue or erase saved bindings.
+7. **Identify the calling module on every invocation.** Supply a stable consumer ID through the
+   client constructor or required Host `--consumer` argument. Never use user input, script IDs,
+   document names, paths, or parameters as the consumer ID.
 
 ## Choose the consumer contract
 
@@ -62,7 +66,7 @@ encapsulates Host discovery, safe argument construction, process invocation, JSO
 timeouts while keeping the consumer decoupled from `PowerScripts.Core`.
 
 ```csharp
-var client = new PowerScriptsClient();
+var client = new PowerScriptsClient("my-module");
 if (!client.IsAvailable)
 {
     return;
@@ -96,12 +100,51 @@ Native consumers may invoke the Host contract directly:
 
 ```text
 PowerScripts.Host.exe list --json [--input <shape>] [--output <shape>] [--no-input]
-PowerScripts.Host.exe run <id> [--files <paths...>] [--set name=value...]
-PowerScripts.Host.exe transform <id>
+PowerScripts.Host.exe run <id> --consumer my-module [--files <paths...>] [--set name=value...]
+PowerScripts.Host.exe transform <id> --consumer my-module
 ```
 
 Use structured process argument APIs where available. Do not concatenate untrusted IDs, paths, or
 parameter values into a command line.
+
+### Caller identity and Activity
+
+Consumer identity is mandatory for both `run` and `transform`, including direct/native calls.
+Use 1-64 lowercase ASCII letters, digits or hyphens, beginning with a letter. Built-in IDs are
+`advanced-paste` and `keyboard-manager`; manual CLI invocations should explicitly use `command-line`.
+The managed client requires `consumerId` as its first constructor argument and supplies the Host
+option automatically. Discovery, trust management, and Activity queries do not execute scripts and
+do not require attribution.
+
+Existing managed integrations must update the constructor. Native integrations and saved command
+lines must add `--consumer`; missing or invalid IDs are rejected before execution. Re-save older
+Keyboard Manager PowerScript bindings to regenerate their command line.
+
+The shared Host records the latest 200 invocations in local `activity.json`, independently of the
+selected scripts folder. Settings > PowerScripts > Activity shows the script, source, start time,
+status and duration, refreshing every five seconds while open. `activity list` returns the same
+metadata as JSON; `activity clear` removes completed/interrupted entries but preserves running and
+status-unavailable entries. It never cancels work or changes trust.
+
+History contains only bounded script ID/name, consumer ID, invocation ID, UTC timestamps, status,
+exit code, and Host PID/start time for liveness detection. It does **not** contain primary input,
+parameter values, file paths, stdout, stderr, or error messages. It is local operational history,
+not telemetry, a tamper-resistant security audit, or an authorization source. Caller identity is
+self-reported and can be spoofed; never use it to grant trust or relax isolation.
+
+An invocation starts before enabled/trust/input checks, so refused runs also appear as failures.
+Missing/unknown script IDs and invalid consumer IDs are usage errors, not runs. Completed invocations
+have an exit code and duration; nonzero exits include runtime failures and refused requests.
+If the owning Host exits without recording completion (including consumer cancellation, timeout,
+or a crash), the entry is **Interrupted**. Its exact end time, duration and exit code remain unknown;
+do not present it as a confirmed cancellation. If process liveness cannot be inspected, show
+**Status unavailable** instead. Very old runs may age out even while still running.
+
+The store serializes cross-process updates and uses atomic replacement. History I/O/corruption
+errors are surfaced, never disguised as empty history. A failure to create a run record prevents
+execution; a completion-write failure reports that execution may already have happened. Do not
+automatically retry a failed invocation. Activity is separate from security-bearing config/trust
+storage and must remain so when that storage moves to the protected-settings broker.
 
 Default `list` discovery (JSON or text, with or without I/O filters) omits Python scripts when
 Settings has Python execution disabled. Windows and WSL modes both enable Python discovery. Consumers should re-enumerate
@@ -160,6 +203,7 @@ do not reference the Settings executable from a runtime module or add UI depende
 
 1. Define supported input/output shapes, file/media bounds, and parameter collection behavior.
 2. Reference `PowerScripts.Client` for execution; do not reference Core or launch interpreters.
+   Choose a stable module consumer ID and pass it to the client constructor (or Host `--consumer`).
 3. Choose automatic discovery for all applicable scripts, or consumer-owned saved bindings
    when explicit assignment is needed. Do not require per-script configuration by default.
 4. For automatic discovery, filter against current input before presenting actions and refresh on
