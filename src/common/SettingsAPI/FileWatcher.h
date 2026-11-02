@@ -23,5 +23,8 @@ class FileWatcher
     std::optional<FILETIME> MyFileTime();
 public:
     FileWatcher(const std::wstring& path, std::function<void()> callback);
+    // Enable replacement notifications for files published with an atomic rename.
+    // The callback must only read the file; a read handle is held until it returns.
+    FileWatcher(const std::wstring& path, std::function<void()> callback, bool watchFileReplacement);
     ~FileWatcher();
 };

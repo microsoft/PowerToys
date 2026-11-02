@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pch.h"
+#include <common/utils/file_change_stamp.h>
 
 class NewSettings
 {
@@ -44,7 +45,7 @@ private:
     Settings new_settings;
     std::wstring general_settings_json_file_path;
     std::wstring new_settings_json_file_path;
-    FILETIME general_settings_last_loaded_timestamp{};
+    std::optional<file_change_stamp::stamp> general_settings_last_loaded_stamp;
     FILETIME new_settings_last_loaded_timestamp{};
 };
 
