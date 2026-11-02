@@ -46,6 +46,13 @@ namespace Microsoft.PowerToys.Run.Plugin.History
 
                         var plugin = PluginManager.AllPlugins.FirstOrDefault(p => p.Metadata.ID == historyItem.PluginID);
 
+                        // The plugin may have been uninstalled or failed to load. Skip the item instead of failing
+                        // the whole history query, but keep it in the history in case the plugin comes back.
+                        if (plugin == null)
+                        {
+                            continue;
+                        }
+
                         if (query.Search != string.Empty && !IsRelevant(query, historyItem))
                         {
                             continue;
