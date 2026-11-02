@@ -8,6 +8,7 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -76,37 +77,37 @@
                                             Grid.Column="1"
                                             Margin="0,4,0,0"
                                             Orientation="Horizontal">
-                                            <TextBlock
+                                            <ptcontrols:IsEnabledTextBlock
                                                 Margin="0,0,4,0"
-                                                Style="{ThemeResource SecondaryTextStyle}"
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
                                                 Text="{x:Bind Fit, Mode=OneWay, Converter={StaticResource ImageResizerFitToStringConverter}}" />
-                                            <TextBlock
+                                            <ptcontrols:IsEnabledTextBlock
                                                 Margin="0,0,4,0"
                                                 AutomationProperties.AccessibilityView="Raw"
-                                                Style="{ThemeResource SecondaryTextStyle}"
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
                                                 Text="-" />
-                                            <TextBlock
+                                            <ptcontrols:IsEnabledTextBlock
                                                 Margin="0,0,4,0"
                                                 FontWeight="SemiBold"
-                                                Style="{ThemeResource SecondaryTextStyle}"
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
                                                 Text="{x:Bind Width, Mode=OneWay, Converter={StaticResource ImageResizerDoubleToAutoConverter}, ConverterParameter=Auto}" />
-                                            <TextBlock
+                                            <ptcontrols:IsEnabledTextBlock
                                                 Margin="0,5,4,0"
                                                 AutomationProperties.AccessibilityView="Raw"
                                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                 FontSize="10"
-                                                Style="{ThemeResource SecondaryTextStyle}"
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
                                                 Text="&#xE947;"
                                                 Visibility="{x:Bind IsHeightUsed, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                            <TextBlock
+                                            <ptcontrols:IsEnabledTextBlock
                                                 Margin="0,0,4,0"
                                                 FontWeight="SemiBold"
-                                                Style="{ThemeResource SecondaryTextStyle}"
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
                                                 Text="{x:Bind Height, Mode=OneWay, Converter={StaticResource ImageResizerDoubleToAutoConverter}, ConverterParameter=Auto}"
                                                 Visibility="{x:Bind IsHeightUsed, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                            <TextBlock
+                                            <ptcontrols:IsEnabledTextBlock
                                                 Margin="0,0,4,0"
-                                                Style="{ThemeResource SecondaryTextStyle}"
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
                                                 Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter}, ConverterParameter=ToLower}" />
                                         </StackPanel>
                                     </tkcontrols:SettingsCard.Description>
