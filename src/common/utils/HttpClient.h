@@ -6,6 +6,7 @@
 #include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Windows.Web.Http.h>
 #include <winrt/Windows.Web.Http.Headers.h>
+#include <winrt/Windows.Web.Http.Filters.h>
 namespace http
 {
     using namespace winrt::Windows::Web::Http;
@@ -20,6 +21,10 @@ namespace http
         {
             auto headers = m_client.DefaultRequestHeaders();
             headers.UserAgent().TryParseAdd(USER_AGENT);
+
+            m_downloadFilter.CacheControl().WriteBehavior(Filters::HttpCacheWriteBehavior::NoCache);
+            auto downloadHeaders = m_downloadClient.DefaultRequestHeaders();
+            downloadHeaders.UserAgent().TryParseAdd(USER_AGENT);
         }
 
         winrt::Windows::Foundation::IAsyncOperation<winrt::hstring> request(winrt::Windows::Foundation::Uri url)
@@ -32,7 +37,7 @@ namespace http
 
         winrt::Windows::Foundation::IAsyncAction download(winrt::Windows::Foundation::Uri url, std::wstring dstFilePath)
         {
-            auto response = co_await m_client.GetAsync(url);
+            auto response = co_await m_downloadClient.GetAsync(url);
             (void)response.EnsureSuccessStatusCode();
             auto file_stream = co_await storage::Streams::FileRandomAccessStream::OpenAsync(dstFilePath.c_str(), storage::FileAccessMode::ReadWrite, storage::StorageOpenOptions::AllowReadersAndWriters, storage::Streams::FileOpenDisposition::CreateAlways);
             co_await response.Content().WriteToStreamAsync(file_stream);
@@ -41,7 +46,7 @@ namespace http
 
         winrt::Windows::Foundation::IAsyncAction download(winrt::Windows::Foundation::Uri url, std::wstring dstFilePath, std::function<void(float)> progressUpdateCallback)
         {
-            auto response = co_await m_client.GetAsync(url, HttpCompletionOption::ResponseHeadersRead);
+            auto response = co_await m_downloadClient.GetAsync(url, HttpCompletionOption::ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
 
             uint64_t totalBytes = response.Content().Headers().ContentLength().GetUInt64();
@@ -76,5 +81,7 @@ namespace http
 
     private:
         winrt::Windows::Web::Http::HttpClient m_client;
+        Filters::HttpBaseProtocolFilter m_downloadFilter;
+        winrt::Windows::Web::Http::HttpClient m_downloadClient{ m_downloadFilter };
     };
 }
