@@ -112,7 +112,9 @@ Read only what the task needs:
    builds cannot register a sparse MSIX (0% on CI), classic (registry-COM, signing-free) vs modern
    (sparse-MSIX) surfaces, Debug vs Release/`NDEBUG` gating, runtime detection, and reproducing CI's
    classic scenario on a local signed VM.
-6. [ui-tests-migration](../ui-tests-migration/SKILL.md) - required whenever test code or framework
+6. [references/multimon.md](references/multimon.md) - virtual monitors, layout presets, mixed DPI, and
+   the multimon baseline, for anything that depends on monitor edges or more than one display.
+7. [ui-tests-migration](../ui-tests-migration/SKILL.md) - required whenever test code or framework
    behavior is being created, migrated, or stabilized.
 
 ## Default agentic cycle
@@ -219,6 +221,25 @@ The controller starts the VM if needed, requests automatic host sleep prevention
 interactive standard-user desktop, dispatches the guest runner, and waits synchronously for matching
 `status.json`. It reports whether sleep prevention succeeded, fails early if the guest task never
 starts or exits without status, summarizes TRX, and leaves the persistent VM running by default.
+
+## Multi-monitor guest
+
+The default guest has one display. For behavior that depends on monitor edges, layout, or mixed DPI,
+add three virtual monitors from Microsoft's IndirectDisplay driver sample and capture a second
+baseline. This runs after host setup, with the guest running:
+
+```pwsh
+pwsh .github\skills\ui-tests-local-vm\scripts\Build-IddSampleDriver.ps1 -VmRoot X:\PowerToysUiTestVm
+pwsh .github\skills\ui-tests-local-vm\scripts\Initialize-LocalVmMultimon.ps1 -VmRoot X:\PowerToysUiTestVm -WhatIf
+pwsh .github\skills\ui-tests-local-vm\scripts\Initialize-LocalVmMultimon.ps1 -VmRoot X:\PowerToysUiTestVm
+```
+
+The optional `Multimon` block in `vm.config.psd1` picks the layout preset (listed in
+[references/multimon.md](references/multimon.md)), the wallpaper folder, and whether to disconnect
+the network before the checkpoint. The virtual monitors are invisible in VMConnect, so read `desktop.png` and
+`cursorwrap_monitor_layout.json` from the evidence folder. Multi-monitor behavior stays
+`BLK-HARDWARE` in CI; this guest is a local check, not a substitute for real hardware.
+See [references/multimon.md](references/multimon.md).
 
 ## Non-negotiable rules
 
