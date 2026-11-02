@@ -14,8 +14,8 @@ namespace CoreWidgetProvider.Helpers;
 internal sealed partial class NetworkStats
 {
     internal const string AllPhysicalAdaptersId = "all-physical-network-adapters";
-    private const string PhysicalAdapterIdPrefix = "network-interface:";
-    private readonly IPhysicalNetworkInterfaceSnapshotProvider _snapshotProvider;
+    private const string AdapterIdPrefix = "network-interface:";
+    private readonly INetworkInterfaceSnapshotProvider _snapshotProvider;
     private readonly string _allAdaptersName;
     private readonly Dictionary<ulong, CounterSample> _previousSamples = new();
     private readonly Dictionary<ulong, List<float>> _chartValues = new();
@@ -43,17 +43,17 @@ internal sealed partial class NetworkStats
         }
     }
 
-    private sealed record NetworkAdapterData(string Id, string Name, Data Usage, List<float> ChartValues);
+    internal sealed record NetworkAdapterData(string Id, string Name, Data Usage, List<float> ChartValues, NetworkInterfaceSnapshot? Snapshot = null);
 
     private readonly record struct CounterSample(ulong ReceivedBytes, ulong SentBytes);
 
-    public NetworkStats()
-        : this(new PhysicalNetworkInterfaceSnapshotProvider(), Resources.GetResource("All_Physical_Network_Adapters"))
+    public NetworkStats(INetworkInterfaceSnapshotProvider snapshotProvider)
+        : this(snapshotProvider, Resources.GetResource("All_Physical_Network_Adapters"))
     {
         GetData();
     }
 
-    internal NetworkStats(IPhysicalNetworkInterfaceSnapshotProvider snapshotProvider, string allAdaptersName)
+    internal NetworkStats(INetworkInterfaceSnapshotProvider snapshotProvider, string allAdaptersName)
     {
         _snapshotProvider = snapshotProvider;
         _allAdaptersName = allAdaptersName;
@@ -78,15 +78,15 @@ internal sealed partial class NetworkStats
             if (!_snapshotReadFailureLogged)
             {
                 _snapshotReadFailureLogged = true;
-                CoreLogger.LogError("Failed while reading physical network interface statistics.", ex);
+                CoreLogger.LogError("Failed while reading network interface statistics.", ex);
             }
         }
     }
 
-    internal void ApplySnapshots(IReadOnlyList<PhysicalNetworkInterfaceSnapshot> snapshots, double elapsedSeconds)
+    internal void ApplySnapshots(IReadOnlyList<NetworkInterfaceSnapshot> snapshots, double elapsedSeconds)
     {
         var currentInterfaceIds = new HashSet<ulong>(snapshots.Count);
-        var adapterMeasurements = new List<(PhysicalNetworkInterfaceSnapshot Snapshot, Data Usage)>(snapshots.Count);
+        var adapterMeasurements = new List<(NetworkInterfaceSnapshot Snapshot, Data Usage)>(snapshots.Count);
         double totalSent = 0;
         double totalReceived = 0;
         double totalBandwidth = 0;
@@ -107,9 +107,12 @@ internal sealed partial class NetworkStats
 
             var usage = CreateUsage(sent, received, snapshot.LinkSpeed);
             adapterMeasurements.Add((snapshot, usage));
-            totalSent += sent;
-            totalReceived += received;
-            totalBandwidth += snapshot.LinkSpeed;
+            if (snapshot.IsHardware)
+            {
+                totalSent += sent;
+                totalReceived += received;
+                totalBandwidth += snapshot.LinkSpeed;
+            }
         }
 
         RemoveMissingInterfaces(currentInterfaceIds);
@@ -130,34 +133,28 @@ internal sealed partial class NetworkStats
             }
 
             AddChartValue(chartValues, usage.Usage);
-            adapters[index + 1] = new(GetPhysicalAdapterId(snapshot), snapshot.Name, usage, chartValues);
+            adapters[index + 1] = new(GetAdapterId(snapshot), snapshot.Name, usage, chartValues, snapshot);
         }
 
         Volatile.Write(ref _networkAdapters, adapters);
     }
 
-    public string CreateNetImageUrl(int netChartIndex)
+    public NetworkAdapterData GetNetworkAdapter(string adapterId)
     {
         var adapters = Volatile.Read(ref _networkAdapters);
-        var resolvedIndex = ResolveIndex(netChartIndex, adapters.Length);
-        return ChartHelper.CreateImageUrl(adapters[resolvedIndex].ChartValues, ChartHelper.ChartType.Net);
+        return adapters[Math.Max(FindNetworkIndex(adapters, adapterId), 0)];
     }
 
-    public string GetNetworkName(int networkIndex)
+    public string GetAdjacentNetworkId(string adapterId, bool forward)
     {
         var adapters = Volatile.Read(ref _networkAdapters);
-        return adapters[ResolveIndex(networkIndex, adapters.Length)].Name;
+        var index = Math.Max(FindNetworkIndex(adapters, adapterId), 0);
+        var nextIndex = (index + (forward ? 1 : adapters.Length - 1)) % adapters.Length;
+        return adapters[nextIndex].Id;
     }
 
-    public string GetNetworkId(int networkIndex)
+    private static int FindNetworkIndex(NetworkAdapterData[] adapters, string adapterId)
     {
-        var adapters = Volatile.Read(ref _networkAdapters);
-        return adapters[ResolveIndex(networkIndex, adapters.Length)].Id;
-    }
-
-    public int GetNetworkIndex(string adapterId)
-    {
-        var adapters = Volatile.Read(ref _networkAdapters);
         for (var index = 0; index < adapters.Length; index++)
         {
             if (string.Equals(adapters[index].Id, adapterId, StringComparison.OrdinalIgnoreCase))
@@ -169,49 +166,16 @@ internal sealed partial class NetworkStats
         return -1;
     }
 
-    public Data GetNetworkUsage(int networkIndex)
-    {
-        var adapters = Volatile.Read(ref _networkAdapters);
-        return adapters[ResolveIndex(networkIndex, adapters.Length)].Usage;
-    }
-
-    public int GetPrevNetworkIndex(int networkIndex)
-    {
-        var adapterCount = Volatile.Read(ref _networkAdapters).Length;
-        if (adapterCount == 0)
-        {
-            return 0;
-        }
-
-        return networkIndex <= 0 || networkIndex >= adapterCount ? adapterCount - 1 : networkIndex - 1;
-    }
-
-    public int GetNextNetworkIndex(int networkIndex)
-    {
-        var adapterCount = Volatile.Read(ref _networkAdapters).Length;
-        if (adapterCount == 0 || networkIndex < 0 || networkIndex >= adapterCount - 1)
-        {
-            return 0;
-        }
-
-        return networkIndex + 1;
-    }
-
     private static double GetBytesPerSecond(ulong previousValue, ulong currentValue, double elapsedSeconds)
     {
         return currentValue >= previousValue ? (currentValue - previousValue) / elapsedSeconds : 0;
     }
 
-    private static int ResolveIndex(int requestedIndex, int adapterCount)
-    {
-        return (uint)requestedIndex < (uint)adapterCount ? requestedIndex : 0;
-    }
-
-    private static string GetPhysicalAdapterId(PhysicalNetworkInterfaceSnapshot snapshot)
+    private static string GetAdapterId(NetworkInterfaceSnapshot snapshot)
     {
         return snapshot.InterfaceGuid != Guid.Empty
-            ? PhysicalAdapterIdPrefix + snapshot.InterfaceGuid.ToString("D")
-            : PhysicalAdapterIdPrefix + snapshot.InterfaceLuid.ToString("X16", CultureInfo.InvariantCulture);
+            ? AdapterIdPrefix + snapshot.InterfaceGuid.ToString("D")
+            : AdapterIdPrefix + snapshot.InterfaceLuid.ToString("X16", CultureInfo.InvariantCulture);
     }
 
     private static Data CreateUsage(double sent, double received, double bandwidth)

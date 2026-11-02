@@ -15,6 +15,9 @@ namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 
 internal sealed class SettingsManager : JsonSettingsManager
 {
+    internal const bool DefaultExcludeVirtualNetworkAdapters = false;
+    internal const bool DefaultExcludeDisconnectedNetworkAdapters = true;
+
     private const string Namespace = "performanceMonitor";
     private static readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true };
     private readonly Lock _fileLock = new();
@@ -38,6 +41,22 @@ internal sealed class SettingsManager : JsonSettingsManager
             : SpeedUnit.BitsPerSecond;
 
     public string DefaultNetworkAdapterId => _defaultNetworkAdapterId;
+
+    private readonly ToggleSetting _excludeVirtualNetworkAdapters = new(
+        Namespaced(nameof(ExcludeVirtualNetworkAdapters)),
+        Resources.GetResource("Exclude_Virtual_Network_Adapters_Setting_Title"),
+        Resources.GetResource("Exclude_Virtual_Network_Adapters_Setting_Description"),
+        DefaultExcludeVirtualNetworkAdapters);
+
+    public bool ExcludeVirtualNetworkAdapters => _excludeVirtualNetworkAdapters.Value;
+
+    private readonly ToggleSetting _excludeDisconnectedNetworkAdapters = new(
+        Namespaced(nameof(ExcludeDisconnectedNetworkAdapters)),
+        Resources.GetResource("Exclude_Disconnected_Network_Adapters_Setting_Title"),
+        Resources.GetResource("Exclude_Disconnected_Network_Adapters_Setting_Description"),
+        DefaultExcludeDisconnectedNetworkAdapters);
+
+    public bool ExcludeDisconnectedNetworkAdapters => _excludeDisconnectedNetworkAdapters.Value;
 
     private readonly ChoiceSetSetting _diskSpeedUnit = new(
         Namespaced(nameof(DiskSpeedUnit)),
@@ -71,6 +90,8 @@ internal sealed class SettingsManager : JsonSettingsManager
         FilePath = filePath;
 
         Settings.Add(_networkSpeedUnit);
+        Settings.Add(_excludeVirtualNetworkAdapters);
+        Settings.Add(_excludeDisconnectedNetworkAdapters);
         Settings.Add(_diskSpeedUnit);
 
         LoadSettings();
