@@ -2,6 +2,7 @@
   "RestartAfterRestore": true,
   "IncludeFiles": [
     "*Keyboard Manager\\default.json",
+    "*Keyboard Manager\\editorSettings.json",
     "*settings.json",
     "*FancyZones\\custom-layouts.json",
     "*FancyZones\\layout-hotkeys.json",
@@ -29,6 +30,9 @@
   ],
   "CustomRestoreSettings": {
     "\\Keyboard Manager\\default.json": {
+      "overwrite": true
+    },
+    "\\Keyboard Manager\\editorSettings.json": {
       "overwrite": true
     }
   },
