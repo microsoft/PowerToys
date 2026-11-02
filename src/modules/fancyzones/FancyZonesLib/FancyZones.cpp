@@ -1226,6 +1226,9 @@ void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
     else
     {
         auto monitors = MonitorUtils::IdentifyMonitors();
+        AppliedLayouts::instance().AdjustWorkAreaIds(monitors);
+        AppZoneHistory::instance().AdjustWorkAreaIds(monitors);
+
         const auto& workAreas = m_workAreaConfiguration.GetAllWorkAreas();
         
         if (ShouldWorkAreasBeRecreated(monitors, currentVirtualDesktop, workAreas))
@@ -1334,6 +1337,14 @@ bool FancyZones::ShouldWorkAreasBeRecreated(const std::vector<FancyZonesDataType
         if (iter->second->UniqueId().monitorId.deviceId != monitor.deviceId)
         {
             Logger::trace(L"DeviceId changed");
+            return true;
+        }
+
+        // DeviceId comparison ignores the monitor number when the instance id matches,
+        // but saved ids are kept in sync with it, so a work area with an outdated number could match another monitor's layout.
+        if (iter->second->UniqueId().monitorId.deviceId.number != monitor.deviceId.number)
+        {
+            Logger::trace(L"Monitor number changed");
             return true;
         }
 

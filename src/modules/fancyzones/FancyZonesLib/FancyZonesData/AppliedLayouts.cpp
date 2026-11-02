@@ -16,6 +16,22 @@
 
 namespace 
 {
+    // Lower values win when adjusted ids collide.
+    int AdjustedIdPriority(MonitorUtils::ConnectedMonitorSync syncResult)
+    {
+        switch (syncResult)
+        {
+        case MonitorUtils::ConnectedMonitorSync::Unchanged:
+            return 0;
+        case MonitorUtils::ConnectedMonitorSync::NumberUpdated:
+            return 1;
+        case MonitorUtils::ConnectedMonitorSync::SerialNumberUpdated:
+            return 2;
+        default:
+            return 3;
+        }
+    }
+
     // didn't use default constants since if they'll be changed later, it'll break this function
     bool isLayoutDefault(const LayoutData& layout)
     {
@@ -284,42 +300,38 @@ void AppliedLayouts::SaveData()
 
 void AppliedLayouts::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::MonitorId>& ids)
 {
+    // Saved ids fall back to the monitor number when the instance id differs, so a stale monitor number
+    // lets monitors of the same model pick up each other's layout. Keep saved ids in sync with the connected monitors.
     bool dirtyFlag = false;
 
-    std::vector<std::pair<FancyZonesDataTypes::WorkAreaId, FancyZonesDataTypes::WorkAreaId>> replaceWithSerialNumber{};
-    for (auto iter = m_layouts.begin(); iter != m_layouts.end(); ++iter)
+    std::vector<std::tuple<int, FancyZonesDataTypes::WorkAreaId, LayoutData>> entries{};
+    for (const auto& [id, layout] : m_layouts)
     {
-        const auto& [id, layout] = *iter;
-        bool serialNumberNotSet = id.monitorId.serialNumber.empty() && !id.monitorId.deviceId.isDefault();
-        bool monitorNumberNotSet = id.monitorId.deviceId.number == 0;
-        if (serialNumberNotSet || monitorNumberNotSet)
+        FancyZonesDataTypes::WorkAreaId updatedId = id;
+        auto syncResult = MonitorUtils::SyncWithConnectedMonitor(updatedId.monitorId, ids);
+        dirtyFlag |= syncResult == MonitorUtils::ConnectedMonitorSync::NumberUpdated || syncResult == MonitorUtils::ConnectedMonitorSync::SerialNumberUpdated;
+        entries.emplace_back(AdjustedIdPriority(syncResult), std::move(updatedId), layout);
+    }
+
+    if (!dirtyFlag)
+    {
+        return;
+    }
+
+    // An updated id can now be equal to another saved id, and only one of them can stay in the map.
+    // Keep the ones belonging to a connected monitor, preferring the ones that needed the fewest changes.
+    std::stable_sort(entries.begin(), entries.end(), [](const auto& lhs, const auto& rhs) { return std::get<0>(lhs) < std::get<0>(rhs); });
+
+    m_layouts.clear();
+    for (auto& [priority, id, layout] : entries)
+    {
+        if (!m_layouts.emplace(id, std::move(layout)).second)
         {
-            for (const auto& monitorId : ids)
-            {
-                if (id.monitorId.deviceId.id == monitorId.deviceId.id && id.monitorId.deviceId.instanceId == monitorId.deviceId.instanceId)
-                {
-                    FancyZonesDataTypes::WorkAreaId updatedId = id;
-                    updatedId.monitorId.serialNumber = monitorId.serialNumber;
-                    updatedId.monitorId.deviceId.number = monitorId.deviceId.number;
-                    replaceWithSerialNumber.push_back({ id, updatedId });
-                    dirtyFlag = true;
-                    break;
-                }
-            }
+            Logger::info(L"Removed outdated layout for {}", id.toString());
         }
     }
 
-    for (const auto& id : replaceWithSerialNumber)
-    {
-        auto mapEntry = m_layouts.extract(id.first);
-        mapEntry.key().monitorId = id.second.monitorId;
-        m_layouts.insert(std::move(mapEntry));
-    }
-
-    if (dirtyFlag)
-    {
-        SaveData();
-    }
+    SaveData();
 }
 
 void AppliedLayouts::SyncVirtualDesktops(const GUID& currentVirtualDesktop, const GUID& lastUsedVirtualDesktop, std::optional<std::vector<GUID>> desktops)
