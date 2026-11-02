@@ -3,6 +3,7 @@
 
 #include <algorithm>
 
+#include <common/interop/shared_constants.h>
 #include <keyboardmanager/common/Helpers.h>
 
 ProfileSwapGate::ProfileSwapGate(NowFunction now, AsyncKeyDownFunction asyncKeyDown) :
@@ -22,30 +23,51 @@ std::wstring ProfileSwapGate::AppliedProfile() const
     return m_appliedProfile;
 }
 
-ProfileSwapGate::OfferResult ProfileSwapGate::Offer(const MappingConfiguration::LoadOutcome outcome, std::unique_ptr<State> configuration, const ApplyInPlaceFunction& applyInPlace, const std::function<void(const std::wstring&)>& onStaged)
+ProfileSwapGate::OfferResult ProfileSwapGate::Offer(const MappingConfiguration::LoadOutcome outcome, std::unique_ptr<State> configuration, const ApplyInPlaceFunction& applyInPlace, const std::function<void(const std::wstring&)>& onRequested)
 {
     // A transient failure says nothing about what the file holds: keep the live tables and leave any
-    // pending stage alone (the caller arranges a retry).
+    // pending stage alone (the caller arranges a retry). The engine is still heading to the staged
+    // profile if there is one, so report that (not "nothing requested"): otherwise the tracker would
+    // compare keyboards with the applied profile while the stage is still waiting to be applied.
     if (outcome == MappingConfiguration::LoadOutcome::Failed || !configuration)
     {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if (onRequested)
+        {
+            onRequested(m_staged ? m_staged->currentConfig : std::wstring{});
+        }
+
         return OfferResult::Discarded;
     }
 
     // Objects released below hold tables; destroy them after the lock is dropped.
     std::unique_ptr<State> replaced;
+    std::unique_ptr<State> cancelled;
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if (!m_staged && configuration->currentConfig == m_appliedProfile)
+        const bool sameProfile = configuration->currentConfig == m_appliedProfile;
+
+        // A stage of the applied profile itself (a switch away that was superseded by a switch back)
+        // changes nothing a held key could depend on, so a reload of that profile does not wait for it.
+        const bool stagedIsApplied = m_staged && m_staged->currentConfig == m_appliedProfile;
+        if (sameProfile && (!m_staged || stagedIsApplied))
         {
-            // Same profile, nothing pending: an edit of the live profile. Keep the existing behaviour
-            // and apply it right away (in place) instead of waiting for an idle key-down.
+            // Same profile, no switch to another profile pending: an edit of the live profile. Keep the
+            // existing behaviour and apply it right away (in place) instead of waiting for an idle
+            // key-down, cancelling the pending same-profile stage if there is one.
+            cancelled = std::move(m_staged);
+            m_hasStage.store(false);
             applyInPlace(*configuration);
             replaced = std::move(configuration);
+            if (onRequested)
+            {
+                onRequested(std::wstring{});
+            }
         }
         else
         {
-            // A profile change, or a reload that supersedes a pending one (including a switch back to
-            // the applied profile, which must cancel the pending switch through the same gate).
+            // A profile change, or a reload that supersedes a pending switch (including a switch back
+            // to the applied profile, which must cancel the pending switch through the same gate).
             if (!m_staged)
             {
                 m_stagedSince = m_now();
@@ -54,9 +76,9 @@ ProfileSwapGate::OfferResult ProfileSwapGate::Offer(const MappingConfiguration::
             replaced = std::move(m_staged);
             m_staged = std::move(configuration);
             m_hasStage.store(true);
-            if (onStaged)
+            if (onRequested)
             {
-                onStaged(m_staged->currentConfig);
+                onRequested(m_staged->currentConfig);
             }
 
             return OfferResult::Staged;
@@ -75,6 +97,47 @@ std::wstring ProfileSwapGate::StagedProfile() const
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_staged ? m_staged->currentConfig : std::wstring{};
+}
+
+ProfileSwapGate::KeyEventSource ProfileSwapGate::ClassifyKeyEvent(const DWORD flags, const ULONG_PTR extraInfo) noexcept
+{
+    if (!(flags & LLKHF_INJECTED))
+    {
+        return KeyEventSource::Physical;
+    }
+
+    // Same test as the handlers' GeneratedByKBM, so "not tracked" and "ignored as KBM output by the
+    // handlers" mean the same events.
+    return (extraInfo & CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG) ? KeyEventSource::OwnInjected : KeyEventSource::ForeignInjected;
+}
+
+intptr_t ProfileSwapGate::OnHookEvent(LowlevelKeyboardEvent* event, const HandleFunction& handle, const AdoptFunction& adopt) noexcept
+{
+    // Read before the numpad-origin encoding below changes vkCode.
+    const KeyEventSource source = ClassifyKeyEvent(event->lParam->flags, event->lParam->dwExtraInfo);
+    event->lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event->lParam->vkCode, event->lParam->flags & LLKHF_EXTENDED);
+
+    if (source != KeyEventSource::Physical)
+    {
+        OnInjectedKeyEvent(event);
+    }
+
+    if (source == KeyEventSource::OwnInjected)
+    {
+        return handle(event);
+    }
+
+    try
+    {
+        return OnTrackedKeyEvent(event, handle, adopt);
+    }
+    catch (...)
+    {
+        // Bookkeeping failed (e.g. out of memory). OnTrackedKeyEvent does everything that can throw
+        // before it hands the event to `handle`, so `handle` has not run for this event: passing it on
+        // cannot deliver it twice.
+        return 0;
+    }
 }
 
 uint32_t ProfileSwapGate::MakeKeyId(const DWORD scanCode, const bool extended, const DWORD vkCode) noexcept
@@ -170,7 +233,20 @@ void ProfileSwapGate::TryApplyStage(const TimePoint now, const HandleFunction& h
     }
 }
 
-intptr_t ProfileSwapGate::OnPhysicalKeyEvent(LowlevelKeyboardEvent* event, const HandleFunction& handle, const AdoptFunction& adopt)
+std::unordered_map<uint32_t, ProfileSwapGate::HeldKey>::iterator ProfileSwapGate::FindHeldKey(const uint32_t id, const DWORD rawVkCode)
+{
+    auto found = m_heldKeys.find(id);
+    if (found != m_heldKeys.end())
+    {
+        return found;
+    }
+
+    return std::find_if(m_heldKeys.begin(), m_heldKeys.end(), [rawVkCode](const auto& entry) {
+        return entry.second.orphan && entry.second.vkCode == rawVkCode;
+    });
+}
+
+intptr_t ProfileSwapGate::OnTrackedKeyEvent(LowlevelKeyboardEvent* event, const HandleFunction& handle, const AdoptFunction& adopt)
 {
     const bool keyDown = event->wParam == WM_KEYDOWN || event->wParam == WM_SYSKEYDOWN;
     const TimePoint now = m_now();
@@ -179,7 +255,7 @@ intptr_t ProfileSwapGate::OnPhysicalKeyEvent(LowlevelKeyboardEvent* event, const
 
     PruneStaleKeys(now, id);
 
-    auto found = m_heldKeys.find(id);
+    auto found = FindHeldKey(id, rawVkCode);
     if (found != m_heldKeys.end() && found->second.orphan)
     {
         // Pressed under an earlier profile: never consult the current one. Its auto-repeats and its
@@ -204,23 +280,38 @@ intptr_t ProfileSwapGate::OnPhysicalKeyEvent(LowlevelKeyboardEvent* event, const
         TryApplyStage(now, handle, adopt);
     }
 
-    // Copy before the handlers run: they may rewrite vkCode (numpad/Shift handling).
-    const KBDLLHOOKSTRUCT eventData = *event->lParam;
-    const intptr_t result = handle(event);
-
+    // Record the key-down before the handlers run, so nothing after `handle` can throw (see the catch in
+    // OnHookEvent). The entry is complete except for `suppressed`, which needs the handlers' answer.
+    // `downData` is copied here, before the handlers may rewrite vkCode (numpad/Shift handling).
+    bool inserted = false;
     if (keyDown)
     {
-        auto [it, inserted] = m_heldKeys.try_emplace(id);
+        auto [it, isNew] = m_heldKeys.try_emplace(id);
+        inserted = isNew;
         if (inserted)
         {
             it->second.vkCode = rawVkCode;
-            it->second.downData = eventData;
+            it->second.downData = *event->lParam;
             it->second.downMessage = event->wParam;
-            it->second.suppressed = result == 1;
             it->second.sequence = ++m_sequence;
         }
 
         it->second.lastEvent = now;
+    }
+
+    const intptr_t result = handle(event);
+
+    if (keyDown)
+    {
+        // Look it up again rather than keep the iterator: a test hook that delivers injected input
+        // synchronously can re-enter the gate from `handle` and rehash the set.
+        if (inserted)
+        {
+            if (auto it = m_heldKeys.find(id); it != m_heldKeys.end())
+            {
+                it->second.suppressed = result == 1;
+            }
+        }
     }
     else
     {

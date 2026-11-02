@@ -53,7 +53,8 @@ public:
     void StopLowlevelKeyboardHook();
 
     // Hook thread (StartHookMessageID): apply a staged profile change if no keyboard hook is installed,
-    // then install or remove the keyboard/mouse hooks to match the live remap tables.
+    // then install or remove the keyboard/mouse hooks to match the live remap tables. A stage that
+    // arrives while the hook is being removed is applied right after the removal.
     void ReconcileHooks();
 
     bool HasRegisteredRemappings() const;
@@ -73,14 +74,15 @@ private:
     // Contains the non localized module name
     std::wstring moduleName = KeyboardManagerConstants::ModuleName;
 
-    // Low level hook handles
-    static HHOOK hookHandle;
+    // Low level hook handles. Installed on the hook thread; read (and removed) from the settings
+    // watcher thread too, hence atomic.
+    static std::atomic<HHOOK> hookHandle;
 
     // Required for Unhook in old versions of Windows
     static HHOOK hookHandleCopy;
 
     // Companion low-level mouse hook handles (see StartLowlevelMouseHook).
-    static HHOOK mouseHookHandle;
+    static std::atomic<HHOOK> mouseHookHandle;
     static HHOOK mouseHookHandleCopy;
 
     // Static pointer to the current KeyboardManager object required for accessing the HandleKeyboardHookEvent function in the hook procedure
@@ -149,8 +151,9 @@ private:
     int pendingCount = 0;
 
     // The profile the engine is heading to but has not adopted yet: set when the tracker requests a
-    // switch and when a reload stages a profile change; cleared once that profile is adopted, when a
-    // reload fails (so the tracker can retry), and when a same-profile reload is applied. The tracker
+    // switch and when a reload stages a profile change; cleared once that profile is adopted and when a
+    // same-profile reload is applied. When a reload fails it is reset to the pending stage's profile,
+    // or cleared if nothing is staged (so the tracker can retry). The tracker
     // compares a keyboard's profile with this (or with activeProfileName when it is empty), which both
     // dedupes requests while a switch is in flight and lets typing on the current profile's keyboard
     // cancel a pending switch away from it. Guarded by activeProfileMutex.
@@ -183,9 +186,6 @@ private:
 
     // Keys GetAsyncKeyState reports down right now (left/right modifier variants only).
     static std::vector<ProfileSwapGate::KeySnapshot> SnapshotKeysDown();
-
-    // Hook thread: a physical (non-injected) event, routed through profileSwapGate.
-    intptr_t HandlePhysicalKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;
 
     // Function called by the hook procedure to handle the events. This is the starting point function for remapping
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;

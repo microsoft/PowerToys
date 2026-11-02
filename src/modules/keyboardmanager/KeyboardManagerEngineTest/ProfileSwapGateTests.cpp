@@ -12,15 +12,18 @@
 #include <keyboardmanager/KeyboardManagerEngineLibrary/ProfileSwapGate.h>
 #include "TestHelpers.h"
 #include <common/interop/shared_constants.h>
+#include <keyboardmanager/common/Helpers.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace RemappingLogicTests
 {
     // Tests for applying profile changes only where a key-down and its key-up resolve under one profile.
-    // The mocked hook mirrors KeyboardManager::HookProc: physical input goes through the gate, injected
-    // input is handled by the live tables directly. MockedInput sets no LLKHF flags, so the test treats
-    // dwExtraInfo == 0 (the test's own driving input) as physical.
+    // The mocked hook calls ProfileSwapGate::OnHookEvent, the same dispatch KeyboardManager::HookProc
+    // uses (classification by LLKHF_INJECTED / dwExtraInfo, numpad-origin encoding, tracked vs KBM's own
+    // input). The test's key presses are delivered as physical input (no LLKHF_INJECTED) with the scan
+    // code MapVirtualKey reports; input the handlers send is delivered as injected.
     TEST_CLASS (ProfileSwapGateTests)
     {
     private:
@@ -77,24 +80,57 @@ namespace RemappingLogicTests
             return profile;
         }
 
-        ProfileSwapGate::OfferResult Offer(std::unique_ptr<State> configuration, Outcome outcome = Outcome::Loaded)
+        ProfileSwapGate::OfferResult Offer(std::unique_ptr<State> configuration, Outcome outcome = Outcome::Loaded, const std::function<void(const std::wstring&)>& onRequested = nullptr)
         {
-            return gate->Offer(outcome, std::move(configuration), [this](State& inPlace) {
-                ++applyInPlaceCalls;
-                testState.AdoptConfiguration(inPlace, false);
-            });
+            return gate->Offer(
+                outcome, std::move(configuration), [this](State& inPlace) {
+                    ++applyInPlaceCalls;
+                    testState.AdoptConfiguration(inPlace, false);
+                },
+                onRequested);
+        }
+
+        // Scan code (low byte) and extended flag (E0 prefix) of a virtual key, as MapVirtualKey reports.
+        static WORD ScanOf(WORD vk)
+        {
+            return static_cast<WORD>(MapVirtualKeyW(vk, MAPVK_VK_TO_VSC_EX) & 0xFF);
+        }
+
+        static bool IsExtended(WORD vk)
+        {
+            return (MapVirtualKeyW(vk, MAPVK_VK_TO_VSC_EX) & 0xFF00) == 0xE000;
+        }
+
+        static constexpr INPUT KeyInput(WORD vk, bool up, WORD scan, bool extended, ULONG_PTR extraInfo = 0)
+        {
+            INPUT input{ .type = INPUT_KEYBOARD };
+            input.ki.wVk = vk;
+            input.ki.wScan = scan;
+            input.ki.dwFlags = (up ? KEYEVENTF_KEYUP : 0) | (extended ? KEYEVENTF_EXTENDEDKEY : 0);
+            input.ki.dwExtraInfo = extraInfo;
+            return input;
+        }
+
+        // A physical key event with an explicit scan code (for keys whose virtual key depends on NumLock).
+        void Physical(WORD vk, bool up, WORD scan, bool extended)
+        {
+            mockedInputHandler.SendPhysicalInput({ KeyInput(vk, up, scan, extended) });
         }
 
         void Press(WORD vk)
         {
-            std::vector<INPUT> inputs{ { .type = INPUT_KEYBOARD, .ki = { .wVk = vk } } };
-            mockedInputHandler.SendVirtualInput(inputs);
+            Physical(vk, false, ScanOf(vk), IsExtended(vk));
         }
 
         void Release(WORD vk)
         {
-            std::vector<INPUT> inputs{ { .type = INPUT_KEYBOARD, .ki = { .wVk = vk, .dwFlags = KEYEVENTF_KEYUP } } };
-            mockedInputHandler.SendVirtualInput(inputs);
+            Physical(vk, true, ScanOf(vk), IsExtended(vk));
+        }
+
+        // A key event injected by another program (SendInput without KBM's marker in dwExtraInfo).
+        void ForeignInject(WORD vk, bool up)
+        {
+            mockedInputHandler.SendVirtualInput({ KeyInput(vk, up, ScanOf(vk), IsExtended(vk)) });
         }
 
         // Count every key-down or key-up of `vk` that reaches the mocked hook (physical or injected).
@@ -126,17 +162,16 @@ namespace RemappingLogicTests
             gate->SetAppliedProfile(L"A");
 
             mockedInputHandler.SetHookProc([this](LowlevelKeyboardEvent* data) -> intptr_t {
-                if (data->lParam->dwExtraInfo == 0)
-                {
-                    return gate->OnPhysicalKeyEvent(
-                        data,
-                        [this](LowlevelKeyboardEvent* event) { return HandleEvent(event); },
-                        [this](std::unique_ptr<State> staged) { Adopt(std::move(staged)); });
-                }
-
-                gate->OnInjectedKeyEvent(data);
-                return HandleEvent(data);
+                return gate->OnHookEvent(
+                    data,
+                    [this](LowlevelKeyboardEvent* event) { return HandleEvent(event); },
+                    [this](std::unique_ptr<State> staged) { Adopt(std::move(staged)); });
             });
+        }
+
+        TEST_METHOD_CLEANUP(CleanupTestEnv)
+        {
+            mockedInputHandler.SetDeferInjectedInput(false);
         }
 
         // The reviewer's scenario: A leaves X unmapped, B maps X to Y. X is held when B is staged and
@@ -398,7 +433,7 @@ namespace RemappingLogicTests
             b->AddSingleKeyRemap('X', static_cast<DWORD>('Y'));
             Offer(std::move(b));
 
-            Assert::IsTrue(gate->ApplyStageWithoutHook({ { 'X', 0, false } }, [this](std::unique_ptr<State> staged) { Adopt(std::move(staged)); }));
+            Assert::IsTrue(gate->ApplyStageWithoutHook({ { 'X', ScanOf('X'), IsExtended('X') } }, [this](std::unique_ptr<State> staged) { Adopt(std::move(staged)); }));
             Assert::AreEqual(std::wstring(L"B"), testState.currentConfig);
 
             CountEventsOf('Y');
@@ -525,6 +560,212 @@ namespace RemappingLogicTests
             Release('Q');
 
             // The real key-ups arrive later and are answered for the orphans, not by B.
+            Release('C');
+            Release(VK_CONTROL);
+            Assert::IsFalse(IsDown(VK_MENU));
+            Assert::IsFalse(IsDown('V'));
+            Assert::IsFalse(IsDown(VK_CONTROL));
+            Assert::IsFalse(testState.osLevelShortcutReMap.begin()->second.isShortcutInvoked);
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+        }
+
+        // The hook's classification: only LLKHF_INJECTED with KBM's marker bit is KBM's own output.
+        TEST_METHOD (ClassifyKeyEvent_SeparatesPhysicalForeignAndOwnInput)
+        {
+            using Source = ProfileSwapGate::KeyEventSource;
+            Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(0, 0) == Source::Physical);
+            Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_EXTENDED | LLKHF_UP, 0) == Source::Physical);
+            Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, 0) == Source::ForeignInjected);
+            Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, 0x1234560) == Source::ForeignInjected);
+            Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG) == Source::OwnInjected);
+            Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG) == Source::OwnInjected);
+            Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG) == Source::OwnInjected);
+            Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG) == Source::OwnInjected);
+        }
+
+        // Review item 1 for input injected by another program (e.g. Mouse Without Borders): X is held
+        // through it under A (unmapped), B (X->Y) is staged, and the user types on a real keyboard. X's
+        // injected key-up must still be resolved under A, or B would turn it into a Y-up and leave X down.
+        TEST_METHOD (ForeignInjectedKey_IsReleasedUnderProfileItWasPressedUnder)
+        {
+            ForeignInject('X', false);
+            Assert::IsTrue(IsDown('X'));
+            Assert::IsTrue(gate->HeldKeyCount() == 1);
+
+            auto b = MakeProfile(L"B");
+            b->AddSingleKeyRemap('X', static_cast<DWORD>('Y'));
+            Offer(std::move(b));
+
+            CountEventsOf('Y');
+            Press('Z');
+            Release('Z');
+            Assert::IsTrue(gate->HasStage());
+
+            ForeignInject('X', true);
+            Assert::IsFalse(IsDown('X'));
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+
+            // KBM's own output is not tracked: under B, X->Y holds only X (not the injected Y).
+            Press('X');
+            Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
+            Assert::IsTrue(IsDown('Y'));
+            Assert::IsTrue(gate->HeldKeyCount() == 1);
+            Release('X');
+            Assert::IsFalse(IsDown('Y'));
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+        }
+
+        // The stale rule for an injected key is the one for physical keys: an injected key never repeats,
+        // so silence alone means nothing; it is dropped only once GetAsyncKeyState also reports it up.
+        TEST_METHOD (ForeignInjectedKey_StaleOnlyWhenAsyncUp)
+        {
+            ForeignInject('X', false); // passes through under A
+            Offer(MakeProfile(L"B"));
+
+            now += std::chrono::seconds(10);
+            Press('Z');
+            Release('Z');
+            Assert::IsTrue(gate->HasStage()); // silent, but the system still has X down
+
+            mockedInputHandler.SetKeyboardState('X', false); // the injector's key-up was lost
+            Press('Z');
+            Assert::IsFalse(gate->HasStage());
+            Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
+            Release('Z');
+        }
+
+        // A numpad key's virtual key can change between its key-down and key-up (NumLock / Shift), while
+        // its scan code stays the same: the key-up must still release the held key.
+        TEST_METHOD (NumpadKey_VirtualKeyChangesBetweenDownAndUp_ScanCodeIdentifiesKey)
+        {
+            Physical(VK_NUMPAD4, false, 0x4B, false);
+            Assert::IsTrue(gate->HeldKeyCount() == 1);
+            Offer(MakeProfile(L"B"));
+
+            Press('Z');
+            Release('Z');
+            Assert::IsTrue(gate->HasStage());
+
+            // Same physical key, reported as the numpad Left arrow now (not extended: numpad origin).
+            Physical(VK_LEFT, true, 0x4B, false);
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+
+            Press('Q');
+            Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
+            Release('Q');
+        }
+
+        // An orphan seeded from GetAsyncKeyState carries an estimated scan code. For the numpad Enter
+        // (VK_RETURN, real scan code E0 1C) MapVirtualKey estimates 1C, so the key-up's id differs; it is
+        // matched by virtual key instead and passes through, not resolved by the new profile.
+        TEST_METHOD (SeededOrphan_WrongEstimatedScanCode_MatchedByVirtualKey)
+        {
+            const DWORD numpadEnter = Helpers::EncodeKeyNumpadOrigin(VK_RETURN, true);
+            mockedInputHandler.SetKeyboardState(VK_RETURN, true);
+            auto b = MakeProfile(L"B");
+            b->AddSingleKeyRemap(numpadEnter, static_cast<DWORD>(VK_TAB));
+            Offer(std::move(b));
+
+            Assert::IsTrue(gate->ApplyStageWithoutHook({ { VK_RETURN, 0x1C, false } }, [this](std::unique_ptr<State> staged) { Adopt(std::move(staged)); }));
+            Assert::IsTrue(gate->OrphanKeyCount() == 1);
+
+            CountEventsOf(VK_TAB);
+            Physical(VK_RETURN, true, 0x1C, true);
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+            Assert::IsFalse(IsDown(VK_RETURN));
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+        }
+
+        // A transient load failure keeps a pending stage, so the requested profile is that stage's, not
+        // cleared; with nothing staged it is cleared so the tracker can retry.
+        TEST_METHOD (TransientFailure_RequestedProfileFollowsPendingStage)
+        {
+            std::vector<std::wstring> requested;
+            const auto record = [&requested](const std::wstring& profile) { requested.push_back(profile); };
+
+            Offer(MakeProfile(L"C"), Outcome::Failed, record);
+            Offer(MakeProfile(L"B"), Outcome::Loaded, record);
+            Offer(MakeProfile(L"C"), Outcome::Failed, record);
+
+            Assert::AreEqual(size_t{ 3 }, requested.size());
+            Assert::AreEqual(std::wstring{}, requested[0]);
+            Assert::AreEqual(std::wstring(L"B"), requested[1]);
+            Assert::AreEqual(std::wstring(L"B"), requested[2]);
+            Assert::AreEqual(std::wstring(L"B"), gate->StagedProfile());
+        }
+
+        // A pending "switch" to the applied profile (A -> B superseded by A -> A) does not hold back an
+        // edit of A: the edit is applied in place and the A -> A stage is cancelled.
+        TEST_METHOD (SameProfileReload_CancelsPendingSwitchToAppliedProfile)
+        {
+            Press('X');
+            Offer(MakeProfile(L"B"));
+            Assert::IsTrue(Offer(MakeProfile(L"A")) == ProfileSwapGate::OfferResult::Staged);
+
+            std::wstring requested = L"unset";
+            auto edited = MakeProfile(L"A");
+            edited->AddSingleKeyRemap('Q', static_cast<DWORD>('R'));
+            Assert::IsTrue(Offer(std::move(edited), Outcome::Loaded, [&requested](const std::wstring& profile) { requested = profile; }) == ProfileSwapGate::OfferResult::AppliedInPlace);
+            Assert::AreEqual(1, applyInPlaceCalls);
+            Assert::IsFalse(gate->HasStage());
+            Assert::AreEqual(std::wstring{}, requested);
+            Assert::IsTrue(testState.GetSingleKeyRemap('Q').has_value());
+            Release('X');
+        }
+
+        // The forced swap as Windows orders it (assumed): input injected from the hook callback reaches
+        // the hook after the callback returns. The key-ups the old profile injects while replaying the
+        // held keys therefore arrive after the swap and are seen by the new profile's handlers (the
+        // limitation noted for the forced swap). This pins down what B then does with them.
+        TEST_METHOD (HalfInvokedShortcut_ForcedSwap_DeferredInjection)
+        {
+            mockedInputHandler.SetDeferInjectedInput(true);
+
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey('C');
+            Shortcut dest;
+            dest.SetKey(VK_MENU);
+            dest.SetKey('V');
+            testState.AddOSLevelShortcut(src, dest);
+
+            Press(VK_CONTROL);
+            Press('C');
+            Assert::IsTrue(IsDown(VK_MENU));
+            Assert::IsTrue(IsDown('V'));
+
+            auto b = MakeProfile(L"B");
+            b->AddOSLevelShortcut(src, dest);
+            Offer(std::move(b));
+
+            // Record which profile is live when the injected V key-up reaches the hook.
+            std::wstring profileAtInjectedVUp;
+            mockedInputHandler.SetHookProc([this, &profileAtInjectedVUp](LowlevelKeyboardEvent* data) -> intptr_t {
+                if ((data->lParam->flags & LLKHF_INJECTED) && data->lParam->vkCode == 'V' && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+                {
+                    profileAtInjectedVUp = testState.currentConfig;
+                }
+
+                return gate->OnHookEvent(
+                    data,
+                    [this](LowlevelKeyboardEvent* event) { return HandleEvent(event); },
+                    [this](std::unique_ptr<State> staged) { Adopt(std::move(staged)); });
+            });
+
+            now += std::chrono::seconds(31);
+            Press('Q');
+            Assert::AreEqual(std::wstring(L"B"), testState.currentConfig);
+
+            // A injected the V-up while replaying C's key-up, but B's handlers are the ones that see it.
+            Assert::AreEqual(std::wstring(L"B"), profileAtInjectedVUp);
+
+            // In this configuration B leaves the injected key-ups alone: nothing is left down and B's
+            // shortcut is not marked invoked.
+            Assert::IsFalse(IsDown(VK_MENU));
+            Assert::IsFalse(IsDown('V'));
+            Assert::IsFalse(testState.osLevelShortcutReMap.begin()->second.isShortcutInvoked);
+            Release('Q');
+
             Release('C');
             Release(VK_CONTROL);
             Assert::IsFalse(IsDown(VK_MENU));

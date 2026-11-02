@@ -18,8 +18,57 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
         return false;
     }
 
-    // Iterate over inputs
+    // Deferred mode: input injected from inside the hook reaches the hook after the hook returns.
+    if (deferInjectedInput && hookDepth > 0)
+    {
+        deferredInputs.insert(deferredInputs.end(), inputs.begin(), inputs.end());
+        return true;
+    }
+
     for (const INPUT& input : inputs)
+    {
+        DeliverInput(input, true);
+        DeliverDeferredInput();
+    }
+
+    return true;
+}
+
+// Function to simulate input from a real keyboard
+bool MockedInput::SendPhysicalInput(const std::vector<INPUT>& inputs)
+{
+    for (const INPUT& input : inputs)
+    {
+        DeliverInput(input, false);
+        DeliverDeferredInput();
+    }
+
+    return true;
+}
+
+void MockedInput::SetDeferInjectedInput(bool defer)
+{
+    deferInjectedInput = defer;
+}
+
+void MockedInput::DeliverDeferredInput()
+{
+    // Only from outside the hook: queued input follows the event whose hook call queued it.
+    if (hookDepth > 0)
+    {
+        return;
+    }
+
+    while (!deferredInputs.empty())
+    {
+        const INPUT input = deferredInputs.front();
+        deferredInputs.pop_front();
+        DeliverInput(input, true);
+    }
+}
+
+void MockedInput::DeliverInput(const INPUT& input, bool injected)
+{
     {
         LowlevelKeyboardEvent keyEvent{};
 
@@ -48,8 +97,10 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
         }
         KBDLLHOOKSTRUCT lParam = {};
 
-        // Set only vkCode and dwExtraInfo since other values are unused
+        // The fields a low-level hook gets from SendInput (time is unused).
         lParam.vkCode = input.ki.wVk;
+        lParam.scanCode = input.ki.wScan;
+        lParam.flags = ((input.ki.dwFlags & KEYEVENTF_EXTENDEDKEY) ? LLKHF_EXTENDED : 0) | ((input.ki.dwFlags & KEYEVENTF_KEYUP) ? LLKHF_UP : 0) | (injected ? LLKHF_INJECTED : 0);
         lParam.dwExtraInfo = input.ki.dwExtraInfo;
         keyEvent.lParam = &lParam;
 
@@ -60,7 +111,9 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
         }
 
         // Call low level hook handler
+        ++hookDepth;
         intptr_t result = MockedKeyboardHook(&keyEvent);
+        --hookDepth;
 
         // Set keyboard state if the hook does not suppress the input
         if (result == 0)
@@ -113,7 +166,6 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
             }
         }
     }
-    return true;
 }
 
 // Function to simulate keyboard hook behavior

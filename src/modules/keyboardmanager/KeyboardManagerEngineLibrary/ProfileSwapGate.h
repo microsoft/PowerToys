@@ -12,28 +12,38 @@
 #include <common/hooks/LowlevelKeyboardEvent.h>
 #include "State.h"
 
-// Decides when a profile change may take effect, so that a physical key-down and its matching key-up
-// are resolved under the same profile.
+// Decides when a profile change may take effect, so that a key-down and its matching key-up are
+// resolved under the same profile.
 //
 // A reload that changes the active profile is parsed off the hook thread into a separate State and
 // handed to Offer(), which stages it. The low-level hook thread applies the staged configuration only
-// at a physical key-down that is not an auto-repeat, and only while it sees no physical key held, so a
+// at a tracked key-down that is not an auto-repeat, and only while it sees no tracked key held, so a
 // key pressed under one profile is released under the same one. The recovery rules below bound how
 // long a lost key-up can block a swap; a forced swap still resolves held keys by the old profile's
 // rules, while a stale drop relies on GetAsyncKeyState being right. A newer stage replaces an
 // older one that was not applied yet. A reload of the profile that is already applied (an editor edit)
-// is applied in place right away, as before this gate existed, unless a stage is pending.
+// is applied in place right away, as before this gate existed, unless a switch to another profile is
+// pending (a pending "switch" to the applied profile itself is cancelled by such a reload instead).
+//
+// Tracked keys are physical input and input injected by other software (SendInput without KBM's
+// marker in dwExtraInfo, e.g. Mouse Without Borders, the on-screen keyboard, AutoHotkey): KBM's
+// handlers remap both, so both need their down and up resolved under one profile. KBM's own output
+// (dwExtraInfo carries KEYBOARDMANAGER_INJECTED_FLAG) is not tracked; see ClassifyKeyEvent.
 //
 // An auto-repeat is recognised as a key-down of a key already in the held set. A held key that stops
 // repeating (assumed: Windows repeats only the most recently pressed key) stays in the set until its
 // key-up; GetAsyncKeyState is assumed not to reflect keys the hook suppressed. Neither assumption has
 // been measured on a real machine yet.
 //
-// Held keys whose key-up is lost (secure desktop, sleep, unplug, a later hook swallowing it) would
-// otherwise block the swap forever, so:
+// Held keys whose key-up is lost (secure desktop, sleep, unplug, a later hook swallowing it, an
+// injecting program that exits mid-press) would otherwise block the swap forever, so:
 //  - a key whose key-down reached the system is dropped after HeldKeyStaleTimeout without events,
 //    once GetAsyncKeyState also reports it up (not if an injected key-up of it was seen while held:
-//    then GetAsyncKeyState no longer says anything about the physical key);
+//    then GetAsyncKeyState no longer says anything about the physical key). Keys injected by other
+//    software follow the same rule: an injected key-down the hook passes on is assumed to update
+//    GetAsyncKeyState like a physical one, and one the hook suppressed is assumed not to, exactly as
+//    for physical keys. An injected key never auto-repeats, so a silent injected key is normal; it
+//    is only dropped once the system also says it is up, and otherwise waits for the forced swap;
 //  - when a stage has waited ForcedSwapTimeout and every held key has been silent that long, the swap
 //    is forced at the next fresh key-down: each held key's key-up is first replayed through the
 //    current (old) profile's handlers, which releases whatever that profile injected for it, and the
@@ -76,6 +86,28 @@ public:
         Staged,
     };
 
+    // Where a low-level keyboard event comes from, as far as the gate is concerned.
+    enum class KeyEventSource
+    {
+        // No LLKHF_INJECTED: a real keyboard. Tracked.
+        Physical,
+
+        // LLKHF_INJECTED without KBM's marker: another program's SendInput. Tracked, like Physical.
+        ForeignInjected,
+
+        // LLKHF_INJECTED and dwExtraInfo has KEYBOARDMANAGER_INJECTED_FLAG: KBM's own output (all KBM
+        // flags include that bit; other PowerToys modules set it so KBM ignores their input). Not
+        // tracked: handled by the live tables directly.
+        OwnInjected,
+    };
+
+    // Pure classification from KBDLLHOOKSTRUCT::flags and ::dwExtraInfo. Note that KBM also re-sends
+    // some key-downs with dwExtraInfo 0 on purpose (KeyboardEventHandlers, "send current key pressed
+    // without shortcut flag so that it can be reprocessed"); those classify as ForeignInjected. Such a
+    // key-down normally has the same scan code as the physical key being handled, so it counts as an
+    // auto-repeat of that held key.
+    static KeyEventSource ClassifyKeyEvent(DWORD flags, ULONG_PTR extraInfo) noexcept;
+
     // A key reported down by GetAsyncKeyState when the hook is (re)installed.
     struct KeySnapshot
     {
@@ -96,26 +128,27 @@ public:
 
     // Hand over the result of a reload. `configuration` must have been loaded into a fresh State;
     // for LoadOutcome::ConfirmedAbsent it is the (empty) configuration of a profile with no file.
-    // `applyInPlace` and `onStaged` (given the staged profile name) run under the gate lock, so they
-    // cannot interleave with a hook-thread swap.
-    OfferResult Offer(MappingConfiguration::LoadOutcome outcome, std::unique_ptr<State> configuration, const ApplyInPlaceFunction& applyInPlace, const std::function<void(const std::wstring&)>& onStaged = nullptr);
+    // `applyInPlace` and `onRequested` run under the gate lock, so they cannot interleave with a
+    // hook-thread swap. `onRequested` is given the profile the engine is heading to but has not
+    // applied yet: the staged profile, or empty when nothing is staged afterwards (in-place apply, or
+    // a discarded load with no stage pending).
+    OfferResult Offer(MappingConfiguration::LoadOutcome outcome, std::unique_ptr<State> configuration, const ApplyInPlaceFunction& applyInPlace, const std::function<void(const std::wstring&)>& onRequested = nullptr);
 
     bool HasStage() const noexcept;
 
     // Name of the staged profile, or empty when nothing is staged.
     std::wstring StagedProfile() const;
 
-    // Hook thread: process one physical (non-injected) keyboard event. `event->lParam->vkCode` is the
-    // value the handlers see (numpad-origin encoded). Applies a pending stage first when allowed,
-    // then either answers for an orphan key or calls `handle`. Returns 1 to suppress the event.
-    // `handle` must not re-enter this function for a physical event.
-    intptr_t OnPhysicalKeyEvent(LowlevelKeyboardEvent* event, const HandleFunction& handle, const AdoptFunction& adopt);
-
-    // Hook thread: observe an injected (non-physical) event before it is handled. An injected key-up
-    // for a key believed physically held (e.g. KBM releasing a held modifier while invoking a shortcut
-    // or a text remap) makes GetAsyncKeyState report that key up while it is still held, so from then on
-    // the key is never dropped as stale (only the forced swap can release it).
-    void OnInjectedKeyEvent(const LowlevelKeyboardEvent* event) noexcept;
+    // Hook thread: the hook procedure's handling of one event (KeyboardManager::HookProc and the tests
+    // both call this). Classifies the event (ClassifyKeyEvent, read before the encoding below), encodes
+    // the numpad origin into `event->lParam->vkCode` (the value the handlers see), and then:
+    //  - injected events (own or foreign) first mark held keys whose async state they invalidate;
+    //  - KBM's own output goes to `handle` directly;
+    //  - tracked events go through the held-key set: a pending stage is applied first when allowed,
+    //    then the event is either answered for an orphan key or passed to `handle`.
+    // Returns 1 to suppress the event. `handle` must not re-enter this function synchronously for a
+    // tracked event (in Windows, input injected from the hook callback arrives after it returns).
+    intptr_t OnHookEvent(LowlevelKeyboardEvent* event, const HandleFunction& handle, const AdoptFunction& adopt) noexcept;
 
     // Hook thread, while no keyboard hook is installed (so no key was remapped): forget the held-key
     // set, record `keysDown` as pass-through orphans, and apply the pending stage now. Returns false
@@ -140,8 +173,9 @@ private:
         KBDLLHOOKSTRUCT downData{};
         WPARAM downMessage = WM_KEYDOWN;
 
-        // For a normal key: whether the hook suppressed its first key-down (then the system never saw
-        // it, GetAsyncKeyState cannot vouch for it, and it is never dropped as stale).
+        // For a normal key (physical or foreign-injected): whether the hook suppressed its first
+        // key-down (then the system never saw it, GetAsyncKeyState cannot vouch for it, and it is never
+        // dropped as stale).
         // For an orphan: whether its remaining events are suppressed (true) or passed through (false).
         bool suppressed = false;
 
@@ -158,6 +192,20 @@ private:
     // and up even when NumLock/Shift changes the reported virtual key. Falls back to the virtual key
     // when the scan code is 0.
     static uint32_t MakeKeyId(DWORD scanCode, bool extended, DWORD vkCode) noexcept;
+
+    // A tracked (physical or foreign-injected) event; see OnHookEvent.
+    intptr_t OnTrackedKeyEvent(LowlevelKeyboardEvent* event, const HandleFunction& handle, const AdoptFunction& adopt);
+
+    // An injected event (KBM's own or foreign), before it is handled. An injected key-up for a key
+    // believed held (e.g. KBM releasing a held modifier while invoking a shortcut or a text remap)
+    // makes GetAsyncKeyState report that key up while it is still held, so from then on the key is
+    // never dropped as stale (only the forced swap can release it).
+    void OnInjectedKeyEvent(const LowlevelKeyboardEvent* event) noexcept;
+
+    // The held entry for an event: by key id, or, for an orphan only, by virtual key when the id is not
+    // found (orphans seeded from GetAsyncKeyState carry an estimated scan code, which can differ from
+    // the real one, e.g. numpad Enter or the numpad navigation keys with NumLock off).
+    std::unordered_map<uint32_t, HeldKey>::iterator FindHeldKey(uint32_t id, DWORD rawVkCode);
 
     void PruneStaleKeys(TimePoint now, uint32_t keepId);
     void TryApplyStage(TimePoint now, const HandleFunction& handle, const AdoptFunction& adopt);

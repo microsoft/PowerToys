@@ -19,8 +19,8 @@
 #include "trace.h"
 
 HHOOK KeyboardManager::hookHandleCopy;
-HHOOK KeyboardManager::hookHandle;
-HHOOK KeyboardManager::mouseHookHandle;
+std::atomic<HHOOK> KeyboardManager::hookHandle{ nullptr };
+std::atomic<HHOOK> KeyboardManager::mouseHookHandle{ nullptr };
 HHOOK KeyboardManager::mouseHookHandleCopy;
 KeyboardManager* KeyboardManager::keyboardManagerObjectPtr;
 
@@ -513,13 +513,21 @@ void KeyboardManager::OnSettingsChanged()
 
     LoadDeviceProfiles();
 
+    // Runs under the gate lock (gate lock, then activeProfileMutex: the same order as the hook thread's
+    // AdoptStagedConfiguration). The requested profile becomes the staged profile, or empty when
+    // nothing is staged.
+    const auto onRequested = [this](const std::wstring& requested) {
+        std::lock_guard<std::mutex> lock(activeProfileMutex);
+        requestedProfile = requested;
+    };
+
     if (outcome == MappingConfiguration::LoadOutcome::Failed)
     {
-        // Transient failure: keep the live tables (and any pending stage). Clear an in-flight
-        // auto-switch request so the tracker's dedupe does not block a retry from the same keyboard.
+        // Transient failure: keep the live tables (and any pending stage). The gate resets the
+        // in-flight auto-switch request to the pending stage, or clears it when nothing is staged, so
+        // the tracker's dedupe does not block a retry from the same keyboard.
         Logger::error(L"Settings reload failed; keeping the current remaps");
-        std::lock_guard<std::mutex> lock(activeProfileMutex);
-        requestedProfile.clear();
+        profileSwapGate.Offer(outcome, nullptr, [](State&) {}, onRequested);
         return;
     }
 
@@ -550,29 +558,18 @@ void KeyboardManager::OnSettingsChanged()
         loadingSettings = false;
     };
 
-    const auto onStaged = [this](const std::wstring& stagedProfile) {
-        std::lock_guard<std::mutex> lock(activeProfileMutex);
-        requestedProfile = stagedProfile;
-    };
-
-    const auto result = profileSwapGate.Offer(outcome, std::move(loaded), applyInPlace, onStaged);
+    const auto result = profileSwapGate.Offer(outcome, std::move(loaded), applyInPlace, onRequested);
     if (result == ProfileSwapGate::OfferResult::Staged)
     {
         Logger::trace(L"Profile change to '{}' staged; it is applied at the next key-down with no key held", profileSwapGate.StagedProfile());
 
         // Without a keyboard hook nothing is remapped, so nothing can be held "under" the live profile:
-        // let the hook thread apply the stage now (ReconcileHooks).
-        if (!hookHandle)
-        {
-            PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
-        }
-
+        // the hook thread applies the stage now (ReconcileHooks). Always post, without checking
+        // hookHandle here: the hook thread may be removing the hook right now, after its own check for a
+        // stage, and would then never see a key-down to apply this one. ReconcileHooks does nothing
+        // for the stage while the hook is installed, so an extra message is harmless.
+        PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
         return;
-    }
-
-    {
-        std::lock_guard<std::mutex> lock(activeProfileMutex);
-        requestedProfile.clear();
     }
 
     const bool newHasRemappings = HasRegisteredRemappingsUnchecked();
@@ -656,40 +653,34 @@ std::vector<ProfileSwapGate::KeySnapshot> KeyboardManager::SnapshotKeysDown()
 
 void KeyboardManager::ReconcileHooks()
 {
-    if (!hookHandle && profileSwapGate.HasStage())
+    for (;;)
     {
-        // No keyboard hook means the live profile remaps nothing, so no key is held "under" it: apply
-        // the stage now. Keys down right now reached the system unremapped; they are recorded as
-        // pass-through orphans so their key-ups also pass through instead of being resolved by the
-        // new profile.
-        profileSwapGate.ApplyStageWithoutHook(SnapshotKeysDown(), [this](std::unique_ptr<State> staged) {
-            AdoptStagedConfiguration(std::move(staged));
-        });
-    }
+        if (!hookHandle && profileSwapGate.HasStage())
+        {
+            // No keyboard hook means the live profile remaps nothing, so no key is held "under" it:
+            // apply the stage now. Keys down right now reached the system unremapped; they are recorded
+            // as pass-through orphans so their key-ups also pass through instead of being resolved by
+            // the new profile.
+            profileSwapGate.ApplyStageWithoutHook(SnapshotKeysDown(), [this](std::unique_ptr<State> staged) {
+                AdoptStagedConfiguration(std::move(staged));
+            });
+        }
 
-    if (HasRegisteredRemappingsUnchecked())
-    {
-        StartLowlevelKeyboardHook();
-    }
-    else
-    {
+        if (HasRegisteredRemappingsUnchecked())
+        {
+            StartLowlevelKeyboardHook();
+            return;
+        }
+
         StopLowlevelKeyboardHook();
-    }
-}
 
-intptr_t KeyboardManager::HandlePhysicalKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
-{
-    try
-    {
-        return profileSwapGate.OnPhysicalKeyEvent(
-            data,
-            [this](LowlevelKeyboardEvent* event) { return HandleKeyboardHookEvent(event); },
-            [this](std::unique_ptr<State> staged) { AdoptStagedConfiguration(std::move(staged)); });
-    }
-    catch (...)
-    {
-        // Bookkeeping failed (e.g. out of memory). Pass the event on rather than risk handling it twice.
-        return 0;
+        // A stage offered while the hook was still installed (after the check above) would otherwise
+        // wait for a key-down that the removed hook can no longer see: go round once more to apply it
+        // without the hook. Each round applies the stage it sees, so this ends.
+        if (!profileSwapGate.HasStage())
+        {
+            return;
+        }
     }
 }
 
@@ -701,23 +692,14 @@ LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const
         event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
         event.wParam = wParam;
 
-        // Read before the numpad-origin encoding below changes vkCode.
-        const bool physical = !(event.lParam->flags & LLKHF_INJECTED);
-        event.lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event.lParam->vkCode, event.lParam->flags & LLKHF_EXTENDED);
-
-        // Physical keys go through the profile-swap gate (held-key tracking, staged profile changes,
-        // orphans); injected input, incl. KBM's own remap output, carries LLKHF_INJECTED and is
-        // handled by the live tables directly (the gate only notes injected key-ups of held keys).
-        intptr_t result = 0;
-        if (physical)
-        {
-            result = keyboardManagerObjectPtr->HandlePhysicalKeyboardHookEvent(&event);
-        }
-        else
-        {
-            keyboardManagerObjectPtr->profileSwapGate.OnInjectedKeyEvent(&event);
-            result = keyboardManagerObjectPtr->HandleKeyboardHookEvent(&event);
-        }
+        // The profile-swap gate classifies the event and encodes the numpad origin into vkCode.
+        // Physical input and input injected by other programs go through its held-key tracking
+        // (staged profile changes, orphans); KBM's own output is handled by the live tables directly
+        // (the gate only notes injected key-ups of held keys). The unit tests drive the same function.
+        const intptr_t result = keyboardManagerObjectPtr->profileSwapGate.OnHookEvent(
+            &event,
+            [](LowlevelKeyboardEvent* data) { return keyboardManagerObjectPtr->HandleKeyboardHookEvent(data); },
+            [](std::unique_ptr<State> staged) { keyboardManagerObjectPtr->AdoptStagedConfiguration(std::move(staged)); });
 
         if (result == 1)
         {
@@ -827,10 +809,10 @@ void KeyboardManager::StartLowlevelKeyboardHook()
 
 void KeyboardManager::StopLowlevelKeyboardHook()
 {
-    if (hookHandle)
+    // Called from the hook thread and the settings watcher thread: take the handle exactly once.
+    if (const HHOOK hook = hookHandle.exchange(nullptr))
     {
-        UnhookWindowsHookEx(hookHandle);
-        hookHandle = nullptr;
+        UnhookWindowsHookEx(hook);
     }
 
     StopLowlevelMouseHook();
@@ -861,10 +843,9 @@ void KeyboardManager::StartLowlevelMouseHook()
 
 void KeyboardManager::StopLowlevelMouseHook()
 {
-    if (mouseHookHandle)
+    if (const HHOOK hook = mouseHookHandle.exchange(nullptr))
     {
-        UnhookWindowsHookEx(mouseHookHandle);
-        mouseHookHandle = nullptr;
+        UnhookWindowsHookEx(hook);
     }
 }
 
