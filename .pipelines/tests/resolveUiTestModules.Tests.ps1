@@ -29,6 +29,19 @@ function New-UITestProject {
 }
 
 Describe 'resolveUiTestModules' {
+    It 'selects Power Display for a fixture-only change <File>' -TestCases @(
+        @{ File = '.pipelines/powerdisplay-idd-poc/Fixture.cpp' }
+        @{ File = '.pipelines\powerdisplay-idd-poc\Manage-Poc.ps1' }
+        @{ File = '.pipelines/v2/templates/steps-build-umdf-display.yml' }
+    ) {
+        param($File)
+        New-UITestProject 'src\modules\powerdisplay\PowerDisplay.UITests\PowerDisplay.UITests.csproj'
+        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile $File
+        $result.TouchedModules | Should Be @('powerdisplay')
+        $result.UiTestModules | Should Be @('PowerDisplay.UITests')
+        $result.InfrastructureChanged | Should Be $false
+    }
+
     It 'selects the UI tests for a touched module' {
         New-UITestProject 'src\modules\FileLocksmith\Tests\FileLocksmith.UITests\FileLocksmith.UITests.csproj'
 

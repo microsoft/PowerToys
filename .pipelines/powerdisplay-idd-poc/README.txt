@@ -17,8 +17,13 @@ The signed UMDF/IddCx package loads with Secure Boot enabled and TESTSIGNING
 absent. It creates two distinct sample-EDID monitors with fixed container IDs.
 Dxva2 capabilities and VCP 0x10 set/readback reach the real IddCx callbacks.
 Independent brightness values 31 and 73 are observed by the driver; the probe
-restores the original 40 and 60. The extended emulator has eight protocol groups.
-x64 and ARM64 Release builds/catalog generation pass. ARM64 runtime is untested.
+restores the original 40 and 60. The emulator self-test reports its executed
+assertion count rather than a fixed test-count label.
+x64 and ARM64 Release builds/catalog generation pass. The isolated Windows 11
+ARM64 CI lane also loads the fixture and passes the complete module suite.
+ARM64 uses its owner-preconfigured Secure Boot off / TESTSIGNING image; scripts
+assert that policy without changing it. Preserve the architecture-specific
+umdf-display-<platform>-<jobId> artifacts for each validation run.
 
 The production probe uses the unchanged Power Display MonitorManager:
   QueryDisplayConfig inventory contains both fixture identities.
@@ -49,6 +54,9 @@ From the repository root in PowerShell 7:
 Use -Platform ARM64 for an ARM64 bundle. -PrepareOnly fetches/verifies build
 inputs without building/signing. The script pins the Microsoft driver sample and
 WDK/SDK packages, verifies NuGet signatures and uses tools\build\build.cmd.
+Use -PackageCache <verified-packages-directory> to reuse extracted packages;
+the signed nupkgs are still verified and an incomplete cache fails explicitly.
+Mixed/all-module CI builds reuse the preceding HID fixture's package cache.
 
 The output is out\<architecture>\{driver,production,driver-hashes.json,
 production-hashes.json,build.json}. The production directory is a console probe

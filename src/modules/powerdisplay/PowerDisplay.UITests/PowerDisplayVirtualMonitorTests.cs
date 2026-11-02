@@ -17,14 +17,15 @@ public sealed partial class PowerDisplayEndToEndTests
     {
         var fixture = RequireFixture();
         var flyout = OpenFlyout();
-        var ids = AssertFixtureInventory(flyout, 2);
+        var ids = AssertFixtureInventory(ref flyout, 2);
         var original = fixture.Snapshot();
+        int[] targets = [original.Monitors[0].Brightness == 31 ? 32 : 31, original.Monitors[1].Brightness == 73 ? 72 : 73];
         try
         {
             foreach (var id in ids)
             {
                 var connector = VirtualMonitorFixture.ConnectorForId(id);
-                var target = connector == 0 ? 31 : 73;
+                var target = targets[connector];
                 var before = fixture.Snapshot();
                 Step($"Setting fixture monitor {connector} to {target} through its real UI slider");
                 FindMonitorBrightnessSlider(flyout, id).SetValue(target);
@@ -35,12 +36,12 @@ public sealed partial class PowerDisplayEndToEndTests
             }
 
             var reads = fixture.Snapshot();
-            Refresh(flyout);
-            CollectionAssert.AreEquivalent(ids, AssertFixtureInventory(flyout, 2), "Refresh changed stable monitor identities.");
+            flyout = Refresh(flyout);
+            CollectionAssert.AreEquivalent(ids, AssertFixtureInventory(ref flyout, 2), "Refresh changed stable monitor identities.");
             foreach (var id in ids)
             {
                 var connector = VirtualMonitorFixture.ConnectorForId(id);
-                Assert.AreEqual(connector == 0 ? 31d : 73d, ReadBrightness(flyout, FindMonitorBrightnessSlider(flyout, id)));
+                Assert.AreEqual((double)targets[connector], ReadBrightness(flyout, FindMonitorBrightnessSlider(flyout, id)));
                 Assert.IsTrue(fixture.Snapshot().Monitors[connector].Gets > reads.Monitors[connector].Gets, "Rediscovery did not read brightness through native DDC/CI.");
             }
         }
@@ -64,20 +65,20 @@ public sealed partial class PowerDisplayEndToEndTests
     {
         var fixture = RequireFixture();
         var flyout = OpenFlyout();
-        var ids = AssertFixtureInventory(flyout, 2);
+        var ids = AssertFixtureInventory(ref flyout, 2);
         var before = fixture.Snapshot();
         Step("Removing only virtual connector 1 through IddCxMonitorDeparture");
         try
         {
             fixture.SetConnected(1, false);
-            AssertFixtureInventory(flyout, 1);
-            Refresh(flyout);
-            AssertFixtureInventory(flyout, 1);
+            AssertFixtureInventory(ref flyout, 1);
+            flyout = Refresh(flyout);
+            AssertFixtureInventory(ref flyout, 1);
             Assert.AreEqual(before.Monitors[0].Brightness, fixture.Snapshot().Monitors[0].Brightness);
             Assert.IsTrue(fixture.Snapshot().Monitors[1].Departures > before.Monitors[1].Departures, "The driver did not observe departure.");
             Step("Reconnecting the same virtual monitor");
             fixture.SetConnected(1, true);
-            var returned = AssertFixtureInventory(flyout, 2);
+            var returned = AssertFixtureInventory(ref flyout, 2);
             CollectionAssert.AreEquivalent(ids, returned, "Hot-plug changed monitor identity.");
             var id = returned.Single(value => VirtualMonitorFixture.ConnectorForId(value) == 1);
             Assert.AreEqual((double)before.Monitors[1].Brightness, ReadBrightness(flyout, FindMonitorBrightnessSlider(flyout, id)), "Arrival lost independent brightness state.");
@@ -97,14 +98,14 @@ public sealed partial class PowerDisplayEndToEndTests
     {
         var fixture = RequireFixture();
         var flyout = OpenFlyout();
-        var ids = AssertFixtureInventory(flyout, 2);
+        var ids = AssertFixtureInventory(ref flyout, 2);
         try
         {
             Step("Removing both virtual monitors to exercise the no-supported-monitors state");
             fixture.SetConnected(0, false);
             fixture.SetConnected(1, false);
-            AssertFixtureInventory(flyout, 0);
-            Refresh(flyout);
+            AssertFixtureInventory(ref flyout, 0);
+            flyout = Refresh(flyout);
             Assert.AreEqual(0, BrightnessSliders(flyout).Length, "The isolated guest should have no other DDC/CI-capable displays.");
             Assert.IsTrue(flyout.Has(By.AccessibilityId("NoMonitorsInfoBar")), "The empty inventory is not explained to the user.");
         }
@@ -113,7 +114,7 @@ public sealed partial class PowerDisplayEndToEndTests
             fixture.Reset();
         }
 
-        CollectionAssert.AreEquivalent(ids, AssertFixtureInventory(flyout, 2));
+        CollectionAssert.AreEquivalent(ids, AssertFixtureInventory(ref flyout, 2));
         SaveFixtureEvidence(fixture, "empty-and-recovered.json");
     }
 
@@ -123,25 +124,27 @@ public sealed partial class PowerDisplayEndToEndTests
     {
         var fixture = RequireFixture();
         var flyout = OpenFlyout();
-        var ids = AssertFixtureInventory(flyout, 2);
+        var ids = AssertFixtureInventory(ref flyout, 2);
         var unsupportedId = ids.Single(id => VirtualMonitorFixture.ConnectorForId(id) == 1);
         var before = fixture.Snapshot();
         try
         {
             Step("Advertising no brightness capability on virtual connector 1");
             fixture.SetMode(1, 1);
-            Refresh(flyout);
-            Assert.AreEqual(0, BrightnessSliders(flyout).Count(slider => string.Equals(slider.AutomationId, unsupportedId, StringComparison.OrdinalIgnoreCase)), "Unsupported brightness must not be presented as a controllable feature.");
+            flyout = Refresh(flyout);
+            var supported = ids.Where(id => !string.Equals(id, unsupportedId, StringComparison.OrdinalIgnoreCase)).ToArray();
+            CollectionAssert.AreEquivalent(supported, AssertFixtureInventory(ref flyout, 1), "Unsupported brightness discovery must retain the healthy monitor.");
+            Assert.IsTrue(fixture.Snapshot().Monitors[1].Capabilities > before.Monitors[1].Capabilities, "Refresh did not read the changed capabilities from the unsupported monitor.");
             Assert.AreEqual(before.Monitors[1].Brightness, fixture.Snapshot().Monitors[1].Brightness, "Capability discovery changed brightness.");
             Assert.AreEqual(before.Monitors[1].Sets, fixture.Snapshot().Monitors[1].Sets, "Unsupported discovery wrote brightness.");
         }
         finally
         {
             fixture.SetMode(1, 0);
-            Refresh(flyout);
+            flyout = Refresh(flyout);
         }
 
-        AssertFixtureInventory(flyout, 2);
+        AssertFixtureInventory(ref flyout, 2);
         SaveFixtureEvidence(fixture, "unsupported-brightness.json");
     }
 
@@ -151,7 +154,7 @@ public sealed partial class PowerDisplayEndToEndTests
     {
         var fixture = RequireFixture();
         var flyout = OpenFlyout();
-        var ids = AssertFixtureInventory(flyout, 2);
+        var ids = AssertFixtureInventory(ref flyout, 2);
         var id = ids.Single(value => VirtualMonitorFixture.ConnectorForId(value) == 0);
         var before = fixture.Snapshot();
         var original = before.Monitors[0].Brightness;
@@ -170,13 +173,27 @@ public sealed partial class PowerDisplayEndToEndTests
                 "The attempted UI write did not reach the failing I2C callback.");
             Assert.AreEqual(original, fixture.Snapshot().Monitors[0].Brightness, "A failed write changed the emulated monitor.");
             Assert.AreEqual(before.Monitors[0].Sets, fixture.Snapshot().Monitors[0].Sets, "The fixture falsely recorded a successful write.");
+            Step("Observing persisted state beyond the product's two-second save debounce");
+            Assert.IsTrue(
+                WaitHelper.WaitForStable(
+                    () =>
+                    {
+                        Assert.IsTrue(ReadSavedBrightness(id) != target, "A rejected hardware write was persisted as a successful brightness change.");
+                        return true;
+                    },
+                    observed => observed,
+                    10_000,
+                    16,
+                    200,
+                    shouldRetryException: ShouldRetryInventoryException).Succeeded,
+                "Could not observe persisted state for a complete debounce window.");
         }
         finally
         {
             fixture.SetMode(0, 0);
         }
 
-        Refresh(flyout);
+        flyout = Refresh(flyout);
         Assert.AreEqual((double)before.Monitors[0].Brightness, ReadBrightness(flyout, FindMonitorBrightnessSlider(flyout, id)), "Refresh reported the failed write as hardware success.");
         Assert.IsTrue(ReadSavedBrightness(id) != target, "A rejected hardware write was persisted as a successful brightness change.");
         SaveFixtureEvidence(fixture, "communication-failure.json");
@@ -188,28 +205,29 @@ public sealed partial class PowerDisplayEndToEndTests
         return virtualMonitors;
     }
 
-    private string[] AssertFixtureInventory(Session flyout, int expected)
+    private string[] AssertFixtureInventory(ref Session flyout, int expected)
     {
+        var current = flyout;
         var result = WaitHelper.WaitForStable(
             () =>
             {
                 if (!FlyoutVisible())
                 {
-                    flyout = OpenFlyout();
+                    current = OpenFlyout();
                 }
 
-                return flyout.Has(By.AccessibilityId("ScanningMonitorsTextBlock"), 0)
+                return current.Has(By.AccessibilityId("ScanningMonitorsTextBlock"), 0)
                     ? null
-                    : BrightnessSliders(flyout).Select(slider => slider.AutomationId)
+                    : BrightnessSliders(current).Select(slider => slider.AutomationId)
                         .Where(VirtualMonitorFixture.IsFixtureId).Order(StringComparer.OrdinalIgnoreCase).ToArray();
             },
             ids => ids is not null && ids.Length == expected,
             60_000,
             3,
             300,
-            shouldRetryException: exception => exception is IOException or JsonException);
+            shouldRetryException: ShouldRetryInventoryException);
         Assert.IsTrue(result.Succeeded, $"Expected {expected} fixture monitors; observed {JsonSerializer.Serialize(result.LastObservation)}.");
-        AssertStableInventory(flyout);
+        flyout = AssertStableInventory(current);
         return result.LastObservation!;
     }
 

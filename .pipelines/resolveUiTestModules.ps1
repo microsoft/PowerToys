@@ -26,6 +26,15 @@ $touchedModules = @(
         Sort-Object -Unique
 )
 
+$fixtureModules = @(
+    $ChangedFile | ForEach-Object {
+        if (($_ -replace '\\', '/') -match '^\.pipelines/(?:powerdisplay-idd-poc/|v2/templates/steps-build-umdf-display\.yml$)') {
+            'powerdisplay'
+        }
+    }
+)
+$touchedModules = @(@($touchedModules) + $fixtureModules | Sort-Object -Unique)
+
 $uiTestModules = foreach ($module in $touchedModules) {
     $moduleRoot = Join-Path $RepoRoot "src\modules\$module"
     if (-not (Test-Path -LiteralPath $moduleRoot -PathType Container)) {

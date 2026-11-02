@@ -95,16 +95,17 @@ Describe 'Dedicated ARM64 virtual HID routing' {
         @{ Modules = @('GrabAndMove.UITests'); Hid = 'true'; Other = 'false' }
         @{ Modules = @('Other.UITests'); Hid = 'false'; Other = 'true' }
         @{ Modules = @('GrabAndMove.UITests', 'Other.UITests'); Hid = 'true'; Other = 'true' }
-        @{ Modules = @('PowerDisplay.UITests'); Hid = 'false'; Other = 'false' }
-        @{ Modules = @('GrabAndMove.UITests', 'PowerDisplay.UITests'); Hid = 'true'; Other = 'false' }
+        @{ Modules = @('PowerDisplay.UITests'); Hid = 'false'; Other = 'false'; Display = 'true' }
+        @{ Modules = @('GrabAndMove.UITests', 'PowerDisplay.UITests'); Hid = 'true'; Other = 'false'; Display = 'true' }
     ) {
-        param($Modules, $Hid, $Other)
+        param($Modules, $Hid, $Other, $Display = 'false')
         $resolve = Get-Content (Join-Path $templates 'job-resolve-ui-tests.yml') -Raw
-        $assignments = [regex]::Matches($resolve, '(?m)^\s+\$has(?:Non)?UmdfHidUiTests = .+$').Value
-        @($assignments).Count | Should Be 2
+        $assignments = [regex]::Matches($resolve, '(?m)^\s+\$has(?:Non)?Umdf(?:Hid|Display)UiTests = .+$').Value
+        @($assignments).Count | Should Be 3
         . ([scriptblock]::Create(($assignments -join "`n")))
         $hasUmdfHidUiTests | Should Be $Hid
         $hasNonUmdfHidUiTests | Should Be $Other
+        $hasUmdfDisplayUiTests | Should Be $Display
         $resolve | Should Match 'hasNonUmdfHidUiTests;isOutput=true'
     }
 

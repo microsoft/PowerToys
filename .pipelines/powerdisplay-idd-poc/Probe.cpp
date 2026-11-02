@@ -197,7 +197,7 @@ namespace
         Physical physical;
         GetPhysicalHandles(physical);
         bool usable = true;
-        bool productionHandlesUsable = true;
+        bool nativeHandlesNonzero = true;
         std::cout << "{\"Monitors\":[";
         for (size_t i = 0; i < physical.Monitors.size(); ++i)
         {
@@ -220,11 +220,11 @@ namespace
                       << ",\"GetVcpSuccess\":" << (get ? "true" : "false") << ",\"GetVcpError\":" << getError
                       << ",\"Brightness\":" << brightness << ",\"Maximum\":" << maximum << '}';
             usable = usable && caps && get;
-            productionHandlesUsable = productionHandlesUsable && handle != nullptr;
+            nativeHandlesNonzero = nativeHandlesNonzero && handle != nullptr;
         }
         std::cout << "],\"Callbacks\":";
         WriteSnapshot(Snapshot(fixture));
-        std::cout << ",\"NativeHandlesNonzero\":" << (productionHandlesUsable ? "true" : "false")
+        std::cout << ",\"NativeHandlesNonzero\":" << (nativeHandlesNonzero ? "true" : "false")
                   << ",\"Passed\":" << (usable ? "true" : "false") << "}\n";
         return usable ? 0 : 1;
     }

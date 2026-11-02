@@ -48,17 +48,15 @@ diff --git a/video/IndirectDisplay/IddSampleDriver/Driver.cpp b/video/IndirectDi
      }
 +    return Status;
  }
-@@ -646,2 +668,6 @@
-     if (NT_SUCCESS(pInArgs->AdapterInitStatus))
-     {
+@@ -650,2 +672,7 @@
+-            pDeviceContextWrapper->pContext->FinishInit(i);
++            const auto status = pDeviceContextWrapper->pContext->FinishInit(i);
++            if (!NT_SUCCESS(status)) return status;
+         }
 +        FixtureAdapterReady(AdapterObject, [](IDDCX_ADAPTER adapter, UINT connector) -> NTSTATUS
 +        {
 +            return WdfObjectGet_IndirectDeviceContextWrapper(adapter)->pContext->FinishInit(connector);
 +        });
-@@ -650,1 +676,2 @@
--            pDeviceContextWrapper->pContext->FinishInit(i);
-+            const auto status = pDeviceContextWrapper->pContext->FinishInit(i);
-+            if (!NT_SUCCESS(status)) return status;
 diff --git a/video/IndirectDisplay/IddSampleDriver/Driver.h b/video/IndirectDisplay/IddSampleDriver/Driver.h
 --- a/video/IndirectDisplay/IddSampleDriver/Driver.h
 +++ b/video/IndirectDisplay/IddSampleDriver/Driver.h

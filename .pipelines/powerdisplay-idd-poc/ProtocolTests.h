@@ -9,11 +9,13 @@
 
 inline void RunProtocolTests()
 {
-    const auto check = [](bool condition, const char* message) {
+    size_t checks = 0;
+    const auto check = [&checks](bool condition, const char* message) {
         if (!condition)
         {
             throw std::runtime_error(message);
         }
+        ++checks;
     };
     const auto command = [](std::initializer_list<BYTE> payload) {
         std::vector<BYTE> frame{ 0x51, static_cast<BYTE>(0x80 | payload.size()) };
@@ -81,7 +83,7 @@ inline void RunProtocolTests()
               !first.Receive(0x6f, nullptr, sizeof(reply)) && !first.Receive(0x6f, reply, 65),
           "Reject invalid receive");
     first.Snapshot.Mode = FixtureMode::NoBrightness;
-    check(transmit(first, { 0x01, 0x10 }) && first.Receive(0x6f, reply, sizeof(reply)) && reply[3] == 1, "Unsupported brightness must not report a value");
+    check(transmit(first, { 0x01, 0x10 }) && first.Receive(0x6f, reply, sizeof(reply)) && reply[3] == 1, "Unsupported brightness must report result code 01");
     check(!transmit(first, { 0x03, 0x10, 0, 70 }) && first.Snapshot.Brightness == 31, "Unsupported brightness must not change state");
     first.Snapshot.Mode = FixtureMode::CommunicationFailure;
     check(!transmit(first, { 0x01, 0x10 }) && !first.Receive(0x6f, reply, sizeof(reply)) &&
@@ -89,5 +91,5 @@ inline void RunProtocolTests()
           "Communication failures must be observed without state changes");
     first.Snapshot.Mode = FixtureMode::Normal;
     check(transmit(first, { 0x01, 0x10 }) && first.Receive(0x6f, reply, sizeof(reply)) && reply[9] == 31, "Recover after communication failure");
-    std::cout << "{\"ProtocolTestsPassed\":true,\"Cases\":8}\n";
+    std::cout << "{\"ProtocolTestsPassed\":true,\"Cases\":" << checks << "}\n";
 }

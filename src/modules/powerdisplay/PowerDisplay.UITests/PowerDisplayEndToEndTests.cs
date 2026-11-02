@@ -150,7 +150,7 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
     public void ConfiguredShortcutOpensStableMonitorInventory()
     {
         var flyout = OpenFlyout();
-        AssertStableInventory(flyout);
+        flyout = AssertStableInventory(flyout);
     }
 
     [TestMethod]
@@ -161,7 +161,7 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
         MouseHelper.LeftClickAt(icon.X + (icon.Width / 2), icon.Y + (icon.Height / 2));
         PowerDisplayTray.ParkCursor();
         var flyout = WaitForFlyout();
-        AssertStableInventory(flyout);
+        flyout = AssertStableInventory(flyout);
         CloseFlyout();
         AssertProcessState(true);
     }
@@ -170,7 +170,7 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
     public void RefreshRediscoversMonitorsAndReturnsToStableState()
     {
         var flyout = OpenFlyout();
-        AssertStableInventory(flyout);
+        flyout = AssertStableInventory(flyout);
         Refresh(flyout);
     }
 
@@ -178,7 +178,7 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
     public void IdentifyShowsAnOverlayOnEveryConnectedDisplay()
     {
         var flyout = OpenFlyout();
-        AssertStableInventory(flyout);
+        flyout = AssertStableInventory(flyout);
         var displays = MonitorInfo.GetAll();
         Assert.IsTrue(displays.Count > 0, "Windows must report at least one display.");
         var existingWindows = WindowsFinder.ListByApp(ProcessName).Select(window => window.Hwnd).ToHashSet();
@@ -229,7 +229,7 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
     public void BrightnessRoundTripsThroughMonitorRediscoveryWhenSupported()
     {
         var flyout = OpenFlyout();
-        AssertStableInventory(flyout);
+        flyout = AssertStableInventory(flyout);
         var sliders = BrightnessSliders(flyout);
         if (sliders.Length == 0)
         {
@@ -252,7 +252,7 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
             slider.SetValue(target);
             Assert.IsTrue(WaitHelper.WaitForStable(() => ReadBrightness(flyout, slider), value => value == target, 10_000).Succeeded, "The slider did not accept the requested brightness.");
             AssertSavedBrightness(monitorId, target);
-            Refresh(flyout);
+            flyout = Refresh(flyout);
             Assert.AreEqual(target, ReadBrightness(flyout, FindMonitorBrightnessSlider(flyout, monitorId)), "Rediscovery did not read the requested brightness back from the monitor.");
         }
         finally
@@ -265,7 +265,7 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
 
             FindMonitorBrightnessSlider(flyout, monitorId).SetValue(original);
             AssertSavedBrightness(monitorId, original);
-            Refresh(flyout);
+            flyout = Refresh(flyout);
             Assert.AreEqual(original, ReadBrightness(flyout, FindMonitorBrightnessSlider(flyout, monitorId)), "The original hardware brightness was not restored.");
         }
     }
@@ -535,7 +535,11 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
         Assert.IsTrue(WaitHelper.WaitForStable(FlyoutVisible, visible => !visible, 10_000, 2).Succeeded, "Escape did not hide the flyout.");
     }
 
-    private void AssertStableInventory(Session flyout)
+    private static bool ShouldRetryInventoryException(Exception exception) =>
+        exception is IOException or JsonException or ElementNotAvailableException ||
+        (exception is AssertFailedException && exception.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase));
+
+    private Session AssertStableInventory(Session flyout)
     {
         Step("Waiting for discovery to finish and expose monitors or the informational empty state");
         var result = WaitHelper.WaitForStable(
@@ -564,7 +568,7 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
             60_000,
             2,
             200,
-            shouldRetryException: exception => exception is IOException or JsonException);
+            shouldRetryException: ShouldRetryInventoryException);
         Assert.IsTrue(result.Succeeded, $"Discovery did not reach a stable state: {result.LastObservation}.");
 
         // Settings retains disconnected monitors for 30 days; only the flyout is live inventory.
@@ -587,6 +591,7 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
         var path = EvidencePath("monitor-inventory.json");
         File.WriteAllText(path, JsonSerializer.Serialize(monitors));
         TestContext.AddResultFile(path);
+        return flyout;
     }
 
     private void OpenDiscoveryMenu(Session flyout)
@@ -595,7 +600,7 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
         flyout.Find<Button>(By.AccessibilityId("RefreshMenuButton")).Invoke(msPostAction: 0);
     }
 
-    private void Refresh(Session flyout)
+    private Session Refresh(Session flyout)
     {
         OpenDiscoveryMenu(flyout);
         var lastWrite = File.GetLastWriteTimeUtc(SettingsPath);
@@ -607,8 +612,9 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
                 write => write > lastWrite,
                 60_000).Succeeded,
             "Refresh did not publish a new monitor inventory.");
-        AssertStableInventory(flyout);
+        flyout = AssertStableInventory(flyout);
         AssertProcessState(true);
+        return flyout;
     }
 
     private string EvidencePath(string name)

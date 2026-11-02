@@ -38,6 +38,10 @@ namespace
         FixtureArrivalCallback callback{};
         {
             std::lock_guard lock(gate);
+            if (!fixtureAdapter || !arriveMonitor)
+            {
+                return STATUS_DEVICE_NOT_READY;
+            }
             auto& state = states[command.Connector];
             if (command.Operation == FixtureOperation::SetMode)
             {
@@ -123,10 +127,13 @@ _Use_decl_annotations_
     FixtureTransmit(IDDCX_MONITOR monitor, const IDARG_IN_I2C_TRANSMIT* input)
 {
     std::lock_guard lock(gate);
-    return states[GetMonitorContext(monitor)->Connector].Transmit(input->SevenBitI2CAddress,
-                                                                  static_cast<const BYTE*>(input->pData),
-                                                                  input->DataSizeInBytes) ?
-               STATUS_SUCCESS :
+    auto& state = states[GetMonitorContext(monitor)->Connector];
+    if (state.Transmit(input->SevenBitI2CAddress, static_cast<const BYTE*>(input->pData), input->DataSizeInBytes))
+    {
+        return STATUS_SUCCESS;
+    }
+    return state.Snapshot.Mode == FixtureMode::CommunicationFailure ?
+               STATUS_GRAPHICS_I2C_ERROR_TRANSMITTING_DATA :
                STATUS_INVALID_PARAMETER;
 }
 
@@ -135,10 +142,13 @@ _Use_decl_annotations_
     FixtureReceive(IDDCX_MONITOR monitor, const IDARG_IN_I2C_RECEIVE* input)
 {
     std::lock_guard lock(gate);
-    return states[GetMonitorContext(monitor)->Connector].Receive(input->SevenBitI2CAddress,
-                                                                 static_cast<BYTE*>(input->pData),
-                                                                 input->DataSizeInBytes) ?
-               STATUS_SUCCESS :
+    auto& state = states[GetMonitorContext(monitor)->Connector];
+    if (state.Receive(input->SevenBitI2CAddress, static_cast<BYTE*>(input->pData), input->DataSizeInBytes))
+    {
+        return STATUS_SUCCESS;
+    }
+    return state.Snapshot.Mode == FixtureMode::CommunicationFailure ?
+               STATUS_GRAPHICS_I2C_ERROR_RECEIVING_DATA :
                STATUS_INVALID_PARAMETER;
 }
 

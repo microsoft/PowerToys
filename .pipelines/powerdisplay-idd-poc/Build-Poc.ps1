@@ -6,6 +6,7 @@ param(
     [Parameter(Mandatory)][string]$WorkRoot,
     [Parameter(Mandatory)][string]$OutputRoot,
     [ValidateSet('x64', 'ARM64')][string]$Platform = 'x64',
+    [string]$PackageCache,
     [switch]$PrepareOnly
 )
 $ErrorActionPreference = 'Stop'
@@ -49,27 +50,31 @@ $signature = Get-AuthenticodeSignature $nuget
 if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'Microsoft') {
     throw 'NuGet executable is not signed by Microsoft.'
 }
-$packages = Join-Path $work 'packages'
+$packages = if ($PackageCache) { [IO.Path]::GetFullPath($PackageCache) } else { Join-Path $work 'packages' }
 $downloads = Join-Path $work 'downloads'
 New-Item $downloads -ItemType Directory -Force | Out-Null
 $ids = @('Microsoft.Windows.SDK.CPP', 'Microsoft.Windows.SDK.CPP.x64', 'Microsoft.Windows.WDK.x64')
 if ($Platform -eq 'ARM64') { $ids += 'Microsoft.Windows.SDK.CPP.arm64', 'Microsoft.Windows.WDK.arm64' }
 foreach ($id in $ids) {
-    $file = Join-Path $downloads "$id.$version.nupkg"
+    $name = "$id.$version.nupkg"
+    $file = if ($PackageCache) { Join-Path $packages "$id.$version\$name" } else { Join-Path $downloads $name }
     if (-not (Test-Path $file)) {
+        if ($PackageCache) { throw "The requested verified package cache is incomplete: $name" }
         Invoke-WebRequest "https://www.nuget.org/api/v2/package/$id/$version" -OutFile $file
     }
     & $nuget verify -All $file | Out-File (Join-Path $work 'dependency-verification.log') -Append
     if ($LASTEXITCODE) { throw "Package signature verification failed: $id" }
 }
-$config = Join-Path $work 'NuGet.Config'
-$source = [Security.SecurityElement]::Escape($downloads)
-"<configuration><packageSources><clear/><add key=`"VerifiedMicrosoft`" value=`"$source`"/></packageSources></configuration>" | Set-Content $config
-$manifest = Join-Path $work 'packages.config'
-$entries = ($ids | ForEach-Object { "<package id=`"$_`" version=`"$version`"/>" }) -join ''
-"<packages>$entries</packages>" | Set-Content $manifest
-& $nuget restore $manifest -PackagesDirectory $packages -ConfigFile $config -NonInteractive -Verbosity quiet
-if ($LASTEXITCODE) { throw 'WDK/SDK restore failed.' }
+if (-not $PackageCache) {
+    $config = Join-Path $work 'NuGet.Config'
+    $source = [Security.SecurityElement]::Escape($downloads)
+    "<configuration><packageSources><clear/><add key=`"VerifiedMicrosoft`" value=`"$source`"/></packageSources></configuration>" | Set-Content $config
+    $manifest = Join-Path $work 'packages.config'
+    $entries = ($ids | ForEach-Object { "<package id=`"$_`" version=`"$version`"/>" }) -join ''
+    "<packages>$entries</packages>" | Set-Content $manifest
+    & $nuget restore $manifest -PackagesDirectory $packages -ConfigFile $config -NonInteractive -Verbosity quiet
+    if ($LASTEXITCODE) { throw 'WDK/SDK restore failed.' }
+}
 if ($PrepareOnly) { return }
 
 $names = @('IddSampleRoot', 'IddPackagesRoot', 'IddOutputDir', 'IddIntermediateDir')
@@ -88,7 +93,7 @@ try {
     $inf = Get-Content (Join-Path $PSScriptRoot 'PtDisplayIdd.inf') -Raw
     if ($Platform -eq 'ARM64') { $inf = $inf.Replace('NTamd64', 'NTarm64') }
     Set-Content (Join-Path $driver 'PtDisplayIdd.inf') $inf -Encoding ascii
-    Copy-Item (Join-Path $sample 'LICENSE') (Join-Path $driver 'MS-PL.txt')
+    Copy-Item (Join-Path $PSScriptRoot 'MS-PL.txt') (Join-Path $driver 'MS-PL.txt')
     Copy-Item (Join-Path $repo 'LICENSE') (Join-Path $driver 'MIT-LICENSE.txt')
     Copy-Item (Join-Path $PSScriptRoot 'UPSTREAM.txt') $driver
     $signTool = Get-ChildItem (Join-Path $packages "Microsoft.Windows.SDK.CPP.$version") -Recurse -Filter signtool.exe |
@@ -127,7 +132,11 @@ try {
     if ($LASTEXITCODE) { throw 'Production discovery probe restore failed.' }
     & (Join-Path $repo 'tools\build\build.cmd') -Path (Split-Path $productionProject -Parent) -Platform $Platform -Configuration Release
     if ($LASTEXITCODE) { throw 'Production discovery probe build failed.' }
-    $productionOutput = Join-Path $repo "$Platform\Release\tests\PowerDisplay.IddPoc.ProductionProbe\net10.0-windows10.0.26100.0"
+    $productionOutput = & dotnet msbuild $productionProject "-p:Platform=$Platform" -p:Configuration=Release -getProperty:TargetDir -nologo
+    if ($LASTEXITCODE -or -not [IO.Path]::IsPathFullyQualified($productionOutput) -or
+        -not (Test-Path (Join-Path $productionOutput 'PowerDisplay.IddPoc.ProductionProbe.exe'))) {
+        throw 'Could not resolve the built production probe output directory.'
+    }
     $production = Join-Path $destination 'production'
     New-Item $production -ItemType Directory -Force | Out-Null
     Copy-Item "$productionOutput\*" $production -Recurse -Force

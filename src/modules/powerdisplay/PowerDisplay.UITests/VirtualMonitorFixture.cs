@@ -83,6 +83,7 @@ internal sealed class VirtualMonitorFixture
         int Brightness,
         int Gets,
         int Sets,
+        int Capabilities,
         int Failures,
         bool Connected,
         int Mode,

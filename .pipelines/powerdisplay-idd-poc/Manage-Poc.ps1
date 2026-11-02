@@ -11,18 +11,20 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
+function Test-Administrator {
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    try {
+        ([Security.Principal.WindowsPrincipal]::new($identity)).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    }
+    finally { $identity.Dispose() }
+}
+
 if (-not $IsolatedGuest) { throw 'Explicit isolated-guest approval is required.' }
 $computer = Get-CimInstance Win32_ComputerSystem
 if ($computer.Manufacturer -ne 'Microsoft Corporation' -or $computer.Model -ne 'Virtual Machine') {
     throw 'This prototype may be provisioned only in an approved Hyper-V guest.'
 }
-$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-try {
-    if (-not ([Security.Principal.WindowsPrincipal]::new($identity)).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        throw 'Use the separate, already elevated guest provisioning channel.'
-    }
-}
-finally { $identity.Dispose() }
+if (-not (Test-Administrator)) { throw 'Use the separate, already elevated guest provisioning channel.' }
 $hardwareId = 'ROOT\PtDisplayIddPoc'
 $subject = 'CN=PowerToys Isolated IDD POC'
 New-Item $ResultsDirectory, (Split-Path $StatePath -Parent) -ItemType Directory -Force | Out-Null
@@ -48,6 +50,7 @@ if ($Action -eq 'Cleanup') {
     $state = Get-Content -LiteralPath $StatePath -Raw | ConvertFrom-Json
     if ($state.HardwareId -ne $hardwareId -or $state.Subject -ne $subject -or
         $state.Thumbprint -notmatch '^[A-Fa-f0-9]{40}$' -or
+        $state.ImportedStores -isnot [Array] -or $state.BeforeInfs -isnot [Array] -or
         @($state.ImportedStores | Where-Object { $_ -notin @('Root', 'TrustedPublisher') }).Count -or
         @($state.BeforeInfs | Where-Object { $_ -notmatch '^oem[0-9]+\.inf$' }).Count) {
         throw 'Invalid ownership journal.'
@@ -93,13 +96,14 @@ foreach ($required in @('PtDisplayIdd.dll', 'PtDisplayIdd.inf', 'PtDisplayIdd.ca
         throw "Missing or mismatched artifact hash: $required"
     }
 }
-$production = Join-Path (Resolve-Path $ArtifactDirectory).Path 'production'
+$production = [IO.Path]::GetFullPath((Join-Path (Resolve-Path $ArtifactDirectory).Path 'production'))
 $productionHashes = @(Get-Content (Join-Path $ArtifactDirectory 'production-hashes.json') -Raw | ConvertFrom-Json)
 if (@($productionHashes | Where-Object Path -EQ 'PowerDisplay.IddPoc.ProductionProbe.exe').Count -ne 1 -or
     @($productionHashes | Where-Object Path -EQ 'PowerDisplay.Lib.dll').Count -ne 1) {
     throw 'The production probe manifest is incomplete.'
 }
 foreach ($file in $productionHashes) {
+    if ([IO.Path]::IsPathRooted($file.Path)) { throw "The production probe manifest path must be relative: $($file.Path)" }
     $path = [IO.Path]::GetFullPath((Join-Path $production $file.Path))
     if (-not $path.StartsWith("$production\", [StringComparison]::OrdinalIgnoreCase) -or
         (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ne $file.Hash) {

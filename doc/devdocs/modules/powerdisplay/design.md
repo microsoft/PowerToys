@@ -1715,6 +1715,10 @@ sequenceDiagram
 and the repository-pinned winappcli. It covers module lifecycle, the notification icon,
 shortcut activation, monitor discovery and refresh, identification overlays, flyout
 Settings navigation, and brightness round-trip when supported hardware is available.
+Five additional `PowerDisplayVirtualMonitors` cases require the test-only UMDF/IddCx
+fixture: independent brightness, hot-plug/identity preservation, empty-state recovery,
+unsupported brightness and rejected writes without false persisted success.
+See the [fixture build/provisioning/cleanup instructions](../../../../.pipelines/powerdisplay-idd-poc/README.txt).
 
 Build from the repository root with the existing build scripts. Wait for exit code 0
 before launching the suite:
@@ -1726,13 +1730,21 @@ before launching the suite:
 & .\tools\build\build.cmd -Path src\modules\powerdisplay\PowerDisplay.UITests -Platform x64 -Configuration Debug
 ```
 
-Run the produced Microsoft.Testing.Platform executable on a live interactive desktop:
+Provision the architecture-matched fixture through the separate elevated channel
+in an approved disposable guest. Run the produced Microsoft.Testing.Platform
+executable from its standard-user console, with the probe path set:
 
 ```powershell
+$env:POWERTOYS_POWERDISPLAY_IDD_PROBE = 'C:\IddPoc\artifact\driver\IddProbe.exe'
 & .\x64\Debug\tests\PowerDisplay.UITests\net10.0-windows10.0.26100.0\PowerDisplay.UITests.exe `
     --report-trx --report-trx-filename PowerDisplay.UITests.trx `
     --results-directory .\TestResults\PowerDisplay
 ```
+
+For an explicitly non-fixture run, omit the probe environment variable and add
+`--filter "TestCategory!=PowerDisplayVirtualMonitors"`. This exercises only the
+original hardware-optional scenarios and is not driver-backed signoff. Selecting
+the fixture cases without provisioning fails rather than silently skipping them.
 
 For focused iteration, add
 `--filter "Name=FlyoutSettingsButtonNavigatesToPowerDisplay"`.
@@ -1758,9 +1770,11 @@ Windows 10/Windows 11 default and constrained resource matrix; use
 
 ### Hardware coverage
 
-Hyper-V and CI guests can expose Windows displays without DDC/CI or WMI brightness
-control. In that environment, the suite verifies the stable unsupported-monitor UI
-and explicitly reports that no physical brightness write was exercised.
+The CI jobs provision virtual monitors whose native Windows/Dxva2 DDC/CI requests
+reach the IddCx fixture. The tests verify driver-observed reads/writes and topology
+changes, not just UI state. Removing both fixture monitors exercises the
+unsupported/empty state. Without the fixture, a hardware-optional run can still
+verify that state on a guest with no supported monitors.
 
 On supported hardware, the brightness case identifies the exact monitor by its stable,
 case-insensitive ID, changes brightness, checks persisted state and a fresh discovery
