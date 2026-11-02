@@ -21,8 +21,9 @@ namespace Microsoft.PowerToys.TextExpander;
 /// </list>
 /// The hook only holds keys and takes markers. SendInput returns once every low-level hook has seen each event, so sent
 /// from the hook it nested, and a slow hook elsewhere could make Windows remove ours. The guard never keeps the keyboard
-/// for long. It ends by itself with no event of ours for <see cref="TimeoutMs"/>, or
-/// with <see cref="MaxHeld"/> key events held, and the worker ends it once it has held keys for <see cref="HoldCapMs"/>.
+/// for long. It ends by itself with no event of ours or renewal for <see cref="TimeoutMs"/>, or with <see cref="MaxHeld"/>
+/// key events held. The worker ends it once typing has held keys for <see cref="HoldCapMs"/>, and renews it while a paste
+/// settles, for <see cref="Injector.PasteBusyCapMs"/> at most.
 /// </summary>
 internal sealed class InsertionGuard : IDisposable
 {
@@ -33,10 +34,10 @@ internal sealed class InsertionGuard : IDisposable
     /// </summary>
     internal const int MarkerVk = 0xFF;
 
-    /// <summary>How long the guard lasts with no event of ours, and the worker waits for the hook to take a marker.</summary>
+    /// <summary>How long the guard lasts with no event of ours or renewal, and the worker waits for the hook to take a marker.</summary>
     internal const int TimeoutMs = 2_000;
 
-    /// <summary>How long the worker lets the guard hold keys: a longer insertion goes on unguarded.</summary>
+    /// <summary>How long the worker lets the guard hold keys while it types: a longer insertion goes on unguarded.</summary>
     internal const int HoldCapMs = 2_000;
 
     /// <summary>The most key events held: reaching it ends the guard.</summary>
@@ -47,6 +48,7 @@ internal sealed class InsertionGuard : IDisposable
 
     private readonly object _lock = new();
     private readonly Func<long> _inputGeneration;
+    private readonly Func<long> _clicks;
     private readonly Timer _timer;
 
     // Under _lock. The insertion being sent: the id its markers carry, the input generation of its trigger, its window,
@@ -68,9 +70,10 @@ internal sealed class InsertionGuard : IDisposable
     private long _deadline;
     private volatile Mode _mode;
 
-    public InsertionGuard(Func<long> inputGeneration, Func<IntPtr, bool> targetInFront)
+    public InsertionGuard(Func<long> inputGeneration, Func<IntPtr, bool> targetInFront, Func<long>? clicks = null)
     {
         _inputGeneration = inputGeneration;
+        _clicks = clicks ?? (static () => 0);
         TargetInFront = targetInFront;
         _timer = new Timer(_ => Expire());
     }
@@ -121,6 +124,15 @@ internal sealed class InsertionGuard : IDisposable
         }
     }
 
+    /// <summary>Gets the input generation now.</summary>
+    public long InputGeneration => _inputGeneration();
+
+    /// <summary>
+    /// Gets how many clicks have reached apps. Clicks aren't held, and unlike the input generation, the keys held and
+    /// sent back never move it.
+    /// </summary>
+    public long Clicks => _clicks();
+
     /// <summary>
     /// Whether no key other than a modifier, and no click, has reached the app since the input generation was
     /// <paramref name="generation"/>, so the caret is still where the trigger was typed.
@@ -130,7 +142,7 @@ internal sealed class InsertionGuard : IDisposable
     /// <summary>
     /// Checked right before the erase: whether the guard is still on, renewing its deadline so it can't run out before
     /// the erase goes out. A slow clipboard borrow can outlast it. True too when the insertion goes in unguarded because
-    /// the start marker never came.
+    /// the start marker never came. Renewed too while a paste settles, which sends nothing of ours.
     /// </summary>
     public bool Renew()
     {
@@ -419,8 +431,8 @@ internal sealed class InsertionGuard : IDisposable
     }
 
     /// <summary>
-    /// Ends the guard once no event of ours has come for <see cref="TimeoutMs"/>, so a stalled worker can't keep the
-    /// keyboard, or once <see cref="MaxHeld"/> key events are held. Run by a timer; tests call it.
+    /// Ends the guard once no event of ours or renewal has come for <see cref="TimeoutMs"/>, so a stalled worker can't keep
+    /// the keyboard, or once <see cref="MaxHeld"/> key events are held. Run by a timer; tests call it.
     /// </summary>
     internal void Expire()
     {
@@ -517,7 +529,7 @@ internal sealed class InsertionGuard : IDisposable
         }
     }
 
-    /// <summary>Called under <c>_lock</c>: holds from now on, for at most <see cref="TimeoutMs"/> without an event of ours.</summary>
+    /// <summary>Called under <c>_lock</c>: holds from now on, for at most <see cref="TimeoutMs"/> without an event of ours or renewal.</summary>
     private void StartHoldingLocked()
     {
         _mode = Mode.Holding;

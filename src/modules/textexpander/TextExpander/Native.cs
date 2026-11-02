@@ -99,6 +99,11 @@ internal static class Native
     public const int VK_RCONTROL = 0xA3;
     public const int VK_LMENU = 0xA4;
     public const int VK_RMENU = 0xA5;
+    public const int VK_LBUTTON = 0x01;
+    public const int VK_RBUTTON = 0x02;
+    public const int VK_MBUTTON = 0x04;
+    public const int VK_XBUTTON1 = 0x05;
+    public const int VK_XBUTTON2 = 0x06;
     public const int GWL_STYLE = -16;
     public const int ES_PASSWORD = 0x0020;
 

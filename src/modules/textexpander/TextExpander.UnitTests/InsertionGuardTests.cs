@@ -326,6 +326,47 @@ public sealed class InsertionGuardTests
     }
 
     [TestMethod]
+    public void HeldKeysWaitForTheUsersClipboardWhileABusyTargetTakesThePaste()
+    {
+        // Busy for 3 s, between the guard's 2 s and the clipboard's 5 s, the target still had our Ctrl+V queued. With
+        // nothing of ours sent meanwhile, the guard let go at 2 s, and a Ctrl+V pressed during the expansion pasted the
+        // snippet a second time. Kept on while the clipboard waits, with the keep-alive the injector hands the paste, it
+        // sends that Ctrl+V back after the user's clipboard.
+        long now = 0;
+        string? atHandBack = null;
+        using var box = new FakeTextBox("!d") { Clipboard = "ORIGINAL" };
+        box.Guard.Clock = () => now;
+        PasteOutcome PasteIntoBusyTarget(string text, IntPtr target, Func<(bool Whole, bool SentAny)> send, Action keepAlive) => box.Paste(
+            text,
+            target,
+            () =>
+            {
+                (bool Whole, bool SentAny) sent = send();
+                box.UserPresses((Native.VK_LCONTROL, false), (Native.VK_V, false), (Native.VK_V, true), (Native.VK_LCONTROL, true));
+
+                // The guard's timer runs at every poll.
+                Assert.IsTrue(Injector.WaitForPasteToSettle(
+                    () => false,
+                    ms =>
+                    {
+                        now += Math.Max(ms, 15);
+                        box.Guard.Expire();
+                    },
+                    () => now,
+                    () => now >= 3_000,
+                    keepAlive));
+                atHandBack = box.ToString();
+                return sent;
+            },
+            keepAlive);
+
+        Assert.IsTrue(Run(box, 2, "SNIPPET ", backend: InjectionBackend.Clipboard, paste: PasteIntoBusyTarget));
+        Assert.AreEqual("SNIPPET |", atHandBack, "Nothing went back before the user's clipboard.");
+        Assert.AreEqual("SNIPPET ORIGINAL|", box.ToString());
+        Assert.AreEqual("Mark | BS BS | Ctrl-down V Ctrl-up | Mark | LCtrl-down V LCtrl-up Mark", Calls(box));
+    }
+
+    [TestMethod]
     public void ModifiersHeldAtTheTriggerArePressedAgainBeforeTheHeldKeys()
     {
         // Shift held from typing the trigger is let go of for the erase. A capital typed meanwhile came out lowercase,
@@ -398,7 +439,7 @@ public sealed class InsertionGuardTests
     {
         // So a refused paste is typed inside the same guard, and a key typed meanwhile goes in after it.
         using var box = new FakeTextBox("!d");
-        Assert.IsTrue(Run(box, 2, "ab", backend: InjectionBackend.Clipboard, paste: (_, _, _) =>
+        Assert.IsTrue(Run(box, 2, "ab", backend: InjectionBackend.Clipboard, paste: (_, _, _, _) =>
         {
             box.UserTypes("u");
             return PasteOutcome.RefusedBeforeErase;
@@ -408,10 +449,10 @@ public sealed class InsertionGuardTests
 
         // A click while it's borrowed isn't held, and may have moved the caret: nothing is erased.
         box.Batches.Clear();
-        Assert.IsFalse(Run(box, 2, "cd", backend: InjectionBackend.Clipboard, paste: (text, target, send) =>
+        Assert.IsFalse(Run(box, 2, "cd", backend: InjectionBackend.Clipboard, paste: (text, target, send, keepAlive) =>
         {
-            box.Hook.ClearUndo();
-            return box.Paste(text, target, send);
+            box.Hook.Click();
+            return box.Paste(text, target, send, keepAlive);
         }));
         Assert.AreEqual("Mark | Mark", Calls(box));
         Assert.AreEqual("abu|", box.ToString());
@@ -429,7 +470,7 @@ public sealed class InsertionGuardTests
         bool ctrl = false;
         using var box = new FakeTextBox("!d");
         box.Guard.Clock = () => now;
-        Assert.IsTrue(Run(box, 2, "ab", backend: InjectionBackend.Clipboard, keys: vk => ctrl && vk == Native.VK_LCONTROL ? unchecked((short)0x8000) : (short)0, paste: (text, target, send) =>
+        Assert.IsTrue(Run(box, 2, "ab", backend: InjectionBackend.Clipboard, keys: vk => ctrl && vk == Native.VK_LCONTROL ? unchecked((short)0x8000) : (short)0, paste: (text, target, send, keepAlive) =>
         {
             now = InsertionGuard.TimeoutMs;
             box.Guard.Expire();
@@ -437,7 +478,7 @@ public sealed class InsertionGuardTests
             // Ctrl, pressed now, reaches the app, and as a modifier doesn't move the input generation.
             ctrl = true;
             Assert.IsFalse(box.Hook.ProcessKey(Native.VK_LCONTROL, 0, ctrl: false, alt: false, shift: false, win: false));
-            return refused ? PasteOutcome.RefusedBeforeErase : box.Paste(text, target, send);
+            return refused ? PasteOutcome.RefusedBeforeErase : box.Paste(text, target, send, keepAlive);
         }));
         Assert.AreEqual($"Mark | Mark | LCtrl-up BS BS | {(refused ? "a | b" : "Ctrl-down V Ctrl-up")} | Mark | LCtrl-down Mark", Calls(box));
         Assert.AreEqual("ab|", box.ToString());
@@ -498,9 +539,151 @@ public sealed class InsertionGuardTests
     }
 
     [TestMethod]
-    public void AfterTheHoldCapTheHeldKeysGoBackAndTheRestIsTypedUnguarded()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void AClickWhileTypingStopsTheRestAndHeldKeysGoWhereItPutTheCaret(bool typeAfter)
     {
-        // A refused paste of a long snippet falls back to typing, which held the keyboard for over 25 s.
+        // Typing "abc" for "!d" after "PREFIX ", a click at the start once the "a" was in sent "bc" to the start, before
+        // "PREFIX a", and the expansion counted as done. A click isn't held, so nothing more goes in, and a key typed
+        // after it goes back where it put the caret.
+        using var box = new FakeTextBox("PREFIX !d");
+        bool clicked = false;
+        bool recorded = false;
+        InjectionDiagnostics.Reset();
+        try
+        {
+            bool completed = Run(box, 2, "abc", inserted: () => recorded = true, sleep: _ =>
+            {
+                if (!clicked && box.Text == "PREFIX a")
+                {
+                    // What the mouse hook does on a click.
+                    clicked = true;
+                    box.Hook.Click();
+                    box.Caret = 0;
+                    if (typeAfter)
+                    {
+                        box.UserTypes("z");
+                    }
+                }
+            });
+            Assert.AreEqual(typeAfter ? "z|PREFIX a" : "|PREFIX a", box.ToString());
+            Assert.AreEqual("Mark | BS BS | a | Mark" + (typeAfter ? " | z Mark" : string.Empty), Calls(box));
+            Assert.IsFalse(completed);
+            Assert.IsFalse(recorded, "No undo for text that isn't all there.");
+            Assert.IsFalse(box.Guard.Cancelled, "Its window is still in front.");
+            Assert.AreEqual(1, InjectionDiagnostics.TypingAbandoned, "Counted as cut short.");
+        }
+        finally
+        {
+            InjectionDiagnostics.Reset();
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void HeldKeysWaitForTheMouseButtonAfterAClick(bool pasting)
+    {
+        // RichEdit and Windows 11 Notepad drop typing while a mouse button is down. An "x" typed during the insertion went
+        // back while an ordinary click, which stopped the typing or came while the paste settled, was still down, and was
+        // lost. It goes back once the button is up, and a "y" typed meanwhile is held for it too.
+        using var box = new FakeTextBox("PREFIX !d");
+        var order = new List<string>();
+        int downFor = -1;
+        box.Guard.Resend = inputs =>
+        {
+            order.Add(FakeTextBox.Describe(inputs));
+            return box.Dispatch(inputs);
+        };
+
+        short Buttons(int vk)
+        {
+            if (vk != Native.VK_LBUTTON || downFor < 0)
+            {
+                return 0;
+            }
+
+            order.Add(downFor > 0 ? "down" : "up");
+            return downFor-- > 0 ? unchecked((short)0x8000) : (short)0;
+        }
+
+        // Typed, then a click at the start, down for three checks.
+        void TypeAndClick()
+        {
+            box.UserTypes("x");
+            box.Hook.Click();
+            box.Caret = 0;
+            downFor = 3;
+        }
+
+        (bool Whole, bool SentAny) WhileItSettles((bool Whole, bool SentAny) sent)
+        {
+            TypeAndClick();
+            return sent;
+        }
+
+        bool completed = Run(
+            box,
+            2,
+            "abc",
+            backend: pasting ? InjectionBackend.Clipboard : InjectionBackend.Typing,
+            keys: Buttons,
+            sleep: _ =>
+            {
+                if (!pasting && downFor < 0 && box.Text == "PREFIX a")
+                {
+                    TypeAndClick();
+                }
+                else if (downFor == 2)
+                {
+                    box.UserTypes("y");
+                }
+            },
+            paste: (text, target, send, keepAlive) => box.Paste(text, target, () => WhileItSettles(send()), keepAlive));
+
+        Assert.AreEqual("down down down up x y Mark", string.Join(" ", order), "Sent back once the button is up.");
+        Assert.AreEqual(pasting ? "xy|PREFIX abc" : "xy|PREFIX a", box.ToString());
+        Assert.AreEqual(pasting, completed, "Only the paste was all in before the click.");
+    }
+
+    [TestMethod]
+    public void AKeyThatStopsTheRestDoesntWaitForTheMouseButtons()
+    {
+        // A key the guard doesn't hold, as one a lower-integrity app injects, reaches the app and stops the rest too. It
+        // leaves no button down: what's held goes back at once.
+        using var box = new FakeTextBox("PREFIX !d");
+        int checks = 0;
+        bool completed = Run(
+            box,
+            2,
+            "abc",
+            keys: vk =>
+            {
+                checks += vk == Native.VK_LBUTTON ? 1 : 0;
+                return 0;
+            },
+            sleep: _ =>
+            {
+                if (box.Text == "PREFIX a")
+                {
+                    box.UserTypes("x");
+                    box.Hook.UnmatchedKey(Native.VK_LEFT);
+                }
+            });
+
+        Assert.IsFalse(completed);
+        Assert.AreEqual(0, checks, "No button checked.");
+        Assert.AreEqual("Mark | BS BS | a | Mark | x Mark", Calls(box));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void AfterTheHoldCapTheHeldKeysGoBackAndTheRestIsTypedUnguarded(bool typeAfter)
+    {
+        // A refused paste of a long snippet falls back to typing, which held the keyboard for over 25 s. The keys going
+        // back don't stop the rest. A key typed once the guard has let go reaches the app and may move the caret: the
+        // character on its way still goes in, and nothing after it.
         long now = 0;
         using var box = new FakeTextBox(string.Empty);
         box.Guard.Clock = () => now;
@@ -510,16 +693,61 @@ public sealed class InsertionGuardTests
             {
                 box.UserTypes("u");
             }
-            else if (calls == 90)
+            else if (calls == 90 && typeAfter)
             {
                 box.UserTypes("v");
             }
         };
 
-        Assert.IsTrue(Run(box, 0, new string('x', 100), sleep: ms => now += ms));
-        Assert.AreEqual(new string('x', 80) + "u" + new string('x', 7) + "v" + new string('x', 13) + "|", box.ToString());
+        bool completed = Run(box, 0, new string('x', 100), sleep: ms => now += ms);
+        Assert.AreEqual(new string('x', 80) + "u" + (typeAfter ? new string('x', 7) + "vx" : new string('x', 20)) + "|", box.ToString());
+        Assert.AreEqual(!typeAfter, completed);
         Assert.AreEqual("Mark", FakeTextBox.Describe(box.Batches[81]), "Ended after 2 s of typing.");
         Assert.AreEqual("u Mark", FakeTextBox.Describe(box.Batches[82]));
+    }
+
+    [TestMethod]
+    public void AClickWhileHeldKeysGoBackMidTypingStillStopsTheRest()
+    {
+        // Past the hold cap the held keys go back, and the input generation they move is taken again after them. A click
+        // as they went back moved it too, and was taken in with them: the rest went in where it put the caret, and
+        // counted as typed. Clicks are counted apart, from the start.
+        long now = 0;
+        bool recorded = false;
+        using var box = new FakeTextBox(string.Empty);
+        box.Guard.Clock = () => now;
+        box.BeforeCall = calls =>
+        {
+            if (calls == 1)
+            {
+                box.UserTypes("u");
+            }
+        };
+
+        box.Guard.Resend = inputs =>
+        {
+            // A click as the held keys go back.
+            box.Hook.Click();
+            box.Caret = 0;
+            return box.Dispatch(inputs);
+        };
+
+        InjectionDiagnostics.Reset();
+        try
+        {
+            // The "a" takes the typing to the hold cap.
+            bool completed = Run(box, 0, "abc", inserted: () => recorded = true, sleep: _ => now = InsertionGuard.HoldCapMs);
+            Assert.AreEqual("u|a", box.ToString(), "The held key goes where the click put the caret, and nothing after it.");
+            Assert.AreEqual("Mark | a | Mark | u Mark", Calls(box));
+            Assert.IsFalse(completed);
+            Assert.IsFalse(recorded, "No undo for text that isn't all there.");
+            Assert.AreEqual(0, InjectionDiagnostics.Typed, "Not counted as typed.");
+            Assert.AreEqual(1, InjectionDiagnostics.TypingAbandoned, "Counted as cut short.");
+        }
+        finally
+        {
+            InjectionDiagnostics.Reset();
+        }
     }
 
     [TestMethod]
@@ -558,7 +786,7 @@ public sealed class InsertionGuardTests
 
     private static string Calls(FakeTextBox box) => string.Join(" | ", box.Batches.Select(FakeTextBox.Describe));
 
-    private static bool Run(FakeTextBox box, int erase, string text, int cursorLeft = 0, InjectionBackend backend = InjectionBackend.Typing, Func<int, short>? keys = null, Action? inserted = null, Action<int>? sleep = null, Func<IntPtr>? foreground = null, IntPtr target = default, Func<Native.INPUT[], uint>? dispatch = null, Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, PasteOutcome>? paste = null)
+    private static bool Run(FakeTextBox box, int erase, string text, int cursorLeft = 0, InjectionBackend backend = InjectionBackend.Typing, Func<int, short>? keys = null, Action? inserted = null, Action<int>? sleep = null, Func<IntPtr>? foreground = null, IntPtr target = default, Func<Native.INPUT[], uint>? dispatch = null, Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, Action, PasteOutcome>? paste = null)
     {
         InjectionBackend original = Injector.Backend;
         try

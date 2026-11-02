@@ -90,7 +90,7 @@ public sealed class InjectorDispatchTests
                 guard,
                 0,
                 () => new IntPtr(1),
-                (_, _, _) => PasteOutcome.FailedAfterErase,
+                (_, _, _, _) => PasteOutcome.FailedAfterErase,
                 inputs =>
                 {
                     typedFallback |= inputs[0].U.Ki.WVk != InsertionGuard.MarkerVk;

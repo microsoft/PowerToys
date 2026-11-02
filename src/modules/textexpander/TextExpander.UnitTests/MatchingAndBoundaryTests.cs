@@ -9,6 +9,9 @@ namespace Microsoft.PowerToys.TextExpander.UnitTests;
 [TestClass]
 public sealed class MatchingAndBoundaryTests
 {
+    // A supplementary-plane letter: two UTF-16 units, neither of them a letter on its own.
+    private const string Adlam = "\U0001E922";
+
     [TestMethod]
     public void TriggerIndexReturnsLongestSuffixInBoundedLookup()
     {
@@ -94,6 +97,90 @@ public sealed class MatchingAndBoundaryTests
         var triggers = new TextExpanderTriggerSet(["addr", "addr_line"]);
         Assert.IsNull(TextExpanderTriggerReach.FindBlocker("addr_line", triggers, wordMode: true));
         Assert.AreEqual(("addr", '_'), TextExpanderTriggerReach.FindBlocker("addr_line", triggers, wordMode: false), "Without the wait, addr fires as it's typed.");
+    }
+
+    [TestMethod]
+    public void AWordStartIsJudgedOnWholeCharacters()
+    {
+        // The character before a trigger was judged one UTF-16 unit at a time, so a combining accent, or the second half
+        // of a supplementary letter, let btw expand inside a word, though é typed as one character didn't.
+        Assert.IsTrue(WordBoundaryRules.IsWordCharacter('\u0301'));
+        Assert.IsTrue(WordBoundaryRules.IsWordCharacter(Adlam[0]));
+        Assert.IsTrue(WordBoundaryRules.IsWordCharacter(Adlam[1]));
+        Assert.IsFalse(WordBoundaryRules.IsWordCharacter('\u2764'));
+
+        // Whether a character ends a word is unchanged: a combining mark or half a pair never did.
+        Assert.IsFalse(WordBoundary.IsTerminator('\u0301'));
+        Assert.IsFalse(WordBoundary.IsTerminator(Adlam[1]));
+        for (int value = 0; value <= char.MaxValue; value++)
+        {
+            char ch = (char)value;
+            bool before = !(char.IsLetterOrDigit(ch) || ch == '_') && (char.IsWhiteSpace(ch) || char.IsPunctuation(ch) || char.IsSymbol(ch));
+            if (WordBoundary.IsTerminator(ch) != before)
+            {
+                Assert.Fail(Hex(ch.ToString()));
+            }
+        }
+
+        Assert.IsFalse(WordBoundary.StartsAtWordBoundary("e\u0301", "btw"));
+        Assert.IsFalse(WordBoundary.StartsAtWordBoundary(Adlam, "btw"));
+        Assert.IsFalse(WordBoundary.StartsAtWordBoundary("\u00E9", "btw"));
+        Assert.IsFalse(WordBoundary.StartsAtWordBoundary("a", Adlam + "x"));
+        Assert.IsTrue(WordBoundary.StartsAtWordBoundary("(", "btw"));
+        Assert.IsTrue(WordBoundary.StartsAtWordBoundary("\U0001F600", "btw"));
+        Assert.IsTrue(WordBoundary.StartsAtWordBoundary("\u2764\uFE0F", "btw"), "A variation selector goes with its emoji.");
+        Assert.IsTrue(WordBoundary.StartsAtWordBoundary(" ", Adlam + "x"));
+
+        // Half a pair, or marks with nothing before them, are taken for a word, so nothing expands.
+        Assert.IsFalse(WordBoundary.StartsAtWordBoundary(Adlam.AsSpan(1), "btw"));
+        Assert.IsFalse(WordBoundary.StartsAtWordBoundary(Adlam.AsSpan(0, 1), "btw"));
+        Assert.IsFalse(WordBoundary.StartsAtWordBoundary("\u0301", "btw"));
+        Assert.IsTrue(WordBoundary.StartsAtWordBoundary(ReadOnlySpan<char>.Empty, "btw"));
+    }
+
+    [TestMethod]
+    public void TheHookAndTheEditorAgreeOnWordStartsBeyondOneUtf16Unit()
+    {
+        string adlamTrigger = Adlam + "x";
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        string path = Path.Combine(scratch.Path, "snippets.json");
+        File.WriteAllText(path, SnippetJson.Of("btw=by the way", adlamTrigger + "=adlam"));
+        using var store = new SnippetStore(path);
+        Assert.AreEqual(2, store.Load().Count);
+        using var hook = new KeyboardHook(store);
+        var triggers = new TextExpanderTriggerSet(["btw", adlamTrigger]);
+
+        bool original = WordBoundary.Required;
+        try
+        {
+            WordBoundary.Required = true;
+            foreach ((string before, string trigger, bool expands) in new[]
+            {
+                ("e\u0301", "btw", false),
+                (Adlam, "btw", false),
+                ("\u00E9", "btw", false),
+                ("a", adlamTrigger, false),
+                (" ", "btw", true),
+                ("(", "btw", true),
+                ("\U0001F600", "btw", true),
+                ("\u2764\uFE0F", "btw", true),
+                (" ", adlamTrigger, true),
+            })
+            {
+                string typed = before + trigger + " ";
+                Assert.IsFalse(hook.ProcessKey(Native.VK_RETURN, 0, ctrl: false, alt: false, shift: false, win: false));
+                Assert.AreEqual(expands, Type(hook, typed), Hex(typed));
+                Assert.AreEqual(expands, hook.Pending.TryTake(out PendingExpansion expansion), Hex(typed));
+                Assert.AreEqual(expands ? trigger : null, expansion.Trigger, Hex(typed));
+
+                // The editor's "Never expands" check follows the same rule.
+                Assert.AreEqual(expands ? (trigger, ' ') : null, TextExpanderTriggerReach.FindBlocker(typed, triggers, wordMode: true), Hex(typed));
+            }
+        }
+        finally
+        {
+            WordBoundary.Required = original;
+        }
     }
 
     [TestMethod]
@@ -261,4 +348,19 @@ public sealed class MatchingAndBoundaryTests
         string replacement = store[trigger];
         return (trigger, wordMode ? trigger : trigger[..^1], wordMode && WordBoundary.KeepTerminator ? replacement + ch : replacement);
     }
+
+    // Types text the way the touch keyboard does, one UTF-16 unit per key. Returns whether the last one fired a trigger.
+    private static bool Type(KeyboardHook hook, string text)
+    {
+        bool fired = false;
+        foreach (char ch in text)
+        {
+            fired = hook.ProcessKey(Native.VK_PACKET, ch, ctrl: false, alt: false, shift: false, win: false);
+        }
+
+        return fired;
+    }
+
+    private static string Hex(string text)
+        => string.Join(" ", text.Select(c => ((int)c).ToString("X4", System.Globalization.CultureInfo.InvariantCulture)));
 }

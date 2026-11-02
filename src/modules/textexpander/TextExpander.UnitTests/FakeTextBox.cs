@@ -176,8 +176,11 @@ internal sealed class FakeTextBox : IDisposable
         return (uint)inputs.Length;
     }
 
-    /// <summary>Pastes as the injector's clipboard path does: the user's clipboard goes back before the end marker.</summary>
-    public PasteOutcome Paste(string value, IntPtr targetWindow, Func<(bool Whole, bool SentAny)> send)
+    /// <summary>
+    /// Pastes as the injector's clipboard path does: the user's clipboard goes back before the end marker. The box takes
+    /// the paste at once, so nothing settles and <paramref name="keepAlive"/> isn't needed.
+    /// </summary>
+    public PasteOutcome Paste(string value, IntPtr targetWindow, Func<(bool Whole, bool SentAny)> send, Action keepAlive)
     {
         string saved = Clipboard;
         Clipboard = value;

@@ -292,7 +292,7 @@ public sealed class InputAndUndoPolicyTests
                 guard,
                 0,
                 () => new IntPtr(10),
-                (_, _, _) =>
+                (_, _, _, _) =>
                 {
                     pasteAttempts++;
                     return PasteOutcome.RefusedBeforeErase;
@@ -420,9 +420,7 @@ public sealed class InputAndUndoPolicyTests
 
         if (click)
         {
-            // What the mouse hook does on a click.
-            hook.ClearBuffer();
-            hook.ClearUndo();
+            hook.Click();
         }
         else
         {
@@ -451,7 +449,7 @@ public sealed class InputAndUndoPolicyTests
                 hook.Guard,
                 work.InputGeneration,
                 () => new IntPtr(1),
-                (_, _, _) =>
+                (_, _, _, _) =>
                 {
                     pasted = true;
                     return PasteOutcome.Pasted;
@@ -579,10 +577,10 @@ public sealed class InputAndUndoPolicyTests
         {
             Injector.Backend = InjectionBackend.Auto;
             Injector.ClipboardThresholdChars = 5;
-            Assert.IsTrue(Program.TryExpand(hook, work with { TargetWindow = IntPtr.Zero }, Into(box, (text, window, send) =>
+            Assert.IsTrue(Program.TryExpand(hook, work with { TargetWindow = IntPtr.Zero }, Into(box, (text, window, send, keepAlive) =>
             {
                 usedClipboard = true;
-                return box.Paste(text, window, send);
+                return box.Paste(text, window, send, keepAlive);
             })));
         }
         finally
@@ -970,7 +968,7 @@ public sealed class InputAndUndoPolicyTests
     /// Runs <see cref="Program.TryExpand"/>'s insertions through the injector into <paramref name="box"/>, pasting with
     /// <paramref name="paste"/> or the box's own Ctrl+V.
     /// </summary>
-    private static Program.ReplaceText Into(FakeTextBox box, Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, PasteOutcome>? paste = null)
+    private static Program.ReplaceText Into(FakeTextBox box, Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, Action, PasteOutcome>? paste = null)
         => (backspaces, text, target, left, right, guard, generation, inserted, givenBack) => Injector.ReplaceCore(
             backspaces,
             text,

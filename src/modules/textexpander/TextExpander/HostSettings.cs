@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
 
@@ -17,13 +18,23 @@ internal sealed class HostSettings : IDisposable
     public const string SettingsSwitch = "--settings:";
 
     /// <summary>Coalesces the burst of events a single save produces, as the snippet store does.</summary>
-    private const int DebounceMs = 250;
+    internal const int DebounceMs = 250;
+
+    /// <summary>
+    /// How many more times a change is read, <see cref="DebounceMs"/> apart, when the file can't be read yet. A save in
+    /// progress has usually finished by then.
+    /// </summary>
+    internal const int MaxRetries = 4;
 
     private readonly string _path;
     private readonly object _debounceLock = new();
     private FileSystemWatcher? _watcher;
     private Timer? _debounce;
-    private Action? _onChanged;
+    private Func<bool>? _onChanged;
+
+    // Guarded by _debounceLock.
+    private int _retries;
+    private bool _disposed;
 
     public string FilePath => _path;
 
@@ -72,10 +83,10 @@ internal sealed class HostSettings : IDisposable
     }
 
     /// <summary>
-    /// Reads the file. Returns an all-null <see cref="Values"/> when it is missing or unreadable (for example
-    /// mid-save), which leaves current settings alone.
+    /// Reads the file. Null when it can't be read or isn't settings: missing, locked, caught mid-save or
+    /// hand-corrupted. That's not a request for the defaults, so callers keep the settings they have.
     /// </summary>
-    public Values Read()
+    public Values? Read()
     {
         string json;
         try
@@ -87,21 +98,22 @@ internal sealed class HostSettings : IDisposable
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
         {
-            return default;
+            return null;
         }
 
         return Parse(json);
     }
 
     /// <summary>
-    /// Parses the PowerToys settings shape. <c>StringProperty</c> and <c>IntProperty</c> serialize
-    /// as <c>{"value": x}</c> while a plain bool serializes bare, so every lookup accepts both.
+    /// Parses the PowerToys settings shape, or returns null when <paramref name="json"/> isn't it: not JSON, or without a
+    /// <c>properties</c> object. <c>StringProperty</c> and <c>IntProperty</c> serialize as <c>{"value": x}</c> while a
+    /// plain bool serializes bare, so every lookup accepts both.
     /// </summary>
-    internal static Values Parse(string json)
+    internal static Values? Parse(string json)
     {
         if (string.IsNullOrWhiteSpace(json))
         {
-            return default;
+            return null;
         }
 
         try
@@ -109,21 +121,21 @@ internal sealed class HostSettings : IDisposable
             using JsonDocument doc = JsonDocument.Parse(json);
             if (doc.RootElement.ValueKind != JsonValueKind.Object)
             {
-                return default;
+                return null;
             }
 
             if (!doc.RootElement.TryGetProperty("properties", out JsonElement props) || props.ValueKind != JsonValueKind.Object)
             {
-                return default;
+                return null;
             }
 
             return new Values(ReadString(props, "snippets_path"), ReadString(props, "injection_backend"), ReadInt(props, "clipboard_threshold_chars"), ReadBool(props, "treat_remaps_as_typing"), ReadBool(props, "require_word_boundary"), ReadBool(props, "word_boundary_keeps_space"), ReadBool(props, "case_sensitive"));
         }
         catch (JsonException)
         {
-            // A half-written or hand-corrupted file must not take the engine down, and must not
-            // silently reset the user's choices either.
-            return default;
+            // A half-written or hand-corrupted file must not take the engine down, nor be taken for
+            // one that asks for the defaults.
+            return null;
         }
     }
 
@@ -196,9 +208,11 @@ internal sealed class HostSettings : IDisposable
 
     /// <summary>
     /// Watches the file so a change in the Settings app takes effect without restarting the
-    /// module. <paramref name="onChanged"/> runs on a timer thread.
+    /// module. <paramref name="onChanged"/> runs on a timer thread, and returns false when it couldn't read the file:
+    /// it's then called again, up to <see cref="MaxRetries"/> more times, before waiting for the next change. With
+    /// <paramref name="readAgain"/>, for a file that couldn't be read at startup, it's called once soon without a change too.
     /// </summary>
-    public void StartWatching(Action onChanged)
+    public void StartWatching(Func<bool> onChanged, bool readAgain = false)
     {
         ArgumentNullException.ThrowIfNull(onChanged);
         _onChanged = onChanged;
@@ -230,30 +244,51 @@ internal sealed class HostSettings : IDisposable
             // Settings that only apply at startup are much better than refusing to start.
             _watcher = null;
         }
+
+        if (readAgain)
+        {
+            _ = ScheduleReload(retry: false);
+        }
     }
 
-    private void OnFileEvent(object sender, FileSystemEventArgs e) => ScheduleReload();
+    private void OnFileEvent(object sender, FileSystemEventArgs e) => ScheduleReload(retry: false);
 
-    private void ScheduleReload()
+    /// <returns>False when the retries are used up.</returns>
+    private bool ScheduleReload(bool retry)
     {
         lock (_debounceLock)
         {
-            _debounce ??= new Timer(
-                _ =>
+            if (_disposed || (retry && _retries >= MaxRetries))
             {
-                try
-                {
-                    _onChanged?.Invoke();
-                }
-                catch
-                { /* a bad settings file must never take the engine down */
-                }
-            },
-                null,
-                Timeout.Infinite,
-                Timeout.Infinite);
+                return false;
+            }
 
+            // Each change gets the full number of tries.
+            _retries = retry ? _retries + 1 : 0;
+            _debounce ??= new Timer(_ => Reload(), null, Timeout.Infinite, Timeout.Infinite);
             _debounce.Change(DebounceMs, Timeout.Infinite);
+            return true;
+        }
+    }
+
+    private void Reload()
+    {
+        bool read;
+        try
+        {
+            read = _onChanged?.Invoke() ?? true;
+        }
+        catch
+        {
+            // A bad settings file must never take the engine down.
+            return;
+        }
+
+        if (!read)
+        {
+            // The engine keeps no log file; a debugger or DebugView shows this.
+            Trace.TraceWarning($"Text Expander couldn't read its settings file '{_path}', so it kept the settings it had. "
+                + (ScheduleReload(retry: true) ? $"Trying again in {DebounceMs} ms." : "It reads the file again when it changes."));
         }
     }
 
@@ -263,6 +298,7 @@ internal sealed class HostSettings : IDisposable
         _watcher = null;
         lock (_debounceLock)
         {
+            _disposed = true;
             _debounce?.Dispose();
             _debounce = null;
         }

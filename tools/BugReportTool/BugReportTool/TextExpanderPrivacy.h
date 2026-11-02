@@ -2,9 +2,12 @@
 
 #include <Windows.h>
 
+#include <cctype>
+#include <cstdint>
 #include <cwchar>
 #include <cwctype>
 #include <filesystem>
+#include <fstream>
 #include <string>
 #include <string_view>
 #include <system_error>
@@ -423,9 +426,58 @@ inline bool IsKeptInReport(const std::wstring &relative, bool directory) {
                     : is(L"settings.json") || is(L"diagnostics.txt"));
 }
 
+// The largest file the engine and the editor read: .NET's Array.MaxLength.
+inline constexpr std::uint64_t MaxSnippetFileSize = 0x7FFFFFC7;
+
+// Whether a file holds snippets, judging by its bytes alone: they have both
+// "snippets" and "trigger", quoted, in any case. Its name doesn't matter, since
+// the editor and the engine use a snippets file of any name, such as work.txt,
+// and its backups and copies are named after it. The bytes are searched rather
+// than parsed, since the engine reads comments and trailing commas too, and
+// they're read a piece at a time, so a large log is never held in memory whole.
+// A file that can't be read to the end, or is larger than the engine reads,
+// counts.
+inline bool HoldsSnippets(const std::filesystem::path &file) {
+  std::error_code error;
+  const std::uint64_t size = std::filesystem::file_size(file, error);
+  if (error || size > MaxSnippetFileSize) {
+    return true;
+  }
+
+  constexpr std::string_view snippetsKey = "\"snippets\"";
+  constexpr std::string_view triggerKey = "\"trigger\"";
+  std::ifstream stream(file, std::ios::binary);
+  std::string chunk(64 * 1024, '\0');
+  std::string text;
+  std::uint64_t read = 0;
+  bool snippets = false;
+  bool trigger = false;
+  while (stream && !(snippets && trigger)) {
+    stream.read(chunk.data(), static_cast<std::streamsize>(chunk.size()));
+    const size_t count = static_cast<size_t>(stream.gcount());
+    read += count;
+
+    // The end of the chunk before stays, for a key split between the two.
+    if (text.size() > snippetsKey.size()) {
+      text.erase(0, text.size() - snippetsKey.size());
+    }
+
+    text.append(chunk, 0, count);
+    for (char &ch : text) {
+      ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+    }
+
+    snippets = snippets || text.find(snippetsKey) != std::string::npos;
+    trigger = trigger || text.find(triggerKey) != std::string::npos;
+  }
+
+  return (snippets && trigger) || read != size;
+}
+
 // Leaves the user's snippets out of a report: the snippets files and the copies
-// Text Expander makes of them, wherever they are in the copied settings, and
-// everything in its TextExpander folder that IsKeptInReport doesn't keep.
+// Text Expander makes of them, wherever they are in the copied settings,
+// everything in its TextExpander folder that IsKeptInReport doesn't keep, and
+// any other file that HoldsSnippets.
 inline bool
 ExcludeConfiguredSnippetFile(const std::filesystem::path &settingsRoot,
                              const std::filesystem::path &reportRoot) {
@@ -440,6 +492,9 @@ ExcludeConfiguredSnippetFile(const std::filesystem::path &settingsRoot,
     }
   }
 
+  // Move snippets database and Sync from another PC leave the file they used
+  // where it was, and a report can't know every place one was kept or what it
+  // was called, so the last step finds the rest by their content.
   const std::filesystem::path moduleFolder = reportRoot / L"TextExpander";
   return ExcludeSnippetFileFamilies(settingsRoot, reportRoot, snippetFiles) &&
          RemoveFromReport(moduleFolder, true,
@@ -448,6 +503,11 @@ ExcludeConfiguredSnippetFile(const std::filesystem::path &settingsRoot,
                             return !IsKeptInReport(
                                 path.lexically_relative(moduleFolder).wstring(),
                                 directory);
-                          });
+                          }) &&
+         RemoveFromReport(
+             reportRoot, true,
+             [](const std::filesystem::path &path, bool directory) {
+               return !directory && HoldsSnippets(path);
+             });
 }
 } // namespace TextExpanderPrivacy

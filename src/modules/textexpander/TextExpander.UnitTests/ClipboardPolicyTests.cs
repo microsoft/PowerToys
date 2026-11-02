@@ -145,4 +145,19 @@ public sealed class ClipboardPolicyTests
         Assert.IsTrue(Injector.WaitForPasteToSettle(() => false, Sleep, () => now, () => true));
         Assert.AreEqual(360, now);
     }
+
+    [TestMethod]
+    public void TheGuardIsKeptOnWhileTheClipboardWaits()
+    {
+        // Busy for 3 s, between the guard's 2 s and the 5 s cap: with nothing of ours sent meanwhile, the guard let go of
+        // the keys it held while the clipboard still had the snippet. It's kept on at every check.
+        const int timerTick = 15;
+        long now = 0;
+        var keptOn = new List<long>();
+        Assert.IsTrue(Injector.WaitForPasteToSettle(() => false, ms => now += Math.Max(ms, timerTick), () => now, () => now >= 3000, () => keptOn.Add(now)));
+        Assert.AreEqual(3150, now, "Busy until 3 s, then the 150 ms floor for its Ctrl+V.");
+        Assert.AreEqual(0L, keptOn.FirstOrDefault(-1));
+        Assert.AreEqual(now, keptOn.LastOrDefault(-1));
+        Assert.IsTrue(keptOn.Zip(keptOn.Skip(1)).All(pair => pair.Second - pair.First <= timerTick), "Never longer apart than a check.");
+    }
 }

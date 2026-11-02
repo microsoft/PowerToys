@@ -10,7 +10,6 @@
     <!-- The window the tests type triggers into is a WinForms text box in the test process. -->
     <UseWindowsForms>true</UseWindowsForms>
     <IsPackable>false</IsPackable>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.PowerToys.TextExpander.UITests</RootNamespace>
     <AssemblyName>TextExpander.UITests</AssemblyName>
     <!-- Element.Click and MouseHelper use physical winappcli bounds with Win32 cursor input. -->

@@ -81,8 +81,11 @@ internal static class Program
 
         _hostSettings = HostSettings.Create(args);
 
+        // One read for both the snippets library and the options. Settings that can't be read here, not written yet or
+        // broken, mean the defaults, since no library is in use yet to keep; they're read again shortly, and on each change.
+        HostSettings.Values? settings = _hostSettings?.Read();
         SnippetPathResolution resolution = SnippetStore.ResolveConfiguredPathInfo(
-            _hostSettings?.Read().SnippetsPath,
+            settings?.SnippetsPath,
             HostSettings.DataFolder(_hostSettings?.FilePath));
         _store = new SnippetStore(resolution.FilePath, resolution.IsDefault);
 
@@ -103,8 +106,8 @@ internal static class Program
 
         Clipboard.OwnerWindow = hwnd;
 
-        ConfigureInjection();
-        _hostSettings?.StartWatching(OnHostSettingsChanged);
+        ConfigureInjection(settings);
+        _hostSettings?.StartWatching(OnHostSettingsChanged, readAgain: settings is null);
 
         _hostLink = HostLink.Create(args);
         _hostLink?.Start(() => Native.PostMessageW(hwnd, RequestShutdownMessage, IntPtr.Zero, IntPtr.Zero));
@@ -145,19 +148,14 @@ internal static class Program
 
     internal static string InstanceMutexName(string instanceSuffix) => MutexName + instanceSuffix;
 
-    private static void ConfigureInjection()
+    private static void ConfigureInjection(HostSettings.Values? settings)
     {
-        ApplyHostSettings();
+        if (settings is { } values)
+        {
+            ApplyHostSettings(values, _store);
+        }
 
-        Injector.Backend = InjectionPolicy.ParseBackend(Environment.GetEnvironmentVariable(InjectionPolicy.BackendVariable), Injector.Backend);
-
-        Injector.ClipboardThresholdChars = InjectionPolicy.ParseThreshold(Environment.GetEnvironmentVariable(InjectionPolicy.ThresholdVariable), Injector.ClipboardThresholdChars);
-
-        HostInputTags.AcceptRemappedInput = !InjectionPolicy.ParseFlag(Environment.GetEnvironmentVariable(InjectionPolicy.IgnoreRemappedVariable), fallback: !HostInputTags.AcceptRemappedInput);
-
-        WordBoundary.Required = InjectionPolicy.ParseFlag(Environment.GetEnvironmentVariable(InjectionPolicy.RequireWordBoundaryVariable), fallback: WordBoundary.Required);
-
-        WordBoundary.KeepTerminator = InjectionPolicy.ParseFlag(Environment.GetEnvironmentVariable(InjectionPolicy.WordBoundaryKeepSpaceVariable), fallback: WordBoundary.KeepTerminator);
+        ApplyEnvironmentOverrides();
 
         Injector.ClipboardRestoreFailed = message =>
         {
@@ -168,15 +166,22 @@ internal static class Program
         };
     }
 
-    private static void ApplyHostSettings()
+    // The environment variables are escape hatches, so they win over the settings file.
+    private static void ApplyEnvironmentOverrides()
     {
-        if (_hostSettings is null)
-        {
-            return;
-        }
+        Injector.Backend = InjectionPolicy.ParseBackend(Environment.GetEnvironmentVariable(InjectionPolicy.BackendVariable), Injector.Backend);
 
-        HostSettings.Values values = _hostSettings.Read();
+        Injector.ClipboardThresholdChars = InjectionPolicy.ParseThreshold(Environment.GetEnvironmentVariable(InjectionPolicy.ThresholdVariable), Injector.ClipboardThresholdChars);
 
+        HostInputTags.AcceptRemappedInput = !InjectionPolicy.ParseFlag(Environment.GetEnvironmentVariable(InjectionPolicy.IgnoreRemappedVariable), fallback: !HostInputTags.AcceptRemappedInput);
+
+        WordBoundary.Required = InjectionPolicy.ParseFlag(Environment.GetEnvironmentVariable(InjectionPolicy.RequireWordBoundaryVariable), fallback: WordBoundary.Required);
+
+        WordBoundary.KeepTerminator = InjectionPolicy.ParseFlag(Environment.GetEnvironmentVariable(InjectionPolicy.WordBoundaryKeepSpaceVariable), fallback: WordBoundary.KeepTerminator);
+    }
+
+    private static void ApplyHostSettings(HostSettings.Values values, SnippetStore? store)
+    {
         if (values.InjectionBackend is string backend)
         {
             Injector.Backend = InjectionPolicy.ParseBackend(backend, Injector.Backend);
@@ -204,7 +209,7 @@ internal static class Program
 
         if (values.CaseSensitive is bool caseSensitive)
         {
-            SnippetStore.TransitionResult? result = _store?.SetCaseSensitive(caseSensitive);
+            SnippetStore.TransitionResult? result = store?.SetCaseSensitive(caseSensitive);
             if (result.HasValue && !result.Value.Succeeded)
             {
                 ReportSnippetTransitionFailure("apply the case-sensitive setting", result.Value);
@@ -212,36 +217,39 @@ internal static class Program
         }
     }
 
-    private static void OnHostSettingsChanged()
+    private static bool OnHostSettingsChanged()
+        => _hostSettings is null || ApplyChangedSettings(_hostSettings, _store);
+
+    /// <summary>
+    /// Reads <paramref name="settings"/> after the file changed and applies it, snippets library included. A file that
+    /// can't be read, such as a save caught half-written or a hand edit with a mistake, changes nothing: the options and
+    /// the library in use stay as they are.
+    /// </summary>
+    /// <returns>Whether the file could be read.</returns>
+    internal static bool ApplyChangedSettings(HostSettings settings, SnippetStore? store)
     {
-        ApplyHostSettings();
+        if (settings.Read() is not { } values)
+        {
+            return false;
+        }
 
-        Injector.Backend = InjectionPolicy.ParseBackend(Environment.GetEnvironmentVariable(InjectionPolicy.BackendVariable), Injector.Backend);
-
-        Injector.ClipboardThresholdChars = InjectionPolicy.ParseThreshold(Environment.GetEnvironmentVariable(InjectionPolicy.ThresholdVariable), Injector.ClipboardThresholdChars);
-
-        HostInputTags.AcceptRemappedInput = !InjectionPolicy.ParseFlag(Environment.GetEnvironmentVariable(InjectionPolicy.IgnoreRemappedVariable), fallback: !HostInputTags.AcceptRemappedInput);
-
-        WordBoundary.Required = InjectionPolicy.ParseFlag(Environment.GetEnvironmentVariable(InjectionPolicy.RequireWordBoundaryVariable), fallback: WordBoundary.Required);
-
-        WordBoundary.KeepTerminator = InjectionPolicy.ParseFlag(Environment.GetEnvironmentVariable(InjectionPolicy.WordBoundaryKeepSpaceVariable), fallback: WordBoundary.KeepTerminator);
-
-        RepointSnippetStore();
+        ApplyHostSettings(values, store);
+        ApplyEnvironmentOverrides();
+        RepointSnippetStore(values.SnippetsPath, store, HostSettings.DataFolder(settings.FilePath));
+        return true;
     }
 
-    private static void RepointSnippetStore()
+    private static void RepointSnippetStore(string? snippetsPath, SnippetStore? store, string? hostDataFolder)
     {
-        if (_hostSettings is null || _store is null)
+        if (store is null)
         {
             return;
         }
 
         try
         {
-            SnippetPathResolution resolution = SnippetStore.ResolveConfiguredPathInfo(
-                _hostSettings.Read().SnippetsPath,
-                HostSettings.DataFolder(_hostSettings.FilePath));
-            SnippetStore.TransitionResult result = _store.Repoint(resolution.FilePath, resolution.IsDefault);
+            SnippetPathResolution resolution = SnippetStore.ResolveConfiguredPathInfo(snippetsPath, hostDataFolder);
+            SnippetStore.TransitionResult result = store.Repoint(resolution.FilePath, resolution.IsDefault);
             if (!result.Succeeded)
             {
                 ReportSnippetTransitionFailure("switch the snippet library", result);

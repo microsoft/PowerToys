@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 
 namespace Microsoft.PowerToys.TextExpander;
@@ -79,8 +81,8 @@ internal static class InjectionDiagnostics
     public static int ClipboardRestoresSkipped => Volatile.Read(ref _clipboardRestoreSkipped);
 
     /// <summary>
-    /// Gets how often a typed replacement was cut short because focus moved part-way through. Counted
-    /// apart from <see cref="Abandoned"/>, which covers expansions abandoned before anything was
+    /// Gets how often a typed replacement was cut short: focus moved, or a key or click reached the app, before it was
+    /// all typed. Counted apart from <see cref="Abandoned"/>, which covers expansions abandoned before anything was
     /// delivered.
     /// </summary>
     public static int TypingAbandoned => Volatile.Read(ref _typingAbandoned);
@@ -165,7 +167,7 @@ internal static class InjectionDiagnostics
     public static void RecordClipboardRestoreSkipped()
         => Interlocked.Increment(ref _clipboardRestoreSkipped);
 
-    /// <summary>Records that a typed replacement was cut short by focus moving mid-delivery.</summary>
+    /// <summary>Records that a typed replacement was cut short by focus moving, or a key or click, mid-delivery.</summary>
     public static void RecordTypingAbandoned()
         => Interlocked.Increment(ref _typingAbandoned);
 
@@ -216,62 +218,48 @@ internal static class InjectionDiagnostics
         return InjectionHealth.PasteUnavailable;
     }
 
+    /// <summary>Describes <see cref="Assess"/>'s verdict for the report, in the user's language.</summary>
     public static string DescribeHealth(InjectionBackend backend) => Assess(backend) switch
     {
-        InjectionHealth.Pasting => "OK — replacements are being pasted.",
-        InjectionHealth.Untested =>
-            "Not yet exercised — every expansion so far was short enough to type. "
-            + "Expand a snippet of five or more characters and look again.",
-        InjectionHealth.TypingByChoice =>
-            "Typing, as configured — POWERTOYS_TEXT_EXPANDER_INJECTION_BACKEND is set to type.",
-        InjectionHealth.ClipboardOwnershipDeclined =>
-            "PASTE PATH INACTIVE — the clipboard only ever opened unowned, so Windows declined "
-            + "cross-thread clipboard ownership and every write refused. Expansions still work, "
-            + "by typing, but the paste path is doing nothing. The clipboard work needs to move "
-            + "onto the message-pump thread that owns the window.",
-        InjectionHealth.PasteUnavailable =>
-            "PASTE UNAVAILABLE — pastes are being attempted and refused. Check whether the "
-            + "target window is elevated, or whether the clipboard holds something that cannot "
-            + "be restored (an image from an app that publishes only a bitmap handle).",
-        _ => "Unknown — no expansion has run yet.",
+        InjectionHealth.Pasting => EngineText.Get("Diagnostics_Health_Pasting", "OK — replacements are being pasted."),
+        InjectionHealth.Untested => EngineText.Get("Diagnostics_Health_Untested", "Not yet exercised — every expansion so far was short enough to type. Expand a snippet of five or more characters and look again."),
+        InjectionHealth.TypingByChoice => EngineText.Get("Diagnostics_Health_TypingByChoice", "Typing, as configured — POWERTOYS_TEXT_EXPANDER_INJECTION_BACKEND is set to type."),
+        InjectionHealth.ClipboardOwnershipDeclined => EngineText.Get("Diagnostics_Health_ClipboardOwnershipDeclined", "PASTE PATH INACTIVE — the clipboard only ever opened unowned, so Windows declined cross-thread clipboard ownership and every write refused. Expansions still work, by typing, but the paste path is doing nothing. The clipboard work needs to move onto the message-pump thread that owns the window."),
+        InjectionHealth.PasteUnavailable => EngineText.Get("Diagnostics_Health_PasteUnavailable", "PASTE UNAVAILABLE — pastes are being attempted and refused. Check whether the target window is elevated, or whether the clipboard holds something that cannot be restored (an image from an app that publishes only a bitmap handle)."),
+        _ => EngineText.Get("Diagnostics_Health_Unknown", "Unknown — no expansion has run yet."),
     };
 
     /// <summary>
-    /// Builds the human-readable report. Allocates freely: this runs when a user opens the
-    /// dialog, never during an expansion.
+    /// Builds the human-readable report, which <c>--diagnostics</c> shows in a message box, so each line is a resource.
+    /// Only numbers and the stable names of the backend, outcome and clipboard open are filled in. Allocates freely: this
+    /// runs when a user opens the dialog, never during an expansion.
     /// </summary>
+    [SuppressMessage("Performance", "CA1863:Cache a 'CompositeFormat' for repeated use in this formatting operation", Justification = "Built only when someone asks for diagnostics.")]
     public static string BuildReport(InjectionBackend backend, int thresholdChars)
     {
         var report = new StringBuilder(512);
+        CultureInfo culture = CultureInfo.CurrentCulture;
 
-        report.Append("Status   : ").AppendLine(DescribeHealth(backend));
-        report.Append("Backend  : ").Append(backend)
-              .Append(" (paste at ").Append(thresholdChars).AppendLine(" chars or more)");
-        report.Append("Last     : ")
-              .Append(LastOutcome?.ToString() ?? "no expansion yet")
-              .Append(", clipboard ")
-              .AppendLine(LastOpen?.ToString() ?? "never opened");
-
-        report.AppendLine();
-        report.Append("Pasted   : ").Append(Pasted).AppendLine();
-        report.Append("Typed    : ").Append(Typed).AppendLine("  (completed)");
-        report.Append("Typing routes: too short ").Append(Volatile.Read(ref _notAttempted))
-              .Append(", paste refused ").Append(Volatile.Read(ref _refusedBeforeErase))
-              .AppendLine();
-        report.Append("Abandoned: ").Append(Abandoned)
-              .Append("  (focus moved or failed after erase; failed after erase ")
-              .Append(Volatile.Read(ref _failedAfterErase))
-              .AppendLine(")");
-        report.Append("Cut short: ").Append(TypingAbandoned).AppendLine("  (focus moved mid-typing)");
-        report.Append("SendInput failures: ").Append(SendInputFailures).AppendLine();
+        report.AppendFormat(culture, EngineText.Get("Diagnostics_Status", "Status   : {0}"), DescribeHealth(backend)).AppendLine();
+        report.AppendFormat(culture, EngineText.Get("Diagnostics_Backend", "Backend  : {0} (paste at {1} chars or more)"), backend, thresholdChars).AppendLine();
+        report.AppendFormat(
+            culture,
+            EngineText.Get("Diagnostics_Last", "Last     : {0}, clipboard {1}"),
+            LastOutcome?.ToString() ?? EngineText.Get("Diagnostics_Last_NoExpansion", "no expansion yet"),
+            LastOpen?.ToString() ?? EngineText.Get("Diagnostics_Last_NeverOpened", "never opened")).AppendLine();
 
         report.AppendLine();
-        report.Append("Clipboard opens: ").Append(OpensOwned).Append(" owned, ")
-              .Append(OpensUnowned).Append(" unowned, ")
-              .Append(OpensFailed).AppendLine(" failed");
-        report.Append("Clipboard restores lost: ").Append(ClipboardRestoreFailures).AppendLine();
-        report.Append("Clipboard restores skipped: ").Append(ClipboardRestoresSkipped)
-              .AppendLine("  (a newer copy was kept)");
+        report.AppendFormat(culture, EngineText.Get("Diagnostics_Pasted", "Pasted   : {0}"), Pasted).AppendLine();
+        report.AppendFormat(culture, EngineText.Get("Diagnostics_Typed", "Typed    : {0}  (completed)"), Typed).AppendLine();
+        report.AppendFormat(culture, EngineText.Get("Diagnostics_TypingRoutes", "Typing routes: too short {0}, paste refused {1}"), Volatile.Read(ref _notAttempted), Volatile.Read(ref _refusedBeforeErase)).AppendLine();
+        report.AppendFormat(culture, EngineText.Get("Diagnostics_Abandoned", "Abandoned: {0}  (focus moved or failed after erase; failed after erase {1})"), Abandoned, Volatile.Read(ref _failedAfterErase)).AppendLine();
+        report.AppendFormat(culture, EngineText.Get("Diagnostics_CutShort", "Cut short: {0}  (focus moved, or a key or click, mid-typing)"), TypingAbandoned).AppendLine();
+        report.AppendFormat(culture, EngineText.Get("Diagnostics_SendInputFailures", "SendInput failures: {0}"), SendInputFailures).AppendLine();
+
+        report.AppendLine();
+        report.AppendFormat(culture, EngineText.Get("Diagnostics_ClipboardOpens", "Clipboard opens: {0} owned, {1} unowned, {2} failed"), OpensOwned, OpensUnowned, OpensFailed).AppendLine();
+        report.AppendFormat(culture, EngineText.Get("Diagnostics_ClipboardRestoresLost", "Clipboard restores lost: {0}"), ClipboardRestoreFailures).AppendLine();
+        report.AppendFormat(culture, EngineText.Get("Diagnostics_ClipboardRestoresSkipped", "Clipboard restores skipped: {0}  (a newer copy was kept)"), ClipboardRestoresSkipped).AppendLine();
 
         return report.ToString();
     }

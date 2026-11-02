@@ -36,14 +36,15 @@ internal static class Injector
 
     /// <summary>
     /// Gets or sets the upper bound on how long to let the target consume the paste before the clipboard is
-    /// restored. Reached only when the target's read is never observed (see <see cref="WaitForPasteToSettle(IntPtr)"/>).
+    /// restored. Reached only when the target's read is never observed (see <see cref="WaitForPasteToSettle(IntPtr, Action)"/>).
     /// </summary>
     public static int PasteSettleMs { get; set; } = 350;
 
     /// <summary>
     /// Gets or sets how long a target that isn't taking messages (busy or hung) may keep its paste pending. Its Ctrl+V is
     /// still queued, so the clipboard waits: handed back now, it would paste what the user copied instead of the snippet.
-    /// Past this, the snippet stays on the clipboard and the user is told.
+    /// Past this, the snippet stays on the clipboard and the user is told. Keys typed meanwhile are held until then, so a
+    /// Ctrl+V among them waits for the clipboard too.
     /// </summary>
     public static int PasteBusyCapMs { get; set; } = 5000;
 
@@ -91,7 +92,13 @@ internal static class Injector
     /// </summary>
     internal const int UndoModifierReleaseTimeoutMs = 1000;
 
-    private const int ModifierReleasePollMs = 10;
+    /// <summary>
+    /// How long, after a click during an insertion, the keys held meanwhile wait for the mouse buttons to go up before
+    /// they go back anyway.
+    /// </summary>
+    private const int ButtonReleaseTimeoutMs = 1000;
+
+    private const int ReleasePollMs = 10;
 
     /// <summary>
     /// The most caret moves that place a snippet's $|$. One further back than that is left at the end of the text:
@@ -169,7 +176,7 @@ internal static class Injector
         InsertionGuard guard,
         long inputGeneration,
         Func<IntPtr>? getForegroundWindow = null,
-        Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, PasteOutcome>? tryPaste = null,
+        Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, Action, PasteOutcome>? tryPaste = null,
         Func<Native.INPUT[], uint>? dispatch = null,
         int cursorRightUnits = 0,
         Func<int, short>? getAsyncKeyState = null,
@@ -184,6 +191,10 @@ internal static class Injector
         dispatch ??= Dispatch;
         getAsyncKeyState ??= Native.GetAsyncKeyState;
         sleep ??= Thread.Sleep;
+
+        // Clicks aren't held: one from now on stops the insertion. They're counted apart from the input generation, which
+        // is taken again once held keys go back mid-typing, so a click then isn't taken in with them.
+        long clicks = guard.Clicks;
 
         // The window must still be in front and drivable, and nothing since the match may have moved the caret.
         if (!Ready())
@@ -212,11 +223,18 @@ internal static class Injector
         {
             if (pasting)
             {
-                outcome = tryPaste(text, targetWindow, () => (Insert(paste: true), sentAny));
+                outcome = tryPaste(text, targetWindow, () => (Insert(paste: true), sentAny), () => guard.Renew());
             }
 
             // Typing is the fallback, inside the same guard, only when the paste was refused before anything went out.
             succeeded = outcome == PasteOutcome.Pasted || (Typing() && Insert(paste: false));
+        }
+
+        // RichEdit and Windows 11 Notepad drop typing while a mouse button is down: after a click, what's held goes back
+        // once none is.
+        if (guarded && guard.Clicks != clicks)
+        {
+            AwaitButtonsUp();
         }
 
         EndGuard();
@@ -225,7 +243,7 @@ internal static class Injector
         {
             InjectionDiagnostics.RecordTypingSucceeded();
         }
-        else if (!sentAny && Typing())
+        else if (Typing())
         {
             InjectionDiagnostics.RecordTypingAbandoned();
         }
@@ -295,17 +313,29 @@ internal static class Injector
             }
         }
 
+        // For a second at most, with the guard kept on: keys typed meanwhile are held too.
+        void AwaitButtonsUp()
+        {
+            int[] buttons = [Native.VK_LBUTTON, Native.VK_RBUTTON, Native.VK_MBUTTON, Native.VK_XBUTTON1, Native.VK_XBUTTON2];
+            long deadline = Environment.TickCount64 + ButtonReleaseTimeoutMs;
+            while (Array.Exists(buttons, vk => (getAsyncKeyState(vk) & 0x8000) != 0) && guard.Renew() && Environment.TickCount64 < deadline)
+            {
+                sleep(ReleasePollMs);
+            }
+        }
+
         // Checked before each call: once the target has lost the front, the insertion goes no further, and what the
-        // guard held is dropped.
+        // guard held is dropped. Once a click, which isn't held, may have moved the caret, it goes no further either, and
+        // what's held goes back where the caret is now.
         bool OnTarget()
         {
-            if (!guard.Cancelled && IsAuthorizedTarget(targetWindow, canDrive, getForegroundWindow))
+            if (guard.Cancelled || !IsAuthorizedTarget(targetWindow, canDrive, getForegroundWindow))
             {
-                return true;
+                guard.Drop();
+                return false;
             }
 
-            guard.Drop();
-            return false;
+            return guard.Unchanged(inputGeneration) && guard.Clicks == clicks;
         }
 
         bool Send(Native.INPUT[] keys)
@@ -393,10 +423,13 @@ internal static class Injector
                     sleep(delay);
                 }
 
-                // Keys are held for HoldCapMs at most; the rest of the text goes in unguarded.
-                if (guarded && guard.Overdue)
+                // Keys are held for HoldCapMs at most; the rest of the text goes in unguarded. Going back, they move the
+                // input generation on themselves, so it's taken again after them: a key that reaches the app later stops
+                // the rest, and so does a click at any time, as clicks are counted apart.
+                if (guarded && guard.Overdue && guard.Unchanged(inputGeneration))
                 {
                     EndGuard();
+                    inputGeneration = guard.InputGeneration;
                 }
             }
 
@@ -418,10 +451,10 @@ internal static class Injector
     /// Pastes via the clipboard, restoring whatever the user had there. It's borrowed only once the guard has decided,
     /// so a Ctrl+V the user pressed first pastes what they copied. Nothing destructive happens until the clipboard
     /// takeover is verified; only then does <paramref name="send"/> erase the trigger and paste, checking the target
-    /// before each call. The paste settles and the clipboard goes back before the end marker, so a Ctrl+V among the
-    /// keys held meanwhile pastes what the user copied too.
+    /// before each call. The paste settles, with <paramref name="keepAlive"/> keeping the guard on, and the clipboard
+    /// goes back before the end marker, so a Ctrl+V among the keys held meanwhile pastes what the user copied too.
     /// </summary>
-    private static PasteOutcome TryPaste(string text, IntPtr targetWindow, Func<(bool Whole, bool SentAny)> send)
+    private static PasteOutcome TryPaste(string text, IntPtr targetWindow, Func<(bool Whole, bool SentAny)> send, Action keepAlive)
     {
         // Null when the clipboard can't be read, is too large to copy, or holds something we couldn't put back.
         using ClipboardSnapshot? saved = Clipboard.Snapshot();
@@ -452,7 +485,7 @@ internal static class Injector
 
             // The target reads the clipboard asynchronously; restoring at once would paste the previous contents. One
             // still busy at the cap keeps the snippet, since its Ctrl+V may yet come.
-            handBack = !sentAny || WaitForPasteToSettle(targetWindow);
+            handBack = !sentAny || WaitForPasteToSettle(targetWindow, keepAlive);
 
             // Not sent at all: focus moved, a click may have moved the caret, or deciding again dropped it. The trigger is intact.
             return !sentAny ? PasteOutcome.TargetLost : pasted ? PasteOutcome.Pasted : PasteOutcome.FailedAfterErase;
@@ -477,10 +510,10 @@ internal static class Injector
     /// <see cref="PasteSettleMs"/>, and longer while the target isn't taking messages. Returns false if it still
     /// isn't after <see cref="PasteBusyCapMs"/>: the clipboard must not be handed back under a pending paste.
     /// </summary>
-    private static bool WaitForPasteToSettle(IntPtr targetWindow)
+    private static bool WaitForPasteToSettle(IntPtr targetWindow, Action keepAlive)
     {
         long start = System.Diagnostics.Stopwatch.GetTimestamp();
-        return WaitForPasteToSettle(() => Clipboard.IsOpenByTarget(targetWindow), Thread.Sleep, () => (long)System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds, () => IsTakingMessages(targetWindow));
+        return WaitForPasteToSettle(() => Clipboard.IsOpenByTarget(targetWindow), Thread.Sleep, () => (long)System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds, () => IsTakingMessages(targetWindow), keepAlive);
     }
 
     /// <summary>
@@ -493,11 +526,12 @@ internal static class Injector
             || Native.SendMessageTimeoutW(window, Native.WM_NULL, IntPtr.Zero, IntPtr.Zero, Native.SMTO_BLOCK | Native.SMTO_ABORTIFHUNG, (uint)Math.Max(1, ResponsiveProbeMs), out _) != IntPtr.Zero;
 
     /// <summary>
-    /// The wait behind <see cref="WaitForPasteToSettle(IntPtr)"/>, with the clock and the target checks passed in
+    /// The wait behind <see cref="WaitForPasteToSettle(IntPtr, Action)"/>, with the clock and the target checks passed in
     /// for tests. Timed by the clock, not by counting polls: a short sleep lasts a whole timer tick (about 15 ms),
     /// so counted 5 ms polls held the clipboard for over a second. Returns whether the clipboard may be handed back.
+    /// <paramref name="keepAlive"/> runs at every check, so the guard outlasts the wait, which sends nothing of ours.
     /// </summary>
-    internal static bool WaitForPasteToSettle(Func<bool> isOpenByTarget, Action<int> sleep, Func<long> elapsedMs, Func<bool>? isTakingMessages = null)
+    internal static bool WaitForPasteToSettle(Func<bool> isOpenByTarget, Action<int> sleep, Func<long> elapsedMs, Func<bool>? isTakingMessages = null, Action? keepAlive = null)
     {
         int budget = PasteSettleMs;
         if (budget <= 0)
@@ -514,6 +548,7 @@ internal static class Injector
 
         for (long waited = elapsedMs(); ; waited = elapsedMs())
         {
+            keepAlive?.Invoke();
             if (isOpenByTarget())
             {
                 observedRead = true;
@@ -630,7 +665,7 @@ internal static class Injector
                 return false;
             }
 
-            Thread.Sleep(ModifierReleasePollMs);
+            Thread.Sleep(ReleasePollMs);
         }
 
         return true;

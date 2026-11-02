@@ -61,6 +61,7 @@ internal sealed class KeyboardHook : IDisposable
     private bool _disposed;
     private UndoEntry? _undo;
     private long _inputGeneration;
+    private long _clicks;
 
     /// <summary>Gets triggers detected but not yet expanded. Drained by the expansion worker.</summary>
     public BlockingCollection<PendingExpansion> Pending { get; } = new();
@@ -83,6 +84,12 @@ internal sealed class KeyboardHook : IDisposable
     /// insertion goes in don't: they haven't reached the app yet.
     /// </summary>
     internal long InputGeneration => Volatile.Read(ref _inputGeneration);
+
+    /// <summary>
+    /// Gets how many clicks have reached apps, but for those while a prompt is open, when no insertion runs. Unlike the
+    /// input generation, keys the guard holds and sends back never move it.
+    /// </summary>
+    internal long Clicks => Volatile.Read(ref _clicks);
 
     /// <summary>Gets the guard that keeps the user's keys out of each insertion.</summary>
     internal InsertionGuard Guard { get; }
@@ -140,7 +147,7 @@ internal sealed class KeyboardHook : IDisposable
         _hookProc = HookCallback;
         _mouseHookProc = MouseCallback;
         _winEventProc = ForegroundChanged;
-        Guard = new InsertionGuard(() => InputGeneration, TargetInFront);
+        Guard = new InsertionGuard(() => InputGeneration, TargetInFront, () => Clicks);
     }
 
     public bool Install()
@@ -256,8 +263,7 @@ internal sealed class KeyboardHook : IDisposable
                 case Native.WM_XBUTTONDOWN:
                     if (!Suspended)
                     {
-                        ResetBuffer();
-                        ClearUndo();
+                        Click();
                     }
                     else
                     {
@@ -271,6 +277,18 @@ internal sealed class KeyboardHook : IDisposable
         }
 
         return Native.CallNextHookEx(_mouseHookHandle, nCode, wParam, lParam);
+    }
+
+    /// <summary>
+    /// Handles a click with no prompt open. It can move the caret, so what was typed before it can't complete a trigger,
+    /// undo ends, and an insertion going in stops (see <see cref="Clicks"/>).
+    /// </summary>
+    internal void Click()
+    {
+        // Counted first: whoever sees the input generation move for it sees the click too.
+        Interlocked.Increment(ref _clicks);
+        ResetBuffer();
+        ClearUndo();
     }
 
     /// <summary>

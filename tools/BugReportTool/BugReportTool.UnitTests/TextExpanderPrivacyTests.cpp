@@ -61,6 +61,10 @@ namespace BugReportToolUnitTests
             const wchar_t* name;
             std::string properties;
         };
+
+        // A snippets database as the editor saves it.
+        const char Database[] = "{\n  \"version\": 1,\n  \"snippets\": [\n    {\n      \"trigger\": \"!team\",\n"
+                                "      \"replacement\": \"private team snippet\"\n    }\n  ]\n}";
     }
 
     TEST_CLASS(TextExpanderPrivacyTests)
@@ -103,8 +107,8 @@ namespace BugReportToolUnitTests
         }
 
         // Makes a report with each case's settings and checks that it leaves out every one of the
-        // files, given relative to the report.
-        void AssertExcluded(const std::vector<SettingsCase>& cases, const std::vector<fs::path>& files, const wchar_t* failure)
+        // files, and keeps every one of kept, given relative to the report.
+        void AssertExcluded(const std::vector<SettingsCase>& cases, const std::vector<fs::path>& files, const wchar_t* failure, const std::vector<fs::path>& kept = {})
         {
             for (const SettingsCase& testCase : cases)
             {
@@ -112,7 +116,12 @@ namespace BugReportToolUnitTests
                 Assert::IsTrue(MakeReport(testCase.properties), message.c_str());
                 for (const fs::path& file : files)
                 {
-                    Assert::IsFalse(fs::exists(report / file), message.c_str());
+                    Assert::IsFalse(fs::exists(report / file), (message + L": " + file.wstring() + L" was in the report").c_str());
+                }
+
+                for (const fs::path& file : kept)
+                {
+                    Assert::IsTrue(fs::exists(report / file), (message + L": " + file.wstring() + L" was left out").c_str());
                 }
             }
         }
@@ -296,6 +305,135 @@ namespace BugReportToolUnitTests
                                !fs::exists(report / L"TextExpander" / L"PowerToysTextExpanderSnippets.json") &&
                                !fs::exists(report / L"TextExpander" / L"old-folder"),
                            L"The settings were left out, or the default snippets or an earlier folder were kept");
+        }
+
+        // Move snippets database and Sync from another PC leave the database they used where it was, here
+        // outside the TextExpander folder, with its backups. The settings point somewhere else now, so they're
+        // found by their content, and other JSON stays.
+        TEST_METHOD(EarlierDatabaseOutsideTextExpanderFolderIsExcluded)
+        {
+            Assert::IsTrue(WriteText(configuredFolder / L"team.json", Database) &&
+                               WriteText(configuredFolder / L"team.json.backup-20261031", (std::string("// Before Sync from another PC\n") + Database).c_str()) &&
+                               WriteText(configuredFolder / L"other.json", "{\"a\":1}") &&
+                               WriteText(settings / L"FancyZones" / L"settings.json", "{\"name\":\"FancyZones\",\"properties\":{\"fancyzones_shiftDrag\":{\"value\":true}}}"),
+                           L"Could not create the earlier database fixture");
+
+            const std::vector<SettingsCase> cases{
+                { L"new database elsewhere", "{\"snippets_path\":{\"value\":" + JsonString((root / L"elsewhere" / L"work.json").wstring()) + "}}" },
+                { L"default database", "{}" },
+            };
+
+            AssertExcluded(cases,
+                           { L"Shared\\team.json", L"Shared\\team.json.backup-20261031" },
+                           L"An earlier snippets database was in the report",
+                           { L"Shared\\other.json", L"FancyZones\\settings.json", L"TextExpander\\settings.json" });
+        }
+
+        // A sync service's keep-both copy of an earlier database, deeper in the settings, in a form the engine also
+        // reads: a byte order mark, keys in any case and trailing commas.
+        TEST_METHOD(EarlierDatabaseCopyInSubfolderIsExcluded)
+        {
+            Assert::IsTrue(WriteText(configuredFolder / L"Sub" / L"team (LAPTOP).json",
+                                     "\xEF\xBB\xBF{\"Snippets\":[{\"TRIGGER\":\"!team\",\"replacement\":\"private team snippet\",},],}"),
+                           L"Could not create the keep-both copy fixture");
+
+            const std::vector<SettingsCase> cases{ { L"default database", "{}" } };
+            AssertExcluded(cases, { L"Shared\\Sub\\team (LAPTOP).json" }, L"A keep-both copy of an earlier database was in the report");
+        }
+
+        // Sync from another PC uses a snippets file whatever its name, so an earlier database named work.txt, its
+        // backup, a sync service's keep-both copy and a file with no extension are found by their content too. Files
+        // with only one of the keys stay.
+        TEST_METHOD(EarlierDatabaseOfAnyNameIsExcluded)
+        {
+            Assert::IsTrue(WriteText(configuredFolder / L"work.txt", Database) &&
+                               WriteText(configuredFolder / L"work.txt.backup-20261031", Database) &&
+                               WriteText(configuredFolder / L"work (LAPTOP).txt", Database) &&
+                               WriteText(configuredFolder / L"snippets", Database) &&
+                               WriteText(configuredFolder / L"notes.txt", "The \"snippets\" list moved to another database.") &&
+                               WriteText(settings / L"RunnerLogs" / L"runner-log_2026-10-31.log", "[09:15:00] Text Expander: \"trigger\" typed, snippets loaded\n") &&
+                               WriteText(settings / L"FancyZones" / L"settings.json", "{\"name\":\"FancyZones\",\"properties\":{\"fancyzones_shiftDrag\":{\"value\":true}}}") &&
+                               WriteText(moduleFolder / L"diagnostics.txt", "snippets_location=custom\nsnippets_file_exists=true\nsnippet_count=1\nwatching=true\n"),
+                           L"Could not create the earlier database fixture");
+
+            const std::vector<SettingsCase> cases{
+                { L"new database elsewhere", "{\"snippets_path\":{\"value\":" + JsonString((root / L"elsewhere" / L"current.json").wstring()) + "}}" },
+                { L"default database", "{}" },
+            };
+
+            AssertExcluded(cases,
+                           { L"Shared\\work.txt", L"Shared\\work.txt.backup-20261031", L"Shared\\work (LAPTOP).txt", L"Shared\\snippets" },
+                           L"An earlier snippets database with a name of its own was in the report",
+                           { L"Shared\\notes.txt", L"RunnerLogs\\runner-log_2026-10-31.log", L"FancyZones\\settings.json", L"TextExpander\\settings.json", L"TextExpander\\diagnostics.txt" });
+        }
+
+        // A key split between two of the 64 KB reads is still found, wherever it's split.
+        TEST_METHOD(KeySplitBetweenReadsIsFound)
+        {
+            std::vector<fs::path> files;
+            for (size_t padding = 64 * 1024 - 24; padding < 64 * 1024; ++padding)
+            {
+                fs::path file = fs::path(L"Shared") / (L"team-" + std::to_wstring(padding) + L".json");
+                std::string contents = std::string(padding, ' ') + "{\"snippets\":[{\"trigger\":\"!team\"}]}";
+                Assert::IsTrue(WriteText(settings / file, contents.c_str()), L"Could not create the split key fixture");
+                files.push_back(file);
+            }
+
+            const std::vector<SettingsCase> cases{ { L"default database", "{}" } };
+            AssertExcluded(cases, files, L"A database with a key split between two reads was in the report");
+        }
+
+        // Every file is read, a piece at a time, so a log of a few MB with only one of the keys is read to the end,
+        // kept whole, and quickly.
+        TEST_METHOD(LargeLogIsKeptQuickly)
+        {
+            const std::string line = "[09:15:00] Text Expander loaded the \"snippets\" list, and a trigger was typed\n";
+            std::string contents;
+            while (contents.size() < 8 * 1024 * 1024)
+            {
+                contents += line;
+            }
+
+            const fs::path log = fs::path(L"RunnerLogs") / L"runner-log_2026-10-31.log";
+            Assert::IsTrue(WriteText(settings / log, contents.c_str()) && WriteSettings(settings, "{}") && ResetReport(settings, report),
+                           L"Could not create the large log fixture");
+
+            const auto start = std::chrono::steady_clock::now();
+            const bool checked = TextExpanderPrivacy::ExcludeConfiguredSnippetFile(settings, report);
+            const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start);
+            Logger::WriteMessage((L"Checked the settings with an 8 MB log in " + std::to_wstring(elapsed.count()) + L" ms").c_str());
+
+            std::error_code error;
+            Assert::IsTrue(checked && fs::file_size(report / log, error) == contents.size() && !error, L"A large log without snippets was not kept whole");
+            Assert::IsTrue(elapsed < std::chrono::seconds(5), L"Checking a large log for snippets took too long");
+        }
+
+        // The module's settings have "snippets_path", which isn't "snippets", so they stay.
+        TEST_METHOD(TextExpanderSettingsAreKept)
+        {
+            const std::vector<SettingsCase> cases{
+                { L"configured database", "{\"snippets_path\":{\"value\":" + JsonString((namedFolder / L"snippets.json").wstring()) + "},\"case_sensitive\":{\"value\":false}}" },
+            };
+
+            AssertExcluded(cases, {}, L"The Text Expander settings were left out", { L"TextExpander\\settings.json" });
+        }
+
+        // A file that can't be read can't be checked, so it's left out, whatever its name.
+        TEST_METHOD(UnreadableFileIsExcluded)
+        {
+            Assert::IsTrue(WriteText(configuredFolder / L"locked.txt", "{\"a\":1}") && WriteSettings(settings, "{}") && ResetReport(settings, report),
+                           L"Could not create the unreadable file fixture");
+
+            // Shared for deleting only, so it can't be read but can still be left out.
+            fs::path locked = report / L"Shared" / L"locked.txt";
+            HANDLE file = CreateFileW(locked.c_str(), GENERIC_READ, FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+            bool excluded = file != INVALID_HANDLE_VALUE && TextExpanderPrivacy::ExcludeConfiguredSnippetFile(settings, report);
+            if (file != INVALID_HANDLE_VALUE)
+            {
+                CloseHandle(file);
+            }
+
+            Assert::IsTrue(excluded && !fs::exists(locked), L"A file that couldn't be read was in the report");
         }
 
         // Without a TextExpander folder there is nothing to leave out, and the report is still made.
