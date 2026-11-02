@@ -3,13 +3,19 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using WorkspacesCsharpLibrary.Data;
 using WorkspacesCsharpLibrary.Utils;
+using WorkspacesEditor.Models;
+using WorkspacesEditor.Utils;
 
 namespace WorkspacesCsharpLibrary.UnitTests;
 
@@ -50,6 +56,32 @@ public class WorkspaceWriteTests
         Assert.AreEqual("Edited", workspace["name"]!.GetValue<string>());
         Assert.AreEqual(100L, workspace["last-launched-time"]!.GetValue<long>());
         Assert.AreEqual(0, Directory.GetFiles(directory, "*.tmp").Length);
+    }
+
+    [TestMethod]
+    [DataRow(0L)]
+    [DataRow(1793332794L)]
+    public void EditingCopyPreservesTimestampsInSavePayload(long lastLaunchedTime)
+    {
+        const long creationTime = 1793332734L;
+        var original = new Project(new ProjectWrapper
+        {
+            Id = Guid.NewGuid().ToString("B"),
+            Name = "Original",
+            CreationTime = creationTime,
+            LastLaunchedTime = lastLaunchedTime,
+            Applications = [],
+            MonitorConfiguration = [],
+        });
+        var edited = new Project(original) { Name = "Edited" };
+        var toWrappers = typeof(WorkspacesEditorIO).GetMethod("ToWrappers", BindingFlags.Static | BindingFlags.NonPublic)!;
+        var candidates = (List<ProjectWrapper>)toWrappers.Invoke(null, [new List<Project> { edited }])!;
+        var payload = JsonSerializer.Serialize(new WorkspacesData.WorkspacesListWrapper { Workspaces = candidates });
+        var saved = JsonNode.Parse(payload)!["workspaces"]![0]!;
+
+        Assert.AreEqual("Edited", saved["name"]!.GetValue<string>());
+        Assert.AreEqual(creationTime, saved["creation-time"]!.GetValue<long>());
+        Assert.AreEqual(lastLaunchedTime, saved["last-launched-time"]!.GetValue<long>());
     }
 
     [TestMethod]
