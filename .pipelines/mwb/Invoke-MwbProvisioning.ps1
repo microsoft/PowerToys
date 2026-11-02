@@ -32,6 +32,12 @@ if ($ExpectedTestSigningCertificateSha256) {
     $arguments += ' -ExpectedTestSigningCertificateSha256 {0}' -f $ExpectedTestSigningCertificateSha256
 }
 
+# This acknowledges only the trusted launcher, never payload readiness or verified ownership.
+$startedPath = Join-Path $PSScriptRoot 'provisioning-started.json'
+@{ RunId = $RunId.ToString(); ProductRoot = $ProductRoot; Status = 'Started' } |
+    ConvertTo-Json | Set-Content -LiteralPath "$startedPath.new" -Encoding utf8
+[IO.File]::Move("$startedPath.new", $startedPath, $true)
+
 # Start-Process drains both redirected streams concurrently to files rather than
 # accumulating output in memory or waiting on one pipe while the other fills.
 $process = Start-Process -FilePath (Get-Process -Id $PID).Path -ArgumentList $arguments `

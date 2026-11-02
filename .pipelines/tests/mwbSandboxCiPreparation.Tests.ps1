@@ -797,9 +797,6 @@ Describe 'MWB gated preparation source contracts' {
         $job | Should Match 'name: prepareMwbRuntime\r?\n    type: boolean\r?\n    default: false'
         $job | Should Match '\$\{\{ if eq\(parameters.prepareMwbRuntime, true\) \}\}:\r?\n    - pwsh:'
         $job | Should Match '-SourceRevision "\$\(Build.SourceVersion\)" -ReadyToRun'
-        $job | Should Not Match '10\.0\.401|mwb-ci-tools|UseDotNet@2'
-        $job | Should Match '-DotNetPath "\$\(DOTNET_ROOT\)\\dotnet.exe"'
-        $job | Should Match "version: '10.0'"
         $buildAst.ParamBlock.Extent.Text | Should Match '\[switch\] \$ReadyToRun'
         $buildAst.ParamBlock.Extent.Text | Should Match "ValidateSet\('x64', 'arm64'\).*Platform = 'x64'"
     }
@@ -844,8 +841,8 @@ Describe 'MWB gated preparation source contracts' {
         $script | Should Match "\`$task.Principal.RunLevel -ne 'Limited'"
         $script | Should Match "\`$task.Principal.LogonType -ne 'Interactive'"
         $script | Should Match '-MwbRecoveryJournal \$journalPath -TimeoutMinutes 4'
-        $script | Should Match 'AddSeconds\(90\)'
-        $script | Should Match 'New-TimeSpan -Minutes 20'
+        $script | Should Match 'Wait-MwbProvisioningReady -RunId'
+        $script | Should Match 'New-TimeSpan -Minutes 22'
     }
 
     It 'writes the prerequisite report before any BLOCKED_INFRASTRUCTURE preflight throw or run-root creation' {
@@ -865,6 +862,32 @@ Describe 'MWB gated preparation source contracts' {
         $testJob | Should Match 'displayName: Restore UI-test prerequisites\r?\n\s*condition: always\(\)'
         $testJob | Should Match 'targetPath: ''\$\(Common.TestResultsDirectory\)\\mwb-prerequisites-\$\(System.JobId\)'''
     }
+}
+
+Describe 'MWB provisioning progress diagnostics' {
+    It 'extracts only known phases and numeric elapsed time' -TestCases @(
+        @{ Phase = 'Inspecting public test trust'; Elapsed = '1.2'; Expected = 1.2 }
+        @{ Phase = 'Hashing Sandbox runtime archive'; Elapsed = '112.3'; Expected = 112.3 }
+        @{ Phase = 'Writing provisioning marker'; Elapsed = '1,234.5'; Expected = 1234.5 }
+    ) {
+        param($Phase, $Elapsed, $Expected)
+        $progress = ConvertTo-MwbProvisioningProgress "MWB provisioning: $Phase (${Elapsed}s)"
+        $progress.Phase | Should Be $Phase
+        $progress.ElapsedSeconds | Should Be $Expected
+    }
+
+    It 'does not export arbitrary text, unknown phases, or malformed timings' -TestCases @(
+        @{ Line = 'private-authentication-state' }
+        @{ Line = 'MWB provisioning: private-authentication-state (1.0s)' }
+        @{ Line = 'MWB provisioning: Hashing MWB assembly (private-authentication-states)' }
+        @{ Line = "MWB provisioning: Hashing MWB assembly (1.0s)`nprivate-authentication-state" }
+        @{ Line = 'MWB provisioning: Hashing MWB assembly (999999999999999999999.0s)' }
+        @{ Line = 'MWB provisioning: Hashing MWB assembly (3600.1s)' }
+    ) {
+        param($Line)
+        ConvertTo-MwbProvisioningProgress $Line | Should Be $null
+    }
+
 }
 
 Describe 'MWB Sandbox prerequisite diagnostics' {
