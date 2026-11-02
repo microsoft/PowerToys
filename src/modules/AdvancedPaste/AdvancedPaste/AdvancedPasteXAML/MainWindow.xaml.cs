@@ -113,9 +113,9 @@ namespace AdvancedPaste
 
         private async void WindowEx_Closed(object sender, Microsoft.UI.Xaml.WindowEventArgs args)
         {
-            await _optionsViewModel.CancelPasteActionAsync();
-            Hide();
             args.Handled = true;
+            Hide();
+            await _optionsViewModel.CancelPasteActionAsync();
         }
 
         private void Hide()
