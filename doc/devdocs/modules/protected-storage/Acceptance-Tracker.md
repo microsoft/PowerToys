@@ -1,6 +1,6 @@
 # Workspaces Protected Storage 验收台账
 
-最后更新：2026-11-02（UTC+08:00；E40同账号提升实测：普通入口通过，High CLI执行失败，取消刺激未确认）
+最后更新：2026-11-02（UTC+08:00；E41定位管理员list的OwnerContextRequired/1346及错误信息映射缺陷）
 
 **这是验收状态的唯一维护入口。每执行完一项，就更新本文件；不能只在聊天里报告通过。**
 
@@ -20,24 +20,24 @@
 |---|---:|
 | PASS | 26 |
 | PARTIAL | 22 |
-| FAIL | 1 |
+| FAIL | 2 |
 | RETEST | 0 |
 | BLOCKED | 1 |
-| NOT RUN | 76 |
+| NOT RUN | 75 |
 | 合计 | 126 |
 
 26条PASS由AUTO 14条、UNIT 6条、LOCAL-01、PERF-02/03及E37关闭的
 DATA-09、DATA-17、CLI-01组成；仍不代表核心架构和正式安装验收已完成。
-显式标P0的45条中，整项PASS 3条、PARTIAL 16条、FAIL 1条、RETEST 0条、BLOCKED 1条、
-NOT RUN 24条。当前正式BLOCKED为REL-01（PM决策）；E40将DATA-14补到PARTIAL，
-并记录CLI-03的实际FAIL；
+显式标P0的45条中，整项PASS 3条、PARTIAL 16条、FAIL 2条、RETEST 0条、BLOCKED 1条、
+NOT RUN 23条。当前正式BLOCKED为REL-01（PM决策）；E40将DATA-14补到PARTIAL，
+E40/E41分别记录CLI-03/CLI-07的实际FAIL；
 不要与E33的三个BLOCKED子项混淆。
 R06已有E36定向实机PASS，但DATA-10包含更多条件，仍只计PARTIAL。
 
 ### 分类总览：126条条件，不是126场独立测试
 
-目前有100条尚未整项关闭，但其中只有76条记为NOT RUN；另有22条已部分覆盖、
-1条FAIL、1条受阻，不能全部当作“从零开始”。E39已关闭原来的2条RETEST。台账混合了工程门禁、
+目前有100条尚未整项关闭，但其中只有75条记为NOT RUN；另有22条已部分覆盖、
+2条FAIL、1条受阻，不能全部当作“从零开始”。E39已关闭原来的2条RETEST。台账混合了工程门禁、
 自动化合同、实机行为、错误分支、环境矩阵和产品决策，因此26/126不是工作量完成百分比。
 
 下面按**主要验证目标**将每个正式ID归入一个类别，互不重复、没有删减或新增要求。
@@ -47,12 +47,12 @@ R06已有E36定向实机PASS，但DATA-10包含更多条件，仍只计PARTIAL�
 |---|---:|---:|---:|---:|
 | 工程基线与自动化 | 27 | 20 | 7 | 3 |
 | 日常功能、交互和性能 | 19 | 4 | 15 | 6 |
-| 跨权限执行与运行上下文 | 7 | 0 | 7 | 5 |
+| 跨权限执行与运行上下文 | 7 | 0 | 7 | 4 |
 | 写保护、授权和用户隔离 | 9 | 0 | 9 | 5 |
 | 数据迁移、一致性与恢复 | 17 | 1 | 16 | 14 |
 | 安装、升级、卸载与生命周期 | 36 | 1 | 35 | 34 |
 | 生产信任、环境与发布门槛 | 11 | 0 | 11 | 9 |
-| 合计 | 126 | 26 | 100 | 76 |
+| 合计 | 126 | 26 | 100 | 75 |
 
 | 类别 | 唯一归属的正式ID |
 |---|---|
@@ -79,7 +79,7 @@ PERF-02/03）；数据一致性1条（DATA-09）；部署核对1条（LOCAL-01�
 | 项目 | 当前记录 |
 |---|---|
 | 待验收代码 | `feature/workspaces-protected-storage-main-20261028`；产品基线 `b132ee3fbf` 加E35时间保留修复 `890cc68af1`；E36已增量发布到本地Debug6006 Editor并实际验证，managed DLL SHA256前缀 `6207D44B809AD83A` |
-| 正式签名构建 | E38：已触发主签名流水线 [162529587](https://dev.azure.com/microsoft/Dart/_build/results?buildId=162529587)，代码 `6bd56af147`，版本 `0.101.6007.0`，x64/ARM64 Release；排队后已确认运行，尚未确认安装包产出，不关闭B02 |
+| 正式签名构建 | E38：主签名流水线 [162529587](https://dev.azure.com/microsoft/Dart/_build/results?buildId=162529587)，代码 `6bd56af147`，版本 `0.101.6007.0`。11-02 16:03 x64在Carrier ICE阶段失败（WIX0217，Windows Installer Service不可访问），ARM64仍运行；尚无已确认完整installer集合，不关闭B02 |
 | 主线基线 | `8056ba09721708bceee6176291b24af7ebabb0b3`；包含 PR #51114，合并提交 `06e6ae43e225cac51c2f282b0eebc42c6f995c97` |
 | 集成 worktree | `D:\PowerToys-Workspaces-Integration` |
 | 待测本地包 | x64 Debug **`0.101.6006.0`，已匹配部署**；入口 `D:\PowerToys-Workspaces-Integration\x64\Debug\PowerToys.exe`；E33 核对实际客户端和 runtime，不再受旧6005部署阻塞 |
@@ -88,7 +88,7 @@ PERF-02/03）；数据一致性1条（DATA-09）；部署核对1条（LOCAL-01�
 | 最近确认的运行环境 | E40，11-02：客户端/catalog/runtime6006匹配，Editor DLL仍为时间修复版；普通控制器Session2，用户明确授权同账号UAC。实测普通CLI、High CLI、Medium host及High Arranger/目标；目标窗口144 DPI，不是混合DPI/OTS验收 |
 | 新包部署状态 | 本轮开始前已完成6006部署；本轮没有 Repair/Reset/Purge、重建VA、迁移或再次请求UAC。E31 的1223仅保留为历史记录 |
 | 数据保护结果 | E40先完整备份，收尾经Cancel冲突/Reload/真实Import恢复原两条记录，全字段及payload字节一致；settings、桌面恢复，测试进程/夹具目录无残留，服务和Debug文件未变。没有直接覆盖protected blob/index |
-| 当前验收结论 | E40为3子项PASS、1产品FAIL、2BLOCKED；普通入口同账号提升和错误权限窗口不复用通过，High CLI仅创建Medium host后退出1，未完成目标启动。取消轮实际成功启动，未确认“点否”刺激，不能算取消通过。整体WITHHELD；OTS、High GUI及正式安装矩阵仍未关闭 |
+| 当前验收结论 | E40普通入口同账号提升通过，High CLI launch退出1、取消刺激未确认。E41新增High list失败：普通owner linked token只有SecurityIdentification，客户端构造即OwnerContextRequired/1346，却被映射成storageUnavailable及泛化错误文案。两条正式FAIL为CLI-03/CLI-07；不能据此认定两者同根因。整体WITHHELD |
 
 `6003`、`6004`、`6005`、`6006` 都是合入 main 后的**本地 E2E 测试构建**，使用
 `ProtectedStorage.LocalLifecycle.exe` 和本地测试 bundle，不是正式 carrier MSI 部署。
@@ -157,6 +157,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | R05 | 6004 `move-existing-windows=true` 时只匹配名称/路径/PWA，没有比较实际 token elevation；普通 Notepad14436 可满足 elevated 条目，绕过新启动路径 | 6005 在既有窗口选择和新窗口认领处均要求 elevation 匹配；仅用 limited process query，查询失败不当作普通窗口，不引入身份握手或 DACL 修改 |
 | R06（L64定向实机PASS） | E35修复复制构造函数；E36实际新建自有工作区，再连续两次改名、Save、Reload、重开 | 创建时间三次均 `1793347374`，last-launched三次均0，除改名外全部字段一致；不是只读内存或单测结论。Debug6006 Editor已包含修复；既有零值不自动恢复 |
 | R08（E40新实测FAIL） | 同账号High CLI24816创建Medium Launcher26380，随后退出1；未观察到该次Arranger/目标，fixture无新目标报告，history未更新 | CLI-03记FAIL。仅证明创建Medium host，不代表handoff后的执行成功；直接RunAs未捕获stdout，现有日志不足以定位内部原因，不能直接归咎于服务认证或UAC。未改产品代码掩盖结果 |
+| R09（E41定位） | High CLI直接执行list，没有Medium读取宿主；本机同账号linked token为TokenImpersonation/SecurityIdentification，真实native客户端构造返回OwnerContextRequired/1346。CLI统一映射成storageUnavailable，Resources又缺该码映射，最终显示unexpected error | CLI-07 FAIL。普通CLI读取成功，前后index/blob/ready/runtime-errors不变；不是未预配、数据损坏或服务拒绝读请求。修复方向是普通owner进程读取及保真错误映射，不放宽token检查、不回退明文、不重装服务 |
 | R07 | E33 重新捕获后快捷方式复选框显示未勾选，现有快捷方式仍在；Revert后恢复勾选 | `DataContext` 赋值后才调用 `CheckShortcutPresence`，对应属性无变更通知；该顺序可追溯到2024-08-23初始PR #34324（`579619952d`），当前main仍保留。本轮未证明快捷方式被删除，也未修产品代码 |
 | Q02 | 首次管理员授权时机、fail-closed 范围和 UX 仍需 PM 结论 | 当前不得启用不受保护 fallback；技术检查通过不等于 PM 已批准 |
 
@@ -250,7 +251,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | CLI-04 / P1 | 拒绝错误 owner/会话、失效进程/映像、非法 private host 输入；普通调用不能注入任意 workspace snapshot | NOT RUN | 部署前置已满足；保护存储和 plan 的身份要求不得因合并而悄悄移除 |
 | CLI-05 / P1 | GUI Cancel/Ctrl+C/deadline/owner exit/第二次启动；停止后续应用，保留已启动应用，释放锁，结果未知不自动重放 | PARTIAL | E37的deadline/已有进程保留/新会话证据保留。E40计划取消UAC，但实际exit0并启动High目标，用户操作无法确认，未发生可证实的denial；不能改为取消PASS。该新启动仅证明此前High失败后会话可再次使用 |
 | CLI-06 / P1 | 控制台应用独立控制台；CLI stdin/stdout/JSON、退出码、code page、隐私遥测合同保持主线行为 | NOT RUN | 部署前置已满足；错误/警告不得污染 JSON 流，参数/工作区内容不进遥测 |
-| CLI-07 / P0 | 普通与提升终端分别验证 list 的 owner 上下文和错误反馈 | NOT RUN | 部署前置已满足；不能只用 launch 的降权结果推断 list |
+| CLI-07 / P0 | 普通与提升终端分别验证 list 的 owner 上下文和错误反馈 | FAIL | E41：同一Debug6006 CLI，普通exit0读到两条；同owner/session2 High exit8、storageUnavailable/unexpected error。匹配native库诊断确认构造期OwnerContextRequired/1346，linked token只有SecurityIdentification；不是服务停机。尚未修复，见R09 |
 
 ## 8. 权限、隔离与信任
 
@@ -276,7 +277,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 | ID / 优先级 | 操作与通过标准 | 当前状态 | 证据 / 注意事项 |
 |---|---|---|---|
-| UX-01 / P0 | 区分未设置、服务停机、存储恢复、arranger 身份/通信、UAC 取消、应用启动失败；日志保留阶段/native error | PARTIAL | E37实际观察坏输入/CAS提示及CLI timeout/错误选项/缺失名称反馈，修正Import输入后Retry有效；服务端Unauthorized保留native5/retryNone。服务停机/恢复/提升取消等分类仍未测试 |
+| UX-01 / P0 | 区分未设置、服务停机、存储恢复、arranger 身份/通信、UAC 取消、应用启动失败；日志保留阶段/native error | PARTIAL | E37坏输入/CAS/timeout等证据保留。E41发现CLI把OwnerContextRequired/1346掩盖为storageUnavailable，缺本地化映射且list初始化为null logger，原始错误未形成有效诊断；已列R09/CLI-07 FAIL。其余错误矩阵仍未关闭 |
 | UX-02 / P0 | Launch & Edit 连点不产生第二次启动；页面 busy 可恢复，失败保留草稿，busy/failed 非“坏数据” | NOT RUN | 部署前置已满足；历史 H03 不直接沿用 |
 | UX-03 / P1 | 进度 UI 冷启动能收到状态；关闭/取消无挂死；Import/Export/Reload/Retry cleanup 作用明确 | NOT RUN | 部署前置已满足；Reload 不重新预配，Retry cleanup 不做 blob GC |
 | UX-04 / P1 | 中英文、长路径/错误文本等可读且本地化；无 console/JSON 内容泄漏或无响应错误循环 | NOT RUN | 部署前置已满足；真实 UI 观察另留证据 |
@@ -614,6 +615,14 @@ C:\Users\bozhang\OneDrive - Microsoft\PowerToys\Module-Signoff\Workspaces-L64-20
 本条只证明成功触发且构建身份正确，不证明签名/ICE/安装产物或实际安装通过。
 B02及所有P环境验收仍保持原状态；最终产物必须另行核验。
 
+**16:03（UTC+08:00）后续状态：** x64的`Build Protected Storage Carrier`
+任务失败，日志229在ICE01/ICE02等报WIX0217，原文为
+`The Windows Installer Service could not be accessed`。这是CI构建机的MSI验证执行错误，
+不是E41本机CLI的owner-context错误；尚未确认为具体MSI authoring违规。
+ARM64任务及整体run仍在执行，未宣称最终产物可用，未禁用ICE或自动重复排队。
+原始证据为`nov02-installer-6007-x64-failure-timeline.json`、
+`nov02-installer-6007-x64-carrier.log`；后续仍需跟踪最终状态。
+
 ### E39：2026-11-02，构建期间补齐本地工程复测
 
 在E38签名构建运行期间，针对当前产品源码 `6bd56af147` 执行独立x64 Release
@@ -679,6 +688,60 @@ runtime ready及Debug客户端哈希未变。未直接覆盖protected blob/index
 ```text
 C:\Users\bozhang\OneDrive - Microsoft\PowerToys\Module-Signoff\Workspaces-UAC-20261102\report.md
 ```
+
+### E41：2026-11-02，管理员list失败的只读复现与根因定位
+
+用户提供管理员终端执行实际Debug6006 CLI `list --json` 的截图：
+`storageUnavailable`、泛化unexpected error文案、exit8。
+本轮只作定向诊断，不启动工作区、不修改产品源码/二进制、服务、文件权限或数据，
+不重开E40归档，也不将诊断脚本包装成新的完整WIP GUI验收。
+
+| 证据 | 结果 |
+|---|---|
+| 同一CLI普通权限执行 | PID17880，exit0，原两条工作区可读 |
+| 用户授权的同账号High执行 | PID32696，真实High、同owner/session2，约180ms返回与截图相同的exit8/JSON |
+| 匹配Debug native库的只读探针 | 普通客户端构造成功；High探针PID30800直接调用真实`OpenOwnerConnectionToken`及`ProtectedStoreClient`构造，二者均返回`OwnerContextRequired`、native1346 |
+| 实际High primary/linked token | primary为High/TokenPrimary；linked为同owner的Medium、非elevated，但`TokenType=2`（TokenImpersonation）、`ImpersonationLevel=1`（SecurityIdentification），不能作为SecurityImpersonation使用 |
+| 无副作用核对 | 前后所有index/blob SHA256、ready内容和runtime-errors.log哈希一致；探针本身不发送service request、不调用ACL修改；诊断进程已退出 |
+
+定位链路：
+
+1. `WorkspacesCLI\main.cpp:121-124` 的list直接调用
+   `CliCommands.cpp:238-240` 的`Workspaces::Repository().Load()`；
+   `WorkspacesRepository.h` 的client成员先构造。list没有使用launch的Medium host边界。
+2. `ProtectedStoreClient.cpp:92-97` 在构造时执行owner-context preflight。
+   `Authentication.cpp:300-317` 获取并核对linked token；
+   `TokenImpersonation/SecurityIdentification`在317行被明确拒绝为
+   `OwnerContextRequired / ERROR_BAD_IMPERSONATION_LEVEL (1346)`。
+   这是允许确认身份但不允许代表普通owner访问资源的token，不能简单移除检查。
+   此时还没有进入`ConnectOwnerPipe`/`GetCapabilities`，不是服务端拒绝。
+3. `WorkspacesCLI\main.cpp:159-163` 把所有ProtectedStorage异常转换成
+   `storageUnavailable`/exit8，丢失typed error/native码；list使用初始化的null sink，
+   该catch中的Logger调用没有给出有效落盘诊断。
+4. `Resources.h:20-76` 没有`storageUnavailable`分支，
+   `Localize()`又覆盖原message，最终回落`IDS_CLIINTERNALERROR`，
+   所以用户看到的是unexpected error而不是owner-context说明。
+
+匹配CLI SHA256：
+`E57F3803F7B85466EA945D41A329D6D7B8B26F17E3322108371C926F416FD762`。
+探针链接现有6006 `ProtectedStorage.Client.lib`和`ProtectedStorage.LocalCommon.lib`，
+只读取自身token并执行构造preflight；不是注册新caller或绕开service authentication。
+首次诊断编译因CRT类型不匹配失败，改用现有库的MTd后成功，未重编译/覆盖产品库。
+
+这解释了**本次High list**，但不能直接解释E40的High launch：
+`LaunchSession.cpp:301-305`已经对High请求选择`resolveInHost=true`，
+由Medium host读取repository；E40仅有exit1，内部原始错误仍缺。
+后续应分别验证完整launch边界，不能将两个失败强行合并。
+
+修复方向：为管理员list提供已验证同owner/session的普通权限执行边界，
+保留原JSON/stdout/exit-code合同；同时保真传递typed storage错误/native码及正确文案。
+不能把识别级token提升为模拟级、把管理员token交给服务、放宽ACL或回退明文。
+本轮尚未实施修复。CLI-07转FAIL，26个整项PASS不变；E40历史结论保留。
+
+本地私有证据：会话files下 `nov02-high-list-results\` 的
+`medium-diagnostic.json`、`high-diagnostic.json`、原始CLI stdout/stderr、
+`before.json`/`after.json`及构建日志；探针源为`nov02-high-list-probe.cpp`，
+驱动为`nov02-high-list-diagnostic.ps1`。账户SID仅留在本地证据，不写入公开台账。
 
 ### 本次证据
 
