@@ -56,6 +56,7 @@
                     MinHeight="0"
                     Padding="12,4,12,4"
                     tk:FrameworkElementExtensions.AncestorType="controls:ModuleList"
+                    AutomationProperties.Name="{x:Bind Label, Mode=OneWay}"
                     Background="Transparent"
                     BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
                     BorderThickness="{Binding (tk:FrameworkElementExtensions.Ancestor).DividerThickness, RelativeSource={RelativeSource Self}}"
