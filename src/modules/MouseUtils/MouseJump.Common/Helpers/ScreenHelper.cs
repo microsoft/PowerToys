@@ -4,7 +4,7 @@
 
 using System.Runtime.InteropServices;
 
-using MouseJump.Common.Interop;
+using MouseJump.Common.Win32Gen;
 using MouseJump.Models.Display;
 using MouseJump.Models.Drawing;
 
@@ -23,11 +23,15 @@ public static class ScreenHelper
     /// </summary>
     private static RectangleInfo GetVirtualScreen()
     {
+        // SM_XVIRTUALSCREEN/SM_YVIRTUALSCREEN can legitimately be zero (e.g. a
+        // single monitor at the origin), so a zero result there isn't treated
+        // as a failure - but SM_CXVIRTUALSCREEN/SM_CYVIRTUALSCREEN should
+        // never legitimately be zero, so those are.
         return new(
-            PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_XVIRTUALSCREEN),
-            PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_YVIRTUALSCREEN),
-            PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXVIRTUALSCREEN),
-            PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYVIRTUALSCREEN));
+            User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_XVIRTUALSCREEN).IgnoreFailure().GetValue(),
+            User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_YVIRTUALSCREEN).IgnoreFailure().GetValue(),
+            User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXVIRTUALSCREEN).ThrowIfFailed().GetValue(),
+            User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYVIRTUALSCREEN).ThrowIfFailed().GetValue());
     }
 
     public static IEnumerable<ScreenInfo> GetAllScreens()
@@ -42,11 +46,8 @@ public static class ScreenHelper
                     hMonitors.Add(hMonitor);
                     return true;
                 });
-            var result = PInvoke.EnumDisplayMonitors(HDC.Null, null, callback, (LPARAM)0);
-            if (result == 0)
-            {
-                throw new InvalidOperationException("failed to enumerate monitors");
-            }
+            _ = User32.EnumDisplayMonitors(HDC.Null, null, callback, (LPARAM)0)
+                .ThrowIfFailed();
 
             // prevent callback from being collected during the enumeration
             GC.KeepAlive(callback);
@@ -59,8 +60,8 @@ public static class ScreenHelper
         };
         foreach (var hMonitor in hMonitors)
         {
-            var result = PInvoke.GetMonitorInfo(hMonitor, ref monitorInfo);
-            ResultHandler.ThrowIfZero(result: result, getLastError: true, memberName: nameof(PInvoke.GetMonitorInfo));
+            _ = User32.GetMonitorInfo(hMonitor, ref monitorInfo)
+                .ThrowIfFailed();
 
             yield return new ScreenInfo(
                 handle: hMonitor,
@@ -83,13 +84,11 @@ public static class ScreenHelper
         PointInfo pt)
     {
         // get the monitor handle from the point
-        var hMonitor = PInvoke.MonitorFromPoint(
-            new((int)pt.X, (int)pt.Y),
-            MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
-        if (hMonitor.IsNull)
-        {
-            throw new InvalidOperationException($"no monitor found for point {pt}");
-        }
+        var hMonitor = User32.MonitorFromPoint(
+                new((int)pt.X, (int)pt.Y),
+                MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST)
+            .ThrowIfFailed()
+            .GetValue();
 
         // find the screen with the given monitor handle
         var screen = screens

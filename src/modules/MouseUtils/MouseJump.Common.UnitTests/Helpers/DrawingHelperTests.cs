@@ -4,14 +4,14 @@
 
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Reflection;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using MouseJump.Common.Capture;
 using MouseJump.Common.Helpers;
-using MouseJump.Common.Imaging;
 using MouseJump.Models.Display;
 using MouseJump.Models.Drawing;
+using MouseJump.Models.Layout;
 using MouseJump.Models.Styles;
 
 namespace MouseJump.Common.UnitTests.Helpers;
@@ -149,32 +149,106 @@ public static class DrawingHelperTests
             // load the fake desktop image
             using var desktopImage = GetPreviewLayoutTests.LoadImageResource(data.DesktopImageFilename);
 
-            var formLayout = LayoutHelper.GetFormLayout(
+            var previewLayout = LayoutHelper.GetPreviewLayout(
                 previewStyle: data.PreviewStyle,
                 displayInfo: data.DisplayInfo,
                 maximumSize: data.ActivatedScreen.DisplayArea.Size);
 
-            var imageCopyServices = formLayout.CanvasLayout.DeviceLayouts
-                .Select(
-                    deviceLayout => (IImageRegionCopyService)new StaticImageRegionCopyService(desktopImage))
-                .ToList();
+            // draw the preview image - the combined (border+background+bezels/screenshots)
+            // render, since the expected golden images were captured against that. Production
+            // code no longer flattens these into a single bitmap itself (screenshots/bezels
+            // are laid out as native XAML elements by PreviewPane - see its remarks), so this
+            // test composes them the same way for comparison purposes only, using the same
+            // production rendering primitives (DrawingHelper.RenderBorder/RenderBackground,
+            // and StaticScreenshotCaptureProvider for the screenshot content).
+            var previewWindowStyle = LayoutHelper.GetPreviewWindowStyle(data.PreviewStyle.CanvasStyle);
+            using var actual = await GetPreviewLayoutTests.ComposePreviewImageAsync(previewLayout, previewWindowStyle, desktopImage);
 
-            // draw the preview image
-            using var actual = await DrawingHelper.RenderPreviewAsync(formLayout.CanvasLayout, data.ActivatedScreen, imageCopyServices);
+            var currentDirectory = Environment.CurrentDirectory;
 
             // save the actual image so we can pick it up as a build artifact
-            var actualFilename = Path.GetFileNameWithoutExtension(data.ExpectedImageFilename) + "_actual" + Path.GetExtension(data.ExpectedImageFilename);
+            var actualFilename = Path.Combine(
+                currentDirectory,
+                Path.GetFileNameWithoutExtension(data.ExpectedImageFilename) + "_actual" + Path.GetExtension(data.ExpectedImageFilename));
             actual.Save(actualFilename, ImageFormat.Png);
 
             // load the expected image
             var expected = GetPreviewLayoutTests.LoadImageResource(data.ExpectedImageFilename);
 
             // save the actual image so we can pick it up as a build artifact
-            var expectedFilename = Path.GetFileNameWithoutExtension(data.ExpectedImageFilename) + "_expected" + Path.GetExtension(data.ExpectedImageFilename);
+            var expectedFilename = Path.Combine(
+                currentDirectory,
+                Path.GetFileNameWithoutExtension(data.ExpectedImageFilename) + "_expected" + Path.GetExtension(data.ExpectedImageFilename));
             expected.Save(expectedFilename, ImageFormat.Png);
 
             // compare the images
             AssertImagesEqual(expected, actual);
+        }
+
+        /// <summary>
+        /// Composes the border, background, and per-screen bezels/screenshots for a
+        /// <see cref="PreviewLayout"/> into a single flattened image, purely so this test can
+        /// keep comparing against the existing golden images - production code renders these
+        /// as separate layers/elements instead (see <see cref="PreviewLayout"/> and
+        /// <c>FancyMouse.WinUI3.UI.PreviewPane</c>).
+        /// </summary>
+        private static async Task<Bitmap> ComposePreviewImageAsync(
+            PreviewLayout previewLayout, BoxStyle hostBoxStyle, Bitmap desktopImage)
+        {
+            var canvasLayout = previewLayout.CanvasLayout;
+            var hostBounds = LayoutHelper.GetPreviewWindowBounds(canvasLayout.CanvasBounds.OuterBounds, hostBoxStyle)
+                .MoveTo(new PointInfo(0, 0));
+
+            // hostBounds.OuterBounds is now (0,0)-based, so hostBounds.ContentBounds.Location
+            // is exactly the margin+border offset to draw the (also zero-based)
+            // canvas-relative background/bezels/screenshots at, within the combined bitmap.
+            var offsetX = (int)hostBounds.ContentBounds.X;
+            var offsetY = (int)hostBounds.ContentBounds.Y;
+
+            // RenderBorder/RenderBackground are no longer box-aware - they just draw as large as
+            // the size they're given, so it's on this caller to position the result at the right
+            // box-model rectangle (BorderBounds/PaddingBounds/etc.) itself.
+            var hostBorderBounds = hostBounds.BorderBounds;
+            using var borderImage = DrawingHelper.RenderBorder(hostBorderBounds.Size, hostBoxStyle.BorderStyle);
+            using var backgroundImage = DrawingHelper.RenderBackground(canvasLayout.CanvasBounds.OuterBounds.Size, canvasLayout.CanvasStyle.BackgroundStyle);
+
+            var combinedBounds = hostBounds.OuterBounds.ToRectangle();
+            var combinedImage = new Bitmap(combinedBounds.Width, combinedBounds.Height, PixelFormat.Format32bppPArgb);
+            using var combinedGraphics = Graphics.FromImage(combinedImage);
+            combinedGraphics.Clear(Color.Transparent);
+            combinedGraphics.DrawImageUnscaled(borderImage, (int)hostBorderBounds.X, (int)hostBorderBounds.Y);
+            combinedGraphics.DrawImageUnscaled(backgroundImage, offsetX, offsetY);
+
+            var captureProvider = new StaticScreenshotCaptureProvider(desktopImage);
+            foreach (var deviceLayout in canvasLayout.DeviceLayouts)
+            {
+                foreach (var screenLayout in deviceLayout.ScreenLayouts)
+                {
+                    // screens sit at a fractional (scaled) position within the canvas, unlike
+                    // the canvas/host boxes above which are already zero-based - anchor at the
+                    // *truncated* border position, matching how production now positions the
+                    // bezel bitmap (see PreviewPane.CreateScreenSlot/PositionElement).
+                    var screenBorderBounds = screenLayout.ScreenBounds.BorderBounds;
+                    var anchorX = (int)screenBorderBounds.X;
+                    var anchorY = (int)screenBorderBounds.Y;
+
+                    using var bezelImage = DrawingHelper.RenderBorder(screenBorderBounds.Size, screenLayout.ScreenStyle.BorderStyle);
+                    combinedGraphics.DrawImageUnscaled(
+                        bezelImage,
+                        offsetX + anchorX,
+                        offsetY + anchorY);
+
+                    using var screenshotImage = await captureProvider.CaptureAsync(
+                        screenLayout.ScreenInfo.DisplayArea,
+                        screenLayout.ScreenBounds.ContentBounds.Size);
+                    combinedGraphics.DrawImageUnscaled(
+                        screenshotImage,
+                        offsetX + (int)screenLayout.ScreenBounds.ContentBounds.X,
+                        offsetY + (int)screenLayout.ScreenBounds.ContentBounds.Y);
+                }
+            }
+
+            return combinedImage;
         }
 
         private static Bitmap LoadImageResource(string filename)
@@ -224,7 +298,7 @@ public static class DrawingHelperTests
                     var expectedPixel = expected.GetPixel(x, y);
                     var actualPixel = actual.GetPixel(x, y);
 
-                    // allow a small tolerance for rounding differences in gdi
+                    // allow a 1-level-per-channel tolerance for residual GDI+ rasterization rounding.
                     Assert.IsTrue(
                         (Math.Abs(expectedPixel.A - actualPixel.A) <= 1) &&
                         (Math.Abs(expectedPixel.R - actualPixel.R) <= 1) &&
@@ -233,109 +307,6 @@ public static class DrawingHelperTests
                         $"images differ at pixel ({x}, {y}) - expected: {expectedPixel}, actual: {actualPixel}");
                 }
             }
-        }
-    }
-
-    [TestClass]
-    public sealed class RenderPreviewAsyncTests
-    {
-        /// <summary>
-        /// Verifies that GetFormLayout's maximumSize parameter is respected when the
-        /// resulting layout is larger than the activatedScreen.DisplayArea. This is a
-        /// regression test for https://github.com/microsoft/PowerToys/issues/50436 where
-        /// the SettingsUI preview image was incorrectly scaled down to fit into the first
-        /// logical screen rather than scaled to fit into the SettingsUI settings card
-        /// (which is larger than the first logical screen), resulting in a preview
-        /// image that was too small and didn't fill the settings card.
-        /// </summary>
-        [TestMethod]
-        public async Task RenderPreviewAsync_GivenSettingsUiStyleInputs_RespectsMaximumSize()
-        {
-            // the same fake two-screen desktop as MouseUtilsViewModel_MouseJump.cs's
-            // MouseJumpPreviewImage getter (a small secondary screen, a larger primary one)
-            var screenA = new ScreenInfo(
-                handle: 0,
-                primary: false,
-                displayArea: new RectangleInfo(635, 172, 272, 168),
-                workingArea: new RectangleInfo(635, 172, 272, 168));
-            var screenB = new ScreenInfo(
-                handle: 0,
-                primary: true,
-                displayArea: new RectangleInfo(0, 0, 635, 339),
-                workingArea: new RectangleInfo(0, 0, 635, 339));
-            var displayInfo = new DisplayInfo(
-                devices: new DeviceInfo[]
-                {
-                    new(
-                        hostname: "FakeDisplay1",
-                        localhost: true,
-                        screens: new List<ScreenInfo> { screenA, screenB }),
-                });
-
-            var desktopSize = LayoutHelper.GetCombinedScreenBounds(
-                    displayInfo.Devices[0].Screens
-                        .Select(screen => screen.DisplayArea)
-                        .ToList())
-                .Size;
-
-            // hard-coded to match what MouseJumpPreviewImage's own settingsCardContentHeight
-            // math currently computes for this same fake desktop (907 wide x 283 tall) -
-            // deliberately much taller/wider than screenA's own 272x168 display area, so this
-            // test can tell "respects maximumSize" apart from "coincidentally small enough to
-            // fit inside screenA anyway".
-            var maximumSize = new SizeInfo(desktopSize.Width, 283);
-
-            var activatedScreen = displayInfo.Devices[0].Screens[0];
-            var previewStyle = StyleHelper.BezelledPreviewStyle.WithCanvasSize(desktopSize);
-
-            var formLayout = LayoutHelper.GetFormLayout(
-                previewStyle: previewStyle,
-                displayInfo: displayInfo,
-                maximumSize: maximumSize);
-
-            using var desktopImage = RenderPreviewAsyncTests.CreateSyntheticDesktopImage(desktopSize, displayInfo.Devices[0]);
-            var imageCopyServices = formLayout.CanvasLayout.DeviceLayouts
-                .Select(deviceLayout => (IImageRegionCopyService)new StaticImageRegionCopyService(desktopImage))
-                .ToList();
-
-            using var actual = await DrawingHelper.RenderPreviewAsync(formLayout.CanvasLayout, activatedScreen, imageCopyServices);
-
-            // the whole point of maximumSize is to bound the rendered image - it must
-            // never come out bigger than that in either dimension...
-            Assert.IsTrue(
-                actual.Width <= (int)maximumSize.Width,
-                $"actual width {actual.Width} exceeds maximumSize.Width {maximumSize.Width}");
-            Assert.IsTrue(
-                actual.Height <= (int)maximumSize.Height,
-                $"actual height {actual.Height} exceeds maximumSize.Height {maximumSize.Height}");
-
-            // ...and the resulting image must be larger than activatedScreen's own tiny
-            // display area (272x168) - this is the actual regression check: before the fix,
-            // GetFormLayout clamped against activatedScreen.DisplayArea.Size instead of
-            // maximumSize, so the preview came out far too small.
-            Assert.IsTrue(
-                actual.Width > (int)activatedScreen.DisplayArea.Width,
-                $"actual width {actual.Width} is no bigger than activatedScreen's own display area width {activatedScreen.DisplayArea.Width} - looks like maximumSize isn't being respected");
-            Assert.IsTrue(
-                actual.Height > (int)activatedScreen.DisplayArea.Height,
-                $"actual height {actual.Height} is no bigger than activatedScreen's own display area height {activatedScreen.DisplayArea.Height} - looks like maximumSize isn't being respected");
-        }
-
-        private static Bitmap CreateSyntheticDesktopImage(SizeInfo desktopSize, DeviceInfo deviceInfo)
-        {
-            var screenColors = new[] { Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Magenta };
-
-            var bitmap = new Bitmap((int)desktopSize.Width, (int)desktopSize.Height, PixelFormat.Format32bppArgb);
-            using var graphics = Graphics.FromImage(bitmap);
-            graphics.Clear(Color.Black);
-            for (var screenIndex = 0; screenIndex < deviceInfo.Screens.Count; screenIndex++)
-            {
-                var color = screenColors[screenIndex % screenColors.Length];
-                using var brush = new SolidBrush(color);
-                graphics.FillRectangle(brush, deviceInfo.Screens[screenIndex].DisplayArea.ToRectangle());
-            }
-
-            return bitmap;
         }
     }
 }
