@@ -1243,7 +1243,9 @@ namespace KeyboardManagerEditorUI.Controls
             switch (CurrentActionType)
             {
                 case ActionType.Text:
-                    if (TextContentBox != null && _textContentDirty && string.IsNullOrWhiteSpace(TextContentBox.Text))
+                    // A space can be intentional inserted text; use the same empty-text rule as
+                    // IsInputComplete and ValidationHelper.ValidateTextMapping.
+                    if (TextContentBox != null && _textContentDirty && string.IsNullOrEmpty(TextContentBox.Text))
                     {
                         ShowValidationErrorFromType(ValidationErrorType.EmptyTargetText);
                         return;
