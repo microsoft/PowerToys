@@ -262,17 +262,43 @@ public sealed class MouseWithoutBordersPairingPresentationTests
             """
             private async Task Connect()
                     {
-                        var pcName = ConnectPCNameTextBox.Text;
-                        var securityKey = ConnectSecurityKeyTextBox.Text.Trim();
-                        if (await ViewModel.SubmitConnectionRequestAsync(pcName, securityKey))
+                        var emptyFields = new List<TextBox>();
+                        if (ConnectSecurityKeyTextBox.Text.Length == 0)
                         {
-                            ConnectPCNameTextBox.Text = string.Empty;
-                            ConnectSecurityKeyTextBox.Text = string.Empty;
-                            ViewModel.ConnectFieldsVisible = false;
+                            emptyFields.Add(ConnectSecurityKeyTextBox);
                         }
+
+                        if (ConnectPCNameTextBox.Text.Length == 0)
+                        {
+                            emptyFields.Add(ConnectPCNameTextBox);
+                        }
+
+                        if (emptyFields.Count != 0)
+                        {
+                            await FlashRequiredFieldsAsync(emptyFields);
+                            return;
+                        }
+
+                        ClearFieldError(ConnectPCNameTextBox);
+                        ClearFieldError(ConnectSecurityKeyTextBox);
+
+                        string pcName = ConnectPCNameTextBox.Text;
+                        string securityKey = ConnectSecurityKeyTextBox.Text.Trim();
+
+                        // Fields are cleared only once ViewModel confirms the connection succeeded
+                        // (ConnectionSucceeded event), so a failed attempt keeps the values and
+                        // surfaces an error instead of silently wiping what the user typed.
+                        _ = await ViewModel.SubmitConnectionRequestAsync(pcName, securityKey);
                     }
             """.Replace("\r\n", "\n"),
             page.Substring(start, end - start).Trim());
+
+        // The fields are cleared and hidden only once the remote device has actually connected.
+        var succeededStart = page.IndexOf("ViewModel.ConnectionSucceeded += (s, e) =>", StringComparison.Ordinal);
+        var succeeded = page.Substring(succeededStart, page.IndexOf("ViewModel.ConnectionFailed += (s, e) =>", succeededStart, StringComparison.Ordinal) - succeededStart);
+        StringAssert.Contains(succeeded, "ConnectPCNameTextBox.Text = string.Empty;");
+        StringAssert.Contains(succeeded, "ConnectSecurityKeyTextBox.Text = string.Empty;");
+        StringAssert.Contains(succeeded, "ViewModel.ConnectFieldsVisible = false;");
         var clearStart = page.IndexOf("private void ClearPairingUI()", end, StringComparison.Ordinal);
         var clear = page.Substring(clearStart, page.IndexOf("public void RefreshEnabledState()", clearStart, StringComparison.Ordinal) - clearStart);
         StringAssert.Contains(clear, "ViewModel.ResetPairingUiState();");
