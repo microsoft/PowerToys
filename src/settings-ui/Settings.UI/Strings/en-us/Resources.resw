@@ -475,6 +475,13 @@
   <data name="MouseWithoutBorders_BlockScreenSaverOnOtherMachines.Description" xml:space="preserve">
     <value>Prevent screen saver from starting on other machines when user is actively working on this machine</value>
   </data>
+  <data name="MouseWithoutBorders_ReverseRemoteScrollWheel.Header" xml:space="preserve">
+    <value>Reverse scroll wheel direction when controlling another machine</value>
+  </data>
+  <data name="MouseWithoutBorders_ReverseRemoteScrollWheel.Description" xml:space="preserve">
+    <value>Reverse the vertical scroll wheel direction for scrolling sent to other machines, for example to match the Windows "Down motion scrolls up" scrolling direction</value>
+    <comment>"Down motion scrolls up" is the name of a Windows Settings option for scrolling direction. Use the official Windows translation of that option name.</comment>
+  </data>
   <data name="MouseWithoutBorders_MoveMouseRelatively.Description" xml:space="preserve">
     <value>Use this option when remote machine's monitor settings are different, or remote machine has multiple monitors</value>
   </data>

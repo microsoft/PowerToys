@@ -99,7 +99,7 @@ internal static class Event
                 MousePackage.Des = MachineStuff.desMachineID;
                 MousePackage.Type = PackageType.Mouse;
                 MousePackage.Md.dwFlags = e.dwFlags;
-                MousePackage.Md.WheelDelta = e.WheelDelta;
+                MousePackage.Md.WheelDelta = ScrollDirectionHelper.ApplyReverse(e.WheelDelta, Setting.Values.ReverseRemoteScrollWheel, e.dwFlags);
 
                 // Relative move
                 if (Setting.Values.MoveMouseRelatively && Math.Abs(dx) >= MOVE_MOUSE_RELATIVE && Math.Abs(dy) >= MOVE_MOUSE_RELATIVE)
