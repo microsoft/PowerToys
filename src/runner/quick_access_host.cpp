@@ -20,8 +20,10 @@ namespace
     wil::unique_handle quick_access_process;
     wil::unique_handle quick_access_job;
     wil::unique_handle show_event;
+    wil::unique_handle hide_event;
     wil::unique_handle exit_event;
     std::wstring show_event_name;
+    std::wstring hide_event_name;
     std::wstring exit_event_name;
     std::wstring runner_pipe_name;
     std::wstring app_pipe_name;
@@ -56,8 +58,10 @@ namespace
         quick_access_process.reset();
         quick_access_job.reset();
         show_event.reset();
+        hide_event.reset();
         exit_event.reset();
         show_event_name.clear();
+        hide_event_name.clear();
         exit_event_name.clear();
         runner_pipe_name.clear();
         app_pipe_name.clear();
@@ -80,6 +84,8 @@ namespace
         command_line += exe_path;
         command_line += L"\" --show-event=\"";
         command_line += show_event_name;
+        command_line += L"\" --hide-event=\"";
+        command_line += hide_event_name;
         command_line += L"\" --exit-event=\"";
         command_line += exit_event_name;
         command_line += L"\"";
@@ -101,6 +107,34 @@ namespace
 
 namespace QuickAccessHost
 {
+    bool is_visible()
+    {
+        std::scoped_lock lock(quick_access_mutex);
+        if (!is_process_active_locked())
+        {
+            return false;
+        }
+
+        struct WindowSearch
+        {
+            DWORD process_id;
+            bool visible;
+        } search{ GetProcessId(quick_access_process.get()), false };
+
+        EnumWindows([](HWND window, LPARAM parameter) -> BOOL {
+            auto& state = *reinterpret_cast<WindowSearch*>(parameter);
+            DWORD process_id = 0;
+            GetWindowThreadProcessId(window, &process_id);
+            if (process_id == state.process_id && IsWindowVisible(window))
+            {
+                state.visible = true;
+                return FALSE;
+            }
+            return TRUE;
+        }, reinterpret_cast<LPARAM>(&search));
+        return search.visible;
+    }
+
     bool is_running()
     {
         std::scoped_lock lock(quick_access_mutex);
@@ -120,12 +154,21 @@ namespace QuickAccessHost
         reset_state_locked();
 
         show_event_name = build_event_name(L"_Show");
+        hide_event_name = build_event_name(L"_Hide");
         exit_event_name = build_event_name(L"_Exit");
 
         show_event.reset(CreateEventW(nullptr, FALSE, FALSE, show_event_name.c_str()));
         if (!show_event)
         {
             Logger::error(L"QuickAccessHost: failed to create show event. error={}.", GetLastError());
+            reset_state_locked();
+            return;
+        }
+
+        hide_event.reset(CreateEventW(nullptr, FALSE, FALSE, hide_event_name.c_str()));
+        if (!hide_event)
+        {
+            Logger::error(L"QuickAccessHost: failed to create hide event. error={}.", GetLastError());
             reset_state_locked();
             return;
         }
@@ -268,6 +311,15 @@ namespace QuickAccessHost
             {
                 Logger::warn(L"QuickAccessHost: failed to signal show event. error={}.", GetLastError());
             }
+        }
+    }
+
+    void hide()
+    {
+        std::scoped_lock lock(quick_access_mutex);
+        if (hide_event && !SetEvent(hide_event.get()))
+        {
+            Logger::warn(L"QuickAccessHost: failed to signal hide event. error={}.", GetLastError());
         }
     }
 
