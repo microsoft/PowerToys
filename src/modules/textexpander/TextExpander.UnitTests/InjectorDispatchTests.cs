@@ -46,7 +46,7 @@ public sealed class InjectorDispatchTests
             _ = box.Dispatch(sent);
             return (uint)sent.Length;
         }));
-        Assert.AreEqual("Mark | BS BS | Ctrl-down | V-down | Ctrl-up | Mark", Calls(box));
+        Assert.AreEqual("Mark | BS | BS | Ctrl-down | V-down | Ctrl-up | Mark", Calls(box));
         Assert.AreEqual("Before !aEXPANDED|", box.ToString());
         Assert.AreEqual("the user's", box.Clipboard);
         Assert.IsFalse(box.Guard.Swallows(FakeTextBox.UserKey('z', up: false)));
@@ -61,7 +61,7 @@ public sealed class InjectorDispatchTests
             return ctrlUp && ctrlUps++ == 0 ? 0 : cut.Dispatch(inputs);
         }));
         Assert.AreEqual(2, ctrlUps);
-        Assert.AreEqual("Mark | BS BS | Ctrl-down | V | Ctrl-up | Mark", Calls(cut));
+        Assert.AreEqual("Mark | BS | BS | Ctrl-down | V | Ctrl-up | Mark", Calls(cut));
         Assert.AreEqual(3, InjectionDiagnostics.SendInputFailures);
         Assert.IsFalse(cut.Guard.Swallows(FakeTextBox.UserKey('z', up: false)));
         InjectionDiagnostics.Reset();
@@ -77,7 +77,7 @@ public sealed class InjectorDispatchTests
         Assert.IsTrue(Replace(box, 4, "EXPANDED ", InjectionBackend.Clipboard, box.Dispatch, sleep: _ => box.Pump()));
         box.Pump();
         Assert.AreEqual("Before EXPANDED |", box.ToString());
-        Assert.AreEqual("Mark | BS BS BS BS | Ctrl-down | V | Ctrl-up | Mark", Calls(box));
+        Assert.AreEqual("Mark | BS | BS | BS | BS | Ctrl-down | V | Ctrl-up | Mark", Calls(box));
     }
 
     [TestMethod]
@@ -90,8 +90,9 @@ public sealed class InjectorDispatchTests
         var sentAt = new List<long>();
         box.BeforeCall = _ => sentAt.Add(now);
         Assert.IsTrue(Replace(box, 4, "EXPANDED ", InjectionBackend.Clipboard, box.Dispatch, sleep: ms => now += ms, isOpenByTarget: () => false, clock: () => now));
-        Assert.AreEqual("Mark | BS BS BS BS | Ctrl-down | V | Ctrl-up | Mark", Calls(box));
-        Assert.AreEqual(Injector.PasteSettleMs, sentAt[4] - sentAt[3], "From the V to Ctrl's key-up.");
+        Assert.AreEqual("Mark | BS | BS | BS | BS | Ctrl-down | V | Ctrl-up | Mark", Calls(box));
+        int v = CallOf(box, "V");
+        Assert.AreEqual(Injector.PasteSettleMs, sentAt[v + 1] - sentAt[v], "From the V to Ctrl's key-up.");
         Assert.AreEqual("Before EXPANDED |", box.ToString());
     }
 
@@ -105,10 +106,39 @@ public sealed class InjectorDispatchTests
         var sentAt = new List<long>();
         box.BeforeCall = _ => sentAt.Add(now);
         Assert.IsTrue(Replace(box, 4, "EXPANDED ", InjectionBackend.Clipboard, box.Dispatch, sleep: ms => now += ms, clock: () => now));
-        Assert.AreEqual("Mark | BS BS BS BS | Ctrl-down | V | Ctrl-up | Mark", Calls(box));
-        Assert.AreEqual(Injector.PrePasteDelayMs, sentAt[2] - sentAt[1], "From the erase to Ctrl.");
-        Assert.AreEqual(0, sentAt[3] - sentAt[2], "Ctrl and the V together.");
+        Assert.AreEqual("Mark | BS | BS | BS | BS | Ctrl-down | V | Ctrl-up | Mark", Calls(box));
+        int ctrl = CallOf(box, "Ctrl-down");
+        Assert.AreEqual(Injector.PrePasteDelayMs, sentAt[ctrl] - sentAt[ctrl - 1], "From the erase to Ctrl.");
+        Assert.AreEqual(0, sentAt[ctrl + 1] - sentAt[ctrl], "Ctrl and the V together.");
         Assert.AreEqual("Before EXPANDED |", box.ToString());
+    }
+
+    [TestMethod]
+    public void TheEraseGoesOutAKeyAtATimePacedLikeTyping()
+    {
+        // Windows 11 Notepad dropped a Backspace now and then from an erase sent in one call, leaving the trigger's first
+        // character in front of the snippet. The modifiers the user holds are let go of in the first call.
+        using var box = new FakeTextBox("Before !abc") { Clipboard = "the user's" };
+        long now = 0;
+        var sentAt = new List<long>();
+        box.BeforeCall = _ => sentAt.Add(now);
+        Assert.IsTrue(Replace(box, 4, "EXPANDED ", InjectionBackend.Clipboard, box.Dispatch, sleep: ms => now += ms, clock: () => now, keyState: vk => vk == Native.VK_LSHIFT ? unchecked((short)0x8000) : (short)0));
+        StringAssert.StartsWith(Calls(box), "Mark | LShift-up BS | BS | BS | BS | Ctrl-down | V | Ctrl-up | Mark");
+        Assert.AreEqual($"{Injector.KeyDelayMs} {Injector.KeyDelayMs} {Injector.KeyDelayMs}", string.Join(" ", Enumerable.Range(2, 3).Select(i => sentAt[i] - sentAt[i - 1])), "A key's pause apart.");
+        Assert.AreEqual("Before EXPANDED |", box.ToString());
+    }
+
+    [TestMethod]
+    public void AnEraseLongerThanThePacedMostGoesOutAtOnce()
+    {
+        // Undoing a long snippet: paced, the erase would hold the user's keys for seconds.
+        string erased = new('x', Injector.MaxPacedEraseKeys + 1);
+        using var box = new FakeTextBox("Before " + erased);
+        var sleeps = new List<int>();
+        Assert.IsTrue(Replace(box, erased.Length, "ab", InjectionBackend.Typing, box.Dispatch, sleep: sleeps.Add));
+        Assert.AreEqual($"Mark | {string.Join(" ", Enumerable.Repeat("BS", erased.Length))} | a | b | Mark", Calls(box));
+        Assert.AreEqual($"{Injector.PreBackspaceDelayMs} {Injector.KeyDelayMs} {Injector.KeyDelayMs}", string.Join(" ", sleeps), "No pause inside the erase: only before it, and after each typed character.");
+        Assert.AreEqual("Before ab|", box.ToString());
     }
 
     [TestMethod]
@@ -128,8 +158,8 @@ public sealed class InjectorDispatchTests
         };
 
         _ = Replace(box, 4, "EXPANDED ", InjectionBackend.Clipboard, box.Dispatch, sleep: sleeps.Add, isOpenByTarget: () => false, foreground: () => front);
-        Assert.AreEqual("Mark | BS BS BS BS | Ctrl-down | V | Ctrl-up | Mark", Calls(box));
-        Assert.AreEqual($"{Injector.PreBackspaceDelayMs} {Injector.PrePasteDelayMs}", string.Join(" ", sleeps), "Only the pauses before the erase and before the paste: no wait with Ctrl down.");
+        Assert.AreEqual("Mark | BS | BS | BS | BS | Ctrl-down | V | Ctrl-up | Mark", Calls(box));
+        Assert.AreEqual(Pauses(4), string.Join(" ", sleeps), "Only the pauses before and inside the erase and before the paste: no wait with Ctrl down.");
     }
 
     [TestMethod]
@@ -147,14 +177,14 @@ public sealed class InjectorDispatchTests
             box.Dispatch,
             sleep: _ =>
             {
-                if (!typed && box.Batches.Count == 4)
+                if (!typed && box.Batches.Count > 0 && FakeTextBox.Describe(box.Batches[^1]) == "V")
                 {
                     typed = true;
                     box.UserTypes("a");
                 }
             },
             isOpenByTarget: () => typed));
-        Assert.AreEqual("Mark | BS BS BS BS | Ctrl-down | V | Ctrl-up | Mark | a Mark", Calls(box));
+        Assert.AreEqual("Mark | BS | BS | BS | BS | Ctrl-down | V | Ctrl-up | Mark | a Mark", Calls(box));
         Assert.AreEqual("Before EXPANDED a|", box.ToString());
     }
 
@@ -173,8 +203,8 @@ public sealed class InjectorDispatchTests
         }
 
         Assert.IsTrue(Replace(box, 4, "EXPANDED ", InjectionBackend.Clipboard, WithoutMarkers, sleep: sleeps.Add, isOpenByTarget: () => false));
-        Assert.AreEqual("BS BS BS BS | Ctrl-down V Ctrl-up", string.Join(" | ", box.Batches.Where(batch => batch.Length > 0).Select(FakeTextBox.Describe)));
-        Assert.AreEqual($"{Injector.PreBackspaceDelayMs} {Injector.PrePasteDelayMs}", string.Join(" ", sleeps), "No wait with Ctrl down.");
+        Assert.AreEqual("BS | BS | BS | BS | Ctrl-down V Ctrl-up", string.Join(" | ", box.Batches.Where(batch => batch.Length > 0).Select(FakeTextBox.Describe)));
+        Assert.AreEqual(Pauses(4), string.Join(" ", sleeps), "No wait with Ctrl down.");
         Assert.AreEqual("Before EXPANDED |", box.ToString());
     }
 
@@ -186,14 +216,15 @@ public sealed class InjectorDispatchTests
         using var box = new FakeTextBox("Before !abc") { Clipboard = "the user's" };
         box.BeforeCall = calls =>
         {
-            if (calls == 2)
+            // The start marker and the four Backspaces are in: the click comes with Ctrl.
+            if (calls == 5)
             {
                 box.Hook.Click();
             }
         };
 
         Assert.IsFalse(Replace(box, 4, "EXPANDED ", InjectionBackend.Clipboard, box.Dispatch));
-        Assert.AreEqual("Mark | BS BS BS BS | Ctrl-down | Ctrl-up | Mark", Calls(box));
+        Assert.AreEqual("Mark | BS | BS | BS | BS | Ctrl-down | Ctrl-up | Mark", Calls(box));
         Assert.AreEqual("Before |", box.ToString());
         Assert.AreEqual("the user's", box.Clipboard);
     }
@@ -280,14 +311,20 @@ public sealed class InjectorDispatchTests
 
     private static string Calls(FakeTextBox box) => string.Join(" | ", box.Batches.Select(FakeTextBox.Describe));
 
-    private static bool Replace(FakeTextBox box, int erase, string text, InjectionBackend backend, Func<Native.INPUT[], uint> dispatch, Action<int>? sleep = null, Func<bool>? isOpenByTarget = null, Func<long>? clock = null, Func<IntPtr>? foreground = null)
+    /// <summary>The injector's pauses for an erase of <paramref name="erased"/> keys and a paste: before the erase, between its keys, and before Ctrl.</summary>
+    private static string Pauses(int erased) => string.Join(" ", Enumerable.Repeat(Injector.KeyDelayMs, erased - 1).Prepend(Injector.PreBackspaceDelayMs).Append(Injector.PrePasteDelayMs));
+
+    /// <summary>The index of the first call that sent exactly <paramref name="description"/>.</summary>
+    private static int CallOf(FakeTextBox box, string description) => box.Batches.FindIndex(batch => FakeTextBox.Describe(batch) == description);
+
+    private static bool Replace(FakeTextBox box, int erase, string text, InjectionBackend backend, Func<Native.INPUT[], uint> dispatch, Action<int>? sleep = null, Func<bool>? isOpenByTarget = null, Func<long>? clock = null, Func<IntPtr>? foreground = null, Func<int, short>? keyState = null)
     {
         InjectionBackend original = Injector.Backend;
         try
         {
             box.Batches.Clear();
             Injector.Backend = backend;
-            return Injector.ReplaceCore(erase, text, IntPtr.Zero, 0, _ => true, box.Guard, box.Hook.InputGeneration, foreground ?? (() => new IntPtr(1)), box.Paste, dispatch, getAsyncKeyState: _ => 0, sleep: sleep ?? (_ => { }), isOpenByTarget: isOpenByTarget ?? box.TookPaste, clock: clock);
+            return Injector.ReplaceCore(erase, text, IntPtr.Zero, 0, _ => true, box.Guard, box.Hook.InputGeneration, foreground ?? (() => new IntPtr(1)), box.Paste, dispatch, getAsyncKeyState: keyState ?? (_ => 0), sleep: sleep ?? (_ => { }), isOpenByTarget: isOpenByTarget ?? box.TookPaste, clock: clock);
         }
         finally
         {

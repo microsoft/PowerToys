@@ -69,8 +69,10 @@ internal static class Injector
     public static int PasteSettleGraceMs { get; set; } = 20;
 
     /// <summary>
-    /// Gets or sets the delay between injected characters on the typing path. Generous on purpose:
-    /// Windows 11 Notepad drops and smears characters when synthetic input arrives faster.
+    /// Gets or sets the delay between injected characters on the typing path, and between the key presses of an erase up
+    /// to <see cref="MaxPacedEraseKeys"/> long. Generous on purpose: Windows 11 Notepad drops and smears characters when
+    /// synthetic input arrives faster, and now and then dropped a Backspace from an erase sent in one call (2 in 315
+    /// expansions), leaving the trigger's first character in front of the snippet.
     /// </summary>
     public static int KeyDelayMs { get; set; } = 25;
 
@@ -88,9 +90,8 @@ internal static class Injector
 
     /// <summary>
     /// Gets or sets the pause between the erase and the paste's Ctrl+V. Windows 11 Notepad keeps working on an edit for a
-    /// while after it, and dropped a Ctrl+V that came meanwhile, pasting nothing, at times along with a Backspace still
-    /// waiting. With the engine typing into Notepad, 5 in 100 pastes went wrong after 50 ms and 5 in 70 after 150 ms; after
-    /// 300 ms, 1 in 175, a stray Backspace with the paste in.
+    /// while after it, and dropped a Ctrl+V that came meanwhile, pasting nothing. With the engine typing into Notepad, 5 in
+    /// 100 pastes went wrong after 50 ms and 5 in 70 after 150 ms; after 300 ms, none in 315.
     /// </summary>
     public static int PrePasteDelayMs { get; set; } = 300;
 
@@ -117,6 +118,12 @@ internal static class Injector
 
     /// <summary>The most key events one call sends: a longer erase or caret move goes out in parts.</summary>
     private const int MaxInputsPerCall = 1_000;
+
+    /// <summary>
+    /// The longest erase sent a key per call, <see cref="KeyDelayMs"/> apart, which takes under half a second. A longer one,
+    /// such as undoing a long snippet, goes out at once.
+    /// </summary>
+    internal const int MaxPacedEraseKeys = 20;
 
     /// <summary>Gets or sets how many times to try handing the user's clipboard back before giving up.</summary>
     public static int RestoreAttempts { get; set; } = 3;
@@ -308,7 +315,7 @@ internal static class Injector
         {
             bool done = (guard.Renew() || (!guard.Cancelled && Start()))
                 && guard.Unchanged(inputGeneration)
-                && SendChunks(Erase(modifiers, cursorRightUnits, backspaceCount))
+                && EraseTrigger()
                 && (paste ? PasteChord() : TypeText())
                 && SendChunks(Presses(Native.VK_LEFT, cursorLeftUnits));
             if (done)
@@ -317,6 +324,35 @@ internal static class Injector
             }
 
             return done;
+        }
+
+        // A key per call, paced like typing: Windows 11 Notepad dropped a Backspace now and then from an erase sent in one
+        // call, leaving the trigger's first character in front of the snippet. A longer erase, such as undoing a long
+        // snippet, still goes out at once rather than hold the user's keys for seconds.
+        bool EraseTrigger()
+        {
+            int presses = Math.Max(0, cursorRightUnits) + Math.Max(0, backspaceCount);
+            if (presses < 2 || presses > MaxPacedEraseKeys || KeyDelayMs <= 0)
+            {
+                return SendChunks(Erase(modifiers, cursorRightUnits, backspaceCount));
+            }
+
+            for (int i = 0; i < presses; i++)
+            {
+                if (i > 0)
+                {
+                    sleep(KeyDelayMs);
+                }
+
+                int vk = i < cursorRightUnits ? Native.VK_RIGHT : Native.VK_BACK;
+                Native.INPUT[] press = [KeyDown(vk), KeyUp(vk)];
+                if (!OnTarget() || !Send(i == 0 ? [.. Modifiers(modifiers, up: true), .. press] : press))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         // The end marker, after the paste's settle and restore: the keys held meanwhile go back after it all.

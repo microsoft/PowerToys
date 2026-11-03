@@ -320,8 +320,8 @@ public sealed class InsertionGuardTests
 
         int recordedAt = -1;
         Assert.IsTrue(Run(box, 6, "alex@contoso.com ", backend: InjectionBackend.Clipboard, inserted: () => recordedAt = box.Batches.Count));
-        Assert.AreEqual("Mark | BS BS BS BS BS BS | Ctrl-down | V | Ctrl-up | Mark | LCtrl-down V LCtrl-up Mark", Calls(box));
-        Assert.AreEqual(5, recordedAt, "Kept before the end marker.");
+        Assert.AreEqual("Mark | BS | BS | BS | BS | BS | BS | Ctrl-down | V | Ctrl-up | Mark | LCtrl-down V LCtrl-up Mark", Calls(box));
+        Assert.AreEqual(10, recordedAt, "Kept before the end marker.");
         Assert.AreEqual("alex@contoso.com the user's|", box.ToString());
     }
 
@@ -363,7 +363,7 @@ public sealed class InsertionGuardTests
         Assert.IsTrue(Run(box, 2, "SNIPPET ", backend: InjectionBackend.Clipboard, paste: PasteIntoBusyTarget));
         Assert.AreEqual("SNIPPET |", atHandBack, "Nothing went back before the user's clipboard.");
         Assert.AreEqual("SNIPPET ORIGINAL|", box.ToString());
-        Assert.AreEqual("Mark | BS BS | Ctrl-down | V | Ctrl-up | Mark | LCtrl-down V LCtrl-up Mark", Calls(box));
+        Assert.AreEqual("Mark | BS | BS | Ctrl-down | V | Ctrl-up | Mark | LCtrl-down V LCtrl-up Mark", Calls(box));
     }
 
     [TestMethod]
@@ -383,14 +383,14 @@ public sealed class InsertionGuardTests
 
         box.AfterKey = key =>
         {
-            if (key.VkCode == Native.VK_LCONTROL && box.Batches.Count == 6 && !box.Text.Contains('x'))
+            if (key.VkCode == Native.VK_LCONTROL && box.Batches.Count == 7 && !box.Text.Contains('x'))
             {
                 box.UserTypes("x");
             }
         };
 
         Assert.IsTrue(Run(box, 2, "ab", keys: vk => vk == Native.VK_LSHIFT ? unchecked((short)0x8000) : (short)0));
-        Assert.AreEqual("Mark | LShift-up BS BS | a | b | Mark | LShift-down H LCtrl-down Z Mark | x Mark", Calls(box));
+        Assert.AreEqual("Mark | LShift-up BS | BS | a | b | Mark | LShift-down H LCtrl-down Z Mark | x Mark", Calls(box));
         Assert.AreEqual("abx|", box.ToString());
     }
 
@@ -423,14 +423,14 @@ public sealed class InsertionGuardTests
         box.AfterKey = key => order += key.VkCode == 0x50 ? ((key.Flags & Native.LLKHF_UP) != 0 ? "↑" : "↓") : string.Empty;
         box.BeforeCall = calls =>
         {
-            if (calls is 1 or 5)
+            if (calls is 1 or 6)
             {
                 box.Take(calls == 1 ? p : p with { Flags = p.Flags | Native.LLKHF_UP });
             }
         };
 
         Assert.IsTrue(Run(box, 2, "ab"));
-        Assert.AreEqual("Mark | BS BS | a | b | Mark | P-down Mark | P-up Mark", Calls(box));
+        Assert.AreEqual("Mark | BS | BS | a | b | Mark | P-down Mark | P-up Mark", Calls(box));
         Assert.AreEqual("↓↑", order, "Nothing is left down.");
     }
 
@@ -444,7 +444,7 @@ public sealed class InsertionGuardTests
             box.UserTypes("u");
             return PasteOutcome.RefusedBeforeErase;
         }));
-        Assert.AreEqual("Mark | BS BS | a | b | Mark | u Mark", Calls(box));
+        Assert.AreEqual("Mark | BS | BS | a | b | Mark | u Mark", Calls(box));
         Assert.AreEqual("abu|", box.ToString());
 
         // A click while it's borrowed isn't held, and may have moved the caret: nothing is erased.
@@ -480,7 +480,7 @@ public sealed class InsertionGuardTests
             Assert.IsFalse(box.Hook.ProcessKey(Native.VK_LCONTROL, 0, ctrl: false, alt: false, shift: false, win: false));
             return refused ? PasteOutcome.RefusedBeforeErase : box.Paste(text, target, send, keepAlive);
         }));
-        Assert.AreEqual($"Mark | Mark | LCtrl-up BS BS | {(refused ? "a | b" : "Ctrl-down | V | Ctrl-up")} | Mark | LCtrl-down Mark", Calls(box));
+        Assert.AreEqual($"Mark | Mark | LCtrl-up BS | BS | {(refused ? "a | b" : "Ctrl-down | V | Ctrl-up")} | Mark | LCtrl-down Mark", Calls(box));
         Assert.AreEqual("ab|", box.ToString());
     }
 
@@ -513,8 +513,8 @@ public sealed class InsertionGuardTests
         using var box = new FakeTextBox("Status: !d");
         var sleeps = new List<int>();
         Assert.IsTrue(Run(box, 2, "Hi. Ok\n", cursorLeft: 1, sleep: sleeps.Add));
-        Assert.AreEqual("Mark | BS BS | H | i | . |   | O | k | Enter | Left | Mark", Calls(box));
-        Assert.AreEqual("15 25 25 50 25 25 25 50", string.Join(" ", sleeps), "The pause before the erase, then one after each character, longer after a sentence.");
+        Assert.AreEqual("Mark | BS | BS | H | i | . |   | O | k | Enter | Left | Mark", Calls(box));
+        Assert.AreEqual("15 25 25 25 50 25 25 25 50", string.Join(" ", sleeps), "The pause before the erase and between its keys, then one after each character, longer after a sentence.");
         Assert.AreEqual("Status: Hi. Ok|\n", box.ToString());
     }
 
@@ -526,7 +526,7 @@ public sealed class InsertionGuardTests
         IntPtr foreground = Target;
         box.BeforeCall = calls =>
         {
-            if (calls == 3)
+            if (calls == 4)
             {
                 foreground = new IntPtr(11);
             }
@@ -567,7 +567,7 @@ public sealed class InsertionGuardTests
                 }
             });
             Assert.AreEqual(typeAfter ? "z|PREFIX a" : "|PREFIX a", box.ToString());
-            Assert.AreEqual("Mark | BS BS | a | Mark" + (typeAfter ? " | z Mark" : string.Empty), Calls(box));
+            Assert.AreEqual("Mark | BS | BS | a | Mark" + (typeAfter ? " | z Mark" : string.Empty), Calls(box));
             Assert.IsFalse(completed);
             Assert.IsFalse(recorded, "No undo for text that isn't all there.");
             Assert.IsFalse(box.Guard.Cancelled, "Its window is still in front.");
@@ -673,7 +673,7 @@ public sealed class InsertionGuardTests
 
         Assert.IsFalse(completed);
         Assert.AreEqual(0, checks, "No button checked.");
-        Assert.AreEqual("Mark | BS BS | a | Mark | x Mark", Calls(box));
+        Assert.AreEqual("Mark | BS | BS | a | Mark | x Mark", Calls(box));
     }
 
     [TestMethod]

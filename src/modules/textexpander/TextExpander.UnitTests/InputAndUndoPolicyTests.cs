@@ -394,7 +394,7 @@ public sealed class InputAndUndoPolicyTests
         int sent = box.Batches.Count;
         Assert.IsTrue(ReplaceIn(box, Injector.CountDeletableUnits(undo.Replacement), undo.Trigger, cursorRight: undo.CursorLeft, generation: undo.InputGeneration));
         Assert.AreEqual("PREFIX!abc |", box.ToString());
-        Assert.AreEqual("Right Right Right Right BS BS BS BS BS BS", FakeTextBox.Describe(box.Batches[sent + 1]), "Back to the end of the expansion, then erased.");
+        Assert.AreEqual("Right | Right | Right | Right | BS | BS | BS | BS | BS | BS", string.Join(" | ", box.Batches.Skip(sent + 1).Take(10).Select(FakeTextBox.Describe)), "Back to the end of the expansion, then erased, a key at a time.");
     }
 
     [TestMethod]
@@ -498,7 +498,7 @@ public sealed class InputAndUndoPolicyTests
             Injector.Backend = original;
         }
 
-        Assert.AreEqual("Mark | Right BS BS BS BS | Ctrl-down | V | Ctrl-up | Left Left Left Left | Mark", string.Join(" | ", box.Batches.Select(FakeTextBox.Describe)));
+        Assert.AreEqual("Mark | Right | BS | BS | BS | BS | Ctrl-down | V | Ctrl-up | Left Left Left Left | Mark", string.Join(" | ", box.Batches.Select(FakeTextBox.Describe)));
         Assert.AreEqual("Before Ab |XYZ ", box.ToString());
         Assert.AreEqual("the user's", box.Clipboard);
     }
