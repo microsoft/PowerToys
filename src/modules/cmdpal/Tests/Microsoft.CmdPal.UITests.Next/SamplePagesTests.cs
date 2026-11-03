@@ -40,30 +40,6 @@ public class SamplePagesTests : CommandPaletteTestBase
             File.Exists(packagePath),
             $"SamplePagesExtension package is missing at '{packagePath}'. Build the test project, then sign its MSIX before running it.");
 
-        // Supply the Windows App Runtime framework the manifest depends on. Clean machines (for
-        // example Windows 10 without Store updates) lack it, and RegisterPackageAsync only accepts
-        // unpacked dependency layouts, so add the signed framework MSIX first. Deployment is a no-op
-        // when the same or a newer version is already installed.
-        var frameworkPath = Path.Combine(AppContext.BaseDirectory, "SamplePagesExtensionDependencies", "Microsoft.WindowsAppRuntime.2.msix");
-        Assert.IsTrue(
-            File.Exists(frameworkPath),
-            $"Windows App Runtime framework package is missing at '{frameworkPath}'. Build the test project, which copies it.");
-
-        var frameworkOperation = packageManager.AddPackageAsync(new Uri(frameworkPath), null, DeploymentOptions.None);
-        try
-        {
-            frameworkOperation.AsTask().GetAwaiter().GetResult();
-        }
-        catch (Exception ex) when (
-            ex.HResult == unchecked((int)0x80073D06))
-        {
-            context.WriteLine("A compatible newer Windows App Runtime framework was registered during deployment.");
-        }
-        catch (Exception ex)
-        {
-            Assert.Fail($"Installing the Windows App Runtime framework failed: {ex.Message} {TryGetErrorText(frameworkOperation!)}");
-        }
-
         var operation = packageManager.AddPackageAsync(
             new Uri(packagePath),
             null,

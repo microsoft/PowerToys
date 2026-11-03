@@ -217,7 +217,8 @@ public sealed class SessionHelper
                 // there is NOT free: each extra --open-settings queues another request that the runner
                 // honours with a SEPARATE Settings.exe (the "Settings: 3" pile-up seen in CI), and the
                 // competing single-instance processes plus the launch contention push the window past
-                // the deadline. So when anything is alive, keep waiting instead of piling on.
+                // the deadline. CmdPal is different: activating its live instance re-shows a
+                // hidden window rather than opening a second Settings instance.
                 var scopeAlive = IsRunning(scope);
                 var runnerAlive = IsRunning(PowerToysModule.Runner);
                 var orphanedSettings = scope == PowerToysModule.PowerToysSettings && scopeAlive && !runnerAlive;
@@ -229,6 +230,11 @@ public sealed class SessionHelper
                         recoveredByUs = true;
                         lastLaunch = DateTime.UtcNow;
                     }
+                }
+                else if (scope == PowerToysModule.CommandPalette && scopeAlive)
+                {
+                    LaunchScope(scope);
+                    lastLaunch = DateTime.UtcNow;
                 }
                 else if (!scopeAlive && !runnerAlive)
                 {
@@ -410,6 +416,33 @@ public sealed class SessionHelper
         var processName = ModulePaths.ProcessNameFor(scope);
         var expectedTitle = ModulePaths.MainWindowTitleFor(scope);
         var deadline = DateTime.UtcNow + timeout;
+
+        if (scope == PowerToysModule.CommandPalette)
+        {
+            // A live CmdPal instance can be cloaked. Activation redirects to that instance and
+            // shows it; walking its UIA tree cannot make the hidden window available.
+            var lastActivation = DateTime.UtcNow;
+            var ready = WaitHelper.WaitForStable(
+                observe: () => WindowsFinder.ListByApp(processName).FirstOrDefault(
+                    window => MatchesMainWindow(processName, expectedTitle, window.ProcessName, window.Title) &&
+                              !WindowHelper.IsWindowCloaked(new IntPtr(window.Hwnd))),
+                isMatch: window => window is not null,
+                timeoutMS: checked((int)timeout.TotalMilliseconds),
+                requiredConsecutiveMatches: 2,
+                pollIntervalMS: 250,
+                recover: _ =>
+                {
+                    if (DateTime.UtcNow - lastActivation >= TimeSpan.FromSeconds(25))
+                    {
+                        LaunchScope(scope);
+                        lastActivation = DateTime.UtcNow;
+                    }
+                });
+            var mainWindow = ready.LastObservation;
+            return ready.Succeeded && mainWindow is not null
+                ? new Session(scope, mainWindow.Hwnd, mainWindow.Title, mainWindow.ProcessId, mainWindow.ProcessName)
+                : null;
+        }
 
         while (DateTime.UtcNow < deadline)
         {

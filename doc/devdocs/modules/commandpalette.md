@@ -11,37 +11,50 @@ creating extensions.
 [shared UI-test framework guide](../development/ui-tests.md) for general build, local-VM, and CI
 workflows.
 
+Most scenarios launch Command Palette directly and test its commands, extensions, and settings
+without running PowerToys. `ModuleLifecycleTests` is the PowerToys integration case: it changes the
+Command Palette toggle in PowerToys Settings and verifies process startup/shutdown and activation
+shortcuts. The complete suite includes both kinds of tests.
+
+Command workflows use owned Win32 GUI windows and a local script that writes a test-owned file;
+they do not rely on Windows Terminal's console-host startup or tab behavior. Window attachment
+also checks that a hidden Command Palette instance can be re-shown without replacing its process.
+
 ### Setup
 
 - Build Command Palette and the test project as **Release**. A Debug Command Palette build is not a
   supported target for these tests. Set `CommandPaletteBranding=Release` for both
   `Microsoft.CmdPal.UI` and `CmdPalModuleInterface`; Release configuration alone does not select
-  stable branding. The runner lifecycle case needs the corresponding signed
+  stable branding. This suite uses signed-MSIX deployment and needs the corresponding
   `Microsoft.CommandPalette` MSIX in the runtime's `WinUI3Apps\CmdPal` directory or its `AppPackages`
-  subtree. A loose-only or development-branded app is not a substitute for testing the runner's
-  package activation.
+  subtree. These are test-suite prerequisites, not requirements for normal Command Palette
+  development; Visual Studio's loose-layout deployment remains supported.
 - The assembly fixture installs that package for the test user only when it is absent and removes
   only the installation it created. A pre-existing package is preserved only when its version
   matches the runtime MSIX; a mismatch fails explicitly rather than replacing the user's package.
-  `ModuleLifecycleTests` drives the real PowerToys Settings toggle and verifies process shutdown,
-  startup, and activation-shortcut behavior; it does not seed settings and restart the runner to
-  simulate a live toggle.
-- The test project builds `SamplePagesExtension` and packages its layout as an unsigned
-  `SamplePagesExtension.msix` next to the test executable. Sign this package and trust its signing
+  The lifecycle test does not seed settings and restart the runner to simulate a live toggle.
+- `SamplePagesExtension` generates its MSIX during its normal build. The test project references
+  the extension for build order and copies that existing package as `SamplePagesExtension.msix`
+  next to the test executable; it does not package the extension a second time.
+  The extension includes its Windows App SDK runtime files, so no separate Windows App Runtime
+  framework package needs to be installed. Sign the sample package and trust its signing
   certificate on the test machine before running the suite. `SamplePagesTests` installs it for the
   current user and removes it after the class; it preserves an extension installed beforehand.
   **Developer Mode is not required for this extension deployment.** Windows policy must permit
   sideloading trusted app packages; certificate trust does not override a policy that blocks it.
-- CI uses `.pipelines\signSparsePackages.ps1` to sign and trust packages during elevated setup,
-  with `.pipelines\removeTestSigningCertificates.ps1` in the always-running cleanup step. Missing or
-  untrusted sample packages fail setup for CmdPal jobs on both Windows 10 and Windows 11. The
-  selected project also opts into the shared authenticated-Settings-IPC setup, which signs both
-  `PowerToys.exe` and `PowerToys.Settings.exe` so Release lifecycle assertions exercise the production
-  authentication path. The suite uses the existing `runUiTestAsUser.ps1` dispatch so packaged COM
-  activation runs on the same non-elevated interactive desktop as local validation, not the elevated
-  agent process. Installed-layout fallback resolves Command Palette from its registered MSIX package
-  even when `useInstallerForTest` is unset and uses registered app activation instead of directly
-  executing its WindowsApps file. Build-artifact runs still prefer the loose output under test.
+- CI signs the packages and trusts their test certificate during elevated setup, using
+  `.pipelines\signSparsePackages.ps1`. Missing or untrusted sample packages fail setup on both
+  Windows 10 and Windows 11. `.pipelines\removeTestSigningCertificates.ps1` removes the test
+  certificate during cleanup, including after a failed run.
+- The PowerToys integration test has an additional CI prerequisite: unsigned Release builds need
+  test signatures on `PowerToys.exe` and `PowerToys.Settings.exe`. The Release runner authenticates
+  Settings before accepting its enable/disable commands. The existing signing helper handles these
+  binaries too. This requirement comes from testing PowerToys Settings integration, not from
+  Command Palette's own commands or extension activation.
+- CI runs the suite through `runUiTestAsUser.ps1` on a non-elevated interactive desktop, matching
+  local validation. When testing an installed build, the framework activates the registered
+  Command Palette app rather than directly executing its WindowsApps file. Build-artifact runs
+  still prefer the loose executable output under test.
 - For a local host-desktop run, execute the same signing helper from an elevated terminal before
   running the tests as the normal test user (replace `<test-output>` with the executable's directory):
 
@@ -62,9 +75,6 @@ workflows.
   guest-side marker and use the cleanup helper in both environments after the run, including on
   failure. Keep guest-side markers outside `C:\PowerToysUiTestRun`, which the VM runner replaces
   when refreshing the payload. This is per-run test trust, not a change to the saved VM baseline.
-- The extension depends on the `Microsoft.WindowsAppRuntime.2` framework package. The test project
-  copies its MSIX from the `Microsoft.WindowsAppSDK.Runtime` NuGet package. `SamplePagesTests`
-  deploys the bundled framework for the current user and preserves a compatible newer installation.
 - Indexer tests create temporary files and uniquely named folders under `Documents`, an indexed
   location in Windows Search's Classic configuration, and need indexing enabled. Folder actions
   use test-owned indexed folders; they do not depend on the hidden `AppData` directory being indexed.

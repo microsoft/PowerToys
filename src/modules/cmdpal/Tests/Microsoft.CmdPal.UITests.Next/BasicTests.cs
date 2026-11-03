@@ -13,6 +13,35 @@ public class BasicTests : CommandPaletteTestBase
 {
     [TestMethod]
     [TestCategory("CmdPal")]
+    public void HiddenPaletteCanBeReattachedWithoutRestart()
+    {
+        SetSearchBox(string.Empty);
+        var processId = Session.ProcessId;
+        KeyboardHelper.SendChord(Key.Esc);
+        var hidden = WaitHelper.WaitForStable(
+            observe: () => WindowsFinder.ListByApp(processId.ToString(CultureInfo.InvariantCulture))
+                .Any(window => window.Title == "Command Palette" &&
+                    !WindowHelper.IsWindowCloaked(new IntPtr(window.Hwnd))),
+            isMatch: visible => !visible,
+            timeoutMS: 10_000,
+            requiredConsecutiveMatches: 2);
+        Assert.IsTrue(hidden.Succeeded, "Escape did not hide Command Palette.");
+
+        var helper = new SessionHelper(PowerToysModule.CommandPalette);
+        try
+        {
+            var reattached = helper.Init();
+            Assert.AreEqual(processId, reattached.ProcessId, "Reattaching must preserve the running Command Palette process.");
+            Assert.IsNotNull(reattached.Find<TextBox>(By.AccessibilityId("MainSearchBox"), timeoutMS: 20_000));
+        }
+        finally
+        {
+            helper.StopIfStarted();
+        }
+    }
+
+    [TestMethod]
+    [TestCategory("CmdPal")]
     public void BasicFileSearchTest()
     {
         SetSearchBox("files");

@@ -8,10 +8,13 @@
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     <UseWinUI>false</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\CmdPalExtensions\$(RootNamespace)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <AppxPackageDir>$(OutputPath)\AppPackages\</AppxPackageDir>
+    <AppxPackageOutput>$(AppxPackageDir)SamplePagesExtension.msix</AppxPackageOutput>
   </PropertyGroup>
 
   <ItemGroup>
@@ -120,5 +123,9 @@
     <PublishSingleFile>false</PublishSingleFile>
     <PublishAot>false</PublishAot>
   </PropertyGroup>
+
+  <Target Name="GetFixturePackage" DependsOnTargets="GetTargetPath" Returns="$(AppxPackageOutput)">
+    <Error Condition="!Exists('$(AppxPackageOutput)')" Text="The SamplePagesExtension package was not built." />
+  </Target>
 
 </Project>
