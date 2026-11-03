@@ -7,7 +7,6 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.Runtime.InteropServices;
-using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -23,6 +22,10 @@ public sealed class AlwaysOnTopTests : UITestBase
     // assertions where no product state can prove that the new setting has loaded.
     private const int SettingsReloadDelayMs = 3_000;
     private static readonly Key[] ActivationShortcut = [Key.LWin, Key.Ctrl, Key.T];
+
+    // Default decrease-opacity shortcut (Win + Ctrl + VK_OEM_MINUS). The runner registers the module's
+    // hotkeys and doesn't see edits made directly to the settings file, so tests use the default.
+    private static readonly Key[] DecreaseOpacityShortcut = [Key.LWin, Key.Ctrl, (Key)0xBD];
     private static IDisposable? originalModuleSettings;
 
     private TestWindow? fixture;
@@ -183,21 +186,11 @@ public sealed class AlwaysOnTopTests : UITestBase
             fixture.GetForm().Opacity = 0.75;
         });
         var originalAlpha = fixture.LayeredAlpha;
-        AlwaysOnTopSettingsSeed.Apply(("decrease-opacity-hotkey", new JsonObject
-        {
-            ["win"] = true,
-            ["ctrl"] = true,
-            ["alt"] = false,
-            ["shift"] = false,
-            ["code"] = (int)Key.F9,
-            ["key"] = string.Empty,
-        }));
-        WaitForSettingsReloadWithoutObservableSignal();
         TogglePin(expected: true);
 
         Step("Reducing the pinned fixture's opacity");
         fixture.Focus();
-        KeyboardHelper.SendKeys(Key.LWin, Key.Ctrl, Key.F9);
+        KeyboardHelper.SendChord(DecreaseOpacityShortcut);
         var reduced = WaitHelper.WaitForStable(
             () => fixture.LayeredAlpha,
             alpha => alpha < originalAlpha,
