@@ -73,6 +73,10 @@
                                 "parameterValue": "/fd \"SHA256\""
                             },
                             {
+                                "parameterName": "Append",
+                                "parameterValue": "/as"
+                            },
+                            {
                                 "parameterName": "PageHash",
                                 "parameterValue": "/NPH"
                             },

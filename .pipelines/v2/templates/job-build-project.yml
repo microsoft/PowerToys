@@ -189,8 +189,7 @@ jobs:
         Import-Module Pester -MinimumVersion 3.4 -MaximumVersion 4.99
         $result = Invoke-Pester -Script @(
             '.pipelines/tests/versionAndSignCheck.Tests.ps1',
-            '.pipelines/tests/winmdSigningPolicy.Tests.ps1',
-            '.pipelines/tests/prepareUnsignedSigningPolicy.Tests.ps1'
+            '.pipelines/tests/winmdSigningPolicy.Tests.ps1'
         ) -PassThru
         if ($result.FailedCount -gt 0 -or $result.TotalCount -eq 0) {
             throw 'Release signing regression tests failed.'
@@ -578,7 +577,6 @@ jobs:
       parameters:
         displayName: Sign CmdPal MSIX content
         signingIdentity: ${{ parameters.signingIdentity }}
-        preserveExistingSignatures: true
         inputs:
           FolderPath: '$(JobOutputDirectory)/CmdPalPackageContents'
           signType: batchSigning
@@ -610,7 +608,6 @@ jobs:
       parameters:
         displayName: Sign Core PowerToys
         signingIdentity: ${{ parameters.signingIdentity }}
-        preserveExistingSignatures: true
         inputs:
           FolderPath: '$(BuildPlatform)/$(BuildConfiguration)'
           signType: batchSigning

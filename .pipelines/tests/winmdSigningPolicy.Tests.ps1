@@ -83,7 +83,7 @@ Describe 'WinMD release signing policy' {
         }
     }
 
-    It 'uses the external-component identity without appending signatures for <PayloadPath>' -TestCases @(
+    It 'uses the external-component identity without replacing upstream signatures for <PayloadPath>' -TestCases @(
         @{ PolicyName = 'Core'; PayloadPath = 'WinUI3Apps\SkiaSharp.Views.WinUI.Native.winmd' },
         @{ PolicyName = 'Core'; PayloadPath = 'SkiaSharp.Views.WinUI.Native.winmd' },
         @{ PolicyName = 'CmdPal'; PayloadPath = 'Microsoft.Graphics.Canvas.winmd' }
@@ -97,7 +97,8 @@ Describe 'WinMD release signing policy' {
         $signOperation.Count | Should Be 1
         $signOperation[0].KeyCode | Should Be 'CP-231522'
         $appendParameter = @($signOperation[0].Parameters | Where-Object parameterName -eq 'Append')
-        $appendParameter.Count | Should Be 0
+        $appendParameter.Count | Should Be 1
+        $appendParameter[0].parameterValue | Should Be '/as'
         ($batches[0].SigningInfo.Operations | Where-Object OperationSetCode -eq 'SigntoolVerify').KeyCode | Should Be 'CP-231522'
     }
 
@@ -119,12 +120,12 @@ Describe 'WinMD release signing policy' {
         $batches.Count | Should Be 0
     }
 
-    It 'does not request an additional signature for OpenAI.dll' {
+    It 'preserves the existing additional signature for OpenAI.dll' {
         $batches = @(Get-MatchingSigningBatch -SigningPolicy $signingPolicies.Core -PayloadPath 'WinUI3Apps\OpenAI.dll')
 
         $batches.Count | Should Be 1
         $signOperation = $batches[0].SigningInfo.Operations | Where-Object OperationSetCode -eq 'SigntoolSign'
         $signOperation.KeyCode | Should Be 'CP-231522'
-        @($signOperation.Parameters | Where-Object parameterName -eq 'Append').Count | Should Be 0
+        ($signOperation.Parameters | Where-Object parameterName -eq 'Append').parameterValue | Should Be '/as'
     }
 }
