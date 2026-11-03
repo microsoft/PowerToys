@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -39,6 +40,6 @@ public partial class TopLevelItemPageContext : IPageContext, ICommandContextSour
     public void ShowException(Exception ex, string? extensionHint = null)
     {
         var message = DiagnosticsHelper.BuildExceptionMessage(ex, extensionHint ?? $"TopLevelItemPageContext({ProviderContext.ProviderId})");
-        CommandPaletteHost.Instance.Log(message);
+        CoreLogger.LogError(message, ex);
     }
 }

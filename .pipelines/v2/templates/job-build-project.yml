@@ -66,6 +66,12 @@ parameters:
   - name: prepareMwbRuntime
     type: boolean
     default: false
+  - name: prepareUmdfHid
+    type: boolean
+    default: false
+  - name: umdfHidCondition
+    type: string
+    default: succeeded()
   - name: mwbRuntimeCondition
     type: string
     default: succeeded()
@@ -106,16 +112,6 @@ parameters:
   - name: metaPackageName
     type: string
     default: 'Microsoft.WindowsAppSDK'
-  - name: csProjectsToPublish
-    type: object
-    default:
-      - 'src/settings-ui/Settings.UI/PowerToys.Settings.csproj'
-      - 'src/modules/launcher/PowerLauncher/PowerLauncher.csproj'
-      - 'src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandler.csproj'
-      - 'src/modules/previewpane/MarkdownPreviewHandler/MarkdownPreviewHandler.csproj'
-      - 'src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj'
-      - 'src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.csproj'
-      - 'src/modules/FileLocksmith/FileLocksmithUI/FileLocksmithUI.csproj'
   - name: timeoutInMinutes
     type: number
     default: 240
@@ -159,7 +155,7 @@ jobs:
       EffectiveVersionNumber: ${{ parameters.resolvedVersionNumber }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
-    ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
+    ${{ if eq(parameters.runTests, true) }}:
       MSBuildMainBuildTargets: Build;Test
     ${{ else }}:
       MSBuildMainBuildTargets: Build
@@ -230,11 +226,6 @@ jobs:
       version: '8.0'
 
   - template: steps-ensure-dotnet-version.yml
-    parameters:
-      sdk: true
-      version: '10.0'
-      # SDK 10.0.303 contains runtime 10.0.11. Keep this aligned with DotNetRuntimePackageVersion in Directory.Packages.props.
-      exactVersion: '10.0.303'
 
   - ${{ if eq(parameters.buildTests, true) }}:
     - template: steps-test-mwb-infrastructure.yml
@@ -246,34 +237,35 @@ jobs:
   - task: NuGetAuthenticate@1
     displayName: Authenticate NuGet feeds for verification
 
+  - ${{ if eq(parameters.official, true) }}:
+    - task: NuGetAuthenticate@1
+      displayName: Authenticate with permissions to Dependencies feed
+      inputs:
+        azureDevOpsServiceConnection: 'SHINE PowerToys Artifact Feed'
+        feedUrl: "https://pkgs.dev.azure.com/shine-oss/PowerToys/_packaging/PowerToysPublicDependencies/nuget/v3/index.json"
+
   - pwsh: |-
       & '.pipelines/verifyNugetPackages.ps1' -solution '$(build.sourcesdirectory)\PowerToys.slnx'
     displayName: Verify Nuget package versions for PowerToys.slnx
 
   - pwsh: |-
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\PowerToys.slnx'
-      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\BugReportTool\BugReportTool.sln'
-      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\StylesReportTool\StylesReportTool.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.slnx'
     displayName: Verify ARM64 configurations
 
+  # No restoreKeys: a fallback restore plus a save under the new key keeps every package version
+  # ever used, which grew these caches to ~10x what one restore needs. A key miss restores cold once.
   - ${{ if eq(parameters.enablePackageCaching, true) }}:
     - task: Cache@2
       displayName: 'Cache nuget packages (PackageReference)'
       inputs:
-        key: '"PackageReference" | "$(Agent.OS)" | Directory.Packages.props'
-        restoreKeys: |
-           "PackageReference" | "$(Agent.OS)"
-           "PackageReference"
+        key: '"PackageReference" | "v2" | "$(Agent.OS)" | Directory.Packages.props'
         path: $(NUGET_PACKAGES)
 
     - task: Cache@2
       displayName: 'Cache nuget packages (packages.config)'
       inputs:
-        key: '"packages.config" | "$(Agent.OS)" | **/packages.config'
-        restoreKeys: |
-           "packages.config" | "$(Agent.OS)"
-           "packages.config"
+        key: '"packages.config" | "v2" | "$(Agent.OS)" | **/packages.config'
         path: packages
   
   - ${{ if eq(parameters.useLatestWinAppSDK, true)}}:
@@ -436,67 +428,19 @@ jobs:
       targetFolder: $(JobOutputDirectory)/sdk/winmd
 
   - task: VSBuild@1
-    displayName: Build BugReportTool
+    displayName: Publish projects for Packaging
     inputs:
-      solution: '**/tools/BugReportTool/BugReportTool.sln'
+      solution: installer/PowerToysSetupVNext/PublishForPackaging.proj
       vsVersion: 18.0
       msbuildArgs: >-
-        -restore -graph
-        /p:RestorePackagesConfig=true
-        /p:CIBuild=true
-        /bl:$(LogOutputDirectory)\build-bug-report.binlog
-        ${{ parameters.additionalBuildOptions }}
-        $(MSBuildCacheParameters)
+        /target:Publish
+        /p:PowerToysRoot=$(Build.SourcesDirectory)
+        /bl:$(LogOutputDirectory)\publish-for-packaging.binlog
         $(RestoreAdditionalProjectSourcesArg)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
-    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-  - task: VSBuild@1
-    displayName: Build StylesReportTool
-    inputs:
-      solution: '**/tools/StylesReportTool/StylesReportTool.sln'
-      vsVersion: 18.0
-      msbuildArgs: >-
-        -restore -graph
-        /p:RestorePackagesConfig=true
-        /p:CIBuild=true
-        /bl:$(LogOutputDirectory)\build-styles-report.binlog
-        ${{ parameters.additionalBuildOptions }}
-        $(MSBuildCacheParameters)
-        $(RestoreAdditionalProjectSourcesArg)
-      platform: $(BuildPlatform)
-      configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
-      maximumCpuCount: true
-    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-  - ${{ each project in parameters.csProjectsToPublish }}:
-    - task: VSBuild@1
-      displayName: Publish ${{ project }} for Packaging
-      inputs:
-        solution: ${{ project }}
-        vsVersion: 18.0
-        msbuildArgs: >-
-          /target:Publish
-          /graph
-          /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
-          /p:VCRTForwarders-IncludeDebugCRT=false
-          /p:PowerToysRoot=$(Build.SourcesDirectory)
-          /p:PublishProfile=InstallationPublishProfile.pubxml
-          /p:TargetFramework=net10.0-windows10.0.26100.0
-          /bl:$(LogOutputDirectory)\publish-${{ join('_',split(project, '/')) }}.binlog
-          $(RestoreAdditionalProjectSourcesArg)
-        platform: $(BuildPlatform)
-        configuration: $(BuildConfiguration)
-        msbuildArchitecture: x64
-        maximumCpuCount: true
 
   ### HACK: On ARM64 builds, building an app with Windows App SDK copies the x64 WebView2 dll instead of the ARM64 one. This task makes sure the right dll is used.
   - task: CopyFiles@2
@@ -763,6 +707,11 @@ jobs:
       displayName: Prepare coherent lean MWB runtime and official winapp CLI release
       condition: ${{ parameters.mwbRuntimeCondition }}
       timeoutInMinutes: 35
+
+  - ${{ if eq(parameters.prepareUmdfHid, true) }}:
+    - template: steps-build-umdf-hid.yml
+      parameters:
+        condition: ${{ parameters.umdfHidCondition }}
 
   - ${{ if eq(parameters.publishArtifacts, true) }}:
     - publish: $(JobOutputDirectory)
