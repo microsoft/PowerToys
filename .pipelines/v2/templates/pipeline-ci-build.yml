@@ -35,6 +35,9 @@ parameters:
   - name: useVSPreview
     type: boolean
     default: false
+  - name: runCppCodeAnalysis
+    type: boolean
+    default: false
   - name: useLatestWebView2
     type: boolean
     default: false
@@ -92,6 +95,13 @@ stages:
             msBuildCacheIsReadOnly: ${{ parameters.msBuildCacheIsReadOnly }}
             runTests: ${{ parameters.runTests }}
             buildTests: true
+            variables:
+              # MSVC /analyze roughly doubles C++ compile time, so the build jobs skip it.
+              # When runCppCodeAnalysis is set, the CppCodeAnalysis stage runs it in parallel instead.
+              SkipCppCodeAnalysis: 1
+              ${{ if and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(parameters.umdfHidArm64Image, 'disabled')))) }}:
+                MwbSandboxSelected: $[ dependencies.Resolve.outputs['resolve.hasMwbUiTests'] ]
+                UmdfHidSelected: $[ dependencies.Resolve.outputs['resolve.hasUmdfHidUiTests'] ]
             prepareMwbRuntime: ${{ and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}
             prepareUmdfHid: ${{ and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(parameters.umdfHidArm64Image, 'disabled')))) }}
             ${{ if and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(parameters.umdfHidArm64Image, 'disabled')))) }}:
@@ -99,9 +109,6 @@ stages:
                 - Resolve
               # Resolve is skipped outside PR builds; the ordinary build must still run.
               condition: and(not(failed()), not(canceled()))
-              variables:
-                MwbSandboxSelected: $[ dependencies.Resolve.outputs['resolve.hasMwbUiTests'] ]
-                UmdfHidSelected: $[ dependencies.Resolve.outputs['resolve.hasUmdfHidUiTests'] ]
               mwbRuntimeCondition: and(succeeded(), eq(variables['MwbSandboxSelected'], 'true'))
               umdfHidCondition: and(succeeded(), eq(variables['UmdfHidSelected'], 'true'))
             useVSPreview: ${{ parameters.useVSPreview }}
@@ -180,3 +187,21 @@ stages:
           buildConfigurations: [Release]
           official: false
           codeSign: false
+
+  - ${{ if eq(parameters.runCppCodeAnalysis, true) }}:
+    - stage: CppCodeAnalysis
+      displayName: C++ code analysis
+      dependsOn: []
+      jobs:
+        - template: job-analyze-cpp.yml
+          parameters:
+            pool:
+              ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+                name: SHINE-INT-L
+              ${{ else }}:
+                name: SHINE-OSS-L
+              ${{ if eq(parameters.useVSPreview, true) }}:
+                demands: ImageOverride -equals SHINE-VS18-Preview
+              ${{ else }}:
+                demands: ImageOverride -equals SHINE-VS18-Latest
+            useVSPreview: ${{ parameters.useVSPreview }}
