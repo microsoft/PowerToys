@@ -95,10 +95,27 @@ detachment, process crashes, module disable/enable, Runner exit/restart, corrupt
 sessions and matching windows reopening in different orders. Use two monitors
 with different DPI settings. Verify unsupported windows remain unchanged.
 
+## Local test launcher
+
+`Tests/WindowTabs.TestHost` loads the built module DLL through the normal module
+interface and provides a visible Stop button. Its `--smoke-test` mode checks
+service startup and shutdown. `--sample-notes` and `--sample-research` each open
+a disposable window in a separate process for interactive testing. The launcher
+and samples are test artifacts, outside the installer's root application folder.
+
+On the development PC, x64 Debug builds of the module and launcher passed with
+code analysis, all 12 native unit tests passed, and startup/shutdown passed.
+The Release x64 ASan/libFuzzer target built and completed 1,000 seeded runs.
+A saved two-window sample group was restored in the live launcher, and its Stop
+button was exercised. Drag grouping, tab clicks, reordering and detachment still
+need broader interactive testing, including real applications and mixed DPI.
+
 ## Outstanding integration gates
 
-The development branch has not passed a Windows build or runtime/UI validation.
-The current development machine lacks Visual Studio and .NET SDK 10.0.403.
+Visual Studio Build Tools and .NET SDK 10.0.403 are now installed on the development
+PC. The full solution restore still fails with MSB4086 toolset-version errors in
+Command Palette, Measure Tool and PowerRename projects. Settings UI builds and
+managed Settings tests remain unverified.
 Installer harvesting already includes DLLs in the root output directory and the
 new DLL is listed for signing. Policy integration is pending clarification under
 the repository's AGENTS.md rules; the module must not be released until its

@@ -58,7 +58,7 @@ namespace WindowTabs
             tabs.erase(it);
             if (active == id)
             {
-                active = tabs.empty() ? 0 : tabs[std::min(index, tabs.size() - 1)];
+                active = tabs.empty() ? 0 : tabs[(std::min)(index, tabs.size() - 1)];
             }
         }
 

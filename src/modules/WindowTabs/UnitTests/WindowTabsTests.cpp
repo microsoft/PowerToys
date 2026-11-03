@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 #include <windows.h>
+#include <roapi.h>
 #include <CppUnitTest.h>
 #include "../GroupModel.h"
 #include "../Session.h"
@@ -15,6 +16,7 @@ namespace WindowTabsUnitTests
     // clang-format off
     TEST_CLASS(WindowTabsTests)
     {
+        bool m_apartmentInitialized = false;
     public:
         TEST_METHOD(RestorationMatchesReopenedWindowsInSavedOrder)
         {
@@ -36,11 +38,14 @@ namespace WindowTabsUnitTests
         }
         TEST_METHOD_INITIALIZE(Initialize)
         {
-            winrt::init_apartment();
+            const auto result = RoInitialize(RO_INIT_MULTITHREADED);
+            m_apartmentInitialized = SUCCEEDED(result);
+            if (!m_apartmentInitialized && result != RPC_E_CHANGED_MODE)
+                winrt::throw_hresult(result);
         }
         TEST_METHOD_CLEANUP(Cleanup)
         {
-            winrt::uninit_apartment();
+            if (m_apartmentInitialized) RoUninitialize();
         }
 
         TEST_METHOD(RejectsDuplicateAndNullWindows)

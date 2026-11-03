@@ -183,6 +183,7 @@
     </Project>
   </Folder>
   <Folder Name="/modules/WindowTabs/">
+    <Project Path="src/modules/WindowTabs/Tests/WindowTabs.TestHost/WindowTabs.TestHost.vcxproj" Id="7ee79fe7-0725-492a-a6e8-8c2ab1f63114" />
     <Project Path="src/modules/WindowTabs/WindowTabs.vcxproj" Id="7ee79fe7-0725-492a-a6e8-8c2ab1f63111" />
     <Project Path="src/modules/WindowTabs/UnitTests/WindowTabsUnitTests.vcxproj" Id="7ee79fe7-0725-492a-a6e8-8c2ab1f63112" />
     <Project Path="src/modules/WindowTabs/FuzzingTest/WindowTabs.FuzzingTest.vcxproj" Id="7ee79fe7-0725-492a-a6e8-8c2ab1f63113">

@@ -107,7 +107,7 @@ public:
     {
         if (hotkeys)
         {
-            for (size_t index = 0; index < std::min(size, size_t{ 2 }); ++index)
+            for (size_t index = 0; index < (std::min)(size, size_t{ 2 }); ++index)
                 hotkeys[index] = m_hotkeys[index];
         }
         return 2;

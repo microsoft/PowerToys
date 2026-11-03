@@ -28,7 +28,7 @@ namespace WindowTabs
         constexpr UINT EventMessage = WM_APP + 1;
         constexpr UINT CycleMessage = WM_APP + 2;
         constexpr UINT TransferMessage = WM_APP + 3;
-        constexpr wchar_t WindowProperty[] = L"PowerToys.WindowTabs.Member";
+        constexpr wchar_t WindowProperty[] = L"PowerToys.WindowTabs.Member.v2";
         constexpr wchar_t DispatcherClass[] = L"PowerToys.WindowTabs.Dispatcher";
         constexpr wchar_t StripClass[] = L"PowerToys.WindowTabs.Strip";
         thread_local HWND dispatcher = nullptr;
@@ -42,6 +42,11 @@ namespace WindowTabs
             return reinterpret_cast<WindowId>(window);
         }
 
+        HANDLE OwnerMarker()
+        {
+            return reinterpret_cast<HANDLE>(static_cast<ULONG_PTR>(GetCurrentProcessId()));
+        }
+
         struct Member
         {
             HWND window = nullptr;
@@ -53,7 +58,7 @@ namespace WindowTabs
             {
                 DWORD current = 0;
                 GetWindowThreadProcessId(window, &current);
-                return IsWindow(window) && current == process && GetPropW(window, WindowProperty) == this;
+                return IsWindow(window) && current == process && GetPropW(window, WindowProperty) == OwnerMarker();
             }
 
             void Release() const
@@ -123,7 +128,7 @@ namespace WindowTabs
         struct Runtime;
         struct TabGroup
         {
-            Runtime* runtime;
+            Runtime* runtime = nullptr;
             Group model;
             HWND strip = nullptr;
             HWND tabs = nullptr;
@@ -156,6 +161,7 @@ namespace WindowTabs
             bool dirty = false;
             bool previousRestore = false;
             bool endingSession = false;
+            bool restoreDiagnosticsWritten = false;
 
             TabGroup* Find(WindowId id)
             {
@@ -172,13 +178,32 @@ namespace WindowTabs
                 if (members.contains(Id(window)))
                     return members.at(Id(window))->Alive();
                 const auto description = Describe(window);
-                if (!description || GetPropW(window, WindowProperty))
+                if (!description)
                     return false;
+                if (const auto owner = GetPropW(window, WindowProperty))
+                {
+                    const auto ownerId = static_cast<DWORD>(reinterpret_cast<ULONG_PTR>(owner));
+                    HANDLE ownerProcess = OpenProcess(SYNCHRONIZE, FALSE, ownerId);
+                    if (ownerProcess)
+                    {
+                        const auto state = WaitForSingleObject(ownerProcess, 0);
+                        CloseHandle(ownerProcess);
+                        if (state != WAIT_OBJECT_0)
+                            return false;
+                    }
+                    else if (GetLastError() != ERROR_INVALID_PARAMETER)
+                    {
+                        return false;
+                    }
+                    // Properties outlive the process that set them. Reclaim a
+                    // window only after its previous owner has actually exited.
+                    RemovePropW(window, WindowProperty);
+                }
                 auto member = std::make_unique<Member>();
                 member->window = window;
                 member->identity = *description;
                 GetWindowThreadProcessId(window, &member->process);
-                if (!GetWindowPlacement(window, &member->placement) || !SetPropW(window, WindowProperty, member.get()))
+                if (!GetWindowPlacement(window, &member->placement) || !SetPropW(window, WindowProperty, OwnerMarker()))
                     return false;
                 members.emplace(Id(window), std::move(member));
                 return true;
@@ -244,7 +269,7 @@ namespace WindowTabs
                 MONITORINFO info{ sizeof(MONITORINFO) };
                 GetMonitorInfoW(MonitorFromWindow(active, MONITOR_DEFAULTTONEAREST), &info);
                 // When maximized, use the titlebar area instead of going off-screen.
-                const int top = std::max(info.rcWork.top, rect.top - height);
+                const int top = (std::max)(info.rcWork.top, rect.top - height);
                 // An unowned strip survives an application closing its selected
                 // window. Keep it immediately above the active window in z-order.
                 HWND previous = GetWindow(active, GW_HWNDPREV);
@@ -260,12 +285,12 @@ namespace WindowTabs
                 if (!members.contains(id) || !members.at(id)->Alive() || !IsWindowEnabled(Handle(group.model.active)) || !group.model.Select(id))
                     return;
                 const HWND active = Handle(id);
-                ShowWindowAsync(active, SW_RESTORE);
+                ShowWindowAsync(active, IsIconic(active) ? (focus ? SW_RESTORE : SW_SHOWNOACTIVATE) : SW_SHOWNA);
                 SetWindowPos(active, nullptr, group.bounds.left, group.bounds.top, group.bounds.right - group.bounds.left, group.bounds.bottom - group.bounds.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
                 for (const auto other : group.model.tabs)
                 {
-                    if (other != id && members.at(other)->Alive())
-                        ShowWindowAsync(Handle(other), SW_MINIMIZE);
+                    if (other != id && members.at(other)->Alive() && !IsIconic(Handle(other)))
+                        ShowWindowAsync(Handle(other), SW_SHOWMINNOACTIVE);
                 }
                 if (focus)
                     SetForegroundWindow(active);
@@ -375,7 +400,7 @@ namespace WindowTabs
                     }
                     return false;
                 }
-                SetPropW(group->strip, WindowProperty, group.get());
+                SetPropW(group->strip, WindowProperty, OwnerMarker());
                 SendMessageW(group->tabs, WM_SETFONT, reinterpret_cast<WPARAM>(GetStockObject(DEFAULT_GUI_FONT)), TRUE);
                 SetWindowSubclass(group->tabs, TabsProc, 1, reinterpret_cast<DWORD_PTR>(group.get()));
                 destination = group.get();
@@ -397,24 +422,6 @@ namespace WindowTabs
         {
             try
             {
-                if (runtime && message == WM_QUERYENDSESSION)
-                {
-                    runtime->Save();
-                    runtime->endingSession = true;
-                    KillTimer(window, 1);
-                    return TRUE;
-                }
-                if (runtime && message == WM_ENDSESSION)
-                {
-                    if (wparam)
-                        PostMessageW(window, WM_CLOSE, 0, 0);
-                    else
-                    {
-                        runtime->endingSession = false;
-                        SetTimer(window, 1, 500, nullptr);
-                    }
-                    return 0;
-                }
                 return StripProcImpl(window, message, wparam, lparam);
             }
             catch (...)
@@ -463,7 +470,10 @@ namespace WindowTabs
             auto& runtime = *group.runtime;
             TCHITTESTINFO hit{};
             hit.pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
-            const int index = TabCtrl_HitTest(window, &hit);
+            // TCM_HITTEST itself is delivered through this subclass. Only issue
+            // the query for pointer input, or control messages recurse forever.
+            const bool pointerInput = message == WM_LBUTTONDOWN || message == WM_MOUSEMOVE || message == WM_LBUTTONUP || message == WM_MBUTTONUP;
+            const int index = pointerInput ? TabCtrl_HitTest(window, &hit) : -1;
             if (message == WM_LBUTTONDOWN && index >= 0)
             {
                 group.pressed = group.model.tabs[index];
@@ -601,10 +611,16 @@ namespace WindowTabs
                         candidates.emplace_back(Id(window), *description);
                 }
             }
+            const bool diagnose = !restoreDiagnosticsWritten;
+            restoreDiagnosticsWritten = true;
+            if (diagnose)
+                Logger::info("Window Tabs restoration: {} pending groups, {} compatible windows.", pending.size(), candidates.size());
             for (auto it = pending.begin(); it != pending.end();)
             {
                 std::erase_if(candidates, [this](const auto& candidate) { return Find(candidate.first) != nullptr; });
                 const auto ids = MatchGroup(*it, candidates);
+                if (diagnose)
+                    Logger::info("Window Tabs restoration matched {} of {} windows.", ids.size(), it->tabs.size());
                 std::vector<HWND> matched;
                 for (auto id : ids)
                     matched.push_back(Handle(id));
@@ -614,6 +630,8 @@ namespace WindowTabs
                     continue;
                 }
                 bool success = Join(matched[1], matched[0]);
+                if (diagnose)
+                    Logger::info("Window Tabs initial join result: {}.", success);
                 for (size_t index = 2; success && index < matched.size(); ++index)
                     success = Join(matched[index], matched[0]);
                 if (success)
@@ -734,6 +752,24 @@ namespace WindowTabs
                     runtime->Tick();
                     return 0;
                 }
+                if (runtime && message == WM_QUERYENDSESSION)
+                {
+                    runtime->Save();
+                    runtime->endingSession = true;
+                    KillTimer(window, 1);
+                    return TRUE;
+                }
+                if (runtime && message == WM_ENDSESSION)
+                {
+                    if (wparam)
+                        PostMessageW(window, WM_CLOSE, 0, 0);
+                    else
+                    {
+                        runtime->endingSession = false;
+                        SetTimer(window, 1, 500, nullptr);
+                    }
+                    return 0;
+                }
                 if (runtime && message == TransferMessage)
                 {
                     runtime->Join(Handle(static_cast<WindowId>(wparam)), Handle(static_cast<WindowId>(lparam)));
@@ -790,7 +826,7 @@ namespace WindowTabs
                             }
                         }
                     }
-                    if (wparam == EVENT_SYSTEM_FOREGROUND)
+                    if (wparam == EVENT_SYSTEM_FOREGROUND && source == GetForegroundWindow())
                     {
                         if (auto group = runtime->Find(Id(source)); group && group->model.active != Id(source))
                             runtime->Select(*group, Id(source), false);
