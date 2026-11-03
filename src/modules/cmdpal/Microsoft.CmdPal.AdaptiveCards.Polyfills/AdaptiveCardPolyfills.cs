@@ -40,10 +40,8 @@ public static class AdaptiveCardPolyfills
     /// Registers the element renderers, and wraps the container renderers to draw <c>roundedCorners</c> and
     /// <c>showBorder</c> with the <c>CmdPal.Adaptive.Container.*</c> styles in the renderer's override styles.
     /// </summary>
-    /// <param name="getString">Gets a localized string by its resource name, such as <c>AdaptiveChart_LineChart</c>.</param>
-    public static void RegisterRenderers(AdaptiveCardRenderer renderer, Func<string, string> getString)
+    public static void RegisterRenderers(AdaptiveCardRenderer renderer)
     {
-        ChartStrings.SetLookup(getString);
         foreach (var type in Types)
         {
             renderer.ElementRenderers.Set(type.Name, new AdaptiveVisualElementRenderer(type));

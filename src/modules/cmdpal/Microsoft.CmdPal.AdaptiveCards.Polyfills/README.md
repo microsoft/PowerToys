@@ -5,7 +5,7 @@ The WinUI 3 Adaptive Cards renderer doesn't support everything in the current Ad
 - The `Chart.Line`, `Chart.VerticalBar`, `Chart.HorizontalBar`, `Chart.HorizontalBar.Stacked`, `ProgressBar`, `Badge`, and `Icon` elements.
 - `roundedCorners` and `showBorder` on containers, column sets, and columns.
 
-Cards stay standard Adaptive Cards JSON, and extensions give each element a `fallback` for other hosts. Nothing here is specific to Command Palette, so each piece can move to the open-source renderer and be deleted here (see [Upstream](#upstream)).
+Cards stay standard Adaptive Cards JSON, and extensions give each element a `fallback` for other hosts. These are partial implementations, not full schema conformance; see [Bar chart limitations](#bar-chart-limitations). Each piece can serve as a reference when adding support to the open-source renderer (see [Upstream](#upstream)).
 
 ## Use it
 
@@ -13,14 +13,15 @@ Cards stay standard Adaptive Cards JSON, and extensions give each element a `fal
 
 ```csharp
 AdaptiveCardPolyfills.RegisterParsers(AdaptiveCardParserRegistrations.ElementParsers);
-AdaptiveCardPolyfills.RegisterRenderers(renderer, RS_.GetString);
+AdaptiveCardPolyfills.RegisterRenderers(renderer);
 _cardUpdater = new IncrementalAdaptiveCardUpdater(..., AdaptiveCardPolyfills.PatchableElements);
 ```
 
 The host provides:
 
-- **Strings.** The library has no resources of its own, so `RegisterRenderers` takes a lookup for the `AdaptiveChart_*` strings in Command Palette's `Resources.resw`: chart names and summaries for screen readers, and the suffixes of compact numbers such as 12.3K.
 - **Container styles.** `roundedCorners` and `showBorder` apply the `CmdPal.Adaptive.Container.Rounded`, `CmdPal.Adaptive.Container.Bordered`, and `CmdPal.Adaptive.Container.RoundedBordered` styles from the renderer's override styles (`CardOverrideStyles` in `ContentFormControl.xaml`).
+
+The library owns its localized chart names, screen-reader summaries, and compact-number formats in `Properties\Resources.resx`; hosts do not supply a string lookup.
 
 `AdaptiveCustomElementJson` is public too: Command Palette's settings inputs, which are custom elements, use it to read and write the properties every element has.
 
@@ -49,10 +50,16 @@ Models read only the properties that the element's page in the [Adaptive Cards e
 
 To add a name, check that it's in the Adaptive Cards icon catalog (the `IconName` type of `@microsoft/teams.cards`), and compare the two glyphs side by side before adding it. Some glyphs, such as `RAM`, are only in Segoe Fluent Icons; on Windows 10 without that font they don't draw, as with other Command Palette glyphs.
 
+## Bar chart limitations
+
+`Chart.VerticalBar` supports negative values. `Chart.HorizontalBar` and `Chart.HorizontalBar.Stacked` currently support only nonnegative values. Their parsers warn when negative data is supplied: horizontal bars clamp it to zero, and stacked bars omit negative segments from the drawing and totals. Original signed values remain in the model and accessibility summaries. A warning does not invoke the element's fallback.
+
+Supporting signed horizontal data requires a common zero baseline, bars extending to either side, and separate positive and negative totals for stacked groups. `PartToWhole` also needs an explicit policy for negative inputs before it can claim support.
+
 ## Add an element
 
 1. Add a model that implements `IAdaptiveVisualModel` with a static `Parse(string elementJson, ICollection<string> warnings)`. Read the properties on the element's reference page, and nothing else.
-2. Add a control that derives from `AdaptiveVisualControl`, and implement `RenderCore` and `ApplyModel`. Read any text it shows with `ChartStrings.Get`, and add the string to Command Palette's `Resources.resw`.
+2. Add a control that derives from `AdaptiveVisualControl`, and implement `RenderCore` and `ApplyModel`. Read any text it shows with `Properties.Resources`, and add the string to this library's `Properties\Resources.resx`.
 3. Add the element to the list in `AdaptiveCardPolyfills`.
 4. Add parsing tests to `Tests\Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests`.
 

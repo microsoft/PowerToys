@@ -45,8 +45,7 @@ internal sealed partial class BarChartControl : AdaptiveVisualControl
     {
         var isDarkTheme = IsDarkTheme;
         var secondary = ChartTheme.ToBrush(ChartTheme.GetTextColor(isDarkTheme, secondary: true));
-        var (dataMin, dataMax) = _model.GetValueExtent();
-        var range = ChartScale.Compute(_model.YMin, _model.YMax, Math.Min(0, dataMin), dataMax);
+        var range = _model.GetAxisRange();
 
         var root = new StackPanel { Spacing = 4 };
         if (_model.ShowTitle && !string.IsNullOrWhiteSpace(_model.Title))
@@ -74,7 +73,7 @@ internal sealed partial class BarChartControl : AdaptiveVisualControl
         }
 
         Content = root;
-        AutomationProperties.SetName(this, !string.IsNullOrWhiteSpace(_model.Title) ? _model.Title : ChartStrings.Get("AdaptiveChart_BarChart"));
+        AutomationProperties.SetName(this, !string.IsNullOrWhiteSpace(_model.Title) ? _model.Title : Properties.Resources.AdaptiveChart_BarChart);
         AutomationProperties.SetHelpText(this, CreateSummary());
     }
 

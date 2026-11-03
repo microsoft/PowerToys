@@ -79,9 +79,13 @@ internal sealed class StackedBarChartModel : IAdaptiveVisualModel
                             continue;
                         }
 
-                        groups.Add(new StackedBarGroup(
-                            ChartJson.GetString(item, "title"),
-                            ChartJson.GetDataPoints(item, "data", "legend", "value", warnings)));
+                        var points = ChartJson.GetDataPoints(item, "data", "legend", "value", warnings);
+                        if (points.Any(point => point.Value < 0))
+                        {
+                            warnings.Add("Chart.HorizontalBar.Stacked does not support negative values; negative segments are not drawn.");
+                        }
+
+                        groups.Add(new StackedBarGroup(ChartJson.GetString(item, "title"), points));
                     }
                 }
                 else
