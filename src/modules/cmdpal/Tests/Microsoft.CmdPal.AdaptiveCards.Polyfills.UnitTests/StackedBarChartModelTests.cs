@@ -70,4 +70,37 @@ public class StackedBarChartModelTests
         Assert.IsFalse(hidden.ShowTitle);
         Assert.IsTrue(shown.ShowTitle);
     }
+
+    [TestMethod]
+    [DataRow(-3d, 5d, 5d)]
+    [DataRow(-3d, -5d, 0d)]
+    public void NegativeSegmentsWarnAndKeepTheirSignedValues(double first, double second, double expectedTotal)
+    {
+        var warnings = new List<string>();
+        var model = StackedBarChartModel.Parse(
+            FormattableString.Invariant(
+                $$"""{ "data": [{ "title": "Signed", "data": [{ "legend": "A", "value": {{first}} }, { "legend": "B", "value": {{second}} }] }] }"""),
+            warnings);
+
+        Assert.AreEqual(1, warnings.Count);
+        Assert.AreEqual("Chart.HorizontalBar.Stacked does not support negative values; negative segments are not drawn.", warnings[0]);
+        Assert.AreEqual(first, model.Groups[0].Data[0].Value);
+        Assert.AreEqual(second, model.Groups[0].Data[1].Value);
+        Assert.AreEqual(expectedTotal, model.Groups[0].Total);
+        Assert.AreEqual(expectedTotal, model.MaxTotal);
+    }
+
+    [TestMethod]
+    public void ZeroAndPositiveSegmentsDoNotWarn()
+    {
+        var warnings = new List<string>();
+        var model = StackedBarChartModel.Parse(
+            """{ "data": [{ "data": [{ "legend": "A", "value": 0 }, { "legend": "B", "value": 5 }] }, { "data": [] }] }""",
+            warnings);
+
+        Assert.AreEqual(0, warnings.Count);
+        Assert.AreEqual(5d, model.Groups[0].Total);
+        Assert.AreEqual(0d, model.Groups[1].Total);
+        Assert.AreEqual(5d, model.MaxTotal);
+    }
 }
