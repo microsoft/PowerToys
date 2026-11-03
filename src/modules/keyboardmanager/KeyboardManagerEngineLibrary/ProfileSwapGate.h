@@ -40,7 +40,16 @@
 //  - a key-up that is lost after the hook suppressed its key-down keeps the key "held" until the
 //    forced swap (L-4);
 //  - on a forced swap, key-ups the old profile injects while releasing held keys reach the hook
-//    after the swap and are seen by the new profile's handlers (L-5).
+//    after the swap and are seen by the new profile's handlers (L-5);
+//  - a key seeded from GetAsyncKeyState (the hook was reinstalled, or a stage applied without a hook,
+//    while it was held and had stopped repeating) whose virtual key is one EncodeKeyNumpadOrigin
+//    distinguishes (Enter, arrows, Home/End, PgUp/PgDn, Ins/Del, numpad /) is matched by virtual key until its own
+//    event arrives, so the first event of the other key with that virtual key takes its record over;
+//    the seeded key's key-up is then resolved by the new profile (same family as L-3; review R-1).
+//
+// KBM's re-sent key-downs (KEYBOARDMANAGER_REPROCESS_FLAG, matched by exact value, sent by KBM on
+// key-downs only) are not tracked; a program that copies GetMessageExtraInfo() into its own injection
+// could carry that value over, as it could KBM's other flags (review Nit-B).
 //
 // An auto-repeat is recognised as a key-down of a key already in the held set. A held key that stops
 // repeating (assumed: Windows repeats only the most recently pressed key) stays in the set until its

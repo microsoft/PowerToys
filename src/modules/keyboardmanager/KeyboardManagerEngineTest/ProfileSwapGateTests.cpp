@@ -679,6 +679,30 @@ namespace RemappingLogicTests
             Assert::IsTrue(gate->HeldKeyCount() == 0);
         }
 
+        // Same, with an auto-repeat (the real id) before the key-up: the repeat, matched by virtual key,
+        // must move the record to the real id, or the key-up would find no record and be resolved by B.
+        TEST_METHOD (SeededOrphan_WrongEstimatedScanCode_RepeatReKeysRecord)
+        {
+            const DWORD numpadEnter = Helpers::EncodeKeyNumpadOrigin(VK_RETURN, true);
+            mockedInputHandler.SetKeyboardState(VK_RETURN, true);
+            auto b = MakeProfile(L"B");
+            b->AddSingleKeyRemap(numpadEnter, static_cast<DWORD>(VK_TAB));
+            Offer(std::move(b));
+
+            Assert::IsTrue(gate->ApplyStageWithoutHook({ { VK_RETURN, 0x1C, false } }, [this](std::unique_ptr<State> staged) { Adopt(std::move(staged)); }));
+            Assert::IsTrue(gate->OrphanKeyCount() == 1);
+
+            CountEventsOf(VK_TAB);
+            Physical(VK_RETURN, false, 0x1C, true);
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+            Assert::IsTrue(gate->OrphanKeyCount() == 1);
+
+            Physical(VK_RETURN, true, 0x1C, true);
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+            Assert::IsFalse(IsDown(VK_RETURN));
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+        }
+
         // A transient load failure keeps a pending stage, so the requested profile is that stage's, not
         // cleared; with nothing staged it is cleared so the tracker can retry.
         TEST_METHOD (TransientFailure_RequestedProfileFollowsPendingStage)

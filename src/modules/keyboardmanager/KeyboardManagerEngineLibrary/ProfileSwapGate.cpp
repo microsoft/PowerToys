@@ -409,7 +409,11 @@ void ProfileSwapGate::SeedOrphans(const std::vector<KeySnapshot>& keysDown, cons
         key.downData.flags = snapshot.extended ? LLKHF_EXTENDED : 0;
         key.suppressed = false; // pass through: no hook was there to remap its key-down
         key.orphan = true;
-        key.estimatedScanCode = true; // MapVirtualKey's guess, see FindHeldKey
+        // The scan code is MapVirtualKey's guess, which can differ from what the hook reports for this
+        // key: the numpad/non-numpad pairs (Enter, arrows, Home/End, PgUp/PgDn, Ins/Del, numpad /) and
+        // also keys such as PrintScreen, Pause and NumLock. So every seeded key may be matched by
+        // virtual key until its own event settles the id (see FindHeldKey; limitation R-1 in the header).
+        key.estimatedScanCode = true;
         key.lastEvent = now;
         key.sequence = ++m_sequence;
         m_heldKeys[MakeKeyId(snapshot.scanCode, snapshot.extended, snapshot.vkCode)] = key;
