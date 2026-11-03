@@ -4,12 +4,15 @@
 
 using System;
 using System.Collections.Immutable;
+using System.IO;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
@@ -69,7 +72,47 @@ public partial class ProviderFallbackSettingsTests
         Assert.AreEqual(writesAfterFirstLoad + 1, settingsService.WriteCount);
     }
 
-    private static ServiceProvider CreateServices(FakeSettingsService settingsService)
+    [DataTestMethod]
+    [DataRow(true, true)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    public async Task LoadTopLevelCommands_SavedProvider_WritesOnlyNewFallbackDefaults(bool isEnabled, bool hasSavedFallback)
+    {
+        var saved = new SettingsModel
+        {
+            ProviderSettings = ImmutableDictionary<string, ProviderSettings>.Empty.Add(
+                ProviderId,
+                new ProviderSettings(isEnabled)
+                {
+                    FallbackCommands = hasSavedFallback
+                        ? ImmutableDictionary<string, FallbackSettings>.Empty.Add(FallbackId, new FallbackSettings(true))
+                        : ImmutableDictionary<string, FallbackSettings>.Empty,
+                }),
+        };
+        var persistence = new Mock<IPersistenceService>();
+        persistence.Setup(p => p.Load(It.IsAny<string>(), JsonSerializationContext.Default.SettingsModel)).Returns(saved);
+        persistence.Setup(p => p.Save(It.IsAny<SettingsModel>(), It.IsAny<string>(), JsonSerializationContext.Default.SettingsModel)).Returns(true);
+        var appInfo = new Mock<IApplicationInfoService>();
+        appInfo.Setup(a => a.ConfigDirectory).Returns(Path.Combine(Path.GetTempPath(), $"CmdPalTest_{Guid.NewGuid():N}"));
+        var settingsService = new SettingsService(persistence.Object, appInfo.Object);
+        await using var services = CreateServices(settingsService);
+
+        for (var i = 0; i < 10; i++)
+        {
+            await new CommandProviderWrapper(new TestCommandProvider(), TaskScheduler.Default).LoadTopLevelCommands(services);
+        }
+
+        var connected = settingsService.Settings.ProviderSettings[ProviderId];
+        Assert.AreEqual(isEnabled, connected.IsEnabled);
+        Assert.AreEqual("Test provider", connected.ProviderDisplayName);
+        Assert.IsTrue(connected.IsBuiltin);
+        Assert.IsTrue(connected.FallbackCommands[FallbackId].IncludeInGlobalResults);
+        persistence.Verify(
+            p => p.Save(It.IsAny<SettingsModel>(), It.IsAny<string>(), JsonSerializationContext.Default.SettingsModel),
+            hasSavedFallback ? Times.Never() : Times.Once());
+    }
+
+    private static ServiceProvider CreateServices(ISettingsService settingsService)
     {
         return new ServiceCollection()
             .AddSingleton(TaskScheduler.Default)

@@ -36,9 +36,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\GlobalKeyboardListener.cs" Link="Helpers\GlobalKeyboardListener.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\GlobalKeyboardHook.cs" Link="Helpers\GlobalKeyboardHook.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\IGlobalKeyboardHook.cs" Link="Helpers\IGlobalKeyboardHook.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\WindowsRunHistory.cs" Link="Helpers\WindowsRunHistory.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockFocusNavigation.cs" Link="Helpers\DockFocusNavigation.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockItemActions.cs" Link="Helpers\DockItemActions.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Dock\DockPageBackNavigation.cs" Link="Dock\DockPageBackNavigation.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\SearchBarBackRequestKind.cs" Link="Controls\SearchBarBackRequestKind.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockDropHelper.cs" Link="Helpers\DockDropHelper.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\QuickAccessShelfItemActions.cs" Link="Helpers\QuickAccessShelfItemActions.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ListItemDoubleTapTarget.cs" Link="Helpers\ListItemDoubleTapTarget.cs" />

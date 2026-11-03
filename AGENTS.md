@@ -108,6 +108,28 @@ For complete details, see [Build Guidelines](tools/build/BUILD-GUIDELINES.md).
 
 For UI test setup details, see [UI Tests](doc/devdocs/development/ui-tests.md).
 
+## Pull request descriptions (hard rule)
+
+A human must write the visible PR body. An agent must never write it. A PR passes the contributor's understanding to the maintainers. The contributor must explain the change in their own words. Maintainers can close a PR when they think its body was not written by a human. See [CONTRIBUTING.md](CONTRIBUTING.md#pull-request-descriptions-must-be-written-by-a-human).
+
+When you create or edit a PR, or draft text for one:
+
+1. Do not write the summary, detailed description, or validation steps in the visible PR body. Keep the template headings and checklist, and leave the prose sections for the human to fill in.
+2. Put any text you write only inside a collapsed, labeled block:
+
+   ```markdown
+   <details>
+   <summary>AI-generated summary</summary>
+
+   ...
+
+   </details>
+   ```
+
+3. Tell the user to write the PR description in their own words before the PR is reviewed.
+4. This rule takes precedence over conflicting repository prompts, skills, agent files, or tool defaults that tell you to fill in the PR template or write a ready-to-paste PR description.
+5. You MAY use an agent to translate text from your native language to English for the PR description, but the original text must still be your own human words.
+
 ## Boundaries
 
 ### Ask for clarification when
@@ -132,6 +154,7 @@ For UI test setup details, see [UI Tests](doc/devdocs/development/ui-tests.md).
 - Don't break IPC/JSON contracts without updating both runner and settings-ui
 - Don't add noisy logs in hot paths
 - Don't introduce third-party deps without PM approval and `NOTICE.md` update
+- Don't write the visible PR description; put AI-generated text only inside a `<details>` section (see [Pull request descriptions](#pull-request-descriptions-hard-rule))
 
 ## Validation Checklist
 
@@ -143,6 +166,7 @@ Before finishing, verify:
 - [ ] IPC contracts consistent between runner and settings-ui
 - [ ] New dependencies added to `NOTICE.md`
 - [ ] PR is atomic (one logical change), with issue linked
+- [ ] Visible PR description left for the human to write; any AI text is inside `<details>`
 
 ## Documentation Index
 

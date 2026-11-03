@@ -16,9 +16,17 @@ public static class TitleBarHelper
     /// </summary>
     public static void SetPreferredTheme(global::Microsoft.UI.Xaml.Window? window)
     {
+        SetPreferredTheme(window, TitleBarTheme.UseDefaultAppMode);
+    }
+
+    /// <summary>
+    /// Sets the title bar theme, allowing windows with an app-specific theme to override the Windows default.
+    /// </summary>
+    public static void SetPreferredTheme(global::Microsoft.UI.Xaml.Window? window, TitleBarTheme theme)
+    {
         if (window?.AppWindow is not null && AppWindowTitleBar.IsCustomizationSupported())
         {
-            window.AppWindow.TitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
+            window.AppWindow.TitleBar.PreferredTheme = theme;
         }
     }
 }

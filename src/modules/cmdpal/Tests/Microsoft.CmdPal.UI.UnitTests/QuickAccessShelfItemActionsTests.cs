@@ -80,7 +80,7 @@ public class QuickAccessShelfItemActionsTests
         Assert.HasCount(hasSecondary ? 1 : 0, invoked);
         if (hasSecondary)
         {
-            Assert.AreSame(item.SecondaryCommand!.Command.Model, invoked[0].Command);
+            Assert.AreSame(item.SecondaryCommand!.Command, invoked[0].Command);
             Assert.AreSame(item.Model.Unsafe, invoked[0].CommandContext);
         }
     }

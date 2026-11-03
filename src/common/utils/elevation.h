@@ -16,6 +16,9 @@
 
 #include <string>
 #include <filesystem>
+#include <functional>
+#include <vector>
+#include <wil/resource.h>
 
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
@@ -273,8 +276,11 @@ inline HANDLE run_elevated(const std::wstring& file, const std::wstring& params,
     return result  ? exec_info.hProcess : nullptr;
 }
 
-// Run command as non-elevated user, returns true if succeeded, puts the process id into returnPid if returnPid != NULL
-inline bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid, const wchar_t* workingDir = nullptr, const bool showWindow = true)
+// The owning overload also supports validating the Explorer parent and inspecting a suspended child.
+inline bool run_non_elevated(const std::wstring& file, const std::wstring& params,
+                             wil::unique_process_information& result, const wchar_t* workingDir = nullptr,
+                             const bool showWindow = true, const bool startSuspended = false,
+                             const std::function<bool(HANDLE)>& validateParent = {})
 {
     Logger::info(L"run_non_elevated with params={}", params);
     auto executable_args = L"\"" + file + L"\"";
@@ -297,13 +303,24 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
 
         return false;
     }
-    DWORD pid;
-    GetWindowThreadProcessId(hwnd, &pid);
+    DWORD pid = 0;
+    if (!GetWindowThreadProcessId(hwnd, &pid) || !pid)
+    {
+        Logger::error(L"Cannot determine the desktop shell process");
+        return false;
+    }
 
-    winrt::handle process{ OpenProcess(PROCESS_CREATE_PROCESS, FALSE, pid) };
+    winrt::handle process{ OpenProcess(PROCESS_CREATE_PROCESS | (validateParent ? PROCESS_QUERY_LIMITED_INFORMATION : 0), FALSE, pid) };
     if (!process)
     {
         Logger::error(L"OpenProcess() failed. {}", get_last_error_or_default(GetLastError()));
+        return false;
+    }
+
+    if (validateParent && !validateParent(process.get()))
+    {
+        Logger::error(L"Non-elevated process parent was rejected");
+        SetLastError(ERROR_ACCESS_DENIED);
         return false;
     }
 
@@ -323,6 +340,7 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
         Logger::error(L"InitializeProcThreadAttributeList() failed. {}", get_last_error_or_default(GetLastError()));
         return false;
     }
+    auto releaseAttributes = wil::scope_exit([&] { DeleteProcThreadAttributeList(pptal); });
 
     HANDLE process_handle = process.get();
     if (!UpdateProcThreadAttribute(pptal,
@@ -337,17 +355,17 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
         return false;
     }
 
-    STARTUPINFOEX siex = { 0 };
+    STARTUPINFOEXW siex = { 0 };
     siex.lpAttributeList = pptal;
     siex.StartupInfo.cb = sizeof(siex);
-    PROCESS_INFORMATION pi = { 0 };
-    auto dwCreationFlags = EXTENDED_STARTUPINFO_PRESENT;
+    wil::unique_process_information pi;
+    DWORD dwCreationFlags = EXTENDED_STARTUPINFO_PRESENT | (startSuspended ? CREATE_SUSPENDED : 0);
 
     if (!showWindow)
     {
         siex.StartupInfo.dwFlags = STARTF_USESHOWWINDOW;
         siex.StartupInfo.wShowWindow = SW_HIDE;
-        dwCreationFlags = CREATE_NO_WINDOW;
+        dwCreationFlags |= CREATE_NO_WINDOW;
     }
 
     auto succeeded = CreateProcessW(file.c_str(),
@@ -362,19 +380,7 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
                                     &pi);
     if (succeeded)
     {
-        if (pi.hProcess)
-        {
-            if (returnPid)
-            {
-                *returnPid = GetProcessId(pi.hProcess);
-            }
-
-            CloseHandle(pi.hProcess);
-        }
-        if (pi.hThread)
-        {
-            CloseHandle(pi.hThread);
-        }
+        result = std::move(pi);
     }
     else
     {
@@ -382,6 +388,17 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
     }
 
     return succeeded;
+}
+
+// Preserve the existing PID-only API and default launch behavior.
+inline bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid, const wchar_t* workingDir = nullptr, const bool showWindow = true)
+{
+    wil::unique_process_information process;
+    if (!run_non_elevated(file, params, process, workingDir, showWindow))
+        return false;
+    if (returnPid)
+        *returnPid = process.dwProcessId;
+    return true;
 }
 
 inline bool RunNonElevatedEx(const std::wstring& file, const std::wstring& params, const std::wstring& working_dir)

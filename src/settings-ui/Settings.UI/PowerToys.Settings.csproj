@@ -171,6 +171,8 @@
 		<ProjectReference Include="..\..\modules\powerdisplay\PowerDisplay.Models\PowerDisplay.Models.csproj" />
 		<ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
 		<ProjectReference Include="..\Settings.UI.Controls\Settings.UI.Controls.csproj" />
+		<Compile Include="..\..\modules\MouseWithoutBorders\App\Class\IPairingKeyCodec.cs" Link="MouseWithoutBorders\IPairingKeyCodec.cs" />
+		<Compile Include="..\..\modules\MouseWithoutBorders\App\Class\PairingKeyCodec.cs" Link="MouseWithoutBorders\PairingKeyCodec.cs" />
 	</ItemGroup>
 
 	<!-- XamlIndexBuilder now outputs directly to Assets\Settings -->

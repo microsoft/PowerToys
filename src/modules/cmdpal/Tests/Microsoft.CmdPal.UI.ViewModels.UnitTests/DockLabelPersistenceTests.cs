@@ -97,7 +97,7 @@ public sealed partial class DockLabelPersistenceTests
         });
         dock.SnapshotBandOrder();
 
-        var (band, root) = CreateBandViewModel(pendingBand, settingsService);
+        var (band, root, context) = CreateBandViewModel(pendingBand, settingsService);
         try
         {
             dock.StartItems.Add(band);
@@ -118,6 +118,7 @@ public sealed partial class DockLabelPersistenceTests
         {
             band.SafeCleanup();
             root.SafeCleanup();
+            GC.KeepAlive(context);
         }
     }
 
@@ -136,7 +137,7 @@ public sealed partial class DockLabelPersistenceTests
             TaskScheduler.Default,
             settingsService);
 
-        var (band, root) = CreateBandViewModel(staleBand, settingsService);
+        var (band, root, context) = CreateBandViewModel(staleBand, settingsService);
         try
         {
             dock.StartItems.Add(band);
@@ -158,6 +159,7 @@ public sealed partial class DockLabelPersistenceTests
         {
             band.SafeCleanup();
             root.SafeCleanup();
+            GC.KeepAlive(context);
         }
     }
 
@@ -189,7 +191,7 @@ public sealed partial class DockLabelPersistenceTests
         });
         dock.SnapshotBandOrder();
 
-        var (band, root) = CreateBandViewModel(pendingBand, settingsService);
+        var (band, root, context) = CreateBandViewModel(pendingBand, settingsService);
         try
         {
             dock.StartItems.Add(band);
@@ -208,6 +210,7 @@ public sealed partial class DockLabelPersistenceTests
         {
             band.SafeCleanup();
             root.SafeCleanup();
+            GC.KeepAlive(context);
         }
     }
 
@@ -259,7 +262,7 @@ public sealed partial class DockLabelPersistenceTests
         };
     }
 
-    private static (DockBandViewModel Band, CommandItemViewModel Root) CreateBandViewModel(
+    private static (DockBandViewModel Band, CommandItemViewModel Root, TestPageContext Context) CreateBandViewModel(
         DockBandSettings settings,
         ISettingsService settingsService)
     {
@@ -272,17 +275,18 @@ public sealed partial class DockLabelPersistenceTests
         };
         var root = new CommandItemViewModel(
             new(new CommandItem(page) { Title = page.Title }),
-            new(context),
+            new WeakReference<IPageContext>(context),
             DefaultContextMenuFactory.Instance);
         root.SlowInitializeProperties();
 
         return (
             new DockBandViewModel(
                 root,
-                new(context),
+                new WeakReference<IPageContext>(context),
                 settings,
                 settingsService,
                 DefaultContextMenuFactory.Instance),
-            root);
+            root,
+            context);
     }
 }

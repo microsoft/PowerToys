@@ -10,7 +10,6 @@ using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
-using Microsoft.CmdPal.UI.Pages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -22,6 +21,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -575,7 +575,7 @@ public sealed partial class SearchBar : UserControl, INotifyPropertyChanged, ICu
     {
         this.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
         {
-            if (this.FindAscendant<ShellPage>()?.HostWindow?.IsVisibleToUser == true &&
+            if (FindHost()?.CanFocusSearchBar == true &&
                 FocusManager.FindFirstFocusableElement(this) is DependencyObject focusable)
             {
                 var operation = FocusManager.TryFocusAsync(focusable, FocusState.Keyboard);
@@ -586,6 +586,22 @@ public sealed partial class SearchBar : UserControl, INotifyPropertyChanged, ICu
                 }
             }
         });
+    }
+
+    private ISearchBarHost? FindHost()
+    {
+        var current = VisualTreeHelper.GetParent(this);
+        while (current is not null)
+        {
+            if (current is ISearchBarHost host)
+            {
+                return host;
+            }
+
+            current = VisualTreeHelper.GetParent(current);
+        }
+
+        return null;
     }
 
     private void Page_SearchSuggestionChanged(object? sender, PageSearchSuggestionChangedEventArgs e)

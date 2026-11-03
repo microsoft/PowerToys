@@ -195,6 +195,66 @@ function New-IdentitySet {
     return ,$set
 }
 
+function Get-HistoryPrIdentitySet {
+    param([Parameter(Mandatory)][string]$Commit)
+
+    $set = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    foreach ($subject in @(Invoke-Git log --format=%s $Commit)) {
+        $prNumber = Get-SubjectPrNumber -Subject ([string]$subject)
+        if ($prNumber) {
+            [void]$set.Add("pr:$prNumber")
+        }
+    }
+    return ,$set
+}
+
+function Get-HistoryPatchIdSet {
+    param([Parameter(Mandatory)][string]$Commit)
+
+    # Stream each full history once instead of spawning git for every commit.
+    $patchOutput = & {
+        & git -C $RepoPath log --format=%H --patch --cc --no-ext-diff --binary $Commit
+        if ($LASTEXITCODE -ne 0) {
+            throw "git log failed while collecting patches reachable from $Commit."
+        }
+    } | & git -C $RepoPath patch-id --stable
+    if ($LASTEXITCODE -ne 0) {
+        throw "git patch-id failed for history reachable from $Commit."
+    }
+
+    $set = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    foreach ($line in $patchOutput) {
+        if ([string]$line -notmatch "^([0-9a-fA-F]{40})\s+[0-9a-fA-F]{40}$") {
+            throw "Unexpected git patch-id output: $line"
+        }
+        [void]$set.Add($matches[1])
+    }
+    return ,$set
+}
+
+function Test-PromotionMerge {
+    param(
+        [Parameter(Mandatory)]$Record,
+        [Parameter(Mandatory)][string]$OtherTip
+    )
+
+    if ($Record.patchId) {
+        return $false
+    }
+
+    $parents = @(([string](Invoke-Git show -s --format=%P $Record.sha)).Trim() -split "\s+" | Where-Object { $_ })
+    if ($parents.Count -lt 2) {
+        return $false
+    }
+
+    foreach ($parent in $parents[1..($parents.Count - 1)]) {
+        if (-not (Test-Ancestor -Ancestor $parent -Descendant $OtherTip)) {
+            return $false
+        }
+    }
+    return $true
+}
+
 function Resolve-CrossSidePatchIdentities {
     param(
         [Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Left,
@@ -274,6 +334,32 @@ Resolve-CrossSidePatchIdentities -Left $targetRecords -Right $previousRecords
 
 $previousIdentities = New-IdentitySet -Records $previousRecords
 $targetIdentities = New-IdentitySet -Records $targetRecords
+
+if ($deltaMode -eq "branch-transition") {
+    $previousHistoryPrIdentities = Get-HistoryPrIdentitySet -Commit $previousSha
+    $targetHistoryPrIdentities = Get-HistoryPrIdentitySet -Commit $targetSha
+    foreach ($identity in $previousHistoryPrIdentities) {
+        [void]$previousIdentities.Add($identity)
+    }
+    foreach ($identity in $targetHistoryPrIdentities) {
+        [void]$targetIdentities.Add($identity)
+    }
+
+    $previousHistoryPatchIds = Get-HistoryPatchIdSet -Commit $previousSha
+    $targetHistoryPatchIds = Get-HistoryPatchIdSet -Commit $targetSha
+    foreach ($record in $previousRecords) {
+        if (($record.patchId -and $targetHistoryPatchIds.Contains([string]$record.patchId)) -or
+            (Test-PromotionMerge -Record $record -OtherTip $targetSha)) {
+            [void]$targetIdentities.Add([string]$record.identity)
+        }
+    }
+    foreach ($record in $targetRecords) {
+        if (($record.patchId -and $previousHistoryPatchIds.Contains([string]$record.patchId)) -or
+            (Test-PromotionMerge -Record $record -OtherTip $previousSha)) {
+            [void]$previousIdentities.Add([string]$record.identity)
+        }
+    }
+}
 
 $addedPrs = Get-PrOutput -Records $targetRecords -OtherSide $previousIdentities
 $removedPrs = if ($deltaMode -eq "branch-transition") {

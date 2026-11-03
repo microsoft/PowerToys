@@ -15,4 +15,5 @@ public:
     static void ZoomItActivateRecord() noexcept;
     static void ZoomItActivateSnip() noexcept;
     static void ZoomItActivateSnipOcr() noexcept;
+    static void ZoomItActivateSnipDictate() noexcept;
 };

@@ -1,5 +1,15 @@
 # Adaptive Cards polyfills
 
+> [!WARNING] 
+> Here be basilisks!
+>
+> This entire library is maintained by LLMs. Humans didn't write the code, and
+> no human actually owns this code. 
+>
+> We're using this library to fill gaps in the WinUI 3 Adaptive Cards renderer.
+> Ideally, the upstream renderer will support these in the fullness of time, and
+> we'll be able to delete this library.
+
 The WinUI 3 Adaptive Cards renderer doesn't support everything in the current Adaptive Cards schema. This library fills the gaps until it does:
 
 - The `Chart.Line`, `Chart.VerticalBar`, `Chart.HorizontalBar`, `Chart.HorizontalBar.Stacked`, `ProgressBar`, `Badge`, and `Icon` elements.
@@ -17,13 +27,12 @@ AdaptiveCardPolyfills.RegisterRenderers(renderer);
 _cardUpdater = new IncrementalAdaptiveCardUpdater(..., AdaptiveCardPolyfills.PatchableElements);
 ```
 
-The host provides:
+The library is self-contained, so deleting it only means removing these calls and the project reference:
 
-- **Container styles.** `roundedCorners` and `showBorder` apply the `CmdPal.Adaptive.Container.Rounded`, `CmdPal.Adaptive.Container.Bordered`, and `CmdPal.Adaptive.Container.RoundedBordered` styles from the renderer's override styles (`CardOverrideStyles` in `ContentFormControl.xaml`).
+- **Strings.** The `AdaptiveChart_*` strings live in this library's `Properties\Resources.resx`: chart names and summaries for screen readers, and the suffixes of compact numbers such as 12.3K.
+- **Element JSON.** `AdaptiveCustomElementJson` is internal. Command Palette's settings inputs keep their own copy, so nothing outside this library depends on it.
 
-The library owns its localized chart names, screen-reader summaries, and compact-number formats in `Properties\Resources.resx`; hosts do not supply a string lookup.
-
-`AdaptiveCustomElementJson` is public too: Command Palette's settings inputs, which are custom elements, use it to read and write the properties every element has.
+The host provides **container styles**. `roundedCorners` and `showBorder` apply the `CmdPal.Adaptive.Container.Rounded`, `CmdPal.Adaptive.Container.Bordered`, and `CmdPal.Adaptive.Container.RoundedBordered` styles from the renderer's override styles (`CardOverrideStyles` in `ContentFormControl.xaml`).
 
 ## How an element works
 
@@ -35,6 +44,8 @@ Each element has two parts, joined in `AdaptiveCardPolyfills`:
 Models read only the properties that the element's page in the [Adaptive Cards element reference](https://adaptivecards.microsoft.com/) defines, with the defaults it gives, such as `showTitle` off and `showLegend` on. Don't add properties of your own: a card that relies on one renders differently in other hosts, and the schema doesn't allow it. Make rendering choices in the control instead. For example, line charts are always smooth and filled, and a line chart narrower than `LineChartLayout.CompactWidth` draws as a sparkline.
 
 `AdaptiveCardPolyfills` lists every element with its parser and control factory. `PatchableElements` lets the incremental updater move a new model into an existing control instead of rebuilding the card, so a line chart that gains one sample scrolls instead of redrawing.
+
+A model whose `RendersItself` is false can't draw itself, so the element shows its `fallback` instead. `AdaptiveFallbackRenderer` draws it, since the WinUI 3 renderer drops fallback content.
 
 `AdaptiveContainerDecoratorRenderer` wraps the built-in container, column set, and column renderers to apply the container styles.
 
@@ -59,7 +70,7 @@ Supporting signed horizontal data requires a common zero baseline, bars extendin
 ## Add an element
 
 1. Add a model that implements `IAdaptiveVisualModel` with a static `Parse(string elementJson, ICollection<string> warnings)`. Read the properties on the element's reference page, and nothing else.
-2. Add a control that derives from `AdaptiveVisualControl`, and implement `RenderCore` and `ApplyModel`. Read any text it shows with `Properties.Resources`, and add the string to this library's `Properties\Resources.resx`.
+2. Add a control that derives from `AdaptiveVisualControl`, and implement `RenderCore` and `ApplyModel`. Add any text it shows to this library's `Properties\Resources.resx`, and read it with `Properties.Resources`.
 3. Add the element to the list in `AdaptiveCardPolyfills`.
 4. Add parsing tests to `Tests\Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests`.
 
@@ -79,4 +90,4 @@ When a renderer release adds one:
 1. Update `AdaptiveCards.Rendering.WinUI3` in `Directory.Packages.props`. Registrations here replace the renderer's own, so the update alone doesn't change any card.
 2. Compare the two. The renderer's controls don't update in place, so a live chart would be rebuilt on every update unless the renderer adds that.
 3. Remove the element from `AdaptiveCardPolyfills`, with its files and tests. Extensions don't change, since they send schema JSON.
-4. When nothing is left, move `AdaptiveCustomElementJson` back to Command Palette, and delete this project and its tests.
+4. When nothing is left, delete this project and its tests, and remove the calls in `ContentFormControl`.
