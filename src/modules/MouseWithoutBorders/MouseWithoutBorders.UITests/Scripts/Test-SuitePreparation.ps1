@@ -180,14 +180,14 @@ try {
             $connected = Connect-Guest 'fixture-key' 'PEER'
             $expected = @(
                 'wait:MouseWithoutBordersShowConnectFieldsButton',
-                'click:MouseWithoutBordersShowConnectFieldsButton',
+                'invoke:MouseWithoutBordersShowConnectFieldsButton',
                 'wait:ConnectSecurityKeyTextBox',
                 'wait:ConnectPCNameTextBox',
                 'set-value:ConnectSecurityKeyTextBox',
                 'set-value:ConnectPCNameTextBox',
                 'invoke:MouseWithoutBordersConnectButton'
             )
-            Assert-Check (($script:connectActions -join '|') -ceq ($expected -join '|')) 'guest opens the ready input row with one click, waits for both fields, and invokes the real Connect command'
+            Assert-Check (($script:connectActions -join '|') -ceq ($expected -join '|')) 'guest opens the ready input row with one UIA invocation, waits for both fields, and invokes the real Connect command'
             Assert-Check ($connected.Submitted -and $connected.Acknowledged) 'guest connection still requires the persisted pairing acknowledgement'
         }
         $script:config = @{ RunId = [Guid]::NewGuid().ToString(); Role = 'Guest' }
