@@ -17,7 +17,6 @@
 #include <common/Telemetry/EtwTrace/EtwTrace.h>
 #include <common/notifications/notifications.h>
 #include <common/notifications/dont_show_again.h>
-#include <common/updating/installer.h>
 #include <common/updating/updating.h>
 #include <common/updating/updateState.h>
 #include <common/utils/appMutex.h>
@@ -66,6 +65,27 @@ namespace
 {
     const wchar_t PT_URI_PROTOCOL_SCHEME[] = L"powertoys://";
     const wchar_t POWER_TOYS_MODULE_LOAD_FAIL[] = L"Failed to load "; // Module name will be appended on this message and it is not localized.
+
+    // "Local Settings" is the non-roaming part of HKCU, so the marker stays with the machine whose registrations were removed.
+    const wchar_t VIDEO_CONFERENCE_CLEANUP_MARKER_KEY[] = L"Software\\Classes\\Local Settings\\Software\\Microsoft\\PowerToys";
+    const wchar_t VIDEO_CONFERENCE_CLEANUP_DONE_VALUE[] = L"VideoConferenceMuteCleanupDone";
+
+    bool is_video_conference_cleanup_done()
+    {
+        DWORD value = 0;
+        DWORD size = sizeof(value);
+        return RegGetValueW(HKEY_CURRENT_USER, VIDEO_CONFERENCE_CLEANUP_MARKER_KEY, VIDEO_CONFERENCE_CLEANUP_DONE_VALUE, RRF_RT_REG_DWORD, nullptr, &value, &size) == ERROR_SUCCESS && value == 1;
+    }
+
+    void mark_video_conference_cleanup_done()
+    {
+        const DWORD value = 1;
+        const LSTATUS result = RegSetKeyValueW(HKEY_CURRENT_USER, VIDEO_CONFERENCE_CLEANUP_MARKER_KEY, VIDEO_CONFERENCE_CLEANUP_DONE_VALUE, REG_DWORD, &value, sizeof(value));
+        if (result != ERROR_SUCCESS)
+        {
+            Logger::warn(L"Failed to record Video Conference Mute cleanup marker, error: {}", result);
+        }
+    }
 }
 
 void chdir_current_executable()
@@ -128,9 +148,10 @@ void DetectAiCapabilitiesAsync(bool skipSettingsCheck)
 
             if (ShellExecuteExW(&sei))
             {
+                const wil::unique_handle process{ sei.hProcess };
+
                 // Wait for detection to complete (with timeout)
-                DWORD waitResult = WaitForSingleObject(sei.hProcess, 30000); // 30 second timeout
-                CloseHandle(sei.hProcess);
+                DWORD waitResult = WaitForSingleObject(process.get(), 30000); // 30 second timeout
 
                 if (waitResult == WAIT_OBJECT_0)
                 {
@@ -259,21 +280,24 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             Logger::info(L"AI capability detection skipped: Windows 10 does not support AI Super Resolution");
         }
 
-        std::thread{ [] {
-            if (updating::uninstall_previous_msix_version_async().get())
-            {
-                notifications::show_toast(GET_RESOURCE_STRING(IDS_OLDER_MSIX_UNINSTALLED).c_str(), L"PowerToys");
-            }
-        } }.detach();
-
         chdir_current_executable();
 
         // We deprecated a utility called Video Conference Mute, which registered itself as a video input device.
         // When running elevated, we try to clean up the device registration from previous installations.
-        // This is done here too because a user-scope installer won't be able to remove the driver registration due to lack of permissions.
-        if (isProcessElevated)
+        // A user-scope installer can't remove the HKCR / HKLM WOW6432Node registration due to lack of permissions,
+        // and upgrades from 0.87 or older may still have it, so the elevated runner is the only place this reliably happens.
+        // The marker is recorded only after every key is gone, so a failed cleanup is retried on the next elevated start.
+        if (isProcessElevated && !is_video_conference_cleanup_done())
         {
-            clean_video_conference();
+            const LSTATUS cleanupResult = clean_video_conference();
+            if (cleanupResult == ERROR_SUCCESS)
+            {
+                mark_video_conference_cleanup_done();
+            }
+            else
+            {
+                Logger::warn(L"Video Conference Mute cleanup failed, will retry on next elevated start, error: {}", cleanupResult);
+            }
         }
 
         // Load PowerToys DLLs
@@ -598,6 +622,22 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         // then modules to guarantee the reverse destruction order.
         modules();
 
+        // Join module workers before CRT exit holds the shared UCRT exit lock.
+        // This guard runs before the settings CLI lock and instance mutex are released.
+        auto shutdown_modules = wil::scope_exit([] {
+            cancel_settings_window_startup();
+            CentralizedKeyboardHook::Stop();
+            for (const auto& module : modules())
+            {
+                CentralizedKeyboardHook::ClearModuleHotkeys(module.first);
+                CentralizedHotkeys::UnregisterHotkeysForModule(module.first);
+            }
+
+            Logger::info("Unloading {} modules before CRT exit", modules().size());
+            modules().clear();
+            Logger::info("Runner module shutdown completed");
+        });
+
         std::thread{ [] {
             auto state = UpdateState::read();
             if (state.state == UpdateState::upToDate)
@@ -673,7 +713,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
 
     if (is_restart_scheduled())
     {
-        modules().clear();
         if (!restart_if_scheduled())
         {
             // If it's not possible to restart non-elevated due to some condition in the user's configuration, user should start PowerToys manually.

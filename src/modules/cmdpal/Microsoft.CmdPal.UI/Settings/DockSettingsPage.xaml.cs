@@ -246,6 +246,8 @@ public sealed partial class DockSettingsPage : Page, IDisposable
     {
         DockBackdrop.Transparent => 0,
         DockBackdrop.Acrylic => 1,
+        DockBackdrop.Mica => 2,
+        DockBackdrop.MicaAlt => 3,
         _ => 1,
     };
 
@@ -253,6 +255,8 @@ public sealed partial class DockSettingsPage : Page, IDisposable
     {
         0 => DockBackdrop.Transparent,
         1 => DockBackdrop.Acrylic,
+        2 => DockBackdrop.Mica,
+        3 => DockBackdrop.MicaAlt,
         _ => DockBackdrop.Acrylic,
     };
 

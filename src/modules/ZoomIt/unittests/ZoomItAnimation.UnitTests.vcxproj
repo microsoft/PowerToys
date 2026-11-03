@@ -36,6 +36,7 @@
     <ClCompile Include="DictationBadgeTests.cpp" />
     <ClCompile Include="DictationFinalizationTests.cpp" />
     <ClCompile Include="PasteChaperoneTests.cpp" />
+    <ClCompile Include="DemoTypeClipboardTests.cpp" />
     <ClCompile Include="WhisperLanguageTests.cpp" />
     <ClCompile Include="..\ZoomIt\third_party\whisper\whisper.cpp">
       <WarningLevel>TurnOffAllWarnings</WarningLevel>

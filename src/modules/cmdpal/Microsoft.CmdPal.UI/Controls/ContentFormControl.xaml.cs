@@ -6,6 +6,7 @@ using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
 using ManagedCommon;
 using Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
+using Microsoft.CmdPal.AdaptiveCards.Polyfills;
 using Microsoft.CmdPal.UI.Controls.AdaptiveCards;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
@@ -43,6 +44,7 @@ public sealed partial class ContentFormControl : UserControl
         RegisterParser<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementParser>();
         RegisterParser<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementParser>();
         RegisterParser<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementParser>();
+        AdaptiveCardPolyfills.RegisterParsers(AdaptiveCardParserRegistrations.ElementParsers);
 
         _customElementParsersRegistered = true;
     }
@@ -60,11 +62,13 @@ public sealed partial class ContentFormControl : UserControl
         RegisterRenderer<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementRenderer>(renderer);
         RegisterRenderer<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementRenderer>(renderer);
         RegisterRenderer<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementRenderer>(renderer);
+        AdaptiveCardPolyfills.RegisterRenderers(renderer);
         _cardUpdater = new IncrementalAdaptiveCardUpdater(
             renderer,
             CardHost,
             AdaptiveCardParserRegistrations.ElementParsers,
-            AdaptiveCardParserRegistrations.ActionParsers);
+            AdaptiveCardParserRegistrations.ActionParsers,
+            AdaptiveCardPolyfills.PatchableElements);
 
         // TODO in the future, we should handle ActualThemeChanged and replace
         // our rendered card with one for that theme. But today is not that day

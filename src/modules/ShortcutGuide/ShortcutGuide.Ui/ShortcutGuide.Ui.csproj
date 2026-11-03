@@ -43,6 +43,11 @@
     </None>
   </ItemGroup>
 
+  <!-- Manifest files use a ".en-US.yml" suffix that MakePri misreads as a resource qualifier (PRI249); they are plain content, not MRT resources. -->
+  <ItemGroup>
+    <_AppxLayoutAssetPackageFiles Include="$(MSBuildProjectDirectory)\Assets\ShortcutGuide\Manifests\*.yml" />
+  </ItemGroup>
+
   <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
     <Message Text="Executing CopyPRIFileToOutputDir task" Importance="High" />
 

@@ -9,7 +9,7 @@ It launches ZoomIt through the PowerToys runner, not as the standalone Sysintern
 | Checklist | Automated scenario and observable result |
 |---|---|
 | Enable ZoomIt | Settings off/on changes the actual process lifecycle; the configured shortcut then produces a magnified image. |
-| 1 | Left- and right-clicking the real notification icon each opens exactly Break Timer, Draw, Zoom, and Record. |
+| 1 | Left- and right-clicking the real notification icon each opens Settings, a separator, Break Timer, Draw, Zoom, Record, a separator, and Exit, in that order. Settings navigates from General to ZoomIt's PowerToys page, including when Settings is minimized. Exit removes the icon and stops only ZoomIt; Settings can then re-enable it. |
 | 2-3 | The Settings switch removes and restores the Shell icon, including the notification overflow. |
 | 4 | Static zoom doubles a known marker, freezes subsequent source updates, and exits with both Escape and the configured shortcut. |
 | 5 | Live Zoom magnifies the marker and displays subsequent source updates; its shortcut exits. |

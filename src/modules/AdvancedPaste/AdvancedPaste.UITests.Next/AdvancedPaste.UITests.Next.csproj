@@ -8,7 +8,6 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <IsPackable>false</IsPackable>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>AdvancedPaste.UITests</RootNamespace>
     <AssemblyName>AdvancedPaste.UITests.Next</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>

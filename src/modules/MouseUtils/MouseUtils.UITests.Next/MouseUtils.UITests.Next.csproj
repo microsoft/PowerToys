@@ -8,7 +8,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>MouseUtils.UITests</RootNamespace>
     <AssemblyName>MouseUtils.UITests.Next</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>

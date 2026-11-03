@@ -3,8 +3,18 @@ variables:
     value: false
   - name: EnablePipelineCache
     value: true
+  # CodeQL tracing roughly doubles the main build and pushes jobs past their timeout.
+  # .pipelines\v2\codeql.yml scans main on a schedule instead.
+  - name: Codeql.Enabled
+    value: false
 
 parameters:
+  - name: umdfHidArm64Image
+    type: string
+    default: disabled
+    values:
+      - disabled
+      - SHINE-W11-Preview-Testing-arm64-TestSigning
   - name: buildPlatforms
     type: object
     default:
@@ -82,6 +92,18 @@ stages:
             msBuildCacheIsReadOnly: ${{ parameters.msBuildCacheIsReadOnly }}
             runTests: ${{ parameters.runTests }}
             buildTests: true
+            prepareMwbRuntime: ${{ and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}
+            prepareUmdfHid: ${{ and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(parameters.umdfHidArm64Image, 'disabled')))) }}
+            ${{ if and(parameters.runAffectedUiTests, or(eq(platform, 'x64'), and(eq(platform, 'arm64'), ne(parameters.umdfHidArm64Image, 'disabled')))) }}:
+              dependsOn:
+                - Resolve
+              # Resolve is skipped outside PR builds; the ordinary build must still run.
+              condition: and(not(failed()), not(canceled()))
+              variables:
+                MwbSandboxSelected: $[ dependencies.Resolve.outputs['resolve.hasMwbUiTests'] ]
+                UmdfHidSelected: $[ dependencies.Resolve.outputs['resolve.hasUmdfHidUiTests'] ]
+              mwbRuntimeCondition: and(succeeded(), eq(variables['MwbSandboxSelected'], 'true'))
+              umdfHidCondition: and(succeeded(), eq(variables['UmdfHidSelected'], 'true'))
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
             ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
@@ -124,8 +146,12 @@ stages:
                 condition: and(succeeded(), eq(dependencies.Resolve.outputs['resolve.hasUiTests'], 'true'))
 
           - ${{ if ne(platform, 'x64') }}:
-            - template: job-test-project.yml
+            - template: job-test-arm64.yml
               parameters:
+                ${{ if eq(parameters.umdfHidArm64Image, 'disabled') }}:
+                  umdfHidArm64Image: ''
+                ${{ else }}:
+                  umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
                 platform: ${{ platform }}
                 configuration: Release
                 buildSource: buildNowSlim

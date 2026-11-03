@@ -48,6 +48,7 @@
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="FileLocksmithCLITests.cpp" />
+    <ClCompile Include="NtdllExtensionsTests.cpp" />
     <ClCompile Include="..\CLILogic.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>

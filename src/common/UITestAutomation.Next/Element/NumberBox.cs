@@ -15,14 +15,7 @@ public class NumberBox : Element
     /// <summary>Set the value directly through UIA ValuePattern or RangeValuePattern.</summary>
     public NumberBox SetValue(double value)
     {
-        EnsureBound();
-        WinappCli.InvokeAssertSuccess(
-            "ui",
-            "set-value",
-            Selector,
-            value.ToString(CultureInfo.InvariantCulture),
-            Owner!.TargetFlag,
-            Owner!.TargetValue);
+        WinappCli.InvokeAssertSuccess(BuildSetValueArguments(value.ToString(CultureInfo.InvariantCulture)));
         return this;
     }
 }

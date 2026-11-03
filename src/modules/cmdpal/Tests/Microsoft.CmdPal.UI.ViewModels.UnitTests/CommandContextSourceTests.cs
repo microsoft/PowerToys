@@ -43,23 +43,24 @@ public sealed class CommandContextSourceTests
         var model = new CommandItem(page);
         var itemViewModel = new CommandItemViewModel(new(model), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
         itemViewModel.SlowInitializeProperties();
-        var topLevel = new TopLevelViewModel(itemViewModel, TopLevelType.Normal, host, provider, new ProviderSettings(), services, model, DefaultContextMenuFactory.Instance);
+        var topLevel = new TopLevelViewModel(itemViewModel, TopLevelType.Normal, host, provider, new ProviderSettings(), services, DefaultContextMenuFactory.Instance);
 
         try
         {
             IListItem item = topLevel;
             for (var i = 0; i < wrapperCount; i++)
             {
-                item = new RecentCommandListItem(item, "recorded-history-id");
+                item = new RecentCommandListItem(new(item), "recorded-history-id");
             }
 
-            var message = new PerformCommandMessage(new(item.Command), new ExtensionObject<IListItem>(item));
+            var message = new PerformCommandMessage(itemViewModel.Command, new ExtensionObject<IListItem>(item));
             var contextSource = message.CommandContext as ICommandContextSource;
 
             Assert.IsNotNull(contextSource);
             Assert.AreSame(host, contextSource.ExtensionHost);
             Assert.AreSame(provider, contextSource.ProviderContext);
-            Assert.AreSame(page, message.Command.Unsafe);
+            Assert.AreSame(itemViewModel.Command, message.Command);
+            Assert.AreSame(page, message.Command.Model.Unsafe);
             Assert.AreSame(item, message.CommandContext);
         }
         finally
@@ -77,7 +78,7 @@ public sealed class CommandContextSourceTests
         var source = new Mock<IListItem>();
         source.As<ICommandContextSource>().SetupGet(context => context.ExtensionHost).Returns(host);
         source.As<ICommandContextSource>().SetupGet(context => context.ProviderContext).Returns(provider);
-        ICommandContextSource recent = new RecentCommandListItem(source.Object, "recorded-history-id");
+        ICommandContextSource recent = new RecentCommandListItem(new(source.Object), "recorded-history-id");
 
         Assert.AreSame(host, recent.ExtensionHost);
         Assert.AreSame(provider, recent.ProviderContext);
@@ -87,7 +88,7 @@ public sealed class CommandContextSourceTests
     public void RecentItem_WithoutContextSource_ProvidesNoContext()
     {
         var app = new ListItem(new NoOpCommand());
-        ICommandContextSource recent = new RecentCommandListItem(app, "app.id");
+        ICommandContextSource recent = new RecentCommandListItem(new(app), "app.id");
 
         Assert.IsNull(recent.ExtensionHost);
         Assert.IsNull(recent.ProviderContext);

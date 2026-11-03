@@ -62,6 +62,7 @@ namespace Microsoft.PowerToys.Settings.UI
             this.InitializeComponent();
 
             SetTitleBar();
+            this.SetIcon("Assets\\Settings\\icon.ico");
 
             RootGrid.DataContext = ViewModel;
 
@@ -167,12 +168,6 @@ namespace Microsoft.PowerToys.Settings.UI
         private void WhatIsNewItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
             ((App)App.Current)!.OpenScoobe();
-        }
-
-        private void Window_Activated(object sender, WindowActivatedEventArgs args)
-        {
-            // Set window icon
-            this.SetIcon("Assets\\Settings\\icon.ico");
         }
 
         private void Window_Closed(object sender, WindowEventArgs args)
