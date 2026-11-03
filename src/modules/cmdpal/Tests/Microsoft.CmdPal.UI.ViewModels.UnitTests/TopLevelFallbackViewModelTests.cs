@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections;
 using System.Collections.Immutable;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Helpers;
@@ -250,6 +252,52 @@ public sealed partial class TopLevelFallbackViewModelTests
     }
 
     [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public void ReadTextForRender_StaysBoundedWhileUpdatesAreCancelled(bool reportRankChanges, bool hideAfterCap)
+    {
+        var fallback = new QueryTitleFallback("test.shell");
+        using var services = CreateServices();
+        var topLevel = CreateTopLevel(fallback, new ProviderSettings(), services);
+        using var superseded = CreateCancelledTokenSource();
+
+        try
+        {
+            topLevel.SafeUpdateFallbackTextSynchronous("Run a", reportRankChanges, CancellationToken.None);
+            _ = topLevel.ReadTextForRender();
+
+            // A slow fallback finishes each query only after the next one supersedes it, so no
+            // update clears what the renders record.
+            for (var i = 0; i < 100; i++)
+            {
+                topLevel.SafeUpdateFallbackTextSynchronous($"Run {i}", reportRankChanges, superseded.Token);
+                _ = topLevel.ReadTextForRender();
+            }
+
+            // Hiding it after the cap is reached must still be recorded.
+            if (hideAfterCap)
+            {
+                topLevel.SafeUpdateFallbackTextSynchronous(string.Empty, reportRankChanges, superseded.Token);
+                _ = topLevel.ReadTextForRender();
+            }
+
+            var recorded = RenderedTextCount(topLevel);
+            Assert.IsTrue(recorded <= 3, $"Renders recorded {recorded} texts.");
+
+            // The latest update returns to the first title, so only the later renders the history
+            // kept make it differ. That can re-rank a global fallback, but other fallbacks refresh
+            // only to show or hide.
+            Assert.AreEqual(reportRankChanges || hideAfterCap, topLevel.SafeUpdateFallbackTextSynchronous("Run a", reportRankChanges, CancellationToken.None));
+        }
+        finally
+        {
+            topLevel.Cleanup();
+        }
+    }
+
+    [TestMethod]
     public void SelectVisibleFallbacks_RecordsTheTitleItFiltersOn()
     {
         var fallback = new QueryTitleFallback("test.common");
@@ -431,6 +479,9 @@ public sealed partial class TopLevelFallbackViewModelTests
         source.Cancel();
         return source;
     }
+
+    private static int RenderedTextCount(TopLevelFallbackViewModel topLevel) =>
+        ((ICollection)typeof(TopLevelFallbackViewModel).GetField("_renderedTexts", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(topLevel)!).Count;
 
     private static ServiceProvider CreateServices() => new ServiceCollection().AddSingleton(Mock.Of<ISettingsService>()).BuildServiceProvider();
 

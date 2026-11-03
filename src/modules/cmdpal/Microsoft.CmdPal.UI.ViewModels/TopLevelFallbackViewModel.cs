@@ -25,6 +25,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
     // Compare updates against title/subtitle pairs rendered since the last refresh request.
     // A render can catch a partial or superseded update, and the last pair may come from
     // a discarded fetch. All hidden pairs count as one.
+    // Renders record only pairs that can change an update's result, so this stays small.
     private readonly List<RenderedText> _renderedTexts = [];
 
     private string _displayTitle = string.Empty;
@@ -162,13 +163,35 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
         lock (_renderedTextLock)
         {
             var text = new RenderedText(Title, Subtitle);
-            if (!HasRendered(text))
+            if (!HasRendered(text) && CanChangeUpdateResult(text))
             {
                 _renderedTexts.Add(text);
             }
 
             return (text.Title, text.Subtitle);
         }
+    }
+
+    // Once two recorded texts render differently, every new text renders differently from one of
+    // them, so a further text matters only if it is the first shown or hidden one. That caps the list
+    // at three entries even while cancelled updates keep it from being cleared, such as when a slow
+    // fallback finishes each query only after the next one supersedes it.
+    private bool CanChangeUpdateResult(RenderedText text)
+    {
+        if (_renderedTexts.Count < 2)
+        {
+            return true;
+        }
+
+        foreach (var renderedText in _renderedTexts)
+        {
+            if (renderedText.IsHidden() == text.IsHidden())
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private bool HasRendered(RenderedText text)
