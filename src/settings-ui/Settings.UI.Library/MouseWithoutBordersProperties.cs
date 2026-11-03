@@ -47,6 +47,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool UseService { get; set; }
 
+        [CmdConfigureIgnore]
+        public BoolProperty AllowNonConsoleSessions { get; set; }
+
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool ShowOriginalUI { get; set; }
 
@@ -205,6 +208,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Switch2AllPCShortcut = DefaultHotKeySwitch2AllPC;
 
             // These are internal, i.e. cannot be edited directly from UI
+            AllowNonConsoleSessions = new BoolProperty(false);
             MachinePool = ":,:,:,:";
             MatrixOneRow = true;
             MachineID = new IntProperty(0);

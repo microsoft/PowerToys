@@ -458,7 +458,9 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         TopLevelViewModel? topLevelViewModel = null;
         try
         {
-            topLevelViewModel = new(commandItemViewModel, type, ExtensionHost, providerContext, providerSettings, serviceProvider, item, contextMenuFactory);
+            topLevelViewModel = type == TopLevelType.Fallback
+                ? new TopLevelFallbackViewModel(commandItemViewModel, ExtensionHost, providerContext, providerSettings, serviceProvider, item as IFallbackCommandItem, contextMenuFactory)
+                : new TopLevelViewModel(commandItemViewModel, type, ExtensionHost, providerContext, providerSettings, serviceProvider, contextMenuFactory);
             topLevelViewModel.InitializeProperties();
             return topLevelViewModel;
         }

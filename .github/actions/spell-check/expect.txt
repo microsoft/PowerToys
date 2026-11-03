@@ -445,6 +445,7 @@ dotnet
 downsampled
 downsampling
 downscale
+dpapi
 DPICHANGED
 DPIs
 dpm
@@ -1189,6 +1190,8 @@ NCMOUSEMOVE
 ncpa
 NCPAINT
 NCRENDERING
+ncrypt
+ncryptprotect
 ndp
 NEEDDISPATCH
 netcoreapp
@@ -1700,6 +1703,7 @@ SETWORKAREA
 SFBS
 sfgao
 SFGAOF
+SGNR
 SHACF
 SHANDLE
 sharepoint
@@ -2235,6 +2239,7 @@ WTSAT
 Wubi
 WUX
 Wwanpp
+Wzhudev
 xap
 Xbuttondown
 xclip

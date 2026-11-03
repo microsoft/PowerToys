@@ -57,7 +57,7 @@ internal static class TranslationHelper
             }
 
             // Translate Areas
-            if (!(settings.Areas is null) && settings.Areas.Any())
+            if (!(settings.Areas is null) && settings.Areas.Count > 0)
             {
                 var translatedAreas = new List<string>();
 

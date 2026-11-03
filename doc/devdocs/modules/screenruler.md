@@ -63,6 +63,18 @@ The Screen Ruler module consists of several components:
 1. Right-click the project MeasureToolUI and click 'Set as Startup Project'
 2. Right-click the project MeasureToolUI and click 'Debug'
 
+### UI testing
+
+The [ScreenRuler.UITests.Next](../../../src/modules/MeasureTool/Tests/ScreenRuler.UITests.Next)
+suite discovers the `PowerToys.ScreenRuler` toolbar through Win32 and binds its session to that
+exact HWND. A winappcli app-name target is not a global search across every matching process:
+overlapping cold-start launches can make `-a PowerToys.MeasureToolUI` ambiguous. Window scoping
+also keeps toolbar interactions separate from measurement overlays.
+
+The multi-process regression test opens an additional ruler instance, closes the original toolbar
+through UIA Invoke on its existing session, and verifies that the additional toolbar remains open. The normal
+Bounds test still requires a real drag producing a `100 x 100` clipboard measurement.
+
 ## Known Issues
 
 There are several open bugs for the Screen Ruler module, most of which are related to crashing issues. These can be found in the [PowerToys issues list](https://github.com/microsoft/PowerToys/issues?q=is%3Aissue%20state%3Aopen%20Screen%20ruler%20type%3ABug).

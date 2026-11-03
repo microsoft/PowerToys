@@ -5,6 +5,7 @@
 using System.IO.Abstractions;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Core;
 using MwbSettings = MouseWithoutBorders.Class.Settings;
 
@@ -19,6 +20,21 @@ public sealed class SettingsReloadTests
     private static readonly string[] TwoMachines = ["first", "second"];
     private static readonly string[] UpdatedMatrix = ["third", "fourth", string.Empty, string.Empty];
     private static readonly string[] MatrixReloadEffects = ["cursor", "invalidate", "send", "save"];
+
+    private string _previousKey = null!;
+
+    [TestInitialize]
+    public void InitializeRuntimeKey()
+    {
+        _previousKey = Encryption.MyKey;
+        Encryption.MyKey = "RELOAD-TEST-KEY";
+    }
+
+    [TestCleanup]
+    public void RestoreRuntimeKey()
+    {
+        Encryption.MyKey = _previousKey;
+    }
 
     [TestMethod]
     [DataRow(false)]
@@ -311,7 +327,8 @@ public sealed class SettingsReloadTests
     {
         return new MwbSettings(
             new SettingsUtils(new FileSystem()),
-            new MouseWithoutBordersSettings { Properties = properties })
+            new MouseWithoutBordersSettings { Properties = properties },
+            new PassthroughPairingKeyCodec())
         {
             PauseInstantSaving = true,
         };

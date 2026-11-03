@@ -157,11 +157,8 @@
     <value>{0}, {1}</value>
     <comment>{0}=extension name, {1}=message</comment>
   </data>
-  <data name="builtin_log_subtitle" xml:space="preserve">
-    <value>View log messages</value>
-  </data>
-  <data name="builtin_log_title" xml:space="preserve">
-    <value>View log</value>
+  <data name="builtin_log_file_command_name" xml:space="preserve">
+    <value>Open current log file</value>
   </data>
   <data name="builtin_log_folder_command_name" xml:space="preserve">
     <value>View log folder</value>
@@ -171,12 +168,6 @@
   </data>
   <data name="builtin_reload_name" xml:space="preserve">
     <value>Reload</value>
-  </data>
-  <data name="builtin_log_name" xml:space="preserve">
-    <value>View log</value>
-  </data>
-  <data name="builtin_log_page_name" xml:space="preserve">
-    <value>Log</value>
   </data>
   <data name="builtin_creating_extension_message" xml:space="preserve">
     <value>Creating new extension...</value>

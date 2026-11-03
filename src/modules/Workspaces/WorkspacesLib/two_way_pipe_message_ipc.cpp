@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include <common/interop/two_way_pipe_message_ipc_impl.h>
+#include <common/logger/logger.h>
 
 #include <algorithm>
 #include <iterator>
@@ -44,6 +45,11 @@ namespace
 {
     std::atomic_int thread_start_failure_after{ -1 };
     std::atomic<HANDLE> wait_named_pipe_entered_event{ nullptr };
+    std::atomic<HANDLE> callback_entered_event{ nullptr };
+    std::atomic<HANDLE> allow_callback_event{ nullptr };
+    std::atomic<HANDLE> callback_stopping_event{ nullptr };
+    std::atomic<const void*> paused_callback_owner{ nullptr };
+    std::atomic<bool> pause_final_result{ false };
 
     void inject_thread_start_failure()
     {
@@ -59,6 +65,18 @@ namespace
                 return;
             }
         }
+    }
+}
+
+namespace workspaces_ipc_test
+{
+    void SetCallbackTeardownEvents(HANDLE entered, HANDLE allowDispatch, HANDLE stopping, bool finalResult)
+    {
+        paused_callback_owner.store(nullptr);
+        pause_final_result.store(finalResult);
+        callback_entered_event.store(entered);
+        allow_callback_event.store(allowDispatch);
+        callback_stopping_event.store(stopping);
     }
 }
 
@@ -93,7 +111,7 @@ TwoWayPipeMessageIPC::TwoWayPipeMessageIPC(
     std::wstring _input_pipe_name,
     std::wstring _output_pipe_name,
     callback_function p_func) :
-    impl(new TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl(
+    impl(std::make_unique<TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl>(
         _input_pipe_name,
         _output_pipe_name,
         p_func))
@@ -103,7 +121,6 @@ TwoWayPipeMessageIPC::TwoWayPipeMessageIPC(
 TwoWayPipeMessageIPC::~TwoWayPipeMessageIPC()
 {
     impl->end();
-    delete impl;
 }
 
 void TwoWayPipeMessageIPC::send(std::wstring msg)
@@ -114,6 +131,11 @@ void TwoWayPipeMessageIPC::send(std::wstring msg)
 void TwoWayPipeMessageIPC::start(HANDLE _restricted_pipe_token)
 {
     impl->start(_restricted_pipe_token);
+}
+
+void TwoWayPipeMessageIPC::start(HANDLE token, const interop_auth::CallerPolicy& policy)
+{
+    impl->start(token, policy);
 }
 
 void TwoWayPipeMessageIPC::end()
@@ -138,13 +160,18 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send(std::wstring msg)
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pipe_token)
 {
+    start(_restricted_pipe_token, {});
+}
+
+void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pipe_token, const interop_auth::CallerPolicy& policy)
+{
     std::scoped_lock lock(lifecycle_mutex);
     if (lifecycle_state != LifecycleState::NotStarted)
     {
         return;
     }
 
-    caller_policy = {};
+    caller_policy = policy;
     pipe_security_token = duplicate_pipe_security_token(_restricted_pipe_token);
     closed.store(false);
     lifecycle_state = LifecycleState::Starting;
@@ -205,6 +232,13 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_threads(HANDLE token)
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::stop_started_threads()
 {
+#ifdef TWO_WAY_PIPE_MESSAGE_IPC_TESTS
+    if (paused_callback_owner.load() == this)
+    {
+        if (const auto event = callback_stopping_event.load())
+            SetEvent(event);
+    }
+#endif
     input_queue.interrupt();
     if (input_queue_thread.joinable())
     {
@@ -292,6 +326,18 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
     if (closed.load() || !output_pipe.valid())
     {
         return;
+    }
+
+    if (caller_policy.enabled)
+    {
+        const auto peer = interop_auth::AuthenticateServer(output_pipe.get(), caller_policy, caller_cache);
+        DWORD ownSession = 0, peerSession = 0;
+        if (!peer.accepted || !ProcessIdToSessionId(GetCurrentProcessId(), &ownSession) ||
+            !ProcessIdToSessionId(peer.pid, &peerSession) || ownSession != peerSession)
+        {
+            Logger::error("Rejected Workspaces IPC server identity");
+            return;
+        }
     }
 
     const HANDLE output_pipe_handle = output_pipe.get();
@@ -622,6 +668,19 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::handle_pipe_connection(cons
         return;
     }
 
+    if (caller_policy.enabled)
+    {
+        const auto peer = interop_auth::AuthenticateClient(input_pipe_handle, caller_policy, caller_cache);
+        DWORD ownSession = 0, peerSession = 0;
+        if (!peer.accepted || !ProcessIdToSessionId(GetCurrentProcessId(), &ownSession) ||
+            !ProcessIdToSessionId(peer.pid, &peerSession) || ownSession != peerSession)
+        {
+            Logger::error("Rejected Workspaces IPC client identity");
+            finish_connection_handler(handler);
+            return;
+        }
+    }
+
     if (!closed.load())
     {
         constexpr DWORD readBlockBytes = BUFSIZE;
@@ -631,6 +690,11 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::handle_pipe_connection(cons
         bool message_read = false;
         do
         {
+            if (caller_policy.enabled && message.size() >= 1024 * 1024)
+            {
+                Logger::error("Rejected oversized Workspaces IPC message");
+                break;
+            }
             constexpr size_t charsPerBlock = readBlockBytes / sizeof(message[0]);
             message.resize(message.size() + charsPerBlock);
             DWORD bytesRead = 0;
@@ -862,6 +926,16 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::consume_input_queue_thread(
         // otherwise just store the response message in a variable.
         if (dispatch_inc_message_function != nullptr)
         {
+#ifdef TWO_WAY_PIPE_MESSAGE_IPC_TESTS
+            if (const auto entered = callback_entered_event.load();
+                entered && (pause_final_result.load() ? message.find(L"\"arranger-result\"") != std::wstring::npos : message == L"snapshot-request"))
+            {
+                paused_callback_owner.store(this);
+                SetEvent(entered);
+                if (WaitForSingleObject(allow_callback_event.load(), 10000) != WAIT_OBJECT_0)
+                    throw std::runtime_error("Timed out releasing the controlled Workspaces IPC callback.");
+            }
+#endif
             dispatch_inc_message_function(message);
         }
         outgoing_message = message;

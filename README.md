@@ -97,7 +97,7 @@ To see what's new, check out the [release notes](https://github.com/microsoft/Po
 
 ## 🛣️ Roadmap
 
-For [v0.102][github-next-release-work], we're working on modernizing several utilities with WinUI 3, expanding Command Palette with tabs and JavaScript/TypeScript extensions, and adding new productivity improvements across PowerToys.
+For [v0.103][github-next-release-work], we're working on a new Awake flyout, improving Screen Ruler, and continuing to modernize more utilities with WinUI 3.
 
 ## ❤️ PowerToys Community
 
@@ -118,4 +118,4 @@ The application logs basic diagnostic data (telemetry). For more privacy informa
 [oss-CLA]: https://cla.opensource.microsoft.com
 [oss-conduct-code]: CODE_OF_CONDUCT.md
 [community-link]: COMMUNITY.md
-[github-next-release-work]: https://github.com/microsoft/PowerToys/milestone/46
+[github-next-release-work]: https://github.com/microsoft/PowerToys/milestone/47

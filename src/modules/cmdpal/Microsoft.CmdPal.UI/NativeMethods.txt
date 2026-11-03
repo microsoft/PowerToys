@@ -84,7 +84,9 @@ GetAsyncKeyState
 KBDLLHOOKSTRUCT
 SendInput
 WM_KEYDOWN
+WM_KEYUP
 WM_SYSKEYDOWN
+WM_SYSKEYUP
 
 GetWindowLong
 SetWindowLong

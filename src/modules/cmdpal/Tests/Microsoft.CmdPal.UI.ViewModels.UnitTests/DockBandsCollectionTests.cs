@@ -115,7 +115,6 @@ public sealed partial class DockBandsCollectionTests
             CommandProviderContext.Empty,
             new ProviderSettings(),
             serviceProvider,
-            item,
             DefaultContextMenuFactory.Instance);
     }
 }
