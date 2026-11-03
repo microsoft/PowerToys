@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -40,7 +42,7 @@ public sealed class MainListPageRefreshTests
         matcherProvider.SetupGet(provider => provider.Current).Returns(new PrecomputedFuzzyMatcher());
         using var commands = new TopLevelCommandManager(services.Object, []);
         var aliases = new AliasManager(commands, settingsService.Object);
-        using var page = new MainListPage(commands, aliases, matcherProvider.Object, settingsService.Object, appStateService.Object, new ListPage());
+        using var page = new MainListPage(commands, aliases, matcherProvider.Object, settingsService.Object, appStateService.Object, new InProcObject<IListPage>(new ListPage()));
         var refreshed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         page.ItemsChanged += (_, _) => refreshed.TrySetResult();
 

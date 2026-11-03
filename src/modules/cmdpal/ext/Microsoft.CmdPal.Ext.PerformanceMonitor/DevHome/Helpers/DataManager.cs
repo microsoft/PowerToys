@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.CmdPal.Ext.PerformanceMonitor;
 using Timer = System.Timers.Timer;
 
@@ -80,13 +81,13 @@ internal sealed partial class DataManager : IDisposable
         }
     }
 
-    private void GetCPUData(bool includeTopProcesses)
+    private void GetCPUData()
     {
         lock (_systemData.CpuStats)
         {
             if (ShouldSample(_systemData.CpuStats))
             {
-                _systemData.CpuStats.GetData(includeTopProcesses);
+                _systemData.CpuStats.GetData();
             }
         }
     }
@@ -132,7 +133,7 @@ internal sealed partial class DataManager : IDisposable
                 case DataType.CPU:
                     {
                         // CPU
-                        GetCPUData(_dataType == DataType.CpuWithTopProcesses);
+                        GetCPUData();
                         break;
                     }
 

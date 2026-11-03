@@ -1,5 +1,15 @@
 # Adaptive Cards polyfills
 
+> [!WARNING]
+> Here be basilisks!
+>
+> This entire library is maintained by LLMs. Humans didn't write the code, and
+> no human actually owns this code.
+>
+> We're using this library to fill gaps in the WinUI 3 Adaptive Cards renderer.
+> Ideally, the upstream renderer will support these in the fullness of time, and
+> we'll be able to delete this library.
+
 The WinUI 3 Adaptive Cards renderer doesn't support everything in the current Adaptive Cards schema. This library fills the gaps until it does:
 
 - The `Chart.Line`, `Chart.Gauge`, `Chart.Donut`, `Chart.Pie`, `Chart.VerticalBar`, `Chart.HorizontalBar`, `Chart.HorizontalBar.Stacked`, `ProgressBar`, `Badge`, and `Icon` elements.
