@@ -346,7 +346,7 @@ namespace MouseWithoutBorders.Class
 
                 if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                 {
-                    IpcHelper.CreateIpcServer(false);
+                    IpcHelper.EnsureIpcServer();
                 }
 
                 Common.MainForm.UpdateNotifyIcon();
@@ -457,18 +457,6 @@ namespace MouseWithoutBorders.Class
             finally
             {
                 Common.ReleaseSocketMutex();
-            }
-
-            if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
-            {
-                try
-                {
-                    IpcHelper.CreateIpcServer(true);
-                }
-                catch (Exception e)
-                {
-                    Logger.Log(e);
-                }
             }
         }
 

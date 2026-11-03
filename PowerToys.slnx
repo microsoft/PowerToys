@@ -218,6 +218,10 @@
     <Project Path="src/modules/awake/AwakeModuleInterface/AwakeModuleInterface.vcxproj" Id="5e7360a8-d048-4ed3-8f09-0bfd64c5529a" />
   </Folder>
   <Folder Name="/modules/awake/Tests/">
+    <Project Path="src/modules/awake/Awake.UITests/Awake.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/awake/Awake.UnitTests/Awake.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -1046,6 +1050,10 @@
     <Project Path="src/modules/powerdisplay/PowerDisplayModuleInterface/PowerDisplayModuleInterface.vcxproj" Id="d1234567-8901-2345-6789-abcdef012345" />
   </Folder>
   <Folder Name="/modules/PowerDisplay/Tests/">
+    <Project Path="src/modules/powerdisplay/PowerDisplay.UITests/PowerDisplay.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/PowerDisplay.Lib.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -1103,6 +1111,10 @@
   </Folder>
   <Folder Name="/modules/MouseWithoutBorders/Tests/">
     <Project Path="src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/MouseWithoutBorders.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/MouseWithoutBorders/Tests/ClipboardHelper.PipeTestHost/ClipboardHelper.PipeTestHost.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -1339,6 +1351,10 @@
   <Folder Name="/modules/GrabAndMove/">
     <Project Path="src/modules/GrabAndMove/GrabAndMove/GrabAndMove.vcxproj" Id="568c4c30-2e3c-4c2c-a691-007362073765" />
     <Project Path="src/modules/GrabAndMove/GrabAndMoveModuleInterface/GrabAndMoveModuleInterface.vcxproj" Id="2c3f7770-4e57-46b7-8dc1-7428a383d0db" />
+    <Project Path="src/modules/GrabAndMove/Tests/GrabAndMove.UITests/GrabAndMove.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/settings-ui/">
     <Project Path="src/settings-ui/QuickAccess.UI/PowerToys.QuickAccess.csproj">
@@ -1367,6 +1383,10 @@
     </Project>
   </Folder>
   <Folder Name="/settings-ui/Tests/">
+    <Project Path="src/settings-ui/OOBE.UITests.Next/OOBE.UITests.Next.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/settings-ui/Settings.UI.UnitTests/Settings.UI.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -1429,4 +1449,6 @@
   <Project Path="tools/project_template/ModuleTemplate/ModuleTemplateCompileTest.vcxproj" Id="64a80062-4d8b-4229-8a38-dfa1d7497749" />
   <Project Path="tools/CliShim/CliShim.vcxproj" Id="8a7fb7fa-65ea-4004-ba73-1b237435a57b" />
   <Project Path="tools/CliShim.UnitTests/CliShim.UnitTests.vcxproj" Id="d4b0ed68-867d-46b4-a03f-ec52b9fbebe5" />
+  <Project Path="tools/BugReportTool/BugReportTool/BugReportTool.vcxproj" Id="99126840-5c30-4e9e-ac6c-e73dded5c3bd" />
+  <Project Path="tools/StylesReportTool/StylesReportTool.vcxproj" Id="0febafaf-cb77-41f0-8ef9-8e3ad4b4f842" />
 </Solution>

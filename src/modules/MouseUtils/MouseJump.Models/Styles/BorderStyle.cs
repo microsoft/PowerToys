@@ -70,6 +70,11 @@ public sealed class BorderStyle
         return new BorderStyle(color, this.Left, this.Top, this.Right, this.Bottom, this.Depth);
     }
 
+    public BorderStyle WithDepth(decimal depth)
+    {
+        return new BorderStyle(this.Color, this.Left, this.Top, this.Right, this.Bottom, depth);
+    }
+
     public override string ToString()
     {
         return "{" +

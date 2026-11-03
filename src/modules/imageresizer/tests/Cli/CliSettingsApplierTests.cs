@@ -230,6 +230,18 @@ namespace ImageResizer.Tests.Cli
         }
 
         [TestMethod]
+        public void Apply_WithFileName_UpdatesFileNameFormatAlreadyRead()
+        {
+            var options = new CliOptions { FileName = "%1_custom" };
+            var settings = CreateDefaultSettings();
+            Assert.AreEqual("{0} ({1})", settings.FileNameFormat);
+
+            CliSettingsApplier.Apply(options, settings);
+
+            Assert.AreEqual("{0}_custom", settings.FileNameFormat);
+        }
+
+        [TestMethod]
         public void Apply_WithEmptyFileName_DoesNotChangeFileName()
         {
             var options = new CliOptions { FileName = string.Empty };
