@@ -5,6 +5,7 @@
 // Compiled by Windows PowerShell 5.1. The request channel cannot write text or mouse counters.
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -325,65 +326,90 @@ namespace Microsoft.MouseWithoutBorders.UITests
                 int error = Marshal.GetLastWin32Error();
                 if (error == 5)
                 {
-                    throw new ExternalException("The clipboard is currently owned.", unchecked((int)0x800401D0));
+                    // Report contention as CLIPBRD_E_CANT_OPEN, like the WinForms clipboard APIs.
+                    Marshal.ThrowExceptionForHR(unchecked((int)0x800401D0), new IntPtr(-1));
                 }
 
                 throw new Win32Exception(error, "OpenClipboard failed.");
             }
 
+            string text;
+            bool closed;
+            int closeError = 0;
             try
             {
-                const uint unicodeText = 13;
-                if (!IsClipboardFormatAvailable(unicodeText))
-                {
-                    return string.Empty;
-                }
-
-                IntPtr data = GetClipboardData(unicodeText);
-                if (data == IntPtr.Zero)
-                {
-                    throw new Win32Exception(Marshal.GetLastWin32Error(), "GetClipboardData failed.");
-                }
-
-                ulong bytes = GlobalSize(data).ToUInt64();
-                if (bytes == 0 || bytes % 2 != 0 || bytes / 2 > int.MaxValue)
-                {
-                    throw new InvalidOperationException("The Unicode clipboard allocation has an invalid size.");
-                }
-
-                IntPtr memory = GlobalLock(data);
-                if (memory == IntPtr.Zero)
-                {
-                    throw new Win32Exception(Marshal.GetLastWin32Error(), "GlobalLock failed for clipboard data.");
-                }
-
-                try
-                {
-                    string text = Marshal.PtrToStringUni(memory, (int)(bytes / 2));
-                    int terminator = text.IndexOf('\0');
-                    if (terminator < 0)
-                    {
-                        throw new InvalidOperationException("The Unicode clipboard data is not terminated.");
-                    }
-
-                    return text.Substring(0, terminator);
-                }
-                finally
-                {
-                    SetNativeLastError(0);
-                    if (!GlobalUnlock(data) && Marshal.GetLastWin32Error() != 0)
-                    {
-                        throw new Win32Exception(Marshal.GetLastWin32Error(), "GlobalUnlock failed for clipboard data.");
-                    }
-                }
+                text = ReadOpenClipboardText();
             }
             finally
             {
-                if (!CloseClipboard())
+                closed = CloseClipboard();
+                if (!closed)
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error(), "CloseClipboard failed.");
+                    closeError = Marshal.GetLastWin32Error();
                 }
             }
+
+            if (!closed)
+            {
+                throw new Win32Exception(closeError, "CloseClipboard failed.");
+            }
+
+            return text;
+        }
+
+        private static string ReadOpenClipboardText()
+        {
+            const uint unicodeText = 13;
+            if (!IsClipboardFormatAvailable(unicodeText))
+            {
+                return string.Empty;
+            }
+
+            IntPtr data = GetClipboardData(unicodeText);
+            if (data == IntPtr.Zero)
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error(), "GetClipboardData failed.");
+            }
+
+            ulong bytes = GlobalSize(data).ToUInt64();
+            if (bytes == 0 || bytes % 2 != 0 || bytes / 2 > int.MaxValue)
+            {
+                throw new InvalidOperationException("The Unicode clipboard allocation has an invalid size.");
+            }
+
+            IntPtr memory = GlobalLock(data);
+            if (memory == IntPtr.Zero)
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error(), "GlobalLock failed for clipboard data.");
+            }
+
+            string text;
+            int unlockError = 0;
+            try
+            {
+                text = Marshal.PtrToStringUni(memory, (int)(bytes / 2));
+            }
+            finally
+            {
+                SetNativeLastError(0);
+                if (!GlobalUnlock(data))
+                {
+                    unlockError = Marshal.GetLastWin32Error();
+                }
+            }
+
+            if (unlockError != 0)
+            {
+                throw new Win32Exception(unlockError, "GlobalUnlock failed for clipboard data.");
+            }
+
+            int terminator = text.IndexOf('\0');
+            if (terminator < 0)
+            {
+                throw new InvalidOperationException("The Unicode clipboard data is not terminated.");
+            }
+
+            return text.Substring(0, terminator);
         }
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -414,6 +440,8 @@ namespace Microsoft.MouseWithoutBorders.UITests
         [DllImport("kernel32.dll", EntryPoint = "SetLastError")]
         private static extern void SetNativeLastError(uint error);
 
+        [SuppressMessage("Performance", "CA1850", Justification = "Windows PowerShell 5.1 uses .NET Framework without SHA256.HashData.")]
+        [SuppressMessage("Performance", "CA1872", Justification = "Windows PowerShell 5.1 uses .NET Framework without Convert.ToHexString.")]
         private static string Digest(string text)
         {
             using (SHA256 hash = SHA256.Create())

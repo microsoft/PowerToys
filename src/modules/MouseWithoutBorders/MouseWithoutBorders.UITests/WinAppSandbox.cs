@@ -671,7 +671,7 @@ internal sealed class WinAppSandbox : ISandboxSession
         // read-only guest-window query. Do not cut it off after twenty.
         var json = Target(["snapshot", "sandbox", "--json"], TimeSpan.FromSeconds(90), bootstrap);
         var snapshot = WinAppSandboxProtocol.ReadSafeSnapshot(json, epoch!);
-        ViewerHwnd = snapshot["ViewerHwnd"]!.GetValue<long>();
+        ViewerHwnd = snapshot[nameof(ViewerHwnd)]!.GetValue<long>();
         return snapshot;
     }
 

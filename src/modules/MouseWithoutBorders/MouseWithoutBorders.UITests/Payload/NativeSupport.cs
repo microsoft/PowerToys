@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
@@ -290,17 +292,32 @@ namespace Microsoft.MouseWithoutBorders.UITests
         [DllImport("kernel32.dll")]
         private static extern uint WTSGetActiveConsoleSessionId();
 
-        [DllImport("user32.dll")]
-        public static extern IntPtr GetForegroundWindow();
+        [DllImport("user32.dll", EntryPoint = "GetForegroundWindow")]
+        private static extern IntPtr NativeGetForegroundWindow();
 
-        [DllImport("user32.dll")]
-        public static extern bool ShowWindow(IntPtr window, int command);
+        [DllImport("user32.dll", EntryPoint = "ShowWindow")]
+        private static extern bool NativeShowWindow(IntPtr window, int command);
 
-        [DllImport("user32.dll")]
-        public static extern bool IsZoomed(IntPtr window);
+        [DllImport("user32.dll", EntryPoint = "IsZoomed")]
+        private static extern bool NativeIsZoomed(IntPtr window);
 
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool GetWindowRect(IntPtr window, out WindowRect rectangle);
+
+        public static IntPtr GetForegroundWindow()
+        {
+            return NativeGetForegroundWindow();
+        }
+
+        public static bool ShowWindow(IntPtr window, int command)
+        {
+            return NativeShowWindow(window, command);
+        }
+
+        public static bool IsZoomed(IntPtr window)
+        {
+            return NativeIsZoomed(window);
+        }
 
         public static int[] WindowBounds(IntPtr window, int processId)
         {
@@ -318,8 +335,8 @@ namespace Microsoft.MouseWithoutBorders.UITests
             return new[] { rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom };
         }
 
-        [DllImport("user32.dll")]
-        public static extern bool SetForegroundWindow(IntPtr window);
+        [DllImport("user32.dll", EntryPoint = "SetForegroundWindow")]
+        private static extern bool NativeSetForegroundWindow(IntPtr window);
 
         [DllImport("user32.dll")]
         private static extern bool BringWindowToTop(IntPtr window);
@@ -330,11 +347,26 @@ namespace Microsoft.MouseWithoutBorders.UITests
         [DllImport("kernel32.dll")]
         private static extern uint GetCurrentThreadId();
 
-        [DllImport("user32.dll")]
-        public static extern bool PostMessage(IntPtr window, uint message, IntPtr wparam, IntPtr lparam);
+        [DllImport("user32.dll", EntryPoint = "PostMessage")]
+        private static extern bool NativePostMessage(IntPtr window, uint message, IntPtr wparam, IntPtr lparam);
 
-        [DllImport("user32.dll")]
-        public static extern bool SetProcessDPIAware();
+        [DllImport("user32.dll", EntryPoint = "SetProcessDPIAware")]
+        private static extern bool NativeSetProcessDPIAware();
+
+        public static bool SetForegroundWindow(IntPtr window)
+        {
+            return NativeSetForegroundWindow(window);
+        }
+
+        public static bool PostMessage(IntPtr window, uint message, IntPtr wparam, IntPtr lparam)
+        {
+            return NativePostMessage(window, message, wparam, lparam);
+        }
+
+        public static bool SetProcessDPIAware()
+        {
+            return NativeSetProcessDPIAware();
+        }
 
         [DllImport("user32.dll")]
         private static extern uint GetWindowThreadProcessId(IntPtr window, out uint processId);
@@ -404,7 +436,11 @@ namespace Microsoft.MouseWithoutBorders.UITests
         public static int WindowProcessId(IntPtr window)
         {
             uint processId;
-            GetWindowThreadProcessId(window, out processId);
+            if (GetWindowThreadProcessId(window, out processId) == 0)
+            {
+                return 0;
+            }
+
             return (int)processId;
         }
 
@@ -463,7 +499,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
             int hresult = DwmGetWindowAttribute(window, 14 /* DWMWA_CLOAKED */, out cloaked, sizeof(int));
             if (hresult < 0)
             {
-                throw new InvalidOperationException("Could not query Start-menu cloaking (HRESULT 0x" + hresult.ToString("X8") + ").",
+                throw new InvalidOperationException("Could not query Start-menu cloaking (HRESULT 0x" + hresult.ToString("X8", CultureInfo.InvariantCulture) + ").",
                     Marshal.GetExceptionForHR(hresult));
             }
 
@@ -478,6 +514,8 @@ namespace Microsoft.MouseWithoutBorders.UITests
             }
         }
 
+        [SuppressMessage("Maintainability", "CA1507", Justification = "This source must compile with the C# 5 compiler in Windows PowerShell 5.1.")]
+        [SuppressMessage("Maintainability", "CA1510", Justification = "Windows PowerShell 5.1 uses .NET Framework without ThrowIfNull.")]
         public static bool DismissForegroundStartMenu(Action sendEscape)
         {
             if (sendEscape == null)
@@ -575,17 +613,21 @@ namespace Microsoft.MouseWithoutBorders.UITests
                         return true;
                     }
 
+                    string title = string.Empty;
                     int length = GetWindowTextLength(window);
-                    StringBuilder title = new StringBuilder(length + 1);
                     if (length > 0)
                     {
-                        GetWindowText(window, title, title.Capacity);
+                        StringBuilder buffer = new StringBuilder(length + 1);
+                        if (GetWindowText(window, buffer, buffer.Capacity) > 0)
+                        {
+                            title = buffer.ToString();
+                        }
                     }
 
                     windows.Add(new WindowInfo
                     {
                         Handle = window.ToInt64(),
-                        Title = title.ToString(),
+                        Title = title,
                         Visible = IsWindowVisible(window),
                         HasOwner = GetWindow(window, 4 /* GW_OWNER */) != IntPtr.Zero,
                     });
@@ -631,8 +673,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
         {
             IntPtr dialog = GetLastActivePopup(viewer);
             StringBuilder name = new StringBuilder(256);
-            GetClassName(dialog, name, name.Capacity);
-            if (WindowProcessId(dialog) != processId || name.ToString() != "#32770")
+            if (GetClassName(dialog, name, name.Capacity) == 0 || WindowProcessId(dialog) != processId || name.ToString() != "#32770")
             {
                 return;
             }
@@ -655,6 +696,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
             }
         }
 
+        [SuppressMessage("Usage", "CA2249", Justification = "Windows PowerShell 5.1 uses .NET Framework without string.Contains(string, StringComparison).")]
         public static bool IsSandboxCloseConfirmation(string text)
         {
             return text != null &&
