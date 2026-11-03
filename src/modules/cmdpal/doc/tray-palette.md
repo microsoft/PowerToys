@@ -42,7 +42,9 @@ An empty saved list stays empty.
 
 `SettingsModel.TrayIconClickAction` controls the tray icon action.
 `SettingsModel.TrayPalette.Commands` stores ordered provider and command ID pairs.
-Packaged apps use an `aumid:` alias so their pins do not depend on translated app names.
+Packaged apps use their AppUserModelIDs as command IDs, so their pins do not depend on translated app names.
+Unpackaged apps retain their name-and-hash command IDs.
+Existing packaged-app pins that use older command IDs must be pinned again.
 Windows Settings commands use their `ms-settings:` destinations as IDs.
 
 Reordering changes the slots occupied by visible commands.

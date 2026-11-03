@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
-using System.Linq;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps;
@@ -64,6 +62,8 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             return results;
         }
 
+        // If this item is already on the tray menu, then we want to add a
+        // context menu entry to _unpin_ it specifically from the tray menu.
         if (page is TrayPaletteItemPageContext trayContext)
         {
             // Use the saved identity, including generated top-level IDs and packaged-app aliases.
@@ -75,6 +75,8 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                     commandItem),
             ];
             results.AddRange(DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(trayCommands.ToArray(), commandItem));
+
+            // we don't need any other commands if we're already on the tray menu
             return results;
         }
 
@@ -411,10 +413,10 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
     private void AddPinToTrayCommand(string itemId, string providerId, List<IContextItem> items, CommandItemViewModel commandItem)
     {
-        // Packaged apps use a language-independent ID, including the default Snipping Tool pin.
-        if (commandItem.Model.Unsafe is AppListItem { App.IsPackaged: true } appItem)
+        // Don't show the pin to tray icon if the tray menu isn't available.
+        if (_settingsService.Settings.TrayIconClickAction == TrayIconClickAction.OpenCommandPalette)
         {
-            itemId = AllAppsCommandProvider.AppUserModelIdPrefix + appItem.App.UserModelId;
+            return;
         }
 
         var pinned = _settingsService.Settings.TrayPalette.Commands.Contains(new(providerId, itemId));
@@ -423,6 +425,11 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             commandItem));
     }
 
+    /// <summary>
+    /// Groups pin commands into a single menu item, with all "Pin to..."
+    /// commands grouped together underneath it. Unpin commands are left in the
+    /// main menu.
+    /// </summary>
     private static void GroupPinCommands(List<IContextItem> items)
     {
         var pins = items.OfType<PinToContextItem>().Where(item => item.IsPin).ToArray();
@@ -663,7 +670,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             var (title, subtitle, icon) = GetDockPreview();
             var dockSettings = _settingsService.Settings.DockSettings;
             var dockSide = dockSettings.Side;
-            IReadOnlyList<MonitorInfo>? monitors = GetDockEnabledMonitors(_monitorService, dockSettings);
+            var monitors = GetDockEnabledMonitors(_monitorService, dockSettings);
             ShowPinToDockDialogMessage message = new(_providerId, _commandId, title, subtitle, icon, dockSide, monitors);
             WeakReferenceMessenger.Default.Send(message);
         }
