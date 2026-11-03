@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Telemetry.Events
         /// telemetry will be blocked without it. refer to the internal
         /// "winext-provider-group-usage-guide" docs.
         /// </summary>
-        public ushort PartA_PrivacyProduct => 12; // TODO! PUT REAL VALUE HERE
+        public ushort PartA_PrivacyProduct => 13;
 
         /// <summary>
         /// The client diagnostic data category required for WinExt telemetry.
