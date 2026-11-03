@@ -1,6 +1,6 @@
 # Workspaces Protected Storage 验收台账
 
-最后更新：2026-11-02（UTC+08:00；E43补充x64 ICE历史对照与重跑可重复性边界，未重跑构建）
+最后更新：2026-11-03（UTC+08:00；E44定位High launch的token对象WRITE_DAC拒绝，尚未修复产品）
 
 **这是验收状态的唯一维护入口。每执行完一项，就更新本文件；不能只在聊天里报告通过。**
 
@@ -11,7 +11,7 @@
 
 ## 1. 当前基线与结论
 
-### 2026-11-02统计快照
+### 2026-11-03统计快照（E44诊断未改变正式用例状态）
 
 按下方126个唯一正式验收ID统计整项状态；不重复计入E33/E36子项、风险编号、
 历史执行记录和环境矩阵行。该比例不是独立测试数、剩余工作量或风险消除比例。
@@ -88,7 +88,7 @@ PERF-02/03）；数据一致性1条（DATA-09）；部署核对1条（LOCAL-01�
 | 最近确认的运行环境 | E40，11-02：客户端/catalog/runtime6006匹配，Editor DLL仍为时间修复版；普通控制器Session2，用户明确授权同账号UAC。实测普通CLI、High CLI、Medium host及High Arranger/目标；目标窗口144 DPI，不是混合DPI/OTS验收 |
 | 新包部署状态 | 本轮开始前已完成6006部署；本轮没有 Repair/Reset/Purge、重建VA、迁移或再次请求UAC。E31 的1223仅保留为历史记录 |
 | 数据保护结果 | E40先完整备份，收尾经Cancel冲突/Reload/真实Import恢复原两条记录，全字段及payload字节一致；settings、桌面恢复，测试进程/夹具目录无残留，服务和Debug文件未变。没有直接覆盖protected blob/index |
-| 当前验收结论 | E40普通入口同账号提升通过，High CLI launch退出1、取消刺激未确认。E41新增High list失败：普通owner linked token只有SecurityIdentification，客户端构造即OwnerContextRequired/1346，却被映射成storageUnavailable及泛化错误文案。两条正式FAIL为CLI-03/CLI-07；不能据此认定两者同根因。整体WITHHELD |
+| 当前验收结论 | E44在未修改6006二进制的情况下复现High launch：Medium Launcher读取前的client身份准备要求WRITE_DAC打开自身token，被拒绝5，最终包装成exit1。与E41 High list的linked-token 1346是两个不同前置条件缺口。CLI-03/CLI-07仍FAIL，26条PASS不变；没有实施架构重构或修复 |
 
 `6003`、`6004`、`6005`、`6006` 都是合入 main 后的**本地 E2E 测试构建**，使用
 `ProtectedStorage.LocalLifecycle.exe` 和本地测试 bundle，不是正式 carrier MSI 部署。
@@ -156,8 +156,8 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | R04 | 服务删除不等于 VA profile 已卸载；旧测试曾报告 profile 仍 loaded | 清理应报告准确残留，不强制卸载 hive；REM-06/CLEAN-02 单独判断 |
 | R05 | 6004 `move-existing-windows=true` 时只匹配名称/路径/PWA，没有比较实际 token elevation；普通 Notepad14436 可满足 elevated 条目，绕过新启动路径 | 6005 在既有窗口选择和新窗口认领处均要求 elevation 匹配；仅用 limited process query，查询失败不当作普通窗口，不引入身份握手或 DACL 修改 |
 | R06（L64定向实机PASS） | E35修复复制构造函数；E36实际新建自有工作区，再连续两次改名、Save、Reload、重开 | 创建时间三次均 `1793347374`，last-launched三次均0，除改名外全部字段一致；不是只读内存或单测结论。Debug6006 Editor已包含修复；既有零值不自动恢复 |
-| R08（E40新实测FAIL） | 同账号High CLI24816创建Medium Launcher26380，随后退出1；未观察到该次Arranger/目标，fixture无新目标报告，history未更新 | CLI-03记FAIL。仅证明创建Medium host，不代表handoff后的执行成功；直接RunAs未捕获stdout，现有日志不足以定位内部原因，不能直接归咎于服务认证或UAC。未改产品代码掩盖结果 |
-| R09（E41定位） | High CLI直接执行list，没有Medium读取宿主；本机同账号linked token为TokenImpersonation/SecurityIdentification，真实native客户端构造返回OwnerContextRequired/1346。CLI统一映射成storageUnavailable，Resources又缺该码映射，最终显示unexpected error | CLI-07 FAIL。普通CLI读取成功，前后index/blob/ready/runtime-errors不变；不是未预配、数据损坏或服务拒绝读请求。修复方向是普通owner进程读取及保真错误映射，不放宽token检查、不回退明文、不重装服务 |
+| R08（E44已定位当前同路径失败） | E40原始exit1保留；E44同一6006二进制的High/no-app复现捕获`open own token DACL: access denied (win32=5)`。Medium Launcher的主token内容IL为Medium，但token对象label仍High/NW、owner为Administrators，普通身份不能WRITE_DAC | `ConnectOwnerPipe -> AllowIdentityQuery -> GrantIdentityQuery`在建立pipe前失败；Unauthorized/5经host通用catch丢失为internalError/exit1。创建Medium进程本身不足以满足SDK身份准备；未修改ACL绕过或修复产品，详见E44 |
+| R09（E41定位） | High CLI直接执行list，没有Medium读取宿主；本机同账号linked token为TokenImpersonation/SecurityIdentification，真实native客户端构造返回OwnerContextRequired/1346。CLI统一映射成storageUnavailable，Resources又缺该码映射，最终显示unexpected error | CLI-07 FAIL。不能只加现有Medium宿主便认为已修复：E44证明该宿主仍可能不满足SDK token对象权限要求。应共同明确通用owner-context/身份准备契约及保真错误映射，不放宽token检查、不回退明文、不重装服务 |
 | R07 | E33 重新捕获后快捷方式复选框显示未勾选，现有快捷方式仍在；Revert后恢复勾选 | `DataContext` 赋值后才调用 `CheckShortcutPresence`，对应属性无变更通知；该顺序可追溯到2024-08-23初始PR #34324（`579619952d`），当前main仍保留。本轮未证明快捷方式被删除，也未修产品代码 |
 | Q02 | 首次管理员授权时机、fail-closed 范围和 UX 仍需 PM 结论 | 当前不得启用不受保护 fallback；技术检查通过不等于 PM 已批准 |
 
@@ -247,7 +247,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 |---|---|---|---|
 | CLI-01 / P0 | 普通终端 list/filter/details/JSON 与 Editor 同一集合；不修改 index/blob，不读旧明文 | PASS | L64 E37：text/JSON及按ID/名称details匹配；最终6次读取前后全部index/blob文件名与字节完全相同。错误选项/缺失名称另验证exit2/3；合法空集合放回legacy后CLI仍读protected空集合 |
 | CLI-02 / P0 | GUI 和 CLI 的 Medium 入口使用共享执行核心；CLI 同步等最终 arrangement 结果，失败/部分成功不报全成功 | PARTIAL | E37：CLI普通启动exit0/completed/arranged/updated，真实新目标为普通token、参数及144 DPI位置匹配；deadline为exit9/timeout，未伪报成功。全部GUI入口和部分应用失败矩阵仍未覆盖 |
-| CLI-03 / P0 | High GUI/CLI launch 先交给同用户/会话的 Medium host；按保存的 elevation 标志启动，不因高权限终端把所有目标提权 | FAIL | L64 E40：实际High CLI24816和Medium host26380同owner/session2，但CLI退出1，未完成目标启动/排列且history未更新；High GUI/Runner未测试。不是“全部目标被错误提权”，而是后续执行失败；内部原因未定，见R08 |
+| CLI-03 / P0 | High GUI/CLI launch 先交给同用户/会话的 Medium host；按保存的 elevation 标志启动，不因高权限终端把所有目标提权 | FAIL | E40目标未启动；E44用不存在ID作无应用诊断，普通exit3，而High直接及调试复现均exit1。Medium进程已进入client，但为VA准备token只读查询权限时无法取得自身token的WRITE_DAC，native5；root见R08/E44。未修复，也不是High GUI/完整启动已通过 |
 | CLI-04 / P1 | 拒绝错误 owner/会话、失效进程/映像、非法 private host 输入；普通调用不能注入任意 workspace snapshot | NOT RUN | 部署前置已满足；保护存储和 plan 的身份要求不得因合并而悄悄移除 |
 | CLI-05 / P1 | GUI Cancel/Ctrl+C/deadline/owner exit/第二次启动；停止后续应用，保留已启动应用，释放锁，结果未知不自动重放 | PARTIAL | E37的deadline/已有进程保留/新会话证据保留。E40计划取消UAC，但实际exit0并启动High目标，用户操作无法确认，未发生可证实的denial；不能改为取消PASS。该新启动仅证明此前High失败后会话可再次使用 |
 | CLI-06 / P1 | 控制台应用独立控制台；CLI stdin/stdout/JSON、退出码、code page、隐私遥测合同保持主线行为 | NOT RUN | 部署前置已满足；错误/警告不得污染 JSON 流，参数/工作区内容不进遥测 |
@@ -277,7 +277,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 | ID / 优先级 | 操作与通过标准 | 当前状态 | 证据 / 注意事项 |
 |---|---|---|---|
-| UX-01 / P0 | 区分未设置、服务停机、存储恢复、arranger 身份/通信、UAC 取消、应用启动失败；日志保留阶段/native error | PARTIAL | E37坏输入/CAS/timeout等证据保留。E41发现CLI把OwnerContextRequired/1346掩盖为storageUnavailable，缺本地化映射且list初始化为null logger，原始错误未形成有效诊断；已列R09/CLI-07 FAIL。其余错误矩阵仍未关闭 |
+| UX-01 / P0 | 区分未设置、服务停机、存储恢复、arranger 身份/通信、UAC 取消、应用启动失败；日志保留阶段/native error | PARTIAL | E37结果保留。E41 list的OwnerContextRequired/1346被泛化；E44 Medium host内的token DACL native5先映射Unauthorized，再被host的std::exception catch丢为internalError/exit1。原始错误传递仍需修复，不能把它们诊断成runtime停机 |
 | UX-02 / P0 | Launch & Edit 连点不产生第二次启动；页面 busy 可恢复，失败保留草稿，busy/failed 非“坏数据” | NOT RUN | 部署前置已满足；历史 H03 不直接沿用 |
 | UX-03 / P1 | 进度 UI 冷启动能收到状态；关闭/取消无挂死；Import/Export/Reload/Retry cleanup 作用明确 | NOT RUN | 部署前置已满足；Reload 不重新预配，Retry cleanup 不做 blob GC |
 | UX-04 / P1 | 中英文、长路径/错误文本等可读且本地化；无 console/JSON 内容泄漏或无响应错误循环 | NOT RUN | 部署前置已满足；真实 UI 观察另留证据 |
@@ -864,6 +864,91 @@ Application/MsiInstaller事件，但没有逐步MSI内部verbose trace、SCM/Sys
 `nov02-history-3001-x64-carrier.log`、`nov02-history-3002-x64-carrier.log`、
 `nov02-history-3002-x64-agent-init.log`/`preflight.log`、
 `nov02-main-today-x64-agent-init.log`及当天machine/user MSI日志。
+
+### E44：2026-11-03，High launch的原始异常与token对象权限定位
+
+用户要求将High launch与High list一起分析后再决定架构。本轮保持产品源码、
+6006 EXE、catalog、服务和业务数据不变；使用已确认不存在的随机workspace ID做
+只读诊断。若流程正常，应在读取repository后返回workspaceNotFound，不应启动任何应用。
+未重开或修改E40封存归档，也不把本轮诊断包装成完整WIP GUI验收。
+
+| 实际诊断 | 结果 |
+|---|---|
+| 普通CLI + 不存在ID | exit3 / workspaceNotFound，证明普通读取链可用 |
+| 用户授权的High CLI，捕获stdout/stderr | PID33800，exit1 / internalError，与E40的High失败表现一致 |
+| 本地debugger观察原版High CLI及其Medium子进程 | High34908 -> Medium8036；首个异常为`PowerToys::ProtectedStorage::Error`，native5，what=`open own token DACL: access denied (win32=5)` |
+| 第二次只读token对象诊断 | High28980 -> Medium35760；同owner/session2，重复得到同样原始错误；下面对象权限读数在创建时和异常时一致 |
+
+原始异常的唯一对应源码位置为
+`ProtectedStorage.Common\Common.cpp:1050-1051`：
+`OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY | READ_CONTROL | WRITE_DAC, ...)`。
+调用链来自
+`Repository.Load -> VerifyReady -> client.GetCapabilities -> ConnectOwnerPipe ->
+AllowIdentityQuery -> GrantIdentityQuery`。该步骤在WaitNamedPipe/CreateFile之前，
+目的是给对应VA增加只读身份查询ACE；尚未发送这次Runtime数据请求。
+`IPCHelper::ModulePeer`没有调用storage client，本异常不是High/Medium交接管道的验证错误。
+
+**直接观察到的两种不同“完整性”：**
+
+| 属性/访问 | High CLI | High创建的Medium Launcher |
+|---|---|---|
+| 进程主token的内容IL / elevation | High / true | Medium / false |
+| token这个内核对象的安全标签 | High，No-Write-Up | **仍为High，No-Write-Up** |
+| token对象owner | BUILTIN\Administrators | BUILTIN\Administrators |
+| DACL | Administrators/SYSTEM可管理；登录SID有限权限 | 同样的DACL形状，登录SID没有WRITE_DAC |
+| 用该目标token作为观察线程身份申请TOKEN_QUERY、QUERY+DUPLICATE、READ_CONTROL | 成功 | 成功 |
+| 用相同身份申请WRITE_DAC或QUERY+READ_CONTROL+WRITE_DAC | 成功 | **AccessDenied5** |
+
+安全标签原文为`S:AI(ML;;NW;;;HI)`。上述访问探针在观察器线程模拟目标的实际主token后
+执行OpenProcessToken，并立即RevertToSelf；没有向产品注入代码或写入对象ACL。
+产品自己的原始OpenProcessToken失败与探针相互印证。
+**Medium IL并不意味着它能修改自身token对象的DACL**；当前PPID/shell-parent创建机制
+满足同owner/session/Medium检查，却没有满足SDK后续身份准备的额外要求。
+这些是两项实际可见的权限限制；没有分别放宽DACL或mandatory label做绕过测试。
+
+错误传递链也已确认：
+`Common::Error(native5, open own token DACL)` ->
+`ClientProtocol::TransportFailure`映射`StorageError(Unauthorized,5)` ->
+`LaunchSessionHost::TryRunHost`的通用std::exception catch生成
+`internalError / Workspace session failed / exit1` ->
+High CLI收到并显示泛化错误。原始native码和阶段在host边界丢失。
+
+与E41的区别：
+
+| 路径 | 当前失败的前置条件 |
+|---|---|
+| High list | 取得的非提升linked token只有Identification级别，client构造preflight返回OwnerContextRequired/1346 |
+| High launch | 真正Medium主token可用于普通身份；但client连接准备要求修改自身token DACL，对象权限不允许，native5最终变成exit1 |
+
+两者都发生在Runtime实际数据请求处理之前，但不是同一个检查、也不是“无法区分IL”。
+仅删除构造预检不能解决第二项；仅把list转交现有Medium Launcher也不能视为修复完成。
+E40的缺失原始输出仍保持历史事实；本轮在同版本原始EXE、相同High入口上取得新的根因证据，
+不能伪称当时已经记录到这些细节。
+
+**对架构讨论的影响（未选定／未实施重构）：**
+
+- VA Blob服务和Workspaces业务payload分离不必因此推翻；缺口在通用调用上下文与身份准备契约。
+- 普通宿主不能只保证SID/session/Medium，还必须满足SDK实际连接所需能力；
+  “已创建Medium进程”不能代表可用的storage consumer。
+- 需要对比：普通执行载体的创建／身份初始化是否应保证最小VA查询权限，
+  或服务端通用身份观察是否能避免要求每个客户端修改自身token DACL。
+  后者属于认证机制设计，不是简单删掉客户端检查；仍须保留真实caller/image/role/target校验。
+- 不在Workspaces业务代码中散布token补权限逻辑，不授予VA mutation/duplication能力，
+  不为通过测试给普通进程广泛WRITE_DAC、不降低安全标签或回退明文。
+- host/CLI必须保真携带typed error与native码，以免初始化失败被误判为存储损坏。
+
+诊断限制：本地观察器成功读取首发异常类型、原生码和what字符串，但PDB符号栈没有正确展开，
+保留原始地址输出、不将其当作成功的符号调用栈。源码定位由唯一错误文本、调用路径及原生
+权限探针共同支持。没有将调试运行声称为无调试器完整业务验收；
+另有不带debugger的High出口1和普通出口3对照。
+
+收尾确认：原index/blob文件集合和SHA256、ready内容、CLI/Launcher EXE哈希均与本轮起点一致；
+没有测试应用启动，所有自有诊断/CLI/Launcher进程均已退出，观察器EXE/OBJ已删除。
+源码与日志在会话files的`nov03-high-launch-results\`，核心证据为
+`baseline.json`、`medium-result.json`、`high-result.json`、`debug-events.log`、
+`token-inspection\debug-events.log`和`diagnosis.json`。
+真实SID/登录SID仅保留于本地证据，公开记录使用角色名称。
+正式用例CLI-03/CLI-07仍FAIL，26条PASS不变；本轮没有实现产品修复。
 
 ### 本次证据
 
