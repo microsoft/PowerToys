@@ -93,6 +93,60 @@
                         </StackPanel>
                     </tkcontrols:SettingsCard>
 
+                    <tkcontrols:SettingsExpander
+                        Name="AwakeTrayTimesExpander"
+                        x:Uid="Awake_TrayTimesExpander"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE823;}"
+                        ItemsSource="{x:Bind ViewModel.TrayTimes, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander.ItemTemplate>
+                            <DataTemplate x:DataType="viewModels:AwakeTrayTimeItem">
+                                <tkcontrols:SettingsCard Header="{x:Bind Label}">
+                                    <Button
+                                        x:Uid="Awake_TrayTimesDeleteButton"
+                                        Click="DeleteTrayTime_Click"
+                                        Content="{ui:FontIcon Glyph=&#xE74D;,
+                                                              FontSize=14}"
+                                        Style="{StaticResource SubtleButtonStyle}"
+                                        Tag="{x:Bind}" />
+                                </tkcontrols:SettingsCard>
+                            </DataTemplate>
+                        </tkcontrols:SettingsExpander.ItemTemplate>
+                        <tkcontrols:SettingsExpander.ItemsFooter>
+                            <tkcontrols:SettingsCard x:Uid="Awake_TrayTimesAddCard" Style="{StaticResource DefaultSettingsExpanderItemStyle}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <NumberBox
+                                        x:Uid="Awake_TrayTimesHoursInput"
+                                        Width="96"
+                                        LargeChange="5"
+                                        Maximum="999"
+                                        Minimum="0"
+                                        SmallChange="1"
+                                        SpinButtonPlacementMode="Compact"
+                                        Value="{x:Bind ViewModel.NewTrayTimeHours, Mode=TwoWay}" />
+                                    <NumberBox
+                                        x:Uid="Awake_TrayTimesMinutesInput"
+                                        Width="96"
+                                        LargeChange="5"
+                                        Maximum="59"
+                                        Minimum="0"
+                                        SmallChange="1"
+                                        SpinButtonPlacementMode="Compact"
+                                        Value="{x:Bind ViewModel.NewTrayTimeMinutes, Mode=TwoWay}" />
+                                    <Button
+                                        x:Uid="Awake_TrayTimesAddButton"
+                                        VerticalAlignment="Bottom"
+                                        Click="AddTrayTime_Click"
+                                        IsEnabled="{x:Bind ViewModel.CanAddTrayTime, Mode=OneWay}"
+                                        Style="{StaticResource AccentButtonStyle}" />
+                                    <Button
+                                        x:Uid="Awake_TrayTimesResetButton"
+                                        VerticalAlignment="Bottom"
+                                        Click="ResetTrayTimes_Click" />
+                                </StackPanel>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.ItemsFooter>
+                    </tkcontrols:SettingsExpander>
+
                     <tkcontrols:SettingsCard
                         x:Uid="Awake_DisplaySettingsCard"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
