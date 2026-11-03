@@ -118,9 +118,12 @@ public sealed partial class ScoringThroughputHarnessTests
                 appScored = InternalListHelpers.FilterListWithScores(apps.Select(item => new InProcObject<IListItem>(item)), query, scoringFn);
             });
 
+            // Catalog text never changes, so scoring the live text measures the cached targets a
+            // global fallback reuses for its captured text.
+            Func<FuzzyQuery, InProcObject<IListItem>, string, string, int> fallbackScoringFn = (q, item, _, _) => scoringFn(in q, item);
             var fallbackMs = TimeAverageMs(() =>
             {
-                _ = MainListPage.ScoreDeferredFallbacks(globalFallbacks, query, scoringFn);
+                _ = MainListPage.ScoreDeferredFallbacks(globalFallbacks, query, fallbackScoringFn);
             });
 
             var total = enumMs + cmdMs + appMs + fallbackMs;

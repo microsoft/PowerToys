@@ -17,8 +17,17 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
 {
     private readonly ExtensionObject<IFallbackCommandItem> _model;
     private readonly string _fallbackId = string.Empty;
+
+    // Keeps recording a render and comparing an update atomic with respect to each other.
+    private readonly Lock _renderedTextLock = new();
+
+    // Fallback commands leave matching replies to queries as an exercise for the caller.
+    // Compare updates against title/subtitle pairs rendered since the last refresh request.
+    // A render can catch a partial or superseded update, and the last pair may come from
+    // a discarded fetch. All hidden pairs count as one.
+    private readonly List<RenderedText> _renderedTexts = [];
+
     private string _displayTitle = string.Empty;
-    private string? _lastReportedTitle; // Tracks what we shown in the list, to detect change that requires a refresh
 
     protected override string IdFromModel => string.IsNullOrWhiteSpace(_fallbackId) ? base.IdFromModel : _fallbackId;
 
@@ -60,7 +69,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
         UpdateInitialIcon(false);
     }
 
-    internal override bool SafeUpdateFallbackTextSynchronous(string newQuery, bool reportTitleChanges, CancellationToken cancellationToken)
+    internal override bool SafeUpdateFallbackTextSynchronous(string newQuery, bool reportRankChanges, CancellationToken cancellationToken)
     {
         if (!IsEnabled)
         {
@@ -69,7 +78,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
 
         try
         {
-            return UnsafeUpdateFallbackSynchronous(newQuery, reportTitleChanges, cancellationToken);
+            return UnsafeUpdateFallbackSynchronous(newQuery, reportRankChanges, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -84,37 +93,103 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
     /// sure you're calling it on a BG thread.
     /// </summary>
     /// <param name="newQuery">The new search text to pass to the extension</param>
-    /// <param name="reportTitleChanges">true to report any title change; false to report only showing or hiding</param>
+    /// <param name="reportRankChanges">true to also report title or subtitle changes of a shown fallback, which rank a global fallback; false to report only showing or hiding</param>
     /// <param name="cancellationToken">Cancelled when a newer query supersedes this one</param>
     /// <returns>true if the main list needs a refresh for this call</returns>
-    private bool UnsafeUpdateFallbackSynchronous(string newQuery, bool reportTitleChanges, CancellationToken cancellationToken)
+    private bool UnsafeUpdateFallbackSynchronous(string newQuery, bool reportRankChanges, CancellationToken cancellationToken)
     {
         if (_model.Unsafe is not { } fallback)
         {
             return false;
         }
 
-        var oldTitle = Title;
-
         // RPC for method
         fallback.FallbackHandler.UpdateQuery(newQuery);
-        var newTitle = Title;
 
-        // Guard against a stale refresh if the COM call returned after cancellation
+        // Guard against a stale refresh if the COM call returned after cancellation. The newer
+        // query's update compares against the rendered text, so it still reports this change.
         if (cancellationToken.IsCancellationRequested)
         {
             return false;
         }
 
-        var reportedTitle = Interlocked.Exchange(ref _lastReportedTitle, newTitle) ?? oldTitle;
+        lock (_renderedTextLock)
+        {
+            // Nothing rendered since the last request (or ever): the pending render reads the live text.
+            if (_renderedTexts.Count == 0)
+            {
+                return false;
+            }
 
-        // - Global fallbacks are ranked by their live title, so a change like "server01" -> "server02"
-        //   can move them.
-        // - Other fallbacks keep a fixed position and update their text in place, so only showing or hiding them
-        //   needs a refresh. Reporting every title change for them makes each keystroke's completions
-        //   postpone the typed results.
-        return reportTitleChanges
-            ? !string.Equals(reportedTitle, newTitle, StringComparison.Ordinal)
-            : string.IsNullOrWhiteSpace(reportedTitle) != string.IsNullOrWhiteSpace(newTitle);
+            var newText = new RenderedText(Title, Subtitle);
+            var needsRefresh = false;
+            foreach (var renderedText in _renderedTexts)
+            {
+                // - Global fallbacks are ranked by their live title and subtitle, so a change like
+                //   "server01" -> "server02" can move them.
+                // - Other fallbacks keep a fixed position and update their text in place, so only showing or hiding them
+                //   needs a refresh. Reporting every change for them makes each keystroke's completions
+                //   postpone the typed results.
+                needsRefresh = reportRankChanges
+                    ? !renderedText.RendersSame(newText)
+                    : renderedText.IsHidden() != newText.IsHidden();
+                if (needsRefresh)
+                {
+                    break;
+                }
+            }
+
+            // A requested refresh renders the live text, so start over. Otherwise every render
+            // agreed with the new text, and it stands in for all of them.
+            _renderedTexts.Clear();
+            if (!needsRefresh)
+            {
+                _renderedTexts.Add(newText);
+            }
+
+            return needsRefresh;
+        }
+    }
+
+    /// <summary>
+    /// Reads the title and subtitle the main list renders this fallback with and records them in the
+    /// same locked step, so a later update compares against exactly the text the render decided on.
+    /// The render must use the returned text to show, hide, and rank the fallback, not read
+    /// <see cref="TopLevelViewModel.Title"/> or <see cref="TopLevelViewModel.Subtitle"/> again.
+    /// </summary>
+    internal (string Title, string Subtitle) ReadTextForRender()
+    {
+        lock (_renderedTextLock)
+        {
+            var text = new RenderedText(Title, Subtitle);
+            if (!HasRendered(text))
+            {
+                _renderedTexts.Add(text);
+            }
+
+            return (text.Title, text.Subtitle);
+        }
+    }
+
+    private bool HasRendered(RenderedText text)
+    {
+        foreach (var renderedText in _renderedTexts)
+        {
+            if (renderedText.RendersSame(text))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // The title and subtitle one render showed this fallback with.
+    private readonly record struct RenderedText(string Title, string Subtitle)
+    {
+        public bool IsHidden() => string.IsNullOrWhiteSpace(Title);
+
+        // A hidden fallback renders nothing, so its subtitle can't change the list.
+        public bool RendersSame(RenderedText other) => IsHidden() ? other.IsHidden() : this == other;
     }
 }

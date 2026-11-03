@@ -86,7 +86,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
 
         void Worker()
         {
-            // The first globalFallbackCount commands are global fallbacks, ranked by their title
+            // The first globalFallbackCount commands are global fallbacks, ranked by their title and subtitle
             while (!cancellationToken.IsCancellationRequested)
             {
                 var i = Interlocked.Increment(ref sharedIndex) - 1;
@@ -140,7 +140,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                     var sw = Stopwatch.StartNew();
                     Logger.LogDebug($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' updating with '{query}'");
 #endif
-                    changed = command.SafeUpdateFallbackTextSynchronous(query, reportTitleChanges: isGlobal, cancellationToken);
+                    changed = command.SafeUpdateFallbackTextSynchronous(query, reportRankChanges: isGlobal, cancellationToken);
 #if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
                     var elapsed = sw.Elapsed;
                     var tail = elapsed > FallbackItemSlowTimeout ? " is slow" : string.Empty;
@@ -215,7 +215,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
             var changed = false;
             try
             {
-                changed = cmd.SafeUpdateFallbackTextSynchronous(q, reportTitleChanges: isGlobal, ct);
+                changed = cmd.SafeUpdateFallbackTextSynchronous(q, reportRankChanges: isGlobal, ct);
             }
             catch (Exception ex)
             {
