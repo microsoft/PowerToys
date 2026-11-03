@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,7 +34,7 @@ public partial class CommandItemViewModelLifecycleTests
         source.ApplyPendingUpdates();
         using var services = new ServiceCollection().AddSingleton(Mock.Of<ISettingsService>()).BuildServiceProvider();
         var topLevel = CreateTopLevelSource(source, services, fallback);
-        IListItem presentation = recent ? new RecentCommandListItem(topLevel, topLevel.Id) : topLevel;
+        IListItem presentation = recent ? new RecentCommandListItem(new InProcObject<IListItem>(topLevel), topLevel.Id) : topLevel;
         command.ReadId = () => Assert.Fail("A recreated host row must not fetch the extension's Id again.");
         command.ReadName = () => Assert.Fail("A recreated host row must use the cached command name.");
         command.ReadIcon = () => Assert.Fail("The loaded command must not be initialized again.");
@@ -88,7 +89,7 @@ public partial class CommandItemViewModelLifecycleTests
         await ui.StartNew(() => { });
         using var services = new ServiceCollection().AddSingleton(Mock.Of<ISettingsService>()).BuildServiceProvider();
         var topLevel = CreateTopLevelSource(source, services, fallback: false);
-        IListItem presentation = recent ? new RecentCommandListItem(topLevel, topLevel.Id) : topLevel;
+        IListItem presentation = recent ? new RecentCommandListItem(new InProcObject<IListItem>(topLevel), topLevel.Id) : topLevel;
         var row = new ListItemViewModel(presentation, new(context), DefaultContextMenuFactory.Instance);
         row.InitializeProperties();
         var oldViewModel = source.Command;
@@ -141,6 +142,34 @@ public partial class CommandItemViewModelLifecycleTests
         fallback
             ? new TopLevelFallbackViewModel(source, CommandPaletteHost.Instance, CommandProviderContext.Empty, new(), services, null, DefaultContextMenuFactory.Instance)
             : new TopLevelViewModel(source, TopLevelType.Normal, CommandPaletteHost.Instance, CommandProviderContext.Empty, new(), services, DefaultContextMenuFactory.Instance);
+
+    [TestMethod]
+    public void TopLevelRows_DoNotInitializeBorrowedCommand()
+    {
+        var context = new TestPageContext();
+        var command = new TestCommand { Name = "Loaded command" };
+        var item = new TestCommandItem { CommandValue = command };
+        var source = new CommandItemViewModel(new(item), new(context), DefaultContextMenuFactory.Instance);
+        source.FastInitializeProperties();
+        using var services = new ServiceCollection().AddSingleton(Mock.Of<ISettingsService>()).BuildServiceProvider();
+        var topLevel = CreateTopLevelSource(source, services, fallback: false);
+        var row = new ListItemViewModel(topLevel, new(context), DefaultContextMenuFactory.Instance);
+        command.ReadIcon = () => Assert.Fail("A row must not initialize a command owned by another view model.");
+
+        try
+        {
+            row.InitializeProperties();
+
+            Assert.AreSame(source.Command, row.Command);
+            Assert.AreEqual(0, command.CountSubscribers<CommandViewModel>());
+        }
+        finally
+        {
+            row.SafeCleanup();
+            topLevel.Cleanup();
+            GC.KeepAlive(context);
+        }
+    }
 
     private static int CountCommandHandlers(CommandViewModel command, object target)
     {

@@ -46,6 +46,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\Class\ClipboardHelperIpc.cs">
+      <Link>ClipboardHelperIpc.cs</Link>
+    </Compile>
     <Compile Include="..\Class\IClipboardHelper.cs">
       <Link>IClipboardHelper.cs</Link>
     </Compile>

@@ -1671,11 +1671,6 @@ public sealed partial class DockWindow : WindowEx,
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            if (message.BringToFront)
-            {
-                RevealAutoHideDock(immediate: true);
-            }
-
             UpdateTopmostState(message.BringToFront);
         });
     }

@@ -83,6 +83,121 @@ a larger value for a module or project-wide run.
 
 - Run tests in the Test Explorer (`Test > Test Explorer` or `Ctrl+E, T`).
 
+### Optional virtual HID input
+
+Some modules intentionally reject injected input. In a dedicated test VM with the PowerToys
+UMDF virtual HID test driver already provisioned, opt the existing helpers into real device input.
+
+For Grab and Move's complete local build, self-signing, provisioning, execution and cleanup
+workflow, see the [module-specific testing guide](../modules/grabandmove.md#ui-tests).
+
+For example:
+
+```csharp
+using var input = UmdfHidInput.Activate();
+KeyboardHelper.PressKey(Key.Alt);
+try
+{
+    MouseHelper.Drag(300, 300, 396, 364);
+}
+finally
+{
+    KeyboardHelper.ReleaseKey(Key.Alt);
+}
+```
+
+The scope is process-wide; input tests must not run in parallel. Disposal releases held device
+keys/buttons and restores the default helpers. Activation fails if the driver is missing, with no
+`SendInput` fallback. The current report descriptor supports six simultaneous non-modifier keys,
+primary-monitor mouse coordinates, and whole wheel detents (120 units).
+
+Run driver-backed gestures on an active, unlocked **console** test desktop, not inside RDP or
+Hyper-V Enhanced Session. The current backend is not an RDP-session input injector: the device
+can open while its input never reaches that session's cursor. Use a physical console or Hyper-V
+Basic Session; a host-side RDP connection is fine when tests execute in a guest's console desktop.
+
+Call `MouseHelper.MoveTo` explicitly before click, wheel, or relative movement sequences. The HID
+backend retains the last requested position because feature-report completion can precede the OS
+cursor update; it does not track physical/injected mouse movement during the scope. Keyboard-only
+scopes do not reposition the mouse. Restore any original off-primary position after disposing the
+scope, when the default mouse backend is active again.
+
+Driver provisioning is separate, elevated test infrastructure; tests themselves run non-elevated.
+The test package targets UMDF 2.31 on Windows 10 2004+ and Windows 11 and is never shipped in the
+PowerToys installer. The Microsoft sample-derived driver is MS-PL licensed; its attribution and
+license accompany the test artifacts. ARM64 requires a separate, isolated CI image preconfigured
+with TESTSIGNING enabled. Other ARM64 suites and all x64 suites retain their ordinary images.
+
+> **Security:** provision this driver only in disposable, isolated test VMs without real credentials.
+> While installed, local code can emit hardware-style keyboard/mouse input, including input to
+> elevated desktops. Do not install it on a developer workstation. Do not change ordinary test
+> images' boot/signing policies. Only the dedicated ARM64 image is provisioned for TESTSIGNING by
+> its owner; the pipeline never enables it, disables Secure Boot/HVCI, or reboots to change policy.
+> Remove the device, package and temporary trust immediately after testing. Activation never
+> installs a driver or changes machine trust.
+
+Build the test-only package on the build host (Visual Studio C++ tools and the SDK are required):
+
+```pwsh
+.\.pipelines\umdf-hid-smoke\Build-Smoke.ps1 `
+  -WorkRoot C:\HidBuild\work -OutputRoot C:\HidBuild\artifacts -Platforms x64 -DriverOnly
+```
+
+Copy the `x64` artifact directory and `Manage-SmokeDriver.ps1` into the dedicated VM. In the VM's
+separate administrator control session, provision the package with a persistent ownership journal:
+
+```pwsh
+.\Manage-SmokeDriver.ps1 -Action Install -ArtifactDirectory C:\HidTest\x64 `
+  -StatePath C:\HidTest\state.json -ResultsDirectory C:\HidTest\results
+```
+
+Run the built module executable in the logged-on **standard-user** desktop, using the normal
+runtime/winappcli setup described above:
+
+```pwsh
+.\GrabAndMove.UITests.exe --report-trx --results-directory C:\HidTest\test-results
+```
+
+Always clean up from the administrator control session, including after a failed install/test:
+
+```pwsh
+.\Manage-SmokeDriver.ps1 -Action Cleanup `
+  -StatePath C:\HidTest\state.json -ResultsDirectory C:\HidTest\results
+```
+
+Cleanup only removes journaled test trust and owned present devices/packages, and retains the
+journal on failure. Preserve that journal until cleanup succeeds. CI provisions automatically for
+the x64 Grab and Move suite. Implicit ARM64 selections skip that suite with an infrastructure
+warning while the dedicated image is unconfigured; explicitly requesting it reports
+`BLOCKED_INFRASTRUCTURE` rather than a passing zero-test run.
+
+#### Dedicated ARM64 Grab and Move CI image
+
+The `umdfHidArm64Image` template parameter is declared by
+`.pipelines\v2\templates\pipeline-ui-tests-automation.yml` and `pipeline-ci-build.yml`, then passed
+explicitly through the stage/job templates so it is available during structural expansion:
+
+- Manual internal UI-test runs default to `SHINE-W11-Preview-Testing-arm64-TestSigning` through
+  `ImageOverride`. The image parameter permits only that name or `disabled` to turn off routing;
+  root templates translate `disabled` to the internal empty-image convention.
+- PR CI enables the image only in the verified internal collection (`SHINE-INT-Testing-arm64`).
+  The shared CI template defaults to disabled; public `shine-oss` PR CI explicitly keeps it
+  disabled until the image is provisioned and verified there. Implicit ARM64 selections then
+  skip Grab and Move with a warning while other suites still run.
+- Image isolation is explicit: ordinary jobs retain the pool's default image. Do not make the
+  TESTSIGNING image the pool default. Registering the image in an OSS pool alone does not opt
+  public CI into it; its root pipeline configuration must also be updated.
+- The dedicated English-language Windows 11 ARM64 image needs TESTSIGNING enabled before boot,
+  an elevated agent, and the same logged-on standard-user desktop/UI-test prerequisites as the
+  ordinary test image. The job checks the architecture and existing boot configuration; it
+  does not alter them. Actual driver-load readiness is still checked separately.
+
+Once configured, PR selection, full builds and official/specific-build runs route only
+`GrabAndMove.UITests` to a separate `_UmdfHid` job. All/mixed selections keep every other suite on
+the ordinary pool. Official/specific-build runs retain both machine-level and per-user jobs.
+Native ARM64 driver artifacts are built on the ordinary build agents, never installed there.
+The experimental ARM64 transport-smoke path also explicitly selects the TESTSIGNING image.
+
 ## Running `.Next` tests in persistent local VMs
 
 The supported local backend is a pair of persistent Hyper-V guests driven through PowerShell Direct:
