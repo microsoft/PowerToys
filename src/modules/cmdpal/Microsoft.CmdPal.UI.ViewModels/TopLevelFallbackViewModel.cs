@@ -18,6 +18,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
     private readonly ExtensionObject<IFallbackCommandItem> _model;
     private readonly string _fallbackId = string.Empty;
     private string _displayTitle = string.Empty;
+    private string? _lastReportedTitle; // Tracks what we shown in the list, to detect change that requires a refresh
 
     protected override string IdFromModel => string.IsNullOrWhiteSpace(_fallbackId) ? base.IdFromModel : _fallbackId;
 
@@ -59,7 +60,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
         UpdateInitialIcon(false);
     }
 
-    internal override bool SafeUpdateFallbackTextSynchronous(string newQuery)
+    internal override bool SafeUpdateFallbackTextSynchronous(string newQuery, bool reportTitleChanges, CancellationToken cancellationToken)
     {
         if (!IsEnabled)
         {
@@ -68,7 +69,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
 
         try
         {
-            return UnsafeUpdateFallbackSynchronous(newQuery);
+            return UnsafeUpdateFallbackSynchronous(newQuery, reportTitleChanges, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -83,8 +84,10 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
     /// sure you're calling it on a BG thread.
     /// </summary>
     /// <param name="newQuery">The new search text to pass to the extension</param>
-    /// <returns>true if our Title changed across this call</returns>
-    private bool UnsafeUpdateFallbackSynchronous(string newQuery)
+    /// <param name="reportTitleChanges">true to report any title change; false to report only showing or hiding</param>
+    /// <param name="cancellationToken">Cancelled when a newer query supersedes this one</param>
+    /// <returns>true if the main list needs a refresh for this call</returns>
+    private bool UnsafeUpdateFallbackSynchronous(string newQuery, bool reportTitleChanges, CancellationToken cancellationToken)
     {
         if (_model.Unsafe is not { } fallback)
         {
@@ -97,9 +100,21 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
         fallback.FallbackHandler.UpdateQuery(newQuery);
         var newTitle = Title;
 
-        // Report any title change, not just an empty <-> non-empty flip: the render path
-        // re-scores fallbacks off this signal, so a change like "server01" -> "server02"
-        // must still trigger a refresh or the fallback keeps its stale score and position.
-        return !string.Equals(oldTitle, newTitle, StringComparison.Ordinal);
+        // Guard against a stale refresh if the COM call returned after cancellation
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return false;
+        }
+
+        var reportedTitle = Interlocked.Exchange(ref _lastReportedTitle, newTitle) ?? oldTitle;
+
+        // - Global fallbacks are ranked by their live title, so a change like "server01" -> "server02"
+        //   can move them.
+        // - Other fallbacks keep a fixed position and update their text in place, so only showing or hiding them
+        //   needs a refresh. Reporting every title change for them makes each keystroke's completions
+        //   postpone the typed results.
+        return reportTitleChanges
+            ? !string.Equals(reportedTitle, newTitle, StringComparison.Ordinal)
+            : string.IsNullOrWhiteSpace(reportedTitle) != string.IsNullOrWhiteSpace(newTitle);
     }
 }
