@@ -105,7 +105,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             Logger.LogInfo($"[Constructor] Initializing with {loadedMonitors.Count} monitors from settings (filtered)");
 
-            Monitors = new ObservableCollection<MonitorInfo>(loadedMonitors);
+            ReplaceMonitors(new ObservableCollection<MonitorInfo>(loadedMonitors));
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -465,31 +465,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public List<int> MouseWheelIncrementOptions => _mouseWheelIncrementOptions;
 
-        public ObservableCollection<MonitorInfo> Monitors
+        public ObservableCollection<MonitorInfo> Monitors => _monitors;
+
+        private void ReplaceMonitors(ObservableCollection<MonitorInfo> value)
         {
-            get => _monitors;
-            set
+            if (_monitors != null)
             {
-                if (_monitors != null)
-                {
-                    _monitors.CollectionChanged -= Monitors_CollectionChanged;
-                    UnsubscribeFromItemPropertyChanged(_monitors);
-                }
-
-                _monitors = value;
-
-                if (_monitors != null)
-                {
-                    _monitors.CollectionChanged += Monitors_CollectionChanged;
-                    SubscribeToItemPropertyChanged(_monitors);
-                }
-
-                OnPropertyChanged(nameof(Monitors));
-                HasMonitors = _monitors?.Count > 0;
-
-                // Update TotalMonitorCount for dynamic DisplayName
-                UpdateTotalMonitorCount();
+                _monitors.CollectionChanged -= Monitors_CollectionChanged;
+                UnsubscribeFromItemPropertyChanged(_monitors);
             }
+
+            _monitors = value;
+
+            if (_monitors != null)
+            {
+                _monitors.CollectionChanged += Monitors_CollectionChanged;
+                SubscribeToItemPropertyChanged(_monitors);
+            }
+
+            OnPropertyChanged(nameof(Monitors));
+            HasMonitors = _monitors?.Count > 0;
+
+            // Update TotalMonitorCount for dynamic DisplayName
+            UpdateTotalMonitorCount();
         }
 
         public bool HasMonitors
@@ -724,7 +722,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (Monitors == null)
                 {
                     // First time initialization - create new collection
-                    Monitors = new ObservableCollection<MonitorInfo>(updatedMonitors);
+                    ReplaceMonitors(new ObservableCollection<MonitorInfo>(updatedMonitors));
                 }
                 else
                 {
