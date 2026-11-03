@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Text;
 using System.Xml.Linq;
 
@@ -110,7 +111,7 @@ namespace SvgPreviewHandlerUnitTests
         {
             // Arrange
             var svgBuilder = new StringBuilder();
-            svgBuilder.AppendLine($"<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" {attributeName}=\"{attributeValue}\" stroke=\"currentColor\">");
+            svgBuilder.AppendLine(CultureInfo.InvariantCulture, $"<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" {attributeName}=\"{attributeValue}\" stroke=\"currentColor\">");
             svgBuilder.AppendLine("\t<path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M4.5 12.75l6 6 9-13.5\" />");
             svgBuilder.AppendLine("</svg>");
 
