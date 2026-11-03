@@ -15,12 +15,15 @@ public partial class PowerScriptsViewModel
     private bool _isLinuxContainerReady;
     private string _linuxContainerStatus = GetResourceString("PowerScripts_LinuxNotChecked");
     private string _linuxContainerImage;
+    private bool _canRecoverLinuxContainer;
 
     public bool CanEditLinuxContainerImage => !_isLinuxContainerBusy;
 
     public bool CanPrepareLinuxContainer => !_isLinuxContainerBusy && !string.IsNullOrWhiteSpace(LinuxContainerImage);
 
     public bool IsLinuxContainerBusy => _isLinuxContainerBusy;
+
+    public bool CanRecoverLinuxContainer => _canRecoverLinuxContainer && !_isLinuxContainerBusy;
 
     public string LinuxContainerStatusTitle { get; private set; } = GetResourceString("PowerScripts_LinuxImageStatusTitle");
 
@@ -40,6 +43,7 @@ public partial class PowerScriptsViewModel
             _linuxContainerImage = image;
             SavePythonSettings();
             _isLinuxContainerReady = false;
+            _canRecoverLinuxContainer = false;
             _linuxContainerStatus = GetResourceString(string.IsNullOrWhiteSpace(image)
                 ? "PowerScripts_LinuxImageRequired"
                 : "PowerScripts_LinuxNotChecked");
@@ -54,7 +58,7 @@ public partial class PowerScriptsViewModel
 
     public string LinuxContainerStatus => _linuxContainerStatus;
 
-    public async Task RefreshLinuxContainerAsync(bool prepare = false)
+    public async Task RefreshLinuxContainerAsync(bool prepare = false, bool recover = false)
     {
         if (_isLinuxContainerBusy)
         {
@@ -65,6 +69,7 @@ public partial class PowerScriptsViewModel
         if (string.IsNullOrWhiteSpace(image))
         {
             _isLinuxContainerReady = false;
+            _canRecoverLinuxContainer = false;
             _linuxContainerStatus = GetResourceString("PowerScripts_LinuxImageRequired");
             LinuxContainerStatusTitle = GetResourceString("PowerScripts_LinuxImageStatusTitle");
             LinuxContainerStatusSeverity = InfoBarSeverity.Informational;
@@ -74,15 +79,15 @@ public partial class PowerScriptsViewModel
 
         _isLinuxContainerBusy = true;
         _isLinuxContainerReady = false;
-        _linuxContainerStatus = GetResourceString(prepare ? "PowerScripts_LinuxPreparing" : "PowerScripts_LinuxChecking");
+        _linuxContainerStatus = GetResourceString(recover ? "PowerScripts_LinuxRecovering" : prepare ? "PowerScripts_LinuxPreparing" : "PowerScripts_LinuxChecking");
         LinuxContainerStatusTitle = GetResourceString(prepare ? "PowerScripts_LinuxImagePreparingTitle" : "PowerScripts_LinuxImageCheckingTitle");
         LinuxContainerStatusSeverity = InfoBarSeverity.Informational;
         NotifyLinuxState();
         try
         {
             var json = await InvokeHostAsync(
-                new[] { prepare ? "linux-container-setup" : "linux-container-status" },
-                commandTimeout: TimeSpan.FromMinutes(prepare ? 12 : 1));
+                new[] { recover ? "linux-container-recover" : prepare ? "linux-container-setup" : "linux-container-status" },
+                commandTimeout: TimeSpan.FromMinutes(prepare ? 12 : recover ? 4 : 1));
             var status = JsonSerializer.Deserialize<LinuxContainerSnapshot>(json, JsonOptions)
                 ?? throw new InvalidOperationException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
             if (string.IsNullOrWhiteSpace(status.Message))
@@ -101,12 +106,25 @@ public partial class PowerScriptsViewModel
             }
 
             _isLinuxContainerReady = status.IsReady;
-            _linuxContainerStatus = status.Message;
-            LinuxContainerStatusTitle = GetResourceString(status.IsReady ? "PowerScripts_LinuxImageReady" : "PowerScripts_LinuxImageNotReady");
+            _canRecoverLinuxContainer = status.CanRecover;
+            _linuxContainerStatus = status.Status switch
+            {
+                "runtime_unavailable" => GetResourceString("PowerScripts_LinuxRuntimeUnavailableHelp") + "\n\n" + status.Message,
+                "recovery_required" => GetResourceString("PowerScripts_LinuxRecoveryRequiredHelp"),
+                "restart_windows_required" => GetResourceString("PowerScripts_LinuxRestartWindowsHelp") + "\n\n" + status.Message,
+                "cache_busy" => GetResourceString("PowerScripts_LinuxCacheBusyHelp") + "\n\n" + status.Message,
+                _ => status.Message,
+            };
+            LinuxContainerStatusTitle = GetResourceString(status.IsReady
+                ? "PowerScripts_LinuxImageReady"
+                : status.Status is "runtime_unavailable" or "recovery_required"
+                    ? "PowerScripts_LinuxRecoveryRequiredTitle"
+                    : status.Status == "restart_windows_required" ? "PowerScripts_LinuxRestartWindowsTitle" : "PowerScripts_LinuxImageNotReady");
             LinuxContainerStatusSeverity = status.IsReady ? InfoBarSeverity.Success : InfoBarSeverity.Error;
         }
         catch (Exception ex)
         {
+            _canRecoverLinuxContainer = false;
             _linuxContainerStatus = ex.Message;
             LinuxContainerStatusTitle = GetResourceString("PowerScripts_LinuxImageNotReady");
             LinuxContainerStatusSeverity = InfoBarSeverity.Error;
@@ -122,6 +140,7 @@ public partial class PowerScriptsViewModel
     private void NotifyLinuxState()
     {
         OnPropertyChanged(nameof(CanPrepareLinuxContainer));
+        OnPropertyChanged(nameof(CanRecoverLinuxContainer));
         OnPropertyChanged(nameof(CanEditLinuxContainerImage));
         OnPropertyChanged(nameof(IsLinuxContainerReady));
         OnPropertyChanged(nameof(IsLinuxContainerBusy));
@@ -206,5 +225,9 @@ public partial class PowerScriptsViewModel
         public required string Image { get; set; }
 
         public required string Message { get; set; }
+
+        public string Status { get; set; }
+
+        public bool CanRecover { get; set; }
     }
 }

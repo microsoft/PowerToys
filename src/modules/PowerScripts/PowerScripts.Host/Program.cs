@@ -51,6 +51,27 @@ internal static class Program
                 return RunActivity(positional, options);
             }
 
+            if (args[0].Equals("consumers", StringComparison.OrdinalIgnoreCase))
+            {
+                var settings = new ConsumerSettings();
+                if (positional.Count == 1 && positional[0] == "list" && options.Count == 0)
+                {
+                    Console.WriteLine(JsonSerializer.Serialize(settings.GetSnapshot(), ToolDescriptorParser.JsonOptions));
+                    return 0;
+                }
+
+                if (positional.Count == 3 && positional[0] == "set" && options.Count == 0 &&
+                    positional[2] is "on" or "off")
+                {
+                    settings.Set(positional[1], positional[2] == "on");
+                    Console.WriteLine(JsonSerializer.Serialize(settings.GetSnapshot(), ToolDescriptorParser.JsonOptions));
+                    return 0;
+                }
+
+                Console.Error.WriteLine("consumers: use list or set <advanced-paste|keyboard-manager> <on|off>.");
+                return 1;
+            }
+
             if (args[0].Equals("template", StringComparison.OrdinalIgnoreCase))
             {
                 if (positional.Count == 1 && positional[0] == "list" && options.Count == 0)
@@ -91,7 +112,7 @@ internal static class Program
                 return 1;
             }
 
-            if (args[0].ToLowerInvariant() is "linux-container-status" or "linux-container-setup")
+            if (args[0].ToLowerInvariant() is "linux-container-status" or "linux-container-setup" or "linux-container-recover")
             {
                 if (args.Length != 1)
                 {
@@ -100,6 +121,16 @@ internal static class Program
                 }
 
                 var image = PythonSettings.Load().Wsl.ContainerImage;
+                if (args[0].Equals("linux-container-recover", StringComparison.OrdinalIgnoreCase))
+                {
+                    var recovery = MxcLinuxProcessRunner.Recover();
+                    if (recovery.ExitCode != 0)
+                    {
+                        WriteLinuxStatus(image, recovery);
+                        return 0;
+                    }
+                }
+
                 if (args[0].Equals("linux-container-setup", StringComparison.OrdinalIgnoreCase))
                 {
                     var setup = MxcLinuxProcessRunner.Setup(image);
@@ -111,12 +142,7 @@ internal static class Program
                 }
 
                 var check = MxcLinuxProcessRunner.Probe(image);
-                Console.WriteLine(JsonSerializer.Serialize(new
-                {
-                    isReady = check.ExitCode == 0,
-                    image,
-                    message = check.ExitCode == 0 ? check.StdOut.Trim() : check.StdErr.Trim(),
-                }));
+                WriteLinuxStatus(image, check);
                 return 0;
             }
 
@@ -145,7 +171,7 @@ internal static class Program
     {
         foreach (var option in options.Keys)
         {
-            if (option.ToLowerInvariant() is not ("json" or "input" or "output" or "no-input" or "include-disabled" or "include-unconfigured" or "root"))
+            if (option.ToLowerInvariant() is not ("json" or "input" or "output" or "no-input" or "include-disabled" or "include-unconfigured" or "root" or "consumer"))
             {
                 Console.Error.WriteLine($"list: unknown option '--{option}'.");
                 return 1;
@@ -162,6 +188,25 @@ internal static class Program
         if (!TryParseListFilters(options, out var wantInput, out var wantOutput))
         {
             return 1;
+        }
+
+        if (options.TryGetValue("consumer", out var consumers))
+        {
+            if (consumers.Count != 1 || !PowerScriptConsumer.IsValid(consumers[0]))
+            {
+                Console.Error.WriteLine("list: --consumer requires exactly one valid consumer ID.");
+                return 1;
+            }
+
+            if (!new ConsumerSettings().Get(consumers[0]).IsEnabled)
+            {
+                if (asJson)
+                {
+                    Console.WriteLine("[]");
+                }
+
+                return 0;
+            }
         }
 
         var catalogue = options.ContainsKey("include-unconfigured")
@@ -348,6 +393,13 @@ internal static class Program
         var exitCode = 2;
         try
         {
+            if (!new ConsumerSettings().Get(consumers[0]).IsEnabled)
+            {
+                Console.Error.WriteLine($"PowerScripts is disabled for consumer '{consumers[0]}' by settings or Group Policy.");
+                exitCode = 4;
+                return exitCode;
+            }
+
             exitCode = execute();
             return exitCode;
         }
@@ -819,18 +871,34 @@ internal static class Program
         return 1;
     }
 
+    private static void WriteLinuxStatus(string image, ProcessRunResult result)
+    {
+        var status = MxcLinuxRecovery.Status(result);
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            isReady = result.ExitCode == 0,
+            image,
+            message = result.ExitCode == 0 ? result.StdOut.Trim() : result.StdErr.Trim(),
+            status,
+            canRecover = status is "runtime_unavailable" or "recovery_required" or "check_failed",
+        }));
+    }
+
     private static int PrintUsage()
     {
         Console.WriteLine("PowerScripts.Host — run and enumerate PowerScripts.");
         Console.WriteLine();
-        Console.WriteLine("  list [--json] [--input <shape>] [--output <shape>] [--no-input] [--include-disabled] [--include-unconfigured] [--root <dir>]");
+        Console.WriteLine("  list [--json] [--consumer <module-id>] [--input <shape>] [--output <shape>] [--no-input] [--include-disabled] [--include-unconfigured] [--root <dir>]");
+        Console.WriteLine("       Consumer discovery honors integration settings and Group Policy; omit --consumer for administrative discovery.");
         Console.WriteLine("       Input and output: none | text | files.");
         Console.WriteLine("       Disabled runtimes are omitted; --include-disabled lists all installed scripts for configuration.");
         Console.WriteLine("  run <id> --consumer <module-id> [--files <f1> <f2> ...] [--set name=value ...] [--no-consent] [--root <dir>]");
         Console.WriteLine("  transform <id> --consumer <module-id> [--no-consent] (JSON payload on stdin, JSON result on stdout)");
         Console.WriteLine("  activity list | clear              (local metadata-only history; clear preserves in-flight runs)");
+        Console.WriteLine("  consumers list | set <advanced-paste|keyboard-manager> <on|off> (central preferences and effective policy state)");
         Console.WriteLine("  mxc-support [--json]                (probe whether MXC is available on this host)");
         Console.WriteLine("  linux-container-status             (check the managed Python image without downloading)");
+        Console.WriteLine("  linux-container-recover            (safely reset only the idle PowerScripts Linux runtime, then check Python)");
         Console.WriteLine("  linux-container-setup              (explicitly download/cache the managed Python image)");
         Console.WriteLine("  trust list | approve <id> | revoke <id>   (manage which scripts are allowed to run)");
         Console.WriteLine("  template list | template create <template-id> [--configure] [--root <dir>]");

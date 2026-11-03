@@ -587,6 +587,155 @@ public class MxcLinuxTests
         Assert.AreEqual(2, attempts);
     }
 
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Readiness_Preserves_A_Warm_Session_Even_When_The_Backend_Fails(bool disconnected)
+    {
+        var settings = RuntimeSettings();
+        var checking = false;
+        var launcher = new RecordingLauncher(start =>
+        {
+            using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
+            if (!checking)
+            {
+                Assert.AreEqual(Path.Combine(_root, "session", "daemon"), start.Environment["MXC_WSLC_STATE_ROOT"]);
+                return PhaseResult(TestPhase(config));
+            }
+
+            Assert.AreEqual("exec", TestPhase(config));
+            StringAssert.Contains(config.RootElement.GetProperty("process").GetProperty("commandLine").GetString()!, "platform.python_version()");
+            return disconnected ? RpcFailure() : new ProcessRunResult(0, "Python ready", string.Empty);
+        });
+        Assert.AreEqual(0, RunText(settings, launcher).ExitCode);
+        var statePath = Path.Combine(_root, "session", "session.json");
+        var before = File.ReadAllText(statePath);
+        checking = true;
+        var result = MxcLinuxProcessRunner.Probe("python:test", settings, launcher, sessionDirectory: Path.Combine(_root, "session"));
+        Assert.AreEqual(disconnected ? "runtime_unavailable" : "ready", MxcLinuxRecovery.Status(result));
+        Assert.AreEqual(before, File.ReadAllText(statePath));
+        Assert.AreEqual(4, launcher.Calls);
+    }
+
+    [TestMethod]
+    [DataRow("interrupted")]
+    [DataRow("image")]
+    [DataRow("network")]
+    [DataRow("legacy")]
+    public void Readiness_Does_Not_Reset_A_Session_That_Cannot_Be_Safely_Probed(string change)
+    {
+        var settings = RuntimeSettings();
+        var launcher = new RecordingLauncher(start =>
+        {
+            using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
+            return PhaseResult(TestPhase(config));
+        });
+        Assert.AreEqual(0, RunText(settings, launcher).ExitCode);
+        var path = Path.Combine(_root, "session", "session.json");
+        var state = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(path))!;
+        if (change == "interrupted")
+        {
+            state["Reusable"] = false;
+        }
+        else if (change == "network")
+        {
+            state["RestrictNetwork"] = false;
+        }
+        else if (change == "legacy")
+        {
+            state.AsObject().Remove("Image");
+            state.AsObject().Remove("DaemonDirectory");
+        }
+
+        File.WriteAllText(path, state.ToJsonString());
+        var before = File.ReadAllText(path);
+        var result = MxcLinuxProcessRunner.Probe(change == "image" ? "python:other" : "python:test",
+            settings, launcher, sessionDirectory: Path.Combine(_root, "session"));
+        Assert.AreEqual("recovery_required", MxcLinuxRecovery.Status(result));
+        Assert.AreEqual(3, launcher.Calls);
+        Assert.AreEqual(before, File.ReadAllText(path));
+    }
+
+    [TestMethod]
+    [DataRow("busy")]
+    [DataRow("timeout")]
+    [DataRow("unrelated")]
+    [DataRow("legacy")]
+    [DataRow("owned")]
+    [DataRow("healthy")]
+    public void Recovery_Uses_Normal_Cleanup_And_Reports_Unrecoverable_Rpc_Without_Replaying_Code(string condition)
+    {
+        var settings = RuntimeSettings();
+        var recovering = false;
+        var phases = new List<string>();
+        var launcher = new RecordingLauncher(start =>
+        {
+            using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
+            var phase = TestPhase(config);
+            if (!recovering)
+            {
+                return PhaseResult(phase);
+            }
+
+            phases.Add(phase);
+            return phase == "check" ? condition switch
+            {
+                "busy" => new ProcessRunResult(1, "{\"error\":{\"code\":\"busy\"}}", string.Empty),
+                "timeout" => new ProcessRunResult(124, string.Empty, "Timed out."),
+                "unrelated" => new ProcessRunResult(1, string.Empty, "Another backend error."),
+                "healthy" => PhaseResult(phase),
+                _ => RpcFailure(),
+            } : condition == "healthy" ? PhaseResult(phase) : RpcFailure();
+        });
+        Assert.AreEqual(0, RunText(settings, launcher).ExitCode);
+        var path = Path.Combine(_root, "session", "session.json");
+        var state = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(path))!;
+        state["Reusable"] = false;
+        if (condition == "legacy")
+        {
+            state["DaemonDirectory"] = null;
+        }
+
+        File.WriteAllText(path, state.ToJsonString());
+        var before = File.ReadAllText(path);
+        recovering = true;
+        var result = MxcLinuxProcessRunner.Recover(settings, launcher, Path.Combine(_root, "session"));
+        Assert.AreEqual(condition == "healthy", result.ExitCode == 0, result.StdErr);
+        CollectionAssert.AreEqual(condition is "busy" or "timeout" or "unrelated"
+            ? new[] { "check" } : new[] { "check", "stop", "deprovision" }, phases);
+        if (condition == "healthy")
+        {
+            Assert.IsFalse(File.Exists(path));
+        }
+        else
+        {
+            Assert.AreEqual(before, File.ReadAllText(path));
+        }
+
+        if (condition is "legacy" or "owned")
+        {
+            Assert.AreEqual("restart_windows_required", MxcLinuxRecovery.Status(result));
+            StringAssert.Contains(result.StdErr, "restart Windows");
+        }
+    }
+
+    [TestMethod]
+    public void Checks_And_Recovery_Refuse_An_Active_Host_Without_Waiting()
+    {
+        var settings = RuntimeSettings();
+        var root = Directory.CreateDirectory(Path.Combine(_root, "session")).FullName;
+        using var active = new FileStream(Path.Combine(root, "session.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        var launcher = new RecordingLauncher(_ => throw new AssertFailedException("An active session must not be interrupted."));
+        var timer = Stopwatch.StartNew();
+        Assert.AreNotEqual(0, MxcLinuxProcessRunner.Probe("python:test", settings, launcher, sessionDirectory: root).ExitCode);
+        var recovery = MxcLinuxProcessRunner.Recover(settings, launcher, root);
+        Assert.AreNotEqual(0, recovery.ExitCode);
+        StringAssert.Contains(recovery.StdErr, "operation is running");
+        Assert.IsTrue(timer.Elapsed < TimeSpan.FromSeconds(5));
+    }
+
+    private static ProcessRunResult RpcFailure() => new(1, "{\"error\":{\"code\":\"backend_error\",\"message\":\"WslcDeleteContainer failed: HRESULT 0x800706BA\"}}", string.Empty);
+
     private MxcSettings RuntimeSettings()
     {
         foreach (var name in new[] { "wxc-exec.exe", "wxc-wslc-daemon.exe", "wslcsdk.dll" })

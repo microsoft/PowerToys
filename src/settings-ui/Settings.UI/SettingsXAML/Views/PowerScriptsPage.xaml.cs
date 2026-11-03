@@ -43,6 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public async void RefreshEnabledState()
         {
+            await RefreshConsumersAsync();
             await RefreshScriptsAsync();
         }
 
@@ -61,6 +62,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void PowerScriptsPage_Loaded(object sender, RoutedEventArgs e)
         {
+            await RefreshConsumersAsync();
             if (_preserveCatalogueOnLoad)
             {
                 return;
@@ -74,6 +76,58 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        private async Task RefreshConsumersAsync()
+        {
+            try
+            {
+                await ViewModel.RefreshConsumersAsync();
+            }
+            catch (Exception exception)
+            {
+                ShowScriptSettingsError(exception);
+            }
+        }
+
+        private async void PowerScriptsEnabledToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleSwitch toggle && ViewModel.CanChangePowerScriptsEnabled && toggle.IsOn != ViewModel.IsEnabled)
+            {
+                try
+                {
+                    ViewModel.IsEnabled = toggle.IsOn;
+                    await ViewModel.RefreshConsumersAsync();
+                }
+                catch (Exception exception)
+                {
+                    ShowScriptSettingsError(exception);
+                }
+            }
+        }
+
+        private async void ConsumerEnabledToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (sender is not ToggleSwitch toggle || !ViewModel.AreConsumerSettingsReady)
+            {
+                return;
+            }
+
+            var consumer = toggle.Tag as string == "advanced-paste" ? ViewModel.AdvancedPasteConsumer : ViewModel.KeyboardManagerConsumer;
+            if (!consumer.CanChange || toggle.IsOn == consumer.IsEnabled)
+            {
+                return;
+            }
+
+            try
+            {
+                await ViewModel.SetConsumerEnabledAsync(consumer, toggle.IsOn);
+            }
+            catch (Exception exception)
+            {
+                ShowScriptSettingsError(exception);
+                await RefreshConsumersAsync();
+            }
+        }
+
         private async void PythonEnvironment_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (sender is ComboBox { SelectedIndex: 2 } && ViewModel.IsMxcEnabled)
@@ -84,6 +138,24 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void CheckLinuxContainer_Click(object sender, RoutedEventArgs e) =>
             await ViewModel.RefreshLinuxContainerAsync();
+
+        private async void RecoverLinuxContainer_Click(object sender, RoutedEventArgs e)
+        {
+            var resources = ResourceLoaderInstance.ResourceLoader;
+            var dialog = new ContentDialog
+            {
+                XamlRoot = XamlRoot,
+                Title = resources.GetString("PowerScripts_LinuxRecoverTitle"),
+                Content = resources.GetString("PowerScripts_LinuxRecoverHelp"),
+                PrimaryButtonText = resources.GetString("PowerScripts_LinuxRecoverConfirm"),
+                CloseButtonText = resources.GetString("PowerScripts_Cancel"),
+                DefaultButton = ContentDialogButton.Close,
+            };
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                await ViewModel.RefreshLinuxContainerAsync(recover: true);
+            }
+        }
 
         private async void SetupLinuxContainer_Click(object sender, RoutedEventArgs e)
         {

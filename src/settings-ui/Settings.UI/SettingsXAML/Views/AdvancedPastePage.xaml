@@ -392,16 +392,6 @@
                             Severity="Warning" />
                     </controls:SettingsGroup>
 
-                    <controls:SettingsGroup Header="PowerScripts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                        <tkcontrols:SettingsCard
-                            x:Uid="AdvancedPaste_PowerScriptsEnabled"
-                            HeaderIcon="{ui:FontIcon Glyph=&#xE756;}">
-                            <ToggleSwitch
-                                AutomationProperties.AutomationId="AdvancedPastePowerScriptsEnabled"
-                                AutomationProperties.Name="PowerScripts"
-                                IsOn="{x:Bind ViewModel.PowerScriptsEnabled, Mode=TwoWay}" />
-                        </tkcontrols:SettingsCard>
-                    </controls:SettingsGroup>
                 </StackPanel>
             </controls:SettingsPageControl.ModuleContent>
             <controls:SettingsPageControl.PrimaryLinks>

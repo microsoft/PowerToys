@@ -151,6 +151,7 @@ public class HostCliTests
         {
             SettingsStore.Current = new FileSettingsStore(directory);
             PowerScriptsPaths.SaveEnabled(true);
+            new ConsumerSettings().Set("advanced-paste", true);
             var (exit, _) = RunHostInProcess(command, "act_hello", "--consumer", "advanced-paste",
                 "--no-consent", "--root", _root);
             Assert.AreEqual(3, exit);
@@ -299,11 +300,53 @@ public class HostCliTests
     }
 
     [TestMethod]
-    public void RemovedModuleFilterIsRejectedInsteadOfSilentlyFilteringScripts()
+    [DataRow("Advanced Paste")]
+    [DataRow("")]
+    public void ConsumerDiscoveryRejectsInvalidIdentity(string consumer)
     {
-        var (exit, _, error) = RunHost("list", "--json", "--consumer", "color-picker", "--root", _root);
+        var (exit, _, error) = RunHost("list", "--json", "--consumer", consumer, "--root", _root);
         Assert.AreEqual(1, exit);
-        StringAssert.Contains(error, "unknown option '--consumer'");
+        StringAssert.Contains(error, "--consumer requires exactly one valid consumer ID");
+    }
+
+    [TestMethod]
+    [DoNotParallelize]
+    [DataRow("run")]
+    [DataRow("transform")]
+    public void CentralConsumerDisableFiltersDiscoveryAndRecordsRefusedExistingBindings(string command)
+    {
+        var originalStore = SettingsStore.Current;
+        var directory = Directory.CreateDirectory(Path.Combine(_root, "consumer-settings")).FullName;
+        try
+        {
+            SettingsStore.Current = new FileSettingsStore(directory);
+            SettingsStore.Current.WriteBlob("config.json", """{"enabled":true,"consumers":{"keyboard-manager":false,"advanced-paste":true}}""");
+            var (listExit, json) = RunHostInProcess("list", "--json", "--consumer", "keyboard-manager",
+                "--include-disabled", "--include-unconfigured", "--root", _root);
+            Assert.AreEqual(0, listExit);
+            Assert.AreEqual(0, ParseList(json).Count);
+            var (adminExit, catalogue) = RunHostInProcess("list", "--json", "--include-disabled", "--root", _root);
+            Assert.AreEqual(0, adminExit);
+            Assert.IsTrue(ParseList(catalogue).Count > 0, "Settings must retain administrative discovery.");
+
+            var (exit, _) = RunHostInProcess(command, "act_hello", "--consumer", "keyboard-manager", "--no-consent", "--root", _root);
+            Assert.AreEqual(4, exit, "A saved binding must be refused before consent or execution.");
+            var activity = new ActivityStore(directory).List().Single();
+            Assert.AreEqual("keyboard-manager", activity.ConsumerId);
+            Assert.AreEqual(4, activity.ExitCode);
+
+            var (setExit, _) = RunHostInProcess("consumers", "set", "keyboard-manager", "on");
+            Assert.AreEqual(0, setExit);
+            (listExit, json) = RunHostInProcess("list", "--json", "--consumer", "keyboard-manager", "--include-disabled", "--root", _root);
+            Assert.AreEqual(0, listExit);
+            Assert.IsTrue(ParseList(json).Count > 0);
+            (exit, _) = RunHostInProcess(command, "act_hello", "--consumer", "keyboard-manager", "--no-consent", "--root", _root);
+            Assert.AreEqual(3, exit, "Re-enabling restores the existing ID without bypassing trust.");
+        }
+        finally
+        {
+            SettingsStore.Current = originalStore;
+        }
     }
 
     [TestMethod]

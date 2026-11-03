@@ -13,6 +13,13 @@ Consumers that need saved assignments own their binding UI and persist script ID
 copies. There is no standalone script launcher or per-consumer configuration picker in this version.
 See the [consumer onboarding guide](CONSUMER-INTEGRATION.md#automatic-discovery-or-saved-bindings).
 
+Integration switches for Advanced Paste and Keyboard Manager live in **PowerScripts > Use PowerScripts in**.
+The shared Host enforces them for discovery and execution, retaining existing bindings when disabled.
+Advanced Paste's legacy preference is preserved; Keyboard Manager defaults on. Group Policy can
+manage the module and each integration without replacing saved preferences. A disabled PowerScripts
+module or a policy-disabled parent utility always wins over a consumer enable policy.
+See [central settings and policy precedence](CONSUMER-INTEGRATION.md#central-integration-settings-and-group-policy).
+
 ## Packages and discovery
 
 A package contains a script and its required sibling descriptor:
@@ -353,8 +360,9 @@ the exact image; third-party dependencies must be included in the image or scrip
 package. Changing this global setting invalidates the displayed readiness and does
 not download anything or select a different image as a fallback.
 **Download image** (`linux-container-setup`) explicitly downloads and caches
-the image, then checks Python. **Check Python** (`linux-container-status`) starts
-a temporary container using the cached image and checks that `python3` runs;
+the image, then checks Python. **Check Python** (`linux-container-status`) checks
+`python3` in the matching, network-blocked warm session without resetting it.
+If no session exists, it uses a temporary container with the cached image;
 it never downloads an image or tests scripts and their dependencies. Neither changes
 trust or accepts risk. Setup, checks, and script execution use the same configured
 reference. Cached images are reused without automatic updates. Windows Python and
@@ -372,8 +380,27 @@ still run for every invocation. Use the supplied `TMPDIR` for file outputs.
 The shared container is replaced when the catalogue, image reference, effective
 network policy, or bundled runtime changes, and invalidated after a nonzero exit or timeout.
 Expired daemon state is recovered before running user code; failed scripts are never
-automatically retried. Runs are serialized across Host processes. Image setup and
-Python checks also release the shared container before using the image store.
+automatically retried. Runs are serialized across Host processes. Image setup
+also releases the shared container before using the image store.
+Readiness checks never tear down an existing session. An interrupted session,
+different image/network policy, or lost WSL backend connection is reported separately
+from image availability.
+
+**Restart Linux runtime** (`linux-container-recover`) provides explicit recovery.
+It acquires the PowerScripts session lock without waiting and admits a constant SDK-worker
+check before cleanup; busy operations, timeouts, and unknown failures block recovery.
+If SDK cleanup fails with RPC server unavailable (`0x800706BA`), recovery reports that
+Windows needs to be restarted; it never forcibly terminates a daemon. Forced termination
+can leave the SDK's image VHD attached even after the process exits. Failed session
+metadata is retained for cleanup, not silently discarded. Daemon discovery is scoped
+to the settings store's `linux-session\daemon` directory. Other apps' daemons and user
+WSL distributions are not restarted. Shared image-store contention remains an explicit error:
+close other MXC Linux apps and retry; if contention persists, save work and restart Windows.
+Cached images, settings, trust approvals, and returned files are kept; container changes
+are discarded, and no user script is replayed. Older shared-daemon sessions are cleaned
+up by sandbox ID when possible, but a disconnected legacy daemon is never forcibly
+stopped: save work and restart Windows, then check Python again.
+The initial cause of an SDK RPC disconnection is not yet established.
 The warm container intentionally survives Host exits; the pinned daemon's idle timeout
 only applies after its last container has been released, not while a warm container exists.
 PowerScripts requests prompt daemon teardown after that release so setup/checks can reopen

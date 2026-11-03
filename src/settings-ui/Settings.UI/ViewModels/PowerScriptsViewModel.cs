@@ -172,7 +172,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _isEnabled;
             set
             {
-                if (_isEnabled != value)
+                if (CanChangePowerScriptsEnabled && _isEnabled != value)
                 {
                     _isEnabled = value;
 

@@ -109,7 +109,7 @@ namespace KeyboardManagerEditorUI.Helpers
                 var psi = new ProcessStartInfo
                 {
                     FileName = hostPath,
-                    Arguments = "list --json",
+                    Arguments = "list --json --consumer keyboard-manager",
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,

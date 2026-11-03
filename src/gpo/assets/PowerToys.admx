@@ -8,6 +8,7 @@
   <resources minRequiredRevision="1.20"/><!-- Last changed with PowerToys v0.98.0 -->
   <supportedOn>
     <definitions>
+      <definition name="SUPPORTED_POWERTOYS_POWERSCRIPTS" displayName="$(string.SUPPORTED_POWERTOYS_POWERSCRIPTS)" />
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_68_0" displayName="$(string.SUPPORTED_POWERTOYS_0_68_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_69_0" displayName="$(string.SUPPORTED_POWERTOYS_0_69_0)"/>
@@ -44,6 +45,9 @@
     <category name="AdvancedPaste" displayName="$(string.AdvancedPaste)">
       <parentCategory ref="PowerToys" />
     </category>
+    <category name="PowerScripts" displayName="$(string.PowerScripts)">
+      <parentCategory ref="PowerToys" />
+    </category>
     <category name="MouseWithoutBorders" displayName="$(string.MouseWithoutBorders)">
       <parentCategory ref="PowerToys" />
     </category>
@@ -58,6 +62,24 @@
     </category>
   </categories>
   <policies>
+    <policy name="ConfigureEnabledUtilityPowerScripts" class="Both" displayName="$(string.ConfigureEnabledUtilityPowerScripts)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityPowerScripts">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_POWERSCRIPTS" />
+      <enabledValue><decimal value="1" /></enabledValue>
+      <disabledValue><decimal value="0" /></disabledValue>
+    </policy>
+    <policy name="ConfigurePowerScriptsAdvancedPaste" class="Both" displayName="$(string.ConfigurePowerScriptsAdvancedPaste)" explainText="$(string.ConfigurePowerScriptsAdvancedPasteDescription)" key="Software\Policies\PowerToys\PowerScripts\Consumers" valueName="advanced-paste">
+      <parentCategory ref="PowerScripts" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_POWERSCRIPTS" />
+      <enabledValue><decimal value="1" /></enabledValue>
+      <disabledValue><decimal value="0" /></disabledValue>
+    </policy>
+    <policy name="ConfigurePowerScriptsKeyboardManager" class="Both" displayName="$(string.ConfigurePowerScriptsKeyboardManager)" explainText="$(string.ConfigurePowerScriptsKeyboardManagerDescription)" key="Software\Policies\PowerToys\PowerScripts\Consumers" valueName="keyboard-manager">
+      <parentCategory ref="PowerScripts" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_POWERSCRIPTS" />
+      <enabledValue><decimal value="1" /></enabledValue>
+      <disabledValue><decimal value="0" /></disabledValue>
+    </policy>
 
  <!--The name (id) of the policy is different to sort it as first policy in edit dialog. The order is sorted alphabetically based on the "name" property.-->
     <policy name="ConfigureAllUtilityGlobalEnabledState" class="Both" displayName="$(string.ConfigureAllUtilityGlobalEnabledState)" explainText="$(string.ConfigureAllUtilityGlobalEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="ConfigureGlobalUtilityEnabledState">

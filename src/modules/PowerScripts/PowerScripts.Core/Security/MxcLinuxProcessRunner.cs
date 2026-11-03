@@ -15,6 +15,8 @@ namespace PowerScripts.Core.Security;
 /// <summary>Runs Python in an MXC-managed Linux image without changing the user's WSL distribution.</summary>
 public static class MxcLinuxProcessRunner
 {
+    internal const string ProbeCommand = "python3 -I -c 'import platform; print(\"Python \" + platform.python_version() + \" (managed Linux container)\")'";
+
     // The pinned state-aware daemon uses MXC's default image store.
     public static string ImageStorePath => Path.Combine(Path.GetTempPath(), "mxc-wslc-sessions");
 
@@ -149,24 +151,69 @@ public static class MxcLinuxProcessRunner
         var directory = (runDirectoryFactory ?? MxcProcessRunner.CreateRunDirectory)();
         try
         {
+            var executor = ResolveRuntime(settings);
+            if (executor is null)
+            {
+                return MissingRuntime();
+            }
+
+            using var session = new MxcLinuxSession(sessionDirectory ?? MxcLinuxSession.DefaultDirectory,
+                executor, launcher, maintenance: false, waitForLock: false);
+            if (session.ProbeExisting(image) is { } existing)
+            {
+                return existing;
+            }
+
             var workspace = Path.Combine(directory, "workspace");
             Directory.CreateDirectory(workspace);
             var config = BuildConfiguration(
                 image,
-                "python3 -I -c 'import platform; print(\"Python \" + platform.python_version() + \" (managed Linux container)\")'",
+                ProbeCommand,
                 workspace,
                 Array.Empty<string>(),
                 restrictNetwork: true,
                 timeoutMs: 30000);
-            return RunWithFreshSession(settings, launcher, sessionDirectory, () => Execute(config, directory, settings, launcher, 45000));
+            return WaitForImageCache(() => Execute(config, directory, settings, launcher, 45000));
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception or InvalidOperationException)
+        catch (IOException exception) when ((exception.HResult & 0xffff) is 32 or 33)
+        {
+            return new ProcessRunResult(2, string.Empty, "A PowerScripts Linux operation is running. Wait for it to finish before checking Python.");
+        }
+        catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException or Win32Exception or InvalidOperationException or JsonException)
         {
             return new ProcessRunResult(2, string.Empty, ex.Message);
         }
         finally
         {
             Cleanup(directory);
+        }
+    }
+
+    public static ProcessRunResult Recover(
+        MxcSettings? settings = null, IProcessLauncher? launcher = null, string? sessionDirectory = null)
+    {
+        settings ??= MxcSettings.Load();
+        launcher ??= ProcessRunner.SecureLauncher;
+        var executor = ResolveRuntime(settings);
+        if (executor is null)
+        {
+            return MissingRuntime();
+        }
+
+        try
+        {
+            using var session = new MxcLinuxSession(sessionDirectory ?? MxcLinuxSession.DefaultDirectory,
+                executor, launcher, maintenance: false, waitForLock: false);
+            return session.Recover();
+        }
+        catch (IOException exception) when ((exception.HResult & 0xffff) is 32 or 33)
+        {
+            return new ProcessRunResult(2, string.Empty, "A PowerScripts Linux operation is running. Wait for it to finish before restarting its runtime.");
+        }
+        catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException or Win32Exception or
+            InvalidOperationException or JsonException)
+        {
+            return new ProcessRunResult(2, string.Empty, $"Could not recover the PowerScripts Linux runtime: {exception.Message}");
         }
     }
 
@@ -390,29 +437,34 @@ public static class MxcLinuxProcessRunner
                 return reset;
             }
 
-            var wait = Stopwatch.StartNew();
-            while (true)
-            {
-                var result = action();
-                if (result.ExitCode == 0 ||
-                    (!result.StdErr.Contains("0x80070020", StringComparison.OrdinalIgnoreCase) &&
-                     !result.StdOut.Contains("0x80070020", StringComparison.OrdinalIgnoreCase)))
-                {
-                    return result;
-                }
-
-                if (wait.Elapsed >= TimeSpan.FromSeconds(10))
-                {
-                    return result with { StdErr = result.StdErr + "\nThe Linux image cache is still in use. Close other MXC Linux sessions and retry the image operation." };
-                }
-
-                // Only idempotent image setup / constant probes may wait for SDK teardown, never scripts.
-                Thread.Sleep(250);
-            }
+            return WaitForImageCache(action);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception or InvalidOperationException or JsonException)
         {
             return new ProcessRunResult(2, string.Empty, $"Could not reset the shared managed Linux container: {ex.Message}");
+        }
+    }
+
+    private static ProcessRunResult WaitForImageCache(Func<ProcessRunResult> action)
+    {
+        var wait = Stopwatch.StartNew();
+        while (true)
+        {
+            var result = action();
+            if (result.ExitCode == 0 ||
+                (!result.StdErr.Contains("0x80070020", StringComparison.OrdinalIgnoreCase) &&
+                 !result.StdOut.Contains("0x80070020", StringComparison.OrdinalIgnoreCase)))
+            {
+                return result;
+            }
+
+            if (wait.Elapsed >= TimeSpan.FromSeconds(10))
+            {
+                return result with { StdErr = result.StdErr + "\nThe Linux image cache is still in use. Close other MXC Linux sessions and retry the image operation." };
+            }
+
+            // Only idempotent image setup / constant probes may wait, never user scripts.
+            Thread.Sleep(250);
         }
     }
 

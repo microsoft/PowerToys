@@ -359,7 +359,7 @@ namespace AdvancedPaste.ViewModels
             PasteFormat.CreateCustomAIFormat(CustomAIFormat, name, prompt, isSavedQuery, AvailableClipboardFormats, IsCustomAIServiceEnabled);
 
         private IReadOnlyList<PowerScriptInfo> GetApplicablePowerScripts() =>
-            PowerScriptsService.GetApplicableScripts(_powerScripts, _userSettings.PowerScriptsEnabled, _powerScriptClipboard);
+            PowerScriptsService.GetApplicableScripts(_powerScripts, enabled: true, _powerScriptClipboard);
 
         private IEnumerable<PasteFormat> CreatePowerScriptPasteFormats() =>
             GetApplicablePowerScripts().Select(script => PasteFormat.CreatePowerScriptFormat(script, isEnabled: true));

@@ -10,6 +10,25 @@
       <string id="InstallerUpdates">Installer and Updates</string>
       <string id="PowerToysRun">PowerToys Run</string>
       <string id="AdvancedPaste">Advanced Paste</string>
+      <string id="PowerScripts">PowerScripts</string>
+      <string id="SUPPORTED_POWERTOYS_POWERSCRIPTS">PowerToys builds that include PowerScripts (preview)</string>
+      <string id="ConfigureEnabledUtilityPowerScripts">PowerScripts: Configure enabled state</string>
+      <string id="ConfigurePowerScriptsAdvancedPaste">Advanced Paste: Allow PowerScripts integration</string>
+      <string id="ConfigurePowerScriptsAdvancedPasteDescription">Controls whether Advanced Paste can discover and run PowerScripts.
+
+Enabled forces this integration on. Disabled prevents discovery and execution from this consumer. Not configured uses the user's preference in PowerScripts settings.
+
+Disabling PowerScripts always takes precedence. A policy disabling Advanced Paste also takes precedence. Enabling this integration does not enable either utility, approve scripts, enable runtimes, or weaken sandbox restrictions.
+
+Machine policy takes precedence over user policy for the same value. Policies never replace saved user preferences; removing a policy restores the preference. Consumer identity is caller-supplied and is not an authentication boundary. Use the PowerScripts utility policy to prevent execution by all consumers.</string>
+      <string id="ConfigurePowerScriptsKeyboardManager">Keyboard Manager: Allow PowerScripts integration</string>
+      <string id="ConfigurePowerScriptsKeyboardManagerDescription">Controls whether Keyboard Manager can discover and run PowerScripts.
+
+Enabled forces this integration on. Disabled prevents discovery and execution from this consumer without deleting saved bindings. Not configured uses the user's preference in PowerScripts settings.
+
+Disabling PowerScripts always takes precedence. A policy disabling Keyboard Manager also takes precedence. Enabling this integration does not enable either utility, approve scripts, enable runtimes, or weaken sandbox restrictions.
+
+Machine policy takes precedence over user policy for the same value. Policies never replace saved user preferences; removing a policy restores the preference. Consumer identity is caller-supplied and is not an authentication boundary. Use the PowerScripts utility policy to prevent execution by all consumers.</string>
       <string id="MouseWithoutBorders">Mouse Without Borders</string>
       <string id="GeneralSettings">General settings</string>
       <string id="NewPlus">New+</string>

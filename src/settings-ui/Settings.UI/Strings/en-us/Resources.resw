@@ -6643,13 +6643,13 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>Enter a Linux container image reference before checking Python or downloading the image.</value>
   </data>
   <data name="PowerScripts_LinuxImagePreparation.Text" xml:space="preserve">
-    <value>Requires a compatible WSL runtime. The cached image is reused. Each run uses a fresh container; changes inside it are discarded.</value>
+    <value>Requires a compatible WSL runtime. PowerScripts reuses an isolated Linux container. Restarting its runtime discards container changes but keeps cached images, returned files, and your settings.</value>
   </data>
   <data name="PowerScripts_LinuxDownloadDescription.Text" xml:space="preserve">
     <value>Download and cache the image from its registry, then check Python. Requires network access; does not install Python or packages.</value>
   </data>
   <data name="PowerScripts_LinuxCheckDescription.Text" xml:space="preserve">
-    <value>Check that python3 runs in a temporary container using the cached image. No image download; your scripts and their dependencies are not tested.</value>
+    <value>Check Python without downloading an image or resetting a healthy PowerScripts session. Your scripts and their dependencies are not tested.</value>
   </data>
   <data name="PowerScripts_LinuxCheck.Content" xml:space="preserve">
     <value>Check Python</value>
@@ -6664,7 +6664,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>Image ready</value>
   </data>
   <data name="PowerScripts_LinuxImageNotReady" xml:space="preserve">
-    <value>Image not ready</value>
+    <value>Linux environment unavailable</value>
   </data>
   <data name="PowerScripts_LinuxImageStatusTitle" xml:space="preserve">
     <value>Image status</value>
@@ -6682,7 +6682,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>Downloading and caching the Linux image, then checking Python...</value>
   </data>
   <data name="PowerScripts_LinuxChecking" xml:space="preserve">
-    <value>Checking Python in a temporary container using the cached image...</value>
+    <value>Checking Python using the cached Linux image...</value>
   </data>
   <data name="PowerScripts_LinuxSetupTitle" xml:space="preserve">
     <value>Download the Linux image?</value>
@@ -6767,4 +6767,24 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_ActivityUnknown" xml:space="preserve"><value>Status unavailable</value></data>
   <data name="PowerScripts_ActivityExitCode" xml:space="preserve"><value>{0} (exit code {1})</value></data>
   <data name="PowerScripts_ActivityDuration" xml:space="preserve"><value>{0} | {1:N1} s</value></data>
+  <data name="PowerScripts_Consumers.Header" xml:space="preserve"><value>Use PowerScripts in</value></data>
+  <data name="PowerScripts_AdvancedPasteConsumer.Header" xml:space="preserve"><value>Advanced Paste</value></data>
+  <data name="PowerScripts_KeyboardManagerConsumer.Header" xml:space="preserve"><value>Keyboard Manager</value></data>
+  <data name="PowerScripts_ConsumerDescription" xml:space="preserve"><value>Allow this module to discover and run scripts. Turning this off keeps existing bindings.</value></data>
+  <data name="PowerScripts_ConsumerModuleDisabled" xml:space="preserve"><value>Enable PowerScripts first. Your integration preference is kept.</value></data>
+  <data name="PowerScripts_ConsumerParentPolicyDisabled" xml:space="preserve"><value>This module is disabled by your organization. Your integration preference is kept.</value></data>
+  <data name="PowerScripts_ConsumerManaged" xml:space="preserve"><value>This integration is managed by your organization.</value></data>
+  <data name="PowerScripts_ManagedPolicy.Message" xml:space="preserve"><value>The PowerScripts enabled state is managed by your organization.</value></data>
+  <data name="PowerScripts_LinuxRecover.Content" xml:space="preserve"><value>Restart Linux runtime</value></data>
+  <data name="PowerScripts_LinuxRecoverDescription.Text" xml:space="preserve"><value>Recover an interrupted PowerScripts Linux session without downloading images or changing settings.</value></data>
+  <data name="PowerScripts_LinuxRecoverTitle" xml:space="preserve"><value>Restart the PowerScripts Linux runtime?</value></data>
+  <data name="PowerScripts_LinuxRecoverConfirm" xml:space="preserve"><value>Restart runtime</value></data>
+  <data name="PowerScripts_LinuxRecoverHelp" xml:space="preserve"><value>Reset only the PowerScripts Linux session and check Python again. Cached images, returned files, script approvals, and sandbox settings are kept. Running operations block recovery; scripts are never retried automatically. No processes or WSL distributions are forcibly stopped. If WSL cannot clean up the session, save your work and restart Windows.</value></data>
+  <data name="PowerScripts_LinuxRecovering" xml:space="preserve"><value>Safely restarting the PowerScripts Linux runtime and checking Python...</value></data>
+  <data name="PowerScripts_LinuxRecoveryRequiredTitle" xml:space="preserve"><value>Linux runtime needs recovery</value></data>
+  <data name="PowerScripts_LinuxRuntimeUnavailableHelp" xml:space="preserve"><value>The WSL backend connection was lost. This does not mean your image is missing. Select Restart Linux runtime to recover the idle PowerScripts session; no image download is needed.</value></data>
+  <data name="PowerScripts_LinuxRecoveryRequiredHelp" xml:space="preserve"><value>The previous PowerScripts session is interrupted or uses a different image or network policy. Restart Linux runtime to check the selected image. Cached images and settings are kept.</value></data>
+  <data name="PowerScripts_LinuxRestartWindowsTitle" xml:space="preserve"><value>Windows restart needed</value></data>
+  <data name="PowerScripts_LinuxRestartWindowsHelp" xml:space="preserve"><value>WSL could not safely clean up the Linux session. Save your work and restart Windows, then select Check Python. Do not delete or download the image again: cached images, settings, and script approvals are kept. PowerToys has not forcibly stopped any process or WSL distribution.</value></data>
+  <data name="PowerScripts_LinuxCacheBusyHelp" xml:space="preserve"><value>The cached image is in use, not missing. Close other apps using MXC Linux and select Check Python again. If this persists with those apps closed, save your work and restart Windows; do not delete or download the image again.</value></data>
 </root>

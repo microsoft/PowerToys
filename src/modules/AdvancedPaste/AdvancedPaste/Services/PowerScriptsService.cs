@@ -26,7 +26,7 @@ internal static class PowerScriptsService
     public static async Task<IReadOnlyList<PowerScriptInfo>> GetAdvancedPasteScriptsAsync()
     {
         var client = new PowerScriptsClient(PowerScriptConsumer.AdvancedPaste);
-        if (!IsPowerScriptsEnabled() || !client.IsAvailable)
+        if (!client.IsAvailable)
         {
             return [];
         }
@@ -383,36 +383,4 @@ internal static class PowerScriptsService
 
     private static PasteActionException Failure(string resource, string details = null) =>
         new(ResourceLoaderInstance.ResourceLoader.GetString(resource), new InvalidOperationException(resource), details);
-
-    private static bool IsPowerScriptsEnabled()
-    {
-        if (Environment.GetEnvironmentVariable("POWERSCRIPTS_IGNORE_ENABLED") == "1")
-        {
-            return true;
-        }
-
-        var root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys");
-        foreach (var (path, moduleConfig) in new[] { (Path.Combine(root, "PowerScripts", "config.json"), true), (Path.Combine(root, "settings.json"), false) })
-        {
-            if (!File.Exists(path))
-            {
-                continue;
-            }
-
-            using var document = JsonDocument.Parse(File.ReadAllText(path));
-            var configuration = document.RootElement;
-            if (!moduleConfig && !configuration.TryGetProperty("enabled", out configuration))
-            {
-                continue;
-            }
-
-            if (configuration.TryGetProperty(moduleConfig ? "enabled" : "PowerScripts", out var enabled) &&
-                enabled.ValueKind is JsonValueKind.True or JsonValueKind.False)
-            {
-                return enabled.GetBoolean();
-            }
-        }
-
-        return true;
-    }
 }

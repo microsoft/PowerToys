@@ -18,7 +18,7 @@ namespace PowerScripts.Core;
 public static class ModuleState
 {
     /// <summary>
-    /// Environment escape hatch (set to <c>1</c>) that bypasses the enabled gate, for hermetic tests
+    /// Environment escape hatch (set to <c>1</c>) that bypasses the user enabled gate, for hermetic tests
     /// and standalone/dev runs of the host outside a PowerToys installation.
     /// </summary>
     public const string IgnoreEnabledEnvironmentVariable = "POWERSCRIPTS_IGNORE_ENABLED";
@@ -27,7 +27,8 @@ public static class ModuleState
     /// True when scripts are allowed to run.
     ///
     /// Resolution order:
-    ///   - The <see cref="IgnoreEnabledEnvironmentVariable"/> bypass wins if set.
+    ///   - Configured utility Group Policy wins, including over the development bypass.
+    ///   - The <see cref="IgnoreEnabledEnvironmentVariable"/> bypass overrides user preferences.
     ///   - If the PowerToys settings file is absent (no PowerToys governance — standalone/dev/test),
     ///     execution is allowed.
     ///   - If the settings file exists but has no <c>enabled.PowerScripts</c> key, execution is
@@ -41,6 +42,12 @@ public static class ModuleState
     /// </summary>
     public static bool IsPowerScriptsEnabled()
     {
+        var policy = PowerScriptsPolicies.ReadUtility("PowerScripts");
+        if (policy.HasValue)
+        {
+            return policy.Value;
+        }
+
         if (string.Equals(Environment.GetEnvironmentVariable(IgnoreEnabledEnvironmentVariable), "1", StringComparison.Ordinal))
         {
             return true;

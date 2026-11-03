@@ -77,6 +77,8 @@ public sealed class PowerScriptsClient
             var psi = CreateStartInfo(redirectStdOut: true);
             psi.ArgumentList.Add("list");
             psi.ArgumentList.Add("--json");
+            psi.ArgumentList.Add("--consumer");
+            psi.ArgumentList.Add(_consumerId);
             AppendRoot(psi);
 
             using var process = Process.Start(psi);
@@ -119,6 +121,8 @@ public sealed class PowerScriptsClient
         var psi = CreateStartInfo(redirectStdOut: true, redirectStdErr: true);
         psi.ArgumentList.Add("list");
         psi.ArgumentList.Add("--json");
+        psi.ArgumentList.Add("--consumer");
+        psi.ArgumentList.Add(_consumerId);
         AppendRoot(psi);
         using var process = Process.Start(psi)
             ?? throw new InvalidOperationException("Failed to start the PowerScripts Host.");

@@ -10,7 +10,8 @@ Host owns script loading, validation, trust, parameter validation, security poli
    descriptor command directly from the consumer.
 2. **Discover by resolved I/O.** A consumer selects scripts whose `io.input` and `io.output`
    it can supply and handle. The catalogue is shared: scripts have no audience field or
-   module-targeting filter. Invocation consumer IDs are attribution only, not discovery filters.
+   module-targeting filter. Consumer IDs apply the integration's master preference and Group Policy,
+   not a per-script audience filter.
    Scripts do not declare the removed `surface` or `kind` fields.
 3. **Treat script IDs as opaque.** Display `name` and `description`; invoke by `id` and persist
    IDs only when the consumer needs saved bindings.
@@ -20,7 +21,7 @@ Host owns script loading, validation, trust, parameter validation, security poli
 6. **Handle PowerScripts being unavailable or disabled.** Hide or disable runtime integration
    rather than crashing. Configuration UIs should show actionable discovery errors, not disguise
    a failed Host as a successful empty catalogue or erase saved bindings.
-7. **Identify the calling module on every invocation.** Supply a stable consumer ID through the
+7. **Identify the calling module on discovery and every invocation.** Supply a stable consumer ID through the
    client constructor or required Host `--consumer` argument. Never use user input, script IDs,
    document names, paths, or parameters as the consumer ID.
 
@@ -31,7 +32,7 @@ Host owns script loading, validation, trust, parameter validation, security poli
 | Trigger an action with no primary input | `input: none` | `run <id>` |
 | Operate on selected filesystem items | `input: files`, then validate extensions and count | `run <id> --files <paths>` |
 | Transform structured content | Compatible input and output shapes | `transform <id>` with JSON on stdin |
-| Browse scripts available to run | Any supported I/O | `list --json` |
+| Browse scripts available to run | Any supported I/O, integration enabled | `list --json --consumer my-module` |
 | Configure installed/unavailable scripts, including disabled runtimes | No consumer filter | `list --json --include-disabled --include-unconfigured` |
 
 Input and output tokens are:
@@ -99,7 +100,7 @@ there is no new client API or consumer-managed container lifecycle.
 Native consumers may invoke the Host contract directly:
 
 ```text
-PowerScripts.Host.exe list --json [--input <shape>] [--output <shape>] [--no-input]
+PowerScripts.Host.exe list --json --consumer my-module [--input <shape>] [--output <shape>] [--no-input]
 PowerScripts.Host.exe run <id> --consumer my-module [--files <paths...>] [--set name=value...]
 PowerScripts.Host.exe transform <id> --consumer my-module
 ```
@@ -113,12 +114,60 @@ Consumer identity is mandatory for both `run` and `transform`, including direct/
 Use 1-64 lowercase ASCII letters, digits or hyphens, beginning with a letter. Built-in IDs are
 `advanced-paste` and `keyboard-manager`; manual CLI invocations should explicitly use `command-line`.
 The managed client requires `consumerId` as its first constructor argument and supplies the Host
-option automatically. Discovery, trust management, and Activity queries do not execute scripts and
-do not require attribution.
+option automatically for discovery and execution. Unqualified administrative discovery, trust
+management, and Activity queries do not require attribution.
 
 Existing managed integrations must update the constructor. Native integrations and saved command
 lines must add `--consumer`; missing or invalid IDs are rejected before execution. Re-save older
 Keyboard Manager PowerScript bindings to regenerate their command line.
+
+### Central integration settings and Group Policy
+
+Put each consumer's integration switch in **Settings > PowerScripts > Use PowerScripts in**, not
+in the consumer's settings page. PowerScripts owns `config.json`'s
+`consumers: { "advanced-paste": true, "keyboard-manager": true }` preferences. Advanced Paste uses
+its legacy `properties.powerscripts-enabled` value until a central preference exists (default off).
+The first central edit copies the legacy choice; subsequent legacy writes cannot override it.
+Keyboard Manager defaults on to preserve existing bindings. Disabling an integration never deletes
+bindings or trust approvals.
+
+The Host applies the same decision to attributed discovery and `run`/`transform`. A disabled
+integration gets an empty catalogue; an existing invocation is refused with exit code 4 and recorded
+in Activity. Administrative `list` without `--consumer` remains available for Settings management,
+including disabled runtimes. It does not grant permission to execute.
+
+Group Policy uses the 64-bit registry view under `Software\Policies\PowerToys` in HKLM/HKCU:
+
+| Policy | Registry value |
+| --- | --- |
+| PowerScripts: Configure enabled state | `ConfigureEnabledUtilityPowerScripts` |
+| Advanced Paste: Allow PowerScripts integration | `PowerScripts\Consumers\advanced-paste` |
+| Keyboard Manager: Allow PowerScripts integration | `PowerScripts\Consumers\keyboard-manager` |
+
+Each value is `REG_DWORD`: 0 disables, 1 enables, absent uses the saved preference.
+HKLM wins over HKCU for each value. As with other utilities, an individual utility policy overrides
+`ConfigureGlobalUtilityEnabledState`. A disabled PowerScripts module always blocks every consumer,
+even if a consumer policy enables its integration; a policy disabling the parent utility also wins.
+Enabling an integration does not enable its parent utility, enable a runtime, approve a script, or
+relax MXC. Policies do not overwrite user preferences, so removing a policy restores the preference.
+Malformed or inaccessible policies are reported as errors, not treated as permission to execute.
+Settings shows effective values and locks policy-managed controls.
+
+The generic per-consumer policy resolver accepts stable consumer IDs, so adding a consumer needs no
+new execution gate. Register its parent utility/default in `ConsumerSettings`, add its central
+Settings card and ADMX/ADML policy, and use the same ID in discovery, execution, and policy values.
+Refresh discovery when presenting actions; do not cache enablement as an authorization decision.
+Host enforcement also covers stale UI and saved bindings. Policy changes affect subsequent
+invocations, not already-running scripts.
+
+Consumer identity remains self-reported, **not authentication**. A process could claim another ID;
+per-consumer policies control official integrations, not hostile same-user programs. Use the global
+PowerScripts policy to prevent execution through every Host consumer, including direct CLI calls.
+The development enabled-state bypass cannot override Group Policy.
+
+`consumers list` returns effective/managed state as JSON.
+`consumers set <advanced-paste|keyboard-manager> <on|off>` changes a user preference, preserving
+unrelated configuration, and refuses edits when the module is disabled or policy controls the switch.
 
 The shared Host records the latest 200 invocations in local `activity.json`, independently of the
 selected scripts folder. Settings > PowerScripts > Activity shows the script, source, start time,
@@ -211,7 +260,8 @@ do not reference the Settings executable from a runtime module or add UI depende
    the shared Host/client discovery contract.
 5. Present script names and relevant contract/parameter information. If maintaining bindings,
    retain missing/invalid/incompatible entries with a warning and an explicit Remove action.
-6. Persist consumer settings through the module's normal IPC/save path. For picker-based bindings,
+6. Put integration enablement in PowerScripts' central consumer settings and register its Group Policy.
+   Persist module-owned bindings through the module's normal IPC/save path. For picker-based bindings,
    Cancel and discovery errors must not modify settings.
 7. Revalidate availability, current contract, parameters, and trust when invoking through the Host.
 8. Test input filtering, input changes, master enablement, runtime-disabled behavior, and trust

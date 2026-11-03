@@ -16,6 +16,7 @@
 
     <controls:SettingsPageControl
         x:Name="PowerScriptsSettingsPage"
+        IsEnabled="{x:Bind ViewModel.AreConsumerSettingsReady, Mode=OneWay}"
         IsTabStop="False"
         ModuleDescription="Create and manage scripts for compatible PowerToys modules. PowerScripts provides the shared protocol and execution policies, not a standalone action surface."
         ModuleTitle="PowerScripts">
@@ -26,8 +27,48 @@
                     Description="Enable PowerScripts"
                     Header="PowerScripts"
                     HeaderIcon="{ui:FontIcon Glyph=&#xE756;}">
-                    <ToggleSwitch AutomationProperties.AutomationId="PowerScriptsEnabledToggle" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch
+                        AutomationProperties.AutomationId="PowerScriptsEnabledToggle"
+                        AutomationProperties.Name="PowerScripts"
+                        IsEnabled="{x:Bind ViewModel.CanChangePowerScriptsEnabled, Mode=OneWay}"
+                        IsOn="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+                        Toggled="PowerScriptsEnabledToggle_Toggled" />
                 </tkcontrols:SettingsCard>
+
+                <InfoBar
+                    x:Uid="PowerScripts_ManagedPolicy"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.IsPowerScriptsPolicyControlled, Mode=OneWay}"
+                    Severity="Informational" />
+
+                <controls:SettingsGroup
+                    x:Uid="PowerScripts_Consumers"
+                    IsEnabled="{x:Bind ViewModel.AreConsumerSettingsReady, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        x:Uid="PowerScripts_AdvancedPasteConsumer"
+                        Description="{x:Bind ViewModel.AdvancedPasteConsumer.Status, Mode=OneWay}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE756;}">
+                        <ToggleSwitch
+                            AutomationProperties.AutomationId="PowerScriptsAdvancedPasteEnabled"
+                            AutomationProperties.Name="Advanced Paste"
+                            IsEnabled="{x:Bind ViewModel.AdvancedPasteConsumer.CanChange, Mode=OneWay}"
+                            IsOn="{x:Bind ViewModel.AdvancedPasteConsumer.IsEnabled, Mode=OneWay}"
+                            Tag="advanced-paste"
+                            Toggled="ConsumerEnabledToggle_Toggled" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        x:Uid="PowerScripts_KeyboardManagerConsumer"
+                        Description="{x:Bind ViewModel.KeyboardManagerConsumer.Status, Mode=OneWay}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
+                        <ToggleSwitch
+                            AutomationProperties.AutomationId="PowerScriptsKeyboardManagerEnabled"
+                            AutomationProperties.Name="Keyboard Manager"
+                            IsEnabled="{x:Bind ViewModel.KeyboardManagerConsumer.CanChange, Mode=OneWay}"
+                            IsOn="{x:Bind ViewModel.KeyboardManagerConsumer.IsEnabled, Mode=OneWay}"
+                            Tag="keyboard-manager"
+                            Toggled="ConsumerEnabledToggle_Toggled" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
 
                 <tkcontrols:SettingsCard
                     Name="PowerScriptsFolderSettingsCard"
@@ -224,6 +265,7 @@
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -257,6 +299,21 @@
                                     AutomationProperties.HelpText="{x:Bind LinuxCheckDescription.Text, Mode=OneWay}"
                                     Click="CheckLinuxContainer_Click"
                                     IsEnabled="{x:Bind ViewModel.CanPrepareLinuxContainer, Mode=OneWay}" />
+                                <TextBlock
+                                    x:Name="LinuxRecoverDescription"
+                                    x:Uid="PowerScripts_LinuxRecoverDescription"
+                                    Grid.Row="2"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    TextWrapping="Wrap" />
+                                <Button
+                                    x:Uid="PowerScripts_LinuxRecover"
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    AutomationProperties.AutomationId="PowerScriptsLinuxRecover"
+                                    AutomationProperties.HelpText="{x:Bind LinuxRecoverDescription.Text, Mode=OneWay}"
+                                    Click="RecoverLinuxContainer_Click"
+                                    IsEnabled="{x:Bind ViewModel.CanRecoverLinuxContainer, Mode=OneWay}" />
                             </Grid>
                             <TextBlock
                                 x:Uid="PowerScripts_LinuxImagePreparation"

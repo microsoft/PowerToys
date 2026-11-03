@@ -20,7 +20,8 @@ UX, invocation timing, presentation, cancellation, and result lifetime. They do 
 launch scripts directly or reference the execution engine.
 
 Advanced Paste automatically offers all clipboard-compatible scripts when its consumer master
-toggle is enabled. It has no per-script assignments or exclusions; no-input scripts are not offered.
+toggle in PowerScripts settings is enabled and policy permits it. It has no per-script assignments
+or exclusions; no-input scripts are not offered.
 Consumers requiring saved bindings own their assignment UI and persistence, using the shared
 Host/client contracts for discovery and execution. This version has no standalone script launcher
 or shared configuration picker. The client remains headless, with no Settings UI dependency.

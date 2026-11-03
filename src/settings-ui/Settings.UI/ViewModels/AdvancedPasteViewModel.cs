@@ -596,23 +596,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        /// <summary>
-        /// Master toggle controlling whether PowerScripts are offered inside Advanced Paste.
-        /// </summary>
-        public bool PowerScriptsEnabled
-        {
-            get => _advancedPasteSettings.Properties.PowerScriptsEnabled;
-            set
-            {
-                if (value != _advancedPasteSettings.Properties.PowerScriptsEnabled)
-                {
-                    _advancedPasteSettings.Properties.PowerScriptsEnabled = value;
-                    NotifySettingsChanged();
-                    OnPropertyChanged(nameof(PowerScriptsEnabled));
-                }
-            }
-        }
-
         public bool IsConflictingCopyShortcut =>
             _customActions.Select(customAction => customAction.Shortcut)
                           .Concat([PasteAsPlainTextShortcut, AdvancedPasteUIShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut])
@@ -1286,7 +1269,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (target.PowerScriptsEnabled != source.PowerScriptsEnabled)
             {
                 target.PowerScriptsEnabled = source.PowerScriptsEnabled;
-                OnPropertyChanged(nameof(PowerScriptsEnabled));
             }
 
             if (target.AutoCopySelectionForCustomActionHotkey != source.AutoCopySelectionForCustomActionHotkey)

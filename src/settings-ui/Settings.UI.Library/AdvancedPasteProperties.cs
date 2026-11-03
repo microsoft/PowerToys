@@ -112,7 +112,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public PasteAIConfiguration PasteAIConfiguration { get; set; }
 
         /// <summary>
-        /// Master toggle for surfacing clipboard-compatible PowerScripts inside Advanced Paste.
+        /// Legacy preference, retained for migration to PowerScripts' central consumer settings.
         /// </summary>
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         [JsonPropertyName("powerscripts-enabled")]

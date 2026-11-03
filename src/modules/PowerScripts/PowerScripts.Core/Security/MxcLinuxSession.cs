@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using PowerScripts.Core.Storage;
 
 namespace PowerScripts.Core.Security;
 
@@ -18,7 +19,10 @@ internal sealed class MxcLinuxSession : IDisposable
     private readonly FileStream _lock;
     private SessionState? _state;
 
-    internal static string DefaultDirectory => Path.Combine(PowerScriptsPaths.ModuleDirectory, "linux-session");
+    internal static string DefaultDirectory => Path.Combine(
+        SettingsStore.Current is FileSettingsStore files ? files.BaseDirectory : PowerScriptsPaths.ModuleDirectory, "linux-session");
+
+    internal string DaemonDirectory => Path.Combine(_directory, "daemon");
 
     internal string RequestsDirectory => Path.Combine(_directory, "requests");
 
@@ -26,7 +30,7 @@ internal sealed class MxcLinuxSession : IDisposable
 
     private string StatePath => Path.Combine(_directory, "session.json");
 
-    internal MxcLinuxSession(string directory, string executor, IProcessLauncher launcher)
+    internal MxcLinuxSession(string directory, string executor, IProcessLauncher launcher, bool maintenance = true, bool waitForLock = true)
     {
         _directory = Path.GetFullPath(directory);
         _executor = executor;
@@ -41,7 +45,7 @@ internal sealed class MxcLinuxSession : IDisposable
                 _lock = new FileStream(Path.Combine(_directory, "session.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
                 break;
             }
-            catch (IOException ex) when (timer.Elapsed < TimeSpan.FromSeconds(60) && (ex.HResult & 0xffff) is 32 or 33)
+            catch (IOException ex) when (waitForLock && timer.Elapsed < TimeSpan.FromSeconds(60) && (ex.HResult & 0xffff) is 32 or 33)
             {
                 Thread.Sleep(50);
             }
@@ -58,7 +62,13 @@ internal sealed class MxcLinuxSession : IDisposable
                 throw new InvalidDataException("The saved shared Linux sandbox identifier is invalid.");
             }
 
-            if (_state?.Reusable != false)
+            if (_state?.DaemonDirectory is { } daemonDirectory &&
+                !string.Equals(daemonDirectory, DaemonDirectory, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException("The saved Linux daemon directory is not owned by this PowerScripts session.");
+            }
+
+            if (maintenance && _state?.Reusable != false)
             {
                 MxcProcessRunner.DeleteStaleRunDirectories(RequestsDirectory, TimeSpan.Zero);
                 MxcProcessRunner.DeleteStaleRunDirectories(WorkspacesDirectory);
@@ -89,7 +99,7 @@ internal sealed class MxcLinuxSession : IDisposable
             RuntimeIdentity(Path.Combine(Path.GetDirectoryName(_executor)!, "wslcsdk.dll")),
         });
         var key = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity)));
-        if (_state is not null && (_state.Key != key || !_state.Reusable))
+        if (_state is not null && (_state.Key != key || !_state.Reusable || _state.DaemonDirectory is null))
         {
             var reset = Reset();
             if (reset.ExitCode != 0)
@@ -156,7 +166,7 @@ internal sealed class MxcLinuxSession : IDisposable
             throw new InvalidDataException("MXC returned an invalid shared Linux sandbox identifier.");
         }
 
-        _state = new SessionState(key, id!, Reusable: false);
+        _state = new SessionState(key, id!, Reusable: false, image, restrictNetwork, DaemonDirectory);
         SaveState();
         var started = Phase("start");
         return started.ExitCode == 0 ? started : Failure("start", started);
@@ -210,6 +220,66 @@ internal sealed class MxcLinuxSession : IDisposable
         return new ProcessRunResult(0, string.Empty, string.Empty);
     }
 
+    internal ProcessRunResult? ProbeExisting(string image)
+    {
+        if (_state is null)
+        {
+            return null;
+        }
+
+        if (!_state.Reusable || _state.Image != image || _state.RestrictNetwork != true)
+        {
+            return new ProcessRunResult(2, string.Empty, MxcLinuxRecovery.RecoveryRequired);
+        }
+
+        var result = Invoke(new
+        {
+            version = "0.8.0-alpha",
+            phase = "exec",
+            sandboxId = _state.SandboxId,
+            process = new { commandLine = MxcLinuxProcessRunner.ProbeCommand, timeout = 30000 },
+        }, 35000);
+        return result.ExitCode == 0 ? result : Failure("readiness check", result);
+    }
+
+    internal ProcessRunResult Recover()
+    {
+        if (_state is null)
+        {
+            return new ProcessRunResult(0, string.Empty, string.Empty);
+        }
+
+        // An admitted constant check completes on the SDK worker after any queued exec.
+        // Busy, timeout and unrelated failures never authorize cleanup.
+        var check = Invoke(new
+        {
+            version = "0.8.0-alpha",
+            phase = "exec",
+            sandboxId = _state.SandboxId,
+            process = new { commandLine = ":", timeout = 5000 },
+        }, 10000);
+        if (check.ExitCode != 0 && !HasError(check, "not_provisioned") &&
+            !HasError(check, "not_started") && !MxcLinuxRecovery.IsRpcUnavailable(check))
+        {
+            return Failure("recovery safety check", check);
+        }
+
+        var reset = Reset();
+        if (reset.ExitCode == 0 || !MxcLinuxRecovery.IsRpcUnavailable(reset))
+        {
+            return reset;
+        }
+
+        if (_state?.DaemonDirectory is null)
+        {
+            return reset with { StdErr = MxcLinuxRecovery.LegacySharedRuntime + "\n" + reset.StdErr };
+        }
+
+        // Process termination can leave the SDK's image VHD attached. Keep the failed
+        // session record and require a Windows restart rather than losing cleanup ownership.
+        return reset with { StdErr = MxcLinuxRecovery.RestartWindowsRequired + "\n" + reset.StdErr };
+    }
+
     public void Dispose() => _lock.Dispose();
 
     internal static void EnsureInside(string root, string path)
@@ -260,6 +330,11 @@ internal sealed class MxcLinuxSession : IDisposable
             // Live containers stay warm. Once released, promptly unlock the SDK image store for setup/checks.
             start.Environment["MXC_WSLC_DAEMON_IDLE_TIMEOUT_SECS"] = "1";
             start.Environment["MXC_WSLC_DAEMON_IDLE_POLL_SECS"] = "1";
+            if (_state is null || _state.DaemonDirectory is not null)
+            {
+                start.Environment["MXC_WSLC_STATE_ROOT"] = DaemonDirectory;
+            }
+
             return _launcher.Run(start, null, timeoutMs);
         }
         finally
@@ -285,5 +360,7 @@ internal sealed class MxcLinuxSession : IDisposable
     private static ProcessRunResult Failure(string phase, ProcessRunResult result) =>
         result with { StdOut = string.Empty, StdErr = $"Managed Linux {phase} failed: {result.StdErr}\n{result.StdOut}".TrimEnd() };
 
-    private sealed record SessionState(string Key, string SandboxId, bool Reusable);
+    private sealed record SessionState(
+        string Key, string SandboxId, bool Reusable, string? Image = null,
+        bool? RestrictNetwork = null, string? DaemonDirectory = null);
 }
