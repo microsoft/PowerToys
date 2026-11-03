@@ -19,6 +19,9 @@ namespace Peek.UI.Helpers
 {
     public static class FileExplorerHelper
     {
+        // TODO(#51651): these casts to [ComImport] shell interfaces use built-in COM interop, which is not
+        // AOT/trimming-safe. Suppressed until this helper moves to CsWin32/ComWrappers-based interop.
+#pragma warning disable CsWinRT1033
         internal static IShellItemArray? GetSelectedItems(HWND foregroundWindowHandle)
         {
             return GetItemsInternal(foregroundWindowHandle, onlySelectedFiles: true);
@@ -113,6 +116,7 @@ namespace Peek.UI.Helpers
 
             return null;
         }
+#pragma warning restore CsWinRT1033
 
         /// <summary>
         /// Heuristic to decide whether the user is actively typing so we should suppress Peek activation.
