@@ -45,6 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(OutGoingGeneralSettings))]
     [JsonSerializable(typeof(AdvancedPasteSettings))]
     [JsonSerializable(typeof(AltWindowCycleSettings))]
+    [JsonSerializable(typeof(WindowTabsSettings))]
     [JsonSerializable(typeof(AlwaysOnTopSettings))]
     [JsonSerializable(typeof(AutoHideCursorSettings))]
     [JsonSerializable(typeof(AwakeSettings))]
@@ -125,6 +126,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(ZoomItProperties))]
 
     // Base Property Types (used throughout settings)
+    [JsonSerializable(typeof(WindowTabsProperties))]
     [JsonSerializable(typeof(BoolProperty))]
     [JsonSerializable(typeof(StringProperty))]
     [JsonSerializable(typeof(IntProperty))]
