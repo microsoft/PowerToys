@@ -53,6 +53,32 @@ public sealed class TextExpanderSettingsTests : TextExpanderTestBase
         AssertExpands(Greeting.Trigger + " ", Greeting.Replacement + " ", waitForEngine: true);
     }
 
+    /// <summary>
+    /// An engine PowerToys started earlier and didn't stop, such as one from a build before an update, went on expanding
+    /// with Text Expander off: a runner that starts with Text Expander off never stopped an engine. It now stops any it
+    /// didn't start.
+    /// </summary>
+    [TestMethod("TextExpander.Settings.AnEngineLeftRunningStopsWhenPowerToysStartsWithTextExpanderOff")]
+    [TestCategory("TextExpander")]
+    [TestCategory("TextExpander.Settings")]
+    public void AnEngineLeftRunningStopsWhenPowerToysStartsWithTextExpanderOff()
+    {
+        var settings = OpenTextExpanderPage();
+        Step("Turning Text Expander off");
+        SetSwitch(settings, EnableSwitch, on: false);
+        Assert.IsTrue(WaitForEngine(running: false, timeoutMS: 20_000), "PowerToys.TextExpander kept running after Text Expander was turned off.");
+
+        using var leftBehind = StartEngineLeftBehind();
+        AssertExpands(Greeting.Trigger + " ", Greeting.Replacement + " ", waitForEngine: true);
+
+        Step("Restarting PowerToys with Text Expander off");
+        RestartScope(enableModules: []);
+        Assert.IsTrue(
+            WaitForEngine(running: false, timeoutMS: 20_000),
+            $"The engine left running went on after PowerToys started with Text Expander off ({DescribeEngine()}).");
+        AssertNotExpanded(Greeting.Trigger + " ");
+    }
+
     /// <summary>Each Advanced option is saved to the module's settings.json, where the engine reads it.</summary>
     [TestMethod("TextExpander.Settings.OptionsAreSavedForTheEngine")]
     [TestCategory("TextExpander")]

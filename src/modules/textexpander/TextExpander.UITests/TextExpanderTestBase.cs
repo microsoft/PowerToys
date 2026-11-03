@@ -74,6 +74,23 @@ public abstract class TextExpanderTestBase : UITestBase
 
     internal static bool IsEngineRunning() => ProcessIds(EngineProcessName).Length > 0;
 
+    /// <summary>
+    /// Starts an engine as the runner does, with the same window and single-instance lock, but tied to this test process
+    /// rather than the runner, so it goes on running when PowerToys stops: one left behind by an earlier PowerToys.
+    /// </summary>
+    internal Process StartEngineLeftBehind()
+    {
+        var engine = Path.Combine(Path.GetDirectoryName(SessionHelper.GetExecutablePath(PowerToysModule.Runner))!, "WinUI3Apps", EngineProcessName + ".exe");
+        Step($"Starting an engine as an earlier PowerToys would have left it: {engine}");
+        var process = Process.Start(new ProcessStartInfo(engine)
+        {
+            Arguments = $"{Environment.ProcessId} --managed --instance:powertoys --settings:\"{TextExpanderFiles.SettingsPath}\"",
+            UseShellExecute = false,
+        });
+        Assert.IsNotNull(process, $"{engine} didn't start.");
+        return process;
+    }
+
     internal static bool WaitForEngine(bool running, int timeoutMS = 30_000) =>
         WaitHelper.WaitForStable(IsEngineRunning, actual => actual == running, timeoutMS, requiredConsecutiveMatches: 3, pollIntervalMS: 250).Succeeded;
 

@@ -11,6 +11,7 @@
 #include <common/utils/winapi_error.h>
 
 #include <shlobj.h>
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -41,8 +42,17 @@ const static wchar_t* ENGINE_PATH = L"WinUI3Apps\\PowerToys.TextExpander.exe";
 
 // --managed runs the engine without UI of its own; PowerToys owns the UI.
 // --instance:powertoys scopes the engine's single-instance mutex and message-window class to
-// this module, so the runner can always find and stop the instance it started.
+// this module, so the runner can always find and stop the engines it started, this session's or earlier.
 const static wchar_t* ENGINE_ARGS = L"--managed --instance:powertoys";
+
+// The window of an engine started with --instance:powertoys, the message that asks it to exit, and its file name, as in
+// the engine's Program.cs. The window and the message are as old as the engine, so an engine from any build answers.
+const static wchar_t* ENGINE_WINDOW_CLASS = L"PowerToys.TextExpander.MessageWindow.powertoys";
+const static wchar_t* ENGINE_SHUTDOWN_MESSAGE = L"PowerToys.TextExpander.RequestShutdown";
+const static wchar_t* ENGINE_FILE_NAME = L"PowerToys.TextExpander.exe";
+
+// How long an engine asked to exit gets before it's terminated: time to put back a clipboard a paste borrowed.
+const static DWORD ENGINE_EXIT_TIMEOUT_MS = 1500;
 
 // Where the Settings app writes this module's configuration. Passed explicitly so the
 // dependency is visible on the command line. The engine watches the file, so changes apply live.
@@ -217,6 +227,85 @@ private:
         return !read || elevation.TokenIsElevated != 0;
     }
 
+    // Whether process runs a Text Expander engine: a window of the engine's class could belong to any process.
+    static bool is_engine_process(HANDLE process)
+    {
+        std::wstring path(32768, L'\0');
+        DWORD size = static_cast<DWORD>(path.size());
+        if (!QueryFullProcessImageNameW(process, 0, path.data(), &size))
+        {
+            return false;
+        }
+
+        path.resize(size);
+        size_t separator = path.find_last_of(L'\\');
+        return _wcsicmp(path.c_str() + (separator == std::wstring::npos ? 0 : separator + 1), ENGINE_FILE_NAME) == 0;
+    }
+
+    // Asks every engine PowerToys started in this session to exit, except keep_pid, and terminates any still running
+    // after ENGINE_EXIT_TIMEOUT_MS. One left by an earlier PowerToys session, such as a build from before an update, went
+    // on expanding with Text Expander off: a runner that starts with it off never stops an engine, and the exit event
+    // wakes only one engine. Left running, it would also hold the single-instance mutex this runner's engine needs.
+    static void stop_other_engines(DWORD keep_pid)
+    {
+        const UINT shutdown_message = RegisterWindowMessageW(ENGINE_SHUTDOWN_MESSAGE);
+        std::vector<DWORD> pids;
+        std::vector<HANDLE> engines;
+        for (HWND window = FindWindowExW(nullptr, nullptr, ENGINE_WINDOW_CLASS, nullptr); window;
+             window = FindWindowExW(nullptr, window, ENGINE_WINDOW_CLASS, nullptr))
+        {
+            DWORD pid = 0;
+            GetWindowThreadProcessId(window, &pid);
+            if (pid == 0 || pid == keep_pid || std::find(pids.begin(), pids.end(), pid) != pids.end())
+            {
+                continue;
+            }
+
+            HANDLE process = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+            if (!process)
+            {
+                Logger::warn(L"Could not open a Text Expander engine this runner didn't start (process {}). {}", pid, get_last_error_or_default(GetLastError()));
+                continue;
+            }
+
+            if (!is_engine_process(process))
+            {
+                CloseHandle(process);
+                continue;
+            }
+
+            // The engine exits as it does for the runner's own request, putting back a clipboard a paste borrowed.
+            Logger::info(L"Asking a Text Expander engine this runner didn't start to exit (process {}).", pid);
+            if (shutdown_message == 0 || !PostMessageW(window, shutdown_message, 0, 0))
+            {
+                Logger::warn(L"Could not ask Text Expander engine {} to exit. {}", pid, get_last_error_or_default(GetLastError()));
+            }
+
+            pids.push_back(pid);
+            engines.push_back(process);
+        }
+
+        const ULONGLONG deadline = GetTickCount64() + ENGINE_EXIT_TIMEOUT_MS;
+        for (size_t i = 0; i < engines.size(); ++i)
+        {
+            const ULONGLONG now = GetTickCount64();
+            if (WaitForSingleObject(engines[i], now < deadline ? static_cast<DWORD>(deadline - now) : 0) != WAIT_OBJECT_0)
+            {
+                Logger::warn(L"Text Expander engine {} did not exit when asked; terminating it.", pids[i]);
+                if (TerminateProcess(engines[i], 1))
+                {
+                    WaitForSingleObject(engines[i], 500);
+                }
+                else
+                {
+                    Logger::warn(L"Failed to terminate Text Expander engine {}. {}", pids[i], get_last_error_or_default(GetLastError()));
+                }
+            }
+
+            CloseHandle(engines[i]);
+        }
+    }
+
     bool launch_process()
     {
         Logger::trace(L"Launching PowerToys TextExpander process");
@@ -277,6 +366,9 @@ public:
         app_key = TextExpanderConstants::ModuleKey;
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", "TextExpander");
         Logger::info("TextExpander object is constructing");
+
+        // Before the runner decides whether to enable this module: with it off, nothing else would stop them.
+        stop_other_engines(0);
     };
 
     virtual void destroy() override
@@ -331,6 +423,9 @@ public:
             return;
         }
 
+        // An engine still running now isn't this runner's, and would keep the one it starts from running.
+        stop_other_engines(0);
+
         // Only report enabled if the engine actually started. Claiming otherwise leaves the UI
         // showing a module that expands nothing.
         if (launch_process())
@@ -345,6 +440,9 @@ public:
         if (m_enabled)
         {
             Logger::trace(L"Disabling TextExpander... {}", m_enabled);
+
+            // Any other engine first, so the exit event, which wakes only one, reaches this runner's.
+            stop_other_engines(p_info.dwProcessId);
 
             // Ask the engine to exit first so an in-flight paste can restore the user's
             // clipboard, then terminate it if it does not exit in time. The terminate fallback
