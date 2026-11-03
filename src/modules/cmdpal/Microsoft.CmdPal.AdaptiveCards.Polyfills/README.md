@@ -59,6 +59,8 @@ A model whose `RendersItself` is false can't draw itself, so the element shows i
 
 `Icon` elements and the `Badge` `icon` property name icons from the Fluent System Icons catalog that Adaptive Cards uses, such as `Calendar` or `Wifi1`. They're drawn with Segoe Fluent Icons, the font Command Palette already uses for glyphs, so `FluentIconGlyphs` maps each name to the Segoe Fluent Icons glyph that draws the same symbol, with a filled glyph where one exists. Names without a matching glyph aren't listed. For them, `AdaptiveFallbackRenderer` draws the icon's `fallback`, since the WinUI 3 renderer drops fallback content, and `IconModel.HasGlyph` tells the incremental updater that the icon doesn't draw itself.
 
+Icon sizes map to font sizes from 12 to 48 device-independent pixels (DIPs), with a default of 24 DIPs. `IconModel.FontSizeInDips` is assigned directly to WinUI's `FontIcon.FontSize`, so display scaling determines the physical pixel size; it does not specify the glyph's exact visible bounds.
+
 To add a name, check that it's in the Adaptive Cards icon catalog (the `IconName` type of `@microsoft/teams.cards`), and compare the two glyphs side by side before adding it. Some glyphs, such as `RAM`, are only in Segoe Fluent Icons; on Windows 10 without that font they don't draw, as with other Command Palette glyphs.
 
 ## Add an element
