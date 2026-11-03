@@ -371,11 +371,7 @@ void KeyboardManager::SwitchActiveProfile(const std::wstring& profile)
         if (!std::filesystem::exists(configPath, ec))
         {
             Logger::error(L"Switch: refusing to activate profile '{}' — its config file is missing", profile);
-            std::lock_guard<std::mutex> activeLock(activeProfileMutex);
-            if (requestedProfile == profile)
-            {
-                requestedProfile.clear();
-            }
+            ResetFailedProfileRequest(profile);
             return;
         }
     }
@@ -392,13 +388,11 @@ void KeyboardManager::SwitchActiveProfile(const std::wstring& profile)
             // CycleActiveProfile. The next keystroke retries the switch.
             Logger::error(L"Auto-switch: settings.json unreadable; leaving it untouched");
 
-            // Clear the request so the next keystroke on this keyboard can retry: OnRawKeyEvent
+            // Undo the request so the next keystroke on this keyboard can retry: OnRawKeyEvent
             // sets requestedProfile before calling us, and otherwise its target == requested guard
-            // would filter out all further input from that keyboard and wedge the switch.
-            {
-                std::lock_guard<std::mutex> lock(activeProfileMutex);
-                requestedProfile.clear();
-            }
+            // would filter out all further input from that keyboard and wedge the switch. A pending
+            // stage is still where the engine is heading, so the request falls back to it.
+            ResetFailedProfileRequest(profile);
             return;
         }
 
@@ -415,10 +409,7 @@ void KeyboardManager::SwitchActiveProfile(const std::wstring& profile)
     catch (...)
     {
         Logger::error(L"Failed to write activeConfiguration for auto-switch");
-        {
-            std::lock_guard<std::mutex> lock(activeProfileMutex);
-            requestedProfile.clear();
-        }
+        ResetFailedProfileRequest(profile);
         return;
     }
 
@@ -433,6 +424,22 @@ void KeyboardManager::SwitchActiveProfile(const std::wstring& profile)
     {
         Logger::error(L"Auto-switch: failed to signal settings event");
     }
+}
+
+void KeyboardManager::ResetFailedProfileRequest(const std::wstring& failedProfile)
+{
+    // Gate lock first, then activeProfileMutex (the order AdoptStagedConfiguration and OnSettingsChanged
+    // use), so the staged profile read here cannot be applied or replaced before requestedProfile is set.
+    profileSwapGate.ReportPendingProfile([this, &failedProfile](const std::wstring& pending) {
+        std::lock_guard<std::mutex> lock(activeProfileMutex);
+
+        // Only the failed request itself: a request for another profile (e.g. a successful switch whose
+        // reload is still in flight, while this failure came from the cycle hotkey) is left alone.
+        if (requestedProfile == failedProfile)
+        {
+            requestedProfile = pending;
+        }
+    });
 }
 
 void KeyboardManager::LoadSettings()

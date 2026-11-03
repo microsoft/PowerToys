@@ -25,10 +25,22 @@
 // is applied in place right away, as before this gate existed, unless a switch to another profile is
 // pending (a pending "switch" to the applied profile itself is cancelled by such a reload instead).
 //
-// Tracked keys are physical input and input injected by other software (SendInput without KBM's
-// marker in dwExtraInfo, e.g. Mouse Without Borders, the on-screen keyboard, AutoHotkey): KBM's
-// handlers remap both, so both need their down and up resolved under one profile. KBM's own output
-// (dwExtraInfo carries KEYBOARDMANAGER_INJECTED_FLAG) is not tracked; see ClassifyKeyEvent.
+// Tracked keys are physical input and input injected by other software whose dwExtraInfo has bit 0
+// (KEYBOARDMANAGER_INJECTED_FLAG) clear, e.g. a plain SendInput with dwExtraInfo 0: KBM's
+// handlers remap both, so both need their down and up resolved under one profile. Any injected event
+// with bit 0 set is treated as KBM output by the gate and by the handlers alike (GeneratedByKBM): not
+// tracked and not remapped. That includes other programs that happen to use an odd dwExtraInfo (some
+// tools tag their own SendInput that way; AutoHotkey's default tag is believed to be odd, not
+// verified here), so their keys are neither remapped nor held back. See ClassifyKeyEvent.
+//
+// Known limitations (bounded by the stale-key and forced-swap rules below, not fixed):
+//  - a held key is identified by scan code + extended flag only, so the same key held at once from
+//    two sources (two keyboards, or a keyboard and another program's injection) shares one record:
+//    the first key-up releases it while the other is still down (review L-3 / N-3);
+//  - a key-up that is lost after the hook suppressed its key-down keeps the key "held" until the
+//    forced swap (L-4);
+//  - on a forced swap, key-ups the old profile injects while releasing held keys reach the hook
+//    after the swap and are seen by the new profile's handlers (L-5).
 //
 // An auto-repeat is recognised as a key-down of a key already in the held set. A held key that stops
 // repeating (assumed: Windows repeats only the most recently pressed key) stays in the set until its
@@ -95,17 +107,23 @@ public:
         // LLKHF_INJECTED without KBM's marker: another program's SendInput. Tracked, like Physical.
         ForeignInjected,
 
-        // LLKHF_INJECTED and dwExtraInfo has KEYBOARDMANAGER_INJECTED_FLAG: KBM's own output (all KBM
-        // flags include that bit; other PowerToys modules set it so KBM ignores their input). Not
-        // tracked: handled by the live tables directly.
+        // LLKHF_INJECTED and dwExtraInfo has KEYBOARDMANAGER_INJECTED_FLAG (bit 0): treated as KBM's own
+        // output (all KBM flags include that bit; other PowerToys modules set it so KBM ignores their
+        // input; any other program setting it is treated the same). Not tracked: handled by the live
+        // tables directly, and the handlers ignore it as KBM output.
         OwnInjected,
+
+        // LLKHF_INJECTED and dwExtraInfo == KEYBOARDMANAGER_REPROCESS_FLAG: a key-down KBM re-sends so
+        // that its handlers process it again ("send current key pressed without shortcut flag"). It
+        // stands for a physical key that is already held (and tracked) while it is being handled, and it
+        // is re-sent with MapVirtualKey's scan code, which can differ from the physical key's (numpad
+        // Enter, numpad navigation keys with NumLock off), so it must not create a held-key record of its
+        // own: one would never see a key-up. Not tracked; passed to the handlers, which reprocess it
+        // (bit 0 is clear).
+        OwnReprocessed,
     };
 
-    // Pure classification from KBDLLHOOKSTRUCT::flags and ::dwExtraInfo. Note that KBM also re-sends
-    // some key-downs with dwExtraInfo 0 on purpose (KeyboardEventHandlers, "send current key pressed
-    // without shortcut flag so that it can be reprocessed"); those classify as ForeignInjected. Such a
-    // key-down normally has the same scan code as the physical key being handled, so it counts as an
-    // auto-repeat of that held key.
+    // Pure classification from KBDLLHOOKSTRUCT::flags and ::dwExtraInfo.
     static KeyEventSource ClassifyKeyEvent(DWORD flags, ULONG_PTR extraInfo) noexcept;
 
     // A key reported down by GetAsyncKeyState when the hook is (re)installed.
@@ -134,6 +152,11 @@ public:
     // a discarded load with no stage pending).
     OfferResult Offer(MappingConfiguration::LoadOutcome outcome, std::unique_ptr<State> configuration, const ApplyInPlaceFunction& applyInPlace, const std::function<void(const std::wstring&)>& onRequested = nullptr);
 
+    // For a profile switch that failed before reaching a reload (e.g. settings.json unreadable): runs
+    // `onRequested` under the gate lock with the profile the engine is still heading to, i.e. the
+    // staged profile or empty when nothing is staged (the same value a discarded Offer reports).
+    void ReportPendingProfile(const std::function<void(const std::wstring&)>& onRequested) const;
+
     bool HasStage() const noexcept;
 
     // Name of the staged profile, or empty when nothing is staged.
@@ -143,7 +166,7 @@ public:
     // both call this). Classifies the event (ClassifyKeyEvent, read before the encoding below), encodes
     // the numpad origin into `event->lParam->vkCode` (the value the handlers see), and then:
     //  - injected events (own or foreign) first mark held keys whose async state they invalidate;
-    //  - KBM's own output goes to `handle` directly;
+    //  - KBM's own output, and key-downs KBM re-sends for reprocessing, go to `handle` directly;
     //  - tracked events go through the held-key set: a pending stage is applied first when allowed,
     //    then the event is either answered for an orphan key or passed to `handle`.
     // Returns 1 to suppress the event. `handle` must not re-enter this function synchronously for a
@@ -181,6 +204,10 @@ private:
 
         bool orphan = false;
 
+        // Seeded from GetAsyncKeyState: the scan code (and so the id) is MapVirtualKey's estimate and
+        // not confirmed by an event of the key yet. See FindHeldKey.
+        bool estimatedScanCode = false;
+
         // An injected key-up of this key was seen while it was held: GetAsyncKeyState no longer
         // reflects the physical key, so it is not dropped as stale.
         bool asyncStateUnreliable = false;
@@ -202,9 +229,13 @@ private:
     // never dropped as stale (only the forced swap can release it).
     void OnInjectedKeyEvent(const LowlevelKeyboardEvent* event) noexcept;
 
-    // The held entry for an event: by key id, or, for an orphan only, by virtual key when the id is not
-    // found (orphans seeded from GetAsyncKeyState carry an estimated scan code, which can differ from
-    // the real one, e.g. numpad Enter or the numpad navigation keys with NumLock off).
+    // The held entry for an event: by key id; when no record has that id, by virtual key, but only for
+    // an orphan seeded from GetAsyncKeyState whose scan code is still an estimate (MapVirtualKey's
+    // guess can differ from the real key, e.g. numpad Enter or the numpad navigation keys with NumLock
+    // off). Other records carry the real id, so a different physical key with the same virtual key
+    // (main vs numpad Enter, arrows vs NumLock-off numpad) never matches them. An estimate is settled
+    // by the key's first event: an exact id match confirms it, a virtual-key match re-keys the record
+    // to the event's id; either way the virtual-key fallback no longer applies to that record.
     std::unordered_map<uint32_t, HeldKey>::iterator FindHeldKey(uint32_t id, DWORD rawVkCode);
 
     void PruneStaleKeys(TimePoint now, uint32_t keepId);

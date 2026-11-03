@@ -129,6 +129,12 @@ private:
     // event, so the existing reload path applies it (avoids a second thread mutating `state`).
     void SwitchActiveProfile(const std::wstring& profile);
 
+    // A switch to `failedProfile` failed before it reached a reload. If that switch is the request in
+    // flight, the engine is still heading to the staged profile (or nowhere, when nothing is staged),
+    // so requestedProfile is reset to that, as a failed reload does (OnSettingsChanged). Takes the gate
+    // lock, then activeProfileMutex.
+    void ResetFailedProfileRequest(const std::wstring& failedProfile);
+
     // Advance to the next profile in settings.json's keyboardConfigurations list (hotkey action).
     void CycleActiveProfile();
 

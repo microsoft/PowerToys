@@ -5,6 +5,7 @@
 
 #include <common/interop/shared_constants.h>
 #include <keyboardmanager/common/Helpers.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
 
 ProfileSwapGate::ProfileSwapGate(NowFunction now, AsyncKeyDownFunction asyncKeyDown) :
     m_now(std::move(now)), m_asyncKeyDown(std::move(asyncKeyDown))
@@ -31,12 +32,7 @@ ProfileSwapGate::OfferResult ProfileSwapGate::Offer(const MappingConfiguration::
     // compare keyboards with the applied profile while the stage is still waiting to be applied.
     if (outcome == MappingConfiguration::LoadOutcome::Failed || !configuration)
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        if (onRequested)
-        {
-            onRequested(m_staged ? m_staged->currentConfig : std::wstring{});
-        }
-
+        ReportPendingProfile(onRequested);
         return OfferResult::Discarded;
     }
 
@@ -88,6 +84,15 @@ ProfileSwapGate::OfferResult ProfileSwapGate::Offer(const MappingConfiguration::
     return OfferResult::AppliedInPlace;
 }
 
+void ProfileSwapGate::ReportPendingProfile(const std::function<void(const std::wstring&)>& onRequested) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (onRequested)
+    {
+        onRequested(m_staged ? m_staged->currentConfig : std::wstring{});
+    }
+}
+
 bool ProfileSwapGate::HasStage() const noexcept
 {
     return m_hasStage.load();
@@ -108,7 +113,18 @@ ProfileSwapGate::KeyEventSource ProfileSwapGate::ClassifyKeyEvent(const DWORD fl
 
     // Same test as the handlers' GeneratedByKBM, so "not tracked" and "ignored as KBM output by the
     // handlers" mean the same events.
-    return (extraInfo & CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG) ? KeyEventSource::OwnInjected : KeyEventSource::ForeignInjected;
+    if (extraInfo & CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG)
+    {
+        return KeyEventSource::OwnInjected;
+    }
+
+    // Bit 0 is clear, so the handlers reprocess it like any other input; it is only not a new key.
+    if (extraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_REPROCESS_FLAG)
+    {
+        return KeyEventSource::OwnReprocessed;
+    }
+
+    return KeyEventSource::ForeignInjected;
 }
 
 intptr_t ProfileSwapGate::OnHookEvent(LowlevelKeyboardEvent* event, const HandleFunction& handle, const AdoptFunction& adopt) noexcept
@@ -122,7 +138,7 @@ intptr_t ProfileSwapGate::OnHookEvent(LowlevelKeyboardEvent* event, const Handle
         OnInjectedKeyEvent(event);
     }
 
-    if (source == KeyEventSource::OwnInjected)
+    if (source == KeyEventSource::OwnInjected || source == KeyEventSource::OwnReprocessed)
     {
         return handle(event);
     }
@@ -238,12 +254,26 @@ std::unordered_map<uint32_t, ProfileSwapGate::HeldKey>::iterator ProfileSwapGate
     auto found = m_heldKeys.find(id);
     if (found != m_heldKeys.end())
     {
+        // The key's own event: its id is now known to be right.
+        found->second.estimatedScanCode = false;
         return found;
     }
 
-    return std::find_if(m_heldKeys.begin(), m_heldKeys.end(), [rawVkCode](const auto& entry) {
-        return entry.second.orphan && entry.second.vkCode == rawVkCode;
+    // No record has this id. Only a seeded orphan's id may be wrong, so only such a record may stand
+    // for a key with another id.
+    found = std::find_if(m_heldKeys.begin(), m_heldKeys.end(), [rawVkCode](const auto& entry) {
+        return entry.second.orphan && entry.second.estimatedScanCode && entry.second.vkCode == rawVkCode;
     });
+    if (found == m_heldKeys.end())
+    {
+        return found;
+    }
+
+    // Re-key it to the real id, so its later events match exactly and the fallback no longer applies.
+    auto node = m_heldKeys.extract(found);
+    node.key() = id;
+    node.mapped().estimatedScanCode = false;
+    return m_heldKeys.insert(std::move(node)).position;
 }
 
 intptr_t ProfileSwapGate::OnTrackedKeyEvent(LowlevelKeyboardEvent* event, const HandleFunction& handle, const AdoptFunction& adopt)
@@ -379,6 +409,7 @@ void ProfileSwapGate::SeedOrphans(const std::vector<KeySnapshot>& keysDown, cons
         key.downData.flags = snapshot.extended ? LLKHF_EXTENDED : 0;
         key.suppressed = false; // pass through: no hook was there to remap its key-down
         key.orphan = true;
+        key.estimatedScanCode = true; // MapVirtualKey's guess, see FindHeldKey
         key.lastEvent = now;
         key.sequence = ++m_sequence;
         m_heldKeys[MakeKeyId(snapshot.scanCode, snapshot.extended, snapshot.vkCode)] = key;

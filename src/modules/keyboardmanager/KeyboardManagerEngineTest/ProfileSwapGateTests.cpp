@@ -581,6 +581,9 @@ namespace RemappingLogicTests
             Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG) == Source::OwnInjected);
             Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG) == Source::OwnInjected);
             Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG) == Source::OwnInjected);
+            Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, KeyboardManagerConstants::KEYBOARDMANAGER_REPROCESS_FLAG) == Source::OwnReprocessed);
+            Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(0, KeyboardManagerConstants::KEYBOARDMANAGER_REPROCESS_FLAG) == Source::Physical);
+            Assert::IsTrue((KeyboardManagerConstants::KEYBOARDMANAGER_REPROCESS_FLAG & CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG) == 0);
         }
 
         // Review item 1 for input injected by another program (e.g. Mouse Without Borders): X is held
@@ -773,6 +776,125 @@ namespace RemappingLogicTests
             Assert::IsFalse(IsDown(VK_CONTROL));
             Assert::IsFalse(testState.osLevelShortcutReMap.begin()->second.isShortcutInvoked);
             Assert::IsTrue(gate->HeldKeyCount() == 0);
+        }
+
+        // N-1: while a shortcut is invoked, another key-down is re-sent by the handlers so that they
+        // process it again. The re-send uses MapVirtualKey's scan code: for the numpad Enter (real E0 1C)
+        // that is 1C without E0, a different key id. It must not become a held key of its own (its
+        // key-up never comes: the physical key-up has the physical id), or it would block every later
+        // swap until the forced one.
+        TEST_METHOD (ReprocessedKeyDown_DifferentScanCode_LeavesNoHeldKey)
+        {
+            mockedInputHandler.SetDeferInjectedInput(true);
+
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey('C');
+            Shortcut dest;
+            dest.SetKey(VK_MENU);
+            dest.SetKey('V');
+            testState.AddOSLevelShortcut(src, dest);
+
+            // Watch for the re-sent key-down, so the test fails loudly if the handlers stop sending it.
+            int reprocessed = 0;
+            mockedInputHandler.SetSendVirtualInputTestHandler([&reprocessed](LowlevelKeyboardEvent* data) {
+                if ((data->lParam->flags & LLKHF_INJECTED) && Helpers::ClearKeyNumpadOrigin(data->lParam->vkCode) == VK_RETURN && data->wParam == WM_KEYDOWN)
+                {
+                    ++reprocessed;
+                }
+
+                return false;
+            });
+
+            Press(VK_CONTROL);
+            Press('C');
+            Assert::IsTrue(IsDown(VK_MENU));
+            Physical(VK_RETURN, false, 0x1C, true); // numpad Enter, Ctrl still held
+            Assert::AreEqual(1, reprocessed);
+
+            Physical(VK_RETURN, true, 0x1C, true);
+            Release('C');
+            Release(VK_CONTROL);
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+
+            // Nothing is held, so a staged profile is applied at the next fresh key-down.
+            Offer(MakeProfile(L"B"));
+            Press('Q');
+            Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
+            Release('Q');
+        }
+
+        // N-2: an orphan made by a forced swap carries the real id of its key. Another physical key with
+        // the same virtual key (the NumLock-off numpad 4 is VK_LEFT, scan 4B, while the arrow key is
+        // E0 4B) must not be taken for it, or that key's key-up would remove the orphan and the arrow's
+        // real key-up would then be resolved by the new profile.
+        TEST_METHOD (ForcedSwapOrphan_NotMatchedBySameVirtualKeyOfOtherKey)
+        {
+            Physical(VK_LEFT, false, 0x4B, true); // arrow key, unmapped under A, passes through
+
+            auto b = MakeProfile(L"B");
+            b->AddSingleKeyRemap(VK_LEFT, static_cast<DWORD>('X'));
+            Offer(std::move(b));
+
+            now += std::chrono::seconds(31);
+            Press('Z');
+            Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
+            Assert::IsTrue(gate->OrphanKeyCount() == 1);
+            Release('Z');
+
+            Physical(VK_LEFT, false, 0x4B, false); // numpad 4 with NumLock off
+            Physical(VK_LEFT, true, 0x4B, false);
+            Assert::IsTrue(gate->OrphanKeyCount() == 1);
+
+            // The arrow's own key-up is answered for the orphan (pass through), not mapped by B.
+            CountEventsOf('X');
+            Physical(VK_LEFT, true, 0x4B, true);
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+        }
+
+        // N-2: a seeded orphan's estimated id is settled by the key's own first event (here an
+        // auto-repeat with the exact id). From then on it is matched by id only, like any other record.
+        TEST_METHOD (SeededOrphan_ConfirmedByOwnEvent_NotMatchedBySameVirtualKeyOfOtherKey)
+        {
+            mockedInputHandler.SetKeyboardState(VK_LEFT, true);
+            auto b = MakeProfile(L"B");
+            b->AddSingleKeyRemap(VK_LEFT, static_cast<DWORD>('X'));
+            Offer(std::move(b));
+
+            Assert::IsTrue(gate->ApplyStageWithoutHook({ { VK_LEFT, 0x4B, true } }, [this](std::unique_ptr<State> staged) { Adopt(std::move(staged)); }));
+            Physical(VK_LEFT, false, 0x4B, true); // the arrow key still auto-repeating
+
+            Physical(VK_LEFT, false, 0x4B, false); // numpad 4 with NumLock off
+            Physical(VK_LEFT, true, 0x4B, false);
+            Assert::IsTrue(gate->OrphanKeyCount() == 1);
+
+            CountEventsOf('X');
+            Physical(VK_LEFT, true, 0x4B, true);
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+        }
+
+        // L-1 (gate side): a switch that fails before any reload reports the staged profile, or empty
+        // once the stage has been applied by a key-down. KeyboardManager::SwitchActiveProfile's use of
+        // this is not covered (KeyboardManager cannot be constructed in tests).
+        TEST_METHOD (ReportPendingProfile_FollowsStage)
+        {
+            std::wstring pending = L"unset";
+            const auto record = [&pending](const std::wstring& profile) { pending = profile; };
+
+            gate->ReportPendingProfile(record);
+            Assert::AreEqual(std::wstring{}, pending);
+
+            Offer(MakeProfile(L"B"));
+            gate->ReportPendingProfile(record);
+            Assert::AreEqual(std::wstring(L"B"), pending);
+
+            Press('Q');
+            Release('Q');
+            Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
+            gate->ReportPendingProfile(record);
+            Assert::AreEqual(std::wstring{}, pending);
         }
     };
 }
