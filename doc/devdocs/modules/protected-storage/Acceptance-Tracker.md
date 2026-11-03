@@ -1,6 +1,6 @@
 # Workspaces Protected Storage 验收台账
 
-最后更新：2026-11-03（UTC+08:00；E44定位High launch的token对象WRITE_DAC拒绝，尚未修复产品）
+最后更新：2026-11-04（UTC+08:00；E45无caller-DACL替代机制试验因UAC取消受阻，未得到可行性结论）
 
 **这是验收状态的唯一维护入口。每执行完一项，就更新本文件；不能只在聊天里报告通过。**
 
@@ -949,6 +949,41 @@ E40的缺失原始输出仍保持历史事实；本轮在同版本原始EXE、�
 `token-inspection\debug-events.log`和`diagnosis.json`。
 真实SID/登录SID仅保留于本地证据，公开记录使用角色名称。
 正式用例CLI-03/CLI-07仍FAIL，26条PASS不变；本轮没有实现产品修复。
+
+### E45：2026-11-04，无caller-DACL替代机制试验准备及授权阻塞
+
+用户要求验证：caller及其SDK不修改自身process/token DACL时，VA能否仍取得真实
+身份和映像证据，保持owner/role/target约束完成受保护读写。
+本轮只准备了独立诊断夹具，**实际VA测试0项，不能给出可行或不可行的技术结论**。
+
+准备的非生产夹具使用独立服务名`PtStorageAuthProbe_6fcf12836ccb`和隔离stage，
+不连接或修改6006服务。计划对比普通Medium、直接High、High派生Medium；
+服务先测VA本身的进程/token/映像访问能力，再对非提升的可模拟caller测试安全的
+普通owner模拟路径；High只请求Identification级连接，不向服务提供可执行High模拟权限。
+同时准备公共／私有客户端路径、未注册映像、只读角色写入和错误target负向用例。
+调用者在请求前后快照自身对象描述符，不执行补DACL操作。
+
+测试服务仅在自身初始化时为原owner开放服务身份的只读查询；这不是修改caller的DACL。
+固定fixture路径/哈希许可仅用于独立实验，不替代生产CMS/catalog信任，也不构成正式签名
+或安装验收。该准备没有被加入产品源码或生产安装器。
+
+| 阶段 | 事实 |
+|---|---|
+| 编译 | 独立原生fixture已编译；初次缺User32链接失败已修正并保留原日志；仅编译，不算认证机制PASS |
+| 创建临时VA服务授权 | PowerShell RunAs返回`ERROR_CANCELLED (1223)`；管理员控制器未启动 |
+| 后续授权 | 未自动重复提权；澄清工具返回用户暂不可用，因此暂停真实服务试验 |
+| 独立收尾核对 | 测试service不存在、protected stage不存在、无测试进程；现有index/blob哈希和runtime ready均与起点一致 |
+| 保留材料 | fixture源码、已编译测试EXE、带超时/finally清理的控制器及输入/日志保留；中间OBJ已删除 |
+
+结果是**BLOCKED（需要一次获准的临时服务预配）**，不是身份认证测试失败，
+也不是“无DACL方案已通过”。没有实施产品修复或架构重构，正式126项状态保持不变。
+
+本地证据根为会话files下
+`nov04-auth-6fcf12836ccb481a905ea9ed7b09ea4c\`，
+`paused-result.json`记录0个真实VA测试及无副作用核对；
+运行指针为`nov04-no-dacl-run.json`，驱动和源文件为`nov04-no-dacl-*.ps1/.cpp`。
+测试EXE SHA256：
+`967CD1F6DFA35040E961E91D1DDC5282EDA3E66D5ADCC0E830F8760BD828AC4B`。
 
 ### 本次证据
 
