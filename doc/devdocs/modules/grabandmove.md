@@ -20,9 +20,18 @@ applications. Settings changes apply to the running module without a restart.
 
 ## UI tests
 
-The suite uses `Microsoft.PowerToys.UITest.Next` and winappcli, not WinAppDriver/Selenium. Its seven
+The suite uses `Microsoft.PowerToys.UITest.Next` and winappcli, not WinAppDriver/Selenium. Its eight
 cases cover Alt move/resize, geometry visibility for both gestures, live modifier changes,
-application exclusions and disable/re-enable behavior through the real Settings UI.
+application exclusions, disable/re-enable behavior and repeated modifier selection while the
+inert fixture owns foreground, through the real Settings UI.
+
+Modifier selection uses coordinate-free UIA expand/select rather than a cross-process
+foreground handoff followed by keyboard input. The dropdown can appear in both the main and
+popup trees, so its exact named list item is deduplicated by selector. Selection can rebuild
+the settings cards, so each selected-value read reacquires the control and retries only known
+stale-element errors. Tests assert both the selected UI value and persisted setting; all
+hardware-style drag/resize gestures still require stable foreground, real HID input, exact
+geometry and unchanged module lifetime.
 
 ### Why a driver is required
 

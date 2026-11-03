@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -158,6 +159,21 @@ public sealed class GrabAndMoveTests : UITestBase
     }
 
     [TestMethod]
+    public void ModifierSelectionWorksWhileFixtureOwnsForeground()
+    {
+        var processId = ModuleProcessId();
+        for (var iteration = 0; iteration < 10; iteration++)
+        {
+            FocusFixture();
+            Assert.AreEqual(fixture!.Handle, WindowControl.GetForegroundWindowHandle(), "The fixture must own foreground before UIA selection.");
+            var cursor = MouseHelper.GetMousePosition();
+            SelectModifier(iteration % 2 == 0);
+            Assert.AreEqual(cursor, MouseHelper.GetMousePosition(), "Coordinate-free modifier selection moved the cursor.");
+            Assert.AreEqual(processId, ModuleProcessId(), "Changing the modifier restarted the module.");
+        }
+    }
+
+    [TestMethod]
     public void ChangingModifierToWinUpdatesMoveAndResizeWithoutRestart()
     {
         DragAndAssert(Key.Alt, resize: false);
@@ -165,20 +181,7 @@ public sealed class GrabAndMoveTests : UITestBase
         var processId = ModuleProcessId();
 
         Step("Changing the activation modifier from Alt to Windows key through Settings");
-        var settings = new IntPtr(Session.WindowHandle);
-        fixture!.TransferForegroundTo(settings);
-        var foreground = WaitHelper.WaitForStable(
-            WindowControl.GetForegroundWindowHandle,
-            hwnd => hwnd == settings,
-            5_000,
-            requiredConsecutiveMatches: 3,
-            recover: _ => fixture.TransferForegroundTo(settings));
-        Assert.IsTrue(foreground.Succeeded, ForegroundDiagnostic());
-        var modifier = Find<ComboBox>(By.Name("Activation modifier key"));
-        modifier.Focus();
-        KeyboardHelper.SendKeys(Key.End);
-        KeyboardHelper.SendKeys(Key.Enter);
-        WaitForSetting("modifierKey", 1);
+        SelectModifier(useWindowsKey: true);
 
         DragAndAssert(Key.LWin, resize: false);
         DragAndAssert(Key.LWin, resize: true);
@@ -352,6 +355,49 @@ public sealed class GrabAndMoveTests : UITestBase
     {
         var foreground = WindowControl.GetForegroundWindowInfo();
         return $"Foreground HWND={foreground.Hwnd}, process='{foreground.ProcessName}', title='{foreground.Title}'.";
+    }
+
+    private static bool IsModifierElementTransient(Exception error) =>
+        ShellMenu.IsTransientElementException(error) ||
+        (error is AssertFailedException &&
+            error.Message.Contains("RuntimeId hash", StringComparison.OrdinalIgnoreCase) &&
+            error.Message.Contains("the UI may have changed", StringComparison.OrdinalIgnoreCase));
+
+    private void SelectModifier(bool useWindowsKey)
+    {
+        var text = useWindowsKey ? "Windows key" : "Alt";
+        var modifier = Find<ComboBox>(By.Name("Activation modifier key"));
+        Step($"Selecting '{text}' through UIA while foreground is {WindowControl.GetForegroundWindowInfo()}");
+        modifier.Invoke(msPostAction: 0);
+
+        // WinUI exposes the dropdown in a process-owned popup, not the Settings HWND's tree.
+        var settings = Microsoft.PowerToys.UITest.Next.Session.FromProcess(
+            Session.ProcessId.ToString(CultureInfo.InvariantCulture),
+            attributeAs: PowerToysModule.PowerToysSettings);
+        var option = WaitHelper.WaitForStable(
+            () => settings.FindAll<Element>(By.Name(text), 0)
+                .Where(element => element.Name == text && element.ControlType == "ListItem")
+                .DistinctBy(element => element.Selector).ToArray(),
+            items => items is { Length: 1 },
+            30_000,
+            requiredConsecutiveMatches: 2,
+            shouldRetryException: IsModifierElementTransient);
+        if (!option.Succeeded)
+        {
+            Assert.Fail($"Settings did not expose exactly one modifier option named '{text}': {settings.Inspect(depth: 12)}");
+        }
+
+        option.LastObservation![0].Invoke(msPostAction: 0);
+
+        // Each fresh sample needs two CLI round trips, including on constrained CPUs.
+        var selected = WaitHelper.WaitForStable(
+            () => Session.Find<ComboBox>(By.Name("Activation modifier key"), 500).SelectedText,
+            value => string.Equals(value, text, StringComparison.Ordinal),
+            30_000,
+            requiredConsecutiveMatches: 3,
+            shouldRetryException: IsModifierElementTransient);
+        Assert.IsTrue(selected.Succeeded, $"The modifier UI did not select '{text}'; last selection='{selected.LastObservation}', stable samples={selected.ConsecutiveMatches}/3, error={selected.LastException}.");
+        WaitForSetting("modifierKey", useWindowsKey ? 1 : 0);
     }
 
     private ToggleSwitch EnableToggle() => Find<ToggleSwitch>(By.Name("Grab And Move"));
