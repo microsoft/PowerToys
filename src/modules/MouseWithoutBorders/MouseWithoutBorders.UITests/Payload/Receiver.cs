@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Microsoft.MouseWithoutBorders.UITests
@@ -23,6 +24,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
             ErrorHResult = errorHResult;
         }
 
+        // Empty when the clipboard is unavailable; check Available before using it.
         public string Digest { get; private set; }
 
         public int? ErrorHResult { get; private set; }
@@ -42,7 +44,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
                     throw;
                 }
 
-                return new ClipboardObservation(null, error.ErrorCode);
+                return new ClipboardObservation(string.Empty, error.ErrorCode);
             }
         }
     }
@@ -52,14 +54,13 @@ namespace Microsoft.MouseWithoutBorders.UITests
     public sealed class ReceiverController : IDisposable
     {
         private readonly Thread thread;
-        private readonly ManualResetEvent ready = new ManualResetEvent(false);
-        private Receiver receiver;
+        private readonly Receiver receiver;
         private IntPtr handle;
-        private Exception startupError;
         private volatile string startupStage = "Thread not scheduled";
 
         public ReceiverController(string role, string runId)
         {
+            var started = new TaskCompletionSource<Receiver>();
             thread = new Thread(delegate()
             {
                 try
@@ -67,31 +68,35 @@ namespace Microsoft.MouseWithoutBorders.UITests
                     startupStage = "Enabling visual styles";
                     Application.EnableVisualStyles();
                     startupStage = "Constructing receiver";
-                    receiver = new Receiver(role, runId);
+                    var created = new Receiver(role, runId);
                     startupStage = "Creating native window";
-                    handle = receiver.Handle;
+                    handle = created.Handle;
                     startupStage = "Running message pump";
-                    ready.Set();
-                    Application.Run(receiver);
+                    started.TrySetResult(created);
+                    Application.Run(created);
                 }
                 catch (Exception error)
                 {
-                    startupError = error;
-                    ready.Set();
+                    started.TrySetException(error);
                 }
             });
             thread.SetApartmentState(ApartmentState.STA);
             thread.IsBackground = true;
             thread.Name = "MWB receiver UI";
             thread.Start();
-            if (!ready.WaitOne(TimeSpan.FromSeconds(60)))
+            try
             {
-                throw new TimeoutException("The receiver UI thread did not initialize: " + startupStage + "; " + thread.ThreadState);
+                if (!started.Task.Wait(TimeSpan.FromSeconds(60)))
+                {
+                    throw new TimeoutException("The receiver UI thread did not initialize: " + startupStage + "; " + thread.ThreadState);
+                }
             }
-            if (startupError != null)
+            catch (AggregateException error)
             {
-                throw new InvalidOperationException("Receiver initialization failed.", startupError);
+                throw new InvalidOperationException("Receiver initialization failed.", error.InnerException);
             }
+
+            receiver = started.Task.Result;
         }
 
         public IntPtr Handle { get { return handle; } }
@@ -130,7 +135,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
         public void Close()
         {
-            if (thread.IsAlive && receiver != null && !receiver.IsDisposed)
+            if (thread.IsAlive && !receiver.IsDisposed)
             {
                 Invoke(delegate { receiver.Close(); return true; });
             }
@@ -143,12 +148,11 @@ namespace Microsoft.MouseWithoutBorders.UITests
             {
                 throw new TimeoutException("Receiver UI thread did not stop.");
             }
-            ready.Dispose();
         }
 
         private T Invoke<T>(Func<T> action)
         {
-            if (receiver == null || receiver.IsDisposed || !thread.IsAlive)
+            if (receiver.IsDisposed || !thread.IsAlive)
             {
                 throw new InvalidOperationException("Receiver UI is no longer available.");
             }
@@ -174,7 +178,8 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
         private readonly TextBox input;
         private readonly ClickPanel clickTarget;
-        private readonly DataObject originalClipboard;
+        private readonly DataObject originalClipboard = new DataObject();
+        private readonly bool restoresClipboard;
         private readonly string role;
         private readonly string runId;
         private bool clipboardChanged;
@@ -204,7 +209,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
                 BackColor = Color.LightSteelBlue,
             };
             // A MouseDown is physical input. Unlike Button.Click, Space/Invoke cannot increment it.
-            clickTarget.MouseDown += delegate(object sender, MouseEventArgs args)
+            clickTarget.MouseDown += (sender, args) =>
             {
                 if (args.Button == MouseButtons.Left)
                 {
@@ -214,16 +219,16 @@ namespace Microsoft.MouseWithoutBorders.UITests
             Controls.Add(clickTarget);
             Controls.Add(input);
             Shown += delegate { input.Focus(); };
-            if (role == "Host")
+            restoresClipboard = role == "Host";
+            if (restoresClipboard)
             {
-                originalClipboard = new DataObject();
-                IDataObject source = Clipboard.GetDataObject();
+                var source = Clipboard.GetDataObject();
                 if (source != null)
                 {
                     foreach (string format in source.GetFormats(false))
                     {
-                        object value = source.GetData(format, false);
-                        MemoryStream memory = value as MemoryStream;
+                        var value = source.GetData(format, false);
+                        var memory = value as MemoryStream;
                         if (memory != null)
                         {
                             value = new MemoryStream(memory.ToArray());
@@ -419,7 +424,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
         public void RestoreClipboard()
         {
-            if (originalClipboard != null && clipboardChanged)
+            if (restoresClipboard && clipboardChanged)
             {
                 Clipboard.SetDataObject(originalClipboard, true);
                 clipboardChanged = false;

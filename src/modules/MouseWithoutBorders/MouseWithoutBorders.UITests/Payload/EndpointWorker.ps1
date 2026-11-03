@@ -223,7 +223,7 @@ try {
                         $clipboard = $script:receiver.ObserveClipboard()
                         $response.Result = @{
                             Text = $script:receiver.ReceivedText; Clicks = $script:receiver.Clicks
-                            ClipboardDigest = $clipboard.Digest
+                            ClipboardDigest = if ($clipboard.Available) { $clipboard.Digest } else { $null }
                             ClipboardAvailable = $clipboard.Available
                             ClipboardErrorHResult = $clipboard.ErrorHResult
                             CursorX = $point.X; CursorY = $point.Y

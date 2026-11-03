@@ -39,7 +39,7 @@ public sealed class ReceiverInfrastructureTests
 
             var contended = WhileClipboardIsOwned(receiver.ObserveClipboard);
             Assert.IsFalse(contended.Available, "A held clipboard must be reported as unavailable, not empty.");
-            Assert.IsNull(contended.Digest);
+            Assert.AreEqual(string.Empty, contended.Digest);
             Assert.AreEqual(unchecked((int)0x800401D0), contended.ErrorHResult);
             var available = receiver.ObserveClipboard();
             Assert.IsTrue(available.Available);
@@ -64,7 +64,7 @@ public sealed class ReceiverInfrastructureTests
     {
         var busy = ClipboardObservation.Read(() => throw new ExternalException("Clipboard is owned.", unchecked((int)0x800401D0)));
         Assert.IsFalse(busy.Available);
-        Assert.IsNull(busy.Digest);
+        Assert.AreEqual(string.Empty, busy.Digest);
         Assert.AreEqual(unchecked((int)0x800401D0), busy.ErrorHResult);
         var unrelated = new ExternalException("Unrelated clipboard failure.", unchecked((int)0x80004005));
         Assert.AreSame(unrelated, Assert.ThrowsExactly<ExternalException>(() => ClipboardObservation.Read(() => throw unrelated)));
