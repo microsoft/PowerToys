@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Buffers.Binary;
+using System.IO.Compression;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -101,32 +104,16 @@ public class ScriptTemplateTests
     }
 
     [DataTestMethod]
-    [DataRow("powershell", "none", "none")]
-    [DataRow("powershell", "none", "text")]
-    [DataRow("powershell", "none", "files")]
-    [DataRow("powershell", "text", "none")]
-    [DataRow("powershell", "text", "text")]
-    [DataRow("powershell", "text", "files")]
-    [DataRow("powershell", "files", "none")]
-    [DataRow("powershell", "files", "text")]
-    [DataRow("powershell", "files", "files")]
-    [DataRow("python", "none", "none")]
-    [DataRow("python", "none", "text")]
-    [DataRow("python", "none", "files")]
-    [DataRow("python", "text", "none")]
-    [DataRow("python", "text", "text")]
-    [DataRow("python", "text", "files")]
-    [DataRow("python", "files", "none")]
-    [DataRow("python", "files", "text")]
-    [DataRow("python", "files", "files")]
-    public void ConfiguredCreationMatchesSelectedContractWithoutPolicyChanges(string runtime, string input, string output)
+    [DynamicData(nameof(ConfiguredCombinations), DynamicDataSourceType.Method)]
+    public void ConfiguredCreationMatchesSelectedContractWithoutPolicyChanges(string runtime, string input, string output, bool withParameters)
     {
         var root = Path.Combine(Path.GetTempPath(), "ps-configured-" + Guid.NewGuid().ToString("N"));
         try
         {
             var options = new ScriptTemplateOptions("  My script  ", "Quoted \"description\"",
                 input == "files" ? "TXT; *.md" : null, runtime, input, output,
-                MinFiles: input == "files" ? 2 : 1, MaxFiles: input == "files" ? 5 : 0);
+                MinFiles: input == "files" ? 2 : 1, MaxFiles: input == "files" ? 5 : 0,
+                Parameters: withParameters ? ExampleParameters() : null);
             var created = ScriptTemplates.Create(root, options);
             var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
             Assert.AreEqual(0, ManifestValidator.Validate(manifest, string.Empty).Count);
@@ -164,6 +151,304 @@ public class ScriptTemplateTests
                 Directory.Delete(root, recursive: true);
             }
         }
+    }
+
+    public static IEnumerable<object[]> ConfiguredCombinations()
+    {
+        var shapes = new[] { "none", "text", "files", "image", "audio" };
+        foreach (var runtime in new[] { "powershell", "python" })
+        {
+            foreach (var input in shapes)
+            {
+                foreach (var output in shapes)
+                {
+                    foreach (var withParameters in new[] { false, true })
+                    {
+                        yield return new object[] { runtime, input, output, withParameters };
+                    }
+                }
+            }
+        }
+    }
+
+    [DataTestMethod]
+    [DynamicData(nameof(ConfiguredCombinations), DynamicDataSourceType.Method)]
+    public void GeneratedExamplesExecuteWithUsefulResults(string runtime, string input, string output, bool withParameters)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "ps-template-execution-" + Guid.NewGuid().ToString("N"));
+        List<string>? outputPaths = null;
+        try
+        {
+            var created = ScriptTemplates.Create(root, new("Example", Runtime: runtime, Input: input, Output: output,
+                Parameters: withParameters ? ExampleParameters() : null));
+            var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
+            manifest.FolderPath = Path.GetDirectoryName(created.EntryPath)!;
+            var selected = Path.Combine(root, "\u6587\u4ef6 one.txt");
+            File.WriteAllText(selected, "hello", new UTF8Encoding(false));
+            const string text = "Hello \u4e16\u754c\nsecond line";
+            var media = input == "image"
+                ? JsonSerializer.SerializeToElement(new { mimeType = "image/png", data = Convert.ToBase64String(ExampleImage()) })
+                : JsonSerializer.SerializeToElement(new { mimeType = "audio/wav", data = Convert.ToBase64String(ExampleAudio()) });
+            var request = new PythonTransformInput
+            {
+                Text = input == "text" ? text : null,
+                FilePaths = input == "files" ? new() { selected } : null,
+                Image = input == "image" ? media : null,
+                Audio = input == "audio" ? media : null,
+            };
+            var result = ExecuteExample(manifest, request);
+            outputPaths = result.FilePaths;
+            Assert.AreEqual(0, result.ExitCode, result.StdErr);
+            if (withParameters)
+            {
+                var summary = result.StdErr.Split('\n').First(line => line.StartsWith("Parameters: ", StringComparison.Ordinal));
+                using var answers = JsonDocument.Parse(summary["Parameters: ".Length..]);
+                Assert.AreEqual(0, answers.RootElement.GetProperty("count").GetInt32());
+                Assert.IsFalse(answers.RootElement.GetProperty("enabled").GetBoolean());
+                Assert.AreEqual("short", answers.RootElement.GetProperty("mode").GetString());
+                Assert.AreEqual(string.Empty, answers.RootElement.GetProperty("empty").GetString());
+                Assert.AreEqual("$(throw 'must remain data') \u4e16\u754c", answers.RootElement.GetProperty("label").GetString());
+                Assert.IsFalse(answers.RootElement.TryGetProperty("omitted", out _));
+            }
+
+            if (output == "none")
+            {
+                Assert.IsNull(result.Text);
+                Assert.IsNull(result.FilePaths);
+                Assert.IsNull(result.Image);
+                Assert.IsNull(result.Audio);
+                StringAssert.Contains(result.StdErr, "Completed input inspection.");
+            }
+            else if (output == "text" || output == "files")
+            {
+                string content;
+                if (output == "files")
+                {
+                    Assert.AreEqual(1, result.FilePaths!.Count);
+                    var path = result.FilePaths[0];
+                    Assert.IsTrue(Path.IsPathFullyQualified(path));
+                    Assert.IsFalse(path.StartsWith(manifest.FolderPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+                    if (input is "image" or "audio")
+                    {
+                        Assert.AreEqual(input == "image" ? ".png" : ".wav", Path.GetExtension(path));
+                        CollectionAssert.AreEqual(Convert.FromBase64String(media.GetProperty("data").GetString()!), File.ReadAllBytes(path));
+                        return;
+                    }
+
+                    var bytes = File.ReadAllBytes(path);
+                    Assert.IsFalse(bytes.AsSpan().StartsWith(Encoding.UTF8.Preamble));
+                    content = Encoding.UTF8.GetString(bytes);
+                }
+                else
+                {
+                    content = result.Text!.Replace("\r\n", "\n", StringComparison.Ordinal);
+                }
+
+                if (input == "text")
+                {
+                    StringAssert.StartsWith(content, output == "text" ? text.ToUpperInvariant() : text);
+                    if (!withParameters)
+                    {
+                        Assert.AreEqual(output == "text" ? text.ToUpperInvariant() : text, content.TrimEnd('\r', '\n'));
+                    }
+                }
+                else if (input == "files")
+                {
+                    StringAssert.Contains(content, "\u6587\u4ef6 one.txt (5 bytes)");
+                }
+                else if (input is "image" or "audio")
+                {
+                    var bytes = Convert.FromBase64String(media.GetProperty("data").GetString()!);
+                    StringAssert.Contains(content, media.GetProperty("mimeType").GetString()!);
+                    StringAssert.Contains(content, $"({bytes.Length} bytes)");
+                    StringAssert.Contains(content, Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes)).ToLowerInvariant());
+                }
+                else
+                {
+                    StringAssert.StartsWith(content, "Hello from your new PowerScript.");
+                }
+
+                Assert.AreEqual(withParameters, content.Contains("Parameters: ", StringComparison.Ordinal));
+            }
+            else
+            {
+                var returned = output == "image" ? result.Image!.Value : result.Audio!.Value;
+                var bytes = Convert.FromBase64String(returned.GetProperty("data").GetString()!);
+                if (input == output)
+                {
+                    Assert.AreEqual(media.GetProperty("mimeType").GetString(), returned.GetProperty("mimeType").GetString());
+                    CollectionAssert.AreEqual(Convert.FromBase64String(media.GetProperty("data").GetString()!), bytes);
+                }
+                else if (output == "image")
+                {
+                    Assert.AreEqual("image/png", returned.GetProperty("mimeType").GetString());
+                    AssertFingerprintPng(bytes);
+                }
+                else
+                {
+                    Assert.AreEqual("audio/wav", returned.GetProperty("mimeType").GetString());
+                    AssertToneWav(bytes);
+                }
+            }
+        }
+        finally
+        {
+            foreach (var path in outputPaths ?? new())
+            {
+                File.Delete(path);
+            }
+
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow("powershell", "image")]
+    [DataRow("powershell", "audio")]
+    [DataRow("python", "image")]
+    [DataRow("python", "audio")]
+    public void GeneratedMediaDependsOnInputAndTypedAnswers(string runtime, string output)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "ps-template-influence-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var created = ScriptTemplates.Create(root, new("Example", Runtime: runtime, Input: "text", Output: output,
+                Parameters: new[] { new ScriptTemplateParameter("label", new() { Type = "string" }) }));
+            var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
+            manifest.FolderPath = Path.GetDirectoryName(created.EntryPath)!;
+            string Run(string text, string label)
+            {
+                var result = ExecuteExample(manifest, new() { Text = text, Params = new() { ["label"] = label } });
+                Assert.AreEqual(0, result.ExitCode, result.StdErr);
+                return (output == "image" ? result.Image!.Value : result.Audio!.Value).GetProperty("data").GetString()!;
+            }
+
+            var first = Run("alpha", "first");
+            Assert.AreEqual(first, Run("alpha", "first"));
+            Assert.AreNotEqual(first, Run("beta", "first"));
+            Assert.AreNotEqual(first, Run("alpha", "second"));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    private static ScriptTemplateParameter[] ExampleParameters() => new[]
+    {
+        new ScriptTemplateParameter("count", new() { Type = "integer", Default = JsonSerializer.SerializeToElement(0) }, Required: true),
+        new ScriptTemplateParameter("enabled", new() { Type = "boolean", Default = JsonSerializer.SerializeToElement(false) }),
+        new ScriptTemplateParameter("label", new() { Type = "string", Default = JsonSerializer.SerializeToElement("$(throw 'must remain data') \u4e16\u754c") }),
+        new ScriptTemplateParameter("mode", new() { Type = "string", Enum = new() { "short", "full" }, Default = JsonSerializer.SerializeToElement("short") }),
+        new ScriptTemplateParameter("empty", new() { Type = "string", Default = JsonSerializer.SerializeToElement(string.Empty) }),
+        new ScriptTemplateParameter("omitted", new() { Type = "string" }),
+    };
+
+    private static PythonTransformResult ExecuteExample(PowerScriptManifest manifest, PythonTransformInput input)
+    {
+        var isolation = new MxcSettings { Enabled = false, RiskAccepted = true };
+        if (manifest.Runtime == ScriptRuntime.Python)
+        {
+            var settings = new PythonSettings { Mode = PythonRuntimeMode.Windows };
+            settings.Windows.InterpreterPath = Environment.GetEnvironmentVariable("POWERSCRIPTS_TEST_PYTHON") ?? string.Empty;
+            var result = new PythonRuntime(settings, isolation).Run(manifest, input);
+            if (result.ExitCode == 2 && result.StdErr.StartsWith("No Python interpreter found.", StringComparison.Ordinal))
+            {
+                Assert.Inconclusive("Python is optional. Install Python on PATH or set POWERSCRIPTS_TEST_PYTHON to run this execution case.");
+            }
+
+            return result;
+        }
+
+        var execution = new ScriptExecutor(isolation).Execute(manifest, files: input.FilePaths, text: input.Text,
+            parameters: input.Params?.ToDictionary(pair => pair.Key, pair => (string?)pair.Value),
+            image: input.Image, audio: input.Audio);
+        Assert.AreEqual(0, execution.ExitCode, execution.StdErr);
+        var parsed = manifest.OutputFormat switch
+        {
+            PowerScriptDataFormat.None => new PythonTransformResult(),
+            PowerScriptDataFormat.Text => new PythonTransformResult { Text = execution.StdOut },
+            _ => PythonTransformResult.Parse(execution.StdOut, manifest.OutputFormat, manifest.OutputSchema),
+        };
+        if (manifest.OutputFormat == PowerScriptDataFormat.None)
+        {
+            Assert.AreEqual(string.Empty, execution.StdOut);
+        }
+
+        parsed.ExitCode = execution.ExitCode;
+        parsed.StdErr = execution.StdErr;
+        return parsed;
+    }
+
+    private static byte[] ExampleImage() => Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=");
+
+    private static byte[] ExampleAudio()
+    {
+        using var buffer = new MemoryStream();
+        using var writer = new BinaryWriter(buffer, Encoding.ASCII, leaveOpen: true);
+        writer.Write("RIFF"u8);
+        writer.Write(44);
+        writer.Write("WAVEfmt "u8);
+        writer.Write(16);
+        writer.Write((short)1);
+        writer.Write((short)1);
+        writer.Write(16000);
+        writer.Write(32000);
+        writer.Write((short)2);
+        writer.Write((short)16);
+        writer.Write("data"u8);
+        writer.Write(8);
+        writer.Write(new byte[] { 0, 0, 1, 0, 255, 255, 0, 0 });
+        return buffer.ToArray();
+    }
+
+    private static void AssertFingerprintPng(byte[] bytes)
+    {
+        CollectionAssert.AreEqual(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }, bytes[..8]);
+        Assert.AreEqual(64, BinaryPrimitives.ReadInt32BigEndian(bytes.AsSpan(16)));
+        Assert.AreEqual(64, BinaryPrimitives.ReadInt32BigEndian(bytes.AsSpan(20)));
+        Assert.AreEqual(8, bytes[24]);
+        Assert.IsTrue(bytes[25] is 2 or 6);
+        using var compressed = new MemoryStream();
+        for (var offset = 8; offset < bytes.Length;)
+        {
+            var length = BinaryPrimitives.ReadInt32BigEndian(bytes.AsSpan(offset));
+            if (Encoding.ASCII.GetString(bytes, offset + 4, 4) == "IDAT")
+            {
+                compressed.Write(bytes, offset + 8, length);
+            }
+
+            offset += 12 + length;
+        }
+
+        compressed.Position = 0;
+        using var decompressor = new ZLibStream(compressed, CompressionMode.Decompress);
+        using var pixels = new MemoryStream();
+        decompressor.CopyTo(pixels);
+        Assert.AreEqual(64 * (1 + 64 * (bytes[25] == 6 ? 4 : 3)), pixels.Length);
+    }
+
+    private static void AssertToneWav(byte[] bytes)
+    {
+        Assert.AreEqual(8044, bytes.Length);
+        Assert.AreEqual("RIFF", Encoding.ASCII.GetString(bytes, 0, 4));
+        Assert.AreEqual(8036, BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(4)));
+        Assert.AreEqual("WAVEfmt ", Encoding.ASCII.GetString(bytes, 8, 8));
+        Assert.AreEqual(1, BinaryPrimitives.ReadInt16LittleEndian(bytes.AsSpan(20)));
+        Assert.AreEqual(1, BinaryPrimitives.ReadInt16LittleEndian(bytes.AsSpan(22)));
+        Assert.AreEqual(16000, BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(24)));
+        Assert.AreEqual(16, BinaryPrimitives.ReadInt16LittleEndian(bytes.AsSpan(34)));
+        Assert.AreEqual("data", Encoding.ASCII.GetString(bytes, 36, 4));
+        Assert.AreEqual(8000, BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(40)));
+        var samples = Enumerable.Range(0, 4000).Select(i => (int)BinaryPrimitives.ReadInt16LittleEndian(bytes.AsSpan(44 + 2 * i))).ToArray();
+        Assert.IsTrue(samples.Any(sample => sample != 0), "Generated audio must not be a silent placeholder.");
+        Assert.IsTrue(samples.All(sample => Math.Abs(sample) <= 3276), "Keep demonstration audio at a low amplitude.");
     }
 
     [DataTestMethod]

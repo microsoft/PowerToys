@@ -36,6 +36,7 @@ internal static class Program
     {
         try
         {
+            Console.OutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
             if (args.Length == 0)
             {
                 PrintUsage();

@@ -531,6 +531,15 @@ public class HostCliTests
     }
 
     [TestMethod]
+    public void DiagnosticsPreserveUnicodeFromArguments()
+    {
+        const string option = "unknown-\u4e16\u754c";
+        var (exit, _, stderr) = RunHost("list", "--" + option, "--root", _root);
+        Assert.AreEqual(1, exit);
+        StringAssert.Contains(stderr, option);
+    }
+
+    [TestMethod]
     [DataRow("image")]
     [DataRow("audio")]
     public void MediaDiscoveryFiltersUseTheDeclaredSchemas(string category)
@@ -693,6 +702,8 @@ public class HostCliTests
             StandardInputEncoding = stdin is null ? null : new UTF8Encoding(false),
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8,
             UseShellExecute = false,
             CreateNoWindow = true,
         };
@@ -735,6 +746,7 @@ public class HostCliTests
         var entryPoint = Assembly.LoadFrom(Path.ChangeExtension(_hostPath, ".dll")).EntryPoint;
         Assert.IsNotNull(entryPoint);
         var previousOutput = Console.Out;
+        var previousEncoding = Console.OutputEncoding;
         using var output = new StringWriter(System.Globalization.CultureInfo.InvariantCulture);
         try
         {
@@ -744,6 +756,7 @@ public class HostCliTests
         }
         finally
         {
+            Console.OutputEncoding = previousEncoding;
             Console.SetOut(previousOutput);
         }
     }

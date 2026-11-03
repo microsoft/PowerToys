@@ -231,8 +231,10 @@ to the configuration request. File-path entries can also specify `fileExtensions
 The creation page starts blank, without metadata presets or prefilled parameters.
 Enter your own details and explicitly choose the runtime, input/output types,
 and each parameter's name and type. For file input, also enter the minimum and
-maximum file counts. Creation generates generic starter code, not specialized
-conversion or formatting implementations.
+maximum file counts. The same generator is ready for a future sentence-based
+creation UI: input maps to `input`, questions to the `parameters` list (empty
+means "ask nothing"), result to `output`, and runtime to `runtime`.
+The UI itself is unchanged.
 Defaults are optional: a required parameter without a default must be supplied
 at invocation, while an optional parameter without a default may be omitted.
 An explicit default can be an empty string, zero, or false; it is not the same
@@ -243,8 +245,29 @@ The CLI equivalent is `template create --configure`, reading creation options
 such as `{"projectName":"My script","runtime":"python","input":"files","output":"text"}`.
 `template list` and `template create <id>` expose six educational templates,
 including image/audio round trips and file-backed video inspection.
-Media outputs pass through matching input; otherwise their starters produce a
-one-pixel PNG or 0.1-second silent WAV. They do not perform a real conversion.
+Every selection generates a runnable example and a README explaining its task:
+
+| Input | No result | Text result | File result | Image result | Audio result |
+|---|---|---|---|---|---|
+| Nothing | Greeting diagnostic | Greeting | UTF-8 greeting file | Greeting fingerprint PNG | Greeting tone WAV |
+| Text | Inspect text | Uppercase text | UTF-8 text file | Text fingerprint PNG | Text-derived tone WAV |
+| Files | Inspect selection | Name/size report | UTF-8 name/size report | Selection-metadata fingerprint PNG | Selection-metadata tone WAV |
+| Image | Inspect MIME/size/digest | MIME/size/SHA-256 report | Export original image | Unchanged image | Image-digest tone WAV |
+| Audio | Inspect MIME/size/digest | MIME/size/SHA-256 report | Export original audio | Audio-digest fingerprint PNG | Unchanged audio |
+
+This matrix works in both runtimes, with or without typed questions: 100
+representative combinations. Python uses only its standard library; PowerShell
+uses built-in Windows/.NET APIs. Visual fingerprints are 64 x 64 PNGs and tones
+are quiet, 0.25-second PCM WAVs. These are input-driven diagnostic examples,
+**not** OCR, transcription, speech synthesis, or transcoding.
+No-result examples perform input inspection and write diagnostics to stderr,
+not stdout or a persistent log. They do not modify selected files.
+Parameters are read as typed values and included in reports, fingerprints,
+tones and stderr. Media round trips/exports preserve the original bytes and
+demonstrate parameters in stderr only. Arbitrary names do not invent behavior:
+authors replace the marked task with their own logic. Omitted optional answers
+stay absent, while false, zero and empty-string defaults retain their meaning.
+Generated output files use the temporary workspace, never the source package.
 
 The catalogue supports name search, sorting, and independent input/output filters.
 Details are read-only descriptor metadata and global effective execution policy.

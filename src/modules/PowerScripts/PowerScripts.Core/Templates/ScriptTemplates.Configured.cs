@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using PowerScripts.Core.Manifest;
@@ -214,7 +213,7 @@ public static partial class ScriptTemplates
         var declaration = bindings.Count == 0 ? string.Empty : "param(" + string.Join(",\n    ", bindings) + ")\n";
         var input = options.Input switch
         {
-            "text" => "$__powerscriptContent = $Text",
+            "text" => options.Output == "text" ? "$__powerscriptContent = $Text.ToUpperInvariant()" : "$__powerscriptContent = $Text",
             "files" => """
                 if ($env:POWERSCRIPTS_FILES) {
                     $Files = @($env:POWERSCRIPTS_FILES -split "`n" | Where-Object { $_ })
@@ -227,7 +226,14 @@ public static partial class ScriptTemplates
             "image" or "audio" => $$"""
                 $__powerscriptMedia = ${{(options.Input == "image" ? "Image" : "Audio")}}
                 $__powerscriptContent = (@($__powerscriptMedia) | ForEach-Object {
-                    '{0} ({1} bytes)' -f $_.mimeType, ([Convert]::FromBase64String($_.data)).Length
+                    $__powerscriptBytes = [Convert]::FromBase64String($_.data)
+                    $__powerscriptHasher = [Security.Cryptography.SHA256]::Create()
+                    try {
+                        $__powerscriptHash = [BitConverter]::ToString($__powerscriptHasher.ComputeHash($__powerscriptBytes)).Replace('-', '').ToLowerInvariant()
+                    } finally {
+                        $__powerscriptHasher.Dispose()
+                    }
+                    '{0} ({1} bytes), SHA-256: {2}' -f $_.mimeType, $__powerscriptBytes.Length, $__powerscriptHash
                 }) -join [Environment]::NewLine
                 """,
             _ => "$__powerscriptContent = 'Hello from your new PowerScript.'",
@@ -235,25 +241,54 @@ public static partial class ScriptTemplates
         var output = options.Output switch
         {
             "text" => "Write-Output $__powerscriptContent",
+            "files" when options.Input is "image" or "audio" => """
+                $__powerscriptExtensions = @{
+                    'image/png' = '.png'; 'image/jpeg' = '.jpg'; 'image/webp' = '.webp'
+                    'audio/wav' = '.wav'; 'audio/mpeg' = '.mp3'; 'audio/flac' = '.flac'
+                }
+                $__powerscriptPaths = @(@($__powerscriptMedia) | ForEach-Object {
+                    $__powerscriptPath = Join-Path $env:TEMP ('powerscript-' + [Guid]::NewGuid().ToString('N') + $__powerscriptExtensions[$_.mimeType])
+                    [IO.File]::WriteAllBytes($__powerscriptPath, [Convert]::FromBase64String($_.data))
+                    $__powerscriptPath
+                })
+                @{ files = $__powerscriptPaths } | ConvertTo-Json -Compress
+                """,
             "files" => """
                 $__powerscriptPath = Join-Path $env:TEMP ('powerscript-' + [Guid]::NewGuid().ToString('N') + '.txt')
-                Set-Content -LiteralPath $__powerscriptPath -Value $__powerscriptContent -Encoding UTF8
+                [IO.File]::WriteAllText($__powerscriptPath, $__powerscriptContent, [Text.UTF8Encoding]::new($false))
                 @{ files = @($__powerscriptPath) } | ConvertTo-Json -Compress
                 """,
-            "image" or "audio" => $$"""
-                # Replace this example with your media processing; matching media input is passed through.
-                $__powerscriptMedia = {{(options.Input == options.Output ? "$" + (options.Input == "image" ? "Image" : "Audio") : "ConvertFrom-Json '" + SampleMedia(options.Output).ToJsonString() + "'")}}
+            "image" or "audio" when options.Input == options.Output => $$"""
                 @{ {{options.Output}} = $__powerscriptMedia } | ConvertTo-Json -Depth 8 -Compress
                 """,
-            _ => "# Add work here; send diagnostics to stderr.",
+            "image" or "audio" => CreatePowerShellMedia(options.Output),
+            _ => """[Console]::Error.WriteLine("Completed input inspection.`n" + $__powerscriptContent)""",
         };
+        var parameters = string.Empty;
+        if (options.Parameters is { Count: > 0 })
+        {
+            var assignments = string.Join(Environment.NewLine, options.Parameters.Select(parameter =>
+                $"if ($PSBoundParameters.ContainsKey('{parameter.Name}')) {{ $__powerscriptOptions['{parameter.Name}'] = ${parameter.Name} }}"));
+            parameters = $$"""
+                # Options stay typed; use the named variables above in your own processing.
+                $__powerscriptOptions = [ordered]@{}
+                {{assignments}}
+                $__powerscriptOptionSummary = 'Parameters: ' + (ConvertTo-Json -InputObject $__powerscriptOptions -Depth 4 -Compress)
+                $__powerscriptContent += "`n" + $__powerscriptOptionSummary
+                [Console]::Error.WriteLine($__powerscriptOptionSummary)
+                """;
+        }
+
         return $"""
             # Edit the sibling script.ps1.tool.json to change the contract; see README.md.
+            # Example: {DescribeExample(options)}
             {declaration}
             [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
             $ErrorActionPreference = 'Stop'
             {input}
+            {parameters}
 
+            # Replace the example task below with your own processing.
             {output}
 
             """;
@@ -263,77 +298,100 @@ public static partial class ScriptTemplates
     {
         var input = options.Input switch
         {
-            "text" => "content = request['text']",
+            "text" => options.Output == "text" ? "content = request['text'].upper()" : "content = request['text']",
             "files" => "content = '\\n'.join(f'{Path(path).name} ({Path(path).stat().st_size} bytes)' for path in request['files'])",
             "image" or "audio" => $$"""
                 media = request['{{options.Input}}']
                 items = media if isinstance(media, list) else [media]
-                content = '\n'.join(f"{item['mimeType']} ({len(base64.b64decode(item['data'], validate=True))} bytes)" for item in items)
+                summaries = []
+                for item in items:
+                    data = base64.b64decode(item['data'], validate=True)
+                    summaries.append(f"{item['mimeType']} ({len(data)} bytes), SHA-256: {hashlib.sha256(data).hexdigest()}")
+                content = '\n'.join(summaries)
                 """,
             _ => "content = 'Hello from your new PowerScript.'",
         };
         var output = options.Output switch
         {
             "text" => "print(content)",
+            "files" when options.Input is "image" or "audio" => """
+                extensions = {
+                    'image/png': '.png', 'image/jpeg': '.jpg', 'image/webp': '.webp',
+                    'audio/wav': '.wav', 'audio/mpeg': '.mp3', 'audio/flac': '.flac',
+                }
+                paths = []
+                for item in items:
+                    with tempfile.NamedTemporaryFile(prefix='powerscript-', suffix=extensions[item['mimeType']], delete=False) as output:
+                        output.write(base64.b64decode(item['data'], validate=True))
+                    paths.append(output.name)
+                print(json.dumps({'files': paths}))
+                """,
             "files" => """
-                with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', encoding='utf-8', delete=False) as output:
+                with tempfile.NamedTemporaryFile(mode='w', prefix='powerscript-', suffix='.txt', encoding='utf-8', newline='', delete=False) as output:
                     output.write(content)
                 print(json.dumps({'files': [output.name]}))
                 """,
-            "image" or "audio" => $$"""
-                # Replace this example with your media processing; matching media input is passed through.
-                media = {{(options.Input == options.Output ? "request['" + options.Input + "']" : SampleMedia(options.Output).ToJsonString())}}
+            "image" or "audio" when options.Input == options.Output => $$"""
                 print(json.dumps({'{{options.Output}}': media}))
                 """,
-            _ => "# Add work here; send diagnostics to stderr with print(..., file=sys.stderr).",
+            "image" or "audio" => CreatePythonMedia(options.Output),
+            _ => """print('Completed input inspection.\n' + content, file=sys.stderr)""",
         };
+        var parameters = options.Parameters is { Count: > 0 } ? """
+            # Options stay typed; use parameters['name'] in your own processing.
+            parameters = request['parameters']
+            option_summary = 'Parameters: ' + json.dumps(parameters, ensure_ascii=False)
+            content += '\n' + option_summary
+            print(option_summary, file=sys.stderr)
+            """ : string.Empty;
+        var imports = new List<string> { "import json", "import sys" };
+        if (options.Input == "files")
+        {
+            imports.Add("from pathlib import Path");
+        }
+
+        if (options.Output == "files")
+        {
+            imports.Add("import tempfile");
+        }
+
+        if (options.Input is "image" or "audio" || options.Output is "image" or "audio")
+        {
+            imports.Add("import base64");
+            imports.Add("import hashlib");
+        }
+
         return $"""
             # Read the schema-validated request; no entry function is required.
-            import json
-            import base64
-            import sys
-            from pathlib import Path
-            import tempfile
+            # Example: {DescribeExample(options)}
+            {string.Join(Environment.NewLine, imports)}
 
             request = json.load(sys.stdin)
-            {(options.Parameters is { Count: > 0 } ? "parameters = request['parameters']" : string.Empty)}
             {input}
+            {parameters}
 
+            # Replace the example task below with your own processing.
             {output}
 
             """;
     }
 
-    private static JsonObject SampleMedia(string category)
+    private static string DescribeExample(ScriptTemplateOptions options)
     {
-        if (category == "image")
+        return (options.Input, options.Output) switch
         {
-            return new JsonObject
-            {
-                ["mimeType"] = "image/png",
-                ["data"] = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=",
-            };
-        }
-
-        using var buffer = new MemoryStream();
-        using (var writer = new BinaryWriter(buffer, Encoding.ASCII, leaveOpen: true))
-        {
-            writer.Write("RIFF"u8);
-            writer.Write(36 + 1600);
-            writer.Write("WAVEfmt "u8);
-            writer.Write(16);
-            writer.Write((short)1);
-            writer.Write((short)1);
-            writer.Write(8000);
-            writer.Write(16000);
-            writer.Write((short)2);
-            writer.Write((short)16);
-            writer.Write("data"u8);
-            writer.Write(1600);
-            writer.Write(new byte[1600]);
-        }
-
-        return new JsonObject { ["mimeType"] = "audio/wav", ["data"] = Convert.ToBase64String(buffer.ToArray()) };
+            (_, "none") => "Inspect the input and write a completion summary to stderr, without returning a result.",
+            ("text", "text") => "Uppercase the input text.",
+            ("image", "image") => "Return the original image, unchanged.",
+            ("audio", "audio") => "Return the original audio, unchanged.",
+            ("image" or "audio", "files") => "Export the original media bytes to a file with the matching extension.",
+            (_, "image") => "Create a 64 x 64 PNG visual fingerprint of the input summary.",
+            (_, "audio") => "Create a quiet 0.25-second WAV tone whose pitch depends on the input summary.",
+            (_, "files") => "Save the greeting, input text, or selected-file metadata report as a UTF-8 text file.",
+            ("files", "text") => "Report each selected file's name and size.",
+            ("image" or "audio", "text") => "Report the media MIME type, decoded byte count, and SHA-256 digest.",
+            _ => "Return a greeting.",
+        };
     }
 
     private static string CreateGuide(ScriptTemplateOptions options, string entryName) => $$"""
@@ -342,6 +400,28 @@ public static partial class ScriptTemplates
         Edit `{{entryName}}` and `{{entryName}}.tool.json`, then refresh the catalogue.
         Selected contract: **{{options.Runtime}}, {{options.Input}} -> {{options.Output}}**.
         Creation neither runs code nor approves trust.
+
+        ## Runnable example
+
+        {{DescribeExample(options)}}
+        No external packages, codecs, network access, or policy exceptions are needed.
+        Python uses the standard library; PowerShell uses built-in Windows/.NET APIs.
+        For no primary input, the example starts from a greeting. File input uses names and sizes,
+        not file contents. Inline media summaries include a digest of the original bytes.
+        Visual fingerprints and notification tones are diagnostic examples, not OCR, transcription,
+        speech synthesis, or transcoding. Their appearance or pitch is derived from the input
+        summary and supplied parameters.
+        Matching media is returned byte-for-byte; exporting media preserves its format and bytes.
+
+        With no parameters, no questions are asked. With parameters, the example reads the typed
+        answers, includes them in text/report/fingerprint/tone output, and writes them to stderr.
+        Media round trips and exports keep the original bytes; their answers are demonstrated
+        in stderr only. Parameter names do not imply actions (for example, `count` does not
+        automatically repeat work). Replace the marked example task with your own logic.
+        Optional answers without defaults may be absent: check `$PSBoundParameters.ContainsKey("name")`
+        in PowerShell or `"name" in parameters` in Python before using them.
+        Required answers without defaults must be provided before execution.
+        Do not use passwords or other secrets as demonstration parameters.
 
         ## Schemas
 
@@ -373,9 +453,7 @@ public static partial class ScriptTemplates
         Image/audio values contain `mimeType` and base64 `data`, never a file path.
         Python reads `request["image"]` / `request["audio"]`; PowerShell receives `$Image` / `$Audio`.
         Both directions support PNG, JPEG, static WebP, WAV, MP3 and FLAC according to the MIME enum.
-        There is no implicit conversion, streaming, or codec installation. Matching media templates
-        pass input through; other media-output templates create a one-pixel PNG or 0.1-second silent WAV.
-        Replace those examples with your own processing.
+        There is no implicit conversion, streaming, or codec installation.
         For collections, wrap the media object schema in `{"type":"array","minItems":1,"items":...}`,
         optionally set `maxItems`, and return an array even for one item.
         Limits: 64 items, 16 MiB decoded per item, 32 MiB decoded total per request/result.
@@ -390,8 +468,9 @@ public static partial class ScriptTemplates
         Optional `capabilities`, `publisher`, `version`, `source` and `icon` belong
         under root `x-powerscript`. They do not grant permissions.
         All scripts use the global MXC settings; there are no per-script settings or policy overrides.
-        Python environment selection is also global. Managed Linux requires globally acknowledged
-        UI and least-privilege exceptions because those Windows policies cannot be enforced there.
+        Python environment selection is also global. Managed Linux requires MXC and filesystem
+        restriction; network access follows the global policy. Windows-only desktop-interaction
+        and least-privilege switches do not apply to Linux and need not be relaxed for it.
         Write output only to the temporary workspace, never the source package.
         Source or metadata edits invalidate trust and require renewed consent.
         Advanced custom launch recipes use `x-execute`.
