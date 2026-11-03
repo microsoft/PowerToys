@@ -61,6 +61,7 @@ jobs:
         parameters:
           displayName: Sign SDK ${{ platform }}
           signingIdentity: ${{ parameters.signingIdentity }}
+          preserveExistingSignatures: true
           inputs:
             FolderPath: '$(Build.SourcesDirectory)/${{ platform }}/Release'
             signType: batchSigning

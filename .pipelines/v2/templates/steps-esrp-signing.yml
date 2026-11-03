@@ -8,10 +8,23 @@ parameters:
   - name: signingIdentity
     type: object
     default: {}
+  - name: preserveExistingSignatures
+    type: boolean
+    default: false
 
 steps:
+  - ${{ if eq(parameters.preserveExistingSignatures, true) }}:
+    - pwsh: |-
+        & '$(Build.SourcesDirectory)/.pipelines/prepareUnsignedSigningPolicy.ps1' `
+          -FolderPath '${{ parameters.inputs.FolderPath }}' `
+          -SigningPolicyPath '${{ parameters.inputs.batchSignPolicyFile }}' `
+          -OutputPath '$(Agent.TempDirectory)/unsigned-signing-policy.json'
+      displayName: Preserve existing signatures before ${{ parameters.displayName }}
+
   - task: EsrpCodeSigning@6
     displayName: 🔏 ${{ parameters.displayName }}
+    ${{ if eq(parameters.preserveExistingSignatures, true) }}:
+      condition: and(succeeded(), eq(variables['EsrpHasUnsignedSigningFiles'], 'true'))
     inputs:
       ConnectedServiceName: ${{ parameters.signingIdentity.serviceName }}
       AppRegistrationClientId: ${{ parameters.signingIdentity.appId }}
@@ -21,4 +34,9 @@ steps:
       AuthSignCertName: ${{ parameters.signingIdentity.signCertName }}
       UseMSIAuthentication: ${{ coalesce(parameters.signingIdentity.useManagedIdentity, 'false') }}
       EsrpClientId: ${{ parameters.signingIdentity.clientId }}
-      ${{ insert }}: ${{ parameters.inputs }}
+      ${{ each input in parameters.inputs }}:
+        ${{ if or(eq(parameters.preserveExistingSignatures, false), and(ne(input.key, 'batchSignPolicyFile'), ne(input.key, 'UseMinimatch'))) }}:
+          ${{ input.key }}: ${{ input.value }}
+      ${{ if eq(parameters.preserveExistingSignatures, true) }}:
+        batchSignPolicyFile: '$(Agent.TempDirectory)/unsigned-signing-policy.json'
+        UseMinimatch: true
