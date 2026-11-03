@@ -30,7 +30,10 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
         public int? ErrorHResult { get; private set; }
 
-        public bool Available { get { return !ErrorHResult.HasValue; } }
+        public bool Available
+        {
+            get { return !ErrorHResult.HasValue; }
+        }
 
         internal static ClipboardObservation Read(Func<string> readDigest)
         {
@@ -62,7 +65,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
         public ReceiverController(string role, string runId)
         {
             var started = new TaskCompletionSource<Receiver>();
-            thread = new Thread(delegate()
+            thread = new Thread(() =>
             {
                 try
                 {
@@ -100,45 +103,116 @@ namespace Microsoft.MouseWithoutBorders.UITests
             receiver = started.Task.Result;
         }
 
-        public IntPtr Handle { get { return handle; } }
+        public IntPtr Handle
+        {
+            get { return handle; }
+        }
 
-        public string ReceivedText { get { return Invoke(delegate { return receiver.ReceivedText; }); } }
+        public string ReceivedText
+        {
+            get { return Invoke(() => receiver.ReceivedText); }
+        }
 
-        public bool InputFocused { get { return Invoke(delegate { return receiver.InputFocused; }); } }
+        public bool InputFocused
+        {
+            get { return Invoke(() => receiver.InputFocused); }
+        }
 
-        public int Clicks { get { return Invoke(delegate { return receiver.Clicks; }); } }
+        public int Clicks
+        {
+            get { return Invoke(() => receiver.Clicks); }
+        }
 
-        public int StartMenuDismissals { get { return Invoke(delegate { return receiver.StartMenuDismissals; }); } }
+        public int StartMenuDismissals
+        {
+            get { return Invoke(() => receiver.StartMenuDismissals); }
+        }
 
-        public Rectangle ClickBounds { get { return Invoke(delegate { return receiver.ClickBounds; }); } }
+        public Rectangle ClickBounds
+        {
+            get { return Invoke(() => receiver.ClickBounds); }
+        }
 
-        public long ClickTargetHandle { get { return Invoke(delegate { return receiver.ClickTargetHandle; }); } }
+        public long ClickTargetHandle
+        {
+            get { return Invoke(() => receiver.ClickTargetHandle); }
+        }
 
-        public int MouseDownMessages { get { return Invoke(delegate { return receiver.MouseDownMessages; }); } }
+        public int MouseDownMessages
+        {
+            get { return Invoke(() => receiver.MouseDownMessages); }
+        }
 
-        public int MouseUpMessages { get { return Invoke(delegate { return receiver.MouseUpMessages; }); } }
+        public int MouseUpMessages
+        {
+            get { return Invoke(() => receiver.MouseUpMessages); }
+        }
 
-        public void FocusInput() { Invoke(delegate { receiver.FocusInput(); return true; }); }
+        public void FocusInput()
+        {
+            Invoke(() =>
+            {
+                receiver.FocusInput();
+                return true;
+            });
+        }
 
-        public void ClearInput() { Invoke(delegate { receiver.ClearInput(); return true; }); }
+        public void ClearInput()
+        {
+            Invoke(() =>
+            {
+                receiver.ClearInput();
+                return true;
+            });
+        }
 
-        public string PublishClipboard() { return Invoke(delegate { return receiver.PublishClipboard(); }); }
+        public string PublishClipboard()
+        {
+            return Invoke(() => receiver.PublishClipboard());
+        }
 
-        public string ClipboardDigest() { return Invoke(delegate { return receiver.ClipboardDigest(); }); }
+        public string ClipboardDigest()
+        {
+            return Invoke(() => receiver.ClipboardDigest());
+        }
 
-        public ClipboardObservation ObserveClipboard() { return Invoke(delegate { return receiver.ObserveClipboard(); }); }
+        public ClipboardObservation ObserveClipboard()
+        {
+            return Invoke(() => receiver.ObserveClipboard());
+        }
 
-        public void RestoreClipboard() { Invoke(delegate { receiver.RestoreClipboard(); return true; }); }
+        public void RestoreClipboard()
+        {
+            Invoke(() =>
+            {
+                receiver.RestoreClipboard();
+                return true;
+            });
+        }
 
-        public void CaptureDesktop(string path) { Invoke(delegate { receiver.CaptureDesktop(path); return true; }); }
+        public void CaptureDesktop(string path)
+        {
+            Invoke(() =>
+            {
+                receiver.CaptureDesktop(path);
+                return true;
+            });
+        }
 
-        public void CaptureFailureDesktop(string path) { Receiver.CaptureFailureDesktop(path); }
+        public void CaptureFailureDesktop(string path)
+        {
+            Receiver.CaptureFailureDesktop(path);
+        }
 
         public void Close()
         {
             if (thread.IsAlive && !receiver.IsDisposed)
             {
-                Invoke(delegate { receiver.Close(); return true; });
+                Invoke(() =>
+                {
+                    receiver.Close();
+                    return true;
+                });
             }
         }
 
@@ -157,6 +231,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
             {
                 throw new InvalidOperationException("Receiver UI is no longer available.");
             }
+
             return (T)receiver.Invoke(action);
         }
     }
@@ -171,8 +246,16 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
             protected override void WndProc(ref Message message)
             {
-                if (message.Msg == 0x0201) { MouseDownMessages++; }
-                if (message.Msg == 0x0202) { MouseUpMessages++; }
+                if (message.Msg == 0x0201)
+                {
+                    MouseDownMessages++;
+                }
+
+                if (message.Msg == 0x0202)
+                {
+                    MouseUpMessages++;
+                }
+
                 base.WndProc(ref message);
             }
         }
@@ -209,6 +292,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
                 Dock = DockStyle.Fill,
                 BackColor = Color.LightSteelBlue,
             };
+
             // A MouseDown is physical input. Unlike Button.Click, Space/Invoke cannot increment it.
             clickTarget.MouseDown += (sender, args) =>
             {
@@ -219,7 +303,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
             };
             Controls.Add(clickTarget);
             Controls.Add(input);
-            Shown += delegate { input.Focus(); };
+            Shown += (sender, args) => input.Focus();
             restoresClipboard = role == "Host";
             if (restoresClipboard)
             {
@@ -246,11 +330,20 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
         public int Clicks { get; private set; }
 
-        public long ClickTargetHandle { get { return clickTarget.Handle.ToInt64(); } }
+        public long ClickTargetHandle
+        {
+            get { return clickTarget.Handle.ToInt64(); }
+        }
 
-        public int MouseDownMessages { get { return clickTarget.MouseDownMessages; } }
+        public int MouseDownMessages
+        {
+            get { return clickTarget.MouseDownMessages; }
+        }
 
-        public int MouseUpMessages { get { return clickTarget.MouseUpMessages; } }
+        public int MouseUpMessages
+        {
+            get { return clickTarget.MouseUpMessages; }
+        }
 
         public string ReceivedText
         {
@@ -271,7 +364,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
         public void FocusInput()
         {
-            if (NativeSupport.DismissForegroundStartMenu(delegate { SendKeys.SendWait("{ESC}"); }))
+            if (NativeSupport.DismissForegroundStartMenu(() => SendKeys.SendWait("{ESC}")))
             {
                 StartMenuDismissals++;
             }
@@ -294,8 +387,10 @@ namespace Microsoft.MouseWithoutBorders.UITests
             DataObject data = new DataObject();
             data.SetText(token, TextDataFormat.UnicodeText);
             clipboardChanged = true;
+
             // Keep the same token while bounded OLE retries cover slow clipboard owners.
             Clipboard.SetDataObject(data, true, 150, 100);
+
             // An immediate OLE clipboard read can still be empty on a cold desktop.
             // Acknowledge the generated value; the controller verifies its publication.
             return Digest(token);
@@ -462,6 +557,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
         public void CaptureDesktop(string path)
         {
             Refresh();
+
             // Diagnostic snapshot of this test-owned control only. Never include
             // another window's generated pairing key or original clipboard.
             using (Bitmap bitmap = new Bitmap(Width, Height))
@@ -477,6 +573,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
             {
                 throw new InvalidOperationException("Failure capture requires the active test desktop.");
             }
+
             Rectangle bounds = SystemInformation.VirtualScreen;
             using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height))
             using (Graphics graphics = Graphics.FromImage(bitmap))

@@ -125,7 +125,9 @@ internal sealed class WinAppSandbox : ISandboxSession
             // can create the instance even when it times out or returns an error.
             creationAttempted = true;
             saveJournal();
-            var result = Run(wsbPath, ["start", "--id", instanceId.ToString("D"), "--config", configuration.ToString(SaveOptions.DisableFormatting), "--raw"],
+            var result = Run(
+                wsbPath,
+                ["start", "--id", instanceId.ToString("D"), "--config", configuration.ToString(SaveOptions.DisableFormatting), "--raw"],
                 Budget(SandboxTimeouts.ModernStart, bootstrap: true));
             WinAppSandboxProtocol.RequireStartResult(result, instanceId);
             WinAppSandboxProtocol.RequireExclusiveInstance(Inventory(Budget(InventoryTimeout, bootstrap: true)), instanceId);
@@ -218,6 +220,7 @@ internal sealed class WinAppSandbox : ISandboxSession
 
         RequireLiveWorker();
         ValidateOwnership(bootstrap: true);
+
         // Correlated worker readiness has met the bootstrap deadline. Media
         // inspection remains bounded separately by the run's hard deadline.
         ReadSnapshot(bootstrap: false);
@@ -234,6 +237,7 @@ internal sealed class WinAppSandbox : ISandboxSession
         }
 
         RequireLiveWorker();
+
         // Assertions are finished. Finalize the video before another guest-wide
         // capture/inspection competes with its active capture channel.
         var recordingErrors = new List<Exception>();
@@ -270,18 +274,20 @@ internal sealed class WinAppSandbox : ISandboxSession
         Cleanup(() => FinishRecording(errors), errors);
         if (worker is not null)
         {
-            Cleanup(() =>
-            {
-                if (!worker.WaitForExit(TimeSpan.FromSeconds(15)))
+            Cleanup(
+                () =>
                 {
-                    errors.Add(new WinAppSandboxException("worker_forced_stop"));
-                    worker.Terminate();
-                }
-                else
-                {
-                    worker.Complete(TimeSpan.FromSeconds(1)).RequireSuccess();
-                }
-            }, errors);
+                    if (!worker.WaitForExit(TimeSpan.FromSeconds(15)))
+                    {
+                        errors.Add(new WinAppSandboxException("worker_forced_stop"));
+                        worker.Terminate();
+                    }
+                    else
+                    {
+                        worker.Complete(TimeSpan.FromSeconds(1)).RequireSuccess();
+                    }
+                },
+                errors);
             Cleanup(worker.Dispose, errors);
             if (worker.HasExited)
             {
@@ -292,88 +298,97 @@ internal sealed class WinAppSandbox : ISandboxSession
         var absent = !creationAttempted;
         if (creationAttempted)
         {
-            Cleanup(() =>
-            {
-                var inventory = WinAppSandboxProtocol.ReadInventory(Inventory(InventoryTimeout));
-                if (inventory.Any(id => id != instanceId))
+            Cleanup(
+                () =>
                 {
-                    ownershipUnconfirmed = true;
-                }
-                if (inventory.Contains(instanceId) || !creationConfirmed)
-                {
-                    // Even partial creation is fenced by the original GUID. Never
-                    // use winapp target cleanup, which could act on an adopted VM.
-                    Run(wsbPath, ["stop", "--id", instanceId.ToString("D"), "--raw"], TimeSpan.FromSeconds(45));
-                }
-
-                var timer = Stopwatch.StartNew();
-                do
-                {
-                    var remaining = WinAppSandboxProtocol.ReadInventory(Inventory(InventoryTimeout - timer.Elapsed));
-                    if (remaining.Any(id => id != instanceId))
+                    var inventory = WinAppSandboxProtocol.ReadInventory(Inventory(InventoryTimeout));
+                    if (inventory.Any(id => id != instanceId))
                     {
                         ownershipUnconfirmed = true;
                     }
 
-                    if (!remaining.Contains(instanceId))
+                    if (inventory.Contains(instanceId) || !creationConfirmed)
                     {
-                        absent = true;
-                        break;
+                        // Even partial creation is fenced by the original GUID. Never
+                        // use winapp target cleanup, which could act on an adopted VM.
+                        Run(wsbPath, ["stop", "--id", instanceId.ToString("D"), "--raw"], TimeSpan.FromSeconds(45));
                     }
 
-                    Thread.Sleep(250);
-                }
-                while (timer.Elapsed < TimeSpan.FromSeconds(30));
+                    var timer = Stopwatch.StartNew();
+                    do
+                    {
+                        var remaining = WinAppSandboxProtocol.ReadInventory(Inventory(InventoryTimeout - timer.Elapsed));
+                        if (remaining.Any(id => id != instanceId))
+                        {
+                            ownershipUnconfirmed = true;
+                        }
 
-                if (!absent)
-                {
-                    throw new WinAppSandboxException("sandbox_stop_unconfirmed");
-                }
+                        if (!remaining.Contains(instanceId))
+                        {
+                            absent = true;
+                            break;
+                        }
 
-                if (ownershipUnconfirmed)
-                {
-                    throw new WinAppSandboxException("sandbox_ownership_unconfirmed");
-                }
-            }, errors);
+                        Thread.Sleep(250);
+                    }
+                    while (timer.Elapsed < TimeSpan.FromSeconds(30));
+
+                    if (!absent)
+                    {
+                        throw new WinAppSandboxException("sandbox_stop_unconfirmed");
+                    }
+
+                    if (ownershipUnconfirmed)
+                    {
+                        throw new WinAppSandboxException("sandbox_ownership_unconfirmed");
+                    }
+                },
+                errors);
         }
 
         if (stagedPayload is not null && Directory.Exists(stagedPayload))
         {
-            Cleanup(() =>
-            {
-                _ = WinAppSandboxPayload.PlainFiles(stagedPayload).ToArray();
-                Directory.Delete(stagedPayload, recursive: true);
-            }, errors);
+            Cleanup(
+                () =>
+                {
+                    _ = WinAppSandboxPayload.PlainFiles(stagedPayload).ToArray();
+                    Directory.Delete(stagedPayload, recursive: true);
+                },
+                errors);
         }
 
         if (absent && client is not null)
         {
-            Cleanup(() =>
-            {
-                if (!client.HasExited)
+            Cleanup(
+                () =>
                 {
-                    client.Kill();
-                    if (!client.WaitForExit(15000))
+                    if (!client.HasExited)
                     {
-                        throw new WinAppSandboxException("client_stop_timeout");
+                        client.Kill();
+                        if (!client.WaitForExit(15000))
+                        {
+                            throw new WinAppSandboxException("client_stop_timeout");
+                        }
                     }
-                }
 
-                client.Dispose();
-                client = null;
-            }, errors);
+                    client.Dispose();
+                    client = null;
+                },
+                errors);
         }
 
         if (creationAttempted && absent && !ownershipUnconfirmed && ownsTargetStateRoot && worker is null && recorder is null && client is null && Directory.Exists(targetStateRoot))
         {
-            Cleanup(() =>
-            {
-                // Keep bootstrap secrets available for recovery until the exact
-                // provider instance is absent and both attached clients have exited.
-                // Pre-existing nonempty target state is never ours to delete.
-                _ = WinAppSandboxPayload.PlainFiles(targetStateRoot).ToArray();
-                Directory.Delete(targetStateRoot, recursive: true);
-            }, errors);
+            Cleanup(
+                () =>
+                {
+                    // Keep bootstrap secrets available for recovery until the exact
+                    // provider instance is absent and both attached clients have exited.
+                    // Pre-existing nonempty target state is never ours to delete.
+                    _ = WinAppSandboxPayload.PlainFiles(targetStateRoot).ToArray();
+                    Directory.Delete(targetStateRoot, recursive: true);
+                },
+                errors);
         }
 
         stopped = absent && errors.Count == 0;
@@ -554,8 +569,9 @@ internal sealed class WinAppSandbox : ISandboxSession
             {
                 var remaining = deadline - DateTime.UtcNow;
                 var timeout = remaining < TimeSpan.FromSeconds(15) ? remaining : TimeSpan.FromSeconds(15);
-                var result = Run(wsbPath,
-                    ["exec", "--id", instanceId.ToString("D"), "--command", "cmd.exe /c exit 0", "--run-as", "ExistingLogin", "--raw"],
+                var result = Run(
+                    wsbPath,
+                    ["exec",  "--id", instanceId.ToString("D"), "--command", "cmd.exe /c exit 0", "--run-as", "ExistingLogin", "--raw"],
                     Budget(timeout, bootstrap: true));
                 WinAppSandboxProtocol.RequireGuestCommandSuccess(result);
                 ValidateOwnership(bootstrap: true, requireState: false);
@@ -727,6 +743,7 @@ internal sealed class WinAppSandbox : ISandboxSession
 
         recordingStartedUtc = DateTime.UtcNow;
         recorder = StartAttached(["target", "record", "sandbox", "--fps", "5", "--max-edge", "960", "--output", recordingPath, "--json"]);
+
         // Ownership is checked before launch and after readiness. Provider inventory
         // polling here can block delivery of an already-published readiness event.
         // Allow the CLI's reconnect and capture initialization, not just capture.
@@ -754,12 +771,14 @@ internal sealed class WinAppSandbox : ISandboxSession
         if (recorder is not null)
         {
             Cleanup(recorder.RequestRecordingStop, recordingErrors);
-            Cleanup(() =>
-            {
-                var result = recorder.Complete(TimeSpan.FromSeconds(90));
-                exitCode = result.ExitCode;
-                result.RequireSuccess();
-            }, recordingErrors);
+            Cleanup(
+                () =>
+                {
+                    var result = recorder.Complete(TimeSpan.FromSeconds(90));
+                    exitCode = result.ExitCode;
+                    result.RequireSuccess();
+                },
+                recordingErrors);
             Cleanup(recorder.Dispose, recordingErrors);
             if (recorder.HasExited)
             {
@@ -772,36 +791,38 @@ internal sealed class WinAppSandbox : ISandboxSession
             recordingErrors.Add(new WinAppSandboxException("recording_output_unavailable"));
         }
 
-        Cleanup(() =>
-        {
-            var available = HasOutput(recordingPath);
-            var manifest = Path.Combine(runRoot, "recordings", "sandbox-guest.json");
-            RunFiles.Write(manifest, new
+        Cleanup(
+            () =>
             {
-                Backend,
-                InstanceId = runId,
-                StartedUtc = recordingStartedUtc,
-                StoppedUtc = DateTime.UtcNow,
-                Started = recordingStarted,
-                Completed = recordingErrors.Count == 0 && exitCode == 0 && available,
-                Available = available,
-                ExitCode = exitCode,
-                FrameRate = 5,
-                MaxEdge = 960,
-                File = available ? Path.GetFileName(recordingPath) : null,
-                Errors = recordingErrors.Select(error => Sanitize(error).Code).ToArray(),
-            });
-            context.AddResultFile(manifest);
-            if (available)
-            {
-                context.AddResultFile(recordingPath);
-            }
+                var available = HasOutput(recordingPath);
+                var manifest = Path.Combine(runRoot, "recordings", "sandbox-guest.json");
+                RunFiles.Write(manifest, new
+                {
+                    Backend,
+                    InstanceId = runId,
+                    StartedUtc = recordingStartedUtc,
+                    StoppedUtc = DateTime.UtcNow,
+                    Started = recordingStarted,
+                    Completed = recordingErrors.Count == 0 && exitCode == 0 && available,
+                    Available = available,
+                    ExitCode = exitCode,
+                    FrameRate = 5,
+                    MaxEdge = 960,
+                    File = available ? Path.GetFileName(recordingPath) : null,
+                    Errors = recordingErrors.Select(error => Sanitize(error).Code).ToArray(),
+                });
+                context.AddResultFile(manifest);
+                if (available)
+                {
+                    context.AddResultFile(recordingPath);
+                }
 
-            if (recordingErrors.Count != 0)
-            {
-                context.WriteLine("Guest recording did not finalize cleanly; any nonempty MP4 was retained. See the safe Sandbox recording manifest.");
-            }
-        }, recordingErrors);
+                if (recordingErrors.Count != 0)
+                {
+                    context.WriteLine("Guest recording did not finalize cleanly; any nonempty MP4 was retained. See the safe Sandbox recording manifest.");
+                }
+            },
+            recordingErrors);
         recordingFinalized = recorder is null;
         errors.AddRange(recordingErrors);
     }

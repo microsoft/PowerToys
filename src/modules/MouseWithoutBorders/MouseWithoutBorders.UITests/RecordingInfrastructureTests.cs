@@ -21,7 +21,8 @@ public sealed class RecordingInfrastructureTests
     [TestCategory("MwbInfrastructure")]
     public void DesktopAndWindowVideosSurviveAnEarlyFailure()
     {
-        var directory = Path.Combine(RunFiles.PersistentResultsRoot(TestContext.TestRunDirectory),
+        var directory = Path.Combine(
+            RunFiles.PersistentResultsRoot(TestContext.TestRunDirectory),
             "mwb-recording-probe-" + Guid.NewGuid().ToString("N"));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => _ = new ScreenRecording(directory, IntPtr.Zero, 0, 960, 540));
         Assert.ThrowsExactly<ArgumentException>(() => _ = new ScreenRecording(directory, IntPtr.Zero, 5, 959, 540));
@@ -59,6 +60,7 @@ public sealed class RecordingInfrastructureTests
                     Assert.AreEqual(SystemInformation.VirtualScreen.Width, image.Width);
                     Assert.AreEqual(SystemInformation.VirtualScreen.Height, image.Height);
                 }
+
                 TestContext.AddResultFile(screenshot);
                 throw expected;
             }
