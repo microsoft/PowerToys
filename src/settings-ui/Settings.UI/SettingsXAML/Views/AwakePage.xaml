@@ -15,7 +15,12 @@
     mc:Ignorable="d">
 
     <local:NavigablePage.Resources>
-        <converters:AwakeModeToIntConverter x:Key="AwakeModeToIntConverter" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.SettingsControls/SettingsExpander/SettingsExpander.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <converters:AwakeModeToIntConverter x:Key="AwakeModeToIntConverter" />
+        </ResourceDictionary>
     </local:NavigablePage.Resources>
 
     <controls:SettingsPageControl
