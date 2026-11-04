@@ -136,6 +136,7 @@ Describe 'runUiTestAsUser' {
             useInstallerForTest = 'true'
             POWERTOYS_INSTALL_DIR = 'C:\PowerToys'
             POWERTOYS_MWB_RUN_ROOT = 'C:\Results\mwb-run'
+            POWERTOYS_POWERDISPLAY_IDD_PROBE = 'C:\Fixtures\driver\IddProbe.exe'
         }
         $request | ConvertTo-Json | Set-Content -LiteralPath $requestPath
 

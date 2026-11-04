@@ -3,6 +3,7 @@
 # See the LICENSE file in the project root for more information.
 
 $sourcePath = Join-Path $PSScriptRoot '..\umdf-hid-smoke\Manage-SmokeDriver.ps1'
+. (Join-Path $PSScriptRoot '..\umdf\UmdfDriver.Common.ps1')
 $tokens = $null
 $parseErrors = $null
 $ast = [Management.Automation.Language.Parser]::ParseFile($sourcePath, [ref]$tokens, [ref]$parseErrors)
@@ -43,10 +44,12 @@ Describe 'Virtual HID driver ownership safety' {
         }
         $script:devices = @()
         $script:leaveDevice = $false
+        $script:nativeCalls = [Collections.Generic.List[string]]::new()
         $script:nativeExit = 0
         Mock Get-PnpDevice { $script:devices } -ParameterFilter { $PresentOnly }
         Mock Get-PnpDeviceProperty { [pscustomobject]@{ Data = @($hardwareId) } }
         Mock pnputil.exe {
+            $script:nativeCalls.Add($args[0])
             $global:LASTEXITCODE = $script:nativeExit
             if ($args[0] -eq '/delete-driver' -and $script:nativeExit -eq 0) {
                 Remove-Item -LiteralPath (Join-Path $env:WINDIR "INF\$($args[1])")
@@ -80,6 +83,8 @@ Describe 'Virtual HID driver ownership safety' {
         @{ Field = 'Thumbprint'; Value = '..\not-a-thumbprint' }
         @{ Field = 'InfNames'; Value = @('unrelated.inf') }
         @{ Field = 'ImportedStores'; Value = @('My') }
+        @{ Field = 'InfNames'; Value = 'oem7.inf' }
+        @{ Field = 'ImportedStores'; Value = 'Root' }
     ) {
         param($Field, $Value)
         $Action = 'Cleanup'
@@ -123,6 +128,7 @@ Describe 'Virtual HID driver ownership safety' {
         Assert-MockCalled Get-PnpDevice -Scope It -ParameterFilter { $PresentOnly }
         $script:devices.Count | Should Be 1
         $script:devices[0].InstanceId | Should Be 'ROOT\HIDCLASS\0002'
+        $script:nativeCalls.ToArray() | Should Be @('/delete-driver', '/remove-device')
         Assert-MockCalled Remove-Item -Times 1 -Exactly -Scope It -ParameterFilter {
             $Path -eq "Cert:\LocalMachine\TrustedPublisher\$('A' * 40)"
         }
@@ -139,12 +145,25 @@ Describe 'Virtual HID driver ownership safety' {
 
     It 'retains the journal and records native removal failure' {
         $Action = 'Cleanup'
+        $journal.ImportedStores = @('Root')
         $journal | ConvertTo-Json | Set-Content $StatePath
         $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\HIDCLASS\0001'; Status = 'OK' })
         $script:nativeExit = 5
         { & $cleanupAction } | Should Throw 'Device removal failed'
         Test-Path -LiteralPath $StatePath | Should Be $true
         (Get-Content (Join-Path $ResultsDirectory 'driver-cleanup.json') -Raw | ConvertFrom-Json).Removed | Should Be $false
+        Assert-MockCalled Remove-Item -Times 0 -Exactly -Scope It -ParameterFilter { $Path -like 'Cert:*' }
+    }
+
+    It 'retains the legacy journal and test trust when package removal fails' {
+        $journal.InfNames = @('oem7.inf')
+        $journal.ImportedStores = @('Root')
+        $journal | ConvertTo-Json | Set-Content $StatePath
+        $hardwareId | Set-Content (Join-Path $env:WINDIR 'INF\oem7.inf')
+        $script:nativeExit = 5
+        { & $cleanupAction } | Should Throw 'Package remains'
+        Test-Path -LiteralPath $StatePath | Should Be $true
+        Assert-MockCalled Remove-Item -Times 0 -Exactly -Scope It -ParameterFilter { $Path -like 'Cert:*' }
     }
 
     It 'does not remove a certificate whose subject no longer matches the journal' {
@@ -152,7 +171,7 @@ Describe 'Virtual HID driver ownership safety' {
         $journal.ImportedStores = @('Root')
         $journal | ConvertTo-Json | Set-Content $StatePath
         Mock Get-Item { [pscustomobject]@{ Subject = 'CN=Unrelated' } } -ParameterFilter { $Path -like 'Cert:*' }
-        { & $cleanupAction } | Should Throw 'Refusing to remove an unrelated certificate'
+        { & $cleanupAction } | Should Throw 'Refusing to remove unrelated trust'
         Assert-MockCalled Remove-Item -Times 0 -Exactly -Scope It -ParameterFilter { $Path -like 'Cert:*' }
     }
 
@@ -180,7 +199,7 @@ Describe 'Virtual HID driver ownership safety' {
         'modified' | Set-Content (Join-Path $ArtifactDirectory 'driver\VhidminiUm.dll')
         @(@{ Path = 'VhidminiUm.dll'; Hash = 'not-the-file-hash' }) |
             ConvertTo-Json | Set-Content (Join-Path $ArtifactDirectory 'driver-hashes.json')
-        { & $installPreflight } | Should Throw 'Staged driver hash mismatch'
+        { & $installPreflight } | Should Throw 'artifact hash'
         Assert-MockCalled pnputil.exe -Times 0 -Exactly -Scope It
     }
 
@@ -201,10 +220,12 @@ Describe 'Virtual HID driver ownership safety' {
             finally { $cert.Dispose() }
         }
         finally { $rsa.Dispose() }
-        $hash = Get-FileHash (Join-Path $driverPath 'PtHidProbe.cer') -Algorithm SHA256
-        @(@{ Path = $hash.Path; Hash = $hash.Hash }) |
+        foreach ($name in @('VhidminiUm.dll', 'PtHidProbe.inf', 'PtHidProbe.cat', 'CreateUmdfHidDevice.exe')) {
+            'not-executable-test-data' | Set-Content (Join-Path $driverPath $name)
+        }
+        Get-ChildItem $driverPath -File | Get-FileHash -Algorithm SHA256 | Select-Object Path, Hash |
             ConvertTo-Json | Set-Content (Join-Path $ArtifactDirectory 'driver-hashes.json')
-        { & $installPreflight } | Should Throw 'Unexpected test certificate subject'
+        { & $installPreflight } | Should Throw 'Unexpected, expired, or non-public'
         Test-Path -LiteralPath $StatePath | Should Be $false
         Assert-MockCalled pnputil.exe -Times 0 -Exactly -Scope It
     }
