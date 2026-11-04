@@ -102,6 +102,106 @@
     <value>Pick a copy to insert</value>
     <comment>Heading over recent copies from Windows clipboard history, when a snippet asks the user to pick the one it inserts</comment>
   </data>
+  <data name="Notice_Heading_Several" xml:space="preserve">
+    <value>Some spots were left empty</value>
+    <comment>Bold heading of a small notice shown at the text cursor after a snippet went in, when a spot in it was left empty. </comment>
+  </data>
+  <data name="Notice_Heading_HistoryOff" xml:space="preserve">
+    <value>Clipboard history is off</value>
+    <comment>Bold heading of a small notice shown at the text cursor after a snippet went in, when a spot in it was left empty. </comment>
+  </data>
+  <data name="Notice_Heading_NoCopies" xml:space="preserve">
+    <value>No copies in clipboard history</value>
+    <comment>Bold heading of a small notice shown at the text cursor after a snippet went in, when a spot in it was left empty. </comment>
+  </data>
+  <data name="Notice_Heading_HistoryUnreadable" xml:space="preserve">
+    <value>Couldn&apos;t read clipboard history</value>
+    <comment>Bold heading of a small notice shown at the text cursor after a snippet went in, when a spot in it was left empty. </comment>
+  </data>
+  <data name="Notice_Heading_NoEmail" xml:space="preserve">
+    <value>No email address found</value>
+    <comment>Bold heading of a small notice shown at the text cursor after a snippet went in, when a spot in it was left empty. </comment>
+  </data>
+  <data name="Notice_Heading_NoLink" xml:space="preserve">
+    <value>No link found</value>
+    <comment>Bold heading of a small notice shown at the text cursor after a snippet went in, when a spot in it was left empty. </comment>
+  </data>
+  <data name="Notice_Heading_NoPhone" xml:space="preserve">
+    <value>No phone number found</value>
+    <comment>Bold heading of a small notice shown at the text cursor after a snippet went in, when a spot in it was left empty. </comment>
+  </data>
+  <data name="Notice_Heading_NoNumber" xml:space="preserve">
+    <value>No number found</value>
+    <comment>Bold heading of a small notice shown at the text cursor after a snippet went in, when a spot in it was left empty. </comment>
+  </data>
+  <data name="Notice_Heading_NoText" xml:space="preserve">
+    <value>No text copied</value>
+    <comment>Bold heading of a small notice shown at the text cursor after a snippet went in, when a spot in it was left empty. </comment>
+  </data>
+  <data name="Notice_HistoryOff_One" xml:space="preserve">
+    <value>Clipboard history is off, so that spot was left empty.</value>
+    <comment>Sentence under the heading of a small notice shown at the text cursor after a snippet went in. </comment>
+  </data>
+  <data name="Notice_HistoryOff_Several" xml:space="preserve">
+    <value>Clipboard history is off, so those spots were left empty.</value>
+    <comment>Sentence under the heading of a small notice shown at the text cursor after a snippet went in. </comment>
+  </data>
+  <data name="Notice_NoCopies_One" xml:space="preserve">
+    <value>Your clipboard history has no text copies, so that spot was left empty.</value>
+    <comment>Sentence under the heading of a small notice shown at the text cursor after a snippet went in. </comment>
+  </data>
+  <data name="Notice_NoCopies_Several" xml:space="preserve">
+    <value>Your clipboard history has no text copies, so those spots were left empty.</value>
+    <comment>Sentence under the heading of a small notice shown at the text cursor after a snippet went in. </comment>
+  </data>
+  <data name="Notice_HistoryUnreadable_One" xml:space="preserve">
+    <value>Text Expander couldn&apos;t read your clipboard history in time, so that spot was left empty.</value>
+    <comment>Sentence under the heading of a small notice shown at the text cursor after a snippet went in. </comment>
+  </data>
+  <data name="Notice_HistoryUnreadable_Several" xml:space="preserve">
+    <value>Text Expander couldn&apos;t read your clipboard history in time, so those spots were left empty.</value>
+    <comment>Sentence under the heading of a small notice shown at the text cursor after a snippet went in. </comment>
+  </data>
+  <data name="Notice_NoEmail_One" xml:space="preserve">
+    <value>There&apos;s no email address in what you copied, so that spot was left empty.</value>
+    <comment>Sentence under the heading of a small notice shown at the text cursor after a snippet went in. </comment>
+  </data>
+  <data name="Notice_NoEmail_Several" xml:space="preserve">
+    <value>There&apos;s no email address in what you copied, so those spots were left empty.</value>
+    <comment>Sentence under the heading of a small notice shown at the text cursor after a snippet went in. </comment>
+  </data>
+  <data name="Notice_NoLink_One" xml:space="preserve">
+    <value>There&apos;s no link in what you copied, so that spot was left empty.</value>
+    <comment>Sentence under the heading of a small notice shown at the text cursor after a snippet went in. </comment>
+  </data>
+  <data name="Notice_NoLink_Several" xml:space="preserve">
+    <value>There&apos;s no link in what you copied, so those spots were left empty.</value>
+    <comment>Sentence under the heading of a small notice shown at the text cursor after a snippet went in. </comment>
+  </data>
+  <data name="Notice_NoPhone_One" xml:space="preserve">
+    <value>There&apos;s no phone number in what you copied, so that spot was left empty.</value>
+    <comment>Sentence under the heading of a small notice shown at the text cursor after a snippet went in. </comment>
+  </data>
+  <data name="Notice_NoPhone_Several" xml:space="preserve">
+    <value>There&apos;s no phone number in what you copied, so those spots were left empty.</value>
+    <comment>Sentence under the heading of a small notice shown at the text cursor after a snippet went in. </comment>
+  </data>
+  <data name="Notice_NoNumber_One" xml:space="preserve">
+    <value>There&apos;s no number in what you copied, so that spot was left empty.</value>
+    <comment>Sentence under the heading of a small notice shown at the text cursor after a snippet went in. </comment>
+  </data>
+  <data name="Notice_NoNumber_Several" xml:space="preserve">
+    <value>There&apos;s no number in what you copied, so those spots were left empty.</value>
+    <comment>Sentence under the heading of a small notice shown at the text cursor after a snippet went in. </comment>
+  </data>
+  <data name="Notice_NoText_One" xml:space="preserve">
+    <value>There&apos;s no text on your clipboard, so that spot was left empty.</value>
+    <comment>Sentence under the heading of a small notice shown at the text cursor after a snippet went in. </comment>
+  </data>
+  <data name="Notice_NoText_Several" xml:space="preserve">
+    <value>There&apos;s no text on your clipboard, so those spots were left empty.</value>
+    <comment>Sentence under the heading of a small notice shown at the text cursor after a snippet went in. </comment>
+  </data>
   <data name="Message_Title" xml:space="preserve">
     <value>PowerToys Text Expander</value>
     <comment>Title of Text Expander's message boxes. {Locked="PowerToys"}</comment>

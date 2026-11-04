@@ -861,6 +861,62 @@ public sealed class InputAndUndoPolicyTests
     }
 
     [TestMethod]
+    public void AnEmptySpotIsToldOnlyOnceTheSnippetIsAllIn()
+    {
+        // No email address and no phone number in the copy: both spots stay empty, the rest goes in, and then one notice
+        // says why, after the insertion and its guard are done.
+        List<string> calls = ExpandWithChoices(
+            "!mail=Mail {{clipboard:email}}, call {{clipboard:phone}}, track {{clipboard:link}}",
+            "!mail ",
+            "Order 1042 shipped: https://example.com/track/1042",
+            ask: (_, _, _) => throw new AssertFailedException("Nothing is asked."),
+            choose: (_, _, _) => throw new AssertFailedException("Nothing is chosen."),
+            out bool expanded);
+
+        Assert.IsTrue(expanded);
+        Assert.AreEqual(
+            "5 \"Mail , call , track https://example.com/track/1042 \" undo:False back:1 | notice Email:NotFound,Phone:NotFound",
+            string.Join(" | ", calls));
+
+        // From clipboard history, which is off.
+        calls = ExpandWithChoices("!mail=Mail {{clipboard:pick:email}}", "!mail ", "you@example.com", (_, _, _) => null, (_, _, _) => null, out expanded, () => ClipboardHistory.TurnedOff);
+        Assert.IsTrue(expanded);
+        Assert.AreEqual("notice Email:HistoryOff", calls[^1]);
+    }
+
+    [TestMethod]
+    public void NothingIsToldWhenTheSnippetDidNotGoInOrNothingWasLeftEmpty()
+    {
+        List<string> calls = ExpandWithChoices("!mail=Mail {{clipboard:email}}", "!mail ", "Order 1042", (_, _, _) => null, (_, _, _) => null, out bool expanded, inserts: false);
+        Assert.IsFalse(expanded);
+        Assert.AreEqual(1, calls.Count, "The insertion didn't go through, so there's no snippet to tell about.");
+
+        calls = ExpandWithChoices("!mail=Mail {{clipboard:email}} {{clipboard:link}}", "!mail ", "https://example.com/a https://example.com/b", (_, _, _) => null, (_, _, _) => null, out expanded);
+        Assert.IsFalse(expanded, "Cancelled at the choice.");
+        Assert.AreEqual("0 \" \" undo:False back:1", calls.Single(), "Only the keystroke the hook swallowed goes back.");
+
+        calls = ExpandWithChoices("!mail=Mail {{clipboard:email}}", "!mail ", "Write to you@example.com", (_, _, _) => null, (_, _, _) => null, out expanded);
+        Assert.IsTrue(expanded);
+        Assert.AreEqual("5 \"Mail you@example.com \" undo:False back:1", calls.Single());
+    }
+
+    [TestMethod]
+    public void TheUsersKeysAndClicksFadeANoticeButTheEnginesOwnInputDoesNot()
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=Expanded");
+        int input = 0;
+        using var hook = new KeyboardHook(store) { UserInput = () => input++ };
+
+        Assert.IsFalse(hook.OnKeyEvent(FakeTextBox.UserKey('a', up: false), Native.WM_KEYDOWN));
+        Assert.AreEqual(1, input);
+        Assert.IsFalse(hook.OnKeyEvent(FakeTextBox.UserKey('a', up: true), 0x0101), "WM_KEYUP");
+        Assert.AreEqual(1, input, "A key coming up isn't another key.");
+        Assert.IsFalse(hook.OnKeyEvent(FakeTextBox.UserVk(Native.VK_SHIFT, up: false) with { DwExtraInfo = KeyboardHook.InjectionSignature }, Native.WM_KEYDOWN));
+        Assert.AreEqual(1, input, "The engine's own keys, and the user's going back after an insertion, would take a notice down as it shows.");
+    }
+
+    [TestMethod]
     [DataRow("https://example.com/a https://example.com/b", "question:False choice:True")]
     [DataRow("https://example.com/a", "question:False")]
     public void AfterAQuestionOnlyTheLastWindowHoldsKeys(string copied, string windows)
@@ -892,7 +948,7 @@ public sealed class InputAndUndoPolicyTests
     /// <summary>
     /// Types <paramref name="typed"/> to fire <paramref name="snippet"/>, waiting for a space, and expands it with
     /// <paramref name="copied"/> on the clipboard. Returns each insertion: what it erased and typed, whether it's kept for
-    /// undo, and how many keystrokes it gave back.
+    /// undo, and how many keystrokes it gave back, then any notice of spots left empty, which comes after.
     /// </summary>
     private static List<string> ExpandWithChoices(
         string snippet,
@@ -900,7 +956,9 @@ public sealed class InputAndUndoPolicyTests
         string copied,
         Func<PromptRequest, IntPtr, Action?, string?> ask,
         Func<ClipboardChoice, IntPtr, Action?, string?> choose,
-        out bool expanded)
+        out bool expanded,
+        Func<ClipboardHistory>? history = null,
+        bool inserts = true)
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
         using SnippetStore store = LoadStore(scratch, snippet);
@@ -920,12 +978,14 @@ public sealed class InputAndUndoPolicyTests
                 (backspaces, text, _, _, _, _, _, inserted, givenBack) =>
                 {
                     calls.Add($"{backspaces} \"{text}\" undo:{inserted is not null} back:{givenBack}");
-                    return true;
+                    return inserts;
                 },
                 isKeyDown: _ => false,
                 ask: ask,
                 choose: choose,
-                readClipboard: () => copied);
+                readClipboard: () => copied,
+                readHistory: history ?? (() => ClipboardHistory.TurnedOff),
+                notify: (_, gaps) => calls.Add("notice " + string.Join(",", gaps.Select(gap => $"{gap.Part}:{gap.Reason}"))));
         }
         finally
         {

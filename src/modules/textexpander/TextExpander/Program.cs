@@ -398,10 +398,11 @@ internal static class Program
 
     /// <summary>
     /// Expands or undoes <paramref name="work"/>. Tests pass a fake <paramref name="replace"/>, <paramref name="isKeyDown"/>,
-    /// <paramref name="ask"/>, <paramref name="choose"/>, <paramref name="readClipboard"/> and <paramref name="readHistory"/>,
-    /// so nothing is typed, read from the keyboard, the clipboard or clipboard history, asked or chosen.
+    /// <paramref name="ask"/>, <paramref name="choose"/>, <paramref name="readClipboard"/>, <paramref name="readHistory"/> and
+    /// <paramref name="notify"/>, so nothing is typed, read from the keyboard, the clipboard or clipboard history, asked,
+    /// chosen or shown.
     /// </summary>
-    internal static bool TryExpand(KeyboardHook hook, PendingExpansion work, ReplaceText? replace = null, Func<int, bool>? isKeyDown = null, Func<PromptRequest, IntPtr, Action?, string?>? ask = null, Func<ClipboardChoice, IntPtr, Action?, string?>? choose = null, Func<string?>? readClipboard = null, Func<ClipboardHistory>? readHistory = null)
+    internal static bool TryExpand(KeyboardHook hook, PendingExpansion work, ReplaceText? replace = null, Func<int, bool>? isKeyDown = null, Func<PromptRequest, IntPtr, Action?, string?>? ask = null, Func<ClipboardChoice, IntPtr, Action?, string?>? choose = null, Func<string?>? readClipboard = null, Func<ClipboardHistory>? readHistory = null, Action<IntPtr, IReadOnlyList<ClipboardGap>>? notify = null)
     {
         replace ??= Injector.Replace;
         readClipboard ??= Clipboard.GetText;
@@ -482,7 +483,16 @@ internal static class Program
         Action? record = Variables.UsesSensitiveRuntimeInput(work.Replacement)
             ? null
             : () => hook.RecordExpansion(work.TypedText ?? work.Trigger, text, work.TargetWindow, work.InputGeneration, cursorLeft);
-        return replace(Injector.CountDeletableUnits(work.TypedPrefix), text, work.TargetWindow, cursorLeft, cursorRightUnits: 0, hook.Guard, work.InputGeneration, record, givenBack: work.Terminator is null ? 0 : 1);
+        bool inserted = replace(Injector.CountDeletableUnits(work.TypedPrefix), text, work.TargetWindow, cursorLeft, cursorRightUnits: 0, hook.Guard, work.InputGeneration, record, givenBack: work.Terminator is null ? 0 : 1);
+
+        // A spot a clipboard variable left empty is told once it's all in and the keys held meanwhile went back, so the
+        // notice never comes between the snippet and them.
+        if (inserted && expanded.Value.Gaps.Count > 0)
+        {
+            (notify ?? ClipboardNotice.Show)(work.TargetWindow, expanded.Value.Gaps);
+        }
+
+        return inserted;
     }
 
     /// <summary>

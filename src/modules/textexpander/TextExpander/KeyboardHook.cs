@@ -95,6 +95,13 @@ internal sealed class KeyboardHook : IDisposable
     internal InsertionGuard Guard { get; }
 
     /// <summary>
+    /// Gets what runs for each key press and click of the user's that isn't held for an insertion: a notice showing at the
+    /// caret starts to fade. Not for the engine's own input, nor keys going back after an insertion, which would take a
+    /// notice down as it shows. Cheap and non-blocking, as everything in the callbacks must be. Tests pass their own.
+    /// </summary>
+    internal Action UserInput { get; init; } = NoticeBubble.OnUserInput;
+
+    /// <summary>
     /// Gets or sets a value indicating whether when false, keystrokes are still observed but never expanded. Turning this off is how a
     /// user pauses the app, so it is also treated as a privacy boundary: whatever they had typed
     /// up to that point is erased rather than left sitting in memory.
@@ -222,6 +229,7 @@ internal sealed class KeyboardHook : IDisposable
             return false;
         }
 
+        UserInput();
         if (Suspended)
         {
             KeyWhileSuspended(data.VkCode, ReachesPromptTarget(Native.GetForegroundWindow()));
@@ -261,6 +269,7 @@ internal sealed class KeyboardHook : IDisposable
                 case Native.WM_MBUTTONDOWN:
                 case Native.WM_NCLBUTTONDOWN:
                 case Native.WM_XBUTTONDOWN:
+                    UserInput();
                     if (!Suspended)
                     {
                         Click();
