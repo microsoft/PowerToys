@@ -566,9 +566,15 @@ internal static class Injector
             return PasteOutcome.RefusedBeforeErase; // clipboard untouched; nothing to put back
         }
 
-        // Taken right after our own write: any later change is someone else's, and restoring over it
-        // would destroy what the user copied during the settle.
-        var loan = new ClipboardLoan(Clipboard.SequenceNumber);
+        // Taken right after our own write, and only while the clipboard is still ours: a copy someone made in between
+        // would pass for ours, and the restore would put the user's old copy over it. That copy stays, as one made during
+        // the settle would, and the snippet is typed.
+        if (ClipboardLoan.TakeAfterWrite(() => Clipboard.SequenceNumber, () => Clipboard.IsOurs) is not { } loan)
+        {
+            InjectionDiagnostics.RecordClipboardRestoreSkipped();
+            return PasteOutcome.RefusedBeforeErase;
+        }
+
         bool handBack = true;
         try
         {

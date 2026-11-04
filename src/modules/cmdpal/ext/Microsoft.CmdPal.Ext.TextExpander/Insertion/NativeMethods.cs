@@ -130,6 +130,9 @@ internal static partial class NativeMethods
     [LibraryImport("user32.dll")]
     internal static partial nint GetOpenClipboardWindow();
 
+    [LibraryImport("user32.dll")]
+    internal static partial nint GetClipboardOwner();
+
     [LibraryImport("user32.dll", EntryPoint = "CreateWindowExW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
     internal static partial nint CreateWindowEx(uint exStyle, string className, string? windowName, uint style, int x, int y, int width, int height, nint parent, nint menu, nint instance, nint param);
 

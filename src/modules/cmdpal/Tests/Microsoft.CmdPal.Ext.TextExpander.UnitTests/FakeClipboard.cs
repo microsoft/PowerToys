@@ -33,6 +33,9 @@ internal sealed class FakeClipboard : IClipboardAccess
 
     public uint SequenceNumber { get; private set; } = 1;
 
+    /// <summary>Gets a value indicating whether the extension's write is the last one, as the clipboard's owner says.</summary>
+    public bool IsOurs { get; private set; }
+
     public uint OpenedBy { get; set; }
 
     public int Saves { get; private set; }
@@ -70,6 +73,7 @@ internal sealed class FakeClipboard : IClipboardAccess
         }
 
         SequenceNumber++;
+        IsOurs = true;
         Text = NextWrite == ClipboardWrite.Written ? text : null;
         AfterWrite?.Invoke();
         return NextWrite;
@@ -95,6 +99,7 @@ internal sealed class FakeClipboard : IClipboardAccess
         }
 
         SequenceNumber++;
+        IsOurs = true;
         if (FailingRestores > 0)
         {
             FailingRestores--;
@@ -112,6 +117,7 @@ internal sealed class FakeClipboard : IClipboardAccess
     public void UserCopies(string text)
     {
         SequenceNumber++;
+        IsOurs = false;
         Text = text;
     }
 }

@@ -512,6 +512,10 @@ internal static class Native
     [DllImport("user32.dll")]
     public static extern IntPtr GetOpenClipboardWindow();
 
+    /// <summary>The window that owns the clipboard: the one that last emptied it to write to it.</summary>
+    [DllImport("user32.dll")]
+    public static extern IntPtr GetClipboardOwner();
+
     // ── Process integrity (UIPI) ─────────────────────────────
     // SendInput can't report UIPI blocking, so whether the target is reachable is asked before sending.
     public const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;

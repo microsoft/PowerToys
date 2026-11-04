@@ -41,6 +41,30 @@ public sealed class ClipboardPolicyTests
     }
 
     [TestMethod]
+    public void TheLoanIsTakenOnlyWhileTheClipboardIsStillOurs()
+    {
+        // Another app emptied the clipboard to copy between our write and the reading of its number, so the number was
+        // theirs: taken for ours, it let the restore put the user's old copy over their new one.
+        var asked = new List<string>();
+        var loan = ClipboardLoan.TakeAfterWrite(
+            () =>
+            {
+                asked.Add("number");
+                return 42;
+            },
+            () =>
+            {
+                asked.Add("owner");
+                return true;
+            });
+        Assert.IsNotNull(loan);
+        Assert.IsTrue(loan.MayRestore(42));
+        Assert.AreEqual("number owner", string.Join(" ", asked), "The owner is asked after the number, so a copy made before it is caught.");
+
+        Assert.IsNull(ClipboardLoan.TakeAfterWrite(() => 43, () => false), "No loan once someone else owns the clipboard.");
+    }
+
+    [TestMethod]
     public void ACopyMadeWhileTheRestoreWaitsToOpenTheClipboardIsKept()
     {
         // The restore checked the clipboard was still ours, then waited to open it while another app held it, often to

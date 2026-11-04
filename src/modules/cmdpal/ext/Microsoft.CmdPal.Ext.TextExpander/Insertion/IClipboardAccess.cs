@@ -25,6 +25,12 @@ internal interface IClipboardAccess
     /// <summary>Gets the clipboard's change counter: a change across a paste means someone else copied.</summary>
     uint SequenceNumber { get; }
 
+    /// <summary>
+    /// Gets a value indicating whether this extension's window still owns the clipboard, as it does after its own write:
+    /// only someone emptying the clipboard to write to it changes its owner.
+    /// </summary>
+    bool IsOurs { get; }
+
     /// <summary>Reads the clipboard's text, or null when it holds none.</summary>
     string? ReadText();
 

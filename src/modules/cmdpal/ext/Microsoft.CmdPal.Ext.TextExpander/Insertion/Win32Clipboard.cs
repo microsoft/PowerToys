@@ -30,6 +30,8 @@ internal sealed class Win32Clipboard : IClipboardAccess
 
     public uint SequenceNumber => NativeMethods.GetClipboardSequenceNumber();
 
+    public bool IsOurs => ClipboardOwnerWindow.Handle != 0 && NativeMethods.GetClipboardOwner() == ClipboardOwnerWindow.Handle;
+
     public string? ReadText()
     {
         if (!NativeMethods.IsClipboardFormatAvailable(ClipboardFormats.CF_UNICODETEXT) || !TryOpen(out _))

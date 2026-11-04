@@ -110,9 +110,13 @@ internal sealed class SnippetInserter
             return (null, false);
         }
 
-        // Taken right after the write: any later change is someone else's copy, which putting the clipboard back
-        // would destroy.
-        var loan = new ClipboardLoan(_clipboard.SequenceNumber);
+        // Taken right after the write, and only while the clipboard is still ours: a copy someone made in between would
+        // pass for ours, and putting the user's clipboard back would destroy it. That copy stays, and the snippet is typed.
+        if (ClipboardLoan.TakeAfterWrite(() => _clipboard.SequenceNumber, () => _clipboard.IsOurs) is not { } loan)
+        {
+            return (null, false);
+        }
+
         var handBack = true;
         var handedBack = ClipboardRestore.Untouched;
         InsertOutcome? outcome = null;

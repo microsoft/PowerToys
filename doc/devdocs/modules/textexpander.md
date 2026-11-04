@@ -162,9 +162,12 @@ keys out of an insertion.
 - The restore comes at least 150 ms after the V, once the target reads. Otherwise it comes at 350 ms,
   if the target answers `WM_NULL` within 50 ms. A busy target gets up to 5 s. Then the snippet stays,
   and the user is told once per run.
-- The restore needs the clipboard sequence number from just after our write, so a newer copy wins. It
-  checks before opening the clipboard, and again once it's open, before emptying it: the open may have
-  waited for an app that was copying. A refusal counts as skipped, not lost.
+- The restore needs the clipboard sequence number from just after our write, so a newer copy wins. The
+  number is read after the clipboard is closed, since closing adds the formats Windows makes from the
+  text. It counts only if our window still owns the clipboard after that (`ClipboardLoan.TakeAfterWrite`),
+  so a copy made in between isn't taken for ours. The restore checks before opening the clipboard, and
+  again once it's open, before emptying it: the open may have waited for an app that was copying. A
+  refusal counts as skipped, not lost.
 - It tries 3 times, 40 ms apart, in Core's `ClipboardHandBack`, which Command Palette shares. Only an
   attempt that emptied the clipboard takes the new sequence number. One that couldn't open it changed
   nothing, so it adopts nothing.

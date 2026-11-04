@@ -198,6 +198,12 @@ internal static class Clipboard
     public static uint SequenceNumber => Native.GetClipboardSequenceNumber();
 
     /// <summary>
+    /// Gets a value indicating whether our window still owns the clipboard, as it does after our own write: only someone
+    /// emptying the clipboard to write to it changes its owner. Readable without opening the clipboard.
+    /// </summary>
+    public static bool IsOurs => OwnerWindow != IntPtr.Zero && Native.GetClipboardOwner() == OwnerWindow;
+
+    /// <summary>
     /// True while <paramref name="targetWindow"/>'s own process holds the clipboard open, as it does while
     /// reading a paste. Only the target's process counts: clipboard listeners also open the clipboard after
     /// our write, and mistaking one for the target would restore before the paste landed.

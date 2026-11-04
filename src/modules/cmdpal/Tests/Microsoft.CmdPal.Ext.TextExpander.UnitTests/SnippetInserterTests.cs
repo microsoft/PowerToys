@@ -57,6 +57,20 @@ public sealed class SnippetInserterTests
     }
 
     [TestMethod]
+    public void Insert_SomeoneCopiesRightAfterThePastesWrite_KeepsTheirCopyAndTypesTheSnippet()
+    {
+        // Their copy came between the write and the reading of the clipboard's number, so the number was theirs: the
+        // restore took the clipboard for the extension's and put the user's old copy over it.
+        _clipboard.AfterWrite = () => _clipboard.UserCopies("A newer copy");
+
+        Assert.AreEqual(InsertOutcome.Inserted, Inserter.Insert(Signature, alwaysType: false));
+        Assert.AreEqual(0, _clipboard.Restores, "Nothing is put back over their copy.");
+        Assert.AreEqual("A newer copy", _clipboard.Text);
+        Assert.IsFalse(_desktop.Pasted);
+        Assert.AreEqual(Signature, _desktop.Typed());
+    }
+
+    [TestMethod]
     public void Insert_ClipboardThatCannotBePutBack_IsLeftAloneAndTheSnippetIsTyped()
     {
         _clipboard.CanBeSaved = false;
