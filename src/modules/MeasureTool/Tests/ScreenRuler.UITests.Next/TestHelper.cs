@@ -10,8 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace ScreenRuler.UITests.Next;
 
 /// <summary>
-/// Shared helpers for the Screen Ruler <c>.Next</c> UI tests. Ported from the legacy
-/// <c>ScreenRuler.UITests/TestHelper.cs</c> (WinAppDriver) to the winappcli harness.
+/// Shared helpers for the Screen Ruler <c>.Next</c> UI tests, driven through winappcli.
 /// </summary>
 /// <remarks>
 /// Key differences from the legacy helper:

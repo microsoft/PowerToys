@@ -16,7 +16,7 @@ $referencedFileVersionsPerDll = @{}
 $totalFailures = 0
 
 Get-ChildItem $targetDir -Recurse -Filter *.deps.json -Exclude *UITest*,MouseJump.Common.UnitTests*,EnvironmentVariablesUILib.UnitTests*,*.FuzzTests* | ForEach-Object {
-    # Temporarily exclude All UI-Test, Fuzzer-Test projects because of Appium.WebDriver dependencies.
+    # UI-test and fuzz-test projects keep their runtime dependencies in isolated test outputs.
     # MouseJump.Common.UnitTests and EnvironmentVariablesUILib.UnitTests are self-contained WinUI (CsWinRT) unit tests:
     # each bundles its full runtime closure into an isolated tests\<name> output folder, so its private dll copies
     # cannot collide with product binaries at runtime and are safe to skip in this cross-dependency version check.

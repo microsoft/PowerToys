@@ -33,7 +33,6 @@ function Get-UITestSigningSelection {
 
 Describe 'UI test signing selection' {
     $authenticatedModules = @(
-        'AdvancedPaste-UITests',
         'AdvancedPaste.UITests.Next',
         'AltWindowCycle.UITests',
         'Awake.UITests',
@@ -41,18 +40,15 @@ Describe 'UI test signing selection' {
         'CropAndLock.UITests',
         'FileLocksmith.UITests',
         'GrabAndMove.UITests',
-        'HostsEditor.UITests',
         'Hosts.UITests.Next',
         'ImageResizer.UITests',
         'LightSwitch.UITests.Next',
         'MouseWithoutBorders.UITests',
-        'MouseUtils.UITests',
         'MouseUtils.UITests.Next',
         'NewPlus.UITests',
         'NewPlus.UITests.Next',
         'PowerAccent.UITests',
         'PowerDisplay.UITests',
-        'PowerRename.UITests',
         'PowerRename.UITests.Next',
         'RegistryPreview.UITests',
         'ScreenRuler.UITests.Next',
@@ -73,6 +69,10 @@ Describe 'UI test signing selection' {
     }
 
     It 'does not require IPC companions for unrelated project <Module>' -TestCases @(
+        'AdvancedPaste-UITests',
+        'HostsEditor.UITests',
+        'MouseUtils.UITests',
+        'PowerRename.UITests',
         'OtherNewPlus.UITests',
         'NewPlus.UITests.Extra',
         'OtherPowerRename.UITests',

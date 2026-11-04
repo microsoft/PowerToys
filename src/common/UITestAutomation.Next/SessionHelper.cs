@@ -28,9 +28,8 @@ public sealed class SessionHelper
 {
     // Generous window-appearance budget. On a cold/busy CI agent the runner spends tens of seconds
     // enabling every module and the Settings WinUI process cold-starts before its window appears.
-    // When the whole test job runs elevated (required so the legacy WinAppDriver harness can bind
-    // :4723) the runner's startup is slower still — ~100s to the first Settings window observed on a
-    // slow platform — so the budget is 150s. We wait patiently (and only re-issue the launch when
+    // On slow CI platforms the first Settings window has taken about 100s to appear,
+    // so the budget is 150s. We wait patiently (and only re-issue the launch when
     // nothing is alive) rather than kill-and-relaunch on a short deadline, which only resets a
     // slow-but-healthy startup and never converges.
     private static readonly TimeSpan LaunchTimeout = TimeSpan.FromSeconds(150);

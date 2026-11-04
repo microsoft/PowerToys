@@ -1,9 +1,9 @@
 # UI tests framework
 
-PowerToys provides UI-test frameworks for modules and Settings. New tests should use
+PowerToys provides a UI-test framework for modules and Settings. Tests use
 `Microsoft.PowerToys.UITest.Next`, which drives Windows UI Automation through `winappcli` and runs as
-a Microsoft.Testing.Platform executable. The legacy `Microsoft.PowerToys.UITest` framework uses
-WinAppDriver/Selenium and remains documented for existing suites and migration baselines.
+a Microsoft.Testing.Platform executable. The legacy WinAppDriver/Selenium framework and its test
+projects have been removed.
 
 ## Agent-assisted workflows
 
@@ -43,12 +43,6 @@ The `.Next` value-setting wrappers pass target options before `--`, followed by 
 selector and value. Keep this boundary when adding wrappers: application arguments such as
 `--payload "text"` and negative numeric values must not be parsed as winapp options.
 
-### Legacy tests
-
-- Install Windows Application Driver v1.2.1 from https://github.com/microsoft/WinAppDriver/releases/tag/v1.2.1 to the default directory (`C:\Program Files (x86)\Windows Application Driver`)
-
-- Enable Developer Mode in Windows settings
-
 ## Running tests
 
 ### `.Next` tests
@@ -74,14 +68,6 @@ $exe = 'x64\Debug\tests\<Module>.UITests.Next\net10.0-windows10.0.26100.0\<Modul
 Use explicit filter properties such as `Name=`, `Name~`, `FullyQualifiedName~`, or `TestCategory=`.
 A bare display name can select zero tests. The `7m` timeout above is a focused-filter example; choose
 a larger value for a module or project-wide run.
-
-### Legacy tests
-
-- Exit PowerToys if it's running.
-
-- Open `PowerToys.slnx` in Visual Studio and build the solution.
-
-- Run tests in the Test Explorer (`Test > Test Explorer` or `Ctrl+E, T`).
 
 ### Optional virtual HID input
 
@@ -301,9 +287,9 @@ explicit tool/runtime paths and are excluded from this fast gate.
   **Usage**: Enter the build ID number (e.g., `12345`) to download that specific build. Only used when `buildSource` is set to `specificBuildId`.
 
 - **uiTestModules**: Specify which UI test modules to build and run. This parameter controls both the `.csproj` projects to build and the `.dll` test assemblies to execute. Examples:
-  - `['UITests-FancyZones']` - Only FancyZones UI tests
-  - `['MouseUtils.UITests']` - Only MouseUtils UI tests
-  - `['UITests-FancyZones', 'MouseUtils.UITests']` - Multiple specific modules
+  - `['FancyZones.UITests.Next']` - Only FancyZones UI tests
+  - `['MouseUtils.UITests.Next']` - Only MouseUtils UI tests
+  - `['FancyZones.UITests.Next', 'MouseUtils.UITests.Next']` - Multiple specific modules
   - Leave empty to build and run all UI test modules
 
   **Important**: The `uiTestModules` parameter values must match both the test project names (for `.csproj` selection during build) and the test assembly names (for `.dll` execution during testing).
@@ -353,82 +339,10 @@ Use the [UI-tests migration skill](../../../.github/skills/ui-tests-migration/SK
 `.Next` projects and ports. It contains the current executable project scaffold, API mapping, naming,
 CI-stability checklist, and validated examples.
 
-The project sample below describes the **legacy WinAppDriver framework** and is retained for existing
-legacy suites. Do not use it as the starting point for a new `.Next` project.
-
-- Follow the naming convention: ![{ModuleFolder}/Tests/{ModuleName}-{TestType(Fuzz/UI/Unit)}Tests](images/uitests/naming.png)
-- Create a new project and add the following references to the project file. Change the OutputPath to your own module's path.
-  ```
-    <Project Sdk="Microsoft.NET.Sdk">
-    <!-- Look at Directory.Build.props in root for common stuff as well -->
-    <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
-
-    <PropertyGroup>
-        <ProjectGuid>{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0}</ProjectGuid>
-        <RootNamespace>PowerToys.Hosts.UITests</RootNamespace>
-        <AssemblyName>PowerToys.Hosts.UITests</AssemblyName>
-        <IsPackable>false</IsPackable>
-        <IsTestProject>true</IsTestProject>
-        <Nullable>enable</Nullable>
-        <OutputType>Library</OutputType>
-
-        <!-- This is a UI test, so don't run as part of MSBuild -->
-        <RunVSTest>false</RunVSTest>
-        </PropertyGroup>
-        <PropertyGroup>
-        <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\Hosts.UITests\</OutputPath>
-        </PropertyGroup>
-
-        <ItemGroup>
-        <PackageReference Include="MSTest" />
-        <ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
-        </ItemGroup>
-    </Project>
-
-  ```
-- Inherit your test class from UITestBase.
-  >Set Scope: The default scope starts from the PowerToys settings UI. If you want to start from your own module, set the constructor as shown below:
-  
-  >Specify Scope:
-  ```
-    [TestClass]
-    public class HostModuleTests : UITestBase
-    {
-        public HostModuleTests()
-            : base(PowerToysModule.Hosts, WindowSize.Small_Vertical)
-        {
-        }
-    }
-  ```
-
-- Then you can start performing the UI operations.
-
-**Example**
-```
-[TestMethod("Hosts.Basic.EmptyViewShouldWork")]
-[TestCategory("Hosts File Editor #4")]
-public void TestEmptyView()
-{
-    this.CloseWarningDialog();
-    this.RemoveAllEntries();
-
-    // 'Add an entry' button (only show-up when list is empty) should be visible
-    Assert.IsTrue(this.HasOne<HyperlinkButton>("Add an entry"), "'Add an entry' button should be visible in the empty view");
-
-    VisualAssert.AreEqual(this.TestContext, this.Find("Entries"), "EmptyView");
-
-    // Click 'Add an entry' from empty-view for adding Host override rule
-    this.Find<HyperlinkButton>("Add an entry").Click();
-
-    this.AddEntry("192.168.0.1", "localhost", false, false);
-
-    // Should have one row now and not more empty view
-    Assert.IsTrue(this.Has<Button>("Delete"), "Should have one row now");
-    Assert.IsFalse(this.Has<HyperlinkButton>("Add an entry"), "'Add an entry' button should be invisible if not empty view");
-
-    VisualAssert.AreEqual(this.TestContext, this.Find("Entries"), "NonEmptyView");
-}
-```
+Reference `src\common\UITestAutomation.Next\UITestAutomation.Next.csproj`, embed a per-monitor-DPI
+manifest, and stage the executable under the repository's `tests` output directory. Follow the
+skill's [project setup guide](../../../.github/skills/ui-tests-migration/references/project-setup.md)
+and [template](../../../.github/skills/ui-tests-migration/templates/Module.UITests.Next.csproj).
 
 ### Visual assertions in UITestAutomation.Next
 
@@ -436,7 +350,6 @@ The `.Next` harness compares complete, equal-sized window captures using local
 structural similarity (SSIM), with a default threshold of **95%**. It does not
 resize images, crop their frames, or mask pixels. The existing embedded baseline
 images are used unchanged, and capture retries remain bounded to 15 seconds.
-The legacy harness shown above retains its original comparison behavior.
 
 The score is the pixel-weighted mean of non-overlapping 8-by-8 blocks, including
 partial blocks at the image edges. Each RGB channel uses local mean, variance
