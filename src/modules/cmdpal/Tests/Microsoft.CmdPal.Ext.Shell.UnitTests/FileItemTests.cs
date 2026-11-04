@@ -60,12 +60,12 @@ public class FileItemTests
     [TestMethod]
     [DataRow("C:hosts")]
     [DataRow("Z:")]
-    public void Icon_IsNullForADriveRelativePath(string path)
+    public void Icon_IsTheRunIconForADriveRelativePath(string path)
     {
         var item = new RunExeItem(path, string.Empty, path, null);
 
         // Resolving one checks that drive's saved directory, which can stall on a mapped drive.
-        Assert.IsNull(item.Icon);
+        Assert.AreSame(Icons.RunGeneric, item.Icon);
     }
 
     [TestMethod]
@@ -79,11 +79,11 @@ public class FileItemTests
     }
 
     [TestMethod]
-    public void Icon_IsNullForAnEmptyPath()
+    public void Icon_IsTheRunIconForAnEmptyPath()
     {
         var item = new RunExeItem(string.Empty, string.Empty, string.Empty, null);
 
-        Assert.IsNull(item.Icon);
+        Assert.AreSame(Icons.RunGeneric, item.Icon);
     }
 
     private static string ShellItemPath(FileItem item)

@@ -699,6 +699,9 @@ public class RunPageTests : CommandPaletteUnitTestBase
         // parsing doesn't check a quoted path, the page's own check finds the folder
         var item = page.GetItems().OfType<RunCommandLineItem>().Single();
         Assert.AreEqual(expectFileIcon, ShellItemIconProtocol.IsProtocol(item.Icon?.Light?.Icon), item.Icon?.Light?.Icon);
+
+        // The rest show the Run icon, not an empty one
+        Assert.AreEqual(!expectFileIcon, ReferenceEquals(Icons.RunGeneric, item.Icon));
     }
 
     [TestMethod]
