@@ -265,9 +265,6 @@ jobs:
           artifactName: $(TestArtifactsName)
 
   - template: steps-ensure-dotnet-version.yml
-    parameters:
-      sdk: true
-      version: '10.0'
 
   - pwsh: |-
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
@@ -359,6 +356,7 @@ jobs:
         'AdvancedPaste-UITests',
         'AdvancedPaste.UITests.Next',
         'AltWindowCycle.UITests',
+        'Awake.UITests',
         'ColorPicker.UITests',
         'CropAndLock.UITests',
         'FileLocksmith.UITests',
@@ -372,6 +370,7 @@ jobs:
         'MouseUtils.UITests',
         'MouseUtils.UITests.Next',
         'PowerAccent.UITests',
+        'PowerDisplay.UITests',
         'PowerRename.UITests',
         'PowerRename.UITests.Next',
         'RegistryPreview.UITests',
