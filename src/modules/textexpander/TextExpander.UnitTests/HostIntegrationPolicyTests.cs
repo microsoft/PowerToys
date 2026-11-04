@@ -73,6 +73,7 @@ public sealed class HostIntegrationPolicyTests
             (0xFFC3D44F, HostInputKind.Typing, HostInputKind.Unmatched), // another app's tag with the same bit
             (0x111, HostInputKind.Ignored, HostInputKind.Ignored), // swallowed by Keyboard Manager itself
             (HostInputTags.CentralizedHookDontTrigger, HostInputKind.Ignored, HostInputKind.Ignored),
+            (InputTags.CommandPalette, HostInputKind.Ignored, HostInputKind.Ignored), // Command Palette's extension, with the bit
             (own.ToInt64(), HostInputKind.Ignored, HostInputKind.Ignored),
             (0, HostInputKind.Typing, HostInputKind.Typing),
         ];

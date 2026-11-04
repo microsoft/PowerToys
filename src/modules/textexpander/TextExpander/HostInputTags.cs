@@ -88,6 +88,13 @@ internal static class HostInputTags
             return HostInputKind.Ignored;
         }
 
+        // Command Palette's Text Expander extension pasting or typing a snippet. It has Keyboard Manager's bit, so that
+        // remaps leave it alone, but it isn't the user typing.
+        if (tag == InputTags.CommandPalette)
+        {
+            return HostInputKind.Ignored;
+        }
+
         // A bit, not a value, as Keyboard Manager tests it.
         if ((tag & KeyboardManagerInjected) != 0 && !AcceptRemappedInput)
         {

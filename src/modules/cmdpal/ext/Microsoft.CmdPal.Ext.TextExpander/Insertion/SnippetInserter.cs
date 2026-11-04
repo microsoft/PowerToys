@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.PowerToys.TextExpander;
 
 namespace Microsoft.CmdPal.Ext.TextExpander.Insertion;
@@ -132,17 +133,17 @@ internal sealed class SnippetInserter
                 else
                 {
                     var sentAt = _clock.ElapsedMilliseconds;
-                    if (_desktop.Send(KeyStrokes.Paste(_desktop.HeldModifiers())))
+                    var sent = _desktop.Send(KeyStrokes.Paste(_desktop.HeldModifiers()));
+                    if (!sent)
                     {
-                        // An app reads the clipboard after it gets the keys. One that's still busy at the cap has the
-                        // Ctrl+V queued, so its clipboard stays on the snippet.
-                        handBack = PasteSettle.WaitForRead(() => IsOpenBy(target), () => _desktop.IsTakingMessages(target), _clock, sentAt);
-                        outcome = InsertOutcome.Inserted;
+                        // Cut off part way, the Ctrl+V may have left Ctrl down: it's let go of, with one more try.
+                        LetGoOf(KeyStrokes.Control);
                     }
-                    else
-                    {
-                        outcome = InsertOutcome.Failed;
-                    }
+
+                    // An app reads the clipboard after it gets the keys, and a Ctrl+V cut off may have sent its V. One
+                    // that's still busy at the cap has the Ctrl+V queued, so its clipboard stays on the snippet.
+                    handBack = PasteSettle.WaitForRead(() => IsOpenBy(target), () => _desktop.IsTakingMessages(target), _clock, sentAt);
+                    outcome = sent ? InsertOutcome.Inserted : InsertOutcome.Failed;
                 }
             }
         }
@@ -180,6 +181,12 @@ internal sealed class SnippetInserter
             var strokes = character.IsKey ? KeyStrokes.AfterReleasing(_desktop.HeldModifiers(), character.Strokes) : character.Strokes;
             if (!_desktop.Send(strokes))
             {
+                // Cut off part way, a typed Enter or Tab may be left down.
+                if (character.IsKey)
+                {
+                    LetGoOf(character.Strokes[^1].VirtualKey);
+                }
+
                 return InsertOutcome.Failed;
             }
 
@@ -187,6 +194,16 @@ internal sealed class SnippetInserter
         }
 
         return InsertOutcome.Inserted;
+    }
+
+    /// <summary>Sends <paramref name="key"/>'s key-up, with one more try, after a batch that may have left it down.</summary>
+    private void LetGoOf(ushort key)
+    {
+        IReadOnlyList<KeyStroke> up = [KeyStroke.KeyUp(key)];
+        if (!_desktop.Send(up))
+        {
+            _ = _desktop.Send(up);
+        }
     }
 
     /// <summary>Waits for a window of another app to be in front: Command Palette hides on its own thread.</summary>

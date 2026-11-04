@@ -23,6 +23,13 @@ internal static class KeyStrokes
     internal const ushort LeftAlt = 0xA4;
     internal const ushort RightAlt = 0xA5;
 
+    /// <summary>
+    /// A key that does nothing, sent before letting go of Alt or the Windows key, as Keyboard Manager does
+    /// (<c>DUMMY_KEY</c>): let go of with nothing pressed in between, Alt opens the window's menu and the Windows key the
+    /// Start menu.
+    /// </summary>
+    internal const ushort Dummy = 0xFF;
+
     /// <summary>Gets the modifier keys checked before a paste or a typed Enter or Tab.</summary>
     internal static IReadOnlyList<ushort> Modifiers { get; } =
         [LeftShift, RightShift, LeftControl, RightControl, LeftAlt, RightAlt, LeftWindows, RightWindows];
@@ -34,12 +41,8 @@ internal static class KeyStrokes
     {
         ArgumentNullException.ThrowIfNull(heldModifiers);
 
-        var strokes = new List<KeyStroke>(heldModifiers.Count + 4);
-        foreach (var modifier in heldModifiers)
-        {
-            strokes.Add(KeyStroke.KeyUp(modifier));
-        }
-
+        var strokes = new List<KeyStroke>(heldModifiers.Count + 6);
+        LetGoOf(heldModifiers, strokes);
         strokes.Add(KeyStroke.KeyDown(Control));
         strokes.Add(KeyStroke.KeyDown(V));
         strokes.Add(KeyStroke.KeyUp(V));
@@ -97,13 +100,28 @@ internal static class KeyStrokes
             return strokes;
         }
 
-        var released = new List<KeyStroke>(heldModifiers.Count + strokes.Count);
-        foreach (var modifier in heldModifiers)
-        {
-            released.Add(KeyStroke.KeyUp(modifier));
-        }
-
+        var released = new List<KeyStroke>(heldModifiers.Count + strokes.Count + 2);
+        LetGoOf(heldModifiers, released);
         released.AddRange(strokes);
         return released;
+    }
+
+    /// <summary>Adds the key-ups that let go of <paramref name="heldModifiers"/>, after the dummy key if Alt or Windows is one.</summary>
+    private static void LetGoOf(IReadOnlyList<ushort> heldModifiers, List<KeyStroke> strokes)
+    {
+        foreach (var modifier in heldModifiers)
+        {
+            if (modifier is LeftAlt or RightAlt or LeftWindows or RightWindows)
+            {
+                strokes.Add(KeyStroke.KeyDown(Dummy));
+                strokes.Add(KeyStroke.KeyUp(Dummy));
+                break;
+            }
+        }
+
+        foreach (var modifier in heldModifiers)
+        {
+            strokes.Add(KeyStroke.KeyUp(modifier));
+        }
     }
 }

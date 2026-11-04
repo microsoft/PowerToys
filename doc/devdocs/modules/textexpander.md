@@ -46,8 +46,9 @@ erases each trigger and pastes or types the snippet. A separate editor manages t
 
 - `KeyboardHook` installs `WH_KEYBOARD_LL`, `WH_MOUSE_LL` and a foreground WinEvent hook. Each key
   event goes to `InsertionGuard.Swallows` first, and only key-downs reach matching.
-- `HostInputTags.Classify` ignores the engine's tag, runner replays (`0x110`) and Keyboard Manager's
-  suppressed keys (`0x111`). Other injected input, like the touch keyboard, is typing.
+- `HostInputTags.Classify` ignores the engine's tag, runner replays (`0x110`), Keyboard Manager's
+  suppressed keys (`0x111`) and Command Palette's extension (`InputTags.CommandPalette`). Other
+  injected input, like the touch keyboard, is typing.
 - With `treat_remaps_as_typing` off, keys with Keyboard Manager's bit `0x1` aren't matched. The
   engine's random tag sets that bit, so Keyboard Manager's key remaps skip it.
 - Keys count only in an authorized foreground window, outside standard password boxes. `ToUnicodeEx`
@@ -331,8 +332,9 @@ Command Palette's process; its
 - It pastes with Core's `ClipboardFormats`, `ClipboardPrivacy`, `ClipboardLoan` and `ClipboardEntry`,
   and hands the clipboard back with the engine's loop, Core's `ClipboardHandBack`. It types when the
   clipboard can't be put back exactly or under Always type.
-- Its key events carry the `0x110` tag, which the engine's hook ignores, and it refuses targets above
-  medium integrity, as the engine does.
+- Its key events carry `InputTags.CommandPalette`: Keyboard Manager's bit, so remaps leave its Ctrl+V
+  alone, in a value the engine's hook ignores. It sends a key that does nothing before letting go of a
+  held Alt or Windows key, and refuses targets above medium integrity, as the engine does.
 - Command Palette compiles Core ahead of time, so Core imports `Common.Dotnet.AotCompatibility.props`.
   Keep reflection-based JSON and other code the trimming analyzers flag out of it.
 

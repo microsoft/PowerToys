@@ -4,6 +4,7 @@
 
 using System.Linq;
 using Microsoft.CmdPal.Ext.TextExpander.Insertion;
+using Microsoft.PowerToys.TextExpander;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TextExpander.UnitTests;
@@ -62,6 +63,48 @@ public sealed class PasteAndTypingTests
                 KeyStroke.KeyUp(KeyStrokes.Control),
             },
             KeyStrokes.Paste([KeyStrokes.LeftShift]).ToArray());
+
+    [TestMethod]
+    [DataRow(KeyStrokes.LeftAlt)]
+    [DataRow(KeyStrokes.RightWindows)]
+    public void Paste_AltOrWindowsHeld_GetsAKeyThatDoesNothingBeforeItsLetGoOf(ushort modifier)
+        => CollectionAssert.AreEqual(
+            new[]
+            {
+                KeyStroke.KeyDown(KeyStrokes.Dummy),
+                KeyStroke.KeyUp(KeyStrokes.Dummy),
+                KeyStroke.KeyUp(modifier),
+                KeyStroke.KeyDown(KeyStrokes.Control),
+                KeyStroke.KeyDown(KeyStrokes.V),
+                KeyStroke.KeyUp(KeyStrokes.V),
+                KeyStroke.KeyUp(KeyStrokes.Control),
+            },
+            KeyStrokes.Paste([modifier]).ToArray());
+
+    [TestMethod]
+    public void AfterReleasing_AltHeld_GetsAKeyThatDoesNothingFirst()
+        => CollectionAssert.AreEqual(
+            new[]
+            {
+                KeyStroke.KeyDown(KeyStrokes.Dummy),
+                KeyStroke.KeyUp(KeyStrokes.Dummy),
+                KeyStroke.KeyUp(KeyStrokes.LeftAlt),
+                KeyStroke.KeyDown(KeyStrokes.Tab),
+                KeyStroke.KeyUp(KeyStrokes.Tab),
+            },
+            KeyStrokes.AfterReleasing([KeyStrokes.LeftAlt], [KeyStroke.KeyDown(KeyStrokes.Tab), KeyStroke.KeyUp(KeyStrokes.Tab)]).ToArray());
+
+    [TestMethod]
+    public void InputTag_HasKeyboardManagersBitInAValueOfItsOwn()
+    {
+        // 0x110 lacked Keyboard Manager's bit, so with Caps Lock and Ctrl swapped, the extension's Ctrl+V was remapped.
+        Assert.AreEqual((nuint)1, Win32Desktop.InputTag & 1, "Keyboard Manager leaves keys with its bit alone.");
+        Assert.AreEqual((nuint)InputTags.CommandPalette, Win32Desktop.InputTag, "Text Expander's hook ignores this value.");
+        foreach (nuint taken in new nuint[] { 0x11, 0x101, 0x110, 0x111 })
+        {
+            Assert.AreNotEqual(taken, Win32Desktop.InputTag, "Keyboard Manager's and the runner's own tags mean something else.");
+        }
+    }
 
     [TestMethod]
     public void Typing_LineBreaksAndTabs_AreKeysAndCarriageReturnsAreSkipped()

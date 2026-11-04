@@ -235,4 +235,26 @@ public sealed class SnippetInserterTests
         Assert.AreEqual(0, _clipboard.Saves);
         Assert.AreEqual(0, _desktop.Sent.Count);
     }
+
+    [TestMethod]
+    public void Insert_PasteCutOffPartWay_LetsGoOfCtrlAndWaitsForTheAppBeforePuttingTheClipboardBack()
+    {
+        // SendInput can stop part way through a batch: the Ctrl+V left Ctrl down, so the user's next keys were shortcuts,
+        // and the clipboard went back at once, under a V that may still have been on its way.
+        _desktop.FailingSends = 1;
+
+        Assert.AreEqual(InsertOutcome.Failed, Inserter.Insert(Signature, alwaysType: false));
+        CollectionAssert.AreEqual(new[] { KeyStroke.KeyUp(KeyStrokes.Control) }, _desktop.Sent[1].ToArray(), "Ctrl is let go of.");
+        Assert.IsTrue(_clock.ElapsedMilliseconds >= PasteSettle.SettleMs, "The clipboard waits for the app to read.");
+        Assert.AreEqual(UsersCopy, _clipboard.Text);
+    }
+
+    [TestMethod]
+    public void Insert_TypedLineBreakCutOff_LetsGoOfEnter()
+    {
+        _desktop.FailingSends = 1;
+
+        Assert.AreEqual(InsertOutcome.Failed, Inserter.Insert("\nNext line", alwaysType: true));
+        CollectionAssert.AreEqual(new[] { KeyStroke.KeyUp(KeyStrokes.Return) }, _desktop.Sent[1].ToArray());
+    }
 }

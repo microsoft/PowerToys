@@ -34,6 +34,9 @@ internal sealed class FakeDesktop : IDesktop
 
     public bool SendSucceeds { get; set; } = true;
 
+    /// <summary>Gets or sets how many sends are cut off part way, before they go through again.</summary>
+    public int FailingSends { get; set; }
+
     public List<IReadOnlyList<KeyStroke>> Sent { get; } = new();
 
     public int HideRequests { get; private set; }
@@ -55,6 +58,12 @@ internal sealed class FakeDesktop : IDesktop
     public bool Send(IReadOnlyList<KeyStroke> strokes)
     {
         Sent.Add(strokes);
+        if (FailingSends > 0)
+        {
+            FailingSends--;
+            return false;
+        }
+
         return SendSucceeds;
     }
 

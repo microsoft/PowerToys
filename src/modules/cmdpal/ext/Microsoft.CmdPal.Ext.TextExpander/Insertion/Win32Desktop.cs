@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Messages;
+using Microsoft.PowerToys.TextExpander;
 
 namespace Microsoft.CmdPal.Ext.TextExpander.Insertion;
 
@@ -14,11 +15,11 @@ namespace Microsoft.CmdPal.Ext.TextExpander.Insertion;
 internal sealed class Win32Desktop : IDesktop
 {
     /// <summary>
-    /// The tag on every key event sent from here: PowerToys' keyboard hooks don't treat it as a shortcut
-    /// (<c>CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG</c>), and Text Expander ignores it, so a snippet's typed text
-    /// can't set off one of its triggers.
+    /// The tag on every key event sent from here (<see cref="InputTags.CommandPalette"/>): Keyboard Manager's injected
+    /// bit, so its remaps leave the paste alone, in a value Text Expander's hook ignores, so a snippet's typed text can't
+    /// set off one of its triggers.
     /// </summary>
-    internal const nuint InputTag = 0x110;
+    internal const nuint InputTag = InputTags.CommandPalette;
 
     /// <summary>Windows' medium integrity level (<c>SECURITY_MANDATORY_MEDIUM_RID</c>), the highest a snippet goes to.</summary>
     private const uint MediumIntegrity = 0x2000;
