@@ -717,39 +717,61 @@ internal static class Injector
 
     /// <summary>
     /// Hands the user's clipboard back, retrying while another process holds it. Refuses when someone else wrote to the
-    /// clipboard after our own write: their newer data wins. A loss is reported once the guard is over.
+    /// clipboard after our own write: their newer data wins, and that's a skip, not a loss. A loss is reported once the
+    /// guard is over.
     /// </summary>
     private static void RestoreClipboard(ClipboardSnapshot saved, ClipboardLoan loan)
     {
-        for (int attempt = 0; attempt < RestoreAttempts; attempt++)
+        ClipboardRestore result = HandBack(saved.Restore, loan, () => Clipboard.SequenceNumber, Thread.Sleep);
+        if (result == ClipboardRestore.Superseded)
         {
-            if (!loan.MayRestore(Clipboard.SequenceNumber))
-            {
-                InjectionDiagnostics.RecordClipboardRestoreSkipped();
-                return;
-            }
-
-            if (saved.Restore())
-            {
-                return;
-            }
-
-            // A failed restore may have emptied the clipboard, moving the sequence number; re-arm so the
-            // retry doesn't mistake our own change for a new owner.
-            loan.Rearm(Clipboard.SequenceNumber);
-
-            if (attempt + 1 < RestoreAttempts && RestoreRetryDelayMs > 0)
-            {
-                Thread.Sleep(RestoreRetryDelayMs);
-            }
+            InjectionDiagnostics.RecordClipboardRestoreSkipped();
         }
-
-        // Nothing was lost if the clipboard was empty.
-        if (!saved.IsEmpty)
+        else if (result != ClipboardRestore.Restored && !saved.IsEmpty)
         {
+            // Nothing was lost if the clipboard was empty.
             InjectionDiagnostics.RecordClipboardRestoreFailure();
             _clipboardLost = true;
         }
+    }
+
+    /// <summary>
+    /// The attempts behind <see cref="RestoreClipboard(ClipboardSnapshot, ClipboardLoan)"/>, with the restore, the sequence
+    /// number and the sleep passed in for tests. Whether the clipboard is still ours is asked before each attempt, and by
+    /// <paramref name="restore"/> again once it holds the clipboard open, before emptying it. Returns
+    /// <see cref="ClipboardRestore.Restored"/>, <see cref="ClipboardRestore.Superseded"/>, or the last attempt's failure.
+    /// </summary>
+    internal static ClipboardRestore HandBack(Func<Func<uint, bool>, ClipboardRestore> restore, ClipboardLoan loan, Func<uint> sequence, Action<int> sleep)
+    {
+        ClipboardRestore result = ClipboardRestore.Untouched;
+        for (int attempt = 0; attempt < RestoreAttempts; attempt++)
+        {
+            if (!loan.MayRestore(sequence()))
+            {
+                return ClipboardRestore.Superseded;
+            }
+
+            result = restore(loan.MayRestore);
+            if (result is ClipboardRestore.Restored or ClipboardRestore.Superseded)
+            {
+                return result;
+            }
+
+            // Only an attempt that emptied the clipboard changed it: re-armed then, so the retry doesn't take our own
+            // change for someone else's. One that couldn't open the clipboard changed nothing, so any change since is
+            // someone else's, such as a copy made while it waited, and must not be adopted.
+            if (result == ClipboardRestore.Incomplete)
+            {
+                loan.Rearm(sequence());
+            }
+
+            if (attempt + 1 < RestoreAttempts && RestoreRetryDelayMs > 0)
+            {
+                sleep(RestoreRetryDelayMs);
+            }
+        }
+
+        return result;
     }
 
     /// <summary>

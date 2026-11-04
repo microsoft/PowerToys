@@ -41,6 +41,98 @@ public sealed class ClipboardPolicyTests
     }
 
     [TestMethod]
+    public void ACopyMadeWhileTheRestoreWaitsToOpenTheClipboardIsKept()
+    {
+        // The restore checked the clipboard was still ours, then waited to open it while another app held it, often to
+        // write a new copy, then emptied the clipboard and put the old copy back over the new one. The check is asked
+        // again once the clipboard is open.
+        uint sequence = 41;
+        int emptied = 0;
+        ClipboardRestore CopiedDuringTheOpen(Func<uint, bool> stillOurs)
+        {
+            sequence++;
+            if (!stillOurs(sequence))
+            {
+                return ClipboardRestore.Superseded;
+            }
+
+            emptied++;
+            return ClipboardRestore.Restored;
+        }
+
+        Assert.AreEqual(ClipboardRestore.Superseded, Injector.HandBack(CopiedDuringTheOpen, new ClipboardLoan(41), () => sequence, _ => { }));
+        Assert.AreEqual(0, emptied, "The new copy stays.");
+
+        // Copied before the first attempt: nothing is opened at all.
+        int attempts = 0;
+        ClipboardRestore Counted(Func<uint, bool> stillOurs)
+        {
+            attempts++;
+            return ClipboardRestore.Restored;
+        }
+
+        Assert.AreEqual(ClipboardRestore.Superseded, Injector.HandBack(Counted, new ClipboardLoan(41), () => 42, _ => { }));
+        Assert.AreEqual(0, attempts);
+    }
+
+    [TestMethod]
+    public void AnAttemptThatCouldntOpenTheClipboardDoesntAdoptACopyMadeMeanwhile()
+    {
+        // A failed attempt re-armed the loan with whatever the clipboard held next, so a copy made while the clipboard
+        // couldn't be opened looked like ours, and the retry put the old copy back over it.
+        uint sequence = 41;
+        int calls = 0;
+        ClipboardRestore HeldByAnAppThatCopied(Func<uint, bool> stillOurs)
+        {
+            if (++calls == 1)
+            {
+                sequence++;
+                return ClipboardRestore.Untouched;
+            }
+
+            return stillOurs(sequence) ? ClipboardRestore.Restored : ClipboardRestore.Superseded;
+        }
+
+        Assert.AreEqual(ClipboardRestore.Superseded, Injector.HandBack(HeldByAnAppThatCopied, new ClipboardLoan(41), () => sequence, _ => { }));
+        Assert.AreEqual(1, calls, "Not tried again over the new copy.");
+
+        // Our own change still doesn't look like someone else's: an attempt that emptied the clipboard is retried.
+        sequence = 41;
+        calls = 0;
+        ClipboardRestore PartlyThenWhole(Func<uint, bool> stillOurs)
+        {
+            if (!stillOurs(sequence))
+            {
+                return ClipboardRestore.Superseded;
+            }
+
+            if (++calls == 1)
+            {
+                sequence += 2;
+                return ClipboardRestore.Incomplete;
+            }
+
+            return ClipboardRestore.Restored;
+        }
+
+        var sleeps = new List<int>();
+        Assert.AreEqual(ClipboardRestore.Restored, Injector.HandBack(PartlyThenWhole, new ClipboardLoan(41), () => sequence, sleeps.Add));
+        Assert.AreEqual(2, calls);
+        CollectionAssert.AreEqual(new[] { Injector.RestoreRetryDelayMs }, sleeps);
+
+        // Never able to open it: every attempt, then the failure, which the caller reports as a loss.
+        calls = 0;
+        ClipboardRestore NeverOpens(Func<uint, bool> stillOurs)
+        {
+            calls++;
+            return ClipboardRestore.Untouched;
+        }
+
+        Assert.AreEqual(ClipboardRestore.Untouched, Injector.HandBack(NeverOpens, new ClipboardLoan(41), () => 41, _ => { }));
+        Assert.AreEqual(Injector.RestoreAttempts, calls);
+    }
+
+    [TestMethod]
     public void ClipboardPrivacyPublishesDocumentedExclusionFormats()
     {
         Assert.AreEqual(3, ClipboardPrivacy.FormatNames.Count);

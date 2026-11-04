@@ -14,8 +14,8 @@ internal sealed class ClipboardSnapshot(IReadOnlyList<ClipboardEntry> entries) :
 
     public bool IsEmpty => Entries.Count == 0;
 
-    /// <summary>Puts these contents back on the clipboard.</summary>
-    public bool Restore() => Clipboard.Restore(this);
+    /// <summary>Puts these contents back on the clipboard, unless <paramref name="stillOurs"/> says someone else wrote to it.</summary>
+    public ClipboardRestore Restore(Func<uint, bool>? stillOurs = null) => Clipboard.Restore(this, stillOurs);
 
     public void Dispose()
     {

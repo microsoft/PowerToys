@@ -318,32 +318,39 @@ internal static class Clipboard
     }
 
     /// <summary>
-    /// Puts a snapshot back, emptying the clipboard when the snapshot is empty. Returns false unless fully
-    /// restored. Every format goes back, including exclusion formats, so protected content stays protected;
-    /// content without any is marked with them (see <see cref="ClipboardPrivacy.ShouldMarkRestore"/>).
+    /// Puts a snapshot back, emptying the clipboard when the snapshot is empty. Every format goes back, including
+    /// exclusion formats, so protected content stays protected; content without any is marked with them (see
+    /// <see cref="ClipboardPrivacy.ShouldMarkRestore"/>). <paramref name="stillOurs"/>, given the sequence number, is asked
+    /// once the clipboard is open, before it's emptied: the open may have waited for another app that was copying, and
+    /// while the clipboard is held open nobody else can write to it.
     /// </summary>
-    public static bool Restore(ClipboardSnapshot snapshot)
+    public static ClipboardRestore Restore(ClipboardSnapshot snapshot, Func<uint, bool>? stillOurs = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
 
         ClipboardOpen open = TryOpen();
         if (open == ClipboardOpen.Failed)
         {
-            return false;
+            return ClipboardRestore.Untouched;
         }
 
         try
         {
+            if (stillOurs is not null && !stillOurs(SequenceNumber))
+            {
+                return ClipboardRestore.Superseded;
+            }
+
             // As in SetText: an unowned handle would empty the clipboard and then fail to
             // republish anything, turning a restore into a wipe.
             if (open != ClipboardOpen.Owned)
             {
-                return false;
+                return ClipboardRestore.Untouched;
             }
 
             if (!Native.EmptyClipboard())
             {
-                return false;
+                return ClipboardRestore.Untouched;
             }
 
             if (ClipboardPrivacy.ShouldMarkRestore(snapshot.Entries, RegisteredFormat))
@@ -362,7 +369,7 @@ internal static class Clipboard
                 }
             }
 
-            return allPublished;
+            return allPublished ? ClipboardRestore.Restored : ClipboardRestore.Incomplete;
         }
         finally
         {
