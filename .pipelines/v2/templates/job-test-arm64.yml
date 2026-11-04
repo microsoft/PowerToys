@@ -37,8 +37,8 @@ parameters:
     default: ''
 
 jobs:
-  # A GrabAndMove-only request needs no ordinary ARM64 job when the isolated route is enabled.
-  - ${{ if or(eq(parameters.umdfHidArm64Image, ''), parameters.autoSelectUiTests, not(and(eq(length(parameters.uiTestModules), 1), containsValue(parameters.uiTestModules, 'GrabAndMove.UITests')))) }}:
+  # A fixture-only request needs no ordinary ARM64 job when the isolated route is enabled.
+  - ${{ if or(eq(parameters.umdfHidArm64Image, ''), parameters.autoSelectUiTests, not(or(and(eq(length(parameters.uiTestModules), 1), or(containsValue(parameters.uiTestModules, 'GrabAndMove.UITests'), containsValue(parameters.uiTestModules, 'PowerDisplay.UITests'))), and(eq(length(parameters.uiTestModules), 2), containsValue(parameters.uiTestModules, 'GrabAndMove.UITests'), containsValue(parameters.uiTestModules, 'PowerDisplay.UITests'))))) }}:
     - template: job-test-project.yml
       parameters:
         platform: ${{ parameters.platform }}
@@ -57,22 +57,26 @@ jobs:
         installMode: ${{ parameters.installMode }}
         jobSuffix: ${{ parameters.jobSuffix }}
 
-  - ${{ if and(ne(parameters.umdfHidArm64Image, ''), or(parameters.autoSelectUiTests, eq(length(parameters.uiTestModules), 0), containsValue(parameters.uiTestModules, 'GrabAndMove.UITests'))) }}:
-    - template: job-test-project.yml
-      parameters:
-        platform: ${{ parameters.platform }}
-        configuration: ${{ parameters.configuration }}
-        buildSource: ${{ parameters.buildSource }}
-        specificBuildId: ${{ parameters.specificBuildId }}
-        useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-        # Never pass the caller's all/mixed/PR-resolved selection onto the TESTSIGNING image.
-        uiTestModules: [GrabAndMove.UITests]
-        umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
-        umdfHidArm64Dedicated: true
-        dependsOn: ${{ parameters.dependsOn }}
-        ${{ if eq(parameters.autoSelectUiTests, true) }}:
-          condition: and(${{ coalesce(parameters.condition, 'succeeded()') }}, eq(dependencies.Resolve.outputs['resolve.hasUmdfHidUiTests'], 'true'))
-        ${{ else }}:
-          condition: ${{ parameters.condition }}
-        installMode: ${{ parameters.installMode }}
-        jobSuffix: ${{ parameters.jobSuffix }}_UmdfHid
+  - ${{ each fixture in split('Hid,Display', ',') }}:
+    - ${{ if and(ne(parameters.umdfHidArm64Image, ''), or(parameters.autoSelectUiTests, eq(length(parameters.uiTestModules), 0), and(eq(fixture, 'Hid'), containsValue(parameters.uiTestModules, 'GrabAndMove.UITests')), and(eq(fixture, 'Display'), containsValue(parameters.uiTestModules, 'PowerDisplay.UITests')))) }}:
+      - template: job-test-project.yml
+        parameters:
+          platform: ${{ parameters.platform }}
+          configuration: ${{ parameters.configuration }}
+          buildSource: ${{ parameters.buildSource }}
+          specificBuildId: ${{ parameters.specificBuildId }}
+          useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+          # Never pass the caller's all/mixed/PR-resolved selection onto the TESTSIGNING image.
+          ${{ if eq(fixture, 'Hid') }}:
+            uiTestModules: [GrabAndMove.UITests]
+          ${{ else }}:
+            uiTestModules: [PowerDisplay.UITests]
+          umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
+          umdfHidArm64Dedicated: true
+          dependsOn: ${{ parameters.dependsOn }}
+          ${{ if eq(parameters.autoSelectUiTests, true) }}:
+            condition: and(${{ coalesce(parameters.condition, 'succeeded()') }}, eq(dependencies.Resolve.outputs['resolve.hasUmdf${{ fixture }}UiTests'], 'true'))
+          ${{ else }}:
+            condition: ${{ parameters.condition }}
+          installMode: ${{ parameters.installMode }}
+          jobSuffix: ${{ parameters.jobSuffix }}_Umdf${{ fixture }}

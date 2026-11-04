@@ -93,6 +93,10 @@ public partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedA
     // Fallback items
     public virtual string DisplayTitle => string.Empty;
 
+    internal string FallbackKey => $"{CommandProviderId}\0{Id}";
+
+    internal bool IncludeInGlobalResults => GetFallbackSettings()?.IncludeInGlobalResults == true;
+
     public HotkeySettings? Hotkey
     {
         get => _hotkey;
@@ -376,6 +380,14 @@ public partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedA
     }
 
     internal virtual bool SafeUpdateFallbackTextSynchronous(string newQuery) => false;
+
+    private FallbackSettings? GetFallbackSettings()
+    {
+        var providerSettings = _settingsService.Settings.ProviderSettings.TryGetValue(CommandProviderId, out var current)
+            ? current
+            : ProviderSettings;
+        return providerSettings.FallbackCommands.TryGetValue(Id, out var settings) ? settings : null;
+    }
 
     public PerformCommandMessage GetPerformCommandMessage()
     {

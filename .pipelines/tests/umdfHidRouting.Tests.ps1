@@ -45,15 +45,20 @@ Describe 'Dedicated ARM64 virtual HID routing' {
 
     It 'isolates a literal one-suite selection and never inherits all/mixed/PR modules' {
         $wrapper = Get-Content (Join-Path $templates 'job-test-arm64.yml') -Raw
-        $dedicated = $wrapper.Substring($wrapper.IndexOf('  - ${{ if and(ne(parameters.umdfHidArm64Image'))
+        $dedicated = $wrapper.Substring($wrapper.IndexOf('  - ${{ each fixture'))
+        $dedicated | Should Match "each fixture in split\('Hid,Display', ','\)"
         $dedicated | Should Match 'uiTestModules: \[GrabAndMove.UITests\]'
         $dedicated | Should Match 'umdfHidArm64Dedicated: true'
         $dedicated | Should Not Match '(?m)^\s+autoSelectUiTests:'
-        $dedicated | Should Match "resolve.hasUmdfHidUiTests'\], 'true'"
-        $dedicated | Should Match 'jobSuffix: \$\{\{ parameters.jobSuffix \}\}_UmdfHid'
+        foreach ($kind in @('Hid', 'Display')) {
+            $expanded = $dedicated.Replace('${{ fixture }}', $kind)
+            $expanded | Should Match "resolve.hasUmdf${kind}UiTests'\], 'true'"
+            $expanded | Should Match ("jobSuffix: \$\{\{ parameters.jobSuffix \}\}_Umdf" + $kind)
+        }
         $wrapper | Should Match "resolve.hasNonUmdfHidUiTests'\], 'true'"
         $wrapper | Should Match 'routeUmdfHidArm64: \$\{\{ ne\(parameters.umdfHidArm64Image'
         # Preserve the producer's artifact-name casing, rather than silently forcing ARM64.
+        $dedicated | Should Match 'uiTestModules: \[PowerDisplay.UITests\]'
         ([regex]::Matches($wrapper, 'platform: \$\{\{ parameters.platform \}\}')).Count | Should Be 2
     }
 
@@ -85,7 +90,7 @@ Describe 'Dedicated ARM64 virtual HID routing' {
         $job | Should Match 'demands: ImageOverride -equals \$\{\{ parameters.umdfHidArm64Image \}\}'
         $job | Should Match 'name: SHINE-INT-Testing-arm64\r?\n'
         $job | Should Match 'name: SHINE-OSS-Testing-arm64\r?\n'
-        $job | Should Match 'Assert-UmdfHidArm64TestEnvironment'
+        $job | Should Match 'Assert-UmdfArm64TestEnvironment'
     }
 
     It 'resolves empty, HID-only and mixed PR selections without expanding empty selections' -TestCases @(
@@ -93,14 +98,17 @@ Describe 'Dedicated ARM64 virtual HID routing' {
         @{ Modules = @('GrabAndMove.UITests'); Hid = 'true'; Other = 'false' }
         @{ Modules = @('Other.UITests'); Hid = 'false'; Other = 'true' }
         @{ Modules = @('GrabAndMove.UITests', 'Other.UITests'); Hid = 'true'; Other = 'true' }
+        @{ Modules = @('PowerDisplay.UITests'); Hid = 'false'; Other = 'false'; Display = 'true' }
+        @{ Modules = @('GrabAndMove.UITests', 'PowerDisplay.UITests'); Hid = 'true'; Other = 'false'; Display = 'true' }
     ) {
-        param($Modules, $Hid, $Other)
+        param($Modules, $Hid, $Other, $Display = 'false')
         $resolve = Get-Content (Join-Path $templates 'job-resolve-ui-tests.yml') -Raw
-        $assignments = [regex]::Matches($resolve, '(?m)^\s+\$has(?:Non)?UmdfHidUiTests = .+$').Value
-        @($assignments).Count | Should Be 2
+        $assignments = [regex]::Matches($resolve, '(?m)^\s+\$has(?:Non)?Umdf(?:Hid|Display)UiTests = .+$').Value
+        @($assignments).Count | Should Be 3
         . ([scriptblock]::Create(($assignments -join "`n")))
         $hasUmdfHidUiTests | Should Be $Hid
         $hasNonUmdfHidUiTests | Should Be $Other
+        $hasUmdfDisplayUiTests | Should Be $Display
         $resolve | Should Match 'hasNonUmdfHidUiTests;isOutput=true'
     }
 
