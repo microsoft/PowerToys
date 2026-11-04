@@ -33,6 +33,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_100_0" displayName="$(string.SUPPORTED_POWERTOYS_0_100_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_101_0" displayName="$(string.SUPPORTED_POWERTOYS_0_101_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_102_0" displayName="$(string.SUPPORTED_POWERTOYS_0_102_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_103_0" displayName="$(string.SUPPORTED_POWERTOYS_0_103_0)"/>
     </definitions>
   </supportedOn>
   <categories>
@@ -515,7 +516,7 @@
     </policy>
     <policy name="ConfigureEnabledUtilityTextExpander" class="Both" displayName="$(string.ConfigureEnabledUtilityTextExpander)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityTextExpander">
       <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_102_0" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_103_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
