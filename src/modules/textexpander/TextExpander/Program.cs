@@ -527,7 +527,9 @@ internal static class Program
             hook.Suspended = false;
         }
 
-        if (target != IntPtr.Zero)
+        // Only once a window of ours took the front. A snippet that asked nothing, as with one match, never pulls the app
+        // back in front: if the user went elsewhere meanwhile, the expansion is dropped instead.
+        if (target != IntPtr.Zero && shown)
         {
             WindowFocus.Force(target);
 
