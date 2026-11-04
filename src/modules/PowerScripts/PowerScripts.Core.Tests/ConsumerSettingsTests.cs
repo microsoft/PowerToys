@@ -58,12 +58,29 @@ public sealed class ConsumerSettingsTests
         var store = new MemoryStore();
         var settings = new ConsumerSettings(store, (_, _) => null, () => true, () => false);
         Assert.IsFalse(settings.Get("advanced-paste").IsEnabled);
+        Assert.IsFalse(settings.Get("file-explorer").IsEnabled);
         Assert.IsTrue(settings.Get("keyboard-manager").IsEnabled);
         Assert.IsTrue(settings.Get("future-module").IsEnabled);
         Assert.IsNull(store.ReadBlob("config.json"), "Discovery must not write preferences.");
 
         settings = new ConsumerSettings(store, (_, _) => null, () => true, () => true);
         Assert.IsTrue(settings.Get("advanced-paste").IsEnabled);
+    }
+
+    [TestMethod]
+    public void ExplorerOptInCanBeChangedAndPolicyStillOverridesIt()
+    {
+        var store = new MemoryStore();
+        bool? policy = null;
+        var settings = new ConsumerSettings(store, (key, name) =>
+            key == PowerScriptsPolicies.ConsumersKey && name == "file-explorer" ? policy : null, () => true, () => false);
+        settings.Set("file-explorer", true);
+        Assert.IsTrue(settings.Get("file-explorer").IsEnabled);
+        policy = false;
+        Assert.IsFalse(settings.Get("file-explorer").IsEnabled);
+        Assert.ThrowsException<InvalidOperationException>(() => settings.Set("file-explorer", true));
+        policy = null;
+        Assert.IsTrue(settings.Get("file-explorer").IsEnabled);
     }
 
     [TestMethod]

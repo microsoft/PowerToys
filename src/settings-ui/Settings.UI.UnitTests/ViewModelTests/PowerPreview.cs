@@ -77,6 +77,30 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void ExplorerParameterPreferenceDefaultsOnAndUsesExistingModuleIpc()
+        {
+            var settings = JsonSerializer.Deserialize<PowerPreviewSettings>("""{"name":"File Explorer","version":"1","properties":{}}""");
+            Assert.IsTrue(settings.Properties.PowerScriptsShowParameters);
+            var messages = 0;
+            var viewModel = new PowerPreviewViewModel(
+                SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object),
+                SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
+                message =>
+                {
+                    var sent = JsonSerializer.Deserialize<SndModuleSettings<SndPowerPreviewSettings>>(message);
+                    Assert.IsFalse(sent.PowertoysSetting.FileExplorerPreviewSettings.Properties.PowerScriptsShowParameters);
+                    messages++;
+                    return 0;
+                });
+            viewModel.PowerScriptsShowParameters = false;
+            viewModel.PowerScriptsShowParameters = false;
+            Assert.AreEqual(1, messages);
+            var roundTrip = JsonSerializer.Deserialize<PowerPreviewSettings>(
+                JsonSerializer.Serialize(new PowerPreviewSettings { Properties = new PowerPreviewProperties { PowerScriptsShowParameters = false } }));
+            Assert.IsFalse(roundTrip.Properties.PowerScriptsShowParameters);
+        }
+
+        [TestMethod]
         public void SVGRenderIsEnabledShouldPrevHandlerWhenSuccessful()
         {
             // Assert

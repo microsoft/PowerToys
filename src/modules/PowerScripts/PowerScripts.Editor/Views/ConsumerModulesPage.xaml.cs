@@ -47,7 +47,13 @@ public sealed partial class ConsumerModulesPage : Page
             return;
         }
 
-        var consumer = id == "advanced-paste" ? ViewModel.AdvancedPasteConsumer : ViewModel.KeyboardManagerConsumer;
+        var consumer = id switch
+        {
+            "advanced-paste" => ViewModel.AdvancedPasteConsumer,
+            "keyboard-manager" => ViewModel.KeyboardManagerConsumer,
+            "file-explorer" => ViewModel.FileExplorerConsumer,
+            _ => throw new ArgumentException("Unknown PowerScripts consumer.", nameof(sender)),
+        };
         if (!consumer.CanChange || toggle.IsOn == consumer.IsEnabled)
         {
             return;

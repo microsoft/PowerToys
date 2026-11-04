@@ -6,7 +6,44 @@
 
 ## Developing
 
--  Add new C++ DLL project in the preview pane folder. This DLL is actual preview handler, i.e. implements IPreviewHandler/IThumbnailProvider interface. 
+### PowerScripts context menu
+
+`FileExplorerScripts.ShellExtension` is the native shell command; `FileExplorerScripts` owns
+catalogue refresh, selection handoff, parameter UX and notifications. `FileExplorerScripts.Core`
+uses only `PowerScripts.Client` for execution and exports results as new, non-overwriting files.
+The existing `powerpreview` module starts/stops the catalogue process. Preview and thumbnail
+handlers do not load or execute scripts.
+
+Enable the integration in **PowerScripts editor > Consumer modules > File Explorer**. The
+**Show parameter options before running** preference is in File Explorer Add-ons settings
+and defaults on. With it off, required parameters without valid defaults disable the action.
+No per-script settings are stored. Scripts receive the complete selection once.
+
+The flat PowerScripts submenu shows up to 14 compatible scripts. A picker appears only when
+matching scripts overflow the menu, the cache is truncated, or discovery needs recovery.
+Script entries use the validated `iconPath` returned by Host discovery. Authors can add a
+package-relative `.ico` through `x-powerscript.icon`; invalid/missing icons do not hide the script.
+Discovery runs outside Explorer; invocation revalidates the current script through Host.
+Results are exported to the selected files' common folder, or an explicitly chosen folder for
+mixed-parent selections. Result export never replaces originals; the default MXC policy keeps
+selected originals read-only. Disabling isolation retains PowerScripts' existing risk model.
+Text becomes UTF-8 `.txt`; supported inline media is saved in its validated format. No result
+window is opened and returned files are never executed automatically.
+
+The initial selection contract is local regular files, including file-backed images/audio/video.
+Directories, reparse points, UNC/device paths and inline media input adaptation are excluded.
+Windows and managed Linux execution continue to use PowerScripts' existing runtime configuration.
+
+Build the Core, native shell, app and `powerpreview` projects for the same architecture.
+Release uses the signed sparse package produced by the shell project. Debug uses a loose
+developer registration (Developer Mode required), without importing a certificate or enabling
+unsigned-package support in production. Restart the Debug Runner after building `powerpreview`.
+Modern-menu registration does not force an Explorer restart; the menu may require a new Explorer
+window to appear. The classic menu uses the same `IExplorerCommand` implementation.
+
+See [consumer integration guidance](..\PowerScripts\CONSUMER-INTEGRATION.md) for the shared contract.
+
+-  Add new C++ DLL project in the preview pane folder. This DLL is actual preview handler, i.e. implements IPreviewHandler/IThumbnailProvider interface.
 -  Add new .NET EXE project in the preview pane folder. This EXE is being spawned by C++ DLL to generate preview/thumbnail.
 
 ## Installation

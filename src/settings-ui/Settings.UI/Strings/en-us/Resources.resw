@@ -6793,4 +6793,13 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_OpenEditorCard.Description" xml:space="preserve">
     <value>Manage My scripts, Consumer modules, and Activity in a separate window.</value>
   </data>
+  <data name="FileExplorerPowerScripts.Header" xml:space="preserve">
+    <value>PowerScripts context menu</value>
+  </data>
+  <data name="FileExplorerPowerScripts_Parameters.Header" xml:space="preserve">
+    <value>Show parameter options before running</value>
+  </data>
+  <data name="FileExplorerPowerScripts_Parameters.Description" xml:space="preserve">
+    <value>Configure script parameters before running. When off, scripts use declared defaults; scripts requiring values without defaults cannot run. Enable this integration in PowerScripts editor &gt; Consumer modules.</value>
+  </data>
 </root>

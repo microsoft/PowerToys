@@ -27,6 +27,11 @@ private:
     // Contains the non localized key of the powertoy
     std::wstring app_key;
     std::vector<FileExplorerModule> m_fileExplorerModules;
+    HANDLE m_scriptsProcess = nullptr;
+    HANDLE m_scriptsStop = nullptr;
+
+    void start_scripts_consumer();
+    void stop_scripts_consumer();
 
     // Function to warn the user that PowerToys needs to run as administrator for changes to take effect
     void show_update_warning_message();

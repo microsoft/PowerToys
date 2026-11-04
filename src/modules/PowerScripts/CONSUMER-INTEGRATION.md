@@ -112,7 +112,7 @@ parameter values into a command line.
 
 Consumer identity is mandatory for both `run` and `transform`, including direct/native calls.
 Use 1-64 lowercase ASCII letters, digits or hyphens, beginning with a letter. Built-in IDs are
-`advanced-paste` and `keyboard-manager`; manual CLI invocations should explicitly use `command-line`.
+`advanced-paste`, `keyboard-manager`, and `file-explorer`; manual CLI invocations should explicitly use `command-line`.
 The managed client requires `consumerId` as its first constructor argument and supplies the Host
 option automatically for discovery and execution. Unqualified administrative discovery, trust
 management, and Activity queries do not require attribution.
@@ -131,6 +131,9 @@ The first central edit copies the legacy choice; subsequent legacy writes cannot
 Keyboard Manager defaults on to preserve existing bindings. Disabling an integration never deletes
 bindings or trust approvals.
 
+File Explorer defaults off. Its single **Show parameter options before running** preference belongs
+to File Explorer Add-ons, not PowerScripts' config. There are no per-script Explorer preferences.
+
 The Host applies the same decision to attributed discovery and `run`/`transform`. A disabled
 integration gets an empty catalogue; an existing invocation is refused with exit code 4 and recorded
 in Activity. Administrative `list` without `--consumer` remains available for Settings management,
@@ -143,6 +146,7 @@ Group Policy uses the 64-bit registry view under `Software\Policies\PowerToys` i
 | PowerScripts: Configure enabled state | `ConfigureEnabledUtilityPowerScripts` |
 | Advanced Paste: Allow PowerScripts integration | `PowerScripts\Consumers\advanced-paste` |
 | Keyboard Manager: Allow PowerScripts integration | `PowerScripts\Consumers\keyboard-manager` |
+| File Explorer: Allow PowerScripts integration | `PowerScripts\Consumers\file-explorer` |
 
 Each value is `REG_DWORD`: 0 disables, 1 enables, absent uses the saved preference.
 HKLM wins over HKCU for each value. As with other utilities, an individual utility policy overrides
@@ -166,7 +170,7 @@ PowerScripts policy to prevent execution through every Host consumer, including 
 The development enabled-state bypass cannot override Group Policy.
 
 `consumers list` returns effective/managed state as JSON.
-`consumers set <advanced-paste|keyboard-manager> <on|off>` changes a user preference, preserving
+`consumers set <advanced-paste|keyboard-manager|file-explorer> <on|off>` changes a user preference, preserving
 unrelated configuration, and refuses edits when the module is disabled or policy controls the switch.
 
 The shared Host records the latest 200 invocations in local `activity.json`, independently of the
@@ -290,9 +294,11 @@ are rejected. A missing or invalid optional icon does not remove the script: the
 
 `list --json` and `PowerScriptInfo.IconPath` expose the validated absolute path. Display it when
 appropriate, use a runtime-specific default script icon when absent or undecodable, and do not execute or fetch icon
-metadata. Consumers must tolerate missing icon fields from older Hosts. The prototype Explorer
-handler and `shell-menu` feed have been removed. Any future file context menu belongs to
-File Explorer Add-ons and should consume the shared JSON/client discovery contract.
+metadata. Consumers must tolerate missing icon fields from older Hosts. The File Explorer consumer
+caches the resolved path and exposes it through `IExplorerCommand::GetIcon`; it does not resolve
+author-supplied relative paths inside Explorer. The prototype Explorer
+handler and `shell-menu` feed have been removed. The new File Explorer Add-ons consumer lives in
+`src\modules\previewpane`, outside PowerScripts, and consumes the shared JSON/client contract.
 
 ## Parameters
 
@@ -349,9 +355,43 @@ Selected files are read-only under the default MXC filesystem policy. A consumer
 that declaring `fileWrite` makes the originals writable. Operations that mutate, move, rename, or
 delete original items need a separately reviewed security and UX design.
 
+### Explorer integration lessons
+
+- Keep native shell callbacks bounded and local. The File Explorer consumer refreshes a
+  short-lived, consumer-owned metadata cache out of process. Its flat submenu does not depend on
+  nested flyouts working in the Windows 11 modern menu; the picker exposes the remaining catalogue.
+  Cache data is presentation only, never execution authority.
+- Pass one bounded selection request to the consumer process, not one process per file. Re-discover
+  the script and revalidate compatibility/parameters immediately before calling the Host. Never
+  replay a failed invocation automatically.
+- Use `ListAsync` with cancellation rather than the tolerant synchronous discovery helpers when
+  the UI must distinguish a failed Host from a healthy empty list. The Client currently has no
+  consumer-state snapshot helper; this integration queries the existing `consumers list` JSON
+  contract rather than referencing Core or duplicating policy resolution.
+- The consumer owns parameter controls. With parameter options disabled, only valid declared
+  defaults may be used; missing required values disable the action. Do not silently remember
+  per-script values, edit descriptor defaults, or treat a menu click as trust approval.
+  Keep an unset field distinct from explicit empty text, zero and false. When parsing textual
+  boolean values, use canonical `true`/`false`, not localized or capitalized display strings.
+- Results need not be displayed in a window. Explorer exports declared text/media/file results as
+  new files in the selected files' common parent, asking for a destination for mixed parents.
+  Export is an explicit consumer-side operation, not extra write permission for the script.
+  Reserve unique output names atomically, never overwrite selected originals, reject unsafe paths,
+  and clean up incomplete staged writes. Errors after partial export must say which outputs exist.
+- The first implementation accepts local regular-file selections, including file-backed media.
+  Folders, reparse points, UNC/device paths and virtual shell selections are not supported.
+  Inline image/audio input adaptation remains a separate consumer enhancement; do not pretend
+  passing paths satisfies a media-object schema.
+- Registration, package identity, process lifetime and uninstall cleanup are consumer deployment
+  responsibilities. Use the existing File Explorer module lifecycle and keep execution unelevated.
+  WinUI apps sharing `WinUI3Apps` need unique XAML resource paths as well as a unique PRI filename;
+  root-level `App.xaml` and `MainWindow.xaml` outputs can collide with another editor's resources.
+
 ## Structured transforms
 
-Use `TransformAsync` when the consumer supplies content rather than an action or Explorer selection.
+Use `TransformAsync` when the consumer needs structured input/output, including an Explorer file
+selection. JSON stdin avoids command-line length limits for a large selection and preserves named
+parameter types. The transport does not change script eligibility, trust, policy, or execution.
 Populate the field matching the script's input contract and consume the matching output field:
 
 ```csharp
@@ -373,6 +413,8 @@ read `request["text"]` from JSON stdin. File transforms receive `$Files` and
 Named options are declared under `inputSchema.properties.parameters`.
 Use `PowerScriptTransformInput.Parameters` with `JsonElement` values to retain JSON integer
 and boolean types; numeric/boolean strings are rejected. The CLI `--set` transport remains strings.
+If the schema does not declare a parameter object, leave `Parameters` unset rather than sending
+an empty dictionary: even an empty undeclared property is correctly rejected by the Host.
 
 For a clipboard bitmap, first encode it as an actual PNG temporary file, then use exactly the same
 file discovery and execution contract as Explorer:

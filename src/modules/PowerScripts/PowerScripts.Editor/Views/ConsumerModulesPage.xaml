@@ -41,6 +41,18 @@
                         Tag="keyboard-manager"
                         Toggled="ConsumerEnabledToggle_Toggled" />
                 </tkcontrols:SettingsCard>
+                <tkcontrols:SettingsCard
+                    x:Uid="PowerScripts_FileExplorerConsumer"
+                    Description="{x:Bind ViewModel.FileExplorerConsumer.Status, Mode=OneWay}"
+                    IsEnabled="{x:Bind ViewModel.AreConsumerSettingsReady, Mode=OneWay}">
+                    <ToggleSwitch
+                        AutomationProperties.AutomationId="PowerScriptsFileExplorerEnabled"
+                        AutomationProperties.Name="File Explorer"
+                        IsEnabled="{x:Bind ViewModel.FileExplorerConsumer.CanChange, Mode=OneWay}"
+                        IsOn="{x:Bind ViewModel.FileExplorerConsumer.IsEnabled, Mode=OneWay}"
+                        Tag="file-explorer"
+                        Toggled="ConsumerEnabledToggle_Toggled" />
+                </tkcontrols:SettingsCard>
             </StackPanel>
         </layout:ManagementPage.ModuleContent>
     </layout:ManagementPage>

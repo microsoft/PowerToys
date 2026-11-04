@@ -22,6 +22,8 @@ public partial class PowerScriptsViewModel
 
     public PowerScriptConsumerItem KeyboardManagerConsumer { get; } = new("keyboard-manager");
 
+    public PowerScriptConsumerItem FileExplorerConsumer { get; } = new("file-explorer");
+
     public bool CanChangePowerScriptsEnabled => AreConsumerSettingsReady && !_isPowerScriptsPolicyControlled;
 
     public bool AreConsumerSettingsReady => _consumerSettingsLoaded && !_consumerSettingsBusy;
@@ -50,10 +52,12 @@ public partial class PowerScriptsViewModel
             var advancedPaste = snapshot.Consumers?.Single(item => item.Id == AdvancedPasteConsumer.Id)
                 ?? throw new InvalidOperationException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
             var keyboardManager = snapshot.Consumers.Single(item => item.Id == KeyboardManagerConsumer.Id);
+            var fileExplorer = snapshot.Consumers.Single(item => item.Id == FileExplorerConsumer.Id);
             _isEnabled = snapshot.IsPowerScriptsEnabled;
             _isPowerScriptsPolicyControlled = snapshot.IsPowerScriptsPolicyControlled;
             AdvancedPasteConsumer.Update(advancedPaste);
             KeyboardManagerConsumer.Update(keyboardManager);
+            FileExplorerConsumer.Update(fileExplorer);
             _consumerSettingsLoaded = true;
             OnPropertyChanged(nameof(IsEnabled));
             OnPropertyChanged(nameof(IsPowerScriptsPolicyControlled));

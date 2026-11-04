@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>FileExplorerScripts.Core.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+    <ProjectReference Include="..\FileExplorerScripts.Core\FileExplorerScripts.Core.csproj" />
+    <ProjectReference Include="FakeHost\FakeHost.csproj" ReferenceOutputAssembly="false" />
+    <Compile Remove="FakeHost\**\*.cs" />
+  </ItemGroup>
+  <Target Name="CopyFakeHost" AfterTargets="Build">
+    <ItemGroup>
+      <FakeHostFiles Include="FakeHost\bin\$(Platform)\$(Configuration)\net10.0\FakeHost.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(FakeHostFiles)" DestinationFolder="$(OutDir)fake-host" />
+  </Target>
+</Project>

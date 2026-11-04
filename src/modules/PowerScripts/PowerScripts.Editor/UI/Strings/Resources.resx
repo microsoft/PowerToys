@@ -1100,4 +1100,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_ConsumerModulesPage.ModuleDescription" xml:space="preserve">
     <value>Choose which PowerToys modules can use PowerScripts. Turning an integration off prevents new executions without deleting saved bindings. Organizational policies take precedence.</value>
   </data>
+  <data name="PowerScripts_FileExplorerConsumer.Header" xml:space="preserve">
+    <value>File Explorer</value>
+  </data>
 </root>

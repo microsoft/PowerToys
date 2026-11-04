@@ -106,6 +106,7 @@ PowerPreviewModule::PowerPreviewModule() :
 // Destroy the powertoy and free memory.
 void PowerPreviewModule::destroy()
 {
+    stop_scripts_consumer();
     Trace::Destroyed();
     delete this;
 }
@@ -175,11 +176,13 @@ void PowerPreviewModule::enable()
     }
 
     m_enabled = true;
+    start_scripts_consumer();
 }
 
 // Disable active preview handlers.
 void PowerPreviewModule::disable()
 {
+    stop_scripts_consumer();
     for (auto& fileExplorerModule : m_fileExplorerModules)
     {
         if (!fileExplorerModule.registryChanges.unApply())
@@ -200,6 +203,59 @@ void PowerPreviewModule::disable()
 bool PowerPreviewModule::is_enabled()
 {
     return m_enabled;
+}
+
+void PowerPreviewModule::start_scripts_consumer()
+{
+    if (m_scriptsProcess && WaitForSingleObject(m_scriptsProcess, 0) == WAIT_TIMEOUT)
+    {
+        return;
+    }
+
+    stop_scripts_consumer();
+    const auto eventName = L"Local\\PowerToys.FileExplorerScripts.Stop." + std::to_wstring(GetCurrentProcessId());
+    m_scriptsStop = CreateEventW(nullptr, TRUE, FALSE, eventName.c_str());
+    if (!m_scriptsStop)
+    {
+        Logger::error(L"Unable to create the Explorer PowerScripts stop event: {}", GetLastError());
+        return;
+    }
+
+    const auto executable = get_module_folderpath() + L"\\WinUI3Apps\\PowerToys.FileExplorerScripts.exe";
+    auto command = L"\"" + executable + L"\" --watch " + std::to_wstring(GetCurrentProcessId());
+    STARTUPINFOW startup{ sizeof(startup) };
+    PROCESS_INFORMATION process{};
+    if (!CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startup, &process))
+    {
+        Logger::error(L"Unable to start the Explorer PowerScripts catalogue: {}", GetLastError());
+        CloseHandle(m_scriptsStop);
+        m_scriptsStop = nullptr;
+        return;
+    }
+
+    CloseHandle(process.hThread);
+    m_scriptsProcess = process.hProcess;
+}
+
+void PowerPreviewModule::stop_scripts_consumer()
+{
+    if (m_scriptsStop)
+    {
+        SetEvent(m_scriptsStop);
+        CloseHandle(m_scriptsStop);
+        m_scriptsStop = nullptr;
+    }
+
+    if (m_scriptsProcess)
+    {
+        if (WaitForSingleObject(m_scriptsProcess, 6000) == WAIT_TIMEOUT)
+        {
+            Logger::warn(L"Explorer PowerScripts catalogue is still shutting down.");
+        }
+
+        CloseHandle(m_scriptsProcess);
+        m_scriptsProcess = nullptr;
+    }
 }
 
 // Function to warn the user that PowerToys needs to run as administrator for changes to take effect

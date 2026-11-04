@@ -1430,7 +1430,17 @@ UINT __stdcall UnRegisterContextMenuPackagesCA(MSIHANDLE hInstall)
     try
     {
         // Packages to unregister
-        const std::vector<std::wstring> packagesToRemoveDisplayName{{L"PowerRenameContextMenu"}, {L"ImageResizerContextMenu"}, {L"FileLocksmithContextMenu"}, {L"NewPlusContextMenu"}};
+        const std::vector<std::wstring> packagesToRemoveDisplayName{{L"PowerRenameContextMenu"}, {L"ImageResizerContextMenu"}, {L"FileLocksmithContextMenu"}, {L"NewPlusContextMenu"}, {L"FileExplorerScriptsContextMenu"}};
+
+        for (const auto* key : {L"Software\\Classes\\*\\shell\\PowerToysPowerScripts", L"Software\\Classes\\CLSID\\{4D97E44F-258D-480D-AC48-7A43F3088284}"})
+        {
+            const auto result = RegDeleteTreeW(HKEY_CURRENT_USER, key);
+            if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND)
+            {
+                Logger::error(L"Unable to remove Explorer PowerScripts registration: {}", result);
+                er = ERROR_INSTALL_FAILURE;
+            }
+        }
 
         for (auto const &package : packagesToRemoveDisplayName)
         {

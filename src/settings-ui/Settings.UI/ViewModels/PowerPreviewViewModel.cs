@@ -1102,6 +1102,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool PowerScriptsShowParameters
+        {
+            get => Settings.Properties.PowerScriptsShowParameters;
+            set
+            {
+                if (value != Settings.Properties.PowerScriptsShowParameters)
+                {
+                    Settings.Properties.PowerScriptsShowParameters = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change
