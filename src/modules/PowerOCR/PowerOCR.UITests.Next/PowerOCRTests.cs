@@ -146,9 +146,17 @@ public class PowerOCRTests : UITestBase
         overlay = Activate();
         Step("Opening overlay context menu with a right click");
         var bounds = GetBounds(overlay);
-        MouseHelper.MoveTo(bounds.Left + (bounds.Width / 2), bounds.Top + (bounds.Height / 2));
-        MouseHelper.RightClick();
         var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(ProcessName);
+        var menu = WaitHelper.WaitForStable(
+            () => process.Has(By.AccessibilityId("CancelMenuItem"), 500),
+            visible => visible,
+            timeoutMS: 15_000,
+            recover: _ =>
+            {
+                MouseHelper.MoveTo(bounds.Left + (bounds.Width / 2), bounds.Top + (bounds.Height / 2));
+                MouseHelper.RightClick();
+            });
+        Assert.IsTrue(menu.Succeeded, $"The right-click context menu should appear. Foreground: {WindowControl.GetForegroundWindowInfo()}");
         Step("Invoking context-menu Cancel");
         process.Find<Element>(By.AccessibilityId("CancelMenuItem")).Invoke(msPostAction: 0);
         AssertOverlayClosed();
@@ -460,30 +468,56 @@ public class PowerOCRTests : UITestBase
         MouseHelper.Drag(centerX - (width / 2), centerY - (height / 2), centerX + (width / 2), centerY + (height / 2), steps: 20);
     }
 
-    private static List<Element> ReadLanguageItems(Session session)
+    private static List<LanguageItem> ReadLanguageItems(Session session)
     {
-        // Inspect only the open dropdown: search requires nonempty Name/AutomationId text.
-        return ReadComboBoxItemSelectors(session.Inspect(depth: 12, hideOffscreen: true))
+        var popup = WindowsFinder.WaitForWindowByApp(
+            session.ProcessName,
+            window => window.Title == "PopupHost" || window.ClassName.Contains("Popup", StringComparison.OrdinalIgnoreCase),
+            timeoutMS: 5_000);
+        Assert.IsNotNull(popup, $"The language dropdown should expose a popup HWND. Windows: {string.Join(", ", WindowsFinder.ListByApp(session.ProcessName))}");
+
+        // Virtualized ComboBoxItem RuntimeIds can change between CLI invocations.
+        // Keep names from the open dropdown, then resolve selection by name and class in one call.
+        return ReadLanguageNames(popup.Inspect(depth: 12, hideOffscreen: true))
             .Distinct(StringComparer.Ordinal)
-            .Select(selector => session.Find<Element>(By.Slug(selector)))
-            .Where(item => item.Width > 0 && item.Height > 0 && item.Displayed)
+            .Select(name => new LanguageItem(name, ReadLanguageSelected(popup, name)))
             .ToList();
     }
 
-    private static IEnumerable<string> ReadComboBoxItemSelectors(JsonElement node)
+    private static bool ReadLanguageSelected(Session session, string name)
+    {
+        var result = WinappCli.InvokeJson(
+            "ui",
+            "get-property",
+            name,
+            "--class-name",
+            "ComboBoxItem",
+            "-p",
+            "IsSelected",
+            session.TargetFlag,
+            session.TargetValue,
+            "--json");
+        var selected = result.GetProperty("properties").GetProperty("IsSelected");
+        Assert.IsTrue(bool.TryParse(selected.ToString(), out bool isSelected), $"The selection state for '{name}' should be boolean: {result}");
+        return isSelected;
+    }
+
+    private static IEnumerable<string> ReadLanguageNames(JsonElement node)
     {
         if (node.ValueKind == JsonValueKind.Object)
         {
             if (node.TryGetProperty("className", out var className) &&
                 className.GetString() == "ComboBoxItem" &&
-                node.TryGetProperty("selector", out var selector))
+                node.GetProperty("width").GetDouble() > 0 &&
+                node.GetProperty("height").GetDouble() > 0 &&
+                !node.GetProperty("isOffscreen").GetBoolean())
             {
-                yield return selector.GetString() ?? throw new InvalidOperationException("The language item has no selector.");
+                yield return node.GetProperty("name").GetString() ?? throw new InvalidOperationException("The language item has no name.");
             }
 
             foreach (var property in node.EnumerateObject())
             {
-                foreach (string child in ReadComboBoxItemSelectors(property.Value))
+                foreach (string child in ReadLanguageNames(property.Value))
                 {
                     yield return child;
                 }
@@ -493,7 +527,7 @@ public class PowerOCRTests : UITestBase
         {
             foreach (var item in node.EnumerateArray())
             {
-                foreach (string child in ReadComboBoxItemSelectors(item))
+                foreach (string child in ReadLanguageNames(item))
                 {
                     yield return child;
                 }
@@ -501,13 +535,13 @@ public class PowerOCRTests : UITestBase
         }
     }
 
-    private static int ReadSelectedLanguageIndex(List<Element> languages)
+    private static int ReadSelectedLanguageIndex(List<LanguageItem> languages)
     {
         var selectedIndices = languages.Select((item, index) => (item, index)).Where(pair => pair.item.Selected).Select(pair => pair.index).ToList();
         Assert.AreEqual(
             1,
             selectedIndices.Count,
-            $"The language ComboBox should have exactly one selected language. Items: {string.Join(", ", languages.Select(item => $"{item.Name} [{item.Selector}]"))}");
+            $"The language ComboBox should have exactly one selected language. Items: {string.Join(", ", languages)}");
         return selectedIndices[0];
     }
 
@@ -636,4 +670,6 @@ public class PowerOCRTests : UITestBase
     }
 
     private void Step(string message) => TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
+
+    private sealed record LanguageItem(string Name, bool Selected);
 }
