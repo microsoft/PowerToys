@@ -22,6 +22,8 @@ public partial class FallbackSettingsViewModel : ObservableObject
 
     public string Id { get; private set; } = string.Empty;
 
+    public string RankId { get; private set; } = string.Empty;
+
     public bool IsEnabled
     {
         get => _fallbackSettings.IsEnabled;
@@ -79,6 +81,7 @@ public partial class FallbackSettingsViewModel : ObservableObject
         _fallbackSettings = fallbackSettings;
 
         Id = fallback.Id;
+        RankId = fallback.FallbackKey;
         DisplayName = string.IsNullOrWhiteSpace(fallback.DisplayTitle)
             ? (string.IsNullOrWhiteSpace(fallback.Title) ? providerSettings.DisplayName : fallback.Title)
             : fallback.DisplayTitle;

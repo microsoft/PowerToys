@@ -55,15 +55,21 @@ jobs:
     displayName: Build SDK
 
   - ${{ if eq(parameters.codeSign, true) }}:
-    - template: steps-esrp-signing.yml
-      parameters:
-        displayName: Sign SDK
-        signingIdentity: ${{ parameters.signingIdentity }}
-        inputs:
-          FolderPath: 'src/modules'
-          signType: batchSigning
-          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_sdk.json'
-          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+    # BuildSDKHelper and the NuGet spec use repository-root architecture outputs.
+    - ${{ each platform in split('x64,arm64', ',') }}:
+      - template: steps-esrp-signing.yml
+        parameters:
+          displayName: Sign SDK ${{ platform }}
+          signingIdentity: ${{ parameters.signingIdentity }}
+          inputs:
+            FolderPath: '$(Build.SourcesDirectory)/${{ platform }}/Release'
+            signType: batchSigning
+            batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_sdk.json'
+            ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+      - pwsh: |-
+          & .pipelines/versionAndSignCheck.ps1 -targetDir '$(Build.SourcesDirectory)/${{ platform }}/Release/Microsoft.CommandPalette.Extensions' -WinmdOnly
+        displayName: Verify SDK metadata signatures (${{ platform }})
 
   - pwsh: |-
       & "$(build.sourcesdirectory)\src\modules\cmdpal\extensionsdk\nuget\BuildSDKHelper.ps1" -Configuration "Release" -BuildStep "pack" -IsAzurePipelineBuild

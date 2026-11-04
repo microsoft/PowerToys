@@ -106,6 +106,8 @@ Describe 'Shared UI pipeline dispatch without host mutation' {
         $fixture = (New-Item -ItemType Directory (Join-Path $TestDrive ([guid]::NewGuid().ToString('N')))).FullName
         $mwb = (New-Item -ItemType Directory "$fixture\.pipelines\mwb" -Force).FullName
         Copy-Item "$PSScriptRoot\..\mwb\MwbSandboxCi.Common.ps1" $mwb
+        $umdf = New-Item -ItemType Directory "$fixture\.pipelines\umdf" -Force
+        Copy-Item "$PSScriptRoot\..\umdf\UmdfCi.Common.ps1" $umdf.FullName
         $phase = @'
 param($Mode, $RunId, $ArtifactRoot, $ResultsDirectory, $Platform, $SourceRevision, $Configuration, $CertificateMarkerPath)
 if (-not $Mode) {
@@ -180,6 +182,7 @@ function Restore-LightSwitchLocation {
             Replace('$(Build.SourcesDirectory)', $fixture).Replace('$(build.sourcesdirectory)', $fixture).
             Replace('$(Common.TestResultsDirectory)', "$fixture\results").Replace('$(Agent.WorkFolder)', $fixture).
             Replace('$(System.JobId)', [guid]::NewGuid().ToString()).Replace('$(TestPlatform)', $Platform).
+            Replace('$(BuildPlatform)', $(if ($Platform -eq 'arm64') { 'arm64' } else { 'x64' })).
             Replace('$(Build.SourceVersion)', 'revision').Replace('$(BuildConfiguration)', 'Release').
             Replace('${{ join('';'', parameters.uiTestModules) }}', 'ColorPicker.UITests;MouseWithoutBorders.UITests')
         $prefix = @'
@@ -220,6 +223,7 @@ function dotnet {
         $step = (Get-UiTestFlowStep 'Restore UI-test prerequisites').
             Replace('$(Build.SourcesDirectory)', $fixture).Replace('$(build.sourcesdirectory)', $fixture).
             Replace('$(Common.TestResultsDirectory)', "$fixture\results").Replace('$(Agent.WorkFolder)', $fixture).
+            Replace('$(Pipeline.Workspace)\$(TestArtifactsName)', "$fixture\artifact").Replace('$(BuildPlatform)', 'x64').
             Replace('$(System.JobId)', [guid]::NewGuid().ToString())
         $path = Join-Path $fixture 'cleanup.ps1'
         $step | Set-Content $path
