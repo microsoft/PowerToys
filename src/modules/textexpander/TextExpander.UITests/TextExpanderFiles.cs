@@ -72,16 +72,29 @@ internal static class TextExpanderFiles
     /// <summary>Writes the default snippets database the way the editor writes it: version 1, then the snippets in order.</summary>
     public static void WriteSnippets(IEnumerable<Snippet> snippets) => WriteSnippets(SnippetsPath, snippets);
 
-    public static void WriteSnippets(string path, IEnumerable<Snippet> snippets)
-    {
-        var list = new JsonArray();
-        foreach (var snippet in snippets)
-        {
-            list.Add(new JsonObject { ["trigger"] = snippet.Trigger, ["replacement"] = snippet.Replacement });
-        }
+    public static void WriteSnippets(string path, IEnumerable<Snippet> snippets) => WriteAtomically(path, SnippetsFileBytes(snippets));
 
-        var file = new JsonObject { ["version"] = 1, ["snippets"] = list };
-        WriteAtomically(path, Encoding.UTF8.GetBytes(file.ToJsonString(DatabaseWriteOptions)));
+    /// <summary>
+    /// Saves the default snippets database as most text editors save a file: the same file, emptied and written again,
+    /// so a watcher can see it empty or half-written for a moment.
+    /// </summary>
+    public static void SaveSnippetsInPlace(IEnumerable<Snippet> snippets)
+    {
+        var bytes = SnippetsFileBytes(snippets);
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                using var stream = new FileStream(SnippetsPath, FileMode.Truncate, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete);
+                stream.Write(bytes);
+                return;
+            }
+            catch (IOException) when (attempt < 50)
+            {
+                // A reader can hold the file for a moment.
+                Thread.Sleep(100);
+            }
+        }
     }
 
     /// <summary>Reads the default snippets database, or null when there is none.</summary>
@@ -197,4 +210,16 @@ internal static class TextExpanderFiles
 
     private static ReadOnlyMemory<byte> WithoutByteOrderMark(byte[] bytes) =>
         bytes.AsSpan().StartsWith("\uFEFF"u8) ? bytes.AsMemory(3) : bytes.AsMemory();
+
+    private static byte[] SnippetsFileBytes(IEnumerable<Snippet> snippets)
+    {
+        var list = new JsonArray();
+        foreach (var snippet in snippets)
+        {
+            list.Add(new JsonObject { ["trigger"] = snippet.Trigger, ["replacement"] = snippet.Replacement });
+        }
+
+        var file = new JsonObject { ["version"] = 1, ["snippets"] = list };
+        return Encoding.UTF8.GetBytes(file.ToJsonString(DatabaseWriteOptions));
+    }
 }

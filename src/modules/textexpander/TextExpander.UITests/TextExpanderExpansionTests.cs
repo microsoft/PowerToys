@@ -183,6 +183,49 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
     }
 
     /// <summary>
+    /// Snippets deleted from the database file in a text editor are gone after Refresh: the editor stops listing them and
+    /// their triggers stay as typed. A snippet with a date variable added in the same save expands, which shows the engine
+    /// read the edited file, and so does one that was there all along.
+    /// </summary>
+    [TestMethod("TextExpander.Expansion.SnippetsDeletedInATextEditorAreGoneAfterRefresh")]
+    [TestCategory("TextExpander")]
+    [TestCategory("TextExpander.Expansion")]
+    public void SnippetsDeletedInATextEditorAreGoneAfterRefresh()
+    {
+        // The engine is ready, and expands a snippet about to be deleted.
+        AssertExpands(Greeting.Trigger + " ", Greeting.Replacement + " ", waitForEngine: true);
+
+        var editor = OpenEditor(OpenTextExpanderPage());
+        editor.WaitForCount(DefaultSnippets.Count);
+
+        var added = new Snippet(";tedate", "Edited on {{isodate}}");
+        Snippet[] edited = [.. DefaultSnippets.Where(snippet => snippet != Greeting && snippet != Address), added];
+        Step($"Saving the database file in place without {Greeting.Trigger} and {Address.Trigger}, and with {added.Trigger}, as a text editor does");
+        TextExpanderFiles.SaveSnippetsInPlace(edited);
+
+        editor.OpenDatabaseMenu();
+        Step("Selecting Refresh");
+        editor.Session.Find<Button>(By.AccessibilityId("Button_TextExpander_ReloadSnippets"), 10_000).Invoke(msPostAction: 0);
+        Assert.IsTrue(editor.WaitForText("Snippets refreshed."), "Refresh did not report that it read the database again.");
+        editor.WaitForCount(edited.Length);
+        Assert.IsTrue(editor.WaitForRow(Greeting.Trigger, present: false), $"A snippet deleted from the file is still listed. Rows: {editor.DescribeRows()}.");
+        Assert.IsTrue(editor.WaitForRow(Address.Trigger, present: false), $"A snippet deleted from the file is still listed. Rows: {editor.DescribeRows()}.");
+        Assert.IsTrue(editor.WaitForRow(added.Trigger, present: true), $"The snippet added to the file isn't listed. Rows: {editor.DescribeRows()}.");
+
+        var before = DateTime.Now;
+        AssertExpandsTo(
+            added.Trigger + " ",
+            text => DatesAround(before).Any(date => text == $"Edited on {date} "),
+            $"Edited on {Iso(before)} ",
+            waitForEngine: true);
+        AssertNotExpanded(Greeting.Trigger + " ");
+        AssertExpandsTo(
+            Letter.Trigger + " ",
+            text => DatesAround(before).Any(date => text == $"Dear ,\nSent {date} "),
+            $"Dear ,\\nSent {Iso(before)} ");
+    }
+
+    /// <summary>
     /// Options changed in Settings apply while the engine runs, without a restart: with Wait for space or punctuation
     /// off a trigger expands as soon as it's typed, and with Case-sensitive snippets off its capitalization doesn't matter.
     /// </summary>
