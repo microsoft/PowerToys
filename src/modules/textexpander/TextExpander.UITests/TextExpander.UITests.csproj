@@ -22,6 +22,9 @@
 
     <!-- UI tests need a live desktop; never run them as part of MSBuild. -->
     <RunVSTest>false</RunVSTest>
+
+    <!-- The notice bubble's sources are compiled in (below); its COM interop uses pointers. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <!-- Stage the built test app under <Platform>\<Configuration>\tests\ so the UI-tests pipeline picks it up. -->
@@ -41,5 +44,26 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
+  </ItemGroup>
+
+  <!--
+    The engine's notice bubble, shown by the test process over its own typing target, as the engine shows it over the
+    app being typed into. EngineText.cs here stands in for the engine's resource loader with the English.
+  -->
+  <ItemGroup>
+    <Compile Include="..\TextExpander\Native.cs" Link="Engine\Native.cs" />
+    <Compile Include="..\TextExpander\NoticeBubble.cs" Link="Engine\NoticeBubble.cs" />
+    <Compile Include="..\TextExpander\NoticeRequests.cs" Link="Engine\NoticeRequests.cs" />
+    <Compile Include="..\TextExpander\NoticePainter.cs" Link="Engine\NoticePainter.cs" />
+    <Compile Include="..\TextExpander\NoticeRenderer.cs" Link="Engine\NoticeRenderer.cs" />
+    <Compile Include="..\TextExpander\NoticeLayout.cs" Link="Engine\NoticeLayout.cs" />
+    <Compile Include="..\TextExpander\NoticeTheme.cs" Link="Engine\NoticeTheme.cs" />
+    <Compile Include="..\TextExpander\NoticeTiming.cs" Link="Engine\NoticeTiming.cs" />
+    <Compile Include="..\TextExpander\NoticeAutomation.cs" Link="Engine\NoticeAutomation.cs" />
+    <Compile Include="..\TextExpander\IRawElementProviderSimple.cs" Link="Engine\IRawElementProviderSimple.cs" />
+    <Compile Include="..\TextExpander\IWindowProvider.cs" Link="Engine\IWindowProvider.cs" />
+    <Compile Include="..\TextExpander\CaretLocator.cs" Link="Engine\CaretLocator.cs" />
+    <Compile Include="..\TextExpander\CaretAutomation.cs" Link="Engine\CaretAutomation.cs" />
+    <Compile Include="..\TextExpander\TimedWorker.cs" Link="Engine\TimedWorker.cs" />
   </ItemGroup>
 </Project>
