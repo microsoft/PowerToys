@@ -11,6 +11,14 @@
 ## Overview
 Text Extractor is a PowerToys utility that enables users to extract and copy text from anywhere on the screen, including inside images and videos. The module uses Optical Character Recognition (OCR) technology to recognize text in visual content. This module is based on Joe Finney's Text Grab.
 
+## UI tests
+
+The winappcli migration lives in [PowerOCR.UITests.Next](../../../src/modules/PowerOCR/PowerOCR.UITests.Next), alongside the unchanged legacy suite. It ports all 10 existing tests, including the toolbar, failed-capture keyboard, and cross-cursor regressions; it does not add multi-monitor coverage.
+
+Build with `tools\build\build.cmd -Path src\modules\PowerOCR\PowerOCR.UITests.Next -Platform x64 -Configuration Debug` (use `ARM64` for the ARM64 build). Run the resulting `PowerOCR.UITests.Next.exe` on an interactive standard-user desktop with `--report-trx --results-directory <directory>`. See the [UI test guide](../development/ui-tests.md) for framework setup.
+
+The language-change tests require at least two installed Windows OCR language capabilities, including English (`en-US`) for the deterministic text fixture. Missing language capabilities fail explicitly rather than skipping coverage. The suite restores module settings, clipboard text, and pointer position after each test. Release CI uses the existing Runner/Settings companion-signing setup so the disable test exercises real Settings IPC.
+
 ## How it works
 Text Extractor captures the screen content and uses OCR to identify and extract text from the selected area. Users can select a region of the screen, and Text Extractor will convert any visible text in that region into copyable text.
 
