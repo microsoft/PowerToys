@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="provider_display_name" xml:space="preserve">
+    <value>Text Expander</value>
+    <comment>{Locked="Text Expander"} The PowerToys utility's name.</comment>
+  </data>
+  <data name="snippets_title" xml:space="preserve">
+    <value>Text Expander snippets</value>
+    <comment>{Locked="Text Expander"} The Command Palette command and page that list Text Expander's snippets.</comment>
+  </data>
+  <data name="snippets_subtitle" xml:space="preserve">
+    <value>Search your snippets and paste one</value>
+  </data>
+  <data name="snippets_page_name" xml:space="preserve">
+    <value>Open</value>
+    <comment>Opens the snippets page.</comment>
+  </data>
+  <data name="snippets_placeholder" xml:space="preserve">
+    <value>Search snippets by trigger or text</value>
+    <comment>A trigger is the short text that Text Expander replaces with a snippet.</comment>
+  </data>
+  <data name="paste_command_name" xml:space="preserve">
+    <value>Paste</value>
+  </data>
+  <data name="copy_command_name" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="copied_toast" xml:space="preserve">
+    <value>Copied the snippet</value>
+  </data>
+  <data name="copy_failed_toast" xml:space="preserve">
+    <value>Couldn't copy the snippet</value>
+  </data>
+  <data name="answers_unnamed_label" xml:space="preserve">
+    <value>Your answer</value>
+    <comment>Shown for a snippet question that has no words of its own. Text Expander uses the same words.</comment>
+  </data>
+  <data name="answers_required_placeholder" xml:space="preserve">
+    <value>Answer</value>
+    <comment>Placeholder in a box that must be filled in before the snippet can be pasted.</comment>
+  </data>
+  <data name="answers_optional_placeholder" xml:space="preserve">
+    <value>Optional</value>
+    <comment>Placeholder in a box that can be left empty.</comment>
+  </data>
+  <data name="tag_asks_questions" xml:space="preserve">
+    <value>Asks questions</value>
+    <comment>Tag on a snippet that asks for answers before it's pasted.</comment>
+  </data>
+  <data name="tag_text_expander_only" xml:space="preserve">
+    <value>Text Expander only</value>
+    <comment>{Locked="Text Expander"} Tag on a snippet that only Text Expander can insert.</comment>
+  </data>
+  <data name="text_expander_only_name" xml:space="preserve">
+    <value>Use Text Expander</value>
+    <comment>{Locked="Text Expander"}</comment>
+  </data>
+  <data name="text_expander_only_toast" xml:space="preserve">
+    <value>Only Text Expander can fill in this snippet. Type its trigger in your app instead.</value>
+    <comment>{Locked="Text Expander"}</comment>
+  </data>
+  <data name="preview_placeholder_format" xml:space="preserve">
+    <value>[{0}]</value>
+    <comment>Shown in a snippet preview where text goes in when the snippet runs. {0} is what goes there: a question's words, or "Clipboard", "Link from clipboard" and the like.</comment>
+  </data>
+  <data name="preview_clipboard" xml:space="preserve">
+    <value>Clipboard</value>
+    <comment>Shown in a snippet preview, as {0} in "[{0}]", where everything on the clipboard goes.</comment>
+  </data>
+  <data name="preview_clipboard_from_now" xml:space="preserve">
+    <value>{0} from clipboard</value>
+    <comment>Shown in a snippet preview for part of what the user copied. {0} is the part, such as "Email" or "Phone number".</comment>
+  </data>
+  <data name="preview_clipboard_from_history" xml:space="preserve">
+    <value>{0} from a copy you pick</value>
+    <comment>Shown in a snippet preview for part of a copy the user picks from clipboard history. {0} is the part, such as "Email" or "Phone number".</comment>
+  </data>
+  <data name="preview_clipboard_whole_history" xml:space="preserve">
+    <value>Copy you pick</value>
+    <comment>Shown in a snippet preview for a copy the user picks from clipboard history.</comment>
+  </data>
+  <data name="preview_clipboard_email" xml:space="preserve">
+    <value>Email</value>
+    <comment>An email address in a copy. Shown as {0} in "{0} from clipboard".</comment>
+  </data>
+  <data name="preview_clipboard_link" xml:space="preserve">
+    <value>Link</value>
+    <comment>A web link in a copy. Shown as {0} in "{0} from clipboard".</comment>
+  </data>
+  <data name="preview_clipboard_phone" xml:space="preserve">
+    <value>Phone number</value>
+    <comment>A phone number in a copy. Shown as {0} in "{0} from clipboard".</comment>
+  </data>
+  <data name="preview_clipboard_number" xml:space="preserve">
+    <value>Number</value>
+    <comment>A number in a copy. Shown as {0} in "{0} from clipboard".</comment>
+  </data>
+  <data name="empty_off_title" xml:space="preserve">
+    <value>Text Expander is off</value>
+    <comment>{Locked="Text Expander"}</comment>
+  </data>
+  <data name="empty_off_subtitle" xml:space="preserve">
+    <value>Turn on Text Expander in PowerToys Settings to paste your snippets here.</value>
+    <comment>{Locked="Text Expander", "PowerToys"}</comment>
+  </data>
+  <data name="empty_policy_subtitle" xml:space="preserve">
+    <value>Your organization manages Text Expander, so it can't be turned on here.</value>
+    <comment>{Locked="Text Expander"}</comment>
+  </data>
+  <data name="empty_no_snippets_title" xml:space="preserve">
+    <value>No snippets yet</value>
+  </data>
+  <data name="empty_no_snippets_subtitle" xml:space="preserve">
+    <value>Add snippets in PowerToys Settings &gt; Text Expander &gt; Manage snippets.</value>
+    <comment>{Locked="PowerToys", "Text Expander"} "Manage snippets" is the name of a button on the Text Expander page.</comment>
+  </data>
+  <data name="empty_not_found_title" xml:space="preserve">
+    <value>Snippets file not found</value>
+  </data>
+  <data name="empty_not_found_subtitle" xml:space="preserve">
+    <value>There's no snippets file at {0}. Check where it is in PowerToys Settings &gt; Text Expander.</value>
+    <comment>{Locked="PowerToys", "Text Expander"} {0} is a file path.</comment>
+  </data>
+  <data name="empty_unreadable_title" xml:space="preserve">
+    <value>Couldn't read your snippets file</value>
+  </data>
+  <data name="empty_unreadable_subtitle" xml:space="preserve">
+    <value>{0} couldn't be opened. If it's on a drive or in a sync folder that isn't ready yet, try again soon.</value>
+    <comment>{0} is a file path.</comment>
+  </data>
+  <data name="empty_not_snippets_line_subtitle" xml:space="preserve">
+    <value>Line {0} of {1} has a mistake. Fix it in Manage snippets or in a text editor.</value>
+    <comment>{0} is a line number. {1} is a file path. "Manage snippets" is the name of a button in Text Expander's settings.</comment>
+  </data>
+  <data name="empty_not_snippets_subtitle" xml:space="preserve">
+    <value>{0} isn't a snippets file. Fix it in Manage snippets or in a text editor.</value>
+    <comment>{0} is a file path. "Manage snippets" is the name of a button in Text Expander's settings.</comment>
+  </data>
+  <data name="empty_no_matches_title" xml:space="preserve">
+    <value>No matching snippets</value>
+  </data>
+  <data name="empty_no_matches_subtitle" xml:space="preserve">
+    <value>Search for a trigger, or for words in a snippet.</value>
+  </data>
+  <data name="open_settings_name" xml:space="preserve">
+    <value>Open Text Expander settings</value>
+    <comment>{Locked="Text Expander"}</comment>
+  </data>
+  <data name="open_settings_failed_toast" xml:space="preserve">
+    <value>Couldn't open PowerToys Settings.</value>
+    <comment>{Locked="PowerToys"}</comment>
+  </data>
+  <data name="fallback_display_title" xml:space="preserve">
+    <value>Text Expander snippets</value>
+    <comment>{Locked="Text Expander"} Names the main-search result that offers a snippet.</comment>
+  </data>
+  <data name="fallback_show_all_name" xml:space="preserve">
+    <value>Show all matching snippets</value>
+  </data>
+  <data name="toast_off" xml:space="preserve">
+    <value>Text Expander is off. Turn it on in PowerToys Settings to paste snippets.</value>
+    <comment>{Locked="Text Expander", "PowerToys"}</comment>
+  </data>
+  <data name="toast_no_target" xml:space="preserve">
+    <value>Couldn't paste the snippet: no app came to the front.</value>
+  </data>
+  <data name="toast_out_of_reach" xml:space="preserve">
+    <value>Couldn't paste the snippet: that app runs as administrator.</value>
+  </data>
+  <data name="toast_target_changed" xml:space="preserve">
+    <value>Stopped inserting the snippet because another window came to the front.</value>
+  </data>
+  <data name="toast_clipboard_not_restored" xml:space="preserve">
+    <value>Your clipboard couldn't be put back, so the snippet is still on it.</value>
+  </data>
+  <data name="toast_failed" xml:space="preserve">
+    <value>Couldn't paste the snippet.</value>
+  </data>
+  <data name="toast_missing_clipboard" xml:space="preserve">
+    <value>There's no text on the clipboard, so that spot was left empty.</value>
+    <comment>Shown after pasting a snippet that takes what the user copied, when the clipboard held no text. The rest of the snippet was pasted.</comment>
+  </data>
+  <data name="toast_missing_email" xml:space="preserve">
+    <value>No email address found in what you copied, so that spot was left empty.</value>
+    <comment>Shown after pasting a snippet that takes an email address from what the user copied, when there wasn't one. The rest of the snippet was pasted.</comment>
+  </data>
+  <data name="toast_missing_link" xml:space="preserve">
+    <value>No link found in what you copied, so that spot was left empty.</value>
+    <comment>Shown after pasting a snippet that takes a web link from what the user copied, when there wasn't one. The rest of the snippet was pasted.</comment>
+  </data>
+  <data name="toast_missing_phone" xml:space="preserve">
+    <value>No phone number found in what you copied, so that spot was left empty.</value>
+    <comment>Shown after pasting a snippet that takes a phone number from what the user copied, when there wasn't one. The rest of the snippet was pasted.</comment>
+  </data>
+  <data name="toast_missing_number" xml:space="preserve">
+    <value>No number found in what you copied, so that spot was left empty.</value>
+    <comment>Shown after pasting a snippet that takes a number from what the user copied, when there wasn't one. The rest of the snippet was pasted.</comment>
+  </data>
+  <data name="toast_missing_several" xml:space="preserve">
+    <value>Some parts weren't found in what you copied, so those spots were left empty.</value>
+    <comment>Shown after pasting a snippet when more than one of the spots that take from what the user copied, such as an email address or a link, was left empty because it wasn't there. The rest of the snippet was pasted.</comment>
+  </data>
+  <data name="picks_title_email" xml:space="preserve">
+    <value>Pick the email address to insert</value>
+    <comment>Search box hint on a page listing the email addresses found in what the user copied. Picking one inserts it into the snippet.</comment>
+  </data>
+  <data name="picks_title_link" xml:space="preserve">
+    <value>Pick the link to insert</value>
+    <comment>Search box hint on a page listing the web links found in what the user copied. Picking one inserts it into the snippet.</comment>
+  </data>
+  <data name="picks_title_phone" xml:space="preserve">
+    <value>Pick the phone number to insert</value>
+    <comment>Search box hint on a page listing the phone numbers found in what the user copied. Picking one inserts it into the snippet.</comment>
+  </data>
+  <data name="picks_title_number" xml:space="preserve">
+    <value>Pick the number to insert</value>
+    <comment>Search box hint on a page listing the numbers found in what the user copied. Picking one inserts it into the snippet.</comment>
+  </data>
+  <data name="picks_nothing_to_pick" xml:space="preserve">
+    <value>Nothing to pick. Press Enter to paste.</value>
+    <comment>"Enter" means the Enter key on the keyboard. Search box hint on a page showing a snippet as it will be pasted, when what the user copied had one match or none for each part the snippet takes from it.</comment>
+  </data>
+  <data name="picks_comes_out_empty" xml:space="preserve">
+    <value>This snippet comes out empty</value>
+    <comment>Shown in place of a snippet's text when nothing would be pasted, because what it takes from what the user copied wasn't there.</comment>
+  </data>
+</root>

@@ -32,6 +32,7 @@
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests\\Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Shell.UnitTests\\Microsoft.CmdPal.Ext.Shell.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.System.UnitTests\\Microsoft.CmdPal.Ext.System.UnitTests.csproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.TextExpander.UnitTests\\Microsoft.CmdPal.Ext.TextExpander.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.TimeDate.UnitTests\\Microsoft.CmdPal.Ext.TimeDate.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.UnitTestsBase\\Microsoft.CmdPal.Ext.UnitTestBase.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.WebSearch.UnitTests\\Microsoft.CmdPal.Ext.WebSearch.UnitTests.csproj",
@@ -55,6 +56,7 @@
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.RemoteDesktop\\Microsoft.CmdPal.Ext.RemoteDesktop.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.Shell\\Microsoft.CmdPal.Ext.Shell.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.System\\Microsoft.CmdPal.Ext.System.csproj",
+      "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.TextExpander\\Microsoft.CmdPal.Ext.TextExpander.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.TimeDate\\Microsoft.CmdPal.Ext.TimeDate.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.WebSearch\\Microsoft.CmdPal.Ext.WebSearch.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.WinGet\\Microsoft.CmdPal.Ext.WinGet.csproj",
@@ -66,6 +68,7 @@
       "src\\modules\\cmdpal\\ext\\SamplePagesExtension\\SamplePagesExtension.csproj",
       "src\\modules\\cmdpal\\extensionsdk\\Microsoft.CommandPalette.Extensions.Toolkit\\Microsoft.CommandPalette.Extensions.Toolkit.csproj",
       "src\\modules\\cmdpal\\extensionsdk\\Microsoft.CommandPalette.Extensions\\Microsoft.CommandPalette.Extensions.vcxproj",
+      "src\\modules\\textexpander\\TextExpander.Core\\TextExpander.Core.csproj",
       "src\\settings-ui\\Settings.UI.Library\\Settings.UI.Library.csproj"
     ]
   }

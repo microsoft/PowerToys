@@ -21,6 +21,7 @@ using Microsoft.CmdPal.Ext.Registry;
 using Microsoft.CmdPal.Ext.RemoteDesktop;
 using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CmdPal.Ext.System;
+using Microsoft.CmdPal.Ext.TextExpander;
 using Microsoft.CmdPal.Ext.TimeDate;
 using Microsoft.CmdPal.Ext.WebSearch;
 using Microsoft.CmdPal.Ext.WindowsServices;
@@ -195,6 +196,7 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
         services.AddSingleton<ICommandProvider, ClipboardHistoryCommandsProvider>();
+        services.AddSingleton<ICommandProvider, TextExpanderCommandsProvider>();
 
         // GH #38440: Users might not have WinGet installed! Or they might have
         // a ridiculously old version. Or might be running as admin.
