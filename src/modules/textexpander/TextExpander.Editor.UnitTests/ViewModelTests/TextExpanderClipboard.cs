@@ -138,6 +138,67 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        [DataRow("en-US")]
+        [DataRow("de-DE")]
+        public void EachKindsHintAndExamplesComeFromTheRules(string region)
+        {
+            var culture = System.Globalization.CultureInfo.GetCultureInfo(region);
+            Assert.AreEqual("A name, an @ and a domain with a dot, such as you@example.com.", TextExpanderClipboardText.Hint(ClipboardPart.Email, culture, Resource));
+            Assert.AreEqual("Starts with https://, http:// or www., such as https://example.com/track. Just example.com isn't found.", TextExpanderClipboardText.Hint(ClipboardPart.Link, culture, Resource));
+            Assert.AreEqual("7 to 15 digits in groups, such as (425) 555-0123, or all together after a +.", TextExpanderClipboardText.Hint(ClipboardPart.Phone, culture, Resource));
+            Assert.AreEqual(
+                $"Digits, with a minus sign and your region's separators, such as {ClipboardPartExamples.SampleNumber(culture)}. Times, dates and phone numbers don't count.",
+                TextExpanderClipboardText.Hint(ClipboardPart.Number, culture, Resource));
+            StringAssert.Contains(TextExpanderClipboardText.Hint(ClipboardPart.Number, culture, Resource), region == "de-DE" ? "-1.234,5" : "-1,234.5", "Written the region's way.");
+
+            foreach (ClipboardPart part in TextExpanderClipboardText.Parts)
+            {
+                StringAssert.StartsWith(TextExpanderClipboardText.CountsHeading(part, Resource), "Counts as ");
+                foreach (ClipboardPartExample example in ClipboardPartExamples.For(part, culture))
+                {
+                    string spoken = TextExpanderClipboardText.Spoken(example, Resource);
+                    if (example.Counts)
+                    {
+                        Assert.IsNull(TextExpanderClipboardText.Why(example, Resource));
+                        Assert.AreEqual("Counts: " + example.Text, spoken);
+                    }
+                    else
+                    {
+                        Assert.IsTrue(English.Value.ContainsKey("TextExpander_ClipboardExample_" + example.Why), example.Why);
+                        Assert.AreEqual($"Doesn't count: {example.Text}, {TextExpanderClipboardText.Why(example, Resource)}", spoken);
+                    }
+                }
+            }
+
+            Assert.AreEqual("add a + or spaces", TextExpanderClipboardText.Why(ClipboardPartExamples.For(ClipboardPart.Phone, culture).First(example => !example.Counts), Resource));
+        }
+
+        [TestMethod]
+        public void TheMenuShowsEachKindsHintAndThePanelShowsWhatCounts()
+        {
+            string code = RepositoryFiles.Text(RepositoryFiles.EditorPage + ".cs");
+            StringAssert.Contains(code, "string hint = TextExpanderClipboardText.Hint(kind, CultureInfo.CurrentCulture, resource);");
+            StringAssert.Contains(code, "AutomationProperties.SetHelpText(item, hint);", "Screen readers hear the hint too.");
+            StringAssert.Contains(code, "ToolTipService.SetToolTip(item, hint);");
+            StringAssert.Contains(code, "ShowClipboardExamples(variable.Part);", "The examples follow the kind.");
+            StringAssert.Contains(code, "AutomationProperties.SetName(text, TextExpanderClipboardText.Spoken(example, resource));", "The check or cross is said in words.");
+
+            XDocument page = RepositoryFiles.Xml(RepositoryFiles.EditorPage);
+            XElement examples = RepositoryFiles.WithName(page, "ClipboardExamples");
+            Assert.AreEqual("Collapsed", (string)examples.Attribute("Visibility"), "Only for a part.");
+            Assert.AreSame(RepositoryFiles.WithName(page, "ClipboardPartBox"), examples.ElementsBeforeSelf().Last(), "Right under Insert.");
+            foreach (string id in new[] { "TextExpander_ClipboardExamples_Counts", "TextExpander_ClipboardExamples_DoesntCount" })
+            {
+                XElement heading = examples.Descendants().Single(element => (string)element.Attribute(XName.Get("AutomationProperties.AutomationId")) == id);
+                Assert.AreEqual("Level3", (string)heading.Attribute(XName.Get("AutomationProperties.HeadingLevel")), id);
+            }
+
+            XElement glyphStyle = page.Descendants().Single(element => (string)element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml")) == "ClipboardExampleCountsGlyphStyle");
+            XElement unread = glyphStyle.Elements().Single(setter => (string)setter.Attribute("Property") == "AutomationProperties.AccessibilityView");
+            Assert.AreEqual("Raw", (string)unread.Attribute("Value"), "The check or cross isn't read; the example's name says it.");
+        }
+
+        [TestMethod]
         [DataRow("{{clipboard:pick}}", true)]
         [DataRow("Here: {{clipboard:pick:link}}", true)]
         [DataRow("{{clipboard:pick:email}}", true)]

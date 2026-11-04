@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 {
@@ -43,6 +44,39 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         /// <summary>Gets what a screen reader says in a row for <paramref name="variable"/>, in place of its text.</summary>
         public static string Spoken(ClipboardVariable variable, Func<string, string> resource)
             => variable.Normalized() == default ? resource("TextExpander_Row_SpokenClipboard") : Label(variable, resource);
+
+        /// <summary>
+        /// Gets the hint for <paramref name="part"/> that Insert variable shows by it, with examples that the rules find and
+        /// don't, written as <paramref name="culture"/> writes numbers, such as "7 to 15 digits in groups, such as
+        /// (425) 555-0123, or all together after a +.".
+        /// </summary>
+        public static string Hint(ClipboardPart part, CultureInfo culture, Func<string, string> resource)
+        {
+            ArgumentNullException.ThrowIfNull(resource);
+            IReadOnlyList<ClipboardPartExample> examples = ClipboardPartExamples.For(part, culture);
+            string counts = examples.First(example => example.Counts).Text;
+            string doesnt = examples.First(example => !example.Counts).Text;
+            return string.Format(CultureInfo.CurrentCulture, resource("TextExpander_ClipboardHint_" + part), counts, doesnt);
+        }
+
+        /// <summary>Gets the heading over what counts as <paramref name="part"/> in the Clipboard panel, such as "Counts as a phone number".</summary>
+        public static string CountsHeading(ClipboardPart part, Func<string, string> resource) => resource("TextExpander_ClipboardExamples_Counts_" + part);
+
+        /// <summary>Gets why <paramref name="example"/> doesn't count, such as "add a + or spaces", or null for one that counts.</summary>
+        public static string Why(ClipboardPartExample example, Func<string, string> resource)
+            => example?.Why is { } why ? resource("TextExpander_ClipboardExample_" + why) : null;
+
+        /// <summary>
+        /// Gets what a screen reader says for <paramref name="example"/>: "Counts: (425) 555-0123", or "Doesn't count:
+        /// 4255550123, add a + or spaces", since the check or cross beside it isn't read.
+        /// </summary>
+        public static string Spoken(ClipboardPartExample example, Func<string, string> resource)
+        {
+            ArgumentNullException.ThrowIfNull(example);
+            return example.Counts
+                ? string.Format(CultureInfo.CurrentCulture, resource("TextExpander_ClipboardExample_CountsName"), example.Text)
+                : string.Format(CultureInfo.CurrentCulture, resource("TextExpander_ClipboardExample_DoesntCountName"), example.Text, Why(example, resource));
+        }
 
         /// <summary>Gets whether <paramref name="text"/> has a variable that picks a copy from clipboard history when it runs.</summary>
         public static bool PicksFromHistory(string text)

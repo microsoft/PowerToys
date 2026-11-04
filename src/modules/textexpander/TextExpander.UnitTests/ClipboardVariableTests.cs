@@ -275,6 +275,42 @@ public sealed class ClipboardVariableTests
     }
 
     [TestMethod]
+    [DataRow("en-US")]
+    [DataRow("de-DE")]
+    [DataRow("fr-FR")]
+    [DataRow("de-CH")]
+    [DataRow("en-IN")]
+    public void TheEditorsExamplesFollowTheRules(string region)
+    {
+        // The editor shows these by each part, and fills its hints from them, so they can't say something a snippet
+        // doesn't do: each that counts is found whole, and none of the others is found at all.
+        CultureInfo culture = CultureInfo.GetCultureInfo(region);
+        foreach (ClipboardPart part in new[] { ClipboardPart.Email, ClipboardPart.Link, ClipboardPart.Phone, ClipboardPart.Number })
+        {
+            IReadOnlyList<ClipboardPartExample> examples = ClipboardPartExamples.For(part, culture);
+            Assert.IsTrue(examples.Count(example => example.Counts) >= 2 && examples.Count(example => !example.Counts) >= 2, $"{region} {part}");
+            Assert.IsTrue(examples.SkipWhile(example => example.Counts).All(example => !example.Counts), "Those that count come first.");
+            foreach (ClipboardPartExample example in examples)
+            {
+                IReadOnlyList<string> found = ClipboardParts.Find(example.Text, part, culture);
+                if (example.Counts)
+                {
+                    Assert.AreEqual(example.Text, found.SingleOrDefault(), $"{region} {part}: '{example.Text}' gave '{string.Join("|", found)}'.");
+                    Assert.IsNull(example.Why);
+                }
+                else
+                {
+                    Assert.AreEqual(0, found.Count, $"{region} {part}: '{example.Text}' gave '{string.Join("|", found)}'.");
+                    Assert.IsFalse(string.IsNullOrEmpty(example.Why), example.Text);
+                }
+            }
+        }
+
+        Assert.AreEqual(0, ClipboardPartExamples.For(ClipboardPart.All, culture).Count);
+        StringAssert.Contains(ClipboardPartExamples.SampleNumber(culture), culture.NumberFormat.NumberDecimalSeparator, "Written the region's way.");
+    }
+
+    [TestMethod]
     [DataRow("Mail you@example.com.", "you@example.com")]
     [DataRow("<first.last+tag@sub.example.co.uk>", "first.last+tag@sub.example.co.uk")]
     [DataRow("mailto:you@example.com?subject=hi", "you@example.com")]

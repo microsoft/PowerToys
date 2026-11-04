@@ -53,6 +53,29 @@
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
         <!--
+            The Clipboard panel's examples of what counts as a part and what doesn't: a check or a cross, which the words
+            beside it also say, so color is never the only cue.
+        -->
+        <Style
+            x:Key="ClipboardExampleTextStyle"
+            BasedOn="{StaticResource CaptionTextBlockStyle}"
+            TargetType="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style x:Key="ClipboardExampleCountsGlyphStyle" TargetType="FontIcon">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="0,3,0,0" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Foreground" Value="{ThemeResource SystemFillColorSuccessBrush}" />
+            <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
+        </Style>
+        <Style
+            x:Key="ClipboardExampleDoesntCountGlyphStyle"
+            BasedOn="{StaticResource ClipboardExampleCountsGlyphStyle}"
+            TargetType="FontIcon">
+            <Setter Property="Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
+        </Style>
+        <!--
             A heading inside a menu, such as "What's on your clipboard now" in Insert variable > Clipboard: secondary caption
             text that can't be focused or clicked. Screen readers skip it, and the items under it carry its words in their names.
         -->
@@ -811,6 +834,26 @@
                                             HorizontalAlignment="Stretch"
                                             AutomationProperties.AutomationId="TextExpander_ClipboardPart"
                                             SelectionChanged="ClipboardChoice_Changed" />
+                                        <!--  For a part: what counts as it and what doesn't, by the same rules as a snippet.  -->
+                                        <StackPanel
+                                            x:Name="ClipboardExamples"
+                                            Spacing="4"
+                                            Visibility="Collapsed">
+                                            <TextBlock
+                                                x:Name="ClipboardCountsHeading"
+                                                AutomationProperties.AutomationId="TextExpander_ClipboardExamples_Counts"
+                                                AutomationProperties.HeadingLevel="Level3"
+                                                FontWeight="SemiBold"
+                                                Style="{StaticResource FlyoutCaptionStyle}" />
+                                            <StackPanel x:Name="ClipboardCountsList" Spacing="2" />
+                                            <TextBlock
+                                                x:Uid="TextExpander_ClipboardExamples_DoesntCount"
+                                                AutomationProperties.AutomationId="TextExpander_ClipboardExamples_DoesntCount"
+                                                AutomationProperties.HeadingLevel="Level3"
+                                                FontWeight="SemiBold"
+                                                Style="{StaticResource FlyoutCaptionStyle}" />
+                                            <StackPanel x:Name="ClipboardDoesntCountList" Spacing="2" />
+                                        </StackPanel>
                                         <StackPanel Spacing="4">
                                             <TextBlock x:Uid="TextExpander_ClipboardFlyout_ShowsAs" Style="{StaticResource FlyoutCaptionStyle}" />
                                             <controls:TextExpanderBubbleText x:Name="ClipboardShowsAs" />

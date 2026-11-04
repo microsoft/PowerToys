@@ -550,6 +550,82 @@
     <value>If there&apos;s more than one, it asks which one when the snippet runs. If there&apos;s none, that spot is left empty.</value>
     <comment>Note in the Clipboard panel for a part of a copy, such as an email address: what happens when the copy has several, and when it has none</comment>
   </data>
+  <data name="TextExpander_ClipboardHint_Email" xml:space="preserve">
+    <value>A name, an @ and a domain with a dot, such as {0}.</value>
+    <comment>Tooltip on Insert variable &gt; Clipboard &gt; Only part of it &gt; Email address: what an email address in the copy needs. {0} is an example, you@example.com</comment>
+  </data>
+  <data name="TextExpander_ClipboardHint_Link" xml:space="preserve">
+    <value>Starts with https://, http:// or www., such as {0}. Just {1} isn&apos;t found.</value>
+    <comment>Tooltip on Insert variable &gt; Clipboard &gt; Only part of it &gt; Link: what a web link in the copy needs. {0} is an example that counts, https://example.com/track; {1} is one that doesn&apos;t, example.com. {Locked=&quot;https://&quot;,&quot;http://&quot;,&quot;www.&quot;}</comment>
+  </data>
+  <data name="TextExpander_ClipboardHint_Phone" xml:space="preserve">
+    <value>7 to 15 digits in groups, such as {0}, or all together after a +.</value>
+    <comment>Tooltip on Insert variable &gt; Clipboard &gt; Only part of it &gt; Phone number: what a phone number in the copy needs. {0} is an example, (425) 555-0123</comment>
+  </data>
+  <data name="TextExpander_ClipboardHint_Number" xml:space="preserve">
+    <value>Digits, with a minus sign and your region&apos;s separators, such as {0}. Times, dates and phone numbers don&apos;t count.</value>
+    <comment>Tooltip on Insert variable &gt; Clipboard &gt; Only part of it &gt; Number: what a number in the copy needs. {0} is an example written with the separators of the user&apos;s region, such as -1,234.5</comment>
+  </data>
+  <data name="TextExpander_ClipboardExamples_Counts_Email" xml:space="preserve">
+    <value>Counts as an email address</value>
+    <comment>Heading in the Clipboard panel over examples of text that the snippet finds as an email address</comment>
+  </data>
+  <data name="TextExpander_ClipboardExamples_Counts_Link" xml:space="preserve">
+    <value>Counts as a link</value>
+    <comment>Heading in the Clipboard panel over examples of text that the snippet finds as a web link</comment>
+  </data>
+  <data name="TextExpander_ClipboardExamples_Counts_Phone" xml:space="preserve">
+    <value>Counts as a phone number</value>
+    <comment>Heading in the Clipboard panel over examples of text that the snippet finds as a phone number</comment>
+  </data>
+  <data name="TextExpander_ClipboardExamples_Counts_Number" xml:space="preserve">
+    <value>Counts as a number</value>
+    <comment>Heading in the Clipboard panel over examples of text that the snippet finds as a number</comment>
+  </data>
+  <data name="TextExpander_ClipboardExamples_DoesntCount.Text" xml:space="preserve">
+    <value>Doesn&apos;t count</value>
+    <comment>Heading in the Clipboard panel over examples of text that the snippet doesn&apos;t find, each with a short reason</comment>
+  </data>
+  <data name="TextExpander_ClipboardExample_AddDomainEnding" xml:space="preserve">
+    <value>add an ending, such as .com</value>
+    <comment>Short reason, after an example in the Clipboard panel, why the example doesn&apos;t count as what the snippet inserts. Lowercase, without a period, as in the panel&apos;s list</comment>
+  </data>
+  <data name="TextExpander_ClipboardExample_AddAt" xml:space="preserve">
+    <value>needs an @</value>
+    <comment>Short reason, after an example in the Clipboard panel, why the example doesn&apos;t count as what the snippet inserts. Lowercase, without a period, as in the panel&apos;s list</comment>
+  </data>
+  <data name="TextExpander_ClipboardExample_AddWebStart" xml:space="preserve">
+    <value>add https:// or www.</value>
+    <comment>Short reason, after an example in the Clipboard panel, why the example doesn&apos;t count as what the snippet inserts. Lowercase, without a period, as in the panel&apos;s list</comment>
+  </data>
+  <data name="TextExpander_ClipboardExample_NotWebLink" xml:space="preserve">
+    <value>not a web link</value>
+    <comment>Short reason, after an example in the Clipboard panel, why the example doesn&apos;t count as what the snippet inserts. Lowercase, without a period, as in the panel&apos;s list</comment>
+  </data>
+  <data name="TextExpander_ClipboardExample_AddPlusOrSpaces" xml:space="preserve">
+    <value>add a + or spaces</value>
+    <comment>Short reason, after an example in the Clipboard panel, why the example doesn&apos;t count as what the snippet inserts. Lowercase, without a period, as in the panel&apos;s list</comment>
+  </data>
+  <data name="TextExpander_ClipboardExample_TimeAndDate" xml:space="preserve">
+    <value>a time, a date</value>
+    <comment>Short reason, after an example in the Clipboard panel, why the example doesn&apos;t count as what the snippet inserts. Lowercase, without a period, as in the panel&apos;s list</comment>
+  </data>
+  <data name="TextExpander_ClipboardExample_AfterLetter" xml:space="preserve">
+    <value>right after a letter</value>
+    <comment>Short reason, after an example in the Clipboard panel, why the example doesn&apos;t count as what the snippet inserts. Lowercase, without a period, as in the panel&apos;s list</comment>
+  </data>
+  <data name="TextExpander_ClipboardExample_PhoneNumber" xml:space="preserve">
+    <value>a phone number</value>
+    <comment>Short reason, after an example in the Clipboard panel, why the example doesn&apos;t count as what the snippet inserts. Lowercase, without a period, as in the panel&apos;s list</comment>
+  </data>
+  <data name="TextExpander_ClipboardExample_CountsName" xml:space="preserve">
+    <value>Counts: {0}</value>
+    <comment>Read by screen readers for an example that counts, in the Clipboard panel. {0} is the example</comment>
+  </data>
+  <data name="TextExpander_ClipboardExample_DoesntCountName" xml:space="preserve">
+    <value>Doesn&apos;t count: {0}, {1}</value>
+    <comment>Read by screen readers for an example that doesn&apos;t count, in the Clipboard panel. {0} is the example, {1} the reason, such as &quot;add a + or spaces&quot;</comment>
+  </data>
   <data name="TextExpander_ClipboardFlyout_Update.Content" xml:space="preserve">
     <value>Update</value>
     <comment>Button that changes the clipboard variable in the snippet as chosen</comment>

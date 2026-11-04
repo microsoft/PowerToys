@@ -313,9 +313,11 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             AutomationProperties.SetName(part, resource("TextExpander_Variable_ClipboardPart_Name"));
             foreach (ClipboardPart kind in TextExpanderClipboardText.Parts)
             {
-                string token = new ClipboardVariable(Part: kind).ToToken();
-                var item = new MenuFlyoutItem { Text = resource("TextExpander_ClipboardPart_" + kind), Tag = token };
-                ToolTipService.SetToolTip(item, token);
+                // Pointing at a kind says what it needs, with examples the rules find, numbers written the region's way.
+                string hint = TextExpanderClipboardText.Hint(kind, CultureInfo.CurrentCulture, resource);
+                var item = new MenuFlyoutItem { Text = resource("TextExpander_ClipboardPart_" + kind), Tag = new ClipboardVariable(Part: kind).ToToken() };
+                AutomationProperties.SetHelpText(item, hint);
+                ToolTipService.SetToolTip(item, hint);
                 item.Click += InsertVariable_Click;
                 part.Items.Add(item);
             }
@@ -528,6 +530,12 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             ClipboardVariable variable = ReadClipboardChoices();
             bool part = variable.Part != ClipboardPart.All;
             ClipboardNoMatch.Visibility = part ? Visibility.Visible : Visibility.Collapsed;
+            ClipboardExamples.Visibility = part ? Visibility.Visible : Visibility.Collapsed;
+            if (part)
+            {
+                ShowClipboardExamples(variable.Part);
+            }
+
             ClipboardShowsAs.Segments = new[] { new TextExpanderPreviewSegment(TextExpanderPreviewSegmentKind.Clipboard, string.Empty, variable) };
 
             string historyNote = variable.PickCopy ? TextExpanderClipboardHistory.Note(_clipboardHistory.On, _clipboardHistory.TurnedOffByPolicy, ResourceLoaderInstance.ResourceLoader.GetString) : null;
@@ -541,6 +549,43 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             if (!_showingClipboardChoices)
             {
                 UpdateClipboardDraft();
+            }
+        }
+
+        /// <summary>
+        /// Shows what counts as <paramref name="part"/> and what doesn't, by the same rules as a snippet, with numbers written
+        /// the region's way: a check or a cross, the example, and for one that doesn't count, why.
+        /// </summary>
+        private void ShowClipboardExamples(ClipboardPart part)
+        {
+            Func<string, string> resource = ResourceLoaderInstance.ResourceLoader.GetString;
+            ClipboardCountsHeading.Text = TextExpanderClipboardText.CountsHeading(part, resource);
+            ClipboardCountsList.Children.Clear();
+            ClipboardDoesntCountList.Children.Clear();
+            foreach (ClipboardPartExample example in ClipboardPartExamples.For(part, CultureInfo.CurrentCulture))
+            {
+                Panel list = example.Counts ? ClipboardCountsList : ClipboardDoesntCountList;
+                var row = new Grid { ColumnSpacing = 6 };
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                row.Children.Add(new FontIcon
+                {
+                    Glyph = example.Counts ? "\uE73E" : "\uE711",
+                    Style = (Style)Resources[example.Counts ? "ClipboardExampleCountsGlyphStyle" : "ClipboardExampleDoesntCountGlyphStyle"],
+                });
+
+                var text = new TextBlock { Style = (Style)Resources["ClipboardExampleTextStyle"] };
+                text.Inlines.Add(new Run { Text = example.Text });
+                if (TextExpanderClipboardText.Why(example, resource) is { } why)
+                {
+                    text.Inlines.Add(new Run { Text = "  " + why, Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"] });
+                }
+
+                AutomationProperties.SetName(text, TextExpanderClipboardText.Spoken(example, resource));
+                AutomationProperties.SetAutomationId(text, (example.Counts ? "TextExpander_ClipboardExample_Counts_" : "TextExpander_ClipboardExample_DoesntCount_") + list.Children.Count.ToString(CultureInfo.InvariantCulture));
+                Grid.SetColumn(text, 1);
+                row.Children.Add(text);
+                list.Children.Add(row);
             }
         }
 

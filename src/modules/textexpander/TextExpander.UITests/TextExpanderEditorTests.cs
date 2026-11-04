@@ -131,6 +131,50 @@ public sealed class TextExpanderEditorTests : TextExpanderTestBase
     }
 
     /// <summary>
+    /// Pointing at a kind under Insert variable > Clipboard > Only part of it says what it needs, and screen readers get
+    /// the same as its help text. In the Clipboard panel, what counts and what doesn't follows the kind chosen.
+    /// </summary>
+    [TestMethod("TextExpander.Editor.ShowsWhatEachClipboardPartNeeds")]
+    [TestCategory("TextExpander")]
+    [TestCategory("TextExpander.Editor")]
+    public void ShowsWhatEachClipboardPartNeeds()
+    {
+        var editor = OpenEditor(OpenTextExpanderPage());
+        editor.WaitForCount(DefaultSnippets.Count);
+        editor.OpenNewSnippet();
+        editor.SetTrigger(";tehint");
+        editor.FocusReplacement();
+
+        Step("Opening Insert variable > Clipboard > Only part of it");
+        editor.Session.Find<Button>(By.AccessibilityId("Button_TextExpander_InsertVariable"), 10_000).Invoke(msPostAction: 300);
+        editor.Session.WaitForExact<Element>("Clipboard", 10_000, "MenuItem").Click(msPostAction: 300);
+        editor.Session.WaitForExact<Element>("Only part of what's on your clipboard now", 10_000, "MenuItem").Click(msPostAction: 300);
+        var link = editor.Session.WaitForExact<Element>("Link", 10_000, "MenuItem");
+        Assert.AreEqual("Starts with https://, http:// or www., such as https://example.com/track. Just example.com isn't found.", link.HelpText);
+        var phone = editor.Session.WaitForExact<Element>("Phone number", 10_000, "MenuItem");
+        Assert.AreEqual("7 to 15 digits in groups, such as (425) 555-0123, or all together after a +.", phone.HelpText);
+        StringAssert.StartsWith(editor.Session.WaitForExact<Element>("Email address", 10_000, "MenuItem").HelpText, "A name, an @ and a domain with a dot");
+        StringAssert.Contains(editor.Session.WaitForExact<Element>("Number", 10_000, "MenuItem").HelpText, "your region's separators, such as ");
+
+        Step("Selecting Phone number, then F2 on it");
+        phone.Click(msPostAction: 300);
+        Assert.IsTrue(editor.WaitForReplacementText("{{clipboard:phone}}"), $"Replacement holds '{TextExpanderFiles.Visible(editor.ReplacementText)}'.");
+        editor.FocusReplacement();
+        TextInput.Press(0x23);
+        TextInput.Press(0x25);
+        TextInput.Press(0x71);
+        AssertExamples(editor, "Counts as a phone number", "Counts: (425) 555-0123", "Doesn't count: 4255550123, add a + or spaces");
+
+        Step("Choosing Only the link in it");
+        editor.Session.Find<ComboBox>(By.AccessibilityId("TextExpander_ClipboardPart"), 10_000).Select("Only the link in it");
+        AssertExamples(editor, "Counts as a link", "Counts: https://example.com/track", "Doesn't count: example.com, add https:// or www.");
+
+        Step("Pressing Esc, which leaves the snippet as it was");
+        TextInput.Escape();
+        Assert.IsTrue(editor.WaitForReplacementText("{{clipboard:phone}}"), $"Replacement holds '{TextExpanderFiles.Visible(editor.ReplacementText)}'.");
+    }
+
+    /// <summary>
     /// {{Date}} isn't a variable, so it's typed as written: the dialog says so under Replacement, and Use {{date}} fixes
     /// it. Saved as written, its row says it's typed as written and what it likely means.
     /// </summary>
@@ -366,5 +410,22 @@ public sealed class TextExpanderEditorTests : TextExpanderTestBase
         Assert.IsTrue(
             saved.Succeeded,
             $"The database should hold {TextExpanderFiles.Describe(expected)}, but holds {TextExpanderFiles.Describe(actual)}.");
+    }
+
+    /// <summary>Waits for the Clipboard panel to show <paramref name="heading"/> over what counts, and the first of each list.</summary>
+    private void AssertExamples(SnippetEditor editor, string heading, string firstCounts, string firstDoesnt)
+    {
+        foreach ((string id, string name) in new[] { ("TextExpander_ClipboardExamples_Counts", heading), ("TextExpander_ClipboardExample_Counts_0", firstCounts), ("TextExpander_ClipboardExample_DoesntCount_0", firstDoesnt) })
+        {
+            var shown = WaitHelper.WaitForStable(
+                () => editor.Session.Has(By.AccessibilityId(id), timeoutMS: 1_000) ? editor.Session.Find<Element>(By.AccessibilityId(id), 2_000).Name : null,
+                actual => actual == name,
+                timeoutMS: 15_000,
+                requiredConsecutiveMatches: 2,
+                pollIntervalMS: 250);
+            Assert.IsTrue(shown.Succeeded, $"The Clipboard panel's {id} says '{shown.LastObservation}', not '{name}'.");
+        }
+
+        Step($"The Clipboard panel shows '{heading}'");
     }
 }
