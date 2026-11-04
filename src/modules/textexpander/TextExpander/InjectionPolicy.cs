@@ -65,8 +65,11 @@ internal static class InjectionPolicy
     /// Return presses trigger auto-indent and auto-complete. Its last <paramref name="givenBack"/> characters, the
     /// user's own keystrokes given back, such as the space that released the trigger, don't count toward
     /// <paramref name="thresholdChars"/>, and text that is only those, as after a cancelled question, is always typed.
+    /// In Windows Terminal (<paramref name="windowsTerminal"/>), Automatic types one line however long it is: Terminal
+    /// trims trailing whitespace from a one-line paste, which would drop the space given back. Lines still paste there,
+    /// so Terminal's multi-line paste warning still guards them, and Always paste still pastes.
     /// </summary>
-    public static bool ShouldUseClipboard(string text, int thresholdChars, InjectionBackend backend, int givenBack = 0)
+    public static bool ShouldUseClipboard(string text, int thresholdChars, InjectionBackend backend, int givenBack = 0, bool windowsTerminal = false)
     {
         ArgumentNullException.ThrowIfNull(text);
 
@@ -80,7 +83,7 @@ internal static class InjectionPolicy
             return true;
         }
 
-        return text.Contains('\n') || text.Length - givenBack >= Math.Max(1, thresholdChars);
+        return text.Contains('\n') || (!windowsTerminal && text.Length - givenBack >= Math.Max(1, thresholdChars));
     }
 
     /// <summary>Reads a backend name, falling back to <paramref name="fallback"/> on a typo rather than refusing to start.</summary>

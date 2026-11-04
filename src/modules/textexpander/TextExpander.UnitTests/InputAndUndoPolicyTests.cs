@@ -596,6 +596,57 @@ public sealed class InputAndUndoPolicyTests
     }
 
     [TestMethod]
+    [DataRow("you@example.com", "auto", false, "you@example.com")]
+    [DataRow("Hello {{prompt:Name}}", "auto", false, "Hello Ada")]
+    [DataRow("echo first-line\necho second-line", "auto", true, "echo first-line\necho second-line")]
+    [DataRow("you@example.com", "clipboard", true, "you@example.com")]
+    [DataRow("echo first-line\necho second-line", "type", false, "echo first-line\necho second-line")]
+    public void WindowsTerminalGetsOneLineTypedSoTheSpaceGivenBackStays(string replacement, string insertion, bool pasted, string inserted)
+    {
+        // Windows Terminal trims trailing whitespace from a one-line paste, so the space given back after a pasted snippet
+        // was lost there. With Automatic, one line is typed instead, after a question's answer too. Lines still paste, so
+        // Terminal's multi-line paste warning still guards them, and Always paste and Always type still decide.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=" + replacement);
+        using var hook = new KeyboardHook(store);
+        var box = new FakeTextBox("Before ", hook);
+        TypeInto(hook, box, "!abc ");
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+
+        InjectionBackend original = Injector.Backend;
+        int threshold = Injector.ClipboardThresholdChars;
+        bool usedClipboard = false;
+        var asked = new List<IntPtr>();
+        try
+        {
+            Injector.Backend = InjectionPolicy.ParseBackend(insertion, InjectionBackend.Auto);
+            Injector.ClipboardThresholdChars = 5;
+            Program.ReplaceText insert = Into(
+                box,
+                (text, window, send, keepAlive) =>
+                {
+                    usedClipboard = true;
+                    return box.Paste(text, window, send, keepAlive);
+                },
+                isWindowsTerminal: window =>
+                {
+                    asked.Add(window);
+                    return true;
+                });
+            Assert.IsTrue(Program.TryExpand(hook, work with { TargetWindow = IntPtr.Zero }, insert, isKeyDown: _ => false, ask: (_, _, _) => PromptText.Result(accepted: true, "Ada")));
+        }
+        finally
+        {
+            Injector.Backend = original;
+            Injector.ClipboardThresholdChars = threshold;
+        }
+
+        Assert.AreEqual(pasted, usedClipboard, replacement);
+        Assert.AreEqual($"Before {inserted} |", box.ToString());
+        CollectionAssert.AreEqual(new[] { new IntPtr(1) }, asked, "Asked once, about the window in front.");
+    }
+
+    [TestMethod]
     public void OnlyAModifierPressedBeforeTheInsertionStartsLetsItGoAhead()
     {
         // Shift or Ctrl on their own, even remapped and so not matched, move no caret; any other key may.
@@ -968,9 +1019,10 @@ public sealed class InputAndUndoPolicyTests
 
     /// <summary>
     /// Runs <see cref="Program.TryExpand"/>'s insertions through the injector into <paramref name="box"/>, pasting with
-    /// <paramref name="paste"/> or the box's own Ctrl+V.
+    /// <paramref name="paste"/> or the box's own Ctrl+V, in a Windows Terminal window when <paramref name="isWindowsTerminal"/>
+    /// says so.
     /// </summary>
-    private static Program.ReplaceText Into(FakeTextBox box, Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, Action, PasteOutcome>? paste = null)
+    private static Program.ReplaceText Into(FakeTextBox box, Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, Action, PasteOutcome>? paste = null, Func<IntPtr, bool>? isWindowsTerminal = null)
         => (backspaces, text, target, left, right, guard, generation, inserted, givenBack) => Injector.ReplaceCore(
             backspaces,
             text,
@@ -987,5 +1039,6 @@ public sealed class InputAndUndoPolicyTests
             sleep: _ => { },
             inserted: inserted,
             givenBack: givenBack,
-            isOpenByTarget: box.TookPaste);
+            isOpenByTarget: box.TookPaste,
+            isWindowsTerminal: isWindowsTerminal ?? (_ => false));
 }

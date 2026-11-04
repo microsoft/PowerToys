@@ -200,7 +200,8 @@ internal static class Injector
         Action? inserted = null,
         int givenBack = 0,
         Func<bool>? isOpenByTarget = null,
-        Func<long>? clock = null)
+        Func<long>? clock = null,
+        Func<IntPtr, bool>? isWindowsTerminal = null)
     {
         ArgumentNullException.ThrowIfNull(canDrive);
 
@@ -210,6 +211,7 @@ internal static class Injector
         sleep ??= Thread.Sleep;
         isOpenByTarget ??= () => Clipboard.IsOpenByTarget(targetWindow);
         clock ??= static () => (long)System.Diagnostics.Stopwatch.GetElapsedTime(0).TotalMilliseconds;
+        isWindowsTerminal ??= InputTarget.IsWindowsTerminal;
 
         // How the paste's Ctrl hold went, for the settle that carries on from it.
         PasteHold hold = default;
@@ -232,7 +234,8 @@ internal static class Injector
             sleep(PreBackspaceDelayMs);
         }
 
-        bool pasting = text.Length > 0 && InjectionPolicy.ShouldUseClipboard(text, ClipboardThresholdChars, Backend, givenBack);
+        bool pasting = text.Length > 0
+            && InjectionPolicy.ShouldUseClipboard(text, ClipboardThresholdChars, Backend, givenBack, isWindowsTerminal(targetWindow != IntPtr.Zero ? targetWindow : getForegroundWindow()));
         PasteOutcome outcome = pasting ? PasteOutcome.TargetLost : PasteOutcome.NotAttempted;
         bool sentAny = false;
         bool guarded = false;

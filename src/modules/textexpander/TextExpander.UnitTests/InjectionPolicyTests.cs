@@ -32,6 +32,39 @@ public sealed class InjectionPolicyTests
     }
 
     [TestMethod]
+    public void WindowsTerminalGetsOneLineTypedWhateverItsLength()
+    {
+        // Terminal trims trailing whitespace from a one-line paste, so the space given back after a pasted snippet was lost.
+        Assert.IsFalse(InjectionPolicy.ShouldUseClipboard("you@example.com ", 5, InjectionBackend.Auto, givenBack: 1, windowsTerminal: true));
+        Assert.IsFalse(InjectionPolicy.ShouldUseClipboard(new string('x', 500), 5, InjectionBackend.Auto, windowsTerminal: true));
+
+        // Lines still paste there, so Terminal's multi-line paste warning still guards them.
+        Assert.IsTrue(InjectionPolicy.ShouldUseClipboard("echo first-line\necho second-line ", 5, InjectionBackend.Auto, givenBack: 1, windowsTerminal: true));
+
+        // The insertion method chosen in Settings still decides: Always paste pastes, and the space is lost; Always type types.
+        Assert.IsTrue(InjectionPolicy.ShouldUseClipboard("you@example.com ", 5, InjectionBackend.Clipboard, givenBack: 1, windowsTerminal: true));
+        Assert.IsFalse(InjectionPolicy.ShouldUseClipboard("echo first-line\necho second-line", 5, InjectionBackend.Typing, windowsTerminal: true));
+
+        // Anywhere else, nothing changes.
+        Assert.IsTrue(InjectionPolicy.ShouldUseClipboard("you@example.com ", 5, InjectionBackend.Auto, givenBack: 1, windowsTerminal: false));
+    }
+
+    [TestMethod]
+    public void WindowsTerminalIsKnownByItsWindowClass()
+    {
+        Assert.IsTrue(InputTarget.IsWindowsTerminalClass("CASCADIA_HOSTING_WINDOW_CLASS"));
+        Assert.IsTrue(InputTarget.IsWindowsTerminalClass("cascadia_hosting_window_class"), "Window classes ignore case.");
+
+        // The console window Windows Terminal replaced doesn't trim a paste.
+        Assert.IsFalse(InputTarget.IsWindowsTerminalClass("ConsoleWindowClass"));
+        Assert.IsFalse(InputTarget.IsWindowsTerminalClass("CASCADIA_HOSTING_WINDOW_CLASS_2"));
+        Assert.IsFalse(InputTarget.IsWindowsTerminalClass("Notepad"));
+        Assert.IsFalse(InputTarget.IsWindowsTerminalClass(string.Empty));
+        Assert.IsFalse(InputTarget.IsWindowsTerminalClass(null));
+        Assert.IsFalse(InputTarget.IsWindowsTerminal(IntPtr.Zero));
+    }
+
+    [TestMethod]
     public void EnvironmentParsingAcceptsDocumentedValuesOnly()
     {
         Assert.AreEqual(InjectionBackend.Typing, InjectionPolicy.ParseBackend("type", InjectionBackend.Auto));

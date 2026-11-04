@@ -16,6 +16,9 @@ internal static class InputTarget
     /// <summary>Windows' medium integrity RID (<c>SECURITY_MANDATORY_MEDIUM_RID</c>).</summary>
     internal const uint MediumIntegrity = 0x2000;
 
+    /// <summary>Windows Terminal's top-level window class.</summary>
+    internal const string WindowsTerminalClass = "CASCADIA_HOSTING_WINDOW_CLASS";
+
     private static uint? _ourIntegrity;
     private static bool _ourIntegrityRead;
     private static uint _trustCeiling = MediumIntegrity;
@@ -116,6 +119,31 @@ internal static class InputTarget
         => !string.IsNullOrEmpty(imagePath)
             && (string.Equals(Path.GetFileName(imagePath), "PowerToys.Settings.exe", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(Path.GetFileName(imagePath), "PowerToys.TextExpander.Editor.exe", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// True when <paramref name="window"/> is a Windows Terminal window. Terminal trims trailing whitespace from a one-line
+    /// paste (its <c>trimPaste</c> setting, on by default), so the space given back after a pasted snippet would be lost.
+    /// Asked by the worker once per insertion, never per key.
+    /// </summary>
+    public static bool IsWindowsTerminal(IntPtr window)
+    {
+        if (window == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        // One longer than the class name, so a longer name that starts with it doesn't match.
+        char[] name = new char[WindowsTerminalClass.Length + 2];
+        int written = Native.GetClassNameW(window, name, name.Length);
+        return written > 0 && IsWindowsTerminalClass(new string(name, 0, written));
+    }
+
+    /// <summary>
+    /// True for Windows Terminal's top-level window class, which its stable, Preview and Canary builds share, and which
+    /// it keeps when it hosts console apps as the default terminal.
+    /// </summary>
+    internal static bool IsWindowsTerminalClass(string? className)
+        => string.Equals(className, WindowsTerminalClass, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Our own integrity level, read once: it can't change while the process runs.</summary>
     private static uint? OurIntegrityLevel()

@@ -115,6 +115,9 @@ keys out of an insertion.
 
 - Automatic pastes text with a line break, or text at least `clipboard_threshold_chars` (default 5)
   long, not counting the given-back key.
+- In Windows Terminal (window class `CASCADIA_HOSTING_WINDOW_CLASS`), Automatic types any snippet
+  without a line break, since Terminal's `trimPaste` would drop the given-back space. Snippets with
+  line breaks still paste, and Always paste still pastes there, losing the space.
 - Ctrl+V goes 300 ms after the erase, since Notepad drops a Ctrl+V during an edit. Ctrl goes down in
   its own call. Notepad reads it late, so it stays down until the target opens the clipboard, at most
   350 ms after the V. Unguarded, Ctrl+V is one call.
@@ -316,8 +319,9 @@ Privacy:
 - `Settings.UI.UnitTests` (`TextExpanderSettingsTests`): the Settings page.
 - `BugReportTool.UnitTests` (`TextExpanderPrivacyTests`): no snippets in bug reports.
 - `TextExpander.FuzzTests`: OneFuzz targets `FuzzSnippetFile` and `FuzzExpandSnippet`.
-- `TextExpander.UITests`: Settings, editor and expansion, end to end. Each test seeds the files, runs
-  PowerToys with only Text Expander on, then restores the files.
+- `TextExpander.UITests`: Settings, editor and expansion, end to end, plus Windows Terminal where it's
+  installed. Each test seeds the files, runs PowerToys with only Text Expander on, then restores the
+  files.
 
 UI tests must run without administrator rights, because the engine refuses elevated targets. The
 pipeline runs them through `.pipelines/runUiTestAsUser.ps1`, with the runner and Settings signed.
