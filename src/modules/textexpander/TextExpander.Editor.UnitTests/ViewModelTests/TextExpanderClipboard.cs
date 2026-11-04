@@ -135,6 +135,10 @@ namespace ViewModelTests
             StringAssert.Contains(code, "Style = (Style)Resources[\"MenuHeadingItemStyle\"]");
             StringAssert.Contains(code, "_replacementEditor.ReplaceVariable(", "Update changes the variable as one undo step.");
 
+            // NumberBox takes what was typed as Enter comes up, so Enter there commits on its key-up, not at key-down.
+            StringAssert.Contains(code, "ClipboardIndexBox.AddHandler(KeyUpEvent, new KeyEventHandler(ClipboardIndexBox_KeyUp), handledEventsToo: true);");
+            StringAssert.Contains(code, "!IsWithin(e.OriginalSource as DependencyObject, ClipboardIndexBox)");
+
             string editor = RepositoryFiles.Text(@"src\modules\textexpander\TextExpander.Editor\Helpers\TextExpanderReplacementEditor.cs");
             StringAssert.Contains(editor, "ClipboardEditRequested?.Invoke(", "Clicking a clipboard variable or pressing F2 on it opens the panel.");
         }

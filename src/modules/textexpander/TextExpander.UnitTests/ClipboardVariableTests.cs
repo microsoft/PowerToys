@@ -233,6 +233,11 @@ public sealed class ClipboardVariableTests
     [DataRow("fr-FR", "Call 01 23 45 67 89, not 1 234 567", "01 23 45 67 89")]
     [DataRow("de-DE", "Phone 030/1234567 or 0049 30 1234567", "030/1234567|0049 30 1234567")]
     [DataRow("en-GB", "Ring 020 7946 0018", "020 7946 0018")]
+    [DataRow("en-US", "Call +1(425)555-0123 or 1(800)555-0199", "+1(425)555-0123|1(800)555-0199")]
+    [DataRow("en-GB", "Ring +44(0)20 7946 0018 or (+44) 20 7946 0019", "+44(0)20 7946 0018|(+44) 20 7946 0019")]
+    [DataRow("en-US", "Ref 1234 5678 9012 3456 7890 1234", "")]
+    [DataRow("en-US", "Invoice 00012345, account 0012345678", "")]
+    [DataRow("en-US", "Order 1042 +1 425 555 0123", "+1 425 555 0123")]
     public void PhoneNumbers(string culture, string text, string expected)
         => Assert.AreEqual(expected, string.Join("|", ClipboardParts.Find(text, ClipboardPart.Phone, CultureInfo.GetCultureInfo(culture))));
 
@@ -249,6 +254,9 @@ public sealed class ClipboardVariableTests
     [DataRow("en-IN", "₹1,23,45,678.50 and 12,345", "1,23,45,678.50|12,345")]
     [DataRow("de-CH", "Price 1'234.50 and 1’000", "1'234.50|1’000")]
     [DataRow("en-US", "Temperature \u22125 and 4\u22122", "\u22125|4|2")]
+    [DataRow("en-US", "Invoice 00012345", "00012345")]
+    [DataRow("en-US", "Call at 10:30am, 9:45PM or 10:30h about order 1042", "1042")]
+    [DataRow("ar-SA", "Total 1,234.56 and 1,234,567 and 1.234,56", "1,234.56|1,234,567|1.234,56")]
     public void Numbers(string culture, string text, string expected)
         => Assert.AreEqual(expected, string.Join("|", ClipboardParts.Find(text, ClipboardPart.Number, CultureInfo.GetCultureInfo(culture))));
 

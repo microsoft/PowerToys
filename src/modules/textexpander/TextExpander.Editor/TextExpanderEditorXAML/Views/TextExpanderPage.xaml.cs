@@ -103,6 +103,10 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             _replacementEditor.ClipboardEditRequested += ReplacementEditor_ClipboardEditRequested;
             BuildClipboardChoices();
 
+            // NumberBox reads what was typed into its value as Enter comes up, so Enter there commits after that, on its
+            // own handled key-up, rather than at key-down with the value from before.
+            ClipboardIndexBox.AddHandler(KeyUpEvent, new KeyEventHandler(ClipboardIndexBox_KeyUp), handledEventsToo: true);
+
             // The guide follows the caret into and out of {{date:…}} variables, and what it shows follows the typing.
             _replacementEditor.TextChanged += (_, _) => UpdateDateFormatGuide();
             _replacementEditor.SelectionChanged += (_, _) => UpdateDateFormatGuide();
@@ -586,12 +590,34 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 e.Handled = true;
                 ClipboardFlyout.Hide();
             }
-            else if (e.Key == global::Windows.System.VirtualKey.Enter && e.OriginalSource is not (Button or ComboBox or ComboBoxItem))
+            else if (e.Key == global::Windows.System.VirtualKey.Enter && e.OriginalSource is not (Button or ComboBox or ComboBoxItem)
+                && !IsWithin(e.OriginalSource as DependencyObject, ClipboardIndexBox))
             {
-                // A button gets its own Enter, and a list opens with it.
+                // A button gets its own Enter, a list opens with it, and the number box commits on its key-up.
                 e.Handled = true;
                 CommitClipboardEdit();
             }
+        }
+
+        private void ClipboardIndexBox_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == global::Windows.System.VirtualKey.Enter && _clipboardEdit != null)
+            {
+                CommitClipboardEdit();
+            }
+        }
+
+        private static bool IsWithin(DependencyObject element, DependencyObject ancestor)
+        {
+            for (; element != null; element = VisualTreeHelper.GetParent(element))
+            {
+                if (ReferenceEquals(element, ancestor))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void ClipboardUpdate_Click(object sender, RoutedEventArgs e) => CommitClipboardEdit();

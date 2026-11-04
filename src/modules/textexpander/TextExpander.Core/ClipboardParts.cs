@@ -35,9 +35,11 @@ public static class ClipboardParts
         RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
 
     // IP addresses, dates written with digits and a year of two or four digits (2026-11-02, 11/2/2026, 02.11.26) and times
-    // (10:30), which are neither phone numbers nor numbers. IP addresses first, so 192.168.1.10 isn't read as a date.
+    // (10:30, 10:30am, 9:45PM, 10:30h), which are neither phone numbers nor numbers. IP addresses first, so 192.168.1.10 isn't
+    // read as a date. A time also takes the character after it, which isn't a digit or a colon, as there's no look-ahead
+    // without backtracking.
     private static readonly Regex DateTimePattern = new(
-        @"\b(?:\d{1,3}(?:\.\d{1,3}){3}|\d{4}-\d{1,2}-\d{1,2}(?:[T ]\d{1,2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+\-]\d{2}:?\d{2})?)?|\d{4}/\d{1,2}/\d{1,2}|\d{4}\.\d{1,2}\.\d{1,2}|\d{1,2}/\d{1,2}/(?:\d{4}|\d{2})|\d{1,2}\.\d{1,2}\.(?:\d{4}|\d{2})|\d{1,2}-\d{1,2}-\d{4}|\d{1,2}:\d{2}(?::\d{2})?)\b",
+        @"\b(?:(?:\d{1,3}(?:\.\d{1,3}){3}|\d{4}-\d{1,2}-\d{1,2}(?:[T ]\d{1,2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+\-]\d{2}:?\d{2})?)?|\d{4}/\d{1,2}/\d{1,2}|\d{4}\.\d{1,2}\.\d{1,2}|\d{1,2}/\d{1,2}/(?:\d{4}|\d{2})|\d{1,2}\.\d{1,2}\.(?:\d{4}|\d{2})|\d{1,2}-\d{1,2}-\d{4})\b|\d{1,2}:\d{2}(?::\d{2})?(?:[^\d:]|$))",
         RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
 
     /// <summary>
@@ -195,10 +197,10 @@ public static class ClipboardParts
     }
 
     /// <summary>
-    /// Finds phone numbers: 7 to 15 digits written with a + or 00 in front, or in groups with spaces, dashes, dots, slashes
-    /// or brackets between them, such as +1 425 555 0123, (425) 555-0123, 555-0123 or 01 23 45 67 89. Digits all together
-    /// are a number, unless a + leads them. So are digits grouped as the region groups thousands, such as 1 234 567 in
-    /// France, and two groups with a dot or comma between, such as 3.14159265.
+    /// Finds phone numbers: 7 to 15 digits written in groups with spaces, dashes, dots, slashes or brackets between them,
+    /// or all together after a +, such as +1 425 555 0123, +1(425)555-0123, (425) 555-0123, 555-0123, +44 (0)20 7946 0018
+    /// or 01 23 45 67 89. Digits all together are a number, unless a + leads them. So are digits grouped as the region
+    /// groups thousands, such as 1 234 567 in France, and two groups with a dot or comma between, such as 3.14159265.
     /// </summary>
     private static List<(int Start, int End)> FindPhones(string text, CultureInfo culture, Mask mask)
     {
@@ -215,11 +217,7 @@ public static class ClipboardParts
                 continue;
             }
 
-            char character = text[index];
-            bool canStart = character == '+' || character == '('
-                ? index + 1 < text.Length && char.IsDigit(text[index + 1])
-                : char.IsDigit(character);
-            if (!canStart || (index > 0 && !CanStartPhoneAfter(text[index - 1])))
+            if (!StartsPhone(text, index) || (index > 0 && !CanStartPhoneAfter(text[index - 1])))
             {
                 index++;
                 continue;
@@ -227,7 +225,7 @@ public static class ClipboardParts
 
             groups.Clear();
             separators.Clear();
-            bool plus = character == '+';
+            bool plus = text[index] == '+';
             bool brackets = false;
             int digits = 0;
             int end = index;
@@ -237,19 +235,27 @@ public static class ClipboardParts
                 bool closedBracket = false;
                 if (text[position] == '(' && !brackets && digits <= 4)
                 {
-                    int close = position + 1;
+                    // An area code, a trunk 0 as in +44 (0)20, or a country code with its + as in (+44).
+                    int open = position + 1;
+                    if (open < text.Length && text[open] == '+' && digits == 0 && !plus)
+                    {
+                        plus = true;
+                        open++;
+                    }
+
+                    int close = open;
                     while (close < text.Length && char.IsDigit(text[close]))
                     {
                         close++;
                     }
 
-                    if (close == position + 1 || close - position - 1 > 5 || close >= text.Length || text[close] != ')')
+                    if (close == open || close - open > 5 || close >= text.Length || text[close] != ')')
                     {
                         break;
                     }
 
-                    groups.Add((position + 1, close));
-                    digits += close - position - 1;
+                    groups.Add((open, close));
+                    digits += close - open;
                     brackets = true;
                     closedBracket = true;
                     position = close + 1;
@@ -277,8 +283,8 @@ public static class ClipboardParts
                     break;
                 }
 
-                // (425)555-0123: digits may follow a closing bracket directly.
-                if (closedBracket && position < text.Length && char.IsDigit(text[position]))
+                // A group may follow brackets directly, as in (425)555-0123, and brackets a group, as in +1(425).
+                if (position < text.Length && (closedBracket ? char.IsDigit(text[position]) : text[position] == '(' && !brackets))
                 {
                     continue;
                 }
@@ -295,22 +301,72 @@ public static class ClipboardParts
                 break;
             }
 
-            bool internationalPrefix = !plus && digits > 2 && index + 1 < text.Length && text[index] == '0' && text[index + 1] == '0';
+            // A separator before brackets that weren't a group isn't between groups.
+            while (separators.Count > 0 && separators.Count >= groups.Count)
+            {
+                separators.RemoveAt(separators.Count - 1);
+            }
+
             bool isPhone = digits >= MinPhoneDigits && digits <= MaxPhoneDigits
-                && (plus || brackets || separators.Count > 0 || internationalPrefix)
+                && (plus || brackets || separators.Count > 0)
                 && (end >= text.Length || !char.IsLetterOrDigit(text[end]))
                 && (plus || brackets || (!IsDate(groups, separators) && !IsGroupedNumber(groups, separators, format)
                     && !(groups.Count == 2 && separators[0] is '.' or ',')));
             if (isPhone)
             {
                 spans.Add((index, end));
+                index = end;
             }
-
-            // The digits looked at aren't looked at again, so a date's parts don't start numbers of their own.
-            index = Math.Max(position, index + 1);
+            else if (digits > MaxPhoneDigits)
+            {
+                // Too long to be one, so the rest of its run isn't one either, as with a long reference's last groups.
+                index = SkipRun(text, position);
+            }
+            else
+            {
+                // The digits looked at aren't looked at again, so a date's parts don't start numbers of their own.
+                index = Math.Max(position, index + 1);
+            }
         }
 
         return spans;
+    }
+
+    /// <summary>Gets whether a phone number can start at <paramref name="index"/>: a digit, a + before one, or a bracket before either.</summary>
+    private static bool StartsPhone(string text, int index)
+    {
+        char character = text[index];
+        if (char.IsDigit(character))
+        {
+            return true;
+        }
+
+        if (index + 1 >= text.Length || character is not ('+' or '('))
+        {
+            return false;
+        }
+
+        char next = text[index + 1];
+        return char.IsDigit(next) || (character == '(' && next == '+' && index + 2 < text.Length && char.IsDigit(text[index + 2]));
+    }
+
+    /// <summary>Gets where the run of digits, and brackets and separators between them, that <paramref name="position"/> is in ends.</summary>
+    private static int SkipRun(string text, int position)
+    {
+        while (position < text.Length)
+        {
+            char character = text[position];
+            bool joins = char.IsDigit(character) || character is '(' or ')'
+                || (IsPhoneSeparator(character) && position + 1 < text.Length && (char.IsDigit(text[position + 1]) || text[position + 1] == '('));
+            if (!joins)
+            {
+                break;
+            }
+
+            position++;
+        }
+
+        return position;
     }
 
     private static bool CanStartPhoneAfter(char previous)
@@ -406,9 +462,12 @@ public static class ClipboardParts
                 break;
             }
 
+            // The region's way, then a dot or a comma as the decimal separator with the other between groups, so a number
+            // written elsewhere's way is one too, wherever the region puts its decimal separator.
             if (IsNumber(groups, separators, format.DecimalSeparator, format, format.GroupSizes)
                 || (separators.Count == 1 && separators[0] is '.' or ',')
-                || IsNumber(groups, separators, format.DecimalSeparator == ',' ? '.' : ',', other: null, [3]))
+                || IsNumber(groups, separators, '.', other: null, [3])
+                || IsNumber(groups, separators, ',', other: null, [3]))
             {
                 spans.Add((index, position));
             }
