@@ -183,6 +183,7 @@ jobs:
     displayName: Restore interrupted Light Switch location setup
 
   - ${{ if eq(parameters.useLatestWebView2, true) }}:
+    # Inbox InternationalSettings cmdlets require Windows PowerShell on Windows 10.
     - powershell: |
         $edge_url = 'https://go.microsoft.com/fwlink/?linkid=2084649&Channel=Canary&language=en'
         $timeout = New-TimeSpan -Minutes 6
@@ -463,7 +464,7 @@ jobs:
       env:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 
-  - pwsh: |
+  - powershell: |
       $ErrorActionPreference = 'Stop'
       $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
       if (-not [string]::IsNullOrWhiteSpace($env:AUTO_UI_TEST_MODULES)) {
@@ -501,7 +502,7 @@ jobs:
         Write-Host "Verified OCR capability: $name"
       }
     displayName: "Provision PowerOCR test languages"
-    timeoutInMinutes: 20
+    timeoutInMinutes: 60
     condition: and(succeeded(), eq(variables['RunGenericUiTests'], 'true'))
     ${{ if eq(parameters.autoSelectUiTests, true) }}:
       env:
