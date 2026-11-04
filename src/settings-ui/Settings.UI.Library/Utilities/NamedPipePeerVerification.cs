@@ -4,6 +4,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Reflection.PortableExecutable;
@@ -184,6 +185,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
                     return false;
                 }
 
+                if (!MeetsComponentIdentityPolicy(ownImagePath, actualFullPath, expectedExeName))
+                {
+                    rejectionReason = "wrong-image";
+                    return false;
+                }
+
                 rejectionReason = string.Empty;
                 return true;
             }
@@ -272,6 +279,40 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             // Signed product components are signed separately and carry their own leaf certificates.
             return !ownHasEmbeddedSignature ||
                 (HasTrustedMicrosoftSignature(ownImagePath) && HasTrustedMicrosoftSignature(peerImagePath));
+        }
+
+        private static bool MeetsComponentIdentityPolicy(string ownImagePath, string peerImagePath, string expectedExeName)
+        {
+            if (!TryHasEmbeddedAuthenticodeSignature(ownImagePath, out var ownHasEmbeddedSignature))
+            {
+                return false;
+            }
+
+            return !ownHasEmbeddedSignature || HasExpectedProductIdentity(ownImagePath, peerImagePath, expectedExeName);
+        }
+
+        // A Microsoft signature alone does not make the peer a PowerToys component. The version
+        // resource is covered by the verified signature, so it must name our product and the
+        // expected executable; a renamed copy of another Microsoft binary fails here.
+        private static bool HasExpectedProductIdentity(string ownImagePath, string peerImagePath, string expectedExeName)
+        {
+            try
+            {
+                var ownVersion = FileVersionInfo.GetVersionInfo(ownImagePath);
+                var peerVersion = FileVersionInfo.GetVersionInfo(peerImagePath);
+
+                return !string.IsNullOrEmpty(ownVersion.ProductName) &&
+                    string.Equals(ownVersion.ProductName, peerVersion.ProductName, StringComparison.Ordinal) &&
+                    !string.IsNullOrEmpty(peerVersion.OriginalFilename) &&
+                    string.Equals(
+                        Path.GetFileNameWithoutExtension(peerVersion.OriginalFilename),
+                        Path.GetFileNameWithoutExtension(expectedExeName),
+                        StringComparison.OrdinalIgnoreCase);
+            }
+            catch (IOException)
+            {
+                return false;
+            }
         }
 
         private static bool TryHasEmbeddedAuthenticodeSignature(string imagePath, out bool hasEmbeddedSignature)

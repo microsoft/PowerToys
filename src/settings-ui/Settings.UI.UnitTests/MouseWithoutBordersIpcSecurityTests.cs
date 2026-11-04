@@ -375,6 +375,22 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         }
 
         [TestMethod]
+        public void ProductIdentityRejectsRenamedMicrosoftSignedBinary()
+        {
+            var ownImagePath = GetCurrentExecutablePath();
+            var ownExeName = Path.GetFileName(ownImagePath);
+            var otherMicrosoftBinary = GetKnownEmbeddedMicrosoftSignedDependencyPath();
+
+            Assert.IsTrue(HasExpectedProductIdentity(ownImagePath, ownImagePath, ownExeName));
+            Assert.IsFalse(
+                HasExpectedProductIdentity(ownImagePath, otherMicrosoftBinary, Path.GetFileName(otherMicrosoftBinary)),
+                "A Microsoft-signed binary from another product must not pass as a PowerToys component.");
+            Assert.IsFalse(
+                HasExpectedProductIdentity(ownImagePath, ownImagePath, "PowerToys.Unexpected.exe"),
+                "A component renamed to another executable name must be rejected.");
+        }
+
+        [TestMethod]
         public void IntactAuthenticodeSignatureAcceptsEmbeddedMicrosoftSignedDependency()
         {
             var signedBinary = GetKnownEmbeddedMicrosoftSignedDependencyPath();
@@ -1087,6 +1103,13 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             var method = typeof(NamedPipePeerVerification).GetMethod("MeetsSigningPolicy", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.IsNotNull(method);
             return (bool)method!.Invoke(null, new object[] { ownImagePath, peerImagePath })!;
+        }
+
+        private static bool HasExpectedProductIdentity(string ownImagePath, string peerImagePath, string expectedExeName)
+        {
+            var method = typeof(NamedPipePeerVerification).GetMethod("HasExpectedProductIdentity", BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.IsNotNull(method);
+            return (bool)method!.Invoke(null, new object[] { ownImagePath, peerImagePath, expectedExeName })!;
         }
 
         private static bool HaveEqualOrNestedDirectories(string firstDirectory, string secondDirectory)
