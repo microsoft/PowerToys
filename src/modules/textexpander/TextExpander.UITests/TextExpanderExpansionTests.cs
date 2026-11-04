@@ -31,7 +31,7 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
 
     internal override IReadOnlyList<Snippet>? InitialSnippets => TestContext.TestName switch
     {
-        nameof(ClipboardPartsGoInAndAMatchIsPickedInTextExpandersWindow) or nameof(CancellingAPickCancelsTheSnippet) => [.. DefaultSnippets, ReplyTo, TrackLink],
+        nameof(ClipboardPartsGoInAndAMatchIsPickedInTextExpandersWindow) or nameof(CancellingAPickCancelsTheSnippet) or nameof(NothingFoundLeavesTheSpotEmptyAndTypingGoesOn) => [.. DefaultSnippets, ReplyTo, TrackLink],
         nameof(PickingACopyInsertsWhatClipboardHistoryHas) => [.. DefaultSnippets, PickACopy],
         _ => DefaultSnippets,
     };
@@ -160,6 +160,24 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
         AssertTargetShows("Track: https://example.com/returns ");
         var clipboard = WaitHelper.WaitForStable(ClipboardHelper.GetText, text => text == CopiedBlock, timeoutMS: 10_000, requiredConsecutiveMatches: 3, pollIntervalMS: 200);
         Assert.IsTrue(clipboard.Succeeded, $"The clipboard holds '{TextExpanderFiles.Visible(clipboard.LastObservation)}', not what was copied.");
+    }
+
+    /// <summary>
+    /// A copy without the part a snippet inserts leaves that spot empty, and the rest goes in. A notice at the cursor then
+    /// says why, and it never takes the focus: what's typed next goes on into the app.
+    /// </summary>
+    [TestMethod("TextExpander.Expansion.NothingFoundLeavesTheSpotEmptyAndTypingGoesOn")]
+    [TestCategory("TextExpander")]
+    [TestCategory("TextExpander.Expansion")]
+    public void NothingFoundLeavesTheSpotEmptyAndTypingGoesOn()
+    {
+        Assert.IsTrue(ClipboardHelper.SetText("Order 1042 shipped today."), "The clipboard could not be set.");
+        AssertExpands(ReplyTo.Trigger + " ", "Reply to  ", waitForEngine: true);
+
+        Step("Typing on right away");
+        TextInput.Type("soon");
+        AssertTargetShows("Reply to  soon");
+        Assert.AreEqual(Target.Handle, WindowControl.GetForegroundWindowHandle(), $"The app lost the focus. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
     }
 
     /// <summary>Esc on the choice window cancels the whole snippet, as on a question: the box shows exactly what was typed.</summary>

@@ -88,6 +88,29 @@ erases each trigger and pastes or types the snippet. A separate editor manages t
 - Keys typed after the last answer land after the snippet. The worker waits up to 350 ms for the
   target to return.
 
+### Clipboard variables
+
+- `{{clipboard}}` inserts the text on the clipboard now. `{{clipboard:email}}`, `:link`, `:phone` and
+  `:number` insert only that part of it. `{{clipboard:pick}}` and `{{clipboard:pick:<part>}}` take
+  from clipboard history instead. Nothing else is a clipboard variable.
+- `ClipboardParts.Find` finds each different part once, in order, in linear time, and reads only the
+  first 1,000,000 characters. Links start with `https://`, `http://` or `www.`. Phone numbers have 7
+  to 15 digits in groups, or all together after a `+`. Numbers follow the region's separators. Dates,
+  times and IP addresses are neither, and nothing inside a link or an email address is either.
+- One match or copy goes straight in. Two or more open the chooser (`ClipboardChoiceWindow`, on the
+  prompt thread) with at most 100 options. Cancel cancels the snippet, as with a question.
+- For history, the engine reads up to 25 text copies on another thread while any questions are asked,
+  waiting at most 3 s. `{{clipboard:pick:<part>}}` offers the different matches across the copies,
+  newest first. What's read is used for that expansion only.
+- None leaves the spot empty, and the rest goes in. `ExpandedSnippet.Gaps` says why: not found,
+  history off, no copies, or unreadable. Once the insertion and its guard are done, the worker shows
+  one notice at the caret (`ClipboardNotice`, `NoticeBubble`). It never shows what was copied. The
+  user's next key or click fades it, but the engine's own input doesn't.
+- In the editor, each part under **Insert variable > Clipboard** has a tooltip saying what it needs.
+  Clicking a clipboard variable, or F2 on it, opens the Clipboard panel to change its copy and part,
+  with examples of what counts. Both come from `ClipboardPartExamples`, which a unit test holds to
+  `Find` in five regions.
+
 ### Insertion guard
 
 `SendInput` batches don't stay whole while any low-level hook runs, so `InsertionGuard` keeps user
@@ -153,8 +176,8 @@ keys out of an insertion.
 
 ### Undo with Ctrl+Z
 
-- The hook records each insertion before held keys go back, except snippets with a prompt or
-  `{{clipboard}}`.
+- The hook records each insertion before held keys go back, except snippets with a prompt or a
+  clipboard variable.
 - Ctrl+Z alone, in the same window, undoes it. Ctrl+Shift+Z stays redo. Any other non-modifier key, a
   click or a focus change ends the undo.
 - The worker waits up to 1 s for modifiers to go up, or gives up: Ctrl+Backspace deletes words. It
@@ -245,6 +268,11 @@ Rules a change must keep:
   can't be empty or contain `}`.
 - **Insert variable** offers only what `Variables` implements. The date guide and the preview use
   Core's `Variables`, and never read the clipboard.
+- Text that looks like a variable but isn't one, such as `{{Date}}` or `{{clipboard:link:2}}`, stays
+  as typed. `TextExpanderNearMiss` says so under Replacement and in the row, and **Use** puts in the
+  likely variable.
+- A snippet that picks from clipboard history while it's off gets a note under Replacement and in the
+  Clipboard panel, with a link to Windows Settings unless a policy turned history off.
 - **Refresh** re-reads the file in the editor only.
 - **Open in text editor** opens a `.json` file in the app Windows uses for `.json`, or Notepad, and
   any other file in Notepad. So a script or shortcut chosen as the database never runs.
