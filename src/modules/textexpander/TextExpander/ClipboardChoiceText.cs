@@ -23,23 +23,15 @@ internal static class ClipboardChoiceText
 
     public static string InsertText => EngineText.Get("Choice_Insert", "Insert");
 
-    /// <summary>Gets the question over the list, such as "Pick the link to insert", or "Pick a copy to take the link from".</summary>
-    public static string Heading(ClipboardChoice choice) => choice.Kind == ClipboardChoiceKind.Copy
-        ? choice.Part switch
-        {
-            ClipboardPart.Email => EngineText.Get("Choice_Heading_CopyFor_Email", "Pick a copy to take the email address from"),
-            ClipboardPart.Link => EngineText.Get("Choice_Heading_CopyFor_Link", "Pick a copy to take the link from"),
-            ClipboardPart.Phone => EngineText.Get("Choice_Heading_CopyFor_Phone", "Pick a copy to take the phone number from"),
-            ClipboardPart.Number => EngineText.Get("Choice_Heading_CopyFor_Number", "Pick a copy to take the number from"),
-            _ => EngineText.Get("Choice_Heading_Copy", "Pick a copy to insert"),
-        }
-        : choice.Part switch
-        {
-            ClipboardPart.Email => EngineText.Get("Choice_Heading_Email", "Pick the email address to insert"),
-            ClipboardPart.Phone => EngineText.Get("Choice_Heading_Phone", "Pick the phone number to insert"),
-            ClipboardPart.Number => EngineText.Get("Choice_Heading_Number", "Pick the number to insert"),
-            _ => EngineText.Get("Choice_Heading_Link", "Pick the link to insert"),
-        };
+    /// <summary>Gets the question over the list, such as "Pick the link to insert", or "Pick a copy to insert" for whole copies.</summary>
+    public static string Heading(ClipboardChoice choice) => choice.Part switch
+    {
+        ClipboardPart.Email => EngineText.Get("Choice_Heading_Email", "Pick the email address to insert"),
+        ClipboardPart.Link => EngineText.Get("Choice_Heading_Link", "Pick the link to insert"),
+        ClipboardPart.Phone => EngineText.Get("Choice_Heading_Phone", "Pick the phone number to insert"),
+        ClipboardPart.Number => EngineText.Get("Choice_Heading_Number", "Pick the number to insert"),
+        _ => EngineText.Get("Choice_Heading_Copy", "Pick a copy to insert"),
+    };
 
     /// <summary>Gets at most <paramref name="max"/> characters of <paramref name="text"/>, then "…", not between the halves of a character.</summary>
     public static string Capped(string? text, int max)

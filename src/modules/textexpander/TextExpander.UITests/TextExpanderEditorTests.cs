@@ -91,14 +91,15 @@ public sealed class TextExpanderEditorTests : TextExpanderTestBase
 
     /// <summary>
     /// Insert variable > Clipboard > Only part of it > Link puts {{clipboard:link}} in Replacement. F2 on it opens the
-    /// Clipboard panel, where Use the last makes it {{clipboard:link:last}}, which the preview names and Save keeps.
+    /// Clipboard panel, where picking from clipboard history makes it {{clipboard:pick:link}}, which the preview names and
+    /// Save keeps.
     /// </summary>
     [TestMethod("TextExpander.Editor.InsertsAClipboardPartAndChangesItInTheClipboardPanel")]
     [TestCategory("TextExpander")]
     [TestCategory("TextExpander.Editor")]
     public void InsertsAClipboardPartAndChangesItInTheClipboardPanel()
     {
-        var added = new Snippet(";telast", "{{clipboard:link:last}}");
+        var added = new Snippet(";tehist", "{{clipboard:pick:link}}");
         var editor = OpenEditor(OpenTextExpanderPage());
         editor.WaitForCount(DefaultSnippets.Count);
         editor.OpenNewSnippet();
@@ -117,12 +118,12 @@ public sealed class TextExpanderEditorTests : TextExpanderTestBase
         TextInput.Press(0x23);
         TextInput.Press(0x25);
         TextInput.Press(0x71);
-        var match = editor.Session.Find<ComboBox>(By.AccessibilityId("TextExpander_ClipboardMatch"), 10_000);
-        Step("Choosing Use the last, then Update");
-        match.Select("Use the last");
+        var copy = editor.Session.Find<ComboBox>(By.AccessibilityId("TextExpander_ClipboardCopy"), 10_000);
+        Step("Choosing Pick from clipboard history when it runs, then Update");
+        copy.Select("Pick from clipboard history when it runs");
         editor.Session.Find<Button>(By.AccessibilityId("Button_TextExpander_ClipboardUpdate"), 10_000).Invoke(msPostAction: 300);
         Assert.IsTrue(editor.WaitForReplacementText(added.Replacement), $"Replacement holds '{TextExpanderFiles.Visible(editor.ReplacementText)}'.");
-        Assert.IsTrue(editor.Session.Has(By.Name("Last link from clipboard"), timeoutMS: 10_000), "The preview doesn't name the variable.");
+        Assert.IsTrue(editor.Session.Has(By.Name("Link from clipboard history"), timeoutMS: 10_000), "The preview doesn't name the variable.");
 
         editor.Save();
         Assert.IsTrue(editor.WaitForRow(added.Trigger, present: true), $"The new snippet isn't listed. Rows: {editor.DescribeRows()}.");

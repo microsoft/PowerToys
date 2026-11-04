@@ -32,12 +32,11 @@ namespace ViewModelTests
         [TestMethod]
         [DataRow("{{clipboard}}", "Clipboard")]
         [DataRow("{{clipboard:email}}", "Email from clipboard")]
-        [DataRow("{{clipboard:link:2}}", "Link 2 from clipboard")]
-        [DataRow("{{clipboard:phone:last}}", "Last phone number from clipboard")]
-        [DataRow("{{clipboard:number:all}}", "All numbers from clipboard")]
-        [DataRow("{{clipboard:link:pick}}", "Link you pick from clipboard")]
-        [DataRow("{{clipboard:pick}}", "Copy you pick")]
-        [DataRow("{{clipboard:pick:email:3}}", "Email 3 from a copy you pick")]
+        [DataRow("{{clipboard:link}}", "Link from clipboard")]
+        [DataRow("{{clipboard:phone}}", "Phone number from clipboard")]
+        [DataRow("{{clipboard:number}}", "Number from clipboard")]
+        [DataRow("{{clipboard:pick}}", "Copy from clipboard history")]
+        [DataRow("{{clipboard:pick:email}}", "Email from clipboard history")]
         public void EachVariableHasABubbleThatSaysWhatItInserts(string token, string label)
         {
             IReadOnlyList<TextExpanderPreviewSegment> segments = TextExpanderSnippetPreview.Build("Send " + token + " today", Now);
@@ -59,24 +58,20 @@ namespace ViewModelTests
         {
             foreach (ClipboardPart part in TextExpanderClipboardText.Parts)
             {
-                foreach (ClipboardMatch match in Enum.GetValues<ClipboardMatch>())
+                foreach (bool pickCopy in new[] { false, true })
                 {
-                    foreach (bool pickCopy in new[] { false, true })
-                    {
-                        string label = TextExpanderClipboardText.Label(new ClipboardVariable(pickCopy, part, match, 4), Resource);
-                        Assert.IsFalse(label.Contains("TextExpander_", StringComparison.Ordinal), $"{part} {match} {pickCopy}: {label}");
-                        Assert.IsFalse(label.Contains('{', StringComparison.Ordinal), label);
-                    }
+                    string label = TextExpanderClipboardText.Label(new ClipboardVariable(pickCopy, part), Resource);
+                    Assert.IsFalse(label.Contains("TextExpander_", StringComparison.Ordinal), $"{part} {pickCopy}: {label}");
+                    Assert.IsFalse(label.Contains('{', StringComparison.Ordinal), label);
                 }
 
                 Assert.IsTrue(English.Value.ContainsKey("TextExpander_ClipboardPart_" + part), part.ToString());
                 Assert.IsTrue(English.Value.ContainsKey("TextExpander_ClipboardFlyout_Part_" + part), part.ToString());
             }
 
-            foreach (string key in new[] { "First", "Second", "Third", "Numbered", "Last", "All", "Pick" })
-            {
-                Assert.IsTrue(English.Value.ContainsKey("TextExpander_ClipboardFlyout_Match" + key), key);
-            }
+            // Two or more matches ask which, so there's no choice of which to make ahead.
+            Assert.IsFalse(English.Value.Keys.Any(key => key.StartsWith("TextExpander_ClipboardFlyout_Match", StringComparison.Ordinal)));
+            Assert.IsFalse(English.Value.Keys.Any(key => key.StartsWith("TextExpander_ClipboardWhat_", StringComparison.Ordinal) && key.Count(character => character == '_') > 2));
         }
 
         [TestMethod]
@@ -99,13 +94,13 @@ namespace ViewModelTests
         [TestMethod]
         public void ClickingOrF2FindsTheClipboardVariableAtTheCaret()
         {
-            const string text = "To {{clipboard:link:2}} and {{prompt:Name}} {{clipboard}}";
-            int link = text.IndexOf("{{clipboard:link:2}}", StringComparison.Ordinal);
+            const string text = "To {{clipboard:pick:link}} and {{prompt:Name}} {{clipboard}}";
+            int link = text.IndexOf("{{clipboard:pick:link}}", StringComparison.Ordinal);
             int whole = text.LastIndexOf("{{clipboard}}", StringComparison.Ordinal);
 
             Assert.IsTrue(TextExpanderClipboardText.TryFindAtSelection(text, link + 3, link + 3, out int start, out int end, out ClipboardVariable variable), "The caret inside it.");
-            Assert.AreEqual((link, link + "{{clipboard:link:2}}".Length), (start, end));
-            Assert.AreEqual(new ClipboardVariable(Part: ClipboardPart.Link, Match: ClipboardMatch.Numbered, Index: 2), variable);
+            Assert.AreEqual((link, link + "{{clipboard:pick:link}}".Length), (start, end));
+            Assert.AreEqual(new ClipboardVariable(PickCopy: true, Part: ClipboardPart.Link), variable);
 
             Assert.IsTrue(TextExpanderClipboardText.TryFindAtSelection(text, whole + "{{clipboard}}".Length, whole, out start, out _, out variable), "It, selected backwards.");
             Assert.AreEqual(whole, start);
@@ -122,12 +117,15 @@ namespace ViewModelTests
         {
             XDocument page = RepositoryFiles.Xml(RepositoryFiles.EditorPage);
             XElement flyout = RepositoryFiles.WithName(page, "ClipboardFlyout");
-            foreach (string id in new[] { "TextExpander_ClipboardCopy", "TextExpander_ClipboardPart", "TextExpander_ClipboardMatch", "TextExpander_ClipboardIndex", "Button_TextExpander_ClipboardUpdate", "Button_TextExpander_ClipboardCancel" })
+            foreach (string id in new[] { "TextExpander_ClipboardCopy", "TextExpander_ClipboardPart", "Button_TextExpander_ClipboardUpdate", "Button_TextExpander_ClipboardCancel" })
             {
                 Assert.IsTrue(flyout.Descendants().Any(element => (string)element.Attribute(XName.Get("AutomationProperties.AutomationId")) == id), id);
             }
 
-            Assert.AreEqual("99", (string)RepositoryFiles.WithName(flyout, "ClipboardIndexBox").Attribute("Maximum"), "{{clipboard:link:99}} is the highest.");
+            // Copy and Insert only: two or more matches ask which when the snippet runs, as the panel's note says.
+            Assert.AreEqual(2, flyout.Descendants().Count(element => element.Name.LocalName == "ComboBox"));
+            Assert.AreEqual("TextExpander_ClipboardFlyout_NoMatch", (string)RepositoryFiles.WithName(flyout, "ClipboardNoMatch").Attribute(XName.Get("Uid", "http://schemas.microsoft.com/winfx/2006/xaml")));
+            StringAssert.StartsWith(Resource("TextExpander_ClipboardFlyout_NoMatch.Text"), "If there's more than one, it asks which one when the snippet runs.");
 
             string code = RepositoryFiles.Text(RepositoryFiles.EditorPage + ".cs");
             StringAssert.Contains(code, "_replacementEditor.ClipboardEditRequested += ReplacementEditor_ClipboardEditRequested;");
@@ -135,18 +133,15 @@ namespace ViewModelTests
             StringAssert.Contains(code, "Style = (Style)Resources[\"MenuHeadingItemStyle\"]");
             StringAssert.Contains(code, "_replacementEditor.ReplaceVariable(", "Update changes the variable as one undo step.");
 
-            // NumberBox takes what was typed as Enter comes up, so Enter there commits on its key-up, not at key-down.
-            StringAssert.Contains(code, "ClipboardIndexBox.AddHandler(KeyUpEvent, new KeyEventHandler(ClipboardIndexBox_KeyUp), handledEventsToo: true);");
-            StringAssert.Contains(code, "!IsWithin(e.OriginalSource as DependencyObject, ClipboardIndexBox)");
-
             string editor = RepositoryFiles.Text(@"src\modules\textexpander\TextExpander.Editor\Helpers\TextExpanderReplacementEditor.cs");
             StringAssert.Contains(editor, "ClipboardEditRequested?.Invoke(", "Clicking a clipboard variable or pressing F2 on it opens the panel.");
         }
 
         [TestMethod]
         [DataRow("{{clipboard:pick}}", true)]
-        [DataRow("Here: {{clipboard:pick:link:2}}", true)]
-        [DataRow("{{clipboard:pick:email:pick}}", true)]
+        [DataRow("Here: {{clipboard:pick:link}}", true)]
+        [DataRow("{{clipboard:pick:email}}", true)]
+        [DataRow("{{clipboard:pick:link:2}}", false)]
         [DataRow("{{clipboard:link:pick}}", false)]
         [DataRow("{{clipboard}} and {{clipboard:email}}", false)]
         [DataRow("{{Clipboard:pick}}", false)]

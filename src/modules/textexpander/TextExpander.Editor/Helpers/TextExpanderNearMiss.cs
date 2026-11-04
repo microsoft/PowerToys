@@ -34,7 +34,10 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             ("paste", "{{clipboard}}"),
         ];
 
-        private static readonly string[] ClipboardWords = ["pick", "email", "link", "phone", "number", "last", "all"];
+        private static readonly string[] ClipboardWords = ["pick", "email", "link", "phone", "number"];
+
+        // Words, besides numbers, that once chose among a part's matches. Two or more matches now ask which, so they're dropped.
+        private static readonly string[] MatchWords = ["first", "last", "all"];
 
         /// <summary>Finds the near misses in <paramref name="replacement"/>, in order, outside its real variables.</summary>
         public static IReadOnlyList<TextExpanderNearMiss> Find(string replacement)
@@ -189,7 +192,10 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             return suggestion != null && IsOneVariable(suggestion) ? suggestion : null;
         }
 
-        /// <summary>Gets a clipboard variable for what follows its name, each word in lowercase or one letter off, or null.</summary>
+        /// <summary>
+        /// Gets a clipboard variable for what follows its name, each word in lowercase or one letter off, or null. A choice
+        /// among a part's matches, such as :2, :last or :pick after the part, is dropped: two or more matches ask which.
+        /// </summary>
         private static string ClipboardSuggestion(string after)
         {
             if (string.IsNullOrWhiteSpace(after))
@@ -197,27 +203,41 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
                 return "{{clipboard}}";
             }
 
+            bool pickCopy = false;
+            ClipboardPart part = ClipboardPart.All;
             string[] words = after.Replace(" ", string.Empty, StringComparison.Ordinal).ToLowerInvariant().Split(':');
-            if (words is ["all"])
-            {
-                // All of it is the whole copy.
-                return "{{clipboard}}";
-            }
-
             for (int index = 0; index < words.Length; index++)
             {
-                if (!int.TryParse(words[index], NumberStyles.None, CultureInfo.InvariantCulture, out _))
+                string word = words[index];
+                if (word.Length == 0 || int.TryParse(word, NumberStyles.None, CultureInfo.InvariantCulture, out _) || Array.IndexOf(MatchWords, word) >= 0)
                 {
-                    words[index] = Array.IndexOf(ClipboardWords, words[index]) >= 0 ? words[index] : Closest(words[index], ClipboardWords);
-                    if (words[index] == null)
+                    continue;
+                }
+
+                string known = Array.IndexOf(ClipboardWords, word) >= 0 ? word : Closest(word, ClipboardWords);
+                if (known == null)
+                {
+                    return null;
+                }
+
+                if (known == "pick")
+                {
+                    // Only before the part does it pick from clipboard history.
+                    pickCopy |= index == 0;
+                }
+                else if (part == ClipboardPart.All)
+                {
+                    part = known switch
                     {
-                        return null;
-                    }
+                        "email" => ClipboardPart.Email,
+                        "link" => ClipboardPart.Link,
+                        "phone" => ClipboardPart.Phone,
+                        _ => ClipboardPart.Number,
+                    };
                 }
             }
 
-            string token = "{{clipboard:" + string.Join(':', words) + "}}";
-            return ClipboardVariable.TryParse(token, out ClipboardVariable variable) ? variable.ToToken() : null;
+            return new ClipboardVariable(pickCopy, part).ToToken();
         }
 
         /// <summary>Splits off the name, in lowercase and without spaces, before the first colon; what's after is null without one.</summary>

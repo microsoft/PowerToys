@@ -251,12 +251,14 @@ public sealed class VariableTests
         Assert.AreEqual("a$|$ c$|$ $|$ [] $|$", text);
         Assert.AreEqual(text.IndexOf("[]", StringComparison.Ordinal) + 1, cursor);
 
-        Assert.AreEqual((string.Empty, 0), Variables.ExpandWithPromptRequests("$|$", _ => null));
-        Assert.AreEqual(("abc", -1), Variables.ExpandWithPromptRequests("abc", _ => null));
-        Assert.AreEqual(("x\ny", 1), Variables.ExpandWithPromptRequests("x$|$\ny", _ => null), "Counted in the text as it's typed.");
+        Assert.AreEqual((string.Empty, 0), TextAndCursor(Variables.ExpandWithPromptRequests("$|$", _ => null)));
+        Assert.AreEqual(("abc", -1), TextAndCursor(Variables.ExpandWithPromptRequests("abc", _ => null)));
+        Assert.AreEqual(("x\ny", 1), TextAndCursor(Variables.ExpandWithPromptRequests("x$|$\ny", _ => null)), "Counted in the text as it's typed.");
 
         // Expand keeps the marker where the snippet put it, as before.
         Assert.AreEqual("a$|$ [$|$]", Variables.Expand("{{prompt:A}} [$|$]", _ => "a$|$"));
+
+        static (string Text, int Cursor) TextAndCursor(ExpandedSnippet expanded) => (expanded.Text, expanded.Cursor);
     }
 
     [TestMethod]

@@ -398,10 +398,10 @@ internal static class Program
 
     /// <summary>
     /// Expands or undoes <paramref name="work"/>. Tests pass a fake <paramref name="replace"/>, <paramref name="isKeyDown"/>,
-    /// <paramref name="ask"/>, <paramref name="choose"/> and <paramref name="readClipboard"/>, so nothing is typed, read
-    /// from the keyboard or the clipboard, asked or chosen.
+    /// <paramref name="ask"/>, <paramref name="choose"/>, <paramref name="readClipboard"/> and <paramref name="readHistory"/>,
+    /// so nothing is typed, read from the keyboard, the clipboard or clipboard history, asked or chosen.
     /// </summary>
-    internal static bool TryExpand(KeyboardHook hook, PendingExpansion work, ReplaceText? replace = null, Func<int, bool>? isKeyDown = null, Func<PromptRequest, IntPtr, Action?, string?>? ask = null, Func<ClipboardChoice, IntPtr, Action?, string?>? choose = null, Func<string?>? readClipboard = null)
+    internal static bool TryExpand(KeyboardHook hook, PendingExpansion work, ReplaceText? replace = null, Func<int, bool>? isKeyDown = null, Func<PromptRequest, IntPtr, Action?, string?>? ask = null, Func<ClipboardChoice, IntPtr, Action?, string?>? choose = null, Func<string?>? readClipboard = null, Func<ClipboardHistory>? readHistory = null)
     {
         replace ??= Injector.Replace;
         readClipboard ??= Clipboard.GetText;
@@ -434,19 +434,19 @@ internal static class Program
             return false;
         }
 
-        // A copy picked from clipboard history is read now, while any questions are asked, so the choice doesn't wait for
-        // it: when no window turns out to be needed, keys typed during the wait would reach the app before anything holds
-        // them, and cancel the insertion.
-        if (choose is null && ClipboardChoiceDialog.PicksCopy(work.Replacement))
+        // Clipboard history is read now, while any questions are asked, so a choice doesn't wait for it: when no window
+        // turns out to be needed, keys typed during the wait would reach the app before anything holds them, and cancel the
+        // insertion.
+        if (readHistory is null && ClipboardChoiceDialog.PicksCopy(work.Replacement))
         {
-            Task<IReadOnlyList<string>> history = Task.Run(ClipboardHistoryReader.ReadTexts);
-            choose = (choice, target, accepted) => ClipboardChoiceDialog.Show(choice, target, accepted, () => ClipboardChoiceDialog.Await(history));
+            Task<ClipboardHistory> history = Task.Run(ClipboardHistoryReader.Read);
+            readHistory = () => ClipboardChoiceDialog.Await(history);
         }
 
         bool giveBack = false;
-        (string Text, int Cursor)? expanded = Variables.MayAsk(work.Replacement)
-            ? ExpandWithPrompts(hook, work.Replacement, work.TargetWindow, ask ?? PromptDialog.Show, choose ?? ClipboardChoiceDialog.Show, readClipboard, isKeyDown, out giveBack)
-            : Variables.ExpandWithPromptRequests(work.Replacement, static _ => string.Empty, readClipboard);
+        ExpandedSnippet? expanded = Variables.MayAsk(work.Replacement)
+            ? ExpandWithPrompts(hook, work.Replacement, work.TargetWindow, ask ?? PromptDialog.Show, choose ?? ClipboardChoiceDialog.Show, readClipboard, readHistory, isKeyDown, out giveBack)
+            : Variables.ExpandWithPromptRequests(work.Replacement, static _ => string.Empty, readClipboard, history: readHistory);
         if (expanded is null)
         {
             // A question was cancelled: nothing is erased or inserted, and the keystroke the hook swallowed goes back, so
@@ -489,7 +489,7 @@ internal static class Program
     /// Asks the snippet's questions, one at a time, then the choices its clipboard variables ask for, and expands it. Null
     /// if one is cancelled; <paramref name="giveBack"/> then says whether the keystroke the hook swallowed can go back.
     /// </summary>
-    private static (string Text, int Cursor)? ExpandWithPrompts(KeyboardHook hook, string replacement, IntPtr target, Func<PromptRequest, IntPtr, Action?, string?> ask, Func<ClipboardChoice, IntPtr, Action?, string?> choose, Func<string?> readClipboard, Func<int, bool>? isKeyDown, out bool giveBack)
+    private static ExpandedSnippet? ExpandWithPrompts(KeyboardHook hook, string replacement, IntPtr target, Func<PromptRequest, IntPtr, Action?, string?> ask, Func<ClipboardChoice, IntPtr, Action?, string?> choose, Func<string?> readClipboard, Func<ClipboardHistory>? readHistory, Func<int, bool>? isKeyDown, out bool giveBack)
     {
         // Once the last window is answered, keys typed right away are held for the expansion, so they land after it. A
         // clipboard choice may follow the questions, so then the last question doesn't hold; the choice says if it's last.
@@ -500,10 +500,10 @@ internal static class Program
         bool shown = false;
         bool holding = false;
         hook.SuspendFor(target);
-        (string Text, int Cursor) expanded;
+        ExpandedSnippet expanded;
         try
         {
-            expanded = Variables.ExpandWithPromptRequests(replacement, Answer, () => cancelled ? null : readClipboard(), Choose);
+            expanded = Variables.ExpandWithPromptRequests(replacement, Answer, () => cancelled ? null : readClipboard(), Choose, () => cancelled || readHistory is null ? ClipboardHistory.NotRead : readHistory());
 
             // A window was answered, but the choice expected after it didn't need one, as with a single match: hold from
             // now, before keys reaching the app again can cancel the insertion.

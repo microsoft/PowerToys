@@ -18,29 +18,32 @@ public static partial class Variables
     public const string CursorMarker = "$|$";
 
     /// <summary>Expands <paramref name="text"/>, keeping the cursor marker in place.</summary>
-    public static string Expand(string text, Func<string, string?> prompt, Func<string?>? clipboard = null, Func<ClipboardChoice, string?>? choose = null)
+    public static string Expand(string text, Func<string, string?> prompt, Func<string?>? clipboard = null, Func<ClipboardChoice, string?>? choose = null, Func<ClipboardHistory>? history = null)
     {
         ArgumentNullException.ThrowIfNull(prompt);
-        (string expanded, int cursor) = ExpandWithPromptRequests(text, request => prompt(request.Label), clipboard, choose);
+        (string expanded, int cursor) = ExpandWithPromptRequests(text, request => prompt(request.Label), clipboard, choose, history);
         return cursor < 0 ? expanded : expanded.Insert(cursor, CursorMarker);
     }
 
     /// <summary>
     /// Expands <paramref name="text"/>. <paramref name="prompt"/> is invoked for each {{prompt:Label}}, which is
     /// required, and {{prompt?:Label}}, which is optional, in order, and may return null (cancelled) to leave that
-    /// spot blank. A null <paramref name="clipboard"/> or result expands {{clipboard}} to nothing. After the questions,
-    /// <paramref name="choose"/> is invoked for each choice a clipboard variable asks for (see <see cref="ClipboardChoice"/>);
-    /// without it, a copy from clipboard history is nothing and a match to pick is the first.
+    /// spot blank. After the questions, each clipboard variable takes from what <paramref name="clipboard"/> reads, or from
+    /// the copies <paramref name="history"/> reads for one that picks from clipboard history; each is read at most once,
+    /// and only if a variable uses it. One match or copy goes straight in. Two or more ask <paramref name="choose"/> which
+    /// (see <see cref="ClipboardChoice"/>), in the snippet's order, which is the same each time for the same copies; a null
+    /// answer cancels, and nothing more is asked. Without <paramref name="choose"/>, the first goes in. None inserts nothing,
+    /// the rest still expands, and the result says why (see <see cref="ClipboardGap"/>).
     /// </summary>
     /// <returns>
-    /// The text without the snippet's first cursor marker, and where that marker was, or -1. A "$|$" in an
-    /// answer, the clipboard or a formatted date stays literal.
+    /// The text without the snippet's first cursor marker, where that marker was, or -1, and the spots left empty. A "$|$"
+    /// in an answer, the clipboard or a formatted date stays literal.
     /// </returns>
-    public static (string Text, int Cursor) ExpandWithPromptRequests(string text, Func<PromptRequest, string?> prompt, Func<string?>? clipboard = null, Func<ClipboardChoice, string?>? choose = null)
-        => ExpandWithPromptRequests(text, prompt, clipboard, DateTime.Now, CultureInfo.CurrentCulture, choose);
+    public static ExpandedSnippet ExpandWithPromptRequests(string text, Func<PromptRequest, string?> prompt, Func<string?>? clipboard = null, Func<ClipboardChoice, string?>? choose = null, Func<ClipboardHistory>? history = null)
+        => ExpandWithPromptRequests(text, prompt, clipboard, DateTime.Now, CultureInfo.CurrentCulture, choose, history);
 
     /// <summary>Expands a snippet at <paramref name="now"/>, writing dates and times and reading numbers for <paramref name="culture"/>.</summary>
-    internal static (string Text, int Cursor) ExpandWithPromptRequests(string text, Func<PromptRequest, string?> prompt, Func<string?>? clipboard, DateTime now, CultureInfo culture, Func<ClipboardChoice, string?>? choose = null)
+    internal static ExpandedSnippet ExpandWithPromptRequests(string text, Func<PromptRequest, string?> prompt, Func<string?>? clipboard, DateTime now, CultureInfo culture, Func<ClipboardChoice, string?>? choose = null, Func<ClipboardHistory>? history = null)
     {
         ArgumentNullException.ThrowIfNull(prompt);
 
@@ -59,7 +62,7 @@ public static partial class Variables
             };
         }
 
-        ResolveClipboard(tokens, values, clipboard, choose, culture);
+        IReadOnlyList<ClipboardGap> gaps = ResolveClipboard(tokens, values, clipboard, choose, history, culture);
 
         var result = new StringBuilder(text.Length);
         int cursor = -1;
@@ -89,61 +92,20 @@ public static partial class Variables
             }
         }
 
-        return (result.ToString(), cursor);
+        return new ExpandedSnippet(result.ToString(), cursor, gaps);
     }
 
     /// <summary>
-    /// Works out what each clipboard variable inserts. What's on the clipboard now is read once, and only if a variable
-    /// uses it. A part that isn't there inserts nothing. A window asks for a copy from clipboard history, and for a match
-    /// when there are two or more to pick from; the last window to show says so, since keys typed once it's answered are
-    /// meant for after the snippet.
+    /// Works out what each clipboard variable inserts, from options gathered for all of them first, so the last window to
+    /// show knows it's last: keys typed once it's answered are meant for after the snippet. A cancelled choice ends it.
     /// </summary>
-    private static void ResolveClipboard(IReadOnlyList<SnippetToken> tokens, string?[] values, Func<string?>? clipboard, Func<ClipboardChoice, string?>? choose, CultureInfo culture)
+    private static IReadOnlyList<ClipboardGap> ResolveClipboard(IReadOnlyList<SnippetToken> tokens, string?[] values, Func<string?>? clipboard, Func<ClipboardChoice, string?>? choose, Func<ClipboardHistory>? history, CultureInfo culture)
     {
-        int first = 0;
-        while (first < tokens.Count && tokens[first].Kind != SnippetTokenKind.Clipboard)
-        {
-            first++;
-        }
-
-        if (first == tokens.Count)
-        {
-            return;
-        }
-
+        IReadOnlyList<string>?[]? options = null;
+        var reasons = new ClipboardGapReason[tokens.Count];
         string? copied = null;
-        bool read = false;
-        var found = new IReadOnlyList<string>?[tokens.Count];
-        var asks = new bool[tokens.Count + 1];
-        for (int index = first; index < tokens.Count; index++)
-        {
-            if (tokens[index].Kind != SnippetTokenKind.Clipboard || tokens[index].Clipboard.PickCopy)
-            {
-                continue;
-            }
-
-            if (!read)
-            {
-                copied = clipboard?.Invoke();
-                read = true;
-            }
-
-            ClipboardVariable variable = tokens[index].Clipboard;
-            if (variable.Part != ClipboardPart.All)
-            {
-                found[index] = ClipboardParts.Find(copied, variable.Part, culture);
-            }
-        }
-
-        // asks[i]: whether a window may show for a variable at i or after it.
-        for (int index = tokens.Count - 1; index >= 0; index--)
-        {
-            SnippetToken token = tokens[index];
-            bool shows = token.Kind == SnippetTokenKind.Clipboard
-                && (token.Clipboard.PickCopy || (token.Clipboard.PicksMatch && found[index] is { Count: > 1 }));
-            asks[index] = shows || asks[index + 1];
-        }
-
+        bool readClipboard = false;
+        ClipboardHistory? copies = null;
         for (int index = 0; index < tokens.Count; index++)
         {
             if (tokens[index].Kind != SnippetTokenKind.Clipboard)
@@ -151,38 +113,107 @@ public static partial class Variables
                 continue;
             }
 
+            options ??= new IReadOnlyList<string>?[tokens.Count];
             ClipboardVariable variable = tokens[index].Clipboard;
-            bool laterAsks = asks[index + 1];
-            string? copy = copied;
-            IReadOnlyList<string>? matches = found[index];
             if (variable.PickCopy)
             {
-                // A copy with a match to pick may ask again, once its matches are known.
-                copy = choose?.Invoke(new ClipboardChoice(ClipboardChoiceKind.Copy, variable.Part, Array.Empty<string>(), IsLast: !laterAsks && !variable.PicksMatch))
-                    ?? (choose is null ? string.Empty : null);
-                matches = variable.Part == ClipboardPart.All || copy is null ? null : ClipboardParts.Find(copy, variable.Part, culture);
+                copies ??= history?.Invoke() ?? ClipboardHistory.NotRead;
+                (options[index], reasons[index]) = FromHistory(copies, variable.Part, culture);
+                continue;
             }
 
-            values[index] = variable.Part == ClipboardPart.All ? copy : Choose(matches, variable, choose, isLast: !laterAsks);
+            if (!readClipboard)
+            {
+                copied = clipboard?.Invoke();
+                readClipboard = true;
+            }
+
+            IReadOnlyList<string> found = ClipboardParts.Find(copied, variable.Part, culture);
+            options[index] = found.Count > ClipboardChoice.MaxOptions ? found.Take(ClipboardChoice.MaxOptions).ToList() : found;
+            reasons[index] = ClipboardGapReason.NotFound;
         }
+
+        if (options is null)
+        {
+            return Array.Empty<ClipboardGap>();
+        }
+
+        // asks[i]: whether a window may show for a variable at i or after it.
+        var asks = new bool[tokens.Count + 1];
+        for (int index = tokens.Count - 1; index >= 0; index--)
+        {
+            asks[index] = (choose is not null && options[index] is { Count: > 1 }) || asks[index + 1];
+        }
+
+        var gaps = new List<ClipboardGap>();
+        for (int index = 0; index < tokens.Count; index++)
+        {
+            if (options[index] is not { } found)
+            {
+                continue;
+            }
+
+            ClipboardVariable variable = tokens[index].Clipboard;
+            if (found.Count == 0)
+            {
+                gaps.Add(new ClipboardGap(variable.Part, reasons[index]));
+                continue;
+            }
+
+            if (found.Count == 1 || choose is null)
+            {
+                values[index] = found[0];
+                continue;
+            }
+
+            values[index] = choose(new ClipboardChoice(variable.Part, variable.PickCopy, found, IsLast: !asks[index + 1]));
+            if (values[index] is null)
+            {
+                break;
+            }
+        }
+
+        return gaps;
     }
 
-    /// <summary>Gets the match <paramref name="variable"/> inserts, or null when there's none.</summary>
-    private static string? Choose(IReadOnlyList<string>? matches, ClipboardVariable variable, Func<ClipboardChoice, string?>? choose, bool isLast)
+    /// <summary>
+    /// Gets what a variable that picks from clipboard history can insert: the copies themselves, or the different matches of
+    /// its part across them, newest first. None when history is off, couldn't be read, has no copies or none has the part,
+    /// and then which.
+    /// </summary>
+    private static (IReadOnlyList<string> Options, ClipboardGapReason Reason) FromHistory(ClipboardHistory history, ClipboardPart part, CultureInfo culture)
     {
-        if (matches is not { Count: > 0 })
+        if (history.State != ClipboardHistoryState.Read)
         {
-            return null;
+            return (Array.Empty<string>(), history.State == ClipboardHistoryState.Off ? ClipboardGapReason.HistoryOff : ClipboardGapReason.HistoryUnreadable);
         }
 
-        return variable.Match switch
+        // An email address is the same however it's capitalized, as within one copy.
+        var seen = new HashSet<string>(part == ClipboardPart.Email ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        var options = new List<string>();
+        bool anyCopy = false;
+        foreach (string copy in history.Copies)
         {
-            ClipboardMatch.Numbered => variable.Index <= matches.Count ? matches[variable.Index - 1] : null,
-            ClipboardMatch.Last => matches[^1],
-            ClipboardMatch.All => string.Join('\n', matches),
-            ClipboardMatch.Pick when matches.Count > 1 && choose is not null => choose(new ClipboardChoice(ClipboardChoiceKind.Match, variable.Part, matches, isLast)),
-            _ => matches[0],
-        };
+            if (string.IsNullOrEmpty(copy))
+            {
+                continue;
+            }
+
+            anyCopy = true;
+            foreach (string found in ClipboardParts.Find(copy, part, culture))
+            {
+                if (seen.Add(found))
+                {
+                    options.Add(found);
+                    if (options.Count == ClipboardChoice.MaxOptions)
+                    {
+                        return (options, ClipboardGapReason.NotFound);
+                    }
+                }
+            }
+        }
+
+        return (options, anyCopy ? ClipboardGapReason.NotFound : ClipboardGapReason.NoCopies);
     }
 
     /// <summary>
@@ -294,8 +325,8 @@ public static partial class Variables
         => text.Contains("{{prompt", StringComparison.Ordinal);
 
     /// <summary>
-    /// True when a clipboard variable in this snippet may show a window to choose something when it runs: a copy from
-    /// clipboard history, or one of several matches.
+    /// True when a clipboard variable in this snippet may show a window to choose when it runs: a part, which may have two
+    /// or more matches, or a pick from clipboard history.
     /// </summary>
     public static bool MayChoose(string text)
         => text.Contains("{{clipboard:", StringComparison.Ordinal)

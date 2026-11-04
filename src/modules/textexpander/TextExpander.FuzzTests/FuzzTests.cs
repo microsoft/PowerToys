@@ -23,11 +23,14 @@ public static class FuzzTests
 
     private static readonly string[] ClipboardVariables =
     [
-        "{{clipboard:email:all}}",
-        "{{clipboard:link:2}}",
-        "{{clipboard:phone:last}}",
-        "{{clipboard:number:pick}}",
-        "{{clipboard:pick:link:pick}}",
+        "{{clipboard}}",
+        "{{clipboard:email}}",
+        "{{clipboard:link}}",
+        "{{clipboard:phone}}",
+        "{{clipboard:number}}",
+        "{{clipboard:pick}}",
+        "{{clipboard:pick:link}}",
+        "{{clipboard:pick:number}}",
     ];
 
     /// <summary>
@@ -95,9 +98,9 @@ public static class FuzzTests
             _ = Variables.MayAsk(snippet);
             _ = Variables.UsesSensitiveRuntimeInput(snippet);
 
-            // Answer each prompt with its label, paste the snippet itself and pick the last choice, so codes also arrive
-            // where they must stay literal.
-            _ = Variables.Expand(snippet, label => label, () => snippet, choice => choice.Options.Count > 0 ? choice.Options[^1] : snippet);
+            // Answer each prompt with its label, paste the snippet itself, keep it in clipboard history too, and pick the last
+            // choice, so codes also arrive where they must stay literal.
+            _ = Variables.Expand(snippet, label => label, () => snippet, PickLast, () => new ClipboardHistory(ClipboardHistoryState.Read, [snippet]));
         }
     }
 
@@ -122,11 +125,23 @@ public static class FuzzTests
             }
         }
 
+        // The copy is on the clipboard now and in history, with an older copy of it in capitals.
+        var history = new ClipboardHistory(ClipboardHistoryState.Read, [copy, copy.ToUpperInvariant()]);
         foreach (string variable in ClipboardVariables)
         {
             Check(ClipboardVariable.TryParse(variable, out ClipboardVariable parsed) && parsed.ToToken() == variable, "A clipboard variable didn't read back the same.");
-            _ = Variables.Expand(variable, _ => null, () => copy, choice => choice.Options.Count > 0 ? choice.Options[^1] : copy);
+            ExpandedSnippet expanded = Variables.ExpandWithPromptRequests(variable, _ => null, () => copy, PickLast, () => history);
+            Check(expanded.Gaps.Count == (expanded.Text.Length == 0 ? 1 : 0), "A spot was left empty without saying why, or said so and wasn't empty.");
         }
+    }
+
+    /// <summary>Picks the last option, checking that a choice is asked only between two to a hundred different ones.</summary>
+    private static string? PickLast(ClipboardChoice choice)
+    {
+        Check(choice.Options.Count is >= 2 and <= ClipboardChoice.MaxOptions, "A choice was asked with too few or too many options.");
+        Check(choice.Options.Distinct(choice.Part == ClipboardPart.Email ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal).Count() == choice.Options.Count, "A choice offered the same option twice.");
+        Check(choice.Options.All(option => option.Length > 0), "A choice offered nothing as an option.");
+        return choice.Options[^1];
     }
 
     private static void CheckMatching(HashSet<string> triggers, string typed)

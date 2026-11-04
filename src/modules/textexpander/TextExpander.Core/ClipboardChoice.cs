@@ -6,22 +6,20 @@
 
 namespace Microsoft.PowerToys.TextExpander;
 
-/// <summary>What a snippet asks the user to choose when it runs.</summary>
-public enum ClipboardChoiceKind
-{
-    /// <summary>A copy from clipboard history, for {{clipboard:pick}}.</summary>
-    Copy,
-
-    /// <summary>One of two or more matches of a part, for {{clipboard:link:pick}}.</summary>
-    Match,
-}
-
 /// <summary>
-/// A choice a snippet asks for when it runs. The answer is the chosen text, an empty text to insert nothing, or null to
-/// cancel the whole snippet, as cancelling a question does.
+/// A choice a clipboard variable asks for when its snippet runs, because there are two or more to choose from: matches of a
+/// part in what's on the clipboard now, matches of a part across the recent copies in clipboard history, or whole copies
+/// from history. The answer is the chosen option, or null to cancel the whole snippet, as cancelling a question does.
 /// </summary>
-/// <param name="Kind">Whether a copy or a match is chosen.</param>
-/// <param name="Part">What's inserted from the copy or match: a whole copy, or an email address, link, phone number or number.</param>
-/// <param name="Options">For <see cref="ClipboardChoiceKind.Match"/>, the different matches, in order; empty for a copy, which the window reads itself.</param>
+/// <param name="Part">What's chosen: a whole copy, or an email address, link, phone number or number.</param>
+/// <param name="FromHistory">Whether the options come from clipboard history rather than what's on the clipboard now.</param>
+/// <param name="Options">
+/// The options, two or more, each different one once: in order for what's on the clipboard now, newest first from history.
+/// At most <see cref="MaxOptions"/>.
+/// </param>
 /// <param name="IsLast">Whether nothing else is asked after this, so keys typed once it's answered are meant for after the snippet.</param>
-public sealed record ClipboardChoice(ClipboardChoiceKind Kind, ClipboardPart Part, IReadOnlyList<string> Options, bool IsLast);
+public sealed record ClipboardChoice(ClipboardPart Part, bool FromHistory, IReadOnlyList<string> Options, bool IsLast)
+{
+    /// <summary>The most options a choice offers, so a copy full of numbers doesn't fill a window with thousands.</summary>
+    public const int MaxOptions = 100;
+}

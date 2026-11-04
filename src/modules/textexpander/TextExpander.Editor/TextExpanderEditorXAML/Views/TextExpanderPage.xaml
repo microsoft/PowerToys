@@ -811,22 +811,6 @@
                                             HorizontalAlignment="Stretch"
                                             AutomationProperties.AutomationId="TextExpander_ClipboardPart"
                                             SelectionChanged="ClipboardChoice_Changed" />
-                                        <!--  Only for a part: which of its matches.  -->
-                                        <ComboBox
-                                            x:Name="ClipboardMatchBox"
-                                            x:Uid="TextExpander_ClipboardFlyout_Match"
-                                            HorizontalAlignment="Stretch"
-                                            AutomationProperties.AutomationId="TextExpander_ClipboardMatch"
-                                            SelectionChanged="ClipboardChoice_Changed" />
-                                        <NumberBox
-                                            x:Name="ClipboardIndexBox"
-                                            x:Uid="TextExpander_ClipboardFlyout_Index"
-                                            AutomationProperties.AutomationId="TextExpander_ClipboardIndex"
-                                            Maximum="99"
-                                            Minimum="2"
-                                            SpinButtonPlacementMode="Inline"
-                                            ValueChanged="ClipboardIndex_ValueChanged"
-                                            Visibility="Collapsed" />
                                         <StackPanel Spacing="4">
                                             <TextBlock x:Uid="TextExpander_ClipboardFlyout_ShowsAs" Style="{StaticResource FlyoutCaptionStyle}" />
                                             <controls:TextExpanderBubbleText x:Name="ClipboardShowsAs" />

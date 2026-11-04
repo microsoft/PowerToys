@@ -11,9 +11,9 @@ namespace Microsoft.PowerToys.TextExpander;
 
 internal static class SnippetTemplate
 {
-    // {{clipboard}}, or with :pick first a copy from clipboard history; then a part, and which of its matches. Its groups
-    // don't capture, since every group costs every match an allocation; ClipboardVariable.FromToken reads the token.
-    private const string ValuePatternText = @"\{\{(?:(?<fixed>date|time|datetime|isodate)|date:(?<format>[^}]*)|prompt(?<optional>\?)?:(?<label>[^}]*)|clipboard(?::pick)?(?::(?:email|link|phone|number)(?::(?:[1-9][0-9]?|last|all|pick))?)?)\}\}";
+    // {{clipboard}}, or with :pick one of the recent copies in clipboard history; then, for only part of it, which kind. Its
+    // groups don't capture, since every group costs every match an allocation; ClipboardVariable.FromToken reads the token.
+    private const string ValuePatternText = @"\{\{(?:(?<fixed>date|time|datetime|isodate)|date:(?<format>[^}]*)|prompt(?<optional>\?)?:(?<label>[^}]*)|clipboard(?::pick)?(?::(?:email|link|phone|number))?)\}\}";
 
     // Without backtracking, a text full of unclosed "{{prompt:" takes linear time, not quadratic. The regex source
     // generator can't build that engine, so these are constructed.

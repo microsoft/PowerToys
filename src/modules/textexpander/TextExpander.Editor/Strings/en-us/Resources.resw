@@ -444,111 +444,47 @@
   </data>
   <data name="TextExpander_ClipboardPart_Email" xml:space="preserve">
     <value>Email address</value>
-    <comment>Insert variable > Clipboard > Only part of it: the first email address in what the user copied</comment>
+    <comment>Insert variable &gt; Clipboard &gt; Only part of it: the email address in what the user copied. With several, the snippet asks which one when it runs</comment>
   </data>
   <data name="TextExpander_ClipboardPart_Link" xml:space="preserve">
     <value>Link</value>
-    <comment>Insert variable > Clipboard > Only part of it: the first web link in what the user copied</comment>
+    <comment>Insert variable &gt; Clipboard &gt; Only part of it: the web link in what the user copied. With several, the snippet asks which one when it runs</comment>
   </data>
   <data name="TextExpander_ClipboardPart_Phone" xml:space="preserve">
     <value>Phone number</value>
-    <comment>Insert variable > Clipboard > Only part of it: the first phone number in what the user copied</comment>
+    <comment>Insert variable &gt; Clipboard &gt; Only part of it: the phone number in what the user copied. With several, the snippet asks which one when it runs</comment>
   </data>
   <data name="TextExpander_ClipboardPart_Number" xml:space="preserve">
     <value>Number</value>
-    <comment>Insert variable > Clipboard > Only part of it: the first number in what the user copied</comment>
+    <comment>Insert variable &gt; Clipboard &gt; Only part of it: the number in what the user copied. With several, the snippet asks which one when it runs</comment>
   </data>
   <data name="TextExpander_ClipboardFrom_Now" xml:space="preserve">
     <value>{0} from clipboard</value>
-    <comment>Label of a bubble for part of what the user copied. {0} is the part, such as "Email", "Link 2" or "Last link"</comment>
+    <comment>Label of a bubble for part of what the user copied. {0} is the part, such as &quot;Email&quot; or &quot;Link&quot;</comment>
   </data>
   <data name="TextExpander_ClipboardFrom_History" xml:space="preserve">
-    <value>{0} from a copy you pick</value>
-    <comment>Label of a bubble for part of a copy the user picks from clipboard history when the snippet runs. {0} is the part, such as "Email" or "Link 2"</comment>
+    <value>{0} from clipboard history</value>
+    <comment>Label of a bubble for part of the user&apos;s recent copies in Windows clipboard history. {0} is the part, such as &quot;Email&quot; or &quot;Link&quot;</comment>
   </data>
   <data name="TextExpander_ClipboardWhole_History" xml:space="preserve">
-    <value>Copy you pick</value>
-    <comment>Label of a bubble for a copy the user picks from clipboard history when the snippet runs</comment>
+    <value>Copy from clipboard history</value>
+    <comment>Label of a bubble for one of the user&apos;s recent copies in Windows clipboard history, picked when the snippet runs if there are several</comment>
   </data>
   <data name="TextExpander_ClipboardWhat_Email" xml:space="preserve">
     <value>Email</value>
-    <comment>The first email address in a copy. Shown as {0} in "{0} from clipboard"</comment>
-  </data>
-  <data name="TextExpander_ClipboardWhat_Email_Numbered" xml:space="preserve">
-    <value>Email {0}</value>
-    <comment>An email address in a copy, by its number: {0} is 2 for the second one. Shown as {0} in "{0} from clipboard"</comment>
-  </data>
-  <data name="TextExpander_ClipboardWhat_Email_Last" xml:space="preserve">
-    <value>Last email</value>
-    <comment>The last email address in a copy. Shown as {0} in "{0} from clipboard"</comment>
-  </data>
-  <data name="TextExpander_ClipboardWhat_Email_All" xml:space="preserve">
-    <value>All emails</value>
-    <comment>Every email address in a copy, one per line. Shown as {0} in "{0} from clipboard"</comment>
-  </data>
-  <data name="TextExpander_ClipboardWhat_Email_Pick" xml:space="preserve">
-    <value>Email you pick</value>
-    <comment>The email address the user picks, when a copy has more than one. Shown as {0} in "{0} from clipboard"</comment>
+    <comment>The email address in a copy. Shown as {0} in &quot;{0} from clipboard&quot;</comment>
   </data>
   <data name="TextExpander_ClipboardWhat_Link" xml:space="preserve">
     <value>Link</value>
-    <comment>The first web link in a copy. Shown as {0} in "{0} from clipboard"</comment>
-  </data>
-  <data name="TextExpander_ClipboardWhat_Link_Numbered" xml:space="preserve">
-    <value>Link {0}</value>
-    <comment>A web link in a copy, by its number: {0} is 2 for the second one. Shown as {0} in "{0} from clipboard"</comment>
-  </data>
-  <data name="TextExpander_ClipboardWhat_Link_Last" xml:space="preserve">
-    <value>Last link</value>
-    <comment>The last web link in a copy. Shown as {0} in "{0} from clipboard"</comment>
-  </data>
-  <data name="TextExpander_ClipboardWhat_Link_All" xml:space="preserve">
-    <value>All links</value>
-    <comment>Every web link in a copy, one per line. Shown as {0} in "{0} from clipboard"</comment>
-  </data>
-  <data name="TextExpander_ClipboardWhat_Link_Pick" xml:space="preserve">
-    <value>Link you pick</value>
-    <comment>The web link the user picks, when a copy has more than one. Shown as {0} in "{0} from clipboard"</comment>
+    <comment>The web link in a copy. Shown as {0} in &quot;{0} from clipboard&quot;</comment>
   </data>
   <data name="TextExpander_ClipboardWhat_Phone" xml:space="preserve">
     <value>Phone number</value>
-    <comment>The first phone number in a copy. Shown as {0} in "{0} from clipboard"</comment>
-  </data>
-  <data name="TextExpander_ClipboardWhat_Phone_Numbered" xml:space="preserve">
-    <value>Phone number {0}</value>
-    <comment>A phone number in a copy, by its number: {0} is 2 for the second one. Shown as {0} in "{0} from clipboard"</comment>
-  </data>
-  <data name="TextExpander_ClipboardWhat_Phone_Last" xml:space="preserve">
-    <value>Last phone number</value>
-    <comment>The last phone number in a copy. Shown as {0} in "{0} from clipboard"</comment>
-  </data>
-  <data name="TextExpander_ClipboardWhat_Phone_All" xml:space="preserve">
-    <value>All phone numbers</value>
-    <comment>Every phone number in a copy, one per line. Shown as {0} in "{0} from clipboard"</comment>
-  </data>
-  <data name="TextExpander_ClipboardWhat_Phone_Pick" xml:space="preserve">
-    <value>Phone number you pick</value>
-    <comment>The phone number the user picks, when a copy has more than one. Shown as {0} in "{0} from clipboard"</comment>
+    <comment>The phone number in a copy. Shown as {0} in &quot;{0} from clipboard&quot;</comment>
   </data>
   <data name="TextExpander_ClipboardWhat_Number" xml:space="preserve">
     <value>Number</value>
-    <comment>The first number in a copy. Shown as {0} in "{0} from clipboard"</comment>
-  </data>
-  <data name="TextExpander_ClipboardWhat_Number_Numbered" xml:space="preserve">
-    <value>Number {0}</value>
-    <comment>A number in a copy, by its position: {0} is 2 for the second one. Shown as {0} in "{0} from clipboard"</comment>
-  </data>
-  <data name="TextExpander_ClipboardWhat_Number_Last" xml:space="preserve">
-    <value>Last number</value>
-    <comment>The last number in a copy. Shown as {0} in "{0} from clipboard"</comment>
-  </data>
-  <data name="TextExpander_ClipboardWhat_Number_All" xml:space="preserve">
-    <value>All numbers</value>
-    <comment>Every number in a copy, one per line. Shown as {0} in "{0} from clipboard"</comment>
-  </data>
-  <data name="TextExpander_ClipboardWhat_Number_Pick" xml:space="preserve">
-    <value>Number you pick</value>
-    <comment>The number the user picks, when a copy has more than one. Shown as {0} in "{0} from clipboard"</comment>
+    <comment>The number in a copy. Shown as {0} in &quot;{0} from clipboard&quot;</comment>
   </data>
   <data name="TextExpander_ClipboardFlyout.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Clipboard</value>
@@ -606,49 +542,13 @@
     <value>Only the number in it</value>
     <comment>Choice under "Insert": a number found in the copy</comment>
   </data>
-  <data name="TextExpander_ClipboardFlyout_Match.Header" xml:space="preserve">
-    <value>If there's more than one</value>
-    <comment>Heading of the choice of which match a clipboard variable inserts when the copy has several, such as two links</comment>
-  </data>
-  <data name="TextExpander_ClipboardFlyout_MatchFirst" xml:space="preserve">
-    <value>Use the first</value>
-    <comment>Choice under "If there's more than one"</comment>
-  </data>
-  <data name="TextExpander_ClipboardFlyout_MatchSecond" xml:space="preserve">
-    <value>Use the second</value>
-    <comment>Choice under "If there's more than one"</comment>
-  </data>
-  <data name="TextExpander_ClipboardFlyout_MatchThird" xml:space="preserve">
-    <value>Use the third</value>
-    <comment>Choice under "If there's more than one"</comment>
-  </data>
-  <data name="TextExpander_ClipboardFlyout_MatchNumbered" xml:space="preserve">
-    <value>Use another one</value>
-    <comment>Choice under "If there's more than one". Shows a box for which one, by its number</comment>
-  </data>
-  <data name="TextExpander_ClipboardFlyout_MatchLast" xml:space="preserve">
-    <value>Use the last</value>
-    <comment>Choice under "If there's more than one"</comment>
-  </data>
-  <data name="TextExpander_ClipboardFlyout_MatchAll" xml:space="preserve">
-    <value>Use all of them, one per line</value>
-    <comment>Choice under "If there's more than one"</comment>
-  </data>
-  <data name="TextExpander_ClipboardFlyout_MatchPick" xml:space="preserve">
-    <value>Let me pick when it runs</value>
-    <comment>Choice under "If there's more than one": a window asks the user which one when the snippet runs</comment>
-  </data>
-  <data name="TextExpander_ClipboardFlyout_Index.Header" xml:space="preserve">
-    <value>Which one</value>
-    <comment>Heading of the box for which match a clipboard variable inserts, by its number, such as 4 for the fourth</comment>
-  </data>
   <data name="TextExpander_ClipboardFlyout_ShowsAs.Text" xml:space="preserve">
     <value>Shows as</value>
     <comment>Caption over how the clipboard variable shows in the snippet preview</comment>
   </data>
   <data name="TextExpander_ClipboardFlyout_NoMatch.Text" xml:space="preserve">
-    <value>If there isn't one, nothing is inserted there, and the rest of the snippet still goes in.</value>
-    <comment>Note in the Clipboard panel about a copy without the part chosen, such as no email address</comment>
+    <value>If there&apos;s more than one, it asks which one when the snippet runs. If there&apos;s none, that spot is left empty.</value>
+    <comment>Note in the Clipboard panel for a part of a copy, such as an email address: what happens when the copy has several, and when it has none</comment>
   </data>
   <data name="TextExpander_ClipboardFlyout_Update.Content" xml:space="preserve">
     <value>Update</value>

@@ -109,10 +109,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             _replacementEditor.ClipboardEditRequested += ReplacementEditor_ClipboardEditRequested;
             BuildClipboardChoices();
 
-            // NumberBox reads what was typed into its value as Enter comes up, so Enter there commits after that, on its
-            // own handled key-up, rather than at key-down with the value from before.
-            ClipboardIndexBox.AddHandler(KeyUpEvent, new KeyEventHandler(ClipboardIndexBox_KeyUp), handledEventsToo: true);
-
             // The guide follows the caret into and out of {{date:…}} variables, and what it shows follows the typing.
             _replacementEditor.TextChanged += (_, _) => UpdateDateFormatGuide();
             _replacementEditor.SelectionChanged += (_, _) => UpdateDateFormatGuide();
@@ -450,7 +446,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             BeginPromptEdit(TextExpanderPromptEditSession.BeginNew(_replacementEditor.Text, start, end, PromptQuestionBox.PlaceholderText));
         }
 
-        /// <summary>Fills the Clipboard panel's lists: which copy, what to insert from it, and which of a part's matches.</summary>
+        /// <summary>Fills the Clipboard panel's lists: which copy, and what to insert from it.</summary>
         private void BuildClipboardChoices()
         {
             Func<string, string> resource = ResourceLoaderInstance.ResourceLoader.GetString;
@@ -460,11 +456,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             foreach (ClipboardPart part in TextExpanderClipboardText.Parts)
             {
                 ClipboardPartBox.Items.Add(new ComboBoxItem { Content = resource("TextExpander_ClipboardFlyout_Part_" + part), Tag = part });
-            }
-
-            foreach ((string key, string tag) in new[] { ("First", "first"), ("Second", "2"), ("Third", "3"), ("Numbered", "n"), ("Last", "last"), ("All", "all"), ("Pick", "pick") })
-            {
-                ClipboardMatchBox.Items.Add(new ComboBoxItem { Content = resource("TextExpander_ClipboardFlyout_Match" + key), Tag = tag });
             }
         }
 
@@ -514,24 +505,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                         ClipboardPartBox.SelectedItem = item;
                     }
                 }
-
-                string which = variable.Match switch
-                {
-                    ClipboardMatch.Numbered => variable.Index is 2 or 3 ? variable.Index.ToString(CultureInfo.InvariantCulture) : "n",
-                    ClipboardMatch.Last => "last",
-                    ClipboardMatch.All => "all",
-                    ClipboardMatch.Pick => "pick",
-                    _ => "first",
-                };
-                foreach (ComboBoxItem item in ClipboardMatchBox.Items)
-                {
-                    if (item.Tag as string == which)
-                    {
-                        ClipboardMatchBox.SelectedItem = item;
-                    }
-                }
-
-                ClipboardIndexBox.Value = variable.Match == ClipboardMatch.Numbered ? variable.Index : 4;
             }
             finally
             {
@@ -546,18 +519,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         {
             bool pickCopy = (ClipboardCopyBox.SelectedItem as ComboBoxItem)?.Tag is true;
             ClipboardPart part = (ClipboardPartBox.SelectedItem as ComboBoxItem)?.Tag is ClipboardPart chosen ? chosen : ClipboardPart.All;
-            int index = double.IsNaN(ClipboardIndexBox.Value) ? 4 : (int)Math.Clamp(Math.Round(ClipboardIndexBox.Value), 2, ClipboardVariable.MaxIndex);
-            (ClipboardMatch match, int number) = ((ClipboardMatchBox.SelectedItem as ComboBoxItem)?.Tag as string) switch
-            {
-                "2" => (ClipboardMatch.Numbered, 2),
-                "3" => (ClipboardMatch.Numbered, 3),
-                "n" => (ClipboardMatch.Numbered, index),
-                "last" => (ClipboardMatch.Last, 0),
-                "all" => (ClipboardMatch.All, 0),
-                "pick" => (ClipboardMatch.Pick, 0),
-                _ => (ClipboardMatch.First, 0),
-            };
-            return new ClipboardVariable(pickCopy, part, match, number).Normalized();
+            return new ClipboardVariable(pickCopy, part).Normalized();
         }
 
         /// <summary>Shows only the choices that apply, and how the variable will show in the preview.</summary>
@@ -565,9 +527,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         {
             ClipboardVariable variable = ReadClipboardChoices();
             bool part = variable.Part != ClipboardPart.All;
-            ClipboardMatchBox.Visibility = part ? Visibility.Visible : Visibility.Collapsed;
             ClipboardNoMatch.Visibility = part ? Visibility.Visible : Visibility.Collapsed;
-            ClipboardIndexBox.Visibility = part && (ClipboardMatchBox.SelectedItem as ComboBoxItem)?.Tag as string == "n" ? Visibility.Visible : Visibility.Collapsed;
             ClipboardShowsAs.Segments = new[] { new TextExpanderPreviewSegment(TextExpanderPreviewSegmentKind.Clipboard, string.Empty, variable) };
 
             string historyNote = variable.PickCopy ? TextExpanderClipboardHistory.Note(_clipboardHistory.On, _clipboardHistory.TurnedOffByPolicy, ResourceLoaderInstance.ResourceLoader.GetString) : null;
@@ -577,14 +537,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         }
 
         private void ClipboardChoice_Changed(object sender, SelectionChangedEventArgs e)
-        {
-            if (!_showingClipboardChoices)
-            {
-                UpdateClipboardDraft();
-            }
-        }
-
-        private void ClipboardIndex_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
         {
             if (!_showingClipboardChoices)
             {
@@ -608,34 +560,12 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 e.Handled = true;
                 ClipboardFlyout.Hide();
             }
-            else if (e.Key == global::Windows.System.VirtualKey.Enter && e.OriginalSource is not (ButtonBase or ComboBox or ComboBoxItem)
-                && !IsWithin(e.OriginalSource as DependencyObject, ClipboardIndexBox))
+            else if (e.Key == global::Windows.System.VirtualKey.Enter && e.OriginalSource is not (ButtonBase or ComboBox or ComboBoxItem))
             {
-                // A button or link gets its own Enter, a list opens with it, and the number box commits on its key-up.
+                // A button or link gets its own Enter, and a list opens with it.
                 e.Handled = true;
                 CommitClipboardEdit();
             }
-        }
-
-        private void ClipboardIndexBox_KeyUp(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == global::Windows.System.VirtualKey.Enter && _clipboardEdit != null)
-            {
-                CommitClipboardEdit();
-            }
-        }
-
-        private static bool IsWithin(DependencyObject element, DependencyObject ancestor)
-        {
-            for (; element != null; element = VisualTreeHelper.GetParent(element))
-            {
-                if (ReferenceEquals(element, ancestor))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private void ClipboardUpdate_Click(object sender, RoutedEventArgs e) => CommitClipboardEdit();

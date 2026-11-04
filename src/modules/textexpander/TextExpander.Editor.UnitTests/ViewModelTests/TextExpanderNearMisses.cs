@@ -50,8 +50,14 @@ namespace ViewModelTests
         [DataRow("{{Clipboard}}", "{{Clipboard}}", "{{clipboard}}")]
         [DataRow("{{clipbaord}}", "{{clipbaord}}", "{{clipboard}}")]
         [DataRow("{{clipboard:Link}}", "{{clipboard:Link}}", "{{clipboard:link}}")]
-        [DataRow("{{clipboard: lnik : 2}}", "{{clipboard: lnik : 2}}", "{{clipboard:link:2}}")]
+        [DataRow("{{clipboard: lnik : 2}}", "{{clipboard: lnik : 2}}", "{{clipboard:link}}")]
         [DataRow("{{clipboard:all}}", "{{clipboard:all}}", "{{clipboard}}")]
+        [DataRow("{{clipboard:link:2}}", "{{clipboard:link:2}}", "{{clipboard:link}}")]
+        [DataRow("{{clipboard:link:0}}", "{{clipboard:link:0}}", "{{clipboard:link}}")]
+        [DataRow("{{clipboard:email:pick}}", "{{clipboard:email:pick}}", "{{clipboard:email}}")]
+        [DataRow("{{clipboard:number:all}}", "{{clipboard:number:all}}", "{{clipboard:number}}")]
+        [DataRow("{{clipboard:pick:link:last}}", "{{clipboard:pick:link:last}}", "{{clipboard:pick:link}}")]
+        [DataRow("{{clipboard:pick:pick}}", "{{clipboard:pick:pick}}", "{{clipboard:pick}}")]
         [DataRow("Dear {{cursor}},", "{{cursor}}", "$|$")]
         [DataRow("On {{today}}", "{{today}}", "{{date}}")]
         [DataRow("At {{now}}", "{{now}}", "{{datetime}}")]
@@ -66,7 +72,7 @@ namespace ViewModelTests
 
         [TestMethod]
         [DataRow("{{clipboard:xyz}}")]
-        [DataRow("{{clipboard:link:0}}")]
+        [DataRow("{{clipboard:link:xyzzy}}")]
         [DataRow("{{prompt}}")]
         [DataRow("{{Prompt?: }}")]
         public void AVariableNameWithAMistakeAfterItIsFoundWithoutAGuess(string replacement)
@@ -78,7 +84,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        [DataRow("{{date}} {{time}} {{clipboard:link:2}} {{prompt:Name}} $|$")]
+        [DataRow("{{date}} {{time}} {{clipboard:link}} {{clipboard:pick:email}} {{prompt:Name}} $|$")]
         [DataRow("{{date:'{{Date}}' yyyy}}")]
         [DataRow("Hi {{name}}, your {{order_id}} {name} {x}")]
         [DataRow("{\"key\": 1} and function() { return x; }")]

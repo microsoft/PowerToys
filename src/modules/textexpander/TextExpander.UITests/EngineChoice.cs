@@ -10,7 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.PowerToys.TextExpander.UITests;
 
 /// <summary>
-/// The window the engine opens to pick one of a clipboard variable's matches, as for <c>{{clipboard:link:pick}}</c>:
+/// The window the engine opens to pick one of a clipboard variable's matches, as for <c>{{clipboard:link}}</c> with two links:
 /// "PowerToys Text Expander", the question over the list of matches (<c>Options</c>), then Insert and Cancel. It belongs
 /// to PowerToys.TextExpander.exe and shares the question window's caption and class, so it's told apart by its list.
 /// </summary>

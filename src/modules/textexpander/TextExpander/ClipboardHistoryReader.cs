@@ -11,46 +11,51 @@ using WinStandardDataFormats = global::Windows.ApplicationModel.DataTransfer.Sta
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// Reads the text of recent copies from Windows clipboard history (Windows logo key + V) for a snippet that picks a copy
-/// when it runs, as {{clipboard:pick}} does. Windows lets the engine read it while the user's app is in front, so it's read
-/// before any window opens. What's read is used for that one expansion only: it's never logged or kept.
+/// Reads the text of recent copies from Windows clipboard history (Windows logo key + V) for a snippet that picks from it,
+/// as {{clipboard:pick}} does. Windows lets the engine read it while the user's app is in front, so it's read before any
+/// window opens. What's read is used for that one expansion only: it's never logged or kept.
 /// </summary>
 internal static class ClipboardHistoryReader
 {
-    /// <summary>The most copies offered, as many as Windows keeps.</summary>
+    /// <summary>The most copies read, as many as Windows keeps.</summary>
     internal const int MaxCopies = 25;
 
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(2);
 
     /// <summary>
-    /// Gets the text copies in clipboard history, newest first and each different one once, or none when history is off,
-    /// can't be read within 2 seconds, or holds no text.
+    /// Gets the text copies in clipboard history, newest first and each different one once; or that history is off, or
+    /// couldn't be read within 2 seconds.
     /// </summary>
-    public static IReadOnlyList<string> ReadTexts()
+    public static ClipboardHistory Read()
     {
         try
         {
             if (!WinClipboard.IsHistoryEnabled())
             {
-                return Array.Empty<string>();
+                return ClipboardHistory.TurnedOff;
             }
 
-            Task<IReadOnlyList<string>> read = Task.Run(ReadAsync);
-            return read.Wait(Timeout) ? read.Result : Array.Empty<string>();
+            Task<ClipboardHistory> read = Task.Run(ReadAsync);
+            return read.Wait(Timeout) ? read.Result : ClipboardHistory.NotRead;
         }
         catch (Exception ex) when (ex is COMException or UnauthorizedAccessException or InvalidOperationException or AggregateException)
         {
             Trace.TraceWarning($"Text Expander couldn't read clipboard history (0x{ex.HResult:X8}), so nothing was inserted from it.");
-            return Array.Empty<string>();
+            return ClipboardHistory.NotRead;
         }
     }
 
-    private static async Task<IReadOnlyList<string>> ReadAsync()
+    private static async Task<ClipboardHistory> ReadAsync()
     {
         var result = await WinClipboard.GetHistoryItemsAsync();
-        if (result.Status != WinClipboardHistoryItemsResultStatus.Success)
+        switch (result.Status)
         {
-            return Array.Empty<string>();
+            case WinClipboardHistoryItemsResultStatus.Success:
+                break;
+            case WinClipboardHistoryItemsResultStatus.ClipboardHistoryDisabled:
+                return ClipboardHistory.TurnedOff;
+            default:
+                return ClipboardHistory.NotRead;
         }
 
         var texts = new List<string>();
@@ -72,6 +77,6 @@ internal static class ClipboardHistoryReader
             }
         }
 
-        return texts;
+        return new ClipboardHistory(ClipboardHistoryState.Read, texts);
     }
 }

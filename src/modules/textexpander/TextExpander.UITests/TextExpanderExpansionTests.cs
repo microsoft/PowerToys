@@ -19,7 +19,7 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
     private const string CopiedBlock = "Questions? Email you@example.com or call 555-0123.\nTrack it: https://example.com/track/1042\nReturns: https://example.com/returns";
 
     private static readonly Snippet ReplyTo = new(";tereply", "Reply to {{clipboard:email}}");
-    private static readonly Snippet TrackLink = new(";telink", "Track: {{clipboard:link:pick}}");
+    private static readonly Snippet TrackLink = new(";telink", "Track: {{clipboard:link}}");
     private static readonly Snippet PickACopy = new(";tepick", "Copy: {{clipboard:pick}}.");
 
     internal override TextExpanderOptions InitialOptions => TestContext.TestName switch
@@ -134,8 +134,8 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
     }
 
     /// <summary>
-    /// A clipboard variable inserts the part of the copy it names: the email address in a copied block. With two links and
-    /// a link to pick, Text Expander's window lists both in front of the app; Enter inserts the first, a click the other.
+    /// A clipboard variable inserts the part of the copy it names: the one email address in a copied block goes straight in.
+    /// With two links, Text Expander's window lists both in front of the app; Enter inserts the first, a click the other.
     /// </summary>
     [TestMethod("TextExpander.Expansion.ClipboardPartsGoInAndAMatchIsPickedInTextExpandersWindow")]
     [TestCategory("TextExpander")]

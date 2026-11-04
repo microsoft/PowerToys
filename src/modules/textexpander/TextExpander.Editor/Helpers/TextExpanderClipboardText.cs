@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 {
     /// <summary>
     /// The snippet editor's words for clipboard variables: what a bubble, a row and a screen reader call one, such as
-    /// "Link 2 from clipboard", and finding the one at the caret for the Clipboard panel.
+    /// "Link from clipboard", and finding the one at the caret for the Clipboard panel.
     /// </summary>
     internal static class TextExpanderClipboardText
     {
@@ -18,8 +18,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         public static IReadOnlyList<ClipboardPart> Parts { get; } = [ClipboardPart.Email, ClipboardPart.Link, ClipboardPart.Phone, ClipboardPart.Number];
 
         /// <summary>
-        /// Gets what a bubble shows for <paramref name="variable"/>: "Clipboard" for the whole copy, or the part and which
-        /// of its matches, from the clipboard or a copy picked from history, such as "Link 2 from clipboard".
+        /// Gets what a bubble shows for <paramref name="variable"/>: "Clipboard" for the whole copy, or the part, from the
+        /// clipboard or from clipboard history, such as "Link from clipboard".
         /// </summary>
         public static string Label(ClipboardVariable variable, Func<string, string> resource)
         {
@@ -30,23 +30,11 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
                 return resource(variable.PickCopy ? "TextExpander_ClipboardWhole_History" : "TextExpander_PreviewClipboard");
             }
 
-            string what = resource("TextExpander_ClipboardWhat_" + variable.Part + variable.Match switch
-            {
-                ClipboardMatch.Numbered => "_Numbered",
-                ClipboardMatch.Last => "_Last",
-                ClipboardMatch.All => "_All",
-                ClipboardMatch.Pick => "_Pick",
-                _ => string.Empty,
-            });
-            if (variable.Match == ClipboardMatch.Numbered)
-            {
-                what = string.Format(CultureInfo.CurrentCulture, what, variable.Index);
-            }
-
+            string what = resource("TextExpander_ClipboardWhat_" + variable.Part);
             return string.Format(CultureInfo.CurrentCulture, resource(variable.PickCopy ? "TextExpander_ClipboardFrom_History" : "TextExpander_ClipboardFrom_Now"), what);
         }
 
-        /// <summary>Describes a clipboard bubble for screen readers, such as "Link 2 from clipboard, filled in when the snippet runs".</summary>
+        /// <summary>Describes a clipboard bubble for screen readers, such as "Link from clipboard, filled in when the snippet runs".</summary>
         public static string Description(ClipboardVariable variable, Func<string, string> resource)
             => variable.Normalized() == default
                 ? resource("TextExpander_PreviewClipboard_Description")

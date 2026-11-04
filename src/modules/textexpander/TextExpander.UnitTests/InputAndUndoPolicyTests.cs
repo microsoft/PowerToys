@@ -822,12 +822,12 @@ public sealed class InputAndUndoPolicyTests
     }
 
     [TestMethod]
-    public void PickingAMatchInsertsThePickAndIsNeverKeptForUndo()
+    public void SeveralMatchesAskAndThePickIsNeverKeptForUndo()
     {
         var offered = new List<string>();
         Action? hold = null;
         List<string> calls = ExpandWithChoices(
-            "!track=Track it: {{clipboard:link:pick}}",
+            "!track=Track it: {{clipboard:link}}",
             "!track ",
             "Docs https://example.com/docs and https://example.com/faq.",
             ask: (_, _, _) => throw new AssertFailedException("Nothing is asked."),
@@ -849,7 +849,7 @@ public sealed class InputAndUndoPolicyTests
     public void CancellingAChoiceCancelsTheWholeSnippet()
     {
         List<string> calls = ExpandWithChoices(
-            "!track=Track it: {{clipboard:link:pick}}",
+            "!track=Track it: {{clipboard:link}}",
             "!track ",
             "https://example.com/a https://example.com/b",
             ask: (_, _, _) => throw new AssertFailedException("Nothing is asked."),
@@ -869,7 +869,7 @@ public sealed class InputAndUndoPolicyTests
         // with one link, leaves the engine to hold once the snippet is worked out.
         var shown = new List<string>();
         List<string> calls = ExpandWithChoices(
-            "!ask={{prompt:Name}}: {{clipboard:link:pick}}",
+            "!ask={{prompt:Name}}: {{clipboard:link}}",
             "!ask ",
             copied,
             ask: (_, _, accepted) =>

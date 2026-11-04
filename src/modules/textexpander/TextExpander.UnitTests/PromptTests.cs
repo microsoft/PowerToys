@@ -49,11 +49,10 @@ public sealed class PromptTests
     [TestMethod]
     public void AChoiceAsksForItsPartAndShowsEachOptionOnOneLine()
     {
-        Assert.AreEqual("Pick the link to insert", ClipboardChoiceText.Heading(new ClipboardChoice(ClipboardChoiceKind.Match, ClipboardPart.Link, AskedInOrder, IsLast: true)));
-        Assert.AreEqual("Pick the phone number to insert", ClipboardChoiceText.Heading(new ClipboardChoice(ClipboardChoiceKind.Match, ClipboardPart.Phone, AskedInOrder, IsLast: true)));
-        Assert.AreEqual("Pick a copy to insert", ClipboardChoiceText.Heading(new ClipboardChoice(ClipboardChoiceKind.Copy, ClipboardPart.All, [], IsLast: true)));
-        Assert.AreEqual("Pick a copy to take the email address from", ClipboardChoiceText.Heading(new ClipboardChoice(ClipboardChoiceKind.Copy, ClipboardPart.Email, [], IsLast: true)));
-        Assert.AreEqual("Pick a copy to take the link from", ClipboardChoiceText.Heading(new ClipboardChoice(ClipboardChoiceKind.Copy, ClipboardPart.Link, [], IsLast: true)));
+        Assert.AreEqual("Pick the link to insert", ClipboardChoiceText.Heading(new ClipboardChoice(ClipboardPart.Link, FromHistory: false, AskedInOrder, IsLast: true)));
+        Assert.AreEqual("Pick the phone number to insert", ClipboardChoiceText.Heading(new ClipboardChoice(ClipboardPart.Phone, FromHistory: false, AskedInOrder, IsLast: true)));
+        Assert.AreEqual("Pick a copy to insert", ClipboardChoiceText.Heading(new ClipboardChoice(ClipboardPart.All, FromHistory: true, AskedInOrder, IsLast: true)));
+        Assert.AreEqual("Pick the email address to insert", ClipboardChoiceText.Heading(new ClipboardChoice(ClipboardPart.Email, FromHistory: true, AskedInOrder, IsLast: true)), "Matches across recent copies are asked for as matches.");
 
         Assert.AreEqual("Best regards, Your name", ClipboardChoiceText.OneLine("  Best regards,\r\n\tYour name\n"));
         Assert.AreEqual(string.Empty, ClipboardChoiceText.OneLine(null));
@@ -76,46 +75,32 @@ public sealed class PromptTests
     }
 
     [TestMethod]
-    public void APickedCopyComesFromClipboardHistoryAndOnlyTwoOrMoreAsk()
+    public void FewerThanTwoOptionsNeedNoWindow()
     {
-        var copy = new ClipboardChoice(ClipboardChoiceKind.Copy, ClipboardPart.All, [], IsLast: true);
+        // Core asks only with two or more, but the dialog stands on its own: one goes in and none inserts nothing, and keys
+        // typed from then on still wait for the snippet.
         int accepted = 0;
-        Assert.AreEqual(string.Empty, ClipboardChoiceDialog.Show(copy, IntPtr.Zero, () => accepted++, () => []), "History off, or no text in it: nothing goes in.");
-        Assert.AreEqual("Call back on Friday", ClipboardChoiceDialog.Show(copy, IntPtr.Zero, () => accepted++, () => ["Call back on Friday"]), "One copy goes in without a window.");
-        Assert.AreEqual(2, accepted, "Without a window, keys typed from then on still wait for the snippet.");
-
-        // For a part, only the copies that have one count.
-        string[] history = ["Call back on Friday", "See https://example.com/docs"];
-        Assert.AreEqual(history[1], ClipboardChoiceDialog.Show(copy with { Part = ClipboardPart.Link }, IntPtr.Zero, null, () => history));
-        Assert.AreEqual(string.Empty, ClipboardChoiceDialog.Show(copy with { Part = ClipboardPart.Email }, IntPtr.Zero, null, () => history));
+        Assert.AreEqual(string.Empty, ClipboardChoiceDialog.Show(new ClipboardChoice(ClipboardPart.All, FromHistory: true, [], IsLast: true), IntPtr.Zero, () => accepted++));
+        Assert.AreEqual("Call back on Friday", ClipboardChoiceDialog.Show(new ClipboardChoice(ClipboardPart.All, FromHistory: true, ["Call back on Friday"], IsLast: true), IntPtr.Zero, () => accepted++));
+        Assert.AreEqual(2, accepted);
     }
 
     [TestMethod]
-    public void ClipboardHistoryIsReadAheadOnlyForASnippetThatPicksACopyAndWaitedForAtMostAWhile()
+    public void ClipboardHistoryIsReadAheadOnlyForASnippetThatPicksFromItAndWaitedForAtMostAWhile()
     {
         Assert.IsTrue(ClipboardChoiceDialog.PicksCopy("{{clipboard:pick}}"));
         Assert.IsTrue(ClipboardChoiceDialog.PicksCopy("Hi {{prompt:Name}}, see {{clipboard:pick:link}}"));
-        Assert.IsFalse(ClipboardChoiceDialog.PicksCopy("{{clipboard:link:pick}}"), "That picks a match in what's on the clipboard now.");
+        Assert.IsFalse(ClipboardChoiceDialog.PicksCopy("{{clipboard:link}}"), "That takes from what's on the clipboard now.");
+        Assert.IsFalse(ClipboardChoiceDialog.PicksCopy("{{clipboard:link:pick}}"), "Not a variable: it stays as typed.");
         Assert.IsFalse(ClipboardChoiceDialog.PicksCopy("{{Clipboard:pick}}"), "Typed as written.");
         Assert.IsFalse(ClipboardChoiceDialog.PicksCopy("{{date:'{{clipboard:pick}}'}}"), "Part of a date format.");
 
-        IReadOnlyList<string> read = ["you@example.com"];
-        CollectionAssert.AreEqual(read.ToArray(), ClipboardChoiceDialog.Await(Task.FromResult(read)).ToArray());
-        var never = new TaskCompletionSource<IReadOnlyList<string>>();
-        Assert.AreEqual(0, ClipboardChoiceDialog.Await(never.Task, TimeSpan.FromMilliseconds(50)).Count, "Not read in time: nothing goes in.");
-    }
-
-    [TestMethod]
-    public void TheCopiesOfferedForAPartAreTheOnesThatHaveItNewestFirst()
-    {
-        string[] history = ["you@example.com", "Call back on Friday", "https://example.com/docs or support@example.com"];
-        string[] withEmail = [history[0], history[2]];
-        string[] withLink = [history[2]];
-        var culture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
-        CollectionAssert.AreEqual(history, ClipboardChoiceDialog.CopiesFor(ClipboardPart.All, history, culture).ToArray());
-        CollectionAssert.AreEqual(withEmail, ClipboardChoiceDialog.CopiesFor(ClipboardPart.Email, history, culture).ToArray());
-        CollectionAssert.AreEqual(withLink, ClipboardChoiceDialog.CopiesFor(ClipboardPart.Link, history, culture).ToArray());
-        Assert.AreEqual(0, ClipboardChoiceDialog.CopiesFor(ClipboardPart.Phone, history, culture).Count);
+        var read = new ClipboardHistory(ClipboardHistoryState.Read, ["you@example.com"]);
+        Assert.AreSame(read, ClipboardChoiceDialog.Await(Task.FromResult(read)));
+        Assert.AreSame(ClipboardHistory.TurnedOff, ClipboardChoiceDialog.Await(Task.FromResult(ClipboardHistory.TurnedOff)));
+        var never = new TaskCompletionSource<ClipboardHistory>();
+        Assert.AreEqual(ClipboardHistoryState.Unreadable, ClipboardChoiceDialog.Await(never.Task, TimeSpan.FromMilliseconds(50)).State, "Not read in time.");
+        Assert.AreEqual(ClipboardHistoryState.Unreadable, ClipboardChoiceDialog.Await(Task.FromException<ClipboardHistory>(new InvalidOperationException())).State);
     }
 
     [TestMethod]
