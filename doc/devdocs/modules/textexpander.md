@@ -17,7 +17,7 @@ erases each trigger and pastes or types the snippet. A separate editor manages t
 | --- | --- |
 | `src/modules/textexpander/TextExpanderModuleInterface` | `PowerToys.TextExpanderModuleInterface.dll`, the runner's module, which starts and stops the engine. |
 | `src/modules/textexpander/TextExpander` | The engine, `WinUI3Apps\PowerToys.TextExpander.exe`. |
-| `src/modules/textexpander/TextExpander.Core` | Shared rules: `SnippetFile`, `SnippetTemplate`, `Variables`, `TriggerIndex`, `WordBoundaryRules`, `TextExpanderTriggerReach`, `SnippetPathResolution`, `TextExpanderStarter`, and the clipboard rules `ClipboardFormats`, `ClipboardPrivacy`, `ClipboardLoan` and `ClipboardEntry`. |
+| `src/modules/textexpander/TextExpander.Core` | Shared rules: `SnippetFile`, `SnippetTemplate`, `Variables`, `TriggerIndex`, `WordBoundaryRules`, `TextExpanderTriggerReach`, `SnippetPathResolution`, `TextExpanderStarter`, and the clipboard rules `ClipboardFormats`, `ClipboardPrivacy`, `ClipboardLoan`, `ClipboardEntry` and `ClipboardHandBack`. |
 | `src/modules/textexpander/TextExpander.Storage` | `TextExpanderSettingsUtils`, for guarded `settings.json` access. |
 | `src/modules/textexpander/TextExpander.Editor` | The editor, `WinUI3Apps\PowerToys.TextExpander.Editor.exe`. |
 | `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.TextExpander` | Command Palette's **Text Expander snippets** extension. See [Command Palette](#command-palette). |
@@ -165,8 +165,9 @@ keys out of an insertion.
 - The restore needs the clipboard sequence number from just after our write, so a newer copy wins. It
   checks before opening the clipboard, and again once it's open, before emptying it: the open may have
   waited for an app that was copying. A refusal counts as skipped, not lost.
-- It tries 3 times, 40 ms apart. Only an attempt that emptied the clipboard takes the new sequence
-  number. One that couldn't open it changed nothing, so it adopts nothing.
+- It tries 3 times, 40 ms apart, in Core's `ClipboardHandBack`, which Command Palette shares. Only an
+  attempt that emptied the clipboard takes the new sequence number. One that couldn't open it changed
+  nothing, so it adopts nothing.
 
 ### Cursor marker and given-back key
 
@@ -307,8 +308,8 @@ Command Palette's process; its
 - A copy picked from clipboard history (`{{clipboard:pick}}` and the like) needs the engine's window,
   so those snippets are listed but not inserted.
 - It pastes with Core's `ClipboardFormats`, `ClipboardPrivacy`, `ClipboardLoan` and `ClipboardEntry`,
-  and types when the clipboard can't be put back exactly or under Always type. Its restore loop
-  copies the engine's `Injector.HandBack`; keep the two in step.
+  and hands the clipboard back with the engine's loop, Core's `ClipboardHandBack`. It types when the
+  clipboard can't be put back exactly or under Always type.
 - Its key events carry the `0x110` tag, which the engine's hook ignores, and it refuses targets above
   medium integrity, as the engine does.
 - Command Palette compiles Core ahead of time, so Core imports `Common.Dotnet.AotCompatibility.props`.

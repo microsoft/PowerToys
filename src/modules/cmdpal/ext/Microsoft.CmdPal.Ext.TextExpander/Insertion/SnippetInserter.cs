@@ -156,41 +156,12 @@ internal sealed class SnippetInserter
     }
 
     /// <summary>
-    /// Hands the user's clipboard back, trying again while another app holds it. If someone else copied after the
-    /// paste, their copy wins and nothing is put back: that's a skip, not a loss. Whether the clipboard is still ours is
-    /// asked before each attempt, and again once it's open, before it's emptied, as Text Expander does.
+    /// Hands the user's clipboard back with Text Expander's own loop (<see cref="ClipboardHandBack.Run"/> in
+    /// TextExpander.Core), trying again while another app holds it. If someone else copied after the paste, their copy
+    /// wins and nothing is put back: that's a skip, not a loss.
     /// </summary>
     private ClipboardRestore RestoreClipboard(SavedClipboard saved, ClipboardLoan loan)
-    {
-        var result = ClipboardRestore.Untouched;
-        for (var attempt = 0; attempt < RestoreAttempts; attempt++)
-        {
-            if (!loan.MayRestore(_clipboard.SequenceNumber))
-            {
-                return ClipboardRestore.Superseded;
-            }
-
-            result = _clipboard.Restore(saved, loan.MayRestore);
-            if (result is ClipboardRestore.Restored or ClipboardRestore.Superseded)
-            {
-                return result;
-            }
-
-            // Only an attempt that emptied the clipboard changed it, so only then is the loan re-armed. After one that
-            // couldn't open it, any change is someone else's, such as a copy made while it waited, and must stay.
-            if (result == ClipboardRestore.Incomplete)
-            {
-                loan.Rearm(_clipboard.SequenceNumber);
-            }
-
-            if (attempt + 1 < RestoreAttempts)
-            {
-                _clock.Sleep(RestoreRetryDelayMs);
-            }
-        }
-
-        return result;
-    }
+        => ClipboardHandBack.Run(stillOurs => _clipboard.Restore(saved, stillOurs), loan, () => _clipboard.SequenceNumber, _clock.Sleep, RestoreAttempts, RestoreRetryDelayMs);
 
     /// <summary>Types one character per batch, paced as Text Expander types, and stops if another window comes to the front.</summary>
     private InsertOutcome Type(string text, nint target)

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.PowerToys.TextExpander;
 
 namespace Microsoft.CmdPal.Ext.TextExpander.Insertion;
 
@@ -16,22 +17,6 @@ internal enum ClipboardWrite
 
     /// <summary>Nothing was touched: the clipboard couldn't be opened for writing.</summary>
     Refused,
-}
-
-/// <summary>How handing the user's clipboard back after a paste went.</summary>
-internal enum ClipboardRestore
-{
-    /// <summary>Everything went back.</summary>
-    Restored,
-
-    /// <summary>Someone else wrote to the clipboard after the paste, so their copy stays and nothing was touched.</summary>
-    Superseded,
-
-    /// <summary>Nothing was touched: the clipboard couldn't be opened, or not in a way that may be written to.</summary>
-    Untouched,
-
-    /// <summary>The clipboard was emptied, but not everything went back: it changed, by this extension's hand.</summary>
-    Incomplete,
 }
 
 /// <summary>The clipboard, as a paste borrows it and gives it back.</summary>

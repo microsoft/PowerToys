@@ -133,6 +133,30 @@ public sealed class ClipboardPolicyTests
     }
 
     [TestMethod]
+    public void TheSharedHandBackTriesAsOftenAsItsCallerSaysAndPausesOnlyBetweenTries()
+    {
+        // Text Expander and Command Palette's extension share Core's loop, each with its own tries and pause.
+        int calls = 0;
+        ClipboardRestore NeverOpens(Func<uint, bool> stillOurs)
+        {
+            calls++;
+            return ClipboardRestore.Untouched;
+        }
+
+        var sleeps = new List<int>();
+        Assert.AreEqual(ClipboardRestore.Untouched, ClipboardHandBack.Run(NeverOpens, new ClipboardLoan(41), () => 41, sleeps.Add, attempts: 4, retryDelayMs: 25));
+        Assert.AreEqual(4, calls);
+        Assert.AreEqual(3, sleeps.Count, "No pause after the last try.");
+        Assert.IsTrue(sleeps.TrueForAll(ms => ms == 25));
+
+        calls = 0;
+        sleeps.Clear();
+        Assert.AreEqual(ClipboardRestore.Untouched, ClipboardHandBack.Run(NeverOpens, new ClipboardLoan(41), () => 41, sleeps.Add, attempts: 2, retryDelayMs: 0));
+        Assert.AreEqual(2, calls);
+        Assert.AreEqual(0, sleeps.Count, "No pause asked for, none taken.");
+    }
+
+    [TestMethod]
     public void ClipboardPrivacyPublishesDocumentedExclusionFormats()
     {
         Assert.AreEqual(3, ClipboardPrivacy.FormatNames.Count);
