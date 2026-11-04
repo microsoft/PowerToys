@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>What can be done about one clipboard format when borrowing the clipboard.</summary>
