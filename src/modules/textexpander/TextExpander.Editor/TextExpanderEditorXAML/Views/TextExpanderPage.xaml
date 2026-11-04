@@ -537,37 +537,66 @@
                                         <TextBlock x:Uid="More_Options_ButtonTooltip" />
                                     </ToolTipService.ToolTip>
                                 </Button>
-                                <!--  Never expands, and why. The icon means color is never the only cue.  -->
-                                <Grid
+                                <!--  What's wrong with the snippet, if anything. Each note's icon means color is never the only cue.  -->
+                                <StackPanel
                                     Grid.Row="1"
                                     Grid.ColumnSpan="3"
-                                    ColumnSpacing="8"
-                                    Visibility="{x:Bind HasWarning, Mode=OneWay}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Border
-                                        Padding="6,1"
-                                        VerticalAlignment="Top"
-                                        Background="{ThemeResource SystemFillColorCautionBackgroundBrush}"
-                                        CornerRadius="{StaticResource ControlCornerRadius}">
-                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                            <FontIcon
-                                                Foreground="{ThemeResource SystemFillColorCautionBrush}"
-                                                Glyph="&#xE7BA;"
-                                                Style="{StaticResource RowIconStyle}" />
-                                            <TextBlock x:Uid="TextExpander_Row_NeverExpands" Style="{StaticResource CaptionTextBlockStyle}" />
-                                        </StackPanel>
-                                    </Border>
-                                    <TextBlock
-                                        Grid.Column="1"
-                                        Margin="0,1,0,0"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Style="{StaticResource CaptionTextBlockStyle}"
-                                        Text="{x:Bind Warning, Mode=OneWay}"
-                                        TextWrapping="Wrap" />
-                                </Grid>
+                                    Spacing="6">
+                                    <!--  Never expands, and why.  -->
+                                    <Grid ColumnSpacing="8" Visibility="{x:Bind HasWarning, Mode=OneWay}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border
+                                            Padding="6,1"
+                                            VerticalAlignment="Top"
+                                            Background="{ThemeResource SystemFillColorCautionBackgroundBrush}"
+                                            CornerRadius="{StaticResource ControlCornerRadius}">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <FontIcon
+                                                    Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                                    Glyph="&#xE7BA;"
+                                                    Style="{StaticResource RowIconStyle}" />
+                                                <TextBlock x:Uid="TextExpander_Row_NeverExpands" Style="{StaticResource CaptionTextBlockStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Margin="0,1,0,0"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            Text="{x:Bind Warning, Mode=OneWay}"
+                                            TextWrapping="Wrap" />
+                                    </Grid>
+                                    <!--  Text that looks like a variable but isn't one, such as {{Date}}, is typed as written: what it likely means.  -->
+                                    <Grid ColumnSpacing="8" Visibility="{x:Bind HasVariableWarning, Mode=OneWay}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border
+                                            Padding="6,1"
+                                            VerticalAlignment="Top"
+                                            Background="{ThemeResource SystemFillColorAttentionBackgroundBrush}"
+                                            CornerRadius="{StaticResource ControlCornerRadius}">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <FontIcon
+                                                    Foreground="{ThemeResource SystemFillColorAttentionBrush}"
+                                                    Glyph="&#xE946;"
+                                                    Style="{StaticResource RowIconStyle}" />
+                                                <TextBlock x:Uid="TextExpander_Row_TypedAsWritten" Style="{StaticResource CaptionTextBlockStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Margin="0,1,0,0"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            Text="{x:Bind VariableWarning, Mode=OneWay}"
+                                            TextWrapping="Wrap" />
+                                    </Grid>
+                                </StackPanel>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
@@ -1051,6 +1080,36 @@
                                 x:Uid="TextExpander_Dialog_SensitiveInfo"
                                 Grid.Column="1"
                                 Style="{StaticResource FlyoutCaptionStyle}" />
+                        </Grid>
+
+                        <!--
+                            Text that looks like a variable but isn't one, such as {{Date}}, is typed as written: the first such
+                            text, and a button to use the variable it likely means. Fixing one shows the next.
+                        -->
+                        <Grid
+                            x:Name="NearMissNote"
+                            ColumnSpacing="6"
+                            Visibility="Collapsed">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon
+                                Margin="0,2,0,0"
+                                VerticalAlignment="Top"
+                                AutomationProperties.AccessibilityView="Raw"
+                                FontSize="12"
+                                Foreground="{ThemeResource SystemFillColorAttentionBrush}"
+                                Glyph="&#xE946;" />
+                            <StackPanel Grid.Column="1" Spacing="2">
+                                <TextBlock x:Name="NearMissText" Style="{StaticResource FlyoutCaptionStyle}" />
+                                <HyperlinkButton
+                                    x:Name="NearMissUseButton"
+                                    Padding="0"
+                                    AutomationProperties.AutomationId="Button_TextExpander_UseVariable"
+                                    Click="NearMissUse_Click"
+                                    FontSize="12" />
+                            </StackPanel>
                         </Grid>
 
                         <!--

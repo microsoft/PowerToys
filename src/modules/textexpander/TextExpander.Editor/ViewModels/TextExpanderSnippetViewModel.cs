@@ -42,6 +42,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 OnPropertyChanged(nameof(ChipSegments));
                 OnPropertyChanged(nameof(Warning));
                 OnPropertyChanged(nameof(HasWarning));
+                OnPropertyChanged(nameof(VariableWarning));
+                OnPropertyChanged(nameof(HasVariableWarning));
                 OnPropertyChanged(nameof(AutomationName));
             }
         }
@@ -59,6 +61,11 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         public string Warning => _description?.Warning ?? string.Empty;
 
         public bool HasWarning => _description?.Warning != null;
+
+        /// <summary>Gets what in the snippet looks like a variable but is typed as written, such as {{Date}}, or empty.</summary>
+        public string VariableWarning => _description?.VariableWarning ?? string.Empty;
+
+        public bool HasVariableWarning => _description?.VariableWarning != null;
 
         /// <summary>Gets what a screen reader says for the row: the trigger, its text, and any warning.</summary>
         public string AutomationName => string.IsNullOrEmpty(_caseVariantAutomationName)

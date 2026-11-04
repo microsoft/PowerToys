@@ -130,6 +130,46 @@ public sealed class TextExpanderEditorTests : TextExpanderTestBase
     }
 
     /// <summary>
+    /// {{Date}} isn't a variable, so it's typed as written: the dialog says so under Replacement, and Use {{date}} fixes
+    /// it. Saved as written, its row says it's typed as written and what it likely means.
+    /// </summary>
+    [TestMethod("TextExpander.Editor.FlagsAVariableWrittenWrongAndUseFixesIt")]
+    [TestCategory("TextExpander")]
+    [TestCategory("TextExpander.Editor")]
+    public void FlagsAVariableWrittenWrongAndUseFixesIt()
+    {
+        var written = new Snippet(";tesent", "Sent {{Date}}");
+        var editor = OpenEditor(OpenTextExpanderPage());
+        editor.WaitForCount(DefaultSnippets.Count);
+        editor.OpenNewSnippet();
+        editor.SetTrigger(written.Trigger);
+        editor.TypeReplacement(written.Replacement);
+        Assert.IsTrue(editor.WaitForReplacementText(written.Replacement), $"Replacement holds '{TextExpanderFiles.Visible(editor.ReplacementText)}'.");
+        Assert.IsTrue(
+            editor.WaitForText("{{Date}} isn't a variable, so it's typed as written. Did you mean {{date}}?"),
+            "The dialog didn't say {{Date}} is typed as written.");
+
+        Step("Selecting Use {{date}}");
+        var use = editor.Session.Find<Element>(By.AccessibilityId("Button_TextExpander_UseVariable"), 10_000);
+        Assert.AreEqual("Use {{date}}", use.Name);
+        use.Invoke(msPostAction: 300);
+        Assert.IsTrue(editor.WaitForReplacementText("Sent {{date}}"), $"Replacement holds '{TextExpanderFiles.Visible(editor.ReplacementText)}'.");
+        Assert.IsTrue(
+            editor.Session.WaitFor(() => !editor.Session.Has(By.AccessibilityId("Button_TextExpander_UseVariable"), timeoutMS: 0), 10_000, pollIntervalMS: 250),
+            "The note stayed after the fix.");
+
+        Step("Writing it wrong again and saving it as written");
+        editor.TypeReplacement(written.Replacement);
+        Assert.IsTrue(editor.WaitForReplacementText(written.Replacement), $"Replacement holds '{TextExpanderFiles.Visible(editor.ReplacementText)}'.");
+        editor.Save();
+        Assert.IsTrue(editor.WaitForRow(written.Trigger, present: true), $"The new snippet isn't listed. Rows: {editor.DescribeRows()}.");
+        Assert.IsTrue(
+            editor.Session.WaitFor(() => editor.Row(written.Trigger)?.Name.EndsWith("Typed as written: {{Date}} isn't a variable. Did you mean {{date}}?", StringComparison.Ordinal) == true, 10_000, pollIntervalMS: 250),
+            $"The row doesn't say {{{{Date}}}} is typed as written. Rows: {editor.DescribeRows()}.");
+        AssertDatabase([.. DefaultSnippets, written]);
+    }
+
+    /// <summary>
     /// The trigger is checked as it's typed, and Save stays off while it's wrong. Cancel on an edited snippet asks
     /// before discarding it, and Discard saves nothing.
     /// </summary>

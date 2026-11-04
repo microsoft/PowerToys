@@ -13,7 +13,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 {
     /// <summary>
     /// Describes a snippet for its row in the list, in Keyboard Manager's style: the questions it asks, what it
-    /// inserts as its real lines in an accent chip, why it never expands, and what a screen reader says.
+    /// inserts as its real lines in an accent chip, why it never expands, text in it that looks like a variable but is
+    /// typed as written, and what a screen reader says.
     /// </summary>
     internal static partial class TextExpanderRowDescriber
     {
@@ -84,6 +85,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             string glyph = kind is { } valueKind ? TextExpanderInlines.ValueText(new(valueKind), resource).Glyph : TextGlyph;
 
             string warning = WarningFor(trigger, hasLaterDuplicate, triggers, wordMode, resource);
+            string variableWarning = NearMissWarning(replacement, resource);
             string spoken = Spoken(segments, resource);
             if (lines > 1 && spoken.Length > 0)
             {
@@ -91,13 +93,33 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             }
 
             string never = warning == null ? null : Format(resource("TextExpander_Row_NeverExpandsSpoken"), warning);
+            string typedAsWritten = variableWarning == null ? null : Format(resource("TextExpander_Row_TypedAsWrittenSpoken"), variableWarning);
+            string notes = never == null ? typedAsWritten : typedAsWritten == null ? never : never + " " + typedAsWritten;
             string automationName = spoken.Length == 0
-                ? (never == null ? trigger : Format(resource("TextExpander_Row_AutomationName"), trigger, never))
-                : never == null
+                ? (notes == null ? trigger : Format(resource("TextExpander_Row_AutomationName"), trigger, notes))
+                : notes == null
                     ? Format(resource("TextExpander_Row_AutomationName"), trigger, spoken)
-                    : Format(resource("TextExpander_Row_AutomationNameWarning"), trigger, WithoutFinalPeriod(spoken), never);
+                    : Format(resource("TextExpander_Row_AutomationNameWarning"), trigger, WithoutFinalPeriod(spoken), notes);
 
-            return new TextExpanderRowDescription(glyph, Lead(questions, resource), ChipLines(segments, oneValue || onlyDates, resource), warning, automationName);
+            return new TextExpanderRowDescription(glyph, Lead(questions, resource), ChipLines(segments, oneValue || onlyDates, resource), warning, variableWarning, automationName);
+        }
+
+        /// <summary>
+        /// Says what in the replacement looks meant as a variable but is typed as written, such as {{Date}}, and the variable
+        /// it likely means: the first such text, as fixing it shows the next. Null when there's none.
+        /// </summary>
+        private static string NearMissWarning(string replacement, Func<string, string> resource)
+        {
+            IReadOnlyList<TextExpanderNearMiss> misses = TextExpanderNearMiss.Find(replacement);
+            if (misses.Count == 0)
+            {
+                return null;
+            }
+
+            TextExpanderNearMiss miss = misses[0];
+            return miss.Suggestion == null
+                ? Format(resource("TextExpander_Row_NearMissUnknown"), miss.Written)
+                : Format(resource("TextExpander_Row_NearMiss"), miss.Written, miss.Suggestion);
         }
 
         /// <summary>

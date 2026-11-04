@@ -11,11 +11,13 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
     /// <param name="Lead">The words before the chip: "inserts", or "asks", each question once as a bubble, then "then inserts".</param>
     /// <param name="Chip">What it inserts, as its real lines with bubbles: at most three, then "…" if more follow.</param>
     /// <param name="Warning">Why the snippet never expands, or null.</param>
-    /// <param name="AutomationName">What a screen reader says for the row: the trigger, the text and any warning.</param>
+    /// <param name="VariableWarning">Text in it that looks meant as a variable but is typed as written, such as {{Date}}, and the variable it likely means, or null.</param>
+    /// <param name="AutomationName">What a screen reader says for the row: the trigger, the text and any warnings.</param>
     public sealed record TextExpanderRowDescription(
         string KindGlyph,
         IReadOnlyList<TextExpanderPreviewSegment> Lead,
         IReadOnlyList<TextExpanderPreviewSegment> Chip,
         string Warning,
+        string VariableWarning,
         string AutomationName);
 }

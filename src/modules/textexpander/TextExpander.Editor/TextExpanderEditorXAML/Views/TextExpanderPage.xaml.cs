@@ -60,6 +60,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         private bool _showingClipboardChoices;
         private MenuFlyout _rowMenu;
         private bool _closeWindowOnDiscard;
+        private TextExpanderNearMiss _nearMiss;
+        private string _nearMissAnnounced;
+        private Microsoft.UI.Dispatching.DispatcherQueueTimer _nearMissTimer;
 
         private enum PromptFlyoutCloseIntent
         {
@@ -1152,6 +1155,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 _isSnippetDialogOpen = false;
                 _editingId = null;
                 CancelPromptEdit();
+                _nearMissTimer?.Stop();
+                _nearMissAnnounced = null;
 
                 // Lets go of the texts kept for undo.
                 _replacementEditor.ClearHistory();
@@ -1518,6 +1523,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             string replacement = _replacementEditor.Text;
 
             ShowPreview(replacement);
+            ShowNearMiss(replacement);
 
             // Only an existing snippet's ID can name a different entry after a reload. A new one is checked
             // against the reloaded file below, so its Save stays available.
@@ -1577,6 +1583,73 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             IReadOnlyList<TextExpanderPreviewSegment> segments = TextExpanderSnippetPreview.Build(replacement, DateTime.Now);
             SnippetPreviewText.Segments = segments;
             PreviewHint.Visibility = TextExpanderSnippetPreview.HasBubbles(segments) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// Shows the first text in the replacement that looks like a variable but is typed as written, such as {{Date}}, with
+        /// a button to use the variable it likely means. Screen readers hear it once the typing pauses, not at every key.
+        /// </summary>
+        private void ShowNearMiss(string replacement)
+        {
+            IReadOnlyList<TextExpanderNearMiss> misses = TextExpanderNearMiss.Find(replacement);
+            _nearMiss = misses.Count > 0 ? misses[0] : null;
+            if (_nearMiss is not { } miss)
+            {
+                NearMissNote.Visibility = Visibility.Collapsed;
+                NearMissText.Text = string.Empty;
+                _nearMissAnnounced = null;
+                _nearMissTimer?.Stop();
+                return;
+            }
+
+            var resources = ResourceLoaderInstance.ResourceLoader;
+            NearMissText.Text = miss.Suggestion == null
+                ? string.Format(CultureInfo.CurrentCulture, resources.GetString("TextExpander_NearMissUnknown"), miss.Written)
+                : string.Format(CultureInfo.CurrentCulture, resources.GetString("TextExpander_NearMiss"), miss.Written, miss.Suggestion);
+            NearMissUseButton.Content = miss.Suggestion == null ? null : string.Format(CultureInfo.CurrentCulture, resources.GetString("TextExpander_NearMiss_Use"), miss.Suggestion);
+            NearMissUseButton.Visibility = miss.Suggestion == null ? Visibility.Collapsed : Visibility.Visible;
+            NearMissNote.Visibility = Visibility.Visible;
+
+            if (_isSnippetDialogOpen && !string.Equals(NearMissText.Text, _nearMissAnnounced, StringComparison.Ordinal))
+            {
+                _nearMissTimer ??= CreateNearMissTimer();
+                _nearMissTimer.Stop();
+                _nearMissTimer.Start();
+            }
+        }
+
+        private Microsoft.UI.Dispatching.DispatcherQueueTimer CreateNearMissTimer()
+        {
+            var timer = DispatcherQueue.CreateTimer();
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.IsRepeating = false;
+            timer.Tick += (_, _) =>
+            {
+                string text = NearMissText.Text;
+                if (_isSnippetDialogOpen && _nearMiss != null && !string.Equals(text, _nearMissAnnounced, StringComparison.Ordinal))
+                {
+                    // A hint, so it doesn't cut off what's being read.
+                    _nearMissAnnounced = text;
+                    var peer = FrameworkElementAutomationPeer.FromElement(NearMissText) ?? FrameworkElementAutomationPeer.CreatePeerForElement(NearMissText);
+                    peer?.RaiseNotificationEvent(AutomationNotificationKind.Other, AutomationNotificationProcessing.MostRecent, text, "textExpanderNearMiss");
+                }
+            };
+            return timer;
+        }
+
+        /// <summary>Uses the variable the text likely means, as one undo step, selected.</summary>
+        private void NearMissUse_Click(object sender, RoutedEventArgs e)
+        {
+            if (_nearMiss is not { Suggestion: { } suggestion } miss || !_replacementEditor.ReplaceVariable(miss.Start, miss.End, miss.Written, suggestion))
+            {
+                return;
+            }
+
+            // The button stays for the next one; with none left, the box shows the variable, selected.
+            if (_nearMiss?.Suggestion == null)
+            {
+                ReplacementBox.Focus(FocusState.Programmatic);
+            }
         }
 
         /// <summary>

@@ -959,7 +959,35 @@ Your name</value>
   </data>
   <data name="TextExpander_Row_AutomationNameWarning" xml:space="preserve">
     <value>{0}: {1}. {2}</value>
-    <comment>Screen reader name of a snippet in the list. {0} is the trigger; {1} is what the snippet types, read aloud; {2} says it never expands, and why</comment>
+    <comment>Screen reader name of a snippet in the list. {0} is the trigger; {1} is what the snippet types, read aloud; {2} says it never expands and why, or that text in it is typed as written, or both</comment>
+  </data>
+  <data name="TextExpander_Row_TypedAsWritten.Text" xml:space="preserve">
+    <value>Typed as written</value>
+    <comment>Badge on a snippet in the list with text that looks like a variable but isn't one, such as {{Date}}, so the text is typed as it is; what the text is follows the badge</comment>
+  </data>
+  <data name="TextExpander_Row_TypedAsWrittenSpoken" xml:space="preserve">
+    <value>Typed as written: {0}</value>
+    <comment>Read by screen readers for a snippet with text that looks like a variable but isn't one, so the text is typed as it is. {0} says what the text is</comment>
+  </data>
+  <data name="TextExpander_Row_NearMiss" xml:space="preserve">
+    <value>{0} isn't a variable. Did you mean {1}?</value>
+    <comment>Shown under a snippet's "Typed as written" badge. {0} is text in the snippet that looks like a variable, such as {{Date}}; {1} is the variable it likely means, such as {{date}}. Variables are case-sensitive and aren't translated</comment>
+  </data>
+  <data name="TextExpander_Row_NearMissUnknown" xml:space="preserve">
+    <value>{0} isn't a variable Text Expander knows.</value>
+    <comment>Shown under a snippet's "Typed as written" badge. {0} is text in the snippet that starts like a variable but isn't one, such as {{clipboard:xyz}}. "Text Expander" is a product name</comment>
+  </data>
+  <data name="TextExpander_NearMiss" xml:space="preserve">
+    <value>{0} isn't a variable, so it's typed as written. Did you mean {1}?</value>
+    <comment>Shown under the Replacement box. {0} is text in the snippet that looks like a variable, such as {{Date}}; {1} is the variable it likely means, such as {{date}}. Variables are case-sensitive and aren't translated</comment>
+  </data>
+  <data name="TextExpander_NearMissUnknown" xml:space="preserve">
+    <value>{0} isn't a variable, so it's typed as written.</value>
+    <comment>Shown under the Replacement box. {0} is text in the snippet that starts like a variable but isn't one, such as {{clipboard:xyz}}</comment>
+  </data>
+  <data name="TextExpander_NearMiss_Use" xml:space="preserve">
+    <value>Use {0}</value>
+    <comment>Button under the Replacement box that replaces text that looks like a variable with the variable it likely means. {0} is that variable, such as {{date}}</comment>
   </data>
   <data name="TextExpander_SnippetSaved" xml:space="preserve">
     <value>Snippet saved.</value>

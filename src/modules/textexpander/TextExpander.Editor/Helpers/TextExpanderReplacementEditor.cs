@@ -193,9 +193,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         }
 
         /// <summary>
-        /// Replaces the variable from <paramref name="start"/> to <paramref name="end"/> with <paramref name="variable"/>, as
-        /// one undo step, and selects it, as the Clipboard panel's Update does. Nothing changes if the text there isn't the
-        /// variable <paramref name="expected"/> any more.
+        /// Replaces the text from <paramref name="start"/> to <paramref name="end"/>, a variable or text meant as one, with
+        /// <paramref name="variable"/>, as one undo step, and selects it, as the Clipboard panel's Update and the Use button
+        /// under the box do. Nothing changes if the text there isn't <paramref name="expected"/> any more.
         /// </summary>
         public bool ReplaceVariable(int start, int end, string expected, string variable)
         {
