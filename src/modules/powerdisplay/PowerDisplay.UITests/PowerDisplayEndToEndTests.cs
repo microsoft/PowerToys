@@ -344,6 +344,18 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
         return document.RootElement.GetProperty("properties").GetProperty("monitors").EnumerateArray().Select(monitor => monitor.Clone()).ToArray();
     }
 
+    private static JsonElement[] ReadLiveMonitors()
+    {
+        var connected = virtualMonitors?.Snapshot().Monitors.Where(monitor => monitor.Connected)
+            .Select(monitor => monitor.Connector).ToHashSet();
+        return PowerDisplayInventory.CurrentBatch(ReadMonitors()).Where(monitor =>
+        {
+            var id = monitor.GetProperty("id").GetString()!;
+            return connected is null || !VirtualMonitorFixture.IsFixtureId(id) ||
+                connected.Contains(VirtualMonitorFixture.ConnectorForId(id));
+        }).ToArray();
+    }
+
     private static void AssertSavedBrightness(string monitorId, double expected)
     {
         var result = WaitHelper.WaitForStable(
@@ -560,9 +572,7 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
                     return "empty";
                 }
 
-                var inventory = ReadMonitors();
-                return inventory.Any(monitor => flyout.Has(By.Name(monitor.GetProperty("name").GetString()!), 0))
-                    ? "monitors" : "unready";
+                return ReadLiveMonitors().Length > 0 ? "monitors" : "unready";
             },
             state => state is "empty" or "monitors",
             60_000,
@@ -571,10 +581,22 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
             shouldRetryException: ShouldRetryInventoryException);
         Assert.IsTrue(result.Succeeded, $"Discovery did not reach a stable state: {result.LastObservation}.");
 
-        // Settings retains disconnected monitors for 30 days; only the flyout is live inventory.
-        var monitors = ReadMonitors().Where(monitor => flyout.Has(By.Name(monitor.GetProperty("name").GetString()!), 0)).ToArray();
+        var monitors = ReadLiveMonitors();
+        if (virtualMonitors is not null)
+        {
+            foreach (var expected in virtualMonitors.Snapshot().Monitors.Where(monitor => monitor.Connected && monitor.Mode == 0))
+            {
+                Assert.IsTrue(
+                    monitors.Any(monitor =>
+                        VirtualMonitorFixture.IsFixtureId(monitor.GetProperty("id").GetString()!) &&
+                        VirtualMonitorFixture.ConnectorForId(monitor.GetProperty("id").GetString()!) == expected.Connector),
+                    $"Connected brightness-capable fixture connector {expected.Connector} is missing from discovery.");
+            }
+        }
+
         if (result.LastObservation == "empty")
         {
+            Assert.AreEqual(0, monitors.Length, "The flyout claims an empty inventory despite independently discovered live monitors.");
             Assert.AreEqual(0, BrightnessSliders(flyout).Length, "The empty flyout still exposes a brightness control.");
             Assert.IsTrue(flyout.Has(By.Name("No monitors detected")), "The empty state did not explain that no monitors were detected.");
         }

@@ -1,4 +1,4 @@
-Test-only feasibility spike for microsoft/PowerToys#51800.
+Test-only CI fixture for microsoft/PowerToys#51800, introduced in PR #51855.
 
 The adapter, EDIDs, mode enumeration and swap-chain processing are built from:
 https://github.com/microsoft/Windows-driver-samples
@@ -19,4 +19,9 @@ is bypassed.
 
 The fixture validates native Dxva2 routing, production discovery and real UI tests.
 The sample's Dell/Lenovo EDIDs are not representations of physical hardware.
+FixtureMonitorIdentity.cs is the single managed source for their connector-to-PnP
+identity mapping, shared by the UI suite and production discovery probe. It is
+coupled to the two EDID arrays in this pinned upstream sample. When changing the
+sample revision or EDIDs, update that mapping and revalidate both stable monitor
+identities through native transport, production discovery, hot-plug and UI tests.
 No claim of physical-panel backlight, WMI or mixed-DPI coverage is made.

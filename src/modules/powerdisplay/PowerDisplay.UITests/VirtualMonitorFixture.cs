@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerDisplay.Testing;
 
 namespace Microsoft.PowerDisplay.UITests;
 
@@ -39,14 +40,9 @@ internal sealed class VirtualMonitorFixture
         }
     }
 
-    public static bool IsFixtureId(string id) =>
-        id.Contains("DISPLAY#DELD0E6#", StringComparison.OrdinalIgnoreCase) ||
-        id.Contains("DISPLAY#LEN65BF#", StringComparison.OrdinalIgnoreCase);
+    public static bool IsFixtureId(string id) => FixtureMonitorIdentity.IsFixture(id);
 
-    public static int ConnectorForId(string id) =>
-        id.Contains("DISPLAY#DELD0E6#", StringComparison.OrdinalIgnoreCase) ? 0 :
-        id.Contains("DISPLAY#LEN65BF#", StringComparison.OrdinalIgnoreCase) ? 1 :
-        throw new ArgumentException("Not a fixture monitor identity.", nameof(id));
+    public static int ConnectorForId(string id) => FixtureMonitorIdentity.ConnectorForId(id);
 
     private FixtureSnapshot Invoke(params string[] arguments)
     {

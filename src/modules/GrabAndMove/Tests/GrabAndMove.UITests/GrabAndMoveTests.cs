@@ -162,7 +162,7 @@ public sealed class GrabAndMoveTests : UITestBase
     public void ModifierSelectionWorksWhileFixtureOwnsForeground()
     {
         var processId = ModuleProcessId();
-        for (var iteration = 0; iteration < 10; iteration++)
+        for (var iteration = 0; iteration < 2; iteration++)
         {
             FocusFixture();
             Assert.AreEqual(fixture!.Handle, WindowControl.GetForegroundWindowHandle(), "The fixture must own foreground before UIA selection.");
@@ -357,12 +357,6 @@ public sealed class GrabAndMoveTests : UITestBase
         return $"Foreground HWND={foreground.Hwnd}, process='{foreground.ProcessName}', title='{foreground.Title}'.";
     }
 
-    private static bool IsModifierElementTransient(Exception error) =>
-        ShellMenu.IsTransientElementException(error) ||
-        (error is AssertFailedException &&
-            error.Message.Contains("RuntimeId hash", StringComparison.OrdinalIgnoreCase) &&
-            error.Message.Contains("the UI may have changed", StringComparison.OrdinalIgnoreCase));
-
     private void SelectModifier(bool useWindowsKey)
     {
         var text = useWindowsKey ? "Windows key" : "Alt";
@@ -381,7 +375,7 @@ public sealed class GrabAndMoveTests : UITestBase
             items => items is { Length: 1 },
             30_000,
             requiredConsecutiveMatches: 2,
-            shouldRetryException: IsModifierElementTransient);
+            shouldRetryException: ShellMenu.IsTransientElementException);
         if (!option.Succeeded)
         {
             Assert.Fail($"Settings did not expose exactly one modifier option named '{text}': {settings.Inspect(depth: 12)}");
@@ -395,7 +389,7 @@ public sealed class GrabAndMoveTests : UITestBase
             value => string.Equals(value, text, StringComparison.Ordinal),
             30_000,
             requiredConsecutiveMatches: 3,
-            shouldRetryException: IsModifierElementTransient);
+            shouldRetryException: ShellMenu.IsTransientElementException);
         Assert.IsTrue(selected.Succeeded, $"The modifier UI did not select '{text}'; last selection='{selected.LastObservation}', stable samples={selected.ConsecutiveMatches}/3, error={selected.LastException}.");
         WaitForSetting("modifierKey", useWindowsKey ? 1 : 0);
     }

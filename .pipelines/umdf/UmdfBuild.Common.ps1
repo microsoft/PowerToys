@@ -6,7 +6,29 @@ function Get-UmdfBuildConfiguration {
     [pscustomobject]@{
         UpstreamRevision = 'bb68ed5e770bce04dc5395ec9258dafab034184d'
         WdkVersion = '10.0.28000.2526'
+        NugetSha256 = '92DBED160DDEE0F64B901E907439E021211B428E57C089ECC12FC38DCC4BD9A5'
+        PackageSha256 = @{
+            'Microsoft.Windows.SDK.CPP' = 'BE1B419491607EAE6F7C57844EBAB39FACE9643C51E2AF1D9176A3BA0D0B23FC'
+            'Microsoft.Windows.SDK.CPP.x64' = 'A9CAE2A8C5DA7F5DC5838AE6A76D06D0D2E2FDC3D8CFC69CA6C184E4B9193A00'
+            'Microsoft.Windows.WDK.x64' = '63C939FB5A79295BF40E941DB592681272219B04EDFF095FE2F3D123E5579A90'
+            'Microsoft.Windows.SDK.CPP.arm64' = 'F890C85F46CC76C094F30FA555A438A212EE3D36165BCD7AFDCA96BB52C9BC7A'
+            'Microsoft.Windows.WDK.arm64' = 'DCD83A77C83EE3163FA07B26421C0B132AF0EA446D391BDA2E63AC6664A261A5'
+        }
     }
+}
+
+function Assert-UmdfDependencyHash {
+    param([Parameter(Mandatory)][string]$Path, [Parameter(Mandatory)][string]$Sha256)
+    if ((Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash -ne $Sha256) {
+        throw "Unexpected dependency SHA256: $Path"
+    }
+}
+
+function Get-UmdfInfDriverVersion {
+    param([Parameter(Mandatory)][string]$Content)
+    $versions = [regex]::Matches($Content, '(?im)^\s*DriverVer\s*=\s*[^,\r\n]+,\s*(\d+\.\d+\.\d+\.\d+)\s*$')
+    if ($versions.Count -ne 1) { throw 'The fixture INF must contain exactly one four-component DriverVer.' }
+    $versions[0].Groups[1].Value
 }
 
 function Initialize-UmdfSample {
@@ -54,6 +76,10 @@ function Initialize-UmdfBuildTools {
         [Parameter(Mandatory)][ValidateSet('x64', 'ARM64')][string[]]$Platforms,
         [string]$PackageCache
     )
+    $configuration = Get-UmdfBuildConfiguration
+    if ($WdkVersion -ne $configuration.WdkVersion) {
+        throw "Unpinned WDK/SDK version: $WdkVersion. Update the version and dependency hashes together."
+    }
     $work = [IO.Path]::GetFullPath($WorkRoot)
     $cache = Join-Path (Split-Path $work -Parent) "umdf-dependencies\$WdkVersion"
     $packages = if ($PackageCache) { [IO.Path]::GetFullPath($PackageCache) } else { Join-Path $cache 'packages' }
@@ -67,6 +93,7 @@ function Initialize-UmdfBuildTools {
     if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'Microsoft') {
         throw 'The NuGet executable is not signed by Microsoft.'
     }
+    Assert-UmdfDependencyHash -Path $nuget -Sha256 $configuration.NugetSha256
     $ids = @(Get-UmdfPackageIds -Platforms $Platforms)
     foreach ($id in $ids) {
         $name = "$id.$WdkVersion.nupkg"
@@ -78,6 +105,7 @@ function Initialize-UmdfBuildTools {
         if (-not (Test-Path $file)) {
             Invoke-WebRequest "https://www.nuget.org/api/v2/package/$id/$WdkVersion" -OutFile $file
         }
+        Assert-UmdfDependencyHash -Path $file -Sha256 $configuration.PackageSha256[$id]
         & $nuget verify -All $file | Out-File (Join-Path $work 'dependency-verification.log') -Append
         if ($LASTEXITCODE) { throw "Package signature verification failed: $name" }
         if (-not $PackageCache -and $file -eq $installed) {

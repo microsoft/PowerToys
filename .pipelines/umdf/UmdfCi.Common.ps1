@@ -21,13 +21,16 @@ function Get-UmdfUiTestSelection {
     $selected = $Modules.Count -eq 0 -or $explicit
     $supported = $Platform -in @('x64', 'x64Win10', 'x64Win11') -or $DedicatedArm64
     $routed = $selected -and $Platform -eq 'ARM64' -and $RouteArm64 -and -not $DedicatedArm64
-    $blocked = $selected -and -not $supported -and $explicit -and -not $AutoSelect -and -not $routed
+    $nonFixture = $selected -and $FixtureModule -eq 'PowerDisplay.UITests' -and
+        $Platform -eq 'ARM64' -and -not $DedicatedArm64 -and -not $routed
+    $blocked = $selected -and -not $supported -and $explicit -and -not $AutoSelect -and -not $routed -and -not $nonFixture
     [pscustomobject]@{
-        Run = $selected -and $supported
-        Exclude = $selected -and -not $supported
+        Run = $selected -and ($supported -or $nonFixture)
+        Exclude = $selected -and -not $supported -and -not $nonFixture
         Blocked = $blocked
-        Skipped = $selected -and -not $supported -and -not $blocked -and -not $routed
+        Skipped = $selected -and -not $supported -and -not $blocked -and -not $routed -and -not $nonFixture
         Routed = $routed
+        Filter = if ($nonFixture) { 'TestCategory!=PowerDisplayVirtualMonitors' } else { '' }
     }
 }
 

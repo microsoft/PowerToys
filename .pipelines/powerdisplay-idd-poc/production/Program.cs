@@ -16,6 +16,7 @@ using PowerDisplay.Common.Drivers;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
+using PowerDisplay.Testing;
 
 namespace PowerDisplay.IddPoc.ProductionProbe;
 
@@ -32,15 +33,15 @@ internal static class Program
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
             using var manager = new MonitorManager(new ObservationStore());
             var inventory = DisplayConfigInventory.GetAllMonitorDisplayInfo().Values
-                .Where(info => IsFixture(info.DevicePath))
+                .Where(info => FixtureMonitorIdentity.IsFixture(info.DevicePath))
                 .OrderBy(info => info.DevicePath, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
             var discovered = (await manager.DiscoverMonitorsAsync(timeout.Token))
-                .Where(monitor => IsFixture(monitor.Id))
+                .Where(monitor => FixtureMonitorIdentity.IsFixture(monitor.Id))
                 .OrderBy(monitor => monitor.Id, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
             var rediscovered = (await manager.DiscoverMonitorsAsync(timeout.Token))
-                .Where(monitor => IsFixture(monitor.Id))
+                .Where(monitor => FixtureMonitorIdentity.IsFixture(monitor.Id))
                 .OrderBy(monitor => monitor.Id, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
@@ -75,10 +76,6 @@ internal static class Program
             return 1;
         }
     }
-
-    private static bool IsFixture(string id) =>
-        id.Contains("DISPLAY#DELD0E6#", StringComparison.OrdinalIgnoreCase) ||
-        id.Contains("DISPLAY#LEN65BF#", StringComparison.OrdinalIgnoreCase);
 
     private sealed class ObservationStore : IKnownGoodVcpStore
     {

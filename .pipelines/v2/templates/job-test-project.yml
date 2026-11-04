@@ -125,8 +125,9 @@ jobs:
       Write-Host "##vso[task.setvariable variable=UmdfHidSelectionBlocked]$($hidSelection.Blocked.ToString().ToLowerInvariant())"
       Write-Host "##vso[task.setvariable variable=ExcludeUmdfDisplaySuite]$($displaySelection.Exclude.ToString().ToLowerInvariant())"
       Write-Host "##vso[task.setvariable variable=UmdfDisplaySelectionBlocked]$($displaySelection.Blocked.ToString().ToLowerInvariant())"
-      if ($displaySelection.Skipped) {
-        Write-Host "##vso[task.logissue type=warning]PowerDisplay.UITests requires the isolated ARM64 UMDF image; it is not run on the ordinary ARM64 image."
+      Write-Host "##vso[task.setvariable variable=PowerDisplayUiTestFilter]$($displaySelection.Filter)"
+      if ($displaySelection.Filter) {
+        Write-Host 'PowerDisplay.UITests runs its eight hardware-optional cases on the ordinary ARM64 image. Driver-backed cases require the isolated image.'
       }
       if ($hidSelection.Skipped) {
         Write-Host "##vso[task.logissue type=warning]Skipping implicitly selected GrabAndMove.UITests on $(TestPlatform): the dedicated ARM64 UMDF image is not configured. Other suites remain selected."
@@ -565,10 +566,11 @@ jobs:
         $dll = Join-Path $dir "$base.dll"
         $suiteFailed = $false
         $fixtureContext = $null
+        $testFilter = if ($base -eq 'PowerDisplay.UITests') { $env:POWERDISPLAY_UI_TEST_FILTER } else { '' }
         Write-Host "##[group]Run UI tests: $base"
         Push-Location $dir
         try {
-          if ($base -in (Get-UmdfFixtures).Suite) {
+          if ($base -in (Get-UmdfFixtures).Suite -and -not $testFilter) {
             $fixtureContext = Get-UmdfFixtureContext -Suite $base -RepositoryRoot "$(Build.SourcesDirectory)" `
               -ArtifactRoot $artifactRoot -Platform "$(BuildPlatform)" `
               -StateDirectory "$(Agent.WorkFolder)\PowerToysUiTestState" -ResultsDirectory $resultsDir
@@ -588,7 +590,7 @@ jobs:
               throw "$base requires its staged executable for non-elevated dispatch; missing runner: $exe"
             }
             & "$(build.sourcesdirectory)\.pipelines\runUiTestAsUser.ps1" `
-              -TestExecutable $exe -ResultsDirectory $resultsDir
+              -TestExecutable $exe -ResultsDirectory $resultsDir -Filter $testFilter
           } elseif (Test-Path $exe) {
             & $exe --report-trx --results-directory $resultsDir
           } elseif (Test-Path $dll) {
@@ -679,6 +681,7 @@ jobs:
       UMDF_HID_SELECTION_BLOCKED: $(UmdfHidSelectionBlocked)
       EXCLUDE_UMDF_DISPLAY_SUITE: $(ExcludeUmdfDisplaySuite)
       UMDF_DISPLAY_SELECTION_BLOCKED: $(UmdfDisplaySelectionBlocked)
+      POWERDISPLAY_UI_TEST_FILTER: $(PowerDisplayUiTestFilter)
       ${{ if eq(parameters.autoSelectUiTests, true) }}:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 

@@ -2,9 +2,11 @@ Power Display virtual monitor fixture (issue #51800)
 ===================================================
 
 This is a test-only UMDF/IddCx fixture, not a shipping PowerToys component.
-The initial feasibility milestone is commit 2d94623123. Follow-ups add controlled
-hot-plug and fault modes plus the module's actual UI tests. It does not modify product code, installers,
-boot policy, host trust, or ordinary CI images.
+It provides CI-gating driver-backed tests, controlled hot-plug and fault modes
+for the module's actual UI suite. See microsoft/PowerToys#51800 and PR #51855.
+It does not modify product code, installers, boot policy, host trust, or
+ordinary CI images. Existing POC-named entry points, hardware IDs, certificate
+subjects and journals are retained for provisioning/cleanup compatibility.
 
 Result
 ------
@@ -53,7 +55,12 @@ From the repository root in PowerShell 7:
 
 Use -Platform ARM64 for an ARM64 bundle. -PrepareOnly fetches/verifies build
 inputs without building/signing. The script pins the Microsoft driver sample and
-WDK/SDK packages, verifies NuGet signatures and uses tools\build\build.cmd.
+WDK/SDK packages, checks exact SHA256 pins before executing NuGet or consuming
+an archive, verifies signatures and uses tools\build\build.cmd. Updating the
+WDK/SDK version requires reviewing all package hashes together. Direct public
+downloads are content-pinned because these packages are not yet saved in the
+curated feed; signature verification remains an additional check, not an
+identity substitute.
 Use -PackageCache <verified-packages-directory> to reuse extracted packages;
 the signed nupkgs are still verified and an incomplete cache fails explicitly.
 Both fixture builders use the neutral versioned cache
@@ -153,11 +160,22 @@ test checks one overlay on each connected Windows display, including the
 fixture displays. Require all 13 executed and passed, with zero skipped.
 
 Settings intentionally retains disconnected monitor records for 30 days.
-The live inventory assertion reads actual flyout controls, not that retained
-cache. Numeric slider reads use the Windows UIA RangeValuePattern because the
+The expected inventory is derived independently from the latest shared
+lastSeenUtc discovery batch, excluding hidden entries. Fixture runs also
+cross-check native connector state, so retained disconnected entries cannot
+be mistaken for live monitors when both connectors are removed. Every expected
+live monitor must appear in the flyout, including when another monitor is
+missing. Numeric slider reads use the Windows UIA RangeValuePattern because the
 pinned winapp get-value returns a Slider's accessible text rather than its
 range value. Actions remain real UIA slider writes; the test's WPF reference
 provides UIAutomationClient only and does not change the product UI stack.
+The shared Slider numeric-read follow-up is microsoft/PowerToys#51900.
+
+On ordinary ARM64 images without the isolated fixture, run the eight existing
+hardware-optional cases with --filter "TestCategory!=PowerDisplayVirtualMonitors".
+The pipeline forwards that filter through its standard-user launcher and does
+not attempt driver provisioning. Dedicated ARM64 fixture jobs keep the complete
+13-case suite, including all five driver-backed cases.
 
 Use the ui-tests-local-vm workflow for full Windows 10/11 Default (4 vCPU/8 GB)
 and Constrained (1 vCPU/4 GB) passes. Inspect the ACTUAL VM resource settings,

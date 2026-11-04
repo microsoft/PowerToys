@@ -37,6 +37,7 @@ try {
     if ($LASTEXITCODE) { throw "IDD POC build failed: $Platform" }
 
     $inf = Get-Content (Join-Path $PSScriptRoot 'PtDisplayIdd.inf') -Raw
+    $driverVersion = Get-UmdfInfDriverVersion -Content $inf
     if ($Platform -eq 'ARM64') { $inf = $inf.Replace('NTamd64', 'NTarm64') }
     Set-Content (Join-Path $driver 'PtDisplayIdd.inf') $inf -Encoding ascii
     Copy-Item (Join-Path $PSScriptRoot 'MS-PL.txt') (Join-Path $driver 'MS-PL.txt')
@@ -50,7 +51,7 @@ try {
         UpstreamRevision = $configuration.UpstreamRevision
         WdkVersion = $configuration.WdkVersion
         Platform = $Platform
-        DriverVersion = '0.0.1.0'
+        DriverVersion = $driverVersion
         SigningThumbprint = $thumbprint
     } | ConvertTo-Json | Set-Content (Join-Path $destination 'build.json')
 

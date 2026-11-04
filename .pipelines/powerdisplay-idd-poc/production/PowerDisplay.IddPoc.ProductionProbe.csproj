@@ -9,6 +9,7 @@
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\PowerDisplay.IddPoc.ProductionProbe\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\FixtureMonitorIdentity.cs" Link="FixtureMonitorIdentity.cs" />
     <ProjectReference Include="$(RepoRoot)src\modules\powerdisplay\PowerDisplay.Lib\PowerDisplay.Lib.csproj" />
   </ItemGroup>
 </Project>

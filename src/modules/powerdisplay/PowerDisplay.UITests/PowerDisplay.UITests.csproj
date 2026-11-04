@@ -17,6 +17,7 @@
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\PowerDisplay.UITests\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(RepoRoot).pipelines\powerdisplay-idd-poc\FixtureMonitorIdentity.cs" Link="FixtureMonitorIdentity.cs" />
     <PackageReference Include="MSTest" />
     <ProjectReference Include="..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
   </ItemGroup>

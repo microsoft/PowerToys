@@ -10,10 +10,14 @@ Describe 'Shared UMDF build infrastructure' {
         $originalExit = $global:LASTEXITCODE
         $script:signingCertificate = $null
         $work = Join-Path $TestDrive 'display'
-        $cache = [IO.Path]::GetFullPath((Join-Path $TestDrive 'umdf-dependencies\test-version'))
+        $configuration = Get-UmdfBuildConfiguration
+        $cache = [IO.Path]::GetFullPath((Join-Path $TestDrive "umdf-dependencies\$($configuration.WdkVersion)"))
         New-Item $cache -ItemType Directory -Force | Out-Null
         'not-executable' | Set-Content (Join-Path $cache 'nuget.exe')
         Mock Invoke-WebRequest { throw 'Unexpected network request.' }
+        Mock Get-FileHash { [pscustomobject]@{ Hash = $configuration.NugetSha256 } } -ParameterFilter {
+            $LiteralPath -eq (Join-Path $cache 'nuget.exe')
+        }
     }
 
     AfterEach {
@@ -24,7 +28,7 @@ Describe 'Shared UMDF build infrastructure' {
     It 'uses the same versioned dependency cache for either fixture without trusting unsigned tools' {
         Mock Get-AuthenticodeSignature { [pscustomobject]@{ Status = 'NotSigned' } }
         foreach ($fixture in @('hid', 'display')) {
-            { Initialize-UmdfBuildTools -WorkRoot (Join-Path $TestDrive $fixture) -WdkVersion test-version -Platforms x64 } |
+            { Initialize-UmdfBuildTools -WorkRoot (Join-Path $TestDrive $fixture) -WdkVersion $configuration.WdkVersion -Platforms x64 } |
                 Should Throw 'not signed by Microsoft'
         }
         Assert-MockCalled Get-AuthenticodeSignature -Times 2 -Exactly -Scope It -ParameterFilter {
@@ -35,9 +39,49 @@ Describe 'Shared UMDF build infrastructure' {
 
     It 'fails closed for an explicitly incomplete package cache instead of downloading a fallback' {
         Mock Get-AuthenticodeSignature { [pscustomobject]@{ Status = 'Valid'; SignerCertificate = @{ Subject = 'CN=Microsoft' } } }
-        { Initialize-UmdfBuildTools -WorkRoot $work -WdkVersion test-version -Platforms ARM64 -PackageCache (Join-Path $TestDrive 'incomplete') } |
+        { Initialize-UmdfBuildTools -WorkRoot $work -WdkVersion $configuration.WdkVersion -Platforms ARM64 -PackageCache (Join-Path $TestDrive 'incomplete') } |
             Should Throw 'cache is incomplete'
         Assert-MockCalled Invoke-WebRequest -Times 0 -Exactly -Scope It
+    }
+
+    It 'rejects a differently signed Microsoft tool with the wrong pinned bytes before execution' {
+        Mock Get-AuthenticodeSignature { [pscustomobject]@{ Status = 'Valid'; SignerCertificate = @{ Subject = 'CN=Microsoft' } } }
+        Mock Get-FileHash { [pscustomobject]@{ Hash = 'F' * 64 } } -ParameterFilter {
+            $LiteralPath -eq (Join-Path $cache 'nuget.exe')
+        }
+        { Initialize-UmdfBuildTools -WorkRoot $work -WdkVersion $configuration.WdkVersion -Platforms x64 } |
+            Should Throw 'Unexpected dependency SHA256'
+        Assert-MockCalled Invoke-WebRequest -Times 0 -Exactly -Scope It
+    }
+
+    It 'rejects substituted cached package bytes before invoking NuGet' {
+        Mock Get-AuthenticodeSignature { [pscustomobject]@{ Status = 'Valid'; SignerCertificate = @{ Subject = 'CN=Microsoft' } } }
+        $packages = Join-Path $TestDrive 'packages'
+        $name = "Microsoft.Windows.SDK.CPP.$($configuration.WdkVersion)"
+        New-Item (Join-Path $packages $name) -ItemType Directory -Force | Out-Null
+        'substituted-package' | Set-Content (Join-Path $packages "$name\$name.nupkg")
+        { Initialize-UmdfBuildTools -WorkRoot $work -WdkVersion $configuration.WdkVersion -Platforms x64 -PackageCache $packages } |
+            Should Throw 'Unexpected dependency SHA256'
+        Assert-MockCalled Invoke-WebRequest -Times 0 -Exactly -Scope It
+    }
+
+    It 'rejects version overrides without matching reviewed hash pins' {
+        { Initialize-UmdfBuildTools -WorkRoot $work -WdkVersion unpinned -Platforms x64 } |
+            Should Throw 'Unpinned WDK/SDK version'
+        Assert-MockCalled Invoke-WebRequest -Times 0 -Exactly -Scope It
+    }
+
+    It 'derives metadata from a changed INF version rather than a duplicated constant' {
+        Get-UmdfInfDriverVersion -Content "[Version]`r`nDriverVer = 11/01/2026, 2.3.4.5`r`n" | Should Be '2.3.4.5'
+    }
+
+    It 'rejects ambiguous or malformed INF versions <Content>' -TestCases @(
+        @{ Content = '[Version]' }
+        @{ Content = 'DriverVer=11/01/2026,1.2.3' }
+        @{ Content = "DriverVer=11/01/2026,1.2.3.4`nDriverVer=11/01/2026,2.3.4.5" }
+    ) {
+        param($Content)
+        { Get-UmdfInfDriverVersion -Content $Content } | Should Throw 'exactly one four-component DriverVer'
     }
 
     It 'removes the private signing key after <Case> failure' -TestCases @(
