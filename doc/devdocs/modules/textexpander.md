@@ -7,531 +7,319 @@
 
 ## Overview
 
-Text Expander replaces short triggers with longer snippets as you type, in any app. For example, typing `!mysig` can expand into a multi-line signature. Snippets can contain variables such as the current date or time, a prompt for a value, and a cursor position marker.
+Text Expander replaces short triggers with longer snippets as the user types, in any app at the
+user's integrity level. An engine process watches keys with a low-level hook. Its worker thread
+erases each trigger and pastes or types the snippet. A separate editor manages the snippets file.
 
-## Architecture
+## Components
 
-```
-textexpander/
-├── TextExpanderModuleInterface/  # Native runner module DLL
-├── TextExpander/                 # Expansion engine (PowerToys.TextExpander.exe)
-├── TextExpander.Core/            # Shared snippets file (JSON), templates, matching, starter
-├── TextExpander.Storage/         # Coordinated module-settings persistence
-├── TextExpander.Editor/          # Standalone WinUI snippet-management app
-├── TextExpander.Editor.UnitTests/# Editor, storage, and ownership tests
-├── TextExpander.FuzzTests/       # OneFuzz targets for the snippets file and expansion
-├── TextExpander.UITests/         # End-to-end UI tests: Settings, editor and expansion
-└── TextExpander.UnitTests/       # Engine and shared-rule unit tests
-```
-
-The thin Settings page lives in `src/settings-ui` and owns enablement, engine options,
-and the **Manage snippets** launch entry point. Configuration DTOs remain in
-`Settings.UI.Library`; snippet editing, previews, file watching, backups, and moving
-the snippets file belong to the module. Settings does not reference the editor executable.
-Both processes use `TextExpander.Storage` for coordinated module-settings reads and
-writes. Readers wait for publication rather than treating a transiently missing
-destination as default settings. Matching-option changes revalidate an open snippet
-draft without invalidating it; a change of snippets file still does.
-The engine and editor reference `TextExpander.Core`, which has no Settings or WinUI dependency.
-
-### Snippet editor (TextExpander.Editor)
-
-**Manage snippets** opens `WinUI3Apps\PowerToys.TextExpander.Editor.exe`. Repeated
-launches activate the existing editor, including restoring a minimized window.
-Its window is titled "PowerToys Text Expander - Manage snippets" and, like the prompt
-window, shows the Text Expander icon from `app.ico`, the same design as the icon in
-Settings, which the engine project copies beside both executables.
-Managing snippets does not require the expansion engine to be enabled. A disabled
-group policy blocks editor startup; elevated Settings retains its existing restriction
-on snippet editing rather than launching an elevated editor.
-
-The editor owns its XAML, view models, resources (`PowerToys.TextExpander.Editor.pri`),
-and focused tests. It observes module-settings changes from the Settings process and
-reloads matching rules and the active snippets file. Closing it disposes both settings
-and snippet watchers. The engine excludes both Settings and the editor from expansion,
-so typing a trigger into the replacement editor cannot expand it.
-
-`SnippetFile` reads and writes the snippets file, `SnippetTemplate` tokenizes
-replacements for both expansion and preview, and `Variables.FormatDate`
-provides shared .NET/strftime formatting. Trigger reachability uses the runtime's
-`TriggerIndex` and `WordBoundaryRules`, not a transcription of engine behavior.
-`SnippetTemplate`'s regular expressions use `RegexOptions.NonBacktracking`, so a
-replacement full of unclosed `{{prompt:` takes linear time, not quadratic time.
-
-### Module Interface (TextExpanderModuleInterface)
-
-`dllmain.cpp` implements `PowertoyModuleIface`. It:
-- Launches `WinUI3Apps\PowerToys.TextExpander.exe` when the module is enabled, resolving the path relative to its own DLL. A runner that isn't elevated starts it directly, so the engine inherits its medium-integrity token, which also works at sign-in before Explorer has created the shell window. An elevated runner starts it as a child of the desktop shell instead; if the shell can't be used, startup fails closed rather than passing on the elevated token.
-- Passes the runner PID, `--managed --instance:powertoys`, and `--settings:"<path to settings.json>"`.
-- Stops the engine by signaling `CommonSharedConstants::TEXT_EXPANDER_EXIT_EVENT`, then terminates it if it has not exited within 1.5 seconds.
-- Stops any other engine started with `--instance:powertoys` in the session when it loads, before it starts its own engine, and when it stops its own. It finds them by their message window, `PowerToys.TextExpander.MessageWindow.powertoys`, checks the process is `PowerToys.TextExpander.exe`, posts the engine's `PowerToys.TextExpander.RequestShutdown` message, and terminates any still running after 1.5 seconds. An engine left by an earlier PowerToys session, such as one from a build before an update, otherwise went on expanding with Text Expander off: a runner that starts with Text Expander off never stops an engine, and the exit event wakes only one. Every build of the engine has that window and message, and standalone engines, which have another `--instance:` suffix or none, are left alone.
-- Honors the `ConfigureEnabledUtilityTextExpander` group policy, which `PowerToys.Settings.Cli` also applies to `list`, `enable` and `disable`.
-
-### Engine (TextExpander)
-
-A self-contained .NET process. Its keyboard hook, matching and injection use no UI framework; WinUI 3 is loaded only for the `{{prompt}}` window. It:
-- Installs a low-level keyboard hook and tracks the characters typed into the focused app. Keys are captured only for the foreground window once it has been checked (integrity level, not PowerToys Settings), off the hook's path, after each foreground change. Activation through `AttachThreadInput`, which is how focus goes back to the app after a prompt, raises the foreground event before `GetForegroundWindow` reports the new window, so the hook also asks, once, for a check of a window in front that was never checked (`KeyboardHook.NeedsAuthorization`).
-- Asks for `{{prompt:<question>}}` answers in a small WinUI 3 window (`PromptWindow`): Mica, the Text Expander icon and "PowerToys Text Expander" in a custom title bar (the window pops up over other apps, so it names PowerToys; the engine's message boxes use the same caption), the question above a box, then **OK** (default) and **Cancel**. Prompts are required by default: OK stays disabled while the answer is blank, and Enter shows "Enter an answer to continue." without closing the window. `{{prompt?:<question>}}` is the explicit optional form and still accepts an empty answer. The window follows Windows' theme, including high contrast, is per-monitor DPI aware, stays on top, and opens a little above the middle of the target window's screen (or the pointer's, if that window has gone). It is exactly as tall as its content, title bar row included, with ContentDialog's footer: 24-pixel padding around 32-pixel buttons. Because the content extends into the title bar, the client area includes it, so the window is sized from its measured frame (`PromptWindowSize`) rather than with `AppWindow.ResizeClient`, which leaves room for a system caption that isn't drawn. Esc, Cancel and the close button cancel the whole snippet, as in other text expanders: no more questions are asked, and nothing is erased or inserted. The keystroke that completed the trigger, which the hook swallowed, goes back through the same guarded insertion, typed even with **Always paste**, so the text stays exactly as typed. Like any insertion, it's dropped if the target isn't in front or other input reached it first, and it isn't sent while a modifier is still down a second later, since that would leave the app in menu mode. The keyboard hook is suspended while it is open, so nothing typed in it expands, and focus goes back to the target window afterwards. The box is emptied as soon as the answer is read, and answers are never logged. XAML runs on its own thread (`PromptHost`), started the first time a snippet asks for something, never on the hook's thread; the expansion worker waits there for each answer, so questions are asked one at a time. Measured on an ARM64 Debug build: the first prompt is in front after about 0.3 s and later ones after about 0.12 s; loading XAML adds about 45 MB of private memory to the engine from the first prompt on. If the Windows App SDK can't start, the Win32 fallback (`ClassicPromptDialog`) enforces the same required-answer behavior.
-- Matches triggers against the snippets file, optionally ignoring capitalization and, by default, waiting for a space or punctuation before expanding. An underscore is part of a word, so it doesn't release a trigger: typing `addr_line` doesn't expand `addr`. An explicitly saved disabled value keeps immediate expansion. With the wait on, a trigger that starts with a letter, digit or `_` must also start a word, and the character before it is judged whole: a surrogate pair is one character, and a combining mark goes with the character before it. So `btw` doesn't expand after `e` followed by U+0301 (é typed as two characters) or after a supplementary-plane letter, but does after an emoji. Half a surrogate pair counts as part of a word, so nothing expands next to one. The hook and the editor's reachability check share these rules (`WordBoundaryRules`).
-- Replaces the trigger by pasting (the user's clipboard is saved and restored) or by typing with `SendInput`, depending on the Insertion method setting and snippet length; the space or punctuation given back after a snippet doesn't count toward **Minimum length to paste**. The pasted text, and the user's clipboard when it's put back, carry the exclusion formats for clipboard monitors, Clipboard History and Cloud Clipboard, so a paste doesn't record the user's last copy again; a clipboard that already carried any of them goes back exactly as it was. It's put back once the target has read the paste (at least 150 ms), or after at most 350 ms, both counted from the paste's V and timed by the clock. A target that isn't taking messages then (busy or hung, checked with a `WM_NULL` sent with a 50 ms timeout) still has the Ctrl+V queued, so the clipboard waits until it answers again and gives it the 150 ms once more; handed back earlier, it would paste what the user copied instead of the snippet. If it still isn't answering after 5 s, the snippet stays on the clipboard and the user is told their clipboard couldn't be put back. `SendInput` doesn't keep a batch together while any low-level keyboard hook is installed, so the engine's own hook keeps the user's keys out (`InsertionGuard`). The worker sends a start marker alone and waits for the hook's decision. From that marker on, the hook holds every key event that isn't the engine's, in order; clicks and input from lower-integrity apps aren't held. Only then does a paste borrow the clipboard, so a Ctrl+V pressed right after the trigger pastes what the user copied; if the clipboard refuses, the text is typed under the same guard. If borrowing the clipboard outlasts the guard's 2 s (Excel delay-rendering a large copy, say), the worker sends a new start marker before erasing: the hook decides again, and the held modifiers are read again. Then come the erase (after letting go of any Shift, Ctrl, Alt or Win the user holds), Ctrl+V or the text, the moves to `$|$`, the undo record, the paste's settle and restore, and the end marker. Ctrl+V goes out 300 ms after the erase, as Ctrl in a call of its own, then V, each after the usual checks, and Ctrl stays down until the target's process is seen with the clipboard open, or for those 350 ms after the V: Windows 11 Notepad, still applying the erase when the V arrived, read Ctrl as it was once it got to the V (40 to 290 ms later on a busy PC), and with Ctrl let go of in the same call as the V, typed a "v" instead of pasting. Notepad also keeps working on an edit for a while after it, and dropped a Ctrl+V that came meanwhile, pasting nothing, at times along with a Backspace still waiting: with the engine typing into Notepad, 5 in 100 pastes went wrong 50 ms after the erase and 5 in 70 after 150 ms, but none in 315 after 300 ms. Two of those 315 still left the trigger's first character in front of the snippet: Notepad had dropped a Backspace from the erase, which it does now and then with an erase sent in one call even when nothing follows it, so the erase is paced (below). Notepad holds the clipboard open for well under a millisecond, so its read is seldom seen and the deadline usually ends the hold. Ctrl is held only while the guard holds the user's keys and the window stays in front, so none of their keys go in with it; an insertion going in unguarded sends Ctrl+V in one call, as before. Clicks and the wheel aren't held, so one during the hold carries Ctrl. A target that isn't taking messages by the deadline still has the clipboard waited for, but not Ctrl, which would otherwise stay down for seconds. The hook never sends input itself. The worker presses again the modifiers it let go of, sends the held keys back with another marker, and repeats with whatever was held meanwhile. While they go back, only they pass, in order, along with what Keyboard Manager injects in place of one (Caps Lock remapped to Ctrl). Anything else, typed or injected (touch keyboard, AutoHotkey), waits for the next round, so a key-up never overtakes its own key-down. Held keys go back only if the target window is still in front; otherwise they're dropped. The guard lets go after 2 s without an engine event, or at 256 held key events (a timer sends them back), and typing that lasts longer than 2 s goes on unguarded: the held keys go back there, and only a key after them, or a click at any point, stops the rest. While the paste settles, which sends nothing, the worker keeps the guard on, for 5 s at most, so a Ctrl+V held meanwhile pastes what the user copied rather than the snippet again. Typing sends one character per `SendInput` call, 25 ms apart and 25 ms more after `.`, `!`, `?` and line breaks, because Windows 11 Notepad drops and smears characters that arrive faster. The erase goes out the same way, a key per call 25 ms apart, with any modifiers the user holds let go of in the first: sent in one call, Notepad dropped a Backspace now and then (2 in 315 expansions, and 1 in 300 erases with nothing after them), leaving the trigger's first character. An erase of more than 20 keys, such as undoing a long snippet, still goes out at once rather than hold the user's keys for over half a second; like the caret moves, it goes out in calls of at most 1,000 key events. The target window, the input generation and the hook's count of clicks are checked before each call that erases, pastes, types a character or moves the caret: once the window has lost focus or can't be driven (an elevated window), or input that isn't held, such as a click, may have moved the caret, the insertion stops there; a paste doesn't fall back to typing, and the clipboard is put back. After a click, the keys held meanwhile go back where the caret is now, once no mouse button is down (1 s at most): RichEdit and Windows 11 Notepad drop typing while one is. If the clipboard can't be put back, a message box says so once per session, on a thread of its own after the insertion, so expansions carry on meanwhile. A `$|$` more than 2,000 characters before the end of the expansion is skipped, leaving the caret at the end. An undo goes through the same guard: the moves back to the end of the expansion, the Backspaces, then the original trigger.
-- Expands variables (`{{date}}`, `{{time}}`, `{{datetime}}`, `{{isodate}}`, `{{date:<format>}}`, `{{clipboard}}`, `{{prompt:<question>}}`, `{{prompt?:<question>}}`) and places the cursor at `$|$`. `{{date}}`, `{{time}}` and `{{datetime}}` use the Windows regional format's short date and time; `{{isodate}}` is always `yyyy-MM-dd`. `{{date:<format>}}` takes names, AM/PM and the calendar from the regional format but types `/` and `:` as written. The regional format is read again when Windows reports a Region settings change (`WM_SETTINGCHANGE` with `intl`), so a new format applies from the next expansion without a restart. A replacement is the exact text: line breaks and tabs are real characters, a backslash is always literal, and only the first `$|$` places the cursor. A prompt answer, the clipboard and a formatted date are inserted exactly as they are, so a variable or `$|$` in them stays literal.
-- Supports undo: pressing Ctrl+Z immediately after an expansion restores exactly what was typed, in the capitalization it was typed in, even when matching ignores case. If the snippet's `$|$` left the caret inside the expansion, the undo first presses Right as many times as the insertion pressed Left, so it erases from the end of the expansion. Modifier key-downs on the way to Ctrl+Z do not cancel the pending undo, but any other key does; Ctrl+Shift+Z is left to the app as redo. The undo waits up to one second for modifiers to be released, and is abandoned otherwise, so its Backspaces are never sent as Ctrl+Backspace.
-- Drops a queued expansion or undo, instead of applying it where the caret is now, when a key reaches the app or the mouse is clicked after the trigger matched; a modifier key-down on its own doesn't count. While a `{{prompt}}` window is open, only a key pressed while the window being typed into is in front, or a click on that window, counts. If that window isn't known, any key or click outside the engine's own windows counts. The worker checks the hook's input generation before it opens a prompt and right before the start marker. The hook decides at the start marker, and again at a new one if a slow clipboard borrow outlasted the guard; the worker checks once more right before the erase and before each later call, since clicks aren't held. Nothing is erased if the guard ended before the start marker, or if the marker didn't come while keys were held: those keys went back where the erase would take them. The keystroke that completed the trigger isn't typed back, so typing straight on within about 15 ms of finishing a trigger skips that one expansion. Keys typed right after the last prompt answer is accepted are held and land after the expansion. After a cancel they land after the keystroke given back; that hold starts once no modifier is down, since Alt+F4's Alt, let go of while held, would go back after the insertion pressed it again, opening the app's menu. A key pressed at the same instant as Enter or Esc reaches the prompt before the hold starts, and is lost. A foreground change alone doesn't cancel the work; once the insertion has started, it stops the insertion and drops what was held. Backspace with Ctrl, Alt or Win clears the rolling buffer instead of removing one character.
-- Ignores its own injected input, the runner's replayed hotkeys (`0x110`) and the key events Keyboard Manager swallows itself (`0x111`). Input carrying Keyboard Manager's injected bit (`0x1`, as in its `0x11` and `0x101` remaps) counts as typing. With **Use PowerToys Keyboard Manager remaps when matching triggers** off, that input isn't matched against triggers but still reaches the app, so a key other than a modifier still clears the rolling buffer and ends the one-step undo. The engine's own tag, random for each run, carries that bit too, so Keyboard Manager's key remaps leave its Backspaces, arrows and Ctrl+V alone; its shortcut remaps skip only `0x101`, so a remap of Ctrl+V itself still applies. Held keys go back with the tag they came with, so a key Keyboard Manager already remapped isn't remapped twice.
-- Runs at the desktop user's integrity level and refuses synthetic input to elevated windows. This preserves expansion in ordinary desktop apps when PowerToys itself is elevated, while preventing user-controlled settings and snippet files from authorizing elevated input or being read by an elevated engine.
-- Checks its actual integrity level before loading host settings or snippets and exits if the check fails or the process is above medium integrity.
-- Exits at startup, before taking its single-instance mutex, loading settings or snippets, or installing hooks, when the `ConfigureEnabledUtilityTextExpander` group policy turns Text Expander off, so starting `PowerToys.TextExpander.exe` directly doesn't get around it.
-- Runs one engine per signed-in session: its single-instance mutex is `Local\PowerToys.TextExpander.SingleInstance` plus the `--instance:` suffix, like the runner's instance mutex and the exit event.
-- Clears its rolling input buffer and one-step undo state while focus is in a detectable standard Windows password box: an `Edit` or `RichEdit` control, or a WinForms `WindowsForms10.EDIT.*` text box, with the `ES_PASSWORD` style. Detection uses only the focused window's class name and style, and sends no messages to other processes. Password fields on websites (Chromium, Firefox), and WPF and WinUI `PasswordBox` controls, don't expose that style and aren't detected, which the **Good to know** note says.
-- The keyboard hook isn't aware of input method editors. While a Japanese, Korean or Chinese IME is composing, the hook sees the Latin keystrokes, not the composed characters, so a trigger can fire mid-composition, and its Backspaces can remove characters before the trigger. **Good to know** asks people to switch the IME to direct input or English before typing a trigger.
-- Does not retain undo entries for snippets using `{{prompt:...}}` or `{{clipboard}}`, because those expansions contain user-supplied values. Clipboard snapshot and temporary paste buffers are zeroed after restoration or publication.
-- Watches `settings.json` and the snippets file and reloads them without a restart. A snippets file that's missing or can't be read doesn't stop it (see *Where snippets are saved*). A `settings.json` that can't be read or isn't settings (missing, locked, half-written, or with a JSON mistake) changes nothing: the options and the snippets file in use are kept rather than taken for the defaults, a warning is traced (the engine keeps no log file), and the file is read again up to four more times, 250 ms apart, then on its next change. One that reads with an empty `snippets_path` still selects the default snippets file. At startup, with nothing in use yet to keep, a file that can't be read means the defaults until it reads: it's read again 250 ms later, with the same retries.
-- Takes its words (the prompt window, its few message boxes and the diagnostics report) from `Strings\en-us\Resources.resw`, built into `PowerToys.TextExpander.pri` and localized with the rest of PowerToys, through `EngineText`. Each call carries its English, which is used when the resources can't be read, so a missing file never stops a prompt or a message from showing. A test checks that every English fallback matches its resource. The messages point to settings rather than to environment variables: if the clipboard can't be restored, to **Advanced** > **Insertion method** > **Always type**; if the engine finds itself elevated, to restarting PowerToys without administrator rights. The report `--diagnostics` shows has one resource per line, with only numbers and stable names (the backend, the last outcome and how the clipboard opened) filled in; `diagnostics.txt`, which `--diagnostics-file` writes for tools and bug reports, keeps its English keys and values.
-- Exits when the runner process exits or the exit event is signaled.
-
-### Settings and snippet storage
-
-| File | Location |
+| Path | Role |
 | --- | --- |
-| Module settings | `%LOCALAPPDATA%\Microsoft\PowerToys\TextExpander\settings.json` |
-| Snippets (default) | `%LOCALAPPDATA%\Microsoft\PowerToys\TextExpander\PowerToysTextExpanderSnippets.json` |
+| `src/modules/textexpander/TextExpanderModuleInterface` | `PowerToys.TextExpanderModuleInterface.dll`, the runner's module, which starts and stops the engine. |
+| `src/modules/textexpander/TextExpander` | The engine, `WinUI3Apps\PowerToys.TextExpander.exe`. |
+| `src/modules/textexpander/TextExpander.Core` | Shared rules: `SnippetFile`, `SnippetTemplate`, `Variables`, `TriggerIndex`, `WordBoundaryRules`, `TextExpanderTriggerReach`, `SnippetPathResolution`, `TextExpanderStarter`. |
+| `src/modules/textexpander/TextExpander.Storage` | `TextExpanderSettingsUtils`, for guarded `settings.json` access. |
+| `src/modules/textexpander/TextExpander.Editor` | The editor, `WinUI3Apps\PowerToys.TextExpander.Editor.exe`. |
+| `src/settings-ui/Settings.UI/SettingsXAML/Views/TextExpanderPage.xaml`, `src/settings-ui/Settings.UI/ViewModels/TextExpanderViewModel.cs` | The Settings page. |
+| `src/settings-ui/Settings.UI.Library/TextExpanderSettings.cs`, `TextExpanderProperties.cs` | The `settings.json` schema. |
+| `src/modules/textexpander/TextExpander.UnitTests`, `.Editor.UnitTests`, `.FuzzTests`, `.UITests` | [Tests](#tests). |
 
-The snippets file can be moved or switched in the snippet editor, whose UI calls it the "snippets database" (see *Where snippets are saved*), and the `snippets_path` setting (`SnippetsPath`) holds its full path. The editor and engine select it with one shared core-library rule (`SnippetPathResolution.FromConfiguredPath`), so both read the same source-of-truth file: surrounding spaces and quotes are trimmed, environment variables are expanded, and a fully qualified path is the file, whatever its name, while a blank value or a relative path (the two processes share no working directory) selects the default file. Only the default location is ever created, with the starter. A chosen file that's missing, or whose folder is, is reported and never created, because a sync service would copy a new starter there to the user's other PCs. Shared Settings does not resolve or read snippet files. If the editor is launched directly as administrator, snippet-file resolving, reading, and editing remain disabled. Elevated Settings disables **Manage snippets** and tells the user to restart PowerToys without administrator rights. The engine runs with the desktop user's token even when the runner is elevated; a configured path that the desktop user cannot read will therefore fail to load rather than being read with elevated access. If PowerToys is elevated with a different administrator account, the engine runs as the signed-in desktop user and may be unable to read that account's settings and snippets.
+- The engine references only Core and `GPOWrapper`. Core references neither Settings nor WinUI.
+- The engine's own words (the prompt, its message boxes and the diagnostics report) come from
+  `TextExpander\Strings\en-us\Resources.resw`, built into `PowerToys.TextExpander.pri` and read
+  through `EngineText`.
+- The module interface starts the engine, found relative to its own DLL, with
+  `<runner pid> --managed --instance:powertoys --settings:"<settings.json>"`. An elevated runner makes
+  the shell process the engine's parent, so no elevated token passes on.
+- On load, `enable()` and `disable()`, the module stops stray engines. It posts
+  `PowerToys.TextExpander.RequestShutdown` to their `PowerToys.TextExpander.MessageWindow.powertoys`
+  windows.
+- `disable()` then signals `TEXT_EXPANDER_EXIT_EVENT` and terminates its engine after 1.5 s. The event
+  is auto-reset, so it wakes only one engine.
+- The mutex `Local\PowerToys.TextExpander.SingleInstance` plus `.<instance>` allows one engine per
+  session. The engine exits with the runner or on the exit event, waiting up to 2 s for the worker.
 
-The editor saves the path with `TextExpanderSettingsUtils.UpdateSnippetsPath`, which
-re-reads the latest `settings.json` under a path-derived cross-process claim and changes
-only `snippets_path`, so options saved in Settings meanwhile are kept.
-`SaveSettingsOrThrow` saves the JSON it's given in full, and `SaveSettings` takes the
-same claim and atomic publication but logs a failure instead of throwing. Each save
-holds the claim while it writes and flushes a unique staging file beside
-`settings.json` and publishes it with an atomic replace or create-only move, so a later
-participating save waits. If publication reports a failure after completing,
-compensation proceeds only while the destination still has the exact bytes this save
-published, so a sync client or older build that changes the file is never overwritten.
-A failed save reports whether the previous settings were verified, the new settings
-were verified, or the state is uncertain. The editor then re-reads `settings.json` and
-uses the path stored there, relying on that report only when the file can't be read; an
-uncertain result removes no snippet files, and its error names the settings and
-recovery files to keep.
+## How an expansion works
 
-**Snippets file format.** The file is JSON; Text Expander never reads or writes another
-format. It holds a `version` (`SnippetFile.FormatVersion`, 1) and a `snippets` list with
-a `trigger` and a `replacement` for each snippet, in order. A replacement is the exact
-text: line breaks and tabs are real characters, written as JSON's `\n` and `\t`.
-Reading (`SnippetFile.Read`) is lenient about hand edits: it skips a UTF-8 byte order
-mark and comments, allows trailing commas and property names in any case, and gives a
-snippet without a trigger or replacement an empty one. A file that isn't JSON, or has no
-`snippets` list, throws `SnippetFileFormatException`, with the line number when it isn't
-JSON; it's reported and never written over. Duplicate triggers stay in the file, and the
-last one wins. Writing produces indented UTF-8 JSON without a byte order mark, keeping
-letters, symbols and HTML characters as they are rather than as `\u` escapes, and keeps
-properties Text Expander doesn't know, in the file and in each snippet
-(`[JsonExtensionData]`). A file whose `version` is newer than `FormatVersion` still
-reads, but the editor refuses to save over it, saying a newer version of PowerToys saved
-it. A file with text that can't be written back as JSON, such as half of an emoji in a
-property Text Expander doesn't use, still reads and expands, but the editor won't save
-changes to it (`SnippetFileWriteException`) until it's fixed in a text editor. Saving
-doesn't keep comments or the file's own layout, so the first save backs up a file that
-the editor wouldn't have written the same way. For example:
+### Keyboard hook and typed buffer
 
-```json
-{
-  "version": 1,
-  "snippets": [
-    { "trigger": "!mysig", "replacement": "Best regards,\nYour name" },
-    { "trigger": "!myaddr", "replacement": "One Microsoft Way\nRedmond, WA 98052" }
-  ]
-}
-```
+- `KeyboardHook` installs `WH_KEYBOARD_LL`, `WH_MOUSE_LL` and a foreground WinEvent hook. Each key
+  event goes to `InsertionGuard.Swallows` first, and only key-downs reach matching.
+- `HostInputTags.Classify` ignores the engine's tag, runner replays (`0x110`) and Keyboard Manager's
+  suppressed keys (`0x111`). Other injected input, like the touch keyboard, is typing.
+- With `treat_remaps_as_typing` off, keys with Keyboard Manager's bit `0x1` aren't matched. The
+  engine's random tag sets that bit, so Keyboard Manager's key remaps skip it.
+- Keys count only in an authorized foreground window, outside standard password boxes. `ToUnicodeEx`
+  uses that window's layout and flag `0x4`, which keeps dead-key state intact.
+- Navigation keys, shortcuts, clicks and focus changes clear the buffer, but AltGr types. The buffer
+  holds max(256, 2 × (longest trigger + 2)) characters and keeps its newest half when full.
 
-**Starter file.** When the engine or the editor starts on the default file and it's
-missing, whichever gets there first writes the starter (`TextExpanderStarter`): six
-snippets, `!ddate`, `!ttime`, `!ddt`, `!isodate`, `!mysig` and `!myemail`, none of which
-reads the clipboard or asks for input. It's written beside the file and moved into place
-without overwriting, so a process or app that creates the file at the same moment wins
-and its file is loaded instead, and nothing reads a half-written starter. Existing files,
-including empty files, are never replaced. The editor creates or loads the starter
-before it shows the list. Only starting on the file writes it, at startup or when the
-setting switches to the default file. Read again, a missing default file keeps the
-snippets already read until it's back: an editor that saves by deleting the file and
-renaming a new copy into place leaves it missing for a moment, and a starter written then
-would make that rename fail, losing the user's save. The snippet editor keeps its list
-too, and **Refresh** says the file isn't there; saving a snippet writes the file again.
-An engine test checks that the engine and editor use the same file name
-(`TextExpanderSnippetFileNames.Current`).
+### Trigger matching
 
-Bug reports keep only `settings.json`, `diagnostics.txt` and the logs of the PowerToys
-`TextExpander` folder, so a snippets file of any name there, such as one that **Move
-snippets database…** left behind, and its backups, temporary files and a sync service's
-keep-both copies stay out. The configured file is left out wherever else it is in the
-PowerToys folder, and so are its backups, temporary files and keep-both copies in its own
-folder. A database used earlier, which **Move snippets database…** and **Sync from another
-PC…** leave where it was, is found by its content anywhere in the PowerToys folder,
-whatever its name, since the engine and the editor use a snippets file of any name: every
-file whose bytes have both `"snippets"` and `"trigger"`, in any case, stays out, and so
-does one that can't be read or is larger than the engine reads. Files are read a piece
-at a time, so a large log is checked without being held in memory whole
-(`TextExpanderPrivacy.h`, tested by `tools/BugReportTool/BugReportTool.UnitTests`).
-The configured path is masked in the report's copy of `settings.json`, and
-`diagnostics.txt` records the file's location only as `snippets_location=default` or
-`snippets_location=custom`, with `snippets_file_exists`, never as a path.
+- The hook reads `SnippetStore.Current`, an immutable snapshot, without locks, and takes the
+  replacement from it.
+- `TriggerIndex`, a reversed trie, finds the longest trigger ending the buffer without allocating.
+- With `require_word_boundary` on (the default), only whitespace, punctuation or a symbol other than
+  `_` fires a trigger. The match uses the text before that key.
+- In that mode, a trigger that starts with a letter, digit or `_` must start a word.
+  `WordBoundaryRules` counts a surrogate pair as one character, and a combining mark with the one
+  before.
+- With `case_sensitive` off, matching uses `StringComparer.OrdinalIgnoreCase`. On a match, the hook
+  swallows the key and clears the buffer.
 
-### Settings page layout
+### Handoff to the worker
 
-The page contains enablement and **Manage snippets**.
-**Advanced** holds **Wait for space or punctuation**; **Insertion method** (Automatic,
-Always paste, or Always type), whose **Minimum length to paste** is available only
-with Automatic, the one method that chooses by length; **Case-sensitive snippets**; and
-**Use PowerToys Keyboard Manager remaps when matching triggers**.
-The page only reads `settings.json`: a missing file shows the defaults without creating
-it, and a file it can't read shows the defaults with **Can't read Text Expander options**
-and is left unchanged; the bar's **Open folder** selects the file in File Explorer. Each
-option change re-reads the file first, so changes are refused until it can be read.
+- The hook adds a `PendingExpansion` to `KeyboardHook.Pending`, which one worker thread drains in
+  order. Each item captures the typed text, replacement, window and input generation.
+- Each non-modifier key-down or click that reaches an app moves the input generation. The worker drops
+  work whose generation moved, checking before prompts, the erase and each `SendInput`.
 
-The separate editor follows Keyboard Manager's layout: a title bar with the icon, the
-title and **Search snippets** (Ctrl+F); then **New snippet**, the snippets button
-(**Saved on this PC ▾**, **Saved in OneDrive ▾** or **Saved in *folder* ▾**) and
-**ⓘ Good to know**; then one card with the **Snippets** heading, the count and the rows.
-**Good to know** has four notes: don't save sensitive info in snippets; snippets don't
-expand in apps running as administrator or in standard Windows password boxes; Ctrl+Z
-right after an expansion changes it back; and switch an input method editor (IME) to
-direct input or English before typing a trigger.
+### Variables and prompts
 
-### Managing snippets in the editor
+- `{{date}}`, `{{time}}` and `{{datetime}}` use the culture's `d`, `t` and `g` formats, and
+  `{{isodate}}` is `yyyy-MM-dd`. `{{date:<format>}}` takes a .NET format, or strftime if it has `%`.
+  `/` and `:` stay literal. `WM_SETTINGCHANGE` with `intl` refreshes the culture.
+- Questions come first, then `{{clipboard}}` reads the clipboard once. Values are literal: a `$|$` in
+  an answer stays text.
+- `{{prompt:…}}` needs an answer, and `{{prompt?:…}}` accepts a blank one.
+- `PromptHost` shows the WinUI 3 prompt on its own thread, and `ClassicPromptDialog` is the fallback.
+  Meanwhile the hook is suspended, and only keys or clicks in the target window drop the work.
+- Cancel drops the whole snippet. The swallowed key goes back, unless a modifier stays down for 1 s.
+- Keys typed after the last answer land after the snippet. The worker waits up to 350 ms for the
+  target to return.
 
-**Wait for space or punctuation** is a module-wide setting rather than a field in
-each snippet row. A clean settings file defaults it on, and adding a snippet uses
-that active value. Loading an existing settings file preserves an explicitly saved
-`false` value. The snippets file, including the starter, stores only triggers and
-replacements, so no starter or existing snippet is rewritten.
+### Insertion guard
 
-Search matches triggers and replacement text without changing file order. The count
-reads "14 snippets", or "Showing 2 of 15 snippets" while searching, and **Clear search**
-appears only when nothing matches. Click or Enter edits a row, and **More options** has
-**Edit**, **Duplicate** and **Delete**. Rows are one Tab stop, and the arrow keys move
-between them. A reload numbers the snippets again, so it closes an open **More options**
-menu, and **Edit**, **Duplicate** and **Delete** refuse a row from before it, including a
-delete confirmed after a reload; the list then shows the reloaded file. A delete that
-removes nothing isn't reported as deleted.
-**Duplicate** opens the copy in the editor, unsaved, with a trigger that can fire
-(`!mysig` → `!2mysig`; `!mysig2` would never fire, because typing it completes
-`!mysig` first).
+`SendInput` batches don't stay whole while any low-level hook runs, so `InsertionGuard` keeps user
+keys out of an insertion.
 
-Each row shows the trigger as a key, trimmed when long, with the whole trigger in a
-tooltip. Then comes "inserts", or "asks *questions* then inserts" with each question
-once as a bubble, and then an accent chip with an icon and up to three real lines of
-what the snippet inserts: blank lines at either end are skipped, tabs show as spacing,
-variables and questions show as bubbles and the cursor as a bar, and "…" follows when
-more lines do. A snippet that is one value, or only dates and times with punctuation,
-shows them as text, with that value's icon. WinUI draws an inline element that falls
-past a trimmed line's ellipsis at the start of the line, over the text, so a trimmed
-line with bubbles shows as text instead (`TextOnlyWhenTrimmed`,
-`TextExpanderTrimFallback`), and tries its bubbles again when the row is clearly wider.
-`TextExpanderRowDescriber` works this out (`TextExpanderRowDescription`), and the view
-model refreshes it whenever the list or **Wait for space or punctuation** setting changes.
+- The worker sends a start marker, a key-up of VK `0xFF` with the engine's tag and the insertion id.
+  It waits up to 2 s.
+- At the marker, the hook goes on only if the input generation hasn't moved. Then it holds every key
+  event that isn't the engine's, in order. Clicks aren't held.
+- The worker releases the user's modifiers in the first erase call, and presses them again before held
+  keys go back.
+- After the end marker, held keys go back in rounds, with their own tags, so a key-up never passes its
+  key-down. They go back only to their window, still in front. A focus change cancels the insertion.
+- The guard ends after 2 s without an engine event, or at 256 held key events. Typing past 2 s goes on
+  unguarded. A slow clipboard borrow gets a new start marker before the erase.
 
-A row that can never expand gets a line under it: a caution badge reading
-**Never expands**, then the reason, by the engine's own rules for the current mode
-(`TextExpanderTriggerReach`): another trigger completes partway through typing this one;
-with **Wait for space or punctuation**, only when a space, punctuation other than `_`, or
-a symbol in this trigger releases it at a word start; or a later row has the same
-trigger, since the last one wins. The badge has a caution icon and the reason is spelled
-out, so color is never the only cue.
+### Erase
 
-A row's screen reader name is "*trigger*: *text*", with each bubble, line break and tab
-spoken in words, then the number of lines when there are several ("…, 2 lines"), then
-"Never expands: *reason*" when it applies.
+- After 15 ms, the worker sends one Backspace per text element of the typed part. Up to 20 keys go one
+  per call, 25 ms apart, since Windows 11 Notepad drops faster keys. Longer erases go at once.
+- No call carries over 1,000 events. Before each call, the worker checks the window, its integrity, the
+  input generation and clicks. A failed check stops the insertion.
 
-The dialog is titled **New snippet** or **Edit snippet** and follows Keyboard Manager's
-mapping: **Trigger**, an arrow, then **Replacement**, with the preview across the
-bottom. Under the **Replacement** box, a caption says "Don't save passwords or other
-sensitive info in snippets. They aren't encrypted.", and screen readers hear it with
-the box's help text. **Good to know** and the Welcome page (`Oobe_TextExpander_HowToUse`
-in the Settings resources) give the longer form: "Don't save passwords, Social Security
-numbers, credit card numbers or other sensitive info in snippets. They're saved as plain
-text and aren't encrypted."
+### Paste or type
 
-The editor validates the trigger as you type: it can't be empty, contain a line break,
-start with a hidden character or start or end with a space, and no other snippet may
-use it (`SnippetProblem`, mapped to resources by the view model). The reason shows in
-one red bar across the dialog, in the user's language, and **Save** stays off while it
-shows; the **Trigger** box is outlined in red when the trigger is what's wrong. The
-reason is announced when it appears or changes and is the **Trigger** box's full
-description. An empty dialog stays quiet, but once there's text, a missing trigger says
-"Type a trigger to save this snippet." Save errors stay in the dialog with your text intact. Closing an edited
-snippet (Cancel, Esc, or the window's close button or Alt+F4) shows "Discard your
-changes?" at the bottom of the dialog, above Save and Cancel, with **Keep editing**
-(focused; it returns to the field you were editing) and **Discard**. When closing the
-window asked, the window comes to the front and **Discard** also closes it. Empty libraries
-offer optional signature, email, and date examples that open in the editor;
-choosing one does not save it automatically.
+- Automatic pastes text with a line break, or text at least `clipboard_threshold_chars` (default 5)
+  long, not counting the given-back key.
+- Ctrl+V goes 300 ms after the erase, since Notepad drops a Ctrl+V during an edit. Ctrl goes down in
+  its own call. Notepad reads it late, so it stays down until the target opens the clipboard, at most
+  350 ms after the V. Unguarded, Ctrl+V is one call.
+- If the clipboard can't be borrowed, the worker types under the same guard. After the first key,
+  there's no fallback.
+- Typing sends one character per call, 25 ms apart, plus 25 ms after `.`, `!`, `?` and line breaks.
+  `\n` and `\t` are Enter and Tab presses, and `\r` is skipped.
 
-The preview shows what the snippet types, in up to eight whole lines (fewer when the
-dialog is short), the last ending in "…" when more follow. Values that are only known
-when it runs are drawn as bubbles in the style of a KeyVisual key: **Clipboard**, a
-question's label, and dates and times evaluated as they are now, in the user's regional
-format. The first `$|$` is a thin cursor marker, and line breaks and tabs show as they
-are typed.
-It never reads your clipboard or asks for input. `TextExpanderSnippetPreview`
-uses the core library's template parser and date formatter, so runtime values remain
-literal and date formats agree with expansion without a second strftime table.
-The preview's accessible name spells out each bubble, for example
-"Clipboard, filled in when the snippet runs", and the hint under it appears only
-when there are bubbles.
+### Clipboard borrow and restore
 
-The **Replacement** box is a `RichEditBox` kept to plain text by
-`TextExpanderReplacementEditor`. Variables the engine understands are shown in
-accent text on a faint tint, with their braces; anything else in braces is left
-plain. Clicking inside a variable selects it whole, and a second click places
-the caret, so a label or format can still be edited. Backspace or Delete next to
-a variable removes it whole. Paste is plain text, formatting shortcuts are off,
-spell check is off, and Tab moves focus as before. Undo comes from
-`TextExpanderEditHistory`, about a word at a time, because RichEdit's own undo
-would record the recoloring. It keeps 200 steps at most, fewer of long texts (about
-4 million characters in all), and none once the dialog closes. The text the box
-reports uses `\n` line breaks, which is how the file stores them. **Insert variable** never
-puts a variable inside another one; after a question or custom date it selects
-the label or format, ready to type over. Its items show what each date or time
-variable gives, filled in each time the menu opens. In high contrast the
-variables are not colored but underlined, so they still stand out.
+- The order is: guard decision, snapshot, write, erase, Ctrl+V, settle, restore, end marker. A Ctrl+V
+  the user presses meanwhile is held, so it pastes their own copy.
+- The snapshot copies every format. It refuses above 32 MB or for formats it can't reproduce, and the
+  snippet is typed.
+- The snippet carries `ExcludeClipboardContentFromMonitorProcessing`,
+  `CanIncludeInClipboardHistory` = 0 and `CanUploadToCloudClipboard` = 0. So does the restored
+  clipboard, unless it had one already.
+- The restore comes at least 150 ms after the V, once the target reads. Otherwise it comes at 350 ms,
+  if the target answers `WM_NULL` within 50 ms. A busy target gets up to 5 s. Then the snippet stays,
+  and the user is told once per run.
+- The restore needs the clipboard sequence number from just after our write, so a newer copy wins. It
+  checks before opening the clipboard, and again once it's open, before emptying it: the open may have
+  waited for an app that was copying. A refusal counts as skipped, not lost.
+- It tries 3 times, 40 ms apart. Only an attempt that emptied the clipboard takes the new sequence
+  number. One that couldn't open it changed nothing, so it adopts nothing.
 
-**Custom date format** is a submenu of ready-made formats (`dddd`, `MMMM d, yyyy`,
-`dddd, MMMM d, yyyy`, `MMM d`, `MM/dd/yyyy`, `yyyy-MM-dd`, `h:mm tt`, `HH:mm`), each
-shown as it comes out now and named with its code; picking one inserts
-`{{date:<format>}}` with the caret after it. **Custom format…**, after a separator,
-inserts `{{date:dddd}}` with the format selected, as before. While the caret or
-selection is in a `{{date:…}}` variable, a **Date format codes** guide shows under
-the box: chips for `yyyy yy`, `MMMM MMM MM M`, `dddd ddd dd d` and `h HH mm tt`,
-each with what it gives now, that put their code in at the caret (never over the
-braces); a "Shows as" line for the format at the caret; a tip to put words outside
-the braces; and a **More codes** link to .NET's custom date and time format strings.
-`TextExpanderDateGuide`, the preview, the row descriptions and the **Insert variable**
-samples use the engine's shared `Variables.FormatToken`/`FormatDate` implementation in
-`TextExpander.Core`, so they show the user's regional format; tests pin the same
-examples for one moment and culture.
+### Cursor marker and given-back key
 
-Colors in the box are set as character formatting, so they don't follow the theme
-by themselves. Ordinary text gets the box's own text color, read from the
-document's default format, which XAML keeps up to date for the box's theme and
-state (`TextExpanderEditorColors`). RichEdit's "automatic" color is not used:
-in a `RichEditBox` it is the Win32 window text color, black even in dark mode.
-Typed text takes the color of the character before it, so every change recolors
-the whole text; so do loading, opening the dialog, a theme or focus change, and
-a change of Windows colors such as high contrast.
+- The first `$|$` sets the caret. The worker presses Left once per text element after it, unless that's
+  over 2,000.
+- In word mode, the swallowed terminator goes back after the snippet, unless
+  `word_boundary_keeps_space` is off.
 
-Successful snippet changes appear as an accessible status message.
-File errors remain separate from empty-library and no-search-results states.
-Use **Retry** to reload after a file-access error. Saving while a search is active
-keeps the filter and includes a reminder in the status message.
+### Undo with Ctrl+Z
 
-Failed writes do not reserve triggers or apply deletions in memory. A reload advances
-the snippet revision: it closes an open **More options** menu and the question flyout,
-and an editor open on an existing snippet keeps your draft but must be reopened before
-saving, so an old row handle cannot overwrite a different entry. A new snippet
-(**New snippet**, **Duplicate** or an example) is checked against the reloaded file
-instead and can still be saved. While it's shown, the editor watches the snippets file:
-a `FileSystemWatcher` on its folder, paired with a 2-second poll that compares only the
-file's existence, size and last-write time, off the UI thread, and reaches the UI only
-when they change or the watcher reports an event or error. It reloads only when the
-file's bytes differ from what it last read or wrote, so its own saves don't reload the
-list.
+- The hook records each insertion before held keys go back, except snippets with a prompt or
+  `{{clipboard}}`.
+- Ctrl+Z alone, in the same window, undoes it. Ctrl+Shift+Z stays redo. Any other non-modifier key, a
+  click or a focus change ends the undo.
+- The worker waits up to 1 s for modifiers to go up, or gives up: Ctrl+Backspace deletes words. It
+  moves the caret to the end, erases the snippet and types what was typed again, through the guard.
 
-The list is a virtualized `ListView`, so only the rows in view are built, however long
-the list. A row's **More options** menu isn't in the list's tree, so the button and its
-items carry their snippet in `Tag="{x:Bind}"`, which their handlers read; a test checks
-the markup for it. A search changes the shown rows in one step
-(`TextExpanderRowCollection`). A save updates only the row that changed and doesn't read the
-file back: what was written is kept as the file's contents, so the next save still
-notices an edit made elsewhere in the meantime.
+## Snippets and settings
 
-### Where snippets are saved
+### settings.json
 
-The snippets button in the editor's toolbar says where the file is: **Saved on this PC ▾**
-for the default location, **Saved in OneDrive ▾** when the file is under `%OneDrive%`,
-`%OneDriveConsumer%` or `%OneDriveCommercial%`, and **Saved in *folder* ▾**, with the
-folder's name, for anywhere else. Text Expander only compares paths
-(`TextExpanderFolderText`) and doesn't inspect cloud accounts. It doesn't sync anything
-itself either: OneDrive or another sync service transfers the file. The button's flyout
-shows, top to bottom:
+`%LOCALAPPDATA%\Microsoft\PowerToys\TextExpander\settings.json` keeps the options in `properties`.
+Strings and numbers are `{"value": …}` objects, and booleans are bare.
 
-1. The snippet count and place ("Saved on this PC · 14 snippets"), then the file's full
-   path on one middle-trimmed, selectable line, with the whole path in a tooltip and for
-   screen readers.
-2. **Open in text editor**, which opens a .json file in the app Windows uses for .json
-   files, or in Notepad when none is set, and any other file in Notepad, so a script or
-   shortcut chosen as the database never runs; and **Refresh**, which reads the file
-   again and says "Snippets refreshed." The editor also does this by itself when the
-   file changes.
-3. The sync tip: a bold "Use your snippets on all your PCs", then two numbered steps,
-   "Select **Move snippets database…** and save it in OneDrive or another synced folder."
-   and "On each of your other PCs, select **Sync from another PC…** and pick that
-   database." For a file that's already in OneDrive, the tip is "Use these snippets on
-   your other PCs" and one step, "On each PC, select **Sync from another PC…** and pick
-   this database."
-4. A footer with **Move snippets database…** and **Sync from another PC…**.
+| Key | Default | UI or override |
+| --- | --- | --- |
+| `snippets_path` | empty | Editor |
+| `injection_backend` | `auto` | Insertion method; `POWERTOYS_TEXT_EXPANDER_INJECTION_BACKEND` |
+| `clipboard_threshold_chars` | 5 | Minimum length to paste; `POWERTOYS_TEXT_EXPANDER_CLIPBOARD_THRESHOLD` |
+| `require_word_boundary` | true | Wait for space or punctuation; `POWERTOYS_TEXT_EXPANDER_REQUIRE_WORD_BOUNDARY` |
+| `word_boundary_keeps_space` | true | `POWERTOYS_TEXT_EXPANDER_WORD_BOUNDARY_KEEP_SPACE` |
+| `case_sensitive` | true | Case-sensitive snippets |
+| `treat_remaps_as_typing` | true | Use PowerToys Keyboard Manager remaps…; `POWERTOYS_TEXT_EXPANDER_IGNORE_REMAPPED_INPUT=1` |
 
-**Move snippets database…** opens the Save dialog in the file's folder, or in Documents
-while the file is in the default location, with the file's name and the
-"Snippets database (*.json)" type. It writes the snippets to the chosen file and
-switches to it; the previous file is left untouched. When the chosen file already has
-snippets, the editor asks, after Windows' own replace prompt, "This database already has
-snippets": **Use its snippets** switches to that file and writes nothing,
-**Replace them** replaces them, and **Cancel**, the default, changes nothing. A file
-that's replaced is backed up first, and the status message says so. Choosing the file
-already in use changes nothing, and the button is off while the current file can't be
-read. **Sync from another PC…** opens the Open dialog and switches to an existing file,
-writing nothing; a file that isn't JSON with a `snippets` list is refused, with
-**Choose a different database**. Both save the path in `snippets_path` before loading
-the file, so the editor never shows a file that the engine isn't using, and the status
-message says how many snippets are now in use and where.
+- Environment variables win over the file. Backends are `auto`, `clipboard` and `type`.
+- The editor resets `word_boundary_keeps_space` to true at startup, but the engine honors false.
+- `DefaultClipboardThresholdChars` must match in `TextExpanderSettings` and `InjectionPolicy`. The
+  on/off switch is `enabled.TextExpander` in the general settings, which Settings sends over IPC.
+- Settings and the editor use `TextExpanderSettingsUtils` under the mutex
+  `Local\PowerToys.Settings.AtomicFile.<hash>` (10 s timeout). A write re-reads the file, changes only
+  its keys, publishes a flushed staging file with `File.Replace` and verifies it.
+- The Settings page never writes over a file it can't read. The editor's startup read
+  (`GetSettingsOrDefault`) writes defaults over a missing or invalid file.
+- The engine reads 250 ms after a change. An unreadable file changes nothing, and it retries 4 times.
 
-Every save and move writes the snippets to a new temporary file beside the target
-(`.tmp-<GUID>`), created exclusively and flushed to disk, which is then moved into place
-or swapped in with `File.Replace`, so nothing reads a half-written file. A write that
-fails deletes it, checking first that it still holds what was written, unless the failure
-left nothing at the target, as a failed replace can: then it's moved into place instead,
-or kept.
-Backups go beside the file they copy, as `<file>.backup-<timestamp>`, with a numeric
-suffix when needed. Before each save or move, the editor compares the file with the
-bytes it loaded; if another app, PC or sync service changed it, the editor reloads the
-list instead of saving. A chosen file that's gone isn't written again, and a file that
-wasn't loaded as snippets is never written over.
+### Snippets file
 
-When the file can't be loaded, an error bar above the list says why, the list stays
-empty rather than suggesting there are no snippets, and **New snippet** and
-**Move snippets database…** stay off until the file loads, on **Retry** or when it
-changes:
+The file looks like `{"version": 1, "snippets": [{"trigger": "!mysig", "replacement": "Best regards,\nYour name"}]}`.
 
-- **Can't find your snippets database**: the chosen file was moved, renamed or deleted,
-  or a folder is where the file should be. The bar shows the path, with **Retry** and
-  **Sync from another PC…**.
-- **Can't reach your snippets in OneDrive** (or in *folder*): its folder, drive, network
-  location or OneDrive isn't available. It has the same buttons.
-- **Can't open your snippets**: "Your snippets database has a mistake on line *n*…",
-  "Your snippets database is missing its "snippets" list…", or the system's message,
-  with **Retry**.
+- `SnippetFile` reads and writes it for both processes, in file order. It writes indented UTF-8
+  without a BOM, keeping unknown properties but not comments.
+- A replacement is exact text: real line breaks and tabs, and literal backslashes. The editor saves
+  `\n`, and typing skips `\r`.
+- Duplicate triggers may stay, and the engine uses the last one. With case sensitivity off, triggers
+  differing only by case are duplicates.
+- Reading allows a BOM, comments and trailing commas. A file that isn't JSON, or has no `snippets`
+  list, throws `SnippetFileFormatException` (an `IOException`) and is never written over.
+- A `version` above 1 reads, but the editor won't save it.
 
-The engine (`SnippetStore`) keeps running when the file is missing or can't be read. A
-file it can't read, such as one with a JSON mistake, leaves the snippets it last read,
-or none at startup; a chosen file that's gone gives no snippets, logged once, until it's
-back; and a default file that's gone keeps the snippets it last read until it's back,
-since only starting on it writes the starter. The engine watches the file's
-folder with a `FileSystemWatcher` filtered to the file's name, which also sees editors
-that save by renaming a temporary file over it. While the file isn't loaded and watched,
-as for one in OneDrive before OneDrive starts at sign-in, it tries again every 30
-seconds. It publishes the path, the parsed snippets and the watcher together as one
-generation-tagged state, which the keyboard hook reads without locking. A failed reload
-keeps the previous state and retries a bounded number of times, 250 ms apart; a new file
-is read once more after its watcher starts, so a change in between isn't missed; and
-bursts of watcher events coalesce, so an older read can't replace a newer one. A read
-that finds the same bytes as the snippets in use (by SHA-256), at the same path and with
-the same case setting, keeps those snippets instead of parsing the file again, as when a
-sync service touches the file without changing it.
+### Where the file lives
 
-While the editor is elevated, these actions and all other snippet editing remain
-unavailable; no snippet path is resolved or displayed. See *Settings and snippet
-storage* above.
+- The default is `PowerToysTextExpanderSnippets.json` in the settings folder. The bug report tool
+  repeats this name.
+- `snippets_path` holds a full file path, with any name. `SnippetPathResolution` trims quotes and
+  expands environment variables. A blank or relative value means the default.
+- A chosen file is never created. While it's missing, there are no snippets.
+- Text Expander doesn't sync. **Move snippets database…** copies the file somewhere, such as OneDrive,
+  and uses it. **Sync from another PC…** uses an existing file. Both save `snippets_path` first, so
+  the engine follows.
 
-### Trigger capitalization
+### Starter file, reloads and safe writes
 
-**Case-sensitive snippets** is on by default, preserving exact matching. When
-it is off, the engine's suffix trie compares characters with
-`StringComparer.OrdinalIgnoreCase`, the same comparer as its replacement map, and
-steps over a surrogate pair as one character, so supplementary-plane letters match
-in either case. Triggers that differ only by case are
-therefore duplicates and the last file row wins, matching the existing duplicate
-rule. The editor applies the same comparison to validation, copy suggestions and
-reachability warnings.
+- `TextExpanderStarter` writes six snippets only when the engine or the editor starts on the default
+  path and finds no file. It moves a temporary file in without overwrite, so the first writer wins.
+- A default file that disappears later isn't recreated; that would break editors that save by delete
+  and rename.
+- The engine watches the file's folder, and changes coalesce for 250 ms. A failed load keeps the last
+  snapshot and tries up to 4 times, 250 ms apart. While the file isn't loaded and watched, the engine
+  retries every 30 s.
+- The editor watches the file and polls it every 2 s. Both keep their snippets if the bytes match.
+- Only the editor writes the file, apart from the starter. If the file no longer matches the bytes it
+  loaded, it reloads and refuses the save. It never merges.
+- It writes `<file>.tmp-<GUID>`, then uses `File.Replace` or a create-only move. It backs up to
+  `<file>.backup-<yyyyMMdd-HHmmss>` when Move replaces a file, or when a first save would lose comments
+  or layout.
 
-In the snippet list, a trigger containing letters is shown as both forms while the
-setting is off, for example `!hello / !HELLO`. The saved trigger is unchanged and
-the editor still shows its original capitalization. The row's accessible name also
-states that either form matches.
+## Snippet editor
 
-### Prompt authoring and validation
+**Manage snippets** starts `PowerToys.TextExpander.Editor.exe`, even with the engine off. It manages
+snippets and moves or switches the file. The `AppInstance` key `PowerToys_TextExpander_Editor` keeps
+one instance. A disabled policy blocks it, and as administrator it edits nothing.
 
-**Ask a question…** in **Insert variable** (tooltip "Ask for text when the snippet runs.")
-puts a provisional `{{prompt:<example>}}` token at the replacement caret or selection.
-`<example>` is the question box's localized example ("Ticket number"); if a translation
-contains `}`, the token is `{{prompt:}}`. It then opens **Ask when the snippet runs**
-against that token: a question box (focused, showing the same example), a **Required**
-toggle (on by default), a preview of the window the snippet will show, and **Add** and
-**Cancel**. Reopening an existing question shows **Update** instead of **Add**. It's a
-Flyout styled like a teaching tip, because a `TeachingTip` doesn't open when it can't fit
-around its target and stops catching outside clicks after a canceled light dismiss. The
-page places it (`TextExpanderPromptPlacement`) from the token's bounds, the Replacement
-box, the dialog's buttons and the window, within 4 px of the window's edges. It lines up
-with the box, except that when the box starts above **Save**, as in the two-column
-dialog, it starts where **Cancel** starts; it ends at the box's right edge. It never
-cuts through **Save**, **Cancel** or **Insert variable**: one it spans from side to side
-it covers completely or stops 4 px clear of, and one it only partly spans it stops clear
-of. So it hides **Cancel** completely or stops above it, and **Save** stays in view. It
-goes 4 px below the token's line, or above the line when it fits only there, and never
-over the line; when it fits neither way, it goes where there's more room without the
-preview and scrolls if it still doesn't fit. As the question is typed, the token and the
-preview follow it. The preview is the runtime window scaled down (icon, "PowerToys Text
-Expander", the question over an empty box, OK and Cancel) on a mid-grey backdrop that
-follows light, dark and high contrast; it can't be clicked or tabbed to, and screen
-readers name it "Preview of the window shown when the snippet runs." The flyout, question
-box, toggle, Add/Update and Cancel have AutomationIds: `TextExpander_PromptFlyout`,
-`TextExpander_PromptQuestion`, `Toggle_TextExpander_PromptRequired`,
-`Button_TextExpander_PromptAdd` and `Button_TextExpander_PromptCancel`.
+Rules a change must keep:
 
-Enter, **Add**, or clicking back in the replacement commits a valid question; Enter on
-a button activates that button. An empty question ("Type a question.") or one
-containing `}` keeps the flyout open with an assertive inline error, shown only after
-a commit is refused and then updated as you type.
+- A trigger can't be empty, contain a line break, start with an invisible byte order mark
+  (`\uFEFF`), have outer spaces or repeat another. Save stays off while a problem shows.
+- **Never expands** marks a row whose trigger a later row repeats, or that another trigger fires
+  first. `TextExpanderTriggerReach` uses the engine's matcher and word rules.
+- **Ask a question…** inserts `{{prompt:…}}`; turning Required off writes `{{prompt?:…}}`. A question
+  can't be empty or contain `}`.
+- **Insert variable** offers only what `Variables` implements. The date guide and the preview use
+  Core's `Variables`, and never read the clipboard.
+- **Refresh** re-reads the file in the editor only.
+- **Open in text editor** opens a `.json` file in the app Windows uses for `.json`, or Notepad, and
+  any other file in Notepad. So a script or shortcut chosen as the database never runs.
+- A reload advances `SnippetRevision`, so an open edit of an existing snippet must be reopened to
+  save.
 
-Click an existing prompt token, or put the caret in one and press F2 (the Replacement
-box's screen reader help says "To change a question, click it or press F2."), to reopen it
-with its question and **Required** setting. Escape or **Cancel** removes a new
-provisional token and restores the original replacement selection; for an existing
-token it discards the changes and reselects the unchanged token. Closing the snippet
-dialog or a reload also discards a pending prompt. Drafts are never undo steps, so a
-completed new prompt is one editor undo step.
+Accessibility contracts, checked by `TextExpanderPageMarkup` and `TextExpanderRows`:
 
-The flyout writes `{{prompt:<question>}}` when required or
-`{{prompt?:<question>}}` when optional. The runtime grammar and snippet schema are
-unchanged.
+- A row is one Tab stop, and its menu items carry their snippet in `Tag="{x:Bind}"`.
+- A row's name is "*trigger*: *text*", plus "Never expands: *reason*" when that applies.
+- The trigger box's full description is the current problem. Problem and error bars announce changes.
+- Every visible string has an English resource. UI tests find controls by AutomationId; keep those
+  stable.
 
-At runtime, required prompts keep OK disabled while the answer is blank. Pressing
-Enter in that state shows the inline `Enter an answer to continue.` error and keeps
-focus in the answer box. Optional prompts accept an empty answer. The WinUI and
-Win32 fallback prompt implementations enforce the same rule. Cancelling either kind
-cancels the whole snippet.
+## Threading
+
+- Main thread (STA): the message window, the clipboard owner and all hook callbacks.
+- Worker (`PowerToys Text Expander`): prompts, variables, the clipboard and `SendInput`.
+- Prompt thread (`PowerToys Text Expander prompt`): WinUI 3 prompts, started on first use.
+- Thread pool and timers: foreground checks, file events, retries and guard expiry.
+- The main thread must keep pumping. Windows silently removes a low-level hook that misses
+  `LowLevelHooksTimeout`.
+- Never on the hook thread: `SendInput`, the clipboard, files, process queries, UI, waits or logging.
+- The per-key path doesn't allocate, and reads the snapshot and `volatile` options without locks.
+- Only the worker and the guard's timer send input.
+
+## Integrity levels and security
+
+- The engine refuses to run above medium integrity. It checks before it loads settings or snippets.
+- `SendInput` can't see UIPI drops, so `InputTarget.CanDrive` refuses targets above the engine's level,
+  capped at medium.
+- A thread-pool check authorizes each new foreground window. The hook captures keys only there.
+- Keys typed in `PowerToys.Settings.exe` or `PowerToys.TextExpander.Editor.exe` never expand.
+- The guard never holds `LLKHF_LOWER_IL_INJECTED` input, which would gain the engine's level if sent
+  again. Matching doesn't check this flag.
+- The `ConfigureEnabledUtilityTextExpander` policy forces the module on or off. Disabled, it also stops
+  the engine and the editor at startup. `PowerToys.Settings.Cli` honors it.
+- Elevated Settings disables **Manage snippets**.
+
+Privacy:
+
+- Keys, snippets, prompt answers and clipboard text are never logged.
+- The buffer, held keys and clipboard copies are zeroed when dropped. Password boxes clear the buffer
+  and the undo.
+- `diagnostics.txt` shows `snippets_location=default` or `custom`, never a path. Bug reports leave out
+  snippet files and mask `snippets_path`.
+
+## Limitations
+
+- Elevated windows never expand. If PowerToys runs elevated as another account, the engine runs as
+  the desktop user and may not read that account's files.
+- Only `Edit`, `RichEdit` and WinForms password boxes are detected. Web, WPF and WinUI password fields
+  still expand.
+- The hook doesn't follow IME composition, so a trigger can fire while the user is composing.
+- A key typed within about 15 ms of a match drops the expansion, and the swallowed key is lost.
+- A click during the Ctrl hold becomes Ctrl+click.
+- Clipboard managers may ignore the exclusion formats; only Always type avoids the clipboard.
 
 ## Debugging
 
-1. Build `PowerToys.slnx` and start the runner.
-2. Enable Text Expander in Settings.
-3. Attach the debugger to `PowerToys.TextExpander.exe`.
+- Build `PowerToys.slnx`, start the runner and attach to `PowerToys.TextExpander.exe`.
+- A second engine runs with `--managed --settings:"<path>" --instance:<name>`, with its snippets beside
+  that settings file. Both engines expand.
+- `--diagnostics` shows the engine's counters, and `--diagnostics-file` writes `diagnostics.txt`. The
+  engine has no log file; its `Trace` output shows in DebugView. The editor logs to
+  `TextExpander\Editor\Logs`.
 
-The engine can also be started directly for debugging: `PowerToys.TextExpander.exe --managed --settings:"<path to settings.json>"`.
-A second engine can run beside PowerToys' own with `--instance:<name>` and a settings file of its own, whose
-folder then holds its snippets. In Debug builds, setting `POWERTOYS_TEXTEXPANDER_PROMPT_THEME` to `Light` or
-`Dark` for that process shows the prompt window in that theme without changing Windows'.
+## Tests
 
-## UI tests
+- `TextExpander.UnitTests`: the engine's rules, from matching to the clipboard, and `EngineText`.
+- `TextExpander.Editor.UnitTests`: the editor's view model, storage, shared rules and page markup.
+- `Settings.UI.UnitTests` (`TextExpanderSettingsTests`): the Settings page.
+- `BugReportTool.UnitTests` (`TextExpanderPrivacyTests`): no snippets in bug reports.
+- `TextExpander.FuzzTests`: OneFuzz targets `FuzzSnippetFile` and `FuzzExpandSnippet`.
+- `TextExpander.UITests`: Settings, editor and expansion, end to end. Each test seeds the files, runs
+  PowerToys with only Text Expander on, then restores the files.
 
-`TextExpander.UITests` drives PowerToys through UI Automation with the `UITestAutomation.Next` harness
-(winappcli). Each test starts PowerToys with only Text Expander enabled, after seeding the module's
-`settings.json` and the default snippets database, and restores the files that were there afterwards. Triggers
-are typed with real key presses into a text box in the test's own window, and the result is read from that box.
-
-- `TextExpanderSettingsTests`: the enable switch stops and starts the engine, the **Advanced** options are saved to
-  `settings.json`, and **Manage snippets** opens one editor, also while Text Expander is off.
-- `TextExpanderEditorTests`: the list and the **Saved on this PC** menu, the starter database, adding a snippet,
-  trigger validation and the discard question, editing, duplicating and deleting, search, and changes made to the
-  file by another app.
-- `TextExpanderExpansionTests`: expansion after a space or punctuation, Ctrl+Z, `$|$` with a line break and
-  `{{isodate}}`, required and cancelled questions, **Always paste** (the clipboard is put back) and **Always type**,
-  the editor's exclusion, and changes from the editor and Settings applying without a restart.
-
-When an expansion doesn't happen, the failure message shows what the target held after typing, how busy the CPU
-was, and the engine's counters, which the test asks for as `PowerToys.TextExpander.exe --diagnostics-file` does.
-
-The tests must run without administrator rights: the engine refuses input to elevated windows, and elevated
-Settings disables **Manage snippets**. The UI Test Automation pipeline runs `TextExpander.UITests` through
-`.pipelines/runUiTestAsUser.ps1` and signs the Runner and Settings so a Release Runner accepts Settings' enable
-and disable. They replace your Text Expander settings and snippets while they run, so run them in a VM or on a
-test machine (see the `ui-tests-local-vm` skill), for example with `TextExpander.UITests.exe --filter "TestCategory=TextExpander"`.
+UI tests must run without administrator rights, because the engine refuses elevated targets. The
+pipeline runs them through `.pipelines/runUiTestAsUser.ps1`, with the runner and Settings signed.
+They replace your Text Expander files, so use a VM:
+`TextExpander.UITests.exe --filter "TestCategory=TextExpander"`.
