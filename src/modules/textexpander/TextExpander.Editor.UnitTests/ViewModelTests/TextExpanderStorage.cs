@@ -350,16 +350,68 @@ namespace ViewModelTests
             Assert.AreEqual("!changed", model.Snippets.Single().Trigger);
             Assert.IsTrue(model.SnippetRevision > firstRevision);
             Assert.AreEqual(1, revisionNotifications, "The page uses this notification to invalidate its editor and close its Prompt window.");
+        }
 
-            // This PC's own file comes back as the starter when it's deleted.
-            int changedRevision = model.SnippetRevision;
+        [TestMethod]
+        public void ASaveThatDeletesThePCsFileAndRenamesACopyIntoPlaceIsNotLostToTheStarter()
+        {
+            string current = Write(_local, Current, SnippetJson.Of("!mine=Mine"));
+            TextExpanderViewModel model = CreateViewModel();
+            int revisionNotifications = 0;
+            model.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(TextExpanderViewModel.SnippetRevision))
+                {
+                    revisionNotifications++;
+                }
+            };
+            model.Dispatch = action => action();
+            int revision = model.SnippetRevision;
+
+            // An editor that saves by writing a copy, deleting the file and renaming the copy into place. The watcher
+            // and Refresh both read while the file is away; neither writes the starter, which would make the rename fail.
+            string copy = current + ".saving";
+            File.WriteAllText(copy, SnippetJson.Of("!saved=Saved"));
             File.Delete(current);
             _environment.NotifyFilesChanged();
+            model.LoadSnippets();
 
+            Assert.IsFalse(File.Exists(current), "No starter is written while the file is away.");
+            Assert.IsTrue(model.IsWaitingForSnippetsFile);
+            Assert.IsFalse(model.HasSnippetError);
+            Assert.AreEqual("!mine", model.Snippets.Single().Trigger, "The list stays as it was.");
+            Assert.AreEqual(revision, model.SnippetRevision, "An open snippet dialog isn't disturbed.");
+
+            File.Move(copy, current, overwrite: false);
+            _environment.NotifyFilesChanged();
+
+            Assert.AreEqual("!saved", model.Snippets.Single().Trigger);
+            Assert.IsFalse(model.IsWaitingForSnippetsFile);
+            Assert.AreEqual(1, revisionNotifications);
+        }
+
+        [TestMethod]
+        public void ThePCsFileDeletedForGoodComesBackWithTheListWhenASnippetIsSaved()
+        {
+            string current = Write(_local, Current, SnippetJson.Of("!mine=Mine"));
+            TextExpanderViewModel model = CreateViewModel();
+            model.Dispatch = action => action();
+
+            File.Delete(current);
+            _environment.NotifyFilesChanged();
+            Assert.IsFalse(File.Exists(current));
+            Assert.IsTrue(model.IsWaitingForSnippetsFile);
+
+            Assert.IsNull(model.SaveSnippet(null, "!added", "Added"));
+            Assert.AreEqual("!mine=Mine | !added=Added", SnippetJson.Listed(current));
+            Assert.IsFalse(model.IsWaitingForSnippetsFile);
+
+            // The editor starting again with no file writes the starter.
+            File.Delete(current);
+            TextExpanderViewModel restarted = CreateViewModel();
             Assert.AreEqual(TextExpanderStarter.Content, File.ReadAllText(current));
-            Assert.AreEqual(6, model.Snippets.Count);
-            Assert.IsTrue(model.SnippetRevision > changedRevision);
-            Assert.AreEqual(2, revisionNotifications);
+            Assert.AreEqual(6, restarted.Snippets.Count);
+            Assert.IsFalse(restarted.IsWaitingForSnippetsFile);
         }
 
         [TestMethod]

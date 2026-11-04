@@ -1126,10 +1126,49 @@ public sealed class SnippetStoreTests
         Assert.AreNotEqual(0xEF, bytes[0], "No byte order mark.");
         StringAssert.StartsWith(TextExpanderStarter.Content, "{" + Environment.NewLine + "  \"version\": 1," + Environment.NewLine + "  \"snippets\": [");
 
-        // Deleted, it comes back the same.
+        // Deleted while PowerToys runs, it isn't written again: the snippets already read stay until the file is back.
         File.Delete(path);
-        Assert.AreEqual(6, store.Load().Count);
+        Assert.IsFalse(store.Load().Succeeded);
+        Assert.IsFalse(File.Exists(path));
+        Assert.AreEqual(6, store.Current.Map.Count);
+
+        // PowerToys starting again with no file writes it, the same.
+        using var restarted = new SnippetStore(path, isDefault: true);
+        Assert.AreEqual(6, restarted.Load().Count);
         CollectionAssert.AreEqual(bytes, File.ReadAllBytes(path));
+    }
+
+    [TestMethod]
+    public void ASaveThatDeletesTheDefaultFileAndRenamesACopyIntoPlaceIsNotLostToTheStarter()
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        string path = Write(scratch, SnippetStore.FileName, "!mine=Mine");
+        using var saved = new ManualResetEventSlim(false);
+        using SnippetStore store = NewStore(path, isDefault: true, maxReloadAttempts: 1);
+        store.Reloaded += _ =>
+        {
+            if (store.Current.Map.ContainsKey("!saved"))
+            {
+                saved.Set();
+            }
+        };
+        Assert.AreEqual(1, store.Load().Count);
+        Assert.IsTrue(store.StartWatching().Succeeded);
+
+        // An editor that saves by writing a copy, deleting the file and renaming the copy into place. A read while the
+        // file is away, as the watcher's for the deletion, must not write the starter, which would make the rename fail.
+        string copy = path + ".saving";
+        File.WriteAllText(copy, SnippetJson.Of("!saved=Saved"));
+        File.Delete(path);
+        Assert.IsFalse(store.Load().Succeeded);
+        Assert.IsFalse(File.Exists(path), "No starter is written while the file is away.");
+        Assert.AreEqual("Mine", store.Current.Map["!mine"], "The snippets already read stay.");
+
+        File.Move(copy, path, overwrite: false);
+
+        Assert.IsTrue(saved.Wait(TimeSpan.FromSeconds(5)), "The watcher didn't load the saved file.");
+        Assert.AreEqual("Saved", store.Current.Map["!saved"]);
+        Assert.AreEqual(1, store.Current.Map.Count, "No starter snippets.");
     }
 
     [TestMethod]

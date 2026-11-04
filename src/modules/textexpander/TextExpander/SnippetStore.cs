@@ -239,6 +239,9 @@ internal sealed class SnippetStore : IDisposable
     private int _watchingRequested;
     private int _recovering;
     private string? _missingFileLogged;
+
+    // The file the last read was for, so a read of another file is the store starting on it. Guarded by _transitionLock.
+    private string? _lastReadPath;
     private int _disposed;
 
     public string FilePath => _published.State.FilePath;
@@ -411,18 +414,26 @@ internal sealed class SnippetStore : IDisposable
 
     /// <summary>
     /// Reads the snippets in <paramref name="target"/>'s file. Only the default location gets its folder, and the starter
-    /// when it has no file. A chosen file that's missing, or whose folder is, gives no snippets until it's there: it was
-    /// moved or deleted, maybe on another PC, or its drive or sync service isn't ready yet, and creating it there would
-    /// put the starter where a sync service copies it to the user's other PCs. A file touched but not changed, as a sync
-    /// service does, keeps the snippets already read from it.
+    /// when the store starts on it with no file. Read again, a default file that's missing doesn't get the starter: an
+    /// editor that saves by deleting the file and renaming a new copy into place leaves it missing for a moment, and a
+    /// starter written then would make that rename fail and lose the save. That read fails instead, which keeps the
+    /// snippets already read until the file is back. A chosen file that's missing, or whose folder is, gives no snippets
+    /// until it's there: it was moved or deleted, maybe on another PC, or its drive or sync service isn't ready yet, and
+    /// creating it there would put the starter where a sync service copies it to the user's other PCs. A file touched but
+    /// not changed, as a sync service does, keeps the snippets already read from it.
     /// </summary>
     private Snapshot ReadSnippets(TransitionTarget target)
     {
         string path = target.FilePath;
+        bool starting = !string.Equals(_lastReadPath, path, StringComparison.OrdinalIgnoreCase);
+        _lastReadPath = path;
         if (target.IsDefault)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            TextExpanderStarter.TryCreateFile(path);
+            if (starting)
+            {
+                TextExpanderStarter.TryCreateFile(path);
+            }
         }
 
         byte[] bytes;

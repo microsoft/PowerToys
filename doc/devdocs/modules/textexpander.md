@@ -144,15 +144,21 @@ the editor wouldn't have written the same way. For example:
 }
 ```
 
-**Starter file.** When the default file is missing, the engine or the editor, whichever
-gets there first, writes the starter (`TextExpanderStarter`): six snippets, `!ddate`,
-`!ttime`, `!ddt`, `!isodate`, `!mysig` and `!myemail`, none of which reads the clipboard
-or asks for input. It's written beside the file and moved into place without
-overwriting, so a process or app that creates the file at the same moment wins and its
-file is loaded instead, and nothing reads a half-written starter. Existing files,
+**Starter file.** When the engine or the editor starts on the default file and it's
+missing, whichever gets there first writes the starter (`TextExpanderStarter`): six
+snippets, `!ddate`, `!ttime`, `!ddt`, `!isodate`, `!mysig` and `!myemail`, none of which
+reads the clipboard or asks for input. It's written beside the file and moved into place
+without overwriting, so a process or app that creates the file at the same moment wins
+and its file is loaded instead, and nothing reads a half-written starter. Existing files,
 including empty files, are never replaced. The editor creates or loads the starter
-before it shows the list. An engine test checks that the engine and editor use the same
-file name (`TextExpanderSnippetFileNames.Current`).
+before it shows the list. Only starting on the file writes it, at startup or when the
+setting switches to the default file. Read again, a missing default file keeps the
+snippets already read until it's back: an editor that saves by deleting the file and
+renaming a new copy into place leaves it missing for a moment, and a starter written then
+would make that rename fail, losing the user's save. The snippet editor keeps its list
+too, and **Refresh** says the file isn't there; saving a snippet writes the file again.
+An engine test checks that the engine and editor use the same file name
+(`TextExpanderSnippetFileNames.Current`).
 
 Bug reports keep only `settings.json`, `diagnostics.txt` and the logs of the PowerToys
 `TextExpander` folder, so a snippets file of any name there, such as one that **Move
@@ -408,7 +414,8 @@ changes:
 The engine (`SnippetStore`) keeps running when the file is missing or can't be read. A
 file it can't read, such as one with a JSON mistake, leaves the snippets it last read,
 or none at startup; a chosen file that's gone gives no snippets, logged once, until it's
-back; and a missing default file gets the starter again. The engine watches the file's
+back; and a default file that's gone keeps the snippets it last read until it's back,
+since only starting on it writes the starter. The engine watches the file's
 folder with a `FileSystemWatcher` filtered to the file's name, which also sees editors
 that save by renaming a temporary file over it. While the file isn't loaded and watched,
 as for one in OneDrive before OneDrive starts at sign-in, it tries again every 30

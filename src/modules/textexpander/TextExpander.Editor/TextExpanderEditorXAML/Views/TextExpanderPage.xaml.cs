@@ -727,7 +727,13 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             SnippetFolderFlyout.Hide();
             bool hadError = ViewModel.HasSnippetError;
             ViewModel.LoadSnippets();
-            if (!ViewModel.HasSnippetError)
+            if (ViewModel.IsWaitingForSnippetsFile)
+            {
+                SetSnippetStatus(
+                    ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SnippetFolder_WaitingForFile"),
+                    "textExpanderSnippetFileWaiting");
+            }
+            else if (!ViewModel.HasSnippetError)
             {
                 SetSnippetStatus(
                     ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SnippetFolder_Reloaded"),

@@ -164,6 +164,10 @@
     <value>Snippets refreshed.</value>
     <comment>Status after the user selected Refresh and the snippets database was read again. "Snippets database" means the user's JSON file of snippets.</comment>
   </data>
+  <data name="TextExpander_SnippetFolder_WaitingForFile" xml:space="preserve">
+    <value>Your snippets database isn't there right now, so the list stays as it is. It's read again when the file is back, and saving a snippet writes it again.</value>
+    <comment>Status after the user selected Refresh while the snippets database was missing, for example for a moment while another app saves it. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
   <data name="TextExpander_SnippetFile_SavedDefault" xml:space="preserve">
     <value>Your {0} snippets are now saved on this PC.</value>
     <comment>Status after Move snippets database… wrote them to a snippets database in the folder on this PC that Text Expander uses by default. {0} is the number of snippets, two or more, or zero. "Snippets database" means the user's JSON file of snippets.</comment>

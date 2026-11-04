@@ -58,6 +58,7 @@ namespace ViewModelTests
             "TextExpander_Row_NeverExpandsSpoken",
             "TextExpander_OpenSnippetsErrorDialog_Title",
             "TextExpander_SnippetFile_OpenMissing",
+            "TextExpander_SnippetFolder_WaitingForFile",
             "TextExpander_SnippetFile_OpenFailed",
             "TextExpander_SnippetError_NotJson",
             "TextExpander_SnippetError_NoList",

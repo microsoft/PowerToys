@@ -407,6 +407,12 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         /// <summary>Gets a value indicating whether the snippet file could not be read or written.</summary>
         public bool HasSnippetError => CanEditSnippets && !string.IsNullOrEmpty(_snippetError);
 
+        /// <summary>
+        /// Gets a value indicating whether the last read found this PC's own snippets file, read before, missing, and so
+        /// left the list as it was until the file is back (see <see cref="IsReadDefaultFileMissing"/>).
+        /// </summary>
+        public bool IsWaitingForSnippetsFile { get; private set; }
+
         /// <summary>Gets a value indicating whether a snippet can be added: editing is allowed and the file could be read.</summary>
         public bool CanAddSnippets => CanEditSnippets && !HasSnippetError;
 
@@ -536,6 +542,14 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         /// <summary>Reads the snippet file into <see cref="Snippets"/>.</summary>
         public void LoadSnippets()
         {
+            IsWaitingForSnippetsFile = IsReadDefaultFileMissing();
+            if (IsWaitingForSnippetsFile)
+            {
+                // The rows, the snippets they came from and the bytes read stay, so the watcher reads the file again when
+                // it's back, and a save writes it. An open snippet dialog isn't disturbed.
+                return;
+            }
+
             AdvanceSnippetRevision(notifyEditor: true);
             _loadedSavesAsIs = null;
 
@@ -559,17 +573,22 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             {
                 resolution = ResolveSnippetsFileInfo();
                 string path = resolution.FilePath;
+                bool starting = !string.Equals(_loadedPath, path, StringComparison.OrdinalIgnoreCase);
 
                 // Until it loads, the file being tried is the one the label, path and any error describe.
                 _loadedPath = path;
 
                 // A chosen file is read where it is and never created there: one that's gone is reported, rather than
                 // coming back holding the starter for a sync service to copy to the user's other PCs. Only the default
-                // location is created, with the starter.
+                // location is created, with the starter, and only when the page starts on it; read again, a missing file
+                // leaves the list as it is (see IsReadDefaultFileMissing).
                 if (resolution.IsDefault)
                 {
                     _storageEnvironment.CreateDirectory(Path.GetDirectoryName(path));
-                    TextExpanderStarter.TryCreateFile(path);
+                    if (starting)
+                    {
+                        TextExpanderStarter.TryCreateFile(path);
+                    }
                 }
 
                 // The bytes are kept to tell, before a save, whether the file changed since it was read.
@@ -597,6 +616,33 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             Snippets.ReplaceAll(rows);
             RaiseSnippetListChanged();
             WatchSnippetFolder();
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this PC's own snippets file, which the page already read, is missing now. An
+        /// editor that saves by deleting the file and renaming a new copy into place leaves it missing for a moment. The
+        /// list stays as it is until the file is back: a starter written then would make that rename fail, and the save
+        /// would be lost. A file deleted for good comes back when a snippet is saved, or as the starter when the editor or
+        /// PowerToys starts again.
+        /// </summary>
+        private bool IsReadDefaultFileMissing()
+        {
+            if (!CanEditSnippets || _loadedPath == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                SnippetPathResolution resolution = ResolveSnippetsFileInfo();
+                return resolution.IsDefault
+                    && string.Equals(resolution.FilePath, _loadedPath, StringComparison.OrdinalIgnoreCase)
+                    && !_storageEnvironment.FileExists(resolution.FilePath);
+            }
+            catch (Exception ex) when (IsFileError(ex))
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -706,6 +752,11 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 if (!current.AsSpan().SequenceEqual(_loadedBytes))
                 {
                     LoadSnippets();
+                }
+                else
+                {
+                    // Back as it was, as after a save that deleted the file and renamed the same text into place.
+                    IsWaitingForSnippetsFile = false;
                 }
             }
             catch (Exception ex) when (IsFileError(ex))
@@ -1056,6 +1107,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 _loadedBytes = payload;
                 _loadedSavesAsIs = true;
                 _snippetError = null;
+                IsWaitingForSnippetsFile = false;
                 SyncRows();
                 return null;
             }
