@@ -56,6 +56,26 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         public static string Spoken(ClipboardVariable variable, Func<string, string> resource)
             => variable.Normalized() == default ? resource("TextExpander_Row_SpokenClipboard") : Label(variable, resource);
 
+        /// <summary>Gets whether <paramref name="text"/> has a variable that picks a copy from clipboard history when it runs.</summary>
+        public static bool PicksFromHistory(string text)
+        {
+            text ??= string.Empty;
+            if (!text.Contains("{{clipboard:pick", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            foreach ((int start, int end) in TextExpanderTokenText.FindVariables(text))
+            {
+                if (ClipboardVariable.TryParse(text[start..end], out ClipboardVariable variable) && variable.PickCopy)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Finds the clipboard variable that the selection is, or that the caret is inside, as clicking or F2 on it does, to
         /// change it in the Clipboard panel.

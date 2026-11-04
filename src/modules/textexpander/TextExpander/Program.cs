@@ -434,6 +434,15 @@ internal static class Program
             return false;
         }
 
+        // A copy picked from clipboard history is read now, while any questions are asked, so the choice doesn't wait for
+        // it: when no window turns out to be needed, keys typed during the wait would reach the app before anything holds
+        // them, and cancel the insertion.
+        if (choose is null && ClipboardChoiceDialog.PicksCopy(work.Replacement))
+        {
+            Task<IReadOnlyList<string>> history = Task.Run(ClipboardHistoryReader.ReadTexts);
+            choose = (choice, target, accepted) => ClipboardChoiceDialog.Show(choice, target, accepted, () => ClipboardChoiceDialog.Await(history));
+        }
+
         bool giveBack = false;
         (string Text, int Cursor)? expanded = Variables.MayAsk(work.Replacement)
             ? ExpandWithPrompts(hook, work.Replacement, work.TargetWindow, ask ?? PromptDialog.Show, choose ?? ClipboardChoiceDialog.Show, readClipboard, isKeyDown, out giveBack)

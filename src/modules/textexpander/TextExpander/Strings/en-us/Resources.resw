@@ -102,6 +102,22 @@
     <value>Pick a copy to insert</value>
     <comment>Heading over recent copies from Windows clipboard history, when a snippet asks the user to pick one</comment>
   </data>
+  <data name="Choice_Heading_CopyFor_Email" xml:space="preserve">
+    <value>Pick a copy to take the email address from</value>
+    <comment>Heading over recent copies from Windows clipboard history that have an email address in them, when a snippet asks the user to pick the copy whose email address it inserts</comment>
+  </data>
+  <data name="Choice_Heading_CopyFor_Link" xml:space="preserve">
+    <value>Pick a copy to take the link from</value>
+    <comment>Heading over recent copies from Windows clipboard history that have a web link in them, when a snippet asks the user to pick the copy whose link it inserts</comment>
+  </data>
+  <data name="Choice_Heading_CopyFor_Phone" xml:space="preserve">
+    <value>Pick a copy to take the phone number from</value>
+    <comment>Heading over recent copies from Windows clipboard history that have a phone number in them, when a snippet asks the user to pick the copy whose phone number it inserts</comment>
+  </data>
+  <data name="Choice_Heading_CopyFor_Number" xml:space="preserve">
+    <value>Pick a copy to take the number from</value>
+    <comment>Heading over recent copies from Windows clipboard history that have a number in them, when a snippet asks the user to pick the copy whose number it inserts</comment>
+  </data>
   <data name="Message_Title" xml:space="preserve">
     <value>PowerToys Text Expander</value>
     <comment>Title of Text Expander's message boxes. {Locked="PowerToys"}</comment>

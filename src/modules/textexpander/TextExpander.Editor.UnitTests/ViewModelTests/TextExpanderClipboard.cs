@@ -143,6 +143,57 @@ namespace ViewModelTests
             StringAssert.Contains(editor, "ClipboardEditRequested?.Invoke(", "Clicking a clipboard variable or pressing F2 on it opens the panel.");
         }
 
+        [TestMethod]
+        [DataRow("{{clipboard:pick}}", true)]
+        [DataRow("Here: {{clipboard:pick:link:2}}", true)]
+        [DataRow("{{clipboard:pick:email:pick}}", true)]
+        [DataRow("{{clipboard:link:pick}}", false)]
+        [DataRow("{{clipboard}} and {{clipboard:email}}", false)]
+        [DataRow("{{Clipboard:pick}}", false)]
+        [DataRow("{{date:'{{clipboard:pick}}'}}", false)]
+        [DataRow("", false)]
+        public void ASnippetPicksFromClipboardHistoryOnlyWithAVariableThatPicksACopy(string replacement, bool picks)
+            => Assert.AreEqual(picks, TextExpanderClipboardText.PicksFromHistory(replacement));
+
+        [TestMethod]
+        public void TheEditorSaysWhenClipboardHistoryIsOffAndWhetherItCanBeTurnedOn()
+        {
+            Assert.IsNull(TextExpanderClipboardHistory.Note(on: true, turnedOffByPolicy: false, Resource));
+            Assert.AreEqual(
+                "Clipboard history is off, so there's no copy to pick when this runs, and nothing is inserted in its place.",
+                TextExpanderClipboardHistory.Note(on: false, turnedOffByPolicy: false, Resource));
+            Assert.AreEqual(
+                "Your organization has turned off clipboard history, so there's no copy to pick when this runs, and nothing is inserted in its place.",
+                TextExpanderClipboardHistory.Note(on: false, turnedOffByPolicy: true, Resource));
+            Assert.AreEqual("ms-settings:clipboard", TextExpanderClipboardHistory.SettingsUri);
+        }
+
+        [TestMethod]
+        public void PickingACopyIsOfferedInTheMenuAndThePanelWithANoteWhenHistoryIsOff()
+        {
+            string code = RepositoryFiles.Text(RepositoryFiles.EditorPage + ".cs");
+            StringAssert.Contains(code, "\"TextExpander_Variable_ClipboardHistory\"");
+            StringAssert.Contains(code, "Tag = new ClipboardVariable(PickCopy: true).ToToken()", "Pick a copy when it runs inserts {{clipboard:pick}}.");
+            StringAssert.Contains(code, "Content = resource(\"TextExpander_ClipboardFlyout_CopyPick\"), Tag = true", "The panel always offers a copy from history.");
+            StringAssert.Contains(code, "ShowHistoryNote(replacement);", "The note follows the typing.");
+            StringAssert.Contains(code, "Clipboard.HistoryEnabledChanged += ClipboardHistory_EnabledChanged;");
+            StringAssert.Contains(code, "Clipboard.HistoryEnabledChanged -= ClipboardHistory_EnabledChanged;", "Only while the page is shown.");
+            StringAssert.Contains(code, "e.OriginalSource is not (ButtonBase or ComboBox or ComboBoxItem)", "Enter on the panel's link opens Settings rather than updating.");
+
+            XDocument page = RepositoryFiles.Xml(RepositoryFiles.EditorPage);
+            foreach ((string note, string link) in new[] { ("HistoryOffNote", "HistoryOffSettingsButton"), ("ClipboardHistoryOffNote", "ClipboardHistorySettingsButton") })
+            {
+                XElement element = RepositoryFiles.WithName(page, note);
+                Assert.AreEqual("Collapsed", (string)element.Attribute("Visibility"), note);
+                Assert.AreEqual("OpenClipboardHistorySettings_Click", (string)RepositoryFiles.WithName(element, link).Attribute("Click"), link);
+            }
+
+            // In the dialog, after the privacy note and the near-miss note; in the panel, right under Copy.
+            XElement box = RepositoryFiles.WithName(page, "ReplacementBox");
+            Assert.AreSame(RepositoryFiles.WithName(page, "HistoryOffNote"), box.ElementsAfterSelf().ElementAt(2));
+            Assert.AreSame(RepositoryFiles.WithName(page, "ClipboardHistoryOffNote"), RepositoryFiles.WithName(page, "ClipboardCopyBox").ElementsAfterSelf().First());
+        }
+
         private static string Resource(string key) => English.Value.TryGetValue(key, out string value) ? value : key;
     }
 }

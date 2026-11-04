@@ -64,6 +64,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         private string _nearMissAnnounced;
         private Microsoft.UI.Dispatching.DispatcherQueueTimer _nearMissTimer;
 
+        // Whether Windows clipboard history is on, read as the dialog or the Clipboard panel opens and when Windows says it changed.
+        private (bool On, bool TurnedOffByPolicy) _clipboardHistory = (true, false);
+
         private enum PromptFlyoutCloseIntent
         {
             None,
@@ -127,9 +130,11 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             // Only while the page is shown, so Windows doesn't keep a closed page alive.
             Loaded += (_, _) => _uiSettings.ColorValuesChanged += UISettings_ColorValuesChanged;
             Loaded += (_, _) => XamlRoot.Changed += (_, _) => FitSnippetDialog();
+            Loaded += (_, _) => global::Windows.ApplicationModel.DataTransfer.Clipboard.HistoryEnabledChanged += ClipboardHistory_EnabledChanged;
             Unloaded += (_, _) =>
             {
                 _uiSettings.ColorValuesChanged -= UISettings_ColorValuesChanged;
+                global::Windows.ApplicationModel.DataTransfer.Clipboard.HistoryEnabledChanged -= ClipboardHistory_EnabledChanged;
                 CancelPromptEdit();
             };
             SnippetDialog.Opened += (_, _) => _replacementEditor.Recolor();
@@ -294,7 +299,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
 
         /// <summary>
         /// Builds Clipboard's submenu, in plain words: under "What's on your clipboard now", All of it, or Only part of it,
-        /// whose submenu has each part. Each inserts its variable at the caret; clicking it in Replacement changes it.
+        /// whose submenu has each part; under "Clipboard history", Pick a copy when it runs. Each inserts its variable at the
+        /// caret; clicking it in Replacement changes it.
         /// </summary>
         private MenuFlyoutSubItem BuildClipboardMenu(TextExpanderVariable clipboard)
         {
@@ -319,6 +325,15 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             }
 
             menu.Items.Add(part);
+
+            menu.Items.Add(new MenuFlyoutItem { Text = resource("TextExpander_Variable_ClipboardHistory"), Style = (Style)Resources["MenuHeadingItemStyle"] });
+            var pick = new MenuFlyoutItem { Text = resource("TextExpander_Variable_ClipboardPickCopy"), Tag = new ClipboardVariable(PickCopy: true).ToToken() };
+            string help = resource("TextExpander_Variable_ClipboardPickCopy_Help");
+            AutomationProperties.SetName(pick, resource("TextExpander_Variable_ClipboardPickCopy_Name"));
+            AutomationProperties.SetHelpText(pick, help);
+            ToolTipService.SetToolTip(pick, help);
+            pick.Click += InsertVariable_Click;
+            menu.Items.Add(pick);
             return menu;
         }
 
@@ -440,6 +455,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         {
             Func<string, string> resource = ResourceLoaderInstance.ResourceLoader.GetString;
             ClipboardCopyBox.Items.Add(new ComboBoxItem { Content = resource("TextExpander_ClipboardFlyout_CopyNow"), Tag = false });
+            ClipboardCopyBox.Items.Add(new ComboBoxItem { Content = resource("TextExpander_ClipboardFlyout_CopyPick"), Tag = true });
             ClipboardPartBox.Items.Add(new ComboBoxItem { Content = resource("TextExpander_ClipboardFlyout_PartAll"), Tag = ClipboardPart.All });
             foreach (ClipboardPart part in TextExpanderClipboardText.Parts)
             {
@@ -462,6 +478,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             }
 
             _clipboardEdit = (e.Start, e.End, text[e.Start..e.End]);
+            _clipboardHistory = TextExpanderClipboardHistory.Read();
             ShowClipboardChoices(variable);
             ClipboardFlyout.XamlRoot = XamlRoot;
 
@@ -489,13 +506,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             _showingClipboardChoices = true;
             try
             {
-                // A copy picked from clipboard history is offered where a variable picks one, so Update keeps it.
-                bool offersHistory = ClipboardCopyBox.Items.Count > 1;
-                if (variable.PickCopy && !offersHistory)
-                {
-                    ClipboardCopyBox.Items.Add(new ComboBoxItem { Content = TextExpanderClipboardText.Label(new ClipboardVariable(PickCopy: true), ResourceLoaderInstance.ResourceLoader.GetString), Tag = true });
-                }
-
                 ClipboardCopyBox.SelectedIndex = variable.PickCopy ? 1 : 0;
                 foreach (ComboBoxItem item in ClipboardPartBox.Items)
                 {
@@ -559,6 +569,11 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             ClipboardNoMatch.Visibility = part ? Visibility.Visible : Visibility.Collapsed;
             ClipboardIndexBox.Visibility = part && (ClipboardMatchBox.SelectedItem as ComboBoxItem)?.Tag as string == "n" ? Visibility.Visible : Visibility.Collapsed;
             ClipboardShowsAs.Segments = new[] { new TextExpanderPreviewSegment(TextExpanderPreviewSegmentKind.Clipboard, string.Empty, variable) };
+
+            string historyNote = variable.PickCopy ? TextExpanderClipboardHistory.Note(_clipboardHistory.On, _clipboardHistory.TurnedOffByPolicy, ResourceLoaderInstance.ResourceLoader.GetString) : null;
+            ClipboardHistoryOffText.Text = historyNote ?? string.Empty;
+            ClipboardHistorySettingsButton.Visibility = _clipboardHistory.TurnedOffByPolicy ? Visibility.Collapsed : Visibility.Visible;
+            ClipboardHistoryOffNote.Visibility = historyNote == null ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private void ClipboardChoice_Changed(object sender, SelectionChangedEventArgs e)
@@ -593,10 +608,10 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 e.Handled = true;
                 ClipboardFlyout.Hide();
             }
-            else if (e.Key == global::Windows.System.VirtualKey.Enter && e.OriginalSource is not (Button or ComboBox or ComboBoxItem)
+            else if (e.Key == global::Windows.System.VirtualKey.Enter && e.OriginalSource is not (ButtonBase or ComboBox or ComboBoxItem)
                 && !IsWithin(e.OriginalSource as DependencyObject, ClipboardIndexBox))
             {
-                // A button gets its own Enter, a list opens with it, and the number box commits on its key-up.
+                // A button or link gets its own Enter, a list opens with it, and the number box commits on its key-up.
                 e.Handled = true;
                 CommitClipboardEdit();
             }
@@ -1143,6 +1158,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             SnippetDialog.XamlRoot = XamlRoot;
             SnippetDialog.Title = ResourceLoaderInstance.ResourceLoader.GetString(id.HasValue ? "TextExpander_SnippetDialog_EditTitle" : "TextExpander_SnippetDialog_NewTitle");
             FitSnippetDialog();
+            _clipboardHistory = TextExpanderClipboardHistory.Read();
             Validate();
 
             ContentDialogResult result;
@@ -1524,6 +1540,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
 
             ShowPreview(replacement);
             ShowNearMiss(replacement);
+            ShowHistoryNote(replacement);
 
             // Only an existing snippet's ID can name a different entry after a reload. A new one is checked
             // against the reloaded file below, so its Save stays available.
@@ -1649,6 +1666,56 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             if (_nearMiss?.Suggestion == null)
             {
                 ReplacementBox.Focus(FocusState.Programmatic);
+            }
+        }
+
+        /// <summary>
+        /// Says, under the Replacement box, that a copy picked from clipboard history inserts nothing while history is off,
+        /// with a link to turn it on unless a policy turned it off. Screen readers hear it as it appears.
+        /// </summary>
+        private void ShowHistoryNote(string replacement)
+        {
+            string note = TextExpanderClipboardText.PicksFromHistory(replacement)
+                ? TextExpanderClipboardHistory.Note(_clipboardHistory.On, _clipboardHistory.TurnedOffByPolicy, ResourceLoaderInstance.ResourceLoader.GetString)
+                : null;
+            bool wasShown = HistoryOffNote.Visibility == Visibility.Visible;
+            HistoryOffText.Text = note ?? string.Empty;
+            HistoryOffSettingsButton.Visibility = _clipboardHistory.TurnedOffByPolicy ? Visibility.Collapsed : Visibility.Visible;
+            HistoryOffNote.Visibility = note == null ? Visibility.Collapsed : Visibility.Visible;
+            if (note != null && !wasShown && _isSnippetDialogOpen)
+            {
+                var peer = FrameworkElementAutomationPeer.FromElement(HistoryOffText) ?? FrameworkElementAutomationPeer.CreatePeerForElement(HistoryOffText);
+                peer?.RaiseNotificationEvent(AutomationNotificationKind.Other, AutomationNotificationProcessing.MostRecent, note, "textExpanderHistoryOff");
+            }
+        }
+
+        /// <summary>Windows says clipboard history was turned on or off, maybe from the link here: the notes follow.</summary>
+        private void ClipboardHistory_EnabledChanged(object sender, object e)
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                _clipboardHistory = TextExpanderClipboardHistory.Read();
+                if (_isSnippetDialogOpen)
+                {
+                    ShowHistoryNote(_replacementEditor.Text);
+                }
+
+                if (_clipboardEdit != null)
+                {
+                    UpdateClipboardDraft();
+                }
+            });
+        }
+
+        private void OpenClipboardHistorySettings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(TextExpanderClipboardHistory.SettingsUri) { UseShellExecute = true })?.Dispose();
+            }
+            catch (Exception ex) when (ex is Win32Exception or InvalidOperationException)
+            {
+                ManagedCommon.Logger.LogWarning($"Could not open the clipboard page of Windows Settings: {ex.Message}");
             }
         }
 

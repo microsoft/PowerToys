@@ -20,6 +20,7 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
 
     private static readonly Snippet ReplyTo = new(";tereply", "Reply to {{clipboard:email}}");
     private static readonly Snippet TrackLink = new(";telink", "Track: {{clipboard:link:pick}}");
+    private static readonly Snippet PickACopy = new(";tepick", "Copy: {{clipboard:pick}}.");
 
     internal override TextExpanderOptions InitialOptions => TestContext.TestName switch
     {
@@ -31,6 +32,7 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
     internal override IReadOnlyList<Snippet>? InitialSnippets => TestContext.TestName switch
     {
         nameof(ClipboardPartsGoInAndAMatchIsPickedInTextExpandersWindow) or nameof(CancellingAPickCancelsTheSnippet) => [.. DefaultSnippets, ReplyTo, TrackLink],
+        nameof(PickingACopyInsertsWhatClipboardHistoryHas) => [.. DefaultSnippets, PickACopy],
         _ => DefaultSnippets,
     };
 
@@ -173,6 +175,76 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
         Assert.IsTrue(choice.WaitForClosed(), "The choice window did not close after Esc.");
         AssertTargetShows(TrackLink.Trigger + " ");
         AssertStaysAsTyped(() => Target.Text, TrackLink.Trigger + " ", observeMS: 2_000, "the target");
+    }
+
+    /// <summary>
+    /// {{clipboard:pick}} offers the text copies in Windows clipboard history: none inserts nothing there and the rest
+    /// expands, one goes in, and two or more open Text Expander's window to pick from. With history on, two copies are made
+    /// first; what's expected follows what Windows recorded, so the test holds on a desktop that records nothing. A copy
+    /// that isn't the test's own is compared but never logged: on a developer's desktop it's theirs.
+    /// </summary>
+    [TestMethod("TextExpander.Expansion.PickingACopyInsertsWhatClipboardHistoryHas")]
+    [TestCategory("TextExpander")]
+    [TestCategory("TextExpander.Expansion")]
+    public void PickingACopyInsertsWhatClipboardHistoryHas()
+    {
+        const string older = "Older test copy for Text Expander";
+        const string newer = "Newer test copy for Text Expander";
+        bool on = ClipboardHistoryState.IsOn();
+        if (on)
+        {
+            Assert.IsTrue(ClipboardHelper.SetText(older), "The clipboard could not be set.");
+            Thread.Sleep(1_000);
+            Assert.IsTrue(ClipboardHelper.SetText(newer), "The clipboard could not be set.");
+            Thread.Sleep(1_000);
+        }
+
+        IReadOnlyList<string> copies = ClipboardHistoryState.ReadTexts();
+        bool ours = copies.Count >= 2 && copies[0] == newer && copies[1] == older;
+        Step($"Clipboard history is {(on ? "on" : "off")}, with {copies.Count} text copies{(ours ? ", the test's two newest" : string.Empty)}");
+        if (copies.Count == 0)
+        {
+            AssertExpands(PickACopy.Trigger + " ", "Copy: . ", waitForEngine: true);
+            return;
+        }
+
+        if (copies.Count == 1)
+        {
+            WaitForEngineReady();
+            Step($"Typing '{PickACopy.Trigger} ' into the target");
+            Target.Clear();
+            Target.Focus();
+            TextInput.Type(PickACopy.Trigger + " ");
+            AssertTargetShowsUnlogged("Copy: " + copies[0] + ". ", "the one copy in clipboard history, without a window");
+            return;
+        }
+
+        var choice = TypeTriggerForChoice(PickACopy.Trigger + " ");
+        Assert.IsTrue(choice.WaitForForeground(), $"The choice window did not come in front. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        Assert.IsTrue(choice.Offers("Pick a copy to insert"), "The choice window doesn't ask for a copy.");
+        if (ours)
+        {
+            Assert.IsTrue(choice.Offers(newer) && choice.Offers(older), "The choice window doesn't list both copies.");
+            Step("Clicking the older copy");
+            choice.Pick(older);
+        }
+        else
+        {
+            Step("Pressing Enter on the newest copy");
+            TextInput.Enter();
+        }
+
+        Assert.IsTrue(choice.WaitForClosed(), "The choice window did not close.");
+        AssertTargetShowsUnlogged("Copy: " + (ours ? older : copies[0]) + ". ", ours ? "Copy: " + older + ". " : "the newest copy in clipboard history");
+    }
+
+    /// <summary>Waits for <paramref name="expected"/> in the target, reporting only lengths: it may hold a copy from someone's clipboard history.</summary>
+    private void AssertTargetShowsUnlogged(string expected, string description)
+    {
+        var result = WaitHelper.WaitForStable(() => Target.Text, text => text == expected, timeoutMS: 30_000, requiredConsecutiveMatches: 3, pollIntervalMS: 200);
+        Assert.IsTrue(
+            result.Succeeded,
+            $"The target doesn't show {description}: it holds {result.LastObservation?.Length ?? 0} characters, not {expected.Length}. What it holds isn't logged, as it may come from clipboard history.");
     }
 
     /// <summary>With Always paste, the snippet goes in through the clipboard, and what the user had copied is put back.</summary>

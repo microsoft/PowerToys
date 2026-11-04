@@ -60,10 +60,22 @@
                 SelectionMode="Single">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="local:ClipboardChoiceOption">
-                        <TextBlock
-                            Text="{x:Bind Shown}"
-                            TextTrimming="CharacterEllipsis"
-                            ToolTipService.ToolTip="{x:Bind Text}" />
+                        <!--  Numbered as they're listed, newest copy first. Screen readers hear each one's place in the list from the list itself.  -->
+                        <Grid ColumnSpacing="12" ToolTipService.ToolTip="{x:Bind Tip}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                MinWidth="12"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="{x:Bind Number}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Text="{x:Bind Shown}"
+                                TextTrimming="CharacterEllipsis" />
+                        </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>

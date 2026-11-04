@@ -790,6 +790,21 @@
                                             HorizontalAlignment="Stretch"
                                             AutomationProperties.AutomationId="TextExpander_ClipboardCopy"
                                             SelectionChanged="ClipboardChoice_Changed" />
+                                        <!--  A copy picked from clipboard history while it's off: nothing goes in there.  -->
+                                        <StackPanel
+                                            x:Name="ClipboardHistoryOffNote"
+                                            Margin="0,-6,0,0"
+                                            Spacing="2"
+                                            Visibility="Collapsed">
+                                            <TextBlock x:Name="ClipboardHistoryOffText" Style="{StaticResource FlyoutCaptionStyle}" />
+                                            <HyperlinkButton
+                                                x:Name="ClipboardHistorySettingsButton"
+                                                x:Uid="TextExpander_ClipboardHistory_TurnOn"
+                                                Padding="0"
+                                                AutomationProperties.AutomationId="Button_TextExpander_ClipboardTurnOnHistory"
+                                                Click="OpenClipboardHistorySettings_Click"
+                                                FontSize="12" />
+                                        </StackPanel>
                                         <ComboBox
                                             x:Name="ClipboardPartBox"
                                             x:Uid="TextExpander_ClipboardFlyout_Part"
@@ -1108,6 +1123,37 @@
                                     Padding="0"
                                     AutomationProperties.AutomationId="Button_TextExpander_UseVariable"
                                     Click="NearMissUse_Click"
+                                    FontSize="12" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!--
+                            A snippet that picks a copy from clipboard history when history is off inserts nothing there,
+                            so say so, with a link to turn history on unless a policy turned it off.
+                        -->
+                        <Grid
+                            x:Name="HistoryOffNote"
+                            ColumnSpacing="6"
+                            Visibility="Collapsed">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon
+                                Margin="0,2,0,0"
+                                VerticalAlignment="Top"
+                                AutomationProperties.AccessibilityView="Raw"
+                                FontSize="12"
+                                Foreground="{ThemeResource SystemFillColorAttentionBrush}"
+                                Glyph="&#xE946;" />
+                            <StackPanel Grid.Column="1" Spacing="2">
+                                <TextBlock x:Name="HistoryOffText" Style="{StaticResource FlyoutCaptionStyle}" />
+                                <HyperlinkButton
+                                    x:Name="HistoryOffSettingsButton"
+                                    x:Uid="TextExpander_ClipboardHistory_TurnOn"
+                                    Padding="0"
+                                    AutomationProperties.AutomationId="Button_TextExpander_TurnOnClipboardHistory"
+                                    Click="OpenClipboardHistorySettings_Click"
                                     FontSize="12" />
                             </StackPanel>
                         </Grid>

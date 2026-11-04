@@ -426,6 +426,22 @@
     <value>Only part of what's on your clipboard now</value>
     <comment>Read by screen readers for Insert variable > Clipboard > Only part of it, which they read without its heading</comment>
   </data>
+  <data name="TextExpander_Variable_ClipboardHistory" xml:space="preserve">
+    <value>Clipboard history</value>
+    <comment>Heading in Insert variable > Clipboard, over the choice that picks one of the user's recent copies from Windows clipboard history when the snippet runs</comment>
+  </data>
+  <data name="TextExpander_Variable_ClipboardPickCopy" xml:space="preserve">
+    <value>Pick a copy when it runs</value>
+    <comment>Insert variable > Clipboard: when the snippet runs, a small window lists the user's recent copies from Windows clipboard history to pick from. Under the heading "Clipboard history"</comment>
+  </data>
+  <data name="TextExpander_Variable_ClipboardPickCopy_Name" xml:space="preserve">
+    <value>Pick a copy from clipboard history when it runs</value>
+    <comment>Read by screen readers for Insert variable > Clipboard > Pick a copy when it runs, which they read without its heading</comment>
+  </data>
+  <data name="TextExpander_Variable_ClipboardPickCopy_Help" xml:space="preserve">
+    <value>When the snippet runs, a small window lists your recent copies from clipboard history (Windows logo key + V) to pick from.</value>
+    <comment>Tooltip and screen reader help for Insert variable > Clipboard > Pick a copy when it runs</comment>
+  </data>
   <data name="TextExpander_ClipboardPart_Email" xml:space="preserve">
     <value>Email address</value>
     <comment>Insert variable > Clipboard > Only part of it: the first email address in what the user copied</comment>
@@ -549,6 +565,22 @@
   <data name="TextExpander_ClipboardFlyout_CopyNow" xml:space="preserve">
     <value>What's on the clipboard now</value>
     <comment>Choice under "Copy": what the user copied last</comment>
+  </data>
+  <data name="TextExpander_ClipboardFlyout_CopyPick" xml:space="preserve">
+    <value>Pick from clipboard history when it runs</value>
+    <comment>Choice under "Copy": when the snippet runs, the user picks one of their recent copies from Windows clipboard history</comment>
+  </data>
+  <data name="TextExpander_ClipboardHistory_Off" xml:space="preserve">
+    <value>Clipboard history is off, so there's no copy to pick when this runs, and nothing is inserted in its place.</value>
+    <comment>Shown under the Replacement box, and in the Clipboard panel, when the snippet picks a copy from Windows clipboard history and history is turned off in Windows</comment>
+  </data>
+  <data name="TextExpander_ClipboardHistory_OffByPolicy" xml:space="preserve">
+    <value>Your organization has turned off clipboard history, so there's no copy to pick when this runs, and nothing is inserted in its place.</value>
+    <comment>As TextExpander_ClipboardHistory_Off, when a group policy has turned off Windows clipboard history, so the user can't turn it on</comment>
+  </data>
+  <data name="TextExpander_ClipboardHistory_TurnOn.Content" xml:space="preserve">
+    <value>Turn on clipboard history</value>
+    <comment>Link that opens Windows Settings at System > Clipboard, where clipboard history is turned on</comment>
   </data>
   <data name="TextExpander_ClipboardFlyout_Part.Header" xml:space="preserve">
     <value>Insert</value>

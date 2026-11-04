@@ -170,6 +170,52 @@ public sealed class TextExpanderEditorTests : TextExpanderTestBase
     }
 
     /// <summary>
+    /// Insert variable > Clipboard > Pick a copy when it runs puts {{clipboard:pick}} in Replacement, which the preview
+    /// names. While Windows clipboard history is off, a note under Replacement says nothing goes in there.
+    /// </summary>
+    [TestMethod("TextExpander.Editor.InsertsAPickFromClipboardHistoryAndSaysWhenHistoryIsOff")]
+    [TestCategory("TextExpander")]
+    [TestCategory("TextExpander.Editor")]
+    public void InsertsAPickFromClipboardHistoryAndSaysWhenHistoryIsOff()
+    {
+        const string off = "Clipboard history is off, so there's no copy to pick when this runs, and nothing is inserted in its place.";
+        const string offByPolicy = "Your organization has turned off clipboard history, so there's no copy to pick when this runs, and nothing is inserted in its place.";
+        var added = new Snippet(";tehist", "{{clipboard:pick}}");
+        var editor = OpenEditor(OpenTextExpanderPage());
+        editor.WaitForCount(DefaultSnippets.Count);
+        editor.OpenNewSnippet();
+        editor.SetTrigger(added.Trigger);
+        editor.FocusReplacement();
+
+        Step("Selecting Insert variable > Clipboard > Pick a copy when it runs");
+        editor.Session.Find<Button>(By.AccessibilityId("Button_TextExpander_InsertVariable"), 10_000).Invoke(msPostAction: 300);
+        editor.Session.WaitForExact<Element>("Clipboard", 10_000, "MenuItem").Click(msPostAction: 300);
+        editor.Session.WaitForExact<Element>("Pick a copy from clipboard history when it runs", 10_000, "MenuItem").Click(msPostAction: 300);
+        Assert.IsTrue(editor.WaitForReplacementText(added.Replacement), $"Replacement holds '{TextExpanderFiles.Visible(editor.ReplacementText)}'.");
+        Assert.IsTrue(editor.Session.Has(By.Name("Copy you pick"), timeoutMS: 10_000), "The preview doesn't name the variable.");
+
+        bool on = ClipboardHistoryState.IsOn();
+        bool byPolicy = ClipboardHistoryState.TurnedOffByPolicy();
+        Step($"Clipboard history is {(on ? "on" : byPolicy ? "off by policy" : "off")}");
+        if (on)
+        {
+            Assert.IsFalse(editor.WaitForText(off, timeoutMS: 2_000), "A note says clipboard history is off while it's on.");
+        }
+        else
+        {
+            Assert.IsTrue(editor.WaitForText(byPolicy ? offByPolicy : off), "No note says clipboard history is off.");
+            Assert.AreEqual(
+                !byPolicy,
+                editor.Session.Has(By.AccessibilityId("Button_TextExpander_TurnOnClipboardHistory"), timeoutMS: 2_000),
+                "Turn on clipboard history is offered unless a policy turned it off.");
+        }
+
+        editor.Save();
+        Assert.IsTrue(editor.WaitForRow(added.Trigger, present: true), $"The new snippet isn't listed. Rows: {editor.DescribeRows()}.");
+        AssertDatabase([.. DefaultSnippets, added]);
+    }
+
+    /// <summary>
     /// The trigger is checked as it's typed, and Save stays off while it's wrong. Cancel on an edited snippet asks
     /// before discarding it, and Discard saves nothing.
     /// </summary>
