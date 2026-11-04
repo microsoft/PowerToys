@@ -311,6 +311,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.TextExpander/Microsoft.CmdPal.Ext.TextExpander.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.TimeDate/Microsoft.CmdPal.Ext.TimeDate.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -415,6 +419,10 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.System.UnitTests/Microsoft.CmdPal.Ext.System.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.TextExpander.UnitTests/Microsoft.CmdPal.Ext.TextExpander.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>

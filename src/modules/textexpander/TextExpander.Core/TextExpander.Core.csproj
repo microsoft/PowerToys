@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(RepoRoot)src\Common.Dotnet.props" />
+  <!-- Command Palette's Text Expander extension compiles this library ahead of time. -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
   <PropertyGroup>
     <AssemblyName>PowerToys.TextExpander.Core</AssemblyName>
     <RootNamespace>Microsoft.PowerToys.TextExpander</RootNamespace>
@@ -16,5 +18,7 @@
     <InternalsVisibleTo Include="PowerToys.TextExpander.Editor" />
     <InternalsVisibleTo Include="PowerToys.TextExpander.UnitTests" />
     <InternalsVisibleTo Include="PowerToys.TextExpander.Editor.UnitTests" />
+    <InternalsVisibleTo Include="Microsoft.CmdPal.Ext.TextExpander" />
+    <InternalsVisibleTo Include="Microsoft.CmdPal.Ext.TextExpander.UnitTests" />
   </ItemGroup>
 </Project>

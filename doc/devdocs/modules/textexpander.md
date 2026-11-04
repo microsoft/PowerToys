@@ -17,9 +17,10 @@ erases each trigger and pastes or types the snippet. A separate editor manages t
 | --- | --- |
 | `src/modules/textexpander/TextExpanderModuleInterface` | `PowerToys.TextExpanderModuleInterface.dll`, the runner's module, which starts and stops the engine. |
 | `src/modules/textexpander/TextExpander` | The engine, `WinUI3Apps\PowerToys.TextExpander.exe`. |
-| `src/modules/textexpander/TextExpander.Core` | Shared rules: `SnippetFile`, `SnippetTemplate`, `Variables`, `TriggerIndex`, `WordBoundaryRules`, `TextExpanderTriggerReach`, `SnippetPathResolution`, `TextExpanderStarter`. |
+| `src/modules/textexpander/TextExpander.Core` | Shared rules: `SnippetFile`, `SnippetTemplate`, `Variables`, `TriggerIndex`, `WordBoundaryRules`, `TextExpanderTriggerReach`, `SnippetPathResolution`, `TextExpanderStarter`, and the clipboard rules `ClipboardFormats`, `ClipboardPrivacy`, `ClipboardLoan` and `ClipboardEntry`. |
 | `src/modules/textexpander/TextExpander.Storage` | `TextExpanderSettingsUtils`, for guarded `settings.json` access. |
 | `src/modules/textexpander/TextExpander.Editor` | The editor, `WinUI3Apps\PowerToys.TextExpander.Editor.exe`. |
+| `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.TextExpander` | Command Palette's **Text Expander snippets** extension. See [Command Palette](#command-palette). |
 | `src/settings-ui/Settings.UI/SettingsXAML/Views/TextExpanderPage.xaml`, `src/settings-ui/Settings.UI/ViewModels/TextExpanderViewModel.cs` | The Settings page. |
 | `src/settings-ui/Settings.UI.Library/TextExpanderSettings.cs`, `TextExpanderProperties.cs` | The `settings.json` schema. |
 | `src/modules/textexpander/TextExpander.UnitTests`, `.Editor.UnitTests`, `.FuzzTests`, `.UITests` | [Tests](#tests). |
@@ -287,6 +288,32 @@ Accessibility contracts, checked by `TextExpanderPageMarkup` and `TextExpanderRo
 - Every visible string has an English resource. UI tests find controls by AutomationId; keep those
   stable.
 
+## Command Palette
+
+Command Palette's built-in **Text Expander snippets** extension lists the snippets, searches them by
+trigger and text, and pastes the one picked into the app Command Palette was opened over. It runs in
+Command Palette's process; its
+[README](../../../src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.TextExpander/README.md) has the details.
+
+- It follows the engine's policy and enable setting, and says "Text Expander is off" rather than
+  pasting while either turns it off.
+- It finds and reads the snippets file with Core's `SnippetPathResolution` and `SnippetFile`, and
+  never writes it. It expands with `Variables.ExpandWithPromptRequests`, so new variables work there
+  without changes.
+- Questions are boxes in Command Palette's search bar. A snippet that takes part of the copy, such as
+  `{{clipboard:email}}`, then opens a pick page. The copy is read once, and each choice Core asks for
+  through its `choose` callback gets a page, in Core's order. Core's `ExpandedSnippet.Gaps` say which
+  spots were left empty, and a toast says so.
+- A copy picked from clipboard history (`{{clipboard:pick}}` and the like) needs the engine's window,
+  so those snippets are listed but not inserted.
+- It pastes with Core's `ClipboardFormats`, `ClipboardPrivacy`, `ClipboardLoan` and `ClipboardEntry`,
+  and types when the clipboard can't be put back exactly or under Always type. Its restore loop
+  copies the engine's `Injector.HandBack`; keep the two in step.
+- Its key events carry the `0x110` tag, which the engine's hook ignores, and it refuses targets above
+  medium integrity, as the engine does.
+- Command Palette compiles Core ahead of time, so Core imports `Common.Dotnet.AotCompatibility.props`.
+  Keep reflection-based JSON and other code the trimming analyzers flag out of it.
+
 ## Threading
 
 - Main thread (STA): the message window, the clipboard owner and all hook callbacks.
@@ -347,6 +374,8 @@ Privacy:
 - `Settings.UI.UnitTests` (`TextExpanderSettingsTests`): the Settings page.
 - `BugReportTool.UnitTests` (`TextExpanderPrivacyTests`): no snippets in bug reports.
 - `TextExpander.FuzzTests`: OneFuzz targets `FuzzSnippetFile` and `FuzzExpandSnippet`.
+- `Microsoft.CmdPal.Ext.TextExpander.UnitTests` (in `src/modules/cmdpal/Tests`): the Command Palette
+  extension, with an in-memory clipboard, desktop and clock.
 - `TextExpander.UITests`: Settings, editor and expansion, end to end, plus Windows Terminal where it's
   installed. Each test seeds the files, runs PowerToys with only Text Expander on, then restores the
   files.
