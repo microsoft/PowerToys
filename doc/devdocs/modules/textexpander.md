@@ -105,8 +105,8 @@ erases each trigger and pastes or types the snippet. A separate editor manages t
   newest first. What's read is used for that expansion only.
 - None leaves the spot empty, and the rest goes in. `ExpandedSnippet.Gaps` says why: not found,
   history off, no copies, or unreadable. Once the insertion and its guard are done, the worker shows
-  one notice at the caret (`ClipboardNotice`, `NoticeBubble`). It never shows what was copied. The
-  user's next key or click fades it, but the engine's own input doesn't.
+  one [notice at the caret](#notice-at-the-caret). `ClipboardNotice` words it, with one sentence for
+  each reason. It never shows what was copied.
 - In the editor, each part under **Insert variable > Clipboard** has a tooltip saying what it needs.
   Clicking a clipboard variable, or F2 on it, opens the Clipboard panel to change its copy and part,
   with examples of what counts. Both come from `ClipboardPartExamples`, which a unit test holds to
@@ -175,6 +175,24 @@ keys out of an insertion.
   over 2,000.
 - In word mode, the swallowed terminator goes back after the snippet, unless
   `word_boundary_keeps_space` is off.
+
+### Notice at the caret
+
+- When a snippet leaves something out, the worker shows a small notice at the text cursor
+  (`NoticeBubble.Show`), such as "No email address found". It never reads or shows the clipboard.
+- It's a layered tool window that's never activated, on its own thread. Keys typed while it shows go
+  on into the app, and a click on it only dismisses it. One shows at a time.
+- It sits under the caret with its arrow pointing at it, or above it when there's no room, inside the
+  monitor's work area. It follows the light, dark and high contrast themes, the monitor's DPI and the
+  text size setting. Narrator reads it through a UI Automation notification.
+- It fades after 4 s, or later if Windows keeps notifications up longer. The user's next key-down or
+  click fades it sooner, but not before it has been up 1 s. The hooks report those with
+  `NoticeBubble.OnUserInput()`, which costs one `volatile` read, or one `PostMessage` while a notice
+  shows. The engine's own input doesn't count.
+- `CaretLocator` finds the caret: the one Windows keeps for the window's thread; then, while the
+  window is in front, UI Automation's caret or selection in the focused element, or that element's
+  bottom-left; then the window's bottom middle. UI Automation runs on its own thread and is given up
+  after 400 ms, so a hung app can't stall the engine.
 
 ### Undo with Ctrl+Z
 
@@ -320,6 +338,8 @@ Command Palette's process; its
 - Main thread (STA): the message window, the clipboard owner and all hook callbacks.
 - Worker (`PowerToys Text Expander`): prompts, variables, the clipboard and `SendInput`.
 - Prompt thread (`PowerToys Text Expander prompt`): WinUI 3 prompts, started on first use.
+- Notice threads (`PowerToys Text Expander notice` and `PowerToys Text Expander caret`, MTA): the
+  notice window, and the UI Automation caret lookup.
 - Thread pool and timers: foreground checks, file events, retries and guard expiry.
 - The main thread must keep pumping. Windows silently removes a low-level hook that misses
   `LowLevelHooksTimeout`.
@@ -374,12 +394,14 @@ Privacy:
 - `TextExpander.Editor.UnitTests`: the editor's view model, storage, shared rules and page markup.
 - `Settings.UI.UnitTests` (`TextExpanderSettingsTests`): the Settings page.
 - `BugReportTool.UnitTests` (`TextExpanderPrivacyTests`): no snippets in bug reports.
-- `TextExpander.FuzzTests`: OneFuzz targets `FuzzSnippetFile` and `FuzzExpandSnippet`.
+- `TextExpander.FuzzTests`: OneFuzz targets `FuzzSnippetFile`, `FuzzExpandSnippet` and
+  `FuzzClipboardParts`.
 - `Microsoft.CmdPal.Ext.TextExpander.UnitTests` (in `src/modules/cmdpal/Tests`): the Command Palette
   extension, with an in-memory clipboard, desktop and clock.
 - `TextExpander.UITests`: Settings, editor and expansion, end to end, plus Windows Terminal where it's
   installed. Each test seeds the files, runs PowerToys with only Text Expander on, then restores the
-  files.
+  files. The notice tests (`TestCategory=TextExpander.Notice`) run the notice window in the test
+  process, from the engine's sources, with an English `EngineText`.
 
 UI tests must run without administrator rights, because the engine refuses elevated targets. The
 pipeline runs them through `.pipelines/runUiTestAsUser.ps1`, with the runner and Settings signed.

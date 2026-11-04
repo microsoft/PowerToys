@@ -164,7 +164,8 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
 
     /// <summary>
     /// A copy without the part a snippet inserts leaves that spot empty, and the rest goes in. A notice at the cursor then
-    /// says why, and it never takes the focus: what's typed next goes on into the app.
+    /// says why, which Narrator can read, and it never takes the focus: what's typed next goes on into the app, and the
+    /// user's typing fades it.
     /// </summary>
     [TestMethod("TextExpander.Expansion.NothingFoundLeavesTheSpotEmptyAndTypingGoesOn")]
     [TestCategory("TextExpander")]
@@ -174,10 +175,17 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
         Assert.IsTrue(ClipboardHelper.SetText("Order 1042 shipped today."), "The clipboard could not be set.");
         AssertExpands(ReplyTo.Trigger + " ", "Reply to  ", waitForEngine: true);
 
+        Step("Waiting for the notice at the cursor");
+        IntPtr notice = EngineNotice.WaitForShown();
+        Assert.AreNotEqual(IntPtr.Zero, notice, "No notice at the cursor said why the spot was left empty.");
+        Assert.IsTrue(EngineNotice.IsNamed(notice, "No email address found", out string read), $"The notice doesn't say 'No email address found' to screen readers: {read}");
+        Assert.AreEqual(Target.Handle, WindowControl.GetForegroundWindowHandle(), $"The notice took the focus. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+
         Step("Typing on right away");
         TextInput.Type("soon");
         AssertTargetShows("Reply to  soon");
         Assert.AreEqual(Target.Handle, WindowControl.GetForegroundWindowHandle(), $"The app lost the focus. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        Assert.IsTrue(EngineNotice.WaitForHidden(notice, timeoutMS: 3_000), "The notice still shows after the user typed.");
     }
 
     /// <summary>Esc on the choice window cancels the whole snippet, as on a question: the box shows exactly what was typed.</summary>
