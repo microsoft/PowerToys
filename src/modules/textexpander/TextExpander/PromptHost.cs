@@ -27,6 +27,20 @@ internal static class PromptHost
     /// the answer, or null when the user cancelled.
     /// </summary>
     public static bool TryAsk(PromptRequest request, IntPtr target, Action? accepted, out string? answer)
+        => TryShow(done => new PromptWindow(request, target, done).Open(), accepted, out answer);
+
+    /// <summary>
+    /// Asks for <paramref name="choice"/> in the choice window. Returns false when the window can't be shown. Otherwise
+    /// <paramref name="chosen"/> is what was picked, or null when the user cancelled.
+    /// </summary>
+    public static bool TryChoose(ClipboardChoice choice, IntPtr target, Action? accepted, out string? chosen)
+        => TryShow(done => new ClipboardChoiceWindow(choice, target, done).Open(), accepted, out chosen);
+
+    /// <summary>
+    /// Opens a window on the prompt thread with <paramref name="open"/>, which passes the window what to call, once, with
+    /// its result, and waits for it. <paramref name="accepted"/> runs on the prompt thread when the result isn't null.
+    /// </summary>
+    private static bool TryShow(Action<Action<string?>> open, Action? accepted, out string? answer)
     {
         answer = null;
         DispatcherQueue? dispatcher = EnsureStarted();
@@ -42,7 +56,7 @@ internal static class PromptHost
         {
             try
             {
-                var window = new PromptWindow(request, target, typed =>
+                open(typed =>
                 {
                     if (typed is not null)
                     {
@@ -52,7 +66,6 @@ internal static class PromptHost
                     result = typed;
                     done.Set();
                 });
-                window.Open();
                 opened = true;
             }
             catch (Exception)

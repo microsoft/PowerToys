@@ -10,7 +10,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
     /// </summary>
     /// <param name="Kind">What the piece stands for.</param>
     /// <param name="Value">The text, the date or time shown, or a question's label.</param>
-    public readonly record struct TextExpanderPreviewSegment(TextExpanderPreviewSegmentKind Kind, string Value = "")
+    /// <param name="Clipboard">For a clipboard value, what it inserts: all of the copy, or a part of it.</param>
+    public readonly record struct TextExpanderPreviewSegment(TextExpanderPreviewSegmentKind Kind, string Value = "", ClipboardVariable Clipboard = default)
     {
         /// <summary>Gets a value indicating whether the preview shows this as a bubble.</summary>
         public bool IsBubble => Kind is TextExpanderPreviewSegmentKind.Date

@@ -11,13 +11,15 @@ namespace Microsoft.PowerToys.TextExpander;
 
 internal static class SnippetTemplate
 {
-    private const string ValuePatternText = @"\{\{(?:(?<fixed>date|time|datetime|isodate)|date:(?<format>[^}]*)|prompt(?<optional>\?)?:(?<label>[^}]*))\}\}";
+    // {{clipboard}}, or with :pick first a copy from clipboard history; then a part, and which of its matches. Its groups
+    // don't capture, since every group costs every match an allocation; ClipboardVariable.FromToken reads the token.
+    private const string ValuePatternText = @"\{\{(?:(?<fixed>date|time|datetime|isodate)|date:(?<format>[^}]*)|prompt(?<optional>\?)?:(?<label>[^}]*)|clipboard(?::pick)?(?::(?:email|link|phone|number)(?::(?:[1-9][0-9]?|last|all|pick))?)?)\}\}";
 
     // Without backtracking, a text full of unclosed "{{prompt:" takes linear time, not quadratic. The regex source
     // generator can't build that engine, so these are constructed.
     private static readonly Regex ValuePattern = new(ValuePatternText, RegexOptions.NonBacktracking);
 
-    private static readonly Regex VariablePattern = new(@"\$\|\$|\{\{clipboard\}\}|" + ValuePatternText, RegexOptions.NonBacktracking);
+    private static readonly Regex VariablePattern = new(@"\$\|\$|" + ValuePatternText, RegexOptions.NonBacktracking);
 
     internal static IReadOnlyList<(int Start, int End)> FindVariables(string text)
     {
@@ -49,7 +51,11 @@ internal static class SnippetTemplate
         foreach (Match match in ValuePattern.Matches(text))
         {
             AddLiteral(text.AsSpan(last, match.Index - last), tokens, ref cursorPlaced);
-            if (match.Groups["label"].Success)
+            if (match.ValueSpan.StartsWith("{{" + ClipboardVariable.Name, StringComparison.Ordinal))
+            {
+                tokens.Add(new(SnippetTokenKind.Clipboard, Clipboard: ClipboardVariable.FromToken(match.ValueSpan)));
+            }
+            else if (match.Groups["label"].Success)
             {
                 tokens.Add(new(SnippetTokenKind.Prompt, match.Groups["label"].Value, !match.Groups["optional"].Success));
             }
@@ -77,7 +83,7 @@ internal static class SnippetTemplate
         while (!text.IsEmpty)
         {
             // Plain text goes in whole, up to the next character that can start a token.
-            int next = text.IndexOfAny("\n\t{$");
+            int next = text.IndexOfAny("\n\t$");
             if (next < 0)
             {
                 literal.Append(text);
@@ -92,11 +98,6 @@ internal static class SnippetTemplate
             if (character is '\n' or '\t')
             {
                 kind = character == '\n' ? SnippetTokenKind.LineBreak : SnippetTokenKind.Tab;
-            }
-            else if (text.StartsWith("{{clipboard}}", StringComparison.Ordinal))
-            {
-                kind = SnippetTokenKind.Clipboard;
-                length = "{{clipboard}}".Length;
             }
             else if (!cursorPlaced && text.StartsWith(Variables.CursorMarker, StringComparison.Ordinal))
             {

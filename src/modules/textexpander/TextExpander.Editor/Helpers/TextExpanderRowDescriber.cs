@@ -264,7 +264,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
                     TextExpanderPreviewSegmentKind.Date or TextExpanderPreviewSegmentKind.Time => " " + segment.Value + " ",
                     TextExpanderPreviewSegmentKind.LineBreak => " (" + resource("TextExpander_Row_SpokenNewLine") + ") ",
                     TextExpanderPreviewSegmentKind.Tab => " (" + resource("TextExpander_Row_SpokenTab") + ") ",
-                    TextExpanderPreviewSegmentKind.Clipboard => " (" + resource("TextExpander_Row_SpokenClipboard") + ") ",
+                    TextExpanderPreviewSegmentKind.Clipboard => " (" + TextExpanderClipboardText.Spoken(segment.Clipboard, resource) + ") ",
                     TextExpanderPreviewSegmentKind.Prompt => " (" + Format(resource("TextExpander_Row_SpokenPrompt"), string.IsNullOrWhiteSpace(segment.Value) ? resource("TextExpander_PreviewPromptUnnamed") : segment.Value) + ") ",
                     _ => " (" + resource("TextExpander_Row_SpokenCursor") + ") ",
                 };

@@ -90,6 +90,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         /// <summary>Raised when a prompt token is clicked or invoked with F2.</summary>
         public event EventHandler<TextExpanderPromptEditRequestedEventArgs> PromptEditRequested;
 
+        /// <summary>Raised when a clipboard variable is clicked or invoked with F2.</summary>
+        public event EventHandler<TextExpanderPromptEditRequestedEventArgs> ClipboardEditRequested;
+
         /// <summary>Gets the replacement as typed, with \n line breaks.</summary>
         public string Text => ReadText();
 
@@ -187,6 +190,23 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             OnContentChanged();
             (int start, int end, int selectStart, int selectEnd) = TextExpanderTokenText.PlanInsert(_text, selectionStart, selectionEnd, variable, selectEditablePart);
             Replace(start, end, variable, selectStart, selectEnd);
+        }
+
+        /// <summary>
+        /// Replaces the variable from <paramref name="start"/> to <paramref name="end"/> with <paramref name="variable"/>, as
+        /// one undo step, and selects it, as the Clipboard panel's Update does. Nothing changes if the text there isn't the
+        /// variable <paramref name="expected"/> any more.
+        /// </summary>
+        public bool ReplaceVariable(int start, int end, string expected, string variable)
+        {
+            OnContentChanged();
+            if (start < 0 || end > _text.Length || start > end || !string.Equals(_text[start..end], expected, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            Replace(start, end, variable, start, start + variable.Length);
+            return true;
         }
 
         /// <summary>
@@ -688,6 +708,14 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
                 return;
             }
 
+            if (TextExpanderClipboardText.TryFindAtSelection(_text, start, end, out int clipboardStart, out int clipboardEnd, out _))
+            {
+                _variableSelectedByClick = null;
+                Select(clipboardStart, clipboardEnd);
+                ClipboardEditRequested?.Invoke(this, new TextExpanderPromptEditRequestedEventArgs(clipboardStart, clipboardEnd));
+                return;
+            }
+
             (int Start, int End)? variable = start == end ? TextExpanderTokenText.VariableAround(_text, start) : null;
             if (variable == null)
             {
@@ -711,6 +739,14 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         {
             OnContentChanged();
             (int start, int end) = GetSelection();
+            if (TextExpanderClipboardText.TryFindAtSelection(_text, start, end, out int clipboardStart, out int clipboardEnd, out _))
+            {
+                _variableSelectedByClick = null;
+                Select(clipboardStart, clipboardEnd);
+                ClipboardEditRequested?.Invoke(this, new TextExpanderPromptEditRequestedEventArgs(clipboardStart, clipboardEnd));
+                return true;
+            }
+
             if (!TextExpanderPromptToken.TryFindAtSelection(_text, start, end, out int tokenStart, out int tokenEnd))
             {
                 return false;

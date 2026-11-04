@@ -97,7 +97,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Controls
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             return segment.Kind switch
             {
-                TextExpanderPreviewSegmentKind.Clipboard => resourceLoader.GetString("TextExpander_PreviewClipboard_Description"),
+                TextExpanderPreviewSegmentKind.Clipboard => TextExpanderClipboardText.Description(segment.Clipboard, Resource),
                 TextExpanderPreviewSegmentKind.Prompt => string.Format(CultureInfo.CurrentCulture, resourceLoader.GetString("TextExpander_PreviewPrompt_Description"), PromptLabel(segment)),
                 TextExpanderPreviewSegmentKind.Cursor => resourceLoader.GetString("TextExpander_PreviewCursor_Description"),
                 _ => string.Format(CultureInfo.CurrentCulture, resourceLoader.GetString("TextExpander_PreviewValue_Description"), segment.Value),

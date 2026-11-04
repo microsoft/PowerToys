@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Window
+    x:Class="Microsoft.PowerToys.TextExpander.ClipboardChoiceWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:local="using:Microsoft.PowerToys.TextExpander"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid
+        x:Name="Root"
+        KeyDown="Root_KeyDown"
+        Loaded="Root_Loaded">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--  As in the question window: a lighter layer over the list, the buttons below a line.  -->
+        <Border Grid.RowSpan="2" Background="{ThemeResource LayerFillColorAltBrush}" />
+
+        <!--  The title bar: Text Expander's icon and its PowerToys name. The close button is the system's.  -->
+        <Grid
+            x:Name="TitleBar"
+            Height="32"
+            Padding="16,0,48,0"
+            ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Image
+                x:Name="TitleBarIcon"
+                Width="16"
+                Height="16"
+                VerticalAlignment="Center" />
+            <TextBlock
+                x:Name="TitleText"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Style="{StaticResource CaptionTextBlockStyle}" />
+        </Grid>
+
+        <!--  The question, then the matches or copies to pick from. A click or Enter on one inserts it.  -->
+        <StackPanel
+            Grid.Row="1"
+            Margin="24,12,24,24"
+            Spacing="8">
+            <TextBlock
+                x:Name="Heading"
+                Style="{StaticResource BodyStrongTextBlockStyle}"
+                TextWrapping="Wrap" />
+            <ListView
+                x:Name="Options"
+                MaxHeight="320"
+                IsItemClickEnabled="True"
+                ItemClick="Options_ItemClick"
+                SelectionMode="Single">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:ClipboardChoiceOption">
+                        <TextBlock
+                            Text="{x:Bind Shown}"
+                            TextTrimming="CharacterEllipsis"
+                            ToolTipService.ToolTip="{x:Bind Text}" />
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
+
+        <!--  The buttons on Mica, below a line. Insert is the default.  -->
+        <Grid
+            Grid.Row="2"
+            Padding="24"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0"
+            ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button
+                x:Name="InsertButton"
+                HorizontalAlignment="Stretch"
+                Click="Insert_Click"
+                Style="{StaticResource AccentButtonStyle}" />
+            <Button
+                x:Name="CancelButton"
+                Grid.Column="1"
+                HorizontalAlignment="Stretch"
+                Click="Cancel_Click" />
+        </Grid>
+    </Grid>
+</Window>

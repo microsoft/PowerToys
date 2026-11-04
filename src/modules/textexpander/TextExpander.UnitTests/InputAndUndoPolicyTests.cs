@@ -822,6 +822,121 @@ public sealed class InputAndUndoPolicyTests
     }
 
     [TestMethod]
+    public void PickingAMatchInsertsThePickAndIsNeverKeptForUndo()
+    {
+        var offered = new List<string>();
+        Action? hold = null;
+        List<string> calls = ExpandWithChoices(
+            "!track=Track it: {{clipboard:link:pick}}",
+            "!track ",
+            "Docs https://example.com/docs and https://example.com/faq.",
+            ask: (_, _, _) => throw new AssertFailedException("Nothing is asked."),
+            choose: (choice, _, accepted) =>
+            {
+                offered.AddRange(choice.Options);
+                hold = accepted;
+                return choice.Options[1];
+            },
+            out bool expanded);
+
+        Assert.IsTrue(expanded);
+        Assert.AreEqual("https://example.com/docs|https://example.com/faq", string.Join("|", offered));
+        Assert.IsNotNull(hold, "The only window is the last, so keys typed once it's answered are held for after the snippet.");
+        Assert.AreEqual("6 \"Track it: https://example.com/faq \" undo:False back:1", calls.Single());
+    }
+
+    [TestMethod]
+    public void CancellingAChoiceCancelsTheWholeSnippet()
+    {
+        List<string> calls = ExpandWithChoices(
+            "!track=Track it: {{clipboard:link:pick}}",
+            "!track ",
+            "https://example.com/a https://example.com/b",
+            ask: (_, _, _) => throw new AssertFailedException("Nothing is asked."),
+            choose: (_, _, _) => null,
+            out bool expanded);
+
+        Assert.IsFalse(expanded);
+        Assert.AreEqual("0 \" \" undo:False back:1", calls.Single(), "Nothing is erased or inserted, and the space the hook swallowed goes back.");
+    }
+
+    [TestMethod]
+    [DataRow("https://example.com/a https://example.com/b", "question:False choice:True")]
+    [DataRow("https://example.com/a", "question:False")]
+    public void AfterAQuestionOnlyTheLastWindowHoldsKeys(string copied, string windows)
+    {
+        // The question doesn't hold keys, since a choice may follow it and must get them. A choice that isn't needed,
+        // with one link, leaves the engine to hold once the snippet is worked out.
+        var shown = new List<string>();
+        List<string> calls = ExpandWithChoices(
+            "!ask={{prompt:Name}}: {{clipboard:link:pick}}",
+            "!ask ",
+            copied,
+            ask: (_, _, accepted) =>
+            {
+                shown.Add($"question:{accepted is not null}");
+                return "Sam";
+            },
+            choose: (choice, _, accepted) =>
+            {
+                shown.Add($"choice:{accepted is not null}");
+                return choice.Options[0];
+            },
+            out bool expanded);
+
+        Assert.IsTrue(expanded);
+        Assert.AreEqual(windows, string.Join(" ", shown));
+        Assert.AreEqual("4 \"Sam: https://example.com/a \" undo:False back:1", calls.Single());
+    }
+
+    /// <summary>
+    /// Types <paramref name="typed"/> to fire <paramref name="snippet"/>, waiting for a space, and expands it with
+    /// <paramref name="copied"/> on the clipboard. Returns each insertion: what it erased and typed, whether it's kept for
+    /// undo, and how many keystrokes it gave back.
+    /// </summary>
+    private static List<string> ExpandWithChoices(
+        string snippet,
+        string typed,
+        string copied,
+        Func<PromptRequest, IntPtr, Action?, string?> ask,
+        Func<ClipboardChoice, IntPtr, Action?, string?> choose,
+        out bool expanded)
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, snippet);
+        using var hook = new KeyboardHook(store);
+        var calls = new List<string>();
+        bool originalWordMode = WordBoundary.Required;
+        bool originalKeep = WordBoundary.KeepTerminator;
+        try
+        {
+            WordBoundary.Required = true;
+            WordBoundary.KeepTerminator = true;
+            Assert.IsTrue(Type(hook, typed));
+            Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+            expanded = Program.TryExpand(
+                hook,
+                work with { TargetWindow = IntPtr.Zero },
+                (backspaces, text, _, _, _, _, _, inserted, givenBack) =>
+                {
+                    calls.Add($"{backspaces} \"{text}\" undo:{inserted is not null} back:{givenBack}");
+                    return true;
+                },
+                isKeyDown: _ => false,
+                ask: ask,
+                choose: choose,
+                readClipboard: () => copied);
+        }
+        finally
+        {
+            WordBoundary.Required = originalWordMode;
+            WordBoundary.KeepTerminator = originalKeep;
+        }
+
+        return calls;
+    }
+
+    [TestMethod]
     public void ARemapThatIsNotMatchedStillCountsAsInput()
     {
         // With remaps not counting as typing, they were dropped like the engine's own input: "!si", Caps Lock

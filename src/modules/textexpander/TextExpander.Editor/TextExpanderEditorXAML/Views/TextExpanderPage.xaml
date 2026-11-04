@@ -52,6 +52,26 @@
             <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
+        <!--
+            A heading inside a menu, such as "What's on your clipboard now" in Insert variable > Clipboard: secondary caption
+            text that can't be focused or clicked. Screen readers skip it, and the items under it carry its words in their names.
+        -->
+        <Style x:Key="MenuHeadingItemStyle" TargetType="MenuFlyoutItem">
+            <Setter Property="IsEnabled" Value="False" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuFlyoutItem">
+                        <TextBlock
+                            Margin="11,8,11,4"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{TemplateBinding Text}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <!--  The date format guide's chips, built in code: the code as the editor shows variables, then what it gives, in secondary caption text.  -->
         <Style x:Key="TextExpanderDateCodeStyle" TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />
@@ -705,6 +725,94 @@
                     </Grid>
 
                     <StackPanel Grid.Column="2" Spacing="8">
+                        <FlyoutBase.AttachedFlyout>
+                            <!--
+                                Changes a clipboard variable: opened by clicking one in Replacement, or pressing F2 on it, as a
+                                question opens the question panel. The page shows it against the variable.
+                            -->
+                            <Flyout
+                                x:Name="ClipboardFlyout"
+                                Closed="ClipboardFlyout_Closed"
+                                Opened="ClipboardFlyout_Opened"
+                                Placement="BottomEdgeAlignedLeft"
+                                ShouldConstrainToRootBounds="True">
+                                <Flyout.FlyoutPresenterStyle>
+                                    <Style TargetType="FlyoutPresenter">
+                                        <Setter Property="Padding" Value="0" />
+                                        <Setter Property="Background" Value="{ThemeResource TeachingTipBackgroundBrush}" />
+                                    </Style>
+                                </Flyout.FlyoutPresenterStyle>
+                                <ScrollViewer
+                                    x:Uid="TextExpander_ClipboardFlyout"
+                                    AutomationProperties.AutomationId="TextExpander_ClipboardFlyout"
+                                    VerticalScrollBarVisibility="Auto">
+                                    <StackPanel
+                                        Width="320"
+                                        Padding="12"
+                                        PreviewKeyDown="ClipboardFlyoutContent_PreviewKeyDown"
+                                        Spacing="12">
+                                        <TextBlock
+                                            x:Uid="TextExpander_ClipboardFlyout_Title"
+                                            AutomationProperties.HeadingLevel="Level2"
+                                            Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                        <ComboBox
+                                            x:Name="ClipboardCopyBox"
+                                            x:Uid="TextExpander_ClipboardFlyout_Copy"
+                                            HorizontalAlignment="Stretch"
+                                            AutomationProperties.AutomationId="TextExpander_ClipboardCopy"
+                                            SelectionChanged="ClipboardChoice_Changed" />
+                                        <ComboBox
+                                            x:Name="ClipboardPartBox"
+                                            x:Uid="TextExpander_ClipboardFlyout_Part"
+                                            HorizontalAlignment="Stretch"
+                                            AutomationProperties.AutomationId="TextExpander_ClipboardPart"
+                                            SelectionChanged="ClipboardChoice_Changed" />
+                                        <!--  Only for a part: which of its matches.  -->
+                                        <ComboBox
+                                            x:Name="ClipboardMatchBox"
+                                            x:Uid="TextExpander_ClipboardFlyout_Match"
+                                            HorizontalAlignment="Stretch"
+                                            AutomationProperties.AutomationId="TextExpander_ClipboardMatch"
+                                            SelectionChanged="ClipboardChoice_Changed" />
+                                        <NumberBox
+                                            x:Name="ClipboardIndexBox"
+                                            x:Uid="TextExpander_ClipboardFlyout_Index"
+                                            AutomationProperties.AutomationId="TextExpander_ClipboardIndex"
+                                            Maximum="99"
+                                            Minimum="2"
+                                            SpinButtonPlacementMode="Inline"
+                                            ValueChanged="ClipboardIndex_ValueChanged"
+                                            Visibility="Collapsed" />
+                                        <StackPanel Spacing="4">
+                                            <TextBlock x:Uid="TextExpander_ClipboardFlyout_ShowsAs" Style="{StaticResource FlyoutCaptionStyle}" />
+                                            <controls:TextExpanderBubbleText x:Name="ClipboardShowsAs" />
+                                        </StackPanel>
+                                        <TextBlock
+                                            x:Name="ClipboardNoMatch"
+                                            x:Uid="TextExpander_ClipboardFlyout_NoMatch"
+                                            Style="{StaticResource FlyoutCaptionStyle}" />
+                                        <Grid ColumnSpacing="8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Button
+                                                x:Uid="TextExpander_ClipboardFlyout_Update"
+                                                HorizontalAlignment="Stretch"
+                                                AutomationProperties.AutomationId="Button_TextExpander_ClipboardUpdate"
+                                                Click="ClipboardUpdate_Click"
+                                                Style="{StaticResource AccentButtonStyle}" />
+                                            <Button
+                                                x:Uid="TextExpander_ClipboardFlyout_Cancel"
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Stretch"
+                                                AutomationProperties.AutomationId="Button_TextExpander_ClipboardCancel"
+                                                Click="ClipboardCancel_Click" />
+                                        </Grid>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Flyout>
+                        </FlyoutBase.AttachedFlyout>
                         <Grid>
                             <TextBlock
                                 x:Uid="TextExpander_Dialog_Replacement"

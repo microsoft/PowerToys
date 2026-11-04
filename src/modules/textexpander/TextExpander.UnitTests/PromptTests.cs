@@ -47,6 +47,21 @@ public sealed class PromptTests
     }
 
     [TestMethod]
+    public void AChoiceAsksForItsPartAndShowsEachOptionOnOneLine()
+    {
+        Assert.AreEqual("Pick the link to insert", ClipboardChoiceText.Heading(new ClipboardChoice(ClipboardChoiceKind.Match, ClipboardPart.Link, AskedInOrder, IsLast: true)));
+        Assert.AreEqual("Pick the phone number to insert", ClipboardChoiceText.Heading(new ClipboardChoice(ClipboardChoiceKind.Match, ClipboardPart.Phone, AskedInOrder, IsLast: true)));
+        Assert.AreEqual("Pick a copy to insert", ClipboardChoiceText.Heading(new ClipboardChoice(ClipboardChoiceKind.Copy, ClipboardPart.Email, [], IsLast: true)));
+
+        Assert.AreEqual("Best regards, Your name", ClipboardChoiceText.OneLine("  Best regards,\r\n\tYour name\n"));
+        Assert.AreEqual(string.Empty, ClipboardChoiceText.OneLine(null));
+        string shown = ClipboardChoiceText.OneLine(new string('x', 500));
+        Assert.AreEqual(ClipboardChoiceText.MaxShown + 1, shown.Length);
+        Assert.IsTrue(shown.EndsWith('\u2026'), "The rest is in its tooltip and name.");
+        Assert.AreEqual("full\ntext", new ClipboardChoiceOption("full\ntext").Text, "What's inserted is the whole text.");
+    }
+
+    [TestMethod]
     public void RequiredPromptsRejectBlankAnswersAndOptionalPromptsAllowThem()
     {
         var required = new PromptRequest("Name", Required: true);

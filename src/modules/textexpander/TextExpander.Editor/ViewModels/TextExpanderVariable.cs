@@ -36,6 +36,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         /// <summary>Gets a value indicating whether this is the custom date format, which Insert variable offers ready-made formats for.</summary>
         public bool IsCustomDate => Token.StartsWith("{{date:", StringComparison.Ordinal);
 
+        /// <summary>Gets a value indicating whether this is the clipboard, which Insert variable offers all of, or parts of.</summary>
+        public bool IsClipboard => ClipboardVariable.TryParse(Token, out _);
+
         /// <summary>Gets a value indicating whether this variable asks a question at runtime.</summary>
         public bool IsPrompt => Token.StartsWith("{{prompt:", StringComparison.Ordinal)
             || Token.StartsWith("{{prompt?:", StringComparison.Ordinal);

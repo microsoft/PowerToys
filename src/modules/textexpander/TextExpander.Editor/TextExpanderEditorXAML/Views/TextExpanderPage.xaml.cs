@@ -56,6 +56,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         private double _dialogRoom = double.NaN;
         private TextExpanderPromptEditSession _promptEditSession;
         private PromptFlyoutCloseIntent _promptFlyoutCloseIntent;
+        private (int Start, int End, string Token)? _clipboardEdit;
+        private bool _showingClipboardChoices;
         private MenuFlyout _rowMenu;
         private bool _closeWindowOnDiscard;
 
@@ -98,6 +100,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             _replacementEditor = new TextExpanderReplacementEditor(ReplacementBox, GetVariableColors);
             _replacementEditor.TextChanged += (_, _) => Validate();
             _replacementEditor.PromptEditRequested += ReplacementEditor_PromptEditRequested;
+            _replacementEditor.ClipboardEditRequested += ReplacementEditor_ClipboardEditRequested;
+            BuildClipboardChoices();
 
             // The guide follows the caret into and out of {{date:…}} variables, and what it shows follows the typing.
             _replacementEditor.TextChanged += (_, _) => UpdateDateFormatGuide();
@@ -224,6 +228,12 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                     continue;
                 }
 
+                if (variable.IsClipboard)
+                {
+                    VariableFlyout.Items.Add(BuildClipboardMenu(variable));
+                    continue;
+                }
+
                 var item = new MenuFlyoutItem { Tag = variable.Token };
                 if (variable.IsPrompt)
                 {
@@ -272,6 +282,36 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             };
             customFormat.Click += InsertVariable_Click;
             menu.Items.Add(customFormat);
+            return menu;
+        }
+
+        /// <summary>
+        /// Builds Clipboard's submenu, in plain words: under "What's on your clipboard now", All of it, or Only part of it,
+        /// whose submenu has each part. Each inserts its variable at the caret; clicking it in Replacement changes it.
+        /// </summary>
+        private MenuFlyoutSubItem BuildClipboardMenu(TextExpanderVariable clipboard)
+        {
+            Func<string, string> resource = ResourceLoaderInstance.ResourceLoader.GetString;
+            var menu = new MenuFlyoutSubItem { Text = clipboard.Name };
+            menu.Items.Add(new MenuFlyoutItem { Text = resource("TextExpander_Variable_ClipboardNow"), Style = (Style)Resources["MenuHeadingItemStyle"] });
+
+            var all = new MenuFlyoutItem { Text = resource("TextExpander_Variable_ClipboardAll"), Tag = default(ClipboardVariable).ToToken() };
+            AutomationProperties.SetName(all, resource("TextExpander_Variable_ClipboardAll_Name"));
+            all.Click += InsertVariable_Click;
+            menu.Items.Add(all);
+
+            var part = new MenuFlyoutSubItem { Text = resource("TextExpander_Variable_ClipboardPart") };
+            AutomationProperties.SetName(part, resource("TextExpander_Variable_ClipboardPart_Name"));
+            foreach (ClipboardPart kind in TextExpanderClipboardText.Parts)
+            {
+                string token = new ClipboardVariable(Part: kind).ToToken();
+                var item = new MenuFlyoutItem { Text = resource("TextExpander_ClipboardPart_" + kind), Tag = token };
+                ToolTipService.SetToolTip(item, token);
+                item.Click += InsertVariable_Click;
+                part.Items.Add(item);
+            }
+
+            menu.Items.Add(part);
             return menu;
         }
 
@@ -386,6 +426,187 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
 
             (int start, int end) = _replacementEditor.Selection;
             BeginPromptEdit(TextExpanderPromptEditSession.BeginNew(_replacementEditor.Text, start, end, PromptQuestionBox.PlaceholderText));
+        }
+
+        /// <summary>Fills the Clipboard panel's lists: which copy, what to insert from it, and which of a part's matches.</summary>
+        private void BuildClipboardChoices()
+        {
+            Func<string, string> resource = ResourceLoaderInstance.ResourceLoader.GetString;
+            ClipboardCopyBox.Items.Add(new ComboBoxItem { Content = resource("TextExpander_ClipboardFlyout_CopyNow"), Tag = false });
+            ClipboardPartBox.Items.Add(new ComboBoxItem { Content = resource("TextExpander_ClipboardFlyout_PartAll"), Tag = ClipboardPart.All });
+            foreach (ClipboardPart part in TextExpanderClipboardText.Parts)
+            {
+                ClipboardPartBox.Items.Add(new ComboBoxItem { Content = resource("TextExpander_ClipboardFlyout_Part_" + part), Tag = part });
+            }
+
+            foreach ((string key, string tag) in new[] { ("First", "first"), ("Second", "2"), ("Third", "3"), ("Numbered", "n"), ("Last", "last"), ("All", "all"), ("Pick", "pick") })
+            {
+                ClipboardMatchBox.Items.Add(new ComboBoxItem { Content = resource("TextExpander_ClipboardFlyout_Match" + key), Tag = tag });
+            }
+        }
+
+        private void ReplacementEditor_ClipboardEditRequested(object sender, TextExpanderPromptEditRequestedEventArgs e)
+        {
+            string text = _replacementEditor.Text;
+            if (_promptEditSession != null || _clipboardEdit != null || e.End > text.Length
+                || !ClipboardVariable.TryParse(text[e.Start..e.End], out ClipboardVariable variable))
+            {
+                return;
+            }
+
+            _clipboardEdit = (e.Start, e.End, text[e.Start..e.End]);
+            ShowClipboardChoices(variable);
+            ClipboardFlyout.XamlRoot = XamlRoot;
+
+            // Against the variable, as the question panel is against a question.
+            Rect box = BoundsOf(ReplacementBox);
+            if (_replacementEditor.BoundsForRange(e.Start, e.End) is Rect token)
+            {
+                ClipboardFlyout.ShowAt(ReplacementBox, new FlyoutShowOptions
+                {
+                    Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                    Position = new Point(Math.Max(0, token.X - box.X), Math.Max(0, token.Bottom - box.Y)),
+                    ShowMode = FlyoutShowMode.Standard,
+                });
+            }
+            else
+            {
+                ClipboardFlyout.ShowAt(ReplacementBox);
+            }
+        }
+
+        /// <summary>Sets the Clipboard panel's lists to <paramref name="variable"/>, and what it shows to match.</summary>
+        private void ShowClipboardChoices(ClipboardVariable variable)
+        {
+            variable = variable.Normalized();
+            _showingClipboardChoices = true;
+            try
+            {
+                // A copy picked from clipboard history is offered where a variable picks one, so Update keeps it.
+                bool offersHistory = ClipboardCopyBox.Items.Count > 1;
+                if (variable.PickCopy && !offersHistory)
+                {
+                    ClipboardCopyBox.Items.Add(new ComboBoxItem { Content = TextExpanderClipboardText.Label(new ClipboardVariable(PickCopy: true), ResourceLoaderInstance.ResourceLoader.GetString), Tag = true });
+                }
+
+                ClipboardCopyBox.SelectedIndex = variable.PickCopy ? 1 : 0;
+                foreach (ComboBoxItem item in ClipboardPartBox.Items)
+                {
+                    if (item.Tag is ClipboardPart part && part == variable.Part)
+                    {
+                        ClipboardPartBox.SelectedItem = item;
+                    }
+                }
+
+                string which = variable.Match switch
+                {
+                    ClipboardMatch.Numbered => variable.Index is 2 or 3 ? variable.Index.ToString(CultureInfo.InvariantCulture) : "n",
+                    ClipboardMatch.Last => "last",
+                    ClipboardMatch.All => "all",
+                    ClipboardMatch.Pick => "pick",
+                    _ => "first",
+                };
+                foreach (ComboBoxItem item in ClipboardMatchBox.Items)
+                {
+                    if (item.Tag as string == which)
+                    {
+                        ClipboardMatchBox.SelectedItem = item;
+                    }
+                }
+
+                ClipboardIndexBox.Value = variable.Match == ClipboardMatch.Numbered ? variable.Index : 4;
+            }
+            finally
+            {
+                _showingClipboardChoices = false;
+            }
+
+            UpdateClipboardDraft();
+        }
+
+        /// <summary>Gets the clipboard variable the panel's lists make.</summary>
+        private ClipboardVariable ReadClipboardChoices()
+        {
+            bool pickCopy = (ClipboardCopyBox.SelectedItem as ComboBoxItem)?.Tag is true;
+            ClipboardPart part = (ClipboardPartBox.SelectedItem as ComboBoxItem)?.Tag is ClipboardPart chosen ? chosen : ClipboardPart.All;
+            int index = double.IsNaN(ClipboardIndexBox.Value) ? 4 : (int)Math.Clamp(Math.Round(ClipboardIndexBox.Value), 2, ClipboardVariable.MaxIndex);
+            (ClipboardMatch match, int number) = ((ClipboardMatchBox.SelectedItem as ComboBoxItem)?.Tag as string) switch
+            {
+                "2" => (ClipboardMatch.Numbered, 2),
+                "3" => (ClipboardMatch.Numbered, 3),
+                "n" => (ClipboardMatch.Numbered, index),
+                "last" => (ClipboardMatch.Last, 0),
+                "all" => (ClipboardMatch.All, 0),
+                "pick" => (ClipboardMatch.Pick, 0),
+                _ => (ClipboardMatch.First, 0),
+            };
+            return new ClipboardVariable(pickCopy, part, match, number).Normalized();
+        }
+
+        /// <summary>Shows only the choices that apply, and how the variable will show in the preview.</summary>
+        private void UpdateClipboardDraft()
+        {
+            ClipboardVariable variable = ReadClipboardChoices();
+            bool part = variable.Part != ClipboardPart.All;
+            ClipboardMatchBox.Visibility = part ? Visibility.Visible : Visibility.Collapsed;
+            ClipboardNoMatch.Visibility = part ? Visibility.Visible : Visibility.Collapsed;
+            ClipboardIndexBox.Visibility = part && (ClipboardMatchBox.SelectedItem as ComboBoxItem)?.Tag as string == "n" ? Visibility.Visible : Visibility.Collapsed;
+            ClipboardShowsAs.Segments = new[] { new TextExpanderPreviewSegment(TextExpanderPreviewSegmentKind.Clipboard, string.Empty, variable) };
+        }
+
+        private void ClipboardChoice_Changed(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_showingClipboardChoices)
+            {
+                UpdateClipboardDraft();
+            }
+        }
+
+        private void ClipboardIndex_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+        {
+            if (!_showingClipboardChoices)
+            {
+                UpdateClipboardDraft();
+            }
+        }
+
+        private void ClipboardFlyout_Opened(object sender, object e) => ClipboardPartBox.Focus(FocusState.Programmatic);
+
+        private void ClipboardFlyout_Closed(object sender, object e)
+        {
+            // Closing without Update, by Cancel, Esc or a click outside, leaves the snippet as it was.
+            _clipboardEdit = null;
+            FocusAfterLayout(ReplacementBox);
+        }
+
+        private void ClipboardFlyoutContent_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == global::Windows.System.VirtualKey.Escape)
+            {
+                e.Handled = true;
+                ClipboardFlyout.Hide();
+            }
+            else if (e.Key == global::Windows.System.VirtualKey.Enter && e.OriginalSource is not (Button or ComboBox or ComboBoxItem))
+            {
+                // A button gets its own Enter, and a list opens with it.
+                e.Handled = true;
+                CommitClipboardEdit();
+            }
+        }
+
+        private void ClipboardUpdate_Click(object sender, RoutedEventArgs e) => CommitClipboardEdit();
+
+        private void ClipboardCancel_Click(object sender, RoutedEventArgs e) => ClipboardFlyout.Hide();
+
+        /// <summary>Puts the variable the panel makes in place of the one it was opened on, as one undo step.</summary>
+        private void CommitClipboardEdit()
+        {
+            if (_clipboardEdit is { } edit)
+            {
+                _replacementEditor.ReplaceVariable(edit.Start, edit.End, edit.Token, ReadClipboardChoices().ToToken());
+            }
+
+            ClipboardFlyout.Hide();
         }
 
         private void ReplacementEditor_PromptEditRequested(object sender, TextExpanderPromptEditRequestedEventArgs e)

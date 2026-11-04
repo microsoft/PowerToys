@@ -410,4 +410,36 @@ public abstract class TextExpanderTestBase : UITestBase
         Assert.Fail($"Typing '{typed}' did not open Text Expander's question window. The target shows '{TextExpanderFiles.Visible(Target.Text)}'. {diagnostics}");
         return null!;
     }
+
+    /// <summary>Types a trigger whose snippet asks to pick one of the clipboard's matches, and returns the choice window.</summary>
+    internal EngineChoice TypeTriggerForChoice(string typed)
+    {
+        WaitForEngineReady();
+        var diagnostics = string.Empty;
+        for (var attempt = 1; attempt <= 4; attempt++)
+        {
+            Step($"Typing '{typed}' into the target (attempt {attempt} of 4)");
+            Target.Clear();
+            Target.Focus();
+            TextInput.Type(typed);
+
+            Step("Waiting for the choice window");
+            var choice = EngineChoice.WaitForOpen(Target.Text != typed ? 30_000 : 15_000);
+            if (choice is not null)
+            {
+                return choice;
+            }
+
+            var text = Target.Text;
+            diagnostics = $"{EngineDiagnostics.DescribeWinapp()}. Engine: {DescribeEngine()}; {EngineDiagnostics.Read()}.";
+            Step($"No choice window; the target shows '{TextExpanderFiles.Visible(text)}'. {diagnostics}");
+            if (text != typed)
+            {
+                break;
+            }
+        }
+
+        Assert.Fail($"Typing '{typed}' did not open Text Expander's choice window. The target shows '{TextExpanderFiles.Visible(Target.Text)}'. {diagnostics}");
+        return null!;
+    }
 }

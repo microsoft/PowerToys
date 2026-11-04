@@ -78,6 +78,30 @@
     <value>Enter an answer to continue.</value>
     <comment>Inline validation shown when a snippet prompt requires an answer and the answer box is empty</comment>
   </data>
+  <data name="Choice_Insert" xml:space="preserve">
+    <value>Insert</value>
+    <comment>Default button of the window where the user picks what a snippet inserts, such as one of several links</comment>
+  </data>
+  <data name="Choice_Heading_Email" xml:space="preserve">
+    <value>Pick the email address to insert</value>
+    <comment>Heading over the email addresses found in what the user copied, when a snippet asks them to pick one</comment>
+  </data>
+  <data name="Choice_Heading_Link" xml:space="preserve">
+    <value>Pick the link to insert</value>
+    <comment>Heading over the web links found in what the user copied, when a snippet asks them to pick one</comment>
+  </data>
+  <data name="Choice_Heading_Phone" xml:space="preserve">
+    <value>Pick the phone number to insert</value>
+    <comment>Heading over the phone numbers found in what the user copied, when a snippet asks them to pick one</comment>
+  </data>
+  <data name="Choice_Heading_Number" xml:space="preserve">
+    <value>Pick the number to insert</value>
+    <comment>Heading over the numbers found in what the user copied, when a snippet asks them to pick one</comment>
+  </data>
+  <data name="Choice_Heading_Copy" xml:space="preserve">
+    <value>Pick a copy to insert</value>
+    <comment>Heading over recent copies from Windows clipboard history, when a snippet asks the user to pick one</comment>
+  </data>
   <data name="Message_Title" xml:space="preserve">
     <value>PowerToys Text Expander</value>
     <comment>Title of Text Expander's message boxes. {Locked="PowerToys"}</comment>

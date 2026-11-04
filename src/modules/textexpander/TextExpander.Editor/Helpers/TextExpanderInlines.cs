@@ -61,7 +61,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         /// <summary>Gets a value's icon glyph and the label its bubble shows, such as "Clipboard" or a question's label.</summary>
         public static (string Glyph, string Label) ValueText(TextExpanderPreviewSegment segment, Func<string, string> resource) => segment.Kind switch
         {
-            TextExpanderPreviewSegmentKind.Clipboard => ("\uE77F", string.IsNullOrEmpty(segment.Value) ? resource("TextExpander_PreviewClipboard") : segment.Value),
+            TextExpanderPreviewSegmentKind.Clipboard => ("\uE77F", string.IsNullOrEmpty(segment.Value) ? TextExpanderClipboardText.Label(segment.Clipboard, resource) : segment.Value),
             TextExpanderPreviewSegmentKind.Prompt => ("\uE70F", string.IsNullOrWhiteSpace(segment.Value) ? resource("TextExpander_PreviewPromptUnnamed") : segment.Value),
             TextExpanderPreviewSegmentKind.Time => ("\uE823", segment.Value),
             _ => ("\uE787", segment.Value),

@@ -90,6 +90,46 @@ public sealed class TextExpanderEditorTests : TextExpanderTestBase
     }
 
     /// <summary>
+    /// Insert variable > Clipboard > Only part of it > Link puts {{clipboard:link}} in Replacement. F2 on it opens the
+    /// Clipboard panel, where Use the last makes it {{clipboard:link:last}}, which the preview names and Save keeps.
+    /// </summary>
+    [TestMethod("TextExpander.Editor.InsertsAClipboardPartAndChangesItInTheClipboardPanel")]
+    [TestCategory("TextExpander")]
+    [TestCategory("TextExpander.Editor")]
+    public void InsertsAClipboardPartAndChangesItInTheClipboardPanel()
+    {
+        var added = new Snippet(";telast", "{{clipboard:link:last}}");
+        var editor = OpenEditor(OpenTextExpanderPage());
+        editor.WaitForCount(DefaultSnippets.Count);
+        editor.OpenNewSnippet();
+        editor.SetTrigger(added.Trigger);
+        editor.FocusReplacement();
+
+        Step("Selecting Insert variable > Clipboard > Only part of it > Link");
+        editor.Session.Find<Button>(By.AccessibilityId("Button_TextExpander_InsertVariable"), 10_000).Invoke(msPostAction: 300);
+        editor.Session.WaitForExact<Element>("Clipboard", 10_000, "MenuItem").Click(msPostAction: 300);
+        editor.Session.WaitForExact<Element>("Only part of what's on your clipboard now", 10_000, "MenuItem").Click(msPostAction: 300);
+        editor.Session.WaitForExact<Element>("Link", 10_000, "MenuItem").Click(msPostAction: 300);
+        Assert.IsTrue(editor.WaitForReplacementText("{{clipboard:link}}"), $"Replacement holds '{TextExpanderFiles.Visible(editor.ReplacementText)}'.");
+
+        Step("Pressing Left, into the variable, then F2");
+        editor.FocusReplacement();
+        TextInput.Press(0x23);
+        TextInput.Press(0x25);
+        TextInput.Press(0x71);
+        var match = editor.Session.Find<ComboBox>(By.AccessibilityId("TextExpander_ClipboardMatch"), 10_000);
+        Step("Choosing Use the last, then Update");
+        match.Select("Use the last");
+        editor.Session.Find<Button>(By.AccessibilityId("Button_TextExpander_ClipboardUpdate"), 10_000).Invoke(msPostAction: 300);
+        Assert.IsTrue(editor.WaitForReplacementText(added.Replacement), $"Replacement holds '{TextExpanderFiles.Visible(editor.ReplacementText)}'.");
+        Assert.IsTrue(editor.Session.Has(By.Name("Last link from clipboard"), timeoutMS: 10_000), "The preview doesn't name the variable.");
+
+        editor.Save();
+        Assert.IsTrue(editor.WaitForRow(added.Trigger, present: true), $"The new snippet isn't listed. Rows: {editor.DescribeRows()}.");
+        AssertDatabase([.. DefaultSnippets, added]);
+    }
+
+    /// <summary>
     /// The trigger is checked as it's typed, and Save stays off while it's wrong. Cancel on an edited snippet asks
     /// before discarding it, and Discard saves nothing.
     /// </summary>

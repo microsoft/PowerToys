@@ -50,7 +50,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
                 }
                 else
                 {
-                    segments.Add(new TextExpanderPreviewSegment(kind, value));
+                    segments.Add(new TextExpanderPreviewSegment(kind, value, token.Clipboard));
                 }
             }
 

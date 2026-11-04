@@ -15,11 +15,23 @@ namespace Microsoft.PowerToys.TextExpander.UITests;
 [TestClass]
 public sealed class TextExpanderExpansionTests : TextExpanderTestBase
 {
+    // A copied block with one email address, a phone number and two links, sample data only.
+    private const string CopiedBlock = "Questions? Email you@example.com or call 555-0123.\nTrack it: https://example.com/track/1042\nReturns: https://example.com/returns";
+
+    private static readonly Snippet ReplyTo = new(";tereply", "Reply to {{clipboard:email}}");
+    private static readonly Snippet TrackLink = new(";telink", "Track: {{clipboard:link:pick}}");
+
     internal override TextExpanderOptions InitialOptions => TestContext.TestName switch
     {
         nameof(AlwaysPastePutsTheClipboardBack) => new() { InjectionBackend = "clipboard" },
         nameof(AlwaysTypeTypesTheSnippet) => new() { InjectionBackend = "type" },
         _ => new(),
+    };
+
+    internal override IReadOnlyList<Snippet>? InitialSnippets => TestContext.TestName switch
+    {
+        nameof(ClipboardPartsGoInAndAMatchIsPickedInTextExpandersWindow) or nameof(CancellingAPickCancelsTheSnippet) => [.. DefaultSnippets, ReplyTo, TrackLink],
+        _ => DefaultSnippets,
     };
 
     /// <summary>
@@ -117,6 +129,50 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
         Assert.IsTrue(prompt.WaitForClosed(), "The question window did not close after Esc.");
         AssertTargetShows(Note.Trigger + " ");
         AssertStaysAsTyped(() => Target.Text, Note.Trigger + " ", observeMS: 2_000, "the target");
+    }
+
+    /// <summary>
+    /// A clipboard variable inserts the part of the copy it names: the email address in a copied block. With two links and
+    /// a link to pick, Text Expander's window lists both in front of the app; Enter inserts the first, a click the other.
+    /// </summary>
+    [TestMethod("TextExpander.Expansion.ClipboardPartsGoInAndAMatchIsPickedInTextExpandersWindow")]
+    [TestCategory("TextExpander")]
+    [TestCategory("TextExpander.Expansion")]
+    public void ClipboardPartsGoInAndAMatchIsPickedInTextExpandersWindow()
+    {
+        Assert.IsTrue(ClipboardHelper.SetText(CopiedBlock), "The clipboard could not be set.");
+        AssertExpands(ReplyTo.Trigger + " ", "Reply to you@example.com ", waitForEngine: true);
+
+        var choice = TypeTriggerForChoice(TrackLink.Trigger + " ");
+        Assert.IsTrue(choice.WaitForForeground(), $"The choice window did not come in front. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        Assert.IsTrue(choice.Offers("https://example.com/track/1042") && choice.Offers("https://example.com/returns"), "The choice window doesn't list both links.");
+        Step("Pressing Enter");
+        TextInput.Enter();
+        Assert.IsTrue(choice.WaitForClosed(), "The choice window did not close after Enter.");
+        AssertTargetShows("Track: https://example.com/track/1042 ");
+
+        choice = TypeTriggerForChoice(TrackLink.Trigger + " ");
+        Step("Clicking the second link");
+        choice.Pick("https://example.com/returns");
+        Assert.IsTrue(choice.WaitForClosed(), "The choice window did not close after a click.");
+        AssertTargetShows("Track: https://example.com/returns ");
+        var clipboard = WaitHelper.WaitForStable(ClipboardHelper.GetText, text => text == CopiedBlock, timeoutMS: 10_000, requiredConsecutiveMatches: 3, pollIntervalMS: 200);
+        Assert.IsTrue(clipboard.Succeeded, $"The clipboard holds '{TextExpanderFiles.Visible(clipboard.LastObservation)}', not what was copied.");
+    }
+
+    /// <summary>Esc on the choice window cancels the whole snippet, as on a question: the box shows exactly what was typed.</summary>
+    [TestMethod("TextExpander.Expansion.CancellingAPickCancelsTheSnippet")]
+    [TestCategory("TextExpander")]
+    [TestCategory("TextExpander.Expansion")]
+    public void CancellingAPickCancelsTheSnippet()
+    {
+        Assert.IsTrue(ClipboardHelper.SetText(CopiedBlock), "The clipboard could not be set.");
+        var choice = TypeTriggerForChoice(TrackLink.Trigger + " ");
+        Step("Pressing Esc");
+        TextInput.Escape();
+        Assert.IsTrue(choice.WaitForClosed(), "The choice window did not close after Esc.");
+        AssertTargetShows(TrackLink.Trigger + " ");
+        AssertStaysAsTyped(() => Target.Text, TrackLink.Trigger + " ", observeMS: 2_000, "the target");
     }
 
     /// <summary>With Always paste, the snippet goes in through the clipboard, and what the user had copied is put back.</summary>

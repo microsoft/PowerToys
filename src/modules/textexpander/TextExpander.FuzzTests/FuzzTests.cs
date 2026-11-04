@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.Text;
 
 using Microsoft.PowerToys.TextExpander;
@@ -15,6 +16,19 @@ namespace TextExpander.FuzzTests;
 public static class FuzzTests
 {
     private const string AddedTrigger = "fuzz";
+
+    // Regions that write numbers differently: a dot or a comma for decimals, and commas, dots, spaces, apostrophes or
+    // India's grouping between groups.
+    private static readonly string[] Regions = ["en-US", "de-DE", "fr-FR", "de-CH", "en-IN", "ar-SA"];
+
+    private static readonly string[] ClipboardVariables =
+    [
+        "{{clipboard:email:all}}",
+        "{{clipboard:link:2}}",
+        "{{clipboard:phone:last}}",
+        "{{clipboard:number:pick}}",
+        "{{clipboard:pick:link:pick}}",
+    ];
 
     /// <summary>
     /// Reads the input as the snippets file, as the engine and the editor do. A file that isn't one is refused with
@@ -78,10 +92,40 @@ public static class FuzzTests
         foreach (string snippet in new[] { text, "{{date:" + text + "}}", "{{prompt:" + text + "}}" })
         {
             _ = Variables.NeedsPrompt(snippet);
+            _ = Variables.MayAsk(snippet);
             _ = Variables.UsesSensitiveRuntimeInput(snippet);
 
-            // Answer each prompt with its label and paste the snippet itself, so codes also arrive where they must stay literal.
-            _ = Variables.Expand(snippet, label => label, () => snippet);
+            // Answer each prompt with its label, paste the snippet itself and pick the last choice, so codes also arrive
+            // where they must stay literal.
+            _ = Variables.Expand(snippet, label => label, () => snippet, choice => choice.Options.Count > 0 ? choice.Options[^1] : snippet);
+        }
+    }
+
+    /// <summary>
+    /// Reads the input as a copy, as clipboard variables do, for each part in regions with different number separators.
+    /// Every match must be text from the copy, each different one once, and every clipboard variable must expand over it.
+    /// </summary>
+    public static void FuzzClipboardParts(ReadOnlySpan<byte> input)
+    {
+        string copy = Encoding.UTF8.GetString(input);
+        foreach (string name in Regions)
+        {
+            CultureInfo culture = CultureInfo.GetCultureInfo(name);
+            foreach (ClipboardPart part in Enum.GetValues<ClipboardPart>())
+            {
+                IReadOnlyList<string> found = ClipboardParts.Find(copy, part, culture);
+                Check(found.Distinct(StringComparer.Ordinal).Count() == found.Count, "A match was found twice.");
+                foreach (string match in found)
+                {
+                    Check(match.Length > 0 && copy.Contains(match, StringComparison.Ordinal), "A match isn't text from the copy.");
+                }
+            }
+        }
+
+        foreach (string variable in ClipboardVariables)
+        {
+            Check(ClipboardVariable.TryParse(variable, out ClipboardVariable parsed) && parsed.ToToken() == variable, "A clipboard variable didn't read back the same.");
+            _ = Variables.Expand(variable, _ => null, () => copy, choice => choice.Options.Count > 0 ? choice.Options[^1] : copy);
         }
     }
 
