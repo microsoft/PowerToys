@@ -4,8 +4,8 @@
 
 using System;
 using System.Text.Json.Nodes;
-using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerScripts.UI.ViewModels;
 
 namespace ViewModelTests;
 
@@ -59,6 +59,20 @@ public class PowerScriptTemplateParameterTests
         Assert.AreEqual("file-path", definition["schema"]["format"].GetValue<string>());
         Assert.AreEqual(".txt, .json", definition["fileExtensions"].GetValue<string>());
         Assert.IsNull(definition["schema"]["minimum"]);
+    }
+
+    [TestMethod]
+    public void InvalidIntegerDefaultsReportTheParameterWithoutASettingsWindow()
+    {
+        var parameter = new PowerScriptTemplateParameter(1)
+        {
+            Name = "repeatCount",
+            TypeIndex = 1,
+            HasDefault = true,
+            DefaultText = "not-an-integer",
+        };
+        var error = Assert.ThrowsException<ArgumentException>(() => parameter.ToTemplateParameter());
+        StringAssert.Contains(error.Message, "repeatCount");
     }
 
     [TestMethod]

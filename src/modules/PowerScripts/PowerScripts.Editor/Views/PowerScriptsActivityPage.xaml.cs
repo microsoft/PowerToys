@@ -3,17 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.Services;
-using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
+using PowerScripts.UI.ViewModels;
 
-namespace Microsoft.PowerToys.Settings.UI.Views;
+namespace PowerScripts.Editor.Views;
 
-public sealed partial class PowerScriptsActivityPage : NavigablePage
+public sealed partial class PowerScriptsActivityPage : Page
 {
     private readonly DispatcherTimer _refreshTimer = new() { Interval = TimeSpan.FromSeconds(5) };
     private bool _isActive;
@@ -33,7 +30,6 @@ public sealed partial class PowerScriptsActivityPage : NavigablePage
         base.OnNavigatedTo(e);
         ViewModel = e.Parameter as PowerScriptsViewModel ??
             throw new ArgumentException("Activity navigation requires the PowerScripts view model.", nameof(e));
-        ActivityBreadcrumb.ItemsSource = new[] { "PowerScripts", PowerScriptsViewModel.GetResourceString("PowerScripts_ActivityTitle") };
         Bindings.Update();
     }
 
@@ -51,19 +47,6 @@ public sealed partial class PowerScriptsActivityPage : NavigablePage
     {
         _isActive = false;
         _refreshTimer.Stop();
-    }
-
-    private void BackButton_Click(object sender, RoutedEventArgs e) => NavigationService.GoBack();
-
-    private void BackKeyboardAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args) =>
-        args.Handled = NavigationService.GoBack();
-
-    private void ActivityBreadcrumb_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
-    {
-        if (args.Index == 0)
-        {
-            NavigationService.GoBack();
-        }
     }
 
     private async void RefreshButton_Click(object sender, RoutedEventArgs e) => await ViewModel.RefreshActivityAsync();

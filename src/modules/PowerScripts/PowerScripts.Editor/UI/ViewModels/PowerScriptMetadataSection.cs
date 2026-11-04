@@ -4,6 +4,6 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.PowerToys.Settings.UI.ViewModels;
+namespace PowerScripts.UI.ViewModels;
 
 public sealed record PowerScriptMetadataSection(string Key, string Title, IReadOnlyList<PowerScriptMetadataRow> Rows);

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 
-namespace Microsoft.PowerToys.Settings.UI.ViewModels;
+namespace PowerScripts.UI.ViewModels;
 
 public partial class PowerScriptsViewModel
 {

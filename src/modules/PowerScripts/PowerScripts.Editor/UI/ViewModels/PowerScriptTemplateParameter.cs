@@ -6,10 +6,10 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json.Nodes;
-using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using PowerScripts.UI.Helpers;
 
-namespace Microsoft.PowerToys.Settings.UI.ViewModels;
+namespace PowerScripts.UI.ViewModels;
 
 public sealed class PowerScriptTemplateParameter : Observable
 {

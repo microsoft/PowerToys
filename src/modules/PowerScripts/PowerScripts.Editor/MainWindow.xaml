@@ -1,0 +1,38 @@
+﻿<Window
+    x:Class="PowerScripts.Editor.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="PowerScripts">
+    <Grid x:Name="Root" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <NavigationView
+            x:Name="Navigation"
+            AutomationProperties.AutomationId="PowerScriptsEditorNavigation"
+            IsBackButtonVisible="Collapsed"
+            IsSettingsVisible="False"
+            PaneDisplayMode="Top"
+            SelectionChanged="Navigation_SelectionChanged">
+            <NavigationView.MenuItems>
+                <NavigationViewItem
+                    x:Name="MyScriptsTab"
+                    x:Uid="PowerScripts_MyScriptsTab"
+                    AutomationProperties.AutomationId="PowerScriptsMyScriptsTab"
+                    Icon="Library"
+                    Tag="0" />
+                <NavigationViewItem
+                    x:Uid="PowerScripts_ConsumerModulesTab"
+                    AutomationProperties.AutomationId="PowerScriptsConsumerModulesTab"
+                    Icon="Link"
+                    Tag="1" />
+                <NavigationViewItem
+                    x:Uid="PowerScripts_ActivityTab"
+                    AutomationProperties.AutomationId="PowerScriptsActivityTab"
+                    Icon="Clock"
+                    Tag="2" />
+            </NavigationView.MenuItems>
+            <ContentControl
+                x:Name="TabContent"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch" />
+        </NavigationView>
+    </Grid>
+</Window>

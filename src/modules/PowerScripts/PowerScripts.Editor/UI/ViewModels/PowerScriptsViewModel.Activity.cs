@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Microsoft.PowerToys.Settings.UI.ViewModels;
+namespace PowerScripts.UI.ViewModels;
 
 public partial class PowerScriptsViewModel
 {

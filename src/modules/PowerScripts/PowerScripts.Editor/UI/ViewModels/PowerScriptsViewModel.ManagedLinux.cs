@@ -7,7 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.PowerToys.Settings.UI.ViewModels;
+namespace PowerScripts.UI.ViewModels;
 
 public partial class PowerScriptsViewModel
 {

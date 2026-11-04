@@ -1,0 +1,432 @@
+﻿<Page
+    x:Class="PowerScripts.Editor.Views.MyScriptsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:layout="using:PowerScripts.Editor.Controls"
+    xmlns:local="using:PowerScripts.Editor.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewModels="using:PowerScripts.UI.ViewModels"
+    xmlns:views="using:PowerScripts.Editor.Views"
+    d:DataContext="{d:DesignInstance Type=viewModels:PowerScriptsViewModel}"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <layout:ManagementPage
+        x:Name="PowerScriptsSettingsPage"
+        IsEnabled="{x:Bind ViewModel.AreConsumerSettingsReady, Mode=OneWay}"
+        IsTabStop="False"
+        ModuleDescription="Create and manage scripts for compatible PowerToys modules. PowerScripts provides the shared protocol and execution policies, not a standalone action surface."
+        ModuleTitle="My scripts">
+        <layout:ManagementPage.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <tkcontrols:SettingsCard
+                    Name="PowerScriptsEnableSettingsCard"
+                    Description="Enable PowerScripts"
+                    Header="PowerScripts"
+                    HeaderIcon="{ui:FontIcon Glyph=&#xE756;}">
+                    <ToggleSwitch
+                        AutomationProperties.AutomationId="PowerScriptsEnabledToggle"
+                        AutomationProperties.Name="PowerScripts"
+                        IsEnabled="{x:Bind ViewModel.CanChangePowerScriptsEnabled, Mode=OneWay}"
+                        IsOn="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+                        Toggled="PowerScriptsEnabledToggle_Toggled" />
+                </tkcontrols:SettingsCard>
+
+                <InfoBar
+                    x:Uid="PowerScripts_ManagedPolicy"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.IsPowerScriptsPolicyControlled, Mode=OneWay}"
+                    Severity="Informational" />
+
+                <tkcontrols:SettingsCard
+                    Name="PowerScriptsFolderSettingsCard"
+                    Description="{x:Bind ViewModel.ScriptsFolder, Mode=OneWay}"
+                    Header="Scripts folder"
+                    HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}"
+                    IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button
+                            x:Name="OpenScriptsFolderButton"
+                            AutomationProperties.AutomationId="PowerScriptsOpenFolderButton"
+                            AutomationProperties.Name="Open scripts folder"
+                            Click="OpenScriptsFolderButton_Click"
+                            ToolTipService.ToolTip="Open scripts folder in File Explorer">
+                            <FontIcon FontSize="16" Glyph="&#xE838;" />
+                        </Button>
+                        <Button
+                            x:Name="BrowseScriptsFolderButton"
+                            AutomationProperties.AutomationId="PowerScriptsBrowseFolderButton"
+                            Click="BrowseScriptsFolderButton_Click"
+                            Content="Browse..." />
+                        <Button
+                            x:Name="ResetScriptsFolderButton"
+                            AutomationProperties.AutomationId="PowerScriptsResetFolderButton"
+                            Click="ResetScriptsFolderButton_Click"
+                            Content="Reset"
+                            IsEnabled="{x:Bind ViewModel.IsCustomFolder, Mode=OneWay}" />
+                    </StackPanel>
+                </tkcontrols:SettingsCard>
+
+                <controls:SettingsGroup IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsExpander
+                        x:Uid="PowerScripts_MxcEnabled"
+                        AutomationProperties.AutomationId="PowerScriptsSandboxExpander"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE72E;}"
+                        IsExpanded="{x:Bind ViewModel.IsMxcEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander.Content>
+                            <ToggleSwitch
+                                x:Uid="PowerScripts_MxcEnabledToggle"
+                                AutomationProperties.AutomationId="PowerScriptsMxcEnabledToggle"
+                                IsEnabled="{x:Bind ViewModel.CanChangeMxcEnabled, Mode=OneWay}"
+                                IsOn="{x:Bind ViewModel.IsMxcEnabled, Mode=OneWay}"
+                                Toggled="MxcEnabledToggle_Toggled"
+                                ToolTipService.ToolTip="{x:Bind ViewModel.MxcSupportMessage, Mode=OneWay}" />
+                        </tkcontrols:SettingsExpander.Content>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcFilesystem" Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(ViewModel.IsMxcEnabled), Mode=OneWay}">
+                                <ToggleSwitch
+                                    x:Uid="PowerScripts_MxcFilesystemToggle"
+                                    AutomationProperties.AutomationId="PowerScriptsMxcFilesystemToggle"
+                                    IsOn="{x:Bind ViewModel.IsMxcFilesystemRestrictionEnabled, Mode=OneWay}"
+                                    Tag="filesystem"
+                                    Toggled="GlobalMxcPolicyToggle_Toggled" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcNetwork" Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(ViewModel.IsMxcEnabled), Mode=OneWay}">
+                                <ToggleSwitch
+                                    x:Uid="PowerScripts_MxcNetworkToggle"
+                                    AutomationProperties.AutomationId="PowerScriptsMxcNetworkToggle"
+                                    IsOn="{x:Bind ViewModel.IsMxcNetworkRestrictionEnabled, Mode=OneWay}"
+                                    Tag="network"
+                                    Toggled="GlobalMxcPolicyToggle_Toggled" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcUi" Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(ViewModel.IsMxcEnabled), Mode=OneWay}">
+                                <ToggleSwitch
+                                    x:Uid="PowerScripts_MxcUiToggle"
+                                    AutomationProperties.AutomationId="PowerScriptsMxcUiToggle"
+                                    IsOn="{x:Bind ViewModel.IsMxcUiRestrictionEnabled, Mode=OneWay}"
+                                    Tag="ui"
+                                    Toggled="GlobalMxcPolicyToggle_Toggled" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcLeastPrivilege" Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(ViewModel.IsMxcEnabled), Mode=OneWay}">
+                                <ToggleSwitch
+                                    x:Uid="PowerScripts_MxcLeastPrivilegeToggle"
+                                    AutomationProperties.AutomationId="PowerScriptsMxcLeastPrivilegeToggle"
+                                    IsOn="{x:Bind ViewModel.IsMxcLeastPrivilegeRestrictionEnabled, Mode=OneWay}"
+                                    Tag="leastPrivilege"
+                                    Toggled="GlobalMxcPolicyToggle_Toggled" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                    <InfoBar
+                        x:Uid="PowerScripts_MxcUnavailable"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsMxcUnsupported, Mode=OneWay}"
+                        Message="{x:Bind ViewModel.MxcSupportMessage, Mode=OneWay}"
+                        Severity="Warning" />
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="PowerScripts_PythonEnvironmentGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        x:Uid="PowerScripts_PythonEnvironment"
+                        HorizontalContentAlignment="Stretch"
+                        ContentAlignment="Vertical"
+                        Description="{x:Bind ViewModel.PythonEnvironmentDescription, Mode=OneWay}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE943;}">
+                        <ComboBox
+                            MinWidth="160"
+                            HorizontalAlignment="Stretch"
+                            AutomationProperties.AutomationId="PowerScriptsPythonModeComboBox"
+                            SelectedIndex="{x:Bind ViewModel.PythonModeIndex, Mode=TwoWay}"
+                            SelectionChanged="PythonEnvironment_SelectionChanged">
+                            <ComboBoxItem x:Uid="PowerScripts_EnvironmentDisabled" />
+                            <ComboBoxItem x:Uid="PowerScripts_EnvironmentWindows" />
+                            <ComboBoxItem x:Uid="PowerScripts_EnvironmentWsl" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        HorizontalContentAlignment="Stretch"
+                        ContentAlignment="Vertical"
+                        Description="Optional. Leave empty to auto-detect via the Python launcher (py.exe) or python.exe on PATH."
+                        Header="Python interpreter path"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE756;}"
+                        Visibility="{x:Bind ViewModel.IsWindowsMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox
+                                MinWidth="160"
+                                AutomationProperties.AutomationId="PowerScriptsPythonInterpreterPathTextBox"
+                                Text="{x:Bind ViewModel.PythonInterpreterPath, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                            <Button
+                                x:Name="BrowsePythonInterpreterButton"
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                AutomationProperties.AutomationId="PowerScriptsBrowsePythonInterpreterButton"
+                                Click="BrowsePythonInterpreterButton_Click"
+                                Content="Browse..." />
+                        </Grid>
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        Description="The WSL distribution scripts run in. Leave empty to use the default distribution."
+                        Header="WSL distribution"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEC7A;}"
+                        Visibility="{x:Bind ViewModel.IsWslMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <ComboBox
+                            MinWidth="200"
+                            AutomationProperties.AutomationId="PowerScriptsWslDistributionComboBox"
+                            IsEditable="True"
+                            ItemsSource="{x:Bind ViewModel.WslDistributions, Mode=OneWay}"
+                            Text="{x:Bind ViewModel.WslDistribution, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        x:Uid="PowerScripts_LinuxImage"
+                        HorizontalContentAlignment="Stretch"
+                        AutomationProperties.AutomationId="PowerScriptsLinuxImageCard"
+                        ContentAlignment="Vertical"
+                        Visibility="{x:Bind ViewModel.IsManagedLinuxMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Spacing="8">
+                            <TextBox
+                                x:Uid="PowerScripts_LinuxImageInput"
+                                MinWidth="200"
+                                AutomationProperties.AutomationId="PowerScriptsLinuxImage"
+                                IsEnabled="{x:Bind ViewModel.CanEditLinuxContainerImage, Mode=OneWay}"
+                                Text="{x:Bind ViewModel.LinuxContainerImage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <InfoBar
+                                Title="{x:Bind ViewModel.LinuxContainerStatusTitle, Mode=OneWay}"
+                                AutomationProperties.AutomationId="PowerScriptsLinuxStatusBanner"
+                                IsClosable="False"
+                                IsOpen="True"
+                                Severity="{x:Bind ViewModel.LinuxContainerStatusSeverity, Mode=OneWay}">
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <ProgressRing
+                                        x:Uid="PowerScripts_LinuxImageProgress"
+                                        Width="20"
+                                        Height="20"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.AutomationId="PowerScriptsLinuxProgress"
+                                        IsActive="{x:Bind ViewModel.IsLinuxContainerBusy, Mode=OneWay}"
+                                        Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(ViewModel.IsLinuxContainerBusy), Mode=OneWay}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        AutomationProperties.AutomationId="PowerScriptsLinuxStatus"
+                                        IsTextSelectionEnabled="True"
+                                        Text="{x:Bind ViewModel.LinuxContainerStatus, Mode=OneWay}"
+                                        TextWrapping="Wrap" />
+                                </Grid>
+                            </InfoBar>
+                            <Grid ColumnSpacing="12" RowSpacing="8">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    x:Name="LinuxDownloadDescription"
+                                    x:Uid="PowerScripts_LinuxDownloadDescription"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    TextWrapping="Wrap" />
+                                <Button
+                                    x:Uid="PowerScripts_LinuxSetup"
+                                    Grid.Column="1"
+                                    AutomationProperties.AutomationId="PowerScriptsLinuxSetup"
+                                    AutomationProperties.HelpText="{x:Bind LinuxDownloadDescription.Text, Mode=OneWay}"
+                                    Click="SetupLinuxContainer_Click"
+                                    IsEnabled="{x:Bind ViewModel.CanPrepareLinuxContainer, Mode=OneWay}" />
+                                <TextBlock
+                                    x:Name="LinuxCheckDescription"
+                                    x:Uid="PowerScripts_LinuxCheckDescription"
+                                    Grid.Row="1"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    TextWrapping="Wrap" />
+                                <Button
+                                    x:Uid="PowerScripts_LinuxCheck"
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    AutomationProperties.AutomationId="PowerScriptsLinuxCheck"
+                                    AutomationProperties.HelpText="{x:Bind LinuxCheckDescription.Text, Mode=OneWay}"
+                                    Click="CheckLinuxContainer_Click"
+                                    IsEnabled="{x:Bind ViewModel.CanPrepareLinuxContainer, Mode=OneWay}" />
+                                <TextBlock
+                                    x:Name="LinuxRecoverDescription"
+                                    x:Uid="PowerScripts_LinuxRecoverDescription"
+                                    Grid.Row="2"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    TextWrapping="Wrap" />
+                                <Button
+                                    x:Uid="PowerScripts_LinuxRecover"
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    AutomationProperties.AutomationId="PowerScriptsLinuxRecover"
+                                    AutomationProperties.HelpText="{x:Bind LinuxRecoverDescription.Text, Mode=OneWay}"
+                                    Click="RecoverLinuxContainer_Click"
+                                    IsEnabled="{x:Bind ViewModel.CanRecoverLinuxContainer, Mode=OneWay}" />
+                            </Grid>
+                            <TextBlock
+                                x:Uid="PowerScripts_LinuxImagePreparation"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup Header="Installed scripts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <InfoBar
+                        x:Name="ScriptSettingsError"
+                        AutomationProperties.AutomationId="PowerScriptsSettingsError"
+                        IsClosable="False"
+                        Severity="Error" />
+                    <Grid ColumnSpacing="12" RowSpacing="12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.ColumnSpan="3" ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox
+                                x:Uid="PowerScripts_CatalogueSearch"
+                                AutomationProperties.AutomationId="PowerScriptsSearchTextBox"
+                                Text="{x:Bind ViewModel.ScriptSearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button
+                                x:Uid="PowerScripts_CreateScriptAction"
+                                Grid.Column="1"
+                                VerticalAlignment="Bottom"
+                                AutomationProperties.AutomationId="PowerScriptsCreateScript"
+                                Click="CreateScriptButton_Click"
+                                Style="{StaticResource AccentButtonStyle}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <SymbolIcon Symbol="Add" />
+                                    <TextBlock x:Uid="PowerScripts_CreateScriptButton" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                        <ComboBox
+                            x:Uid="PowerScripts_CatalogueInputFilter"
+                            Grid.Row="1"
+                            HorizontalAlignment="Stretch"
+                            AutomationProperties.AutomationId="PowerScriptsInputFilterComboBox"
+                            SelectedIndex="{x:Bind ViewModel.ScriptInputFilterIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="PowerScripts_FilterAll" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterNone" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterFiles" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterText" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterImage" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterAudio" />
+                        </ComboBox>
+                        <ComboBox
+                            x:Uid="PowerScripts_CatalogueOutputFilter"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            AutomationProperties.AutomationId="PowerScriptsOutputFilterComboBox"
+                            SelectedIndex="{x:Bind ViewModel.ScriptOutputFilterIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="PowerScripts_OutputFilterAll" />
+                            <ComboBoxItem x:Uid="PowerScripts_OutputFilterNone" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterFiles" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterText" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterImage" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterAudio" />
+                        </ComboBox>
+                        <ComboBox
+                            x:Uid="PowerScripts_CatalogueSort"
+                            Grid.Row="1"
+                            Grid.Column="2"
+                            HorizontalAlignment="Stretch"
+                            AutomationProperties.AutomationId="PowerScriptsSortComboBox"
+                            SelectedIndex="{x:Bind ViewModel.ScriptSortIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="PowerScripts_SortNameAscending" />
+                            <ComboBoxItem x:Uid="PowerScripts_SortNameDescending" />
+                            <ComboBoxItem x:Uid="PowerScripts_SortInput" />
+                            <ComboBoxItem x:Uid="PowerScripts_SortOutput" />
+                            <ComboBoxItem x:Uid="PowerScripts_SortRuntime" />
+                        </ComboBox>
+                    </Grid>
+                    <TextBlock
+                        AutomationProperties.AutomationId="PowerScriptsCatalogueCount"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.CatalogueCount, Mode=OneWay}" />
+                    <InfoBar
+                        x:Uid="PowerScripts_SettingsEmptyCatalogue"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.HasScripts, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                        Severity="Informational" />
+                    <InfoBar
+                        x:Uid="PowerScripts_CatalogueNoMatches"
+                        AutomationProperties.AutomationId="PowerScriptsCatalogueNoMatches"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.HasNoMatchingScripts, Mode=OneWay}"
+                        Severity="Informational" />
+
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.VisibleScripts, Mode=OneWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="viewModels:PowerScriptListItem">
+                                <tkcontrols:SettingsCard
+                                    Margin="0,0,0,8"
+                                    AutomationProperties.AutomationId="{x:Bind CardAutomationId, Mode=OneWay}"
+                                    AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
+                                    Click="ScriptSettingsButton_Click"
+                                    Description="{x:Bind Description, Mode=OneWay}"
+                                    IsClickEnabled="True">
+                                    <tkcontrols:SettingsCard.Header>
+                                        <Grid ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid Width="32" Height="32">
+                                                <FontIcon Glyph="{x:Bind DefaultIconGlyph, Mode=OneWay}" Visibility="{x:Bind views:MyScriptsPage.InvertBoolToVisibility(HasIcon), Mode=OneWay}" />
+                                                <Image
+                                                    DataContext="{x:Bind}"
+                                                    ImageFailed="ScriptIcon_ImageFailed"
+                                                    Source="{Binding IconSourcePath, Mode=OneWay}"
+                                                    Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(HasIcon), Mode=OneWay}" />
+                                            </Grid>
+                                            <StackPanel Grid.Column="1" Spacing="4">
+                                                <TextBlock
+                                                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                    Text="{x:Bind Name, Mode=OneWay}"
+                                                    TextWrapping="Wrap" />
+                                                <TextBlock
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                    Text="{x:Bind CatalogueSummary, Mode=OneWay}"
+                                                    TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </tkcontrols:SettingsCard.Header>
+                                </tkcontrols:SettingsCard>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </controls:SettingsGroup>
+            </StackPanel>
+        </layout:ManagementPage.ModuleContent>
+
+    </layout:ManagementPage>
+</Page>

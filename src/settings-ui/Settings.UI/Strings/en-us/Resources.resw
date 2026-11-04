@@ -6787,4 +6787,10 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_LinuxRestartWindowsTitle" xml:space="preserve"><value>Windows restart needed</value></data>
   <data name="PowerScripts_LinuxRestartWindowsHelp" xml:space="preserve"><value>WSL could not safely clean up the Linux session. Save your work and restart Windows, then select Check Python. Do not delete or download the image again: cached images, settings, and script approvals are kept. PowerToys has not forcibly stopped any process or WSL distribution.</value></data>
   <data name="PowerScripts_LinuxCacheBusyHelp" xml:space="preserve"><value>The cached image is in use, not missing. Close other apps using MXC Linux and select Check Python again. If this persists with those apps closed, save your work and restart Windows; do not delete or download the image again.</value></data>
+  <data name="PowerScripts_OpenEditorCard.Header" xml:space="preserve">
+    <value>Open PowerScripts editor</value>
+  </data>
+  <data name="PowerScripts_OpenEditorCard.Description" xml:space="preserve">
+    <value>Manage My scripts, Consumer modules, and Activity in a separate window.</value>
+  </data>
 </root>

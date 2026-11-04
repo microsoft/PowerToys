@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>PowerScripts.Editor</RootNamespace>
+    <AssemblyName>PowerToys.PowerScriptsEditor</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>$(RepoRoot)src\settings-ui\Settings.UI\Assets\Settings\icon.ico</ApplicationIcon>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <ProjectPriFileName>PowerToys.PowerScriptsEditor.pri</ProjectPriFileName>
+    <DefaultItemExcludes>$(DefaultItemExcludes);UI\**</DefaultItemExcludes>
+    <SettingsSource>$(RepoRoot)src\settings-ui\Settings.UI\</SettingsSource>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
+    <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
+    <PackageReference Include="CommunityToolkit.WinUI.Converters" />
+    <PackageReference Include="Microsoft.Web.WebView2" />
+    <ProjectReference Include="UI\PowerScripts.UI.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\common\Common.UI\Common.UI.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(SettingsSource)SettingsXAML\Controls\SettingsGroup\*.cs" Link="Controls\%(Filename)%(Extension)" />
+    <Page Include="$(SettingsSource)SettingsXAML\Controls\SettingsGroup\SettingsGroup.xaml" Link="Controls\SettingsGroup.xaml" />
+    <Compile Include="$(SettingsSource)Helpers\OpenFileName.cs" Link="Helpers\OpenFileName.cs" />
+    <Compile Include="$(SettingsSource)Helpers\ShellGetFolder.cs" Link="Helpers\ShellGetFolder.cs" />
+    <PRIResource Include="$(IntermediateOutputPath)Strings\en-US\Resources.resw" Link="Strings\en-US\Resources.resw" />
+  </ItemGroup>
+  <Target Name="PreparePowerScriptsResources" BeforeTargets="PrepareForBuild">
+    <Copy SourceFiles="UI\Strings\Resources.resx" DestinationFiles="$(IntermediateOutputPath)Strings\en-US\Resources.resw" />
+  </Target>
+</Project>

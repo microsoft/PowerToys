@@ -9,17 +9,17 @@ using System.IO;
 using System.Linq;
 using System.Text.Json.Nodes;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.Services;
-using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
+using PowerScripts.Editor.Helpers;
+using PowerScripts.UI.Helpers;
+using PowerScripts.UI.ViewModels;
 
-namespace Microsoft.PowerToys.Settings.UI.Views;
+namespace PowerScripts.Editor.Views;
 
-public sealed partial class PowerScriptTemplatesPage : NavigablePage
+public sealed partial class PowerScriptTemplatesPage : Page
 {
     private bool _isCreating;
     private int _nextParameterId;
@@ -46,18 +46,18 @@ public sealed partial class PowerScriptTemplatesPage : NavigablePage
     {
         if (!_isCreating)
         {
-            NavigationService.GoBack();
+            EditorNavigation.GoBack(Frame);
         }
     }
 
     private void BackKeyboardAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args) =>
-        args.Handled = _isCreating || NavigationService.GoBack();
+        args.Handled = _isCreating || EditorNavigation.GoBack(Frame);
 
     private void TemplateBreadcrumb_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
     {
         if (args.Index == 0 && !_isCreating)
         {
-            NavigationService.GoBack();
+            EditorNavigation.GoBack(Frame);
         }
     }
 

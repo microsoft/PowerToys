@@ -1,18 +1,12 @@
-﻿<local:NavigablePage
-    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerScriptsActivityPage"
+<Page
+    x:Class="PowerScripts.Editor.Views.PowerScriptsActivityPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
-    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
-    xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
+    xmlns:local="using:PowerScripts.Editor.Helpers"
+    xmlns:viewModels="using:PowerScripts.UI.ViewModels"
+    xmlns:views="using:PowerScripts.Editor.Views"
     AutomationProperties.AutomationId="PowerScriptsActivityPage"
     AutomationProperties.LandmarkType="Main">
-    <local:NavigablePage.KeyboardAccelerators>
-        <KeyboardAccelerator
-            Key="Left"
-            Invoked="BackKeyboardAccelerator_Invoked"
-            Modifiers="Menu" />
-    </local:NavigablePage.KeyboardAccelerators>
     <Grid Margin="24,0,24,24" RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -21,25 +15,10 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid ColumnSpacing="8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Button
-                x:Uid="PowerScripts_SettingsBack"
-                AutomationProperties.AutomationId="PowerScriptsActivityBack"
-                Click="BackButton_Click"
-                Style="{StaticResource SubtleButtonStyle}">
-                <SymbolIcon Symbol="Back" />
-            </Button>
-            <BreadcrumbBar
-                x:Name="ActivityBreadcrumb"
-                Grid.Column="1"
-                VerticalAlignment="Center"
-                AutomationProperties.AutomationId="PowerScriptsActivityBreadcrumb"
-                ItemClicked="ActivityBreadcrumb_ItemClicked" />
-        </Grid>
+        <TextBlock
+            x:Uid="PowerScripts_ActivityHeading"
+            AutomationProperties.HeadingLevel="Level1"
+            Style="{StaticResource TitleTextBlockStyle}" />
         <TextBlock
             x:Uid="PowerScripts_ActivityHelp"
             Grid.Row="1"
@@ -67,7 +46,7 @@
                 Height="24"
                 HorizontalAlignment="Left"
                 IsActive="{x:Bind ViewModel.IsActivityBusy, Mode=OneWay}"
-                Visibility="{x:Bind views:PowerScriptsPage.BoolToVisibility(ViewModel.IsActivityBusy), Mode=OneWay}" />
+                Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(ViewModel.IsActivityBusy), Mode=OneWay}" />
         </Grid>
         <InfoBar
             x:Uid="PowerScripts_ActivityError"
@@ -81,7 +60,7 @@
             <TextBlock
                 x:Uid="PowerScripts_ActivityEmpty"
                 AutomationProperties.AutomationId="PowerScriptsActivityEmpty"
-                Visibility="{x:Bind views:PowerScriptsPage.BoolToVisibility(ViewModel.IsActivityEmpty), Mode=OneWay}" />
+                Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(ViewModel.IsActivityEmpty), Mode=OneWay}" />
             <ListView
                 x:Uid="PowerScripts_ActivityList"
                 HorizontalContentAlignment="Stretch"
@@ -113,4 +92,4 @@
             </ListView>
         </Grid>
     </Grid>
-</local:NavigablePage>
+</Page>

@@ -1,0 +1,28 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PowerScripts.Editor.Controls">
+    <Style TargetType="local:ManagementPage">
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:ManagementPage">
+                    <ScrollViewer AutomationProperties.AutomationId="PageScrollViewer">
+                        <StackPanel Margin="24,16,24,32" Spacing="16">
+                            <TextBlock
+                                AutomationProperties.HeadingLevel="Level1"
+                                Style="{StaticResource TitleTextBlockStyle}"
+                                Text="{TemplateBinding ModuleTitle}"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="{TemplateBinding ModuleDescription}"
+                                TextWrapping="Wrap" />
+                            <ContentPresenter Content="{TemplateBinding Content}" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

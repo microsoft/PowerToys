@@ -1,0 +1,19 @@
+<Application
+    x:Class="PowerScripts.Editor.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <ResourceDictionary Source="Controls/EditorControls.xaml" />
+                <ResourceDictionary Source="Controls/SettingsGroup.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
+            <x:Double x:Key="SettingsCardSpacing">4</x:Double>
+            <TransitionCollection x:Key="SettingsCardsAnimations" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

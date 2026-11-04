@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Microsoft.PowerToys.Settings.UI.ViewModels;
+namespace PowerScripts.UI.ViewModels;
 
 /// <summary>Read-only presentation of authoritative metadata; never generates settings overrides.</summary>
 public static class PowerScriptMetadataDetails

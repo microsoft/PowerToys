@@ -1,19 +1,20 @@
-﻿<local:NavigablePage
-    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerScriptSettingsPage"
+﻿<Page
+    x:Class="PowerScripts.Editor.Views.PowerScriptSettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:layout="using:PowerScripts.Editor.Controls"
+    xmlns:local="using:PowerScripts.Editor.Helpers"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
-    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:viewModels="using:PowerScripts.UI.ViewModels"
     AutomationProperties.AutomationId="PowerScriptsScriptSettingsPage"
     AutomationProperties.LandmarkType="Main">
-    <local:NavigablePage.KeyboardAccelerators>
+    <Page.KeyboardAccelerators>
         <KeyboardAccelerator
             Key="Left"
             Invoked="BackKeyboardAccelerator_Invoked"
             Modifiers="Menu" />
-    </local:NavigablePage.KeyboardAccelerators>
+    </Page.KeyboardAccelerators>
     <Grid RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -38,8 +39,8 @@
                 AutomationProperties.AutomationId="PowerScriptsSettingsBreadcrumb"
                 ItemClicked="ScriptBreadcrumb_ItemClicked" />
         </Grid>
-        <controls:SettingsPageControl x:Uid="PowerScripts_SettingsSubpage" Grid.Row="1">
-            <controls:SettingsPageControl.ModuleContent>
+        <layout:ManagementPage x:Uid="PowerScripts_SettingsSubpage" Grid.Row="1">
+            <layout:ManagementPage.ModuleContent>
                 <StackPanel Spacing="16">
                     <InfoBar
                         x:Name="ScriptSettingsError"
@@ -176,7 +177,7 @@
                         </StackPanel>
                     </Expander>
                 </StackPanel>
-            </controls:SettingsPageControl.ModuleContent>
-        </controls:SettingsPageControl>
+            </layout:ManagementPage.ModuleContent>
+        </layout:ManagementPage>
     </Grid>
-</local:NavigablePage>
+</Page>

@@ -13,7 +13,14 @@ Consumers that need saved assignments own their binding UI and persist script ID
 copies. There is no standalone script launcher or per-consumer configuration picker in this version.
 See the [consumer onboarding guide](CONSUMER-INTEGRATION.md#automatic-discovery-or-saved-bindings).
 
-Integration switches for Advanced Paste and Keyboard Manager live in **PowerScripts > Use PowerScripts in**.
+Open **Settings > PowerScripts > Open PowerScripts editor** to manage PowerScripts in a
+standalone WinUI 3 window. **My scripts** contains the library, creation flow, descriptor details,
+scripts folder, and Windows/Linux runtime and sandbox controls. **Consumer modules** contains
+integration switches and their effective policy state. **Activity** contains attributed execution
+history, refresh, and safe history clearing. Settings retains the module enable switch.
+The editor uses the existing Host and storage; moving the UI does not migrate scripts, trust, or bindings.
+
+Integration switches for Advanced Paste and Keyboard Manager live in the editor's **Consumer modules** tab.
 The shared Host enforces them for discovery and execution, retaining existing bindings when disabled.
 Advanced Paste's legacy preference is preserved; Keyboard Manager defaults on. Group Policy can
 manage the module and each integration without replacing saved preferences. A disabled PowerScripts
@@ -423,7 +430,7 @@ Python starts; such invocations fail explicitly.
 
 ## Activity
 
-Settings > PowerScripts > Activity shows the latest 200 invocations, including the calling module,
+PowerScripts editor > Activity shows the latest 200 invocations, including the calling module,
 script, start time, status and duration. History stays on this device and never stores input,
 parameters or output. Clear history preserves running invocations. Interrupted Hosts (including
 consumer cancellation) are identified without inventing a completion time or reason.

@@ -5,8 +5,8 @@
 using System;
 using System.Linq;
 
-using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerScripts.UI.ViewModels;
 
 namespace ViewModelTests
 {

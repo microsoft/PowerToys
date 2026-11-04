@@ -835,6 +835,14 @@
     </Project>
   </Folder>
   <Folder Name="/modules/PowerScripts/">
+    <Project Path="src/modules/PowerScripts/PowerScripts.Editor/PowerScripts.Editor.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/PowerScripts/PowerScripts.Editor/UI/PowerScripts.UI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/PowerScripts/PowerScripts.Core/PowerScripts.Core.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />

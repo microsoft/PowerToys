@@ -4,9 +4,9 @@
 
 using System.Linq;
 using System.Text.Json.Nodes;
-using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerScripts.UI.Helpers;
+using PowerScripts.UI.ViewModels;
 
 namespace ViewModelTests;
 

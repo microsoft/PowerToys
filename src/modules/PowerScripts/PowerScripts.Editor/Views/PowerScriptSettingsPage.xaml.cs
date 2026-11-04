@@ -11,17 +11,17 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.Services;
-using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
+using PowerScripts.Editor.Helpers;
+using PowerScripts.UI.Helpers;
+using PowerScripts.UI.ViewModels;
 
-namespace Microsoft.PowerToys.Settings.UI.Views;
+namespace PowerScripts.Editor.Views;
 
-public sealed partial class PowerScriptSettingsPage : NavigablePage
+public sealed partial class PowerScriptSettingsPage : Page
 {
     private NavigationContext _context;
     private bool _isLoading;
@@ -133,16 +133,16 @@ public sealed partial class PowerScriptSettingsPage : NavigablePage
     private void UpdateBreadcrumb() =>
         ScriptBreadcrumb.ItemsSource = new[] { "PowerScripts", _context.Script.Name };
 
-    private void BackButton_Click(object sender, RoutedEventArgs e) => NavigationService.GoBack();
+    private void BackButton_Click(object sender, RoutedEventArgs e) => EditorNavigation.GoBack(Frame);
 
     private void BackKeyboardAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args) =>
-        args.Handled = NavigationService.GoBack();
+        args.Handled = EditorNavigation.GoBack(Frame);
 
     private void ScriptBreadcrumb_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
     {
         if (args.Index == 0)
         {
-            NavigationService.GoBack();
+            EditorNavigation.GoBack(Frame);
         }
     }
 

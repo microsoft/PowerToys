@@ -6,10 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using PowerScripts.UI.Helpers;
 
-namespace Microsoft.PowerToys.Settings.UI.ViewModels
+namespace PowerScripts.UI.ViewModels
 {
     /// <summary>Read-only catalogue metadata and the globally selected execution environment.</summary>
     public sealed class PowerScriptListItem : Observable
@@ -192,7 +192,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             new[] { FilesystemPolicy, NetworkPolicy, UiPolicy, LeastPrivilegePolicy }
                 .Where(known => (policies ?? Array.Empty<string>()).Contains(known, StringComparer.OrdinalIgnoreCase)).ToList();
 
-        internal static string GetMxcPolicyDisplayName(string policy) => policy switch
+        public static string GetMxcPolicyDisplayName(string policy) => policy switch
         {
             FilesystemPolicy => GetResourceString("PowerScripts_MxcPolicy_Filesystem_DisplayName"),
             NetworkPolicy => GetResourceString("PowerScripts_MxcPolicy_Network_DisplayName"),

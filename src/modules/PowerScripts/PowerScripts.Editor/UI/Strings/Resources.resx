@@ -1,0 +1,1103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Microsoft ResX Schema
+
+    Version 2.0
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+
+    Example:
+
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PowerScripts_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PowerScripts_MxcEnabled.Header" xml:space="preserve">
+    <value>Run scripts in sandbox environment</value>
+  </data>
+  <data name="PowerScripts_MxcEnabled.Description" xml:space="preserve">
+    <value>Limit what scripts can change or access. These settings apply globally, not per script.</value>
+  </data>
+  <data name="PowerScripts_MxcEnabledToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Run scripts in sandbox environment</value>
+  </data>
+  <data name="PowerScripts_MxcUnavailable.Title" xml:space="preserve">
+    <value>Script sandbox is unavailable on this PC.</value>
+  </data>
+  <data name="PowerScripts_MxcFilesystem.Header" xml:space="preserve">
+    <value>Protect files</value>
+  </data>
+  <data name="PowerScripts_MxcFilesystem.Description" xml:space="preserve">
+    <value>Keep the script package and selected inputs read-only; allow writes only in the per-run workspace.</value>
+  </data>
+  <data name="PowerScripts_MxcFilesystemToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Restrict filesystem access</value>
+  </data>
+  <data name="PowerScripts_MxcNetwork.Header" xml:space="preserve">
+    <value>Block network access</value>
+  </data>
+  <data name="PowerScripts_MxcNetwork.Description" xml:space="preserve">
+    <value>Deny outbound, inbound, and host-loopback network access.</value>
+  </data>
+  <data name="PowerScripts_MxcNetworkToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Block network access</value>
+  </data>
+  <data name="PowerScripts_MxcUi.Header" xml:space="preserve">
+    <value>Protect desktop interaction (Windows only)</value>
+  </data>
+  <data name="PowerScripts_MxcUi.Description" xml:space="preserve">
+    <value>Restrict clipboard access, simulated input, and desktop control for Windows scripts. Not available in the Linux sandbox.</value>
+  </data>
+  <data name="PowerScripts_MxcUiToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Protect desktop interaction (Windows only)</value>
+  </data>
+  <data name="PowerScripts_MxcLeastPrivilege.Header" xml:space="preserve">
+    <value>Limit process privileges (Windows only)</value>
+  </data>
+  <data name="PowerScripts_MxcLeastPrivilege.Description" xml:space="preserve">
+    <value>Run Windows scripts with reduced process privileges. Not available in the Linux sandbox, where Python runs as guest root, not as a Windows administrator.</value>
+  </data>
+  <data name="PowerScripts_MxcLeastPrivilegeToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Limit process privileges (Windows only)</value>
+  </data>
+  <data name="PowerScripts_MxcEffective.Header" xml:space="preserve">
+    <value>Effective isolation</value>
+  </data>
+  <data name="PowerScripts_MxcEffective.Description" xml:space="preserve">
+    <value>All scripts use the global sandbox settings. Change them on the main PowerScripts page.</value>
+  </data>
+  <data name="PowerScripts_MxcEffectiveDisabled" xml:space="preserve">
+    <value>Runs without sandbox protection.</value>
+  </data>
+  <data name="PowerScripts_MxcEffectiveAll" xml:space="preserve">
+    <value>Sandbox required with all restrictions.</value>
+  </data>
+  <data name="PowerScripts_MxcEffectiveReduced" xml:space="preserve">
+    <value>Sandbox on; disabled restrictions: {0}.</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_Filesystem_DisplayName" xml:space="preserve">
+    <value>Filesystem</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_Network_DisplayName" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_Ui_DisplayName" xml:space="preserve">
+    <value>Desktop interaction (Windows only)</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_LeastPrivilege_DisplayName" xml:space="preserve">
+    <value>Process privileges (Windows only)</value>
+  </data>
+  <data name="PowerScripts_MxcAccess_Filesystem" xml:space="preserve">
+    <value>broader file access</value>
+  </data>
+  <data name="PowerScripts_MxcAccess_Network" xml:space="preserve">
+    <value>network access</value>
+  </data>
+  <data name="PowerScripts_MxcAccess_Ui" xml:space="preserve">
+    <value>desktop interaction</value>
+  </data>
+  <data name="PowerScripts_MxcAccess_LeastPrivilege" xml:space="preserve">
+    <value>standard process privileges</value>
+  </data>
+  <data name="PowerScripts_MxcSupportChecking" xml:space="preserve">
+    <value>Checking sandbox support...</value>
+  </data>
+  <data name="PowerScripts_MxcSupportHostMissing" xml:space="preserve">
+    <value>PowerScripts.Host.exe was not found, so sandbox support could not be verified.</value>
+  </data>
+  <data name="PowerScripts_MxcSupportProbeStartFailed" xml:space="preserve">
+    <value>The sandbox support check could not be started.</value>
+  </data>
+  <data name="PowerScripts_MxcSupportProbeFailed" xml:space="preserve">
+    <value>The sandbox support check did not complete successfully.</value>
+  </data>
+  <data name="PowerScripts_MxcSupportProbeNoResult" xml:space="preserve">
+    <value>The sandbox support check returned no result.</value>
+  </data>
+  <data name="PowerScripts_MxcSupportUnknown" xml:space="preserve">
+    <value>Sandbox support could not be verified on this PC.</value>
+  </data>
+  <data name="PowerScripts_MxcDisableWarning" xml:space="preserve">
+    <value>Turning off the script sandbox allows all PowerScripts to run without sandbox protection. Linux Python will use your WSL distribution instead of a separate managed container.</value>
+  </data>
+  <data name="PowerScripts_MxcDisablePolicyWarning" xml:space="preserve">
+    <value>Turning off the {0} restriction weakens isolation for all PowerScripts.</value>
+  </data>
+  <data name="PowerScripts_MxcRiskDialogTitle" xml:space="preserve">
+    <value>Reduce script sandbox protection?</value>
+  </data>
+  <data name="PowerScripts_MxcRiskDialogContent" xml:space="preserve">
+    <value>{0}
+
+This can expose files, network access, the desktop, or elevated capabilities to untrusted script code. Continue only if you understand and accept the risk.</value>
+  </data>
+  <data name="PowerScripts_MxcRiskDialogAccept" xml:space="preserve">
+    <value>Accept risk and continue</value>
+  </data>
+  <data name="PowerScripts_CatalogueInputFilter.Header" xml:space="preserve">
+    <value>Input type</value>
+  </data>
+  <data name="PowerScripts_CatalogueSearch.Header" xml:space="preserve">
+    <value>Search scripts</value>
+  </data>
+  <data name="PowerScripts_CatalogueSearch.PlaceholderText" xml:space="preserve">
+    <value>Search by name</value>
+  </data>
+  <data name="PowerScripts_CatalogueOutputFilter.Header" xml:space="preserve">
+    <value>Output type</value>
+  </data>
+  <data name="PowerScripts_OutputFilterAll.Content" xml:space="preserve">
+    <value>All output types</value>
+  </data>
+  <data name="PowerScripts_OutputFilterNone.Content" xml:space="preserve">
+    <value>None (no output)</value>
+  </data>
+  <data name="PowerScripts_CatalogueSort.Header" xml:space="preserve">
+    <value>Sort by</value>
+  </data>
+  <data name="PowerScripts_FilterAll.Content" xml:space="preserve">
+    <value>All input types</value>
+  </data>
+  <data name="PowerScripts_FilterNone.Content" xml:space="preserve">
+    <value>None (no primary input)</value>
+  </data>
+  <data name="PowerScripts_FilterFiles.Content" xml:space="preserve">
+    <value>Files</value>
+  </data>
+  <data name="PowerScripts_FilterText.Content" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="PowerScripts_FilterImage.Content" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="PowerScripts_FilterAudio.Content" xml:space="preserve">
+    <value>Audio</value>
+  </data>
+  <data name="PowerScripts_IoImage" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="PowerScripts_IoAudio" xml:space="preserve">
+    <value>Audio</value>
+  </data>
+  <data name="PowerScripts_DetailsImage" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="PowerScripts_DetailsAudio" xml:space="preserve">
+    <value>Audio</value>
+  </data>
+  <data name="PowerScripts_DetailsInputMediaTypes" xml:space="preserve">
+    <value>Accepted input media types</value>
+  </data>
+  <data name="PowerScripts_DetailsOutputMediaTypes" xml:space="preserve">
+    <value>Allowed output media types</value>
+  </data>
+  <data name="PowerScripts_DetailsMediaCollection" xml:space="preserve">
+    <value>Media collection</value>
+  </data>
+  <data name="PowerScripts_DetailsMediaMinimum" xml:space="preserve">
+    <value>Minimum media items</value>
+  </data>
+  <data name="PowerScripts_DetailsMediaMaximum" xml:space="preserve">
+    <value>Maximum media items</value>
+  </data>
+  <data name="PowerScripts_DetailsMediaLimits" xml:space="preserve">
+    <value>Inline media limits</value>
+  </data>
+  <data name="PowerScripts_DetailsMediaLimitsValue" xml:space="preserve">
+    <value>16 MiB decoded per item; 32 MiB total; at most 64 items. Format headers are checked; no automatic conversion.</value>
+  </data>
+  <data name="PowerScripts_SortNameAscending.Content" xml:space="preserve">
+    <value>Name (A–Z)</value>
+  </data>
+  <data name="PowerScripts_SortNameDescending.Content" xml:space="preserve">
+    <value>Name (Z–A)</value>
+  </data>
+  <data name="PowerScripts_SortInput.Content" xml:space="preserve">
+    <value>Input type</value>
+  </data>
+  <data name="PowerScripts_SortOutput.Content" xml:space="preserve">
+    <value>Output type</value>
+  </data>
+  <data name="PowerScripts_SortRuntime.Content" xml:space="preserve">
+    <value>Runtime</value>
+  </data>
+  <data name="PowerScripts_CatalogueCount" xml:space="preserve">
+    <value>{0} of {1} scripts</value>
+  </data>
+  <data name="PowerScripts_CatalogueNoMatches.Message" xml:space="preserve">
+    <value>No scripts match your search and filters. Try another name or select all input and output types.</value>
+  </data>
+  <data name="PowerScripts_IconWarning.Header" xml:space="preserve">
+    <value>Script icon unavailable</value>
+  </data>
+  <data name="PowerScripts_IconLoadFailed" xml:space="preserve">
+    <value>The script icon could not be decoded. A default icon is shown instead.</value>
+  </data>
+  <data name="PowerScripts_IoNone" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="PowerScripts_IoFiles" xml:space="preserve">
+    <value>Files</value>
+  </data>
+  <data name="PowerScripts_IoAllFiles" xml:space="preserve">
+    <value>All files</value>
+  </data>
+  <data name="PowerScripts_IoText" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="PowerScripts_SettingsBack.AutomationProperties.Name" xml:space="preserve">
+    <value>Back to PowerScripts</value>
+  </data>
+  <data name="PowerScripts_SettingsBack.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Back to PowerScripts</value>
+  </data>
+  <data name="PowerScripts_SettingsSubpage.ModuleTitle" xml:space="preserve">
+    <value>Script details</value>
+  </data>
+  <data name="PowerScripts_SettingsSubpage.ModuleDescription" xml:space="preserve">
+    <value>Review the script's descriptor and global execution isolation. To change metadata, edit the .tool.json file.</value>
+  </data>
+  <data name="PowerScripts_SettingsNavigationFailed" xml:space="preserve">
+    <value>Could not open the script settings page. Try again.</value>
+  </data>
+  <data name="PowerScripts_SettingsDetails.Header" xml:space="preserve">
+    <value>Security and script details</value>
+  </data>
+  <data name="PowerScripts_SettingsInvalidResponse" xml:space="preserve">
+    <value>PowerScripts Host returned an invalid settings response.</value>
+  </data>
+  <data name="PowerScripts_SettingsHostFailed" xml:space="preserve">
+    <value>PowerScripts could not save the settings. Your edits have been kept. Check that the script and its settings are accessible, then try again.</value>
+  </data>
+  <data name="PowerScripts_SettingsTimeout" xml:space="preserve">
+    <value>PowerScripts Host did not respond in time. Your edits have been kept. Refresh to check whether the operation completed before trying again.</value>
+  </data>
+  <data name="PowerScripts_SettingsEmptyCatalogue.Message" xml:space="preserve">
+    <value>No PowerScripts found. Create one from a template, or place a script and its sibling .tool.json directly in the scripts folder or one subfolder below it. Helper files without descriptors are ignored.</value>
+  </data>
+  <data name="PowerScripts_SettingsConfigurationErrors.Header" xml:space="preserve">
+    <value>Configuration needs attention — this script cannot run</value>
+  </data>
+  <data name="PowerScripts_SettingsConfiguration.Header" xml:space="preserve">
+    <value>Local settings</value>
+  </data>
+  <data name="PowerScripts_SettingsConfiguration.Description" xml:space="preserve">
+    <value>Metadata comes from the .tool.json descriptor. All scripts use global runtime and isolation settings.</value>
+  </data>
+  <data name="PowerScripts_MetadataHelp.Text" xml:space="preserve">
+    <value>These properties come from the script's .tool.json file. Edit metadata or script in an external editor, then select Refresh to see your changes. Edits require trust review before the script runs again. All scripts use the global sandbox settings.</value>
+  </data>
+  <data name="PowerScripts_EditMetadata.Label" xml:space="preserve">
+    <value>Edit metadata</value>
+  </data>
+  <data name="PowerScripts_ShowInExplorer.Label" xml:space="preserve">
+    <value>Show in File Explorer</value>
+  </data>
+  <data name="PowerScripts_ShowInExplorer.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Open the containing folder and select the script file.</value>
+  </data>
+  <data name="PowerScripts_ScriptIsolation.Header" xml:space="preserve">
+    <value>Script sandbox</value>
+  </data>
+  <data name="PowerScripts_EditMetadata.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Open the .tool.json file using Windows' Edit action. If no editor is registered, use Notepad.</value>
+  </data>
+  <data name="PowerScripts_EditScript.Label" xml:space="preserve">
+    <value>Edit script</value>
+  </data>
+  <data name="PowerScripts_EditScript.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Open the script using Windows' Edit action, never its Run/Open action. If no editor is registered, use Notepad.</value>
+  </data>
+  <data name="PowerScripts_RefreshMetadata.Label" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="PowerScripts_RefreshMetadata.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Reload the descriptor, script details, trust and isolation status after editing.</value>
+  </data>
+  <data name="PowerScripts_RawMetadata.Header" xml:space="preserve">
+    <value>Raw metadata (advanced)</value>
+  </data>
+  <data name="PowerScripts_EditorFallback.Message" xml:space="preserve">
+    <value>No suitable Windows file association was found. The file was opened safely in Notepad instead.</value>
+  </data>
+  <data name="PowerScripts_EditorFileMissing" xml:space="preserve">
+    <value>The file no longer exists. Refresh the script details or check its folder.</value>
+  </data>
+  <data name="PowerScripts_EditorLaunchFailed" xml:space="preserve">
+    <value>The text editor could not be started.</value>
+  </data>
+  <data name="PowerScripts_DetailsGeneral" xml:space="preserve">
+    <value>About this script</value>
+  </data>
+  <data name="PowerScripts_DetailsName" xml:space="preserve">
+    <value>Display name</value>
+  </data>
+  <data name="PowerScripts_DetailsId" xml:space="preserve">
+    <value>Action ID</value>
+  </data>
+  <data name="PowerScripts_DetailsDescription" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="PowerScripts_DetailsPublisher" xml:space="preserve">
+    <value>Publisher</value>
+  </data>
+  <data name="PowerScripts_DetailsVersion" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="PowerScripts_DetailsSource" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="PowerScripts_DetailsIcon" xml:space="preserve">
+    <value>Package icon</value>
+  </data>
+  <data name="PowerScripts_DetailsIo" xml:space="preserve">
+    <value>Input and output</value>
+  </data>
+  <data name="PowerScripts_DetailsInput" xml:space="preserve">
+    <value>Primary input</value>
+  </data>
+  <data name="PowerScripts_DetailsOutput" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="PowerScripts_DetailsExtensions" xml:space="preserve">
+    <value>Accepted input file types</value>
+  </data>
+  <data name="PowerScripts_DetailsMinFiles" xml:space="preserve">
+    <value>Minimum selected files</value>
+  </data>
+  <data name="PowerScripts_DetailsMaxFiles" xml:space="preserve">
+    <value>Maximum selected files</value>
+  </data>
+  <data name="PowerScripts_DetailsCapabilitiesSection" xml:space="preserve">
+    <value>Declared capabilities</value>
+  </data>
+  <data name="PowerScripts_DetailsCapabilities" xml:space="preserve">
+    <value>Declared capabilities (not permission grants)</value>
+  </data>
+  <data name="PowerScripts_DetailsParameters" xml:space="preserve">
+    <value>Parameters</value>
+  </data>
+  <data name="PowerScripts_DetailsNoParameters" xml:space="preserve">
+    <value>No named parameters</value>
+  </data>
+  <data name="PowerScripts_DetailsParameterTitle" xml:space="preserve">
+    <value>Parameter: {0}</value>
+  </data>
+  <data name="PowerScripts_DetailsResultFieldTitle" xml:space="preserve">
+    <value>Result field: {0}</value>
+  </data>
+  <data name="PowerScripts_DetailsResultFieldName" xml:space="preserve">
+    <value>Field name</value>
+  </data>
+  <data name="PowerScripts_DetailsResultFields" xml:space="preserve">
+    <value>Result fields</value>
+  </data>
+  <data name="PowerScripts_DetailsNoResultFields" xml:space="preserve">
+    <value>No named result fields declared</value>
+  </data>
+  <data name="PowerScripts_DetailsParameterName" xml:space="preserve">
+    <value>Parameter name</value>
+  </data>
+  <data name="PowerScripts_DetailsType" xml:space="preserve">
+    <value>Value type</value>
+  </data>
+  <data name="PowerScripts_DetailsRequired" xml:space="preserve">
+    <value>Required</value>
+  </data>
+  <data name="PowerScripts_DetailsDefault" xml:space="preserve">
+    <value>Default value</value>
+  </data>
+  <data name="PowerScripts_DetailsOptions" xml:space="preserve">
+    <value>Allowed choices</value>
+  </data>
+  <data name="PowerScripts_DetailsMinimum" xml:space="preserve">
+    <value>Minimum value</value>
+  </data>
+  <data name="PowerScripts_DetailsMaximum" xml:space="preserve">
+    <value>Maximum value</value>
+  </data>
+  <data name="PowerScripts_DetailsFormat" xml:space="preserve">
+    <value>Value format</value>
+  </data>
+  <data name="PowerScripts_DetailsMediaType" xml:space="preserve">
+    <value>File media type</value>
+  </data>
+  <data name="PowerScripts_DetailsRole" xml:space="preserve">
+    <value>Input role</value>
+  </data>
+  <data name="PowerScripts_DetailsPrimaryFiles" xml:space="preserve">
+    <value>Selected files supplied by the consuming module</value>
+  </data>
+  <data name="PowerScripts_DetailsExecution" xml:space="preserve">
+    <value>Execution</value>
+  </data>
+  <data name="PowerScripts_DetailsRuntime" xml:space="preserve">
+    <value>Script language</value>
+  </data>
+  <data name="PowerScripts_DetailsExecutionMode" xml:space="preserve">
+    <value>Launch method</value>
+  </data>
+  <data name="PowerScripts_DetailsBuiltIn" xml:space="preserve">
+    <value>Built-in runtime</value>
+  </data>
+  <data name="PowerScripts_DetailsCustom" xml:space="preserve">
+    <value>Custom execution command</value>
+  </data>
+  <data name="PowerScripts_DetailsCommand" xml:space="preserve">
+    <value>Command and fixed arguments (one per line)</value>
+  </data>
+  <data name="PowerScripts_DetailsArgumentMap" xml:space="preserve">
+    <value>Parameter-to-argument mapping</value>
+  </data>
+  <data name="PowerScripts_DetailsExitCodes" xml:space="preserve">
+    <value>Exit code meanings</value>
+  </data>
+  <data name="PowerScripts_DetailsStandardInput" xml:space="preserve">
+    <value>Input delivery</value>
+  </data>
+  <data name="PowerScripts_DetailsJsonInput" xml:space="preserve">
+    <value>JSON on standard input</value>
+  </data>
+  <data name="PowerScripts_DetailsArgumentInput" xml:space="preserve">
+    <value>Command-line arguments</value>
+  </data>
+  <data name="PowerScripts_DetailsAnnotations" xml:space="preserve">
+    <value>Author-provided hints</value>
+  </data>
+  <data name="PowerScripts_DetailsReadOnlyHint" xml:space="preserve">
+    <value>Read-only operation hint</value>
+  </data>
+  <data name="PowerScripts_DetailsDestructiveHint" xml:space="preserve">
+    <value>Destructive operation hint</value>
+  </data>
+  <data name="PowerScripts_DetailsAllFiles" xml:space="preserve">
+    <value>All file types</value>
+  </data>
+  <data name="PowerScripts_DetailsNoLimit" xml:space="preserve">
+    <value>No upper limit</value>
+  </data>
+  <data name="PowerScripts_DetailsNone" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="PowerScripts_DetailsNotSpecified" xml:space="preserve">
+    <value>Not specified</value>
+  </data>
+  <data name="PowerScripts_DetailsEmptyText" xml:space="preserve">
+    <value>Empty text</value>
+  </data>
+  <data name="PowerScripts_DetailsEmptyList" xml:space="preserve">
+    <value>Empty list</value>
+  </data>
+  <data name="PowerScripts_DetailsEmptyObject" xml:space="preserve">
+    <value>Empty object</value>
+  </data>
+  <data name="PowerScripts_DetailsNull" xml:space="preserve">
+    <value>No value (null)</value>
+  </data>
+  <data name="PowerScripts_DetailsYes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="PowerScripts_DetailsNo" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="PowerScripts_DetailsText" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="PowerScripts_DetailsFiles" xml:space="preserve">
+    <value>Files</value>
+  </data>
+  <data name="PowerScripts_DetailsFilePath" xml:space="preserve">
+    <value>File path</value>
+  </data>
+  <data name="PowerScripts_DetailsInteger" xml:space="preserve">
+    <value>Whole number</value>
+  </data>
+  <data name="PowerScripts_DetailsNumber" xml:space="preserve">
+    <value>Number</value>
+  </data>
+  <data name="PowerScripts_DetailsBoolean" xml:space="preserve">
+    <value>On/off</value>
+  </data>
+  <data name="PowerScripts_DetailsArray" xml:space="preserve">
+    <value>List</value>
+  </data>
+  <data name="PowerScripts_DetailsObject" xml:space="preserve">
+    <value>Object</value>
+  </data>
+  <data name="PowerScripts_DetailsFileRead" xml:space="preserve">
+    <value>Read files</value>
+  </data>
+  <data name="PowerScripts_DetailsFileWrite" xml:space="preserve">
+    <value>Write files</value>
+  </data>
+  <data name="PowerScripts_DetailsNetwork" xml:space="preserve">
+    <value>Network access</value>
+  </data>
+  <data name="PowerScripts_DetailsUi" xml:space="preserve">
+    <value>Display user interface</value>
+  </data>
+  <data name="PowerScripts_CreateScriptButton.Text" xml:space="preserve">
+    <value>Create Script</value>
+  </data>
+  <data name="PowerScripts_CreateScriptAction.AutomationProperties.Name" xml:space="preserve">
+    <value>Create Script</value>
+  </data>
+  <data name="PowerScripts_CreateScriptTitle" xml:space="preserve">
+    <value>Create Script</value>
+  </data>
+  <data name="PowerScripts_TemplatesPage.ModuleTitle" xml:space="preserve">
+    <value>Create Script</value>
+  </data>
+  <data name="PowerScripts_TemplatesPage.ModuleDescription" xml:space="preserve">
+    <value>Choose a runtime and input/output contract to generate a starter script.</value>
+  </data>
+  <data name="PowerScripts_TemplateNavigationFailed" xml:space="preserve">
+    <value>Could not open the script creation page. Try again.</value>
+  </data>
+  <data name="PowerScripts_TemplatesHelp.Text" xml:space="preserve">
+    <value>Create an editable script, .tool.json descriptor and README guide in your scripts folder. Each guide explains the fields and safe policy choices. Creation does not run the script, approve trust or change isolation.</value>
+  </data>
+  <data name="PowerScripts_TemplateCreate.Content" xml:space="preserve">
+    <value>Create script</value>
+  </data>
+  <data name="PowerScripts_TemplateProjectName.Header" xml:space="preserve">
+    <value>Project name (required)</value>
+  </data>
+  <data name="PowerScripts_TemplateProjectNameHelp.Text" xml:space="preserve">
+    <value>Shown as the script title. A unique folder and action ID are derived automatically, so existing projects are never overwritten.</value>
+  </data>
+  <data name="PowerScripts_TemplateDescription.Header" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="PowerScripts_TemplateFileExtensions.Header" xml:space="preserve">
+    <value>Allowed input file extensions (optional)</value>
+  </data>
+  <data name="PowerScripts_TemplateFileExtensionsHelp.Text" xml:space="preserve">
+    <value>For example: .txt, .md or *.png. Video stays file-based: use .mp4, .webm, .mov or .mkv. Separate types with commas, spaces or semicolons. Leave blank for all file types, or use * alone. For compound names such as archive.tar.gz, use .gz. This filters selected files; it does not grant filesystem access.</value>
+  </data>
+  <data name="PowerScripts_TemplateSetupHelp.Text" xml:space="preserve">
+    <value>Your choices are written into the .tool.json descriptor. Image/audio input uses MIME type and base64 data; matching media output passes it through. Otherwise, media output creates a sample one-pixel PNG or silent WAV; file output creates a text file. Supported formats: PNG, JPEG, static WebP, WAV, MP3 and FLAC. Video uses files. Inline limits: 16 MiB per item, 32 MiB total. Replace the example processing after creation. Creation does not run code, approve trust or change sandbox protection.</value>
+  </data>
+  <data name="PowerScripts_TemplateCancel.Content" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PowerScripts_TemplateCreated" xml:space="preserve">
+    <value>Created. Read README.md in the new folder, then edit the script and descriptor. Refresh after edits; review trust before running from a consumer.</value>
+  </data>
+  <data name="PowerScripts_TemplateRuntime.Header" xml:space="preserve">
+    <value>Runtime (required)</value>
+  </data>
+  <data name="PowerScripts_TemplateRuntime.PlaceholderText" xml:space="preserve">
+    <value>Choose a runtime</value>
+  </data>
+  <data name="PowerScripts_TemplatePythonHelp.Text" xml:space="preserve">
+    <value>Python scripts execute top-level code and read typed JSON from stdin. Enable Python execution before running them; creation does not change runtime settings.</value>
+  </data>
+  <data name="PowerScripts_TemplateInput.Header" xml:space="preserve">
+    <value>Primary input type (required)</value>
+  </data>
+  <data name="PowerScripts_TemplateInput.PlaceholderText" xml:space="preserve">
+    <value>Choose an input type</value>
+  </data>
+  <data name="PowerScripts_TemplateOutput.Header" xml:space="preserve">
+    <value>Output type (required)</value>
+  </data>
+  <data name="PowerScripts_TemplateOutput.PlaceholderText" xml:space="preserve">
+    <value>Choose an output type</value>
+  </data>
+  <data name="PowerScripts_TemplateNone.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="PowerScripts_TemplateMinimumFiles.Header" xml:space="preserve">
+    <value>Minimum input files (required)</value>
+  </data>
+  <data name="PowerScripts_TemplateMaximumFiles.Header" xml:space="preserve">
+    <value>Maximum input files (required; 0 means unlimited)</value>
+  </data>
+  <data name="PowerScripts_TemplateInvalidFileCount" xml:space="preserve">
+    <value>Enter a whole-number file count. The minimum must be at least 1; maximum 0 means unlimited.</value>
+  </data>
+  <data name="PowerScripts_TemplateFolderFailed" xml:space="preserve">
+    <value>The script was created, but its folder could not be opened.</value>
+  </data>
+  <data name="PowerScripts_TemplateParameters.Text" xml:space="preserve">
+    <value>Parameters</value>
+  </data>
+  <data name="PowerScripts_TemplateParametersHelp.Text" xml:space="preserve">
+    <value>Add named options for consumers to collect when running your script. Choose a type, optional choices and defaults. Names must start with a letter and use only letters, digits or underscores.</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterAdd.Content" xml:space="preserve">
+    <value>Add parameter</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterRemove.Content" xml:space="preserve">
+    <value>Remove parameter</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterName.Header" xml:space="preserve">
+    <value>Name (required)</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterHeader" xml:space="preserve">
+    <value>Parameter</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterType.Header" xml:space="preserve">
+    <value>Type (required)</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterType.PlaceholderText" xml:space="preserve">
+    <value>Choose a type</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterString.Content" xml:space="preserve">
+    <value>String</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterInteger.Content" xml:space="preserve">
+    <value>Integer</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterBoolean.Content" xml:space="preserve">
+    <value>Boolean</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterFile.Content" xml:space="preserve">
+    <value>File path</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterTitle.Header" xml:space="preserve">
+    <value>Display name (optional)</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterDescription.Header" xml:space="preserve">
+    <value>Description (optional)</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterRequired.Content" xml:space="preserve">
+    <value>Required</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterEnum.Header" xml:space="preserve">
+    <value>Allowed values (enum, optional)</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterEnumHelp.Text" xml:space="preserve">
+    <value>One value per line. Leave blank to accept any string. A default must match one of these values exactly.</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterMinimum.Header" xml:space="preserve">
+    <value>Minimum (optional)</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterMaximum.Header" xml:space="preserve">
+    <value>Maximum (optional)</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterExtensions.Header" xml:space="preserve">
+    <value>Allowed file extensions (optional; for example .txt, .json)</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterHasDefault.Content" xml:space="preserve">
+    <value>Provide a default value (optional)</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterDefaultHelp.Text" xml:space="preserve">
+    <value>A required parameter without a default must be provided when running the script. File paths normally come from a file picker. An optional parameter without a default can be omitted.</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterDefault.Header" xml:space="preserve">
+    <value>Default value</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterBooleanDefault.Header" xml:space="preserve">
+    <value>Default value</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterBooleanDefault.OnContent" xml:space="preserve">
+    <value>True</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterBooleanDefault.OffContent" xml:space="preserve">
+    <value>False</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterInvalidInteger" xml:space="preserve">
+    <value>Enter a 32-bit whole number for parameter '{0}'.</value>
+  </data>
+  <data name="PowerScripts_PythonEnvironmentGroup.Header" xml:space="preserve">
+    <value>Python environment</value>
+  </data>
+  <data name="PowerScripts_PythonEnvironment.Header" xml:space="preserve">
+    <value>Run Python scripts in</value>
+  </data>
+  <data name="PowerScripts_EnvironmentDisabled.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="PowerScripts_EnvironmentWindows.Content" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="PowerScripts_EnvironmentWsl.Content" xml:space="preserve">
+    <value>Linux (WSL)</value>
+  </data>
+  <data name="PowerScripts_EnvironmentDisabledHelp" xml:space="preserve">
+    <value>Python scripts are disabled. PowerShell scripts are unaffected.</value>
+  </data>
+  <data name="PowerScripts_EnvironmentWindowsHelp" xml:space="preserve">
+    <value>Use Python installed on Windows. The global script sandbox settings apply.</value>
+  </data>
+  <data name="PowerScripts_EnvironmentWslHelp" xml:space="preserve">
+    <value>Sandbox off: use Python and packages in your WSL distribution. Turning the script sandbox on switches Linux execution to a separate managed container.</value>
+  </data>
+  <data name="PowerScripts_EnvironmentLinuxHelp" xml:space="preserve">
+    <value>Sandbox on: use the configured Linux image in a separate managed container, not your WSL distribution. Turning the script sandbox off switches Linux execution to your WSL distribution.</value>
+  </data>
+  <data name="PowerScripts_LinuxImage.Header" xml:space="preserve">
+    <value>Linux container image</value>
+  </data>
+  <data name="PowerScripts_LinuxImage.Description" xml:space="preserve">
+    <value>Provide a trusted Linux image for this PC's architecture with /bin/sh, python3 on PATH (/usr/local/bin:/usr/bin:/bin), and your script dependencies. PowerToys mounts scripts and inputs at runtime; it does not install packages.</value>
+  </data>
+  <data name="PowerScripts_LinuxImageInput.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Linux container image reference</value>
+  </data>
+  <data name="PowerScripts_LinuxImageInput.PlaceholderText" xml:space="preserve">
+    <value>registry/repository:tag or registry/repository@sha256:digest</value>
+  </data>
+  <data name="PowerScripts_LinuxImageRequired" xml:space="preserve">
+    <value>Enter a Linux container image reference before checking Python or downloading the image.</value>
+  </data>
+  <data name="PowerScripts_LinuxImagePreparation.Text" xml:space="preserve">
+    <value>Requires a compatible WSL runtime. PowerScripts reuses an isolated Linux container. Restarting its runtime discards container changes but keeps cached images, returned files, and your settings.</value>
+  </data>
+  <data name="PowerScripts_LinuxDownloadDescription.Text" xml:space="preserve">
+    <value>Download and cache the image from its registry, then check Python. Requires network access; does not install Python or packages.</value>
+  </data>
+  <data name="PowerScripts_LinuxCheckDescription.Text" xml:space="preserve">
+    <value>Check Python without downloading an image or resetting a healthy PowerScripts session. Your scripts and their dependencies are not tested.</value>
+  </data>
+  <data name="PowerScripts_LinuxCheck.Content" xml:space="preserve">
+    <value>Check Python</value>
+  </data>
+  <data name="PowerScripts_LinuxSetup.Content" xml:space="preserve">
+    <value>Download image</value>
+  </data>
+  <data name="PowerScripts_LinuxNotChecked" xml:space="preserve">
+    <value>Environment has not been checked.</value>
+  </data>
+  <data name="PowerScripts_LinuxImageReady" xml:space="preserve">
+    <value>Image ready</value>
+  </data>
+  <data name="PowerScripts_LinuxImageNotReady" xml:space="preserve">
+    <value>Linux environment unavailable</value>
+  </data>
+  <data name="PowerScripts_LinuxImageStatusTitle" xml:space="preserve">
+    <value>Image status</value>
+  </data>
+  <data name="PowerScripts_LinuxImageCheckingTitle" xml:space="preserve">
+    <value>Checking Python</value>
+  </data>
+  <data name="PowerScripts_LinuxImagePreparingTitle" xml:space="preserve">
+    <value>Downloading and checking image</value>
+  </data>
+  <data name="PowerScripts_LinuxImageProgress.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Downloading the image or checking Python</value>
+  </data>
+  <data name="PowerScripts_LinuxPreparing" xml:space="preserve">
+    <value>Downloading and caching the Linux image, then checking Python...</value>
+  </data>
+  <data name="PowerScripts_LinuxChecking" xml:space="preserve">
+    <value>Checking Python using the cached Linux image...</value>
+  </data>
+  <data name="PowerScripts_LinuxSetupTitle" xml:space="preserve">
+    <value>Download the Linux image?</value>
+  </data>
+  <data name="PowerScripts_LinuxSetupHelp" xml:space="preserve">
+    <value>Download {0} from its container registry into the PowerScripts cache, then check Python in a temporary container. The image must already contain Python and your dependencies; PowerToys does not install them. Only use an image you trust. Downloading requires network access, independently of script network permissions. Your WSL distributions, script trust, and sandbox permissions are not changed.</value>
+  </data>
+  <data name="PowerScripts_LinuxSetupConfirm" xml:space="preserve">
+    <value>Download and check</value>
+  </data>
+  <data name="PowerScripts_ExecutionEnvironment.Header" xml:space="preserve">
+    <value>Execution environment</value>
+  </data>
+  <data name="PowerScripts_ExecutionDescriptor" xml:space="preserve">
+    <value>This script supplies its own launch command in the descriptor. Python environment selection does not change that command.</value>
+  </data>
+  <data name="PowerScripts_ExecutionDescriptorPolicy" xml:space="preserve">
+    <value>Sandbox settings are evaluated against the script's launch command. Sandboxing for Windows scripts cannot host wsl.exe; execution is blocked when sandbox protection is required for that command.</value>
+  </data>
+  <data name="PowerScripts_ExecutionWindowsPython" xml:space="preserve">
+    <value>Python on Windows, using the configured Windows interpreter.</value>
+  </data>
+  <data name="PowerScripts_ExecutionPowerShell" xml:space="preserve">
+    <value>PowerShell on Windows. Python environment selection does not affect this script.</value>
+  </data>
+  <data name="PowerScripts_ExecutionWsl" xml:space="preserve">
+    <value>Python in your existing WSL distribution: {0}. No sandbox protection.</value>
+  </data>
+  <data name="PowerScripts_WslDefaultDistribution" xml:space="preserve">
+    <value>WSL default distribution</value>
+  </data>
+  <data name="PowerScripts_ExecutionLinux" xml:space="preserve">
+    <value>Python in a separate managed Linux container using {0}. Sandbox required; your WSL distribution and packages are not used.</value>
+  </data>
+  <data name="PowerScripts_ExecutionLinuxControls" xml:space="preserve">
+    <value>Windows files protected; networking {0}. Windows-only desktop and process-privilege restrictions are not enforced. Python runs as guest root.</value>
+  </data>
+  <data name="PowerScripts_LinuxNetworkBlocked" xml:space="preserve">
+    <value>blocked</value>
+  </data>
+  <data name="PowerScripts_LinuxNetworkAllowed" xml:space="preserve">
+    <value>allowed</value>
+  </data>
+  <data name="PowerScripts_ExecutionLinuxBlocked" xml:space="preserve">
+    <value>Blocked by global sandbox settings. Managed Linux requires sandbox and file protection. Windows-only desktop and process-privilege restrictions do not apply to Linux.</value>
+  </data>
+  <data name="PowerScripts_ExecutionLinuxSetupRequired" xml:space="preserve">
+    <value>The managed Linux environment is not ready or has not been checked. Use Check Python in PowerScripts settings, or Download image if it is not cached.</value>
+  </data>
+  <data name="PowerScripts_ExecutionBlocked" xml:space="preserve">
+    <value>Execution blocked. No direct-execution fallback is permitted.</value>
+  </data>
+  <data name="PowerScripts_LinuxPolicyHelp.Title" xml:space="preserve">
+    <value>Review sandbox restrictions for Linux</value>
+  </data>
+  <data name="PowerScripts_LinuxPolicyHelp.Message" xml:space="preserve">
+    <value>Sandbox and file protection are required. Desktop and process-privilege restrictions apply only to Windows scripts and can stay enabled while running Linux. Python runs as guest root, not as a Windows administrator. Review the network restriction before running scripts.</value>
+  </data>
+  <data name="PowerScripts_LinuxUseSupported.Content" xml:space="preserve">
+    <value>Use supported Linux policies</value>
+  </data>
+  <data name="PowerScripts_ActivityTitle" xml:space="preserve">
+    <value>Activity</value>
+  </data>
+  <data name="PowerScripts_ActivityCard.Header" xml:space="preserve">
+    <value>Activity</value>
+  </data>
+  <data name="PowerScripts_ActivityCard.Description" xml:space="preserve">
+    <value>See recent script runs and the module that started them.</value>
+  </data>
+  <data name="PowerScripts_ActivityHelp.Text" xml:space="preserve">
+    <value>The latest 200 invocations, newest first. Refreshes every 5 seconds while open. Only script names, IDs, calling modules, times and results are kept on this device. Inputs, parameters and outputs are never recorded. Sources are caller-supplied, not verified identities.</value>
+  </data>
+  <data name="PowerScripts_ActivityRefresh.Content" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="PowerScripts_ActivityClear.Content" xml:space="preserve">
+    <value>Clear history</value>
+  </data>
+  <data name="PowerScripts_ActivityClearTitle" xml:space="preserve">
+    <value>Clear script history?</value>
+  </data>
+  <data name="PowerScripts_ActivityClearConfirm" xml:space="preserve">
+    <value>Clear history</value>
+  </data>
+  <data name="PowerScripts_ActivityClearHelp" xml:space="preserve">
+    <value>Remove completed and interrupted invocations. Running invocations are kept. This does not cancel scripts or change trust approvals.</value>
+  </data>
+  <data name="PowerScripts_ActivityEmpty.Text" xml:space="preserve">
+    <value>No script activity yet.</value>
+  </data>
+  <data name="PowerScripts_ActivityList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Recent script activity</value>
+  </data>
+  <data name="PowerScripts_ActivityError.Title" xml:space="preserve">
+    <value>Activity could not be updated. Previously loaded entries may be out of date.</value>
+  </data>
+  <data name="PowerScripts_ActivityAdvancedPaste" xml:space="preserve">
+    <value>Advanced Paste</value>
+  </data>
+  <data name="PowerScripts_ActivityKeyboardManager" xml:space="preserve">
+    <value>Keyboard Manager</value>
+  </data>
+  <data name="PowerScripts_ActivityCommandLine" xml:space="preserve">
+    <value>Command line</value>
+  </data>
+  <data name="PowerScripts_ActivityDetails" xml:space="preserve">
+    <value>{0} | {1} | {2}</value>
+  </data>
+  <data name="PowerScripts_ActivityRunning" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="PowerScripts_ActivitySucceeded" xml:space="preserve">
+    <value>Succeeded</value>
+  </data>
+  <data name="PowerScripts_ActivityFailed" xml:space="preserve">
+    <value>Failed or refused</value>
+  </data>
+  <data name="PowerScripts_ActivityInterrupted" xml:space="preserve">
+    <value>Interrupted (cancelled or Host stopped; completion time unavailable)</value>
+  </data>
+  <data name="PowerScripts_ActivityUnknown" xml:space="preserve">
+    <value>Status unavailable</value>
+  </data>
+  <data name="PowerScripts_ActivityExitCode" xml:space="preserve">
+    <value>{0} (exit code {1})</value>
+  </data>
+  <data name="PowerScripts_ActivityDuration" xml:space="preserve">
+    <value>{0} | {1:N1} s</value>
+  </data>
+  <data name="PowerScripts_Consumers.Header" xml:space="preserve">
+    <value>Use PowerScripts in</value>
+  </data>
+  <data name="PowerScripts_AdvancedPasteConsumer.Header" xml:space="preserve">
+    <value>Advanced Paste</value>
+  </data>
+  <data name="PowerScripts_KeyboardManagerConsumer.Header" xml:space="preserve">
+    <value>Keyboard Manager</value>
+  </data>
+  <data name="PowerScripts_ConsumerDescription" xml:space="preserve">
+    <value>Allow this module to discover and run scripts. Turning this off keeps existing bindings.</value>
+  </data>
+  <data name="PowerScripts_ConsumerModuleDisabled" xml:space="preserve">
+    <value>Enable PowerScripts first. Your integration preference is kept.</value>
+  </data>
+  <data name="PowerScripts_ConsumerParentPolicyDisabled" xml:space="preserve">
+    <value>This module is disabled by your organization. Your integration preference is kept.</value>
+  </data>
+  <data name="PowerScripts_ConsumerManaged" xml:space="preserve">
+    <value>This integration is managed by your organization.</value>
+  </data>
+  <data name="PowerScripts_ManagedPolicy.Message" xml:space="preserve">
+    <value>The PowerScripts enabled state is managed by your organization.</value>
+  </data>
+  <data name="PowerScripts_LinuxRecover.Content" xml:space="preserve">
+    <value>Restart Linux runtime</value>
+  </data>
+  <data name="PowerScripts_LinuxRecoverDescription.Text" xml:space="preserve">
+    <value>Recover an interrupted PowerScripts Linux session without downloading images or changing settings.</value>
+  </data>
+  <data name="PowerScripts_LinuxRecoverTitle" xml:space="preserve">
+    <value>Restart the PowerScripts Linux runtime?</value>
+  </data>
+  <data name="PowerScripts_LinuxRecoverConfirm" xml:space="preserve">
+    <value>Restart runtime</value>
+  </data>
+  <data name="PowerScripts_LinuxRecoverHelp" xml:space="preserve">
+    <value>Reset only the PowerScripts Linux session and check Python again. Cached images, returned files, script approvals, and sandbox settings are kept. Running operations block recovery; scripts are never retried automatically. No processes or WSL distributions are forcibly stopped. If WSL cannot clean up the session, save your work and restart Windows.</value>
+  </data>
+  <data name="PowerScripts_LinuxRecovering" xml:space="preserve">
+    <value>Safely restarting the PowerScripts Linux runtime and checking Python...</value>
+  </data>
+  <data name="PowerScripts_LinuxRecoveryRequiredTitle" xml:space="preserve">
+    <value>Linux runtime needs recovery</value>
+  </data>
+  <data name="PowerScripts_LinuxRuntimeUnavailableHelp" xml:space="preserve">
+    <value>The WSL backend connection was lost. This does not mean your image is missing. Select Restart Linux runtime to recover the idle PowerScripts session; no image download is needed.</value>
+  </data>
+  <data name="PowerScripts_LinuxRecoveryRequiredHelp" xml:space="preserve">
+    <value>The previous PowerScripts session is interrupted or uses a different image or network policy. Restart Linux runtime to check the selected image. Cached images and settings are kept.</value>
+  </data>
+  <data name="PowerScripts_LinuxRestartWindowsTitle" xml:space="preserve">
+    <value>Windows restart needed</value>
+  </data>
+  <data name="PowerScripts_LinuxRestartWindowsHelp" xml:space="preserve">
+    <value>WSL could not safely clean up the Linux session. Save your work and restart Windows, then select Check Python. Do not delete or download the image again: cached images, settings, and script approvals are kept. PowerToys has not forcibly stopped any process or WSL distribution.</value>
+  </data>
+  <data name="PowerScripts_LinuxCacheBusyHelp" xml:space="preserve">
+    <value>The cached image is in use, not missing. Close other apps using MXC Linux and select Check Python again. If this persists with those apps closed, save your work and restart Windows; do not delete or download the image again.</value>
+  </data>
+  <data name="PowerScripts_MyScriptsTab.Content" xml:space="preserve">
+    <value>My scripts</value>
+  </data>
+  <data name="PowerScripts_ConsumerModulesTab.Content" xml:space="preserve">
+    <value>Consumer modules</value>
+  </data>
+  <data name="PowerScripts_ActivityTab.Content" xml:space="preserve">
+    <value>Activity</value>
+  </data>
+  <data name="PowerScripts_ActivityHeading.Text" xml:space="preserve">
+    <value>Activity</value>
+  </data>
+  <data name="PowerScripts_ConsumerModulesPage.ModuleTitle" xml:space="preserve">
+    <value>Consumer modules</value>
+  </data>
+  <data name="PowerScripts_ConsumerModulesPage.ModuleDescription" xml:space="preserve">
+    <value>Choose which PowerToys modules can use PowerScripts. Turning an integration off prevents new executions without deleting saved bindings. Organizational policies take precedence.</value>
+  </data>
+</root>

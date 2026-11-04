@@ -1,19 +1,20 @@
-<local:NavigablePage
-    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerScriptTemplatesPage"
+﻿<Page
+    x:Class="PowerScripts.Editor.Views.PowerScriptTemplatesPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
-    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
-    xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
+    xmlns:layout="using:PowerScripts.Editor.Controls"
+    xmlns:local="using:PowerScripts.Editor.Helpers"
+    xmlns:viewModels="using:PowerScripts.UI.ViewModels"
+    xmlns:views="using:PowerScripts.Editor.Views"
     AutomationProperties.AutomationId="PowerScriptsTemplatesPage"
     AutomationProperties.LandmarkType="Main">
-    <local:NavigablePage.KeyboardAccelerators>
+    <Page.KeyboardAccelerators>
         <KeyboardAccelerator
             Key="Left"
             Invoked="BackKeyboardAccelerator_Invoked"
             Modifiers="Menu" />
-    </local:NavigablePage.KeyboardAccelerators>
+    </Page.KeyboardAccelerators>
     <Grid RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -38,11 +39,11 @@
                 AutomationProperties.AutomationId="PowerScriptsTemplatesBreadcrumb"
                 ItemClicked="TemplateBreadcrumb_ItemClicked" />
         </Grid>
-        <controls:SettingsPageControl
+        <layout:ManagementPage
             x:Name="CreationForm"
             x:Uid="PowerScripts_TemplatesPage"
             Grid.Row="1">
-            <controls:SettingsPageControl.ModuleContent>
+            <layout:ManagementPage.ModuleContent>
                 <StackPanel Spacing="12">
                     <TextBlock x:Uid="PowerScripts_TemplatesHelp" TextWrapping="Wrap" />
                     <TextBox
@@ -151,9 +152,7 @@
                                 ValueChanged="FileCount_ValueChanged" />
                         </Grid>
                     </StackPanel>
-                    <TextBlock
-                        x:Uid="PowerScripts_TemplateParameters"
-                        Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock x:Uid="PowerScripts_TemplateParameters" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock x:Uid="PowerScripts_TemplateParametersHelp" TextWrapping="Wrap" />
                     <TextBlock
                         x:Uid="PowerScripts_TemplateParameterDefaultHelp"
@@ -295,7 +294,7 @@
                             Click="BackButton_Click" />
                     </StackPanel>
                 </StackPanel>
-            </controls:SettingsPageControl.ModuleContent>
-        </controls:SettingsPageControl>
+            </layout:ManagementPage.ModuleContent>
+        </layout:ManagementPage>
     </Grid>
-</local:NavigablePage>
+</Page>

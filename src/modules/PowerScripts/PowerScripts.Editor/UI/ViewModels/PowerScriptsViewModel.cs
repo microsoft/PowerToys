@@ -15,12 +15,12 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using PowerScripts.UI.Helpers;
 
-namespace Microsoft.PowerToys.Settings.UI.ViewModels
+namespace PowerScripts.UI.ViewModels
 {
     public partial class PowerScriptsViewModel : Observable
     {
@@ -983,7 +983,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        internal static string GetResourceString(string resourceName) =>
+        public static string GetResourceString(string resourceName) =>
             ResourceLoaderInstance.ResourceLoader.GetString(resourceName);
 
         private sealed class MxcSupportSnapshot

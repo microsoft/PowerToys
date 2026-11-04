@@ -123,7 +123,7 @@ Keyboard Manager PowerScript bindings to regenerate their command line.
 
 ### Central integration settings and Group Policy
 
-Put each consumer's integration switch in **Settings > PowerScripts > Use PowerScripts in**, not
+Put each consumer's integration switch in **PowerScripts editor > Consumer modules**, not
 in the consumer's settings page. PowerScripts owns `config.json`'s
 `consumers: { "advanced-paste": true, "keyboard-manager": true }` preferences. Advanced Paste uses
 its legacy `properties.powerscripts-enabled` value until a central preference exists (default off).
@@ -151,11 +151,11 @@ even if a consumer policy enables its integration; a policy disabling the parent
 Enabling an integration does not enable its parent utility, enable a runtime, approve a script, or
 relax MXC. Policies do not overwrite user preferences, so removing a policy restores the preference.
 Malformed or inaccessible policies are reported as errors, not treated as permission to execute.
-Settings shows effective values and locks policy-managed controls.
+The editor shows effective values and locks policy-managed controls.
 
 The generic per-consumer policy resolver accepts stable consumer IDs, so adding a consumer needs no
 new execution gate. Register its parent utility/default in `ConsumerSettings`, add its central
-Settings card and ADMX/ADML policy, and use the same ID in discovery, execution, and policy values.
+editor card and ADMX/ADML policy, and use the same ID in discovery, execution, and policy values.
 Refresh discovery when presenting actions; do not cache enablement as an authorization decision.
 Host enforcement also covers stale UI and saved bindings. Policy changes affect subsequent
 invocations, not already-running scripts.
@@ -170,7 +170,7 @@ The development enabled-state bypass cannot override Group Policy.
 unrelated configuration, and refuses edits when the module is disabled or policy controls the switch.
 
 The shared Host records the latest 200 invocations in local `activity.json`, independently of the
-selected scripts folder. Settings > PowerScripts > Activity shows the script, source, start time,
+selected scripts folder. PowerScripts editor > Activity shows the script, source, start time,
 status and duration, refreshing every five seconds while open. `activity list` returns the same
 metadata as JSON; `activity clear` removes completed/interrupted entries but preserves running and
 status-unavailable entries. It never cancels work or changes trust.
@@ -209,8 +209,8 @@ enable a runtime or bypass execution checks.
 automatic discovery when a consumer can offer every applicable script. Saved assignments and a
 configuration picker are only necessary for consumers that need explicit bindings.
 
-Advanced Paste is the automatic-discovery example. Its Settings page has only a PowerScripts
-master toggle, off by default. When enabled, the paste window offers every available script with
+Advanced Paste is the automatic-discovery example. Its integration toggle lives in the editor's
+Consumer modules tab and defaults off. When enabled, the paste window offers every available script with
 compatible clipboard input and a pasteable output. Text, files, bitmap images, and audio are
 matched against the declared contracts, including file/media restrictions. No-input scripts are
 excluded. AP stores no per-script selection or exclusion list.

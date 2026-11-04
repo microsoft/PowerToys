@@ -4,7 +4,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.PowerToys.Settings.UI.ViewModels
+namespace PowerScripts.UI.ViewModels
 {
     /// <summary>
     /// The declared file-input contract for a script. Mirrors the <c>input</c> object emitted by

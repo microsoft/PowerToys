@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using ManagedCommon;
 
-namespace Microsoft.PowerToys.Settings.UI.Helpers;
+namespace PowerScripts.UI.Helpers;
 
 public static class PowerScriptFileEditor
 {

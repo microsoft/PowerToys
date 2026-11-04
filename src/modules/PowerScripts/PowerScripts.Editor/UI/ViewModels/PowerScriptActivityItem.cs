@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Text;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 
-namespace Microsoft.PowerToys.Settings.UI.ViewModels;
+namespace PowerScripts.UI.ViewModels;
 
 public sealed class PowerScriptActivityItem : Observable
 {
