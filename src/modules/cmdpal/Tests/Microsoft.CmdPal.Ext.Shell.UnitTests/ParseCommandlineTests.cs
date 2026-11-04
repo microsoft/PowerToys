@@ -103,6 +103,23 @@ public class ParseCommandlineTests
     }
 
     [TestMethod]
+    [DataRow("cmd /c echo", true)]
+    [DataRow("C:\\Windows", true)]
+    [DataRow("Microsoft.NET", true)]
+    [DataRow("\"cmdpal-quoted.txt\" /a", false)]
+    [DataRow("C:\\cmdpal-missing\\tool.exe /a", false)]
+    [DataRow("cmdpal-missing-command /a", false)]
+    public void ReportsWhetherItFoundTheTarget(string commandLine, bool expectedTargetFound)
+    {
+        // Act
+        ParseCommandlineResult result = RunHistory.ParseCommandline(commandLine, string.Empty);
+
+        // Assert
+        Assert.AreEqual(0, result.Result);
+        Assert.AreEqual(expectedTargetFound, result.TargetFound, result.FilePath);
+    }
+
+    [TestMethod]
     [DataRow(@"\\?\C:", @"\\?\C:")]
     [DataRow(@"\\?\", @"\\?\")]
     [DataRow(@"\\?\C:\Windows", @"\\?\C:\Windows")]
