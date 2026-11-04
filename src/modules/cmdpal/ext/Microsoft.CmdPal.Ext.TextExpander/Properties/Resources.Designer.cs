@@ -349,7 +349,7 @@ namespace Microsoft.CmdPal.Ext.TextExpander.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} from a copy you pick.
+        ///   Looks up a localized string similar to {0} from clipboard history.
         /// </summary>
         public static string preview_clipboard_from_history {
             get {
@@ -394,7 +394,7 @@ namespace Microsoft.CmdPal.Ext.TextExpander.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copy you pick.
+        ///   Looks up a localized string similar to Copy from clipboard history.
         /// </summary>
         public static string preview_clipboard_whole_history {
             get {
@@ -511,7 +511,7 @@ namespace Microsoft.CmdPal.Ext.TextExpander.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There's no text on the clipboard, so that spot was left empty..
+        ///   Looks up a localized string similar to There's no text on your clipboard, so that spot was left empty..
         /// </summary>
         public static string toast_missing_clipboard {
             get {
@@ -520,7 +520,16 @@ namespace Microsoft.CmdPal.Ext.TextExpander.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No email address found in what you copied, so that spot was left empty..
+        ///   Looks up a localized string similar to There's no text on your clipboard, so those spots were left empty..
+        /// </summary>
+        public static string toast_missing_clipboard_several {
+            get {
+                return ResourceManager.GetString("toast_missing_clipboard_several", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There's no email address in what you copied, so that spot was left empty..
         /// </summary>
         public static string toast_missing_email {
             get {
@@ -529,7 +538,16 @@ namespace Microsoft.CmdPal.Ext.TextExpander.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No link found in what you copied, so that spot was left empty..
+        ///   Looks up a localized string similar to There's no email address in what you copied, so those spots were left empty..
+        /// </summary>
+        public static string toast_missing_email_several {
+            get {
+                return ResourceManager.GetString("toast_missing_email_several", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There's no link in what you copied, so that spot was left empty..
         /// </summary>
         public static string toast_missing_link {
             get {
@@ -538,7 +556,16 @@ namespace Microsoft.CmdPal.Ext.TextExpander.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No number found in what you copied, so that spot was left empty..
+        ///   Looks up a localized string similar to There's no link in what you copied, so those spots were left empty..
+        /// </summary>
+        public static string toast_missing_link_several {
+            get {
+                return ResourceManager.GetString("toast_missing_link_several", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There's no number in what you copied, so that spot was left empty..
         /// </summary>
         public static string toast_missing_number {
             get {
@@ -547,7 +574,16 @@ namespace Microsoft.CmdPal.Ext.TextExpander.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No phone number found in what you copied, so that spot was left empty..
+        ///   Looks up a localized string similar to There's no number in what you copied, so those spots were left empty..
+        /// </summary>
+        public static string toast_missing_number_several {
+            get {
+                return ResourceManager.GetString("toast_missing_number_several", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There's no phone number in what you copied, so that spot was left empty..
         /// </summary>
         public static string toast_missing_phone {
             get {
@@ -556,11 +592,11 @@ namespace Microsoft.CmdPal.Ext.TextExpander.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Some parts weren't found in what you copied, so those spots were left empty..
+        ///   Looks up a localized string similar to There's no phone number in what you copied, so those spots were left empty..
         /// </summary>
-        public static string toast_missing_several {
+        public static string toast_missing_phone_several {
             get {
-                return ResourceManager.GetString("toast_missing_several", resourceCulture);
+                return ResourceManager.GetString("toast_missing_phone_several", resourceCulture);
             }
         }
         

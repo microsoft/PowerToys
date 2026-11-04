@@ -119,8 +119,8 @@ public sealed class SnippetTextTests
     [TestMethod]
     [DataRow("{{clipboard:email}}", "[Email from clipboard]")]
     [DataRow("{{clipboard:number}}", "[Number from clipboard]")]
-    [DataRow("{{clipboard:pick}}", "[Copy you pick]")]
-    [DataRow("{{clipboard:pick:link}}", "[Link from a copy you pick]")]
+    [DataRow("{{clipboard:pick}}", "[Copy from clipboard history]")]
+    [DataRow("{{clipboard:pick:link}}", "[Link from clipboard history]")]
     [DataRow("{{clipboard:Link}}", "{{clipboard:Link}}")]
     [DataRow("{{clipboard:link:2}}", "{{clipboard:link:2}}")]
     public void Preview_ClipboardVariables_ShowTheirNamesAsTheEditorDoes(string replacement, string expected)

@@ -189,11 +189,11 @@
     <comment>Shown in a snippet preview for part of what the user copied. {0} is the part, such as "Email" or "Phone number".</comment>
   </data>
   <data name="preview_clipboard_from_history" xml:space="preserve">
-    <value>{0} from a copy you pick</value>
+    <value>{0} from clipboard history</value>
     <comment>Shown in a snippet preview for part of a copy the user picks from clipboard history. {0} is the part, such as "Email" or "Phone number".</comment>
   </data>
   <data name="preview_clipboard_whole_history" xml:space="preserve">
-    <value>Copy you pick</value>
+    <value>Copy from clipboard history</value>
     <comment>Shown in a snippet preview for a copy the user picks from clipboard history.</comment>
   </data>
   <data name="preview_clipboard_email" xml:space="preserve">
@@ -294,28 +294,44 @@
     <value>Couldn't paste the snippet.</value>
   </data>
   <data name="toast_missing_clipboard" xml:space="preserve">
-    <value>There's no text on the clipboard, so that spot was left empty.</value>
+    <value>There's no text on your clipboard, so that spot was left empty.</value>
     <comment>Shown after pasting a snippet that takes what the user copied, when the clipboard held no text. The rest of the snippet was pasted.</comment>
   </data>
+  <data name="toast_missing_clipboard_several" xml:space="preserve">
+    <value>There's no text on your clipboard, so those spots were left empty.</value>
+    <comment>Shown after pasting a snippet with more than one spot that takes what the user copied, when the clipboard held no text. The rest of the snippet was pasted. Can be shown before another of these sentences, one for each kind of part that wasn't there.</comment>
+  </data>
   <data name="toast_missing_email" xml:space="preserve">
-    <value>No email address found in what you copied, so that spot was left empty.</value>
+    <value>There's no email address in what you copied, so that spot was left empty.</value>
     <comment>Shown after pasting a snippet that takes an email address from what the user copied, when there wasn't one. The rest of the snippet was pasted.</comment>
   </data>
+  <data name="toast_missing_email_several" xml:space="preserve">
+    <value>There's no email address in what you copied, so those spots were left empty.</value>
+    <comment>Shown after pasting a snippet with more than one spot that takes an email address from what the user copied, when there wasn't one. The rest of the snippet was pasted. Can be shown after another of these sentences, one for each kind of part that wasn't there.</comment>
+  </data>
   <data name="toast_missing_link" xml:space="preserve">
-    <value>No link found in what you copied, so that spot was left empty.</value>
+    <value>There's no link in what you copied, so that spot was left empty.</value>
     <comment>Shown after pasting a snippet that takes a web link from what the user copied, when there wasn't one. The rest of the snippet was pasted.</comment>
   </data>
+  <data name="toast_missing_link_several" xml:space="preserve">
+    <value>There's no link in what you copied, so those spots were left empty.</value>
+    <comment>Shown after pasting a snippet with more than one spot that takes a web link from what the user copied, when there wasn't one. The rest of the snippet was pasted. Can be shown after another of these sentences, one for each kind of part that wasn't there.</comment>
+  </data>
   <data name="toast_missing_phone" xml:space="preserve">
-    <value>No phone number found in what you copied, so that spot was left empty.</value>
+    <value>There's no phone number in what you copied, so that spot was left empty.</value>
     <comment>Shown after pasting a snippet that takes a phone number from what the user copied, when there wasn't one. The rest of the snippet was pasted.</comment>
   </data>
+  <data name="toast_missing_phone_several" xml:space="preserve">
+    <value>There's no phone number in what you copied, so those spots were left empty.</value>
+    <comment>Shown after pasting a snippet with more than one spot that takes a phone number from what the user copied, when there wasn't one. The rest of the snippet was pasted. Can be shown after another of these sentences, one for each kind of part that wasn't there.</comment>
+  </data>
   <data name="toast_missing_number" xml:space="preserve">
-    <value>No number found in what you copied, so that spot was left empty.</value>
+    <value>There's no number in what you copied, so that spot was left empty.</value>
     <comment>Shown after pasting a snippet that takes a number from what the user copied, when there wasn't one. The rest of the snippet was pasted.</comment>
   </data>
-  <data name="toast_missing_several" xml:space="preserve">
-    <value>Some parts weren't found in what you copied, so those spots were left empty.</value>
-    <comment>Shown after pasting a snippet when more than one of the spots that take from what the user copied, such as an email address or a link, was left empty because it wasn't there. The rest of the snippet was pasted.</comment>
+  <data name="toast_missing_number_several" xml:space="preserve">
+    <value>There's no number in what you copied, so those spots were left empty.</value>
+    <comment>Shown after pasting a snippet with more than one spot that takes a number from what the user copied, when there wasn't one. The rest of the snippet was pasted. Can be shown after another of these sentences, one for each kind of part that wasn't there.</comment>
   </data>
   <data name="picks_title_email" xml:space="preserve">
     <value>Pick the email address to insert</value>

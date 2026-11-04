@@ -50,22 +50,47 @@ internal static class ClipboardVariableText
     };
 
     /// <summary>
-    /// Gets what's said after a paste about the spots Core left empty (<see cref="ExpandedSnippet.Gaps"/>): what wasn't
-    /// there, when it's one spot, or that some were left empty. Null when none was. Spots that pick from clipboard history
-    /// never get here, since only Text Expander inserts those snippets.
+    /// Gets what's said after a paste about the spots Core left empty (<see cref="ExpandedSnippet.Gaps"/>), in the words of
+    /// Text Expander's notice: one sentence for each kind of part that wasn't there, in the snippet's order. Null when none
+    /// was. Spots that pick from clipboard history never get here, since only Text Expander inserts those snippets.
     /// </summary>
-    public static string? NothingFound(IReadOnlyList<ClipboardGap> gaps) => gaps.Count switch
+    public static string? NothingFound(IReadOnlyList<ClipboardGap> gaps)
     {
-        0 => null,
-        1 when gaps[0].Reason == ClipboardGapReason.NotFound => gaps[0].Part switch
+        var parts = new List<(ClipboardPart Part, int Spots)>();
+        foreach (var gap in gaps)
         {
-            ClipboardPart.All => Resources.toast_missing_clipboard,
-            ClipboardPart.Email => Resources.toast_missing_email,
-            ClipboardPart.Link => Resources.toast_missing_link,
-            ClipboardPart.Phone => Resources.toast_missing_phone,
-            _ => Resources.toast_missing_number,
-        },
-        _ => Resources.toast_missing_several,
+            if (gap.Reason != ClipboardGapReason.NotFound)
+            {
+                continue;
+            }
+
+            var seen = parts.FindIndex(known => known.Part == gap.Part);
+            if (seen < 0)
+            {
+                parts.Add((gap.Part, 1));
+            }
+            else
+            {
+                parts[seen] = (gap.Part, parts[seen].Spots + 1);
+            }
+        }
+
+        // Text Expander's notice puts each sentence on its own line; a pick page shows this as one line, so a space.
+        return parts.Count == 0 ? null : string.Join(' ', parts.ConvertAll(part => NothingFound(part.Part, several: part.Spots > 1)));
+    }
+
+    private static string NothingFound(ClipboardPart part, bool several) => (part, several) switch
+    {
+        (ClipboardPart.Email, false) => Resources.toast_missing_email,
+        (ClipboardPart.Email, true) => Resources.toast_missing_email_several,
+        (ClipboardPart.Link, false) => Resources.toast_missing_link,
+        (ClipboardPart.Link, true) => Resources.toast_missing_link_several,
+        (ClipboardPart.Phone, false) => Resources.toast_missing_phone,
+        (ClipboardPart.Phone, true) => Resources.toast_missing_phone_several,
+        (ClipboardPart.Number, false) => Resources.toast_missing_number,
+        (ClipboardPart.Number, true) => Resources.toast_missing_number_several,
+        (_, false) => Resources.toast_missing_clipboard,
+        (_, true) => Resources.toast_missing_clipboard_several,
     };
 
     private static string PartName(ClipboardPart part) => part switch

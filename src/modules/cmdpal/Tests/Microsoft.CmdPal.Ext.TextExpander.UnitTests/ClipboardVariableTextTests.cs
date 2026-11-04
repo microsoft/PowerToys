@@ -38,23 +38,42 @@ public sealed class ClipboardVariableTextTests
     [TestMethod]
     [DataRow(false, (int)ClipboardPart.All, "Clipboard")]
     [DataRow(false, (int)ClipboardPart.Phone, "Phone number from clipboard")]
-    [DataRow(true, (int)ClipboardPart.All, "Copy you pick")]
-    [DataRow(true, (int)ClipboardPart.Link, "Link from a copy you pick")]
+    [DataRow(true, (int)ClipboardPart.All, "Copy from clipboard history")]
+    [DataRow(true, (int)ClipboardPart.Link, "Link from clipboard history")]
     public void Label_Variable_UsesTheSnippetEditorsWords(bool pickCopy, int part, string expected)
         => Assert.AreEqual(expected, ClipboardVariableText.Label(new ClipboardVariable(pickCopy, (ClipboardPart)part)));
 
     [TestMethod]
-    public void NothingFound_Gaps_NamesWhatWasntThereForOneSpotAndSaysSomeForMore()
+    public void NothingFound_Gaps_SaysWhatWasntThereOnceForEachKindInTextExpandersWords()
     {
         ClipboardGap[] none = [];
         ClipboardGap[] oneLink = [new(ClipboardPart.Link, ClipboardGapReason.NotFound)];
         ClipboardGap[] wholeCopy = [new(ClipboardPart.All, ClipboardGapReason.NotFound)];
         ClipboardGap[] twoEmails = [new(ClipboardPart.Email, ClipboardGapReason.NotFound), new(ClipboardPart.Email, ClipboardGapReason.NotFound)];
+        ClipboardGap[] phoneEmailPhone =
+        [
+            new(ClipboardPart.Phone, ClipboardGapReason.NotFound),
+            new(ClipboardPart.Email, ClipboardGapReason.NotFound),
+            new(ClipboardPart.Phone, ClipboardGapReason.NotFound),
+        ];
 
         Assert.IsNull(ClipboardVariableText.NothingFound(none));
-        Assert.AreEqual("No link found in what you copied, so that spot was left empty.", ClipboardVariableText.NothingFound(oneLink));
-        Assert.AreEqual("There's no text on the clipboard, so that spot was left empty.", ClipboardVariableText.NothingFound(wholeCopy));
-        Assert.AreEqual("Some parts weren't found in what you copied, so those spots were left empty.", ClipboardVariableText.NothingFound(twoEmails));
+        Assert.AreEqual("There's no link in what you copied, so that spot was left empty.", ClipboardVariableText.NothingFound(oneLink));
+        Assert.AreEqual("There's no text on your clipboard, so that spot was left empty.", ClipboardVariableText.NothingFound(wholeCopy));
+        Assert.AreEqual("There's no email address in what you copied, so those spots were left empty.", ClipboardVariableText.NothingFound(twoEmails));
+        Assert.AreEqual(
+            "There's no phone number in what you copied, so those spots were left empty. There's no email address in what you copied, so that spot was left empty.",
+            ClipboardVariableText.NothingFound(phoneEmailPhone));
+    }
+
+    [TestMethod]
+    public void NothingFound_HistoryGaps_AreNotWordedAsMissingFromTheCopy()
+    {
+        ClipboardGap[] historyOff = [new(ClipboardPart.Email, ClipboardGapReason.HistoryOff)];
+        ClipboardGap[] historyAndLink = [new(ClipboardPart.All, ClipboardGapReason.NoCopies), new(ClipboardPart.Link, ClipboardGapReason.NotFound)];
+
+        Assert.IsNull(ClipboardVariableText.NothingFound(historyOff));
+        Assert.AreEqual("There's no link in what you copied, so that spot was left empty.", ClipboardVariableText.NothingFound(historyAndLink));
     }
 
     [TestMethod]
