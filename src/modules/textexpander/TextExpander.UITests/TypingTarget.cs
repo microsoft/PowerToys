@@ -62,6 +62,16 @@ internal sealed class TypingTarget : IDisposable
     private (IntPtr Foreground, bool EditorFocused, bool Minimized) State =>
         Invoke(() => (WindowControl.GetForegroundWindowHandle(), editor!.Focused, form!.WindowState == Forms.FormWindowState.Minimized));
 
+    /// <summary>Gets a value indicating whether the box has the keyboard focus, with its window in front.</summary>
+    public bool HasKeyboardFocus
+    {
+        get
+        {
+            var (foreground, editorFocused, minimized) = State;
+            return foreground == Handle && editorFocused && !minimized;
+        }
+    }
+
     /// <summary>Empties the box without typing, so Text Expander sees no keys.</summary>
     public void Clear() => Invoke(() =>
     {

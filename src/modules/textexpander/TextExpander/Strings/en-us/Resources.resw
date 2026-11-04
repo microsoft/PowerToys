@@ -187,4 +187,8 @@ To keep snippets from using the clipboard, open PowerToys Settings &gt; Text Exp
     <value>Clipboard restores skipped: {0}  (a newer copy was kept)</value>
     <comment>Line of the diagnostics report. {0} is how often the user's clipboard wasn't put back after a paste because something newer had been copied, which was kept.</comment>
   </data>
+  <data name="Notice_SpokenText" xml:space="preserve">
+    <value>{0}. {1}</value>
+    <comment>What screen readers say when a small notice appears beside the text cursor, and the notice's accessible name. {0} is the notice's heading, such as "No email address found", and {1} its message, both already translated. Translate only the punctuation between them.</comment>
+  </data>
 </root>
