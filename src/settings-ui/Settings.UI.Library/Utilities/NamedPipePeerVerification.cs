@@ -271,14 +271,30 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
 
         private static bool MeetsSigningPolicy(string ownImagePath, string peerImagePath)
         {
-            if (!TryHasEmbeddedAuthenticodeSignature(ownImagePath, out var ownHasEmbeddedSignature))
+            return EvaluateSigningPolicy(
+                ownImagePath,
+                peerImagePath,
+                imagePath => TryHasEmbeddedAuthenticodeSignature(imagePath, out var hasEmbeddedSignature) ? hasEmbeddedSignature : null,
+                HasTrustedMicrosoftSignature);
+        }
+
+        // The signature probes are passed in so the policy can be tested with controlled signer fixtures.
+        // hasEmbeddedSignature returns null when the image cannot be read.
+        private static bool EvaluateSigningPolicy(
+            string ownImagePath,
+            string peerImagePath,
+            Func<string, bool?> hasEmbeddedSignature,
+            Func<string, bool> hasTrustedMicrosoftSignature)
+        {
+            var ownHasEmbeddedSignature = hasEmbeddedSignature(ownImagePath);
+            if (ownHasEmbeddedSignature is null)
             {
                 return false;
             }
 
             // Signed product components are signed separately and carry their own leaf certificates.
-            return !ownHasEmbeddedSignature ||
-                (HasTrustedMicrosoftSignature(ownImagePath) && HasTrustedMicrosoftSignature(peerImagePath));
+            return ownHasEmbeddedSignature == false ||
+                (hasTrustedMicrosoftSignature(ownImagePath) && hasTrustedMicrosoftSignature(peerImagePath));
         }
 
         private static bool MeetsComponentIdentityPolicy(string ownImagePath, string peerImagePath, string expectedExeName)
