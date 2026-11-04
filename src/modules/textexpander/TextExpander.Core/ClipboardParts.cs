@@ -34,12 +34,13 @@ public static class ClipboardParts
         @"[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.[A-Za-z]{2,}",
         RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
 
-    // IP addresses, dates written with digits and a year of two or four digits (2026-11-02, 11/2/2026, 02.11.26) and times
-    // (10:30, 10:30am, 9:45PM, 10:30h), which are neither phone numbers nor numbers. IP addresses first, so 192.168.1.10 isn't
-    // read as a date. A time also takes the character after it, which isn't a digit or a colon, as there's no look-ahead
-    // without backtracking.
+    // IP addresses, dates written with digits and a year of two or four digits (2026-11-02, 11/2/2026, 02.11.26, 02-11-26)
+    // and times (10:30, 10:30am, 9:45PM, 10:30h), which are neither phone numbers nor numbers. IP addresses first, so
+    // 192.168.1.10 isn't read as a date. Each part of one is up to 255, so 1.234.567.890, a number where dots group
+    // digits, isn't one. A time also takes the character after it, which isn't a digit or a colon, as there's no
+    // look-ahead without backtracking.
     private static readonly Regex DateTimePattern = new(
-        @"\b(?:(?:\d{1,3}(?:\.\d{1,3}){3}|\d{4}-\d{1,2}-\d{1,2}(?:[T ]\d{1,2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+\-]\d{2}:?\d{2})?)?|\d{4}/\d{1,2}/\d{1,2}|\d{4}\.\d{1,2}\.\d{1,2}|\d{1,2}/\d{1,2}/(?:\d{4}|\d{2})|\d{1,2}\.\d{1,2}\.(?:\d{4}|\d{2})|\d{1,2}-\d{1,2}-\d{4})\b|\d{1,2}:\d{2}(?::\d{2})?(?:[^\d:]|$))",
+        @"\b(?:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}|\d{4}-\d{1,2}-\d{1,2}(?:[T ]\d{1,2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+\-]\d{2}:?\d{2})?)?|\d{4}/\d{1,2}/\d{1,2}|\d{4}\.\d{1,2}\.\d{1,2}|\d{1,2}/\d{1,2}/(?:\d{4}|\d{2})|\d{1,2}\.\d{1,2}\.(?:\d{4}|\d{2})|\d{1,2}-\d{1,2}-(?:\d{4}|\d{2}))\b|\d{1,2}:\d{2}(?::\d{2})?(?:[^\d:]|$))",
         RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
 
     /// <summary>
