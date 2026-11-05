@@ -4,6 +4,8 @@
 
 #nullable enable
 
+using System.Buffers;
+
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
@@ -13,6 +15,11 @@ namespace Microsoft.PowerToys.TextExpander;
 /// </summary>
 public static class ControlCharacters
 {
+    // Looked for many at a time, since a copy can run to a million characters and a pick page reads it once for each match.
+    private static readonly SearchValues<char> Removed = SearchValues.Create(
+        "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u000B\u000C\u000E\u000F\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001A\u001B\u001C\u001D\u001E\u001F"
+        + "\u007F\u0080\u0081\u0082\u0083\u0084\u0085\u0086\u0087\u0088\u0089\u008A\u008B\u008C\u008D\u008E\u008F\u0090\u0091\u0092\u0093\u0094\u0095\u0096\u0097\u0098\u0099\u009A\u009B\u009C\u009D\u009E\u009F");
+
     /// <summary>
     /// Whether <paramref name="ch"/> is a C0 or C1 control character or DEL other than a tab or a line break: one that's
     /// removed from what was copied, and from text typed into a terminal.
@@ -28,28 +35,24 @@ public static class ControlCharacters
     {
         ArgumentNullException.ThrowIfNull(text);
 
-        int first = 0;
-        while (first < text.Length && !IsRemoved(text[first]))
-        {
-            first++;
-        }
-
-        if (first == text.Length)
+        int first = text.AsSpan().IndexOfAny(Removed);
+        if (first < 0)
         {
             return text;
         }
 
-        return string.Create(text.Length - Count(text, first), (text, first), static (kept, state) =>
+        return string.Create(text.Length - Count(text, first), text, static (kept, text) =>
         {
-            state.text.AsSpan(0, state.first).CopyTo(kept);
-            int written = state.first;
-            for (int i = state.first; i < state.text.Length; i++)
+            ReadOnlySpan<char> rest = text;
+            int written = 0;
+            for (int next = rest.IndexOfAny(Removed); next >= 0; next = rest.IndexOfAny(Removed))
             {
-                if (!IsRemoved(state.text[i]))
-                {
-                    kept[written++] = state.text[i];
-                }
+                rest[..next].CopyTo(kept[written..]);
+                written += next;
+                rest = rest[(next + 1)..];
             }
+
+            rest.CopyTo(kept[written..]);
         });
     }
 
@@ -58,15 +61,7 @@ public static class ControlCharacters
     {
         ArgumentNullException.ThrowIfNull(text);
 
-        foreach (char ch in text)
-        {
-            if (char.IsControl(ch))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return text.AsSpan().IndexOfAnyInRange('\u0000', '\u001F') >= 0 || text.AsSpan().IndexOfAnyInRange('\u007F', '\u009F') >= 0;
     }
 
     /// <summary>Whether <paramref name="text"/> has any character <see cref="IsRemoved"/> picks.</summary>
@@ -74,26 +69,17 @@ public static class ControlCharacters
     {
         ArgumentNullException.ThrowIfNull(text);
 
-        foreach (char ch in text)
-        {
-            if (IsRemoved(ch))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return text.AsSpan().ContainsAny(Removed);
     }
 
-    private static int Count(string text, int from)
+    private static int Count(string text, int first)
     {
         int count = 0;
-        for (int i = from; i < text.Length; i++)
+        ReadOnlySpan<char> rest = text.AsSpan(first);
+        for (int next = rest.IndexOfAny(Removed); next >= 0; next = rest.IndexOfAny(Removed))
         {
-            if (IsRemoved(text[i]))
-            {
-                count++;
-            }
+            count++;
+            rest = rest[(next + 1)..];
         }
 
         return count;

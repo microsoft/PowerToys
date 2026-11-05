@@ -105,6 +105,34 @@ public sealed class InjectionPolicyTests
     }
 
     [TestMethod]
+    public void ControlCharactersAreFoundAnywhereInLongText()
+    {
+        // Looked for many characters at a time: every character, at every position within a block, is checked as one at a time would.
+        for (int code = 0; code <= char.MaxValue; code++)
+        {
+            char ch = (char)code;
+            string text = new string('x', 40) + ch + new string('y', 40);
+            Assert.AreEqual(ControlCharacters.IsRemoved(ch), ControlCharacters.HasRemoved(text), $"U+{code:X4}");
+            Assert.AreEqual(char.IsControl(ch), ControlCharacters.HasAny(text), $"U+{code:X4}");
+        }
+
+        var random = new Random(1042);
+        for (int round = 0; round < 200; round++)
+        {
+            char[] chars = new char[random.Next(0, 300)];
+            for (int i = 0; i < chars.Length; i++)
+            {
+                chars[i] = random.Next(4) == 0 ? (char)random.Next(0, 0xA0) : (char)random.Next(0x20, 0x3000);
+            }
+
+            string text = new(chars);
+            string expected = new(chars.Where(ch => !ControlCharacters.IsRemoved(ch)).ToArray());
+            Assert.AreEqual(expected, ControlCharacters.Remove(text), $"Round {round}");
+            Assert.AreEqual(expected.Length != text.Length, ControlCharacters.HasRemoved(text), $"Round {round}");
+        }
+    }
+
+    [TestMethod]
     public void WindowsTerminalIsKnownByItsWindowClass()
     {
         Assert.IsTrue(InjectionPolicy.IsWindowsTerminalClass("CASCADIA_HOSTING_WINDOW_CLASS"));
