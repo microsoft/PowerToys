@@ -217,7 +217,8 @@ public sealed class SessionHelper
                 // there is NOT free: each extra --open-settings queues another request that the runner
                 // honours with a SEPARATE Settings.exe (the "Settings: 3" pile-up seen in CI), and the
                 // competing single-instance processes plus the launch contention push the window past
-                // the deadline. So when anything is alive, keep waiting instead of piling on.
+                // the deadline. CmdPal is different: activating its live instance re-shows a
+                // hidden window rather than opening a second Settings instance.
                 var scopeAlive = IsRunning(scope);
                 var runnerAlive = IsRunning(PowerToysModule.Runner);
                 var orphanedSettings = scope == PowerToysModule.PowerToysSettings && scopeAlive && !runnerAlive;
@@ -229,6 +230,11 @@ public sealed class SessionHelper
                         recoveredByUs = true;
                         lastLaunch = DateTime.UtcNow;
                     }
+                }
+                else if (scope == PowerToysModule.CommandPalette && scopeAlive)
+                {
+                    LaunchScope(scope);
+                    lastLaunch = DateTime.UtcNow;
                 }
                 else if (!scopeAlive && !runnerAlive)
                 {
@@ -254,9 +260,9 @@ public sealed class SessionHelper
     /// <summary>
     /// Issue a single detached launch for <paramref name="scope"/>: the runner with
     /// <c>--open-settings</c> for the Settings scope (the runner owns the Settings UI — see
-    /// <see cref="EnsureRunning"/> remarks), or the scope's own exe otherwise.
+    /// <see cref="EnsureRunning"/> remarks), or the scope's executable or registered application.
     /// </summary>
-    private static void LaunchScope(PowerToysModule scope)
+    public static void LaunchScope(PowerToysModule scope)
     {
         if (scope == PowerToysModule.PowerToysSettings)
         {
@@ -264,7 +270,24 @@ public sealed class SessionHelper
         }
         else
         {
-            LaunchViaShell(ModulePaths.ExePathFor(scope), null);
+            var executable = ModulePaths.ExePathFor(scope);
+            if (scope == PowerToysModule.CommandPalette)
+            {
+                var package = ModulePaths.FindPackagedCommandPalette();
+                if (package is not null &&
+                    string.Equals(Path.GetDirectoryName(executable), package.InstalledLocation.Path, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Windows 10 requires app activation rather than executing the WindowsApps file.
+                    var entries = package.GetAppListEntriesAsync().AsTask().GetAwaiter().GetResult();
+                    Assert.HasCount(1, entries, "The installed Command Palette package must expose exactly one application.");
+                    Assert.IsTrue(
+                        entries[0].LaunchAsync().AsTask().GetAwaiter().GetResult(),
+                        "Windows did not activate the installed Command Palette application.");
+                    return;
+                }
+            }
+
+            LaunchViaShell(executable, null);
         }
     }
 
@@ -394,6 +417,33 @@ public sealed class SessionHelper
         var expectedTitle = ModulePaths.MainWindowTitleFor(scope);
         var deadline = DateTime.UtcNow + timeout;
 
+        if (scope == PowerToysModule.CommandPalette)
+        {
+            // A live CmdPal instance can be cloaked. Activation redirects to that instance and
+            // shows it; walking its UIA tree cannot make the hidden window available.
+            var lastActivation = DateTime.UtcNow;
+            var ready = WaitHelper.WaitForStable(
+                observe: () => WindowsFinder.ListByApp(processName).FirstOrDefault(
+                    window => MatchesMainWindow(processName, expectedTitle, window.ProcessName, window.Title) &&
+                              !WindowHelper.IsWindowCloaked(new IntPtr(window.Hwnd))),
+                isMatch: window => window is not null,
+                timeoutMS: checked((int)timeout.TotalMilliseconds),
+                requiredConsecutiveMatches: 2,
+                pollIntervalMS: 250,
+                recover: _ =>
+                {
+                    if (DateTime.UtcNow - lastActivation >= TimeSpan.FromSeconds(25))
+                    {
+                        LaunchScope(scope);
+                        lastActivation = DateTime.UtcNow;
+                    }
+                });
+            var mainWindow = ready.LastObservation;
+            return ready.Succeeded && mainWindow is not null
+                ? new Session(scope, mainWindow.Hwnd, mainWindow.Title, mainWindow.ProcessId, mainWindow.ProcessName)
+                : null;
+        }
+
         while (DateTime.UtcNow < deadline)
         {
             var r = WinappCli.Invoke("ui", "list-windows", "--json");
@@ -420,8 +470,7 @@ public sealed class SessionHelper
 
                             // Strict title match wins immediately — disambiguates from sibling
                             // windows owned by the same process (e.g. Settings + PopupHost).
-                            if (!string.IsNullOrEmpty(expectedTitle) &&
-                                title.Contains(expectedTitle, StringComparison.OrdinalIgnoreCase))
+                            if (MatchesMainWindow(processName, expectedTitle, pn, title))
                             {
                                 return new Session(scope, hwnd, title, pid, pn);
                             }
@@ -455,4 +504,10 @@ public sealed class SessionHelper
 
         return null;
     }
+
+    internal static bool MatchesMainWindow(string expectedProcess, string expectedTitle, string processName, string title) =>
+        !string.IsNullOrEmpty(expectedProcess) &&
+        !string.IsNullOrEmpty(expectedTitle) &&
+        processName.Contains(expectedProcess, StringComparison.OrdinalIgnoreCase) &&
+        title.Contains(expectedTitle, StringComparison.OrdinalIgnoreCase);
 }
