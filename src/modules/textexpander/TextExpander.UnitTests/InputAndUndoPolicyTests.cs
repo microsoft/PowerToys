@@ -231,6 +231,53 @@ public sealed class InputAndUndoPolicyTests
     }
 
     [TestMethod]
+    public void WhatWasTypedInAnotherWindowDoesntCarryIntoOneBeingChecked()
+    {
+        // The foreground event can come while the old window is still in front, and what's typed there stays in the
+        // buffer. The first key in the new window, which asks for its check, starts afresh, or "!ab" there and "c " here
+        // would erase three characters this window never had.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=EXPANDED");
+        var requests = new List<IntPtr>();
+        using var hook = new KeyboardHook(store) { RequestAuthorization = requests.Add };
+
+        bool original = WordBoundary.Required;
+        try
+        {
+            WordBoundary.Required = true;
+            foreach (char ch in "!ab")
+            {
+                Assert.IsFalse(hook.ProcessKey(Native.VK_PACKET, ch, ctrl: false, alt: false, shift: false, win: false));
+            }
+
+            Assert.AreEqual(KeyboardHook.ForegroundCapture.Pending, hook.CaptureForWindow(new IntPtr(11), 21));
+            CollectionAssert.AreEqual(new[] { new IntPtr(11) }, requests);
+            foreach (char ch in "c ")
+            {
+                Assert.IsFalse(hook.ProcessKey(Native.VK_PACKET, ch, ctrl: false, alt: false, shift: false, win: false), $"'{ch}'");
+            }
+
+            Assert.AreEqual(0, hook.Pending.Count);
+
+            // Asked once, not for every key while the check runs, and a trigger typed whole in the new window still counts.
+            Assert.AreEqual(KeyboardHook.ForegroundCapture.Pending, hook.CaptureForWindow(new IntPtr(11), 21));
+            Assert.AreEqual(1, requests.Count);
+            foreach (char ch in "!abc")
+            {
+                Assert.IsFalse(hook.ProcessKey(Native.VK_PACKET, ch, ctrl: false, alt: false, shift: false, win: false), $"'{ch}'");
+            }
+
+            Assert.IsTrue(hook.ProcessKey(Native.VK_PACKET, ' ', ctrl: false, alt: false, shift: false, win: false));
+            Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion expansion));
+            Assert.AreEqual("!abc", expansion.Trigger);
+        }
+        finally
+        {
+            WordBoundary.Required = original;
+        }
+    }
+
+    [TestMethod]
     public void KeysTypedWhileTheWindowInFrontIsCheckedAreKeptButExpandNothing()
     {
         // Windows Terminal raises the foreground event for a new window before showing it, so the event checked the

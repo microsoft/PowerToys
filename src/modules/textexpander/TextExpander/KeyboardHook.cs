@@ -122,6 +122,12 @@ internal sealed class KeyboardHook : IDisposable
     internal Func<Native.POINT, bool> IsOnNotice { get; init; } = NoticeBubble.IsAt;
 
     /// <summary>
+    /// Gets what asks for a window's check off the hook's path, once a key is typed in a window in front that was never
+    /// checked (see <see cref="CaptureForWindow"/>). Tests pass their own.
+    /// </summary>
+    internal Action<IntPtr> RequestAuthorization { get; init; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether when false, keystrokes are still observed but never expanded. Turning this off is how a
     /// user pauses the app, so it is also treated as a privacy boundary: whatever they had typed
     /// up to that point is erased rather than left sitting in memory.
@@ -175,6 +181,7 @@ internal sealed class KeyboardHook : IDisposable
         _mouseHookProc = MouseCallback;
         _winEventProc = ForegroundChanged;
         Guard = new InsertionGuard(() => InputGeneration, TargetInFront, () => Clicks);
+        RequestAuthorization = window => RefreshTargetAuthorization(window, asynchronous: true);
     }
 
     public bool Install()
@@ -818,7 +825,7 @@ internal sealed class KeyboardHook : IDisposable
         // queued work checks its window before typing, and focus coming back after a prompt must not
         // cancel the expansion that asked.
         DiscardUndo();
-        _requestedAuthorizationWindow = IntPtr.Zero;
+        Volatile.Write(ref _requestedAuthorizationWindow, IntPtr.Zero);
         RefreshTargetAuthorization(Native.GetForegroundWindow(), asynchronous: true);
     }
 
@@ -834,20 +841,29 @@ internal sealed class KeyboardHook : IDisposable
             return ForegroundCapture.Refused;
         }
 
-        // The foreground event can check the wrong window. Windows Terminal raises it for a new
-        // window before showing it, and a window activated through AttachThreadInput, as
-        // WindowFocus.Force does when a prompt hands focus back, raises it while
-        // GetForegroundWindow still reports the window it is leaving. Either way, check the one
-        // actually in front, off this path and once, and keep its keys meanwhile: the first one
-        // may start a trigger.
+        return CaptureForWindow(foreground, foregroundProcessId);
+    }
+
+    /// <summary>
+    /// What the hook does with a key typed in <paramref name="foreground"/>, asking for the window's check the first time
+    /// one is. The foreground event can check the wrong window. Windows Terminal raises it for a new window before showing
+    /// it, and a window activated through AttachThreadInput, as WindowFocus.Force does when a prompt hands focus back,
+    /// raises it while GetForegroundWindow still reports the window it is leaving. Either way, the one actually in front is
+    /// checked, off this path and once, and its keys are kept meanwhile: the first one may start a trigger.
+    /// </summary>
+    internal ForegroundCapture CaptureForWindow(IntPtr foreground, uint foregroundProcessId)
+    {
         TargetAuthorization authorization = Volatile.Read(ref _targetAuthorization);
-        if (NeedsAuthorization(foreground, authorization, _requestedAuthorizationWindow))
+        if (NeedsAuthorization(foreground, authorization, Volatile.Read(ref _requestedAuthorizationWindow)))
         {
-            _requestedAuthorizationWindow = foreground;
-            RefreshTargetAuthorization(foreground, asynchronous: true);
+            // Whatever was typed before went into another window.
+            ResetBuffer();
+            ClearUndo();
+            Volatile.Write(ref _requestedAuthorizationWindow, foreground);
+            RequestAuthorization(foreground);
         }
 
-        return CaptureFor(foreground, foregroundProcessId, authorization, _requestedAuthorizationWindow);
+        return CaptureFor(foreground, foregroundProcessId, authorization, Volatile.Read(ref _requestedAuthorizationWindow));
     }
 
     private void RefreshTargetAuthorization(IntPtr window, bool asynchronous)
@@ -870,9 +886,15 @@ internal sealed class KeyboardHook : IDisposable
         {
             // Off the hook's path: this runs once per foreground change, on the thread pool.
             bool canDrive = InputTarget.CanDrive(window) && !InputTarget.IsPowerToysSettings(processId);
-            if (generation != Volatile.Read(ref _authorizationGeneration)
-                || Native.GetForegroundWindow() != window)
+            if (generation != Volatile.Read(ref _authorizationGeneration))
             {
+                return;
+            }
+
+            if (Native.GetForegroundWindow() != window)
+            {
+                // Left while it was checked. Should it come back without a foreground event, a key there asks again.
+                _ = Interlocked.CompareExchange(ref _requestedAuthorizationWindow, IntPtr.Zero, window);
                 return;
             }
 
