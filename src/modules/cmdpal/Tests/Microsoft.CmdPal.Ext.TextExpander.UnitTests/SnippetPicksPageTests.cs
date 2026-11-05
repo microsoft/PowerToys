@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.CmdPal.Ext.TextExpander.Commands;
 using Microsoft.CmdPal.Ext.TextExpander.Pages;
 using Microsoft.CmdPal.Ext.TextExpander.Properties;
+using Microsoft.CmdPal.Ext.TextExpander.Snippets;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -16,6 +17,22 @@ namespace Microsoft.CmdPal.Ext.TextExpander.UnitTests;
 public sealed class SnippetPicksPageTests
 {
     private const string Reply = "Reply to " + AskingSpots.Email;
+
+    [TestMethod]
+    public void GetItems_TextExpanderOffByPolicy_DoesntReadTheClipboard()
+    {
+        // A pick page opened from an item listed before policy turned Text Expander off read the copy and showed its
+        // matches; nothing could be pasted, but the clipboard was still read.
+        using var environment = new TestEnvironment();
+        environment.UseSnippets(("!reply", Reply));
+        environment.Clipboard.Text = AskingSpots.Copied;
+        var page = new SnippetPicksPage(environment.SnippetFor("!reply"), environment.Actions);
+        environment.Policies.Values[TextExpanderPolicy.TextExpanderValueName] = 0;
+
+        Assert.AreEqual(0, page.GetItems().Length);
+        Assert.AreEqual(0, environment.Clipboard.Reads);
+        StringAssert.Contains(page.EmptyContent!.Subtitle, "organization");
+    }
 
     [TestMethod]
     public void GetItems_SeveralMatches_ListsThemToPick()

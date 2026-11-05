@@ -62,6 +62,15 @@ internal sealed partial class SnippetPicksPage : ListPage
 
     public override IListItem[] GetItems()
     {
+        // Off, or turned off by policy since the page was opened: the clipboard isn't read, nor what was read shown.
+        var state = _actions.Source.GetState();
+        if (!state.IsOn)
+        {
+            PlaceholderText = string.Empty;
+            EmptyContent = EmptyState.For(state).ToCommandItem();
+            return [];
+        }
+
         var fill = _fill ?? ReadClipboard();
         if (fill.Picks.Count >= fill.Plan.Choices.Count)
         {
