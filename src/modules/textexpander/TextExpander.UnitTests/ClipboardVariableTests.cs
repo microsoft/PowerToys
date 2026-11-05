@@ -442,5 +442,26 @@ public sealed class ClipboardVariableTests
         Assert.AreEqual(late, ClipboardParts.Find(late, ClipboardPart.All, EnglishUS).Single(), "All of it is all of it.");
     }
 
+    [TestMethod]
+    public void EachDifferentMatchIsCopiedOutOnce()
+    {
+        // A copy can repeat one link thousands of times. Each was copied out, and two dictionaries made to trim it, before
+        // the repeats were dropped.
+        string text = string.Concat(Enumerable.Repeat("see https://example.com/a(1), and ", 20_000));
+        _ = ClipboardParts.Find(text, ClipboardPart.Link, EnglishUS);
+
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        IReadOnlyList<string> links = ClipboardParts.Find(text, ClipboardPart.Link, EnglishUS);
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.AreEqual("https://example.com/a(1)", links.Single());
+        Assert.IsTrue(allocated < text.Length * 10L, $"{allocated} bytes for {text.Length} characters.");
+
+        // A match that is the whole copy is the copy.
+        string digits = new('7', 1_000);
+        Assert.AreSame(digits, ClipboardParts.Find(digits, ClipboardPart.Number, EnglishUS).Single());
+        Assert.AreEqual("You@Example.com", string.Join("|", ClipboardParts.Find("You@Example.com, you@example.com, YOU@EXAMPLE.COM", ClipboardPart.Email, EnglishUS)), "Kept as first written.");
+    }
+
     private static string Expand(string snippet) => Variables.Expand(snippet, _ => null, () => Copied);
 }

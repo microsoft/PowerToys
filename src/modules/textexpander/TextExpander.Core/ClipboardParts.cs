@@ -83,14 +83,18 @@ public static class ClipboardParts
             spans = part == ClipboardPart.Phone ? phones : FindNumbers(text, culture, new Mask([.. notNumbers, .. phones]));
         }
 
-        // An email address is the same however it's capitalized; a link's path and anything else may not be.
+        // An email address is the same however it's capitalized; a link's path and anything else may not be. Each different
+        // match is copied out once, however often the copy repeats it.
         var seen = new HashSet<string>(part == ClipboardPart.Email ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        HashSet<string>.AlternateLookup<ReadOnlySpan<char>> seenSpans = seen.GetAlternateLookup<ReadOnlySpan<char>>();
         var found = new List<string>();
         foreach ((int start, int end) in spans)
         {
-            string value = text[start..end];
-            if (seen.Add(value))
+            ReadOnlySpan<char> match = text.AsSpan(start, end - start);
+            if (!seenSpans.Contains(match))
             {
+                string value = match.Length == text.Length ? text : match.ToString();
+                seen.Add(value);
                 found.Add(value);
             }
         }
@@ -131,32 +135,39 @@ public static class ClipboardParts
     /// </summary>
     private static int TrimLink(string text, int start, int end)
     {
-        var opened = new Dictionary<char, int>();
-        var closed = new Dictionary<char, int>();
+        // Counted by kind: (), [], {} and full-width parentheses.
+        Span<int> opened = stackalloc int[4];
+        Span<int> closed = stackalloc int[4];
         for (int index = start; index < end; index++)
         {
             char character = text[index];
+            int kind = BracketKind(character);
+            if (kind < 0)
+            {
+                continue;
+            }
+
             if (Opening(character) != '\0')
             {
-                closed[character] = closed.GetValueOrDefault(character) + 1;
+                closed[kind]++;
             }
-            else if (character is '(' or '[' or '{' or '\uFF08')
+            else
             {
-                opened[character] = opened.GetValueOrDefault(character) + 1;
+                opened[kind]++;
             }
         }
 
         while (end > start)
         {
             char last = text[end - 1];
-            char opening = Opening(last);
+            int kind = Opening(last) != '\0' ? BracketKind(last) : -1;
             if (".,;:!?'\"*_~\u3001\u3002\uFF0C\uFF0E".Contains(last, StringComparison.Ordinal))
             {
                 end--;
             }
-            else if (opening != '\0' && closed.GetValueOrDefault(last) > opened.GetValueOrDefault(opening))
+            else if (kind >= 0 && closed[kind] > opened[kind])
             {
-                closed[last]--;
+                closed[kind]--;
                 end--;
             }
             else
@@ -167,6 +178,15 @@ public static class ClipboardParts
 
         return end;
     }
+
+    private static int BracketKind(char bracket) => bracket switch
+    {
+        '(' or ')' => 0,
+        '[' or ']' => 1,
+        '{' or '}' => 2,
+        '\uFF08' or '\uFF09' => 3,
+        _ => -1,
+    };
 
     private static char Opening(char closing) => closing switch
     {
