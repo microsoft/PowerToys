@@ -18,11 +18,13 @@ internal static class ClipboardHandBack
     /// waited for an app that was copying. Returns <see cref="ClipboardRestore.Restored"/>,
     /// <see cref="ClipboardRestore.Superseded"/>, or the last attempt's failure.
     /// </summary>
-    public static ClipboardRestore Run(Func<Func<uint, bool>, ClipboardRestore> restore, ClipboardLoan loan, Func<uint> sequence, Action<int> sleep, int attempts, int retryDelayMs)
+    /// <param name="stillOurs">Whether our window still owns the clipboard, as emptying it made it.</param>
+    public static ClipboardRestore Run(Func<Func<uint, bool>, ClipboardRestore> restore, ClipboardLoan loan, Func<uint> sequence, Func<bool> stillOurs, Action<int> sleep, int attempts, int retryDelayMs)
     {
         ArgumentNullException.ThrowIfNull(restore);
         ArgumentNullException.ThrowIfNull(loan);
         ArgumentNullException.ThrowIfNull(sequence);
+        ArgumentNullException.ThrowIfNull(stillOurs);
         ArgumentNullException.ThrowIfNull(sleep);
 
         ClipboardRestore result = ClipboardRestore.Untouched;
@@ -41,10 +43,18 @@ internal static class ClipboardHandBack
 
             // Only an attempt that emptied the clipboard changed it: re-armed then, so the retry doesn't take our own
             // change for someone else's. One that couldn't open the clipboard changed nothing, so any change since is
-            // someone else's, such as a copy made while it waited, and must not be adopted.
+            // someone else's, such as a copy made while it waited, and must not be adopted. Nor may a copy made once the
+            // attempt closed the clipboard: the number is read, then whether the clipboard is still ours, as when the
+            // loan was taken (see ClipboardLoan.TakeAfterWrite).
             if (result == ClipboardRestore.Incomplete)
             {
-                loan.Rearm(sequence());
+                uint sequenceAfterOurChange = sequence();
+                if (!stillOurs())
+                {
+                    return ClipboardRestore.Superseded;
+                }
+
+                loan.Rearm(sequenceAfterOurChange);
             }
 
             if (attempt + 1 < attempts && retryDelayMs > 0)

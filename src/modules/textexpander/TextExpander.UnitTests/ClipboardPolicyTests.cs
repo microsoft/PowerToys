@@ -84,7 +84,7 @@ public sealed class ClipboardPolicyTests
             return ClipboardRestore.Restored;
         }
 
-        Assert.AreEqual(ClipboardRestore.Superseded, Injector.HandBack(CopiedDuringTheOpen, new ClipboardLoan(41), () => sequence, _ => { }));
+        Assert.AreEqual(ClipboardRestore.Superseded, Injector.HandBack(CopiedDuringTheOpen, new ClipboardLoan(41), () => sequence, () => true, _ => { }));
         Assert.AreEqual(0, emptied, "The new copy stays.");
 
         // Copied before the first attempt: nothing is opened at all.
@@ -95,7 +95,7 @@ public sealed class ClipboardPolicyTests
             return ClipboardRestore.Restored;
         }
 
-        Assert.AreEqual(ClipboardRestore.Superseded, Injector.HandBack(Counted, new ClipboardLoan(41), () => 42, _ => { }));
+        Assert.AreEqual(ClipboardRestore.Superseded, Injector.HandBack(Counted, new ClipboardLoan(41), () => 42, () => true, _ => { }));
         Assert.AreEqual(0, attempts);
     }
 
@@ -117,7 +117,7 @@ public sealed class ClipboardPolicyTests
             return stillOurs(sequence) ? ClipboardRestore.Restored : ClipboardRestore.Superseded;
         }
 
-        Assert.AreEqual(ClipboardRestore.Superseded, Injector.HandBack(HeldByAnAppThatCopied, new ClipboardLoan(41), () => sequence, _ => { }));
+        Assert.AreEqual(ClipboardRestore.Superseded, Injector.HandBack(HeldByAnAppThatCopied, new ClipboardLoan(41), () => sequence, () => true, _ => { }));
         Assert.AreEqual(1, calls, "Not tried again over the new copy.");
 
         // Our own change still doesn't look like someone else's: an attempt that emptied the clipboard is retried.
@@ -140,9 +140,15 @@ public sealed class ClipboardPolicyTests
         }
 
         var sleeps = new List<int>();
-        Assert.AreEqual(ClipboardRestore.Restored, Injector.HandBack(PartlyThenWhole, new ClipboardLoan(41), () => sequence, sleeps.Add));
+        Assert.AreEqual(ClipboardRestore.Restored, Injector.HandBack(PartlyThenWhole, new ClipboardLoan(41), () => sequence, () => true, sleeps.Add));
         Assert.AreEqual(2, calls);
         CollectionAssert.AreEqual(new[] { Injector.RestoreRetryDelayMs }, sleeps);
+
+        // But a copy made once that attempt closed the clipboard isn't taken for ours: the clipboard isn't ours any more.
+        sequence = 41;
+        calls = 0;
+        Assert.AreEqual(ClipboardRestore.Superseded, Injector.HandBack(PartlyThenWhole, new ClipboardLoan(41), () => sequence, () => false, _ => { }));
+        Assert.AreEqual(1, calls, "Not tried again over the new copy.");
 
         // Never able to open it: every attempt, then the failure, which the caller reports as a loss.
         calls = 0;
@@ -152,7 +158,7 @@ public sealed class ClipboardPolicyTests
             return ClipboardRestore.Untouched;
         }
 
-        Assert.AreEqual(ClipboardRestore.Untouched, Injector.HandBack(NeverOpens, new ClipboardLoan(41), () => 41, _ => { }));
+        Assert.AreEqual(ClipboardRestore.Untouched, Injector.HandBack(NeverOpens, new ClipboardLoan(41), () => 41, () => true, _ => { }));
         Assert.AreEqual(Injector.RestoreAttempts, calls);
     }
 
@@ -168,14 +174,14 @@ public sealed class ClipboardPolicyTests
         }
 
         var sleeps = new List<int>();
-        Assert.AreEqual(ClipboardRestore.Untouched, ClipboardHandBack.Run(NeverOpens, new ClipboardLoan(41), () => 41, sleeps.Add, attempts: 4, retryDelayMs: 25));
+        Assert.AreEqual(ClipboardRestore.Untouched, ClipboardHandBack.Run(NeverOpens, new ClipboardLoan(41), () => 41, () => true, sleeps.Add, attempts: 4, retryDelayMs: 25));
         Assert.AreEqual(4, calls);
         Assert.AreEqual(3, sleeps.Count, "No pause after the last try.");
         Assert.IsTrue(sleeps.TrueForAll(ms => ms == 25));
 
         calls = 0;
         sleeps.Clear();
-        Assert.AreEqual(ClipboardRestore.Untouched, ClipboardHandBack.Run(NeverOpens, new ClipboardLoan(41), () => 41, sleeps.Add, attempts: 2, retryDelayMs: 0));
+        Assert.AreEqual(ClipboardRestore.Untouched, ClipboardHandBack.Run(NeverOpens, new ClipboardLoan(41), () => 41, () => true, sleeps.Add, attempts: 2, retryDelayMs: 0));
         Assert.AreEqual(2, calls);
         Assert.AreEqual(0, sleeps.Count, "No pause asked for, none taken.");
     }
@@ -336,6 +342,32 @@ public sealed class ClipboardPolicyTests
         now = 90;
         Assert.IsTrue(Injector.WaitForPasteToSettle(() => false, Sleep, () => now, readSeen: true));
         Assert.AreEqual(170, now);
+    }
+
+    [TestMethod]
+    public void ASnapshotThatCantBeTakenZeroesWhatItCopied()
+    {
+        // Text, then a format that renders nothing: the text was copied, then dropped as it was, the user's clipboard
+        // left in memory.
+        byte[] text = [104, 0, 105, 0, 0, 0];
+        uint[] plan = [ClipboardFormats.CF_UNICODETEXT, 0xC123];
+        Assert.IsNull(Clipboard.Capture(plan, (format, _) => format == ClipboardFormats.CF_UNICODETEXT ? text : null));
+        Assert.IsTrue(text.All(b => b == 0));
+
+        // No more than 32 MB in all: each format is told how much may still be copied.
+        var budgets = new List<long>();
+        uint[] two = [ClipboardFormats.CF_UNICODETEXT, ClipboardFormats.CF_LOCALE];
+        using (ClipboardSnapshot? taken = Clipboard.Capture(two, (_, budget) =>
+        {
+            budgets.Add(budget);
+            return new byte[1024];
+        }))
+        {
+            Assert.AreEqual(2, taken?.Entries.Count);
+        }
+
+        Assert.AreEqual(32L * 1024 * 1024, budgets[0]);
+        Assert.AreEqual((32L * 1024 * 1024) - 1024, budgets[1]);
     }
 
     [TestMethod]

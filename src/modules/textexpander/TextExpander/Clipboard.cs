@@ -245,59 +245,72 @@ internal static class Clipboard
         try
         {
             IReadOnlyList<uint>? plan = PlanCapture();
-            if (plan is null)
-            {
-                return null;
-            }
-
-            var entries = new List<ClipboardEntry>(plan.Count);
-            long total = 0;
-
-            foreach (uint format in plan)
-            {
-                // An advertised format that produces no data (delay-rendered, OLE stream or storage)
-                // can't be put back, so the clipboard is left alone.
-                IntPtr handle = Native.GetClipboardData(format);
-                if (handle == IntPtr.Zero)
-                {
-                    return null;
-                }
-
-                ulong size = Native.GlobalSize(handle).ToUInt64();
-                if (size == 0 || size > int.MaxValue)
-                {
-                    return null;
-                }
-
-                total += (long)size;
-                if (total > MaxSnapshotBytes)
-                {
-                    return null;
-                }
-
-                IntPtr pointer = Native.GlobalLock(handle);
-                if (pointer == IntPtr.Zero)
-                {
-                    return null;
-                }
-
-                try
-                {
-                    var bytes = new byte[size];
-                    Marshal.Copy(pointer, bytes, 0, bytes.Length);
-                    entries.Add(new ClipboardEntry(format, bytes));
-                }
-                finally
-                {
-                    Native.GlobalUnlock(handle);
-                }
-            }
-
-            return new ClipboardSnapshot(entries);
+            return plan is null ? null : Capture(plan, ReadFormat);
         }
         finally
         {
             Native.CloseClipboard();
+        }
+    }
+
+    /// <summary>
+    /// Copies each of <paramref name="plan"/>'s formats with <paramref name="read"/>, which is told how many bytes may
+    /// still be copied, up to 32 MB in all. Null when one can't be, with what was copied before it zeroed, as when a
+    /// snapshot is dropped: it's the user's clipboard.
+    /// </summary>
+    internal static ClipboardSnapshot? Capture(IReadOnlyList<uint> plan, Func<uint, long, byte[]?> read)
+    {
+        var entries = new List<ClipboardEntry>(plan.Count);
+        long remaining = MaxSnapshotBytes;
+        foreach (uint format in plan)
+        {
+            byte[]? bytes = read(format, remaining);
+            if (bytes is null)
+            {
+                new ClipboardSnapshot(entries).Dispose();
+                return null;
+            }
+
+            remaining -= bytes.Length;
+            entries.Add(new ClipboardEntry(format, bytes));
+        }
+
+        return new ClipboardSnapshot(entries);
+    }
+
+    /// <summary>
+    /// Copies <paramref name="format"/> off the open clipboard, or null: an advertised format that produces no data
+    /// (delay-rendered, OLE stream or storage) can't be put back, and neither can more than <paramref name="budget"/> bytes.
+    /// </summary>
+    private static byte[]? ReadFormat(uint format, long budget)
+    {
+        IntPtr handle = Native.GetClipboardData(format);
+        if (handle == IntPtr.Zero)
+        {
+            return null;
+        }
+
+        ulong size = Native.GlobalSize(handle).ToUInt64();
+        if (size == 0 || size > int.MaxValue || (long)size > budget)
+        {
+            return null;
+        }
+
+        IntPtr pointer = Native.GlobalLock(handle);
+        if (pointer == IntPtr.Zero)
+        {
+            return null;
+        }
+
+        try
+        {
+            var bytes = new byte[size];
+            Marshal.Copy(pointer, bytes, 0, bytes.Length);
+            return bytes;
+        }
+        finally
+        {
+            Native.GlobalUnlock(handle);
         }
     }
 

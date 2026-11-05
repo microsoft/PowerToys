@@ -179,7 +179,7 @@ internal sealed class SnippetInserter
     /// wins and nothing is put back: that's a skip, not a loss.
     /// </summary>
     private ClipboardRestore RestoreClipboard(SavedClipboard saved, ClipboardLoan loan)
-        => ClipboardHandBack.Run(stillOurs => _clipboard.Restore(saved, stillOurs), loan, () => _clipboard.SequenceNumber, _clock.Sleep, RestoreAttempts, RestoreRetryDelayMs);
+        => ClipboardHandBack.Run(stillOurs => _clipboard.Restore(saved, stillOurs), loan, () => _clipboard.SequenceNumber, () => _clipboard.IsOurs, _clock.Sleep, RestoreAttempts, RestoreRetryDelayMs);
 
     /// <summary>Types one character per batch, paced as Text Expander types, and stops if another window comes to the front.</summary>
     private InsertOutcome Type(string text, nint target)

@@ -769,7 +769,7 @@ internal static class Injector
     /// </summary>
     private static void RestoreClipboard(ClipboardSnapshot saved, ClipboardLoan loan)
     {
-        ClipboardRestore result = HandBack(saved.Restore, loan, () => Clipboard.SequenceNumber, Thread.Sleep);
+        ClipboardRestore result = HandBack(saved.Restore, loan, () => Clipboard.SequenceNumber, () => Clipboard.IsOurs, Thread.Sleep);
         if (result == ClipboardRestore.Superseded)
         {
             InjectionDiagnostics.RecordClipboardRestoreSkipped();
@@ -785,11 +785,11 @@ internal static class Injector
     /// <summary>
     /// The attempts behind <see cref="RestoreClipboard(ClipboardSnapshot, ClipboardLoan)"/>: Core's
     /// <see cref="ClipboardHandBack.Run"/>, which Command Palette's extension shares, with this class's
-    /// <see cref="RestoreAttempts"/> and <see cref="RestoreRetryDelayMs"/>, and the restore, the sequence number and the
-    /// sleep passed in for tests.
+    /// <see cref="RestoreAttempts"/> and <see cref="RestoreRetryDelayMs"/>, and the restore, the sequence number, whether
+    /// the clipboard is still ours and the sleep passed in for tests.
     /// </summary>
-    internal static ClipboardRestore HandBack(Func<Func<uint, bool>, ClipboardRestore> restore, ClipboardLoan loan, Func<uint> sequence, Action<int> sleep)
-        => ClipboardHandBack.Run(restore, loan, sequence, sleep, RestoreAttempts, RestoreRetryDelayMs);
+    internal static ClipboardRestore HandBack(Func<Func<uint, bool>, ClipboardRestore> restore, ClipboardLoan loan, Func<uint> sequence, Func<bool> stillOurs, Action<int> sleep)
+        => ClipboardHandBack.Run(restore, loan, sequence, stillOurs, sleep, RestoreAttempts, RestoreRetryDelayMs);
 
     /// <summary>
     /// Tells the user their clipboard is lost, on a thread of its own, and doesn't wait: the handler opens a message
