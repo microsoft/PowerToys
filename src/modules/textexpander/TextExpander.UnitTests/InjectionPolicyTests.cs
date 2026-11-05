@@ -52,15 +52,15 @@ public sealed class InjectionPolicyTests
     [TestMethod]
     public void WindowsTerminalIsKnownByItsWindowClass()
     {
-        Assert.IsTrue(InputTarget.IsWindowsTerminalClass("CASCADIA_HOSTING_WINDOW_CLASS"));
-        Assert.IsTrue(InputTarget.IsWindowsTerminalClass("cascadia_hosting_window_class"), "Window classes ignore case.");
+        Assert.IsTrue(InjectionPolicy.IsWindowsTerminalClass("CASCADIA_HOSTING_WINDOW_CLASS"));
+        Assert.IsTrue(InjectionPolicy.IsWindowsTerminalClass("cascadia_hosting_window_class"), "Window classes ignore case.");
 
         // The console window Windows Terminal replaced doesn't trim a paste.
-        Assert.IsFalse(InputTarget.IsWindowsTerminalClass("ConsoleWindowClass"));
-        Assert.IsFalse(InputTarget.IsWindowsTerminalClass("CASCADIA_HOSTING_WINDOW_CLASS_2"));
-        Assert.IsFalse(InputTarget.IsWindowsTerminalClass("Notepad"));
-        Assert.IsFalse(InputTarget.IsWindowsTerminalClass(string.Empty));
-        Assert.IsFalse(InputTarget.IsWindowsTerminalClass(null));
+        Assert.IsFalse(InjectionPolicy.IsWindowsTerminalClass("ConsoleWindowClass"));
+        Assert.IsFalse(InjectionPolicy.IsWindowsTerminalClass("CASCADIA_HOSTING_WINDOW_CLASS_2"));
+        Assert.IsFalse(InjectionPolicy.IsWindowsTerminalClass("Notepad"));
+        Assert.IsFalse(InjectionPolicy.IsWindowsTerminalClass(string.Empty));
+        Assert.IsFalse(InjectionPolicy.IsWindowsTerminalClass(null));
         Assert.IsFalse(InputTarget.IsWindowsTerminal(IntPtr.Zero));
     }
 

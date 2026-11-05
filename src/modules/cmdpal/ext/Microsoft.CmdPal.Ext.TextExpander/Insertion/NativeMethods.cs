@@ -83,6 +83,9 @@ internal static partial class NativeMethods
     [LibraryImport("user32.dll")]
     internal static partial uint GetWindowThreadProcessId(nint hWnd, out uint processId);
 
+    [LibraryImport("user32.dll", EntryPoint = "GetClassNameW")]
+    internal static unsafe partial int GetClassName(nint hWnd, char* className, int maxCount);
+
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static partial bool IsWindow(nint hWnd);

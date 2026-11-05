@@ -89,6 +89,20 @@ internal sealed class Win32Desktop : IDesktop
             || !NativeMethods.IsWindow(window)
             || NativeMethods.SendMessageTimeout(window, NativeMethods.WM_NULL, 0, 0, NativeMethods.SMTO_BLOCK | NativeMethods.SMTO_ABORTIFHUNG, ResponsiveProbeMs, out _) != 0;
 
+    public unsafe bool IsWindowsTerminal(nint window)
+    {
+        if (window == 0)
+        {
+            return false;
+        }
+
+        // One longer than the class name, so a longer name that starts with it doesn't match.
+        var length = InjectionPolicy.WindowsTerminalClass.Length + 2;
+        var name = stackalloc char[length];
+        var written = NativeMethods.GetClassName(window, name, length);
+        return written > 0 && InjectionPolicy.IsWindowsTerminalClass(new string(name, 0, written));
+    }
+
     public bool Send(IReadOnlyList<KeyStroke> strokes)
     {
         ArgumentNullException.ThrowIfNull(strokes);

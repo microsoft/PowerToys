@@ -32,6 +32,9 @@ internal sealed class FakeDesktop : IDesktop
 
     public bool TakingMessages { get; set; } = true;
 
+    /// <summary>Gets or sets a value indicating whether the user's app is Windows Terminal.</summary>
+    public bool AppIsWindowsTerminal { get; set; }
+
     public bool SendSucceeds { get; set; } = true;
 
     /// <summary>Gets or sets how many sends are cut off part way, before they go through again.</summary>
@@ -54,6 +57,8 @@ internal sealed class FakeDesktop : IDesktop
     public bool CanDrive(nint window) => CanDriveTarget;
 
     public bool IsTakingMessages(nint window) => TakingMessages;
+
+    public bool IsWindowsTerminal(nint window) => window == AppWindow && AppIsWindowsTerminal;
 
     public bool Send(IReadOnlyList<KeyStroke> strokes)
     {

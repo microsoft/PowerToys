@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using Microsoft.PowerToys.TextExpander;
 
 namespace Microsoft.CmdPal.Ext.TextExpander.Insertion;
 
@@ -28,6 +29,12 @@ internal interface IDesktop
 
     /// <summary>True when <paramref name="window"/>'s app answers messages, or is gone. A busy app still has a paste queued.</summary>
     bool IsTakingMessages(nint window);
+
+    /// <summary>
+    /// True when <paramref name="window"/> is Windows Terminal, which trims the spaces at the end of a one-line paste
+    /// (<see cref="InjectionPolicy.ShouldUseClipboard"/>).
+    /// </summary>
+    bool IsWindowsTerminal(nint window);
 
     /// <summary>Sends <paramref name="strokes"/> in one call, so nothing else gets between them. False unless all went.</summary>
     bool Send(IReadOnlyList<KeyStroke> strokes);

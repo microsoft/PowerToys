@@ -56,9 +56,10 @@ internal sealed class SnippetInserter
 
     /// <summary>
     /// Hides Command Palette, waits for the app it was opened over to come back to the front, and puts
-    /// <paramref name="text"/> there.
+    /// <paramref name="text"/> there, pasted or typed as Text Expander's <paramref name="backend"/> decides, pasting
+    /// one-line snippets from <paramref name="clipboardThresholdChars"/> characters under Automatic.
     /// </summary>
-    public InsertOutcome Insert(string text, bool alwaysType)
+    public InsertOutcome Insert(string text, InjectionBackend backend, int clipboardThresholdChars)
     {
         ArgumentNullException.ThrowIfNull(text);
 
@@ -81,9 +82,11 @@ internal sealed class SnippetInserter
 
         WaitForModifierRelease();
 
+        // As Text Expander decides: Automatic types short snippets, and one line in Windows Terminal, which trims the
+        // spaces at the end of a one-line paste.
         var clipboardLost = false;
         InsertOutcome? outcome = null;
-        if (!alwaysType)
+        if (InjectionPolicy.ShouldUseClipboard(text, clipboardThresholdChars, backend, givenBack: 0, _desktop.IsWindowsTerminal(target)))
         {
             (outcome, clipboardLost) = TryPaste(text, target);
         }

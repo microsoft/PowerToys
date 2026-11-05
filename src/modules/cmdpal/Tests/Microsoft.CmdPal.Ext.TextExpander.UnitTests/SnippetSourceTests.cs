@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.CmdPal.Ext.TextExpander.Snippets;
+using Microsoft.PowerToys.TextExpander;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TextExpander.UnitTests;
@@ -133,12 +134,12 @@ public sealed class SnippetSourceTests
         using var environment = new TestEnvironment();
         environment.UseSnippets(("!mysig", "Best regards,\nYour name"));
         environment.Folder.SetModuleSettings(caseSensitive: false, injectionBackend: "type");
-        Assert.IsTrue(environment.Source.GetState().Settings.AlwaysType);
+        Assert.AreEqual(InjectionBackend.Typing, environment.Source.GetState().Settings.Backend);
 
         File.WriteAllText(environment.Folder.Paths.ModuleSettingsFile, "{ \"properties\": ");
 
         var settings = environment.Source.GetState().Settings;
-        Assert.IsTrue(settings.AlwaysType);
+        Assert.AreEqual(InjectionBackend.Typing, settings.Backend);
         Assert.IsFalse(settings.CaseSensitive);
     }
 

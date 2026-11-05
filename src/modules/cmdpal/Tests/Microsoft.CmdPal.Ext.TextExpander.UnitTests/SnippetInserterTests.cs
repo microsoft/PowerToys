@@ -4,6 +4,7 @@
 
 using System.Linq;
 using Microsoft.CmdPal.Ext.TextExpander.Insertion;
+using Microsoft.PowerToys.TextExpander;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TextExpander.UnitTests;
@@ -20,6 +21,10 @@ public sealed class SnippetInserterTests
 
     private SnippetInserter Inserter => new(_clipboard, _desktop, _clock);
 
+    // Text Expander's defaults, but for the insertion method.
+    private InsertOutcome Insert(string text, InjectionBackend backend = InjectionBackend.Auto)
+        => Inserter.Insert(text, backend, InjectionPolicy.DefaultClipboardThresholdChars);
+
     [TestMethod]
     public void Insert_Paste_PastesKeptOutOfHistoryAndPutsTheUsersClipboardBack()
     {
@@ -30,7 +35,7 @@ public sealed class SnippetInserterTests
             readByApp ??= _clipboard.OpenedBy != 0 ? _clipboard.Text : null;
         };
 
-        var outcome = Inserter.Insert(Signature, alwaysType: false);
+        var outcome = Insert(Signature);
 
         Assert.AreEqual(InsertOutcome.Inserted, outcome);
         Assert.AreEqual(1, _desktop.HideRequests);
@@ -51,7 +56,7 @@ public sealed class SnippetInserterTests
             }
         };
 
-        Assert.AreEqual(InsertOutcome.Inserted, Inserter.Insert(Signature, alwaysType: false));
+        Assert.AreEqual(InsertOutcome.Inserted, Insert(Signature));
         Assert.AreEqual(0, _clipboard.Restores);
         Assert.AreEqual("A newer copy", _clipboard.Text);
     }
@@ -63,7 +68,7 @@ public sealed class SnippetInserterTests
         // restore took the clipboard for the extension's and put the user's old copy over it.
         _clipboard.AfterWrite = () => _clipboard.UserCopies("A newer copy");
 
-        Assert.AreEqual(InsertOutcome.Inserted, Inserter.Insert(Signature, alwaysType: false));
+        Assert.AreEqual(InsertOutcome.Inserted, Insert(Signature));
         Assert.AreEqual(0, _clipboard.Restores, "Nothing is put back over their copy.");
         Assert.AreEqual("A newer copy", _clipboard.Text);
         Assert.IsFalse(_desktop.Pasted);
@@ -75,7 +80,7 @@ public sealed class SnippetInserterTests
     {
         _clipboard.CanBeSaved = false;
 
-        Assert.AreEqual(InsertOutcome.Inserted, Inserter.Insert(Signature, alwaysType: false));
+        Assert.AreEqual(InsertOutcome.Inserted, Insert(Signature));
         Assert.AreEqual(0, _clipboard.Writes.Count);
         Assert.AreEqual(UsersCopy, _clipboard.Text);
         Assert.AreEqual(Signature, _desktop.Typed());
@@ -85,7 +90,7 @@ public sealed class SnippetInserterTests
     [TestMethod]
     public void Insert_AlwaysType_NeverTouchesTheClipboardAndPacesTheTyping()
     {
-        Assert.AreEqual(InsertOutcome.Inserted, Inserter.Insert(Signature, alwaysType: true));
+        Assert.AreEqual(InsertOutcome.Inserted, Insert(Signature, InjectionBackend.Typing));
 
         Assert.AreEqual(0, _clipboard.Saves);
         Assert.AreEqual(0, _clipboard.Writes.Count);
@@ -99,7 +104,7 @@ public sealed class SnippetInserterTests
     {
         _clipboard.NextWrite = ClipboardWrite.Failed;
 
-        Assert.AreEqual(InsertOutcome.Inserted, Inserter.Insert(Signature, alwaysType: false));
+        Assert.AreEqual(InsertOutcome.Inserted, Insert(Signature));
         Assert.AreEqual(UsersCopy, _clipboard.Text);
         Assert.AreEqual(Signature, _desktop.Typed());
     }
@@ -109,7 +114,7 @@ public sealed class SnippetInserterTests
     {
         _desktop.WindowAfterHide = FakeDesktop.CommandPaletteWindow;
 
-        Assert.AreEqual(InsertOutcome.NoTarget, Inserter.Insert(Signature, alwaysType: false));
+        Assert.AreEqual(InsertOutcome.NoTarget, Insert(Signature));
         Assert.AreEqual(0, _clipboard.Saves);
         Assert.AreEqual(0, _desktop.Sent.Count);
         Assert.IsTrue(_clock.ElapsedMilliseconds >= SnippetInserter.TargetWaitMs);
@@ -120,7 +125,7 @@ public sealed class SnippetInserterTests
     {
         _desktop.CanDriveTarget = false;
 
-        Assert.AreEqual(InsertOutcome.TargetOutOfReach, Inserter.Insert(Signature, alwaysType: false));
+        Assert.AreEqual(InsertOutcome.TargetOutOfReach, Insert(Signature));
         Assert.AreEqual(0, _clipboard.Saves);
         Assert.AreEqual(0, _desktop.Sent.Count);
     }
@@ -130,7 +135,7 @@ public sealed class SnippetInserterTests
     {
         _clipboard.AfterWrite = () => _desktop.ForegroundWindow = FakeDesktop.OtherWindow;
 
-        Assert.AreEqual(InsertOutcome.TargetChanged, Inserter.Insert(Signature, alwaysType: false));
+        Assert.AreEqual(InsertOutcome.TargetChanged, Insert(Signature));
         Assert.IsFalse(_desktop.Pasted);
         Assert.AreEqual(UsersCopy, _clipboard.Text);
     }
@@ -146,7 +151,7 @@ public sealed class SnippetInserterTests
             }
         };
 
-        Assert.AreEqual(InsertOutcome.TargetChanged, Inserter.Insert(Signature, alwaysType: true));
+        Assert.AreEqual(InsertOutcome.TargetChanged, Insert(Signature, InjectionBackend.Typing));
         Assert.IsTrue(_desktop.Typed().Length is > 0 and < 5, _desktop.Typed());
     }
 
@@ -155,7 +160,7 @@ public sealed class SnippetInserterTests
     {
         _desktop.TakingMessages = false;
 
-        Assert.AreEqual(InsertOutcome.ClipboardNotRestored, Inserter.Insert(Signature, alwaysType: false));
+        Assert.AreEqual(InsertOutcome.ClipboardNotRestored, Insert(Signature));
         Assert.AreEqual(0, _clipboard.Restores);
         Assert.AreEqual(Signature, _clipboard.Text);
     }
@@ -165,7 +170,7 @@ public sealed class SnippetInserterTests
     {
         _clipboard.FailingRestores = 1;
 
-        Assert.AreEqual(InsertOutcome.Inserted, Inserter.Insert(Signature, alwaysType: false));
+        Assert.AreEqual(InsertOutcome.Inserted, Insert(Signature));
         Assert.AreEqual(2, _clipboard.Restores);
         Assert.AreEqual(UsersCopy, _clipboard.Text);
     }
@@ -175,7 +180,7 @@ public sealed class SnippetInserterTests
     {
         _clipboard.FailingRestores = SnippetInserter.RestoreAttempts;
 
-        Assert.AreEqual(InsertOutcome.ClipboardNotRestored, Inserter.Insert(Signature, alwaysType: false));
+        Assert.AreEqual(InsertOutcome.ClipboardNotRestored, Insert(Signature));
     }
 
     [TestMethod]
@@ -183,7 +188,7 @@ public sealed class SnippetInserterTests
     {
         _clipboard.WhileOpening = () => _clipboard.UserCopies("A newer copy");
 
-        Assert.AreEqual(InsertOutcome.Inserted, Inserter.Insert(Signature, alwaysType: false));
+        Assert.AreEqual(InsertOutcome.Inserted, Insert(Signature));
         Assert.AreEqual(1, _clipboard.Restores);
         Assert.AreEqual("A newer copy", _clipboard.Text);
     }
@@ -194,7 +199,7 @@ public sealed class SnippetInserterTests
         _clipboard.UnopenableRestores = 1;
         _clipboard.WhileOpening = () => _clipboard.UserCopies("A newer copy");
 
-        Assert.AreEqual(InsertOutcome.Inserted, Inserter.Insert(Signature, alwaysType: false));
+        Assert.AreEqual(InsertOutcome.Inserted, Insert(Signature));
         Assert.AreEqual(1, _clipboard.Restores, "The retry mustn't take the newer copy for the extension's own change.");
         Assert.AreEqual("A newer copy", _clipboard.Text);
     }
@@ -204,7 +209,7 @@ public sealed class SnippetInserterTests
     {
         _clipboard.UnopenableRestores = SnippetInserter.RestoreAttempts;
 
-        Assert.AreEqual(InsertOutcome.ClipboardNotRestored, Inserter.Insert(Signature, alwaysType: false));
+        Assert.AreEqual(InsertOutcome.ClipboardNotRestored, Insert(Signature));
         Assert.AreEqual(SnippetInserter.RestoreAttempts, _clipboard.Restores);
     }
 
@@ -213,7 +218,7 @@ public sealed class SnippetInserterTests
     {
         _clipboard.Text = null;
 
-        Assert.AreEqual(InsertOutcome.Inserted, Inserter.Insert(Signature, alwaysType: false));
+        Assert.AreEqual(InsertOutcome.Inserted, Insert(Signature));
         Assert.IsNull(_clipboard.Text);
     }
 
@@ -222,7 +227,7 @@ public sealed class SnippetInserterTests
     {
         _desktop.Held.Add(KeyStrokes.RightControl);
 
-        Assert.AreEqual(InsertOutcome.Inserted, Inserter.Insert(Signature, alwaysType: false));
+        Assert.AreEqual(InsertOutcome.Inserted, Insert(Signature));
         Assert.AreEqual(KeyStroke.KeyUp(KeyStrokes.RightControl), _desktop.Sent.Single()[0]);
         Assert.IsTrue(_clock.ElapsedMilliseconds >= SnippetInserter.ModifierReleaseWaitMs);
     }
@@ -230,7 +235,7 @@ public sealed class SnippetInserterTests
     [TestMethod]
     public void Insert_EmptySnippet_HidesCommandPaletteAndSendsNothing()
     {
-        Assert.AreEqual(InsertOutcome.Empty, Inserter.Insert(string.Empty, alwaysType: false));
+        Assert.AreEqual(InsertOutcome.Empty, Insert(string.Empty));
         Assert.AreEqual(1, _desktop.HideRequests);
         Assert.AreEqual(0, _clipboard.Saves);
         Assert.AreEqual(0, _desktop.Sent.Count);
@@ -243,7 +248,7 @@ public sealed class SnippetInserterTests
         // and the clipboard went back at once, under a V that may still have been on its way.
         _desktop.FailingSends = 1;
 
-        Assert.AreEqual(InsertOutcome.Failed, Inserter.Insert(Signature, alwaysType: false));
+        Assert.AreEqual(InsertOutcome.Failed, Insert(Signature));
         CollectionAssert.AreEqual(new[] { KeyStroke.KeyUp(KeyStrokes.Control) }, _desktop.Sent[1].ToArray(), "Ctrl is let go of.");
         Assert.IsTrue(_clock.ElapsedMilliseconds >= PasteSettle.SettleMs, "The clipboard waits for the app to read.");
         Assert.AreEqual(UsersCopy, _clipboard.Text);
@@ -254,7 +259,53 @@ public sealed class SnippetInserterTests
     {
         _desktop.FailingSends = 1;
 
-        Assert.AreEqual(InsertOutcome.Failed, Inserter.Insert("\nNext line", alwaysType: true));
+        Assert.AreEqual(InsertOutcome.Failed, Insert("\nNext line", InjectionBackend.Typing));
         CollectionAssert.AreEqual(new[] { KeyStroke.KeyUp(KeyStrokes.Return) }, _desktop.Sent[1].ToArray());
+    }
+
+    [TestMethod]
+    public void Insert_AutomaticShortSnippet_IsTypedAsTextExpanderTypesIt()
+    {
+        // Settings' Insertion method is Text Expander's: Automatic types what's shorter than its minimum to paste.
+        Assert.AreEqual(InsertOutcome.Inserted, Insert("Hi"));
+        Assert.AreEqual(0, _clipboard.Writes.Count);
+        Assert.AreEqual("Hi", _desktop.Typed());
+    }
+
+    [TestMethod]
+    public void Insert_AutomaticWithAHigherMinimum_TypesWhatsShorter()
+    {
+        Assert.AreEqual(InsertOutcome.Inserted, Inserter.Insert("Kind regards", InjectionBackend.Auto, clipboardThresholdChars: 40));
+        Assert.AreEqual(0, _clipboard.Writes.Count);
+        Assert.AreEqual("Kind regards", _desktop.Typed());
+    }
+
+    [TestMethod]
+    public void Insert_AutomaticOneLineInWindowsTerminal_IsTypedSoTheSpacesAtTheEndStay()
+    {
+        // Windows Terminal trims the spaces at the end of a one-line paste, so "git commit -m " lost its space.
+        _desktop.AppIsWindowsTerminal = true;
+
+        Assert.AreEqual(InsertOutcome.Inserted, Insert("git commit -m "));
+        Assert.AreEqual(0, _clipboard.Writes.Count);
+        Assert.AreEqual("git commit -m ", _desktop.Typed());
+    }
+
+    [TestMethod]
+    public void Insert_LinesInWindowsTerminal_ArePastedSoItCanWarnAboutThem()
+    {
+        _desktop.AppIsWindowsTerminal = true;
+
+        Assert.AreEqual(InsertOutcome.Inserted, Insert(Signature));
+        Assert.IsTrue(_desktop.Pasted);
+    }
+
+    [TestMethod]
+    public void Insert_AlwaysPasteInWindowsTerminal_StillPastes()
+    {
+        _desktop.AppIsWindowsTerminal = true;
+
+        Assert.AreEqual(InsertOutcome.Inserted, Insert("git commit -m ", InjectionBackend.Clipboard));
+        Assert.IsTrue(_desktop.Pasted);
     }
 }

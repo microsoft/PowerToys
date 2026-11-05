@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.CmdPal.Ext.TextExpander.Snippets;
+using Microsoft.PowerToys.TextExpander;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TextExpander.UnitTests;
@@ -67,9 +69,9 @@ public sealed class TextExpanderStateTests
             }
             """);
 
-        Assert.AreEqual(new TextExpanderSettings(@"C:\Snippets\mine.json", CaseSensitive: false, AlwaysType: true), settings);
+        Assert.AreEqual(new TextExpanderSettings(@"C:\Snippets\mine.json", CaseSensitive: false, InjectionBackend.Typing, InjectionPolicy.DefaultClipboardThresholdChars), settings);
         Assert.AreEqual(
-            new TextExpanderSettings(null, CaseSensitive: false, AlwaysType: false),
+            new TextExpanderSettings(null, CaseSensitive: false, InjectionBackend.Auto, InjectionPolicy.DefaultClipboardThresholdChars),
             TextExpanderSettings.Parse("""{ "properties": { "case_sensitive": { "value": false }, "snippets_path": "" } }"""));
     }
 
@@ -78,15 +80,25 @@ public sealed class TextExpanderStateTests
         => Assert.AreEqual(TextExpanderSettings.Default, TextExpanderSettings.Parse("""{ "properties": {} }"""));
 
     [TestMethod]
-    [DataRow("type", true)]
-    [DataRow("Typing", true)]
-    [DataRow("keyboard", true)]
-    [DataRow("inject", true)]
-    [DataRow("auto", false)]
-    [DataRow("clipboard", false)]
-    [DataRow("something else", false)]
-    public void ParseSettings_InsertionMethod_AlwaysTypeFollowsTheNamesTheEngineAccepts(string backend, bool alwaysType)
-        => Assert.AreEqual(alwaysType, TextExpanderSettings.Parse($$"""{ "properties": { "injection_backend": { "value": "{{backend}}" } } }""")!.AlwaysType);
+    [DataRow("type", "Typing")]
+    [DataRow("Typing", "Typing")]
+    [DataRow("keyboard", "Typing")]
+    [DataRow("inject", "Typing")]
+    [DataRow("auto", "Auto")]
+    [DataRow("clipboard", "Clipboard")]
+    [DataRow("paste", "Clipboard")]
+    [DataRow("something else", "Auto")]
+    public void ParseSettings_InsertionMethod_FollowsTheNamesTheEngineAccepts(string backend, string expected)
+        => Assert.AreEqual(Enum.Parse<InjectionBackend>(expected), TextExpanderSettings.Parse($$"""{ "properties": { "injection_backend": { "value": "{{backend}}" } } }""")!.Backend);
+
+    [TestMethod]
+    [DataRow("""{ "properties": { "clipboard_threshold_chars": { "value": 40 } } }""", 40)]
+    [DataRow("""{ "properties": { "clipboard_threshold_chars": 12 } }""", 12)]
+    [DataRow("""{ "properties": { "clipboard_threshold_chars": { "value": "30" } } }""", 30)]
+    [DataRow("""{ "properties": { "clipboard_threshold_chars": { "value": 0 } } }""", 5)]
+    [DataRow("""{ "properties": { "clipboard_threshold_chars": true } }""", 5)]
+    public void ParseSettings_ShortestSnippetToPaste_IsReadAsTheEngineReadsIt(string json, int expected)
+        => Assert.AreEqual(expected, TextExpanderSettings.Parse(json)!.ClipboardThresholdChars);
 
     [TestMethod]
     [DataRow("")]

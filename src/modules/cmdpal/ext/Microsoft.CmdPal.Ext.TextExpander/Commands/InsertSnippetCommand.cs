@@ -65,7 +65,7 @@ internal sealed partial class InsertSnippetCommand : InvokableCommand
             ? SnippetText.ExpandWithGaps(_snippet.Replacement, _answers?.Invoke() ?? [], _inserter.Clipboard.ReadText)
             : SnippetText.ExpandWithGaps(_snippet.Replacement, _fill);
         var text = expanded.Text;
-        var outcome = _inserter.Insert(text, state.Settings.AlwaysType);
+        var outcome = _inserter.Insert(text, state.Settings.Backend, state.Settings.ClipboardThresholdChars);
         if (outcome is InsertOutcome.Inserted or InsertOutcome.Empty or InsertOutcome.ClipboardNotRestored)
         {
             _inserted?.Invoke();

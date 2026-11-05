@@ -17,7 +17,7 @@ erases each trigger and pastes or types the snippet. A separate editor manages t
 | --- | --- |
 | `src/modules/textexpander/TextExpanderModuleInterface` | `PowerToys.TextExpanderModuleInterface.dll`, the runner's module, which starts and stops the engine. |
 | `src/modules/textexpander/TextExpander` | The engine, `WinUI3Apps\PowerToys.TextExpander.exe`. |
-| `src/modules/textexpander/TextExpander.Core` | Shared rules: `SnippetFile`, `SnippetTemplate`, `Variables`, `TriggerIndex`, `WordBoundaryRules`, `TextExpanderTriggerReach`, `SnippetPathResolution`, `TextExpanderStarter`, and the clipboard rules `ClipboardFormats`, `ClipboardPrivacy`, `ClipboardLoan`, `ClipboardEntry` and `ClipboardHandBack`. |
+| `src/modules/textexpander/TextExpander.Core` | Shared rules: `SnippetFile`, `SnippetTemplate`, `Variables`, `TriggerIndex`, `WordBoundaryRules`, `TextExpanderTriggerReach`, `SnippetPathResolution`, `TextExpanderStarter`, the clipboard rules `ClipboardFormats`, `ClipboardPrivacy`, `ClipboardLoan`, `ClipboardEntry` and `ClipboardHandBack`, and `InjectionPolicy`, which decides between pasting and typing. |
 | `src/modules/textexpander/TextExpander.Storage` | `TextExpanderSettingsUtils`, for guarded `settings.json` access. |
 | `src/modules/textexpander/TextExpander.Editor` | The editor, `WinUI3Apps\PowerToys.TextExpander.Editor.exe`. |
 | `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.TextExpander` | Command Palette's **Text Expander snippets** extension. See [Command Palette](#command-palette). |
@@ -329,9 +329,11 @@ Command Palette's process; its
   spots were left empty, and a toast says so.
 - A copy picked from clipboard history (`{{clipboard:pick}}` and the like) needs the engine's window,
   so those snippets are listed but not inserted.
-- It pastes with Core's `ClipboardFormats`, `ClipboardPrivacy`, `ClipboardLoan` and `ClipboardEntry`,
-  and hands the clipboard back with the engine's loop, Core's `ClipboardHandBack`. It types when the
-  clipboard can't be put back exactly or under Always type.
+- It pastes or types as Settings' **Insertion method** says, by the engine's rule (Core's
+  `InjectionPolicy`), so Automatic types short snippets and one line in Windows Terminal. It pastes
+  with Core's `ClipboardFormats`, `ClipboardPrivacy`, `ClipboardLoan` and `ClipboardEntry`, hands the
+  clipboard back with the engine's loop, Core's `ClipboardHandBack`, and types when the clipboard can't
+  be put back exactly.
 - Its key events carry `InputTags.CommandPalette`: Keyboard Manager's bit, so remaps leave its Ctrl+V
   alone, in a value the engine's hook ignores. It sends a key that does nothing before letting go of a
   held Alt or Windows key, and refuses targets above medium integrity, as the engine does.

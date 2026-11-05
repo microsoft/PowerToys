@@ -2,18 +2,21 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.Text.Json;
+using Microsoft.PowerToys.TextExpander;
 
 namespace Microsoft.CmdPal.Ext.TextExpander.Snippets;
 
 /// <summary>
 /// The Text Expander settings this extension follows, from <c>TextExpander\settings.json</c>: where the snippets
-/// file is, whether triggers match capitalization, and whether snippets must be typed rather than pasted.
+/// file is, whether triggers match capitalization, and the insertion method, with the shortest snippet Automatic pastes.
 /// </summary>
-internal sealed record TextExpanderSettings(string? SnippetsPath, bool CaseSensitive, bool AlwaysType)
+internal sealed record TextExpanderSettings(string? SnippetsPath, bool CaseSensitive, InjectionBackend Backend, int ClipboardThresholdChars)
 {
-    /// <summary>Gets Text Expander's defaults: the default snippets file, capitalization matters, paste when it can.</summary>
-    public static TextExpanderSettings Default { get; } = new(SnippetsPath: null, CaseSensitive: true, AlwaysType: false);
+    /// <summary>Gets Text Expander's defaults: the default snippets file, capitalization matters, Automatic.</summary>
+    public static TextExpanderSettings Default { get; } =
+        new(SnippetsPath: null, CaseSensitive: true, InjectionBackend.Auto, InjectionPolicy.DefaultClipboardThresholdChars);
 
     /// <summary>
     /// Parses the settings as the engine does (<c>HostSettings.Parse</c>): a <c>properties</c> object whose values are
@@ -37,24 +40,17 @@ internal sealed record TextExpanderSettings(string? SnippetsPath, bool CaseSensi
                 return null;
             }
 
-            var backend = ReadString(properties, "injection_backend");
             return new TextExpanderSettings(
                 ReadString(properties, "snippets_path"),
                 ReadBool(properties, "case_sensitive") ?? Default.CaseSensitive,
-                IsTypingBackend(backend));
+                InjectionPolicy.ParseBackend(ReadString(properties, "injection_backend"), Default.Backend),
+                ReadInt(properties, "clipboard_threshold_chars") is int threshold && threshold >= 1 ? threshold : Default.ClipboardThresholdChars);
         }
         catch (JsonException)
         {
             return null;
         }
     }
-
-    /// <summary>The names the engine accepts for its typing backend (<c>InjectionPolicy.ParseBackend</c>).</summary>
-    private static bool IsTypingBackend(string? backend) => backend?.ToLowerInvariant() switch
-    {
-        "type" or "typing" or "inject" or "keyboard" => true,
-        _ => false,
-    };
 
     private static bool TryGetValue(JsonElement parent, string name, out JsonElement value)
     {
@@ -92,5 +88,21 @@ internal sealed record TextExpanderSettings(string? SnippetsPath, bool CaseSensi
             JsonValueKind.False => false,
             _ => null,
         };
+    }
+
+    // A number, or a string of one, as the engine takes it from a file edited by hand.
+    private static int? ReadInt(JsonElement parent, string name)
+    {
+        if (!TryGetValue(parent, name, out var value))
+        {
+            return null;
+        }
+
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var number))
+        {
+            return number;
+        }
+
+        return value.ValueKind == JsonValueKind.String && int.TryParse(value.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) ? parsed : null;
     }
 }

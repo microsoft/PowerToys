@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>How a replacement reaches the focused window.</summary>
@@ -17,9 +19,18 @@ internal enum InjectionBackend
     Typing,
 }
 
-/// <summary>Decides how a given replacement should be injected; free of Win32 so the rule can be tested.</summary>
+/// <summary>
+/// Decides how a given replacement should be injected; free of Win32 so the rule can be tested. Text Expander and
+/// Command Palette's extension share it, so Settings' Insertion method means the same in both.
+/// </summary>
 internal static class InjectionPolicy
 {
+    /// <summary>
+    /// Windows Terminal's top-level window class, which its stable, Preview and Canary builds share, and which it keeps
+    /// when it hosts console apps as the default terminal.
+    /// </summary>
+    public const string WindowsTerminalClass = "CASCADIA_HOSTING_WINDOW_CLASS";
+
     /// <summary>
     /// Replacements at least this long are pasted rather than typed. A paste is a single Ctrl+V;
     /// typing stays for short text and targets that reject paste.
@@ -35,7 +46,7 @@ internal static class InjectionPolicy
     public const string ThresholdVariable = "POWERTOYS_TEXT_EXPANDER_CLIPBOARD_THRESHOLD";
 
     /// <summary>
-    /// Set to <c>1</c> to stop treating Keyboard Manager remaps as typing (see <see cref="HostInputTags.AcceptRemappedInput"/>).
+    /// Set to <c>1</c> to stop treating Keyboard Manager remaps as typing (see the engine's <c>HostInputTags.AcceptRemappedInput</c>).
     /// </summary>
     public const string IgnoreRemappedVariable = "POWERTOYS_TEXT_EXPANDER_IGNORE_REMAPPED_INPUT";
 
@@ -111,4 +122,8 @@ internal static class InjectionPolicy
         => int.TryParse(value?.Trim(), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out int parsed) && parsed >= 1
             ? parsed
             : fallback;
+
+    /// <summary>True for <see cref="WindowsTerminalClass"/>. Window classes ignore case.</summary>
+    public static bool IsWindowsTerminalClass(string? className)
+        => string.Equals(className, WindowsTerminalClass, StringComparison.OrdinalIgnoreCase);
 }
