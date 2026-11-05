@@ -231,6 +231,10 @@ internal sealed class SnippetStore : IDisposable
     private volatile TransitionTarget _desired;
     private Timer? _debounce;
     private Timer? _recovery;
+
+    // Whether _recovery is ticking: only while watching is on and the desired file isn't loaded and watched. Guarded by
+    // _debounceLock.
+    private bool _recoveryArmed;
     private long _nextGeneration;
     private long _nextWatcherIdentity;
     private long _nextReloadSequence;
@@ -255,6 +259,18 @@ internal sealed class SnippetStore : IDisposable
 
     public bool IsWatching => _published.Watcher?.Watcher.EnableRaisingEvents == true;
 
+    /// <summary>Gets a value indicating whether recovery is ticking, which it does only while the store needs it.</summary>
+    internal bool IsRecoveryArmed
+    {
+        get
+        {
+            lock (_debounceLock)
+            {
+                return _recoveryArmed;
+            }
+        }
+    }
+
     /// <summary>Raised after a successful reload. Fires on a thread pool thread.</summary>
     public event Action<int>? Reloaded;
 
@@ -273,7 +289,8 @@ internal sealed class SnippetStore : IDisposable
 
     /// <param name="recoveryInterval">
     /// How often, once watching, to try again to load a snippets file that couldn't be loaded or watched, such as one in
-    /// OneDrive before it starts at sign-in, or in a folder that isn't there yet. Thirty seconds when null.
+    /// OneDrive before it starts at sign-in, or in a folder that isn't there yet. Thirty seconds when null. Nothing ticks
+    /// while the file is loaded and watched.
     /// </param>
     internal SnippetStore(
         string filePath,
@@ -521,6 +538,7 @@ internal sealed class SnippetStore : IDisposable
             ScheduleRetryAfterFailure(target, result);
         }
 
+        UpdateRecovery();
         return result;
     }
 
@@ -761,15 +779,44 @@ internal sealed class SnippetStore : IDisposable
     public TransitionResult StartWatching()
     {
         Interlocked.Exchange(ref _watchingRequested, 1);
+        return ExecuteTransition(_desired);
+    }
+
+    /// <summary>
+    /// Arms recovery while watching is on and the desired file isn't loaded and watched, and disarms it once it is, so a
+    /// healthy store wakes nothing while idle. Everything that changes the store's state calls this afterwards, and the
+    /// calls take turns reading that state, so the last one always sees the last change.
+    /// </summary>
+    private void UpdateRecovery()
+    {
         lock (_debounceLock)
         {
-            if (Volatile.Read(ref _disposed) == 0)
+            if (Volatile.Read(ref _disposed) != 0)
             {
-                _recovery ??= new Timer(_ => Recover(), null, _recoveryInterval, _recoveryInterval);
+                return;
             }
-        }
 
-        return ExecuteTransition(_desired);
+            bool needed = Volatile.Read(ref _watchingRequested) != 0 && !IsDesiredLoadedAndWatched();
+            if (needed == _recoveryArmed)
+            {
+                return;
+            }
+
+            _recovery ??= new Timer(_ => Recover(), null, Timeout.Infinite, Timeout.Infinite);
+            TimeSpan interval = needed ? _recoveryInterval : Timeout.InfiniteTimeSpan;
+            _recovery.Change(interval, interval);
+            _recoveryArmed = needed;
+        }
+    }
+
+    private bool IsDesiredLoadedAndWatched()
+    {
+        TransitionTarget desired = _desired;
+        PublishedState published = _published;
+        return published.Watcher is not null
+            && published.HasLoadedState
+            && published.State.Generation == desired.Generation
+            && SameConfiguration(published.State, desired);
     }
 
     /// <summary>
@@ -785,16 +832,12 @@ internal sealed class SnippetStore : IDisposable
 
         try
         {
-            TransitionTarget desired = _desired;
-            PublishedState published = _published;
-            if (published.Watcher is not null
-                && published.HasLoadedState
-                && published.State.Generation == desired.Generation
-                && SameConfiguration(published.State, desired))
+            if (IsDesiredLoadedAndWatched())
             {
                 return;
             }
 
+            TransitionTarget desired = _desired;
             TransitionResult result;
             lock (_transitionLock)
             {
@@ -813,6 +856,7 @@ internal sealed class SnippetStore : IDisposable
         finally
         {
             Interlocked.Exchange(ref _recovering, 0);
+            UpdateRecovery();
         }
     }
 
@@ -989,6 +1033,8 @@ internal sealed class SnippetStore : IDisposable
         {
             ScheduleRetryAfterFailure(target, Failed(attemptedPath, error));
         }
+
+        UpdateRecovery();
     }
 
     /// <summary>
@@ -1102,6 +1148,7 @@ internal sealed class SnippetStore : IDisposable
         finally
         {
             CompleteReloadRequest(request, retry);
+            UpdateRecovery();
             try
             {
                 if (reloadedCount is int count)
@@ -1341,6 +1388,7 @@ internal sealed class SnippetStore : IDisposable
             _debounce = null;
             _recovery?.Dispose();
             _recovery = null;
+            _recoveryArmed = false;
             _scheduledReload = null;
         }
     }

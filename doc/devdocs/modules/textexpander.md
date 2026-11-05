@@ -271,7 +271,7 @@ The file looks like `{"version": 1, "snippets": [{"trigger": "!mysig", "replacem
   and rename.
 - The engine watches the file's folder, and changes coalesce for 250 ms. A failed load keeps the last
   snapshot and tries up to 4 times, 250 ms apart. While the file isn't loaded and watched, the engine
-  retries every 30 s.
+  retries every 30 s. Once it is, no timer runs.
 - The editor watches the file and polls it every 2 s. Both keep their snippets if the bytes match.
 - Only the editor writes the file, apart from the starter. If the file no longer matches the bytes it
   loaded, it reloads and refuses the save. It never merges.

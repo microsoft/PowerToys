@@ -531,6 +531,38 @@ public sealed class SnippetStoreTests
         Assert.IsTrue(store.IsWatching);
         Assert.IsTrue(store.Current.Map.ContainsKey("!new"));
         Assert.IsFalse(store.Current.Map.ContainsKey("!old"));
+        Assert.IsTrue(SpinWait.SpinUntil(() => !store.IsRecoveryArmed, TimeSpan.FromSeconds(5)), "Watched again, the store stops recovering.");
+    }
+
+    [TestMethod]
+    public void AHealthyStoreHasNoRecoveryTicking()
+    {
+        // Recovery used to tick every 30 seconds for the life of the engine, even with the file loaded and watched.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        string path = Write(scratch, "snippets.json", "!old=before");
+        Action<Exception>? raiseWatcherError = null;
+        var hooks = new SnippetStore.TestHooks
+        {
+            WatcherErrorHandlerRegistered = (_, handler) => Interlocked.Exchange(ref raiseWatcherError, handler),
+        };
+
+        using var store = NewStore(path, hooks: hooks, retryDelay: TimeSpan.FromSeconds(30), maxReloadAttempts: 1);
+        Assert.IsTrue(store.Load().Succeeded);
+        Assert.IsFalse(store.IsRecoveryArmed, "Nothing ticks before watching starts.");
+        Assert.IsTrue(store.StartWatching().Succeeded);
+        Assert.IsTrue(store.IsWatching);
+        Assert.IsFalse(store.IsRecoveryArmed, "Loaded and watched, nothing ticks.");
+
+        using var reloaded = new ManualResetEventSlim(false);
+        store.Reloaded += _ => reloaded.Set();
+        File.WriteAllText(path, SnippetJson.Of("!new=after"));
+        Assert.IsTrue(reloaded.Wait(TimeSpan.FromSeconds(5)), "The change wasn't loaded.");
+        Assert.IsFalse(store.IsRecoveryArmed, "A reload leaves nothing ticking.");
+
+        // A watcher that stops, as when its folder goes away, leaves the file unwatched until recovery or a retry.
+        raiseWatcherError!(new IOException("Injected watcher error."));
+        Assert.IsFalse(store.IsWatching);
+        Assert.IsTrue(store.IsRecoveryArmed, "Unwatched, recovery ticks.");
     }
 
     [TestMethod]
@@ -1274,6 +1306,7 @@ public sealed class SnippetStoreTests
 
         Assert.AreEqual(0, store.Load().Count);
         Assert.IsFalse(store.StartWatching().Succeeded, "There's no folder to watch yet.");
+        Assert.IsTrue(store.IsRecoveryArmed, "With nothing watched, recovery ticks.");
         Assert.IsTrue(SpinWait.SpinUntil(() => Volatile.Read(ref reads) > 6, TimeSpan.FromSeconds(5)), "Recovery keeps trying.");
         int logged = logs.Count;
         Thread.Sleep(200);
@@ -1286,6 +1319,7 @@ public sealed class SnippetStoreTests
         Assert.IsTrue(recovered.Wait(TimeSpan.FromSeconds(5)), "The file wasn't loaded once its folder arrived.");
         Assert.IsTrue(store.Current.Map.ContainsKey("!synced"));
         Assert.IsTrue(store.IsWatching);
+        Assert.IsTrue(SpinWait.SpinUntil(() => !store.IsRecoveryArmed, TimeSpan.FromSeconds(5)), "Recovered, nothing ticks.");
 
         // Loaded and watched, recovery stops reading.
         Thread.Sleep(200);
