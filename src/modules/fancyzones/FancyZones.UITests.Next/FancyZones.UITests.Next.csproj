@@ -37,8 +37,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
-    <!-- Layout/settings JSON wrappers shared with the editor. Deliberately NOT a reference to the
-         legacy FancyZonesEditor.UITests project, which pulls in the WinAppDriver harness. -->
+    <!-- Layout/settings JSON wrappers shared with the editor. -->
     <ProjectReference Include="..\FancyZonesEditorCommon\FancyZonesEditorCommon.csproj" />
   </ItemGroup>
 </Project>

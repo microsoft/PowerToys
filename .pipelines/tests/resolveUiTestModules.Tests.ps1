@@ -8,7 +8,7 @@ function New-UITestProject {
         [Parameter(Mandatory)]
         [string] $RelativePath,
 
-        [ValidateSet('Next', 'Legacy', 'None')]
+        [ValidateSet('Next', 'None')]
         [string] $Framework = 'Next'
     )
 
@@ -16,7 +16,6 @@ function New-UITestProject {
     New-Item -ItemType Directory -Path (Split-Path $path) -Force | Out-Null
     $projectReference = switch ($Framework) {
         'Next' { '<ProjectReference Include="..\UITestAutomation.Next\UITestAutomation.Next.csproj" />' }
-        'Legacy' { '<ProjectReference Include="..\UITestAutomation\UITestAutomation.csproj" />' }
         default { '' }
     }
     @"
@@ -73,10 +72,8 @@ Describe 'resolveUiTestModules' {
         $result.UiTestModules | Should Be @('FileLocksmith.UITests')
     }
 
-    It 'selects projects using the Next framework and ignores legacy siblings' {
-        New-UITestProject 'src\modules\fancyzones\FancyZones.UITests\FancyZones.UITests.csproj' -Framework Legacy
+    It 'selects all UI test projects using the Next framework' {
         New-UITestProject 'src\modules\fancyzones\FancyZones.UITests.Next\FancyZones.UITests.Next.csproj'
-        New-UITestProject 'src\modules\fancyzones\FancyZonesEditor.UITests\FancyZonesEditor.UITests.csproj' -Framework Legacy
         New-UITestProject 'src\modules\fancyzones\FancyZonesEditor.UITests.Next\FancyZonesEditor.UITests.Next.csproj'
 
         $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile 'src/modules/fancyzones/dll/FancyZones.cpp'
@@ -87,8 +84,8 @@ Describe 'resolveUiTestModules' {
         )
     }
 
-    It 'ignores modules with only legacy UI tests and non-module changes' {
-        New-UITestProject 'src\modules\Example\Tests\Example.UITests\Example.UITests.csproj' -Framework Legacy
+    It 'ignores projects without the UI test framework and non-module changes' {
+        New-UITestProject 'src\modules\Example\Tests\Example.UITests\Example.UITests.csproj' -Framework None
         New-UITestProject 'src\modules\Example\Tests\Example.UnitTests\Example.UnitTests.csproj' -Framework None
 
         $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile @(
@@ -155,7 +152,7 @@ Describe 'resolveUiTestModules' {
 
         $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile @(
             '.pipelines/v2/templates/job-build-project.yml',
-            'src/common/UITestAutomation/Session.cs'
+            'src/common/logger/logger.cpp'
         )
 
         $result.InfrastructureChanged | Should Be $false

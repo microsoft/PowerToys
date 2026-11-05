@@ -608,7 +608,7 @@ public class ColorPickerEndToEndTests : UITestBase
     /// <summary>
     /// Parse a UI-rendered shortcut string like <c>"Win + Shift + C"</c> into the
     /// <see cref="Key"/> sequence the harness's keyboard helper expects. Matches the parser
-    /// pattern used by <c>ScreenRuler.UITests/TestHelper.cs</c>.
+    /// pattern used by <c>ScreenRuler.UITests.Next/TestHelper.cs</c>.
     /// </summary>
     private static Key[] ParseShortcutText(string shortcutText)
     {
