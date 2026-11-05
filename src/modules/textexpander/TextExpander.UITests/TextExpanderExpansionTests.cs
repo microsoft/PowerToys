@@ -168,7 +168,8 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
     /// <summary>
     /// Question and choice windows leave nothing behind once they close. Windows App SDK kept each closed window's title
     /// bar, about 20 GDI objects and 25 handles, and each window loaded its icon again, so an engine asked often enough
-    /// ran out of GDI objects. The first window of each kind sets WinUI up, so the count starts after them.
+    /// ran out of GDI objects. The first windows of each kind set WinUI and its caches up, so the count starts after two
+    /// of each, and allows the few objects those caches still come and go by.
     /// </summary>
     [TestMethod("TextExpander.Expansion.ClosedWindowsLeaveNothingBehind")]
     [TestCategory("TextExpander")]
@@ -176,8 +177,12 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
     public void ClosedWindowsLeaveNothingBehind()
     {
         Assert.IsTrue(ClipboardHelper.SetText(CopiedBlock), "The clipboard could not be set.");
-        AnswerTheTicketQuestion();
-        PickTheFirstLink();
+        for (var i = 0; i < 2; i++)
+        {
+            AnswerTheTicketQuestion();
+            PickTheFirstLink();
+        }
+
         using var engine = Process.GetProcessById(ProcessIds(EngineProcessName).Single());
         var (gdi, user, handles) = SettledObjects(engine);
 
@@ -189,8 +194,8 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
 
         var (gdiAfter, userAfter, handlesAfter) = SettledObjects(engine);
         var counts = $"GDI {gdi} -> {gdiAfter}, USER {user} -> {userAfter}, handles {handles} -> {handlesAfter}";
-        Assert.IsTrue(gdiAfter - gdi <= 10, $"Ten more windows left GDI objects behind: {counts}.");
-        Assert.IsTrue(userAfter - user <= 4, $"Ten more windows left USER objects behind: {counts}.");
+        Assert.IsTrue(gdiAfter - gdi <= 25, $"Ten more windows left GDI objects behind: {counts}.");
+        Assert.IsTrue(userAfter - user <= 6, $"Ten more windows left USER objects behind: {counts}.");
     }
 
     /// <summary>
