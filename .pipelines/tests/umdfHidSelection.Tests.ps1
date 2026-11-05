@@ -94,11 +94,78 @@ Describe 'Virtual HID suite selection' {
     ) {
         param($Case, $Platform, $Modules, $Auto)
         { Get-UmdfHidUiTestSelection -Modules $Modules -Platform $Platform -AutoSelect $Auto -DedicatedArm64 $true } |
-            Should Throw 'must select exactly GrabAndMove.UITests'
+            Should Throw 'must select exactly one supported fixture suite'
     }
 
     It 'accepts the preconfigured dedicated English-language ARM64 image' {
         Assert-UmdfHidArm64TestEnvironment -OsArchitecture ARM64 -BootConfiguration "Windows Boot Loader`r`ntestsigning             Yes`r`n"
+    }
+
+    It 'routes Power Display through its own dedicated ARM64 fixture job' {
+        $selection = Get-UmdfHidUiTestSelection -Modules 'PowerDisplay.UITests' -FixtureModule 'PowerDisplay.UITests' -Platform ARM64 -RouteArm64 $true
+        $selection.Routed | Should Be $true
+        $selection.Run | Should Be $false
+        $selection.Blocked | Should Be $false
+        $dedicated = Get-UmdfHidUiTestSelection -Modules 'PowerDisplay.UITests' -FixtureModule 'PowerDisplay.UITests' -Platform ARM64 -DedicatedArm64 $true
+        $dedicated.Run | Should Be $true
+        (Get-UmdfHidUiTestSelection -Modules 'PowerDisplay.UITests' -Platform ARM64 -DedicatedArm64 $true).Run | Should Be $false
+    }
+
+    It 'preserves ordinary ARM64 Power Display coverage without provisioning a fixture for <Case>' -TestCases @(
+        @{ Case = 'explicit'; Modules = @('PowerDisplay.UITests'); Auto = $false }
+        @{ Case = 'PR'; Modules = @('PowerDisplay.UITests'); Auto = $true }
+        @{ Case = 'all'; Modules = @(); Auto = $false }
+        @{ Case = 'mixed'; Modules = @('PowerDisplay.UITests', 'Other.UITests'); Auto = $false }
+    ) {
+        param($Case, $Modules, $Auto)
+        $selection = Get-UmdfHidUiTestSelection -Modules $Modules -FixtureModule 'PowerDisplay.UITests' -Platform ARM64 -AutoSelect $Auto
+        $selection.Run | Should Be $true
+        $selection.Blocked | Should Be $false
+        $selection.Exclude | Should Be $false
+        $selection.Skipped | Should Be $false
+        $selection.Filter | Should Be 'TestCategory!=PowerDisplayVirtualMonitors'
+        (Get-UmdfHidUiTestSelection -Modules 'PowerDisplay.UITests' -FixtureModule 'PowerDisplay.UITests' -Platform x64Win10).Run | Should Be $true
+    }
+
+    It 'never filters the dedicated or x64 Power Display fixture coverage' {
+        foreach ($platform in @('x64', 'ARM64')) {
+            $selection = Get-UmdfHidUiTestSelection -Modules 'PowerDisplay.UITests' -FixtureModule 'PowerDisplay.UITests' `
+                -Platform $platform -DedicatedArm64 ($platform -eq 'ARM64')
+            $selection.Run | Should Be $true
+            $selection.Filter | Should Be ''
+        }
+        (Get-UmdfHidUiTestSelection -Modules Other.UITests -FixtureModule 'PowerDisplay.UITests' -Platform ARM64).Filter | Should Be ''
+    }
+
+    It 'forwards the ordinary ARM64 category filter through the actual standard-user dispatch block' {
+        $template = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
+        $start = $template.IndexOf('          if ($nonElevatedSuites -contains $base) {')
+        $end = $template.IndexOf('          if ($LASTEXITCODE -ne 0)', $start)
+        $start | Should BeGreaterThan 0
+        $end | Should BeGreaterThan $start
+        $dispatch = $template.Substring($start, $end - $start)
+        $root = Join-Path $TestDrive 'dispatch'
+        New-Item (Join-Path $root '.pipelines') -ItemType Directory -Force | Out-Null
+        @'
+param($TestExecutable, $ResultsDirectory, $Filter)
+$global:umdfDispatchFilter = $Filter
+$global:LASTEXITCODE = 0
+'@ | Set-Content (Join-Path $root '.pipelines\runUiTestAsUser.ps1')
+        $exe = Join-Path $root 'PowerDisplay.UITests.exe'
+        'not-executable' | Set-Content $exe
+        $resultsDir = Join-Path $root 'results'
+        $base = 'PowerDisplay.UITests'
+        $nonElevatedSuites = @($base)
+        $testFilter = (Get-UmdfHidUiTestSelection -Modules $base -FixtureModule $base -Platform ARM64).Filter
+        $originalExit = $global:LASTEXITCODE
+        try {
+            . ([scriptblock]::Create($dispatch.Replace('$(build.sourcesdirectory)', $root)))
+            $global:umdfDispatchFilter | Should Be 'TestCategory!=PowerDisplayVirtualMonitors'
+        }
+        finally {
+            Remove-Variable umdfDispatchFilter -Scope Global -ErrorAction SilentlyContinue
+            $global:LASTEXITCODE = $originalExit
+        }
     }
 
     It 'rejects an unprepared dedicated image <Case>' -TestCases @(
@@ -120,17 +187,8 @@ Describe 'Virtual HID suite selection' {
         @{ Platform = 'ARM64'; Expected = 5 }
     ) {
         param($Platform, $Expected)
-        $tokens = $null
-        $errors = $null
-        $build = [Management.Automation.Language.Parser]::ParseFile(
-            (Join-Path $PSScriptRoot '..\umdf-hid-smoke\Build-Smoke.ps1'), [ref]$tokens, [ref]$errors)
-        $statements = @($build.EndBlock.Statements | Where-Object {
-            $_.Extent.Text.StartsWith('$ids = ') -or
-            ($_.Extent.Text.StartsWith('if ($Platforms -contains ''ARM64'')'))
-        })
-        $statements.Count | Should Be 2
-        $Platforms = @($Platform)
-        . ([scriptblock]::Create(($statements.Extent.Text -join "`n")))
+        . (Join-Path $PSScriptRoot '..\umdf\UmdfBuild.Common.ps1')
+        $ids = @(Get-UmdfPackageIds -Platforms $Platform)
         $ids.Count | Should Be $Expected
         $ids -contains 'Microsoft.Windows.WDK.x64' | Should Be $true
         ($ids -contains 'Microsoft.Windows.WDK.arm64') | Should Be ($Platform -eq 'ARM64')

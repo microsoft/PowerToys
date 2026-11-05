@@ -105,33 +105,6 @@ dotnet tool install --global wix --version 5.0.2
 
 > **Note:** As of release 0.94, PowerToys has migrated from WiX v3 to WiX v5. The WiX v3 toolset is no longer required.
 
-#### Building prerequisite projects
-
-##### From the command line
-
-1. From the start menu, open a `Developer Command Prompt for VS`
-1. Ensure `nuget.exe` is in your `%path%`
-1. In the repo root, run these commands:
-  
-```
-nuget restore .\tools\BugReportTool\BugReportTool.sln
-msbuild -p:Platform=x64 -p:Configuration=Release .\tools\BugReportTool\BugReportTool.sln
-
-nuget restore .\tools\StylesReportTool\StylesReportTool.sln
-msbuild -p:Platform=x64 -p:Configuration=Release .\tools\StylesReportTool\StylesReportTool.sln
-```
-
-##### From Visual Studio
-
-If you prefer, you can alternatively build prerequisite projects for the installer using the Visual Studio UI.
-
-1. Open `tools\BugReportTool\BugReportTool.sln`
-1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
-1. From the `Build` menu, choose `Build Solution`.
-1. Open `tools\StylesReportTool\StylesReportTool.sln`
-1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
-1. From the `Build` menu, choose `Build Solution`.
-
 #### Locally compiling the installer
 
 1. Open `installer\PowerToysSetup.slnx`
