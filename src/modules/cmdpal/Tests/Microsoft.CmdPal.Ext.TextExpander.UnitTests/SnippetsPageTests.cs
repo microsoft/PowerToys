@@ -150,6 +150,21 @@ public sealed class SnippetsPageTests : CommandPaletteUnitTestBase
         => Assert.AreEqual("````text\nUse ``` here\n````", SnippetListItem.DetailsBody("Use ``` here"));
 
     [TestMethod]
+    public void DetailsBody_LongRunOfBackticks_GetsItsFenceAtOnce()
+    {
+        // Every snippet's details are made when the page is, so one with a long run of backticks held up the whole page.
+        var run = new string('`', 100_000);
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var body = SnippetListItem.DetailsBody("a" + run + "b");
+        Assert.IsTrue(clock.ElapsedMilliseconds < 2_000, $"Took {clock.ElapsedMilliseconds} ms.");
+
+        var fence = new string('`', 100_001);
+        Assert.IsTrue(body.StartsWith(fence + "text\n", System.StringComparison.Ordinal));
+        Assert.IsTrue(body.EndsWith("\n" + fence, System.StringComparison.Ordinal));
+        Assert.AreEqual("```text\nNo backticks\n```", SnippetListItem.DetailsBody("No backticks"));
+    }
+
+    [TestMethod]
     public void Provider_BuiltIn_ListsTheSnippetsPageAndOffersMatchesInTheMainSearch()
     {
         using var environment = new TestEnvironment();

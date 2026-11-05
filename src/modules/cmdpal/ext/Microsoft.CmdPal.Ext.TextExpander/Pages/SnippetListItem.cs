@@ -42,13 +42,17 @@ internal sealed partial class SnippetListItem : ListItem
             return string.Empty;
         }
 
-        // The fence must be longer than any run of backticks in the text.
-        var fence = "```";
-        while (text.Contains(fence, StringComparison.Ordinal))
+        // The fence must be longer than any run of backticks in the text, found in one pass: growing it until the text
+        // no longer held it took time and memory growing with the square of a long run's length.
+        var longest = 0;
+        var run = 0;
+        foreach (var character in text)
         {
-            fence += "`";
+            run = character == '`' ? run + 1 : 0;
+            longest = Math.Max(longest, run);
         }
 
+        var fence = new string('`', Math.Max(3, longest + 1));
         return $"{fence}text\n{text}\n{fence}";
     }
 }
