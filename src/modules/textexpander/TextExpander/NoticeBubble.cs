@@ -113,6 +113,16 @@ internal static class NoticeBubble
         return Volatile.Read(ref _shown) != 0 && window != IntPtr.Zero && Native.WindowFromPoint(point) == window;
     }
 
+    /// <summary>
+    /// Whether the notice may show at the caret in <paramref name="target"/> while <paramref name="foreground"/> is in front:
+    /// not over another app the user went to while the caret was found. With no window in front, Windows is between two.
+    /// </summary>
+    internal static bool IsForTheAppInFront(IntPtr target, IntPtr foreground, Func<IntPtr, IntPtr> root)
+    {
+        ArgumentNullException.ThrowIfNull(root);
+        return target == IntPtr.Zero || foreground == IntPtr.Zero || root(foreground) == root(target);
+    }
+
     private static bool Post(uint message, long generation)
     {
         IntPtr window = Volatile.Read(ref _window);
@@ -338,6 +348,13 @@ internal static class NoticeBubble
         // Finding the caret can take a moment. A Show or Dismiss meanwhile overtakes this notice; its message comes next.
         if (Requests.Overtaken(generation))
         {
+            return;
+        }
+
+        // The user may have gone to another app meanwhile: over it, the notice would be about text that isn't there.
+        if (!IsForTheAppInFront(notice.Target, Native.GetForegroundWindow(), static window => Native.GetAncestor(window, Native.GA_ROOT)))
+        {
+            _synced = generation;
             return;
         }
 

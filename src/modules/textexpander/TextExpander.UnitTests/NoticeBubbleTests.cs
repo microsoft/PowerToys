@@ -24,6 +24,20 @@ public sealed class NoticeBubbleTests
     }
 
     [TestMethod]
+    public void ShowsOnlyWhileItsAppIsStillInFront()
+    {
+        // The user went to another app while the caret was found, and the notice came up over it, at the old app's caret.
+        IntPtr app = new(0x10);
+        IntPtr other = new(0x20);
+        static IntPtr Root(IntPtr window) => window;
+
+        Assert.IsTrue(NoticeBubble.IsForTheAppInFront(app, app, Root));
+        Assert.IsFalse(NoticeBubble.IsForTheAppInFront(app, other, Root), "Another app came to the front.");
+        Assert.IsTrue(NoticeBubble.IsForTheAppInFront(app, IntPtr.Zero, Root), "Windows is between two windows.");
+        Assert.IsTrue(NoticeBubble.IsForTheAppInFront(IntPtr.Zero, other, Root), "No app was given.");
+    }
+
+    [TestMethod]
     public void AKeyOrClickFadesItOnceItHasBeenUpAMoment()
     {
         Assert.AreEqual(0, NoticeTiming.FadeDelay(shownAtMs: 10_000, nowMs: 12_000), "Up 2 seconds: it fades at once.");
