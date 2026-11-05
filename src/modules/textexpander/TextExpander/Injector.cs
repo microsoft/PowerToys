@@ -205,7 +205,7 @@ internal static class Injector
         Func<IntPtr, bool>? isWindowsTerminal = null,
         bool fromClipboard = false,
         Func<IntPtr, bool>? isConsole = null,
-        Action<IntPtr>? refusedInTerminal = null)
+        Action<IntPtr, bool>? refusedInTerminal = null)
     {
         ArgumentNullException.ThrowIfNull(canDrive);
 
@@ -218,6 +218,9 @@ internal static class Injector
         isWindowsTerminal ??= InputTarget.IsWindowsTerminal;
         isConsole ??= InputTarget.IsConsole;
         refusedInTerminal ??= TerminalNotice.ShowRefusal;
+
+        // Read once, as Settings can change it meanwhile: whether to paste and whether to type must agree.
+        InjectionBackend backend = Backend;
 
         // How the paste's Ctrl hold went, for the settle that carries on from it.
         PasteHold hold = default;
@@ -253,7 +256,7 @@ internal static class Injector
         }
 
         bool pasting = text.Length > 0
-            && InjectionPolicy.ShouldUseClipboard(text, ClipboardThresholdChars, Backend, givenBack, windowsTerminal, fromClipboard);
+            && InjectionPolicy.ShouldUseClipboard(text, ClipboardThresholdChars, backend, givenBack, windowsTerminal, fromClipboard);
         PasteOutcome outcome = pasting ? PasteOutcome.TargetLost : PasteOutcome.NotAttempted;
         bool sentAny = false;
         bool guarded = false;
@@ -272,9 +275,9 @@ internal static class Injector
             }
 
             // Typing is the fallback, inside the same guard, only when the paste was refused before anything went out. Not
-            // for lines into a terminal: each Enter would run one. Then only the key the hook swallowed goes back, so what
-            // was typed stays as typed.
-            refused = pasting && outcome == PasteOutcome.RefusedBeforeErase && InjectionPolicy.RefusesTypedLines(text, terminal);
+            // for lines into a terminal: each Enter would run one. Always type doesn't type them there either when part came
+            // from a copy. Then only the key the hook swallowed goes back, so what was typed stays as typed.
+            refused = Typing() && InjectionPolicy.RefusesTypedLines(text, terminal, backend, fromClipboard);
             succeeded = outcome == PasteOutcome.Pasted || (Typing() && !refused && Insert(paste: false));
             if (refused && givenBack > 0)
             {
@@ -310,7 +313,7 @@ internal static class Injector
         // Once the guard is done, as with every notice.
         if (refused)
         {
-            refusedInTerminal(window);
+            refusedInTerminal(window, backend == InjectionBackend.Typing);
         }
 
         return succeeded;

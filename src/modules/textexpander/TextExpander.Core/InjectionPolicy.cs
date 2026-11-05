@@ -139,12 +139,15 @@ internal static class InjectionPolicy
         => string.Equals(className, ConsoleWindowClass, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
-    /// True when a snippet that couldn't be pasted into a terminal mustn't be typed instead: its line breaks would be Enter
-    /// presses, each running a line, past the warning Windows Terminal shows for a paste with lines.
+    /// True when a snippet with lines mustn't be typed into a terminal: its line breaks would be Enter presses, each running
+    /// a line, past the warning Windows Terminal shows for a paste with lines. Automatic and Always paste type lines only
+    /// when the paste was refused, and then never into a terminal. Always type (<see cref="InjectionBackend.Typing"/>)
+    /// refuses them there only when part of them came from a copy (<paramref name="fromClipboard"/>): lines the user wrote
+    /// are typed as the setting says.
     /// </summary>
-    public static bool RefusesTypedLines(string text, bool terminal)
+    public static bool RefusesTypedLines(string text, bool terminal, InjectionBackend backend, bool fromClipboard)
     {
         ArgumentNullException.ThrowIfNull(text);
-        return terminal && text.Contains('\n');
+        return terminal && text.Contains('\n') && (backend != InjectionBackend.Typing || fromClipboard);
     }
 }

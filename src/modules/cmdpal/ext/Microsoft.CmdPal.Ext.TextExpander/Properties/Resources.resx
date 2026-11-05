@@ -291,6 +291,10 @@
     <value>Couldn't insert this snippet into the terminal: a snippet with more than one line goes in only as a paste, and the clipboard couldn't be used just now.</value>
     <comment>Shown when a snippet with several lines wasn't inserted into a terminal window, such as Windows Terminal. Typing the lines instead would run each one as a command.</comment>
   </data>
+  <data name="toast_terminal_copied_lines" xml:space="preserve">
+    <value>Couldn't insert this snippet into the terminal: a snippet with copied text and more than one line goes in only as a paste, and Text Expander's Insertion method is set to Always type.</value>
+    <comment>Shown when a snippet with several lines and text the user copied wasn't inserted into a terminal window, such as Windows Terminal. "Insertion method" and "Always type" are names on the Text Expander page in PowerToys Settings. Typing the lines would run each one as a command. {Locked="Text Expander"}</comment>
+  </data>
   <data name="toast_clipboard_not_restored" xml:space="preserve">
     <value>Your clipboard couldn't be put back, so the snippet is still on it.</value>
   </data>

@@ -77,6 +77,31 @@ public sealed class SnippetCommandsTests
     }
 
     [TestMethod]
+    public void Insert_AlwaysTypeLinesWithCopiedTextIntoATerminal_OffersToCopyTheSnippetInstead()
+    {
+        using var environment = new TestEnvironment();
+        environment.UseSnippets(("!quote", "Quote:\n{{clipboard}}"), ("!steps", "cd ~/project\nls"));
+        environment.Folder.SetModuleSettings(injectionBackend: "type");
+        environment.Desktop.AppIsWindowsTerminal = true;
+        environment.Clipboard.Text = "copied text";
+
+        var result = new InsertSnippetCommand(environment.SnippetFor("!quote"), environment.Source, environment.Inserter).Invoke();
+
+        var toast = (ToastArgs)result.Args!;
+        Assert.AreEqual(CommandResultKind.ShowToast, result.Kind);
+        Assert.AreEqual(InsertSnippetCommand.MessageFor(Insertion.InsertOutcome.TerminalCopiedLines), toast.Message);
+        Assert.AreEqual(CommandResultKind.KeepOpen, toast.Result!.Kind);
+        Assert.AreEqual(string.Empty, environment.Desktop.Typed());
+        Assert.AreEqual(0, environment.Clipboard.Writes.Count);
+
+        // Lines the user wrote are typed, as Always type says.
+        result = new InsertSnippetCommand(environment.SnippetFor("!steps"), environment.Source, environment.Inserter).Invoke();
+
+        Assert.AreEqual(CommandResultKind.Dismiss, result.Kind);
+        Assert.AreEqual("cd ~/project\nls", environment.Desktop.Typed());
+    }
+
+    [TestMethod]
     public void Copy_TextExpanderOff_CopiesNothing()
     {
         using var environment = new TestEnvironment();

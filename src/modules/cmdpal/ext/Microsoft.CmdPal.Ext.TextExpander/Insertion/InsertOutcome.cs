@@ -29,6 +29,12 @@ internal enum InsertOutcome
     /// </summary>
     TerminalNeedsPaste,
 
+    /// <summary>
+    /// Text Expander is set to always type, and a snippet with lines and copied text wasn't typed into a terminal, where
+    /// each line would run, so nothing went in.
+    /// </summary>
+    TerminalCopiedLines,
+
     /// <summary>Windows didn't take the key events.</summary>
     Failed,
 }

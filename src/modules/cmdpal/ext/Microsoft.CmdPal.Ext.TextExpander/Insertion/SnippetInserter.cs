@@ -96,10 +96,11 @@ internal sealed class SnippetInserter
         }
 
         // Null when the clipboard couldn't be borrowed: the user's copy stays, and the snippet is typed. Not lines into a
-        // terminal, where each Enter would run one. A terminal acts on control characters that are typed, so they aren't.
-        if (outcome is null && pasting && InjectionPolicy.RefusesTypedLines(text, terminal))
+        // terminal, where each Enter would run one, and under Always type not there when part of them came from a copy. A
+        // terminal acts on control characters that are typed, so they aren't.
+        if (outcome is null && InjectionPolicy.RefusesTypedLines(text, terminal, backend, fromClipboard))
         {
-            return InsertOutcome.TerminalNeedsPaste;
+            return pasting ? InsertOutcome.TerminalNeedsPaste : InsertOutcome.TerminalCopiedLines;
         }
 
         outcome ??= Type(terminal ? ControlCharacters.Remove(text) : text, target);

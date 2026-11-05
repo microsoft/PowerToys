@@ -70,9 +70,24 @@ public sealed class InjectionPolicyTests
     [TestMethod]
     public void LinesAreNotTypedIntoATerminal()
     {
-        Assert.IsTrue(InjectionPolicy.RefusesTypedLines("cd ~/project\nrm -rf build", terminal: true));
-        Assert.IsFalse(InjectionPolicy.RefusesTypedLines("git status", terminal: true));
-        Assert.IsFalse(InjectionPolicy.RefusesTypedLines("Best regards,\nYour name", terminal: false));
+        // Automatic and Always paste type lines only when the paste was refused, and then not into a terminal, whoever
+        // wrote them.
+        Assert.IsTrue(InjectionPolicy.RefusesTypedLines("cd ~/project\nrm -rf build", terminal: true, InjectionBackend.Auto, fromClipboard: false));
+        Assert.IsTrue(InjectionPolicy.RefusesTypedLines("Hi,\nyou@example.com", terminal: true, InjectionBackend.Clipboard, fromClipboard: true));
+        Assert.IsFalse(InjectionPolicy.RefusesTypedLines("git status", terminal: true, InjectionBackend.Auto, fromClipboard: false));
+        Assert.IsFalse(InjectionPolicy.RefusesTypedLines("Best regards,\nYour name", terminal: false, InjectionBackend.Auto, fromClipboard: false));
+    }
+
+    [TestMethod]
+    public void AlwaysTypeTypesLinesTheUserWroteIntoATerminalButNotLinesWithCopiedText()
+    {
+        // Typed, each line runs as it goes in, and a copy can hide a command.
+        Assert.IsTrue(InjectionPolicy.RefusesTypedLines("Hi,\nyou@example.com", terminal: true, InjectionBackend.Typing, fromClipboard: true));
+        Assert.IsFalse(InjectionPolicy.RefusesTypedLines("cd ~/project\nls", terminal: true, InjectionBackend.Typing, fromClipboard: false));
+
+        // One line runs nothing until the user presses Enter, and other apps run nothing at all.
+        Assert.IsFalse(InjectionPolicy.RefusesTypedLines("curl https://example.com/install", terminal: true, InjectionBackend.Typing, fromClipboard: true));
+        Assert.IsFalse(InjectionPolicy.RefusesTypedLines("Hi,\nyou@example.com", terminal: false, InjectionBackend.Typing, fromClipboard: true));
     }
 
     [TestMethod]

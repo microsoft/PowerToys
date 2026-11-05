@@ -96,6 +96,7 @@ internal sealed partial class InsertSnippetCommand : InvokableCommand
         InsertOutcome.TargetChanged => Resources.toast_target_changed,
         InsertOutcome.ClipboardNotRestored => Resources.toast_clipboard_not_restored,
         InsertOutcome.TerminalNeedsPaste => Resources.toast_terminal_lines,
+        InsertOutcome.TerminalCopiedLines => Resources.toast_terminal_copied_lines,
         _ => Resources.toast_failed,
     };
 

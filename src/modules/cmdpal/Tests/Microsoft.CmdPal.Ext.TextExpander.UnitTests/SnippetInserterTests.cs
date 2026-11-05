@@ -374,8 +374,66 @@ public sealed class SnippetInserterTests
     }
 
     [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    public void Insert_AlwaysTypeLinesWithCopiedTextIntoATerminal_AreNotTyped(bool windowsTerminal, bool console)
+    {
+        // Typed, each line would run as it went in, and a copy can hide a command.
+        _desktop.AppIsWindowsTerminal = windowsTerminal;
+        _desktop.AppIsConsole = console;
+
+        Assert.AreEqual(InsertOutcome.TerminalCopiedLines, Inserter.Insert("Hi,\nyou@example.com", InjectionBackend.Typing, InjectionPolicy.DefaultClipboardThresholdChars, fromClipboard: true));
+        Assert.AreEqual(0, _desktop.Sent.Count);
+        Assert.AreEqual(0, _clipboard.Writes.Count);
+    }
+
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    public void Insert_AlwaysTypeLinesTheUserWroteIntoATerminal_AreTyped(bool windowsTerminal, bool console)
+    {
+        _desktop.AppIsWindowsTerminal = windowsTerminal;
+        _desktop.AppIsConsole = console;
+
+        Assert.AreEqual(InsertOutcome.Inserted, Insert("cd ~/project\nls", InjectionBackend.Typing));
+        Assert.AreEqual("cd ~/project\nls", _desktop.Typed());
+        Assert.AreEqual(0, _clipboard.Writes.Count);
+    }
+
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    public void Insert_AutomaticLinesIntoATerminal_ArePastedWhoeverWroteThem(bool windowsTerminal, bool console)
+    {
+        _desktop.AppIsWindowsTerminal = windowsTerminal;
+        _desktop.AppIsConsole = console;
+
+        Assert.AreEqual(InsertOutcome.Inserted, Inserter.Insert("Hi,\nyou@example.com", InjectionBackend.Auto, InjectionPolicy.DefaultClipboardThresholdChars, fromClipboard: true));
+        Assert.AreEqual(InsertOutcome.Inserted, Insert("cd ~/project\nls"));
+        Assert.AreEqual(2, _clipboard.Writes.Count);
+        Assert.AreEqual(string.Empty, _desktop.Typed());
+    }
+
+    [TestMethod]
+    public void Insert_AlwaysTypeLinesWithCopiedTextIntoAnotherApp_AreTyped()
+    {
+        Assert.AreEqual(InsertOutcome.Inserted, Inserter.Insert("Hi,\nyou@example.com", InjectionBackend.Typing, InjectionPolicy.DefaultClipboardThresholdChars, fromClipboard: true));
+        Assert.AreEqual("Hi,\nyou@example.com", _desktop.Typed());
+    }
+
+    [TestMethod]
     public void MessageFor_LinesATerminalCantGetAsAPaste_SaysWhy()
     {
         StringAssert.Contains(InsertSnippetCommand.MessageFor(InsertOutcome.TerminalNeedsPaste), "terminal");
+    }
+
+    [TestMethod]
+    public void MessageFor_CopiedLinesUnderAlwaysType_SaysWhy()
+    {
+        var message = InsertSnippetCommand.MessageFor(InsertOutcome.TerminalCopiedLines);
+
+        StringAssert.Contains(message, "terminal");
+        StringAssert.Contains(message, "Always type");
+        Assert.AreNotEqual(InsertSnippetCommand.MessageFor(InsertOutcome.TerminalNeedsPaste), message);
     }
 }

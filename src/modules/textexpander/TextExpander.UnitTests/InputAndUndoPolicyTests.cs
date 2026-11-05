@@ -817,17 +817,17 @@ public sealed class InputAndUndoPolicyTests
         Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
         Assert.AreEqual("Before !abc|", box.ToString(), "The hook swallowed the space.");
 
-        var refused = new List<IntPtr>();
+        var refused = new List<(IntPtr Window, bool AlwaysType)>();
         Program.ReplaceText insert = Into(
             box,
             (_, _, _, _) => PasteOutcome.RefusedBeforeErase,
             isWindowsTerminal: _ => windowsTerminal,
             isConsole: _ => console,
-            refused: refused.Add);
+            refused: (window, alwaysType) => refused.Add((window, alwaysType)));
         Assert.IsFalse(Program.TryExpand(hook, work with { TargetWindow = IntPtr.Zero }, insert, isKeyDown: _ => false));
 
         Assert.AreEqual("Before !abc |", box.ToString());
-        CollectionAssert.AreEqual(new[] { new IntPtr(1) }, refused);
+        CollectionAssert.AreEqual(new[] { (new IntPtr(1), false) }, refused, "The notice says the clipboard couldn't be used.");
 
         // One line still falls back to typing there.
         box = new FakeTextBox("Before ", hook);
@@ -844,6 +844,55 @@ public sealed class InputAndUndoPolicyTests
         }
 
         Assert.AreEqual("Before git status|", box.ToString());
+    }
+
+    [TestMethod]
+    [DataRow("type", "Hi,\n{{clipboard:email}}", "Before !abc |", true)]
+    [DataRow("type", "cd ~/project\nls", "Before cd ~/project\nls |", false)]
+    [DataRow("auto", "Hi,\n{{clipboard:email}}", "Before Hi,\nyou@example.com |", false)]
+    [DataRow("auto", "cd ~/project\nls", "Before cd ~/project\nls |", false)]
+    public void AlwaysTypeKeepsLinesWithCopiedTextOutOfATerminal(string insertion, string replacement, string expected, bool refusal)
+    {
+        // Typed, each line runs as it goes in, and a copy can hide a command. With Always type, lines that hold copied text
+        // aren't typed into a terminal: nothing is erased, the space the hook swallowed goes back, and a notice says why.
+        // Lines the user wrote type as the setting says, and Automatic pastes both, so the terminal's paste filter applies.
+        foreach ((bool windowsTerminal, bool console) in new[] { (true, false), (false, true) })
+        {
+            using ScratchDirectory scratch = ScratchDirectory.Create();
+            using SnippetStore store = LoadStore(scratch, "!abc=" + replacement);
+            using var hook = new KeyboardHook(store);
+            var box = new FakeTextBox("Before ", hook);
+            TypeInto(hook, box, "!abc ");
+            Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+
+            InjectionBackend original = Injector.Backend;
+            bool usedClipboard = false;
+            var refused = new List<(IntPtr Window, bool AlwaysType)>();
+            try
+            {
+                Injector.Backend = InjectionPolicy.ParseBackend(insertion, InjectionBackend.Auto);
+                Program.ReplaceText insert = Into(
+                    box,
+                    (text, window, send, keepAlive) =>
+                    {
+                        usedClipboard = true;
+                        return box.Paste(text, window, send, keepAlive);
+                    },
+                    isWindowsTerminal: _ => windowsTerminal,
+                    isConsole: _ => console,
+                    refused: (window, alwaysType) => refused.Add((window, alwaysType)));
+                Assert.AreEqual(!refusal, Program.TryExpand(hook, work with { TargetWindow = IntPtr.Zero }, insert, isKeyDown: _ => false, readClipboard: () => "Write to you@example.com"));
+            }
+            finally
+            {
+                Injector.Backend = original;
+            }
+
+            string where = windowsTerminal ? "Windows Terminal" : "the console";
+            Assert.AreEqual(expected, box.ToString(), where);
+            Assert.AreEqual(insertion == "auto", usedClipboard, where);
+            CollectionAssert.AreEqual(refusal ? new[] { (new IntPtr(1), true) } : Array.Empty<(IntPtr, bool)>(), refused, where);
+        }
     }
 
     [TestMethod]
@@ -1495,9 +1544,9 @@ public sealed class InputAndUndoPolicyTests
     /// Runs <see cref="Program.TryExpand"/>'s insertions through the injector into <paramref name="box"/>, pasting with
     /// <paramref name="paste"/> or the box's own Ctrl+V, in a Windows Terminal window when <paramref name="isWindowsTerminal"/>
     /// says so, or a console window when <paramref name="isConsole"/> does, telling <paramref name="refused"/> about a
-    /// snippet a terminal didn't get.
+    /// snippet a terminal didn't get, and whether that was under Always type.
     /// </summary>
-    private static Program.ReplaceText Into(FakeTextBox box, Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, Action, PasteOutcome>? paste = null, Func<IntPtr, bool>? isWindowsTerminal = null, Func<IntPtr, bool>? isConsole = null, Action<IntPtr>? refused = null)
+    private static Program.ReplaceText Into(FakeTextBox box, Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, Action, PasteOutcome>? paste = null, Func<IntPtr, bool>? isWindowsTerminal = null, Func<IntPtr, bool>? isConsole = null, Action<IntPtr, bool>? refused = null)
         => (backspaces, text, target, left, right, guard, generation, inserted, givenBack, fromClipboard) => Injector.ReplaceCore(
             backspaces,
             text,
@@ -1518,5 +1567,5 @@ public sealed class InputAndUndoPolicyTests
             isWindowsTerminal: isWindowsTerminal ?? (_ => false),
             fromClipboard: fromClipboard,
             isConsole: isConsole ?? (_ => false),
-            refusedInTerminal: refused ?? (_ => Assert.Fail("No terminal refused anything.")));
+            refusedInTerminal: refused ?? ((_, _) => Assert.Fail("No terminal refused anything.")));
 }

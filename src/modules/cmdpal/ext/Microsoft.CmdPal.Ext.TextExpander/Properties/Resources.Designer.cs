@@ -637,6 +637,15 @@ namespace Microsoft.CmdPal.Ext.TextExpander.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Couldn't insert this snippet into the terminal: a snippet with copied text and more than one line goes in only as a paste, and Text Expander's Insertion method is set to Always type..
+        /// </summary>
+        public static string toast_terminal_copied_lines {
+            get {
+                return ResourceManager.GetString("toast_terminal_copied_lines", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Couldn't insert this snippet into the terminal: a snippet with more than one line goes in only as a paste, and the clipboard couldn't be used just now..
         /// </summary>
         public static string toast_terminal_lines {
