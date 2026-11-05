@@ -463,9 +463,9 @@ jobs:
       env:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 
-  # Inbox InternationalSettings cmdlets require Windows PowerShell on Windows 10.
   - powershell: |
       $ErrorActionPreference = 'Stop'
+      Write-Host '##vso[task.setvariable variable=PowerOcrLanguagesReady]false'
       $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
       if (-not [string]::IsNullOrWhiteSpace($env:AUTO_UI_TEST_MODULES)) {
         $modulesRaw = $env:AUTO_UI_TEST_MODULES
@@ -475,13 +475,6 @@ jobs:
         Write-Host 'The migrated PowerOCR suite is not selected; OCR provisioning is unnecessary.'
         return
       }
-      $languages = Get-WinUserLanguageList
-      foreach ($tag in @('en-US', 'en-GB')) {
-        if ($languages.LanguageTag -notcontains $tag) {
-          $languages.Add($tag)
-        }
-      }
-      Set-WinUserLanguageList -LanguageList $languages -Force
       foreach ($name in @(
         'Language.Basic~~~en-US~0.0.1.0',
         'Language.Basic~~~en-GB~0.0.1.0',
@@ -501,7 +494,9 @@ jobs:
         }
         Write-Host "Verified OCR capability: $name"
       }
+      Write-Host '##vso[task.setvariable variable=PowerOcrLanguagesReady]true'
     displayName: "Provision PowerOCR test languages"
+    continueOnError: true
     timeoutInMinutes: 90
     condition: and(succeeded(), eq(variables['RunGenericUiTests'], 'true'))
     ${{ if eq(parameters.autoSelectUiTests, true) }}:
@@ -617,6 +612,11 @@ jobs:
         Write-Host "##[group]Run UI tests: $base"
         Push-Location $dir
         try {
+          if ($base -eq 'PowerOCR.UITests.Next' -and $env:POWER_OCR_LANGUAGES_READY -ne 'true') {
+            Write-Host '##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: PowerOCR language provisioning did not complete; other selected suites run independently.'
+            $suiteFailed = $true
+            continue
+          }
           if ($base -in (Get-UmdfFixtures).Suite -and -not $testFilter) {
             $fixtureContext = Get-UmdfFixtureContext -Suite $base -RepositoryRoot "$(Build.SourcesDirectory)" `
               -ArtifactRoot $artifactRoot -Platform "$(BuildPlatform)" `
@@ -729,6 +729,7 @@ jobs:
       EXCLUDE_UMDF_DISPLAY_SUITE: $(ExcludeUmdfDisplaySuite)
       UMDF_DISPLAY_SELECTION_BLOCKED: $(UmdfDisplaySelectionBlocked)
       POWERDISPLAY_UI_TEST_FILTER: $(PowerDisplayUiTestFilter)
+      POWER_OCR_LANGUAGES_READY: $(PowerOcrLanguagesReady)
       ${{ if eq(parameters.autoSelectUiTests, true) }}:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 

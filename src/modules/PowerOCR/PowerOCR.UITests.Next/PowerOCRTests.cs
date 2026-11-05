@@ -16,6 +16,8 @@ namespace PowerOCR.UITests;
 public class PowerOCRTests : UITestBase
 {
     private const string ProcessName = "PowerToys.PowerOCR";
+    private const string CaptureText = "PowerToys Text Extractor";
+    private const string LanguageMenuItemPrefix = "OCRLanguageMenuItem_";
     private const string DefaultSettings = """
         {
           "name": "TextExtractor",
@@ -28,7 +30,7 @@ public class PowerOCRTests : UITestBase
               "shift": true,
               "code": 84
             },
-            "PreferredLanguage": "en-US"
+            "PreferredLanguage": ""
           }
         }
         """;
@@ -46,6 +48,7 @@ public class PowerOCRTests : UITestBase
     private string? originalClipboard;
     private Point originalPointer;
     private Forms.Form? captureBackground;
+    private IntPtr captureWindowHandle;
     private Thread? captureThread;
     private ManualResetEventSlim? captureReady;
 
@@ -56,6 +59,9 @@ public class PowerOCRTests : UITestBase
 
     protected override IReadOnlyList<string> StaleProcessNames { get; } =
         ["PowerToys", "PowerToys.Settings", ProcessName];
+
+    private static Rectangle CaptureMonitorBounds =>
+        (Forms.Screen.PrimaryScreen ?? throw new InvalidOperationException("The capture fixture needs a primary monitor.")).Bounds;
 
     protected override void PrepareTestState()
     {
@@ -70,6 +76,7 @@ public class PowerOCRTests : UITestBase
             {
                 var defaults = System.Text.Json.Nodes.JsonNode.Parse(DefaultSettings)!;
                 settings["properties"] = defaults["properties"]!.DeepClone();
+                settings["properties"]!["PreferredLanguage"] = new Windows.Globalization.Language("en-US").NativeName;
             });
     }
 
@@ -127,7 +134,10 @@ public class PowerOCRTests : UITestBase
                     settingsSnapshot?.Dispose();
                     if (originalClipboard is not null)
                     {
-                        ClipboardHelper.SetText(originalClipboard);
+                        bool restored = originalClipboard.Length == 0
+                            ? ClipboardHelper.Clear()
+                            : ClipboardHelper.SetText(originalClipboard);
+                        Assert.IsTrue(restored, "The original clipboard text should be restored.");
                     }
                 }
             }
@@ -148,8 +158,9 @@ public class PowerOCRTests : UITestBase
         var bounds = GetBounds(overlay);
         var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(ProcessName);
         var menu = WaitHelper.WaitForStable(
-            () => process.Has(By.AccessibilityId("CancelMenuItem"), 500),
-            visible => visible,
+            () => process.FindAll<Element>(By.AccessibilityId("CancelMenuItem"), 500)
+                .FirstOrDefault(item => item.Width > 0 && item.Height > 0 && item.Displayed),
+            item => item is not null,
             timeoutMS: 15_000,
             recover: _ =>
             {
@@ -157,8 +168,8 @@ public class PowerOCRTests : UITestBase
                 MouseHelper.RightClick();
             });
         Assert.IsTrue(menu.Succeeded, $"The right-click context menu should appear. Foreground: {WindowControl.GetForegroundWindowInfo()}");
-        Step("Invoking context-menu Cancel");
-        process.Find<Element>(By.AccessibilityId("CancelMenuItem")).Invoke(msPostAction: 0);
+        Step("Clicking context-menu Cancel");
+        ClickWithoutRaising(menu.LastObservation!);
         AssertOverlayClosed();
     }
 
@@ -224,17 +235,17 @@ public class PowerOCRTests : UITestBase
         int selectedIndex = ReadSelectedLanguageIndex(languages);
         Assert.IsTrue(languages.Count >= 2, "Install at least two OCR languages to verify changing languages.");
         string selectedName = languages[selectedIndex].Name;
-        int targetIndex = selectedIndex == 0 ? 1 : 0;
-        string targetName = languages[targetIndex].Name;
+        string targetName = languages[selectedIndex == 0 ? 1 : 0].Name;
         KeyboardHelper.SendKeys(Key.Esc);
 
         Step("Opening the language context menu with Shift+F10 from the ComboBox");
         KeyboardHelper.SendKeys(Key.Shift, Key.F10);
-        var menuItems = process.FindAll<Element>(By.AccessibilityId("OCRLanguageMenuItem_"));
+        var menuItems = process.FindAll<Element>(By.AccessibilityId(LanguageMenuItemPrefix));
         var selected = menuItems.Single(item => item.Name == selectedName);
         var target = menuItems.Single(item => item.Name == targetName);
         AssertToggleState(selected, "On", "The current language should be checked in the context menu.");
         AssertToggleState(target, "Off", "The target language should initially be unchecked.");
+        int targetIndex = ReadLanguageMenuIndex(target);
 
         Step($"Selecting context-menu language '{targetName}' using the keyboard");
         KeyboardHelper.SendKeys(Key.Home);
@@ -245,7 +256,7 @@ public class PowerOCRTests : UITestBase
 
         KeyboardHelper.SendKeys(Key.Enter);
         combo.Click(msPostAction: 0);
-        languages = ReadLanguageItems(process);
+        languages = ReadLanguageItems(process, targetName);
         Assert.AreEqual(targetName, languages[ReadSelectedLanguageIndex(languages)].Name, "The toolbar should reflect the context-menu language change.");
     }
 
@@ -262,11 +273,11 @@ public class PowerOCRTests : UITestBase
             Assert.IsTrue(initial is "On" or "Off", $"{id} should expose a two-state toggle, not '{initial}'.");
             if (initial == "On")
             {
-                button.Invoke(msPostAction: 0);
+                ClickWithoutRaising(button);
                 AssertToggleState(button, "Off", $"{id} should reset to off.");
             }
 
-            button.Invoke(msPostAction: 0);
+            ClickWithoutRaising(button);
             AssertToggleState(button, "On", $"{id} should turn on.");
         }
 
@@ -286,10 +297,13 @@ public class PowerOCRTests : UITestBase
         Assert.IsTrue(bounds.Width >= 400 && bounds.Height >= 400, "The overlay must have room for an interior pointer sweep.");
         Assert.AreEqual(Forms.MouseButtons.None, Forms.Control.MouseButtons, "Pointer sweeps must start without a pressed mouse button.");
 
+        // Stay below the toolbar and away from monitor edges, where cursor changes are intentional.
         var interior = new Rectangle(bounds.Left + (bounds.Width / 4), bounds.Top + (bounds.Height / 2), bounds.Width / 2, bounds.Height / 4);
         int startX = interior.Left + 1;
         int startY = interior.Top + (interior.Height / 2);
         Step("Waiting for the cross cursor on the selection surface");
+
+        // Real mouse input wakes a headless desktop's pointer; SetCursorPos alone does not.
         MouseHelper.MoveBy(1, 0, delayMs: 0);
         MouseHelper.MoveTo(startX, startY);
         Assert.IsTrue(
@@ -380,9 +394,13 @@ public class PowerOCRTests : UITestBase
             ClipboardHelper.Clear();
             var overlay = Activate();
             Step("Selecting the rendered text fixture");
-            DragCenter(overlay, 720, 180);
+            var bounds = GetBounds(overlay);
+            DragCenter(overlay, bounds.Width * 3 / 4, bounds.Height / 3);
             string text = ClipboardHelper.WaitForText(string.Empty, timeoutMS: 15_000);
-            Assert.IsFalse(string.IsNullOrWhiteSpace(text), "Clipboard should contain extracted text after selection.");
+            string normalized = string.Join(" ", text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+            Assert.IsTrue(
+                normalized.Contains(CaptureText, StringComparison.OrdinalIgnoreCase),
+                $"Clipboard should contain the rendered fixture text '{CaptureText}', but contained '{text}'.");
         });
     }
 
@@ -434,17 +452,27 @@ public class PowerOCRTests : UITestBase
             var languages = ReadLanguageItems(process);
             int selectedIndex = ReadSelectedLanguageIndex(languages);
             Assert.IsTrue(languages.Count >= 2, "Install at least two OCR languages to verify the language shortcut.");
-            int targetIndex = selectedIndex == 0 ? 1 : 0;
-            string targetName = languages[targetIndex].Name;
+            string selectedName = languages[selectedIndex].Name;
+            KeyboardHelper.SendKeys(Key.Esc);
+
+            Step("Reading the product's numbered language indices from the context menu");
+            KeyboardHelper.SendKeys(Key.Shift, Key.F10);
+            var targets = process.FindAll<Element>(By.AccessibilityId(LanguageMenuItemPrefix))
+                .Select(item => (item.Name, Index: ReadLanguageMenuIndex(item)))
+                .Where(item => item.Name != selectedName && item.Index < 9)
+                .OrderBy(item => item.Index)
+                .ToList();
+            Assert.IsTrue(targets.Count > 0, "A different OCR language should have a number shortcut.");
+            var target = targets[0];
             KeyboardHelper.SendKeys(Key.Esc);
             CaptureBlankRegion(overlay);
 
-            Step($"Selecting '{targetName}' using its number shortcut immediately after the blank capture");
-            KeyboardHelper.SendKeys(targetIndex == 0 ? Key.Num1 : Key.Num2);
+            Step($"Selecting '{target.Name}' using its number shortcut immediately after the blank capture");
+            KeyboardHelper.SendKeys((Key)((byte)Key.Num1 + target.Index));
             combo.Click(msPostAction: 0);
-            languages = ReadLanguageItems(process);
+            languages = ReadLanguageItems(process, target.Name);
             Assert.AreEqual(
-                targetName,
+                target.Name,
                 languages[ReadSelectedLanguageIndex(languages)].Name,
                 "The language shortcut should change selection after a failed capture without a toolbar click.");
         });
@@ -452,6 +480,12 @@ public class PowerOCRTests : UITestBase
 
     private static bool IsOverlay(WindowsFinder.WindowInfo window) =>
         window.Title == "Text Extractor" && window.Width >= 400 && window.Height >= 400;
+
+    private static void ClickWithoutRaising(Element element)
+    {
+        Assert.IsTrue(element.Width > 0 && element.Height > 0, $"'{element.Name}' should expose physical click bounds.");
+        MouseHelper.LeftClickAt(element.X + (element.Width / 2), element.Y + (element.Height / 2));
+    }
 
     private static Rectangle GetBounds(Session overlay)
     {
@@ -468,7 +502,22 @@ public class PowerOCRTests : UITestBase
         MouseHelper.Drag(centerX - (width / 2), centerY - (height / 2), centerX + (width / 2), centerY + (height / 2), steps: 20);
     }
 
-    private static List<LanguageItem> ReadLanguageItems(Session session)
+    private static List<LanguageItem> ReadLanguageItems(Session session, string? expectedSelectedName = null)
+    {
+        var result = WaitHelper.WaitForStable(
+            () => ReadLanguageSnapshot(session),
+            items => items is { Count: > 0 } &&
+                items.Count(item => item.Selected) == 1 &&
+                (expectedSelectedName is null || items.Single(item => item.Selected).Name == expectedSelectedName),
+            timeoutMS: 10_000,
+            requiredConsecutiveMatches: 2);
+        Assert.IsTrue(
+            result.Succeeded,
+            $"The language dropdown should expose a stable selection '{expectedSelectedName ?? "(any)"}'. Last items: {string.Join(", ", result.LastObservation ?? [])}");
+        return result.LastObservation!;
+    }
+
+    private static List<LanguageItem> ReadLanguageSnapshot(Session session)
     {
         var popup = WindowsFinder.WaitForWindowByApp(
             session.ProcessName,
@@ -545,6 +594,14 @@ public class PowerOCRTests : UITestBase
         return selectedIndices[0];
     }
 
+    private static int ReadLanguageMenuIndex(Element item)
+    {
+        string id = item.AutomationId;
+        Assert.IsTrue(id.StartsWith(LanguageMenuItemPrefix, StringComparison.Ordinal), $"The language menu item should expose its product index: '{id}'.");
+        Assert.IsTrue(int.TryParse(id.AsSpan(LanguageMenuItemPrefix.Length), out int index) && index >= 0, $"Invalid language menu index: '{id}'.");
+        return index;
+    }
+
     private static void AssertToggleState(Element element, string expected, string message)
     {
         Assert.IsTrue(element.WaitForProperty("ToggleState", expected, 5_000), message);
@@ -558,6 +615,7 @@ public class PowerOCRTests : UITestBase
         }
 
         Session? overlay = null;
+        var captureBounds = CaptureMonitorBounds;
         for (int attempt = 1; attempt <= 3 && overlay is null; attempt++)
         {
             Step($"Activating Text Extractor with {string.Join(" + ", keys)}, attempt {attempt}");
@@ -566,6 +624,14 @@ public class PowerOCRTests : UITestBase
         }
 
         Assert.IsNotNull(overlay, $"The Text Extractor overlay should appear after activation. Foreground: {WindowControl.GetForegroundWindowInfo()}");
+
+        overlay = WindowsFinder.WaitForWindowByApp(
+            ProcessName,
+            window => IsOverlay(window) &&
+                WindowHelper.GetWindowBounds(new IntPtr(window.Hwnd)) ==
+                    (captureBounds.Left, captureBounds.Top, captureBounds.Right, captureBounds.Bottom),
+            timeoutMS: 10_000);
+        Assert.IsNotNull(overlay, "The overlay should finish positioning on the fixture's capture monitor.");
 
         // The native selection surface and the WinUI toolbar are independent topmost HWNDs.
         // Raising the toolbar's full-screen host would cover the native cross-cursor surface.
@@ -618,7 +684,7 @@ public class PowerOCRTests : UITestBase
                 using var form = new Forms.Form
                 {
                     BackColor = Color.White,
-                    Bounds = Forms.SystemInformation.VirtualScreen,
+                    Bounds = CaptureMonitorBounds,
                     FormBorderStyle = Forms.FormBorderStyle.None,
                     ShowInTaskbar = false,
                     StartPosition = Forms.FormStartPosition.Manual,
@@ -630,7 +696,7 @@ public class PowerOCRTests : UITestBase
                     form.Controls.Add(new Forms.Label
                     {
                         Dock = Forms.DockStyle.Fill,
-                        Text = "PowerToys Text Extractor",
+                        Text = CaptureText,
                         TextAlign = ContentAlignment.MiddleCenter,
                         Font = font,
                         ForeColor = Color.Black,
@@ -640,6 +706,7 @@ public class PowerOCRTests : UITestBase
                 captureBackground = form;
                 form.Shown += (_, _) =>
                 {
+                    captureWindowHandle = form.Handle;
                     form.Refresh();
                     ready.Set();
                 };
@@ -663,7 +730,7 @@ public class PowerOCRTests : UITestBase
         Assert.IsNull(backgroundError, $"The capture background fixture failed: {backgroundError}");
         var fixture = captureBackground ?? throw new InvalidOperationException("The capture fixture was not created.");
         Assert.IsTrue(
-            WindowControl.WaitForForeground(fixture.Handle, requiredConsecutiveMatches: 2),
+            WindowControl.WaitForForeground(captureWindowHandle, requiredConsecutiveMatches: 2),
             $"The capture fixture should be foreground: {WindowControl.GetForegroundWindowInfo()}");
         fixture.Invoke(new Action(() => fixture.TopMost = false));
         test();
