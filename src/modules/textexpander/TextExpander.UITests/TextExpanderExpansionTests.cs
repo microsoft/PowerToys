@@ -158,11 +158,11 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
 
         choice = TypeTriggerForChoice(TrackLink.Trigger + " ");
 
-        // Once it's in front by itself, as a user sees it: a click while the engine is still bringing it forward was lost.
+        // As a user sees it: in front by itself, listing the link.
         Assert.IsTrue(choice.WaitForForeground(), $"The choice window did not come in front. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
         Assert.IsTrue(choice.Offers("https://example.com/returns"), "The choice window doesn't list the second link.");
         Step("Clicking the second link");
-        choice.Pick("https://example.com/returns");
+        choice.Pick("https://example.com/returns", Step);
         Assert.IsTrue(choice.WaitForClosed(), "The choice window did not close after a click.");
         AssertTargetShows("Track: https://example.com/returns ");
         var clipboard = WaitHelper.WaitForStable(ClipboardHelper.GetText, text => text == CopiedBlock, timeoutMS: 10_000, requiredConsecutiveMatches: 3, pollIntervalMS: 200);
@@ -314,7 +314,7 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
         {
             Assert.IsTrue(choice.Offers(newer) && choice.Offers(older), "The choice window doesn't list both copies.");
             Step("Clicking the older copy");
-            choice.Pick(older);
+            choice.Pick(older, Step);
         }
         else
         {

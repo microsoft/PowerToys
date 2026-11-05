@@ -4,6 +4,7 @@
 
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -16,6 +17,10 @@ namespace Microsoft.PowerToys.TextExpander.UITests;
 /// </summary>
 internal sealed class EngineChoice
 {
+    private const string ClickCatcherClass = "Shell_LightDismissOverlay";
+
+    private const uint GaRoot = 2;
+
     private EngineChoice(Session session)
     {
         Session = session;
@@ -63,8 +68,32 @@ internal sealed class EngineChoice
     /// <summary>Whether the list offers <paramref name="text"/>.</summary>
     public bool Offers(string text) => Session.WaitForExactName(text, 5_000);
 
-    /// <summary>Picks <paramref name="text"/> with a click, as a mouse user does.</summary>
-    public void Pick(string text) => Session.WaitForExact<Element>(text, 5_000).Click(msPostAction: 0);
+    /// <summary>
+    /// Picks <paramref name="text"/> with a click, as a mouse user does. A shell flyout's click catcher
+    /// (<c>Shell_LightDismissOverlay</c>), which Windows 10 test agents had over part of the screen, takes a click to close
+    /// itself and passes nothing on, so it's clicked away first, as a user would. Anything else over the match fails.
+    /// </summary>
+    public void Pick(string text, Action<string>? step = null)
+    {
+        var option = Session.WaitForExact<Element>(text, 5_000);
+        int x = option.X + (option.Width / 2);
+        int y = option.Y + (option.Height / 2);
+        if (!WindowControl.IsPointOwnedByWindow(Handle, x, y))
+        {
+            string covering = TypingTarget.DescribeWindowAt(Handle, x, y);
+            Assert.AreEqual(ClickCatcherClass, ClassAt(x, y), $"Something is over the match '{text}': {covering}.");
+            step?.Invoke($"A shell flyout's click catcher is over the match ({covering}); clicking it away first");
+            MouseHelper.LeftClickAt(x, y);
+            var cleared = WaitHelper.WaitForStable(() => !IsOpen || WindowControl.IsPointOwnedByWindow(Handle, x, y), done => done, timeoutMS: 3_000);
+            Assert.IsTrue(cleared.Succeeded, $"The click catcher stayed over the match: {TypingTarget.DescribeWindowAt(Handle, x, y)}.");
+            if (!IsOpen)
+            {
+                return;
+            }
+        }
+
+        option.Click(msPostAction: 0);
+    }
 
     /// <summary>Whether the window comes in front by itself, as it does over the app being typed in.</summary>
     public bool WaitForForeground(int timeoutMS = 10_000) =>
@@ -76,6 +105,31 @@ internal sealed class EngineChoice
 
     public bool WaitForClosed(int timeoutMS = 10_000) =>
         WaitHelper.WaitForStable(() => IsOpen, open => !open, timeoutMS, requiredConsecutiveMatches: 2).Succeeded;
+
+    /// <summary>The class of the top-level window at a screen point.</summary>
+    private static string ClassAt(int x, int y)
+    {
+        IntPtr at = WindowFromPoint(new Point { X = x, Y = y });
+        IntPtr root = at == IntPtr.Zero ? IntPtr.Zero : GetAncestor(at, GaRoot);
+        var name = new StringBuilder(256);
+        return root != IntPtr.Zero && GetClassNameW(root, name, name.Capacity) > 0 ? name.ToString() : string.Empty;
+    }
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr WindowFromPoint(Point point);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetAncestor(IntPtr window, uint flags);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern int GetClassNameW(IntPtr window, StringBuilder name, int capacity);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Point
+    {
+        public int X;
+        public int Y;
+    }
 
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
