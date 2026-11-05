@@ -398,6 +398,7 @@ Privacy:
 - A key typed within about 15 ms of a match drops the expansion, and the swallowed key is lost.
 - A click during the Ctrl hold becomes Ctrl+click.
 - Clipboard managers may ignore the exclusion formats; only Always type avoids the clipboard.
+- The first question or choice window loads WinUI into the engine for the rest of the session.
 
 ## Debugging
 
