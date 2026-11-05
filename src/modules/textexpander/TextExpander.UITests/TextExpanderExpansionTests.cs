@@ -17,6 +17,7 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
 {
     // A copied block with one email address, a phone number and two links, sample data only.
     private const string CopiedBlock = "Questions? Email you@example.com or call 555-0123.\nTrack it: https://example.com/track/1042\nReturns: https://example.com/returns";
+    private const ushort VirtualKeyEnd = 0x23;
 
     private static readonly Snippet ReplyTo = new(";tereply", "Reply to {{clipboard:email}}");
     private static readonly Snippet TrackLink = new(";telink", "Track: {{clipboard:link}}");
@@ -31,7 +32,8 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
 
     internal override IReadOnlyList<Snippet>? InitialSnippets => TestContext.TestName switch
     {
-        nameof(ClipboardPartsGoInAndAMatchIsPickedInTextExpandersWindow) or nameof(CancellingAPickCancelsTheSnippet) or nameof(NothingFoundLeavesTheSpotEmptyAndTypingGoesOn) => [.. DefaultSnippets, ReplyTo, TrackLink],
+        nameof(ClipboardPartsGoInAndAMatchIsPickedInTextExpandersWindow) or nameof(CancellingAPickCancelsTheSnippet) or nameof(NothingFoundLeavesTheSpotEmptyAndTypingGoesOn)
+            or nameof(ALongListOfMatchesScrollsAndEachKeepsItsName) => [.. DefaultSnippets, ReplyTo, TrackLink],
         nameof(PickingACopyInsertsWhatClipboardHistoryHas) => [.. DefaultSnippets, PickACopy],
         _ => DefaultSnippets,
     };
@@ -186,6 +188,28 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
         AssertTargetShows("Reply to  soon");
         Assert.AreEqual(Target.Handle, WindowControl.GetForegroundWindowHandle(), $"The app lost the focus. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
         Assert.IsTrue(EngineNotice.WaitForHidden(notice, timeoutMS: 3_000), "The notice still shows after the user typed.");
+    }
+
+    /// <summary>
+    /// A long list of matches scrolls, reusing its rows, and each match keeps its name as they're reused: End goes to the
+    /// last one, which Enter inserts.
+    /// </summary>
+    [TestMethod("TextExpander.Expansion.ALongListOfMatchesScrollsAndEachKeepsItsName")]
+    [TestCategory("TextExpander")]
+    [TestCategory("TextExpander.Expansion")]
+    public void ALongListOfMatchesScrollsAndEachKeepsItsName()
+    {
+        string copied = string.Join(" ", Enumerable.Range(1, 40).Select(number => $"user{number}@example.com"));
+        Assert.IsTrue(ClipboardHelper.SetText(copied), "The clipboard could not be set.");
+        var choice = TypeTriggerForChoice(ReplyTo.Trigger + " ");
+        Assert.IsTrue(choice.WaitForForeground(), $"The choice window did not come in front. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        Step("Pressing End");
+        TextInput.Press(VirtualKeyEnd);
+        Assert.IsTrue(choice.Offers("user40@example.com"), "The last match, scrolled to, has no name.");
+        Step("Pressing Enter");
+        TextInput.Enter();
+        Assert.IsTrue(choice.WaitForClosed(), "The choice window did not close after Enter.");
+        AssertTargetShows("Reply to user40@example.com ");
     }
 
     /// <summary>Esc on the choice window cancels the whole snippet, as on a question: the box shows exactly what was typed.</summary>

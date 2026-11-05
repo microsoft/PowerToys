@@ -41,7 +41,15 @@ public sealed partial class ClipboardChoiceWindow : Window
         InsertButton.Content = ClipboardChoiceText.InsertText;
         CancelButton.Content = PromptText.CancelText;
         Options.ItemsSource = choice.Options.Select((option, index) => new ClipboardChoiceOption(option, index + 1)).ToList();
-        Options.ContainerContentChanging += (_, args) => AutomationProperties.SetName(args.ItemContainer, ((ClipboardChoiceOption)args.Item).Spoken);
+
+        // A row going back to be reused shows no match, and may have none.
+        Options.ContainerContentChanging += (_, args) =>
+        {
+            if (!args.InRecycleQueue && args.Item is ClipboardChoiceOption option)
+            {
+                AutomationProperties.SetName(args.ItemContainer, option.Spoken);
+            }
+        };
         Options.SelectedIndex = choice.Options.Count > 0 ? 0 : -1;
 
         // The close button and Alt+F4 cancel, as Esc does.
