@@ -48,7 +48,7 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly ISettingsService _settingsService;
     private readonly IAppStateService _appStateService;
     private readonly InProcObject<IListPage> _allAppsPage;
-    private readonly ScoringFunction<InProcObject<IListItem>> _scoringFunction;
+    private readonly Func<FuzzyQuery, InProcObject<IListItem>, string, string, int> _globalFallbackScoringFunction;
     private readonly ScoringFunction<InProcObject<IListItem>> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
 
@@ -149,7 +149,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _recentCommands = _appStateService.State.RecentCommands;
         _tlcManager = topLevelCommandManager;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
-        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateService.State.RecentCommands, _fuzzyMatcherProvider.Current, ResolveProviderSearchWeight);
+        _globalFallbackScoringFunction = (query, item, title, subtitle) => ScoreTopLevelItem(in query, item, _appStateService.State.RecentCommands, _fuzzyMatcherProvider.Current, ResolveProviderSearchWeight, title: title, subtitle: subtitle);
         _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, _settingsService.Settings.FallbackRanks);
 
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
@@ -335,11 +335,9 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         // Score global fallbacks against their current titles so a fallback whose title
         // resolved after first paint gets the right score. Cheap: only a handful are configured.
-        var validScoredFallbacks = ScoreDeferredFallbacks(_globalFallbackSources, _globalFallbackQuery, _scoringFunction);
+        var validScoredFallbacks = ScoreDeferredFallbacks(_globalFallbackSources, _globalFallbackQuery, _globalFallbackScoringFunction);
 
-        var validFallbacks = _fallbackItems?
-            .Where(s => !string.IsNullOrWhiteSpace(s.Item.Safe.Title))
-            .ToList();
+        var validFallbacks = SelectVisibleFallbacks(_fallbackItems);
 
         // Remove fuzzy-only app matches for short queries so frecency-boosted weak matches don't
         // appear while typing.
@@ -368,37 +366,52 @@ public sealed partial class MainListPage : DynamicListPage,
         return result;
     }
 
+    // Keeps the common fallbacks whose title this render shows, in their scored order.
+    internal static List<RoScored<InProcObject<IListItem>>>? SelectVisibleFallbacks(IEnumerable<RoScored<InProcObject<IListItem>>>? fallbackItems)
+        => fallbackItems?
+            .Where(s => !string.IsNullOrWhiteSpace(ReadTextForRender(s.Item).Title))
+            .ToList();
+
+    // Reads the text a render uses to show, hide, and rank an item. A fallback records it in the same
+    // read, so a later fallback update compares against exactly what this render decided on.
+    private static (string Title, string Subtitle) ReadTextForRender(InProcObject<IListItem> item)
+        => item.Safe is TopLevelFallbackViewModel fallback ? fallback.ReadTextForRender() : (item.Safe.Title, item.Safe.Subtitle);
+
     // Scores the current global-fallback snapshot against its query, dropping any whose title is
-    // still empty. Static so it can be unit tested with a fake slow source.
+    // still empty. Each title and subtitle is read once, recorded, and scored as read, so a later
+    // fallback update compares against exactly the text this render showed and ranked. Static so it
+    // can be unit tested with a fake slow source.
     internal static List<RoScored<InProcObject<IListItem>>>? ScoreDeferredFallbacks(
         IReadOnlyList<InProcObject<IListItem>>? sources,
         in FuzzyQuery query,
-        ScoringFunction<InProcObject<IListItem>> scoringFunction)
+        Func<FuzzyQuery, InProcObject<IListItem>, string, string, int> scoringFunction)
     {
         if (sources is null || sources.Count == 0)
         {
             return null;
         }
 
-        var scored = InternalListHelpers.FilterListWithScores(sources, query, scoringFunction);
-        if (scored.Length == 0)
-        {
-            return null;
-        }
-
         List<RoScored<InProcObject<IListItem>>>? valid = null;
-        foreach (var s in scored)
+        foreach (var source in sources)
         {
-            if (string.IsNullOrWhiteSpace(s.Item.Safe.Title))
+            var (title, subtitle) = ReadTextForRender(source);
+            if (string.IsNullOrWhiteSpace(title))
             {
                 continue;
             }
 
-            valid ??= new List<RoScored<InProcObject<IListItem>>>(scored.Length);
-            valid.Add(s);
+            var score = scoringFunction(query, source, title, subtitle);
+            if (score <= 0)
+            {
+                continue;
+            }
+
+            valid ??= new List<RoScored<InProcObject<IListItem>>>(sources.Count);
+            valid.Add(new RoScored<InProcObject<IListItem>>(source, score));
         }
 
-        return valid;
+        // Highest score first, keeping source order among equal scores.
+        return valid?.OrderByDescending(s => s.Score).ToList();
     }
 
     // Returns a filtered view of the scored array without reordering it.
@@ -671,7 +684,7 @@ public sealed partial class MainListPage : DynamicListPage,
                 }
             }
 
-            _fallbackUpdateManager.BeginUpdate(SearchText, [.. specialFallbacks, .. commonFallbacks], token);
+            _fallbackUpdateManager.BeginUpdate(SearchText, [.. specialFallbacks, .. commonFallbacks], specialFallbacks.Count, token);
 
             if (token.IsCancellationRequested)
             {
@@ -920,9 +933,16 @@ public sealed partial class MainListPage : DynamicListPage,
         IRecentCommandsManager history,
         IPrecomputedFuzzyMatcher precomputedFuzzyMatcher,
         Func<InProcObject<IListItem>, ProviderSearchWeight>? providerWeightLookup = null,
-        DateTimeOffset? now = null)
+        DateTimeOffset? now = null,
+        string? title = null,
+        string? subtitle = null)
     {
-        var title = topLevelOrAppItem.Safe.Title;
+        // A caller that recorded the text it renders passes both title and subtitle, so the score
+        // matches that text even if the live text has changed since.
+        // Global fallbacks re-rank only when what TopLevelFallbackViewModel.ReadTextForRender records
+        // changes. Scoring them on any other value the fallback supplies means recording it there too.
+        var usesLiveText = title is null;
+        title ??= topLevelOrAppItem.Safe.Title;
         if (string.IsNullOrWhiteSpace(title))
         {
             return 0;
@@ -950,13 +970,19 @@ public sealed partial class MainListPage : DynamicListPage,
         // Handle whitespace query separately - FuzzySearch doesn't handle it well
         if (string.IsNullOrWhiteSpace(query.Original))
         {
-            return ScoreWhitespaceQuery(query.Original, title, topLevelOrAppItem.Safe.Subtitle, isFallback);
+            return ScoreWhitespaceQuery(query.Original, title, subtitle ?? topLevelOrAppItem.Safe.Subtitle, isFallback);
         }
 
-        // Get precomputed targets
-        var (titleTarget, subtitleTarget) = topLevelOrAppItem.Safe is IPrecomputedListItem precomputedItem
-            ? (precomputedItem.GetTitleTarget(precomputedFuzzyMatcher), precomputedItem.GetSubtitleTarget(precomputedFuzzyMatcher))
-            : (precomputedFuzzyMatcher.PrecomputeTarget(title), precomputedFuzzyMatcher.PrecomputeTarget(topLevelOrAppItem.Safe.Subtitle));
+        // Get precomputed targets. Passed-in text goes through the item's caches too, keyed by that
+        // text, so unchanged text stays a cache hit.
+        var (titleTarget, subtitleTarget) = topLevelOrAppItem.Safe switch
+        {
+            IPrecomputedListItem precomputedItem when usesLiveText =>
+                (precomputedItem.GetTitleTarget(precomputedFuzzyMatcher), precomputedItem.GetSubtitleTarget(precomputedFuzzyMatcher)),
+            TopLevelViewModel topLevelItem =>
+                (topLevelItem.GetTitleTarget(precomputedFuzzyMatcher, title), topLevelItem.GetSubtitleTarget(precomputedFuzzyMatcher, subtitle ?? topLevelItem.Subtitle)),
+            _ => (precomputedFuzzyMatcher.PrecomputeTarget(title), precomputedFuzzyMatcher.PrecomputeTarget(subtitle ?? topLevelOrAppItem.Safe.Subtitle)),
+        };
 
         // Score components. Keep the raw matcher scores so "did this signal match at
         // all" is decided before the historical subtitle penalty (which can push a real

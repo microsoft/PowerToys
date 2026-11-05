@@ -66,11 +66,10 @@ public sealed partial class FastFirstPaintTests
     // A stand-in ranker that mirrors the real contract for fallbacks: an item with no
     // (resolved) title scores 0 and is dropped; otherwise it lands at the FallbackFloor tier
     // with a stronger within-floor score when its current title overlaps the query text.
-    private static ScoringFunction<InProcObject<IListItem>> FloorScorerFor(string queryText)
+    private static Func<FuzzyQuery, InProcObject<IListItem>, string, string, int> FloorScorerFor(string queryText)
     {
-        return (in FuzzyQuery _, InProcObject<IListItem> item) =>
+        return (_, _, title, _) =>
         {
-            var title = item.Safe.Title;
             if (string.IsNullOrWhiteSpace(title))
             {
                 return 0;

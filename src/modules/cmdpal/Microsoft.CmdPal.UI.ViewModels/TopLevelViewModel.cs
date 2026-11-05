@@ -379,7 +379,7 @@ public partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedA
         }
     }
 
-    internal virtual bool SafeUpdateFallbackTextSynchronous(string newQuery) => false;
+    internal virtual bool SafeUpdateFallbackTextSynchronous(string newQuery, bool reportRankChanges, CancellationToken cancellationToken) => false;
 
     private FallbackSettings? GetFallbackSettings()
     {
@@ -407,6 +407,13 @@ public partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedA
 
     public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher)
         => _titleCache.GetOrUpdate(matcher, Title);
+
+    // Score text read earlier through the same caches, so unchanged text isn't precomputed again.
+    internal FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher, string title)
+        => _titleCache.GetOrUpdate(matcher, title);
+
+    internal FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher, string subtitle)
+        => _subtitleCache.GetOrUpdate(matcher, subtitle);
 
     public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher)
         => _subtitleCache.GetOrUpdate(matcher, Subtitle);

@@ -61,7 +61,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
         _onFallbackChanged = onFallbackChanged;
     }
 
-    internal void BeginUpdate(string query, IReadOnlyList<TopLevelViewModel> commands, CancellationToken cancellationToken)
+    internal void BeginUpdate(string query, IReadOnlyList<TopLevelViewModel> commands, int globalFallbackCount, CancellationToken cancellationToken)
     {
         if (commands.Count == 0 || string.IsNullOrWhiteSpace(query))
         {
@@ -86,6 +86,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
 
         void Worker()
         {
+            // The first globalFallbackCount commands are global fallbacks, ranked by their title and subtitle
             while (!cancellationToken.IsCancellationRequested)
             {
                 var i = Interlocked.Increment(ref sharedIndex) - 1;
@@ -95,6 +96,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                 }
 
                 var command = commands[i];
+                var isGlobal = i < globalFallbackCount;
                 var counter = _inflightFallbacks.GetOrAdd(command.FallbackKey, static _ => new InflightCounter());
                 if (!counter.TryClaim(MaxInflightPerFallback))
                 {
@@ -103,7 +105,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                     var pendingCommand = command;
                     var pendingQuery = query;
                     var pendingCt = cancellationToken;
-                    counter.SetPending(() => RetryFallbackUpdate(pendingCommand, pendingQuery, pendingCt, counter), pendingCt);
+                    counter.SetPending(() => RetryFallbackUpdate(pendingCommand, pendingQuery, isGlobal, pendingCt, counter), pendingCt);
                     continue;
                 }
 
@@ -138,7 +140,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                     var sw = Stopwatch.StartNew();
                     Logger.LogDebug($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' updating with '{query}'");
 #endif
-                    changed = command.SafeUpdateFallbackTextSynchronous(query);
+                    changed = command.SafeUpdateFallbackTextSynchronous(query, reportRankChanges: isGlobal, cancellationToken);
 #if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
                     var elapsed = sw.Elapsed;
                     var tail = elapsed > FallbackItemSlowTimeout ? " is slow" : string.Empty;
@@ -165,8 +167,9 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                     DispatchPending(counter.TakePending());
                 }
 
-                // Guard against a stale refresh if the COM call returned after cancellation.
-                if (changed && !cancellationToken.IsCancellationRequested)
+                // No cancellation check here: the fallback already checked, and a true result means it counts
+                // the change as reported => skipping this refresh would lose the change
+                if (changed)
                 {
                     _onFallbackChanged();
                 }
@@ -195,7 +198,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
 
         // One-shot retry for a command that was skipped due to MaxInflightPerFallback.
         // Claims a slot, runs the COM call, releases, and propagates the next pending (if any).
-        void RetryFallbackUpdate(TopLevelViewModel cmd, string q, CancellationToken ct, InflightCounter ctr)
+        void RetryFallbackUpdate(TopLevelViewModel cmd, string q, bool isGlobal, CancellationToken ct, InflightCounter ctr)
         {
             if (ct.IsCancellationRequested)
             {
@@ -212,7 +215,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
             var changed = false;
             try
             {
-                changed = cmd.SafeUpdateFallbackTextSynchronous(q);
+                changed = cmd.SafeUpdateFallbackTextSynchronous(q, reportRankChanges: isGlobal, ct);
             }
             catch (Exception ex)
             {
@@ -224,7 +227,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                 DispatchPending(ctr.TakePending());
             }
 
-            if (changed && !ct.IsCancellationRequested)
+            if (changed)
             {
                 _onFallbackChanged();
             }
