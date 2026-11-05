@@ -36,6 +36,12 @@ internal interface IDesktop
     /// </summary>
     bool IsWindowsTerminal(nint window);
 
+    /// <summary>
+    /// True when <paramref name="window"/> is the console host's window (conhost). Like Windows Terminal, it acts on control
+    /// characters that are typed.
+    /// </summary>
+    bool IsConsole(nint window);
+
     /// <summary>Sends <paramref name="strokes"/> in one call, so nothing else gets between them. False unless all went.</summary>
     bool Send(IReadOnlyList<KeyStroke> strokes);
 

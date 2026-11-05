@@ -103,6 +103,39 @@ public sealed class ClipboardVariableTests
     }
 
     [TestMethod]
+    public void ACopyLosesItsControlCharactersButNotItsTabsAndLineBreaks()
+    {
+        // A Ctrl+O hidden at the end of a copied link ran the line in bash once the link was typed into a terminal.
+        const string copied = "curl https://example.com/install.sh\u000F | sh\u001B[2J\tnext\r\nline\u0085\u007F\u0000";
+        ExpandedSnippet expanded = Variables.ExpandWithPromptRequests("[{{clipboard}}][{{clipboard:link}}]", _ => null, () => copied, new DateTime(2026, 10, 18), EnglishUS);
+        Assert.AreEqual("[curl https://example.com/install.sh | sh[2J\tnext\r\nline][https://example.com/install.sh]", expanded.Text);
+        Assert.IsTrue(expanded.HasClipboardText);
+
+        // Copies picked from clipboard history are cleaned the same way.
+        var history = new ClipboardHistory(ClipboardHistoryState.Read, ["rm -rf ~\u000F", "See www.example.com/a\u0003b"]);
+        expanded = Variables.ExpandWithPromptRequests("[{{clipboard:pick}}][{{clipboard:pick:link}}]", _ => null, null, new DateTime(2026, 10, 18), EnglishUS, choose: choice => choice.Options[0], history: () => history);
+        Assert.AreEqual("[rm -rf ~][www.example.com/ab]", expanded.Text);
+    }
+
+    [TestMethod]
+    public void ALinkEndsAtAControlCharacter()
+    {
+        // Cleaning the copy comes first; the pattern stops at one anyway, for callers that find parts in raw text.
+        Assert.AreEqual("https://example.com/a", ClipboardParts.Find("Open https://example.com/a\u000Fb now", ClipboardPart.Link, EnglishUS).Single());
+        Assert.AreEqual("https://example.com/x", ClipboardParts.Find("https://example.com/x\u001B[31m", ClipboardPart.Link, EnglishUS).Single());
+        Assert.AreEqual("www.example.com/y", ClipboardParts.Find("www.example.com/y\u009Bz", ClipboardPart.Link, EnglishUS).Single());
+    }
+
+    [TestMethod]
+    public void TheResultSaysWhetherAnyTextCameFromACopy()
+    {
+        Assert.IsTrue(Variables.ExpandWithPromptRequests("To {{clipboard:email}}", _ => null, () => Copied).HasClipboardText);
+        Assert.IsFalse(Variables.ExpandWithPromptRequests("To {{clipboard:email}}", _ => null, () => "nothing here").HasClipboardText, "A spot left empty puts no copy in.");
+        Assert.IsFalse(Variables.ExpandWithPromptRequests("To {{clipboard}}", _ => null, () => null).HasClipboardText);
+        Assert.IsFalse(Variables.ExpandWithPromptRequests("Ticket {{prompt:Number}} on {{date}}", _ => "42").HasClipboardText, "An answer is the user's own.");
+    }
+
+    [TestMethod]
     public void WhatsOnTheClipboardAndInHistoryIsReadOnceAndOnlyWhenUsed()
     {
         int reads = 0;

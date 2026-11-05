@@ -65,7 +65,7 @@ internal sealed partial class InsertSnippetCommand : InvokableCommand
             ? SnippetText.ExpandWithGaps(_snippet.Replacement, _answers?.Invoke() ?? [], _inserter.Clipboard.ReadText)
             : SnippetText.ExpandWithGaps(_snippet.Replacement, _fill);
         var text = expanded.Text;
-        var outcome = _inserter.Insert(text, state.Settings.Backend, state.Settings.ClipboardThresholdChars);
+        var outcome = _inserter.Insert(text, state.Settings.Backend, state.Settings.ClipboardThresholdChars, expanded.HasClipboardText);
         if (outcome is InsertOutcome.Inserted or InsertOutcome.Empty or InsertOutcome.ClipboardNotRestored)
         {
             _inserted?.Invoke();
@@ -95,6 +95,7 @@ internal sealed partial class InsertSnippetCommand : InvokableCommand
         InsertOutcome.TargetOutOfReach => Resources.toast_out_of_reach,
         InsertOutcome.TargetChanged => Resources.toast_target_changed,
         InsertOutcome.ClipboardNotRestored => Resources.toast_clipboard_not_restored,
+        InsertOutcome.TerminalNeedsPaste => Resources.toast_terminal_lines,
         _ => Resources.toast_failed,
     };
 

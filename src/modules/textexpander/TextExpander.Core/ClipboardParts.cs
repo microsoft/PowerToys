@@ -25,9 +25,10 @@ public static class ClipboardParts
     private const int MinPhoneDigits = 7;
     private const int MaxPhoneDigits = 15;
 
-    // Without backtracking, so text built to make a pattern work hard still takes linear time.
+    // Without backtracking, so text built to make a pattern work hard still takes linear time. A control character ends a
+    // link, so one hidden in a copied link, such as Ctrl+O, isn't taken along.
     private static readonly Regex LinkPattern = new(
-        @"(?:https?://|www\.)[^\s<>""]+",
+        @"(?:https?://|www\.)[^\s<>""\p{Cc}]+",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
 
     private static readonly Regex EmailPattern = new(

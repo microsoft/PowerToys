@@ -635,5 +635,14 @@ namespace Microsoft.CmdPal.Ext.TextExpander.Properties {
                 return ResourceManager.GetString("toast_target_changed", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Couldn't insert this snippet into the terminal: a snippet with more than one line goes in only as a paste, and the clipboard couldn't be used just now..
+        /// </summary>
+        public static string toast_terminal_lines {
+            get {
+                return ResourceManager.GetString("toast_terminal_lines", resourceCulture);
+            }
+        }
     }
 }

@@ -31,6 +31,9 @@ internal static class InjectionPolicy
     /// </summary>
     public const string WindowsTerminalClass = "CASCADIA_HOSTING_WINDOW_CLASS";
 
+    /// <summary>The console host's window class (conhost), the terminal console apps get when Windows Terminal isn't the default.</summary>
+    public const string ConsoleWindowClass = "ConsoleWindowClass";
+
     /// <summary>
     /// Replacements at least this long are pasted rather than typed. A paste is a single Ctrl+V;
     /// typing stays for short text and targets that reject paste.
@@ -78,9 +81,11 @@ internal static class InjectionPolicy
     /// <paramref name="thresholdChars"/>, and text that is only those, as after a cancelled question, is always typed.
     /// In Windows Terminal (<paramref name="windowsTerminal"/>), Automatic types one line however long it is: Terminal
     /// trims trailing whitespace from a one-line paste, which would drop the space given back. Lines still paste there,
-    /// so Terminal's multi-line paste warning still guards them, and Always paste still pastes.
+    /// so Terminal's multi-line paste warning still guards them, and Always paste still pastes. So does text with any
+    /// control character or with text from a copy (<paramref name="fromClipboard"/>): Terminal filters what's pasted,
+    /// but acts on control characters that are typed, and losing the space is the lesser harm.
     /// </summary>
-    public static bool ShouldUseClipboard(string text, int thresholdChars, InjectionBackend backend, int givenBack = 0, bool windowsTerminal = false)
+    public static bool ShouldUseClipboard(string text, int thresholdChars, InjectionBackend backend, int givenBack = 0, bool windowsTerminal = false, bool fromClipboard = false)
     {
         ArgumentNullException.ThrowIfNull(text);
 
@@ -89,12 +94,14 @@ internal static class InjectionPolicy
             return false;
         }
 
-        if (backend == InjectionBackend.Clipboard)
+        if (backend == InjectionBackend.Clipboard || text.Contains('\n'))
         {
             return true;
         }
 
-        return text.Contains('\n') || (!windowsTerminal && text.Length - givenBack >= Math.Max(1, thresholdChars));
+        return windowsTerminal
+            ? fromClipboard || ControlCharacters.HasAny(text)
+            : text.Length - givenBack >= Math.Max(1, thresholdChars);
     }
 
     /// <summary>Reads a backend name, falling back to <paramref name="fallback"/> on a typo rather than refusing to start.</summary>
@@ -126,4 +133,18 @@ internal static class InjectionPolicy
     /// <summary>True for <see cref="WindowsTerminalClass"/>. Window classes ignore case.</summary>
     public static bool IsWindowsTerminalClass(string? className)
         => string.Equals(className, WindowsTerminalClass, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>True for <see cref="ConsoleWindowClass"/>. Window classes ignore case.</summary>
+    public static bool IsConsoleClass(string? className)
+        => string.Equals(className, ConsoleWindowClass, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// True when a snippet that couldn't be pasted into a terminal mustn't be typed instead: its line breaks would be Enter
+    /// presses, each running a line, past the warning Windows Terminal shows for a paste with lines.
+    /// </summary>
+    public static bool RefusesTypedLines(string text, bool terminal)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        return terminal && text.Contains('\n');
+    }
 }

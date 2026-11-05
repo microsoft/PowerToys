@@ -12,6 +12,12 @@ namespace Microsoft.PowerToys.TextExpander;
 /// <param name="Gaps">The spots clipboard variables left empty, in the snippet's order, and why; none for most snippets.</param>
 public readonly record struct ExpandedSnippet(string Text, int Cursor, IReadOnlyList<ClipboardGap> Gaps)
 {
+    /// <summary>
+    /// Gets a value indicating whether a clipboard variable put text in, which came from a copy rather than the snippet, so
+    /// Windows Terminal gets it as a paste it can filter (see <see cref="InjectionPolicy.ShouldUseClipboard"/>).
+    /// </summary>
+    public bool HasClipboardText { get; init; }
+
     /// <summary>Gets the text and where the cursor marker was, for callers that don't tell the user about empty spots.</summary>
     public void Deconstruct(out string text, out int cursor)
     {

@@ -103,6 +103,19 @@ internal sealed class Win32Desktop : IDesktop
         return written > 0 && InjectionPolicy.IsWindowsTerminalClass(new string(name, 0, written));
     }
 
+    public unsafe bool IsConsole(nint window)
+    {
+        if (window == 0)
+        {
+            return false;
+        }
+
+        var length = InjectionPolicy.ConsoleWindowClass.Length + 2;
+        var name = stackalloc char[length];
+        var written = NativeMethods.GetClassName(window, name, length);
+        return written > 0 && InjectionPolicy.IsConsoleClass(new string(name, 0, written));
+    }
+
     public bool Send(IReadOnlyList<KeyStroke> strokes)
     {
         ArgumentNullException.ThrowIfNull(strokes);

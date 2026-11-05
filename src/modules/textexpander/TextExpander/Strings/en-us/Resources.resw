@@ -202,6 +202,14 @@
     <value>There&apos;s no text on your clipboard, so those spots were left empty.</value>
     <comment>Sentence under the heading of a small notice shown at the text cursor after a snippet went in. </comment>
   </data>
+  <data name="Notice_Heading_TerminalLines" xml:space="preserve">
+    <value>Couldn&apos;t insert this snippet into the terminal</value>
+    <comment>Bold heading of a small notice shown at the text cursor in a terminal window, such as Windows Terminal, when a snippet with several lines wasn't inserted.</comment>
+  </data>
+  <data name="Notice_TerminalLines" xml:space="preserve">
+    <value>A snippet with more than one line goes into a terminal only as a paste, and the clipboard couldn&apos;t be used just now, so the trigger was left as you typed it.</value>
+    <comment>Sentence under the heading of the same notice. "Trigger" is the short text the user typed that a snippet replaces. Typing the lines instead would run each one as a command.</comment>
+  </data>
   <data name="Message_Title" xml:space="preserve">
     <value>PowerToys Text Expander</value>
     <comment>Title of Text Expander's message boxes. {Locked="PowerToys"}</comment>

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Linq;
+using Microsoft.CmdPal.Ext.TextExpander.Commands;
 using Microsoft.CmdPal.Ext.TextExpander.Insertion;
 using Microsoft.PowerToys.TextExpander;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -307,5 +308,74 @@ public sealed class SnippetInserterTests
 
         Assert.AreEqual(InsertOutcome.Inserted, Insert("git commit -m ", InjectionBackend.Clipboard));
         Assert.IsTrue(_desktop.Pasted);
+    }
+
+    [TestMethod]
+    public void Insert_OneLineFromACopyInWindowsTerminal_IsPastedSoTerminalFiltersIt()
+    {
+        // Typed, a Ctrl+O hidden in a copied link would run the line in bash. Terminal filters a paste.
+        _desktop.AppIsWindowsTerminal = true;
+
+        Assert.AreEqual(InsertOutcome.Inserted, Inserter.Insert("curl https://example.com/install ", InjectionBackend.Auto, InjectionPolicy.DefaultClipboardThresholdChars, fromClipboard: true));
+        Assert.IsTrue(_desktop.Pasted);
+        Assert.AreEqual(string.Empty, _desktop.Typed());
+    }
+
+    [TestMethod]
+    public void Insert_OneLineWithAControlCharacterInWindowsTerminal_IsPasted()
+    {
+        _desktop.AppIsWindowsTerminal = true;
+
+        Assert.AreEqual(InsertOutcome.Inserted, Insert("name\tvalue"));
+        Assert.IsTrue(_desktop.Pasted);
+    }
+
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    public void Insert_TypedIntoATerminal_LeavesOutControlCharacters(bool windowsTerminal, bool console)
+    {
+        _desktop.AppIsWindowsTerminal = windowsTerminal;
+        _desktop.AppIsConsole = console;
+
+        Assert.AreEqual(InsertOutcome.Inserted, Insert("echo \u001B[2Jhi\u000F\u007F\u0085 there\tnow", InjectionBackend.Typing));
+        Assert.AreEqual("echo [2Jhi there\tnow", _desktop.Typed());
+    }
+
+    [TestMethod]
+    public void Insert_TypedIntoAnotherApp_KeepsControlCharacters()
+    {
+        Assert.AreEqual(InsertOutcome.Inserted, Insert("a\u000Fb", InjectionBackend.Typing));
+        Assert.AreEqual("a\u000Fb", _desktop.Typed());
+    }
+
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    public void Insert_LinesATerminalCantGetAsAPaste_AreNotTyped(bool windowsTerminal, bool console)
+    {
+        // Typed, each line would run as it went in, past the warning Terminal shows for a paste with lines.
+        _desktop.AppIsWindowsTerminal = windowsTerminal;
+        _desktop.AppIsConsole = console;
+        _clipboard.CanBeSaved = false;
+
+        Assert.AreEqual(InsertOutcome.TerminalNeedsPaste, Insert("cd ~/project\nrm -rf build"));
+        Assert.AreEqual(0, _desktop.Sent.Count);
+    }
+
+    [TestMethod]
+    public void Insert_OneLineATerminalCantGetAsAPaste_IsTyped()
+    {
+        _desktop.AppIsConsole = true;
+        _clipboard.CanBeSaved = false;
+
+        Assert.AreEqual(InsertOutcome.Inserted, Insert("git status --short"));
+        Assert.AreEqual("git status --short", _desktop.Typed());
+    }
+
+    [TestMethod]
+    public void MessageFor_LinesATerminalCantGetAsAPaste_SaysWhy()
+    {
+        StringAssert.Contains(InsertSnippetCommand.MessageFor(InsertOutcome.TerminalNeedsPaste), "terminal");
     }
 }

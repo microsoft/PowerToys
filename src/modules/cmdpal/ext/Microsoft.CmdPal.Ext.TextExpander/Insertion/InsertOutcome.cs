@@ -24,6 +24,11 @@ internal enum InsertOutcome
     /// <summary>The user's clipboard couldn't be put back, so the snippet is still on it.</summary>
     ClipboardNotRestored,
 
+    /// <summary>
+    /// A snippet with lines couldn't be pasted into a terminal, and typing them would run each one, so nothing went in.
+    /// </summary>
+    TerminalNeedsPaste,
+
     /// <summary>Windows didn't take the key events.</summary>
     Failed,
 }

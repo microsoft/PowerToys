@@ -145,7 +145,12 @@ keys out of an insertion.
   long, not counting the given-back key.
 - In Windows Terminal (window class `CASCADIA_HOSTING_WINDOW_CLASS`), Automatic types any snippet
   without a line break, since Terminal's `trimPaste` would drop the given-back space. Snippets with
-  line breaks still paste, and Always paste still pastes there, losing the space.
+  line breaks still paste, and Always paste still pastes there, losing the space. So does text from a
+  copy or with a control character, since Terminal filters a paste but acts on what's typed.
+- Text from the clipboard or clipboard history loses its control characters but tabs and line breaks
+  (`ControlCharacters`). Typing into Windows Terminal or the console (`ConsoleWindowClass`) leaves
+  them out too, and lines a terminal couldn't get as a paste aren't typed: the trigger stays, and a
+  notice says why.
 - Ctrl+V goes 300 ms after the erase, since Notepad drops a Ctrl+V during an edit. Ctrl goes down in
   its own call. Notepad reads it late, so it stays down until the target opens the clipboard, at most
   350 ms after the V. Unguarded, Ctrl+V is one call.
@@ -333,7 +338,8 @@ Command Palette's process; its
 - A copy picked from clipboard history (`{{clipboard:pick}}` and the like) needs the engine's window,
   so those snippets are listed but not inserted.
 - It pastes or types as Settings' **Insertion method** says, by the engine's rule (Core's
-  `InjectionPolicy`), so Automatic types short snippets and one line in Windows Terminal. It pastes
+  `InjectionPolicy`), so Automatic types short snippets and one line in Windows Terminal, unless it has
+  text from a copy or a control character. It pastes
   with Core's `ClipboardFormats`, `ClipboardPrivacy`, `ClipboardLoan` and `ClipboardEntry`, hands the
   clipboard back with the engine's loop, Core's `ClipboardHandBack`, and types when the clipboard can't
   be put back exactly.

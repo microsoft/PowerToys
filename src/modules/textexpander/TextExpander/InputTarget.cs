@@ -135,6 +135,22 @@ internal static class InputTarget
         return written > 0 && InjectionPolicy.IsWindowsTerminalClass(new string(name, 0, written));
     }
 
+    /// <summary>
+    /// True when <paramref name="window"/> is the console host's window (conhost), which also acts on control characters
+    /// that are typed. Asked by the worker once per insertion, never per key.
+    /// </summary>
+    public static bool IsConsole(IntPtr window)
+    {
+        if (window == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        char[] name = new char[InjectionPolicy.ConsoleWindowClass.Length + 2];
+        int written = Native.GetClassNameW(window, name, name.Length);
+        return written > 0 && InjectionPolicy.IsConsoleClass(new string(name, 0, written));
+    }
+
     /// <summary>Our own integrity level, read once: it can't change while the process runs.</summary>
     private static uint? OurIntegrityLevel()
     {

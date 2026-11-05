@@ -58,8 +58,9 @@ internal sealed class SnippetInserter
     /// Hides Command Palette, waits for the app it was opened over to come back to the front, and puts
     /// <paramref name="text"/> there, pasted or typed as Text Expander's <paramref name="backend"/> decides, pasting
     /// one-line snippets from <paramref name="clipboardThresholdChars"/> characters under Automatic.
+    /// <paramref name="fromClipboard"/> says whether part of it came from a copy (<see cref="ExpandedSnippet.HasClipboardText"/>).
     /// </summary>
-    public InsertOutcome Insert(string text, InjectionBackend backend, int clipboardThresholdChars)
+    public InsertOutcome Insert(string text, InjectionBackend backend, int clipboardThresholdChars, bool fromClipboard = false)
     {
         ArgumentNullException.ThrowIfNull(text);
 
@@ -83,16 +84,25 @@ internal sealed class SnippetInserter
         WaitForModifierRelease();
 
         // As Text Expander decides: Automatic types short snippets, and one line in Windows Terminal, which trims the
-        // spaces at the end of a one-line paste.
+        // spaces at the end of a one-line paste, unless it came from a copy or has control characters.
+        var windowsTerminal = _desktop.IsWindowsTerminal(target);
+        var terminal = windowsTerminal || _desktop.IsConsole(target);
         var clipboardLost = false;
         InsertOutcome? outcome = null;
-        if (InjectionPolicy.ShouldUseClipboard(text, clipboardThresholdChars, backend, givenBack: 0, _desktop.IsWindowsTerminal(target)))
+        var pasting = InjectionPolicy.ShouldUseClipboard(text, clipboardThresholdChars, backend, givenBack: 0, windowsTerminal, fromClipboard);
+        if (pasting)
         {
             (outcome, clipboardLost) = TryPaste(text, target);
         }
 
-        // Null when the clipboard couldn't be borrowed: the user's copy stays, and the snippet is typed.
-        outcome ??= Type(text, target);
+        // Null when the clipboard couldn't be borrowed: the user's copy stays, and the snippet is typed. Not lines into a
+        // terminal, where each Enter would run one. A terminal acts on control characters that are typed, so they aren't.
+        if (outcome is null && pasting && InjectionPolicy.RefusesTypedLines(text, terminal))
+        {
+            return InsertOutcome.TerminalNeedsPaste;
+        }
+
+        outcome ??= Type(terminal ? ControlCharacters.Remove(text) : text, target);
         return clipboardLost ? InsertOutcome.ClipboardNotRestored : outcome.Value;
     }
 

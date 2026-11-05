@@ -180,8 +180,9 @@ internal static class Injector
     /// How many characters at the end of <paramref name="text"/> are the user's own keystrokes given back, such as
     /// the space that released the trigger. They don't count toward <see cref="ClipboardThresholdChars"/>.
     /// </param>
-    public static bool Replace(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, int cursorRightUnits, InsertionGuard guard, long inputGeneration, Action? inserted, int givenBack)
-        => ReplaceCore(backspaceCount, text, targetWindow, cursorLeftUnits, InputTarget.CanDrive, guard, inputGeneration, cursorRightUnits: cursorRightUnits, inserted: inserted, givenBack: givenBack);
+    /// <param name="fromClipboard">Whether part of <paramref name="text"/> came from a copy (see <see cref="ExpandedSnippet.HasClipboardText"/>).</param>
+    public static bool Replace(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, int cursorRightUnits, InsertionGuard guard, long inputGeneration, Action? inserted, int givenBack, bool fromClipboard)
+        => ReplaceCore(backspaceCount, text, targetWindow, cursorLeftUnits, InputTarget.CanDrive, guard, inputGeneration, cursorRightUnits: cursorRightUnits, inserted: inserted, givenBack: givenBack, fromClipboard: fromClipboard);
 
     internal static bool ReplaceCore(
         int backspaceCount,
@@ -201,7 +202,10 @@ internal static class Injector
         int givenBack = 0,
         Func<bool>? isOpenByTarget = null,
         Func<long>? clock = null,
-        Func<IntPtr, bool>? isWindowsTerminal = null)
+        Func<IntPtr, bool>? isWindowsTerminal = null,
+        bool fromClipboard = false,
+        Func<IntPtr, bool>? isConsole = null,
+        Action<IntPtr>? refusedInTerminal = null)
     {
         ArgumentNullException.ThrowIfNull(canDrive);
 
@@ -212,6 +216,8 @@ internal static class Injector
         isOpenByTarget ??= () => Clipboard.IsOpenByTarget(targetWindow);
         clock ??= static () => (long)System.Diagnostics.Stopwatch.GetElapsedTime(0).TotalMilliseconds;
         isWindowsTerminal ??= InputTarget.IsWindowsTerminal;
+        isConsole ??= InputTarget.IsConsole;
+        refusedInTerminal ??= TerminalNotice.ShowRefusal;
 
         // How the paste's Ctrl hold went, for the settle that carries on from it.
         PasteHold hold = default;
@@ -234,12 +240,25 @@ internal static class Injector
             sleep(PreBackspaceDelayMs);
         }
 
+        IntPtr window = targetWindow != IntPtr.Zero ? targetWindow : getForegroundWindow();
+        bool windowsTerminal = isWindowsTerminal(window);
+
+        // A terminal filters control characters out of a paste, but acts on them when they're typed, so they aren't typed
+        // there. Then the caret moves would count characters that didn't go in, so the caret stays at the end.
+        bool terminal = windowsTerminal || isConsole(window);
+        string typed = terminal ? ControlCharacters.Remove(text) : text;
+        if (!ReferenceEquals(typed, text))
+        {
+            cursorLeftUnits = 0;
+        }
+
         bool pasting = text.Length > 0
-            && InjectionPolicy.ShouldUseClipboard(text, ClipboardThresholdChars, Backend, givenBack, isWindowsTerminal(targetWindow != IntPtr.Zero ? targetWindow : getForegroundWindow()));
+            && InjectionPolicy.ShouldUseClipboard(text, ClipboardThresholdChars, Backend, givenBack, windowsTerminal, fromClipboard);
         PasteOutcome outcome = pasting ? PasteOutcome.TargetLost : PasteOutcome.NotAttempted;
         bool sentAny = false;
         bool guarded = false;
         bool succeeded = false;
+        bool refused = false;
         Native.INPUT marker = default;
         int[] modifiers = [];
         Native.INPUT[] pressAgain = [];
@@ -252,8 +271,15 @@ internal static class Injector
                 outcome = tryPaste(text, targetWindow, () => (Insert(paste: true), sentAny), () => guard.Renew());
             }
 
-            // Typing is the fallback, inside the same guard, only when the paste was refused before anything went out.
-            succeeded = outcome == PasteOutcome.Pasted || (Typing() && Insert(paste: false));
+            // Typing is the fallback, inside the same guard, only when the paste was refused before anything went out. Not
+            // for lines into a terminal: each Enter would run one. Then only the key the hook swallowed goes back, so what
+            // was typed stays as typed.
+            refused = pasting && outcome == PasteOutcome.RefusedBeforeErase && InjectionPolicy.RefusesTypedLines(text, terminal);
+            succeeded = outcome == PasteOutcome.Pasted || (Typing() && !refused && Insert(paste: false));
+            if (refused && givenBack > 0)
+            {
+                _ = GiveBack();
+            }
         }
 
         // RichEdit and Windows 11 Notepad drop typing while a mouse button is down: after a click, what's held goes back
@@ -279,6 +305,12 @@ internal static class Injector
         {
             _clipboardLost = false;
             ReportClipboardLoss();
+        }
+
+        // Once the guard is done, as with every notice.
+        if (refused)
+        {
+            refusedInTerminal(window);
         }
 
         return succeeded;
@@ -319,7 +351,7 @@ internal static class Injector
             bool done = (guard.Renew() || (!guard.Cancelled && Start()))
                 && guard.Unchanged(inputGeneration)
                 && EraseTrigger()
-                && (paste ? PasteChord() : TypeText())
+                && (paste ? PasteChord() : TypeText(typed))
                 && SendChunks(Presses(Native.VK_LEFT, cursorLeftUnits));
             if (done)
             {
@@ -328,6 +360,12 @@ internal static class Injector
 
             return done;
         }
+
+        // Only the user's own keystrokes at the end, such as the space the hook swallowed, with nothing erased.
+        bool GiveBack()
+            => (guard.Renew() || (!guard.Cancelled && Start()))
+                && guard.Unchanged(inputGeneration)
+                && TypeText(typed[^givenBack..]);
 
         // A key per call, paced like typing: Windows 11 Notepad dropped a Backspace now and then from an erase sent in one
         // call, leaving the trigger's first character in front of the snippet. A longer erase, such as undoing a long
@@ -473,11 +511,11 @@ internal static class Injector
         }
 
         // A character per call, paced: Windows 11 Notepad drops and smears characters that arrive faster.
-        bool TypeText()
+        bool TypeText(string chars)
         {
-            for (int i = 0; i < text.Length; i++)
+            for (int i = 0; i < chars.Length; i++)
             {
-                char ch = text[i];
+                char ch = chars[i];
                 if (ch == '\r')
                 {
                     continue;

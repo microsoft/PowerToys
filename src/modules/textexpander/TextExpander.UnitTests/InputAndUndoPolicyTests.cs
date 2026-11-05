@@ -565,9 +565,9 @@ public sealed class InputAndUndoPolicyTests
         using SnippetStore store = LoadStore(scratch, "!abc=EXPANDED");
         using var hook = new KeyboardHook(store);
         var calls = new List<string>();
-        Program.ReplaceText replace = (backspaces, text, _, _, right, guard, generation, inserted, givenBack) =>
+        Program.ReplaceText replace = (backspaces, text, _, _, right, guard, generation, inserted, givenBack, fromClipboard) =>
         {
-            calls.Add($"{backspaces} \"{text}\" {right} {guard == hook.Guard} {generation} {inserted is not null} {givenBack}");
+            calls.Add($"{backspaces} \"{text}\" {right} {guard == hook.Guard} {generation} {inserted is not null} {givenBack} {fromClipboard}");
             inserted?.Invoke();
             return true;
         };
@@ -585,7 +585,7 @@ public sealed class InputAndUndoPolicyTests
         Assert.IsFalse(hook.ProcessKey(Native.VK_LEFT, 0, ctrl: false, alt: false, shift: false, win: false));
         Assert.IsFalse(Program.TryExpand(hook, late with { TargetWindow = IntPtr.Zero }, replace));
 
-        Assert.AreEqual($"4 \"EXPANDED \" 0 True {work.InputGeneration} True 1, 9 \"!abc \" 0 True {undo.InputGeneration} False 0", string.Join(", ", calls), "Only the space added after the expansion is given back.");
+        Assert.AreEqual($"4 \"EXPANDED \" 0 True {work.InputGeneration} True 1 False, 9 \"!abc \" 0 True {undo.InputGeneration} False 0 False", string.Join(", ", calls), "Only the space added after the expansion is given back.");
     }
 
     [TestMethod]
@@ -599,7 +599,7 @@ public sealed class InputAndUndoPolicyTests
         Assert.AreEqual(1, store.Load().Count);
         using var hook = new KeyboardHook(store);
         var calls = new List<string>();
-        Program.ReplaceText replace = (_, _, _, left, _, _, _, inserted, _) =>
+        Program.ReplaceText replace = (_, _, _, left, _, _, _, inserted, _, _) =>
         {
             calls.Add($"{left} {inserted is not null}");
             return true;
@@ -697,6 +697,106 @@ public sealed class InputAndUndoPolicyTests
         Assert.AreEqual(pasted, usedClipboard, replacement);
         Assert.AreEqual($"Before {inserted} |", box.ToString());
         CollectionAssert.AreEqual(new[] { new IntPtr(1) }, asked, "Asked once, about the window in front.");
+    }
+
+    [TestMethod]
+    public void TextFromACopyGoesIntoWindowsTerminalAsAPaste()
+    {
+        // Typed, a Ctrl+O hidden in a copied link ran the line in bash. Terminal filters a paste and brackets it.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=Reply to {{clipboard:email}}");
+        using var hook = new KeyboardHook(store);
+        var box = new FakeTextBox("Before ", hook);
+        TypeInto(hook, box, "!abc ");
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+
+        bool usedClipboard = false;
+        Program.ReplaceText insert = Into(
+            box,
+            (text, window, send, keepAlive) =>
+            {
+                usedClipboard = true;
+                return box.Paste(text, window, send, keepAlive);
+            },
+            isWindowsTerminal: _ => true);
+        Assert.IsTrue(Program.TryExpand(hook, work with { TargetWindow = IntPtr.Zero }, insert, isKeyDown: _ => false, readClipboard: () => "Write to you@example.com\u000F"));
+
+        Assert.IsTrue(usedClipboard);
+        Assert.AreEqual("Before Reply to you@example.com |", box.ToString());
+    }
+
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    public void ControlCharactersAreNotTypedIntoATerminal(bool windowsTerminal, bool console)
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=EXPANDED");
+        using var hook = new KeyboardHook(store);
+        var box = new FakeTextBox("Before ", hook);
+
+        InjectionBackend original = Injector.Backend;
+        try
+        {
+            Injector.Backend = InjectionBackend.Typing;
+            Program.ReplaceText insert = Into(box, isWindowsTerminal: _ => windowsTerminal, isConsole: _ => console);
+            Assert.IsTrue(insert(0, "echo \u001B[2Jhi\u000F\u007F\u0085 there", IntPtr.Zero, 0, 0, box.Guard, hook.InputGeneration, null, 0, fromClipboard: false));
+            Assert.AreEqual("Before echo [2Jhi there|", box.ToString());
+
+            // Anywhere else, the snippet goes in as written.
+            box = new FakeTextBox("Before ", hook);
+            insert = Into(box);
+            Assert.IsTrue(insert(0, "a\u000Fb", IntPtr.Zero, 0, 0, box.Guard, hook.InputGeneration, null, 0, fromClipboard: false));
+            Assert.AreEqual("Before a\u000Fb|", box.ToString());
+        }
+        finally
+        {
+            Injector.Backend = original;
+        }
+    }
+
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    public void LinesATerminalCantGetAsAPasteAreNotTyped(bool windowsTerminal, bool console)
+    {
+        // Typed, each line would run as it went in, past the warning Terminal shows for a paste with lines. Nothing is
+        // erased, the space the hook swallowed goes back, and a notice says why.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=cd ~/project\nrm -rf build");
+        using var hook = new KeyboardHook(store);
+        var box = new FakeTextBox("Before ", hook);
+        TypeInto(hook, box, "!abc ");
+        Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+        Assert.AreEqual("Before !abc|", box.ToString(), "The hook swallowed the space.");
+
+        var refused = new List<IntPtr>();
+        Program.ReplaceText insert = Into(
+            box,
+            (_, _, _, _) => PasteOutcome.RefusedBeforeErase,
+            isWindowsTerminal: _ => windowsTerminal,
+            isConsole: _ => console,
+            refused: refused.Add);
+        Assert.IsFalse(Program.TryExpand(hook, work with { TargetWindow = IntPtr.Zero }, insert, isKeyDown: _ => false));
+
+        Assert.AreEqual("Before !abc |", box.ToString());
+        CollectionAssert.AreEqual(new[] { new IntPtr(1) }, refused);
+
+        // One line still falls back to typing there.
+        box = new FakeTextBox("Before ", hook);
+        insert = Into(box, (_, _, _, _) => PasteOutcome.RefusedBeforeErase, isWindowsTerminal: _ => windowsTerminal, isConsole: _ => console);
+        InjectionBackend original = Injector.Backend;
+        try
+        {
+            Injector.Backend = InjectionBackend.Clipboard;
+            Assert.IsTrue(insert(0, "git status", IntPtr.Zero, 0, 0, box.Guard, hook.InputGeneration, null, 0, fromClipboard: false));
+        }
+        finally
+        {
+            Injector.Backend = original;
+        }
+
+        Assert.AreEqual("Before git status|", box.ToString());
     }
 
     [TestMethod]
@@ -824,13 +924,13 @@ public sealed class InputAndUndoPolicyTests
             Assert.IsFalse(Program.TryExpand(
                 hook,
                 work with { TargetWindow = IntPtr.Zero },
-                (backspaces, text, target, left, right, guard, generation, inserted, givenBack) =>
+                (backspaces, text, target, left, right, guard, generation, inserted, givenBack, fromClipboard) =>
                 {
                     calls.Add($"{backspaces} \"{text}\" {inserted is null} {givenBack}");
 
                     // Typed right after Esc: held, so it lands after the keystroke given back.
                     box.UserTypes("x");
-                    return insert(backspaces, text, target, left, right, guard, generation, inserted, givenBack);
+                    return insert(backspaces, text, target, left, right, guard, generation, inserted, givenBack, fromClipboard);
                 },
                 isKeyDown: _ => false,
                 ask: (request, _, _) =>
@@ -866,7 +966,7 @@ public sealed class InputAndUndoPolicyTests
         Assert.IsFalse(Program.TryExpand(
             hook,
             work with { TargetWindow = IntPtr.Zero },
-            (_, _, _, _, _, _, _, _, _) => ++calls > 0,
+            (_, _, _, _, _, _, _, _, _, _) => ++calls > 0,
             isKeyDown: vk => vk == Native.VK_MENU,
             ask: (_, _, _) => null));
 
@@ -1051,7 +1151,7 @@ public sealed class InputAndUndoPolicyTests
             expanded = Program.TryExpand(
                 hook,
                 work with { TargetWindow = IntPtr.Zero },
-                (backspaces, text, _, _, _, _, _, inserted, givenBack) =>
+                (backspaces, text, _, _, _, _, _, inserted, givenBack, _) =>
                 {
                     calls.Add($"{backspaces} \"{text}\" undo:{inserted is not null} back:{givenBack}");
                     return inserts;
@@ -1271,10 +1371,11 @@ public sealed class InputAndUndoPolicyTests
     /// <summary>
     /// Runs <see cref="Program.TryExpand"/>'s insertions through the injector into <paramref name="box"/>, pasting with
     /// <paramref name="paste"/> or the box's own Ctrl+V, in a Windows Terminal window when <paramref name="isWindowsTerminal"/>
-    /// says so.
+    /// says so, or a console window when <paramref name="isConsole"/> does, telling <paramref name="refused"/> about a
+    /// snippet a terminal didn't get.
     /// </summary>
-    private static Program.ReplaceText Into(FakeTextBox box, Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, Action, PasteOutcome>? paste = null, Func<IntPtr, bool>? isWindowsTerminal = null)
-        => (backspaces, text, target, left, right, guard, generation, inserted, givenBack) => Injector.ReplaceCore(
+    private static Program.ReplaceText Into(FakeTextBox box, Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, Action, PasteOutcome>? paste = null, Func<IntPtr, bool>? isWindowsTerminal = null, Func<IntPtr, bool>? isConsole = null, Action<IntPtr>? refused = null)
+        => (backspaces, text, target, left, right, guard, generation, inserted, givenBack, fromClipboard) => Injector.ReplaceCore(
             backspaces,
             text,
             target,
@@ -1291,5 +1392,8 @@ public sealed class InputAndUndoPolicyTests
             inserted: inserted,
             givenBack: givenBack,
             isOpenByTarget: box.TookPaste,
-            isWindowsTerminal: isWindowsTerminal ?? (_ => false));
+            isWindowsTerminal: isWindowsTerminal ?? (_ => false),
+            fromClipboard: fromClipboard,
+            isConsole: isConsole ?? (_ => false),
+            refusedInTerminal: refused ?? (_ => Assert.Fail("No terminal refused anything.")));
 }

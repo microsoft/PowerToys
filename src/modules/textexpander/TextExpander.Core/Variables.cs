@@ -66,15 +66,19 @@ public static partial class Variables
 
         var result = new StringBuilder(text.Length);
         int cursor = -1;
+        bool fromClipboard = false;
         for (int index = 0; index < tokens.Count; index++)
         {
             SnippetToken token = tokens[index];
             switch (token.Kind)
             {
+                case SnippetTokenKind.Clipboard:
+                    result.Append(values[index]);
+                    fromClipboard |= !string.IsNullOrEmpty(values[index]);
+                    break;
                 case SnippetTokenKind.Date:
                 case SnippetTokenKind.Time:
                 case SnippetTokenKind.Prompt:
-                case SnippetTokenKind.Clipboard:
                     result.Append(values[index]);
                     break;
                 case SnippetTokenKind.Cursor:
@@ -92,7 +96,7 @@ public static partial class Variables
             }
         }
 
-        return new ExpandedSnippet(result.ToString(), cursor, gaps);
+        return new ExpandedSnippet(result.ToString(), cursor, gaps) { HasClipboardText = fromClipboard };
     }
 
     /// <summary>
@@ -124,7 +128,8 @@ public static partial class Variables
 
             if (!readClipboard)
             {
-                copied = clipboard?.Invoke();
+                // Without the control characters a copy can carry unseen (see ControlCharacters).
+                copied = clipboard?.Invoke() is { } read ? ControlCharacters.Remove(read) : null;
                 readClipboard = true;
             }
 
@@ -200,7 +205,7 @@ public static partial class Variables
             }
 
             anyCopy = true;
-            foreach (string found in ClipboardParts.Find(copy, part, culture))
+            foreach (string found in ClipboardParts.Find(ControlCharacters.Remove(copy), part, culture))
             {
                 if (seen.Add(found))
                 {
