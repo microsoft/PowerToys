@@ -502,7 +502,7 @@ jobs:
         Write-Host "Verified OCR capability: $name"
       }
     displayName: "Provision PowerOCR test languages"
-    timeoutInMinutes: 60
+    timeoutInMinutes: 90
     condition: and(succeeded(), eq(variables['RunGenericUiTests'], 'true'))
     ${{ if eq(parameters.autoSelectUiTests, true) }}:
       env:
