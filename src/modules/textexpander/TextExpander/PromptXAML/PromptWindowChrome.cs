@@ -2,11 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.InteropServices;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Windows.Foundation;
 using Windows.Graphics;
 
 namespace Microsoft.PowerToys.TextExpander;
@@ -18,6 +20,13 @@ namespace Microsoft.PowerToys.TextExpander;
 /// </summary>
 internal sealed class PromptWindowChrome
 {
+    // Long enough for the window to have gone.
+    private const int CollectAfterCloseMs = 1_500;
+
+    // Loaded once for every window. AppWindow.SetIcon(path) loads the icon again for each window and keeps it after the
+    // window closes: a USER object and three GDI objects each time.
+    private static readonly Lazy<IconId?> WindowIcon = new(LoadWindowIcon);
+
     private readonly Window _window;
     private readonly IntPtr _target;
     private RectInt32 _workArea;
@@ -35,7 +44,11 @@ internal sealed class PromptWindowChrome
         if (File.Exists(icon))
         {
             titleBarIcon.Source = new BitmapImage(new Uri(icon));
-            window.AppWindow.SetIcon(icon);
+        }
+
+        if (WindowIcon.Value is { } iconId)
+        {
+            window.AppWindow.SetIcon(iconId);
         }
 
         window.ExtendsContentIntoTitleBar = true;
@@ -66,6 +79,47 @@ internal sealed class PromptWindowChrome
     {
         _window.Activate();
         WindowFocus.Force(Handle);
+    }
+
+    /// <summary>
+    /// Calls <paramref name="closing"/> when the window is closed from its frame, by its close button or Alt+F4, and
+    /// <paramref name="closed"/> once it has closed, after which the window lets go of what it showed.
+    /// </summary>
+    public void OnClose(Action closing, Action closed)
+    {
+        AppWindow appWindow = _window.AppWindow;
+        TypedEventHandler<AppWindow, AppWindowClosingEventArgs> onClosing = (_, _) =>
+        {
+            closing();
+            ResetTitleBar();
+        };
+        TypedEventHandler<object, WindowEventArgs>? onClosed = null;
+        onClosed = (_, _) =>
+        {
+            // AppWindow isn't a XAML object, so it would keep its handler, and with it the closed window.
+            _window.Closed -= onClosed;
+            try
+            {
+                appWindow.Closing -= onClosing;
+            }
+            catch (Exception ex) when (ex is COMException or ObjectDisposedException)
+            {
+                // Gone with the window.
+            }
+
+            closed();
+            Release();
+        };
+
+        appWindow.Closing += onClosing;
+        _window.Closed += onClosed;
+    }
+
+    /// <summary>Closes the window, its title bar first put back to the system's (see <see cref="ResetTitleBar"/>).</summary>
+    public void Close()
+    {
+        ResetTitleBar();
+        _window.Close();
     }
 
     /// <summary>
@@ -128,5 +182,52 @@ internal sealed class PromptWindowChrome
     {
         SizeInt32 size = _window.AppWindow.Size;
         _window.AppWindow.Move(new PointInt32(_workArea.X + ((_workArea.Width - size.Width) / 2), _workArea.Y + ((_workArea.Height - size.Height) / 3)));
+    }
+
+    /// <summary>
+    /// Hides the window and puts its title bar back to the system's, before it closes. Windows App SDK keeps the native
+    /// title bar of every closed window whose content extends into it, about 20 GDI objects, 25 handles and 1 MB each,
+    /// for as long as the engine runs (microsoft/microsoft-ui-xaml#12210). Hidden first, so the reset never shows.
+    /// </summary>
+    private void ResetTitleBar()
+    {
+        try
+        {
+            AppWindow appWindow = _window.AppWindow;
+            appWindow.Hide();
+            appWindow.TitleBar.ResetToDefault();
+        }
+        catch (Exception ex) when (ex is COMException or ObjectDisposedException)
+        {
+            // Already going.
+        }
+    }
+
+    /// <summary>
+    /// Lets go of what the window showed, once it's closed. The prompt thread stays up for the next window, and a closed
+    /// window's text box kept the compositor waking for its caret until the garbage collector ran.
+    /// </summary>
+    private void Release()
+    {
+        _window.SystemBackdrop = null;
+        _window.Content = null;
+
+        // The window's native parts go when their managed wrappers are collected, and an engine that allocates so little
+        // may not collect for hours. Off the prompt thread, which finalizers may need pumping.
+        _ = Task.Delay(CollectAfterCloseMs).ContinueWith(
+            static _ =>
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            },
+            TaskScheduler.Default);
+    }
+
+    private static IconId? LoadWindowIcon()
+    {
+        string icon = Path.Combine(AppContext.BaseDirectory, "app.ico");
+        IntPtr handle = File.Exists(icon) ? Native.LoadImageW(IntPtr.Zero, icon, Native.IMAGE_ICON, 0, 0, Native.LR_LOADFROMFILE | Native.LR_DEFAULTSIZE) : IntPtr.Zero;
+        return handle == IntPtr.Zero ? null : Win32Interop.GetIconIdFromIcon(handle);
     }
 }

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -33,7 +34,7 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
     internal override IReadOnlyList<Snippet>? InitialSnippets => TestContext.TestName switch
     {
         nameof(ClipboardPartsGoInAndAMatchIsPickedInTextExpandersWindow) or nameof(CancellingAPickCancelsTheSnippet) or nameof(NothingFoundLeavesTheSpotEmptyAndTypingGoesOn)
-            or nameof(ALongListOfMatchesScrollsAndEachKeepsItsName) => [.. DefaultSnippets, ReplyTo, TrackLink],
+            or nameof(ALongListOfMatchesScrollsAndEachKeepsItsName) or nameof(ClosedWindowsLeaveNothingBehind) => [.. DefaultSnippets, ReplyTo, TrackLink],
         nameof(PickingACopyInsertsWhatClipboardHistoryHas) => [.. DefaultSnippets, PickACopy],
         _ => DefaultSnippets,
     };
@@ -162,6 +163,34 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
         AssertTargetShows("Track: https://example.com/returns ");
         var clipboard = WaitHelper.WaitForStable(ClipboardHelper.GetText, text => text == CopiedBlock, timeoutMS: 10_000, requiredConsecutiveMatches: 3, pollIntervalMS: 200);
         Assert.IsTrue(clipboard.Succeeded, $"The clipboard holds '{TextExpanderFiles.Visible(clipboard.LastObservation)}', not what was copied.");
+    }
+
+    /// <summary>
+    /// Question and choice windows leave nothing behind once they close. Windows App SDK kept each closed window's title
+    /// bar, about 20 GDI objects and 25 handles, and each window loaded its icon again, so an engine asked often enough
+    /// ran out of GDI objects. The first window of each kind sets WinUI up, so the count starts after them.
+    /// </summary>
+    [TestMethod("TextExpander.Expansion.ClosedWindowsLeaveNothingBehind")]
+    [TestCategory("TextExpander")]
+    [TestCategory("TextExpander.Expansion")]
+    public void ClosedWindowsLeaveNothingBehind()
+    {
+        Assert.IsTrue(ClipboardHelper.SetText(CopiedBlock), "The clipboard could not be set.");
+        AnswerTheTicketQuestion();
+        PickTheFirstLink();
+        using var engine = Process.GetProcessById(ProcessIds(EngineProcessName).Single());
+        var (gdi, user, handles) = SettledObjects(engine);
+
+        for (var i = 0; i < 5; i++)
+        {
+            AnswerTheTicketQuestion();
+            PickTheFirstLink();
+        }
+
+        var (gdiAfter, userAfter, handlesAfter) = SettledObjects(engine);
+        var counts = $"GDI {gdi} -> {gdiAfter}, USER {user} -> {userAfter}, handles {handles} -> {handlesAfter}";
+        Assert.IsTrue(gdiAfter - gdi <= 10, $"Ten more windows left GDI objects behind: {counts}.");
+        Assert.IsTrue(userAfter - user <= 4, $"Ten more windows left USER objects behind: {counts}.");
     }
 
     /// <summary>
@@ -444,4 +473,36 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
         Assert.IsTrue(result.Succeeded, $"The target should show '{description}', but shows '{TextExpanderFiles.Visible(result.LastObservation)}'.");
         Step($"Target shows '{description}'");
     }
+
+    private void AnswerTheTicketQuestion()
+    {
+        var prompt = TypeTriggerForPrompt(Ticket.Trigger + " ");
+        Assert.IsTrue(prompt.WaitForForeground(), $"The question window did not come in front. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        TextInput.Type("te4217");
+        Assert.IsTrue(prompt.WaitForOkEnabled(true), "OK did not turn on once there was an answer.");
+        TextInput.Enter();
+        Assert.IsTrue(prompt.WaitForClosed(), "The question window did not close after Enter.");
+        AssertTargetShows("Ticket te4217 is resolved. ");
+    }
+
+    private void PickTheFirstLink()
+    {
+        var choice = TypeTriggerForChoice(TrackLink.Trigger + " ");
+        Assert.IsTrue(choice.WaitForForeground(), $"The choice window did not come in front. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        TextInput.Enter();
+        Assert.IsTrue(choice.WaitForClosed(), "The choice window did not close after Enter.");
+        AssertTargetShows("Track: https://example.com/track/1042 ");
+    }
+
+    /// <summary>The engine's GDI objects, USER objects and handles, once what closed has had time to go.</summary>
+    private (int Gdi, int User, int Handles) SettledObjects(Process engine)
+    {
+        Step("Letting the closed windows go");
+        Thread.Sleep(5_000);
+        engine.Refresh();
+        return ((int)GetGuiResources(engine.Handle, 0), (int)GetGuiResources(engine.Handle, 1), engine.HandleCount);
+    }
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern uint GetGuiResources(IntPtr process, uint flags);
 }

@@ -357,6 +357,13 @@ internal static class Native
     public const int SM_CXSCREEN = 0;
     public const int SM_CYSCREEN = 1;
 
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    public static extern IntPtr LoadImageW(IntPtr hInst, string name, uint type, int cx, int cy, uint load);
+
+    public const uint IMAGE_ICON = 1;
+    public const uint LR_LOADFROMFILE = 0x0010;
+    public const uint LR_DEFAULTSIZE = 0x0040;
+
     // ── DPI, for placing the prompt window on the right screen ──
     public const uint MONITOR_DEFAULTTONEAREST = 2;
     public const int MDT_EFFECTIVE_DPI = 0;

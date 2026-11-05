@@ -53,8 +53,7 @@ public sealed partial class ClipboardChoiceWindow : Window
         Options.SelectedIndex = choice.Options.Count > 0 ? 0 : -1;
 
         // The close button and Alt+F4 cancel, as Esc does.
-        AppWindow.Closing += (_, _) => Finish(null, close: false);
-        Closed += (_, _) => Complete(null);
+        _chrome.OnClose(closing: () => Finish(null, close: false), closed: () => Complete(null));
 
         _chrome.Place(WidthDip, EstimatedHeightDip);
     }
@@ -112,7 +111,7 @@ public sealed partial class ClipboardChoiceWindow : Window
         Complete(chosen);
         if (close)
         {
-            Close();
+            _chrome.Close();
         }
     }
 

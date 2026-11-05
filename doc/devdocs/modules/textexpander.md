@@ -354,7 +354,9 @@ Command Palette's process; its
 
 - Main thread (STA): the message window, the clipboard owner and all hook callbacks.
 - Worker (`PowerToys Text Expander`): prompts, variables, the clipboard and `SendInput`.
-- Prompt thread (`PowerToys Text Expander prompt`): WinUI 3 prompts, started on first use.
+- Prompt thread (`PowerToys Text Expander prompt`): WinUI 3 prompts, started on first use. A closing window
+  puts its title bar back to the system's and drops its content, and the engine collects once it has gone:
+  Windows App SDK otherwise keeps each closed window's title bar (microsoft/microsoft-ui-xaml#12210).
 - Notice threads (`PowerToys Text Expander notice` and `PowerToys Text Expander caret`, MTA): the
   notice window, and the UI Automation caret lookup.
 - Thread pool and timers: foreground checks, file events, retries and guard expiry.

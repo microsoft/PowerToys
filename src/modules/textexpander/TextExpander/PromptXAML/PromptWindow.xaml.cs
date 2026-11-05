@@ -44,8 +44,7 @@ public sealed partial class PromptWindow : Window
         OkButton.IsEnabled = !request.Required;
 
         // The close button and Alt+F4 cancel, as Esc does.
-        AppWindow.Closing += (_, _) => Finish(accepted: false, close: false);
-        Closed += (_, _) => Complete(null);
+        _chrome.OnClose(closing: () => Finish(accepted: false, close: false), closed: () => Complete(null));
 
         _chrome.Place(WidthDip, EstimatedHeightDip);
     }
@@ -113,7 +112,7 @@ public sealed partial class PromptWindow : Window
         Complete(PromptText.Result(accepted, typed));
         if (close)
         {
-            Close();
+            _chrome.Close();
         }
     }
 
