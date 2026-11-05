@@ -237,7 +237,7 @@ public sealed class TextExpanderEditorTests : TextExpanderTestBase
         editor.Session.WaitForExact<Element>("Clipboard", 10_000, "MenuItem").Click(msPostAction: 300);
         editor.Session.WaitForExact<Element>("Pick a copy from clipboard history when it runs", 10_000, "MenuItem").Click(msPostAction: 300);
         Assert.IsTrue(editor.WaitForReplacementText(added.Replacement), $"Replacement holds '{TextExpanderFiles.Visible(editor.ReplacementText)}'.");
-        Assert.IsTrue(editor.Session.Has(By.Name("Copy you pick"), timeoutMS: 10_000), "The preview doesn't name the variable.");
+        Assert.IsTrue(editor.Session.Has(By.Name("Copy from clipboard history"), timeoutMS: 10_000), "The preview doesn't name the variable.");
 
         bool on = ClipboardHistoryState.IsOn();
         bool byPolicy = ClipboardHistoryState.TurnedOffByPolicy();
