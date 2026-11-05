@@ -105,7 +105,8 @@ erases each trigger and pastes or types the snippet. A separate editor manages t
 - One match or copy goes straight in. Two or more open the chooser (`ClipboardChoiceWindow`, on the
   prompt thread) with at most 100 options. Cancel cancels the snippet, as with a question.
 - For history, the engine reads up to 25 text copies on another thread while any questions are asked,
-  waiting at most 3 s. `{{clipboard:pick:<part>}}` offers the different matches across the copies,
+  waiting at most 3 s. One read runs at a time: while one that timed out still hangs, history counts
+  as unreadable. `{{clipboard:pick:<part>}}` offers the different matches across the copies,
   newest first. What's read is used for that expansion only.
 - None leaves the spot empty, and the rest goes in. `ExpandedSnippet.Gaps` says why: not found,
   history off, no copies, or unreadable. Once the insertion and its guard are done, the worker shows

@@ -104,6 +104,38 @@ public sealed class PromptTests
     }
 
     [TestMethod]
+    public void AHistoryReadThatTimedOutIsNotStartedAgainBesideIt()
+    {
+        // Each snippet that picks from history would otherwise start another read next to one hung in the clipboard service.
+        var hung = new TaskCompletionSource<ClipboardHistory>(TaskCreationOptions.RunContinuationsAsynchronously);
+        int started = 0;
+        Task<ClipboardHistory> Hung()
+        {
+            Interlocked.Increment(ref started);
+            return hung.Task;
+        }
+
+        try
+        {
+            Assert.AreEqual(ClipboardHistoryState.Unreadable, ClipboardHistoryReader.Read(static () => true, Hung, TimeSpan.FromMilliseconds(50)).State);
+            Assert.AreEqual(ClipboardHistoryState.Unreadable, ClipboardHistoryReader.Read(static () => true, Hung, TimeSpan.FromMilliseconds(50)).State);
+            Assert.AreSame(ClipboardHistory.TurnedOff, ClipboardHistoryReader.Read(static () => false, Hung, TimeSpan.FromMilliseconds(50)));
+            Assert.AreEqual(1, Volatile.Read(ref started));
+        }
+        finally
+        {
+            hung.SetResult(new ClipboardHistory(ClipboardHistoryState.Read, ["older copy"]));
+        }
+
+        // Once it ends, the next read starts afresh rather than taking what it read.
+        var fresh = new ClipboardHistory(ClipboardHistoryState.Read, ["you@example.com"]);
+        ClipboardHistory? read = null;
+        Assert.IsTrue(SpinWait.SpinUntil(() => (read = ClipboardHistoryReader.Read(static () => true, () => Task.FromResult(fresh), TimeSpan.FromSeconds(5))).State == ClipboardHistoryState.Read, TimeSpan.FromSeconds(10)));
+        Assert.AreSame(fresh, read);
+        Assert.AreEqual(1, Volatile.Read(ref started));
+    }
+
+    [TestMethod]
     public void RequiredPromptsRejectBlankAnswersAndOptionalPromptsAllowThem()
     {
         var required = new PromptRequest("Name", Required: true);

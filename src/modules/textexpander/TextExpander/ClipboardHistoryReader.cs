@@ -22,21 +22,43 @@ internal static class ClipboardHistoryReader
 
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(2);
 
+    private static readonly Lock RunningLock = new();
+
+    // Guarded by RunningLock: the last read started, which may still be running after it timed out.
+    private static Task<ClipboardHistory>? _running;
+
     /// <summary>
     /// Gets the text copies in clipboard history, newest first and each different one once; or that history is off, or
     /// couldn't be read within 2 seconds.
     /// </summary>
-    public static ClipboardHistory Read()
+    public static ClipboardHistory Read() => Read(WinClipboard.IsHistoryEnabled, ReadAsync, Timeout);
+
+    /// <summary>
+    /// Reads clipboard history with <paramref name="readAsync"/>, one read at a time. A read that timed out may still be
+    /// running, as when Windows' clipboard service hangs. Another isn't started next to it, where it would hang too: until
+    /// it ends, history can't be read.
+    /// </summary>
+    internal static ClipboardHistory Read(Func<bool> isEnabled, Func<Task<ClipboardHistory>> readAsync, TimeSpan timeout)
     {
         try
         {
-            if (!WinClipboard.IsHistoryEnabled())
+            if (!isEnabled())
             {
                 return ClipboardHistory.TurnedOff;
             }
 
-            Task<ClipboardHistory> read = Task.Run(ReadAsync);
-            return read.Wait(Timeout) ? read.Result : ClipboardHistory.NotRead;
+            Task<ClipboardHistory> read;
+            lock (RunningLock)
+            {
+                if (_running is { IsCompleted: false })
+                {
+                    return ClipboardHistory.NotRead;
+                }
+
+                read = _running = Task.Run(readAsync);
+            }
+
+            return read.Wait(timeout) ? read.Result : ClipboardHistory.NotRead;
         }
         catch (Exception ex) when (ex is COMException or UnauthorizedAccessException or InvalidOperationException or AggregateException)
         {
