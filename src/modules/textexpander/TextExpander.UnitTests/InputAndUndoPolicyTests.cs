@@ -231,6 +231,59 @@ public sealed class InputAndUndoPolicyTests
     }
 
     [TestMethod]
+    public void KeysTypedWhileTheWindowInFrontIsCheckedAreKeptButExpandNothing()
+    {
+        // Windows Terminal raises the foreground event for a new window before showing it, so the event checked the
+        // window being left (10), and the first key typed in the new one (11) asked for its check.
+        var left = new KeyboardHook.TargetAuthorization(new IntPtr(10), 20, CanDrive: true);
+
+        Assert.AreEqual(KeyboardHook.ForegroundCapture.Pending, KeyboardHook.CaptureFor(new IntPtr(11), 21, left, new IntPtr(11)));
+        Assert.AreEqual(KeyboardHook.ForegroundCapture.Authorized, KeyboardHook.CaptureFor(new IntPtr(10), 20, left, new IntPtr(11)));
+        Assert.AreEqual(KeyboardHook.ForegroundCapture.Refused, KeyboardHook.CaptureFor(new IntPtr(10), 20, left with { CanDrive = false }, new IntPtr(10)), "A refused window drops its keys.");
+        Assert.AreEqual(KeyboardHook.ForegroundCapture.Refused, KeyboardHook.CaptureFor(new IntPtr(11), 21, left, IntPtr.Zero), "Only a window being checked keeps them.");
+        Assert.AreEqual(KeyboardHook.ForegroundCapture.Refused, KeyboardHook.CaptureFor(IntPtr.Zero, 0, left, IntPtr.Zero));
+    }
+
+    [TestMethod]
+    public void ATriggerTypedFirstInANewWindowExpandsOnceTheWindowPasses()
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, ";teecho=echo spaced-out");
+        using var hook = new KeyboardHook(store);
+
+        bool original = WordBoundary.Required;
+        try
+        {
+            WordBoundary.Required = true;
+
+            // The ';' is typed while the window is being checked, and the rest once it passed.
+            Assert.IsFalse(hook.ProcessKey(Native.VK_PACKET, ';', ctrl: false, alt: false, shift: false, win: false, mayExpand: false));
+            foreach (char ch in "teecho")
+            {
+                Assert.IsFalse(hook.ProcessKey(Native.VK_PACKET, ch, ctrl: false, alt: false, shift: false, win: false), $"'{ch}'");
+            }
+
+            Assert.IsTrue(hook.ProcessKey(Native.VK_PACKET, ' ', ctrl: false, alt: false, shift: false, win: false));
+            Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion expansion));
+            Assert.AreEqual(";teecho", expansion.Trigger);
+
+            // Before the check answers, nothing expands: the trigger stays as typed, and the space goes on to the app.
+            foreach (char ch in ";teecho ")
+            {
+                Assert.IsFalse(hook.ProcessKey(Native.VK_PACKET, ch, ctrl: false, alt: false, shift: false, win: false, mayExpand: false), $"'{ch}'");
+            }
+
+            Assert.AreEqual(0, hook.Pending.Count);
+            Assert.IsFalse(hook.ProcessKey(Native.VK_PACKET, ' ', ctrl: false, alt: false, shift: false, win: false), "What was typed before is gone.");
+            Assert.AreEqual(0, hook.Pending.Count);
+        }
+        finally
+        {
+            WordBoundary.Required = original;
+        }
+    }
+
+    [TestMethod]
     public void ClipboardSnapshotZeroesCopiedBytesWhenDisposed()
     {
         byte[] data = [1, 2, 3, 4];

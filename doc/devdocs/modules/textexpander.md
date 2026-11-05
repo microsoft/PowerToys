@@ -51,8 +51,11 @@ erases each trigger and pastes or types the snippet. A separate editor manages t
   injected input, like the touch keyboard, is typing.
 - With `treat_remaps_as_typing` off, keys with Keyboard Manager's bit `0x1` aren't matched. The
   engine's random tag sets that bit, so Keyboard Manager's key remaps skip it.
-- Keys count only in an authorized foreground window, outside standard password boxes. `ToUnicodeEx`
-  uses that window's layout and flag `0x4`, which keeps dead-key state intact.
+- Keys count in the foreground window unless its check refused it, and never in standard password
+  boxes. `ToUnicodeEx` uses that window's layout and flag `0x4`, which keeps dead-key state intact.
+- The foreground event can name a window before Windows reports it in front, as Windows Terminal
+  does for a new window. Then the first key typed there asks for the check. Keys typed while it runs
+  count, but nothing expands until the window passes.
 - Navigation keys, shortcuts, clicks and focus changes clear the buffer, but AltGr types. The buffer
   holds max(256, 2 × (longest trigger + 2)) characters and keeps its newest half when full.
 
@@ -359,7 +362,8 @@ Command Palette's process; its
 - The engine refuses to run above medium integrity. It checks before it loads settings or snippets.
 - `SendInput` can't see UIPI drops, so `InputTarget.CanDrive` refuses targets above the engine's level,
   capped at medium.
-- A thread-pool check authorizes each new foreground window. The hook captures keys only there.
+- A thread-pool check authorizes each new foreground window. Only there does a trigger expand, and a
+  refused window's keys are dropped.
 - Keys typed in `PowerToys.Settings.exe` or `PowerToys.TextExpander.Editor.exe` never expand.
 - The guard never holds `LLKHF_LOWER_IL_INJECTED` input, which would gain the engine's level if sent
   again. Matching doesn't check this flag.

@@ -77,6 +77,19 @@ internal sealed class KeyboardHook : IDisposable
 
     internal sealed record TargetAuthorization(IntPtr Window, uint ProcessId, bool CanDrive);
 
+    /// <summary>What the hook does with a key, from the check of the window in front (<see cref="CaptureFor"/>).</summary>
+    internal enum ForegroundCapture
+    {
+        /// <summary>Dropped, with what was typed: nothing is in front, or the window was checked and refused.</summary>
+        Refused,
+
+        /// <summary>Kept while the window's check runs, but no trigger fires.</summary>
+        Pending,
+
+        /// <summary>Kept, and a trigger expands.</summary>
+        Authorized,
+    }
+
     /// <summary>
     /// Gets the input generation. Every key press other than a modifier, and every click, moves it on, because
     /// any of them can move the caret: work queued before one of them must not be applied where the caret is now.
@@ -388,7 +401,8 @@ internal sealed class KeyboardHook : IDisposable
 
     private bool HandleKeyLocked(Native.KBDLLHOOKSTRUCT data)
     {
-        if (!CanCaptureForForeground())
+        ForegroundCapture capture = CaptureForForeground();
+        if (capture == ForegroundCapture.Refused)
         {
             ResetBuffer();
             ClearUndo();
@@ -408,19 +422,23 @@ internal sealed class KeyboardHook : IDisposable
             ctrl: IsDown(Native.VK_CONTROL),
             alt: IsDown(Native.VK_MENU),
             shift: IsDown(Native.VK_SHIFT),
-            win: IsDown(Native.VK_LWIN) || IsDown(Native.VK_RWIN));
+            win: IsDown(Native.VK_LWIN) || IsDown(Native.VK_RWIN),
+            mayExpand: capture == ForegroundCapture.Authorized);
     }
 
-    /// <summary>Processes a key-down that passed the capture checks, so tests can drive key sequences.</summary>
-    internal bool ProcessKey(uint vk, uint scanCode, bool ctrl, bool alt, bool shift, bool win)
+    /// <summary>
+    /// Processes a key-down that passed the capture checks, so tests can drive key sequences. With
+    /// <paramref name="mayExpand"/> false, as while the window in front is being checked, keys count but no trigger fires.
+    /// </summary>
+    internal bool ProcessKey(uint vk, uint scanCode, bool ctrl, bool alt, bool shift, bool win, bool mayExpand = true)
     {
         lock (_bufferLock)
         {
-            return !_disposed && ProcessKeyLocked(vk, scanCode, ctrl, alt, shift, win);
+            return !_disposed && ProcessKeyLocked(vk, scanCode, ctrl, alt, shift, win, mayExpand);
         }
     }
 
-    private bool ProcessKeyLocked(uint vk, uint scanCode, bool ctrl, bool alt, bool shift, bool win)
+    private bool ProcessKeyLocked(uint vk, uint scanCode, bool ctrl, bool alt, bool shift, bool win, bool mayExpand)
     {
         if (vk == Native.VK_BACK)
         {
@@ -528,6 +546,14 @@ internal sealed class KeyboardHook : IDisposable
         // worker running would otherwise leave the swallowed keystroke unaccounted for.
         if (!snapshot.Map.TryGetValue(trigger, out string? replacement))
         {
+            return false;
+        }
+
+        // Typed before the window in front passed its check, which can't be known on this thread.
+        // The trigger stays as typed, as in a window that was refused.
+        if (!mayExpand)
+        {
+            ResetBuffer();
             return false;
         }
 
@@ -796,7 +822,7 @@ internal sealed class KeyboardHook : IDisposable
         RefreshTargetAuthorization(Native.GetForegroundWindow(), asynchronous: true);
     }
 
-    private bool CanCaptureForForeground()
+    private ForegroundCapture CaptureForForeground()
     {
         IntPtr foreground = Native.GetForegroundWindow();
         uint foregroundProcessId = 0;
@@ -805,26 +831,23 @@ internal sealed class KeyboardHook : IDisposable
             : Native.GetWindowThreadProcessId(foreground, out foregroundProcessId);
         if (thread == 0 || foregroundProcessId == 0)
         {
-            return false;
+            return ForegroundCapture.Refused;
         }
 
+        // The foreground event can check the wrong window. Windows Terminal raises it for a new
+        // window before showing it, and a window activated through AttachThreadInput, as
+        // WindowFocus.Force does when a prompt hands focus back, raises it while
+        // GetForegroundWindow still reports the window it is leaving. Either way, check the one
+        // actually in front, off this path and once, and keep its keys meanwhile: the first one
+        // may start a trigger.
         TargetAuthorization authorization = Volatile.Read(ref _targetAuthorization);
-        if (IsAuthorizedForeground(foreground, foregroundProcessId, authorization))
-        {
-            return true;
-        }
-
-        // A window activated through AttachThreadInput, as WindowFocus.Force does when a prompt
-        // hands focus back, raises the foreground event while GetForegroundWindow still reports
-        // the window it is leaving, so that event checks the wrong window. Check the one actually
-        // in front instead, off this path and once, so typing there expands again.
         if (NeedsAuthorization(foreground, authorization, _requestedAuthorizationWindow))
         {
             _requestedAuthorizationWindow = foreground;
             RefreshTargetAuthorization(foreground, asynchronous: true);
         }
 
-        return false;
+        return CaptureFor(foreground, foregroundProcessId, authorization, _requestedAuthorizationWindow);
     }
 
     private void RefreshTargetAuthorization(IntPtr window, bool asynchronous)
@@ -876,6 +899,26 @@ internal sealed class KeyboardHook : IDisposable
             && authorization.Window == foregroundWindow
             && authorization.ProcessId == foregroundProcessId
             && authorization.CanDrive;
+
+    /// <summary>
+    /// What the hook does with a key typed in <paramref name="foregroundWindow"/>: drops it in a window that was refused,
+    /// keeps it without expanding anything while the window's check runs (<paramref name="requestedWindow"/>), and
+    /// expands only in a window that passed.
+    /// </summary>
+    internal static ForegroundCapture CaptureFor(IntPtr foregroundWindow, uint foregroundProcessId, TargetAuthorization authorization, IntPtr requestedWindow)
+    {
+        if (IsAuthorizedForeground(foregroundWindow, foregroundProcessId, authorization))
+        {
+            return ForegroundCapture.Authorized;
+        }
+
+        return foregroundWindow != IntPtr.Zero
+            && foregroundProcessId != 0
+            && authorization.Window != foregroundWindow
+            && requestedWindow == foregroundWindow
+            ? ForegroundCapture.Pending
+            : ForegroundCapture.Refused;
+    }
 
     /// <summary>Whether <paramref name="target"/> is in front and our input reaches it, checked as the worker does.</summary>
     private static bool TargetInFront(IntPtr target)
