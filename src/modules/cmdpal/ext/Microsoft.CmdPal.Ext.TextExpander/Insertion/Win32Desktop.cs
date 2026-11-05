@@ -26,7 +26,13 @@ internal sealed class Win32Desktop : IDesktop
 
     private const uint ResponsiveProbeMs = 50;
 
-    private readonly Lazy<uint?> _ownIntegrity = new(() => IntegrityLevelOf(NativeMethods.GetCurrentProcess()));
+    private static readonly Lazy<uint?> OwnIntegrity = new(() => IntegrityLevelOf(NativeMethods.GetCurrentProcess()));
+
+    /// <summary>
+    /// Gets a value indicating whether Command Palette runs above medium integrity, as when started as administrator, or
+    /// its level can't be read.
+    /// </summary>
+    internal static bool RunsElevated => OwnIntegrity.Value is not uint level || level > MediumIntegrity;
 
     public nint ForegroundWindow => NativeMethods.GetForegroundWindow();
 
@@ -54,7 +60,7 @@ internal sealed class Win32Desktop : IDesktop
 
     public bool CanDrive(nint window)
     {
-        if (window == 0 || _ownIntegrity.Value is not uint ours)
+        if (window == 0 || OwnIntegrity.Value is not uint ours)
         {
             return false;
         }

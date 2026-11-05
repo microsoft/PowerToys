@@ -143,7 +143,23 @@ public sealed class SnippetCommandsTests
     [DataRow("\"C:\\Program Files\\PowerToys\\PowerToys.exe\" \"%1\"", "C:\\Program Files\\PowerToys\\PowerToys.exe")]
     [DataRow("C:\\Tools\\PowerToys\\PowerToys.exe %1", "C:\\Tools\\PowerToys\\PowerToys.exe")]
     [DataRow("\"C:\\Program Files\\Other\\Other.exe\" \"%1\"", null)]
+    [DataRow("PowerToys.exe \"%1\"", null)]
+    [DataRow("..\\PowerToys\\PowerToys.exe", null)]
     [DataRow("", null)]
     public void PowerToysFromProtocolCommand_RegisteredCommand_FindsPowerToysExe(string command, string? expected)
         => Assert.AreEqual(expected, OpenTextExpanderSettingsCommand.PowerToysFromProtocolCommand(command));
+
+    [TestMethod]
+    public void HivesFor_Elevated_TrustsOnlyTheMachinesRegistration()
+    {
+        // Anything running as the user can write HKCU, and an elevated Command Palette would start its program elevated.
+        var elevated = OpenTextExpanderSettingsCommand.HivesFor(elevated: true);
+        Assert.AreEqual(1, elevated.Length);
+        Assert.AreEqual(Microsoft.Win32.RegistryHive.LocalMachine, elevated[0]);
+
+        var user = OpenTextExpanderSettingsCommand.HivesFor(elevated: false);
+        Assert.AreEqual(2, user.Length);
+        Assert.AreEqual(Microsoft.Win32.RegistryHive.CurrentUser, user[0]);
+        Assert.AreEqual(Microsoft.Win32.RegistryHive.LocalMachine, user[1]);
+    }
 }
