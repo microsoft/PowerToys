@@ -1117,6 +1117,33 @@ public sealed class InputAndUndoPolicyTests
     }
 
     [TestMethod]
+    public void CommandPalettesKeysNeverExpandButEndWhatWasTyped()
+    {
+        // Command Palette's extension pasting a snippet changes the app's text: what was typed before it can't complete
+        // a trigger, and Ctrl+Z can't undo an expansion made before it. Ignored, "!ab" then its paste then "c " expanded.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=Expanded");
+        int input = 0;
+        using var hook = new KeyboardHook(store) { UserInput = () => input++ };
+        foreach (char ch in "!ab")
+        {
+            Assert.IsFalse(hook.ProcessKey(Native.VK_PACKET, ch, ctrl: false, alt: false, shift: false, win: false));
+        }
+
+        long generation = hook.InputGeneration;
+        Assert.IsFalse(hook.OnKeyEvent(FakeTextBox.UserKey('c', up: false) with { DwExtraInfo = (nint)InputTags.CommandPalette }, Native.WM_KEYDOWN));
+        Assert.AreEqual(1, input, "A notice at the caret fades.");
+        Assert.AreNotEqual(generation, hook.InputGeneration);
+
+        foreach (char ch in "c ")
+        {
+            Assert.IsFalse(hook.ProcessKey(Native.VK_PACKET, ch, ctrl: false, alt: false, shift: false, win: false), $"'{ch}'");
+        }
+
+        Assert.AreEqual(0, hook.Pending.Count);
+    }
+
+    [TestMethod]
     public void AClickOnTheNoticeOnlyTakesItDown()
     {
         // A click on the notice doesn't move the caret, but it was taken for one that can: what was typed was dropped, with

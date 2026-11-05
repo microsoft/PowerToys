@@ -11,8 +11,8 @@ internal enum HostInputKind
     Typing,
 
     /// <summary>
-    /// Input carrying Keyboard Manager's bit, such as a remap, while remaps don't count as typing. It isn't
-    /// matched, but it reaches the app and can move the caret.
+    /// Input that reaches the app and can move the caret, but isn't matched: Command Palette's extension putting a snippet
+    /// in, and input carrying Keyboard Manager's bit, such as a remap, while remaps don't count as typing.
     /// </summary>
     Unmatched,
 
@@ -89,10 +89,11 @@ internal static class HostInputTags
         }
 
         // Command Palette's Text Expander extension pasting or typing a snippet. It has Keyboard Manager's bit, so that
-        // remaps leave it alone, but it isn't the user typing.
+        // remaps leave it alone, but it isn't the user typing: it never sets off a trigger. It does change the app's text,
+        // though, so what was typed before it can't complete one, and an expansion waiting on a question there is off.
         if (tag == InputTags.CommandPalette)
         {
-            return HostInputKind.Ignored;
+            return HostInputKind.Unmatched;
         }
 
         // A bit, not a value, as Keyboard Manager tests it.
