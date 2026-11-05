@@ -21,7 +21,7 @@ Search Text Expander's snippets in Command Palette and paste one into the app Co
 | Settings | `%LOCALAPPDATA%\Microsoft\PowerToys\TextExpander\settings.json` | `snippets_path`, `case_sensitive`, `injection_backend` and `clipboard_threshold_chars`, bare or as `{"value": x}`. A file caught mid-save keeps the values read before, as the engine does. |
 | Snippets | The chosen file, or `PowerToysTextExpanderSnippets.json` in Text Expander's folder | Selected by `SnippetPathResolution`, read by `SnippetFile.Read`. Duplicate triggers resolve as in Text Expander (the last wins, with its capitalization setting); triggers that can't be typed are left out. |
 
-The page checks these each time it's opened and as the search changes. The main search reuses what it read for up to a second (`SnippetSource.SearchMaxAge`), since it asks on every keystroke. A snippets file is read again only when its size or write time changes, and a file that couldn't be read (locked mid-save, a drive that isn't ready) is tried again next time.
+The page checks these each time it's opened and as the search changes. The main search reuses what it read for up to a second (`SnippetSource.SearchMaxAge`), since it asks on every keystroke. Group policy is read each time. A settings or snippets file is read again only when its size or write time changes, and a file that couldn't be read or understood (locked or caught mid-save, a drive that isn't ready) is tried again next time.
 
 ## Expanding
 

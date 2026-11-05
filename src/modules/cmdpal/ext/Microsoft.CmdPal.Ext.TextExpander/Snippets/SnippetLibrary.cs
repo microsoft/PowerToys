@@ -134,23 +134,4 @@ internal sealed class SnippetLibrary
         => new(isDefault ? SnippetLibraryStatus.NoSnippetsYet : SnippetLibraryStatus.FileNotFound, filePath, []);
 
     private sealed record Loaded(string FilePath, bool IsDefault, bool CaseSensitive, FileStamp Stamp, SnippetLibrarySnapshot Snapshot);
-
-    /// <summary>What says the file changed, short of reading it.</summary>
-    private readonly record struct FileStamp(bool Exists, long Length, DateTime LastWriteTimeUtc, bool Unreadable)
-    {
-        public static FileStamp Of(string path)
-        {
-            try
-            {
-                var info = new FileInfo(path);
-                return info.Exists
-                    ? new FileStamp(true, info.Length, info.LastWriteTimeUtc, false)
-                    : default;
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SecurityException or NotSupportedException or ArgumentException)
-            {
-                return new FileStamp(false, 0, default, true);
-            }
-        }
-    }
 }

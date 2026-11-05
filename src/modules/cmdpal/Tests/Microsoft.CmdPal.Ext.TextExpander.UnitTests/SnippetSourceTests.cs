@@ -144,6 +144,51 @@ public sealed class SnippetSourceTests
     }
 
     [TestMethod]
+    public void GetState_SettingsUnchangedSinceRead_AreNotReadAgainButASaveIs()
+    {
+        // The snippets page asks on every keystroke, so a settings file is read again only once its size or write time
+        // changes, as the snippets file is.
+        using var environment = new TestEnvironment();
+        environment.UseSnippets(("!mysig", "Best regards,\nYour name"));
+        environment.Folder.SetModuleSettings(injectionBackend: "type");
+        var file = environment.Folder.Paths.ModuleSettingsFile;
+        var saved = DateTime.UtcNow.AddMinutes(-5);
+        File.SetLastWriteTimeUtc(file, saved);
+        Assert.AreEqual(InjectionBackend.Typing, environment.Source.GetState().Settings.Backend);
+
+        environment.Folder.SetModuleSettings(injectionBackend: "auto");
+        File.SetLastWriteTimeUtc(file, saved);
+        Assert.AreEqual(InjectionBackend.Typing, environment.Source.GetState().Settings.Backend, "Not read again.");
+
+        File.SetLastWriteTimeUtc(file, saved.AddSeconds(1));
+        Assert.AreEqual(InjectionBackend.Auto, environment.Source.GetState().Settings.Backend);
+    }
+
+    [TestMethod]
+    public void GetState_SettingsSavedAfterAHalfSave_ReadsTheFinishedFile()
+    {
+        using var environment = new TestEnvironment();
+        environment.UseSnippets(("!mysig", "Best regards,\nYour name"));
+        environment.Folder.SetModuleSettings(injectionBackend: "type");
+        var file = environment.Folder.Paths.ModuleSettingsFile;
+        var saved = DateTime.UtcNow.AddMinutes(-5);
+        File.SetLastWriteTimeUtc(file, saved);
+        Assert.AreEqual(InjectionBackend.Typing, environment.Source.GetState().Settings.Backend);
+
+        File.WriteAllText(file, "{ \"properties\": ");
+        File.SetLastWriteTimeUtc(file, saved.AddSeconds(1));
+        Assert.AreEqual(InjectionBackend.Typing, environment.Source.GetState().Settings.Backend);
+
+        // Even finished within the same write time as the half it replaced, which was never understood.
+        environment.Folder.SetModuleSettings(injectionBackend: "auto");
+        File.SetLastWriteTimeUtc(file, saved.AddSeconds(1));
+        Assert.AreEqual(InjectionBackend.Auto, environment.Source.GetState().Settings.Backend);
+
+        environment.Folder.SetEnabled(false);
+        Assert.IsFalse(environment.Source.GetState().IsOn);
+    }
+
+    [TestMethod]
     public void GetState_WithinMaxAge_ReusesWhatWasRead()
     {
         using var environment = new TestEnvironment();

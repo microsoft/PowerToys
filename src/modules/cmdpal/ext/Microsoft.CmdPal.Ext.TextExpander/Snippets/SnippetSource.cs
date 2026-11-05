@@ -12,7 +12,8 @@ namespace Microsoft.CmdPal.Ext.TextExpander.Snippets;
 
 /// <summary>
 /// Reads, on request, whether Text Expander is on, its settings and its snippets. Each read checks the files again,
-/// so a change made in PowerToys Settings or the snippet editor shows the next time the page opens.
+/// so a change made in PowerToys Settings or the snippet editor shows the next time the page opens. A file that hasn't
+/// changed since it was read isn't read again.
 /// </summary>
 internal sealed class SnippetSource
 {
@@ -30,6 +31,10 @@ internal sealed class SnippetSource
     private long _readAt;
     private bool _enabledInSettings;
     private TextExpanderSettings _settings = TextExpanderSettings.Default;
+
+    // Guarded by _lock: each settings file as it was when last read, so one that hasn't changed isn't read again.
+    private FileStamp _generalSettingsRead;
+    private FileStamp _moduleSettingsRead;
 
     public SnippetSource()
         : this(TextExpanderPaths.ForCurrentUser, new RegistryPolicyStore(), static () => Environment.TickCount64)
@@ -90,14 +95,21 @@ internal sealed class SnippetSource
 
     private SnippetSourceState Read()
     {
-        if (ReadText(_paths.GeneralSettingsFile) is { } general && TextExpanderModuleState.ReadEnabledFlag(general) is bool enabled)
+        // The snippets page asks on every keystroke. Group policy is checked each time; the files only when they changed.
+        if (Changed(_paths.GeneralSettingsFile, ref _generalSettingsRead, out var generalStamp)
+            && ReadText(_paths.GeneralSettingsFile) is { } general
+            && TextExpanderModuleState.ReadEnabledFlag(general) is bool enabled)
         {
             _enabledInSettings = enabled;
+            _generalSettingsRead = generalStamp;
         }
 
-        if (ReadText(_paths.ModuleSettingsFile) is { } module && TextExpanderSettings.Parse(module) is { } settings)
+        if (Changed(_paths.ModuleSettingsFile, ref _moduleSettingsRead, out var moduleStamp)
+            && ReadText(_paths.ModuleSettingsFile) is { } module
+            && TextExpanderSettings.Parse(module) is { } settings)
         {
             _settings = settings;
+            _moduleSettingsRead = moduleStamp;
         }
 
         var availability = TextExpanderModuleState.Evaluate(TextExpanderPolicy.Evaluate(_policy), _enabledInSettings);
@@ -108,6 +120,22 @@ internal sealed class SnippetSource
 
         var (filePath, isDefault) = ResolveSnippetsFile(_settings.SnippetsPath, _paths.ModuleFolder);
         return new SnippetSourceState(availability, _settings, _library.Load(filePath, isDefault, _settings.CaseSensitive));
+    }
+
+    /// <summary>
+    /// Whether a settings file may have changed since <paramref name="lastRead"/>, its stamp when it was last read and
+    /// understood. If so, that's cleared until it's read and understood again: a save caught halfway is read again next time.
+    /// </summary>
+    private static bool Changed(string path, ref FileStamp lastRead, out FileStamp stamp)
+    {
+        stamp = FileStamp.Of(path);
+        if (stamp.Exists && stamp == lastRead)
+        {
+            return false;
+        }
+
+        lastRead = default;
+        return true;
     }
 
     private static string? ReadText(string path)
