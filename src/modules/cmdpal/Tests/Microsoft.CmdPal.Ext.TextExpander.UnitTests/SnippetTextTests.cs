@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.CmdPal.Ext.TextExpander.Snippets;
@@ -241,5 +242,44 @@ public sealed class SnippetTextTests
         Assert.AreEqual(
             "Call 555-0199 or mail [Email from clipboard] on 2026-03-04",
             SnippetText.Preview(Replacement, fill, Now, CultureInfo.InvariantCulture));
+    }
+
+    [TestMethod]
+    public void Preview_EveryMatchOfAPickPage_FindsEachPartInTheCopyOnce()
+    {
+        // A pick page previews the snippet with each match, which used to look through the whole copy again for each.
+        const string Replacement = "Call " + AskingSpots.Phone + " or mail " + AskingSpots.Email;
+        var emails = Enumerable.Range(0, 100).Select(i => $"person{i}@example.com").ToList();
+        var copy = "Call 555-0123. " + string.Join(", ", emails);
+        var finds = new List<ClipboardPart>();
+        var plan = new ClipboardPlan(copy, [], [])
+        {
+            Finder = (text, part, culture) =>
+            {
+                finds.Add(part);
+                return ClipboardParts.Find(text, part, culture);
+            },
+        };
+
+        foreach (var email in emails)
+        {
+            var fill = new SnippetFill([], plan, [email]);
+            Assert.AreEqual($"Call 555-0123 or mail {email}", SnippetText.Preview(Replacement, fill, Now, CultureInfo.InvariantCulture));
+        }
+
+        var picked = new SnippetFill([], plan, [emails[42]]);
+        Assert.AreEqual("Call 555-0123 or mail person42@example.com", SnippetText.ExpandWithGaps(Replacement, picked, Now, CultureInfo.InvariantCulture).Text);
+        CollectionAssert.AreEqual(new List<ClipboardPart> { ClipboardPart.Phone, ClipboardPart.Email }, finds);
+    }
+
+    [TestMethod]
+    public void PlanClipboard_KeepsThePartsItFoundForThePreviews()
+    {
+        const string Replacement = "Mail " + AskingSpots.Email;
+        var plan = SnippetText.PlanClipboard(Replacement, [], AskingSpots.Copied, Now, CultureInfo.InvariantCulture);
+        var found = plan.FindParts(AskingSpots.Copied, ClipboardPart.Email, CultureInfo.InvariantCulture);
+
+        Assert.AreSame(plan.Choices[0].Options, found);
+        Assert.AreSame(found, plan.FindParts(AskingSpots.Copied, ClipboardPart.Email, CultureInfo.InvariantCulture));
     }
 }

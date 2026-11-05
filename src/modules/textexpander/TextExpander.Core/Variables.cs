@@ -42,8 +42,12 @@ public static partial class Variables
     public static ExpandedSnippet ExpandWithPromptRequests(string text, Func<PromptRequest, string?> prompt, Func<string?>? clipboard = null, Func<ClipboardChoice, string?>? choose = null, Func<ClipboardHistory>? history = null)
         => ExpandWithPromptRequests(text, prompt, clipboard, DateTime.Now, CultureInfo.CurrentCulture, choose, history);
 
-    /// <summary>Expands a snippet at <paramref name="now"/>, writing dates and times and reading numbers for <paramref name="culture"/>.</summary>
-    internal static ExpandedSnippet ExpandWithPromptRequests(string text, Func<PromptRequest, string?> prompt, Func<string?>? clipboard, DateTime now, CultureInfo culture, Func<ClipboardChoice, string?>? choose = null, Func<ClipboardHistory>? history = null)
+    /// <summary>
+    /// Expands a snippet at <paramref name="now"/>, writing dates and times and reading numbers for <paramref name="culture"/>.
+    /// <paramref name="findParts"/>, when given, stands in for <see cref="ClipboardParts.Find"/> on the clipboard's text, so
+    /// a caller expanding the same copy many times, as for a preview of each match, can keep what it found.
+    /// </summary>
+    internal static ExpandedSnippet ExpandWithPromptRequests(string text, Func<PromptRequest, string?> prompt, Func<string?>? clipboard, DateTime now, CultureInfo culture, Func<ClipboardChoice, string?>? choose = null, Func<ClipboardHistory>? history = null, Func<string?, ClipboardPart, CultureInfo, IReadOnlyList<string>>? findParts = null)
     {
         ArgumentNullException.ThrowIfNull(prompt);
 
@@ -62,7 +66,7 @@ public static partial class Variables
             };
         }
 
-        IReadOnlyList<ClipboardGap> gaps = ResolveClipboard(tokens, values, clipboard, choose, history, culture);
+        IReadOnlyList<ClipboardGap> gaps = ResolveClipboard(tokens, values, clipboard, choose, history, culture, findParts ?? ClipboardParts.Find);
 
         var result = new StringBuilder(text.Length);
         int cursor = -1;
@@ -103,7 +107,7 @@ public static partial class Variables
     /// Works out what each clipboard variable inserts, from options gathered for all of them first, so the last window to
     /// show knows it's last: keys typed once it's answered are meant for after the snippet. A cancelled choice ends it.
     /// </summary>
-    private static IReadOnlyList<ClipboardGap> ResolveClipboard(IReadOnlyList<SnippetToken> tokens, string?[] values, Func<string?>? clipboard, Func<ClipboardChoice, string?>? choose, Func<ClipboardHistory>? history, CultureInfo culture)
+    private static IReadOnlyList<ClipboardGap> ResolveClipboard(IReadOnlyList<SnippetToken> tokens, string?[] values, Func<string?>? clipboard, Func<ClipboardChoice, string?>? choose, Func<ClipboardHistory>? history, CultureInfo culture, Func<string?, ClipboardPart, CultureInfo, IReadOnlyList<string>> findParts)
     {
         IReadOnlyList<string>?[]? options = null;
         var reasons = new ClipboardGapReason[tokens.Count];
@@ -133,7 +137,7 @@ public static partial class Variables
                 readClipboard = true;
             }
 
-            IReadOnlyList<string> found = ClipboardParts.Find(copied, variable.Part, culture);
+            IReadOnlyList<string> found = findParts(copied, variable.Part, culture);
             options[index] = found.Count > ClipboardChoice.MaxOptions ? found.Take(ClipboardChoice.MaxOptions).ToList() : found;
             reasons[index] = ClipboardGapReason.NotFound;
         }

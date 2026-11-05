@@ -84,7 +84,7 @@ internal static class SnippetText
         ArgumentNullException.ThrowIfNull(fill);
 
         var next = 0;
-        return ExpandChoosing(replacement, fill.Answers, () => fill.Plan.Copy, now, culture, choice => next < fill.Picks.Count ? fill.Picks[next++] : choice.Options[0]);
+        return ExpandChoosing(replacement, fill.Answers, () => fill.Plan.Copy, now, culture, choice => next < fill.Picks.Count ? fill.Picks[next++] : choice.Options[0], fill.Plan.FindParts);
     }
 
     /// <summary>
@@ -108,7 +108,10 @@ internal static class SnippetText
 
     internal static ClipboardPlan PlanClipboard(string replacement, IReadOnlyList<string> answers, string? copy, DateTime now, CultureInfo culture)
     {
+        // Filled in before anyone else sees the plan, so the parts found for the dry run are kept for the previews.
         var choices = new List<ClipboardChoice>();
+        var gaps = new List<ClipboardGap>();
+        var plan = new ClipboardPlan(copy, choices, gaps);
         var expanded = ExpandChoosing(
             replacement,
             answers,
@@ -119,9 +122,11 @@ internal static class SnippetText
             {
                 choices.Add(choice);
                 return choice.Options[0];
-            });
+            },
+            plan.FindParts);
 
-        return new ClipboardPlan(copy, choices, expanded.Gaps);
+        gaps.AddRange(expanded.Gaps);
+        return plan;
     }
 
     /// <summary>
@@ -189,7 +194,8 @@ internal static class SnippetText
             () => fill.Plan.Copy,
             now,
             culture,
-            choice => next < fill.Picks.Count ? fill.Picks[next++] : Placeholder(ClipboardVariableText.Label(new ClipboardVariable(choice.FromHistory, choice.Part)))).Text;
+            choice => next < fill.Picks.Count ? fill.Picks[next++] : Placeholder(ClipboardVariableText.Label(new ClipboardVariable(choice.FromHistory, choice.Part))),
+            fill.Plan.FindParts).Text;
     }
 
     /// <summary>Gets the words to show for a question: its own, or "Your answer" when it has none, as in Text Expander.</summary>
@@ -250,8 +256,9 @@ internal static class SnippetText
     /// Expands with Core. Each question takes the next of <paramref name="answers"/>, and Core asks
     /// <paramref name="choose"/> only when a spot has two or more options. No clipboard history reader is given: only
     /// Text Expander inserts snippets that pick from history, so here Core would leave those spots empty.
+    /// <paramref name="findParts"/>, when given, finds the parts of the copy in place of Core.
     /// </summary>
-    private static ExpandedSnippet ExpandChoosing(string replacement, IReadOnlyList<string> answers, Func<string?>? clipboard, DateTime now, CultureInfo culture, Func<ClipboardChoice, string> choose)
+    private static ExpandedSnippet ExpandChoosing(string replacement, IReadOnlyList<string> answers, Func<string?>? clipboard, DateTime now, CultureInfo culture, Func<ClipboardChoice, string> choose, Func<string?, ClipboardPart, CultureInfo, IReadOnlyList<string>>? findParts = null)
     {
         ArgumentNullException.ThrowIfNull(replacement);
         ArgumentNullException.ThrowIfNull(answers);
@@ -263,7 +270,8 @@ internal static class SnippetText
             clipboard,
             now,
             culture,
-            choose);
+            choose,
+            findParts: findParts);
     }
 
     // A part of what's on the clipboard now, such as {{clipboard:email}}: not all of it, and not a copy from history.
