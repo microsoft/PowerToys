@@ -32,20 +32,41 @@ internal static class SnippetSearch
 
     /// <summary>
     /// Gets the snippet to offer in Command Palette's main search: the best trigger match. Text matches are left to the
-    /// snippets page, so a search for something else doesn't turn up a snippet that merely mentions it.
+    /// snippets page, so a search for something else doesn't turn up a snippet that merely mentions it. Runs for every
+    /// search typed there, so it looks at triggers only, in one pass.
     /// </summary>
     public static Snippet? BestTriggerMatch(IReadOnlyList<Snippet> snippets, string? query)
     {
+        ArgumentNullException.ThrowIfNull(snippets);
+
         if (string.IsNullOrWhiteSpace(query))
         {
             return null;
         }
 
-        var matches = Filter(snippets, query, Match.TriggerContains);
-        return matches.Count > 0 ? matches[0] : null;
+        var search = query.Trim();
+        Snippet? best = null;
+        var bestMatch = Match.None;
+        var bestScore = 0;
+        foreach (var snippet in snippets)
+        {
+            // Ties keep the file's order, as in the page.
+            var (match, score) = Score(snippet, search, Match.TriggerContains);
+            if (match < bestMatch || (match == bestMatch && match != Match.None && score > bestScore))
+            {
+                best = snippet;
+                bestMatch = match;
+                bestScore = score;
+            }
+        }
+
+        return best;
     }
 
-    internal static (Match Match, int Score) Score(Snippet snippet, string query)
+    internal static (Match Match, int Score) Score(Snippet snippet, string query) => Score(snippet, query, Match.Text);
+
+    /// <summary>Scores a snippet against the search, looking no further than <paramref name="weakest"/>: a weaker match is none.</summary>
+    private static (Match Match, int Score) Score(Snippet snippet, string query, Match weakest)
     {
         ArgumentNullException.ThrowIfNull(snippet);
 
@@ -71,13 +92,18 @@ internal static class SnippetSearch
             return (Match.TriggerContains, -trigger.Length);
         }
 
+        if (weakest < Match.FuzzyTrigger)
+        {
+            return (Match.None, 0);
+        }
+
         var fuzzy = FuzzyStringMatcher.ScoreFuzzy(query, trigger);
         if (fuzzy > 0)
         {
             return (Match.FuzzyTrigger, fuzzy);
         }
 
-        return snippet.Replacement.Contains(query, StringComparison.OrdinalIgnoreCase) ? (Match.Text, 0) : (Match.None, 0);
+        return weakest >= Match.Text && snippet.Replacement.Contains(query, StringComparison.OrdinalIgnoreCase) ? (Match.Text, 0) : (Match.None, 0);
     }
 
     private static IReadOnlyList<Snippet> Filter(IReadOnlyList<Snippet> snippets, string? query, Match weakest)
@@ -93,7 +119,7 @@ internal static class SnippetSearch
         var matches = new List<(Snippet Snippet, Match Match, int Score, int Index)>();
         for (var i = 0; i < snippets.Count; i++)
         {
-            var (match, score) = Score(snippets[i], search);
+            var (match, score) = Score(snippets[i], search, weakest);
             if (match <= weakest)
             {
                 matches.Add((snippets[i], match, score, i));

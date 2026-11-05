@@ -61,4 +61,24 @@ public sealed class SnippetSearchTests
         Assert.IsNull(SnippetSearch.BestTriggerMatch(Snippets, "regards"));
         Assert.IsNull(SnippetSearch.BestTriggerMatch(Snippets, string.Empty));
     }
+
+    [TestMethod]
+    [DataRow("my")]
+    [DataRow(" my ")]
+    [DataRow("MY")]
+    [DataRow("y")]
+    [DataRow("!")]
+    [DataRow("m_y")]
+    [DataRow("mysig")]
+    [DataRow("me")]
+    [DataRow("regards")]
+    [DataRow("notepad")]
+    public void BestTriggerMatch_Search_IsTheFirstTriggerMatchOnTheSnippetsPage(string search)
+    {
+        // It looks at triggers only, in one pass, since it runs for everything typed in Command Palette's main search.
+        Snippet[] snippets = [.. Snippets, new("MY", "Capitals"), new("xmy", "Contains, as long as !my"), new("my2", "Starts, longer")];
+        var expected = SnippetSearch.Filter(snippets, search).FirstOrDefault(snippet => SnippetSearch.Score(snippet, search.Trim()).Match <= SnippetSearch.Match.TriggerContains);
+
+        Assert.AreSame(expected, SnippetSearch.BestTriggerMatch(snippets, search));
+    }
 }
