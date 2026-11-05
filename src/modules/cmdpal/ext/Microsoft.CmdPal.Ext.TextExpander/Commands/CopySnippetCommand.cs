@@ -18,15 +18,19 @@ internal sealed partial class CopySnippetCommand : InvokableCommand
 {
     private readonly Func<string?> _text;
     private readonly IClipboardAccess _clipboard;
+    private readonly Action? _copied;
 
     /// <param name="text">Gets the text to copy, expanded when the copy is made; null when Text Expander is off.</param>
-    internal CopySnippetCommand(Func<string?> text, IClipboardAccess clipboard)
+    /// <param name="clipboard">The clipboard.</param>
+    /// <param name="copied">Runs once the copy is made, so a snippet's answers can be cleared, as after a paste.</param>
+    internal CopySnippetCommand(Func<string?> text, IClipboardAccess clipboard, Action? copied = null)
     {
         ArgumentNullException.ThrowIfNull(text);
         ArgumentNullException.ThrowIfNull(clipboard);
 
         _text = text;
         _clipboard = clipboard;
+        _copied = copied;
         Name = Resources.copy_command_name;
         Icon = Icons.Copy;
     }
@@ -39,8 +43,12 @@ internal sealed partial class CopySnippetCommand : InvokableCommand
             return CommandResult.ShowToast(new ToastArgs { Message = Resources.toast_off, Result = CommandResult.KeepOpen() });
         }
 
-        return _clipboard.WriteText(text, keepOutOfHistory: false) == ClipboardWrite.Written
-            ? CommandResult.ShowToast(Resources.copied_toast)
-            : CommandResult.ShowToast(new ToastArgs { Message = Resources.copy_failed_toast, Result = CommandResult.KeepOpen() });
+        if (_clipboard.WriteText(text, keepOutOfHistory: false) != ClipboardWrite.Written)
+        {
+            return CommandResult.ShowToast(new ToastArgs { Message = Resources.copy_failed_toast, Result = CommandResult.KeepOpen() });
+        }
+
+        _copied?.Invoke();
+        return CommandResult.ShowToast(Resources.copied_toast);
     }
 }

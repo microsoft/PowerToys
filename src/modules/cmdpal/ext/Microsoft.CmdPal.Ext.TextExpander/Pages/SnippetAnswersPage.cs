@@ -60,7 +60,7 @@ internal sealed partial class SnippetAnswersPage : ParametersPage
         {
             Title = Resources.paste_command_name,
             Icon = Icons.Paste,
-            MoreCommands = snippet.UsesClipboardParts ? [] : [new CommandContextItem(actions.CopyCommand(snippet, Answers))],
+            MoreCommands = snippet.UsesClipboardParts ? [] : [new CommandContextItem(actions.CopyCommand(snippet, Answers, ClearAnswers))],
         };
         UpdatePreview();
     }
@@ -81,7 +81,7 @@ internal sealed partial class SnippetAnswersPage : ParametersPage
         return answers;
     }
 
-    /// <summary>Empties the boxes once the snippet is in, so the answers aren't kept, and the next paste starts afresh.</summary>
+    /// <summary>Empties the boxes once the snippet is in or copied, so the answers aren't kept, and the next one starts afresh.</summary>
     internal void ClearAnswers()
     {
         foreach (var answer in _answers)

@@ -97,7 +97,7 @@ internal sealed partial class SnippetPicksPage : ListPage
             Title = match,
             Subtitle = SnippetText.OneLine(SnippetText.Preview(_snippet.Replacement, picked)),
             Icon = ClipboardVariableText.PartIcon(choice.Part),
-            MoreCommands = last ? [new CommandContextItem(_actions.CopyCommand(_snippet, picked))] : [],
+            MoreCommands = last ? [new CommandContextItem(_actions.CopyCommand(_snippet, picked, _inserted))] : [],
         };
     }
 
@@ -110,7 +110,7 @@ internal sealed partial class SnippetPicksPage : ListPage
             Title = expanded.Text.Length == 0 ? Resources.picks_comes_out_empty : SnippetText.OneLine(expanded.Text),
             Subtitle = ClipboardVariableText.NothingFound(expanded.Gaps) ?? string.Empty,
             Icon = Icons.TextExpander,
-            MoreCommands = [new CommandContextItem(_actions.CopyCommand(_snippet, fill))],
+            MoreCommands = [new CommandContextItem(_actions.CopyCommand(_snippet, fill, _inserted))],
         };
     }
 

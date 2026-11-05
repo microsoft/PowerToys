@@ -58,22 +58,24 @@ internal sealed class SnippetActions
         return snippet.Kind == SnippetKind.Ready && !snippet.UsesClipboardParts ? [new CommandContextItem(CopyCommand(snippet, answers: null))] : [];
     }
 
-    public CopySnippetCommand CopyCommand(Snippet snippet, Func<IReadOnlyList<string>>? answers)
+    /// <summary>Copies a snippet, with its answers; <paramref name="copied"/> runs once it's copied, so they can be cleared.</summary>
+    public CopySnippetCommand CopyCommand(Snippet snippet, Func<IReadOnlyList<string>>? answers, Action? copied = null)
     {
         ArgumentNullException.ThrowIfNull(snippet);
 
         return new CopySnippetCommand(
             () => Source.GetState().IsOn ? SnippetText.Expand(snippet.Replacement, answers?.Invoke() ?? [], Inserter.Clipboard.ReadText) : null,
-            Inserter.Clipboard);
+            Inserter.Clipboard,
+            copied);
     }
 
     /// <summary>Copies a snippet with what its pick pages gathered, as <see cref="InsertSnippetCommand"/> would paste it.</summary>
-    public CopySnippetCommand CopyCommand(Snippet snippet, SnippetFill fill)
+    public CopySnippetCommand CopyCommand(Snippet snippet, SnippetFill fill, Action? copied = null)
     {
         ArgumentNullException.ThrowIfNull(snippet);
         ArgumentNullException.ThrowIfNull(fill);
 
-        return new CopySnippetCommand(() => Source.GetState().IsOn ? SnippetText.Expand(snippet.Replacement, fill) : null, Inserter.Clipboard);
+        return new CopySnippetCommand(() => Source.GetState().IsOn ? SnippetText.Expand(snippet.Replacement, fill) : null, Inserter.Clipboard, copied);
     }
 
     public ITag[] Tags(Snippet snippet)

@@ -4,6 +4,7 @@
 
 using System.Linq;
 using Microsoft.CmdPal.Ext.TextExpander.Commands;
+using Microsoft.CmdPal.Ext.TextExpander.Insertion;
 using Microsoft.CmdPal.Ext.TextExpander.Pages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -90,12 +91,32 @@ public sealed class SnippetAnswersPageTests
         using var environment = new TestEnvironment();
         environment.UseSnippets(("!greet", "Hi {{prompt:Name}}"));
         var page = new SnippetAnswersPage(environment.SnippetFor("!greet"), environment.Actions);
-        page.Parameters.OfType<AnswerRun>().Single().Text = "Your name";
+        var answer = page.Parameters.OfType<AnswerRun>().Single();
+        answer.Text = "Your name";
 
         var copy = (CopySnippetCommand)((CommandContextItem)page.Command.MoreCommands.Single()).Command!;
         _ = copy.Invoke();
 
         Assert.AreEqual(("Hi Your name", false), environment.Clipboard.Writes.Single());
+
+        // The page stays with its snippet for up to a minute, so answers kept after a copy came back with it.
+        Assert.AreEqual(0, answer.Text.Length, "Answers aren't kept after the copy, as after a paste.");
+    }
+
+    [TestMethod]
+    public void Copy_ClipboardWontTakeIt_KeepsTheAnswers()
+    {
+        using var environment = new TestEnvironment();
+        environment.UseSnippets(("!greet", "Hi {{prompt:Name}}"));
+        environment.Clipboard.NextWrite = ClipboardWrite.Refused;
+        var page = new SnippetAnswersPage(environment.SnippetFor("!greet"), environment.Actions);
+        var answer = page.Parameters.OfType<AnswerRun>().Single();
+        answer.Text = "Your name";
+
+        var copy = (CopySnippetCommand)((CommandContextItem)page.Command.MoreCommands.Single()).Command!;
+        _ = copy.Invoke();
+
+        Assert.AreEqual("Your name", answer.Text, "The user can try again.");
     }
 
     [TestMethod]
