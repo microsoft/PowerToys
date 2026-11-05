@@ -578,6 +578,36 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
+    public async Task PerformCommand_UsesCachedMetadata()
+    {
+        using var shell = CreateViewModel();
+        var command = new Mock<IInvokableCommand>();
+        command.SetupGet(value => value.Id).Returns("cached.id");
+        command.SetupGet(value => value.Name).Returns("Cached name");
+        command.Setup(value => value.Invoke(It.IsAny<object?>())).Returns(CommandResult.KeepOpen());
+        var viewModel = CreateCommandViewModel(command.Object, shell.CurrentPage);
+        command.SetupGet(value => value.Id).Throws(new InvalidOperationException("Unexpected ID RPC"));
+        command.SetupGet(value => value.Name).Throws(new InvalidOperationException("Unexpected name RPC"));
+        var recipient = new object();
+        var completed = new TaskCompletionSource<TelemetryExtensionInvokedMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        WeakReferenceMessenger.Default.Register<TelemetryExtensionInvokedMessage>(recipient, (_, message) => completed.TrySetResult(message));
+        try
+        {
+            shell.Receive(new PerformCommandMessage(viewModel));
+            var invocation = await completed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.IsTrue(invocation.Success);
+            Assert.AreEqual("cached.id", invocation.CommandId);
+            Assert.AreEqual("Cached name", invocation.CommandName);
+            command.VerifyGet(value => value.Id, Times.Once);
+            command.VerifyGet(value => value.Name, Times.Once);
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+        }
+    }
+
+    [TestMethod]
     public void PerformCommand_PageNavigationUsesCachedMetadata()
     {
         using var shell = CreateViewModel();

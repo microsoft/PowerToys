@@ -51,6 +51,7 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly ScoringFunction<InProcObject<IListItem>> _scoringFunction;
     private readonly ScoringFunction<InProcObject<IListItem>> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
+    private readonly Lock _queryGenerationLock = new();
 
     // All main-page search telemetry state and emission is owned by this dedicated type, keeping
     // MainListPage responsible for producing results rather than for tracking telemetry bookkeeping.
@@ -238,6 +239,21 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
         InvalidateDefaultView();
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            lock (_tlcManager.TopLevelCommands)
+            {
+                ClearResults();
+
+                // Reserve this generation before queuing work so a later keystroke cancels it.
+                var token = BeginQuery();
+                var currentSearch = SearchText;
+                _ = Task.Run(() => UpdateSearchTextCore(currentSearch, currentSearch, isUserInput: false, token));
+            }
+
+            return;
+        }
+
         if (_includeApps != _filteredItemsIncludesApps)
         {
             ReapplySearchInBackground();
@@ -583,15 +599,31 @@ public sealed partial class MainListPage : DynamicListPage,
         UpdateSearchTextCore(oldSearch, newSearch, isUserInput: true);
     }
 
-    private void UpdateSearchTextCore(string oldSearch, string newSearch, bool isUserInput)
+    private CancellationToken BeginQuery()
+    {
+        CancellationTokenSource? previousCancellationTokenSource;
+        CancellationToken token;
+        lock (_queryGenerationLock)
+        {
+            var nextCancellationTokenSource = new CancellationTokenSource();
+            previousCancellationTokenSource = _cancellationTokenSource;
+            _cancellationTokenSource = nextCancellationTokenSource;
+            token = nextCancellationTokenSource.Token;
+        }
+
+        previousCancellationTokenSource?.Cancel();
+        previousCancellationTokenSource?.Dispose();
+        return token;
+    }
+
+    private void UpdateSearchTextCore(string oldSearch, string newSearch, bool isUserInput) =>
+        UpdateSearchTextCore(oldSearch, newSearch, isUserInput, BeginQuery());
+
+    private void UpdateSearchTextCore(string oldSearch, string newSearch, bool isUserInput, CancellationToken token)
     {
         var stopwatch = Stopwatch.StartNew();
 
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
-        _cancellationTokenSource = new CancellationTokenSource();
-
-        var token = _cancellationTokenSource.Token;
+        var queryId = Guid.NewGuid().ToString("N");
         if (token.IsCancellationRequested)
         {
             return;
@@ -653,12 +685,33 @@ public sealed partial class MainListPage : DynamicListPage,
             // prefilter fallbacks
             var specialFallbacks = new List<TopLevelViewModel>();
             var commonFallbacks = new List<TopLevelViewModel>(commands.Count);
+            var activeFallbacks = new List<TopLevelViewModel>();
 
             foreach (var s in commands)
             {
                 if (!s.IsFallback)
                 {
                     continue;
+                }
+
+                if (s.IsFallbackV2)
+                {
+                    if (s.IsPassiveFallback)
+                    {
+                        if (!s.PreparePassiveFallback(newSearch, queryId, token))
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        // Result sources need the asynchronous result host, not the legacy handler.
+                        continue;
+                    }
+                }
+                else
+                {
+                    activeFallbacks.Add(s);
                 }
 
                 if (s.IncludeInGlobalResults)
@@ -671,7 +724,7 @@ public sealed partial class MainListPage : DynamicListPage,
                 }
             }
 
-            _fallbackUpdateManager.BeginUpdate(SearchText, [.. specialFallbacks, .. commonFallbacks], token);
+            _fallbackUpdateManager.BeginUpdate(newSearch, queryId, activeFallbacks, token);
 
             if (token.IsCancellationRequested)
             {

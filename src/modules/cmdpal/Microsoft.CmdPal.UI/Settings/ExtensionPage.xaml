@@ -229,6 +229,29 @@
                                                                 IsChecked="{x:Bind IncludeInGlobalResults, Mode=TwoWay}"
                                                                 IsEnabled="{x:Bind IsEnabled, Mode=OneWay}" />
                                                         </controls:SettingsCard>
+
+                                                        <controls:SettingsCard
+                                                            x:Uid="Settings_Fallback_QueryDelay"
+                                                            Visibility="{x:Bind HasQuerySettings, Mode=OneTime}">
+                                                            <NumberBox
+                                                                Maximum="{x:Bind QueryDelayUpperBound, Mode=OneTime}"
+                                                                Minimum="0"
+                                                                SmallChange="25"
+                                                                SpinButtonPlacementMode="Compact"
+                                                                Value="{x:Bind QueryDelayMilliseconds, Mode=TwoWay}" />
+                                                        </controls:SettingsCard>
+
+                                                        <controls:SettingsCard
+                                                            x:Uid="Settings_Fallback_MinimumQueryLength"
+                                                            Visibility="{x:Bind HasQuerySettings, Mode=OneTime}">
+                                                            <NumberBox
+                                                                Maximum="{x:Bind MinimumQueryLengthUpperBound, Mode=OneTime}"
+                                                                Minimum="0"
+                                                                SmallChange="1"
+                                                                SpinButtonPlacementMode="Compact"
+                                                                Value="{x:Bind MinimumQueryLength, Mode=TwoWay}" />
+                                                        </controls:SettingsCard>
+
                                                     </controls:SettingsExpander.Items>
                                                 </controls:SettingsExpander>
                                             </DataTemplate>

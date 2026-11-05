@@ -2,22 +2,37 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
+using System.Text.RegularExpressions;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-/// <summary>
-/// A <see cref="TopLevelViewModel"/> for a fallback command item. Holds the
-/// fallback-specific state (fallback ID, display title, per-fallback enabled
-/// setting) and forwards query updates to the extension's fallback handler.
-/// </summary>
 internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
 {
+    private const int MaximumRegexLength = 4096;
+    private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(50);
     private readonly ExtensionObject<IFallbackCommandItem> _model;
-    private readonly string _fallbackId = string.Empty;
+    private ExtensionObject<IFallbackCommandItem3> _fallbackV2 = new(null);
+    private ExtensionObject<IFallbackHandler2> _queryHandler = new(null);
+    private HostMatchKind _matchKind;
+    private string _matchValue = string.Empty;
+    private string _titleTemplate = string.Empty;
+    private string _subtitleTemplate = string.Empty;
+    private string _fallbackId = string.Empty;
     private string _displayTitle = string.Empty;
+    private string _name = string.Empty;
+    private string? _title;
+    private string? _subtitle;
+    private FallbackInvocationViewModel? _invocationCommand;
+    private bool _isV2;
+    private bool _isMetadataInitialized;
+    private volatile bool _isCleanedUp;
+
+    internal bool IsCleanedUp => _isCleanedUp;
 
     protected override string IdFromModel => string.IsNullOrWhiteSpace(_fallbackId) ? base.IdFromModel : _fallbackId;
 
@@ -26,6 +41,16 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
     public override string DisplayTitle => _displayTitle;
 
     public override bool IsEnabled => !ProviderSettings.FallbackCommands.TryGetValue(_fallbackId, out var settings) || settings.IsEnabled;
+
+    internal override bool IsFallbackV2 => _isV2;
+
+    internal override ExtensionObject<IFallbackHandler2> FallbackQueryHandler => IsCleanedUp ? base.FallbackQueryHandler : _queryHandler;
+
+    public override string Title => _title ?? base.Title;
+
+    public override string Subtitle => _subtitle ?? base.Subtitle;
+
+    public override CommandViewModel CommandViewModel => _invocationCommand ?? base.CommandViewModel;
 
     internal TopLevelFallbackViewModel(
         CommandItemViewModel item,
@@ -38,37 +63,66 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
         : base(item, TopLevelType.Fallback, extensionHost, commandProviderContext, providerSettings, serviceProvider, contextMenuFactory)
     {
         _model = new(model);
-
-        // RPC to check type
-        if (model is IFallbackCommandItem2 fallback2)
-        {
-            _fallbackId = fallback2.Id;
-        }
     }
 
     internal override void InitializeProperties()
     {
-        base.InitializeProperties();
-
-        // RPC
-        if (_model.Unsafe is { } model)
+        if (IsCleanedUp)
         {
-            _displayTitle = model.DisplayTitle;
+            return;
         }
 
+        if (!_isMetadataInitialized)
+        {
+            // The provider loader calls this on its background worker inside its initialization try block.
+            UnsafeFetchMetadata();
+            _isMetadataInitialized = true;
+        }
+
+        base.InitializeProperties();
         UpdateInitialIcon(false);
     }
 
-    internal override bool SafeUpdateFallbackTextSynchronous(string newQuery)
+    private void UnsafeFetchMetadata()
     {
-        if (!IsEnabled)
+        var model = _model.Unsafe!;
+        _fallbackId = (model as IFallbackCommandItem2)?.Id ?? string.Empty;
+        _displayTitle = model.DisplayTitle;
+        var fallbackV2 = model as IFallbackCommandItem3;
+        _fallbackV2 = new(fallbackV2);
+        _isV2 = fallbackV2 is not null;
+        if (fallbackV2 is not null)
+        {
+            _queryHandler = new(fallbackV2.QueryHandler);
+            if (IsPassiveFallback)
+            {
+                _matchKind = fallbackV2.MatchKind;
+                _matchValue = fallbackV2.MatchValue;
+                _titleTemplate = fallbackV2.TitleTemplate;
+                _subtitleTemplate = fallbackV2.SubtitleTemplate;
+                _name = fallbackV2.Name;
+                _invocationCommand = CreateInvocation(null, CancellationToken.None);
+            }
+        }
+    }
+
+    internal override bool SafeUpdateFallbackTextSynchronous(string newQuery, string queryId, CancellationToken queryToken)
+    {
+        if (IsCleanedUp || IsFallbackV2 || !IsEnabled || queryToken.IsCancellationRequested)
         {
             return false;
         }
 
         try
         {
-            return UnsafeUpdateFallbackSynchronous(newQuery);
+            var oldTitle = Title;
+            _model.Unsafe!.FallbackHandler.UpdateQuery(newQuery);
+            if (queryToken.IsCancellationRequested)
+            {
+                return false;
+            }
+
+            return !string.Equals(oldTitle, Title, StringComparison.Ordinal);
         }
         catch (Exception ex)
         {
@@ -78,28 +132,107 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
         return false;
     }
 
-    /// <summary>
-    /// Calls UpdateQuery on our fallback handler. This does RPC work, so make
-    /// sure you're calling it on a BG thread.
-    /// </summary>
-    /// <param name="newQuery">The new search text to pass to the extension</param>
-    /// <returns>true if our Title changed across this call</returns>
-    private bool UnsafeUpdateFallbackSynchronous(string newQuery)
+    internal override bool PreparePassiveFallback(string query, string queryId, CancellationToken queryToken)
     {
-        if (_model.Unsafe is not { } fallback)
+        if (IsCleanedUp || !IsPassiveFallback || !IsEnabled || queryToken.IsCancellationRequested)
         {
             return false;
         }
 
-        var oldTitle = Title;
+        var matches = _matchKind != HostMatchKind.Regex || MatchesRegex(query, _matchValue);
+        var title = matches ? FormatText(_titleTemplate, ItemViewModel.Title, query) : string.Empty;
+        var subtitle = matches ? FormatText(_subtitleTemplate, ItemViewModel.Subtitle, query) : string.Empty;
+        var changed = !string.Equals(_title, title, StringComparison.Ordinal)
+            || !string.Equals(_subtitle, subtitle, StringComparison.Ordinal);
+        _title = title;
+        _subtitle = subtitle;
+        SetQuery(query, queryId, queryToken);
+        if (changed)
+        {
+            NotifyItemChanged(nameof(Title));
+            NotifyItemChanged(nameof(Subtitle));
+        }
 
-        // RPC for method
-        fallback.FallbackHandler.UpdateQuery(newQuery);
-        var newTitle = Title;
+        return matches;
+    }
 
-        // Report any title change, not just an empty <-> non-empty flip: the render path
-        // re-scores fallbacks off this signal, so a change like "server01" -> "server02"
-        // must still trigger a refresh or the fallback keeps its stale score and position.
-        return !string.Equals(oldTitle, newTitle, StringComparison.Ordinal);
+    private void SetQuery(string query, string queryId, CancellationToken queryToken)
+    {
+        if (!IsPassiveFallback)
+        {
+            return;
+        }
+
+        _invocationCommand = CreateInvocation(
+            new FallbackCommandInvocationArgs(
+                query,
+                queryId,
+                global::Windows.System.UserProfile.GlobalizationPreferences.Languages.ToArray()),
+            queryToken);
+        NotifyItemChanged(nameof(ICommandItem.Command));
+    }
+
+    private FallbackInvocationViewModel CreateInvocation(IFallbackCommandInvocationArgs? args, CancellationToken queryToken) =>
+        new(this, Id, _name, args, queryToken);
+
+    internal ICommand? UnsafeCreateCommand(IFallbackCommandInvocationArgs args) =>
+        IsCleanedUp ? null : _fallbackV2.Unsafe?.CreateCommand(args);
+
+    protected override void Item_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(CommandItemViewModel.Name))
+        {
+            try
+            {
+                UnsafeFetchName();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.ToString());
+            }
+        }
+
+        base.Item_PropertyChanged(sender, e);
+    }
+
+    private void UnsafeFetchName()
+    {
+        if (!IsCleanedUp && IsPassiveFallback && _fallbackV2.Unsafe is { } model)
+        {
+            _name = model.Name;
+            _invocationCommand?.UpdateName(_name);
+        }
+    }
+
+    internal override void Cleanup()
+    {
+        _isCleanedUp = true;
+        _invocationCommand?.SafeCleanup();
+        base.Cleanup();
+    }
+
+    private static string FormatText(string template, string defaultValue, string query) =>
+        string.IsNullOrEmpty(template) ? defaultValue : template.Replace("{query}", query, StringComparison.Ordinal);
+
+    // Extension patterns must match the whole query and have bounded parsing and matching costs.
+    private static bool MatchesRegex(string query, string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern) || pattern.Length > MaximumRegexLength)
+        {
+            return false;
+        }
+
+        try
+        {
+            return Regex.IsMatch(query, $"\\A(?:{pattern})\\z", RegexOptions.CultureInvariant, RegexTimeout);
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            return false;
+        }
     }
 }
