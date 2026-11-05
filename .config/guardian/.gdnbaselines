@@ -1,0 +1,129 @@
+{
+  "properties": {
+    "helpUri": "https://eng.ms/docs/microsoft-security/security/azure-security/cloudai-security-fundamentals-engineering/security-integration/guardian-wiki/microsoft-guardian/general/baselines"
+  },
+  "version": "1.0.0",
+  "baselines": {
+    "default": {
+      "name": "default",
+      "createdDate": "2026-11-05 07:54:30Z",
+      "lastUpdatedDate": "2026-11-05 07:54:30Z"
+    }
+  },
+  "results": {
+    "09775b6638a539816d99d10c5532ee632418d6e57dcd6d6152806bfff8986edb": {
+      "signature": "09775b6638a539816d99d10c5532ee632418d6e57dcd6d6152806bfff8986edb",
+      "alternativeSignatures": [
+        "823e8b0808fb73c60e73786dc5ff8bd9b115b0ef6372edcbd3477cfcf67e1be6",
+        "6cd0a7f448eb84973ee38bc266474fae87eb3470b0e79fbc9e6748b8b81c23c6",
+        "d482c8c3bb1bed8cfa05e59834b6fbea6ca4f3237e689dc7940a15a3a63cb88b"
+      ],
+      "target": "src/modules/ZoomIt/ZoomIt/rnnoise/parse_lpcnet_weights.c",
+      "line": 67,
+      "uriBaseId": "file:///C:/a/_work/1/s/",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "prefast",
+      "ruleId": "C6308",
+      "createdDate": "2026-11-05 07:54:30Z",
+      "expirationDate": "2027-04-24 08:46:18Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2026-11-05 08:46:18Z"
+    },
+    "1184dbbab1fccc10043893f7d633a378b87f3339d6153ec57c121ca35e696073": {
+      "signature": "1184dbbab1fccc10043893f7d633a378b87f3339d6153ec57c121ca35e696073",
+      "alternativeSignatures": [
+        "2eb04f71c0716c7214373012b83bbae7cf76ad45ef63f38505051bfdbc9cb072",
+        "7b3a5c4004344c97c92a61eed311ea916ebf4bbcdef7ab74dd946211553d1800",
+        "70773e2d4d17a504b95d4fb4245ec36c868332f56977a89f428129cbb0761a45"
+      ],
+      "target": "src/modules/ZoomIt/ZoomIt/third_party/whisper/ggml-alloc.c",
+      "line": 912,
+      "uriBaseId": "file:///C:/a/_work/1/s/",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "prefast",
+      "ruleId": "C6308",
+      "createdDate": "2026-11-05 07:54:30Z",
+      "expirationDate": "2027-04-24 08:46:18Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2026-11-05 08:46:18Z"
+    },
+    "dd08a368f0bda9e76b6503deffa3f89aa1643713117d06990ccdc11bc78037c3": {
+      "signature": "dd08a368f0bda9e76b6503deffa3f89aa1643713117d06990ccdc11bc78037c3",
+      "alternativeSignatures": [
+        "56949ab244086d533562464d43172a1cdaed18d4bedf3704ebd276a764650bc0",
+        "ab9d838bfb6d971e66e0ddb57ca031921eb880af02ac3c12d51f2cb78356b06f",
+        "3617b621ddc5863255dbaa8823f77a937716acae3ac1e94eca328d3b854166f4"
+      ],
+      "target": "src/modules/ZoomIt/ZoomIt/third_party/whisper/ggml-backend.c",
+      "line": 1464,
+      "uriBaseId": "file:///C:/a/_work/1/s/",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "prefast",
+      "ruleId": "C6308",
+      "createdDate": "2026-11-05 07:54:30Z",
+      "expirationDate": "2027-04-24 08:46:18Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2026-11-05 08:46:18Z"
+    },
+    "b479cabf0dfda7295c7d859ae3d4868dbe55c40cf20b2046424f5aec7e9eefa7": {
+      "signature": "b479cabf0dfda7295c7d859ae3d4868dbe55c40cf20b2046424f5aec7e9eefa7",
+      "alternativeSignatures": [
+        "0883b065c64f120a4edb63031102364e1c512c68d2153a0e8e1af95d1b7182b5",
+        "e3430feda158db7303d6a77ba63a9ec637ced4a69008960af8cd3efe96ed852b",
+        "8508fb0176e77749070be9367d5ebd900fec13802127f4e224e207bc5936dba7"
+      ],
+      "target": "src/modules/ZoomIt/ZoomIt/third_party/whisper/ggml.c",
+      "line": 21385,
+      "uriBaseId": "file:///C:/a/_work/1/s/",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "prefast",
+      "ruleId": "C6308",
+      "createdDate": "2026-11-05 07:54:30Z",
+      "expirationDate": "2027-04-24 08:46:18Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2026-11-05 08:46:18Z"
+    },
+    "56bc48526c78162e949acda86ebb1fbab9939e13118d39b69ca795bb815a46a7": {
+      "signature": "56bc48526c78162e949acda86ebb1fbab9939e13118d39b69ca795bb815a46a7",
+      "alternativeSignatures": [
+        "8b7823c585f08eda851741f91c20ccb2b7411f2f3f9459e2f774c24f12c26ce5",
+        "c3ea1d6ed141bf8ce68f795b923b2d93599b1c71bf247f3693d9e7174e62ed6f",
+        "0876caafbf498903d987348bf65a58388158795f3dc3deab1dc98cf55c56e675"
+      ],
+      "target": ".claude/skills/ui-tests-local-vm/templates/oem/Set-UiTestAutoLogon.ps1",
+      "line": 168,
+      "uriBaseId": "file:///C:/a/_work/1/s/",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "psscriptanalyzer",
+      "ruleId": "PSAvoidUsingConvertToSecureStringWithPlainText",
+      "createdDate": "2026-11-05 06:07:26Z",
+      "expirationDate": "2027-04-24 08:46:18Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2026-11-05 08:46:18Z"
+    },
+    "5105a4581747cc8096ef25375d1d6d2a3369929d98b166d04ed21c937f028926": {
+      "signature": "5105a4581747cc8096ef25375d1d6d2a3369929d98b166d04ed21c937f028926",
+      "alternativeSignatures": [
+        "cf668d7098ccc6fc5160f88b99b6a6b31533dc4a8c3984248d6b9c2d70d99d32",
+        "8e3554f132741ae37d0f2f86c831d5a532a49a267ed4e7e327657d9b087836a7",
+        "1d3afd24ce00859da5d7eb9c6304a4e902400479bde8eb1755aaf1eac31f4f84"
+      ],
+      "target": ".github/skills/ui-tests-local-vm/templates/oem/Set-UiTestAutoLogon.ps1",
+      "line": 168,
+      "uriBaseId": "file:///C:/a/_work/1/s/",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "psscriptanalyzer",
+      "ruleId": "PSAvoidUsingConvertToSecureStringWithPlainText",
+      "createdDate": "2026-11-05 06:07:26Z",
+      "expirationDate": "2027-04-24 08:46:18Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2026-11-05 08:46:18Z"
+    }
+  }
+}
