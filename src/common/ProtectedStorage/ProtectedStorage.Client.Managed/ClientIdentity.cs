@@ -13,7 +13,6 @@ namespace PowerToys.ProtectedStorage;
 internal static class ClientIdentity
 {
     internal const int ProcessIdentityAccess = 0x101400;
-    internal const int TokenIdentityAccess = 8;
     private static readonly object Gate = new();
 
     internal static void RequireNormalMaintenanceOwner()
@@ -48,21 +47,17 @@ internal static class ClientIdentity
             throw new ProtectedStorageException("NotProvisioned", innerException: exception);
         }
 
+        AllowServiceQuery(service);
+    }
+
+    internal static void AllowServiceQuery(SecurityIdentifier service)
+    {
         lock (Gate)
         {
             using var process = new SafeProcessHandle(new IntPtr(-1), false);
 
             // ProcessImageFileMapping requires QUERY_INFORMATION, not QUERY_LIMITED_INFORMATION.
             Grant(process.DangerousGetHandle(), service, ProcessIdentityAccess);
-            if (!OpenProcessToken(process, 8 | 0x20000 | 0x40000, out var token))
-            {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
-            }
-
-            using (token)
-            {
-                Grant(token.DangerousGetHandle(), service, TokenIdentityAccess);
-            }
         }
     }
 

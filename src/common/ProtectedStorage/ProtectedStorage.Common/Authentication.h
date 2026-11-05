@@ -35,6 +35,7 @@ namespace PowerToys::ProtectedStorage
     void VerifyServer(HANDLE pipe, const Paths& paths, bool bootstrap);
     void VerifyLiveRelease(const Paths& paths);
     Handle ConnectOwnerPipe(const Paths& paths, const std::wstring& endpoint, DWORD timeout);
+    // Elevated callers require a verified ordinary desktop in their own session.
     Handle OpenOwnerConnectionToken(const std::wstring& owner);
     constexpr bool UsableOwnerTokenType(TOKEN_TYPE type, SECURITY_IMPERSONATION_LEVEL level)
     {

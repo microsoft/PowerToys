@@ -474,9 +474,16 @@ namespace WorkspacesEditor.ViewModels
                 isExistingProjectLaunched ? $"{(int)InvokePoint.LaunchAndEdit}" : string.Empty);
             process.StartInfo.RedirectStandardOutput = true;
 
-            if (!process.Start())
+            try
             {
-                throw new InvalidOperationException(Properties.Resources.ProtectedStorageCaptureFailed);
+                if (!process.Start())
+                {
+                    throw new ProtectedStorageException("CaptureFailed");
+                }
+            }
+            catch (Win32Exception error)
+            {
+                throw new ProtectedStorageException("CaptureFailed", nativeCode: error.NativeErrorCode, innerException: error);
             }
 
             // The ID arrives over the anonymous pipe inherited by this exact child, not a file.
@@ -485,7 +492,8 @@ namespace WorkspacesEditor.ViewModels
             var output = await outputTask;
             if (process.ExitCode != 0 || !Guid.TryParse(output.Trim(), out var id) || id == Guid.Empty)
             {
-                throw new InvalidOperationException(Properties.Resources.ProtectedStorageCaptureFailed);
+                Logger.LogError($"Workspaces Snapshot exited with native code {process.ExitCode} or returned an invalid preview reference.");
+                throw new ProtectedStorageException("CaptureFailed", nativeCode: process.ExitCode == 0 ? 13 : process.ExitCode);
             }
 
             return id;

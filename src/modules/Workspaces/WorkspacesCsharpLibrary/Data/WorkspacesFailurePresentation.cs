@@ -14,6 +14,7 @@ public sealed record WorkspacesFailurePresentation(string MessageKey, string Ret
             "ServiceUnavailable" => "ProtectedStorageServiceUnavailable",
             "LaunchFailed" => "ProtectedStorageLaunchFailed",
             "LaunchBusy" => "ProtectedStorageLaunchBusy",
+            "CaptureFailed" => "ProtectedStorageCaptureFailed",
             "ConnectionClosed" => "ProtectedStorageConnectionClosed",
             "Timeout" => "ProtectedStorageTimedOut",
             "Unauthorized" or "TargetDenied" => "ProtectedStorageAccessDenied",

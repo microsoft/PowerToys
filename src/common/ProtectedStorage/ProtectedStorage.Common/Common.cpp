@@ -942,6 +942,10 @@ namespace PowerToys::ProtectedStorage
     std::string Call(const Paths& paths, const Request& request, DWORD timeout)
     {
         ValidateRequest(request);
+        // The bootstrap protocol must still reach installed versions predating
+        // process-only data clients, including during MSI prepare/commit.
+        auto owner = OpenOwnerConnectionToken(paths.owner);
+        AllowIdentityQuery(paths);
         auto pipe = ConnectOwnerPipe(paths, paths.pipe, timeout);
         VerifyServer(pipe.get(), paths, true);
         DWORD mode = PIPE_READMODE_MESSAGE;
@@ -1027,34 +1031,35 @@ namespace PowerToys::ProtectedStorage
             Fail("construct observation DACL", error);
         return updated;
     }
-    static void GrantIdentityQuery(const std::wstring& observer, const std::wstring& owner)
+    static void GrantIdentityQuery(HANDLE object, const std::wstring& observer, const std::wstring& owner, DWORD access)
     {
-        auto grant = [&](HANDLE object, DWORD access) {
-            PACL previous = nullptr;
-            PSECURITY_DESCRIPTOR raw = nullptr;
-            DWORD error = GetSecurityInfo(object, SE_KERNEL_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &previous, nullptr, &raw);
-            if (error != ERROR_SUCCESS)
-                Fail("query kernel object DACL", error);
-            std::unique_ptr<void, decltype(&LocalFree)> descriptor(raw, LocalFree);
-            PACL updated = BuildIdentityQueryAcl(previous, observer, owner, access);
-            std::unique_ptr<void, decltype(&LocalFree)> acl(updated, LocalFree);
-            error = SetSecurityInfo(object, SE_KERNEL_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, updated, nullptr);
-            if (error != ERROR_SUCCESS)
-                Fail("grant read-only identity observation", error);
-        };
+        PACL previous = nullptr;
+        PSECURITY_DESCRIPTOR raw = nullptr;
+        DWORD error = GetSecurityInfo(object, SE_KERNEL_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &previous, nullptr, &raw);
+        if (error != ERROR_SUCCESS)
+            Fail("query kernel object DACL", error);
+        std::unique_ptr<void, decltype(&LocalFree)> descriptor(raw, LocalFree);
+        PACL updated = BuildIdentityQueryAcl(previous, observer, owner, access);
+        std::unique_ptr<void, decltype(&LocalFree)> acl(updated, LocalFree);
+        error = SetSecurityInfo(object, SE_KERNEL_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, updated, nullptr);
+        if (error != ERROR_SUCCESS)
+            Fail("grant read-only identity observation", error);
+    }
+    void AllowProcessIdentityQuery(const std::wstring& observer, const std::wstring& owner)
+    {
         // Explicit VA access spans SCM logon sessions; explicit SYSTEM access lets
         // privilege-stripped MSI actions observe exit without SeDebugPrivilege.
         // These grants add query only, never duplication or process mutation.
-        grant(GetCurrentProcess(), IdentityProcessAccess);
+        GrantIdentityQuery(GetCurrentProcess(), observer, owner, IdentityProcessAccess);
+    }
+    void AllowIdentityQuery(const Paths& paths)
+    {
+        AllowProcessIdentityQuery(paths.va, paths.owner);
         HANDLE raw = nullptr;
         if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY | READ_CONTROL | WRITE_DAC, &raw))
             Fail("open own token DACL");
         Handle token(raw);
-        grant(token.get(), TOKEN_QUERY);
-    }
-    void AllowIdentityQuery(const Paths& paths)
-    {
-        GrantIdentityQuery(paths.va, paths.owner);
+        GrantIdentityQuery(token.get(), paths.va, paths.owner, TOKEN_QUERY);
     }
     Child Spawn(const std::wstring& executable, const std::wstring& arguments, const std::vector<HANDLE>& inherited, DWORD flags)
     {

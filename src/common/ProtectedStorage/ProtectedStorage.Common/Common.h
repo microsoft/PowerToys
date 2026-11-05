@@ -195,6 +195,8 @@ namespace PowerToys::ProtectedStorage
     std::map<std::string, std::string> MsiCall(const Paths& paths, Command command, const std::wstring& operation, const std::wstring& bundle = {});
     void CheckOwnVa(const Paths& paths);
     PACL BuildIdentityQueryAcl(PACL previous, const std::wstring& va, const std::wstring& owner, DWORD access);
+    void AllowProcessIdentityQuery(const std::wstring& observer, const std::wstring& owner);
+    // Service startup also exposes its token for clients' server verification.
     void AllowIdentityQuery(const Paths& paths);
 
     struct Child

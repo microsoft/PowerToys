@@ -338,14 +338,23 @@ storage timeouts.
   import suppression, so old legacy files cannot silently restore purged data.
 - Machine cleanup is best effort. Residual per-user MSI registrations/profiles
   are reported rather than force-removed or claimed clean.
-- Identified-but-unusable linked tokens fail with `OwnerContextRequired`;
-  the service never weakens impersonation or accepts an elevated token as a
-  substitute for the required normal owner context.
-- Runner-to-Editor, elevated direct Launcher, and maintenance synchronization
-  use a separate explicit same-owner process launch boundary. It validates the
-  real shell SID/session/medium primary token, starts the child suspended with
-  its owner environment, verifies that child's identity, and only then resumes.
-  It never selects another user's shell or promotes an identification-only token.
+- Data clients grant the VA process-query and synchronization access, without
+  modifying their own token DACL. The service opens the real pipe caller's
+  process as VA, then queries its primary token and verifies the mapped image
+  under ordinary-owner impersonation. Owner/session, catalog role, target and
+  lifetime checks still apply; storage I/O runs after reverting to VA.
+- Elevated data connections use a verified same-owner/session Medium Explorer
+  token without de-elevating the calling process. An unavailable or invalid
+  ordinary desktop fails with `OwnerContextRequired`; an identification-only
+  linked token is not promoted and no elevated impersonation context is accepted.
+- Service startup retains its own process/token observation grants for mutual
+  server verification. Bootstrap/MSI control clients also retain the legacy
+  token-query grant so they can authenticate to older installed Bootstrap
+  versions during an update. This compatibility path is separate from normal
+  data operations; maintenance still requires an ordinary primary caller.
+- Workspaces' same-owner/session Medium launch host remains a separate business
+  execution boundary. SDK connection impersonation does not launch module
+  business processes or require another module to copy that launch flow.
 - Q02's fail-closed first-use policy is implemented as the current design
   direction, but final scope/UX still requires PM approval.
 

@@ -89,10 +89,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
 
     try
     {
-        for (auto& app : project.apps)
-        {
-            if (app.id.empty()) app.id = CreateGuidString();
-        }
+        SnapshotUtils::AssignUniqueApplicationIds(project.apps);
         Workspaces::Repository repository;
         auto id = repository.CreatePreview(project);
         DWORD written = 0;
@@ -102,6 +99,18 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
             CoUninitialize();
             return 1;
         }
+    }
+    catch (const PowerToys::ProtectedStorage::Error& error)
+    {
+        Logger::error("Could not create a complete protected Workspaces capture: {} (native={})", error.what(), error.code);
+        CoUninitialize();
+        return 1;
+    }
+    catch (const std::exception& error)
+    {
+        Logger::error("Could not create a complete protected Workspaces capture: {}", error.what());
+        CoUninitialize();
+        return 1;
     }
     catch (...)
     {

@@ -1,6 +1,8 @@
 #pragma once
 
-#include <shlobj.h>
+#include <objbase.h>
+#include <optional>
+#include <string>
 
 inline std::optional<GUID> GuidFromString(const std::wstring& str) noexcept
 {

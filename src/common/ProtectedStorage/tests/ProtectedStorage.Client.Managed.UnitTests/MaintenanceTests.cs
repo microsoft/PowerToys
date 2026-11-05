@@ -47,6 +47,16 @@ public sealed class MaintenanceTests
     }
 
     [TestMethod]
+    public void CaptureFailureIsNotPresentedAsInvalidInput()
+    {
+        var failure = WorkspacesCsharpLibrary.Data.WorkspacesFailurePresentation.For("CaptureFailed", false, true);
+        Assert.AreEqual("ProtectedStorageCaptureFailed", failure.MessageKey);
+        Assert.AreEqual("RetryNow", failure.RetryKind);
+        Assert.IsTrue(failure.CanRetry);
+        Assert.IsFalse(failure.CanSetup);
+    }
+
+    [TestMethod]
     public void ShippingClientCannotSelectTheLocalTestNamespace()
     {
         Assert.IsFalse(StorageIdentity.IsLocalTest);

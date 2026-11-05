@@ -293,6 +293,53 @@ namespace
     }
     void AuthorizationTests()
     {
+        const auto descriptor = [](HANDLE object) {
+            constexpr auto flags = OWNER_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION | LABEL_SECURITY_INFORMATION;
+            PSECURITY_DESCRIPTOR raw = nullptr;
+            Expect(GetSecurityInfo(object, SE_KERNEL_OBJECT, flags, nullptr, nullptr, nullptr, nullptr, &raw) == ERROR_SUCCESS,
+                   "read identity object security");
+            std::unique_ptr<void, decltype(&LocalFree)> held(raw, LocalFree);
+            PWSTR text = nullptr;
+            Expect(ConvertSecurityDescriptorToStringSecurityDescriptorW(raw, SDDL_REVISION_1, flags, &text, nullptr) != FALSE,
+                   "format identity object security");
+            std::unique_ptr<void, decltype(&LocalFree)> formatted(text, LocalFree);
+            return std::wstring(text);
+        };
+        {
+            PACL originalAcl = nullptr;
+            PSECURITY_DESCRIPTOR original = nullptr;
+            Expect(GetSecurityInfo(GetCurrentProcess(), SE_KERNEL_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &originalAcl, nullptr, &original) == ERROR_SUCCESS,
+                   "save caller process ACL");
+            const auto restore = [originalAcl](void* memory) {
+                if (SetSecurityInfo(GetCurrentProcess(), SE_KERNEL_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, originalAcl, nullptr) != ERROR_SUCCESS)
+                    std::terminate();
+                LocalFree(memory);
+            };
+            std::unique_ptr<void, decltype(restore)> saved(original, restore);
+            HANDLE raw = nullptr;
+            Expect(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY | READ_CONTROL, &raw) != FALSE,
+                   "observe caller token without WRITE_DAC");
+            Handle token(raw);
+            const auto before = descriptor(token.get());
+            const std::wstring observer = L"S-1-5-80-1-2-3-4-5";
+            AllowProcessIdentityQuery(observer, TokenSid());
+            Expect(descriptor(token.get()) == before, "caller preparation leaves token owner/DACL/label unchanged");
+            PACL acl = nullptr;
+            PSECURITY_DESCRIPTOR security = nullptr;
+            Expect(GetSecurityInfo(GetCurrentProcess(), SE_KERNEL_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &acl, nullptr, &security) == ERROR_SUCCESS,
+                   "inspect caller process observation grant");
+            std::unique_ptr<void, decltype(&LocalFree)> held(security, LocalFree);
+            bool found = false;
+            for (DWORD i = 0; i < acl->AceCount; ++i)
+            {
+                void* entry = nullptr;
+                Expect(GetAce(acl, i, &entry) != FALSE, "read process ACE");
+                const auto ace = static_cast<ACCESS_ALLOWED_ACE*>(entry);
+                if (ace->Header.AceType == ACCESS_ALLOWED_ACE_TYPE && SidText(&ace->SidStart) == observer)
+                    found = ace->Mask == IdentityProcessAccess;
+            }
+            Expect(found, "caller grants only query/synchronize rights to observer");
+        }
         Expect(UsableOwnerTokenType(TokenPrimary, SecurityAnonymous), "ordinary primary token supports owner connection");
         Expect(UsableOwnerTokenType(TokenImpersonation, SecurityImpersonation), "usable owner impersonation token");
         Expect(!UsableOwnerTokenType(TokenImpersonation, SecurityIdentification), "identification linked token cannot perform owner file access");
@@ -307,32 +354,6 @@ namespace
         if (elevation.TokenIsElevated)
         {
             Reject([&] { RequireOrdinaryMaintenanceProcess(GetCurrentProcess()); });
-            TOKEN_LINKED_TOKEN linkedValue{};
-            DWORD linkedSize = 0;
-            if (GetTokenInformation(primary.get(), TokenLinkedToken, &linkedValue, sizeof(linkedValue), &linkedSize))
-            {
-                Handle linked(linkedValue.LinkedToken);
-                TOKEN_TYPE linkedType{};
-                Expect(GetTokenInformation(linked.get(), TokenType, &linkedType, sizeof(linkedType), &linkedSize) != FALSE,
-                       "observe linked token type");
-                SECURITY_IMPERSONATION_LEVEL linkedLevel = SecurityAnonymous;
-                if (linkedType == TokenImpersonation)
-                    Expect(GetTokenInformation(linked.get(), TokenImpersonationLevel, &linkedLevel, sizeof(linkedLevel), &linkedSize) != FALSE,
-                           "observe linked impersonation level");
-                if (!UsableOwnerTokenType(linkedType, linkedLevel))
-                {
-                    try
-                    {
-                        ProtectedStoreClient client;
-                        Expect(false, "unusable linked token must fail before any service lookup");
-                    }
-                    catch (const StorageError& error)
-                    {
-                        Expect(error.errorCode == ErrorCode::OwnerContextRequired && error.code == ERROR_BAD_IMPERSONATION_LEVEL,
-                               "unusable elevated context is not misclassified as missing storage");
-                    }
-                }
-            }
         }
         else
         {

@@ -4,6 +4,8 @@
 #include <memory>
 #include <winternl.h>
 
+#pragma comment(lib, "user32.lib")
+
 namespace PowerToys::ProtectedStorage
 {
     namespace
@@ -23,7 +25,7 @@ namespace PowerToys::ProtectedStorage
             PipeImpersonation(const PipeImpersonation&) = delete;
             PipeImpersonation& operator=(const PipeImpersonation&) = delete;
         };
-        void RequireFilteredPipeToken()
+        DWORD RequireFilteredPipeToken()
         {
             HANDLE raw = nullptr;
             Check(OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, &raw) != FALSE, ErrorCode::Unauthorized, GetLastError());
@@ -36,6 +38,67 @@ namespace PowerToys::ProtectedStorage
             Check(GetTokenInformation(token.get(), TokenImpersonationLevel, &level, sizeof(level), &size) &&
                       level == SecurityImpersonation,
                   ErrorCode::Unauthorized);
+            DWORD session = 0;
+            Check(GetTokenInformation(token.get(), TokenSessionId, &session, sizeof(session), &size) != FALSE,
+                  ErrorCode::Unauthorized,
+                  GetLastError());
+            return session;
+        }
+        std::wstring TokenOwner(HANDLE token)
+        {
+            DWORD size = 0;
+            GetTokenInformation(token, TokenUser, nullptr, 0, &size);
+            Check(size && size <= 65536, ErrorCode::Unauthorized);
+            std::vector<BYTE> user(size);
+            Check(GetTokenInformation(token, TokenUser, user.data(), size, &size) != FALSE,
+                  ErrorCode::Unauthorized,
+                  GetLastError());
+            return SidText(reinterpret_cast<TOKEN_USER*>(user.data())->User.Sid);
+        }
+        Handle OpenDesktopOwnerToken(const std::wstring& owner, DWORD session)
+        {
+            DWORD pid = 0;
+            const auto shell = GetShellWindow();
+            Check(session && shell && GetWindowThreadProcessId(shell, &pid) && pid,
+                  ErrorCode::OwnerContextRequired,
+                  ERROR_NO_SUCH_LOGON_SESSION);
+            Handle process(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION | SYNCHRONIZE, FALSE, pid));
+            Check(static_cast<bool>(process), ErrorCode::OwnerContextRequired, GetLastError());
+            wchar_t windows[MAX_PATH]{};
+            const auto length = GetWindowsDirectoryW(windows, MAX_PATH);
+            Check(length && length < MAX_PATH &&
+                      _wcsicmp(ProcessImage(process.get()).c_str(), (std::wstring(windows) + L"\\explorer.exe").c_str()) == 0,
+                  ErrorCode::OwnerContextRequired,
+                  ERROR_INVALID_OWNER);
+            HANDLE raw = nullptr;
+            Check(OpenProcessToken(process.get(), TOKEN_QUERY | TOKEN_DUPLICATE, &raw) != FALSE,
+                  ErrorCode::OwnerContextRequired,
+                  GetLastError());
+            Handle token(raw);
+            DWORD actualSession = 0, size = 0;
+            TOKEN_TYPE type{};
+            TOKEN_ELEVATION elevation{};
+            Check(GetTokenInformation(token.get(), TokenSessionId, &actualSession, sizeof(actualSession), &size) &&
+                      GetTokenInformation(token.get(), TokenType, &type, sizeof(type), &size) &&
+                      GetTokenInformation(token.get(), TokenElevation, &elevation, sizeof(elevation), &size),
+                  ErrorCode::OwnerContextRequired,
+                  GetLastError());
+            Check(TokenOwner(token.get()) == owner && actualSession == session,
+                  ErrorCode::OwnerContextRequired,
+                  ERROR_INVALID_OWNER);
+            GetTokenInformation(token.get(), TokenIntegrityLevel, nullptr, 0, &size);
+            Check(size && size <= 65536, ErrorCode::OwnerContextRequired);
+            std::vector<BYTE> label(size);
+            Check(GetTokenInformation(token.get(), TokenIntegrityLevel, label.data(), size, &size) != FALSE,
+                  ErrorCode::OwnerContextRequired,
+                  GetLastError());
+            const auto sid = reinterpret_cast<TOKEN_MANDATORY_LABEL*>(label.data())->Label.Sid;
+            Check(type == TokenPrimary && !elevation.TokenIsElevated &&
+                      *GetSidSubAuthority(sid, *GetSidSubAuthorityCount(sid) - 1) == SECURITY_MANDATORY_MEDIUM_RID &&
+                      WaitForSingleObject(process.get(), 0) == WAIT_TIMEOUT,
+                  ErrorCode::OwnerContextRequired,
+                  ERROR_BAD_IMPERSONATION_LEVEL);
+            return token;
         }
         void VerifyProcess(HANDLE process, const Paths& paths, std::wstring_view image)
         {
@@ -151,11 +214,27 @@ namespace PowerToys::ProtectedStorage
         ULONG pid = 0;
         Check(GetNamedPipeClientProcessId(pipe, &pid) && pid, ErrorCode::Unauthorized, GetLastError());
         CallerIdentity result;
-        result.process.reset(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION | SYNCHRONIZE, FALSE, pid));
+        result.process.reset(OpenProcess(IdentityProcessAccess, FALSE, pid));
         Check(static_cast<bool>(result.process), ErrorCode::Unauthorized, GetLastError());
         result.pid = pid;
         result.birth = ProcessBirth(result.process.get());
-        result.owner = TokenSid(result.process.get());
+        {
+            // Open the process as VA, but query its token as the ordinary owner.
+            // Caller tokens need no VA ACE or self-WRITE_DAC capability.
+            PipeImpersonation impersonation(pipe);
+            const auto pipeSession = RequireFilteredPipeToken();
+            HANDLE raw = nullptr;
+            Check(OpenProcessToken(result.process.get(), TOKEN_QUERY, &raw) != FALSE,
+                  ErrorCode::Unauthorized,
+                  GetLastError());
+            Handle token(raw);
+            DWORD session = 0, size = 0;
+            Check(GetTokenInformation(token.get(), TokenSessionId, &session, sizeof(session), &size) != FALSE,
+                  ErrorCode::Unauthorized,
+                  GetLastError());
+            result.owner = TokenOwner(token.get());
+            Check(session == pipeSession, ErrorCode::Unauthorized, ERROR_INVALID_OWNER);
+        }
         Check(result.owner == paths.owner && WaitForSingleObject(result.process.get(), 0) == WAIT_TIMEOUT, ErrorCode::Unauthorized);
         ULONG current = 0;
         Check(GetNamedPipeClientProcessId(pipe, &current) && current == pid &&
@@ -182,11 +261,6 @@ namespace PowerToys::ProtectedStorage
     CallerIdentity AuthenticateCaller(HANDLE pipe, const Paths& paths, bool maintenance, const Value* candidateCatalog)
     {
         auto result = AuthenticateOwner(pipe, paths);
-        if (maintenance)
-            RequireOrdinaryMaintenanceProcess(result.process.get());
-        Handle process(OpenProcess(PROCESS_QUERY_INFORMATION | SYNCHRONIZE, FALSE, result.pid));
-        Check(static_cast<bool>(process) && ProcessBirth(process.get()) == result.birth, ErrorCode::Unauthorized, GetLastError());
-        result.process = std::move(process);
         auto image = ProcessImage(result.process.get());
         Value catalog;
         if (candidateCatalog)
@@ -205,6 +279,8 @@ namespace PowerToys::ProtectedStorage
         {
             PipeImpersonation impersonation(pipe);
             RequireFilteredPipeToken();
+            if (maintenance)
+                RequireOrdinaryMaintenanceProcess(result.process.get());
             result.pinnedDirectories = HoldDirectories(Parent(image));
             auto executable = OpenRead(image);
             Handle executableIdentity(CreateFileW(image.c_str(), GENERIC_READ | GENERIC_EXECUTE, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT, nullptr));
@@ -299,10 +375,10 @@ namespace PowerToys::ProtectedStorage
             throw StorageError(ErrorCode::OwnerContextRequired, GetLastError());
         if (elevation.TokenIsElevated)
         {
-            TOKEN_LINKED_TOKEN value{};
-            if (!GetTokenInformation(token.get(), TokenLinkedToken, &value, sizeof(value), &size))
+            DWORD session = 0;
+            if (!GetTokenInformation(token.get(), TokenSessionId, &session, sizeof(session), &size))
                 throw StorageError(ErrorCode::OwnerContextRequired, GetLastError());
-            token.reset(value.LinkedToken);
+            token = OpenDesktopOwnerToken(owner, session);
         }
         if (!GetTokenInformation(token.get(), TokenElevation, &elevation, sizeof(elevation), &size))
             throw StorageError(ErrorCode::OwnerContextRequired, GetLastError());
@@ -329,7 +405,7 @@ namespace PowerToys::ProtectedStorage
     Handle ConnectOwnerPipe(const Paths& paths, const std::wstring& endpoint, DWORD timeout)
     {
         auto token = OpenOwnerConnectionToken(paths.owner);
-        AllowIdentityQuery(paths);
+        AllowProcessIdentityQuery(paths.va, paths.owner);
         if (!WaitNamedPipeW(endpoint.c_str(), timeout))
         {
             const DWORD error = GetLastError();

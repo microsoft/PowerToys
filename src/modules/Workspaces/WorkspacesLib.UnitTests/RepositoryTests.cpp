@@ -1,5 +1,6 @@
 #include "pch.h"
 #include <WorkspacesLib/WorkspacesRepository.h>
+#include <WorkspacesSnapshotTool/SnapshotUtils.h>
 #include <fstream>
 #include <filesystem>
 #include <random>
@@ -57,6 +58,46 @@ namespace WorkspacesLibUnitTests
             const auto parsed = Workspaces::Repository::ParseProject(bytes);
             Assert::AreEqual(project.id, parsed.id);
             Assert::AreEqual(project.name, parsed.name);
+        }
+
+        TEST_METHOD (CaptureAssignsUniqueIdsWithoutDroppingWindows)
+        {
+            auto project = Project();
+            WorkspacesData::WorkspacesProject::Monitor monitor{};
+            monitor.id = L"monitor";
+            monitor.number = 1;
+            monitor.dpi = 96;
+            monitor.monitorRectDpiAware = { 0, 0, 1920, 1080 };
+            monitor.monitorRectDpiUnaware = monitor.monitorRectDpiAware;
+            project.monitors.push_back(monitor);
+            WorkspacesData::WorkspacesProject::Application app{};
+            app.id = L"{E6301185-2051-4BF7-8DE2-1AD014E379E3}";
+            app.name = L"File Explorer";
+            app.path = L"C:\\Windows\\explorer.exe";
+            app.position = { 0, 0, 600, 400 };
+            app.monitor = 1;
+            project.apps = { app, app, app };
+            project.apps[1].id = L"{e6301185-2051-4bf7-8de2-1ad014e379e3}";
+            project.apps[1].position.x = 700;
+            project.apps[2].id.clear();
+            Assert::ExpectException<PowerToys::ProtectedStorage::StorageError>([&] {
+                Workspaces::Repository::SerializeProject(project);
+            });
+
+            SnapshotUtils::AssignUniqueApplicationIds(project.apps);
+
+            Assert::AreEqual(size_t{ 3 }, project.apps.size());
+            Assert::AreEqual(app.id, project.apps[0].id);
+            Assert::IsFalse(Workspaces::Repository::SameIdentity(project.apps[0].id, project.apps[1].id));
+            Assert::IsFalse(Workspaces::Repository::SameIdentity(project.apps[1].id, project.apps[2].id));
+            Assert::AreEqual(700, project.apps[1].position.x);
+            const auto parsed = Workspaces::Repository::ParseProject(Workspaces::Repository::SerializeProject(project));
+            Assert::AreEqual(size_t{ 3 }, parsed.apps.size());
+
+            const auto normalized = project.apps;
+            SnapshotUtils::AssignUniqueApplicationIds(project.apps);
+            for (size_t i = 0; i < project.apps.size(); ++i)
+                Assert::AreEqual(normalized[i].id, project.apps[i].id);
         }
 
         TEST_METHOD(MalformedAndTruncatedWorkspaceCorpusIsRejected)
