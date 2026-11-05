@@ -30,6 +30,8 @@ Wrap generated release content with:
 
 On rerun, replace only this region. Preserve human-authored text before and after it.
 
+Start the managed content with the public introduction, not an H1 title. The GitHub release title supplies the release name; repeating it in the body duplicates the heading on GitHub and in Settings. Use H2 for sections. Upsert removes a legacy leading H1, and verification rejects any remaining managed H1.
+
 ## Idempotency
 
 - Create a draft when the tag is unused.

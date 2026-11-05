@@ -44,6 +44,8 @@ Once all `grouped_md/*.md` files are reviewed and approved, consolidate into a s
 
 ### Structure
 
+Set the release name in the GitHub release title only. Do not include an H1 title in the notes body; GitHub and Settings already display the release name. Use H2 for sections.
+
 **1. Highlights section** (top):
 - 8-12 bullets covering the most user-visible features and impactful fixes
 - Pattern: `**Module**: brief description`
@@ -59,8 +61,6 @@ Some items in the Development section may overlap and should be moved to the Mod
 ### Example Final Structure
 
 ```markdown
-# PowerToys v{{ReleaseVersion}} Release Notes
-
 ## Highlights
 
 - **Command Palette**: Added theme customization and drag-and-drop support

@@ -101,6 +101,10 @@ function Get-ReleaseNotesFile {
 function Test-ReleaseNotesInstallerLinks {
     param([Parameter(Mandatory)][string]$Path, [Parameter(Mandatory)][string]$Tag, [Parameter(Mandatory)][string]$Version)
     $content = Get-Content -LiteralPath $Path -Raw
+    if ($content -match '(?m)^ {0,3}#(?:[ \t]+|$)') {
+        throw "Release notes must not contain an H1 title; use the GitHub release title instead."
+    }
+
     $expectedLinks = @{
         "ptUserX64" = "https://github.com/$GitHubRepo/releases/download/$Tag/PowerToysUserSetup-$Version-x64.exe"
         "ptUserArm64" = "https://github.com/$GitHubRepo/releases/download/$Tag/PowerToysUserSetup-$Version-arm64.exe"
