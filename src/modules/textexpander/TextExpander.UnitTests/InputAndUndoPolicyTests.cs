@@ -1167,6 +1167,55 @@ public sealed class InputAndUndoPolicyTests
     }
 
     [TestMethod]
+    public unsafe void AClickIsReadFromTheHookDataWithoutAllocating()
+    {
+        // Every click on the machine goes through the mouse hook, which used to box each point it read.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=Expanded");
+        var points = new List<(int X, int Y)>();
+        bool record = true;
+        using var hook = new KeyboardHook(store)
+        {
+            UserInput = static () => { },
+            IsOnNotice = point =>
+            {
+                if (record)
+                {
+                    points.Add((point.X, point.Y));
+                }
+
+                return false;
+            },
+        };
+
+        // MSLLHOOKSTRUCT: the point, then mouseData, flags, time and dwExtraInfo.
+        long* data = stackalloc long[4];
+        *(Native.POINT*)data = new Native.POINT { X = -1200, Y = 345 };
+        data[1] = 0x0000_0001_0000_0000;
+
+        Assert.IsFalse(Type(hook, "!ab"));
+        hook.OnMouseEvent(0x0200 /* WM_MOUSEMOVE */, (IntPtr)data);
+        hook.OnMouseEvent(0x020A /* WM_MOUSEWHEEL */, (IntPtr)data);
+        Assert.AreEqual(0, points.Count, "Moves and the wheel aren't clicks.");
+        Assert.IsTrue(Type(hook, "c "), "What was typed still counts.");
+
+        Assert.IsFalse(Type(hook, "!ab"));
+        hook.OnMouseEvent(Native.WM_LBUTTONDOWN, (IntPtr)data);
+        CollectionAssert.AreEqual(new List<(int X, int Y)> { (-1200, 345) }, points);
+        Assert.IsFalse(Type(hook, "c "), "A click can move the caret.");
+
+        record = false;
+        hook.OnMouseEvent(Native.WM_RBUTTONDOWN, (IntPtr)data);
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        for (int i = 0; i < 1_000; i++)
+        {
+            hook.OnMouseEvent(Native.WM_LBUTTONDOWN, (IntPtr)data);
+        }
+
+        Assert.AreEqual(0L, GC.GetAllocatedBytesForCurrentThread() - before);
+    }
+
+    [TestMethod]
     [DataRow("https://example.com/a https://example.com/b", "question:False choice:True")]
     [DataRow("https://example.com/a", "question:False")]
     public void AfterAQuestionOnlyTheLastWindowHoldsKeys(string copied, string windows)

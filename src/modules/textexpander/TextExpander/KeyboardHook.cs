@@ -287,22 +287,28 @@ internal sealed class KeyboardHook : IDisposable
     {
         if (nCode == Native.HC_ACTION)
         {
-            // Only button-down messages reposition the caret. Wheel and WM_MOUSEMOVE do not, and
-            // clearing on every move would be both wrong and far too expensive for this hook.
-            switch (wParam.ToInt32())
-            {
-                case Native.WM_LBUTTONDOWN:
-                case Native.WM_RBUTTONDOWN:
-                case Native.WM_MBUTTONDOWN:
-                case Native.WM_NCLBUTTONDOWN:
-                case Native.WM_XBUTTONDOWN:
-                    // MSLLHOOKSTRUCT starts with the point clicked.
-                    OnButtonDown(System.Runtime.InteropServices.Marshal.PtrToStructure<Native.POINT>(lParam));
-                    break;
-            }
+            OnMouseEvent(wParam.ToInt32(), lParam);
         }
 
         return Native.CallNextHookEx(_mouseHookHandle, nCode, wParam, lParam);
+    }
+
+    /// <summary>Handles a mouse event, given its message and the MSLLHOOKSTRUCT behind <paramref name="data"/>.</summary>
+    internal unsafe void OnMouseEvent(int message, IntPtr data)
+    {
+        // Only button-down messages reposition the caret. Wheel and WM_MOUSEMOVE do not, and
+        // clearing on every move would be both wrong and far too expensive for this hook.
+        switch (message)
+        {
+            case Native.WM_LBUTTONDOWN:
+            case Native.WM_RBUTTONDOWN:
+            case Native.WM_MBUTTONDOWN:
+            case Native.WM_NCLBUTTONDOWN:
+            case Native.WM_XBUTTONDOWN:
+                // MSLLHOOKSTRUCT starts with the point clicked. Copied, not marshalled, which would allocate on every click.
+                OnButtonDown(*(Native.POINT*)data);
+                break;
+        }
     }
 
     /// <summary>
