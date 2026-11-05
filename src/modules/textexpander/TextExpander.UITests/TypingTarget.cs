@@ -82,6 +82,9 @@ internal sealed class TypingTarget : IDisposable
     /// <summary>Describes the keys the box has taken since it was cleared, in ms from <paramref name="sinceTick"/>.</summary>
     public string DescribeKeys(long sinceTick) => editor?.DescribeKeys(sinceTick) ?? "<no box>";
 
+    /// <summary>Whether a mouse button came up over the box at or after <paramref name="sinceTick"/>.</summary>
+    public bool ReleasedAButtonSince(long sinceTick) => (editor?.LastButtonUp ?? 0) >= sinceTick;
+
     /// <summary>
     /// Clicks into the box, as a person does before typing, and puts the caret at the end. A click also clears what
     /// Text Expander remembers of earlier typing.
@@ -369,9 +372,14 @@ internal sealed class TypingTarget : IDisposable
         private const int WmKeyDown = 0x0100;
         private const int WmSysKeyDown = 0x0104;
         private const int WmPaste = 0x0302;
+        private const int WmLButtonUp = 0x0202;
+        private const int WmRButtonUp = 0x0205;
 
         private readonly object sync = new();
         private readonly List<(long Tick, string Key)> keys = [];
+        private long lastButtonUp;
+
+        public long LastButtonUp => Interlocked.Read(ref lastButtonUp);
 
         public void ClearKeys()
         {
@@ -400,6 +408,10 @@ internal sealed class TypingTarget : IDisposable
                 {
                     keys.Add((Environment.TickCount64, key));
                 }
+            }
+            else if (m.Msg is WmLButtonUp or WmRButtonUp)
+            {
+                Interlocked.Exchange(ref lastButtonUp, Environment.TickCount64);
             }
 
             base.WndProc(ref m);

@@ -587,6 +587,7 @@ internal static class Native
     public const int WM_LBUTTONUP = 0x0202;
     public const int WM_RBUTTONUP = 0x0205;
     public const int WM_MBUTTONUP = 0x0208;
+    public const int WM_CAPTURECHANGED = 0x0215;
     public const int WM_DISPLAYCHANGE = 0x007E;
     public const int WM_DPICHANGED = 0x02E0;
     public const int MA_NOACTIVATE = 3;

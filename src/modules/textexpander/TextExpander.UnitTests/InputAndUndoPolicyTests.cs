@@ -913,7 +913,30 @@ public sealed class InputAndUndoPolicyTests
         Assert.IsFalse(hook.OnKeyEvent(FakeTextBox.UserKey('a', up: true), 0x0101), "WM_KEYUP");
         Assert.AreEqual(1, input, "A key coming up isn't another key.");
         Assert.IsFalse(hook.OnKeyEvent(FakeTextBox.UserVk(Native.VK_SHIFT, up: false) with { DwExtraInfo = KeyboardHook.InjectionSignature }, Native.WM_KEYDOWN));
-        Assert.AreEqual(1, input, "The engine's own keys, and the user's going back after an insertion, would take a notice down as it shows.");
+        Assert.AreEqual(1, input, "The engine's own keys aren't the user's.");
+    }
+
+    [TestMethod]
+    public void AClickOnTheNoticeOnlyTakesItDown()
+    {
+        // A click on the notice doesn't move the caret, but it was taken for one that can: what was typed was dropped, with
+        // Ctrl+Z, and an insertion under way stopped.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=Expanded");
+        int input = 0;
+        var onNotice = new Native.POINT { X = 40, Y = 40 };
+        using var hook = new KeyboardHook(store) { UserInput = () => input++, IsOnNotice = point => point.X == onNotice.X && point.Y == onNotice.Y };
+
+        Assert.IsFalse(Type(hook, "!ab"));
+        long generation = hook.InputGeneration;
+        hook.OnButtonDown(onNotice);
+        Assert.AreEqual(1, input, "The notice still starts to fade.");
+        Assert.AreEqual(generation, hook.InputGeneration, "Nothing under way stops.");
+        Assert.IsTrue(Type(hook, "c "), "What was typed still counts.");
+
+        Assert.IsFalse(Type(hook, "!ab"));
+        hook.OnButtonDown(new Native.POINT { X = 400, Y = 400 });
+        Assert.IsFalse(Type(hook, "c "), "A click anywhere else can move the caret.");
     }
 
     [TestMethod]

@@ -103,6 +103,16 @@ internal static class NoticeBubble
         _ = Post(SyncMessage, 0);
     }
 
+    /// <summary>
+    /// Whether the notice shows at <paramref name="point"/>, on the screen: a click there only takes it down, and leaves
+    /// the caret where it was. Cheap and non-blocking, for the mouse hook: one read while no notice shows.
+    /// </summary>
+    public static bool IsAt(Native.POINT point)
+    {
+        IntPtr window = Volatile.Read(ref _window);
+        return Volatile.Read(ref _shown) != 0 && window != IntPtr.Zero && Native.WindowFromPoint(point) == window;
+    }
+
     private static bool Post(uint message, long generation)
     {
         IntPtr window = Volatile.Read(ref _window);
@@ -252,6 +262,15 @@ internal static class NoticeBubble
                 case Native.WM_RBUTTONUP:
                 case Native.WM_MBUTTONUP:
                     Hide(hwnd);
+                    return IntPtr.Zero;
+
+                // Another window took the mouse from a notice that faded while a button was held on it.
+                case Native.WM_CAPTURECHANGED:
+                    if (_fade == Fade.Out && _opacity == 0 && lParam != hwnd)
+                    {
+                        Hide(hwnd);
+                    }
+
                     return IntPtr.Zero;
 
                 case Native.WM_GETOBJECT:
@@ -420,7 +439,7 @@ internal static class NoticeBubble
         StopTimers(hwnd);
         if (!_animate)
         {
-            Hide(hwnd);
+            Vanish(hwnd);
             return;
         }
 
@@ -455,7 +474,7 @@ internal static class NoticeBubble
             case Fade.Out:
                 if (elapsed >= NoticeTiming.FadeOutMs)
                 {
-                    Hide(hwnd);
+                    Vanish(hwnd);
                     break;
                 }
 
@@ -502,6 +521,23 @@ internal static class NoticeBubble
         _fade = Fade.None;
         _frame?.Dispose();
         _frame = null;
+    }
+
+    // A notice that has faded while a button is held on it stays, unseen and holding the mouse, until the button comes
+    // up: taken down at once, it would let the release reach the app under it, and a right button's opens its menu.
+    private static void Vanish(IntPtr hwnd)
+    {
+        if (Native.GetCapture() != hwnd)
+        {
+            Hide(hwnd);
+            return;
+        }
+
+        StopTimers(hwnd);
+        _ = Native.KillTimer(hwnd, AnimationTimer);
+        _fade = Fade.Out;
+        _opacity = 0;
+        _ = Update(hwnd);
     }
 
     // Accessibility > Visual effects > Animation effects.

@@ -122,6 +122,44 @@ public sealed class TextExpanderNoticeTests : TextExpanderTestBase
     [TestCleanup]
     public void DismissNotice() => NoticeBubble.Dismiss();
 
+    /// <summary>
+    /// A notice that fades while a button is held on it keeps the mouse until the button comes up, so the release doesn't
+    /// reach the app under it, where a right button's would open the app's menu.
+    /// </summary>
+    [TestMethod("TextExpander.Notice.AButtonHeldOnItAsItFadesDoesntReachTheApp")]
+    [TestCategory("TextExpander")]
+    [TestCategory("TextExpander.Notice")]
+    public void AButtonHeldOnItAsItFadesDoesntReachTheApp()
+    {
+        Target.Clear();
+        Target.Focus();
+        TextInput.Type("Sent to you");
+
+        IntPtr notice = ShowNotice(Heading, Message);
+        Thread.Sleep(NoticeTiming.MinimumVisibleMs + 200);
+        Assert.IsTrue(Native.GetWindowRect(notice, out Native.RECT bounds));
+        int x = bounds.Left + ((bounds.Right - bounds.Left) / 2);
+        int y = bounds.Top + ((bounds.Bottom - bounds.Top) / 2);
+        Step($"Holding the right button on the notice at ({x}, {y}) past its fade");
+        MouseHelper.MoveTo(x, y);
+        long pressed = Environment.TickCount64;
+        MouseHelper.RightDown();
+        try
+        {
+            // As the engine's mouse hook reports the press.
+            NoticeBubble.OnUserInput();
+            Thread.Sleep(NoticeTiming.FadeOutMs + 600);
+        }
+        finally
+        {
+            MouseHelper.RightUp();
+        }
+
+        AssertHidden(notice, timeoutMS: 3_000, "the button came up");
+        Assert.IsFalse(Target.ReleasedAButtonSince(pressed), "The release reached the app under the notice.");
+        AssertFocusStaysInTheTarget("after the button held on the notice came up");
+    }
+
     private static IEnumerable<string> Strings(JsonElement element) => element.ValueKind switch
     {
         JsonValueKind.String => [element.GetString() ?? string.Empty],

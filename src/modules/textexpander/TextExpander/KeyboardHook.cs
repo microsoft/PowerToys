@@ -96,10 +96,17 @@ internal sealed class KeyboardHook : IDisposable
 
     /// <summary>
     /// Gets what runs for each key press and click of the user's that isn't held for an insertion: a notice showing at the
-    /// caret starts to fade. Not for the engine's own input, nor keys going back after an insertion, which would take a
-    /// notice down as it shows. Cheap and non-blocking, as everything in the callbacks must be. Tests pass their own.
+    /// caret starts to fade. Not for the engine's own input. Keys held during an insertion count as they go back, which is
+    /// before that insertion's notice shows. Cheap and non-blocking, as everything in the callbacks must be. Tests pass their
+    /// own.
     /// </summary>
     internal Action UserInput { get; init; } = NoticeBubble.OnUserInput;
+
+    /// <summary>
+    /// Gets what tells whether a click at a point on the screen lands on the notice at the caret, which a click only takes
+    /// down. Cheap and non-blocking: one read while no notice shows. Tests pass their own.
+    /// </summary>
+    internal Func<Native.POINT, bool> IsOnNotice { get; init; } = NoticeBubble.IsAt;
 
     /// <summary>
     /// Gets or sets a value indicating whether when false, keystrokes are still observed but never expanded. Turning this off is how a
@@ -253,8 +260,8 @@ internal sealed class KeyboardHook : IDisposable
     /// This runs for every mouse event system-wide, so it must be as cheap as the keyboard
     /// callback: if this thread misses the 300 ms LowLevelHooksTimeout the hook is silently
     /// removed. We therefore read only wParam to identify the message, and read the
-    /// MSLLHOOKSTRUCT behind lParam only for a button press while a prompt is open. Mouse input
-    /// is never swallowed — the result of CallNextHookEx is always returned.
+    /// MSLLHOOKSTRUCT behind lParam only for a button press. Mouse input is never swallowed —
+    /// the result of CallNextHookEx is always returned.
     /// </summary>
     private IntPtr MouseCallback(int nCode, IntPtr wParam, IntPtr lParam)
     {
@@ -269,23 +276,36 @@ internal sealed class KeyboardHook : IDisposable
                 case Native.WM_MBUTTONDOWN:
                 case Native.WM_NCLBUTTONDOWN:
                 case Native.WM_XBUTTONDOWN:
-                    UserInput();
-                    if (!Suspended)
-                    {
-                        Click();
-                    }
-                    else
-                    {
-                        // MSLLHOOKSTRUCT starts with the point clicked.
-                        Native.POINT point = System.Runtime.InteropServices.Marshal.PtrToStructure<Native.POINT>(lParam);
-                        ClickWhileSuspended(ReachesPromptTarget(Native.GetAncestor(Native.WindowFromPoint(point), Native.GA_ROOT)));
-                    }
-
+                    // MSLLHOOKSTRUCT starts with the point clicked.
+                    OnButtonDown(System.Runtime.InteropServices.Marshal.PtrToStructure<Native.POINT>(lParam));
                     break;
             }
         }
 
         return Native.CallNextHookEx(_mouseHookHandle, nCode, wParam, lParam);
+    }
+
+    /// <summary>
+    /// Handles a button press at <paramref name="point"/>, on the screen: a notice showing starts to fade, and what was
+    /// typed and Ctrl+Z are dropped, since a click can move the caret. Not for a click on the notice, which only takes the
+    /// notice down and leaves the caret where it was.
+    /// </summary>
+    internal void OnButtonDown(Native.POINT point)
+    {
+        UserInput();
+        if (IsOnNotice(point))
+        {
+            return;
+        }
+
+        if (!Suspended)
+        {
+            Click();
+        }
+        else
+        {
+            ClickWhileSuspended(ReachesPromptTarget(Native.GetAncestor(Native.WindowFromPoint(point), Native.GA_ROOT)));
+        }
     }
 
     /// <summary>
