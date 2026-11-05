@@ -28,7 +28,8 @@ $ErrorActionPreference = 'Stop'
 $environmentNames = @(
     'DOTNET_ROOT', 'DOTNET_ROOT_X64', 'DOTNET_ROOT_ARM64',
     'WINAPP_CLI_PATH', 'WINAPP_CLI_INVOKE_TIMEOUT_SECONDS',
-    'platform', 'TF_BUILD', 'useInstallerForTest', 'POWERTOYS_INSTALL_DIR', 'POWERTOYS_MWB_RUN_ROOT'
+    'platform', 'TF_BUILD', 'useInstallerForTest', 'POWERTOYS_INSTALL_DIR', 'POWERTOYS_MWB_RUN_ROOT',
+    'POWERTOYS_POWERDISPLAY_IDD_PROBE'
 )
 
 if ($PSCmdlet.ParameterSetName -eq 'Worker') {

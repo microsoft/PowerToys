@@ -2,6 +2,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <UseWPF>true</UseWPF>
     <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -16,6 +17,7 @@
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\PowerDisplay.UITests\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(RepoRoot).pipelines\powerdisplay-idd-poc\FixtureMonitorIdentity.cs" Link="FixtureMonitorIdentity.cs" />
     <PackageReference Include="MSTest" />
     <ProjectReference Include="..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
   </ItemGroup>

@@ -132,6 +132,11 @@ jobs:
       parameters:
         condition: and(succeeded(), or(eq(variables['BuildPlatform'], 'x64'), and(eq(variables['BuildPlatform'], 'arm64'), eq('${{ ne(parameters.umdfHidArm64Image, '') }}', 'True'))))
 
+  - ${{ if or(eq(length(parameters.uiTestModules), 0), containsValue(parameters.uiTestModules, 'PowerDisplay.UITests')) }}:
+    - template: steps-build-umdf-display.yml
+      parameters:
+        condition: and(succeeded(), or(eq(variables['BuildPlatform'], 'x64'), and(eq(variables['BuildPlatform'], 'arm64'), eq('${{ ne(parameters.umdfHidArm64Image, '') }}', 'True'))))
+
   - publish: $(JobOutputDirectory)
     artifact: $(JobOutputArtifactName)
     displayName: Publish UI Test artifacts

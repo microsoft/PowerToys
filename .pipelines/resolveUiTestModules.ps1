@@ -26,6 +26,21 @@ $touchedModules = @(
         Sort-Object -Unique
 )
 
+$fixtureModules = @(
+    $ChangedFile | ForEach-Object {
+        if (($_ -replace '\\', '/') -match '^\.pipelines/(?:powerdisplay-idd-poc/|v2/templates/steps-build-umdf-display\.yml$)') {
+            'powerdisplay'
+        }
+        elseif (($_ -replace '\\', '/') -match '^\.pipelines/(?:umdf-hid-smoke/|v2/templates/steps-build-umdf-hid\.yml$)') {
+            'GrabAndMove'
+        }
+        elseif (($_ -replace '\\', '/') -match '^\.pipelines/(?:umdf/|v2/templates/job-test-(?:arm64|project)\.yml$)') {
+            'GrabAndMove', 'powerdisplay'
+        }
+    }
+)
+$touchedModules = @(@($touchedModules) + $fixtureModules | Sort-Object -Unique)
+
 $uiTestModules = foreach ($module in $touchedModules) {
     $moduleRoot = Join-Path $RepoRoot "src\modules\$module"
     if (-not (Test-Path -LiteralPath $moduleRoot -PathType Container)) {

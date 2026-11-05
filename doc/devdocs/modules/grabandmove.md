@@ -16,12 +16,22 @@ applications. Settings changes apply to the running module without a restart.
 | `src\modules\GrabAndMove\Tests\GrabAndMove.UITests` | Module UI tests and inert resizable test window |
 | `src\common\UITestAutomation.Next\UmdfHidInput.cs` | Optional virtual-HID backend for the shared input helpers |
 | `.pipelines\umdf-hid-smoke` | Test-only driver build, signing, provisioning, cleanup and transport probe |
+| `.pipelines\umdf` | Shared UMDF build, fixture orchestration, ownership, trust and diagnostic primitives |
 
 ## UI tests
 
-The suite uses `Microsoft.PowerToys.UITest.Next` and winappcli, not WinAppDriver/Selenium. Its seven
+The suite uses `Microsoft.PowerToys.UITest.Next` and winappcli, not WinAppDriver/Selenium. Its eight
 cases cover Alt move/resize, geometry visibility for both gestures, live modifier changes,
-application exclusions and disable/re-enable behavior through the real Settings UI.
+application exclusions, disable/re-enable behavior and repeated modifier selection while the
+inert fixture owns foreground, through the real Settings UI.
+
+Modifier selection uses coordinate-free UIA expand/select rather than a cross-process
+foreground handoff followed by keyboard input. The dropdown can appear in both the main and
+popup trees, so its exact named list item is deduplicated by selector. Selection can rebuild
+the settings cards, so each selected-value read reacquires the control and retries only known
+stale-element errors. Tests assert both the selected UI value and persisted setting; all
+hardware-style drag/resize gestures still require stable foreground, real HID input, exact
+geometry and unchanged module lifetime.
 
 ### Why a driver is required
 
@@ -154,6 +164,11 @@ This script:
   machine trust on the build host. An untrusted-root result when inspecting that bundle before
   provisioning is therefore not, by itself, a broken signature.
 
+The HID and Power Display builders share a versioned SDK/WDK cache at
+`<WorkRoot parent>\umdf-dependencies\<WDK version>`, but retain independent patched
+sample checkouts and certificate subjects. `-PackageCache` still accepts an explicitly
+prepared package directory; its signed nupkgs are verified and an incomplete cache fails.
+
 Preserve the complete `artifacts\<platform>` directory, including its `driver` subdirectory,
 `driver-hashes.json`, public certificate and licenses. Do not copy just the DLL/INF.
 Do not rebuild, re-sign or replace this bundle while its device is installed: every build creates
@@ -178,11 +193,14 @@ C:\PTGrabMoveTest\runtime\tests\GrabAndMove.UITests\net10.0-windows10.0.26100.0\
 C:\PTGrabMoveTest\driver-artifact\driver-hashes.json
 C:\PTGrabMoveTest\driver-artifact\driver\...
 C:\PTGrabMoveTest\Manage-SmokeDriver.ps1
+C:\PTGrabMoveTest\UmdfDriver.Common.ps1
 ```
 
 `runtime` is the copied `<repo>\<platform>\Debug` tree, including dependencies and the newly built
 tests. `driver-artifact` is the copied `C:\PTGrabMoveBuild\artifacts\<platform>` tree.
 Copy `Manage-SmokeDriver.ps1` from `.pipelines\umdf-hid-smoke` at the same source revision.
+Copy `.pipelines\umdf\UmdfDriver.Common.ps1` beside it as well. Repository-local execution
+loads that helper from its normal shared directory instead.
 Do not mix binaries or artifacts from different architectures/revisions.
 
 For a machine that builds and executes inside the same disposable VM, staging the runtime is
@@ -218,6 +236,12 @@ This interactive example pauses only after successful installation. Follow Step 
 normal terminal, then return and press Enter immediately. On an install error, `finally` still
 attempts cleanup. Automated VM jobs use their separate administrator control channel instead of
 this interactive pause.
+
+Cleanup retains compatibility with existing `InfNames` ownership journals. It uninstalls
+the HID package before removing keyboard/mouse roots, which can reject removal while the
+driver is active. The shared primitives retain the journal and its test trust if device
+or package removal fails, so cleanup remains retryable; unrelated packages and trust are
+never removed.
 
 Installation validates the file manifest and signer, imports the public certificate into
 `LocalMachine\Root` and `LocalMachine\TrustedPublisher` only when absent, creates the fixed root

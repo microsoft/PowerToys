@@ -119,7 +119,7 @@ public class FallbackV2Tests
     {
         var fallback = new TestResultsItem();
         var item = (IFallbackCommandItem3)fallback;
-        var args = new FallbackQueryArgs("query", "query-id", 5);
+        var args = new FallbackQueryArgs("query", "query-id", 5, ["en-US", "fr-FR"]);
 
         item.FallbackHandler.UpdateQuery("ignored");
         Assert.IsNull(fallback.LastQuery);
@@ -127,7 +127,12 @@ public class FallbackV2Tests
 
         var result = await item.QueryHandler.QueryAsync(args);
 
-        Assert.AreSame(args, fallback.LastQuery);
+        Assert.IsNotNull(fallback.LastQuery);
+        Assert.AreNotSame(args, fallback.LastQuery);
+        Assert.AreEqual(args.Query, fallback.LastQuery.Query);
+        Assert.AreEqual(args.QueryId, fallback.LastQuery.QueryId);
+        Assert.AreEqual(args.RequestedItemCount, fallback.LastQuery.RequestedItemCount);
+        CollectionAssert.AreEqual(args.LanguageTags, fallback.LastQuery.LanguageTags);
         Assert.AreEqual(args.Query, result.Query);
         Assert.AreEqual(args.QueryId, result.QueryId);
         Assert.HasCount(1, result.Items);
