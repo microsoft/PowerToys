@@ -54,6 +54,26 @@ public sealed class CaretLocatorTests
         => Assert.AreEqual(Rect(200, 449, 201, 450), CaretLocator.Locate(Target, Fakes([], null, new(null, null, Element), Window)));
 
     [TestMethod]
+    public void KeepsTheFocusedElementsCornerInsideTheWindow()
+    {
+        // A scrolled document reaches far past its window, so its bottom-left put the notice far from the text.
+        Native.RECT document = Rect(100, -500, 900, 3500);
+        Assert.AreEqual(Rect(100, 699, 101, 700), CaretLocator.Locate(Target, Fakes([], null, new(null, null, document), Window)));
+    }
+
+    [TestMethod]
+    public void UsesTheCaretOfAWindowLaidOutRightToLeft()
+    {
+        // Mapped to the screen in a mirrored window, the caret's left edge came out right of its right edge, so it was
+        // taken for no caret, and the notice went to UI Automation's answer or the window's bottom.
+        var asked = new List<string>();
+        Native.RECT caret = CaretLocator.Locate(Target, Fakes(asked, Rect(302, 200, 300, 218), new(CaretRange, Selection, Element), Window));
+
+        Assert.AreEqual(SystemCaret, caret);
+        CollectionAssert.DoesNotContain(asked, "automation");
+    }
+
+    [TestMethod]
     public void FallsBackToTheTargetWindowsBottomMiddle()
     {
         Assert.AreEqual(Rect(500, 699, 501, 700), CaretLocator.Locate(Target, Fakes([], null, null, Window)), "UI Automation had no answer in time.");

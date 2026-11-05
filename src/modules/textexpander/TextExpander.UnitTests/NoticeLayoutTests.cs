@@ -32,6 +32,19 @@ public sealed class NoticeLayoutTests
     }
 
     [TestMethod]
+    public void StaysInTheWorkAreaWhenTheCaretIsOutsideIt()
+    {
+        // A window partly off the screen can have its caret under or over the work area, and the notice went off the
+        // screen with it: every placement but the last skipped moving it into the work area.
+        foreach (Native.RECT caret in new[] { Rect(500, 1200, 501, 1218), Rect(500, -300, 501, -282) })
+        {
+            NoticeLayout.Placement placement = NoticeLayout.Place(caret, 230, 60, Screen, At100);
+            Native.RECT card = CardOnScreen(placement);
+            Assert.IsTrue(card.Top >= Screen.Top && card.Bottom <= Screen.Bottom, $"Caret at {caret.Top}: card {card.Top}-{card.Bottom}.");
+        }
+    }
+
+    [TestMethod]
     public void FlipsAboveTheCaretWhenThereIsNoRoomBelow()
     {
         var caret = Rect(500, 1000, 501, 1018);

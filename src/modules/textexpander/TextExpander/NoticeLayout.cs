@@ -130,6 +130,10 @@ internal static class NoticeLayout
             top = Math.Max(workArea.Top, Math.Min(below ? under : over - height, workArea.Bottom - height));
         }
 
+        // Moved into the work area on either side: a caret outside it, as in a window partly off the screen, would take
+        // the notice off the screen with it.
+        top = Math.Max(workArea.Top, Math.Min(top, workArea.Bottom - height));
+
         // The shadow stops at the work area's edge, so it never lies over the taskbar or another monitor. The card and
         // its arrow keep their place.
         int cardTop = below ? top + metrics.ArrowHeight : top;

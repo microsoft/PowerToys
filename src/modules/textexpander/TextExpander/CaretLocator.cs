@@ -29,7 +29,7 @@ internal static class CaretLocator
     {
         // What's found is checked against the window, in case focus moved elsewhere since the insertion.
         Native.RECT? window = sources.Window(targetWindow);
-        if (sources.SystemCaret(targetWindow) is { } system && IsCaret(system) && Overlaps(system, window))
+        if (sources.SystemCaret(targetWindow) is { } found && Ordered(found) is var system && IsCaret(system) && Overlaps(system, window))
         {
             return AsCaret(system);
         }
@@ -50,7 +50,10 @@ internal static class CaretLocator
 
             if (focus.Element is { } element && HasArea(element) && Overlaps(element, window))
             {
-                return Point(element.Left, element.Bottom);
+                // An element can reach far past the window, as a scrolled document does: the corner is kept inside it.
+                return window is { } box && HasArea(box)
+                    ? Point(Math.Clamp(element.Left, box.Left, box.Right - 1), Math.Clamp(element.Bottom, box.Top + 1, box.Bottom))
+                    : Point(element.Left, element.Bottom);
             }
         }
 
@@ -102,6 +105,16 @@ internal static class CaretLocator
     }
 
     private static bool OnScreen(double value) => double.IsFinite(value) && Math.Abs(value) < 1_000_000;
+
+    // A window laid out right to left maps the caret's left edge to the right one on the screen, which put the caret's
+    // left past its right: it's put in order.
+    private static Native.RECT Ordered(Native.RECT rect) => new()
+    {
+        Left = Math.Min(rect.Left, rect.Right),
+        Top = Math.Min(rect.Top, rect.Bottom),
+        Right = Math.Max(rect.Left, rect.Right),
+        Bottom = Math.Max(rect.Top, rect.Bottom),
+    };
 
     private static bool IsCaret(Native.RECT caret)
         => caret.Bottom > caret.Top && caret.Bottom - caret.Top <= MaxCaretHeight && caret.Right >= caret.Left;
