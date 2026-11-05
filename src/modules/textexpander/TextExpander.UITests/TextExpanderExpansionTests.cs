@@ -157,6 +157,10 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
         AssertTargetShows("Track: https://example.com/track/1042 ");
 
         choice = TypeTriggerForChoice(TrackLink.Trigger + " ");
+
+        // Once it's in front by itself, as a user sees it: a click while the engine is still bringing it forward was lost.
+        Assert.IsTrue(choice.WaitForForeground(), $"The choice window did not come in front. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        Assert.IsTrue(choice.Offers("https://example.com/returns"), "The choice window doesn't list the second link.");
         Step("Clicking the second link");
         choice.Pick("https://example.com/returns");
         Assert.IsTrue(choice.WaitForClosed(), "The choice window did not close after a click.");
