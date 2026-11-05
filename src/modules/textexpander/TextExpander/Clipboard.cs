@@ -99,7 +99,8 @@ internal static class Clipboard
 
             try
             {
-                return Marshal.PtrToStringUni(pointer);
+                // No further than the block: an app can leave out the terminator.
+                return ClipboardFormats.ReadUnicodeText(pointer, (nuint)Native.GlobalSize(handle));
             }
             finally
             {

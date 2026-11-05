@@ -110,4 +110,22 @@ internal static class ClipboardFormats
 
         return capture;
     }
+
+    /// <summary>
+    /// Reads <c>CF_UNICODETEXT</c> from the <paramref name="byteSize"/>-byte block at <paramref name="pointer"/>, up to the
+    /// first null in it: an app can leave out the terminator, and reading to one past the block would take whatever lies
+    /// beyond. The whole block when it has no null.
+    /// </summary>
+    public static unsafe string ReadUnicodeText(IntPtr pointer, nuint byteSize)
+    {
+        if (pointer == IntPtr.Zero)
+        {
+            return string.Empty;
+        }
+
+        // A string can't be longer than this, and no clipboard block that long can be read anyway.
+        var text = new ReadOnlySpan<char>((void*)pointer, (int)Math.Min(byteSize / 2, (nuint)0x3FFF_FFDF));
+        int end = text.IndexOf('\0');
+        return new string(end < 0 ? text : text[..end]);
+    }
 }

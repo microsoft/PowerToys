@@ -337,4 +337,29 @@ public sealed class ClipboardPolicyTests
         Assert.IsTrue(Injector.WaitForPasteToSettle(() => false, Sleep, () => now, readSeen: true));
         Assert.AreEqual(170, now);
     }
+
+    [TestMethod]
+    public void ClipboardTextIsReadNoFurtherThanItsBlock()
+    {
+        // An app can leave out the terminator: reading to a null past the block took whatever lay beyond it.
+        Assert.AreEqual("abc", Read("abc", bytes: 6));
+        Assert.AreEqual("ab", Read("abc", bytes: 5), "Half a character isn't read.");
+        Assert.AreEqual("ab", Read("ab\0cd", bytes: 10), "It stops at the first null.");
+        Assert.AreEqual(string.Empty, Read("abc", bytes: 0));
+        Assert.AreEqual(string.Empty, ClipboardFormats.ReadUnicodeText(IntPtr.Zero, 10));
+
+        static string Read(string block, nuint bytes)
+        {
+            char[] memory = block.ToCharArray();
+            var pinned = System.Runtime.InteropServices.GCHandle.Alloc(memory, System.Runtime.InteropServices.GCHandleType.Pinned);
+            try
+            {
+                return ClipboardFormats.ReadUnicodeText(pinned.AddrOfPinnedObject(), bytes);
+            }
+            finally
+            {
+                pinned.Free();
+            }
+        }
+    }
 }

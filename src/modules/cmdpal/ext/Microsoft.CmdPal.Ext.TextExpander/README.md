@@ -28,7 +28,7 @@ The page checks these each time it's opened and as the search changes. The main 
 `Snippets/SnippetText.cs` is the only place that expands snippets. It calls `Variables.ExpandWithPromptRequests`, so variables Text Expander adds later work here too:
 
 - Dates and times come out as of now, in the regional format.
-- Clipboard variables, all of the copy (`{{clipboard}}`) or one part of it (`{{clipboard:email}}`, `link`, `phone` or `number`), are expanded by Core from one read of the clipboard, made before the paste borrows it and only if a variable needs it.
+- Clipboard variables, all of the copy (`{{clipboard}}`) or one part of it (`{{clipboard:email}}`, `link`, `phone` or `number`), are expanded by Core from one read of the clipboard, made before the paste borrows it and only if a variable needs it. The clipboard's text is read no further than its memory block, whether or not it ends in a null.
 - For a snippet that takes part of the copy, the first pick page reads the clipboard and `SnippetText.PlanClipboard` does a dry run of the expansion, recording each choice Core asks for through its `choose` callback (only for a spot with 2 to 100 options), so Core decides when to ask and in what order. The paste expands again with that copy, answering the choices in order with the matches picked (`SnippetFill`).
 - Core reports the spots it left empty, and why, in `ExpandedSnippet.Gaps`. The pick page and the toast after a paste are built from them (`ClipboardVariableText.NothingFound`), so the extension never looks for parts itself.
 - Questions are found by recording the requests `ExpandWithPromptRequests` makes, so Core's parser decides what a question is. A question that appears twice is asked twice, as in Text Expander.
