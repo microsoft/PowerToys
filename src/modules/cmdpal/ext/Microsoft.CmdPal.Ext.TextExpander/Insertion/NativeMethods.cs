@@ -12,6 +12,7 @@ internal static partial class NativeMethods
 {
     internal const uint GMEM_MOVEABLE = 0x0002;
     internal const uint INPUT_KEYBOARD = 1;
+    internal const uint KEYEVENTF_EXTENDEDKEY = 0x0001;
     internal const uint KEYEVENTF_KEYUP = 0x0002;
     internal const uint KEYEVENTF_UNICODE = 0x0004;
     internal const uint WM_NULL = 0x0000;

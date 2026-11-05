@@ -35,6 +35,13 @@ internal static class KeyStrokes
         [LeftShift, RightShift, LeftControl, RightControl, LeftAlt, RightAlt, LeftWindows, RightWindows];
 
     /// <summary>
+    /// Whether <paramref name="virtualKey"/> is an extended key, sent with its flag as Text Expander sends it, so the app
+    /// sees the right-hand Ctrl or Alt, or a Windows key, go up rather than the left-hand one.
+    /// </summary>
+    public static bool IsExtended(ushort virtualKey)
+        => virtualKey is RightControl or RightAlt or LeftWindows or RightWindows;
+
+    /// <summary>
     /// Gets Ctrl+V in one batch, after letting go of the modifiers the user holds, so it isn't sent as Ctrl+Shift+V.
     /// </summary>
     public static IReadOnlyList<KeyStroke> Paste(IReadOnlyList<ushort> heldModifiers)

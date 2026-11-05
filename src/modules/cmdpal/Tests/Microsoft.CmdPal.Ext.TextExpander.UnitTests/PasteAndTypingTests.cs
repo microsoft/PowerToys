@@ -99,11 +99,25 @@ public sealed class PasteAndTypingTests
     {
         // 0x110 lacked Keyboard Manager's bit, so with Caps Lock and Ctrl swapped, the extension's Ctrl+V was remapped.
         Assert.AreEqual((nuint)1, Win32Desktop.InputTag & 1, "Keyboard Manager leaves keys with its bit alone.");
-        Assert.AreEqual((nuint)InputTags.CommandPalette, Win32Desktop.InputTag, "Text Expander's hook ignores this value.");
+        Assert.AreEqual((nuint)InputTags.CommandPalette, Win32Desktop.InputTag, "Text Expander's hook never matches this value.");
         foreach (nuint taken in new nuint[] { 0x11, 0x101, 0x110, 0x111 })
         {
             Assert.AreNotEqual(taken, Win32Desktop.InputTag, "Keyboard Manager's and the runner's own tags mean something else.");
         }
+    }
+
+    [TestMethod]
+    public void IsExtended_RightHandCtrlAndAltAndTheWindowsKeys_AreSentAsExtended()
+    {
+        // Let go of without the flag, as Text Expander never sends them, the app saw the left-hand key go up.
+        foreach (var key in KeyStrokes.Modifiers)
+        {
+            var extended = key is KeyStrokes.RightControl or KeyStrokes.RightAlt or KeyStrokes.LeftWindows or KeyStrokes.RightWindows;
+            Assert.AreEqual(extended, KeyStrokes.IsExtended(key), $"0x{key:X2}");
+        }
+
+        Assert.IsFalse(KeyStrokes.IsExtended(KeyStrokes.Control));
+        Assert.IsFalse(KeyStrokes.IsExtended(KeyStrokes.Return));
     }
 
     [TestMethod]

@@ -285,6 +285,87 @@ public sealed class InjectorDispatchTests
     }
 
     [TestMethod]
+    public void ATypedEnterCutOffPartWayIsLetGoOf()
+    {
+        // Cut off part way, a typed Enter's key-up may not have gone, and Enter stayed down.
+        InjectionBackend originalBackend = Injector.Backend;
+        using var guard = new InsertionGuard(() => 0, _ => true) { MarkerWaitMs = 0 };
+        var batches = new List<Native.INPUT[]>();
+        try
+        {
+            Injector.Backend = InjectionBackend.Typing;
+            Assert.IsFalse(Injector.ReplaceCore(
+                0,
+                "a\nb",
+                IntPtr.Zero,
+                0,
+                _ => true,
+                guard,
+                0,
+                () => new IntPtr(1),
+                dispatch: inputs =>
+                {
+                    batches.Add(inputs);
+                    bool enterDown = inputs.Any(input => input.U.Ki.WVk == Native.VK_RETURN && (input.U.Ki.DwFlags & Native.KEYEVENTF_KEYUP) == 0);
+                    return enterDown ? (uint)inputs.Length - 1 : (uint)inputs.Length;
+                },
+                getAsyncKeyState: _ => 0,
+                sleep: _ => { },
+                isWindowsTerminal: _ => false,
+                isConsole: _ => false));
+
+            int cutOff = batches.FindIndex(batch => batch.Any(input => input.U.Ki.WVk == Native.VK_RETURN));
+            Native.INPUT[] next = batches[cutOff + 1];
+            Assert.AreEqual(1, next.Length);
+            Assert.AreEqual(Native.VK_RETURN, (int)next[0].U.Ki.WVk);
+            Assert.AreNotEqual(0u, next[0].U.Ki.DwFlags & Native.KEYEVENTF_KEYUP);
+        }
+        finally
+        {
+            Injector.Backend = originalBackend;
+        }
+    }
+
+    [TestMethod]
+    public void ASurrogatePairTypedIntoATerminalStaysOneBatch()
+    {
+        // With a control character left out in front of it, the pair was looked for in the text as written, one place on,
+        // and its halves went in apart.
+        InjectionBackend originalBackend = Injector.Backend;
+        using var guard = new InsertionGuard(() => 0, _ => true) { MarkerWaitMs = 0 };
+        var batches = new List<Native.INPUT[]>();
+        try
+        {
+            Injector.Backend = InjectionBackend.Typing;
+            Assert.IsTrue(Injector.ReplaceCore(
+                0,
+                "\u000F\U0001F642",
+                IntPtr.Zero,
+                0,
+                _ => true,
+                guard,
+                0,
+                () => new IntPtr(1),
+                dispatch: inputs =>
+                {
+                    batches.Add(inputs);
+                    return (uint)inputs.Length;
+                },
+                getAsyncKeyState: _ => 0,
+                sleep: _ => { },
+                isWindowsTerminal: _ => false,
+                isConsole: _ => true));
+
+            Native.INPUT[] pair = batches.Single(batch => batch.Any(input => (input.U.Ki.DwFlags & Native.KEYEVENTF_UNICODE) != 0));
+            CollectionAssert.AreEqual(new ushort[] { 0xD83D, 0xD83D, 0xDE42, 0xDE42 }, pair.Select(input => input.U.Ki.WScan).ToArray());
+        }
+        finally
+        {
+            Injector.Backend = originalBackend;
+        }
+    }
+
+    [TestMethod]
     public void ASlowClipboardLossHandlerDoesntHoldUpTheWorker()
     {
         // Its message box, opened on the worker, could sit behind other windows: until someone closed it, every trigger

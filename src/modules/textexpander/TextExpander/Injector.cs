@@ -528,17 +528,18 @@ internal static class Injector
                 }
 
                 Native.INPUT[] keys;
+                int key = 0;
                 if (ch is '\n' or '\t')
                 {
                     // Real key presses: many editors ignore a literal \n delivered as a Unicode event. A modifier the user
                     // holds once the guard has let go is let go of first, or Tab would become Shift+Tab.
-                    int vk = ch == '\n' ? Native.VK_RETURN : Native.VK_TAB;
-                    keys = [.. Modifiers(HeldModifiers(getAsyncKeyState), up: true), KeyDown(vk), KeyUp(vk)];
+                    key = ch == '\n' ? Native.VK_RETURN : Native.VK_TAB;
+                    keys = [.. Modifiers(HeldModifiers(getAsyncKeyState), up: true), KeyDown(key), KeyUp(key)];
                 }
-                else if (char.IsHighSurrogate(ch) && i + 1 < text.Length && char.IsLowSurrogate(text[i + 1]))
+                else if (char.IsHighSurrogate(ch) && i + 1 < chars.Length && char.IsLowSurrogate(chars[i + 1]))
                 {
                     // A surrogate pair must reach the target as a single uninterrupted unit.
-                    char low = text[++i];
+                    char low = chars[++i];
                     keys = [UnicodeDown(ch), UnicodeUp(ch), UnicodeDown(low), UnicodeUp(low)];
                 }
                 else
@@ -548,6 +549,13 @@ internal static class Injector
 
                 if (!Send(keys))
                 {
+                    // Cut off part way, a typed Enter or Tab may be left down: it's let go of, as Command Palette's
+                    // extension does.
+                    if (key != 0)
+                    {
+                        _ = DispatchExactly(dispatch, [KeyUp(key)]);
+                    }
+
                     return false;
                 }
 

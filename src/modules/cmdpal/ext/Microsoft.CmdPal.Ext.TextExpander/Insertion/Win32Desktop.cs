@@ -145,7 +145,9 @@ internal sealed class Win32Desktop : IDesktop
                     {
                         WVk = unicode ? (ushort)0 : stroke.VirtualKey,
                         WScan = unicode ? stroke.Character : (ushort)0,
-                        DwFlags = (unicode ? NativeMethods.KEYEVENTF_UNICODE : 0) | (stroke.Up ? NativeMethods.KEYEVENTF_KEYUP : 0),
+                        DwFlags = (unicode ? NativeMethods.KEYEVENTF_UNICODE : 0)
+                            | (stroke.Up ? NativeMethods.KEYEVENTF_KEYUP : 0)
+                            | (!unicode && KeyStrokes.IsExtended(stroke.VirtualKey) ? NativeMethods.KEYEVENTF_EXTENDEDKEY : 0),
                         DwExtraInfo = InputTag,
                     },
                 },
