@@ -1,6 +1,6 @@
 # Workspaces Protected Storage 验收台账
 
-最后更新：2026-11-05（UTC+08:00；E53首次迁移/源清理成功；E54确认6007人工重试后整体绿色，准备发布当前修复并以6010构建配对升级候选）
+最后更新：2026-11-05（UTC+08:00；E53首次迁移/源清理成功；E54修复已push，private6010构建162959015已启动，与绿色6007组成待验证升级候选）
 
 **这是验收状态的唯一维护入口。每执行完一项，就更新本文件；不能只在聊天里报告通过。**
 
@@ -81,8 +81,8 @@ PERF-02/03）；数据一致性1条（DATA-09）；部署核对1条（LOCAL-01�
 
 | 项目 | 当前记录 |
 |---|---|
-| 待验收代码 | `feature/workspaces-protected-storage-main-20261028`；本次发布E49 SDK整合、E50 Capture ID/错误提示修复及E46～E54证据。E51完整Debug6009已构建，E53首次迁移成功；live Capture仍未补验收 |
-| 正式签名构建 | E54重新查询：[162529587](https://dev.azure.com/microsoft/Dart/_build/results?buildId=162529587)人工重试后于11-02 19:38:37整体SUCCEEDED，版本`0.101.6007.0`、代码`6bd56af147`；x64 attempt2及ARM64均成功，两个正常Release artifact存在。E42首轮失败历史保留；新候选6010待构建，尚未执行已安装/升级验收 |
+| 待验收代码 | `feature/workspaces-protected-storage-main-20261028`；实现提交`0a59eeafe9`已push到origin及fork，包含E49 SDK整合、E50 Capture ID/错误提示修复及E46～E54证据。E51完整Debug6009已构建，E53首次迁移成功；live Capture仍未补验收 |
+| 正式签名构建 | E54：[162529587](https://dev.azure.com/microsoft/Dart/_build/results?buildId=162529587)人工重试后6007整体SUCCEEDED，x64/ARM64正常Release artifact存在；E42首轮失败历史保留。新6010 [162959015](https://dev.azure.com/microsoft/Dart/_build/results?buildId=162959015)于11-05 20:00:59排队并进入inProgress，固定`0a59eeafe9`、private分支、Release/x64+ARM64；尚未绿色或执行已安装/升级验收 |
 | 主线基线 | `8056ba09721708bceee6176291b24af7ebabb0b3`；包含 PR #51114，合并提交 `06e6ae43e225cac51c2f282b0eebc42c6f995c97` |
 | 集成 worktree | `D:\PowerToys-Workspaces-Integration` |
 | 待测本地包 | x64 Debug **`0.101.6009.0`**；E52 Reset后用户完成首次Setup，E53服务及两条迁移记录已就绪，legacy源已清理；Editor保持打开 |
@@ -147,7 +147,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | 编号 | 事实 | 影响与解除条件 |
 |---|---|---|
 | B01（已解除） | 早前提权取消后服务留在 6002；14:39 发现新 6003 客户端反复被旧 catalog 拒绝 | 2026-10-28 14:49 已授权保留数据更新，核对新 ready/catalog 和不变的数据哈希（E13/E15）。未执行的用例转为 NOT RUN，不自动变为 PASS |
-| B02 | E54确认6007重试后x64/ARM64整体绿色且正常Release产物存在；升级候选配对为6007 -> 6010，新包待构建，实际字节/签名和已安装资格仍需核验 | 绿色构建及候选配对不等于P环境安装/升级/卸载已执行；不能用本地helper或历史3000/3001结果替代 |
+| B02 | E54确认6007重试后x64/ARM64整体绿色且正常Release产物存在；升级候选配对为6007/162529587 -> 6010/162959015，新包构建中，实际字节/签名和已安装资格仍需核验 | 绿色构建及候选配对不等于P环境安装/升级/卸载已执行；不能用本地helper或历史3000/3001结果替代 |
 | B03（历史探测取消） | 6004 隔离 High Arranger 探测曾返回 1223；之后用户已完成 6004 服务更新（E21） | High/OTS 完整资格仍需独立证据；不再把部署列为 6004 阻塞。6005 更新单独记录 |
 | B04（已解除） | E31 的6006更新曾返回1223；E33 开始时已观察到匹配的6006客户端/runtime | 本轮实际业务验证已执行；不把历史授权取消继续当作当前部署阻塞 |
 | B05 | E33 当前会话与Runner均非管理员；WIP skill要求跳过管理员变体 | High目标/OTS仍需另行授权的适用环境；未为覆盖率发起UAC |
@@ -1405,7 +1405,7 @@ initialization operation为`15889ba5-b465-4322-9098-89a9b440cd82`，
 `nov05-migration-verification`，包含result/index/ready及受保护数据的本地副本；
 不提交用户JSON。
 
-### E54：2026-11-05，发布修复并准备6007 -> 6010升级构建配对
+### E54：2026-11-05，修复已push并启动6010私有构建，记录6007升级基线
 
 用户要求更新台账、push当前代码、启动同一private branch的新构建，
 并利用上次绿色构建与新构建做后续升级测试。本轮不执行安装或升级。
@@ -1427,7 +1427,22 @@ API返回正常`build-x64-Release`和`build-arm64-Release`产物，
 `refs/heads/feature/workspaces-protected-storage-main-20261028`、
 Release/x64+ARM64、`releaseIntent=auto`、不发布public symbols。
 本地执行pipeline原metadata resolver已确认结果为`private-validation/private`，
-不发布preview、也不允许public symbols。新构建需固定在本次推送的源码提交。
+不发布preview、也不允许public symbols。
+
+实现提交`0a59eeafe9c338886db8b33d445e7966fca16741`已push至origin和fork，
+两端远端分支tip均核对一致。有效新构建为
+[162959015](https://dev.azure.com/microsoft/Dart/_build/results?buildId=162959015)，
+11-05 20:00:59（UTC+08:00）排队，已进入`inProgress`。
+Runs回执与独立Build API查询均确认精确branch、source commit、6010版本和构建矩阵；
+当时x64/ARM64/SDK job尚在等待agent，不称构建绿色或安装包已就绪。
+本节的后续构建链接补记为文档更新，不改变该run固定的产品代码。
+
+**排队操作异常如实保留：** 两次通用Runs API提交未应用请求中的分支/版本覆盖，
+实际回执成为main/auto，产生`162958562`和`162958629`。
+均在发现后立即取消，并确认`completed/canceled`，未当作6010或产品失败。
+改用`az pipelines run --branch ... --commit-id ... --parameters versionNumber=0.101.6010.0`
+后得到上述正确run；该命令返回Runs结构，最终核对读取
+`resources.repositories.self`并用Build API交叉确认，而非将缺少顶层source字段误判为错误分支。
 
 本次代码已有E49/E50定向回归及E51完整6009包构建证据；没有把原生
 Photos名称差异失败或尚未进行的live Capture复测改成PASS。
@@ -1438,7 +1453,8 @@ Photos名称差异失败或尚未进行的live Capture复测改成PASS。
 应核对工作区及初始化状态保留、VA/固定服务路径不变、实际PE版本更新、
 不重复迁移/首次设置以及正常owner维护授权行为；本轮不关闭UPD类验收。
 构建API、artifact和installer阶段证据保存在会话files的
-`nov05-private-build-6010`。新run身份在排队后补入本节。
+`nov05-private-build-6010`，包括旧版绿色build/timeline/artifacts、两个误排的取消回执、
+正确`queued-build.json`、`verified-build.json`和初始timeline。
 
 ### 本次证据
 
