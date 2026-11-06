@@ -29,6 +29,8 @@ properties:
           Enabled: false
         MouseButtonLock:
           Enabled: false
+        CursorBrake:
+          Enabled: false
         MouseHighlighter:
           Enabled: false
         MouseJump:

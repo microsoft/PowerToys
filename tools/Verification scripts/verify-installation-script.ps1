@@ -402,6 +402,7 @@ function Test-CoreFiles {
         'Wox.Plugin.dll',
         
         # Mouse utilities
+        'PowerToys.CursorBrake.dll',
         'PowerToys.FindMyMouse.dll',
         'PowerToys.MouseButtonLock.dll',
         'PowerToys.MouseHighlighter.dll',

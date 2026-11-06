@@ -148,6 +148,12 @@ namespace UnitTestsCommonUtils
             Assert::IsTrue(IsValidGpoResult(result));
         }
 
+        TEST_METHOD(GetConfiguredCursorBrakeEnabledValue_ReturnsValidState)
+        {
+            auto result = getConfiguredCursorBrakeEnabledValue();
+            Assert::IsTrue(IsValidGpoResult(result));
+        }
+
         TEST_METHOD(GetConfiguredMouseWithoutBordersEnabledValue_ReturnsValidState)
         {
             auto result = getConfiguredMouseWithoutBordersEnabledValue();

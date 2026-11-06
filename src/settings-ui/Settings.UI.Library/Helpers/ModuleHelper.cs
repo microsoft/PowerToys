@@ -22,6 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.MousePointerCrosshairs => "MouseUtils_MousePointerCrosshairs/Header",
                 ModuleType.CursorWrap => "MouseUtils_CursorWrap/Header",
                 ModuleType.MouseButtonLock => "MouseUtils_MouseButtonLock/Header",
+                ModuleType.CursorBrake => "MouseUtils_CursorBrake/Header",
                 ModuleType.GeneralSettings => "QuickAccessTitle/Title",
                 _ => $"{moduleType}/ModuleTitle",
             };
@@ -58,6 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.CropAndLock => generalSettingsConfig.Enabled.CropAndLock,
                 ModuleType.CursorWrap => generalSettingsConfig.Enabled.CursorWrap,
                 ModuleType.MouseButtonLock => generalSettingsConfig.Enabled.MouseButtonLock,
+                ModuleType.CursorBrake => generalSettingsConfig.Enabled.CursorBrake,
                 ModuleType.EnvironmentVariables => generalSettingsConfig.Enabled.EnvironmentVariables,
                 ModuleType.FancyZones => generalSettingsConfig.Enabled.FancyZones,
                 ModuleType.FileLocksmith => generalSettingsConfig.Enabled.FileLocksmith,
@@ -102,6 +104,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 case ModuleType.CropAndLock: generalSettingsConfig.Enabled.CropAndLock = isEnabled; break;
                 case ModuleType.CursorWrap: generalSettingsConfig.Enabled.CursorWrap = isEnabled; break;
                 case ModuleType.MouseButtonLock: generalSettingsConfig.Enabled.MouseButtonLock = isEnabled; break;
+                case ModuleType.CursorBrake: generalSettingsConfig.Enabled.CursorBrake = isEnabled; break;
                 case ModuleType.EnvironmentVariables: generalSettingsConfig.Enabled.EnvironmentVariables = isEnabled; break;
                 case ModuleType.FancyZones: generalSettingsConfig.Enabled.FancyZones = isEnabled; break;
                 case ModuleType.FileLocksmith: generalSettingsConfig.Enabled.FileLocksmith = isEnabled; break;
@@ -149,6 +152,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.CropAndLock => CropAndLockSettings.ModuleName,
                 ModuleType.CursorWrap => CursorWrapSettings.ModuleName,
                 ModuleType.MouseButtonLock => MouseButtonLockSettings.ModuleName,
+                ModuleType.CursorBrake => CursorBrakeSettings.ModuleName,
                 ModuleType.EnvironmentVariables => EnvironmentVariablesSettings.ModuleName,
                 ModuleType.FancyZones => FancyZonesSettings.ModuleName,
                 ModuleType.FileLocksmith => FileLocksmithSettings.ModuleName,
