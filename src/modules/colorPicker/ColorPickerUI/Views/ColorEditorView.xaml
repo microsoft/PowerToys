@@ -8,7 +8,10 @@
     xmlns:models="using:ColorPicker.Models"
     x:Name="colorEditorControl"
     mc:Ignorable="d">
-    <Grid>
+    <Grid KeyboardAcceleratorPlacementMode="Hidden">
+        <Grid.KeyboardAccelerators>
+            <KeyboardAccelerator Key="I" Invoked="PickAccelerator_Invoked" />
+        </Grid.KeyboardAccelerators>
         <Grid.RowDefinitions>
             <RowDefinition Height="56" />
             <RowDefinition Height="*" />
@@ -43,6 +46,7 @@
                 VerticalContentAlignment="Center"
                 ItemContainerTransitions="{x:Null}"
                 ItemsSource="{Binding ColorsHistory}"
+                KeyboardAcceleratorPlacementMode="Hidden"
                 PointerWheelChanged="HistoryColors_OnPointerWheelChanged"
                 ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                 SelectedIndex="{Binding SelectedColorIndex, Mode=TwoWay}"
@@ -52,6 +56,12 @@
                         <ItemsStackPanel VerticalAlignment="Top" Orientation="Horizontal" />
                     </ItemsPanelTemplate>
                 </ListView.ItemsPanel>
+                <ListView.KeyboardAccelerators>
+                    <KeyboardAccelerator
+                        Key="Delete"
+                        Invoked="DeleteAccelerator_Invoked"
+                        ScopeOwner="{x:Bind HistoryColors}" />
+                </ListView.KeyboardAccelerators>
                 <ListView.ContextFlyout>
                     <MenuFlyout x:Name="HistoryContextFlyout" Opening="HistoryContextFlyout_Opening">
                         <MenuFlyoutItem
