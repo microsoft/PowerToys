@@ -33,10 +33,9 @@ namespace KeyboardManagerEditorUI.Controls
 
         private readonly ObservableCollection<string> _triggerKeys = new();
         private readonly ObservableCollection<string> _actionKeys = new();
+        private readonly ObservableCollection<Helpers.PowerScriptInfo> _powerScripts = new();
         private List<string> _triggerKeysBeforeRecording = new();
         private List<string> _actionKeysBeforeRecording = new();
-
-        private readonly ObservableCollection<Helpers.PowerScriptInfo> _powerScripts = new();
 
         private bool _disposed;
         private bool _internalUpdate;

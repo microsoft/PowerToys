@@ -20,6 +20,31 @@ namespace AdvancedPaste.UnitTests.ServicesTests;
 public sealed class PasteFormatExecutorTests
 {
     [TestMethod]
+    public async Task KernelQuery_PreservesSuppliedInputAndProviderOverride()
+    {
+        var package = new DataPackage();
+        package.SetText("supplied input");
+        var input = package.GetView();
+        var result = new DataPackage();
+        result.SetText("transformed");
+        var format = PasteFormat.CreateCustomAIFormat(PasteFormats.KernelQuery, "action", "prompt", false, ClipboardFormat.Text, true, "provider");
+        var service = new Mock<IKernelService>(MockBehavior.Strict);
+        service.Setup(kernel => kernel.TransformClipboardAsync(
+            "prompt",
+            input,
+            false,
+            It.IsAny<CancellationToken>(),
+            It.IsAny<IProgress<double>>(),
+            "provider")).ReturnsAsync(result);
+        var executor = new PasteFormatExecutor(service.Object, Mock.Of<ICustomActionTransformService>(), Mock.Of<IUserSettings>());
+
+        var output = await executor.ExecutePasteFormatAsync(format, input, PasteActionSource.CommandLine, CancellationToken.None, null);
+
+        Assert.AreSame(result, output);
+        service.VerifyAll();
+    }
+
+    [TestMethod]
     public async Task Markdown_TransformsHtmlOnlyInputThroughSharedExecutor()
     {
         var package = new DataPackage();
