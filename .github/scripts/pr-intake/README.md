@@ -33,6 +33,11 @@ label. Draft pull requests receive product labels but skip readiness checks.
 - If the PR is clean and a previous intake comment exists, it is replaced with a
   short all-clear note.
 - If the PR is clean and no intake comment exists, nothing is posted.
+- If the PR author has the `admin`, `maintain`, `write`, or `triage` repository
+  role (core team, extended team, and code owners), no comment is posted, any
+  trusted canonical intake comment is deleted, and `Needs-Author-Feedback` is
+  never applied. Product and `Ready for review` labels are still managed. If
+  the permission lookup fails, the PR is handled like a community PR.
 
 Missing issue references are advisory. Explicitly invalid references, merge
 conflicts, unknown mergeability, and missing required visual evidence block
