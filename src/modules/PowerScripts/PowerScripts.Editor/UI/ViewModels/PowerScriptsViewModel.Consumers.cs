@@ -60,6 +60,7 @@ public partial class PowerScriptsViewModel
             FileExplorerConsumer.Update(fileExplorer);
             _consumerSettingsLoaded = true;
             OnPropertyChanged(nameof(IsEnabled));
+            OnPropertyChanged(nameof(ExecutionSettingsSummary));
             OnPropertyChanged(nameof(IsPowerScriptsPolicyControlled));
         }
         catch

@@ -15,17 +15,71 @@ See the [consumer onboarding guide](CONSUMER-INTEGRATION.md#automatic-discovery-
 
 Open **Settings > PowerScripts > Open PowerScripts editor** to manage PowerScripts in a
 standalone WinUI 3 window. **My scripts** contains the library, creation flow, descriptor details,
-scripts folder, and Windows/Linux runtime and sandbox controls. **Consumer modules** contains
-integration switches and their effective policy state. **Activity** contains attributed execution
-history, refresh, and safe history clearing. Settings retains the module enable switch.
+and per-script review. **Activity** contains attributed execution history, refresh, and safe history
+clearing. PowerToys Settings owns enablement, the scripts folder, Windows/Linux runtime and sandbox
+controls, integration switches, and AI agent skills. The editor shows effective configuration and
+links back to Settings; it refreshes configuration when reactivated.
 The editor uses the existing Host and storage; moving the UI does not migrate scripts, trust, or bindings.
 
-Integration switches for Advanced Paste and Keyboard Manager live in the editor's **Consumer modules** tab.
+Integration switches for Advanced Paste and Keyboard Manager live in **Settings > PowerScripts > Use PowerScripts in**.
 The shared Host enforces them for discovery and execution, retaining existing bindings when disabled.
 Advanced Paste's legacy preference is preserved; Keyboard Manager defaults on. Group Policy can
 manage the module and each integration without replacing saved preferences. A disabled PowerScripts
 module or a policy-disabled parent utility always wins over a consumer enable policy.
 See [central settings and policy precedence](CONSUMER-INTEGRATION.md#central-integration-settings-and-group-policy).
+
+## AI agent skills
+
+**Settings > PowerScripts > AI agent skills** installs the bundled
+[`powertoys-powerscripts` skill](AgentSkills/powertoys-powerscripts/SKILL.md) into a selected local
+agent's personal skill directory:
+
+| Agent | Destination |
+|---|---|
+| Copilot CLI / VS Code Copilot | `%USERPROFILE%\.copilot\skills\powertoys-powerscripts` |
+| Claude Code | `%USERPROFILE%\.claude\skills\powertoys-powerscripts` |
+| Codex | `%USERPROFILE%\.agents\skills\powertoys-powerscripts` |
+| Custom | `powertoys-powerscripts` inside a user-selected skills folder |
+
+Install the agent separately. This installs the complete instruction/reference bundle, not an MCP
+server, an execution permission, a trust approval, or a hotkey binding. Remote, cloud and WSL agents
+need separate setup. The portable skill uses existing Host commands to scaffold and validate scripts
+after planning the consumer, input/output contract, typed parameters, runtime/environment,
+dependencies and failure behavior. It documents Advanced Paste, Keyboard Manager and conditional
+File Explorer integration capabilities; a profile does not mean that integration is installed.
+Python guidance distinguishes Windows, the user's WSL distribution, and managed Linux containers,
+including environment-specific APIs, dependencies and paths. Keyboard Manager instructions are
+optional hotkey handoff guidance, not a separate skill or a prerequisite for other consumers.
+No KBM configuration API or direct JSON editing is introduced. It cannot promise host VPN changes
+work under sandboxing. Integration contributors must update the
+[consumer profiles](AgentSkills/powertoys-powerscripts/references/consumers.md) and bundle version
+when adding/changing adapters.
+
+Choose one of the three agents or **Custom**, which opens a folder picker. Select the agent's
+skills parent folder; PowerToys creates `powertoys-powerscripts` inside it. Custom selections are
+remembered, and **Choose folder** is available only for Custom. The destination and installed/bundled
+versions are visible before installing/updating. A single action shows **Install** when absent,
+**Update** for an intact managed copy with another bundled version, or a disabled **Update** when
+already current. Modified/unmanaged copies also disable Update with an explanation, never overwrite.
+**Keep this skill updated when PowerScripts Settings opens** is opt-in. PowerToys records managed
+copies and per-file hashes in the separate `PowerScripts\agent-skills.json` state file. When the page
+opens, intact opted-in copies are synchronized with the bundle shipped by the installed PowerToys
+release. User changes (including added or missing files) pause replacement; unknown existing folders
+are never overwritten. Install to a different Custom folder to review a separate bundled copy. Source and
+destination reparse paths are rejected; concurrent management is serialized. Failures are reported.
+The installer only packages the bundle; the per-user Settings process manages personal copies.
+Custom copies use the same ownership checks and optional updates as named-agent copies. Switching
+folders preserves each managed copy and its update choice; selecting a named agent's folder through
+Custom uses the existing record. Older exported/manual copies remain unmanaged and are not adopted.
+Start a fresh session after changing skills, or use Copilot CLI's
+`/skills reload` and `/skills info powertoys-powerscripts`. Discovery does not guarantee selection;
+explicitly request the skill when needed, for example "Use the powertoys-powerscripts skill to create
+a script for this task." Existing conversations may retain old instructions.
+
+When changing the shipped skill, update `AgentSkills\powertoys-powerscripts\bundle.json`'s version
+in the same change. The Host build/publish includes the bundle under `AgentSkill`, covered by the
+existing recursive PowerScripts installer payload. Settings builds also copy it locally for
+development. No consumer discovery/execution JSON contracts or script/trust/binding formats change.
 
 ## Packages and discovery
 

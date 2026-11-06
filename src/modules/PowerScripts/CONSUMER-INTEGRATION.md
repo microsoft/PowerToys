@@ -123,7 +123,7 @@ Keyboard Manager PowerScript bindings to regenerate their command line.
 
 ### Central integration settings and Group Policy
 
-Put each consumer's integration switch in **PowerScripts editor > Consumer modules**, not
+Put each consumer's integration switch in **PowerToys Settings > PowerScripts > Use PowerScripts in**, not
 in the consumer's settings page. PowerScripts owns `config.json`'s
 `consumers: { "advanced-paste": true, "keyboard-manager": true }` preferences. Advanced Paste uses
 its legacy `properties.powerscripts-enabled` value until a central preference exists (default off).
@@ -157,11 +157,14 @@ even if a consumer policy enables its integration; a policy disabling the parent
 Enabling an integration does not enable its parent utility, enable a runtime, approve a script, or
 relax MXC. Policies do not overwrite user preferences, so removing a policy restores the preference.
 Malformed or inaccessible policies are reported as errors, not treated as permission to execute.
-The editor shows effective values and locks policy-managed controls.
+PowerToys Settings shows effective values and locks policy-managed controls.
 
 The generic per-consumer policy resolver accepts stable consumer IDs, so adding a consumer needs no
 new execution gate. Register its parent utility/default in `ConsumerSettings`, add its central
-editor card and ADMX/ADML policy, and use the same ID in discovery, execution, and policy values.
+Settings card in `Settings.UI\SettingsXAML\Views\PowerScriptsPage.xaml` and ADMX/ADML policy, and use
+the same ID in discovery, execution, and policy values. The standalone editor does not own global
+configuration. Relocating these controls changes no Host commands, consumer IDs, preferences,
+default values, policies, or module-owned bindings.
 Refresh discovery when presenting actions; do not cache enablement as an authorization decision.
 Host enforcement also covers stale UI and saved bindings. Policy changes affect subsequent
 invocations, not already-running scripts.
@@ -215,8 +218,8 @@ enable a runtime or bypass execution checks.
 automatic discovery when a consumer can offer every applicable script. Saved assignments and a
 configuration picker are only necessary for consumers that need explicit bindings.
 
-Advanced Paste is the automatic-discovery example. Its integration toggle lives in the editor's
-Consumer modules tab and defaults off. When enabled, the paste window offers every available script with
+Advanced Paste is the automatic-discovery example. Its integration toggle lives in
+PowerToys Settings > PowerScripts > Use PowerScripts in and defaults off. When enabled, the paste window offers every available script with
 compatible clipboard input and a pasteable output. Text, files, bitmap images, and audio are
 matched against the declared contracts, including file/media restrictions. No-input scripts are
 excluded. AP stores no per-script selection or exclusion list.
@@ -273,6 +276,13 @@ do not reference the Settings executable from a runtime module or add UI depende
 8. Test input filtering, input changes, master enablement, runtime-disabled behavior, and trust
    invalidation. For saved bindings, also test search-preserved selection, cancellation, stale IDs,
    and persistence. Do not introduce a runtime picker unless that consumer needs one.
+9. Update the bundled agent skill's
+   [`references/consumers.md`](AgentSkills/powertoys-powerscripts/references/consumers.md) in the same
+   integration change. Record the module's purpose/ID, exact accepted I/O and result presentation,
+   file/media limits, parameter UX, setup/bindings, timeout/cancellation/error behavior, and build
+   availability. Check against the adapter, not just Host support; `consumers list` is not a
+   capability schema. Update related handoff guidance and bump `bundle.json` so managed copies
+   receive the new knowledge. Keep unavailable/separate-branch integrations explicitly conditional.
 
 ## Script presentation and icons
 

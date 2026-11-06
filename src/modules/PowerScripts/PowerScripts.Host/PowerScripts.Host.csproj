@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="..\AgentSkills\powertoys-powerscripts\**\*">
+      <Link>AgentSkill\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
     <ProjectReference Include="..\PowerScripts.Core\PowerScripts.Core.csproj" />
     <ProjectReference Include="..\PowerScripts.Client\PowerScripts.Client.csproj" />
   </ItemGroup>

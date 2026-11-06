@@ -14,7 +14,7 @@ uses only `PowerScripts.Client` for execution and exports results as new, non-ov
 The existing `powerpreview` module starts/stops the catalogue process. Preview and thumbnail
 handlers do not load or execute scripts.
 
-Enable the integration in **PowerScripts editor > Consumer modules > File Explorer**. The
+Enable the integration in **Settings > PowerScripts > Use PowerScripts in > File Explorer**. The
 **Show parameter options before running** preference is in File Explorer Add-ons settings
 and defaults on. With it off, required parameters without valid defaults disable the action.
 No per-script settings are stored. Scripts receive the complete selection once.
