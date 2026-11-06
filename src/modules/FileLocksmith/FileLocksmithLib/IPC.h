@@ -14,7 +14,6 @@ namespace ipc
         HRESULT start();
         HRESULT add_path(LPCWSTR path);
         void finish();
-        HANDLE get_read_handle();
 
     private:
         std::ofstream m_stream;
