@@ -22,6 +22,7 @@ using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Exceptions;
 
 using SystemClipboard = System.Windows.Forms.Clipboard;
+using ThreadingTimer = System.Threading.Timer;
 
 // <summary>
 //     Clipboard related routines.
@@ -45,19 +46,270 @@ internal static class Clipboard
     private const int TEXT_HEADER_SIZE = 12;
     private const int DATA_SIZE = 48;
     private const string TEXT_TYPE_SEP = "{4CFF57F7-BEDD-43d5-AE8F-27A61E886F2F}";
+    private static readonly object LastDragDropFileLock = new();
     private static long lastClipboardEventTime;
     private static string lastMachineWithClipboardData;
     private static string lastDragDropFile;
+    private static LocalPathLease lastDragDropFileLease;
+    private static bool lastDragDropFileIsDirectory;
+    private static bool lastDragDropFileRequiresLease;
+    private static bool lastDragDropFileIsTransient;
+    private static bool lastDragDropFileReleaseRequested;
+    private static bool lastDragDropFileTransferCompleted;
+    private static int lastDragDropFileActiveTransfers;
+    private static long lastDragDropFileGeneration;
+    private static ThreadingTimer lastDragDropFileReleaseTimer;
+    private static long nextTransientDragValidationGeneration;
+    private static long pendingTransientDragValidationGeneration;
+    private static bool pendingTransientDragReleaseRequested;
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
     internal static long clipboardCopiedTime;
 #pragma warning restore SA1307
+
+    internal static TimeSpan TransientLeaseReleaseTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
     internal static ID LastIDWithClipboardData { get; set; }
 
     internal static string LastDragDropFile
     {
-        get => Clipboard.lastDragDropFile;
-        set => Clipboard.lastDragDropFile = value;
+        get
+        {
+            lock (LastDragDropFileLock)
+            {
+                return Clipboard.lastDragDropFile;
+            }
+        }
+
+        set => SetLastDragDropFile(value, null);
+    }
+
+    internal static bool IsClipboardFileSizeSupported(long length)
+    {
+        return length <= MAX_CLIPBOARD_FILE_SIZE_CAN_BE_SENT;
+    }
+
+    internal static void SetLastDragDropFile(
+        string path,
+        LocalPathLease lease,
+        bool isDirectory = false,
+        bool requiresLease = false,
+        bool isTransient = false)
+    {
+        LocalPathLease previousLease;
+        ThreadingTimer previousTimer;
+
+        lock (LastDragDropFileLock)
+        {
+            previousLease = lastDragDropFileLease;
+            previousTimer = lastDragDropFileReleaseTimer;
+            lastDragDropFileGeneration++;
+            lastDragDropFile = path;
+            lastDragDropFileLease = lease;
+            lastDragDropFileIsDirectory = isDirectory;
+            lastDragDropFileRequiresLease = requiresLease;
+            lastDragDropFileIsTransient = isTransient;
+            lastDragDropFileReleaseRequested = false;
+            lastDragDropFileTransferCompleted = false;
+            lastDragDropFileActiveTransfers = 0;
+            lastDragDropFileReleaseTimer = null;
+            pendingTransientDragValidationGeneration = 0;
+            pendingTransientDragReleaseRequested = false;
+        }
+
+        previousTimer?.Dispose();
+        previousLease?.Dispose();
+    }
+
+    internal static long BeginTransientDragFileValidation()
+    {
+        lock (LastDragDropFileLock)
+        {
+            pendingTransientDragValidationGeneration = ++nextTransientDragValidationGeneration;
+            pendingTransientDragReleaseRequested = false;
+            return pendingTransientDragValidationGeneration;
+        }
+    }
+
+    internal static bool TrySetValidatedTransientDragFile(
+        long validationGeneration,
+        string path,
+        LocalPathLease lease)
+    {
+        LocalPathLease previousLease = null;
+        ThreadingTimer previousTimer = null;
+
+        lock (LastDragDropFileLock)
+        {
+            if (pendingTransientDragValidationGeneration != validationGeneration
+                || pendingTransientDragReleaseRequested)
+            {
+                if (pendingTransientDragValidationGeneration == validationGeneration)
+                {
+                    pendingTransientDragValidationGeneration = 0;
+                    pendingTransientDragReleaseRequested = false;
+                }
+
+                return false;
+            }
+
+            previousLease = lastDragDropFileLease;
+            previousTimer = lastDragDropFileReleaseTimer;
+            pendingTransientDragValidationGeneration = 0;
+            pendingTransientDragReleaseRequested = false;
+            lastDragDropFileGeneration++;
+            lastDragDropFile = path;
+            lastDragDropFileLease = lease;
+            lastDragDropFileIsDirectory = false;
+            lastDragDropFileRequiresLease = false;
+            lastDragDropFileIsTransient = true;
+            lastDragDropFileReleaseRequested = false;
+            lastDragDropFileTransferCompleted = false;
+            lastDragDropFileActiveTransfers = 0;
+            lastDragDropFileReleaseTimer = null;
+        }
+
+        previousTimer?.Dispose();
+        previousLease?.Dispose();
+        return true;
+    }
+
+    internal static void CancelTransientDragFileValidation(long validationGeneration)
+    {
+        lock (LastDragDropFileLock)
+        {
+            if (pendingTransientDragValidationGeneration == validationGeneration)
+            {
+                pendingTransientDragValidationGeneration = 0;
+                pendingTransientDragReleaseRequested = false;
+            }
+        }
+    }
+
+    internal static bool TryAcquireLastDragDropFile(
+        out string path,
+        out LocalPathLease lease,
+        out bool isDirectory,
+        out bool requiresLease)
+    {
+        lock (LastDragDropFileLock)
+        {
+            path = lastDragDropFile;
+            lease = lastDragDropFileLease?.Acquire();
+            isDirectory = lastDragDropFileIsDirectory;
+            requiresLease = lastDragDropFileRequiresLease;
+
+            if (lease != null && lastDragDropFileIsTransient)
+            {
+                lastDragDropFileActiveTransfers++;
+            }
+        }
+
+        return path != null;
+    }
+
+    internal static void RequestLastDragDropFileReleaseAfterSend()
+    {
+        LocalPathLease ownerLeaseToRelease = null;
+        ThreadingTimer timerToDispose = null;
+
+        lock (LastDragDropFileLock)
+        {
+            if (pendingTransientDragValidationGeneration != 0)
+            {
+                pendingTransientDragReleaseRequested = true;
+            }
+
+            if (!lastDragDropFileIsTransient)
+            {
+                return;
+            }
+
+            lastDragDropFileReleaseRequested = true;
+            if (lastDragDropFileTransferCompleted && lastDragDropFileActiveTransfers == 0)
+            {
+                ownerLeaseToRelease = ClearLastDragDropFileLocked(out timerToDispose);
+            }
+            else if (lastDragDropFileReleaseTimer == null)
+            {
+                long generation = lastDragDropFileGeneration;
+                lastDragDropFileReleaseTimer = new ThreadingTimer(
+                    ReleaseExpiredTransientDragFile,
+                    generation,
+                    TransientLeaseReleaseTimeout,
+                    Timeout.InfiniteTimeSpan);
+            }
+        }
+
+        timerToDispose?.Dispose();
+        ownerLeaseToRelease?.Dispose();
+    }
+
+    internal static void CompleteLastDragDropFileSend(LocalPathLease lease)
+    {
+        if (lease == null)
+        {
+            return;
+        }
+
+        LocalPathLease ownerLeaseToRelease = null;
+        ThreadingTimer timerToDispose = null;
+
+        lock (LastDragDropFileLock)
+        {
+            if (!lastDragDropFileIsTransient
+                || !ReferenceEquals(lastDragDropFileLease, lease)
+                || lastDragDropFileActiveTransfers == 0)
+            {
+                return;
+            }
+
+            lastDragDropFileActiveTransfers--;
+            lastDragDropFileTransferCompleted = true;
+            if (lastDragDropFileReleaseRequested && lastDragDropFileActiveTransfers == 0)
+            {
+                ownerLeaseToRelease = ClearLastDragDropFileLocked(out timerToDispose);
+            }
+        }
+
+        timerToDispose?.Dispose();
+        ownerLeaseToRelease?.Dispose();
+    }
+
+    private static void ReleaseExpiredTransientDragFile(object state)
+    {
+        long generation = (long)state;
+        LocalPathLease ownerLeaseToRelease = null;
+        ThreadingTimer timerToDispose = null;
+
+        lock (LastDragDropFileLock)
+        {
+            if (generation == lastDragDropFileGeneration
+                && lastDragDropFileIsTransient
+                && lastDragDropFileReleaseRequested
+                && lastDragDropFileActiveTransfers == 0)
+            {
+                ownerLeaseToRelease = ClearLastDragDropFileLocked(out timerToDispose);
+            }
+        }
+
+        timerToDispose?.Dispose();
+        ownerLeaseToRelease?.Dispose();
+    }
+
+    private static LocalPathLease ClearLastDragDropFileLocked(out ThreadingTimer timer)
+    {
+        LocalPathLease ownerLease = lastDragDropFileLease;
+        timer = lastDragDropFileReleaseTimer;
+        lastDragDropFile = null;
+        lastDragDropFileLease = null;
+        lastDragDropFileIsDirectory = false;
+        lastDragDropFileRequiresLease = false;
+        lastDragDropFileIsTransient = false;
+        lastDragDropFileReleaseRequested = false;
+        lastDragDropFileTransferCompleted = false;
+        lastDragDropFileActiveTransfers = 0;
+        lastDragDropFileReleaseTimer = null;
+        return ownerLease;
     }
 
     internal static string LastMachineWithClipboardData
@@ -149,41 +401,37 @@ internal static class Clipboard
                     }
 
                     string filePath = stringData;
-
-                    _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
+                    if (!LocalPathLease.TryCreate(filePath, out LocalPathLease lease))
                     {
-                        if (File.Exists(filePath) || Directory.Exists(filePath))
+                        Logger.Log("CheckClipboardEx: Rejected non-local or unstable path: " + filePath);
+                    }
+                    else if (!lease.IsDirectory && lease.Length <= MAX_CLIPBOARD_FILE_SIZE_CAN_BE_SENT)
+                    {
+                        Logger.LogDebug("Clipboard contains: " + filePath);
+                        lease.Dispose();
+                        SetLastDragDropFile(filePath, null, requiresLease: true);
+                        Common.SendClipboardBeat();
+                        Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE] { Common.ICON_BIG_CLIPBOARD, -1, Common.ICON_BIG_CLIPBOARD, -1 });
+                    }
+                    else
+                    {
+                        if (lease.IsDirectory)
                         {
-                            if (File.Exists(filePath) && new FileInfo(filePath).Length <= MAX_CLIPBOARD_FILE_SIZE_CAN_BE_SENT)
-                            {
-                                Logger.LogDebug("Clipboard contains: " + filePath);
-                                LastDragDropFile = filePath;
-                                Common.SendClipboardBeat();
-                                Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE] { Common.ICON_BIG_CLIPBOARD, -1, Common.ICON_BIG_CLIPBOARD, -1 });
-                            }
-                            else
-                            {
-                                if (Directory.Exists(filePath))
-                                {
-                                    Logger.LogDebug("Clipboard contains a directory: " + filePath);
-                                    LastDragDropFile = filePath;
-                                    Common.SendClipboardBeat();
-                                }
-                                else
-                                {
-                                    LastDragDropFile = filePath + " - File too big (greater than 100MB), please drag and drop the file instead!";
-                                    Common.SendClipboardBeat();
-                                    Logger.Log("Clipboard: File too big: " + filePath);
-                                }
-
-                                Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE] { Common.ICON_ERROR, -1, Common.ICON_ERROR, -1 });
-                            }
+                            Logger.LogDebug("Clipboard contains a directory: " + filePath);
+                            lease.Dispose();
+                            SetLastDragDropFile(filePath, null, isDirectory: true);
+                            Common.SendClipboardBeat();
                         }
                         else
                         {
-                            Logger.Log("CheckClipboardEx: File not found: " + filePath);
+                            lease.Dispose();
+                            LastDragDropFile = filePath + " - File too big (greater than 100MB), please drag and drop the file instead!";
+                            Common.SendClipboardBeat();
+                            Logger.Log("Clipboard: File too big: " + filePath);
                         }
-                    });
+
+                        Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE] { Common.ICON_ERROR, -1, Common.ICON_ERROR, -1 });
+                    }
                 }
                 else
                 {

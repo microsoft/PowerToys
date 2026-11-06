@@ -121,7 +121,7 @@ namespace MouseWithoutBorders
     {
         void SendLog(string log);
 
-        void SendDragFile(string fileName);
+        void SendDragFile(string fileName, long validationGeneration);
 
         void SendClipboardData(ByteArrayOrString data, bool isFilePath);
     }
@@ -152,9 +152,9 @@ namespace MouseWithoutBorders
             }
         }
 
-        public void SendDragFile(string fileName)
+        public void SendDragFile(string fileName, long validationGeneration)
         {
-            DragDrop.DragDropStep05Ex(fileName);
+            DragDrop.DragDropStep05Ex(fileName, validationGeneration);
         }
 
         public void SendClipboardData(ByteArrayOrString data, bool isFilePath)
@@ -577,5 +577,6 @@ namespace MouseWithoutBorders
     internal sealed class SharedConst
     {
         internal const int QUIT_CMD = 0x409;
+        internal const int SET_DRAG_VALIDATION_GENERATION_CMD = 0x40A;
     }
 }
