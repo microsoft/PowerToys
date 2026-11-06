@@ -2,6 +2,9 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const workflowOptions = Object.freeze({ postComment: process.env.POST_COMMENT === 'true' });
+const outputContext = { messages: [], labelPlan: null, commentIdsToDelete: [] };
+
 export const CANONICAL_MARKER = '<!-- powertoys-pr-intake:canonical:v1 -->';
 export const ACTIONS_BOT_LOGIN = 'github-actions[bot]';
 export const ACTIONS_BOT_ID = 41898282;
@@ -501,7 +504,7 @@ export function buildIntakeReport({
   invalidClosingIssues,
 }) {
   const ownership = classifyChangedPaths(changedPaths);
-  const visualAssessment = deriveVisualAssessment(ownership.requiresVisualEvidence);
+  const visualAssessment = deriveVisualAssessment(ownership.requiresVisualEvidence && !workflowOptions.postComment);
   const closingIssues = Array.isArray(verifiedClosingIssues)
     ? verifiedClosingIssues
     : findClosingIssueReferences(body);
@@ -703,25 +706,29 @@ export async function upsertCanonicalComment({
   body,
   comments = null,
 }) {
+  outputContext.messages.push(body);
   const existingComments = Array.isArray(comments)
     ? comments
     : await listAllComments(api, issueNumber);
   const { canonical, extras } = selectCanonicalComment(existingComments);
 
-  let savedComment;
-  let operation;
-  if (canonical) {
+  let savedComment = null;
+  let operation = 'skipped';
+  if (workflowOptions.postComment && canonical) {
     savedComment = await api.updateIssueComment(canonical.id, body);
     operation = 'updated';
-  } else {
+  } else if (workflowOptions.postComment) {
     savedComment = await api.createIssueComment(issueNumber, body);
     operation = 'created';
   }
 
   const deletedExtraComments = [];
   for (const extra of extras) {
-    await api.deleteIssueComment(extra.id);
-    deletedExtraComments.push(extra.id);
+    outputContext.commentIdsToDelete.push(extra.id);
+    if (workflowOptions.postComment) {
+      await api.deleteIssueComment(extra.id);
+      deletedExtraComments.push(extra.id);
+    }
   }
 
   return {
@@ -743,8 +750,11 @@ export async function deleteCanonicalComments({
   const trustedComments = canonical ? [canonical, ...extras] : [];
   const deletedCommentIds = [];
   for (const comment of trustedComments) {
-    await api.deleteIssueComment(comment.id);
-    deletedCommentIds.push(comment.id);
+    outputContext.commentIdsToDelete.push(comment.id);
+    if (workflowOptions.postComment) {
+      await api.deleteIssueComment(comment.id);
+      deletedCommentIds.push(comment.id);
+    }
   }
   return deletedCommentIds;
 }
@@ -778,10 +788,11 @@ export function planManagedLabelChanges(
 }
 
 async function syncLabelChanges(api, issueNumber, labelPlan) {
+  outputContext.labelPlan = labelPlan;
   for (const label of labelPlan.remove) {
-    await api.removeLabel(issueNumber, label);
+    if (workflowOptions.postComment) await api.removeLabel(issueNumber, label);
   }
-  if (labelPlan.add.length) {
+  if (workflowOptions.postComment && labelPlan.add.length) {
     await api.addLabels(issueNumber, labelPlan.add);
   }
 }
@@ -816,7 +827,23 @@ function parseIssueLabels(issue) {
     : [];
 }
 
+async function writeSummary(fallback) {
+  const summary = [
+    ...(outputContext.messages.length ? outputContext.messages : [fallback]),
+    ...(!workflowOptions.postComment ? [
+      ...outputContext.labelPlan.add.map((label) => `Suggested maintainer label: ${label}.`),
+      ...outputContext.labelPlan.remove.map((label) => `Maintainer action: remove stale label ${label}.`),
+      ...outputContext.commentIdsToDelete.map((id) => `Maintainer action: remove stale intake comment ${id}.`),
+    ] : []),
+  ].join('\n');
+  console.log(summary);
+  if (process.env.GITHUB_STEP_SUMMARY) await fs.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
+}
+
 export async function runPullRequestIntake({ api, event }) {
+  outputContext.messages.length = 0;
+  outputContext.labelPlan = null;
+  outputContext.commentIdsToDelete.length = 0;
   if (!event?.repository) {
     throw new Error('The GitHub event payload must contain repository data');
   }
@@ -850,10 +877,8 @@ export async function runPullRequestIntake({ api, event }) {
       ],
     );
     await syncLabelChanges(api, issueNumber, labelPlan);
-    const deletedCanonicalCommentIds = await deleteCanonicalComments({
-      api,
-      issueNumber,
-    });
+    const deletedCanonicalCommentIds = await deleteCanonicalComments({ api, issueNumber });
+    await writeSummary('Draft PR: readiness checks skipped.');
     return {
       issueNumber,
       skippedDraft: true,
@@ -913,25 +938,32 @@ export async function runPullRequestIntake({ api, event }) {
   // silent to avoid noise on already-healthy PRs.
   const hasRemarks = report.authorActions.length > 0
     || report.recommendations.length > 0;
+  const body = hasRemarks || !canonical
+    ? renderIntakeComment(report, feedbackSince)
+    : renderAllClearComment();
   let commentResult = {
     operation: 'skipped',
     comment: null,
     deletedExtraComments: [],
   };
-  if (hasRemarks) {
-    commentResult = await upsertCanonicalComment({
-      api,
-      issueNumber,
-      body: renderIntakeComment(report, feedbackSince),
-      comments,
-    });
-  } else if (canonical) {
-    commentResult = await upsertCanonicalComment({
-      api,
-      issueNumber,
-      body: renderAllClearComment(),
-      comments,
-    });
+  try {
+    if (hasRemarks) {
+      commentResult = await upsertCanonicalComment({
+        api,
+        issueNumber,
+        body,
+        comments,
+      });
+    } else if (canonical) {
+      commentResult = await upsertCanonicalComment({
+        api,
+        issueNumber,
+        body,
+        comments,
+      });
+    }
+  } finally {
+    await writeSummary(body);
   }
 
   return {
@@ -954,6 +986,7 @@ export async function runPullRequestIntake({ api, event }) {
     needsAuthorFeedback: report.needsAuthorFeedback,
     feedbackSince,
     readyForReview: report.readyForReview,
+    postComment: workflowOptions.postComment,
   };
 }
 
@@ -1075,6 +1108,7 @@ async function main() {
 
   const result = await runPullRequestIntake({ api, event });
   console.log(JSON.stringify(result, null, 2));
+  if (!result.postComment && result.readyForReview === false) process.exitCode = 1;
 }
 
 const ENTRYPOINT = fileURLToPath(import.meta.url);
