@@ -123,6 +123,31 @@ namespace RemappingLogicTests
             return L"\"" + std::filesystem::path{ modulePath }.generic_wstring() + L"\",CloseAndEndTestTarget " + eventName + L" " + mode;
         }
 
+        DWORD CreateTargetProcess(const std::wstring& file, const std::wstring& arguments, const std::wstring& workingDirectory)
+        {
+            auto command = L"\"" + file + L"\" " + arguments;
+            STARTUPINFOW startup{ sizeof(startup) };
+            PROCESS_INFORMATION info{};
+            if (!CreateProcessW(file.c_str(), command.data(), nullptr, nullptr, FALSE, CREATE_NO_WINDOW, nullptr, workingDirectory.c_str(), &startup, &info))
+            {
+                return GetLastError();
+            }
+            winrt::handle thread{ info.hThread };
+            processes.emplace_back(info.hProcess);
+            return ERROR_SUCCESS;
+        }
+
+        void WaitForTargetReady(HANDLE ready, HANDLE process)
+        {
+            const HANDLE startupResults[]{ ready, process };
+            if (WaitForMultipleObjects(ARRAYSIZE(startupResults), startupResults, FALSE, 10000) != WAIT_OBJECT_0)
+            {
+                DWORD code = 0;
+                GetExitCodeProcess(process, &code);
+                Assert::Fail((L"Target failed to start (exit code " + std::to_wstring(code) + L")").c_str());
+            }
+        }
+
         HANDLE StartTarget(const wchar_t* mode = L"ignore")
         {
             const auto eventName = EventName();
@@ -130,30 +155,27 @@ namespace RemappingLogicTests
             Assert::IsTrue(static_cast<bool>(ready));
             closeNotifications.emplace_back(CreateEventW(nullptr, TRUE, FALSE, (eventName + L"-close").c_str()));
             Assert::IsTrue(static_cast<bool>(closeNotifications.back()));
-            auto command = L"\"" + executable.wstring() + L"\" " + Arguments(eventName, mode);
-            STARTUPINFOW startup{ sizeof(startup) };
-            PROCESS_INFORMATION info{};
-            Assert::IsTrue(CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, FALSE, CREATE_NO_WINDOW, nullptr, std::filesystem::path{ modulePath }.parent_path().c_str(), &startup, &info) != FALSE);
-            winrt::handle thread{ info.hThread };
-            processes.emplace_back(info.hProcess);
-            const HANDLE startupResults[]{ ready.get(), info.hProcess };
-            if (WaitForMultipleObjects(ARRAYSIZE(startupResults), startupResults, FALSE, 10000) != WAIT_OBJECT_0)
-            {
-                DWORD code = 0;
-                GetExitCodeProcess(info.hProcess, &code);
-                Assert::Fail((L"Target failed to start (exit code " + std::to_wstring(code) + L"): " + command).c_str());
-            }
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), CreateTargetProcess(executable.wstring(), Arguments(eventName, mode), std::filesystem::path{ modulePath }.parent_path().wstring()));
+            WaitForTargetReady(ready.get(), processes.back().get());
             return processes.back().get();
         }
 
-        void RunShortcut(Shortcut::ProgramAlreadyRunningAction action, const std::wstring& arguments = {})
+        void RunShortcut(Shortcut::ProgramAlreadyRunningAction action, const std::wstring& arguments = {}, const KeyboardEventHandlers::ProgramLauncher::LaunchCallback& launchProgram = {})
         {
             Shortcut shortcut;
             shortcut.runProgramFilePath = executable.wstring();
             shortcut.runProgramArgs = arguments;
             shortcut.startWindowType = Shortcut::StartWindowType::Minimized;
             shortcut.alreadyRunningAction = action;
-            KeyboardEventHandlers::CreateOrShowProcessForShortcut(shortcut);
+            unsigned int launchCount = 0;
+            KeyboardEventHandlers::CreateOrShowProcessForShortcut(shortcut, [&](const auto& file, const auto& args, const auto& workingDirectory) {
+                ++launchCount;
+                if (launchProgram)
+                {
+                    launchProgram(file, args, workingDirectory);
+                }
+            });
+            Assert::AreEqual(launchProgram ? 1u : 0u, launchCount);
         }
 
         DWORD ExitCode(HANDLE process)
@@ -169,21 +191,17 @@ namespace RemappingLogicTests
             const auto eventName = EventName();
             winrt::handle ready{ CreateEventW(nullptr, TRUE, FALSE, eventName.c_str()) };
             Assert::IsTrue(static_cast<bool>(ready));
-            RunShortcut(action, Arguments(eventName, L"no-window"));
-            // Capture even a failed launch for cleanup before asserting readiness.
-            for (const DWORD pid : KeyboardEventHandlers::GetProcessesIdByName(executable.filename().wstring()))
-            {
-                bool captured = false;
-                for (const auto& process : processes)
-                {
-                    captured |= GetProcessId(process.get()) == pid;
-                }
-                if (!captured)
-                {
-                    processes.emplace_back(OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid));
-                }
-            }
-            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(ready.get(), 10000));
+            bool launchedExpectedTarget = false;
+            DWORD launchError = ERROR_SUCCESS;
+            // CI may have no Explorer shell. Keep the real engine decisions and resolved
+            // launch parameters, but create the child directly and retain its cleanup handle.
+            RunShortcut(action, Arguments(eventName, L"no-window"), [&](const auto& file, const auto& arguments, const auto& workingDirectory) {
+                launchedExpectedTarget = file == executable.wstring();
+                launchError = CreateTargetProcess(file, arguments, workingDirectory);
+            });
+            Assert::IsTrue(launchedExpectedTarget);
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), launchError);
+            WaitForTargetReady(ready.get(), processes.back().get());
         }
 
     public:

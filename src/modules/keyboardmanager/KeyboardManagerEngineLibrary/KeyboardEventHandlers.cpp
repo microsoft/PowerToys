@@ -1677,7 +1677,7 @@ namespace KeyboardEventHandlers
         } }.detach();*/
     }
 
-    void CreateOrShowProcessForShortcut(Shortcut shortcut) noexcept
+    void CreateOrShowProcessForShortcut(Shortcut shortcut, const ProgramLauncher::LaunchCallback& launchProgram) noexcept
     {
         try
         {
@@ -1776,6 +1776,12 @@ namespace KeyboardEventHandlers
                     toast(fmt::format(L"Error starting {}", fileNamePart), L"The start in path was not valid. It could not be used.");
                     return;
                 }
+            }
+
+            if (launchProgram)
+            {
+                launchProgram(*launchPath, *expandedArgs, currentDir);
+                return;
             }
 
             DWORD processId = 0;
