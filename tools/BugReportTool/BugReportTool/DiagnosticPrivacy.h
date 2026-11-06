@@ -17,6 +17,50 @@
 
 namespace diagnostic_privacy
 {
+    inline bool contains_security_key_name(std::string_view contents)
+    {
+        constexpr std::string_view name = "SecurityKey";
+        constexpr std::string_view hexDigits = "0123456789abcdefABCDEF";
+        size_t matched = 0;
+        for (size_t index = 0; index < contents.size();)
+        {
+            auto character = contents[index++];
+            if (character == '\\')
+            {
+                while (index < contents.size() && contents[index] == '\\')
+                {
+                    ++index;
+                }
+                if (contents.size() - index >= 5 && (contents[index] == 'u' || contents[index] == 'U'))
+                {
+                    unsigned int code = 0;
+                    bool valid = true;
+                    for (size_t digit = 1; digit <= 4; ++digit)
+                    {
+                        const auto value = hexDigits.find(contents[index + digit]);
+                        if (value == std::string_view::npos)
+                        {
+                            valid = false;
+                            break;
+                        }
+                        code = code * 16 + static_cast<unsigned int>(value < 16 ? value : value - 6);
+                    }
+                    if (valid)
+                    {
+                        character = code <= 0x7f ? static_cast<char>(code) : '\0';
+                        index += 5;
+                    }
+                }
+            }
+            matched = character == name[matched] ? matched + 1 : (character == name.front() ? 1 : 0);
+            if (matched == name.size())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     inline bool redact_json_security_keys(const winrt::Windows::Data::Json::IJsonValue& value)
     {
         using namespace winrt::Windows::Data::Json;
@@ -99,7 +143,6 @@ namespace diagnostic_privacy
             {
                 contents = (hasBom ? "\xef\xbb\xbf" : "") + winrt::to_string(json.Stringify());
             }
-            return true;
         }
 
         std::string redacted;
@@ -140,7 +183,7 @@ namespace diagnostic_privacy
             }
 
             const auto prefix = contents.substr(cursor, position - cursor);
-            if (prefix.find("SecurityKey") != std::string::npos)
+            if (contains_security_key_name(prefix))
             {
                 return false;
             }
@@ -149,7 +192,7 @@ namespace diagnostic_privacy
             cursor = *valueEnd;
             position = contents.find('"', cursor);
         }
-        if (contents.find("SecurityKey", cursor) != std::string::npos)
+        if (contains_security_key_name(std::string_view{ contents }.substr(cursor)))
         {
             return false;
         }
@@ -174,8 +217,8 @@ namespace diagnostic_privacy
             std::string contents{ std::istreambuf_iterator<char>{ input }, std::istreambuf_iterator<char>{} };
             input.close();
 
-            if (contents.find('\0') == std::string::npos && contents.find("SecurityKey") == std::string::npos &&
-                contents.find("\\u") == std::string::npos && contents.find("GETSECKEY:") == std::string::npos)
+            if (contents.find('\0') == std::string::npos && !contains_security_key_name(contents) &&
+                contents.find("GETSECKEY:") == std::string::npos)
             {
                 continue;
             }
