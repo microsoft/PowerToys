@@ -1,0 +1,41 @@
+{
+  "comment": "Approximate wall minutes per UI test suite on x64Win11, used only to balance UI-test shards. Suites missing here use defaultMinutes, so new suites need no edit. Other platforms scale by platformMultipliers.",
+  "defaultMinutes": 5,
+  "platformMultipliers": {
+    "x64Win11": 1.0,
+    "x64Win10": 0.9,
+    "arm64": 0.75
+  },
+  "suites": {
+    "FancyZonesEditor.UITests.Next": 31.2,
+    "ZoomIt.UITests": 24.6,
+    "AdvancedPaste.UITests.Next": 21.7,
+    "MouseWithoutBorders.UITests": 15.6,
+    "Workspaces.UITests.Next": 11.8,
+    "FancyZones.UITests.Next": 10.2,
+    "MouseUtils.UITests.Next": 9.4,
+    "Awake.UITests": 8.9,
+    "KeyboardManager.UITests": 7.0,
+    "PowerRename.UITests.Next": 6.7,
+    "PowerAccent.UITests": 6.1,
+    "PowerDisplay.UITests": 6.1,
+    "EnvironmentVariables.UITests": 5.2,
+    "ImageResizer.UITests": 5.0,
+    "NewPlus.UITests": 4.7,
+    "Peek.UITests.Next": 4.6,
+    "Hosts.UITests.Next": 4.4,
+    "AltWindowCycle.UITests": 4.2,
+    "FileLocksmith.UITests": 4.0,
+    "Settings.UITests": 3.5,
+    "OOBE.UITests.Next": 3.4,
+    "GrabAndMove.UITests": 3.3,
+    "LightSwitch.UITests.Next": 3.0,
+    "PreviewPane.UITests": 3.0,
+    "CropAndLock.UITests": 2.4,
+    "RegistryPreview.UITests": 2.2,
+    "ScreenRuler.UITests.Next": 1.9,
+    "AlwaysOnTop.UITests": 1.3,
+    "ShortcutGuide.UITests": 1.1,
+    "ColorPicker.UITests": 0.7
+  }
+}
