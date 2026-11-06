@@ -50,7 +50,7 @@ The Bug Report Tool creates a zip file on the desktop named "PowerToys_Report_[d
 * `dotnet-installation-info.txt` - Information about the installed .NET versions.
 * `EventViewer-*.xml` - These files contain event logs from the Windows Event Viewer for the executable specified in the file name.
 * `EventViewer-Microsoft-Windows-AppXDeploymentServer/Operational.xml` - Contains event logs from the AppXDeployment-Server which are useful for diagnosing MSIX installation issues.
-* `gpo-configuration-info.txt` - Information about the configured [GPO](doc/devdocs/processes/gpo.md).
+* `gpo-configuration-info.txt` - Information about the configured [GPO](../processes/gpo.md).
 * `installationFolderStructure.txt` - Information about the folder structure of the installation. All lines with files have the following structure: `FileName Version MD5Hash`.
 * `last_version_run.json` - Information about the last version of PowerToys that was run.
 * `log_settings.json` - Information about the log level settings.
@@ -96,24 +96,3 @@ When adding new PowerToys features, the Bug Report Tool may need to be updated t
 3. New GPO values to report
 4. Process names to include in Event Viewer data collection
 5. New configuration files to include
-
-## Build Process
-
-The Bug Report Tool is built separately from the main PowerToys solution:
-
-1. Path from root: `tools\BugReportTool\BugReportTool.sln`
-2. Must be built before building the installer
-3. Built version is included in the PowerToys installer
-
-### Building from the Command Line
-
-```
-nuget restore .\tools\BugReportTool\BugReportTool.sln
-msbuild -p:Platform=x64 -p:Configuration=Release .\tools\BugReportTool\BugReportTool.sln
-```
-
-### Building from Visual Studio
-
-1. Open `tools\BugReportTool\BugReportTool.sln`
-2. Set the Solution Configuration to `Release`
-3. Build the solution

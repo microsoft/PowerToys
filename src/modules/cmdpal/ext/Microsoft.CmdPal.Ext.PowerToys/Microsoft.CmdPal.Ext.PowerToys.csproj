@@ -27,6 +27,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="Microsoft.CmdPal.Ext.PowerToys.UnitTests" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\*.png" Link="Assets\Settings\Icons\%(Filename)%(Extension)">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>

@@ -105,7 +105,12 @@ namespace ImageResizer.Models
                     using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.ReadWrite))
                     {
                         var winrtOutputStream = outputStream.AsRandomAccessStream();
-                        bool forceFresh = encoderGuid == BitmapEncoder.JpegEncoderId && !noTransformNeeded;
+
+                        // Transcoding cannot accept codec options, and a transform on a
+                        // transcode encoder only affects its first frame.
+                        bool forceFresh = (encoderGuid == BitmapEncoder.JpegEncoderId && !noTransformNeeded)
+                            || (encoderGuid == BitmapEncoder.PngEncoderId && _settings.PngInterlaceOption != PngInterlaceOption.Default)
+                            || (encoderGuid == BitmapEncoder.TiffEncoderId && (_settings.TiffCompressOption != TiffCompressOption.Default || decoder.FrameCount > 1));
 
                         await EncodeToStreamAsync(
                             decoder,
@@ -134,6 +139,7 @@ namespace ImageResizer.Models
                                     await EncodeFramesAsync(
                                         encoder,
                                         decoder,
+                                        encoderGuid,
                                         scaledWidth,
                                         scaledHeight,
                                         cropBounds,
@@ -201,10 +207,10 @@ namespace ImageResizer.Models
                         winrtOutputStream,
                         encoderGuid,
                         forceFresh: true,
-                        (encoder, _) =>
+                        async (encoder, _) =>
                         {
                             encoder.SetSoftwareBitmap(aiResult);
-                            return Task.CompletedTask;
+                            await CopyFrameMetadataAsync(() => decoder.BitmapProperties, encoder, encoderGuid);
                         });
                 }
 
@@ -237,7 +243,7 @@ namespace ImageResizer.Models
             }
             else
             {
-                await FreshEncodeAsync(decoder, outputStream, encoderGuid, writeContent);
+                await FreshEncodeAsync(outputStream, encoderGuid, writeContent);
             }
         }
 
@@ -273,23 +279,12 @@ namespace ImageResizer.Models
         /// call <see cref="EncodeFramesAsync"/> or <see cref="BitmapEncoder.SetSoftwareBitmap"/>.
         /// </summary>
         private async Task FreshEncodeAsync(
-            BitmapDecoder decoder,
             IRandomAccessStream outputStream,
             Guid encoderGuid,
             Func<BitmapEncoder, bool, Task> writeContent)
         {
-            // The blank encoder inherits nothing from the source, so we have to carry
-            // metadata over ourselves. RemoveMetadata keeps only the rendering-critical
-            // properties (orientation/colorspace); otherwise mirror the transcode path's
-            // best-effort EXIF preservation.
-            var propsToPreserve = _settings.RemoveMetadata
-                ? RenderingMetadataProperties
-                : KnownMetadataProperties;
-            var preservedMetadata = await ReadMetadataAsync(decoder, propsToPreserve);
-
             var encoder = await CreateFreshEncoderAsync(encoderGuid, outputStream);
             await writeContent(encoder, false);
-            await WriteMetadataAsync(encoder, preservedMetadata);
 
             await encoder.FlushAsync();
         }
@@ -299,9 +294,10 @@ namespace ImageResizer.Models
         /// Uses GetPixelDataAsync + SetPixelData for explicit pixel format control — the
         /// SetSoftwareBitmap API can fail with ArgumentException for some decoder outputs.
         /// </summary>
-        private static async Task EncodeFramesAsync(
+        private async Task EncodeFramesAsync(
             BitmapEncoder encoder,
             BitmapDecoder decoder,
+            Guid encoderGuid,
             uint scaledWidth,
             uint scaledHeight,
             BitmapBounds? cropBounds,
@@ -309,55 +305,88 @@ namespace ImageResizer.Models
             int originalWidth,
             int originalHeight)
         {
-            var transform = new BitmapTransform();
-            if (!noTransformNeeded)
-            {
-                transform.ScaledWidth = scaledWidth;
-                transform.ScaledHeight = scaledHeight;
-                transform.InterpolationMode = BitmapInterpolationMode.Fant;
-
-                if (cropBounds.HasValue)
-                {
-                    transform.Bounds = cropBounds.Value;
-                }
-            }
-            else
-            {
-                transform.ScaledWidth = (uint)originalWidth;
-                transform.ScaledHeight = (uint)originalHeight;
-            }
-
-            uint outWidth = cropBounds?.Width ?? (noTransformNeeded ? (uint)originalWidth : scaledWidth);
-            uint outHeight = cropBounds?.Height ?? (noTransformNeeded ? (uint)originalHeight : scaledHeight);
-
             for (uint i = 0; i < decoder.FrameCount; i++)
             {
                 if (i > 0)
                 {
-                    await encoder.GoToNextFrameAsync();
+                    var encodingOptions = GetEncoderPropertySet(encoderGuid);
+                    if (encodingOptions != null)
+                    {
+                        await encoder.GoToNextFrameAsync(encodingOptions);
+                    }
+                    else
+                    {
+                        await encoder.GoToNextFrameAsync();
+                    }
                 }
 
                 var frame = await decoder.GetFrameAsync(i);
+                if (encoderGuid == BitmapEncoder.TiffEncoderId)
+                {
+                    originalWidth = (int)frame.PixelWidth;
+                    originalHeight = (int)frame.PixelHeight;
+                    (scaledWidth, scaledHeight, cropBounds, noTransformNeeded) =
+                        CalculateDimensions(originalWidth, originalHeight, frame.DpiX, frame.DpiY);
+                }
+
+                var transform = new BitmapTransform
+                {
+                    ScaledWidth = noTransformNeeded ? (uint)originalWidth : scaledWidth,
+                    ScaledHeight = noTransformNeeded ? (uint)originalHeight : scaledHeight,
+                    InterpolationMode = BitmapInterpolationMode.Fant,
+                };
+
+                if (!noTransformNeeded && cropBounds.HasValue)
+                {
+                    transform.Bounds = cropBounds.Value;
+                }
+
+                uint outWidth = cropBounds?.Width ?? (noTransformNeeded ? (uint)originalWidth : scaledWidth);
+                uint outHeight = cropBounds?.Height ?? (noTransformNeeded ? (uint)originalHeight : scaledHeight);
+                var pixelFormat = (encoderGuid == BitmapEncoder.PngEncoderId || encoderGuid == BitmapEncoder.TiffEncoderId)
+                    && frame.BitmapPixelFormat is BitmapPixelFormat.Rgba16 or BitmapPixelFormat.Gray16
+                        ? BitmapPixelFormat.Rgba16
+                        : BitmapPixelFormat.Bgra8;
+                var alphaMode = pixelFormat == BitmapPixelFormat.Bgra8
+                    ? BitmapAlphaMode.Premultiplied
+                    : frame.BitmapAlphaMode;
+
+                // TIFF's WinRT encoder cannot retain an embedded ICC profile,
+                // even when its IFD metadata is copied. Encode sRGB samples so
+                // selecting a compression option does not change displayed colors.
+                var colorManagementMode = encoderGuid == BitmapEncoder.TiffEncoderId
+                    ? ColorManagementMode.ColorManageToSRgb
+                    : ColorManagementMode.DoNotColorManage;
                 var pixelData = await frame.GetPixelDataAsync(
-                    BitmapPixelFormat.Bgra8,
-                    BitmapAlphaMode.Premultiplied,
+                    pixelFormat,
+                    alphaMode,
                     transform,
                     ExifOrientationMode.IgnoreExifOrientation,
-                    ColorManagementMode.DoNotColorManage);
+                    colorManagementMode);
 
                 encoder.SetPixelData(
-                    BitmapPixelFormat.Bgra8,
-                    BitmapAlphaMode.Premultiplied,
+                    pixelFormat,
+                    alphaMode,
                     outWidth,
                     outHeight,
                     frame.DpiX,
                     frame.DpiY,
                     pixelData.DetachPixelData());
+
+                // GoToNextFrameAsync commits the current frame, so copy its metadata
+                // before advancing rather than copying the first frame onto the last.
+                await CopyFrameMetadataAsync(
+                    () => frame.BitmapProperties,
+                    encoder,
+                    encoderGuid,
+                    copyNativeMetadata: CodecHelper.GetEncoderIdForDecoder(decoder) == encoderGuid);
             }
         }
 
         private static readonly string[] KnownMetadataProperties =
         [
+            "System.Author",
+            "System.Title",
             "System.Photo.DateTaken",
             "System.Photo.CameraModel",
             "System.Photo.CameraManufacturer",
@@ -370,11 +399,11 @@ namespace ImageResizer.Models
         /// Best-effort read of metadata properties from the decoder.
         /// Returns null if the format doesn't support metadata (e.g. BMP).
         /// </summary>
-        private static async Task<BitmapPropertySet> ReadMetadataAsync(BitmapDecoder decoder, string[] propertyNames)
+        private static async Task<BitmapPropertySet> ReadMetadataAsync(BitmapPropertiesView source, string[] propertyNames)
         {
             try
             {
-                var props = await decoder.BitmapProperties.GetPropertiesAsync(propertyNames);
+                var props = await source.GetPropertiesAsync(propertyNames);
                 if (props.Count > 0)
                 {
                     var result = new BitmapPropertySet();
@@ -388,7 +417,25 @@ namespace ImageResizer.Models
             }
             catch
             {
-                // Some formats (e.g. BMP) don't support property queries.
+                // A codec may reject one property in a batch while supporting the rest.
+                var result = new BitmapPropertySet();
+                foreach (var propertyName in propertyNames)
+                {
+                    try
+                    {
+                        var properties = await source.GetPropertiesAsync([propertyName]);
+                        if (properties.TryGetValue(propertyName, out var value))
+                        {
+                            result[propertyName] = value;
+                        }
+                    }
+                    catch
+                    {
+                        // Some formats (e.g. BMP) don't support property queries.
+                    }
+                }
+
+                return result;
             }
 
             return null;
@@ -410,7 +457,21 @@ namespace ImageResizer.Models
             }
             catch
             {
-                // Some encoders don't support these properties (e.g. BMP).
+                // Don't let an unsupported property prevent other metadata from being saved.
+                foreach (var property in metadata)
+                {
+                    try
+                    {
+                        await encoder.BitmapProperties.SetPropertiesAsync(new BitmapPropertySet
+                        {
+                            [property.Key] = property.Value,
+                        });
+                    }
+                    catch
+                    {
+                        // Some encoders don't support these properties (e.g. BMP).
+                    }
+                }
             }
         }
 
@@ -421,8 +482,121 @@ namespace ImageResizer.Models
         /// </summary>
         private static async Task CopyKnownMetadataAsync(BitmapDecoder decoder, BitmapEncoder encoder)
         {
-            var metadata = await ReadMetadataAsync(decoder, KnownMetadataProperties);
+            var source = GetMetadata(() => decoder.BitmapProperties);
+            if (source == null)
+            {
+                return;
+            }
+
+            var metadata = await ReadMetadataAsync(source, KnownMetadataProperties);
             await WriteMetadataAsync(encoder, metadata);
+        }
+
+        private async Task CopyFrameMetadataAsync(
+            Func<BitmapPropertiesView> getSource,
+            BitmapEncoder encoder,
+            Guid encoderGuid,
+            bool copyNativeMetadata = false)
+        {
+            var source = GetMetadata(getSource);
+            if (source == null)
+            {
+                return;
+            }
+
+            if (!_settings.RemoveMetadata && copyNativeMetadata)
+            {
+                await CopyNativeMetadataAsync(source, encoder, encoderGuid);
+            }
+
+            var properties = _settings.RemoveMetadata ? RenderingMetadataProperties : KnownMetadataProperties;
+            var metadata = await ReadMetadataAsync(source, properties);
+            if (encoderGuid == BitmapEncoder.TiffEncoderId)
+            {
+                metadata ??= new BitmapPropertySet();
+                metadata["System.Image.ColorSpace"] = new BitmapTypedValue((ushort)1, PropertyType.UInt16);
+            }
+
+            await WriteMetadataAsync(encoder, metadata);
+        }
+
+        private static BitmapPropertiesView GetMetadata(Func<BitmapPropertiesView> getSource)
+        {
+            try
+            {
+                return getSource();
+            }
+            catch
+            {
+                // Some codecs (including ICO) reject even the metadata accessor.
+                return null;
+            }
+        }
+
+        private static async Task CopyNativeMetadataAsync(BitmapPropertiesView source, BitmapEncoder encoder, Guid encoderGuid)
+        {
+            BitmapPropertySet blocks;
+            try
+            {
+                // An empty query enumerates the native metadata blocks. Keep their
+                // BitmapTypedValues so WIC can copy the nested readers and their types.
+                blocks = await source.GetPropertiesAsync([]);
+            }
+            catch
+            {
+                return;
+            }
+
+            // Repeated blocks (such as PNG text chunks) must be appended in index
+            // order. The property map itself does not guarantee that order.
+            foreach (var block in blocks.OrderBy(block => GetMetadataBlockIndex(block.Key)))
+            {
+                var name = block.Key.TrimStart('/');
+                if (name.StartsWith('['))
+                {
+                    name = name[(name.IndexOf(']') + 1)..];
+                }
+
+                name = name.ToLowerInvariant();
+
+                // JPEG also exposes its quantization tables as metadata. Copying
+                // those would override the requested image quality. PNG/TIFF codec
+                // structure is written by the encoder; preserve their metadata blocks.
+                bool preserve = encoderGuid == BitmapEncoder.JpegEncoderId
+                    ? name is "app1" or "app13" or "xmp" or "com" or "iptc" or "irb"
+                    : encoderGuid == BitmapEncoder.TiffEncoderId
+                        ? name == "ifd"
+                        : encoderGuid == BitmapEncoder.PngEncoderId
+                            && name is "text" or "ztxt" or "itxt" or "xmp" or "exif" or "iccp" or "gama" or "chrm" or "srgb" or "time" or "phys";
+
+                if (!preserve)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    await encoder.BitmapProperties.SetPropertiesAsync(new BitmapPropertySet
+                    {
+                        [block.Key] = block.Value,
+                    });
+                }
+                catch
+                {
+                    // Retain the supported Windows-property fallback when a codec
+                    // cannot copy a native block from an unusual source image.
+                }
+            }
+        }
+
+        private static int GetMetadataBlockIndex(string query)
+        {
+            var name = query.TrimStart('/');
+            var end = name.IndexOf(']');
+            return name.StartsWith('[') && end > 1
+                && int.TryParse(name.AsSpan(1, end - 1), NumberStyles.None, CultureInfo.InvariantCulture, out var index)
+                    ? index
+                    : 0;
         }
 
         private (uint ScaledWidth, uint ScaledHeight, BitmapBounds? CropBounds, bool NoTransformNeeded) CalculateDimensions(

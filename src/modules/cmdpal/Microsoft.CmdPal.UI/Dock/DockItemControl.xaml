@@ -120,13 +120,12 @@
                                     <StackPanel
                                         x:Name="TextPanel"
                                         Grid.Column="1"
+                                        MaxWidth="100"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center"
                                         Visibility="{TemplateBinding TextVisibility}">
                                         <TextBlock
                                             x:Name="TitleText"
-                                            MinWidth="24"
-                                            MaxWidth="100"
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Center"
                                             FontFamily="Segoe UI"
@@ -137,7 +136,6 @@
                                             TextWrapping="NoWrap" />
                                         <TextBlock
                                             x:Name="SubtitleText"
-                                            MaxWidth="100"
                                             Margin="0,-2,0,0"
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Center"
@@ -258,6 +256,21 @@
                                         <VisualState.Setters>
                                             <Setter Target="TitleText.TextAlignment" Value="Center" />
                                             <Setter Target="SubtitleText.TextAlignment" Value="Center" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="TextRightAligned">
+                                        <VisualState.Setters>
+                                            <Setter Target="TitleText.TextAlignment" Value="Right" />
+                                            <Setter Target="SubtitleText.TextAlignment" Value="Right" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="NumeralAlignmentStates">
+                                    <VisualState x:Name="DefaultNumeralAlignment" />
+                                    <VisualState x:Name="TabularDigits">
+                                        <VisualState.Setters>
+                                            <Setter Target="TitleText.(Typography.NumeralAlignment)" Value="Tabular" />
+                                            <Setter Target="SubtitleText.(Typography.NumeralAlignment)" Value="Tabular" />
                                         </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>

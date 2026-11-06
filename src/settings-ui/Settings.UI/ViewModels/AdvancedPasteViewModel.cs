@@ -1538,8 +1538,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 pasteConfig = _advancedPasteSettings.Properties.PasteAIConfiguration;
             }
 
-            pasteConfig.Providers ??= new ObservableCollection<PasteAIProviderDefinition>();
-
             SyncProviderActiveFlags(pasteConfig);
             SubscribeToPasteAIProviders(pasteConfig);
         }

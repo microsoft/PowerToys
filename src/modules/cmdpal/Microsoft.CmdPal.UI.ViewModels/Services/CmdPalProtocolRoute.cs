@@ -13,4 +13,9 @@ public abstract record CmdPalProtocolRoute
     public sealed record OpenSettings(OpenSettingsMessage Message) : CmdPalProtocolRoute;
 
     public sealed record Reload : CmdPalProtocolRoute;
+
+    public sealed record ExecuteCommand(
+        string ProviderId,
+        string CommandId,
+        ListPageLaunchOptions? ListPageOptions = null) : CmdPalProtocolRoute;
 }

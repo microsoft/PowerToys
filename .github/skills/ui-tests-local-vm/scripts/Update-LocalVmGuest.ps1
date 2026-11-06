@@ -11,6 +11,8 @@ Retail Windows 10 22H2 media starts at an unserviced build that .NET 10 rejects 
 "Your Windows doesn't fully support CET. Please install all available Windows updates."
 This script drives the in-box Windows Update COM API over PowerShell Direct, reboots as needed, and
 repeats until no software updates remain or MaxPasses is reached.
+Also prevents password expiry for the existing guest administrator. AdminUserName defaults to the
+credential's local user name; pass StandardUser when the guest does not use the PTUser default.
 
 .EXAMPLE
 pwsh ./Update-LocalVmGuest.ps1 -VmName PowerToysUiTest-Win10
@@ -24,7 +26,9 @@ param(
     [ValidateRange(1, 10)]
     [int]$MaxPasses = 4,
     [ValidateRange(1, 120)]
-    [int]$ReconnectTimeoutMinutes = 30
+    [int]$ReconnectTimeoutMinutes = 30,
+    [string]$AdminUserName,
+    [string]$StandardUser = 'PTUser'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -38,6 +42,12 @@ if (-not (Test-Path $CredentialPath -PathType Leaf)) {
 
 Import-Module Hyper-V -ErrorAction Stop
 $credential = Import-Clixml $CredentialPath
+if ($credential -isnot [pscredential]) {
+    throw "Credential file does not contain a PSCredential: $CredentialPath"
+}
+if ([string]::IsNullOrWhiteSpace($AdminUserName)) {
+    $AdminUserName = $credential.UserName -replace '^.*\\', ''
+}
 
 function New-GuestSession {
     $deadline = [DateTime]::UtcNow.AddMinutes($ReconnectTimeoutMinutes)
@@ -59,56 +69,78 @@ if ($vm.State -ne 'Running') {
     Start-VM -Name $VmName
 }
 
+$session = New-GuestSession
+try {
+    $adminPolicyScript = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\templates\oem\Set-UiTestAdminPasswordPolicy.ps1'))
+    Invoke-Command -Session $session -FilePath $adminPolicyScript `
+        -ArgumentList $AdminUserName, $StandardUser -ErrorAction Stop | Out-Null
+}
+finally {
+    Remove-PSSession $session -ErrorAction SilentlyContinue
+}
+
 $passes = @()
 for ($pass = 1; $pass -le $MaxPasses; $pass++) {
-    $session = New-GuestSession
-    try {
-        $result = Invoke-Command -Session $session -ScriptBlock {
-            $ErrorActionPreference = 'Stop'
-            $updateSession = New-Object -ComObject Microsoft.Update.Session
-            $searcher = $updateSession.CreateUpdateSearcher()
-            $search = $searcher.Search("IsInstalled=0 and Type='Software' and IsHidden=0")
-            $titles = @($search.Updates | ForEach-Object Title)
+    $result = $null
+    for ($serviceAttempt = 1; $serviceAttempt -le 6; $serviceAttempt++) {
+        $session = New-GuestSession
+        try {
+            $result = Invoke-Command -Session $session -ScriptBlock {
+                $ErrorActionPreference = 'Stop'
+                $updateSession = New-Object -ComObject Microsoft.Update.Session
+                $searcher = $updateSession.CreateUpdateSearcher()
+                $search = $searcher.Search("IsInstalled=0 and Type='Software' and IsHidden=0")
+                $titles = @($search.Updates | ForEach-Object Title)
 
-            if ($search.Updates.Count -eq 0) {
+                if ($search.Updates.Count -eq 0) {
+                    $ubr = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').UBR
+                    return [pscustomobject]@{
+                        Count = 0
+                        Titles = @()
+                        DownloadResult = $null
+                        InstallResult = $null
+                        RebootRequired = $false
+                        Version = "$([Environment]::OSVersion.Version.Major).$([Environment]::OSVersion.Version.Minor).$([Environment]::OSVersion.Version.Build).$ubr"
+                    }
+                }
+
+                $updates = New-Object -ComObject Microsoft.Update.UpdateColl
+                foreach ($update in $search.Updates) {
+                    if (-not $update.EulaAccepted) { $update.AcceptEula() }
+                    [void]$updates.Add($update)
+                }
+
+                $downloader = $updateSession.CreateUpdateDownloader()
+                $downloader.Updates = $updates
+                $download = $downloader.Download()
+
+                $installer = $updateSession.CreateUpdateInstaller()
+                $installer.Updates = $updates
+                $install = $installer.Install()
+
                 $ubr = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').UBR
-                return [pscustomobject]@{
-                    Count = 0
-                    Titles = @()
-                    DownloadResult = $null
-                    InstallResult = $null
-                    RebootRequired = $false
+                [pscustomobject]@{
+                    Count = $updates.Count
+                    Titles = $titles
+                    DownloadResult = [int]$download.ResultCode
+                    InstallResult = [int]$install.ResultCode
+                    RebootRequired = [bool]$install.RebootRequired
                     Version = "$([Environment]::OSVersion.Version.Major).$([Environment]::OSVersion.Version.Minor).$([Environment]::OSVersion.Version.Build).$ubr"
                 }
             }
-
-            $updates = New-Object -ComObject Microsoft.Update.UpdateColl
-            foreach ($update in $search.Updates) {
-                if (-not $update.EulaAccepted) { $update.AcceptEula() }
-                [void]$updates.Add($update)
-            }
-
-            $downloader = $updateSession.CreateUpdateDownloader()
-            $downloader.Updates = $updates
-            $download = $downloader.Download()
-
-            $installer = $updateSession.CreateUpdateInstaller()
-            $installer.Updates = $updates
-            $install = $installer.Install()
-
-            $ubr = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').UBR
-            [pscustomobject]@{
-                Count = $updates.Count
-                Titles = $titles
-                DownloadResult = [int]$download.ResultCode
-                InstallResult = [int]$install.ResultCode
-                RebootRequired = [bool]$install.RebootRequired
-                Version = "$([Environment]::OSVersion.Version.Major).$([Environment]::OSVersion.Version.Minor).$([Environment]::OSVersion.Version.Build).$ubr"
-            }
+            break
         }
-    }
-    finally {
-        Remove-PSSession $session -ErrorAction SilentlyContinue
+        catch {
+            if ($_.Exception.ToString() -match '0x8024001E' -and $serviceAttempt -lt 6) {
+                Write-Warning "Windows Update service is still restarting after reboot (0x8024001E); retrying in 20 seconds ($serviceAttempt/6)."
+                Start-Sleep -Seconds 20
+                continue
+            }
+            throw
+        }
+        finally {
+            Remove-PSSession $session -ErrorAction SilentlyContinue
+        }
     }
 
     $passes += $result

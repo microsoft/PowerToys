@@ -40,7 +40,7 @@ protected:
 
     HINSTANCE instance_handle = 0;
     ComPtr<IUnknown> site_of_folder;
-    newplus::template_folder* templates = nullptr;
+    std::unique_ptr<newplus::template_folder> templates;
     std::vector<HBITMAP> bitmap_handles;
     POINT mouse_position_at_time_of_invoke = {-1, -1};
 };

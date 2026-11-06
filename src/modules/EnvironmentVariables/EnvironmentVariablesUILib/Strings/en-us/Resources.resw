@@ -250,6 +250,14 @@
   <data name="More_Options_ButtonTooltip.Text" xml:space="preserve">
     <value>More options</value>
   </data>
+  <data name="More_Options_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More options</value>
+    <comment>Accessible name for a variable or profile options button.</comment>
+  </data>
+  <data name="VariableListEntryValue.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>List entry value</value>
+    <comment>Accessible name for an editable entry in a list-valued environment variable, such as PATH.</comment>
+  </data>
   <data name="MoveDown.Text" xml:space="preserve">
     <value>Move down</value>
   </data>
@@ -267,6 +275,13 @@
   </data>
   <data name="RemoveListItem.Text" xml:space="preserve">
     <value>Delete</value>
+  </data>
+  <data name="RemoveDuplicatePathEntries.Content" xml:space="preserve">
+    <value>Remove duplicates</value>
+  </data>
+  <data name="RemoveDuplicatePathEntries.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Remove duplicate PATH entries</value>
+    <comment>Accessible name for a button that removes duplicate entries from the PATH environment variable.</comment>
   </data>
   <data name="RemoveItem.Text" xml:space="preserve">
     <value>Remove</value>

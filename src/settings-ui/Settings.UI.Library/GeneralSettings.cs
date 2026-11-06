@@ -116,6 +116,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowNewUpdatesToastNotification = true;
             AutoDownloadUpdates = true;
             IncludePrereleaseUpdates = false;
+            ShowWhatsNewAfterUpdates = true;
             EnableExperimentation = true;
             DashboardSortOrder = DashboardSortOrder.Alphabetical;
             Theme = "system";

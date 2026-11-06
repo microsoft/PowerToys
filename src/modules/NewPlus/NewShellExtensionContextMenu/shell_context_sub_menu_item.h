@@ -12,7 +12,7 @@ using namespace newplus;
 class shell_context_sub_menu_item : public RuntimeClass<RuntimeClassFlags<ClassicCom>, IExplorerCommand>
 {
 public:
-    shell_context_sub_menu_item(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder, const POINT mouse_position_at_invoke);
+    shell_context_sub_menu_item(const std::shared_ptr<const template_item> template_entry, const ComPtr<IUnknown> site_of_folder, const POINT mouse_position_at_invoke);
 
     // IExplorerCommand
     IFACEMETHODIMP GetTitle(_In_opt_ IShellItemArray* items, _Outptr_result_nullonfailure_ PWSTR* title);
@@ -33,7 +33,9 @@ public:
 
 protected:
     shell_context_sub_menu_item();
-    const template_item* template_entry;
+    // Shared with the template folder that was scanned when the menu was built, because Explorer
+    // can keep invoking these items after the enumerator that created them is gone
+    std::shared_ptr<const template_item> template_entry;
     ComPtr<IUnknown> site_of_folder;
     POINT mouse_position_at_time_of_invoke;
 };

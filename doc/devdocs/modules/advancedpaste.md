@@ -18,6 +18,55 @@ Advanced Paste is a PowerToys module that provides enhanced clipboard pasting wi
 
 TODO: Add implementation details
 
+### Headless CLI
+
+`PowerToys.AdvancedPaste.CLI.exe` runs Advanced Paste actions without starting the Advanced Paste UI or communicating with Runner. It loads the same shared action engine, a startup snapshot of settings, policy, credential-vault entries, AI providers, OCR, and media-transcoding implementation used by the UI; live settings-file watching is disabled for the one-shot CLI process.
+
+```powershell
+Get-Clipboard | PowerToys.AdvancedPaste.CLI.exe transform --action plain-text --stdin --stdout
+PowerToys.AdvancedPaste.CLI.exe transform --action markdown --input notes.html --output notes.md
+PowerToys.AdvancedPaste.CLI.exe transform --action image-to-text --input screenshot.png --stdout
+PowerToys.AdvancedPaste.CLI.exe transform --action transcode-to-mp3 --input recording.mp4 --output recording.mp3
+PowerToys.AdvancedPaste.CLI.exe transform --action paste-with-ai --prompt "Summarize this" --clipboard
+PowerToys.AdvancedPaste.CLI.exe transform --custom-action 3 --clipboard
+# After copying a CSV file in Explorer, read it from the default clipboard input.
+PowerToys.AdvancedPaste.CLI.exe transform --action json --stdout
+```
+
+Input defaults to the clipboard; use at most one of `--input <path>`, `--stdin`, or `--clipboard` to select a source explicitly. Piped input requires `--stdin`; redirecting standard input does not override the clipboard default. Output also defaults to the clipboard; use at most one of `--output <path>`, `--stdout`, or `--output-clipboard`. Clipboard output sets content but never simulates paste keys. Text inputs are limited to 16,777,216 characters and raw input, prompts, and output are never written to the CLI log. `--format` remains an alias for `--action`.
+
+Clipboard modes use the Win32/OLE clipboard so they do not require a foreground app window. Like the Windows clipboard itself, they require an interactive user session; use file or standard-stream modes for services and session-0 automation.
+
+Built-in actions are `plain-text`, `markdown`, `json`, `fix-spelling-and-grammar`, `image-to-text`, `paste-as-txt-file`, `paste-as-png-file`, `paste-as-html-file`, `transcode-to-mp3`, `transcode-to-mp4`, and `paste-with-ai`. Use `actions list` to include configured custom actions. The CLI honors the Advanced Paste enabled policy and AI actions honor the configured provider, AI-related GPO, moderation, and credentials; `--provider <id>` selects another configured provider.
+
+Root `--help` and `transform --help` describe every built-in action, input/output defaults, AI/custom-action setup, examples, size limits, cancellation, and exit codes without loading settings or providers. `actions list` includes descriptions; its JSON array uses keys `name`, `kind`, `id`, `requiresPrompt`, and `description`. Saved custom actions are discovered through `actions list`, since they depend on the user's configuration.
+
+#### AI providers
+
+A provider is an AI service and model configured in **PowerToys Settings > Advanced Paste**, such as Ollama with a local model or OpenAI with a cloud model. Provider IDs are generated per configured entry; there is no fixed list of IDs, and names such as `Ollama` are not IDs.
+
+```powershell
+PowerToys.AdvancedPaste.CLI.exe providers list
+PowerToys.AdvancedPaste.CLI.exe providers list --json
+PowerToys.AdvancedPaste.CLI.exe transform --action paste-with-ai --prompt "Summarize in one sentence" --stdin --stdout --provider <id-from-list>
+```
+
+`providers list` shows each configured ID, service/model, default selection, and policy status without making AI requests or reading the clipboard. It lists configuration, not a connectivity or credential-health check; it also works when AI is turned off in settings. JSON output is an array with stable keys `id`, `name`, `serviceType`, `model`, `isDefault`, and `isAllowedByPolicy`. API keys, endpoints, and system prompts are not included.
+
+`--provider` applies only to `paste-with-ai`, `fix-spelling-and-grammar`, and `--custom-action`. It overrides the saved action's provider or the default provider for that invocation, including nested Advanced AI transformations and cached action chains. Unknown explicit IDs are rejected rather than falling back to another provider. Without the option, the saved action's configured provider is used when present, otherwise the default provider. Plain-text, Markdown, JSON, OCR, and media conversion do not use this AI-provider option.
+
+Configure providers and credentials in Settings; the CLI does not enable AI, create providers, sign in, install local models, or accept API keys. Local Ollama needs a running server and an installed model with a matching model name; cloud services need their own API access and can incur charges. A GitHub Copilot subscription is not an Advanced Paste provider.
+
+Text files are exposed as text/HTML, not as image/file attachments; malformed UTF-8 and binary files retain their original file representation. With default clipboard input or explicit `--clipboard`, a single file copied in Explorer is read using the same bounded file reader as `--input`, enabling copied CSV-to-JSON and HTML-to-Markdown conversions. Existing clipboard text, HTML, or bitmap takes precedence; folders and multiple-file selections are not converted to text or combined. Markdown and custom AI actions also accept HTML-only clipboard content. OpenAI moderation is skipped, with a warning in the log, when OpenAI or online AI is forbidden by policy; an otherwise permitted Azure provider can still run.
+
+Generated file output is cleaned after copying to an explicit output path. Older owned temporary directories are cleaned only when clipboard input provides a snapshot (default or explicit `--clipboard`), excluding directories containing current clipboard files or the selected output. Cleanup uses paths from the original file-drop snapshot even after text-file input has been converted to text/HTML. File/stdin commands and action listing never read the clipboard for cleanup.
+
+For `transform`, `--json` emits one UTF-8 JSON result envelope on stdout (`status`, `action`, `resultKind`, `outputPath`, `outputClipboard`, and optional `output`) or one error envelope on stderr (`status`, `code`, `message`, and `usage` for argument errors). `actions list --json` emits a bare array of action objects (`name`, `kind`, optional `id`, and `requiresPrompt`). The stable exit codes are `0` for success, `1` for input, I/O, cancellation, provider, clipboard, or transformation failures, and `2` for parser/argument errors.
+
+Run `src\modules\AdvancedPaste\AdvancedPaste.CLI\SmokeTest.ps1` after building the CLI to exercise help, stdin/stdout, file input/output, JSON output, and failing argument paths against the built executable.
+
+The CLI uses the centrally pinned System.CommandLine 2.0 API. Register options and subcommands through `Options` and `Subcommands`, read parsed values with `ParseResult.GetValue`, and route help through `InvocationConfiguration.Output` and `Error`. Keep option-value token checks when detecting help so a prompt or file path such as `-h` is not treated as a help request. `AdvancedPaste.Cli.UnitTests` covers these cases, command aliases, JSON output, and exit codes.
+
 ### Paste with AI Preview
 
 The "Show preview" setting (`ShowCustomPreview`) controls whether AI-generated results are displayed in a preview window before pasting. **The preview feature does not consume additional AI credits**—the preview displays the same AI response that was already generated, cached locally from a single API call.

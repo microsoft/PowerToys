@@ -10,6 +10,53 @@
 
 using namespace PowerRenameLib;
 
+namespace
+{
+    constexpr double ParsePackedRational(ULONGLONG value) noexcept
+    {
+        // WIC stores a RATIONAL's numerator in the low DWORD and denominator in the high DWORD.
+        const auto numerator = static_cast<uint32_t>(value);
+        const auto denominator = static_cast<uint32_t>(value >> 32);
+        return denominator != 0 ? static_cast<double>(numerator) / denominator : 0.0;
+    }
+
+    double ParseGPSAngle(const PROPVARIANT& value)
+    {
+        if (value.vt == (VT_VECTOR | VT_UI8) && value.cauh.cElems >= 3 && value.cauh.pElems)
+        {
+            const auto* rationals = value.cauh.pElems;
+            return ParsePackedRational(rationals[0].QuadPart) +
+                   ParsePackedRational(rationals[1].QuadPart) / 60.0 +
+                   ParsePackedRational(rationals[2].QuadPart) / 3600.0;
+        }
+
+        if (value.vt == (VT_VECTOR | VT_UI1) && value.caub.cElems >= 24 && value.caub.pElems)
+        {
+            const auto* bytes = value.caub.pElems;
+            return MetadataFormatHelper::ParseSingleRational(bytes, 0) +
+                   MetadataFormatHelper::ParseSingleRational(bytes, 8) / 60.0 +
+                   MetadataFormatHelper::ParseSingleRational(bytes, 16) / 3600.0;
+        }
+
+        return 0.0;
+    }
+
+    bool HasGPSReference(const PROPVARIANT& value, char direction)
+    {
+        switch (value.vt)
+        {
+        case VT_LPSTR:
+            return value.pszVal && value.pszVal[0] == direction && value.pszVal[1] == '\0';
+        case VT_LPWSTR:
+            return value.pwszVal && value.pwszVal[0] == direction && value.pwszVal[1] == L'\0';
+        case VT_BSTR:
+            return value.bstrVal && value.bstrVal[0] == direction && value.bstrVal[1] == L'\0';
+        default:
+            return false;
+        }
+    }
+}
+
 // Formatting functions
 
 std::wstring MetadataFormatHelper::FormatAperture(double aperture)
@@ -88,7 +135,12 @@ std::wstring MetadataFormatHelper::FormatSystemTime(const SYSTEMTIME& st)
 
 double MetadataFormatHelper::ParseGPSRational(const PROPVARIANT& pv)
 {
-    if ((pv.vt & VT_VECTOR) && pv.caub.cElems >= 8)
+    if (pv.vt == VT_UI8)
+    {
+        return ParsePackedRational(pv.uhVal.QuadPart);
+    }
+
+    if (pv.vt == (VT_VECTOR | VT_UI1) && pv.caub.cElems >= 8 && pv.caub.pElems)
     {
         return ParseSingleRational(pv.caub.pElems, 0);
     }
@@ -166,44 +218,18 @@ std::pair<double, double> MetadataFormatHelper::ParseGPSCoordinates(
     const PROPVARIANT& latRef,
     const PROPVARIANT& lonRef)
 {
-    double lat = 0.0, lon = 0.0;
-
-    // Parse latitude - typically stored as 3 rationals (degrees, minutes, seconds)
-    if ((latitude.vt & VT_VECTOR) && latitude.caub.cElems >= 24) // 3 rationals * 8 bytes each
-    {
-        const uint8_t* bytes = latitude.caub.pElems;
-
-        // degrees, minutes, seconds (each rational is 8 bytes)
-        double degrees = ParseSingleRational(bytes, 0);
-        double minutes = ParseSingleRational(bytes, 8);
-        double seconds = ParseSingleRational(bytes, 16);
-
-        lat = degrees + minutes / 60.0 + seconds / 3600.0;
-    }
-
-    // Parse longitude
-    if ((longitude.vt & VT_VECTOR) && longitude.caub.cElems >= 24)
-    {
-        const uint8_t* bytes = longitude.caub.pElems;
-
-        double degrees = ParseSingleRational(bytes, 0);
-        double minutes = ParseSingleRational(bytes, 8);
-        double seconds = ParseSingleRational(bytes, 16);
-
-        lon = degrees + minutes / 60.0 + seconds / 3600.0;
-    }
+    double lat = ParseGPSAngle(latitude);
+    double lon = ParseGPSAngle(longitude);
 
     // Apply direction references (N/S for latitude, E/W for longitude)
-    if (latRef.vt == VT_LPSTR && latRef.pszVal)
+    if (HasGPSReference(latRef, 'S'))
     {
-        if (strcmp(latRef.pszVal, "S") == 0)
-            lat = -lat;
+        lat = -lat;
     }
 
-    if (lonRef.vt == VT_LPSTR && lonRef.pszVal)
+    if (HasGPSReference(lonRef, 'W'))
     {
-        if (strcmp(lonRef.pszVal, "W") == 0)
-            lon = -lon;
+        lon = -lon;
     }
 
     return { lat, lon };

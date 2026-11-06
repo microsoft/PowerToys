@@ -14,6 +14,7 @@ public:
     {
     public:
         static void Enable(bool enabled) noexcept;
+        static void CLICommand(_In_ PCWSTR commandName, _In_ bool successful) noexcept;
         static void Launch(bool success,
                            const WorkspacesData::WorkspacesProject& project,
                            InvokePoint invokePoint,

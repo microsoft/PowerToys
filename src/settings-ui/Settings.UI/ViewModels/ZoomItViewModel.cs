@@ -54,9 +54,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public int DemoTypeMinTypingSpeed { get; } = 100;
 
-        public ObservableCollection<Tuple<string, string>> MicrophoneList { get; set; } = new ObservableCollection<Tuple<string, string>>();
+        public ObservableCollection<Tuple<string, string>> MicrophoneList { get; } = new ObservableCollection<Tuple<string, string>>();
 
-        public ObservableCollection<Tuple<string, string>> WebcamList { get; set; } = new ObservableCollection<Tuple<string, string>>();
+        public ObservableCollection<Tuple<string, string>> WebcamList { get; } = new ObservableCollection<Tuple<string, string>>();
 
         private async void LoadMicrophoneList()
         {
@@ -526,6 +526,76 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.SnipOcrToggleKey.Value = value ?? ZoomItProperties.DefaultSnipOcrToggleKey;
                     OnPropertyChanged(nameof(SnipOcrToggleKey));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public HotkeySettings SnipDictateToggleKey
+        {
+            get => _zoomItSettings.Properties.SnipDictateToggleKey.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.SnipDictateToggleKey.Value != value)
+                {
+                    _zoomItSettings.Properties.SnipDictateToggleKey.Value = value ?? ZoomItProperties.DefaultSnipDictateToggleKey;
+                    OnPropertyChanged(nameof(SnipDictateToggleKey));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool SnipDictateEnabled
+        {
+            get => _zoomItSettings.Properties.SnipDictateEnabled.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.SnipDictateEnabled.Value != value)
+                {
+                    _zoomItSettings.Properties.SnipDictateEnabled.Value = value;
+                    OnPropertyChanged(nameof(SnipDictateEnabled));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool SnipDictateOnSnip
+        {
+            get => _zoomItSettings.Properties.SnipDictateOnSnip.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.SnipDictateOnSnip.Value != value)
+                {
+                    _zoomItSettings.Properties.SnipDictateOnSnip.Value = value;
+                    OnPropertyChanged(nameof(SnipDictateOnSnip));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int SnipDictateGrace
+        {
+            get => _zoomItSettings.Properties.SnipDictateGrace.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.SnipDictateGrace.Value != value)
+                {
+                    _zoomItSettings.Properties.SnipDictateGrace.Value = value;
+                    OnPropertyChanged(nameof(SnipDictateGrace));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public string SnipDictatePrefix
+        {
+            get => _zoomItSettings.Properties.SnipDictatePrefix.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.SnipDictatePrefix.Value != value)
+                {
+                    _zoomItSettings.Properties.SnipDictatePrefix.Value = value;
+                    OnPropertyChanged(nameof(SnipDictatePrefix));
                     NotifySettingsChanged();
                 }
             }

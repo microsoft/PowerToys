@@ -82,6 +82,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="KeyboardManagerEditorUI.UnitTests" />
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="Styles\Colors.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

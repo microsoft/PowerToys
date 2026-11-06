@@ -9,15 +9,11 @@
 #include "pch.h"
 #include "GifRecordingSession.h"
 #include "CaptureFrameWait.h"
+#include "ZoomItMessages.h"
 #include <shcore.h>
 
 extern DWORD g_RecordScaling;
 extern HWND g_hWndMain;
-
-// Must match the definition in ZoomIt.h.
-#ifndef WM_USER_RECORDING_NO_FRAMES
-#define WM_USER_RECORDING_NO_FRAMES (WM_USER + 112)
-#endif
 
 namespace winrt
 {

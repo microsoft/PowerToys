@@ -1,0 +1,131 @@
+// Copyright (c) Microsoft Corporation. Licensed under the MIT license.
+#include "pch.h"
+#include <WorkspacesLib/SessionHandoff.h>
+#include <WorkspacesLib/CliCommands.h>
+#include <wil/resource.h>
+#include <filesystem>
+#include <common/utils/elevation.h>
+
+using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+
+namespace WorkspacesLibUnitTests
+{
+    TEST_CLASS (CliHandoffTests)
+    {
+    public:
+        TEST_METHOD (SharedNonElevatedHelperRejectsParentBeforeCreatingChild)
+        {
+            wil::unique_process_information process;
+            Assert::IsFalse(run_non_elevated(L"must-not-start.exe", L"", process, nullptr, false, true,
+                                             [](HANDLE) { return false; }));
+            Assert::IsNull(process.hProcess);
+            Assert::IsNull(process.hThread);
+        }
+
+        TEST_METHOD (CurrentProcessIdentityMatchesItself)
+        {
+            Assert::IsTrue(WorkspacesSession::SameUserSession(GetCurrentProcess(), GetCurrentProcess()));
+        }
+
+        TEST_METHOD (InvalidProcessAndOperationFailClosed)
+        {
+            Assert::ExpectException<WorkspacesCli::Error>([] {
+                WorkspacesSession::IsMediumProcess(nullptr);
+            });
+            Assert::ExpectException<WorkspacesCli::Error>([] {
+                WorkspacesSession::ReceiveWorkerHandles(L"..\\not-a-guid", GetCurrentProcessId(), { L"fixture.exe" });
+            });
+            Assert::ExpectException<WorkspacesCli::Error>([] {
+                WorkspacesSession::ReceiveWorkerHandles(L"{EF762D6C-EDBF-4C45-98F2-878BBF67583F}", 0, { L"fixture.exe" });
+            });
+        }
+
+        TEST_METHOD (CanceledOrExpiredStartupDoesNotCreateAWorker)
+        {
+            wil::unique_handle cancel(CreateEventW(nullptr, TRUE, TRUE, nullptr));
+            Assert::IsTrue(static_cast<bool>(cancel));
+            WorkspacesSession::WorkerHandles handles;
+            handles.cancel = cancel.get();
+            try
+            {
+                WorkspacesSession::StartMediumWorker(L"must-not-start.exe",
+                                                 L"{EF762D6C-EDBF-4C45-98F2-878BBF67583F}",
+                                                 handles,
+                                                 GetTickCount64() + 10000);
+                Assert::Fail(L"Canceled startup must not proceed.");
+            }
+            catch (const WorkspacesCli::Error& error)
+            {
+                Assert::AreEqual(12, error.exitCode);
+            }
+            ResetEvent(cancel.get());
+            try
+            {
+                WorkspacesSession::StartMediumWorker(L"must-not-start.exe",
+                                                 L"{EF762D6C-EDBF-4C45-98F2-878BBF67583F}",
+                                                 handles,
+                                                 GetTickCount64() - 1);
+                Assert::Fail(L"Expired startup must not proceed.");
+            }
+            catch (const WorkspacesCli::Error& error)
+            {
+                Assert::AreEqual(9, error.exitCode);
+            }
+        }
+
+#ifdef _DEBUG
+        TEST_METHOD (SharedHelperWorkerReceivesOnlyExpectedCapabilities)
+        {
+            wchar_t module[32768]{};
+            Assert::IsTrue(GetModuleFileNameW(reinterpret_cast<HMODULE>(&__ImageBase), module, ARRAYSIZE(module)) > 0);
+            const auto executable = std::filesystem::path(module).parent_path() / L"WorkspacesCliHandoffFixture.exe";
+            Assert::IsTrue(std::filesystem::is_regular_file(executable));
+            SECURITY_ATTRIBUTES attributes{ sizeof(attributes), nullptr, TRUE };
+            wil::unique_handle read, write;
+            Assert::IsTrue(CreatePipe(read.put(), write.put(), &attributes, 4096) != FALSE);
+            Assert::IsTrue(SetHandleInformation(read.get(), HANDLE_FLAG_INHERIT, 0) != FALSE);
+            wil::unique_handle input(CreateFileW(L"NUL", GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, &attributes, OPEN_EXISTING, 0, nullptr));
+            STARTUPINFOW startup{ sizeof(startup) };
+            startup.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+            startup.wShowWindow = SW_HIDE;
+            startup.hStdInput = input.get();
+            startup.hStdOutput = write.get();
+            startup.hStdError = write.get();
+            auto command = L"\"" + executable.wstring() + L"\" --parent all";
+            wil::unique_process_information process;
+            Assert::IsTrue(CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, TRUE, CREATE_NEW_CONSOLE, nullptr, nullptr, &startup, &process) != FALSE);
+            write.reset();
+            auto cleanup = wil::scope_exit([&] {
+                if (WaitForSingleObject(process.hProcess, 0) == WAIT_TIMEOUT)
+                {
+                    TerminateProcess(process.hProcess, 1);
+                    WaitForSingleObject(process.hProcess, 2000);
+                }
+            });
+            Assert::AreEqual(DWORD{ WAIT_OBJECT_0 }, WaitForSingleObject(process.hProcess, 35000));
+            DWORD exitCode{};
+            Assert::IsTrue(GetExitCodeProcess(process.hProcess, &exitCode) != FALSE);
+            char buffer[4096]{};
+            DWORD received{};
+            Assert::IsTrue(ReadFile(read.get(), buffer, sizeof(buffer), &received, nullptr) != FALSE);
+            const std::string output(buffer, received);
+            Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage(output.c_str());
+            Assert::AreEqual(DWORD{ 0 }, exitCode);
+            const auto result = json::JsonObject::Parse(winrt::to_hstring(output));
+            Assert::IsTrue(result.GetNamedBoolean(L"passed"));
+            const auto cases = result.GetNamedArray(L"cases");
+            Assert::AreEqual(2u, cases.Size());
+            for (const auto& value : cases)
+            {
+                const auto item = value.GetObjectW();
+                Assert::IsTrue(item.GetNamedBoolean(L"medium"));
+                Assert::IsTrue(item.GetNamedBoolean(L"readOnlySnapshot"));
+                Assert::IsTrue(item.GetNamedBoolean(L"readOnlyCancel"));
+                Assert::IsTrue(item.GetNamedBoolean(L"syncOnlyOwner"));
+                Assert::IsTrue(item.GetNamedBoolean(L"passed"));
+            }
+        }
+#endif
+    };
+}

@@ -33,6 +33,8 @@ namespace KeyboardManagerEditorUI.Controls
 
         private readonly ObservableCollection<string> _triggerKeys = new();
         private readonly ObservableCollection<string> _actionKeys = new();
+        private List<string> _triggerKeysBeforeRecording = new();
+        private List<string> _actionKeysBeforeRecording = new();
 
         private bool _disposed;
         private bool _internalUpdate;
@@ -150,10 +152,13 @@ namespace KeyboardManagerEditorUI.Controls
 
             TriggerKeys.ItemsSource = _triggerKeys;
             ActionKeys.ItemsSource = _actionKeys;
+            TriggerEmptyKeyDropDown.KeyChanged += TriggerEmptyKeyDropDown_KeyChanged;
+            ActionEmptyKeyDropDown.KeyChanged += ActionEmptyKeyDropDown_KeyChanged;
 
             _triggerKeys.CollectionChanged += (_, _) =>
             {
                 UpdatePlaceholderVisibility();
+                UpdateConditionVisibility();
                 RaiseValidationStateChanged();
             };
 
@@ -164,6 +169,7 @@ namespace KeyboardManagerEditorUI.Controls
             };
 
             this.Unloaded += UnifiedMappingControl_Unloaded;
+            UpdatePlaceholderVisibility();
         }
 
         #endregion
@@ -207,6 +213,8 @@ namespace KeyboardManagerEditorUI.Controls
                     UncheckAllToggleButtons();
                 }
             }
+
+            UpdateConditionVisibility();
         }
 
         private void TriggerKeyToggleBtn_Checked(object sender, RoutedEventArgs e)
@@ -214,6 +222,7 @@ namespace KeyboardManagerEditorUI.Controls
             if (TriggerKeyToggleBtn.IsChecked == true)
             {
                 _currentInputMode = KeyInputMode.OriginalKeys;
+                _triggerKeysBeforeRecording = _triggerKeys.ToList();
 
                 // Uncheck action toggle if checked
                 if (ActionKeyToggleBtn?.IsChecked == true)
@@ -223,6 +232,7 @@ namespace KeyboardManagerEditorUI.Controls
 
                 // Disable dropdowns during recording
                 SetDropDownsEnabled(TriggerKeys, false);
+                TriggerEmptyKeyDropDown.IsEnabled = false;
 
                 KeyboardHookHelper.Instance.ActivateHook(this);
             }
@@ -236,6 +246,7 @@ namespace KeyboardManagerEditorUI.Controls
             }
 
             SetDropDownsEnabled(TriggerKeys, true);
+            TriggerEmptyKeyDropDown.IsEnabled = true;
         }
 
         #endregion
@@ -264,6 +275,7 @@ namespace KeyboardManagerEditorUI.Controls
             }
 
             HideValidationMessage();
+            UpdateConditionVisibility();
             RaiseValidationStateChanged();
         }
 
@@ -272,6 +284,7 @@ namespace KeyboardManagerEditorUI.Controls
             if (ActionKeyToggleBtn.IsChecked == true)
             {
                 _currentInputMode = KeyInputMode.RemappedKeys;
+                _actionKeysBeforeRecording = _actionKeys.ToList();
 
                 // Uncheck trigger toggle if checked
                 if (TriggerKeyToggleBtn?.IsChecked == true)
@@ -281,6 +294,7 @@ namespace KeyboardManagerEditorUI.Controls
 
                 // Disable dropdowns during recording
                 SetDropDownsEnabled(ActionKeys, false);
+                ActionEmptyKeyDropDown.IsEnabled = false;
 
                 KeyboardHookHelper.Instance.ActivateHook(this);
             }
@@ -294,6 +308,7 @@ namespace KeyboardManagerEditorUI.Controls
             }
 
             SetDropDownsEnabled(ActionKeys, true);
+            ActionEmptyKeyDropDown.IsEnabled = true;
         }
 
         #endregion
@@ -323,6 +338,11 @@ namespace KeyboardManagerEditorUI.Controls
             }
         }
 
+        private void TriggerEmptyKeyDropDown_KeyChanged(object? sender, KeyChangedEventArgs e)
+        {
+            TrySetFirstDropDownKey(_triggerKeys, e, true);
+        }
+
         private void ActionKeyDropDown_Loaded(object sender, RoutedEventArgs e)
         {
             if (sender is KeyDropDownButton dropDown)
@@ -335,6 +355,11 @@ namespace KeyboardManagerEditorUI.Controls
                 dropDown.Unloaded -= ActionKeyDropDown_Unloaded;
                 dropDown.Unloaded += ActionKeyDropDown_Unloaded;
             }
+        }
+
+        private void ActionEmptyKeyDropDown_KeyChanged(object? sender, KeyChangedEventArgs e)
+        {
+            TrySetFirstDropDownKey(_actionKeys, e, false);
         }
 
         private void ActionKeyDropDown_Unloaded(object sender, RoutedEventArgs e)
@@ -370,6 +395,7 @@ namespace KeyboardManagerEditorUI.Controls
 
                     _triggerKeys[index] = e.NewKeyName;
                     HandleAutoGrowShrink(_triggerKeys, index, e.NewKeyCode);
+                    UpdateAppSpecificCheckBoxState();
                 }
             }
         }
@@ -399,6 +425,30 @@ namespace KeyboardManagerEditorUI.Controls
                     _actionKeys[index] = e.NewKeyName;
                     HandleAutoGrowShrink(_actionKeys, index, e.NewKeyCode);
                 }
+            }
+        }
+
+        private void TrySetFirstDropDownKey(ObservableCollection<string> keys, KeyChangedEventArgs e, bool isTrigger)
+        {
+            if (e.NewKeyCode == 0)
+            {
+                return;
+            }
+
+            string? validationError = ValidateDropDownSelection(keys, 0, e.NewKeyCode, e.NewKeyName);
+            if (validationError != null)
+            {
+                ShowNotificationTip(validationError);
+                return;
+            }
+
+            keys.Clear();
+            keys.Add(e.NewKeyName);
+            HandleAutoGrowShrink(keys, 0, e.NewKeyCode);
+
+            if (isTrigger)
+            {
+                UpdateAppSpecificCheckBoxState();
             }
         }
 
@@ -548,7 +598,7 @@ namespace KeyboardManagerEditorUI.Controls
         private void UpdateAppSpecificCheckBoxState()
         {
             // Only enable app-specific remapping for shortcuts (multiple keys).
-            bool isShortcut = _triggerKeys.Count > 1;
+            bool isShortcut = _triggerKeys.Count(k => !string.IsNullOrEmpty(k)) > 1;
             bool alreadyChecked = AppSpecificCheckBox.IsChecked == true;
 
             try
@@ -726,6 +776,52 @@ namespace KeyboardManagerEditorUI.Controls
             ShowNotificationTip(ResourceHelper.GetString("Warning_InputLimitReached"));
         }
 
+        public void OnRecordingStopped(bool restorePreviousKeys, bool moveFocusBackward)
+        {
+            void ApplyRecordingStopped()
+            {
+                if (restorePreviousKeys)
+                {
+                    RestoreKeysBeforeRecording();
+                }
+
+                UncheckAllToggleButtons();
+                SetDropDownsEnabled(TriggerKeys, true);
+                SetDropDownsEnabled(ActionKeys, true);
+                TriggerEmptyKeyDropDown.IsEnabled = true;
+                ActionEmptyKeyDropDown.IsEnabled = true;
+
+                if (moveFocusBackward)
+                {
+                    MoveFocusBackward();
+                }
+            }
+
+            if (DispatcherQueue.HasThreadAccess)
+            {
+                ApplyRecordingStopped();
+            }
+            else
+            {
+                DispatcherQueue.TryEnqueue(ApplyRecordingStopped);
+            }
+        }
+
+        private void MoveFocusBackward()
+        {
+            // Passing the public XamlRoot content lets WinUI widen the search to its internal root, which
+            // includes the popup hosting the dialog. Other explicit roots reject Next/Previous navigation.
+            var searchRoot = XamlRoot?.Content;
+            if (searchRoot is null)
+            {
+                return;
+            }
+
+            Microsoft.UI.Xaml.Input.FocusManager.TryMoveFocus(
+                Microsoft.UI.Xaml.Input.FocusNavigationDirection.Previous,
+                new Microsoft.UI.Xaml.Input.FindNextElementOptions { SearchRoot = searchRoot });
+        }
+
         #endregion
 
         #region Public API - Getters
@@ -807,6 +903,12 @@ namespace KeyboardManagerEditorUI.Controls
         public ElevationLevel GetElevationLevel() => (ElevationLevel)(ElevationComboBox?.SelectedIndex ?? 0);
 
         /// <summary>
+        /// Gets the single-key remap condition (Always/Alone). Only meaningful for single-key remaps.
+        /// </summary>
+        public KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition GetCondition() =>
+            (KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition)(ConditionComboBox?.SelectedIndex ?? 0);
+
+        /// <summary>
         /// Gets the window visibility (for OpenApp action type).
         /// </summary>
         public StartWindowType GetVisibility() => (StartWindowType)(VisibilityComboBox?.SelectedIndex ?? 0);
@@ -826,14 +928,14 @@ namespace KeyboardManagerEditorUI.Controls
         public bool IsInputComplete()
         {
             // Trigger keys are always required
-            if (_triggerKeys.Count == 0)
+            if (GetTriggerKeys().Count == 0)
             {
                 return false;
             }
 
             return CurrentActionType switch
             {
-                ActionType.KeyOrShortcut => _actionKeys.Count > 0,
+                ActionType.KeyOrShortcut => GetActionKeys().Count > 0,
                 ActionType.Text => !string.IsNullOrEmpty(TextContentBox?.Text),
                 ActionType.OpenUrl => !string.IsNullOrWhiteSpace(UrlPathInput?.Text),
                 ActionType.OpenApp => !string.IsNullOrWhiteSpace(ProgramPathInput?.Text),
@@ -975,6 +1077,17 @@ namespace KeyboardManagerEditorUI.Controls
         }
 
         /// <summary>
+        /// Sets the single-key remap condition (Always/Alone).
+        /// </summary>
+        public void SetCondition(KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition condition)
+        {
+            if (ConditionComboBox != null)
+            {
+                ConditionComboBox.SelectedIndex = (int)condition;
+            }
+        }
+
+        /// <summary>
         /// Sets the window visibility (for OpenApp action type).
         /// </summary>
         public void SetVisibility(StartWindowType visibility)
@@ -1052,19 +1165,66 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void UpdatePlaceholderVisibility()
         {
-            if (TriggerKeyPlaceholder != null)
+            if (TriggerEmptyKeyPickerPanel != null)
             {
-                TriggerKeyPlaceholder.Visibility = _triggerKeys.Count == 0
+                TriggerEmptyKeyPickerPanel.Visibility = _triggerKeys.Count == 0
                     ? Microsoft.UI.Xaml.Visibility.Visible
                     : Microsoft.UI.Xaml.Visibility.Collapsed;
             }
 
-            if (ActionKeyPlaceholder != null)
+            if (ActionEmptyKeyPickerPanel != null)
             {
-                ActionKeyPlaceholder.Visibility = _actionKeys.Count == 0
+                ActionEmptyKeyPickerPanel.Visibility = _actionKeys.Count == 0
                     ? Microsoft.UI.Xaml.Visibility.Visible
                     : Microsoft.UI.Xaml.Visibility.Collapsed;
             }
+        }
+
+        private void RestoreKeysBeforeRecording()
+        {
+            if (_currentInputMode == KeyInputMode.OriginalKeys)
+            {
+                RestoreKeys(_triggerKeys, _triggerKeysBeforeRecording);
+                UpdateAppSpecificCheckBoxState();
+            }
+            else
+            {
+                RestoreKeys(_actionKeys, _actionKeysBeforeRecording);
+            }
+        }
+
+        private static void RestoreKeys(ObservableCollection<string> keys, List<string> previousKeys)
+        {
+            keys.Clear();
+            foreach (var key in previousKeys)
+            {
+                keys.Add(key);
+            }
+        }
+
+        /// <summary>
+        /// Shows the single-key remap "Condition" (Always / Alone) combo box only when the mapping is a
+        /// single-key remap whose action is a key/shortcut or Disable — the cases where the alone
+        /// condition is meaningful and supported by the engine (a key/shortcut alone target, or an
+        /// "alone-disable" that swallows a solo tap while the key still works in combination). Only
+        /// toggles visibility; never changes the selection, so a condition set via
+        /// <see cref="SetCondition"/> during load is preserved.
+        /// </summary>
+        private void UpdateConditionVisibility()
+        {
+            if (ConditionComboBox == null)
+            {
+                return;
+            }
+
+            int nonEmptyTriggerKeys = _triggerKeys.Count(k => !string.IsNullOrEmpty(k));
+            bool isSingleKeyRemap = CurrentTriggerType == TriggerType.KeyOrShortcut
+                && nonEmptyTriggerKeys == 1
+                && (CurrentActionType == ActionType.KeyOrShortcut || CurrentActionType == ActionType.Disable);
+
+            ConditionComboBox.Visibility = isSingleKeyRemap
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
 
         private void RaiseValidationStateChanged()
@@ -1192,6 +1352,11 @@ namespace KeyboardManagerEditorUI.Controls
             if (ElevationComboBox != null)
             {
                 ElevationComboBox.SelectedIndex = 0;
+            }
+
+            if (ConditionComboBox != null)
+            {
+                ConditionComboBox.SelectedIndex = 0;
             }
 
             if (IfRunningComboBox != null)

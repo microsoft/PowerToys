@@ -9,7 +9,9 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.UnitTestBase;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -46,6 +48,18 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
 
         // Assert
         Assert.IsTrue(history.GetCommandHistoryWeight("com.microsoft.cmdpal.shell") > 0);
+    }
+
+    [TestMethod]
+    public void RecentCommandIdsAreMostRecentFirstAndCanBeBoundedByConsumer()
+    {
+        var history = CreateHistory(["oldest", "middle", "newest"]);
+        string[] expected = ["newest", "middle"];
+
+        CollectionAssert.AreEqual(
+            expected,
+            history.EnumerateRecentCommandIds().Take(2).ToArray());
+        Assert.AreEqual(3, history.EnumerateRecentCommandIds().Count());
     }
 
     [TestMethod]
@@ -235,6 +249,77 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
+    public void WithoutHistoryItem_RemovesOnlyRequestedCommand()
+    {
+        var original = CreateHistory(["alpha", "beta", "gamma"]);
+
+        var updated = original.WithoutHistoryItem("beta");
+
+        string[] expectedUpdated = ["gamma", "alpha"];
+        string[] expectedOriginal = ["gamma", "beta", "alpha"];
+        CollectionAssert.AreEqual(expectedUpdated, updated.EnumerateRecentCommandIds().ToArray());
+        CollectionAssert.AreEqual(expectedOriginal, original.EnumerateRecentCommandIds().ToArray());
+        Assert.AreSame(updated, updated.WithoutHistoryItem("missing"));
+    }
+
+    [TestMethod]
+    public void ClearHistory_RemovesEverythingAndPreservesEmptyInstance()
+    {
+        var original = CreateHistory(["alpha", "beta"]);
+
+        var cleared = original.ClearHistory();
+
+        Assert.IsTrue(cleared.IsEmpty);
+        Assert.AreEqual(0, cleared.EnumerateRecentCommandIds().Count());
+        Assert.AreSame(cleared, cleared.ClearHistory());
+        Assert.AreEqual(2, original.EnumerateRecentCommandIds().Count());
+    }
+
+    [TestMethod]
+    public void RecentCommandListItem_PreservesRecordedHistoryId()
+    {
+        var source = new ListItemMock("A command", GivenId: "source-command-id");
+        var recentItem = new RecentCommandListItem(new(source), "recorded-history-id");
+
+        Assert.AreSame(source, recentItem.Source.Safe);
+        Assert.AreEqual("recorded-history-id", MainListPage.IdForTopLevelOrAppItem(new(recentItem)));
+    }
+
+    [TestMethod]
+    public void RecentCommandListItem_PreservesLiveInProcProperties()
+    {
+        var command = new NoOpCommand { Id = "command" };
+        var source = new ListItem(command) { Title = "Original" };
+        var recentItem = new RecentCommandListItem(new(source), "history-id");
+
+        source.Title = "Updated";
+        source.Subtitle = "Updated subtitle";
+
+        Assert.AreSame(source, recentItem.Source.Safe);
+        Assert.AreSame(command, recentItem.Command);
+        Assert.AreEqual("Updated", recentItem.Title);
+        Assert.AreEqual("Updated subtitle", recentItem.Subtitle);
+    }
+
+    [TestMethod]
+    public void RecentCommandListItem_CreateOrReuse_ReusesOnlyMatchingPresentation()
+    {
+        var source = new ListItemMock("A command", GivenId: "source-command-id");
+        var first = RecentCommandListItem.CreateOrReuse(null, new(source), "recorded-history-id");
+
+        var reused = RecentCommandListItem.CreateOrReuse([new(first)], new(source), "recorded-history-id");
+        var differentCommand = RecentCommandListItem.CreateOrReuse([new(first)], new(source), "other-history-id");
+        var differentSource = RecentCommandListItem.CreateOrReuse(
+            [new(first)],
+            new(new ListItemMock("A command", GivenId: "source-command-id")),
+            "recorded-history-id");
+
+        Assert.AreSame(first, reused);
+        Assert.AreNotSame(first, differentCommand);
+        Assert.AreNotSame(first, differentSource);
+    }
+
+    [TestMethod]
     public void ValidateHistoryCap()
     {
         // Insert well beyond the cap, each newer than the last. The store keeps the most-recent
@@ -331,9 +416,9 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var fuzzyMatcher = CreateMatcher();
         var q = fuzzyMatcher.PrecomputeQuery("C");
 
-        var scoreA = MainListPage.ScoreTopLevelItem(q, items[0], history, fuzzyMatcher);
-        var scoreB = MainListPage.ScoreTopLevelItem(q, items[1], history, fuzzyMatcher);
-        var scoreC = MainListPage.ScoreTopLevelItem(q, items[2], history, fuzzyMatcher);
+        var scoreA = MainListPage.ScoreTopLevelItem(q, new(items[0]), history, fuzzyMatcher);
+        var scoreB = MainListPage.ScoreTopLevelItem(q, new(items[1]), history, fuzzyMatcher);
+        var scoreC = MainListPage.ScoreTopLevelItem(q, new(items[2]), history, fuzzyMatcher);
 
         // Assert
         // All of these equally match the query, and they're all in the same bucket,
@@ -412,8 +497,8 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var fuzzyMatcher = CreateMatcher();
 
         var q = fuzzyMatcher.PrecomputeQuery("C");
-        var unweightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, emptyHistory, fuzzyMatcher)).ToList();
-        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
+        var unweightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), emptyHistory, fuzzyMatcher)).ToList();
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher)).ToList();
         Assert.AreEqual(unweightedScores.Count, weightedScores.Count, "Both score lists should have the same number of items");
         for (var i = 0; i < unweightedScores.Count; i++)
         {
@@ -457,7 +542,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var fuzzyMatcher = CreateMatcher();
         var q = fuzzyMatcher.PrecomputeQuery("te");
 
-        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher)).ToList();
         var weightedMatches = GetMatches(items, weightedScores).ToList();
 
         Assert.AreEqual(3, weightedMatches.Count, "Find Terminal, VsCode and Run commands");
@@ -484,7 +569,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
             history = history.WithHistoryItem(items[1].Id);
         }
 
-        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher)).ToList();
         var weightedMatches = GetMatches(items, weightedScores).ToList();
 
         Assert.AreEqual(3, weightedMatches.Count, "Find Terminal, VsCode and Run commands");
@@ -513,7 +598,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         {
             history = history.WithHistoryItem(vsCodeId);
 
-            var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
+            var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher)).ToList();
             var weightedMatches = GetMatches(items, weightedScores).ToList();
             Assert.AreEqual(4, weightedMatches.Count);
 
@@ -544,7 +629,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
             history = history.WithHistoryItem("vscode");
         }
 
-        var scores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
+        var scores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher)).ToList();
 
         // Same tier for both, so the frequently-used one should not be below the other.
         Assert.IsTrue(

@@ -1,0 +1,28 @@
+{
+  "Repository": "https://github.com/microsoft/winappCli",
+  "Tag": "v0.7.1",
+  "Version": "0.7.1",
+  "Assets": {
+    "x64": {
+      "Name": "winappcli-x64.zip",
+      "Sha256": "d925d1e32cdc320b6d271f653fd2cd3c05b5d7558deb20d1b548bead77900fcf"
+    },
+    "arm64": {
+      "Name": "winappcli-arm64.zip",
+      "Sha256": "4ed1edcc6d4a1a7c75bb70dbdbf77a69b3c650823c7e8061aa66f8adb1017f2e"
+    }
+  },
+  "Files": [
+    "winapp.exe",
+    "libHarfBuzzSharp.dll",
+    "libSkiaSharp.dll"
+  ],
+  "ArchiveFiles": [
+    "winapp.exe",
+    "winapp.pdb",
+    "libHarfBuzzSharp.dll",
+    "libHarfBuzzSharp.pdb",
+    "libSkiaSharp.dll",
+    "libSkiaSharp.pdb"
+  ]
+}

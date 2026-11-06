@@ -79,7 +79,7 @@ namespace HostsUILib.ViewModels
 
         private ObservableCollection<Entry> _entries;
 
-        public AdvancedCollectionView Entries { get; set; }
+        public AdvancedCollectionView Entries { get; private set; }
 
         public int NextId => _entries?.Count > 0 ? _entries.Max(e => e.Id) + 1 : 0;
 

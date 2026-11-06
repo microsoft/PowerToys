@@ -29,7 +29,7 @@ public class ExtensionWrapper : IExtensionWrapper
         [typeof(ICommandProvider)] = ProviderType.Commands,
     };
 
-    private IExtension? _extensionObject;
+    private volatile IExtension? _extensionObject;
 
     public ExtensionWrapper(AppExtension appExtension, string classId)
     {
@@ -169,6 +169,37 @@ public class ExtensionWrapper : IExtensionWrapper
         lock (_lock)
         {
             return IsRunning() ? _extensionObject : null;
+        }
+    }
+
+    public bool TryAllowSetForeground(bool checkLiveness)
+    {
+        try
+        {
+            var extensionObject = checkLiveness ? GetExtensionObject() : _extensionObject;
+            if (extensionObject is null)
+            {
+                return false;
+            }
+
+            unsafe
+            {
+                var winrtObject = (IWinRTObject)extensionObject;
+                var hr = PInvoke.CoAllowSetForegroundWindow((IUnknown*)winrtObject.NativeObject.ThisPtr);
+                GC.KeepAlive(extensionObject);
+                if (hr != 0)
+                {
+                    Logger.LogWarning($"Error giving foreground rights: 0x{hr.Value:X8}");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to give extension foreground rights", ex);
+            return false;
         }
     }
 

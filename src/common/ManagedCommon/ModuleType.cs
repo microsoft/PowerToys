@@ -9,6 +9,7 @@ namespace ManagedCommon
         AdvancedPaste,
         AltWindowCycle,
         AlwaysOnTop,
+        AutoHideCursor,
         Awake,
         ColorPicker,
         CmdPal,
@@ -39,6 +40,7 @@ namespace ManagedCommon
         Workspaces,
         GrabAndMove,
         ZoomIt,
+        MouseButtonLock,
         GeneralSettings,
     }
 }

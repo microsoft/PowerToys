@@ -22,6 +22,35 @@
             Source="{x:Bind HeroImage}"
             Stretch="UniformToFill" />
 
+        <Canvas
+            x:Name="HeaderVideoHost"
+            Height="{x:Bind HeroImageHeight}"
+            HorizontalAlignment="Stretch"
+            SizeChanged="HeaderVideoHost_SizeChanged"
+            Visibility="Collapsed">
+            <MediaPlayerElement
+                x:Name="HeaderVideo"
+                AreTransportControlsEnabled="False"
+                AutomationProperties.AccessibilityView="Raw"
+                IsTabStop="False"
+                Stretch="UniformToFill" />
+        </Canvas>
+
+        <Grid
+            x:Name="HeaderFallback"
+            Height="{x:Bind HeroImageHeight}"
+            Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}"
+            Visibility="Collapsed">
+            <Image
+                Width="64"
+                Height="64"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                AutomationProperties.AccessibilityView="Raw"
+                Source="ms-appx:///Assets/Settings/Icons/PowerToys.png"
+                Stretch="Uniform" />
+        </Grid>
+
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel
                 Margin="32,24"

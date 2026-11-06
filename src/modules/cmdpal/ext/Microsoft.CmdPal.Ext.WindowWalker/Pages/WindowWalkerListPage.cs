@@ -375,11 +375,7 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
     }
 
     private static int ScoreFunction(string query, WindowEntry entry)
-    {
-        var titleScore = FuzzyStringMatcher.ScoreFuzzy(query, entry.Item.Title);
-        var processNameScore = FuzzyStringMatcher.ScoreFuzzy(query, entry.Window.Process.Name ?? string.Empty);
-        return Math.Max(titleScore, processNameScore);
-    }
+        => WindowSearchScorer.Score(query, entry.Item.Title, entry.Window.Process.Name);
 
     private void SetLoadingComplete(CancellationTokenSource cancellationTokenSource)
     {

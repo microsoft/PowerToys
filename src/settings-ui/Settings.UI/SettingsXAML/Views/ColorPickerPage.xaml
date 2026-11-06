@@ -23,7 +23,10 @@
                 Orientation="Vertical">
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ColorPicker_EnableColorPicker" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ColorPicker.png}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.AutomationId="Toggle_ColorPicker"
+                            IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
 
@@ -94,7 +97,7 @@
                             x:Name="ColorPicker_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             DisplayMemberPath="Value"
-                            ItemsSource="{Binding ColorFormatsPreview, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            ItemsSource="{Binding ColorFormatsPreview, Mode=OneWay}"
                             Loaded="ColorPicker_ComboBox_Loaded"
                             SelectedIndex="{Binding ColorFormatsPreviewIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             SelectedValue="{Binding SelectedColorRepresentationValue, Mode=TwoWay}"

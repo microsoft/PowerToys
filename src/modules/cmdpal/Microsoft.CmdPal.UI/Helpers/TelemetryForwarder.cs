@@ -54,12 +54,6 @@ internal sealed class TelemetryForwarder :
             message.CommandName,
             message.Success,
             message.ExecutionTimeMs));
-
-        // Increment session counter for commands executed
-        if (App.Current.AppWindow is MainWindow mainWindow)
-        {
-            mainWindow.IncrementCommandsExecuted();
-        }
     }
 
     public void Receive(TelemetryDockConfigurationMessage message)

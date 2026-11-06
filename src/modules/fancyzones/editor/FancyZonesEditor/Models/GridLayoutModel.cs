@@ -78,10 +78,10 @@ namespace FancyZonesEditor.Models
         public int[,] CellChildMap { get; set; }
 
         // RowPercents - represents the %age height of each row in the grid
-        public List<int> RowPercents { get; set; } = new List<int>();
+        public List<int> RowPercents { get; } = new List<int>();
 
         // ColumnPercents - represents the %age width of each column in the grid
-        public List<int> ColumnPercents { get; set; } = new List<int>();
+        public List<int> ColumnPercents { get; } = new List<int>();
 
         // ShowSpacing - flag if free space between cells should be presented
         public bool ShowSpacing
@@ -153,8 +153,8 @@ namespace FancyZonesEditor.Models
         {
             _rows = rows;
             _cols = cols;
-            RowPercents = rowPercents;
-            ColumnPercents = colsPercents;
+            RowPercents.AddRange(rowPercents);
+            ColumnPercents.AddRange(colsPercents);
             CellChildMap = cellChildMap;
         }
 
@@ -246,13 +246,15 @@ namespace FancyZonesEditor.Models
             _rows = data[i++];
             _cols = data[i++];
 
-            RowPercents = new List<int>(Rows);
+            RowPercents.Clear();
+            RowPercents.EnsureCapacity(Rows);
             for (int row = 0; row < Rows; row++)
             {
                 RowPercents.Add((data[i++] * 256) + data[i++]);
             }
 
-            ColumnPercents = new List<int>(Columns);
+            ColumnPercents.Clear();
+            ColumnPercents.EnsureCapacity(Columns);
             for (int col = 0; col < Columns; col++)
             {
                 ColumnPercents.Add((data[i++] * 256) + data[i++]);
@@ -307,7 +309,8 @@ namespace FancyZonesEditor.Models
                 rowPercents.Add(RowPercents[row]);
             }
 
-            layout.RowPercents = rowPercents;
+            layout.RowPercents.Clear();
+            layout.RowPercents.AddRange(rowPercents);
 
             List<int> colPercents = new List<int>(cols);
             for (int col = 0; col < cols; col++)
@@ -315,7 +318,8 @@ namespace FancyZonesEditor.Models
                 colPercents.Add(ColumnPercents[col]);
             }
 
-            layout.ColumnPercents = colPercents;
+            layout.ColumnPercents.Clear();
+            layout.ColumnPercents.AddRange(colPercents);
 
             layout.ShowSpacing = ShowSpacing;
             layout.Spacing = Spacing;
@@ -359,7 +363,8 @@ namespace FancyZonesEditor.Models
         private void InitRows()
         {
             CellChildMap = new int[TemplateZoneCount, 1];
-            RowPercents = new List<int>(TemplateZoneCount);
+            RowPercents.Clear();
+            RowPercents.EnsureCapacity(TemplateZoneCount);
 
             for (int i = 0; i < TemplateZoneCount; i++)
             {
@@ -376,7 +381,8 @@ namespace FancyZonesEditor.Models
         private void InitColumns()
         {
             CellChildMap = new int[1, TemplateZoneCount];
-            ColumnPercents = new List<int>(TemplateZoneCount);
+            ColumnPercents.Clear();
+            ColumnPercents.EnsureCapacity(TemplateZoneCount);
 
             for (int i = 0; i < TemplateZoneCount; i++)
             {
@@ -409,8 +415,10 @@ namespace FancyZonesEditor.Models
                 cols++;
             }
 
-            RowPercents = new List<int>(rows);
-            ColumnPercents = new List<int>(cols);
+            RowPercents.Clear();
+            RowPercents.EnsureCapacity(rows);
+            ColumnPercents.Clear();
+            ColumnPercents.EnsureCapacity(cols);
             CellChildMap = new int[rows, cols];
 
             // Note: The following are NOT equal to _multiplier divided by rows or columns and is
