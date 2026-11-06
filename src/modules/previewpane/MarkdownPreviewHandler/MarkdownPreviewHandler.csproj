@@ -5,6 +5,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
+    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyTitle>PowerToys.MarkdownPreviewHandler</AssemblyTitle>
@@ -62,6 +63,7 @@
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />
   </ItemGroup>
 

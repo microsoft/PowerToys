@@ -6,7 +6,7 @@
 
 struct VersionHelper
 {
-    VersionHelper(const size_t major, const size_t minor, const size_t revision);
+    VersionHelper(const size_t major, const size_t minor, const size_t revision, const size_t build = 0);
 
     auto operator<=>(const VersionHelper&) const = default;
     
@@ -16,6 +16,7 @@ struct VersionHelper
     size_t major;
     size_t minor;
     size_t revision;
+    size_t build;
 
     std::wstring toWstring() const;
     std::string toString() const;

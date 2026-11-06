@@ -19,6 +19,11 @@
                     Icon="Library"
                     Tag="0" />
                 <NavigationViewItem
+                    x:Uid="PowerScripts_ConsumerModulesTab"
+                    AutomationProperties.AutomationId="PowerScriptsConsumerModulesTab"
+                    Icon="AllApps"
+                    Tag="2" />
+                <NavigationViewItem
                     x:Uid="PowerScripts_ActivityTab"
                     AutomationProperties.AutomationId="PowerScriptsActivityTab"
                     Icon="Clock"

@@ -8,7 +8,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
     AutomationProperties.LandmarkType="Main">
-    <controls:SettingsPageControl ModuleDescription="Configure PowerScripts runtimes, isolation, integrations, and AI agent skills. Manage individual scripts in the standalone editor." ModuleTitle="PowerScripts">
+    <controls:SettingsPageControl ModuleDescription="Configure PowerScripts runtimes, isolation, and AI agent skills. Manage individual scripts and integrations in the standalone app." ModuleTitle="PowerScripts">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Spacing="8">
                 <tkcontrols:SettingsCard Description="Enable PowerScripts" Header="PowerScripts">
@@ -36,44 +36,6 @@
                     AutomationProperties.AutomationId="PowerScriptsEditorError"
                     IsClosable="False"
                     Severity="Error" />
-                <controls:SettingsGroup x:Uid="PowerScripts_Consumers">
-                    <tkcontrols:SettingsCard
-                        x:Uid="PowerScripts_AdvancedPasteConsumer"
-                        Description="{x:Bind ViewModel.AdvancedPasteConsumer.Status, Mode=OneWay}"
-                        IsEnabled="{x:Bind ViewModel.AreConsumerSettingsReady, Mode=OneWay}">
-                        <ToggleSwitch
-                            AutomationProperties.AutomationId="PowerScriptsAdvancedPasteEnabled"
-                            AutomationProperties.Name="Advanced Paste"
-                            IsEnabled="{x:Bind ViewModel.AdvancedPasteConsumer.CanChange, Mode=OneWay}"
-                            IsOn="{x:Bind ViewModel.AdvancedPasteConsumer.IsEnabled, Mode=OneWay}"
-                            Tag="advanced-paste"
-                            Toggled="ConsumerEnabledToggle_Toggled" />
-                    </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard
-                        x:Uid="PowerScripts_KeyboardManagerConsumer"
-                        Description="{x:Bind ViewModel.KeyboardManagerConsumer.Status, Mode=OneWay}"
-                        IsEnabled="{x:Bind ViewModel.AreConsumerSettingsReady, Mode=OneWay}">
-                        <ToggleSwitch
-                            AutomationProperties.AutomationId="PowerScriptsKeyboardManagerEnabled"
-                            AutomationProperties.Name="Keyboard Manager"
-                            IsEnabled="{x:Bind ViewModel.KeyboardManagerConsumer.CanChange, Mode=OneWay}"
-                            IsOn="{x:Bind ViewModel.KeyboardManagerConsumer.IsEnabled, Mode=OneWay}"
-                            Tag="keyboard-manager"
-                            Toggled="ConsumerEnabledToggle_Toggled" />
-                    </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard
-                        x:Uid="PowerScripts_FileExplorerConsumer"
-                        Description="{x:Bind ViewModel.FileExplorerConsumer.Status, Mode=OneWay}"
-                        IsEnabled="{x:Bind ViewModel.AreConsumerSettingsReady, Mode=OneWay}">
-                        <ToggleSwitch
-                            AutomationProperties.AutomationId="PowerScriptsFileExplorerEnabled"
-                            AutomationProperties.Name="File Explorer"
-                            IsEnabled="{x:Bind ViewModel.FileExplorerConsumer.CanChange, Mode=OneWay}"
-                            IsOn="{x:Bind ViewModel.FileExplorerConsumer.IsEnabled, Mode=OneWay}"
-                            Tag="file-explorer"
-                            Toggled="ConsumerEnabledToggle_Toggled" />
-                    </tkcontrols:SettingsCard>
-                </controls:SettingsGroup>
                 <controls:SettingsGroup x:Name="AgentSkillControls" x:Uid="PowerScripts_AgentSkillsGroup">
                     <InfoBar
                         x:Uid="PowerScripts_AgentSkillsHelp"
@@ -81,7 +43,7 @@
                         IsOpen="True"
                         Severity="Informational" />
                     <StackPanel Spacing="8">
-                        <tkcontrols:SettingsCard x:Uid="PowerScripts_AgentSelection">
+                        <tkcontrols:SettingsCard x:Uid="PowerScripts_AgentSelection" AutomationProperties.AutomationId="PowerScriptsAgentSkillSelectionCard">
                             <ComboBox
                                 x:Name="AgentSkillTarget"
                                 MinWidth="200"
@@ -97,6 +59,7 @@
                         <tkcontrols:SettingsCard
                             x:Name="AgentSkillDestination"
                             x:Uid="PowerScripts_AgentDestination"
+                            AutomationProperties.AutomationId="PowerScriptsAgentSkillDestinationCard"
                             ContentAlignment="Vertical">
                             <StackPanel Spacing="8">
                                 <TextBlock
@@ -104,26 +67,27 @@
                                     AutomationProperties.AutomationId="PowerScriptsAgentSkillStatus"
                                     IsTextSelectionEnabled="True"
                                     TextWrapping="Wrap" />
-                                <Button
-                                    x:Name="AgentSkillBrowse"
-                                    x:Uid="PowerScripts_AgentBrowse"
-                                    AutomationProperties.AutomationId="PowerScriptsAgentSkillBrowse"
-                                    Click="AgentSkillBrowse_Click"
-                                    Visibility="Collapsed" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button
+                                        x:Name="AgentSkillBrowse"
+                                        x:Uid="PowerScripts_AgentBrowse"
+                                        AutomationProperties.AutomationId="PowerScriptsAgentSkillBrowse"
+                                        Click="AgentSkillBrowse_Click"
+                                        IsEnabled="False" />
+                                    <Button
+                                        x:Name="AgentSkillAction"
+                                        AutomationProperties.AutomationId="PowerScriptsAgentSkillAction"
+                                        Click="AgentSkillAction_Click"
+                                        IsEnabled="False" />
+                                </StackPanel>
+                                <CheckBox
+                                    x:Name="AgentSkillKeepUpdated"
+                                    x:Uid="PowerScripts_AgentKeepUpdated"
+                                    AutomationProperties.AutomationId="PowerScriptsAgentSkillKeepUpdated"
+                                    Checked="AgentSkillKeepUpdated_Changed"
+                                    Unchecked="AgentSkillKeepUpdated_Changed" />
                             </StackPanel>
                         </tkcontrols:SettingsCard>
-                        <CheckBox
-                            x:Name="AgentSkillKeepUpdated"
-                            x:Uid="PowerScripts_AgentKeepUpdated"
-                            AutomationProperties.AutomationId="PowerScriptsAgentSkillKeepUpdated"
-                            Checked="AgentSkillKeepUpdated_Changed"
-                            Unchecked="AgentSkillKeepUpdated_Changed" />
-                        <Button
-                            x:Name="AgentSkillAction"
-                            HorizontalAlignment="Left"
-                            AutomationProperties.AutomationId="PowerScriptsAgentSkillAction"
-                            Click="AgentSkillAction_Click"
-                            IsEnabled="False" />
                     </StackPanel>
                     <InfoBar
                         x:Name="AgentSkillFeedback"

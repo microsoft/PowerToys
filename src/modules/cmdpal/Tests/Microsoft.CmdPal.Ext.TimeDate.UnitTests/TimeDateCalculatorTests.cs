@@ -15,8 +15,8 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 [TestClass]
 public class TimeDateCalculatorTests
 {
-    private CultureInfo originalCulture;
-    private CultureInfo originalUiCulture;
+    private CultureInfo originalCulture = null!;
+    private CultureInfo originalUiCulture = null!;
 
     [TestInitialize]
     public void Setup()
@@ -69,7 +69,7 @@ public class TimeDateCalculatorTests
         var settings = new SettingsManager();
 
         // Act
-        var results = TimeDateCalculator.ExecuteSearch(settings, null);
+        var results = TimeDateCalculator.ExecuteSearch(settings, null!);
 
         // Assert
         Assert.IsNotNull(results);

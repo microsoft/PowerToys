@@ -126,7 +126,10 @@ public partial class InstallPackageCommand : InvokableCommand
 
         try
         {
-            var result = await _winGetPackageManagerService.InstallPackageAsync(_package, SkipDependencies).ConfigureAwait(false);
+            var result = await _winGetPackageManagerService.InstallPackageAsync(
+                _package,
+                SkipDependencies,
+                source: WinGetPackageOperationSource.WinGetExtension).ConfigureAwait(false);
             await CompleteInstallOperationAsync(result).ConfigureAwait(false);
         }
         finally
@@ -141,7 +144,9 @@ public partial class InstallPackageCommand : InvokableCommand
 
         try
         {
-            var result = await _winGetPackageManagerService.UninstallPackageAsync(_package).ConfigureAwait(false);
+            var result = await _winGetPackageManagerService.UninstallPackageAsync(
+                _package,
+                source: WinGetPackageOperationSource.WinGetExtension).ConfigureAwait(false);
             await CompleteInstallOperationAsync(result).ConfigureAwait(false);
         }
         finally
@@ -243,7 +248,8 @@ public partial class InstallPackageCommand : InvokableCommand
             ? WinGetPackageOperationKind.Uninstall
             : WinGetPackageOperationKind.Install;
 
-        return operation.Kind == expectedKind
+        return operation.Source == WinGetPackageOperationSource.WinGetExtension
+            && operation.Kind == expectedKind
             && string.Equals(operation.PackageId, _packageId, StringComparison.OrdinalIgnoreCase);
     }
 

@@ -1,0 +1,1939 @@
+PackageName: +Godot.Godot
+Name: Godot
+WindowFilter: "Godot.exe"
+BackgroundProcess: false
+Shortcuts:
+  - SectionName: General editor actions
+    Properties:
+      - Name: Open 2D Workspace
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - F1
+      - Name: Open 3D Workspace
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - F2
+      - Name: Open Script Editor
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - F3
+      - Name: Search Help
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - F1
+      - Name: Distraction Free Mode
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - F11
+      - Name: Next Scene Tab
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Tab>"
+      - Name: Previous Scene Tab
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - "<Tab>"
+      - Name: Filter Files
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: true
+            Keys:
+              - P
+      - Name: Open Scene
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - O
+      - Name: Close Scene
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - W
+      - Name: Reopen Closed Scene
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - T
+      - Name: Save Scene
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - S
+      - Name: Save Scene As
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - S
+      - Name: Save All Scenes
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: true
+            Keys:
+              - S
+      - Name: Quick Open
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: true
+            Keys:
+              - O
+      - Name: Quick Open Scene
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - O
+      - Name: Quick Open Script
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: true
+            Keys:
+              - O
+      - Name: Undo
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - Z
+      - Name: Redo
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - Z
+      - Name: Quit
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - Q
+      - Name: Quit to Project List
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - Q
+      - Name: Take Screenshot
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - F12
+      - Name: Toggle Fullscreen
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - F11
+      - Name: Play
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - F5
+      - Name: Pause Scene
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - F7
+      - Name: Stop
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - F8
+      - Name: Play Scene
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - F6
+      - Name: Play Custom Scene
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - F5
+      - Name: Expand Bottom Panel
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - F12
+      - Name: Command Palette
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - P
+  - SectionName: Bottom panels
+    Properties:
+      - Name: Toggle Last Opened Panel
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - J
+      - Name: Toggle Animation Bottom Panel
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - N
+      - Name: Toggle Audio Bottom Panel
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - A
+      - Name: Toggle Debugger Bottom Panel
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - D
+      - Name: Toggle FileSystem Bottom Panel
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - F
+      - Name: Toggle Output Bottom Panel
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - O
+      - Name: Toggle Shader Editor Bottom Panel
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - S
+  - SectionName: 2D / CanvasItem editor
+    Properties:
+      - Name: Zoom In
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - '='
+      - Name: Zoom Out
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - '-'
+      - Name: Zoom Reset
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "<0>"
+      - Name: Pan View
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Space>"
+      - Name: Select Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - Q
+      - Name: Move Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - W
+      - Name: Rotate Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - E
+      - Name: Scale Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - S
+      - Name: Ruler Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - R
+      - Name: Use Smart Snap
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - S
+      - Name: Use Grid Snap
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - G
+      - Name: Multiply grid step by 2
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - 'Num *'
+      - Name: Divide grid step by 2
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - Num /
+      - Name: Always Show Grid
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - G
+      - Name: Show Helpers
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - H
+      - Name: Show Guides
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - Y
+      - Name: Center Selection
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - F
+      - Name: Frame Selection
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - F
+      - Name: Preview Canvas Scale
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - P
+      - Name: Insert Key
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Insert>"
+      - Name: Insert Key (Existing Tracks)
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Insert>"
+      - Name: Make Custom Bones from Nodes
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - B
+      - Name: Clear Pose
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - K
+  - SectionName: 3D / Spatial editor
+    Properties:
+      - Name: Toggle Freelook
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - F
+      - Name: Freelook Left
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - A
+      - Name: Freelook Right
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - D
+      - Name: Freelook Forward
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - W
+      - Name: Freelook Backwards
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - S
+      - Name: Freelook Up
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - E
+      - Name: Freelook Down
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - Q
+      - Name: Freelook Speed Modifier
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys: []
+      - Name: Freelook Slow Modifier
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys: []
+      - Name: Select Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - Q
+      - Name: Move Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - W
+      - Name: Rotate Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - E
+      - Name: Scale Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - R
+      - Name: Use Local Space
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - T
+      - Name: Use Snap
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - Y
+      - Name: Snap Object to Floor
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<PageDown>"
+      - Name: Top View
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - Num 7
+      - Name: Bottom View
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - Num 7
+      - Name: Front View
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - Num 1
+      - Name: Rear View
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - Num 1
+      - Name: Right View
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - Num 3
+      - Name: Left View
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - Num 3
+      - Name: Switch Perspective/Orthogonal View
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - Num 5
+      - Name: Insert Animation Key
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - K
+      - Name: Focus Origin
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - O
+      - Name: Focus Selection
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - F
+      - Name: Align Transform with View
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: true
+            Keys:
+              - M
+      - Name: Align Rotation with View
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: true
+            Keys:
+              - F
+      - Name: 1 Viewport
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "<1>"
+      - Name: 2 Viewports
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "<2>"
+      - Name: 2 Viewports (Alt)
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: true
+            Keys:
+              - "<2>"
+      - Name: 3 Viewports
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "<3>"
+      - Name: 3 Viewports (Alt)
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: true
+            Keys:
+              - "<3>"
+      - Name: 4 Viewports
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "<4>"
+  - SectionName: Text editor
+    Properties:
+      - Name: Cut
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - X
+      - Name: Copy
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - C
+      - Name: Paste
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - V
+      - Name: Select All
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - A
+      - Name: Find
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - F
+      - Name: Find Next
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - F3
+      - Name: Find Previous
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - F3
+      - Name: Find in Files
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - F
+      - Name: Replace
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - R
+      - Name: Replace in Files
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - R
+      - Name: Undo
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - Z
+      - Name: Redo
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - Y
+      - Name: Move Up
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - Up Arrow
+      - Name: Move Down
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - Down Arrow
+      - Name: Delete Line
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - K
+      - Name: Toggle Comment
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - K
+      - Name: Fold/Unfold Line
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - F
+      - Name: Duplicate Lines
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: true
+            Keys:
+              - Down Arrow
+      - Name: Duplicate Selection
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - D
+      - Name: Select Down
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - Down Arrow
+      - Name: Select Up
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - Up Arrow
+      - Name: Select Next Occurrence
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - D
+      - Name: Complete Symbol
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Space>"
+      - Name: Evaluate Selection
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - E
+      - Name: Trim Trailing Whitespace
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: true
+            Keys:
+              - T
+      - Name: Uppercase
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - F4
+      - Name: Lowercase
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - F5
+      - Name: Capitalize
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - F6
+      - Name: Convert Indent to Spaces
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - Y
+      - Name: Convert Indent to Tabs
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - I
+      - Name: Auto Indent
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - I
+      - Name: Toggle Bookmark
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: true
+            Keys:
+              - B
+      - Name: Go to Next Bookmark
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - B
+      - Name: Go to Previous Bookmark
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - B
+      - Name: Go to Function
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: true
+            Keys:
+              - F
+      - Name: Go to Line
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - G
+      - Name: Toggle Breakpoint
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - F9
+      - Name: Remove All Breakpoints
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - F9
+      - Name: Go to Next Breakpoint
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - '.'
+      - Name: Go to Previous Breakpoint
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - ','
+      - Name: Contextual Help
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - F1
+  - SectionName: Script editor
+    Properties:
+      - Name: Find
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - F
+      - Name: Find Next
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - F3
+      - Name: Find Previous
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - F3
+      - Name: Find in Files
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - F
+      - Name: Move Up
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: true
+            Keys:
+              - Up Arrow
+      - Name: Move Down
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: true
+            Keys:
+              - Down Arrow
+      - Name: Next Script
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - '.'
+      - Name: Previous Script
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - ','
+      - Name: Reopen Closed Script
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - T
+      - Name: Save
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: true
+            Keys:
+              - S
+      - Name: Save All
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: true
+            Keys:
+              - S
+      - Name: Soft Reload Script
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - R
+      - Name: History Previous
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - Left Arrow
+      - Name: History Next
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - Right Arrow
+      - Name: Close
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - W
+      - Name: Run
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - X
+      - Name: Toggle Scripts Panel
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - '\'
+      - Name: Zoom In
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - '='
+      - Name: Zoom Out
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - '-'
+      - Name: Reset Zoom
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "<0>"
+  - SectionName: Editor output
+    Properties:
+      - Name: Copy Selection
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - C
+      - Name: Clear Output
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - K
+  - SectionName: Debugger
+    Properties:
+      - Name: Step Into
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - F11
+      - Name: Step Over
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - F10
+      - Name: Continue
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - F12
+  - SectionName: File dialog
+    Properties:
+      - Name: Go Back
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - Left Arrow
+      - Name: Go Forward
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - Right Arrow
+      - Name: Go Up
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - Up Arrow
+      - Name: Refresh
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - F5
+      - Name: Toggle Hidden Files
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - H
+      - Name: Toggle Favorite
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - F
+      - Name: Toggle Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - V
+      - Name: Create Folder
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - N
+      - Name: Delete
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Delete>"
+      - Name: Focus Path
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - L
+      - Name: Move Favorite Up
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - Up Arrow
+      - Name: Move Favorite Down
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - Down Arrow
+  - SectionName: FileSystem dock
+    Properties:
+      - Name: Copy Path
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - C
+      - Name: Duplicate
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - D
+      - Name: Delete
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Delete>"
+  - SectionName: Scene tree dock
+    Properties:
+      - Name: Add Child Node
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - A
+      - Name: Batch Rename
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - F2
+      - Name: Copy Node Path
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - C
+      - Name: Delete
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Delete>"
+      - Name: Force Delete
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - "<Delete>"
+      - Name: Duplicate
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - D
+      - Name: Move Up
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - Up Arrow
+      - Name: Move Down
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - Down Arrow
+  - SectionName: Animation track editor
+    Properties:
+      - Name: Duplicate Selection
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - D
+      - Name: Duplicate Transposed
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - D
+      - Name: Delete Selection
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Delete>"
+      - Name: Go to Next Step
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - Right Arrow
+      - Name: Go to Previous Step
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - Left Arrow
+  - SectionName: TileMap editor
+    Properties:
+      - Name: Select
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - S
+      - Name: Cut Selection
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - X
+      - Name: Copy Selection
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - C
+      - Name: Paste Selection
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - V
+      - Name: Delete Selection
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Delete>"
+      - Name: Cancel
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Escape>"
+      - Name: Paint
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - D
+      - Name: Line
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - L
+      - Name: Rect
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - R
+      - Name: Bucket
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - B
+      - Name: Picker
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - P
+      - Name: Eraser
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - E
+      - Name: Flip Horizontally
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - C
+      - Name: Flip Vertically
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - V
+      - Name: Rotate Left
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - Z
+      - Name: Rotate Right
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - X
+  - SectionName: TileSet Editor
+    Properties:
+      - Name: Next Coordinate
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<PageDown>"
+      - Name: Previous Coordinate
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<PageUp>"
+      - Name: Region Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<1>"
+      - Name: Collision Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<2>"
+      - Name: Occlusion Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<3>"
+      - Name: Navigation Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<4>"
+      - Name: Bitmask Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<5>"
+      - Name: Priority Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<6>"
+      - Name: Icon Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<7>"
+      - Name: Z Index Mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<8>"
+  - SectionName: GridMap Editor
+    Properties:
+      - Name: Previous Floor
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<1>"
+      - Name: Next Floor
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<3>"
+      - Name: Edit X Axis
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - Z
+      - Name: Edit Y Axis
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - X
+      - Name: Edit Z Axis
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - C
+      - Name: Transform
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - T
+      - Name: Selection
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - Q
+      - Name: Erase
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - W
+      - Name: Paint
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - E
+      - Name: Pick
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - R
+      - Name: Fill
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - Z
+      - Name: Move
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - X
+      - Name: Duplicate
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - C
+      - Name: Delete
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - V
+      - Name: Cursor Rotate X
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - A
+      - Name: Cursor Rotate Y
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - S
+      - Name: Cursor Rotate Z
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - D
+  - SectionName: Project manager
+    Properties:
+      - Name: New Project
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - N
+      - Name: Import Project
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - I
+      - Name: Scan for Projects
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - S
+      - Name: Edit Project
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - E
+      - Name: Run Project
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - R
+      - Name: Rename Project
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - F2
+      - Name: Remove Project
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Delete>"

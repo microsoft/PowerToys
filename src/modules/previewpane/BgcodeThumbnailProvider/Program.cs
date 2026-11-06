@@ -8,7 +8,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Bgcode
 {
     internal static class Program
     {
-        private static BgcodeThumbnailProvider _thumbnailProvider;
+        private static BgcodeThumbnailProvider? _thumbnailProvider;
 
         /// <summary>
         ///  The main entry point for the application.
@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Bgcode
                     uint cx = Convert.ToUInt32(args[1], 10);
 
                     _thumbnailProvider = new BgcodeThumbnailProvider(filePath);
-                    Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
+                    Bitmap? thumbnail = _thumbnailProvider.GetThumbnail(cx);
                     if (thumbnail != null)
                     {
                         filePath = filePath.Replace(".bgcode", ".bmp");

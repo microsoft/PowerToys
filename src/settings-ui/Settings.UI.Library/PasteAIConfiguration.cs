@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public ObservableCollection<PasteAIProviderDefinition> Providers
         {
             get => _providers;
-            set => SetProperty(ref _providers, value ?? new ObservableCollection<PasteAIProviderDefinition>());
+            init => SetProperty(ref _providers, value ?? new ObservableCollection<PasteAIProviderDefinition>());
         }
 
         [JsonIgnore]

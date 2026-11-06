@@ -18,17 +18,17 @@
     <layout:ManagementPage
         x:Name="PowerScriptsSettingsPage"
         IsTabStop="False"
-        ModuleDescription="Create and manage scripts for compatible PowerToys modules. Global runtime, isolation, and integration options live in PowerToys Settings."
+        ModuleDescription="Create and manage scripts for compatible PowerToys modules. Choose integrations in Consumer modules; global runtime and isolation options live in PowerToys Settings."
         ModuleTitle="My scripts">
         <layout:ManagementPage.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <tkcontrols:SettingsCard
-                    x:Uid="PowerScripts_OpenGlobalSettings"
-                    AutomationProperties.AutomationId="PowerScriptsOpenGlobalSettings"
-                    Click="OpenGlobalSettings_Click"
-                    Description="{x:Bind ViewModel.ExecutionSettingsSummary, Mode=OneWay}"
-                    IsClickEnabled="True">
-                    <FontIcon Glyph="&#xE713;" />
+                <tkcontrols:SettingsCard x:Uid="PowerScripts_ExecutionSettings" Description="{x:Bind ViewModel.ExecutionSettingsSummary, Mode=OneWay}">
+                    <Button
+                        x:Uid="PowerScripts_OpenGlobalSettingsButton"
+                        AutomationProperties.AutomationId="PowerScriptsOpenGlobalSettings"
+                        Click="OpenGlobalSettings_Click">
+                        <FontIcon Glyph="&#xE713;" />
+                    </Button>
                 </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="PowerScripts_EditorDisabled"

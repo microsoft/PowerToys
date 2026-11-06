@@ -91,6 +91,7 @@ namespace SvgPreviewHandlerUnitTests
                 }
 
                 var textBox = svgPreviewControl.Controls[0] as RichTextBox;
+                Assert.IsNotNull(textBox);
 
                 // Assert
                 Assert.IsFalse(string.IsNullOrWhiteSpace(textBox.Text));
@@ -125,6 +126,7 @@ namespace SvgPreviewHandlerUnitTests
                 }
 
                 var textBox = svgPreviewControl.Controls[0] as RichTextBox;
+                Assert.IsNotNull(textBox);
                 var incrementParentControlWidth = 5;
                 var initialParentWidth = svgPreviewControl.Width;
                 var initialTextBoxWidth = textBox.Width;
@@ -202,6 +204,7 @@ namespace SvgPreviewHandlerUnitTests
                 }
 
                 var textBox = svgPreviewControl.Controls[0] as RichTextBox;
+                Assert.IsNotNull(textBox);
                 var incrementParentControlWidth = 5;
                 var initialParentWidth = svgPreviewControl.Width;
                 var initialTextBoxWidth = textBox.Width;

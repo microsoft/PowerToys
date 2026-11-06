@@ -15,8 +15,8 @@ namespace PowerScripts.Editor;
 
 public sealed partial class MainWindow : Window
 {
-    private readonly Frame[] _frames = { new(), new() };
-    private readonly Type[] _pages = { typeof(MyScriptsPage), typeof(PowerScriptsActivityPage) };
+    private readonly Frame[] _frames = { new(), new(), new() };
+    private readonly Type[] _pages = { typeof(MyScriptsPage), typeof(PowerScriptsActivityPage), typeof(ConsumerModulesPage) };
     private readonly PowerScriptsViewModel _viewModel;
 
     public MainWindow()
@@ -37,6 +37,11 @@ public sealed partial class MainWindow : Window
             if (args.WindowActivationState != WindowActivationState.Deactivated && _frames[0].Content is MyScriptsPage page)
             {
                 await page.RefreshConfigurationAsync();
+            }
+
+            if (args.WindowActivationState != WindowActivationState.Deactivated && ReferenceEquals(TabContent.Content, _frames[2]) && _frames[2].Content is ConsumerModulesPage consumers)
+            {
+                await consumers.RefreshConsumersAsync();
             }
         };
     }

@@ -8,7 +8,7 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_ImageResizer" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/ImageResizer.gif">
+    <controls:OOBEPageControl x:Uid="Oobe_ImageResizer" HeroVideo="ms-appx:///Assets/Settings/Modules/OOBE/ImageResizer.mp4">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToLaunch" Style="{ThemeResource OobeSubtitleStyle}" />

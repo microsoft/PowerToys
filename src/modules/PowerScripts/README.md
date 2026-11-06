@@ -17,11 +17,11 @@ Open **Settings > PowerScripts > Open PowerScripts editor** to manage PowerScrip
 standalone WinUI 3 window. **My scripts** contains the library, creation flow, descriptor details,
 and per-script review. **Activity** contains attributed execution history, refresh, and safe history
 clearing. PowerToys Settings owns enablement, the scripts folder, Windows/Linux runtime and sandbox
-controls, integration switches, and AI agent skills. The editor shows effective configuration and
-links back to Settings; it refreshes configuration when reactivated.
+controls and AI agent skills. The app owns integration switches in **Consumer modules**, shows
+effective configuration with a compact Settings button, and refreshes configuration when reactivated.
 The editor uses the existing Host and storage; moving the UI does not migrate scripts, trust, or bindings.
 
-Integration switches for Advanced Paste and Keyboard Manager live in **Settings > PowerScripts > Use PowerScripts in**.
+Integration switches for Advanced Paste and Keyboard Manager live in **PowerScripts app > Consumer modules**.
 The shared Host enforces them for discovery and execution, retaining existing bindings when disabled.
 Advanced Paste's legacy preference is preserved; Keyboard Manager defaults on. Group Policy can
 manage the module and each integration without replacing saved preferences. A disabled PowerScripts
@@ -55,9 +55,13 @@ work under sandboxing. Integration contributors must update the
 [consumer profiles](AgentSkills/powertoys-powerscripts/references/consumers.md) and bundle version
 when adding/changing adapters.
 
-Choose one of the three agents or **Custom**, which opens a folder picker. Select the agent's
+The main skill is a short workflow with task-specific references. Agents load only relevant
+consumer/runtime guidance; inline media syntax and code examples are separate optional references.
+
+Choose one of the three agents or **Custom**, then use **Choose folder**. Select the agent's
 skills parent folder; PowerToys creates `powertoys-powerscripts` inside it. Custom selections are
-remembered, and **Choose folder** is available only for Custom. The destination and installed/bundled
+remembered, and **Choose folder** remains visible but disabled for named agents. The destination,
+folder action, Install/Update action, and optional automatic updates share a card. Installed/bundled
 versions are visible before installing/updating. A single action shows **Install** when absent,
 **Update** for an intact managed copy with another bundled version, or a disabled **Update** when
 already current. Modified/unmanaged copies also disable Update with an explanation, never overwrite.

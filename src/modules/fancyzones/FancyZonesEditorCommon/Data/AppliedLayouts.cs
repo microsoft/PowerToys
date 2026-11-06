@@ -53,7 +53,7 @@ namespace FancyZonesEditorCommon.Data
 
         public struct AppliedLayoutsListWrapper
         {
-            public List<AppliedLayoutWrapper> AppliedLayouts { get; set; }
+            public List<AppliedLayoutWrapper> AppliedLayouts { get; init; }
         }
     }
 }

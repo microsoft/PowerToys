@@ -1,17 +1,11 @@
-# Discover the installed engine and create a package
+# Discover, scaffold, validate
 
-## Find the Host
+## Locate the engine and settings
 
-If PowerToys is running, inspect its executable path (read-only) and look for
-`PowerScripts\PowerScripts.Host.exe` beside `PowerToys.exe`. For a normal
-per-user installation, also check
-`%LOCALAPPDATA%\PowerToys\PowerScripts\PowerScripts.Host.exe`; for a machine
-installation, check `%ProgramFiles%\PowerToys\PowerScripts\PowerScripts.Host.exe`.
-Verify the file exists. If several installations exist, ask which to use.
-Do not recursively scan the user's drive, download another Host, or hardcode a
-developer worktree. If not found, guide installation/repair.
-
-Use PowerShell's call operator with the resolved full path:
+Inspect the running PowerToys executable path and look beside it for
+`PowerScripts\PowerScripts.Host.exe`. Otherwise check `%LOCALAPPDATA%\PowerToys`
+or `%ProgramFiles%\PowerToys` with that suffix. Verify existence; resolve multiple
+installations with the user. Do not scan the drive or download another Host.
 
 ```powershell
 & $hostPath --help
@@ -20,89 +14,60 @@ Use PowerShell's call operator with the resolved full path:
 & $hostPath template list
 ```
 
-Check exit codes and stderr. These commands do not execute user scripts.
-`consumers list` reports effective enablement and policy, not all runtime settings.
+These do not execute scripts. Check exits and stderr. Consumer enablement and
+platform support do not establish task dependencies or installed UI capabilities.
 
-## Resolve configuration
-
-Read `%LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts\config.json` if it exists.
-The configured folder is `scriptsRoot`; otherwise the default is
+Read `%LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts\config.json`.
+Root precedence: explicit `--root` > `POWERSCRIPTS_ROOT` > `scriptsRoot` >
 `%LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts\scripts`.
-`POWERSCRIPTS_ROOT` overrides the configured folder, and explicit `--root` wins
-over both. Report the chosen root; never silently create in another location.
-Read `python` and `mxc` settings to assess runtime/isolation. Use the Host's
-support probe for platform capability; absent MXC preferences are platform-derived,
-not permission to choose your own defaults.
+Report the chosen root. Read `python`/`mxc`; absent MXC preferences are
+platform-derived. Never edit settings to bypass gates; configuration belongs in
+PowerToys Settings, integration switches in PowerScripts app > Consumer modules.
 
-The Host shares persisted configuration with Settings. Never edit it directly
-to enable modules, change runtime/isolation, or bypass a managed preference.
-Guide the user to **PowerToys Settings > PowerScripts** instead.
+## Scaffold the chosen contract
 
-## Scaffold without execution
-
-First finish the consumer, I/O, parameter, and runtime decisions in `SKILL.md`.
-Map those decisions to creation options; do not always choose a no-input action
-or use the VPN example as the default. For example, an Advanced Paste text
-cleanup uses `input: text` and `output: text`, while Explorer report generation
-requires `input: files` and an output its installed adapter can export.
-
-Use a configured template to generate a unique package. This example scaffolds
-only the shape of a no-input action; its feasibility must already be established:
+After agreeing on consumer, I/O, parameters, runtime, and side effects:
 
 ```powershell
 $options = @{
-    projectName = 'Ensure VPN connected'
-    description = 'Ensure the selected VPN profile is connected.'
+    projectName = 'Clean copied text'
+    description = 'Normalize copied text.'
     runtime = 'powershell'
-    input = 'none'
-    output = 'none'
+    input = 'text'
+    output = 'text'
     parameters = @()
 } | ConvertTo-Json -Depth 10 -Compress
 $createdJson = $options | & $hostPath template create --configure --root $scriptsRoot
-if ($LASTEXITCODE -ne 0) { throw 'PowerScripts package creation failed; inspect stderr.' }
+if ($LASTEXITCODE -ne 0) { throw 'Creation failed; inspect stderr.' }
 $created = $createdJson | ConvertFrom-Json
 ```
 
-The response contains `entryPath` and `guidePath`. The descriptor is
-`entryPath + '.tool.json'`. Creation produces an educational example; replace its
-marked task with real, reviewed implementation. It does not configure a VPN,
-grant trust, or assign a shortcut.
+Replace the educational implementation with the task. The response gives
+`entryPath`, `guidePath`; descriptor path is `entryPath + '.tool.json'`.
+Creation neither grants trust nor configures bindings.
 
-Creation options support `runtime` (`powershell`/`python`), `input` and `output`
+Options: `runtime` (`powershell`/`python`), `input`/`output`
 (`none`/`text`/`files`/`image`/`audio`), `fileExtensions`, `minFiles`, `maxFiles`,
-and `parameters`. Creation's `maxFiles: 0` means unlimited.
-A parameter entry has `name`, `schema`, and `required`, for example:
+`parameters`. Creation's `maxFiles: 0` omits the schema maximum.
+Parameter entries use `name`, `schema`, `required`:
 
 ```json
-{"name":"profile","schema":{"type":"string","minLength":1},"required":true}
+{"name":"limit","schema":{"type":"integer","minimum":1,"default":10},"required":true}
 ```
 
-Parameters for a non-interactive hotkey need safe defaults or an explicitly
-configured binding supplying them. Do not promise that every consumer prompts
-for required parameters.
+Keep defaults typed. Required options need consumer collection or saved/default
+values; an auxiliary file option does not replace primary `files` input.
 
-Choose parameters for task configuration, not as a substitute for primary input.
-An auxiliary `file-path` option does not make a script accept an Explorer
-selection. Preserve typed defaults (including false/zero/empty string).
-Use file extension/count limits and media contracts appropriate to the task,
-not merely whatever makes a script appear in a menu.
-
-## Validate and hand off
+## Validate without execution
 
 ```powershell
 & $hostPath list --json --include-disabled --include-unconfigured --root $scriptsRoot
 ```
 
-Inspect stdout **and stderr**: registry errors can be written to stderr even
-when the command exits zero. Locate the created package by `entryFullPath`;
-confirm its returned opaque `id`, runtime, `io`, empty `configurationErrors`,
-schemas, parameter requirements/defaults, and expected paths. Compare them with
-the plan and the selected consumer's profile. Check optional icon warnings too.
-Do not use the friendly
-title as the invocation ID. Discovery may list untrusted scripts; it grants no
-execution approval and does not prove the code's behavior.
+Registry errors may appear on stderr even with exit zero. Find the package by
+`entryFullPath`; check opaque `id` (not title), runtime, `io`, schemas, defaults,
+empty `configurationErrors`, and icon warnings.
 
-Only after explicit approval and normal trust requirements, an agent test can
-use `run <id> --consumer command-line` (optionally `--set name=value`) or
-`transform <id> --consumer command-line` with a JSON request on stdin.
-Never use `trust approve` as an automatic setup step.
+Only with execution consent and normal trust, test `run <id> --consumer command-line`
+(optional `--set name=value`) or `transform <id> --consumer command-line` with
+stdin JSON. Never make `trust approve` an automatic setup step.

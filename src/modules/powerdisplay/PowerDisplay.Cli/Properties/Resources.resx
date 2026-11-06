@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Text_NoMonitorsDiscovered" xml:space="preserve">
+    <value>No monitors discovered.</value>
+    <comment>Text-mode output when list/get finds no monitors.</comment>
+  </data>
+  <data name="Text_NotSupported" xml:space="preserve">
+    <value>(not supported)</value>
+    <comment>Text-mode marker for an unsupported setting.</comment>
+  </data>
+  <data name="Text_Unknown" xml:space="preserve">
+    <value>(unknown)</value>
+    <comment>Text-mode marker for a supported setting whose value was not read.</comment>
+  </data>
+  <data name="Text_NoProfilesSaved" xml:space="preserve">
+    <value>No profiles saved.</value>
+    <comment>profiles command: no saved profiles exist.</comment>
+  </data>
+  <data name="Text_NoVcpCapabilities" xml:space="preserve">
+    <value>No VCP capabilities reported.</value>
+  </data>
+  <data name="Text_NoValuesReported" xml:space="preserve">
+    <value>(no values reported)</value>
+    <comment>capabilities: a discrete VCP code advertised no enumerated values.</comment>
+  </data>
+  <data name="Text_ProfileProcessedBestEffort" xml:space="preserve">
+    <value>Processed profile '{0}' (best effort).</value>
+    <comment>{0} = profile name. apply-profile is best-effort and must not claim hardware success; per-setting outcomes are not reported.</comment>
+  </data>
+  <data name="Warn_MonitorNumberIgnored" xml:space="preserve">
+    <value>warning: --monitor-number {0} ignored because --monitor-id was also provided</value>
+    <comment>{0} = the complete comma-separated list of ignored monitor numbers. Flag names are CLI syntax and must not be translated.</comment>
+  </data>
+  <data name="Error_NoSettingSpecified" xml:space="preserve">
+    <value>no setting specified; pass one of --brightness/--contrast/--volume/--color-temperature/--input-source/--power-state/--orientation</value>
+    <comment>The flag names are CLI syntax and must not be translated.</comment>
+  </data>
+  <data name="Error_OnlyOneSetting" xml:space="preserve">
+    <value>only one setting may be applied per 'set' call</value>
+    <comment>'set' is a literal command name and must not be translated.</comment>
+  </data>
+  <data name="Hint_OnlyOneSetting" xml:space="preserve">
+    <value>split into multiple invocations: one --&lt;setting&gt; per call</value>
+  </data>
+  <data name="Error_UnknownSetting" xml:space="preserve">
+    <value>unknown setting '{0}'</value>
+    <comment>{0} = the setting name the user passed to --setting.</comment>
+  </data>
+  <data name="Hint_ValidSettings" xml:space="preserve">
+    <value>valid settings: {0}</value>
+    <comment>{0} = comma-separated canonical setting names (CLI syntax, not translated).</comment>
+  </data>
+  <data name="Error_TimedOut" xml:space="preserve">
+    <value>operation timed out after {0}s</value>
+    <comment>{0} = number of seconds.</comment>
+  </data>
+  <data name="Error_Cancelled" xml:space="preserve">
+    <value>operation was cancelled</value>
+  </data>
+  <data name="Error_InvalidArguments" xml:space="preserve">
+    <value>invalid arguments</value>
+  </data>
+  <data name="Error_UnexpectedError" xml:space="preserve">
+    <value>unexpected error: {0}</value>
+    <comment>{0} = exception message.</comment>
+  </data>
+  <data name="Error_ProviderUnavailable" xml:space="preserve">
+    <value>PowerDisplay is not running. Enable it in PowerToys settings.</value>
+    <comment>Shown when the CLI cannot reach the PowerDisplay app over the IPC pipe.</comment>
+  </data>
+  <data name="Error_DeserializeMismatch" xml:space="preserve">
+    <value>Response could not be deserialized as expected type.</value>
+    <comment>Shown when the app's IPC response does not match the CLI's expected schema (version skew).</comment>
+  </data>
+  <data name="Error_NegativeStep" xml:space="preserve">
+    <value>--step must be &gt;= 0.</value>
+    <comment>--step is CLI syntax and must not be translated.</comment>
+  </data>
+  <data name="Error_NoAdjustSettingSpecified" xml:space="preserve">
+    <value>no setting specified; pass one of --brightness/--contrast/--volume</value>
+    <comment>The flag names are CLI syntax and must not be translated.</comment>
+  </data>
+  <data name="Error_InvalidMonitorNumber" xml:space="preserve">
+    <value>invalid monitor number(s) '{0}'; use comma-separated 1-based indices, e.g. 1,2,3</value>
+    <comment>{0} = the raw value the user passed to -n/--monitor-number. -n/--monitor-number and the example indices are CLI syntax and must not be translated.</comment>
+  </data>
+  <data name="Error_SingleMonitorOnly" xml:space="preserve">
+    <value>this command accepts a single monitor; comma-separated monitor numbers are only supported by set/up/down</value>
+    <comment>set/up/down are CLI command names and must not be translated.</comment>
+  </data>
+  <data name="Label_Error" xml:space="preserve">
+    <value>Error</value>
+    <comment>Prefix label for an error line, e.g. "Error: unknown setting foo".</comment>
+  </data>
+  <data name="Label_Monitor" xml:space="preserve">
+    <value>monitor</value>
+    <comment>Label for the monitor line under an error, e.g. "monitor: 1 (Dell U2720Q)".</comment>
+  </data>
+  <data name="Label_Expected" xml:space="preserve">
+    <value>expected</value>
+    <comment>Label for the expected-value line under an error.</comment>
+  </data>
+  <data name="Label_Supported" xml:space="preserve">
+    <value>supported</value>
+    <comment>Label for the supported-values line under an error.</comment>
+  </data>
+  <data name="Label_Diagnostic" xml:space="preserve">
+    <value>diagnostic</value>
+    <comment>Label for a low-level technical diagnostic line under an error (e.g. a VCP capability reason or a driver error string, shown verbatim in English).</comment>
+  </data>
+  <data name="Label_Hint" xml:space="preserve">
+    <value>hint</value>
+    <comment>Label for the hint line under an error.</comment>
+  </data>
+  <data name="Text_ExpectedInteger" xml:space="preserve">
+    <value>integer in {0}</value>
+    <comment>{0} = an inclusive numeric range like "[0, 100]" (not translated). Shown on the "expected" line for a numeric out-of-range error.</comment>
+  </data>
+  <data name="ErrMsg_OutOfRange" xml:space="preserve">
+    <value>{0} is out of range for {1}</value>
+    <comment>{0} = the value the user passed; {1} = the setting name (e.g. brightness). Neither is translated.</comment>
+  </data>
+  <data name="ErrMsg_InvalidInteger" xml:space="preserve">
+    <value>{0} is not a valid integer for {1}</value>
+    <comment>{0} = the value the user passed; {1} = the setting name. Neither is translated.</comment>
+  </data>
+  <data name="ErrMsg_InvalidDiscrete" xml:space="preserve">
+    <value>{0} is not a valid value for {1}</value>
+    <comment>{0} = the value the user passed; {1} = the setting name. Neither is translated.</comment>
+  </data>
+  <data name="ErrMsg_DiscreteNotInSet" xml:space="preserve">
+    <value>{0} is not in the supported set for {1}</value>
+    <comment>{0} = the value the user passed; {1} = the setting name. The supported values are listed on a separate line.</comment>
+  </data>
+  <data name="ErrMsg_InvalidOrientation" xml:space="preserve">
+    <value>{0} is not a valid orientation</value>
+    <comment>{0} = the value the user passed (not translated).</comment>
+  </data>
+  <data name="ErrMsg_Unsupported" xml:space="preserve">
+    <value>{0} is not supported</value>
+    <comment>{0} = the setting name (e.g. volume), not translated.</comment>
+  </data>
+  <data name="ErrMsg_PowerBlankingConfirm" xml:space="preserve">
+    <value>this power state blanks the display</value>
+  </data>
+  <data name="ErrMsg_HardwareFailure" xml:space="preserve">
+    <value>hardware write failed</value>
+  </data>
+  <data name="ErrMsg_UnknownSetting" xml:space="preserve">
+    <value>unknown setting {0}</value>
+    <comment>{0} = the setting name the user passed (not translated).</comment>
+  </data>
+  <data name="ErrMsg_NotDiscreteSetting" xml:space="preserve">
+    <value>{0} is not a discrete setting</value>
+    <comment>{0} = the setting name the user passed to --setting (not translated).</comment>
+  </data>
+  <data name="ErrMsg_SelectorMissing" xml:space="preserve">
+    <value>a monitor must be specified</value>
+  </data>
+  <data name="ErrMsg_MonitorNotFoundNumber" xml:space="preserve">
+    <value>no monitor found with number {0}</value>
+    <comment>{0} = the 1-based monitor number the user passed (not translated).</comment>
+  </data>
+  <data name="ErrMsg_MonitorNotFoundId" xml:space="preserve">
+    <value>no monitor found with id {0}</value>
+    <comment>{0} = the monitor id the user passed (not translated).</comment>
+  </data>
+  <data name="ErrMsg_NotAdjustable" xml:space="preserve">
+    <value>{0} cannot be adjusted relatively</value>
+    <comment>{0} = the setting name (not translated). Shown for up/down on a non-continuous setting.</comment>
+  </data>
+  <data name="ErrMsg_AdjustValueUnknown" xml:space="preserve">
+    <value>the current {0} value could not be read</value>
+    <comment>{0} = the setting name (not translated). Shown when up/down cannot read the starting value.</comment>
+  </data>
+  <data name="ErrMsg_ProfileNotFound" xml:space="preserve">
+    <value>no profile with id {0}</value>
+    <comment>{0} = the profile id</comment>
+  </data>
+  <data name="ErrMsg_UnknownCommand" xml:space="preserve">
+    <value>unknown command {0}</value>
+    <comment>{0} = the command name (not translated).</comment>
+  </data>
+  <data name="ErrMsg_InternalError" xml:space="preserve">
+    <value>internal error</value>
+  </data>
+  <data name="Hint_ValidDiscreteSettings" xml:space="preserve">
+    <value>valid discrete settings: {0}</value>
+    <comment>{0} = comma-separated discrete setting names (CLI syntax, not translated).</comment>
+  </data>
+  <data name="Hint_AdjustSettings" xml:space="preserve">
+    <value>relative up/down supports only: {0}</value>
+    <comment>{0} = comma-separated continuous setting names (CLI syntax, not translated).</comment>
+  </data>
+  <data name="Hint_UseSetForAbsolute" xml:space="preserve">
+    <value>use 'PowerToys.PowerDisplay.Cli.exe set' to assign an absolute value</value>
+    <comment>'PowerToys.PowerDisplay.Cli.exe set' is a literal command and must not be translated.</comment>
+  </data>
+  <data name="Hint_UseHexVcp" xml:space="preserve">
+    <value>use a hex VCP value (0x??); run 'PowerToys.PowerDisplay.Cli.exe capabilities' to list supported values</value>
+    <comment>The command and 0x?? are CLI syntax and must not be translated.</comment>
+  </data>
+  <data name="Hint_RunList" xml:space="preserve">
+    <value>run 'PowerToys.PowerDisplay.Cli.exe list' to see available monitors</value>
+    <comment>'PowerToys.PowerDisplay.Cli.exe list' is a literal command and must not be translated.</comment>
+  </data>
+  <data name="Hint_SelectorMissing" xml:space="preserve">
+    <value>specify --monitor-number/-n or --monitor-id/-i; run 'PowerToys.PowerDisplay.Cli.exe list' to see available monitors</value>
+    <comment>The option and command names are CLI syntax and must not be translated.</comment>
+  </data>
+  <data name="Hint_Orientation" xml:space="preserve">
+    <value>specify orientation in degrees: 0, 90, 180, or 270</value>
+    <comment>The degree values must not be translated.</comment>
+  </data>
+  <data name="Hint_ConfirmPowerOff" xml:space="preserve">
+    <value>use --confirm-power-off to allow power states that blank the display</value>
+    <comment>--confirm-power-off is CLI syntax and must not be translated.</comment>
+  </data>
+  <data name="Hint_RunProfiles" xml:space="preserve">
+    <value>run 'PowerToys.PowerDisplay.Cli.exe profiles' to see available profiles</value>
+    <comment>'PowerToys.PowerDisplay.Cli.exe profiles' is a literal command and must not be translated.</comment>
+  </data>
+</root>

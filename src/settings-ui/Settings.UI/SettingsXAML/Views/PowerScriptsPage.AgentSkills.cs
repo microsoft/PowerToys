@@ -95,7 +95,7 @@ public sealed partial class PowerScriptsPage
         {
             var needsFolder = status.Target == SkillTarget.Custom && string.IsNullOrEmpty(status.DestinationDirectory);
             AgentSkillDestination.Description = needsFolder ? SkillResource("ChooseFolderHelp") : status.DestinationDirectory;
-            AgentSkillBrowse.Visibility = status.Target == SkillTarget.Custom ? Visibility.Visible : Visibility.Collapsed;
+            AgentSkillBrowse.IsEnabled = status.Target == SkillTarget.Custom && !_agentSkillPickingFolder;
             AgentSkillStatusText.Text = needsFolder ? SkillResource("ChooseFolderStatus") : SkillResource("State" + status.State)
                 .Replace("{0}", status.InstalledVersion ?? string.Empty, StringComparison.Ordinal)
                 .Replace("{1}", status.AvailableVersion, StringComparison.Ordinal);
@@ -110,16 +110,12 @@ public sealed partial class PowerScriptsPage
         }
     }
 
-    private async void AgentSkillTarget_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void AgentSkillTarget_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (IsLoaded && !_agentSkillBusy && _agentSkills.Count != 0)
         {
             UpdateAgentSkillControls();
             AgentSkillFeedback.IsOpen = false;
-            if (SelectedSkillTarget == SkillTarget.Custom)
-            {
-                await ChooseAgentSkillFolderAsync();
-            }
         }
     }
 
@@ -187,7 +183,7 @@ public sealed partial class PowerScriptsPage
         finally
         {
             _agentSkillPickingFolder = false;
-            AgentSkillBrowse.IsEnabled = true;
+            UpdateAgentSkillControls();
         }
     }
 }
