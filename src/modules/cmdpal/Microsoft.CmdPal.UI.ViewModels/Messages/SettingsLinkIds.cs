@@ -18,6 +18,7 @@ public static class SettingsLinkIds
         public const string RecentItems = "recent-items";
         public const string AppBehavior = "app-behavior";
         public const string SystemTrayIcon = "system-tray-icon";
+        public const string TrayIconClickAction = "tray-icon-click-action";
         public const string AltF4 = "alt-f4";
         public const string Language = "language";
         public const string ExternalLinks = "external-links";

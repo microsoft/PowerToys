@@ -2129,4 +2129,52 @@ Home: highest position. End: lowest position.</value>
     <value>browse discover download install extensions plugins plug-ins addons add-ons store marketplace</value>
     <comment>Search aliases for finding new extensions in the gallery.</comment>
   </data>
+  <data name="Settings_GeneralPage_TrayIconClickAction.Header" xml:space="preserve">
+    <value>Tray icon click action</value>
+  </data>
+  <data name="Settings_GeneralPage_TrayIconClickAction.Description" xml:space="preserve">
+    <value>Choose what opens when you click the Command Palette tray icon.</value>
+  </data>
+  <data name="Settings_GeneralPage_TrayIconClickAction_QuickActions.Content" xml:space="preserve">
+    <value>Open quick actions</value>
+  </data>
+  <data name="Settings_GeneralPage_TrayIconClickAction_CommandPalette.Content" xml:space="preserve">
+    <value>Open command palette</value>
+  </data>
+  <data name="PinTo_Menu" xml:space="preserve">
+    <value>Pin to...</value>
+  </data>
+  <data name="PinTo_Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="PinTo_Dock" xml:space="preserve">
+    <value>Dock</value>
+  </data>
+  <data name="PinTo_Tray" xml:space="preserve">
+    <value>Tray menu</value>
+  </data>
+  <data name="TrayPalette_Unpin" xml:space="preserve">
+    <value>Unpin from tray menu</value>
+  </data>
+  <data name="TrayPalette_Title" xml:space="preserve">
+    <value>Tray Palette</value>
+  </data>
+  <data name="TrayPalette_Empty.Text" xml:space="preserve">
+    <value>Pin commands from Command Palette to add quick actions here.</value>
+  </data>
+  <data name="TrayPalette_LoadError.Text" xml:space="preserve">
+    <value>Some quick actions could not be loaded or saved. Try opening Tray Palette again.</value>
+  </data>
+  <data name="TrayPalette_OpenPalette.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Open Command Palette</value>
+  </data>
+  <data name="TrayPalette_OpenPalette.AutomationProperties.Name" xml:space="preserve">
+    <value>Open Command Palette</value>
+  </data>
+  <data name="TrayPalette_OpenSettings.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Command Palette settings</value>
+  </data>
+  <data name="TrayPalette_OpenSettings.AutomationProperties.Name" xml:space="preserve">
+    <value>Command Palette settings</value>
+  </data>
 </root>

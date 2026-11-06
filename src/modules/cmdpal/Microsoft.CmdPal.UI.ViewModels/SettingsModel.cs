@@ -17,6 +17,7 @@ public record SettingsModel
 
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
+    // WARNING: IF YOU ADD A SETTING, MAKE SURE YOU UPDATE SettingsSearchCatalog.
     public const int DefaultCompactCenterHeightPercentage = 75;
 
     internal const int MinQuickAccessShelfPinnedCommandLimit = 0;
@@ -84,6 +85,16 @@ public record SettingsModel
     public bool ShowSystemTrayIcon { get; init; } = true;
 
     public string Language { get; init; } = string.Empty;
+
+    public TrayIconClickAction TrayIconClickAction { get; init; } = TrayIconClickAction.OpenQuickActions;
+
+    private TrayPaletteSettings? _trayPalette = new();
+
+    public TrayPaletteSettings TrayPalette
+    {
+        get => _trayPalette ?? new();
+        init => _trayPalette = value;
+    }
 
     public bool IgnoreShortcutWhenFullscreen { get; init; } = true;
 
