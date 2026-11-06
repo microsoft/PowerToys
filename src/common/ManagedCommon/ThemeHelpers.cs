@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 
 using Microsoft.Win32;
@@ -21,6 +22,9 @@ namespace ManagedCommon
         internal const string HValueAppTheme = "AppsUseLightTheme";
         internal const int DWMWAImmersiveDarkMode = 20;
 
+        private const string BaseColorLight = "Light";
+        private const string BaseColorDark = "Dark";
+
         // based on https://stackoverflow.com/questions/51334674/how-to-detect-windows-10-light-dark-mode-in-win32-application
         public static AppTheme GetAppTheme()
         {
@@ -28,10 +32,52 @@ namespace ManagedCommon
             return (AppTheme)value;
         }
 
+        /// <summary>Returns "Light" or "Dark" like ControlzEx 6.0.0 WindowsThemeHelper.GetWindowsBaseColor(), without WPF.</summary>
+        public static string GetWindowsBaseColor()
+        {
+            if (!IsHighContrastEnabled())
+            {
+                return AppsUseLightTheme() ? BaseColorLight : BaseColorDark;
+            }
+
+            uint windowColor = NativeMethods.GetSysColor(NativeMethods.COLOR_WINDOW);
+            return GetBaseColorFromWindowColor((byte)windowColor, (byte)(windowColor >> 8), (byte)(windowColor >> 16));
+        }
+
+        public static bool IsHighContrastEnabled()
+        {
+            var highContrast = new NativeMethods.HIGHCONTRAST { cbSize = (uint)Marshal.SizeOf<NativeMethods.HIGHCONTRAST>() };
+            return NativeMethods.SystemParametersInfo(NativeMethods.SPI_GETHIGHCONTRAST, highContrast.cbSize, ref highContrast, 0)
+                && (highContrast.dwFlags & NativeMethods.HCF_HIGHCONTRASTON) != 0;
+        }
+
+        /// <summary>Classifies a color by HSL lightness, the value System.Drawing.Color.GetBrightness() returns.</summary>
+        public static string GetBaseColorFromWindowColor(byte red, byte green, byte blue)
+        {
+            int max = Math.Max(red, Math.Max(green, blue));
+            int min = Math.Min(red, Math.Min(green, blue));
+            float brightness = (max + min) / (byte.MaxValue * 2f);
+            return brightness < .5 ? BaseColorDark : BaseColorLight;
+        }
+
         public static void SetImmersiveDarkMode(IntPtr window, bool enabled)
         {
             int useImmersiveDarkMode = enabled ? 1 : 0;
             _ = DwmSetWindowAttribute(window, DWMWAImmersiveDarkMode, ref useImmersiveDarkMode, sizeof(int));
+        }
+
+        private static bool AppsUseLightTheme()
+        {
+            // Like ControlzEx, a missing or unreadable value means the light theme.
+            try
+            {
+                object value = Registry.GetValue($"{HKeyRoot}\\{HkeyWindowsPersonalizeTheme}", HValueAppTheme, null);
+                return value is null || Convert.ToBoolean(value, CultureInfo.InvariantCulture);
+            }
+            catch (Exception)
+            {
+                return true;
+            }
         }
     }
 }

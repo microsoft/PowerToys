@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
-using System.Windows.Threading;
 
 using Common.UI;
 using Microsoft.PowerToys.Telemetry;
@@ -73,7 +72,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                                 Environment.Exit(0);
                             }
                         },
-                        Dispatcher.CurrentDispatcher,
+                        new WindowsFormsSynchronizationContext(),
                         _tokenSource.Token);
 
                     etwTrace?.Dispose();

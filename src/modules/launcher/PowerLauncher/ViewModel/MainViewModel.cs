@@ -109,12 +109,13 @@ namespace PowerLauncher.ViewModel
             Log.Info("RegisterHotkey()", GetType());
 
             // Allow OOBE to call PowerToys Run.
-            NativeEventWaiter.WaitForEventLoop(Constants.PowerLauncherSharedEvent(), OnHotkey, Application.Current.Dispatcher, _nativeWaiterCancelToken);
+            var uiSynchronizationContext = new DispatcherSynchronizationContext(Application.Current.Dispatcher);
+            NativeEventWaiter.WaitForEventLoop(Constants.PowerLauncherSharedEvent(), OnHotkey, uiSynchronizationContext, _nativeWaiterCancelToken);
 
             if (_settings.StartedFromPowerToysRunner)
             {
                 // Allow runner to call PowerToys Run from the centralized keyboard hook.
-                NativeEventWaiter.WaitForEventLoop(Constants.PowerLauncherCentralizedHookSharedEvent(), OnCentralizedKeyboardHookHotKey, Application.Current.Dispatcher, _nativeWaiterCancelToken);
+                NativeEventWaiter.WaitForEventLoop(Constants.PowerLauncherCentralizedHookSharedEvent(), OnCentralizedKeyboardHookHotKey, uiSynchronizationContext, _nativeWaiterCancelToken);
             }
 
             _settings.PropertyChanged += (s, e) =>
