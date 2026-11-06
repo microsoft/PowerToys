@@ -82,6 +82,44 @@ public sealed class TypingStraightOnTests
     [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
+    public void ASlowInsertionWithNothingTypedOnStillGoesIn(bool wordMode)
+    {
+        // On a busy machine the worker can take more than 2 s to begin. With nothing typed on, nobody waits on the hold, so
+        // the snippet still goes in, as it did before keys were held from the match on.
+        With(wordMode, "!abc=snippet", (hook, box) =>
+        {
+            long now = 0;
+            hook.Guard.Clock = () => now;
+            box.UserTypes(wordMode ? "!abc " : "!abc");
+            now = 10 * InsertionGuard.TimeoutMs;
+            hook.Guard.Expire();
+            Assert.IsTrue(Expand(hook, box));
+            Assert.AreEqual(wordMode ? "Before snippet |" : "Before snippet|", box.ToString());
+        });
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void KeysTypedOnLongAfterTheMatchStillWaitForTheWholeSnippet(bool wordMode)
+    {
+        // The worker began more than 2 s after the match, but within 2 s of the first key typed on. Counted from the match,
+        // typing's hold was over at once, so those keys went in after the snippet's first character.
+        With(wordMode, "!abc=snippet", (hook, box) =>
+        {
+            long now = 0;
+            hook.Guard.Clock = () => now;
+            box.UserTypes(wordMode ? "!abc " : "!abc");
+            now = 10 * InsertionGuard.TimeoutMs;
+            box.UserTypes(wordMode ? "more" : " more");
+            Assert.IsTrue(Expand(hook, box));
+            Assert.AreEqual("Before snippet more|", box.ToString());
+        });
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public void KeysTypedOnBeforeAQuestionCancelItAndStayAsTyped(bool wordMode)
     {
         // The question's window would have taken them.

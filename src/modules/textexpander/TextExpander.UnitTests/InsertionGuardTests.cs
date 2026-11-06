@@ -1031,6 +1031,41 @@ public sealed class InsertionGuardTests
         }
     }
 
+    [TestMethod]
+    public void WithNothingPressedSinceAMatchItsHoldWaitsForTheInsertion()
+    {
+        // Holding only the swallowed key delays nobody, and a busy machine can be slow to begin the insertion: it was dropped
+        // after 2 s, with the key given back. The first key pressed since the match starts the 2 s; a key-up doesn't.
+        long now = 0;
+        var sent = new List<Native.INPUT[]>();
+        using var guard = Guard(() => 5, sent);
+        guard.Clock = () => now;
+        Assert.IsTrue(guard.HoldAfterMatch(Target, 5, FakeTextBox.UserKey('x', up: false)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('x', up: true)));
+        now = 10 * InsertionGuard.TimeoutMs;
+        guard.Expire();
+        Assert.AreEqual(0, sent.Count);
+
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('a', up: false)));
+        now += InsertionGuard.TimeoutMs - 1;
+        guard.Expire();
+        Assert.AreEqual(0, sent.Count);
+        now++;
+        guard.Expire();
+        Assert.AreEqual("x a-down", FakeTextBox.Describe(sent.Single()));
+    }
+
+    [TestMethod]
+    public void WarmingUpTheHoldTouchesNothingElse()
+    {
+        // Run as the hook is installed, on a guard of its own.
+        var sent = new List<Native.INPUT[]>();
+        using var guard = Guard(() => 5, sent);
+        InsertionGuard.WarmUp();
+        Assert.IsFalse(guard.Swallows(FakeTextBox.UserKey('a', up: false)), "Nothing held.");
+        Assert.AreEqual(0, sent.Count);
+    }
+
     /// <summary>A guard whose sends come back through it, as through the hook: SendInput returns once every hook has seen them.</summary>
     private static InsertionGuard Guard(Func<long> generation, List<Native.INPUT[]> sent, Func<IntPtr, bool>? inFront = null)
     {

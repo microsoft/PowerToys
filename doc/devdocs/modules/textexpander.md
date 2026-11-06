@@ -124,8 +124,11 @@ keys out of an insertion.
 
 - From the match on, the hook holds the user's key events, after the key it swallowed. The insertion
   takes them over at its start marker, so keys typed straight on land after the snippet. With no
-  insertion within 2 s, or none at all, they go back as they came, the swallowed key first, and the
-  snippet is dropped. Another window coming to the front drops them.
+  insertion within 2 s of the first key pressed since the match, or none at all, they go back as they
+  came, the swallowed key first, and the snippet is dropped. With nothing pressed, the hold waits for
+  the insertion. Another window coming to the front drops them.
+- The match arms no timer, and the engine runs the hold once at startup, so the first trigger compiles
+  nothing on the hook's thread. Windows gives the hook about 300 ms a key before passing it on.
 - Before a question or choice window opens, a held key press other than a modifier cancels the
   snippet, and what was typed goes back as typed.
 - The worker sends a start marker, a key-up of VK `0xFF` with the engine's tag and the insertion id.

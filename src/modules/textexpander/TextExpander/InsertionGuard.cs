@@ -26,8 +26,9 @@ namespace Microsoft.PowerToys.TextExpander;
 /// The hook only holds keys and takes markers. SendInput returns once every low-level hook has seen each event, so sent
 /// from the hook it nested, and a slow hook elsewhere could make Windows remove ours. The guard never keeps the keyboard
 /// for long. It ends by itself with no event of ours or renewal for <see cref="TimeoutMs"/>, or with <see cref="MaxHeld"/>
-/// key events held, and so does a hold since a match the worker hasn't taken. The worker ends it once typing has held keys
-/// for <see cref="HoldCapMs"/>, and renews it while a paste settles, for <see cref="Injector.PasteBusyCapMs"/> at most.
+/// key events held, and so does a hold since a match the worker hasn't taken, <see cref="TimeoutMs"/> after the first key
+/// pressed since the match. The worker ends it once typing has held keys for <see cref="HoldCapMs"/>, and renews it while
+/// a paste settles, for <see cref="Injector.PasteBusyCapMs"/> at most.
 /// </summary>
 internal sealed class InsertionGuard : IDisposable
 {
@@ -49,6 +50,9 @@ internal sealed class InsertionGuard : IDisposable
 
     /// <summary>The flag on injected input, <c>LLKHF_INJECTED</c>.</summary>
     private const uint Injected = 0x10;
+
+    /// <summary>The deadline of a hold since a match with no key pressed since it: there's none.</summary>
+    private const long NoDeadline = long.MaxValue;
 
     private readonly object _lock = new();
     private readonly Func<long> _inputGeneration;
@@ -75,12 +79,12 @@ internal sealed class InsertionGuard : IDisposable
     private volatile Mode _mode;
 
     // Under _lock. The keys held since a match the worker hasn't taken yet, the key the hook swallowed first; the match's
-    // input generation, which the insertion that takes them over begins with; their window; and since and until when.
+    // input generation, which the insertion that takes them over begins with; their window; and until when, once a key is
+    // pressed since the match.
     // Kept apart from _held: a match among held keys going back holds what follows them for its own insertion.
     private List<Native.KBDLLHOOKSTRUCT> _afterMatch = [];
     private long _afterMatchGeneration;
     private IntPtr _afterMatchTarget;
-    private long _afterMatchStart;
     private long _afterMatchDeadline;
     private volatile bool _holdingAfterMatch;
 
@@ -204,8 +208,10 @@ internal sealed class InsertionGuard : IDisposable
     /// Run in the hook as a trigger matches, before its work is queued: holds the user's keys from now on, after
     /// <paramref name="swallowed"/>, the key the hook swallowed, for the insertion into <paramref name="target"/> the worker
     /// begins with input generation <paramref name="generation"/>, which takes them over (<see cref="Begin"/>). Ends by
-    /// itself after <see cref="TimeoutMs"/>, or at <see cref="MaxHeld"/> key events, sending them back. Returns false, holding
-    /// nothing, while keys are held since another match: none reaches the matcher then but a lower-integrity app's.
+    /// itself <see cref="TimeoutMs"/> after the first key pressed since, or at <see cref="MaxHeld"/> key events, sending them
+    /// back. With nothing pressed, it delays nobody, so it waits for the insertion, which a busy machine can be slow to
+    /// begin. Returns false, holding nothing, while keys are held since another match: none reaches the matcher then but a
+    /// lower-integrity app's. Arms no timer: the key that matched must be answered quickly, or Windows passes it on.
     /// </summary>
     public bool HoldAfterMatch(IntPtr target, long generation, Native.KBDLLHOOKSTRUCT swallowed)
     {
@@ -219,11 +225,25 @@ internal sealed class InsertionGuard : IDisposable
             _afterMatch.Add(swallowed);
             _afterMatchGeneration = generation;
             _afterMatchTarget = target;
-            _afterMatchStart = Clock();
-            _afterMatchDeadline = _afterMatchStart + TimeoutMs;
+            _afterMatchDeadline = NoDeadline;
             _holdingAfterMatch = true;
-            ArmTimerLocked();
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Runs a hold since a match once, on a guard of its own, before the hook is installed: the first trigger the user types
+    /// then compiles nothing, and starts no timer thread, on the hook's thread. Windows gives the hook about 300 ms a key,
+    /// and passes on a key it doesn't answer in time; on a busy single-core machine, a first trigger came close.
+    /// </summary>
+    internal static void WarmUp()
+    {
+        using var guard = new InsertionGuard(static () => 0, static _ => false);
+        var key = new Native.KBDLLHOOKSTRUCT { VkCode = Native.VK_PACKET };
+        if (guard.HoldAfterMatch(IntPtr.Zero, 0, key))
+        {
+            _ = guard.Swallows(key);
+            guard.ReleaseAfterMatch(0);
         }
     }
 
@@ -314,7 +334,13 @@ internal sealed class InsertionGuard : IDisposable
                 if (_mode == Mode.None)
                 {
                     StartHoldingLocked();
-                    _holdStart = _afterMatchStart;
+
+                    // Typing holds keys for HoldCapMs at most, counted from the first key pressed since the match, since when
+                    // the user has been waiting; with none, from now. Not from the match: a slow start would be overdue at once.
+                    if (_afterMatchDeadline != NoDeadline)
+                    {
+                        _holdStart = _afterMatchDeadline - TimeoutMs;
+                    }
                 }
 
                 List<Native.KBDLLHOOKSTRUCT> keys = TakeAfterMatchLocked();
@@ -518,10 +544,17 @@ internal sealed class InsertionGuard : IDisposable
                 return true;
             }
 
-            // Held keys going back can set off a trigger: what comes after it waits for that insertion.
+            // Held keys going back can set off a trigger: what comes after it waits for that insertion. The first key pressed
+            // since the match starts its time limit, as the user is now waiting for it.
             if (_holdingAfterMatch)
             {
                 HoldLocked(_afterMatch, key);
+                if (_afterMatchDeadline == NoDeadline && (key.Flags & Native.LLKHF_UP) == 0)
+                {
+                    _afterMatchDeadline = Clock() + TimeoutMs;
+                    ArmTimerLocked();
+                }
+
                 return true;
             }
 
@@ -796,7 +829,7 @@ internal sealed class InsertionGuard : IDisposable
             due = _deadline - now;
         }
 
-        if (_holdingAfterMatch)
+        if (_holdingAfterMatch && _afterMatchDeadline != NoDeadline)
         {
             due = Math.Min(due, _afterMatchDeadline - now);
         }

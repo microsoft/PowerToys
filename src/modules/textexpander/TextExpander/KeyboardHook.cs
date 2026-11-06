@@ -194,6 +194,7 @@ internal sealed class KeyboardHook : IDisposable
     public bool Install()
     {
         Guard.Resend = Injector.Dispatch;
+        InsertionGuard.WarmUp();
         RefreshTargetAuthorization(Native.GetForegroundWindow(), asynchronous: false);
 
         IntPtr module = Native.GetModuleHandleW(null);
