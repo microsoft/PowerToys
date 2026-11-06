@@ -45,7 +45,8 @@ try {
     }
     Assert-Check ($moduleSettings.properties.Name2IP.value -eq 'PEER 192.0.2.1') 'MWB name mapping is retained in the typed settings schema'
     & {
-        Add-Type -Path (Join-Path $payloadRoot 'NativeSupport.cs') -ErrorAction Stop
+        Add-Type -Path ('DesktopState.cs', 'MouseTargetState.cs', 'NativeSupport.cs', 'ProcessIdentity.cs', 'WindowInfo.cs' |
+            ForEach-Object { Join-Path $payloadRoot $_ }) -ErrorAction Stop
         $closeQuestion = 'Are you sure you want to close Windows Sandbox? Once Windows Sandbox is closed all of its content will be discarded and permanently lost.'
         Assert-Check ([Microsoft.MouseWithoutBorders.UITests.NativeSupport]::IsSandboxCloseConfirmation($closeQuestion)) 'only the exact owned Sandbox destruction prompt is accepted'
         foreach ($text in @('', 'Windows Sandbox could not start.', 'Close Windows Sandbox',
@@ -179,14 +180,14 @@ try {
             $connected = Connect-Guest 'fixture-key' 'PEER'
             $expected = @(
                 'wait:MouseWithoutBordersShowConnectFieldsButton',
-                'click:MouseWithoutBordersShowConnectFieldsButton',
+                'invoke:MouseWithoutBordersShowConnectFieldsButton',
                 'wait:ConnectSecurityKeyTextBox',
                 'wait:ConnectPCNameTextBox',
                 'set-value:ConnectSecurityKeyTextBox',
                 'set-value:ConnectPCNameTextBox',
                 'invoke:MouseWithoutBordersConnectButton'
             )
-            Assert-Check (($script:connectActions -join '|') -ceq ($expected -join '|')) 'guest opens the ready input row with one click, waits for both fields, and invokes the real Connect command'
+            Assert-Check (($script:connectActions -join '|') -ceq ($expected -join '|')) 'guest opens the ready input row with one UIA invocation, waits for both fields, and invokes the real Connect command'
             Assert-Check ($connected.Submitted -and $connected.Acknowledged) 'guest connection still requires the persisted pairing acknowledgement'
         }
         $script:config = @{ RunId = [Guid]::NewGuid().ToString(); Role = 'Guest' }
