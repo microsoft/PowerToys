@@ -1,6 +1,6 @@
 # Workspaces Protected Storage 验收台账
 
-最后更新：2026-11-06（UTC+08:00；E57确认本地6011已匹配、B08解除，6010 CI整体绿色；发布E56范围纠正并准备6012 private构建，真实配置冲突UI测试尚需受控writer）
+最后更新：2026-11-06（UTC+08:00；E57确认本地6011已匹配、B08解除，6010 CI整体绿色；E56修复已push，6012 private构建163076849已启动；真实配置冲突UI测试尚需受控writer）
 
 **这是验收状态的唯一维护入口。每执行完一项，就更新本文件；不能只在聊天里报告通过。**
 
@@ -91,8 +91,8 @@ PERF-02/03）；跨权限2条（CLI-03/07）；数据一致性1条（DATA-01）�
 
 | 项目 | 当前记录 |
 |---|---|
-| 待验收代码 | `feature/workspaces-protected-storage-main-20261028`；本次发布E56范围纠正、历史合并和条件清理UI。59项托管回归、实际Editor Release及完整Debug6011构建通过；E57已确认客户端/服务6011匹配，未将真实配置冲突或cleanup失败UI补PASS |
-| 正式签名构建 | E57确认6010 [162959015](https://dev.azure.com/microsoft/Dart/_build/results?buildId=162959015)于11-05 23:19:26整体SUCCEEDED，固定`0a59eeafe9`，x64/ARM64均成功且正常产物存在；更早6007/162529587同样绿色。本次范围纠正将由新6012构建覆盖；真实MSI升级未执行 |
+| 待验收代码 | `feature/workspaces-protected-storage-main-20261028`；E56范围纠正、历史合并和条件清理UI已提交为`264346e777`并push至origin/fork。59项托管回归、实际Editor Release及完整Debug6011构建通过；未将真实配置冲突或cleanup失败UI补PASS |
+| 正式签名构建 | E57确认6010 [162959015](https://dev.azure.com/microsoft/Dart/_build/results?buildId=162959015)整体SUCCEEDED，x64/ARM64产物存在；6007也绿色。新6012 [163076849](https://dev.azure.com/microsoft/Dart/_build/results?buildId=163076849)于11-06 15:06:16排队，固定`264346e777`，private/Release/x64+ARM64，当前inProgress；真实MSI升级未执行 |
 | 主线基线 | `8056ba09721708bceee6176291b24af7ebabb0b3`；包含 PR #51114，合并提交 `06e6ae43e225cac51c2f282b0eebc42c6f995c97` |
 | 集成 worktree | `D:\PowerToys-Workspaces-Integration` |
 | 待测本地包 | 完整x64 Debug **`0.101.6011.0`**已构建并通过pinned CMS正/负检查；E57确认运行service也为6011、recovery=0，实际CLI读取当前两条记录成功。没有关闭或重开用户当前Editor |
@@ -1561,7 +1561,14 @@ CI查询确认6010/build162959015于11-05 23:19:26（UTC+08:00）
 `build-x64-Release`与`build-arm64-Release`正常产物存在。
 新候选使用6012、同一private branch、固定本次实现commit、Release/x64+ARM64，
 不发布public symbols；使用已验证的`az pipelines run --branch --commit-id`方式，
-不重复E54通用Runs API误排路径。排队后补充精确run身份。
+不重复E54通用Runs API误排路径。
+实现提交`264346e7771e5fe75e824b78e61289b4e9dca9f4`已push至origin和fork，
+并分别读取远端tip确认一致。有效新run为
+[163076849](https://dev.azure.com/microsoft/Dart/_build/results?buildId=163076849)，
+11-06 15:06:16（UTC+08:00）排队，当前`inProgress`。
+Runs回执及独立Build API均确认完整commit、branch、6012版本和Release/x64+ARM64；
+初始timeline中Build/SDK/SDL阶段已开始，架构job等待agent，没有宣称构建绿色。
+此后仅补记构建链接的文档提交，不改变该run固定的产品代码。
 升级可选6010 -> 6012，旧6007仍保留；本轮不执行安装或升级测试。
 证据保存于会话files的`nov06-private-build-6012`。
 
