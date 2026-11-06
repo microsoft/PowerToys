@@ -40,6 +40,8 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
     // Friendly adapter names (and software flag) keyed by LUID, resolved via DXGI.
     private readonly Dictionary<long, GpuAdapterNames.AdapterInfo> _adaptersByLuid;
 
+    private readonly Func<long, float?> _readTemperature;
+
     // LUIDs we've already turned into a _stats entry, or deliberately skipped
     // (e.g. software adapters). Used to discover GPUs at most once each.
     private readonly HashSet<long> _knownLuids = [];
@@ -56,6 +58,7 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
     private Dictionary<string, CounterSample> _previousSamples = [];
     private bool _gpuEnumerationFailureLogged;
     private bool _gpuReadFailureLogged;
+    private bool _gpuTemperatureReadFailureLogged;
 
     internal sealed record DisplayInfo(string Name, string ShortName, int AdapterCount);
 
@@ -69,7 +72,7 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
 
         public float Usage { get; set; }
 
-        public float Temperature { get; set; }
+        public float? Temperature { get; set; }
 
         public List<float> GpuChartValues { get; set; } = [];
     }
@@ -81,9 +84,10 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
         DiscoverGPUsFromCounters();
     }
 
-    internal GPUStats(Dictionary<long, GpuAdapterNames.AdapterInfo> adaptersByLuid, IEnumerable<long> gpuLuids)
+    internal GPUStats(Dictionary<long, GpuAdapterNames.AdapterInfo> adaptersByLuid, IEnumerable<long> gpuLuids, Func<long, float?>? readTemperature = null)
     {
         _adaptersByLuid = adaptersByLuid;
+        _readTemperature = readTemperature ?? GpuTemperature.ReadCelsius;
         lock (_statsLock)
         {
             foreach (var luid in gpuLuids)
@@ -133,6 +137,43 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
     }
 
     public void GetData()
+    {
+        GetUsageData();
+        GetTemperatureData();
+    }
+
+    private void GetTemperatureData()
+    {
+        Data[] gpus;
+        lock (_statsLock)
+        {
+            gpus = _stats.ToArray();
+        }
+
+        foreach (var gpu in gpus)
+        {
+            float? temperature = null;
+            try
+            {
+                // Driver calls can take time. Do not block UI accessors behind
+                // _statsLock, or tie temperature sampling to PDH availability.
+                temperature = _readTemperature(gpu.LuidKey);
+            }
+            catch (Exception ex)
+            {
+                LogFailureOnce(ref _gpuTemperatureReadFailureLogged, "Failed while reading GPU temperature.", ex);
+            }
+
+            lock (_statsLock)
+            {
+                // Clear stale readings on failure; retry on the next tick so a
+                // sleeping GPU or a reset driver can recover automatically.
+                gpu.Temperature = temperature;
+            }
+        }
+    }
+
+    private void GetUsageData()
     {
         if (_gpuEngineCategory is null)
         {
@@ -445,21 +486,15 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
 
     internal string GetGPUTemperature(int gpuActiveIndex)
     {
-        // MG Jan 2026: This code was lifted from the old Dev Home codebase.
-        // However, the performance counters for GPU temperature are not being
-        // collected. So this function always returns "--" for now.
-        //
-        // I have not done the code archeology to figure out why they were
-        // removed.
         lock (_statsLock)
         {
-            if (_stats.Count <= gpuActiveIndex)
+            if ((uint)gpuActiveIndex >= (uint)_stats.Count)
             {
                 return TemperatureUnavailable;
             }
 
             var temperature = _stats[gpuActiveIndex].Temperature;
-            if (temperature == 0)
+            if (temperature is null)
             {
                 return TemperatureUnavailable;
             }
