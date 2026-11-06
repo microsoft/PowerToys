@@ -2,7 +2,7 @@
 
 This `.Next` suite retains the five legacy scenarios: theme shortcut and module
 lifecycle, fixed-hour edits, sunrise/sunset offsets, manual coordinates, and real
-Windows geolocation. The legacy framework and its test project have been retired.
+Windows geolocation. The legacy `LightSwitch.UITests` project remains unchanged.
 
 ## Prerequisites and side effects
 

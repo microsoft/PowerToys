@@ -10,7 +10,6 @@
     <IsPackable>false</IsPackable>
     <RootNamespace>Microsoft.Settings.UITests</RootNamespace>
     <AssemblyName>Settings.UITests</AssemblyName>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
 
     <!--
       Microsoft.Testing.Platform: same modern runner Directory.Build.props enables for the rest

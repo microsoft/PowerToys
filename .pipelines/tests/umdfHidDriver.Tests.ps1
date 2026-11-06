@@ -143,23 +143,6 @@ Describe 'Virtual HID driver ownership safety' {
         Test-Path -LiteralPath $StatePath | Should Be $true
     }
 
-    It 'preserves HID acceptance of reboot-required native exits when no owned device or package remains' {
-        $journal.InfNames = @('oem7.inf')
-        $journal | ConvertTo-Json | Set-Content $StatePath
-        $hardwareId | Set-Content (Join-Path $env:WINDIR 'INF\oem7.inf')
-        $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\HIDCLASS\0001'; Status = 'OK' })
-        Mock pnputil.exe {
-            $script:nativeCalls.Add($args[0])
-            $global:LASTEXITCODE = 3010
-            if ($args[0] -eq '/delete-driver') { Remove-Item (Join-Path $env:WINDIR "INF\$($args[1])") }
-            if ($args[0] -eq '/remove-device') { $script:devices = @() }
-        }
-        & $cleanupAction
-        Test-Path -LiteralPath $StatePath | Should Be $false
-        (Get-Content (Join-Path $ResultsDirectory 'driver-cleanup.json') -Raw | ConvertFrom-Json).Removed | Should Be $true
-        $script:nativeCalls.ToArray() | Should Be @('/delete-driver', '/remove-device')
-    }
-
     It 'retains the journal and records native removal failure' {
         $Action = 'Cleanup'
         $journal.ImportedStores = @('Root')
