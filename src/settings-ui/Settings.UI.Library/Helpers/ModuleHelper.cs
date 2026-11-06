@@ -33,6 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
             {
                 ModuleType.AdvancedPaste => "ms-appx:///Assets/Settings/Icons/AdvancedPaste.png",
                 ModuleType.AltWindowCycle => "ms-appx:///Assets/Settings/Icons/WindowHopper.png",
+                ModuleType.WindowTabs => "ms-appx:///Assets/Settings/Icons/WindowHopper.png",
                 ModuleType.AutoHideCursor => "ms-appx:///Assets/Settings/Icons/CursorHide.png",
                 ModuleType.Workspaces => "ms-appx:///Assets/Settings/Icons/Workspaces.png",
                 ModuleType.PowerOCR => "ms-appx:///Assets/Settings/Icons/TextExtractor.png",
@@ -63,6 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.FileLocksmith => generalSettingsConfig.Enabled.FileLocksmith,
                 ModuleType.FindMyMouse => generalSettingsConfig.Enabled.FindMyMouse,
                 ModuleType.AltWindowCycle => generalSettingsConfig.Enabled.AltWindowCycle,
+                ModuleType.WindowTabs => generalSettingsConfig.Enabled.WindowTabs,
                 ModuleType.Hosts => generalSettingsConfig.Enabled.Hosts,
                 ModuleType.ImageResizer => generalSettingsConfig.Enabled.ImageResizer,
                 ModuleType.KeyboardManager => generalSettingsConfig.Enabled.KeyboardManager,
@@ -107,6 +109,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 case ModuleType.FileLocksmith: generalSettingsConfig.Enabled.FileLocksmith = isEnabled; break;
                 case ModuleType.FindMyMouse: generalSettingsConfig.Enabled.FindMyMouse = isEnabled; break;
                 case ModuleType.AltWindowCycle: generalSettingsConfig.Enabled.AltWindowCycle = isEnabled; break;
+                case ModuleType.WindowTabs: generalSettingsConfig.Enabled.WindowTabs = isEnabled; break;
                 case ModuleType.Hosts: generalSettingsConfig.Enabled.Hosts = isEnabled; break;
                 case ModuleType.ImageResizer: generalSettingsConfig.Enabled.ImageResizer = isEnabled; break;
                 case ModuleType.KeyboardManager: generalSettingsConfig.Enabled.KeyboardManager = isEnabled; break;
@@ -154,6 +157,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.FileLocksmith => FileLocksmithSettings.ModuleName,
                 ModuleType.FindMyMouse => FindMyMouseSettings.ModuleName,
                 ModuleType.AltWindowCycle => AltWindowCycleSettings.ModuleName,
+                ModuleType.WindowTabs => WindowTabsSettings.ModuleName,
                 ModuleType.Hosts => HostsSettings.ModuleName,
                 ModuleType.ImageResizer => ImageResizerSettings.ModuleName,
                 ModuleType.KeyboardManager => KeyboardManagerSettings.ModuleName,

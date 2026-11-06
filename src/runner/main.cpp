@@ -340,6 +340,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.PowerDisplayModuleInterface.dll",
             L"PowerToys.GrabAndMoveModuleInterface.dll",
             L"PowerToys.AltWindowCycle.dll",
+            L"PowerToys.WindowTabs.dll",
         };
 
         for (auto moduleSubdir : knownModules)

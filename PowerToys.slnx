@@ -183,6 +183,14 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
+  <Folder Name="/modules/WindowTabs/">
+    <Project Path="src/modules/WindowTabs/Tests/WindowTabs.TestHost/WindowTabs.TestHost.vcxproj" Id="7ee79fe7-0725-492a-a6e8-8c2ab1f63114" />
+    <Project Path="src/modules/WindowTabs/WindowTabs.vcxproj" Id="7ee79fe7-0725-492a-a6e8-8c2ab1f63111" />
+    <Project Path="src/modules/WindowTabs/UnitTests/WindowTabsUnitTests.vcxproj" Id="7ee79fe7-0725-492a-a6e8-8c2ab1f63112" />
+    <Project Path="src/modules/WindowTabs/FuzzingTest/WindowTabs.FuzzingTest.vcxproj" Id="7ee79fe7-0725-492a-a6e8-8c2ab1f63113">
+      <Build Solution="*|ARM64" Project="false" />
+    </Project>
+  </Folder>
   <Folder Name="/modules/AltWindowCycle/">
     <Project Path="src/modules/AltWindowCycle/AltWindowCycle.vcxproj" Id="4d1d41c7-e22b-4a8b-8805-660a100e1d79" />
     <Project Path="src/modules/AltWindowCycle/Tests/AltWindowCycle.TestApp/AltWindowCycle.TestApp.csproj">

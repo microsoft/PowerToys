@@ -38,6 +38,7 @@
             "PowerToys.AlwaysOnTop.exe",
             "PowerToys.AlwaysOnTopModuleInterface.dll",
             "PowerToys.AltWindowCycle.dll",
+            "PowerToys.WindowTabs.dll",
 
             "PowerToys.CmdNotFoundModuleInterface.dll",
 
