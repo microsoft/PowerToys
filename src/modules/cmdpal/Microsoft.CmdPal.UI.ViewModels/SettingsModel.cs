@@ -282,6 +282,21 @@ public record SettingsModel
     private static bool GetWindowsKeyHotkeyFeatureFlag() =>
         Environment.GetEnvironmentVariable("CMDPAL_ENABLE_WIN_HOTKEY") == "1";
 
+    /// <summary>Returns the first saved shortcut for a command, or <see langword="null"/> when missing or empty.</summary>
+    /// <param name="commandId">Command ID stored in the shortcut binding.</param>
+    /// <returns>The shortcut with its display metadata, or <see langword="null"/> if unassigned.</returns>
+    public HotkeySettings? GetCommandHotkey(string commandId)
+    {
+        return GetCommandHotkey(CommandHotkeys, commandId);
+    }
+
+    /// <summary>Returns the first matching shortcut from a binding sequence or indexed command group, treating empty values as unassigned.</summary>
+    internal static HotkeySettings? GetCommandHotkey(IEnumerable<TopLevelHotkey> bindings, string commandId)
+    {
+        var hotkey = bindings.FirstOrDefault(binding => binding.CommandId == commandId)?.Hotkey;
+        return hotkey?.IsEmpty() == true ? null : hotkey;
+    }
+
     public (SettingsModel Model, ProviderSettings Settings) GetProviderSettings(CommandProviderWrapper provider)
     {
         if (!ProviderSettings.TryGetValue(provider.ProviderId, out var settings))

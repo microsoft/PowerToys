@@ -37,7 +37,9 @@
 
   <ItemGroup>
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\GlobalKeyboardListener.cs" Link="Helpers\GlobalKeyboardListener.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\HotkeyRegistrar.cs" Link="Helpers\HotkeyRegistrar.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\GlobalKeyboardHook.cs" Link="Helpers\GlobalKeyboardHook.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\HotkeyWindowMessageHelper.cs" Link="Helpers\HotkeyWindowMessageHelper.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\IGlobalKeyboardHook.cs" Link="Helpers\IGlobalKeyboardHook.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\WindowsRunHistory.cs" Link="Helpers\WindowsRunHistory.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockFocusNavigation.cs" Link="Helpers\DockFocusNavigation.cs" />
