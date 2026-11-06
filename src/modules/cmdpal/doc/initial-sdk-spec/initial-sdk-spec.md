@@ -966,6 +966,18 @@ is set to a non-null value, DevPal uses the implemented layout interface:
 gallery layouts can show titles, and gallery layouts can also show subtitles.
 Grids are useful for visual content such as images or icons.
 
+Gallery images fill their square tile by default, cropping content when its aspect
+ratio differs from the tile. A gallery layout can implement
+`IExtendedAttributesProvider` and return the `Int32` attribute
+`Microsoft.CommandPalette.Gallery.ImageFit` (`WellKnownExtensionAttributes.GalleryImageFit`).
+`GalleryImageFit.Cover` (`0`) fills the tile while preserving aspect ratio and
+cropping overflow. `GalleryImageFit.Contain` (`1`) fits the whole image within
+the same tile while preserving its aspect ratio. In the toolkit, set
+`GalleryGridLayout.ImageFit` to `GalleryImageFit.Contain` to opt in.
+The default is `Cover`; missing, non-`Int32`, or unknown values retain crop-to-fill.
+This controls presentation; it cannot restore content already cropped by a
+thumbnail provider.
+
 Each item in the list may also include an optional `Details` property. This
 allows the extension to provide additional information about the item, like a
 description, a preview of a file, or a link to more information. For more

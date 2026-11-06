@@ -13,6 +13,11 @@ public static class WellKnownExtensionAttributes
     public const string FontFamily = "FontFamily";
 
     /// <summary>
+    /// Optional Int32 selecting Cover (0) or Contain (1) for gallery images.
+    /// </summary>
+    public const string GalleryImageFit = "Microsoft.CommandPalette.Gallery.ImageFit";
+
+    /// <summary>
     /// The logical property name used with <c>PropChanged</c> when any Dock label-width hint changes.
     /// </summary>
     public const string DockLabelWidthPropertyName = "DockLabelWidth";
