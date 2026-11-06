@@ -19,6 +19,14 @@ Enable the integration in **PowerScripts editor > Consumer modules > File Explor
 and defaults on. With it off, required parameters without valid defaults disable the action.
 No per-script settings are stored. Scripts receive the complete selection once.
 
+**Show execution status after (seconds)** controls the status popup delay, from 0 to 600
+seconds (default 2; 0 shows it immediately). Timing starts after parameter/destination choices,
+when execution preparation begins. Fast successful runs do not open a status window. Longer runs
+show the script, selection count, elapsed time and preparation/execution/export stage, with cancellation.
+Closing a running status window hides it without cancelling. Errors appear immediately and remain
+visible with copyable details, regardless of the delay. Cancellation cannot undo prior side effects;
+failed/interrupted requests are never automatically retried. There is still no result preview.
+
 The flat PowerScripts submenu shows up to 14 compatible scripts. A picker appears only when
 matching scripts overflow the menu, the cache is truncated, or discovery needs recovery.
 Script entries use the validated `iconPath` returned by Host discovery. Authors can add a

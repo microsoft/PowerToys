@@ -67,11 +67,20 @@ public sealed class ExplorerScriptService
         return scripts.Where(script => script.Input == PowerScriptIO.Files && script.AcceptsFiles(selection)).ToArray();
     }
 
+    public Task<IReadOnlyList<string>> ExecuteAsync(
+        PowerScriptInfo script,
+        IReadOnlyList<string> files,
+        IReadOnlyDictionary<string, JsonElement> parameters,
+        string destination,
+        CancellationToken cancellationToken = default) =>
+        ExecuteAsync(script, files, parameters, destination, progress: null, cancellationToken);
+
     public async Task<IReadOnlyList<string>> ExecuteAsync(
         PowerScriptInfo script,
         IReadOnlyList<string> files,
         IReadOnlyDictionary<string, JsonElement> parameters,
         string destination,
+        IProgress<ExplorerScriptStage>? progress,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(script);
@@ -80,6 +89,7 @@ public sealed class ExplorerScriptService
         var selection = files.ToArray();
         var supplied = parameters.ToDictionary(pair => pair.Key, pair => pair.Value.Clone(), StringComparer.Ordinal);
         cancellationToken.ThrowIfCancellationRequested();
+        progress?.Report(ExplorerScriptStage.Preparing);
         ValidateSelection(selection);
         LocalPaths.Validate(destination, directory: true);
         var scripts = await client.ListAsync(cancellationToken).ConfigureAwait(false);
@@ -96,10 +106,16 @@ public sealed class ExplorerScriptService
             throw new ArgumentException("The script's input schema no longer declares parameters. Refresh its parameters before running.", nameof(parameters));
         }
 
+        progress?.Report(ExplorerScriptStage.Running);
         var result = await client.TransformAsync(
             current.Id,
             new PowerScriptTransformInput { FilePaths = selection, Parameters = hasParameterBag ? validated : null },
             cancellationToken: cancellationToken).ConfigureAwait(false);
+        if (result.ExitCode == 0)
+        {
+            progress?.Report(ExplorerScriptStage.Saving);
+        }
+
         return await ResultExporter.ExportAsync(result, current, selection, destination, cancellationToken).ConfigureAwait(false);
     }
 

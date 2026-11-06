@@ -22,6 +22,16 @@
                             AutomationProperties.AutomationId="FileExplorerPowerScriptsShowParameters"
                             IsOn="{x:Bind ViewModel.PowerScriptsShowParameters, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="FileExplorerPowerScripts_StatusDelay">
+                        <NumberBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="FileExplorerPowerScriptsStatusDelay"
+                            Maximum="600"
+                            Minimum="0"
+                            SmallChange="1"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{x:Bind ViewModel.PowerScriptsStatusDelaySeconds, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane">
                     <InfoBar

@@ -13,6 +13,7 @@
     <ProjectReference Include="..\FileExplorerScripts.Core\FileExplorerScripts.Core.csproj" />
     <ProjectReference Include="FakeHost\FakeHost.csproj" ReferenceOutputAssembly="false" />
     <Compile Remove="FakeHost\**\*.cs" />
+    <Compile Include="..\FileExplorerScripts\ExplorerSettings.cs" Link="ExplorerSettings.cs" />
   </ItemGroup>
   <Target Name="CopyFakeHost" AfterTargets="Build">
     <ItemGroup>

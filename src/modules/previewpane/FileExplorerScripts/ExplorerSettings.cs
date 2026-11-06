@@ -16,6 +16,35 @@ internal static class ExplorerSettings
 
     public static string RequestsPath => Path.Combine(DirectoryPath, "PowerScripts", "Requests");
 
+    public static TimeSpan StatusDelay()
+    {
+        var path = Path.Combine(DirectoryPath, "settings.json");
+        if (!File.Exists(path))
+        {
+            return TimeSpan.FromSeconds(2);
+        }
+
+        using var document = JsonDocument.Parse(File.ReadAllText(path));
+        return ReadStatusDelay(document.RootElement);
+    }
+
+    internal static TimeSpan ReadStatusDelay(JsonElement root)
+    {
+        if (!root.TryGetProperty("properties", out var properties) ||
+            !properties.TryGetProperty("powerscripts-status-delay-seconds", out var setting))
+        {
+            return TimeSpan.FromSeconds(2);
+        }
+
+        var value = setting.ValueKind == JsonValueKind.Object ? setting.GetProperty("value") : setting;
+        if (!value.TryGetInt32(out var seconds) || seconds is < 0 or > 600)
+        {
+            throw new InvalidDataException("The PowerScripts status delay must be a whole number between 0 and 600 seconds.");
+        }
+
+        return TimeSpan.FromSeconds(seconds);
+    }
+
     public static bool ShowParameters()
     {
         var path = Path.Combine(DirectoryPath, "settings.json");

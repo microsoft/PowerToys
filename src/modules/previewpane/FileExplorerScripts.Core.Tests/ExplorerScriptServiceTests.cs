@@ -12,6 +12,7 @@ namespace FileExplorerScripts.Core.Tests;
 public sealed class ExplorerScriptServiceTests
 {
     private static readonly string[] ExpectedCalls = ["list:file-explorer", "list:file-explorer", "transform:file-explorer"];
+    private static readonly ExplorerScriptStage[] ExpectedStages = [ExplorerScriptStage.Preparing, ExplorerScriptStage.Running, ExplorerScriptStage.Saving];
 
     [TestMethod]
     public async Task DiscoveryAndTransformAreAttributedAndUseTypedParametersAndCurrentMetadata()
@@ -25,7 +26,9 @@ public sealed class ExplorerScriptServiceTests
         var stale = scripts[0];
         fixture.Write("catalogue.json", Catalogue(output: "text", parameterType: "int", name: "Current name"));
         var parameters = new Dictionary<string, JsonElement> { ["amount"] = JsonSerializer.SerializeToElement(2) };
-        var outputs = await service.ExecuteAsync(stale, [fixture.Input], parameters, fixture.Destination, CancellationToken.None);
+        var progress = new StageCollector();
+        var outputs = await service.ExecuteAsync(stale, [fixture.Input], parameters, fixture.Destination, progress, CancellationToken.None);
+        CollectionAssert.AreEqual(ExpectedStages, progress.Stages);
         Assert.AreEqual("sample - Current_name.txt", Path.GetFileName(outputs.Single()));
         using var payload = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(fixture.Root, "payload.json")));
         Assert.AreEqual(fixture.Input, payload.RootElement.GetProperty("files")[0].GetString());
@@ -44,7 +47,10 @@ public sealed class ExplorerScriptServiceTests
         foreach (var catalogue in new[] { "[]", Catalogue("text", "int", extension: ".txt") })
         {
             fixture.Write("catalogue.json", catalogue);
-            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => service.ExecuteAsync(stale, [fixture.Input], new Dictionary<string, JsonElement>(), fixture.Destination));
+            var progress = new StageCollector();
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => service.ExecuteAsync(stale, [fixture.Input], new Dictionary<string, JsonElement>(), fixture.Destination, progress: progress));
+            Assert.AreEqual(1, progress.Stages.Count);
+            Assert.AreEqual(ExplorerScriptStage.Preparing, progress.Stages[0]);
         }
 
         Assert.IsFalse(File.Exists(Path.Combine(fixture.Root, "payload.json")));
@@ -160,6 +166,24 @@ public sealed class ExplorerScriptServiceTests
     }
 
     [TestMethod]
+    public async Task HostFailureDoesNotReportSavingOrPublishOutput()
+    {
+        using var fixture = new Fixture();
+        fixture.Write("catalogue.json", Catalogue("text", "int"));
+        fixture.Write("error.txt", "Example script failure.");
+        var service = Service(fixture);
+        var script = (await service.GetApplicableScriptsAsync([fixture.Input])).Single();
+        var progress = new StageCollector();
+        var parameters = new Dictionary<string, JsonElement> { ["amount"] = JsonSerializer.SerializeToElement(2) };
+        var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() =>
+            service.ExecuteAsync(script, [fixture.Input], parameters, fixture.Destination, progress));
+        StringAssert.Contains(exception.Message, "Example script failure.");
+        Assert.AreEqual(2, progress.Stages.Count);
+        Assert.AreEqual(ExplorerScriptStage.Running, progress.Stages[^1]);
+        Assert.AreEqual(0, Directory.GetFiles(fixture.Destination).Length);
+    }
+
+    [TestMethod]
     public async Task CancelledDiscoveryDoesNotStartHost()
     {
         using var fixture = new Fixture();
@@ -167,6 +191,13 @@ public sealed class ExplorerScriptServiceTests
         cancellation.Cancel();
         await Assert.ThrowsExactlyAsync<OperationCanceledException>(() => Service(fixture).GetApplicableScriptsAsync([fixture.Input], cancellation.Token));
         Assert.IsFalse(File.Exists(Path.Combine(fixture.Root, "calls.txt")));
+    }
+
+    private sealed class StageCollector : IProgress<ExplorerScriptStage>
+    {
+        public List<ExplorerScriptStage> Stages { get; } = [];
+
+        public void Report(ExplorerScriptStage value) => Stages.Add(value);
     }
 
     private static ExplorerScriptService Service(Fixture fixture) =>

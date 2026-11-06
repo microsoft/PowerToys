@@ -10,13 +10,13 @@ internal static class Program
     {
         var rootIndex = Array.IndexOf(args, "--root");
         var consumerIndex = Array.IndexOf(args, "--consumer");
-        if (rootIndex < 0 || consumerIndex < 0 || args[consumerIndex + 1] != "file-explorer")
+        var root = rootIndex >= 0 ? args[rootIndex + 1] : Environment.GetEnvironmentVariable("POWERSCRIPTS_ROOT");
+        if (string.IsNullOrEmpty(root) || consumerIndex < 0 || args[consumerIndex + 1] != "file-explorer")
         {
             Console.Error.Write("Discovery and execution must be attributed to file-explorer.");
             return 2;
         }
 
-        var root = args[rootIndex + 1];
         await File.AppendAllTextAsync(Path.Combine(root, "calls.txt"), args[0] + ":" + args[consumerIndex + 1] + Environment.NewLine);
         if (args[0] == "list")
         {
@@ -27,6 +27,19 @@ internal static class Program
         if (args[0] == "transform")
         {
             await File.WriteAllTextAsync(Path.Combine(root, "payload.json"), await Console.In.ReadToEndAsync());
+            var delay = Path.Combine(root, "delay-ms.txt");
+            if (File.Exists(delay))
+            {
+                await Task.Delay(int.Parse(await File.ReadAllTextAsync(delay), System.Globalization.CultureInfo.InvariantCulture));
+            }
+
+            var error = Path.Combine(root, "error.txt");
+            if (File.Exists(error))
+            {
+                Console.Error.Write(await File.ReadAllTextAsync(error));
+                return 3;
+            }
+
             Console.Write(await File.ReadAllTextAsync(Path.Combine(root, "result.json")));
             return 0;
         }

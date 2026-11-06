@@ -6802,4 +6802,10 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="FileExplorerPowerScripts_Parameters.Description" xml:space="preserve">
     <value>Configure script parameters before running. When off, scripts use declared defaults; scripts requiring values without defaults cannot run. Enable this integration in PowerScripts editor &gt; Consumer modules.</value>
   </data>
+  <data name="FileExplorerPowerScripts_StatusDelay.Header" xml:space="preserve">
+    <value>Show execution status after (seconds)</value>
+  </data>
+  <data name="FileExplorerPowerScripts_StatusDelay.Description" xml:space="preserve">
+    <value>Wait 0–600 seconds before showing script execution status. Set to 0 to show immediately. Errors always appear immediately.</value>
+  </data>
 </root>

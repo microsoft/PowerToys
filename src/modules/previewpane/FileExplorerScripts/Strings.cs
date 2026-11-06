@@ -15,5 +15,7 @@ internal static class Strings
 
     public static CompositeFormat CreatedFiles { get; } = CompositeFormat.Parse(Get("CreatedFiles"));
 
+    public static CompositeFormat Elapsed { get; } = CompositeFormat.Parse(Get("Elapsed"));
+
     public static string Get(string key) => Loader.GetString(key);
 }

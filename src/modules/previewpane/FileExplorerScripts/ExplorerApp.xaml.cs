@@ -25,6 +25,7 @@ namespace FileExplorerScripts;
 public partial class App : Application
 {
     private ExplorerScriptWindow? _window;
+    private ExplorerExecutionWindow? _executionWindow;
 
     public App()
     {
@@ -35,11 +36,13 @@ public partial class App : Application
 
     protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
+        var watching = false;
         try
         {
             var arguments = Environment.GetCommandLineArgs();
             if (arguments.Length == 3 && arguments[1] == "--watch")
             {
+                watching = true;
                 await CatalogueWorker.RunAsync(int.Parse(arguments[2], CultureInfo.InvariantCulture));
             }
             else if (arguments.Length == 3 && arguments[1] == "--request")
@@ -55,17 +58,29 @@ public partial class App : Application
         {
             // Cancelling the configuration/destination picker never submits an invocation.
         }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or Win32Exception or System.Text.Json.JsonException or COMException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or Win32Exception or System.Text.Json.JsonException or COMException or NotSupportedException)
         {
             Logger.LogError("Explorer PowerScript could not complete.", exception);
-            if (MessageBoxW(IntPtr.Zero, exception.Message, Strings.Get("Failed"), 0x10) == 0)
+            if (watching)
             {
-                Logger.LogError("Unable to display the Explorer PowerScripts error.");
+                if (MessageBoxW(IntPtr.Zero, exception.Message, Strings.Get("Failed"), 0x10) == 0)
+                {
+                    Logger.LogError("Unable to display the Explorer PowerScripts error.");
+                }
+            }
+            else
+            {
+                _window?.Close();
+                _window = null;
+                _executionWindow ??= new ExplorerExecutionWindow(Strings.Get("Title"), 0);
+                await _executionWindow.ShowFailureAsync(exception);
             }
         }
         finally
         {
             _window?.Close();
+            _executionWindow?.Finish();
+            _executionWindow?.Close();
             Exit();
         }
     }
@@ -123,16 +138,26 @@ public partial class App : Application
         var parents = request.Files.Select(path => Path.GetDirectoryName(Path.GetFullPath(path))!)
             .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         var destination = parents.Length == 1 ? parents[0] : await PickDestinationAsync(scripts, request);
+        using var userCancellation = new CancellationTokenSource();
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(userCancellation.Token, timeout.Token);
+        var delay = ExplorerSettings.StatusDelay();
+        _executionWindow = new ExplorerExecutionWindow(script.Name, request.Files.Count, userCancellation);
+        _executionWindow.Start(delay);
+        var progress = new Progress<ExplorerScriptStage>(_executionWindow.ReportStage);
         System.Collections.Generic.IReadOnlyList<string> outputs;
         try
         {
-            outputs = await service.ExecuteAsync(script, request.Files, parameters, destination, timeout.Token);
+            outputs = await service.ExecuteAsync(script, request.Files, parameters, destination, progress, cancellation.Token);
         }
         catch (OperationCanceledException exception)
         {
-            throw new InvalidOperationException(Strings.Get("Cancelled"), exception);
+            throw new InvalidOperationException(Strings.Get(userCancellation.IsCancellationRequested ? "Cancelled" : "TimedOut"), exception);
         }
+
+        _executionWindow.Finish();
+        _executionWindow.Close();
+        _executionWindow = null;
 
         try
         {

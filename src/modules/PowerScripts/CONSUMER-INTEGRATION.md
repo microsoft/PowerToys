@@ -131,8 +131,10 @@ The first central edit copies the legacy choice; subsequent legacy writes cannot
 Keyboard Manager defaults on to preserve existing bindings. Disabling an integration never deletes
 bindings or trust approvals.
 
-File Explorer defaults off. Its single **Show parameter options before running** preference belongs
-to File Explorer Add-ons, not PowerScripts' config. There are no per-script Explorer preferences.
+File Explorer defaults off. Its global **Show parameter options before running** and
+**Show execution status after (seconds)** preferences belong to File Explorer Add-ons, not
+PowerScripts' config. The status delay defaults to 2 seconds; 0 shows it immediately, and failures
+always appear immediately regardless of the delay. There are no per-script Explorer preferences.
 
 The Host applies the same decision to attributed discovery and `run`/`transform`. A disabled
 integration gets an empty catalogue; an existing invocation is refused with exit code 4 and recorded

@@ -1115,6 +1115,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int PowerScriptsStatusDelaySeconds
+        {
+            get => Settings.Properties.PowerScriptsStatusDelaySeconds.Value;
+            set
+            {
+                if (value != Settings.Properties.PowerScriptsStatusDelaySeconds.Value)
+                {
+                    Settings.Properties.PowerScriptsStatusDelaySeconds.Value = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change
