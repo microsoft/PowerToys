@@ -2623,6 +2623,54 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Awake_IntervalMinutesInput.Header" xml:space="preserve">
     <value>Minutes</value>
   </data>
+  <data name="Awake_TrayTimesExpander.Header" xml:space="preserve">
+    <value>Tray menu time shortcuts</value>
+  </data>
+  <data name="Awake_TrayTimesExpander.Description" xml:space="preserve">
+    <value>Choose the durations listed under "Keep awake on interval" in the Awake system tray menu</value>
+    <comment>"Keep awake on interval" is the name of the Awake tray menu item</comment>
+  </data>
+  <data name="Awake_TrayTimesAddCard.Header" xml:space="preserve">
+    <value>Add a time shortcut</value>
+  </data>
+  <data name="Awake_TrayTimesHoursInput.Header" xml:space="preserve">
+    <value>Hours</value>
+  </data>
+  <data name="Awake_TrayTimesMinutesInput.Header" xml:space="preserve">
+    <value>Minutes</value>
+  </data>
+  <data name="Awake_TrayTimesAddButton.Content" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="Awake_TrayTimesResetButton.Content" xml:space="preserve">
+    <value>Reset to defaults</value>
+  </data>
+  <data name="Awake_TrayTimesDeleteButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Remove time shortcut</value>
+  </data>
+  <data name="Awake_TrayTimesDeleteButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="Awake_TrayTime_Minute" xml:space="preserve">
+    <value>{0} minute</value>
+    <comment>{0} will be replaced by the number 1. Label of an Awake tray menu duration.</comment>
+  </data>
+  <data name="Awake_TrayTime_Minutes" xml:space="preserve">
+    <value>{0} minutes</value>
+    <comment>{0} will be replaced by a number of minutes. Label of an Awake tray menu duration.</comment>
+  </data>
+  <data name="Awake_TrayTime_Hour" xml:space="preserve">
+    <value>{0} hour</value>
+    <comment>{0} will be replaced by the number 1. Label of an Awake tray menu duration.</comment>
+  </data>
+  <data name="Awake_TrayTime_Hours" xml:space="preserve">
+    <value>{0} hours</value>
+    <comment>{0} will be replaced by a number of hours. Label of an Awake tray menu duration.</comment>
+  </data>
+  <data name="Awake_TrayTime_HoursMinutes" xml:space="preserve">
+    <value>{0} h {1} min</value>
+    <comment>{0} will be replaced by a number of hours and {1} by a number of minutes. Label of an Awake tray menu duration.</comment>
+  </data>
   <data name="Awake_ExpirationSettingsExpander_Date.Header" xml:space="preserve">
     <value>End date</value>
   </data>

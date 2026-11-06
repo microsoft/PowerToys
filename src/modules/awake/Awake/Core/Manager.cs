@@ -507,13 +507,31 @@ namespace Awake.Core
         /// <returns>Returns a dictionary of default Awake timed interval options.</returns>
         internal static Dictionary<string, uint> GetDefaultTrayOptions()
         {
-            Dictionary<string, uint> optionsList = new()
+            Dictionary<string, uint> optionsList = [];
+
+            foreach (uint seconds in AwakeDefaults.TrayTimeSeconds)
             {
-                { string.Format(CultureInfo.InvariantCulture, AwakeMinutes, 30), 1800 },
-                { string.Format(CultureInfo.InvariantCulture, AwakeHour, 1), 3600 },
-                { string.Format(CultureInfo.InvariantCulture, AwakeHours, 2), 7200 },
-            };
+                optionsList[FormatTrayDuration(seconds)] = seconds;
+            }
+
             return optionsList;
+        }
+
+        /// <summary>
+        /// Formats a tray time shortcut duration as a human-readable label.
+        /// </summary>
+        /// <param name="seconds">Duration in seconds.</param>
+        /// <returns>Label such as "30 minutes", "1 hour" or "8 hours".</returns>
+        internal static string FormatTrayDuration(uint seconds)
+        {
+            if (seconds % 3600 == 0)
+            {
+                uint hours = seconds / 3600;
+                return string.Format(CultureInfo.InvariantCulture, hours == 1 ? AwakeHour : AwakeHours, hours);
+            }
+
+            uint minutes = seconds / 60;
+            return string.Format(CultureInfo.InvariantCulture, minutes == 1 ? AwakeMinute : AwakeMinutes, minutes);
         }
 
         /// <summary>
