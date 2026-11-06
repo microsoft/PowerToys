@@ -156,9 +156,9 @@ keys out of an insertion.
   copy or with a control character, since Terminal filters a paste but acts on what's typed.
 - Text from the clipboard or clipboard history loses its control characters but tabs and line breaks
   (`ControlCharacters`). Typing into Windows Terminal or the console (`ConsoleWindowClass`) leaves
-  them out too, and lines a terminal couldn't get as a paste aren't typed: the trigger stays, and a
-  notice says why. With Always type, lines that hold copied text aren't typed into a terminal either,
-  while lines the user wrote are.
+  them out too, and lines a terminal couldn't get as a paste aren't typed: the trigger stays as typed,
+  with the key the hook swallowed given back in any mode, and a notice says why. With Always type,
+  lines that hold copied text aren't typed into a terminal either, while lines the user wrote are.
 - Ctrl+V goes 300 ms after the erase, since Notepad drops a Ctrl+V during an edit. Ctrl goes down in
   its own call. Notepad reads it late, so it stays down until the target opens the clipboard, at most
   350 ms after the V. Unguarded, Ctrl+V is one call.

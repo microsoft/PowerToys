@@ -181,8 +181,13 @@ internal static class Injector
     /// the space that released the trigger. They don't count toward <see cref="ClipboardThresholdChars"/>.
     /// </param>
     /// <param name="fromClipboard">Whether part of <paramref name="text"/> came from a copy (see <see cref="ExpandedSnippet.HasClipboardText"/>).</param>
-    public static bool Replace(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, int cursorRightUnits, InsertionGuard guard, long inputGeneration, Action? inserted, int givenBack, bool fromClipboard)
-        => ReplaceCore(backspaceCount, text, targetWindow, cursorLeftUnits, InputTarget.CanDrive, guard, inputGeneration, cursorRightUnits: cursorRightUnits, inserted: inserted, givenBack: givenBack, fromClipboard: fromClipboard);
+    /// <param name="swallowed">
+    /// The key the hook swallowed for the trigger: its last character, or the space or punctuation after it in word mode.
+    /// If a terminal can't be given <paramref name="text"/>, nothing is erased and it goes back, so what was typed stays
+    /// as typed. Empty when nothing was swallowed.
+    /// </param>
+    public static bool Replace(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, int cursorRightUnits, InsertionGuard guard, long inputGeneration, Action? inserted, int givenBack, bool fromClipboard, string swallowed)
+        => ReplaceCore(backspaceCount, text, targetWindow, cursorLeftUnits, InputTarget.CanDrive, guard, inputGeneration, cursorRightUnits: cursorRightUnits, inserted: inserted, givenBack: givenBack, fromClipboard: fromClipboard, swallowed: swallowed);
 
     internal static bool ReplaceCore(
         int backspaceCount,
@@ -205,7 +210,8 @@ internal static class Injector
         Func<IntPtr, bool>? isWindowsTerminal = null,
         bool fromClipboard = false,
         Func<IntPtr, bool>? isConsole = null,
-        Action<IntPtr, bool>? refusedInTerminal = null)
+        Action<IntPtr, bool>? refusedInTerminal = null,
+        string swallowed = "")
     {
         ArgumentNullException.ThrowIfNull(canDrive);
 
@@ -280,7 +286,7 @@ internal static class Injector
             // from a copy. Then only the key the hook swallowed goes back, so what was typed stays as typed.
             refused = Typing() && InjectionPolicy.RefusesTypedLines(text, terminal, backend, fromClipboard);
             succeeded = outcome == PasteOutcome.Pasted || (Typing() && !refused && Insert(paste: false));
-            if (refused && givenBack > 0)
+            if (refused && swallowed.Length > 0)
             {
                 _ = GiveBack();
             }
@@ -365,11 +371,11 @@ internal static class Injector
             return done;
         }
 
-        // Only the user's own keystrokes at the end, such as the space the hook swallowed, with nothing erased.
+        // Only the key the hook swallowed, with nothing erased: the trigger's last character, or the space after it.
         bool GiveBack()
             => (guard.Renew() || (!guard.Cancelled && Start()))
                 && guard.Unchanged(inputGeneration)
-                && TypeText(typed[^givenBack..]);
+                && TypeText(terminal ? ControlCharacters.Remove(swallowed) : swallowed);
 
         // A key per call, paced like typing: Windows 11 Notepad dropped a Backspace now and then from an erase sent in one
         // call, leaving the trigger's first character in front of the snippet. A longer erase, such as undoing a long

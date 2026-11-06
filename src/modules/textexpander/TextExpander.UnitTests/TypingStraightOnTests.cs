@@ -155,7 +155,7 @@ public sealed class TypingStraightOnTests
     {
         Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
         work = work with { TargetWindow = IntPtr.Zero };
-        Program.ReplaceText insert = (backspaces, text, target, left, right, guard, generation, inserted, givenBack, fromClipboard) => Injector.ReplaceCore(
+        Program.ReplaceText insert = (backspaces, text, target, left, right, guard, generation, inserted, givenBack, fromClipboard, swallowed) => Injector.ReplaceCore(
             backspaces,
             text,
             target,
@@ -175,7 +175,8 @@ public sealed class TypingStraightOnTests
             isWindowsTerminal: _ => false,
             fromClipboard: fromClipboard,
             isConsole: _ => false,
-            refusedInTerminal: (_, _) => Assert.Fail("No terminal refused anything."));
+            refusedInTerminal: (_, _) => Assert.Fail("No terminal refused anything."),
+            swallowed: swallowed);
         return Program.Expand(hook, work, () => Program.TryExpand(hook, work, insert, isKeyDown: _ => false, ask: ask));
     }
 }

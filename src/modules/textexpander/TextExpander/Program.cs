@@ -401,8 +401,11 @@ internal static class Program
         }
     }
 
-    /// <summary>Erases and types for <see cref="TryExpand"/>: <see cref="Injector.Replace"/>, or a test's fake.</summary>
-    internal delegate bool ReplaceText(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, int cursorRightUnits, InsertionGuard guard, long inputGeneration, Action? inserted, int givenBack, bool fromClipboard);
+    /// <summary>
+    /// Erases and types for <see cref="TryExpand"/>: <see cref="Injector.Replace"/>, or a test's fake. Its last parameter is
+    /// the key the hook swallowed, which goes back if a terminal can't be given the snippet.
+    /// </summary>
+    internal delegate bool ReplaceText(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, int cursorRightUnits, InsertionGuard guard, long inputGeneration, Action? inserted, int givenBack, bool fromClipboard, string swallowed);
 
     /// <summary>
     /// Expands or undoes <paramref name="work"/>. Tests pass a fake <paramref name="replace"/>, <paramref name="isKeyDown"/>,
@@ -434,7 +437,7 @@ internal static class Program
             }
 
             // A $|$ left the caret inside the expansion; it goes back to the end before the expansion is erased.
-            return replace(Injector.CountDeletableUnits(work.Replacement), work.Trigger, work.TargetWindow, cursorLeftUnits: 0, cursorRightUnits: work.CursorLeft, hook.Guard, work.InputGeneration, inserted: null, givenBack: 0, fromClipboard: false);
+            return replace(Injector.CountDeletableUnits(work.Replacement), work.Trigger, work.TargetWindow, cursorLeftUnits: 0, cursorRightUnits: work.CursorLeft, hook.Guard, work.InputGeneration, inserted: null, givenBack: 0, fromClipboard: false, swallowed: string.Empty);
         }
 
         // Before any prompt, so nobody answers questions for an expansion that can no longer happen.
@@ -462,7 +465,7 @@ internal static class Program
             // what was typed stays as typed. Not while a modifier is still down: it would leave the app in menu mode.
             if (giveBack)
             {
-                _ = replace(0, (work.TypedText ?? work.Trigger)[^1..], work.TargetWindow, cursorLeftUnits: 0, cursorRightUnits: 0, hook.Guard, work.InputGeneration, inserted: null, givenBack: 1, fromClipboard: false);
+                _ = replace(0, (work.TypedText ?? work.Trigger)[^1..], work.TargetWindow, cursorLeftUnits: 0, cursorRightUnits: 0, hook.Guard, work.InputGeneration, inserted: null, givenBack: 1, fromClipboard: false, swallowed: string.Empty);
             }
 
             return false;
@@ -491,7 +494,7 @@ internal static class Program
         Action? record = Variables.UsesSensitiveRuntimeInput(work.Replacement)
             ? null
             : () => hook.RecordExpansion(work.TypedText ?? work.Trigger, text, work.TargetWindow, work.InputGeneration, cursorLeft);
-        bool inserted = replace(Injector.CountDeletableUnits(work.TypedPrefix), text, work.TargetWindow, cursorLeft, cursorRightUnits: 0, hook.Guard, work.InputGeneration, record, givenBack: work.Terminator is null ? 0 : 1, fromClipboard: expanded.Value.HasClipboardText);
+        bool inserted = replace(Injector.CountDeletableUnits(work.TypedPrefix), text, work.TargetWindow, cursorLeft, cursorRightUnits: 0, hook.Guard, work.InputGeneration, record, givenBack: work.Terminator is null ? 0 : 1, fromClipboard: expanded.Value.HasClipboardText, swallowed: (work.TypedText ?? work.Trigger)[^1..]);
 
         // A spot a clipboard variable left empty is told once it's all in and the keys held meanwhile went back, so the
         // notice never comes between the snippet and them.

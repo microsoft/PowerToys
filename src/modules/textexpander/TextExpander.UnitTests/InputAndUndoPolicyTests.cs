@@ -612,9 +612,9 @@ public sealed class InputAndUndoPolicyTests
         using SnippetStore store = LoadStore(scratch, "!abc=EXPANDED");
         using var hook = new KeyboardHook(store);
         var calls = new List<string>();
-        Program.ReplaceText replace = (backspaces, text, _, _, right, guard, generation, inserted, givenBack, fromClipboard) =>
+        Program.ReplaceText replace = (backspaces, text, _, _, right, guard, generation, inserted, givenBack, fromClipboard, swallowed) =>
         {
-            calls.Add($"{backspaces} \"{text}\" {right} {guard == hook.Guard} {generation} {inserted is not null} {givenBack} {fromClipboard}");
+            calls.Add($"{backspaces} \"{text}\" {right} {guard == hook.Guard} {generation} {inserted is not null} {givenBack} {fromClipboard} [{swallowed}]");
             inserted?.Invoke();
             return true;
         };
@@ -632,7 +632,7 @@ public sealed class InputAndUndoPolicyTests
         Assert.IsFalse(hook.ProcessKey(Native.VK_LEFT, 0, ctrl: false, alt: false, shift: false, win: false));
         Assert.IsFalse(Program.TryExpand(hook, late with { TargetWindow = IntPtr.Zero }, replace));
 
-        Assert.AreEqual($"4 \"EXPANDED \" 0 True {work.InputGeneration} True 1 False, 9 \"!abc \" 0 True {undo.InputGeneration} False 0 False", string.Join(", ", calls), "Only the space added after the expansion is given back.");
+        Assert.AreEqual($"4 \"EXPANDED \" 0 True {work.InputGeneration} True 1 False [ ], 9 \"!abc \" 0 True {undo.InputGeneration} False 0 False []", string.Join(", ", calls), "Only the space added after the expansion is given back.");
     }
 
     [TestMethod]
@@ -646,7 +646,7 @@ public sealed class InputAndUndoPolicyTests
         Assert.AreEqual(1, store.Load().Count);
         using var hook = new KeyboardHook(store);
         var calls = new List<string>();
-        Program.ReplaceText replace = (_, _, _, left, _, _, _, inserted, _, _) =>
+        Program.ReplaceText replace = (_, _, _, left, _, _, _, inserted, _, _, _) =>
         {
             calls.Add($"{left} {inserted is not null}");
             return true;
@@ -787,13 +787,13 @@ public sealed class InputAndUndoPolicyTests
         {
             Injector.Backend = InjectionBackend.Typing;
             Program.ReplaceText insert = Into(box, isWindowsTerminal: _ => windowsTerminal, isConsole: _ => console);
-            Assert.IsTrue(insert(0, "echo \u001B[2Jhi\u000F\u007F\u0085 there", IntPtr.Zero, 0, 0, box.Guard, hook.InputGeneration, null, 0, fromClipboard: false));
+            Assert.IsTrue(insert(0, "echo \u001B[2Jhi\u000F\u007F\u0085 there", IntPtr.Zero, 0, 0, box.Guard, hook.InputGeneration, null, 0, fromClipboard: false, swallowed: string.Empty));
             Assert.AreEqual("Before echo [2Jhi there|", box.ToString());
 
             // Anywhere else, the snippet goes in as written.
             box = new FakeTextBox("Before ", hook);
             insert = Into(box);
-            Assert.IsTrue(insert(0, "a\u000Fb", IntPtr.Zero, 0, 0, box.Guard, hook.InputGeneration, null, 0, fromClipboard: false));
+            Assert.IsTrue(insert(0, "a\u000Fb", IntPtr.Zero, 0, 0, box.Guard, hook.InputGeneration, null, 0, fromClipboard: false, swallowed: string.Empty));
             Assert.AreEqual("Before a\u000Fb|", box.ToString());
         }
         finally
@@ -836,7 +836,7 @@ public sealed class InputAndUndoPolicyTests
         try
         {
             Injector.Backend = InjectionBackend.Clipboard;
-            Assert.IsTrue(insert(0, "git status", IntPtr.Zero, 0, 0, box.Guard, hook.InputGeneration, null, 0, fromClipboard: false));
+            Assert.IsTrue(insert(0, "git status", IntPtr.Zero, 0, 0, box.Guard, hook.InputGeneration, null, 0, fromClipboard: false, swallowed: string.Empty));
         }
         finally
         {
@@ -844,6 +844,47 @@ public sealed class InputAndUndoPolicyTests
         }
 
         Assert.AreEqual("Before git status|", box.ToString());
+    }
+
+    [TestMethod]
+    [DataRow(false, true, "!abc", "Before !abc|")]
+    [DataRow(true, false, "!abc ", "Before !abc |")]
+    [DataRow(true, true, "!abc ", "Before !abc |")]
+    public void ARefusedSnippetLeavesTheTriggerAsTypedInEveryMode(bool wordMode, bool keepSpace, string typed, string expected)
+    {
+        // Nothing goes in, so the key the hook swallowed goes back: the trigger's last character without word mode, and
+        // the space after it too when the space doesn't stay after a snippet. Only the space kept after one went back.
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using SnippetStore store = LoadStore(scratch, "!abc=cd ~/project\nrm -rf build");
+        using var hook = new KeyboardHook(store);
+        bool required = WordBoundary.Required;
+        bool keep = WordBoundary.KeepTerminator;
+        InjectionBackend backend = Injector.Backend;
+        try
+        {
+            WordBoundary.Required = wordMode;
+            WordBoundary.KeepTerminator = keepSpace;
+            Injector.Backend = InjectionBackend.Auto;
+            var box = new FakeTextBox("Before ", hook);
+            TypeInto(hook, box, typed);
+            Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+
+            var refused = new List<(IntPtr Window, bool AlwaysType)>();
+            Program.ReplaceText insert = Into(
+                box,
+                (_, _, _, _) => PasteOutcome.RefusedBeforeErase,
+                isWindowsTerminal: _ => true,
+                refused: (window, alwaysType) => refused.Add((window, alwaysType)));
+            Assert.IsFalse(Program.TryExpand(hook, work with { TargetWindow = IntPtr.Zero }, insert, isKeyDown: _ => false));
+            Assert.AreEqual(expected, box.ToString());
+            Assert.AreEqual(1, refused.Count, "The notice says why.");
+        }
+        finally
+        {
+            WordBoundary.Required = required;
+            WordBoundary.KeepTerminator = keep;
+            Injector.Backend = backend;
+        }
     }
 
     [TestMethod]
@@ -1020,13 +1061,13 @@ public sealed class InputAndUndoPolicyTests
             Assert.IsFalse(Program.TryExpand(
                 hook,
                 work with { TargetWindow = IntPtr.Zero },
-                (backspaces, text, target, left, right, guard, generation, inserted, givenBack, fromClipboard) =>
+                (backspaces, text, target, left, right, guard, generation, inserted, givenBack, fromClipboard, swallowed) =>
                 {
                     calls.Add($"{backspaces} \"{text}\" {inserted is null} {givenBack}");
 
                     // Typed right after Esc: held, so it lands after the keystroke given back.
                     box.UserTypes("x");
-                    return insert(backspaces, text, target, left, right, guard, generation, inserted, givenBack, fromClipboard);
+                    return insert(backspaces, text, target, left, right, guard, generation, inserted, givenBack, fromClipboard, swallowed);
                 },
                 isKeyDown: _ => false,
                 ask: (request, _, _) =>
@@ -1062,7 +1103,7 @@ public sealed class InputAndUndoPolicyTests
         Assert.IsFalse(Program.TryExpand(
             hook,
             work with { TargetWindow = IntPtr.Zero },
-            (_, _, _, _, _, _, _, _, _, _) => ++calls > 0,
+            (_, _, _, _, _, _, _, _, _, _, _) => ++calls > 0,
             isKeyDown: vk => vk == Native.VK_MENU,
             ask: (_, _, _) => null));
 
@@ -1323,7 +1364,7 @@ public sealed class InputAndUndoPolicyTests
             expanded = Program.TryExpand(
                 hook,
                 work with { TargetWindow = IntPtr.Zero },
-                (backspaces, text, _, _, _, _, _, inserted, givenBack, _) =>
+                (backspaces, text, _, _, _, _, _, inserted, givenBack, _, _) =>
                 {
                     calls.Add($"{backspaces} \"{text}\" undo:{inserted is not null} back:{givenBack}");
                     return inserts;
@@ -1547,7 +1588,7 @@ public sealed class InputAndUndoPolicyTests
     /// snippet a terminal didn't get, and whether that was under Always type.
     /// </summary>
     private static Program.ReplaceText Into(FakeTextBox box, Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, Action, PasteOutcome>? paste = null, Func<IntPtr, bool>? isWindowsTerminal = null, Func<IntPtr, bool>? isConsole = null, Action<IntPtr, bool>? refused = null)
-        => (backspaces, text, target, left, right, guard, generation, inserted, givenBack, fromClipboard) => Injector.ReplaceCore(
+        => (backspaces, text, target, left, right, guard, generation, inserted, givenBack, fromClipboard, swallowed) => Injector.ReplaceCore(
             backspaces,
             text,
             target,
@@ -1567,5 +1608,6 @@ public sealed class InputAndUndoPolicyTests
             isWindowsTerminal: isWindowsTerminal ?? (_ => false),
             fromClipboard: fromClipboard,
             isConsole: isConsole ?? (_ => false),
-            refusedInTerminal: refused ?? ((_, _) => Assert.Fail("No terminal refused anything.")));
+            refusedInTerminal: refused ?? ((_, _) => Assert.Fail("No terminal refused anything.")),
+            swallowed: swallowed);
 }
