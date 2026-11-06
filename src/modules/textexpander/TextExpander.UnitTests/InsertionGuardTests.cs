@@ -939,6 +939,98 @@ public sealed class InsertionGuardTests
         Assert.IsFalse(guard.Swallows(FakeTextBox.UserKey('b', up: false)));
     }
 
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void WithNoStartMarkerTheInsertionGoesInUnguardedOnlyIfNothingWasTyped(bool typedOn)
+    {
+        // Another hook swallowing the markers left every insertion cancelled after 2 s: the key the hook swallowed, held since
+        // the match, counted as typed. It doesn't, and doesn't go back; nor do key-ups or modifiers. Keys typed on cancel it.
+        var sent = new List<Native.INPUT[]>();
+        using var guard = Guard(() => 5, sent);
+        guard.MarkerWaitMs = 0;
+        Assert.IsTrue(guard.HoldAfterMatch(Target, 5, FakeTextBox.UserKey('x', up: false)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('x', up: true)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserVk(Native.VK_LSHIFT, up: false)));
+        if (typedOn)
+        {
+            Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('a', up: false)));
+        }
+
+        guard.Begin(5, Target);
+        Assert.AreEqual(!typedOn, guard.AwaitStart());
+        Assert.AreEqual(typedOn ? "x a" : "x-up", FakeTextBox.Describe(sent.Single()), "The Shift still down is dropped.");
+        Assert.IsFalse(guard.Swallows(FakeTextBox.UserKey('b', up: false)), "The guard is over.");
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void WhenTheTimerEndsAnInsertionWithNoStartMarkerItDecidesAsTheWaitWould(bool typedOn)
+    {
+        // The guard's own deadline comes as the wait for the marker does: the timer got there first, and cancelled.
+        long now = 0;
+        var sent = new List<Native.INPUT[]>();
+        using var guard = Guard(() => 5, sent);
+        guard.Clock = () => now;
+        Assert.IsTrue(guard.HoldAfterMatch(Target, 5, FakeTextBox.UserKey('x', up: false)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('x', up: true)));
+        if (typedOn)
+        {
+            Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('a', up: false)));
+        }
+
+        guard.Begin(5, Target);
+        now = InsertionGuard.TimeoutMs;
+        guard.Expire();
+        Assert.AreEqual(!typedOn, guard.AwaitStart());
+        Assert.AreEqual(typedOn ? "x a" : "x-up", string.Join(" | ", sent.Select(FakeTextBox.Describe)));
+    }
+
+    [TestMethod]
+    public void KeysThatRanOutAsTheirInsertionBeganDontGoInAgainAfterIt()
+    {
+        // The hold since the match ran out just as the worker came to it, and its start marker got to the hook before the
+        // keys going back: the insertion went ahead and held them, so the key the hook swallowed went in after the snippet.
+        long now = 0;
+        byte id = 0;
+        var sent = new List<Native.INPUT[]>();
+        InsertionGuard? guard = null;
+        guard = new InsertionGuard(() => 5, _ => true)
+        {
+            Clock = () => now,
+            Resend = inputs =>
+            {
+                sent.Add([.. inputs]);
+                if (sent.Count == 1)
+                {
+                    // The worker begins between the timer taking the keys and sending them, and its marker gets there first.
+                    id = guard!.Begin(5, Target);
+                    Assert.IsTrue(guard.Swallows(FakeTextBox.Marker(id)));
+                }
+
+                foreach (Native.INPUT input in inputs)
+                {
+                    _ = guard!.Swallows(FakeTextBox.ToHookEvent(input));
+                }
+
+                return (uint)inputs.Length;
+            },
+        };
+
+        using (guard)
+        {
+            Assert.IsTrue(guard.HoldAfterMatch(Target, 5, FakeTextBox.UserKey('x', up: false)));
+            Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('a', up: false)));
+            now = InsertionGuard.TimeoutMs;
+            guard.Expire();
+            Assert.IsFalse(guard.AwaitStart(), "The keys went back to the app: it doesn't go ahead.");
+            Assert.IsTrue(guard.Swallows(FakeTextBox.Marker(id)));
+            guard.AwaitEnd(markerSent: true, []);
+            Assert.AreEqual("x-down a-down | x-down a-down Mark", string.Join(" | ", sent.Select(FakeTextBox.Describe)), "Held as they came, and back once.");
+        }
+    }
+
     /// <summary>A guard whose sends come back through it, as through the hook: SendInput returns once every hook has seen them.</summary>
     private static InsertionGuard Guard(Func<long> generation, List<Native.INPUT[]> sent, Func<IntPtr, bool>? inFront = null)
     {

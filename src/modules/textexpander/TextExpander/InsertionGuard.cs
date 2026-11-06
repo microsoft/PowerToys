@@ -88,6 +88,16 @@ internal sealed class InsertionGuard : IDisposable
     // hold since the match: it goes back only if the insertion doesn't go ahead.
     private bool _swallowedFirst;
 
+    // Under _lock. Whether the insertion is still waiting for its start marker; whether it goes in unguarded, decided when
+    // the guard ended without that marker; and whether the keys held since its match went back to the app instead of to
+    // it, for which the marker can't tell, since they can get to the hook after it.
+    private bool _awaitingStart;
+    private bool _unguarded;
+    private bool _keysWentBack;
+
+    // Under _lock. The input generation of the last match whose held keys went back to the app, as they ran out.
+    private long? _afterMatchSentBack;
+
     public InsertionGuard(Func<long> inputGeneration, Func<IntPtr, bool> targetInFront, Func<long>? clicks = null)
     {
         _inputGeneration = inputGeneration;
@@ -292,6 +302,12 @@ internal sealed class InsertionGuard : IDisposable
             _markers = 0;
             _over = false;
             _cancelled = false;
+            _awaitingStart = true;
+            _unguarded = false;
+
+            // The keys held since its match ran out as the worker came to it: they're on their way to the app, and may get to
+            // the hook after the start marker. It doesn't go ahead.
+            _keysWentBack = _afterMatchSentBack == generation;
             if (_holdingAfterMatch && _afterMatchGeneration == generation)
             {
                 // Holding first: without the lock, the hook checks for a hold since a match before it checks the mode.
@@ -315,22 +331,26 @@ internal sealed class InsertionGuard : IDisposable
     /// <summary>
     /// Waits for the hook to take the start marker, and returns whether the insertion goes ahead: not if the guard ended
     /// first, since what it held has gone back where the erase would take it. If the marker doesn't come, because another
-    /// hook swallowed it or ours is gone, the guard ends, and the insertion goes in unguarded only if nothing was held.
+    /// hook swallowed it or ours is gone, the guard ends, and the insertion goes in unguarded only if nothing was typed
+    /// since its match (<see cref="EndWithoutMarkerLocked"/>), whether this wait or the timer ends it.
     /// </summary>
     public bool AwaitStart()
     {
+        List<Native.KBDLLHOOKSTRUCT> held;
+        IntPtr target;
         bool unguarded;
         lock (_lock)
         {
             if (Wait(MarkerWaitMs, () => _markers > 0 || _over))
             {
-                return !_over && _committed;
+                return _over ? _unguarded : _committed;
             }
 
-            unguarded = _held.Count == 0;
+            target = _target;
+            held = EndWithoutMarkerLocked(out unguarded);
         }
 
-        Abandon();
+        SendBack(held, target);
         return unguarded;
     }
 
@@ -587,12 +607,15 @@ internal sealed class InsertionGuard : IDisposable
             if (_mode != Mode.None && (_deadline - now <= 0 || _held.Count >= MaxHeld))
             {
                 target = _target;
-                held = EndLocked();
+
+                // Still waiting for its start marker, the insertion may go in unguarded, as when the wait for it ends.
+                held = _awaitingStart ? EndWithoutMarkerLocked(out _) : EndLocked();
             }
 
             if (_holdingAfterMatch && (_afterMatchDeadline - now <= 0 || _afterMatch.Count >= MaxHeld))
             {
                 afterMatchTarget = _afterMatchTarget;
+                _afterMatchSentBack = _afterMatchGeneration;
                 afterMatch = TakeAfterMatchLocked();
             }
 
@@ -669,8 +692,10 @@ internal sealed class InsertionGuard : IDisposable
 
             if (++_markers == 1)
             {
-                // The decision that counts: the hook has seen every key and click that reached the app before this.
-                _committed = Unchanged(_generation);
+                // The decision that counts: the hook has seen every key and click that reached the app before this. But not
+                // the keys held since the match that ran out as the worker came to it: they may get here after this.
+                _awaitingStart = false;
+                _committed = Unchanged(_generation) && !_keysWentBack;
                 if (_mode == Mode.None)
                 {
                     StartHoldingLocked();
@@ -709,11 +734,37 @@ internal sealed class InsertionGuard : IDisposable
         _mode = Mode.None;
         _over = true;
         _swallowedFirst = false;
+        _awaitingStart = false;
         Zero(_expected);
         List<Native.KBDLLHOOKSTRUCT> held = _held;
         _held = [];
         Monitor.PulseAll(_lock);
         return held;
+    }
+
+    /// <summary>
+    /// Called under <c>_lock</c> once the start marker didn't come in time, by the wait for it or by the timer: ends the
+    /// guard, and returns what goes back. The insertion goes in unguarded only if nothing is where its erase would take it:
+    /// nothing went back to the app already, and no key but a modifier was pressed since its match. The key the hook
+    /// swallowed doesn't count, and doesn't go back: going ahead, the insertion takes its place or gives it back.
+    /// </summary>
+    private List<Native.KBDLLHOOKSTRUCT> EndWithoutMarkerLocked(out bool unguarded)
+    {
+        int first = _swallowedFirst ? 1 : 0;
+        unguarded = !_keysWentBack;
+        for (int i = first; unguarded && i < _held.Count; i++)
+        {
+            unguarded = (_held[i].Flags & Native.LLKHF_UP) != 0 || KeyboardHook.IsModifierKey(_held[i].VkCode);
+        }
+
+        if (unguarded && first == 1 && _held.Count > 0)
+        {
+            _held[0] = default;
+            _held.RemoveAt(0);
+        }
+
+        _unguarded = unguarded;
+        return EndLocked();
     }
 
     /// <summary>Called under <c>_lock</c>: ends the hold since a match, and returns what it held, the swallowed key first.</summary>

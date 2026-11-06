@@ -119,6 +119,24 @@ public sealed class TypingStraightOnTests
         });
     }
 
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    public void WhenAnotherHookSwallowsTheMarkersTheSnippetGoesInUnlessKeysWereTypedOn(bool wordMode, bool typedOn)
+    {
+        // Without its markers an insertion goes in unguarded, as before keys were held from the match on, when the key the
+        // hook swallowed counted as typed and cancelled every one. Keys typed on would be where the erase takes them.
+        With(wordMode, "!abc=snippet", (hook, box) =>
+        {
+            hook.Guard.MarkerWaitMs = 50;
+            box.UserTypes((wordMode ? "!abc " : "!abc") + (typedOn ? (wordMode ? "more" : " more") : string.Empty));
+            Assert.AreEqual(!typedOn, Expand(hook, box, dispatch: WithoutMarkers(box)));
+            Assert.AreEqual(typedOn ? "Before !abc more|" : wordMode ? "Before snippet |" : "Before snippet|", box.ToString());
+        });
+    }
+
     private static void With(bool wordMode, string snippet, Action<KeyboardHook, FakeTextBox> test)
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
@@ -151,7 +169,7 @@ public sealed class TypingStraightOnTests
     }
 
     /// <summary>Runs the work the hook queued as Program does, typing into <paramref name="box"/>.</summary>
-    private static bool Expand(KeyboardHook hook, FakeTextBox box, Func<PromptRequest, IntPtr, Action?, string?>? ask = null)
+    private static bool Expand(KeyboardHook hook, FakeTextBox box, Func<PromptRequest, IntPtr, Action?, string?>? ask = null, Func<Native.INPUT[], uint>? dispatch = null)
     {
         Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
         work = work with { TargetWindow = IntPtr.Zero };
@@ -165,7 +183,7 @@ public sealed class TypingStraightOnTests
             generation,
             () => new IntPtr(1),
             box.Paste,
-            box.Dispatch,
+            dispatch ?? box.Dispatch,
             cursorRightUnits: right,
             getAsyncKeyState: _ => 0,
             sleep: _ => { },
@@ -179,4 +197,16 @@ public sealed class TypingStraightOnTests
             swallowed: swallowed);
         return Program.Expand(hook, work, () => Program.TryExpand(hook, work, insert, isKeyDown: _ => false, ask: ask));
     }
+
+    /// <summary>Sends as another hook that swallows the engine's markers lets through: the box and our hook never see them.</summary>
+    private static Func<Native.INPUT[], uint> WithoutMarkers(FakeTextBox box) => inputs =>
+    {
+        Native.INPUT[] rest = [.. inputs.Where(input => input.U.Ki.WVk != InsertionGuard.MarkerVk)];
+        if (rest.Length > 0)
+        {
+            _ = box.Dispatch(rest);
+        }
+
+        return (uint)inputs.Length;
+    };
 }

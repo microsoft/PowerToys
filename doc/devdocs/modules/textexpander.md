@@ -129,7 +129,8 @@ keys out of an insertion.
 - Before a question or choice window opens, a held key press other than a modifier cancels the
   snippet, and what was typed goes back as typed.
 - The worker sends a start marker, a key-up of VK `0xFF` with the engine's tag and the insertion id.
-  It waits up to 2 s.
+  It waits up to 2 s. Without it, as when another hook swallows it, the insertion goes in unguarded,
+  unless a key other than a modifier was pressed since the match: then what was typed goes back.
 - At the marker, the hook goes on only if the input generation hasn't moved. Then it holds every key
   event that isn't the engine's, in order. Clicks aren't held.
 - The worker releases the user's modifiers in the first erase call, and presses them again before held
