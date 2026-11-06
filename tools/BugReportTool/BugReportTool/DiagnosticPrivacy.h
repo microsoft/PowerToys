@@ -47,8 +47,9 @@ namespace diagnostic_privacy
                     }
                     if (valid)
                     {
-                        // An escaped backslash can introduce another JSON escaping layer.
-                        if (code == '\\')
+                        // Escaped JSON escape syntax can introduce another decoding layer.
+                        if (code == '\\' || code == 'u' || code == 'U' ||
+                            (code <= 0x7f && hexDigits.find(static_cast<char>(code)) != std::string_view::npos))
                         {
                             return true;
                         }

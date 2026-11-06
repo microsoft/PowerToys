@@ -137,6 +137,8 @@ namespace RunnerUnitTests
                 "\r\n[info] context ended \"\r\n",
                 R"({"payload":"{\"\\u0053ecurityKey\":{\"value\":\"synthetic-secret\"}}"})",
                 R"({"payload":"{\"\u005cu0053ecurityKey\":{\"value\":\"synthetic-secret\"}}"})",
+                R"({"payload":"{\"\\\u00750053ecurityKey\":{\"value\":\"synthetic-secret\"}}"})",
+                R"({"payload":"{\"\\u\u0030053ecurityKey\":{\"value\":\"synthetic-secret\"}}"})",
                 R"([info] payload="{ "\u0053\u0065\u0063\u0075\u0072\u0069\u0074\u0079\u004B\u0065\u0079":{"value":"synthetic-secret"}}")"
             };
             for (size_t index = 0; index < logs.size(); ++index)
