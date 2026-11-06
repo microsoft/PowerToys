@@ -59,7 +59,8 @@ The activation process works as follows:
      - Update the crosshairs position
      - Check if the cursor should be auto-hidden, and set a timer for auto-hide if enabled
      - Show the crosshairs window if the cursor is visible
-     - Set a low-level mouse hook to track mouse movements asynchronously
+     - Set a low-level mouse hook for immediate mouse movement updates
+     - Start a 16 ms timer to track cursor movement from pen and Windows Ink input
 
    ```cpp
    void InclusiveCrosshairs::StartDrawing()
@@ -87,22 +88,22 @@ The activation process works as follows:
 
        m_drawing = true;
        m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, m_hinstance, 0);
+       SetTimer(m_hwnd, CURSOR_POSITION_TIMER_ID, CURSOR_POSITION_TIMER_INTERVAL_MS, NULL);
    }
    ```
 
 4. **Stop Drawing Function**
    - The `StopDrawing()` function is called to:
      - Remove the mouse hook
-     - Kill the auto-hide timer
+     - Kill the auto-hide and cursor position timers
      - Hide the crosshairs window
      - Log the stop of drawing
 
 ### Cursor Tracking
 
-While active, the utility:
-1. Uses a low-level mouse hook (`WH_MOUSE_LL`) to track cursor movement
-2. Updates crosshair positions in real-time as the mouse moves
-3. Supports auto-hiding functionality when the cursor is inactive for a specified period
+While active, the low-level mouse hook (`WH_MOUSE_LL`) provides immediate mouse movement updates. A separate timer samples `GetCursorPos()` approximately every 16 ms to track pen and Windows Ink input, which can move the system cursor without producing low-level mouse events. The timer redraws only when the screen position differs from the last drawn position.
+
+While external control is enabled for Gliding Cursor, the timer skips position sampling; Gliding Cursor requests its own position updates. Stopping the crosshairs removes the mouse hook and stops both timers.
 
 ## Debugging
 
