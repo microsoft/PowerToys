@@ -71,13 +71,24 @@ internal sealed class EnginePrompt
         return null;
     }
 
-    /// <summary>Whether the window comes in front by itself, as it does over the app being typed in.</summary>
+    /// <summary>
+    /// Whether the window comes in front by itself, as it does over the app being typed in, ready to type in: its Answer box
+    /// is there and has the keyboard focus. In front isn't enough: on one CPU the first window stays blank for a second
+    /// while WinUI loads, and keys typed meanwhile go nowhere. Where winappcli can't read the focus it reports nothing, and
+    /// the box counts as ready.
+    /// </summary>
     public bool WaitForForeground(int timeoutMS = 10_000) =>
         WaitHelper.WaitForStable(
             WindowControl.GetForegroundWindowHandle,
             foreground => foreground == Handle,
             timeoutMS,
-            requiredConsecutiveMatches: 2).Succeeded;
+            requiredConsecutiveMatches: 2).Succeeded
+        && Session.Has(By.AccessibilityId("Answer"), timeoutMS)
+        && WaitHelper.WaitForStable(
+            () => Answer.GetProperty("HasKeyboardFocus"),
+            focus => !string.Equals(focus, "False", StringComparison.OrdinalIgnoreCase),
+            timeoutMS,
+            pollIntervalMS: 250).Succeeded;
 
     public bool WaitForClosed(int timeoutMS = 10_000) =>
         WaitHelper.WaitForStable(() => IsOpen, open => !open, timeoutMS, requiredConsecutiveMatches: 2).Succeeded;

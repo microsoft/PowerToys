@@ -110,7 +110,7 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
     public void QuestionWindowNeedsAnAnswer()
     {
         var prompt = TypeTriggerForPrompt(Ticket.Trigger + " ");
-        Assert.IsTrue(prompt.WaitForForeground(), $"The question window did not come in front. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        Assert.IsTrue(prompt.WaitForForeground(), $"The question window did not come in front, ready to type in. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
         StringAssert.Contains(prompt.Question, "Ticket number", "The question window doesn't ask the snippet's question.");
         Assert.IsTrue(prompt.WaitForOkEnabled(false), "OK should be off while the answer is blank.");
 
@@ -138,7 +138,7 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
     public void CancellingAQuestionCancelsTheSnippet()
     {
         var prompt = TypeTriggerForPrompt(Note.Trigger + " ");
-        Assert.IsTrue(prompt.WaitForForeground(), $"The question window did not come in front. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        Assert.IsTrue(prompt.WaitForForeground(), $"The question window did not come in front, ready to type in. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
         StringAssert.Contains(prompt.Question, "Your note", "The question window doesn't ask the snippet's question.");
 
         Step("Pressing Esc");
@@ -498,7 +498,7 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
     private void AnswerTheTicketQuestion()
     {
         var prompt = TypeTriggerForPrompt(Ticket.Trigger + " ");
-        Assert.IsTrue(prompt.WaitForForeground(), $"The question window did not come in front. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        Assert.IsTrue(prompt.WaitForForeground(), $"The question window did not come in front, ready to type in. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
         TextInput.Type("te4217");
         Assert.IsTrue(prompt.WaitForOkEnabled(true), "OK did not turn on once there was an answer.");
         TextInput.Enter();
