@@ -8,65 +8,12 @@
 #include <filesystem>
 #include <fstream>
 #include <iterator>
-#include <optional>
 #include <string>
-#include <string_view>
-#include <utility>
 #include <winrt/Windows.Data.Json.h>
 #include <winrt/Windows.Foundation.Collections.h>
 
 namespace diagnostic_privacy
 {
-    inline bool might_contain_security_key_name(std::string_view contents)
-    {
-        constexpr std::string_view name = "SecurityKey";
-        constexpr std::string_view hexDigits = "0123456789abcdefABCDEF";
-        size_t matched = 0;
-        for (size_t index = 0; index < contents.size();)
-        {
-            auto character = contents[index++];
-            if (character == '\\')
-            {
-                while (index < contents.size() && contents[index] == '\\')
-                {
-                    ++index;
-                }
-                if (contents.size() - index >= 5 && (contents[index] == 'u' || contents[index] == 'U'))
-                {
-                    unsigned int code = 0;
-                    bool valid = true;
-                    for (size_t digit = 1; digit <= 4; ++digit)
-                    {
-                        const auto value = hexDigits.find(contents[index + digit]);
-                        if (value == std::string_view::npos)
-                        {
-                            valid = false;
-                            break;
-                        }
-                        code = code * 16 + static_cast<unsigned int>(value < 16 ? value : value - 6);
-                    }
-                    if (valid)
-                    {
-                        // Escaped JSON escape syntax can introduce another decoding layer.
-                        if (code == '\\' || code == 'u' || code == 'U' ||
-                            (code <= 0x7f && hexDigits.find(static_cast<char>(code)) != std::string_view::npos))
-                        {
-                            return true;
-                        }
-                        character = code <= 0x7f ? static_cast<char>(code) : '\0';
-                        index += 5;
-                    }
-                }
-            }
-            matched = character == name[matched] ? matched + 1 : (character == name.front() ? 1 : 0);
-            if (matched == name.size())
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
     inline bool redact_json_security_keys(const winrt::Windows::Data::Json::IJsonValue& value)
     {
         using namespace winrt::Windows::Data::Json;
@@ -97,123 +44,64 @@ namespace diagnostic_privacy
         return changed;
     }
 
-    inline std::optional<size_t> json_value_end(const std::string& contents, size_t start)
-    {
-        if (start == contents.size() || (contents[start] != '"' && contents[start] != '{'))
-        {
-            return std::nullopt;
-        }
-        int depth = 0;
-        bool inString = false;
-        for (auto end = start; end < contents.size(); ++end)
-        {
-            const auto ch = contents[end];
-            if (inString && ch == '\\')
-            {
-                ++end;
-                continue;
-            }
-            if (ch == '"')
-            {
-                inString = !inString;
-            }
-            else if (!inString && ch == '{')
-            {
-                ++depth;
-            }
-            else if (!inString && ch == '}')
-            {
-                --depth;
-            }
-            if (!inString && depth == 0)
-            {
-                return end + 1;
-            }
-        }
-        return std::nullopt;
-    }
-
     inline bool redact_security_keys(std::string& contents)
     {
-        // Older MWB logs wrote the key as unstructured text.
-        if (contents.find("GETSECKEY:") != std::string::npos)
+        if (contents.find('\0') != std::string::npos)
         {
             return false;
         }
 
         const bool hasBom = contents.starts_with("\xef\xbb\xbf");
         winrt::Windows::Data::Json::JsonValue json{ nullptr };
-        if (winrt::Windows::Data::Json::JsonValue::TryParse(winrt::to_hstring(contents.substr(hasBom ? 3 : 0)), json))
-        {
-            if (redact_json_security_keys(json))
-            {
-                contents = (hasBom ? "\xef\xbb\xbf" : "") + winrt::to_string(json.Stringify());
-            }
-        }
-
-        std::string redacted;
-        size_t cursor = 0;
-
-        for (auto position = contents.find('"'); position != std::string::npos;)
-        {
-            const auto nameEnd = json_value_end(contents, position);
-            if (!nameEnd)
-            {
-                return false;
-            }
-            winrt::Windows::Data::Json::JsonValue name{ nullptr };
-            if (!winrt::Windows::Data::Json::JsonValue::TryParse(winrt::to_hstring(contents.substr(position, *nameEnd - position)), name) ||
-                name.GetString() != L"SecurityKey")
-            {
-                position = contents.find('"', *nameEnd);
-                continue;
-            }
-            auto valueStart = *nameEnd;
-            const auto skipWhitespace = [&]() {
-                while (valueStart < contents.size() && std::string_view{ " \t\r\n" }.find(contents[valueStart]) != std::string_view::npos)
-                {
-                    ++valueStart;
-                }
-            };
-            skipWhitespace();
-            if (valueStart == contents.size() || contents[valueStart++] != ':')
-            {
-                return false;
-            }
-            skipWhitespace();
-            const auto valueEnd = json_value_end(contents, valueStart);
-            winrt::Windows::Data::Json::JsonValue value{ nullptr };
-            if (!valueEnd || !winrt::Windows::Data::Json::JsonValue::TryParse(winrt::to_hstring(contents.substr(valueStart, *valueEnd - valueStart)), value))
-            {
-                return false;
-            }
-
-            const auto prefix = contents.substr(cursor, position - cursor);
-            if (might_contain_security_key_name(prefix))
-            {
-                return false;
-            }
-            redacted += prefix;
-            redacted += "\"SecurityKey\":\"<private_data>\"";
-            cursor = *valueEnd;
-            position = contents.find('"', cursor);
-        }
-        if (might_contain_security_key_name(std::string_view{ contents }.substr(cursor)))
+        if (!winrt::Windows::Data::Json::JsonValue::TryParse(winrt::to_hstring(contents.substr(hasBom ? 3 : 0)), json))
         {
             return false;
         }
-
-        redacted.append(contents, cursor, std::string::npos);
-        contents = std::move(redacted);
+        if (redact_json_security_keys(json))
+        {
+            contents = (hasBom ? "\xef\xbb\xbf" : "") + winrt::to_string(json.Stringify());
+        }
         return true;
+    }
+
+    inline bool is_sensitive_log_path(const std::filesystem::path& relativePath)
+    {
+        for (auto directory = relativePath.parent_path(); !directory.empty(); directory = directory.parent_path())
+        {
+            const auto name = directory.filename().wstring();
+            if (_wcsicmp(name.c_str(), L"RunnerLogs") == 0)
+            {
+                return true;
+            }
+            const auto moduleName = directory.parent_path().filename().wstring();
+            if (_wcsicmp(name.c_str(), L"Logs") == 0 &&
+                (_wcsicmp(moduleName.c_str(), L"MouseWithoutBorders") == 0 ||
+                 _wcsicmp(moduleName.c_str(), L"MouseWithoutBorders.backup") == 0))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     inline void sanitize_report(const std::filesystem::path& reportDirectory)
     {
         for (const auto& entry : std::filesystem::recursive_directory_iterator{ reportDirectory })
         {
+            if (!entry.is_regular_file())
+            {
+                continue;
+            }
+
+            // Exclude historical log sources without attempting to recover embedded or malformed payloads.
+            if (is_sensitive_log_path(entry.path().lexically_relative(reportDirectory)))
+            {
+                std::filesystem::remove(entry.path());
+                continue;
+            }
+
             const auto extension = entry.path().extension().wstring();
-            if (!entry.is_regular_file() || (_wcsicmp(extension.c_str(), L".json") != 0 && _wcsicmp(extension.c_str(), L".log") != 0))
+            if (_wcsicmp(extension.c_str(), L".json") != 0)
             {
                 continue;
             }
@@ -223,14 +111,8 @@ namespace diagnostic_privacy
             std::string contents{ std::istreambuf_iterator<char>{ input }, std::istreambuf_iterator<char>{} };
             input.close();
 
-            if (contents.find('\0') == std::string::npos && !might_contain_security_key_name(contents) &&
-                contents.find("GETSECKEY:") == std::string::npos)
-            {
-                continue;
-            }
-
             // Unsupported encodings and incomplete sensitive values must not be exported unchanged.
-            if (contents.find('\0') != std::string::npos || !redact_security_keys(contents))
+            if (!redact_security_keys(contents))
             {
                 std::filesystem::remove(entry.path());
                 continue;
