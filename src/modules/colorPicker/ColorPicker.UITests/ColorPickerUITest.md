@@ -13,5 +13,6 @@
 - [] Remove color from the history in the Editor
 - [] Remove the selected colors from the history with the Delete key (focus in the history list)
 - [] Open the Color Picker from the Editor
+- [] Start picking a new color with the I key from the Editor (not while typing in Adjust color)
 - [] Open Adjust color from the Editor
 - [] Check Color Picker logs for errors

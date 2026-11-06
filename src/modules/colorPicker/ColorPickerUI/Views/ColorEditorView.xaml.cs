@@ -33,6 +33,9 @@ namespace ColorPicker.Views
         internal static List<Color> GetDistinctSelectedColors(IList<object> items)
             => items.OfType<Color>().Distinct().ToList();
 
+        internal static bool ShouldStartPicking(bool isTextInputFocused, bool isAdjustFlyoutOpen)
+            => !isTextInputFocused && !isAdjustFlyoutOpen;
+
         private void HistoryContextFlyout_Opening(object sender, object e)
         {
             var selectedColors = GetDistinctSelectedColors(HistoryColors.SelectedItems);
@@ -69,6 +72,22 @@ namespace ColorPicker.Views
                 // Removing the focused item moves focus out of the list; bring it back so Delete can repeat.
                 HistoryColors.UpdateLayout();
                 HistoryColors.Focus(FocusState.Keyboard);
+            }
+        }
+
+        private void PickAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            bool isTextInputFocused = FocusManager.GetFocusedElement(XamlRoot) is TextBox;
+            if (!ShouldStartPicking(isTextInputFocused, EditorState.BlockEscapeKeyClosingColorPickerEditor))
+            {
+                // Leave Handled false so a focused TextBox still receives the typed character.
+                return;
+            }
+
+            args.Handled = true;
+            if (DataContext is IColorEditorViewModel viewModel && viewModel.OpenColorPickerCommand.CanExecute(null))
+            {
+                viewModel.OpenColorPickerCommand.Execute(null);
             }
         }
 

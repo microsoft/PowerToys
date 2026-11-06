@@ -39,5 +39,15 @@ namespace ColorPicker.UnitTests.Views
 
             Assert.AreEqual(0, result.Count);
         }
+
+        [TestMethod]
+        [DataRow(false, false, true)]
+        [DataRow(true, false, false)]
+        [DataRow(false, true, false)]
+        [DataRow(true, true, false)]
+        public void ShouldStartPicking_FocusAndFlyoutState_ReturnsExpected(bool isTextInputFocused, bool isAdjustFlyoutOpen, bool expected)
+        {
+            Assert.AreEqual(expected, ColorEditorView.ShouldStartPicking(isTextInputFocused, isAdjustFlyoutOpen));
+        }
     }
 }
