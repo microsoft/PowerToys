@@ -1001,6 +1001,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ReverseRemoteScrollWheel
+        {
+            get
+            {
+                return Settings.Properties.ReverseRemoteScrollWheel;
+            }
+
+            set
+            {
+                if (Settings.Properties.ReverseRemoteScrollWheel != value)
+                {
+                    Settings.Properties.ReverseRemoteScrollWheel = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public bool MatrixOneRow
         {
             get
