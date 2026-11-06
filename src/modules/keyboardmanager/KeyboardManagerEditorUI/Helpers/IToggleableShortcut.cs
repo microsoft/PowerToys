@@ -28,5 +28,8 @@ namespace KeyboardManagerEditorUI.Helpers
 
         // Lowercased, pre-computed text used by the filter bar's text search.
         string SearchableText { get; set; }
+
+        // Screen reader name of the row; also used in save/delete announcements.
+        string AccessibleName { get; }
     }
 }

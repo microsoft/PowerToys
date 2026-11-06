@@ -114,6 +114,7 @@
                     -->
                     <Button
                         x:Name="NewRemappingBtn"
+                        x:Uid="NewRemappingBtn"
                         Grid.Column="0"
                         Margin="0,0,8,0"
                         VerticalAlignment="Center"
@@ -288,6 +289,7 @@
                                         <StackPanel Orientation="Vertical" Visibility="{x:Bind RemappingList.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
                                             <TextBlock
                                                 x:Uid="RemappingsHeader"
+                                                AutomationProperties.HeadingLevel="Level2"
                                                 Margin="16,16,0,8"
                                                 Style="{StaticResource BodyStrongTextBlockStyle}" />
                                             <Rectangle
@@ -296,6 +298,7 @@
                                                 Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
                                             <ListView
                                                 x:Name="RemappingsListView"
+                                                x:Uid="RemappingsListView"
                                                 IsItemClickEnabled="{x:Bind IsNotSelectionMode, Mode=OneWay}"
                                                 ItemClick="RemappingsList_ItemClick"
                                                 ItemsSource="{x:Bind RemappingList}"
@@ -368,12 +371,14 @@
                                                                 Spacing="8">
                                                                 <ToggleSwitch
                                                                     AutomationProperties.AutomationId="MappingEnabledToggle"
+                                                                    AutomationProperties.Name="{x:Bind EnableToggleAccessibleName}"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
                                                                     VerticalAlignment="Center"
                                                                     AutomationProperties.AutomationId="MappingMenuButton"
+                                                                    AutomationProperties.Name="{x:Bind MoreOptionsAccessibleName}"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
                                                                     Style="{StaticResource SubtleButtonStyle}">
@@ -399,6 +404,7 @@
                                         <StackPanel Orientation="Vertical" Visibility="{x:Bind TextMappings.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
                                             <TextBlock
                                                 x:Uid="TextMappingsHeader"
+                                                AutomationProperties.HeadingLevel="Level2"
                                                 Margin="16,16,0,8"
                                                 Style="{StaticResource BodyStrongTextBlockStyle}" />
                                             <Rectangle
@@ -407,6 +413,7 @@
                                                 Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
                                             <ListView
                                                 x:Name="TextListView"
+                                                x:Uid="TextListView"
                                                 IsItemClickEnabled="{x:Bind IsNotSelectionMode, Mode=OneWay}"
                                                 ItemClick="TextMappingsList_ItemClick"
                                                 ItemsSource="{x:Bind TextMappings}"
@@ -460,12 +467,14 @@
                                                                 Spacing="8">
                                                                 <ToggleSwitch
                                                                     AutomationProperties.AutomationId="MappingEnabledToggle"
+                                                                    AutomationProperties.Name="{x:Bind EnableToggleAccessibleName}"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
                                                                     VerticalAlignment="Center"
                                                                     AutomationProperties.AutomationId="MappingMenuButton"
+                                                                    AutomationProperties.Name="{x:Bind MoreOptionsAccessibleName}"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
                                                                     Style="{StaticResource SubtleButtonStyle}">
@@ -491,6 +500,7 @@
                                         <StackPanel Orientation="Vertical" Visibility="{x:Bind ProgramShortcuts.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
                                             <TextBlock
                                                 x:Uid="ProgramsHeader"
+                                                AutomationProperties.HeadingLevel="Level2"
                                                 Margin="16,16,0,8"
                                                 Style="{StaticResource BodyStrongTextBlockStyle}" />
                                             <Rectangle
@@ -500,6 +510,7 @@
 
                                             <ListView
                                                 x:Name="ProgramsListView"
+                                                x:Uid="ProgramsListView"
                                                 IsItemClickEnabled="{x:Bind IsNotSelectionMode, Mode=OneWay}"
                                                 ItemClick="ProgramShortcutsList_ItemClick"
                                                 ItemsSource="{x:Bind ProgramShortcuts}"
@@ -582,12 +593,14 @@
                                                                 Spacing="8">
                                                                 <ToggleSwitch
                                                                     AutomationProperties.AutomationId="MappingEnabledToggle"
+                                                                    AutomationProperties.Name="{x:Bind EnableToggleAccessibleName}"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
                                                                     VerticalAlignment="Center"
                                                                     AutomationProperties.AutomationId="MappingMenuButton"
+                                                                    AutomationProperties.Name="{x:Bind MoreOptionsAccessibleName}"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
                                                                     Style="{StaticResource SubtleButtonStyle}">
@@ -613,6 +626,7 @@
                                         <StackPanel Orientation="Vertical" Visibility="{x:Bind UrlShortcuts.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
                                             <TextBlock
                                                 x:Uid="UrlsHeader"
+                                                AutomationProperties.HeadingLevel="Level2"
                                                 Margin="16,16,0,8"
                                                 Style="{StaticResource BodyStrongTextBlockStyle}" />
                                             <Rectangle
@@ -621,6 +635,7 @@
                                                 Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
                                             <ListView
                                                 x:Name="UrlsListView"
+                                                x:Uid="UrlsListView"
                                                 IsItemClickEnabled="{x:Bind IsNotSelectionMode, Mode=OneWay}"
                                                 ItemClick="UrlShortcutsList_ItemClick"
                                                 ItemsSource="{x:Bind UrlShortcuts}"
@@ -674,12 +689,14 @@
                                                                 Spacing="8">
                                                                 <ToggleSwitch
                                                                     AutomationProperties.AutomationId="MappingEnabledToggle"
+                                                                    AutomationProperties.Name="{x:Bind EnableToggleAccessibleName}"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
                                                                     VerticalAlignment="Center"
                                                                     AutomationProperties.AutomationId="MappingMenuButton"
+                                                                    AutomationProperties.Name="{x:Bind MoreOptionsAccessibleName}"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
                                                                     Style="{StaticResource SubtleButtonStyle}">
@@ -705,6 +722,7 @@
                                         <StackPanel Orientation="Vertical" Visibility="{x:Bind DisabledList.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
                                             <TextBlock
                                                 x:Uid="DisabledHeader"
+                                                AutomationProperties.HeadingLevel="Level2"
                                                 Margin="16,16,0,8"
                                                 Style="{StaticResource BodyStrongTextBlockStyle}" />
                                             <Rectangle
@@ -713,6 +731,7 @@
                                                 Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
                                             <ListView
                                                 x:Name="DisabledListView"
+                                                x:Uid="DisabledListView"
                                                 IsItemClickEnabled="{x:Bind IsNotSelectionMode, Mode=OneWay}"
                                                 ItemClick="DisabledList_ItemClick"
                                                 ItemsSource="{x:Bind DisabledList}"
@@ -759,12 +778,14 @@
                                                                 Spacing="8">
                                                                 <ToggleSwitch
                                                                     AutomationProperties.AutomationId="MappingEnabledToggle"
+                                                                    AutomationProperties.Name="{x:Bind EnableToggleAccessibleName}"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
                                                                     VerticalAlignment="Center"
                                                                     AutomationProperties.AutomationId="MappingMenuButton"
+                                                                    AutomationProperties.Name="{x:Bind MoreOptionsAccessibleName}"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
                                                                     Style="{StaticResource SubtleButtonStyle}">

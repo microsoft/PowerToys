@@ -39,6 +39,7 @@
                         TextChanged="KeySearchBox_TextChanged" />
                     <ListView
                         x:Name="KeyListView"
+                        x:Uid="KeyDropDownButton_KeyList"
                         Grid.Row="1"
                         MaxHeight="320"
                         IsItemClickEnabled="True"

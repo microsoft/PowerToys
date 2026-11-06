@@ -38,5 +38,14 @@ namespace KeyboardManagerEditorUI.Helpers
         public IReadOnlyList<int> TriggerKeyCodes { get; set; } = Array.Empty<int>();
 
         public string SearchableText { get; set; } = string.Empty;
+
+        public string AccessibleName => MappingAccessibility.ForProgram(this, ResourceHelper.GetString);
+
+        public string EnableToggleAccessibleName => MappingAccessibility.EnableToggleName(AccessibleName, ResourceHelper.GetString);
+
+        public string MoreOptionsAccessibleName => MappingAccessibility.MoreOptionsName(AccessibleName, ResourceHelper.GetString);
+
+        // ListViewItem automation peers fall back to ToString() for their name.
+        public override string ToString() => AccessibleName;
     }
 }
