@@ -10,9 +10,13 @@ namespace Microsoft.PowerToys.TextExpander;
 /// went in just before the erase and was erased in place of the trigger. So the worker brackets each insertion with
 /// markers, and the keyboard hook, which sees every key event in the order the app will, guards it:
 /// <list type="bullet">
+/// <item>From the match itself, the hook holds every key event that isn't ours, after the key it swallowed
+/// (<see cref="HoldAfterMatch"/>): a key typed straight after a trigger used to reach the app before the start marker,
+/// which dropped the insertion and lost the swallowed key. The insertion takes those keys over when it begins.</item>
 /// <item>At the start marker it decides whether the insertion still goes ahead: not if a key other than a modifier, or a
 /// click, reached the app since the trigger matched. Either way, every key event that isn't ours is held from then on,
-/// in order. Clicks aren't held.</item>
+/// in order. Clicks aren't held. If it goes ahead, the swallowed key isn't sent back: the snippet takes its place, or the
+/// worker gives it back after the snippet. If not, it goes back first, so what was typed stays as typed.</item>
 /// <item>Once the hook has the end marker, the worker sends the held keys back, after the modifiers it let go of, with
 /// another marker after them; then what was held meanwhile, until a round brings nothing. While they go back, only they
 /// pass, in order, and what Keyboard Manager sends in place of one. Anything else, typed or injected, waits for the next
@@ -22,8 +26,8 @@ namespace Microsoft.PowerToys.TextExpander;
 /// The hook only holds keys and takes markers. SendInput returns once every low-level hook has seen each event, so sent
 /// from the hook it nested, and a slow hook elsewhere could make Windows remove ours. The guard never keeps the keyboard
 /// for long. It ends by itself with no event of ours or renewal for <see cref="TimeoutMs"/>, or with <see cref="MaxHeld"/>
-/// key events held. The worker ends it once typing has held keys for <see cref="HoldCapMs"/>, and renews it while a paste
-/// settles, for <see cref="Injector.PasteBusyCapMs"/> at most.
+/// key events held, and so does a hold since a match the worker hasn't taken. The worker ends it once typing has held keys
+/// for <see cref="HoldCapMs"/>, and renews it while a paste settles, for <see cref="Injector.PasteBusyCapMs"/> at most.
 /// </summary>
 internal sealed class InsertionGuard : IDisposable
 {
@@ -69,6 +73,20 @@ internal sealed class InsertionGuard : IDisposable
     private long _holdStart;
     private long _deadline;
     private volatile Mode _mode;
+
+    // Under _lock. The keys held since a match the worker hasn't taken yet, the key the hook swallowed first; the match's
+    // input generation, which the insertion that takes them over begins with; their window; and since and until when.
+    // Kept apart from _held: a match among held keys going back holds what follows them for its own insertion.
+    private List<Native.KBDLLHOOKSTRUCT> _afterMatch = [];
+    private long _afterMatchGeneration;
+    private IntPtr _afterMatchTarget;
+    private long _afterMatchStart;
+    private long _afterMatchDeadline;
+    private volatile bool _holdingAfterMatch;
+
+    // Under _lock. Whether _held starts with the key the hook swallowed for this insertion's trigger, taken over from the
+    // hold since the match: it goes back only if the insertion doesn't go ahead.
+    private bool _swallowedFirst;
 
     public InsertionGuard(Func<long> inputGeneration, Func<IntPtr, bool> targetInFront, Func<long>? clicks = null)
     {
@@ -173,8 +191,95 @@ internal sealed class InsertionGuard : IDisposable
     }
 
     /// <summary>
+    /// Run in the hook as a trigger matches, before its work is queued: holds the user's keys from now on, after
+    /// <paramref name="swallowed"/>, the key the hook swallowed, for the insertion into <paramref name="target"/> the worker
+    /// begins with input generation <paramref name="generation"/>, which takes them over (<see cref="Begin"/>). Ends by
+    /// itself after <see cref="TimeoutMs"/>, or at <see cref="MaxHeld"/> key events, sending them back. Returns false, holding
+    /// nothing, while keys are held since another match: none reaches the matcher then but a lower-integrity app's.
+    /// </summary>
+    public bool HoldAfterMatch(IntPtr target, long generation, Native.KBDLLHOOKSTRUCT swallowed)
+    {
+        lock (_lock)
+        {
+            if (_holdingAfterMatch)
+            {
+                return false;
+            }
+
+            _afterMatch.Add(swallowed);
+            _afterMatchGeneration = generation;
+            _afterMatchTarget = target;
+            _afterMatchStart = Clock();
+            _afterMatchDeadline = _afterMatchStart + TimeoutMs;
+            _holdingAfterMatch = true;
+            ArmTimerLocked();
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Ends the hold since the match with input generation <paramref name="generation"/>, when no insertion took it over:
+    /// the key the hook swallowed goes back, then the keys typed after it, if their window is in front. Does nothing for
+    /// another match's.
+    /// </summary>
+    public void ReleaseAfterMatch(long generation)
+    {
+        List<Native.KBDLLHOOKSTRUCT> keys;
+        IntPtr target;
+        lock (_lock)
+        {
+            if (!_holdingAfterMatch || _afterMatchGeneration != generation)
+            {
+                return;
+            }
+
+            target = _afterMatchTarget;
+            keys = TakeAfterMatchLocked();
+        }
+
+        SendBackAsTheyCame(keys, target);
+    }
+
+    /// <summary>
+    /// Run before a window of ours opens for the match with input generation <paramref name="generation"/>. With no key
+    /// but a modifier pressed since the swallowed one, ends its hold: what it held after that key goes back, so no key
+    /// stays down, and the swallowed key stays with the worker, which gives it back after the window as before. A
+    /// modifier held through the trigger repeats, which isn't typing on. Returns false, holding on, when keys were typed
+    /// on: the window would take them, so the worker cancels the snippet and gives everything back as typed.
+    /// </summary>
+    public bool ReleaseAfterMatchBeforeAWindow(long generation)
+    {
+        List<Native.KBDLLHOOKSTRUCT> keys;
+        IntPtr target;
+        lock (_lock)
+        {
+            if (!_holdingAfterMatch || _afterMatchGeneration != generation)
+            {
+                return true;
+            }
+
+            for (int i = 1; i < _afterMatch.Count; i++)
+            {
+                if ((_afterMatch[i].Flags & Native.LLKHF_UP) == 0 && !KeyboardHook.IsModifierKey(_afterMatch[i].VkCode))
+                {
+                    return false;
+                }
+            }
+
+            target = _afterMatchTarget;
+            keys = TakeAfterMatchLocked();
+            keys[0] = default;
+            keys.RemoveAt(0);
+        }
+
+        SendBackAsTheyCame(keys, target);
+        return true;
+    }
+
+    /// <summary>
     /// Readies the guard for an insertion into <paramref name="target"/>, for a trigger matched at input generation
-    /// <paramref name="generation"/>, and returns the id its markers carry.
+    /// <paramref name="generation"/>, and returns the id its markers carry. The keys held since that match are its own from
+    /// now on, the swallowed key first.
     /// </summary>
     public byte Begin(long generation, IntPtr target)
     {
@@ -187,6 +292,22 @@ internal sealed class InsertionGuard : IDisposable
             _markers = 0;
             _over = false;
             _cancelled = false;
+            if (_holdingAfterMatch && _afterMatchGeneration == generation)
+            {
+                // Holding first: without the lock, the hook checks for a hold since a match before it checks the mode.
+                if (_mode == Mode.None)
+                {
+                    StartHoldingLocked();
+                    _holdStart = _afterMatchStart;
+                }
+
+                List<Native.KBDLLHOOKSTRUCT> keys = TakeAfterMatchLocked();
+                keys.AddRange(_held);
+                Zero(_held);
+                _held = keys;
+                _swallowedFirst = true;
+            }
+
             return _id;
         }
     }
@@ -300,7 +421,8 @@ internal sealed class InsertionGuard : IDisposable
 
     /// <summary>
     /// Takes a change of the window in front. Once an insertion has started, any window but its own ends the guard,
-    /// drops what it held, and cancels the rest. Before then, as when a prompt hands focus back, the worker checks.
+    /// drops what it held, and cancels the rest. Before then, as when a prompt hands focus back, the worker checks. Keys
+    /// held since a match are dropped too when another window comes to the front: they were typed for the match's.
     /// </summary>
     public void ForegroundChanged(IntPtr window)
     {
@@ -311,13 +433,19 @@ internal sealed class InsertionGuard : IDisposable
                 _cancelled = true;
                 Zero(EndLocked());
             }
+
+            if (_holdingAfterMatch && window != _afterMatchTarget)
+            {
+                Zero(TakeAfterMatchLocked());
+            }
         }
     }
 
     /// <summary>
     /// The guard's part in the keyboard hook, ahead of everything else: whether a key event is swallowed. Markers always
     /// are. While guarding, so is every other key event that isn't ours, held to be sent back, but for the held keys
-    /// coming back. It never sends anything or asks about a window: the worker and the timer do.
+    /// coming back. Since a match the worker hasn't taken, so is every one that gets past that. It never sends anything or
+    /// asks about a window: the worker and the timer do.
     /// </summary>
     public bool Swallows(Native.KBDLLHOOKSTRUCT key)
     {
@@ -328,8 +456,9 @@ internal sealed class InsertionGuard : IDisposable
             return true;
         }
 
-        // Input a lower-integrity app injected is never held: sent again, it would carry our integrity level.
-        if (_mode == Mode.None || (key.Flags & Native.LLKHF_LOWER_IL_INJECTED) != 0)
+        // Input a lower-integrity app injected is never held: sent again, it would carry our integrity level. The hold since
+        // a match is read first: an insertion taking it over starts holding before it ends it.
+        if ((!_holdingAfterMatch && _mode == Mode.None) || (key.Flags & Native.LLKHF_LOWER_IL_INJECTED) != 0)
         {
             return false;
         }
@@ -338,41 +467,45 @@ internal sealed class InsertionGuard : IDisposable
         {
             if (ours)
             {
-                _deadline = Clock() + TimeoutMs;
-                return false;
-            }
+                if (_mode != Mode.None)
+                {
+                    _deadline = Clock() + TimeoutMs;
+                }
 
-            if (_mode == Mode.None)
-            {
                 return false;
             }
 
             // While held keys go back, the next one of them passes, and so does what Keyboard Manager sends in place of
             // one: our hook usually runs before its, so a Caps Lock remapped to Ctrl comes back as an injected Ctrl.
+            bool passes = _mode == Mode.None;
             if (_mode == Mode.Draining && (key.Flags & Injected) != 0)
             {
                 if (_next < _expected.Count && SameKey(_expected[_next], key))
                 {
                     _next++;
-                    return false;
+                    passes = true;
                 }
-
-                if ((key.DwExtraInfo & HostInputTags.KeyboardManagerInjected) != 0)
+                else if ((key.DwExtraInfo & HostInputTags.KeyboardManagerInjected) != 0)
                 {
-                    return false;
+                    passes = true;
                 }
             }
 
             // Anything else, typed or injected, waits: let through, a key-up overtook its own key-down going back.
-            _held.Add(key);
-
-            // Too many to hold: the timer ends the guard at once and sends them back.
-            if (_held.Count == MaxHeld)
+            if (!passes)
             {
-                _timer.Change(0, Timeout.Infinite);
+                HoldLocked(_held, key);
+                return true;
             }
 
-            return true;
+            // Held keys going back can set off a trigger: what comes after it waits for that insertion.
+            if (_holdingAfterMatch)
+            {
+                HoldLocked(_afterMatch, key);
+                return true;
+            }
+
+            return false;
         }
     }
 
@@ -381,6 +514,7 @@ internal sealed class InsertionGuard : IDisposable
         lock (_lock)
         {
             Zero(EndLocked());
+            Zero(TakeAfterMatchLocked());
         }
 
         _timer.Dispose();
@@ -438,31 +572,44 @@ internal sealed class InsertionGuard : IDisposable
 
     /// <summary>
     /// Ends the guard once no event of ours or renewal has come for <see cref="TimeoutMs"/>, so a stalled worker can't keep
-    /// the keyboard, or once <see cref="MaxHeld"/> key events are held. Run by a timer; tests call it.
+    /// the keyboard, or once <see cref="MaxHeld"/> key events are held; and so, too, a hold since a match the worker hasn't
+    /// taken. Run by a timer; tests call it.
     /// </summary>
     internal void Expire()
     {
-        List<Native.KBDLLHOOKSTRUCT> held;
-        IntPtr target;
+        List<Native.KBDLLHOOKSTRUCT>? held = null;
+        List<Native.KBDLLHOOKSTRUCT>? afterMatch = null;
+        IntPtr target = IntPtr.Zero;
+        IntPtr afterMatchTarget = IntPtr.Zero;
         lock (_lock)
         {
-            if (_mode == Mode.None)
+            long now = Clock();
+            if (_mode != Mode.None && (_deadline - now <= 0 || _held.Count >= MaxHeld))
             {
-                return;
+                target = _target;
+                held = EndLocked();
             }
 
-            long left = _deadline - Clock();
-            if (left > 0 && _held.Count < MaxHeld)
+            if (_holdingAfterMatch && (_afterMatchDeadline - now <= 0 || _afterMatch.Count >= MaxHeld))
             {
-                _timer.Change(left, Timeout.Infinite);
-                return;
+                afterMatchTarget = _afterMatchTarget;
+                afterMatch = TakeAfterMatchLocked();
             }
 
-            target = _target;
-            held = EndLocked();
+            ArmTimerLocked();
         }
 
-        SendBack(held, target);
+        // Held since a match among keys going back, those were typed before what that insertion still held for later. With
+        // the swallowed key first, they reach the app, so the insertion still to begin for that match won't go ahead.
+        if (afterMatch is not null)
+        {
+            SendBackAsTheyCame(afterMatch, afterMatchTarget);
+        }
+
+        if (held is not null)
+        {
+            SendBack(held, target);
+        }
     }
 
     /// <summary>
@@ -528,6 +675,18 @@ internal sealed class InsertionGuard : IDisposable
                 {
                     StartHoldingLocked();
                 }
+
+                // Going ahead, the worker gives the swallowed key back after the snippet, or it's the trigger's own last
+                // character. Not, it goes back first, with the keys typed after it, so what was typed stays as typed.
+                if (_swallowedFirst)
+                {
+                    _swallowedFirst = false;
+                    if (_committed && _held.Count > 0)
+                    {
+                        _held[0] = default;
+                        _held.RemoveAt(0);
+                    }
+                }
             }
 
             _deadline = Clock() + TimeoutMs;
@@ -541,7 +700,7 @@ internal sealed class InsertionGuard : IDisposable
         _mode = Mode.Holding;
         _holdStart = Clock();
         _deadline = _holdStart + TimeoutMs;
-        _timer.Change(TimeoutMs, Timeout.Infinite);
+        ArmTimerLocked();
     }
 
     /// <summary>Called under <c>_lock</c>: ends the guard and the insertion, wakes the worker, and returns what was held.</summary>
@@ -549,11 +708,52 @@ internal sealed class InsertionGuard : IDisposable
     {
         _mode = Mode.None;
         _over = true;
+        _swallowedFirst = false;
         Zero(_expected);
         List<Native.KBDLLHOOKSTRUCT> held = _held;
         _held = [];
         Monitor.PulseAll(_lock);
         return held;
+    }
+
+    /// <summary>Called under <c>_lock</c>: ends the hold since a match, and returns what it held, the swallowed key first.</summary>
+    private List<Native.KBDLLHOOKSTRUCT> TakeAfterMatchLocked()
+    {
+        _holdingAfterMatch = false;
+        List<Native.KBDLLHOOKSTRUCT> keys = _afterMatch;
+        _afterMatch = [];
+        return keys;
+    }
+
+    /// <summary>Called under <c>_lock</c>: holds <paramref name="key"/> in <paramref name="keys"/>; with too many, the timer ends that hold at once.</summary>
+    private void HoldLocked(List<Native.KBDLLHOOKSTRUCT> keys, Native.KBDLLHOOKSTRUCT key)
+    {
+        keys.Add(key);
+        if (keys.Count == MaxHeld)
+        {
+            _timer.Change(0, Timeout.Infinite);
+        }
+    }
+
+    /// <summary>Called under <c>_lock</c>: sets the timer for the earlier of the guard's deadline and the hold since a match's.</summary>
+    private void ArmTimerLocked()
+    {
+        long now = Clock();
+        long due = long.MaxValue;
+        if (_mode != Mode.None)
+        {
+            due = _deadline - now;
+        }
+
+        if (_holdingAfterMatch)
+        {
+            due = Math.Min(due, _afterMatchDeadline - now);
+        }
+
+        if (due != long.MaxValue)
+        {
+            _timer.Change((int)Math.Clamp(due, 0, TimeoutMs), Timeout.Infinite);
+        }
     }
 
     /// <summary>Sends <paramref name="held"/> back as <see cref="ToResend"/> does if <paramref name="target"/> is in front, and zeroes it.</summary>
@@ -567,6 +767,28 @@ internal sealed class InsertionGuard : IDisposable
         }
 
         Zero(held);
+    }
+
+    /// <summary>
+    /// Sends keys held since a match back exactly as they came if <paramref name="target"/> is in front, and zeroes them.
+    /// Held without a break since the match, so a key still down has its key-up still to come: unlike
+    /// <see cref="ToResend"/>, nothing is added or left out, and a modifier the user still holds stays down.
+    /// </summary>
+    private void SendBackAsTheyCame(List<Native.KBDLLHOOKSTRUCT> keys, IntPtr target)
+    {
+        if (keys.Count > 0 && TargetInFront(target))
+        {
+            var resend = new Native.INPUT[keys.Count];
+            for (int i = 0; i < keys.Count; i++)
+            {
+                resend[i] = ToInput(keys[i]);
+            }
+
+            _ = Resend(resend);
+            Array.Clear(resend);
+        }
+
+        Zero(keys);
     }
 
     /// <summary>Called under <c>_lock</c>: waits up to <paramref name="timeoutMs"/> for <paramref name="done"/>.</summary>

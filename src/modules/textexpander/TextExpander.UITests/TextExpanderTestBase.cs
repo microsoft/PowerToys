@@ -268,11 +268,11 @@ public abstract class TextExpanderTestBase : UITestBase
     /// expansion after PowerToys starts also proves the engine is ready, so it may retry while nothing was replaced.
     /// Once the engine has taken the trigger, it gets time to finish, and the text must then be exactly what's expected.
     /// </summary>
-    internal void AssertExpands(string typed, string expected, bool waitForEngine = false) =>
-        AssertExpandsTo(typed, text => text == expected, TextExpanderFiles.Visible(expected), waitForEngine);
+    internal void AssertExpands(string typed, string expected, bool waitForEngine = false, int delayMS = 40) =>
+        AssertExpandsTo(typed, text => text == expected, TextExpanderFiles.Visible(expected), waitForEngine, delayMS);
 
     /// <inheritdoc cref="AssertExpands"/>
-    internal void AssertExpandsTo(string typed, Func<string?, bool> isExpected, string description, bool waitForEngine = false)
+    internal void AssertExpandsTo(string typed, Func<string?, bool> isExpected, string description, bool waitForEngine = false, int delayMS = 40)
     {
         if (waitForEngine)
         {
@@ -288,7 +288,7 @@ public abstract class TextExpanderTestBase : UITestBase
             Target.Clear();
             Target.Focus();
             var cpu = EngineDiagnostics.SampleCpu();
-            TextInput.Type(typed);
+            TextInput.Type(typed, delayMS);
 
             // An expansion takes a second or two; a trigger still as typed after that means the engine wasn't ready yet.
             var shown = new TextHistory(() => Target.Text);

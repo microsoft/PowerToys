@@ -127,6 +127,12 @@ internal sealed class KeyboardHook : IDisposable
     /// </summary>
     internal Action<IntPtr> RequestAuthorization { get; init; }
 
+    /// <summary>Gets what the check of the window in front says about a key typed there. Tests pass their own.</summary>
+    internal Func<ForegroundCapture> CaptureForeground { get; init; }
+
+    /// <summary>Gets whether a standard password box has the focus, where keys don't count. Tests pass their own.</summary>
+    internal Func<bool> InPasswordBox { get; init; } = IsFocusedPasswordEdit;
+
     /// <summary>
     /// Gets or sets a value indicating whether when false, keystrokes are still observed but never expanded. Turning this off is how a
     /// user pauses the app, so it is also treated as a privacy boundary: whatever they had typed
@@ -182,6 +188,7 @@ internal sealed class KeyboardHook : IDisposable
         _winEventProc = ForegroundChanged;
         Guard = new InsertionGuard(() => InputGeneration, TargetInFront, () => Clicks);
         RequestAuthorization = window => RefreshTargetAuthorization(window, asynchronous: true);
+        CaptureForeground = CaptureForForeground;
     }
 
     public bool Install()
@@ -414,7 +421,7 @@ internal sealed class KeyboardHook : IDisposable
 
     private bool HandleKeyLocked(Native.KBDLLHOOKSTRUCT data)
     {
-        ForegroundCapture capture = CaptureForForeground();
+        ForegroundCapture capture = CaptureForeground();
         if (capture == ForegroundCapture.Refused)
         {
             ResetBuffer();
@@ -422,7 +429,7 @@ internal sealed class KeyboardHook : IDisposable
             return false;
         }
 
-        if (IsFocusedPasswordEdit())
+        if (InPasswordBox())
         {
             ResetBuffer();
             ClearUndo();
@@ -436,22 +443,24 @@ internal sealed class KeyboardHook : IDisposable
             alt: IsDown(Native.VK_MENU),
             shift: IsDown(Native.VK_SHIFT),
             win: IsDown(Native.VK_LWIN) || IsDown(Native.VK_RWIN),
-            mayExpand: capture == ForegroundCapture.Authorized);
+            mayExpand: capture == ForegroundCapture.Authorized,
+            key: data);
     }
 
     /// <summary>
     /// Processes a key-down that passed the capture checks, so tests can drive key sequences. With
     /// <paramref name="mayExpand"/> false, as while the window in front is being checked, keys count but no trigger fires.
+    /// Driven this way, without the hook's key event, a match holds no keys after it.
     /// </summary>
     internal bool ProcessKey(uint vk, uint scanCode, bool ctrl, bool alt, bool shift, bool win, bool mayExpand = true)
     {
         lock (_bufferLock)
         {
-            return !_disposed && ProcessKeyLocked(vk, scanCode, ctrl, alt, shift, win, mayExpand);
+            return !_disposed && ProcessKeyLocked(vk, scanCode, ctrl, alt, shift, win, mayExpand, key: null);
         }
     }
 
-    private bool ProcessKeyLocked(uint vk, uint scanCode, bool ctrl, bool alt, bool shift, bool win, bool mayExpand)
+    private bool ProcessKeyLocked(uint vk, uint scanCode, bool ctrl, bool alt, bool shift, bool win, bool mayExpand, Native.KBDLLHOOKSTRUCT? key)
     {
         if (vk == Native.VK_BACK)
         {
@@ -577,14 +586,24 @@ internal sealed class KeyboardHook : IDisposable
         string typedText = new(_buffer, start, _count - start);
         ResetBuffer();
 
+        // From here on the user's keys are held, after this one, until the insertion takes them over: one typed straight
+        // after the trigger reached the app before the insertion began, which dropped it and lost the swallowed key.
+        // Before the work is queued, so the worker can't begin first.
+        IntPtr target = Native.GetForegroundWindow();
+        long generation = InputGeneration;
+        if (key is { } swallowed)
+        {
+            _ = Guard.HoldAfterMatch(target, generation, swallowed);
+        }
+
         // The keystroke that completed the match is swallowed; everything typed before it reached the target.
         Pending.Add(new PendingExpansion(
             trigger,
             typedText[..^1],
             replacement,
-            Native.GetForegroundWindow(),
+            target,
             TypedText: typedText,
-            InputGeneration: InputGeneration,
+            InputGeneration: generation,
             Terminator: wordMode && WordBoundary.KeepTerminator ? ch : null));
         return true;
     }

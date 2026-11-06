@@ -57,6 +57,18 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
         AssertTargetShows(Greeting.Replacement + ".");
     }
 
+    /// <summary>
+    /// Typing straight on at 20 ms a key, what follows the trigger lands after the snippet. The key after the trigger
+    /// used to reach the app before the insertion began, which dropped the snippet and lost the space that released it.
+    /// </summary>
+    [TestMethod("TextExpander.Expansion.TypingStraightOnAfterATriggerKeepsEveryKey")]
+    [TestCategory("TextExpander")]
+    [TestCategory("TextExpander.Expansion")]
+    public void TypingStraightOnAfterATriggerKeepsEveryKey()
+    {
+        AssertExpands(Greeting.Trigger + " and on in order", Greeting.Replacement + " and on in order", waitForEngine: true, delayMS: 20);
+    }
+
     /// <summary>Ctrl+Z right after an expansion puts back exactly what was typed.</summary>
     [TestMethod("TextExpander.Expansion.CtrlZPutsTheTriggerBack")]
     [TestCategory("TextExpander")]

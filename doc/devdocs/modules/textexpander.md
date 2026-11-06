@@ -122,6 +122,12 @@ erases each trigger and pastes or types the snippet. A separate editor manages t
 `SendInput` batches don't stay whole while any low-level hook runs, so `InsertionGuard` keeps user
 keys out of an insertion.
 
+- From the match on, the hook holds the user's key events, after the key it swallowed. The insertion
+  takes them over at its start marker, so keys typed straight on land after the snippet. With no
+  insertion within 2 s, or none at all, they go back as they came, the swallowed key first, and the
+  snippet is dropped. Another window coming to the front drops them.
+- Before a question or choice window opens, a held key press other than a modifier cancels the
+  snippet, and what was typed goes back as typed.
 - The worker sends a start marker, a key-up of VK `0xFF` with the engine's tag and the insertion id.
   It waits up to 2 s.
 - At the marker, the hook goes on only if the input generation hasn't moved. Then it holds every key
@@ -399,7 +405,8 @@ Privacy:
 - Only `Edit`, `RichEdit` and WinForms password boxes are detected. Web, WPF and WinUI password fields
   still expand.
 - The hook doesn't follow IME composition, so a trigger can fire while the user is composing.
-- A key typed within about 15 ms of a match drops the expansion, and the swallowed key is lost.
+- A key typed while a question or choice window is still opening reaches the app. That drops the
+  snippet, and the swallowed key is lost.
 - A click during the Ctrl hold becomes Ctrl+click.
 - Clipboard managers may ignore the exclusion formats; only Always type avoids the clipboard.
 - The first question or choice window loads WinUI into the engine for the rest of the session.

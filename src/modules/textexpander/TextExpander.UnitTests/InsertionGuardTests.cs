@@ -765,6 +765,180 @@ public sealed class InsertionGuardTests
         Assert.IsTrue(checks >= 4, "Before the work, before the start marker, and before each part.");
     }
 
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void KeysTypedStraightAfterAMatchWaitForItsInsertion(bool clickFirst)
+    {
+        // Typed 20 ms a key, the one after a trigger reached the app before the insertion began: that dropped the
+        // insertion and lost the key the hook had swallowed. Held from the match on, the keys go in after the insertion,
+        // which gives that key back itself. If a click moved the caret first, it doesn't go ahead, and that key goes back
+        // first, so what was typed stays as typed.
+        long generation = 5;
+        var sent = new List<Native.INPUT[]>();
+        using var guard = Guard(() => generation, sent);
+        Assert.IsTrue(guard.HoldAfterMatch(Target, 5, FakeTextBox.UserKey('x', up: false)));
+        Assert.IsTrue("ab".All(ch => guard.Swallows(FakeTextBox.UserKey(ch, up: false)) && guard.Swallows(FakeTextBox.UserKey(ch, up: true))));
+        if (clickFirst)
+        {
+            generation++;
+        }
+
+        byte id = guard.Begin(5, Target);
+        Assert.IsTrue(guard.Swallows(FakeTextBox.Marker(id)));
+        Assert.AreEqual(!clickFirst, guard.AwaitStart());
+        Assert.IsFalse(guard.Swallows(OurKey(Native.VK_BACK, up: false)), "The insertion's own keys go through.");
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('c', up: false)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.Marker(id)));
+        Assert.AreEqual(0, sent.Count, "Only held, by the hook.");
+        guard.AwaitEnd(markerSent: true, []);
+        Assert.AreEqual(clickFirst ? "x-down a b c-down Mark" : "a b c-down Mark", FakeTextBox.Describe(sent.Single()));
+        guard.ReleaseAfterMatch(5);
+        Assert.AreEqual(1, sent.Count, "The insertion took them over.");
+    }
+
+    [TestMethod]
+    public void KeysHeldSinceAMatchNoInsertionTookGoBackAsTheyCame()
+    {
+        // The work ended without inserting, as when the caret moved. The swallowed key goes first, and nothing is added or
+        // left out: the Shift still down stays down, and A's key-up comes when the user lets go of it.
+        var sent = new List<Native.INPUT[]>();
+        using var guard = Guard(() => 5, sent);
+        Assert.IsTrue(guard.HoldAfterMatch(Target, 5, FakeTextBox.UserKey('x', up: false)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserVk(Native.VK_LSHIFT, up: false)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('x', up: true)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserVk(0x41, up: false)));
+        guard.ReleaseAfterMatch(4);
+        Assert.AreEqual(0, sent.Count, "Another match's.");
+        guard.ReleaseAfterMatch(5);
+        Assert.AreEqual("x-down LShift-down x-up A-down", FakeTextBox.Describe(sent.Single()));
+        Assert.IsFalse(guard.Swallows(FakeTextBox.UserVk(0x41, up: true)), "Let go of.");
+    }
+
+    [TestMethod]
+    public void KeysHeldSinceAMatchGoBackWhenItsInsertionIsTooLongComing()
+    {
+        long now = 0;
+        long generation = 5;
+        var sent = new List<Native.INPUT[]>();
+        using var guard = Guard(() => generation, sent);
+        guard.Clock = () => now;
+        Assert.IsTrue(guard.HoldAfterMatch(Target, 5, FakeTextBox.UserKey('x', up: false)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('a', up: false)));
+        now = InsertionGuard.TimeoutMs - 1;
+        guard.Expire();
+        Assert.AreEqual(0, sent.Count);
+
+        now = InsertionGuard.TimeoutMs;
+        guard.Expire();
+        Assert.AreEqual("x-down a-down", FakeTextBox.Describe(sent.Single()), "The swallowed key first.");
+        Assert.IsFalse(guard.Swallows(FakeTextBox.UserKey('a', up: true)), "Let go of.");
+
+        // They reached the app, so the insertion that comes at last doesn't go ahead, and takes nothing to send again.
+        generation++;
+        byte id = guard.Begin(5, Target);
+        Assert.IsTrue(guard.Swallows(FakeTextBox.Marker(id)));
+        Assert.IsFalse(guard.AwaitStart());
+        Assert.IsTrue(guard.Swallows(FakeTextBox.Marker(id)));
+        guard.AwaitEnd(markerSent: true, []);
+        guard.ReleaseAfterMatch(5);
+        Assert.AreEqual(1, sent.Count);
+    }
+
+    [TestMethod]
+    public void KeysHeldSinceAMatchAreDroppedWhenAnotherWindowComesToTheFront()
+    {
+        var sent = new List<Native.INPUT[]>();
+        using var guard = Guard(() => 5, sent);
+        Assert.IsTrue(guard.HoldAfterMatch(Target, 5, FakeTextBox.UserKey('x', up: false)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('a', up: false)));
+        guard.ForegroundChanged(Target);
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('a', up: true)), "Its own window coming back changes nothing.");
+        guard.ForegroundChanged(new IntPtr(11));
+        Assert.IsFalse(guard.Swallows(FakeTextBox.UserKey('b', up: false)), "Typed for the window in front now.");
+        guard.ReleaseAfterMatch(5);
+        guard.Expire();
+        Assert.AreEqual(0, sent.Count, "Typed for a window that isn't in front, they can't go back.");
+    }
+
+    [TestMethod]
+    public void BeforeAWindowOpensOnlyKeysTypedOnKeepTheHoldSinceTheMatch()
+    {
+        var sent = new List<Native.INPUT[]>();
+        using var guard = Guard(() => 5, sent);
+
+        // A key-up, and a Shift held through the trigger, repeating: the hold ends, and they go back as they came. The
+        // swallowed key stays with the worker, which gives it back after the window as before.
+        Assert.IsTrue(guard.HoldAfterMatch(Target, 5, FakeTextBox.UserKey('.', up: false)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserVk(0x54, up: true)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserVk(Native.VK_LSHIFT, up: false)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('.', up: true)));
+        Assert.IsTrue(guard.ReleaseAfterMatchBeforeAWindow(4), "Another match's: nothing to do.");
+        Assert.AreEqual(0, sent.Count);
+        Assert.IsTrue(guard.ReleaseAfterMatchBeforeAWindow(5));
+        Assert.AreEqual("T-up LShift-down .-up", FakeTextBox.Describe(sent.Single()));
+        Assert.IsFalse(guard.Swallows(FakeTextBox.UserKey('a', up: false)), "The window takes what's typed now.");
+        guard.ReleaseAfterMatch(5);
+        Assert.AreEqual(1, sent.Count, "The swallowed key stays with the worker.");
+
+        // A key typed on would go to the window: the hold stays, for the worker to cancel and give everything back.
+        Assert.IsTrue(guard.HoldAfterMatch(Target, 6, FakeTextBox.UserKey('.', up: false)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('a', up: false)));
+        Assert.IsFalse(guard.ReleaseAfterMatchBeforeAWindow(6));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('a', up: true)), "Still held.");
+        guard.ReleaseAfterMatch(6);
+        Assert.AreEqual(".-down a", FakeTextBox.Describe(sent[1]));
+    }
+
+    [TestMethod]
+    public void AHoldSinceAMatchIsOnlyItsOwnInsertions()
+    {
+        long generation = 5;
+        var sent = new List<Native.INPUT[]>();
+        using var guard = Guard(() => generation, sent);
+        Assert.IsTrue(guard.HoldAfterMatch(Target, 5, FakeTextBox.UserKey('x', up: false)));
+        Assert.IsFalse(guard.HoldAfterMatch(Target, 6, FakeTextBox.UserKey('y', up: false)), "Meanwhile only a lower-integrity app's keys reach the matcher.");
+        Assert.IsFalse(guard.Swallows(FakeTextBox.UserKey('l', up: false) with { Flags = Native.LLKHF_LOWER_IL_INJECTED | 0x10 }), "Never held.");
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('a', up: false)));
+
+        // Another insertion takes none of it.
+        generation = 7;
+        byte id = guard.Begin(7, Target);
+        Assert.IsTrue(guard.Swallows(FakeTextBox.Marker(id)));
+        Assert.IsTrue(guard.AwaitStart());
+        Assert.IsTrue(guard.Swallows(FakeTextBox.Marker(id)));
+        guard.AwaitEnd(markerSent: true, []);
+        Assert.AreEqual(0, sent.Count);
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('b', up: false)), "Still held.");
+        guard.ReleaseAfterMatch(5);
+        Assert.AreEqual("x-down a-down b-down", FakeTextBox.Describe(sent.Single()));
+    }
+
+    [TestMethod]
+    public void TooManyKeysHeldSinceAMatchEndTheHold()
+    {
+        // The timer sends them back at once, the swallowed key first: the hook never sends.
+        var sent = new TaskCompletionSource<Native.INPUT[]>();
+        using var guard = new InsertionGuard(() => 1, _ => true)
+        {
+            Resend = inputs =>
+            {
+                sent.TrySetResult([.. inputs]);
+                return (uint)inputs.Length;
+            },
+        };
+        Assert.IsTrue(guard.HoldAfterMatch(Target, 1, FakeTextBox.UserKey('x', up: false)));
+        for (int i = 1; i < InsertionGuard.MaxHeld; i++)
+        {
+            Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('a', up: (i & 1) == 0)));
+        }
+
+        Assert.IsTrue(sent.Task.Wait(10_000));
+        Assert.AreEqual(InsertionGuard.MaxHeld, sent.Task.Result.Length);
+        Assert.AreEqual((ushort)'x', sent.Task.Result[0].U.Ki.WScan);
+        Assert.IsFalse(guard.Swallows(FakeTextBox.UserKey('b', up: false)));
+    }
+
     /// <summary>A guard whose sends come back through it, as through the hook: SendInput returns once every hook has seen them.</summary>
     private static InsertionGuard Guard(Func<long> generation, List<Native.INPUT[]> sent, Func<IntPtr, bool>? inFront = null)
     {

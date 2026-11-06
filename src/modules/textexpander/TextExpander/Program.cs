@@ -379,17 +379,25 @@ internal static class Program
         }
     }
 
-    private static void Expand(PendingExpansion work)
+    private static void Expand(PendingExpansion work) => Expand(_hook!, work, () => TryExpand(_hook!, work));
+
+    /// <summary>
+    /// Runs <paramref name="tryExpand"/> for <paramref name="work"/>, then lets go of what the guard still holds for it.
+    /// Tests pass their own <paramref name="tryExpand"/>.
+    /// </summary>
+    internal static bool Expand(KeyboardHook hook, PendingExpansion work, Func<bool> tryExpand)
     {
         try
         {
-            _ = TryExpand(_hook!, work);
+            return tryExpand();
         }
         finally
         {
             // However the work ended, keys held since a prompt was answered or cancelled go back to their window, or are
-            // dropped if it isn't in front.
-            _hook!.Guard.Abandon();
+            // dropped if it isn't in front. So do keys held since the match, when no insertion took them over: the key
+            // the hook swallowed first, so what was typed stays as typed.
+            hook.Guard.Abandon();
+            hook.Guard.ReleaseAfterMatch(work.InputGeneration);
         }
     }
 
@@ -446,7 +454,7 @@ internal static class Program
 
         bool giveBack = false;
         ExpandedSnippet? expanded = Variables.MayAsk(work.Replacement)
-            ? ExpandWithPrompts(hook, work.Replacement, work.TargetWindow, ask ?? PromptDialog.Show, choose ?? ClipboardChoiceDialog.Show, readClipboard, readHistory, isKeyDown, out giveBack)
+            ? ExpandWithPrompts(hook, work.Replacement, work.TargetWindow, work.InputGeneration, ask ?? PromptDialog.Show, choose ?? ClipboardChoiceDialog.Show, readClipboard, readHistory, isKeyDown, out giveBack)
             : Variables.ExpandWithPromptRequests(work.Replacement, static _ => string.Empty, readClipboard, history: readHistory);
         if (expanded is null)
         {
@@ -498,8 +506,10 @@ internal static class Program
     /// <summary>
     /// Asks the snippet's questions, one at a time, then the choices its clipboard variables ask for, and expands it. Null
     /// if one is cancelled; <paramref name="giveBack"/> then says whether the keystroke the hook swallowed can go back.
+    /// Keys typed on after the trigger, which are held since its match (input generation <paramref name="generation"/>),
+    /// cancel it before a window opens: the window would take them. They go back as typed, after that keystroke.
     /// </summary>
-    private static ExpandedSnippet? ExpandWithPrompts(KeyboardHook hook, string replacement, IntPtr target, Func<PromptRequest, IntPtr, Action?, string?> ask, Func<ClipboardChoice, IntPtr, Action?, string?> choose, Func<string?> readClipboard, Func<ClipboardHistory>? readHistory, Func<int, bool>? isKeyDown, out bool giveBack)
+    private static ExpandedSnippet? ExpandWithPrompts(KeyboardHook hook, string replacement, IntPtr target, long generation, Func<PromptRequest, IntPtr, Action?, string?> ask, Func<ClipboardChoice, IntPtr, Action?, string?> choose, Func<string?> readClipboard, Func<ClipboardHistory>? readHistory, Func<int, bool>? isKeyDown, out bool giveBack)
     {
         // Once the last window is answered, keys typed right away are held for the expansion, so they land after it. A
         // clipboard choice may follow the questions, so then the last question doesn't hold; the choice says if it's last.
@@ -553,7 +563,7 @@ internal static class Program
         // opening the app's menu. A modifier still down after a second means nothing goes back.
         string? Answer(PromptRequest request)
         {
-            if (cancelled)
+            if (cancelled || !WindowMayOpen())
             {
                 return null;
             }
@@ -570,7 +580,7 @@ internal static class Program
 
         string? Choose(ClipboardChoice choice)
         {
-            if (cancelled)
+            if (cancelled || !WindowMayOpen())
             {
                 return null;
             }
@@ -583,6 +593,28 @@ internal static class Program
             }
 
             return chosen;
+        }
+
+        // Keys typed on since the match would go to the window: the snippet is cancelled instead, and the keystroke the hook
+        // swallowed goes back with them held after it, as typed. No modifier needs letting go of: its key-up is held too.
+        // Nor is a window opened for an expansion that can no longer happen: a click may have moved the caret, or what
+        // was held since the match went back, the swallowed key first, once the insertion was too long coming.
+        bool WindowMayOpen()
+        {
+            if (!hook.Guard.Unchanged(generation))
+            {
+                cancelled = true;
+                return false;
+            }
+
+            if (hook.Guard.ReleaseAfterMatchBeforeAWindow(generation))
+            {
+                return true;
+            }
+
+            cancelled = true;
+            released = true;
+            return false;
         }
 
         void Cancel()
