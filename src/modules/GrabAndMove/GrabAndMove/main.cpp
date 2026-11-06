@@ -102,6 +102,7 @@ struct SettingsSnapshot
     bool showGeometry = false;
     bool doNotActivateOnGameMode = true;
     bool useAltResize = true;
+    bool bringToFrontOnGrab = false;
     std::shared_ptr<const std::vector<std::wstring>> excludedApps =
         std::make_shared<const std::vector<std::wstring>>();
     std::shared_ptr<const std::vector<std::wstring>> modifierExcludedApps =
@@ -274,6 +275,8 @@ static std::optional<SettingsSnapshot> g_pendingSettings;
 
 // Custom messages are handled only by the main message window.
 static constexpr UINT WM_APPLY_SETTINGS = WM_APP + 1;
+// wParam = target HWND; see BringGrabbedWindowToFront.
+static constexpr UINT WM_BRING_GRABBED_WINDOW_TO_FRONT = WM_APP + 2;
 
 static constexpr unsigned int ButtonBit(MouseButton button)
 {
@@ -623,6 +626,14 @@ static void CALLBACK WinEventProc(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, D
     g_excludedCache.clear();
     g_modifierExcludedCache.clear();
 
+    // The window being moved/resized just came to the front (bring-to-front-on-grab).
+    // The interaction is still live; the modifier may read as released only because
+    // the keyboard hook absorbed its key-down, so don't tear the interaction down.
+    if (g_interaction.phase == InteractionPhase::Active && hwnd == g_interaction.target)
+    {
+        return;
+    }
+
     // Only validate modifier state when there is actually something to reset.
     // Skipping here when all flags are clear prevents spurious resets that would
     // break continuous Alt-dragging between multiple drags.
@@ -750,6 +761,11 @@ static bool TryLoadSettingsFromFile(const SettingsSnapshot& current, SettingsSna
         if (auto v = values.get_bool_value(L"useAltResize"))
         {
             updated.useAltResize = *v;
+        }
+
+        if (auto v = values.get_bool_value(L"bringToFrontOnGrab"))
+        {
+            updated.bringToFrontOnGrab = *v;
         }
 
         if (auto v = values.get_int_value(L"modifierKey"))
@@ -2020,6 +2036,40 @@ static HookDisposition EnterModifierPassthrough(MouseButton button, bool latchHo
 // real drag/resize) or the button is released first (then the absorbed input is
 // replayed so the target application receives a normal modifier+click).
 // ---------------------------------------------------------------------------
+
+// Gives the grabbed window focus the way a normal click would, without delivering
+// a click to it. Handled from the message loop rather than inside the hook
+// callback: SetForegroundWindow/SendInput re-enter the hooks and must not run there.
+static void BringGrabbedWindowToFront(HWND hwnd)
+{
+    // Drop stale requests: the interaction may have ended before this was processed.
+    if (g_interaction.phase != InteractionPhase::Active || hwnd != g_interaction.target)
+    {
+        return;
+    }
+
+    if (!IsWindow(hwnd) || GetForegroundWindow() == hwnd)
+    {
+        return;
+    }
+
+    // The press that started the grab was swallowed, so the foreground lock would
+    // refuse this process (and flash the taskbar button instead). An empty injected
+    // mouse event lifts it - same trick as FancyZones' SwitchToWindow; the hook ignores injected input.
+    INPUT input = { .type = INPUT_MOUSE };
+    SendInput(1, &input, sizeof(INPUT));
+
+    SetForegroundWindow(hwnd);
+}
+
+static void RequestBringToFront(HWND hwnd)
+{
+    if (g_settings.bringToFrontOnGrab && g_hMsgWnd)
+    {
+        PostMessage(g_hMsgWnd, WM_BRING_GRABBED_WINDOW_TO_FRONT, reinterpret_cast<WPARAM>(hwnd), 0);
+    }
+}
+
 static bool BeginInteraction(InteractionAction action, MouseButton button, HWND hwnd, POINT pt)
 {
     RECT windowRect{};
@@ -2045,6 +2095,7 @@ static bool BeginInteraction(InteractionAction action, MouseButton button, HWND 
     ShowOverlay(
         windowRect,
         action == InteractionAction::Resize ? CursorForHandle(g_interaction.resizeHandle) : g_curSizeAll);
+    RequestBringToFront(hwnd);
     TraceShortcutUse(
         true,
         action == InteractionAction::Resize ? GrabAndMoveShortcutAction::Resize : GrabAndMoveShortcutAction::Move,
@@ -3167,6 +3218,10 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     {
     case WM_APPLY_SETTINGS:
         ApplyPendingSettings();
+        return 0;
+
+    case WM_BRING_GRABBED_WINDOW_TO_FRONT:
+        BringGrabbedWindowToFront(reinterpret_cast<HWND>(wParam));
         return 0;
 
     case WM_CLOSE:
