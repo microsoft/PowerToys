@@ -30,11 +30,7 @@ namespace ManagedCommon
             {
                 try
                 {
-                    var inputStream = File.Open(file, FileMode.Open);
-                    StreamReader reader = new StreamReader(inputStream);
-                    string data = reader.ReadToEnd();
-                    inputStream.Close();
-                    reader.Dispose();
+                    string data = File.ReadAllText(file);
 
                     return JsonSerializer.Deserialize<OutGoingLanguageSettings>(data, SourceGenerationContext.Default.OutGoingLanguageSettings).LanguageTag;
                 }
