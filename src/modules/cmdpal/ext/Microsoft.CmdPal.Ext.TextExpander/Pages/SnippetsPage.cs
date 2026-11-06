@@ -22,13 +22,13 @@ internal sealed partial class SnippetsPage : DynamicListPage
 
     private readonly SnippetActions _actions;
     private readonly Lock _lock = new();
+    private readonly EmptyStateItem _emptyItem = new();
 
     // Guarded by _lock. The items are made again when the snippets change, or a minute later, so the dates and
     // times in their previews stay current.
     private Dictionary<Snippet, SnippetListItem> _items = new();
     private SnippetLibrarySnapshot? _itemsFrom;
     private long _itemsMinute;
-    private EmptyState? _emptyState;
 
     public SnippetsPage(SnippetActions actions, string search = "")
     {
@@ -49,6 +49,9 @@ internal sealed partial class SnippetsPage : DynamicListPage
 
     public override void UpdateSearchText(string oldSearch, string newSearch) => RaiseItemsChanged();
 
+    /// <summary>Gets what the page shows when it lists nothing, as of now (see <see cref="EmptyStateItem"/>).</summary>
+    public override ICommandItem? EmptyContent => _emptyItem.For(EmptyState.For(_actions.Source.GetState()), out _);
+
     public override IListItem[] GetItems()
     {
         var state = _actions.Source.GetState();
@@ -58,7 +61,6 @@ internal sealed partial class SnippetsPage : DynamicListPage
             : [];
 
         IListItem[] result;
-        EmptyState emptyState;
         lock (_lock)
         {
             var items = ItemsFor(library);
@@ -67,17 +69,15 @@ internal sealed partial class SnippetsPage : DynamicListPage
             {
                 result[i] = items[snippets[i]];
             }
-
-            emptyState = EmptyState.For(state);
-            if (_emptyState == emptyState)
-            {
-                return result;
-            }
-
-            _emptyState = emptyState;
         }
 
-        EmptyContent = emptyState.ToCommandItem();
+        // Changed since Command Palette asked, such as Text Expander turned off while the page is open.
+        _ = _emptyItem.For(EmptyState.For(state), out var changed);
+        if (changed)
+        {
+            OnPropertyChanged(nameof(EmptyContent));
+        }
+
         return result;
     }
 

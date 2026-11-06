@@ -35,6 +35,21 @@ public sealed class SnippetPicksPageTests
     }
 
     [TestMethod]
+    public void EmptyContent_TurnedOffSinceTheSnippetWasListed_IsReadyBeforeTheList()
+    {
+        // Command Palette shows the empty state's command only if it has the item when the list comes in.
+        using var environment = new TestEnvironment();
+        environment.UseSnippets(("!reply", Reply));
+        var page = new SnippetPicksPage(environment.SnippetFor("!reply"), environment.Actions);
+        environment.Folder.SetEnabled(false);
+
+        Assert.AreEqual("Text Expander is off", page.EmptyContent?.Title);
+        Assert.IsInstanceOfType<OpenTextExpanderSettingsCommand>(page.EmptyContent?.Command);
+        Assert.AreEqual(0, page.GetItems().Length);
+        Assert.AreEqual(0, environment.Clipboard.Reads);
+    }
+
+    [TestMethod]
     public void GetItems_SeveralMatches_ListsThemToPick()
     {
         using var environment = new TestEnvironment();

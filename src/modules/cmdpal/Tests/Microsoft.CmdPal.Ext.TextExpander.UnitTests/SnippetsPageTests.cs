@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -43,6 +44,44 @@ public sealed class SnippetsPageTests : CommandPaletteUnitTestBase
         Assert.AreEqual("Text Expander is off", page.EmptyContent?.Title);
         StringAssert.Contains(page.EmptyContent!.Subtitle, "organization");
         Assert.IsInstanceOfType<NoOpCommand>(page.EmptyContent?.Command);
+    }
+
+    [TestMethod]
+    public void EmptyContent_TextExpanderOff_IsReadyBeforeTheList()
+    {
+        // Command Palette shows the empty state's command in its command bar only if it has the item when the list comes
+        // in. Set while it fetched the list, the item came too late, and Open Text Expander settings didn't show.
+        using var environment = new TestEnvironment();
+        environment.Folder.WriteSnippets([("!mysig", "Best regards,\nYour name")]);
+        var page = new SnippetsPage(environment.Actions);
+        var changes = new List<string>();
+        page.PropChanged += (_, args) => changes.Add(args.PropertyName);
+
+        var opened = page.EmptyContent;
+        Assert.AreEqual("Text Expander is off", opened?.Title);
+        Assert.IsInstanceOfType<OpenTextExpanderSettingsCommand>(opened?.Command);
+
+        Assert.AreEqual(0, page.GetItems().Length);
+        Assert.AreSame(opened, page.EmptyContent);
+        CollectionAssert.DoesNotContain(changes, nameof(page.EmptyContent), "Nothing changed, so Command Palette keeps the item it has.");
+    }
+
+    [TestMethod]
+    public void GetItems_TurnedOffWhileThePageIsOpen_SaysTheEmptyStateChanged()
+    {
+        using var environment = new TestEnvironment();
+        environment.UseSnippets(("!mysig", "Best regards,\nYour name"));
+        var page = new SnippetsPage(environment.Actions);
+        Assert.AreEqual(1, page.GetItems().Length);
+        var changes = new List<string>();
+        page.PropChanged += (_, args) => changes.Add(args.PropertyName);
+
+        environment.Folder.SetEnabled(false);
+
+        Assert.AreEqual(0, page.GetItems().Length);
+        CollectionAssert.Contains(changes, nameof(page.EmptyContent));
+        Assert.AreEqual("Text Expander is off", page.EmptyContent?.Title);
+        Assert.IsInstanceOfType<OpenTextExpanderSettingsCommand>(page.EmptyContent?.Command);
     }
 
     [TestMethod]

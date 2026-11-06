@@ -60,7 +60,7 @@ Failures show a toast and leave the page as it was. When the snippet didn't go i
 | `TextExpanderCommandsProvider.cs` | Registers the page and the fallback item. Registered in `Microsoft.CmdPal.UI/App.xaml.cs`. |
 | `SnippetActions.cs` | Makes a snippet's commands, the same on the page and in the main search. |
 | `Snippets/` | State (`SnippetSource`, `TextExpanderPolicy`, `TextExpanderModuleState`, `TextExpanderSettings`), the snippets file (`SnippetLibrary`), expansion and previews (`SnippetText`) and search (`SnippetSearch`). |
-| `Pages/` | The snippets page, its items and empty states, the questions page, the pick pages and the fallback item. |
+| `Pages/` | The snippets page, its items and empty states, the questions page, the pick pages and the fallback item. A page gives its empty state from the `EmptyContent` getter, as Command Palette opens it (`EmptyStateItem`): Command Palette shows the empty state's command, such as Open Text Expander settings, only if it has the item when the list comes in. |
 | `Commands/` | Paste, copy, the Text Expander-only notice, and opening Text Expander's settings. |
 | `Insertion/` | Pasting and typing. The Win32 classes are thin; `SnippetInserter`, `PasteSettle` and `KeyStrokes` take their clipboard, windows and clock as interfaces, so they're unit-tested with fakes. |
 

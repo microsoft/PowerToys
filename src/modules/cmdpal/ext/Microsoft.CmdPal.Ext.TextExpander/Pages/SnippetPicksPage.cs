@@ -31,6 +31,7 @@ internal sealed partial class SnippetPicksPage : ListPage
     private readonly Func<IReadOnlyList<string>>? _answers;
     private readonly Action? _inserted;
     private readonly SnippetFill? _fill;
+    private readonly EmptyStateItem _emptyItem = new();
 
     /// <summary>The first page, which reads the clipboard when it's opened.</summary>
     /// <param name="answers">Gets the answers to the snippet's questions, in order.</param>
@@ -60,6 +61,16 @@ internal sealed partial class SnippetPicksPage : ListPage
         }
     }
 
+    /// <summary>Gets what the page shows when Text Expander is off, as of now (see <see cref="EmptyStateItem"/>).</summary>
+    public override ICommandItem? EmptyContent
+    {
+        get
+        {
+            var state = _actions.Source.GetState();
+            return state.IsOn ? null : _emptyItem.For(EmptyState.For(state), out _);
+        }
+    }
+
     public override IListItem[] GetItems()
     {
         // Off, or turned off by policy since the page was opened: the clipboard isn't read, nor what was read shown.
@@ -67,7 +78,12 @@ internal sealed partial class SnippetPicksPage : ListPage
         if (!state.IsOn)
         {
             PlaceholderText = string.Empty;
-            EmptyContent = EmptyState.For(state).ToCommandItem();
+            _ = _emptyItem.For(EmptyState.For(state), out var changed);
+            if (changed)
+            {
+                OnPropertyChanged(nameof(EmptyContent));
+            }
+
             return [];
         }
 
