@@ -22,6 +22,15 @@ steps:
       arguments: 'install --global wix --version 5.0.2'
 
   - pwsh: |-
+      $ErrorActionPreference = 'Stop'
+      Import-Module Pester -RequiredVersion 3.4.0
+      $result = Invoke-Pester -Script '.pipelines\tests\installerMedia.Tests.ps1' -PassThru -Quiet
+      if ($result.TotalCount -eq 0 -or $result.PassedCount -ne $result.TotalCount) {
+        throw 'Installer media tests must all execute and pass.'
+      }
+    displayName: Test installer Smart Cabbing assignments
+
+  - pwsh: |-
       Write-Host "##vso[task.setvariable variable=InstallerMachineRoot]installer\PowerToysSetupVNext\$(BuildPlatform)\$(BuildConfiguration)\MachineSetup"
       Write-Host "##vso[task.setvariable variable=InstallerUserRoot]installer\PowerToysSetupVNext\$(BuildPlatform)\$(BuildConfiguration)\UserSetup"
       Write-Host "##vso[task.setvariable variable=InstallerMachineBasename]PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform)"
@@ -110,6 +119,14 @@ steps:
       dir $(build.sourcesdirectory)\extractedMachineMsi
       dir $(build.sourcesdirectory)\extractedUserMsi
     displayName: "WiX5: Extract and verify MSIs"
+
+  - pwsh: |-
+      $ErrorActionPreference = 'Stop'
+      $manifest = 'installer\PowerToysSetupVNext\obj\InstallerMedia.json'
+      & '.pipelines\verifyInstallerMedia.ps1' -MsiPath '$(InstallerMachineRoot)\$(InstallerMachineBasename).msi' -ManifestPath $manifest -ExtractedFilesPath '$(build.sourcesdirectory)\extractedMachineMsi\File' -ReportPath '$(LogOutputDirectory)\installer-media-machine.json'
+      & '.pipelines\verifyInstallerMedia.ps1' -MsiPath '$(InstallerUserRoot)\$(InstallerUserBasename).msi' -ManifestPath $manifest -ExtractedFilesPath '$(build.sourcesdirectory)\extractedUserMsi\File' -ReportPath '$(LogOutputDirectory)\installer-media-user.json'
+      Copy-Item -LiteralPath $manifest -Destination '$(JobOutputDirectory)\InstallerMedia-$(BuildPlatform).json'
+    displayName: Verify MSI file ownership and cabinet deduplication
 
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-
