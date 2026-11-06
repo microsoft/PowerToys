@@ -45,6 +45,7 @@ namespace KeyboardManagerEditorUI.Controls
         private bool _textContentDirty;
         private bool _urlPathDirty;
         private bool _programPathDirty;
+        private string? _advisoryWarning;
 
         public bool AllowChords { get; set; } = true;
 
@@ -1270,7 +1271,35 @@ namespace KeyboardManagerEditorUI.Controls
                     break;
             }
 
-            HideValidationMessage();
+            ShowAdvisoryWarningOrHide();
+        }
+
+        /// <summary>
+        /// Sets a non-blocking warning that is shown whenever no validation error is visible.
+        /// Pass null to clear it.
+        /// </summary>
+        public void SetAdvisoryWarning(string? message)
+        {
+            _advisoryWarning = string.IsNullOrEmpty(message) ? null : message;
+
+            if (ValidationInfoBar?.IsOpen == true && ValidationInfoBar.Severity == InfoBarSeverity.Error)
+            {
+                return;
+            }
+
+            ShowAdvisoryWarningOrHide();
+        }
+
+        private void ShowAdvisoryWarningOrHide()
+        {
+            if (_advisoryWarning != null)
+            {
+                ShowValidationMessage(string.Empty, _advisoryWarning, InfoBarSeverity.Warning);
+            }
+            else
+            {
+                HideValidationMessage();
+            }
         }
 
         /// <summary>
@@ -1289,6 +1318,7 @@ namespace KeyboardManagerEditorUI.Controls
             _textContentDirty = false;
             _urlPathDirty = false;
             _programPathDirty = false;
+            _advisoryWarning = null;
 
             // Hide any validation messages
             HideValidationMessage();
