@@ -78,6 +78,24 @@ namespace KeyboardEventHandlers
 
     void CloseProcessByName(const std::wstring& fileNamePart);
 
+    // Returns whether matching processes were found, even if none could be opened.
+    bool CloseAndEndProcessesByName(const std::wstring& fileNamePart);
+
+    namespace ProcessCloser
+    {
+        // Implementation details exposed for deterministic process-replacement tests.
+        struct ProcessSnapshot
+        {
+            DWORD pid;
+            FILETIME creationTime;
+            std::wstring imagePath;
+        };
+
+        std::optional<ProcessSnapshot> SnapshotProcess(HANDLE process);
+        // The caller keeps each identity's query handle open through this call.
+        void CloseAndEndProcesses(const std::vector<ProcessSnapshot>& snapshots);
+    }
+
     void TerminateProcessesByName(const std::wstring& fileNamePart);
 
     void toast(winrt::param::hstring const& message1, winrt::param::hstring const& message2) noexcept;
