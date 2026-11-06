@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -81,7 +81,17 @@ namespace MouseWithoutBorders.Class
 
                 if (input.type == 0 && (input.mi.dwFlags & (int)NativeMethods.MOUSEEVENTF.MOVE) != 0 && NativeMethods.InjectMouseInputAvailable)
                 {
-                    Injector.InjectMouseInput(new[] { MouseInputToInjectedInputMouseInfo(input64.mi) });
+                    try
+                    {
+                        Injector.InjectMouseInput(new[] { MouseInputToInjectedInputMouseInfo(input64.mi) });
+                    }
+                    catch (COMException ex)
+                    {
+                        NativeMethods.InjectMouseInputAvailable = false;
+                        Logger.Log(ex);
+                        NativeMethods.INPUT64[] inputs = { input64 };
+                        rv = NativeMethods.SendInput64(1, inputs, Marshal.SizeOf(input64));
+                    }
                 }
                 else
                 {
@@ -93,7 +103,17 @@ namespace MouseWithoutBorders.Class
             {
                 if (input.type == 0 && (input.mi.dwFlags & (int)NativeMethods.MOUSEEVENTF.MOVE) != 0 && NativeMethods.InjectMouseInputAvailable)
                 {
-                    Injector.InjectMouseInput(new[] { MouseInputToInjectedInputMouseInfo(input.mi) });
+                    try
+                    {
+                        Injector.InjectMouseInput(new[] { MouseInputToInjectedInputMouseInfo(input.mi) });
+                    }
+                    catch (COMException ex)
+                    {
+                        NativeMethods.InjectMouseInputAvailable = false;
+                        Logger.Log(ex);
+                        NativeMethods.INPUT[] inputs = { input };
+                        rv = NativeMethods.SendInput(1, inputs, Marshal.SizeOf(input));
+                    }
                 }
                 else
                 {
@@ -480,3 +500,4 @@ namespace MouseWithoutBorders.Class
         }
     }
 }
+
