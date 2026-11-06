@@ -4,6 +4,8 @@
 
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -14,6 +16,8 @@ public class GalleryGridPropertiesViewModel : IGridPropertiesViewModel
     public bool ShowTitle { get; private set; }
 
     public bool ShowSubtitle { get; private set; }
+
+    public Stretch ImageStretch { get; private set; } = Stretch.UniformToFill;
 
     public GalleryGridPropertiesViewModel(IGalleryGridLayout galleryGridLayout)
     {
@@ -30,5 +34,12 @@ public class GalleryGridPropertiesViewModel : IGridPropertiesViewModel
 
         ShowTitle = model.ShowTitle;
         ShowSubtitle = model.ShowSubtitle;
+        ImageStretch = Stretch.UniformToFill;
+        if (model is IExtendedAttributesProvider provider &&
+            provider.GetProperties()?.TryGetValue(WellKnownExtensionAttributes.GalleryImageFit, out var imageFit) == true &&
+            imageFit is int value && value == (int)GalleryImageFit.Contain)
+        {
+            ImageStretch = Stretch.Uniform;
+        }
     }
 }
