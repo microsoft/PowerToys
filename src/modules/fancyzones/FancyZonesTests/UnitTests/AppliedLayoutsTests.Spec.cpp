@@ -8,6 +8,8 @@
 #include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
 #include <FancyZonesLib/util.h>
 
+#include <FancyZonesTests/UnitTests/Util.h>
+
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace FancyZonesUnitTests
@@ -455,6 +457,98 @@ namespace FancyZonesUnitTests
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{F21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
             };
             Assert::IsFalse(AppliedLayouts::instance().IsLayoutApplied(id2));
+        }
+    };
+
+    TEST_CLASS (AppliedLayoutsAdjustWorkAreaIds)
+    {
+        // Two monitors of the same model, only the instance id tells them apart.
+        const std::wstring model = L"DELF13B";
+        const std::wstring portraitInstance = L"5&2d51e510&0&UID4352";
+        const std::wstring landscapeInstance = L"5&2d51e510&0&UID4354";
+        const std::wstring portraitSerial = L"4S4L914";
+        const std::wstring landscapeSerial = L"HK19904";
+
+        LayoutData rowsLayout{ .uuid = FancyZonesUtils::GuidFromString(L"{D7DBECFA-23FC-4F45-9B56-51CFA9F6ABA2}").value(), .type = FancyZonesDataTypes::ZoneSetLayoutType::Rows, .zoneCount = 3 };
+        LayoutData columnsLayout{ .uuid = FancyZonesUtils::GuidFromString(L"{B9EDB48C-EC48-4E82-993F-A15DC1FF09D3}").value(), .type = FancyZonesDataTypes::ZoneSetLayoutType::Columns, .zoneCount = 3 };
+
+        FancyZonesDataTypes::MonitorId CreateMonitorId(const std::wstring& instanceId, int number, const std::wstring& serialNumber, HMONITOR monitor = nullptr)
+        {
+            return FancyZonesDataTypes::MonitorId{ .monitor = monitor, .deviceId = { .id = model, .instanceId = instanceId, .number = number }, .serialNumber = serialNumber };
+        }
+
+        FancyZonesDataTypes::WorkAreaId CreateWorkAreaId(const FancyZonesDataTypes::MonitorId& monitorId)
+        {
+            return FancyZonesDataTypes::WorkAreaId{ .monitorId = monitorId, .virtualDesktopId = GUID_NULL };
+        }
+
+        TEST_METHOD_INITIALIZE(Init)
+        {
+            AppliedLayouts::instance().LoadData();
+        }
+
+        TEST_METHOD_CLEANUP(CleanUp)
+        {
+            std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
+            AppliedLayouts::instance().LoadData();
+        }
+
+        TEST_METHOD (MonitorNumbersSwapped)
+        {
+            // monitors reporting the same serial number
+            AppliedLayouts::instance().SetAppliedLayouts({
+                { CreateWorkAreaId(CreateMonitorId(portraitInstance, 1, portraitSerial)), rowsLayout },
+                { CreateWorkAreaId(CreateMonitorId(landscapeInstance, 2, portraitSerial)), columnsLayout },
+            });
+
+            auto portrait = CreateMonitorId(portraitInstance, 2, portraitSerial, Mocks::Monitor());
+            auto landscape = CreateMonitorId(landscapeInstance, 1, portraitSerial, Mocks::Monitor());
+
+            AppliedLayouts::instance().AdjustWorkAreaIds({ portrait, landscape });
+
+            Assert::IsTrue(rowsLayout == AppliedLayouts::instance().GetDeviceLayout(CreateWorkAreaId(portrait)));
+            Assert::IsTrue(columnsLayout == AppliedLayouts::instance().GetDeviceLayout(CreateWorkAreaId(landscape)));
+        }
+
+        TEST_METHOD (SameSerialNumberSavedForBothMonitors)
+        {
+            // Serial numbers used to be assigned by model, so both monitors got the serial number of whichever was listed last.
+            FancyZonesDataTypes::WorkAreaId otherMonitor{
+                .monitorId = { .deviceId = { .id = L"GSM5B7F", .instanceId = L"5&2d51e510&0&UID4356", .number = 3 }, .serialNumber = L"123456" },
+                .virtualDesktopId = GUID_NULL
+            };
+
+            AppliedLayouts::instance().SetAppliedLayouts({
+                { CreateWorkAreaId(CreateMonitorId(landscapeInstance, 1, portraitSerial)), columnsLayout },
+                { CreateWorkAreaId(CreateMonitorId(portraitInstance, 2, portraitSerial)), rowsLayout },
+                { CreateWorkAreaId(CreateMonitorId(landscapeInstance, 2, landscapeSerial)), columnsLayout },
+                { CreateWorkAreaId(CreateMonitorId(portraitInstance, 1, landscapeSerial)), rowsLayout },
+                { otherMonitor, LayoutData{} },
+            });
+
+            auto portrait = CreateMonitorId(portraitInstance, 1, portraitSerial, Mocks::Monitor());
+            auto landscape = CreateMonitorId(landscapeInstance, 2, landscapeSerial, Mocks::Monitor());
+
+            AppliedLayouts::instance().AdjustWorkAreaIds({ portrait, landscape });
+
+            const auto& map = AppliedLayouts::instance().GetAppliedLayoutMap();
+            Assert::AreEqual(static_cast<size_t>(3), map.size());
+            Assert::IsTrue(rowsLayout == AppliedLayouts::instance().GetDeviceLayout(CreateWorkAreaId(portrait)));
+            Assert::IsTrue(columnsLayout == AppliedLayouts::instance().GetDeviceLayout(CreateWorkAreaId(landscape)));
+            Assert::IsTrue(AppliedLayouts::instance().IsLayoutApplied(otherMonitor));
+        }
+
+        TEST_METHOD (SerialNumberNotOverwrittenWithEmpty)
+        {
+            auto saved = CreateWorkAreaId(CreateMonitorId(portraitInstance, 1, portraitSerial));
+            AppliedLayouts::instance().SetAppliedLayouts({ { saved, rowsLayout } });
+
+            AppliedLayouts::instance().AdjustWorkAreaIds({ CreateMonitorId(portraitInstance, 2, L"", Mocks::Monitor()) });
+
+            const auto& map = AppliedLayouts::instance().GetAppliedLayoutMap();
+            Assert::AreEqual(static_cast<size_t>(1), map.size());
+            Assert::AreEqual(portraitSerial, map.begin()->first.monitorId.serialNumber);
+            Assert::AreEqual(2, map.begin()->first.monitorId.deviceId.number);
         }
     };
 
