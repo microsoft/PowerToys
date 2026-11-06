@@ -54,6 +54,11 @@ namespace MouseWithoutBordersService
         {
             int rv = 0;
 
+            if (!string.IsNullOrEmpty(userLocalAppDataPath))
+            {
+                userLocalAppDataPath = "\"" + userLocalAppDataPath.Trim('\"') + "\"";
+            }
+
             try
             {
                 string me = "\"" + Path.GetDirectoryName(myBinary) + "\\" + processName + "\"";
@@ -70,7 +75,7 @@ namespace MouseWithoutBordersService
                 if (activeDesktop != null)
                 {
                     LogDebug($"Executing {me} on [{activeDesktop}], {NativeMethods.WTSGetActiveConsoleSessionId()}");
-                    rv += NativeMethods.CreateProcessAsSystemAccountOnSpecificDesktop(me + " \"" + activeDesktop + "\"" + userLocalAppDataPath, activeDesktop, noOfTry) ? 1 : 0;
+                    rv += NativeMethods.CreateProcessAsSystemAccountOnSpecificDesktop(me + " \"" + activeDesktop + "\" " + userLocalAppDataPath, activeDesktop, noOfTry) ? 1 : 0;
                 }
                 else
                 {
