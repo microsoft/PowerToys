@@ -46,6 +46,7 @@ namespace ShortcutGuide.Helpers
                 stream.Position = 0;
 
                 BitmapImage bitmapImage = new();
+                bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                 bitmapImage.SetSource(stream.AsRandomAccessStream());
                 return bitmapImage;
             }

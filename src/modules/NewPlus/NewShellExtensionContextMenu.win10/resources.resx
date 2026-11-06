@@ -119,7 +119,7 @@
   </resheader>
   <data name="context_menu_item_new" xml:space="preserve">
     <value>New+</value>
-    <comment>The main context menu item that users click on. This should be localized to match New in Windows. e.g. Danish it would become Ny+</comment>
+    <comment>The main context menu item that users click on. This should be localized to match New in Windows. e.g. Danish it would become Ny+, French it would become Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="context_menu_item_open_templates" xml:space="preserve">
     <value>Open templates</value>

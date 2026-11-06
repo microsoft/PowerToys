@@ -4,9 +4,9 @@
 
 using System;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -34,6 +34,10 @@ namespace RegistryPreview
         {
             this.InitializeComponent();
 
+            // Seed a non-empty title before any title-bar setup or window initialization.
+            titleBar.Title = APPNAME;
+            AppWindow.Title = APPNAME;
+
             // Open settings file; this moved to after the window tweak because it gives the window time to start up
             settingsFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\Microsoft\PowerToys\" + APPNAME;
             OpenWindowPlacementFile(settingsFolder, windowPlacementFile);
@@ -46,6 +50,8 @@ namespace RegistryPreview
             IntPtr windowHandle = this.GetWindowHandle();
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(windowHandle);
             SetTitleBar(titleBar);
+            TitleBarHelper.SetPreferredTheme(this);
+
             AppWindow.SetIcon("Assets\\RegistryPreview\\RegistryPreview.ico");
 
             // if have settings, update the location of the window

@@ -10,14 +10,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ShortcutsKeyDataModel
     {
-        // Suppressing these warnings because removing the setter breaks
-        // deserialization with System.Text.Json. This affects the UI display.
-        // See: https://github.com/dotnet/runtime/issues/30258
         [JsonPropertyName("global")]
-        public List<KeysDataModel> GlobalRemapShortcuts { get; set; }
+        public List<KeysDataModel> GlobalRemapShortcuts { get; init; }
 
         [JsonPropertyName("appSpecific")]
-        public List<AppSpecificKeysDataModel> AppSpecificRemapShortcuts { get; set; }
+        public List<AppSpecificKeysDataModel> AppSpecificRemapShortcuts { get; init; }
 
         public ShortcutsKeyDataModel()
         {

@@ -38,7 +38,8 @@ internal static class Encryption
     private const int SaltSize = 16;
 
     // Number of PBKDF2 iterations used to derive the symmetric key from the shared secret.
-    private const int KeyDerivationIterations = 50000;
+    // Use at least 100,000 iterations to strengthen the derived key against brute-force attempts.
+    private const int KeyDerivationIterations = 100000;
 
     // Length (in bytes) of the derived AES-256 key.
     private const int DerivedKeyLength = 32;
@@ -103,6 +104,14 @@ internal static class Encryption
         }
     }
 
+    private static void EnsurePairingKeyAvailable()
+    {
+        if (string.IsNullOrWhiteSpace(MyKey))
+        {
+            throw new CryptographicException("Pairing setup is required.");
+        }
+    }
+
     private static byte[] GenLegalKey(byte[] salt)
     {
         return Rfc2898DeriveBytes.Pbkdf2(
@@ -115,6 +124,8 @@ internal static class Encryption
 
     internal static Stream GetEncryptedStream(Stream encryptedStream)
     {
+        EnsurePairingKeyAvailable();
+
         // A fresh random salt and IV are generated for every connection and sent in the
         // clear ahead of the cipher text. Neither value is secret: deriving the symmetric
         // key still requires the shared secret. The random salt prevents an attacker from
@@ -133,6 +144,8 @@ internal static class Encryption
 
     internal static Stream GetDecryptedStream(Stream encryptedStream)
     {
+        EnsurePairingKeyAvailable();
+
         byte[] header = new byte[SaltSize + SymAlBlockSize];
         ExchangeEncryptionHeader(encryptedStream, header, send: false);
 
@@ -233,7 +246,7 @@ internal static class Encryption
 
     internal static bool IsKeyValid(string key, out string error)
     {
-        error = string.IsNullOrEmpty(key) || key.Length < 16
+        error = string.IsNullOrEmpty(key) || key.Length < 16 || Class.PairingKeyCodec.IsEncryptedValue(key)
             ? "Key must have at least 16 characters in length (spaces are discarded). Key must be auto generated in one of the machines."
             : null;
 

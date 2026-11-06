@@ -105,6 +105,8 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public string? Homepage => _entry.Homepage;
 
+    public Uri? HomepageUri => _homepageHttpUri;
+
     public Uri IconUri { get; }
 
     public ImageSource IconSource

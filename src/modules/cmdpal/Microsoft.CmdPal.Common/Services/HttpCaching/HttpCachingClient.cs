@@ -94,6 +94,7 @@ internal sealed partial class HttpCachingClient : IDisposable
     public void Dispose()
     {
         _httpClient.Dispose();
+        _cacheHandler.Dispose();
     }
 
     private static bool IsSupportedHttpUri(Uri resourceUri)

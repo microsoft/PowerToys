@@ -55,7 +55,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 }
 
                 // Translate Areas
-                if (!(settings.Areas is null) && settings.Areas.Any())
+                if (!(settings.Areas is null) && settings.Areas.Count > 0)
                 {
                     var translatedAreas = new List<string>();
 

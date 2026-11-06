@@ -10,6 +10,11 @@ namespace Microsoft.CmdPal.UI.Services;
 public interface IHostWindow
 {
     /// <summary>
+    /// Raised when <see cref="IsVisibleToUser"/> changes.
+    /// </summary>
+    event EventHandler? IsVisibleToUserChanged;
+
+    /// <summary>
     /// Gets a value indicating whether the window is visible to the user, taking account not only window visibility but also cloaking.
     /// </summary>
     bool IsVisibleToUser { get; }

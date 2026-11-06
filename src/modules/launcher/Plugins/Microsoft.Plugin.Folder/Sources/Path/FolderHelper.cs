@@ -43,7 +43,7 @@ namespace Microsoft.Plugin.Folder.Sources
             var driverNames = _driveInformation.GetDriveNames()
                 .ToImmutableArray();
 
-            if (driverNames.Any())
+            if (!driverNames.IsEmpty)
             {
                 // Using InvariantCultureIgnoreCase since this is searching for drive names
                 if (driverNames.Any(dn => search.StartsWith(dn, StringComparison.InvariantCultureIgnoreCase)))

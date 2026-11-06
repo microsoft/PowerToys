@@ -21,6 +21,12 @@ namespace
     const wchar_t JSON_KEY_HIGHLIGHT_FADE_DURATION_MS[] = L"highlight_fade_duration_ms";
     const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
     const wchar_t JSON_KEY_SPOTLIGHT_MODE[] = L"spotlight_mode";
+    const wchar_t JSON_KEY_RIPPLE_MODE[] = L"ripple_mode";
+    const wchar_t JSON_KEY_RIPPLE_SIZE[] = L"ripple_size";
+    const wchar_t JSON_KEY_RIPPLE_INTENSITY[] = L"ripple_intensity";
+    const wchar_t JSON_KEY_RIPPLE_DURATION_MS[] = L"ripple_duration_ms";
+    const wchar_t JSON_KEY_RIPPLE_SHOW_DRAG_TRAIL[] = L"ripple_show_drag_trail";
+    const wchar_t JSON_KEY_RIPPLE_SHOW_RELEASE_PULSE[] = L"ripple_show_release_pulse";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -391,6 +397,90 @@ public:
             catch (...)
             {
                 Logger::warn("Failed to initialize spotlight mode settings. Will use default value");
+            }
+            try
+            {
+                // Parse ripple mode
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_RIPPLE_MODE);
+                highlightSettings.rippleMode = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize ripple mode settings. Will use default value");
+            }
+            try
+            {
+                // Parse ripple size
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_RIPPLE_SIZE);
+                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                if (value > 0)
+                {
+                    highlightSettings.rippleSize = value;
+                }
+                else
+                {
+                    throw std::runtime_error("Invalid ripple size value");
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize ripple size from settings. Will use default value");
+            }
+            try
+            {
+                // Parse ripple intensity
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_RIPPLE_INTENSITY);
+                double value = jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+                if (value > 0.0)
+                {
+                    highlightSettings.rippleIntensity = value;
+                }
+                else
+                {
+                    throw std::runtime_error("Invalid ripple intensity value");
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize ripple intensity from settings. Will use default value");
+            }
+            try
+            {
+                // Parse ripple duration
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_RIPPLE_DURATION_MS);
+                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                if (value > 0)
+                {
+                    highlightSettings.rippleDurationMs = value;
+                }
+                else
+                {
+                    throw std::runtime_error("Invalid ripple duration value");
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize ripple duration from settings. Will use default value");
+            }
+            try
+            {
+                // Parse ripple show drag trail
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_RIPPLE_SHOW_DRAG_TRAIL);
+                highlightSettings.rippleShowDragTrail = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize ripple show drag trail from settings. Will use default value");
+            }
+            try
+            {
+                // Parse ripple show release pulse
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_RIPPLE_SHOW_RELEASE_PULSE);
+                highlightSettings.rippleShowReleasePulse = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize ripple show release pulse from settings. Will use default value");
             }
         }
         else
