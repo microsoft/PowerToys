@@ -5,18 +5,27 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Windows.Input;
 using global::PowerToys.GPOWrapper;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.Utilities;
+using Microsoft.UI.Dispatching;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class MouseUtilsViewModel : PageViewModelBase
     {
+        private const string SeamlessCursorCalibrationFileName = "calibration.json";
+
         protected override string ModuleName => "MouseUtils";
 
         private SettingsUtils SettingsUtils { get; set; }
@@ -35,7 +44,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private MouseButtonLockSettings MouseButtonLockSettingsConfig { get; set; }
 
-        public MouseUtilsViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<AutoHideCursorSettings> autoHideCursorSettingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, ISettingsRepository<MouseButtonLockSettings> mouseButtonLockSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        private SeamlessCursorSettings SeamlessCursorSettingsConfig { get; set; }
+
+        public MouseUtilsViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<AutoHideCursorSettings> autoHideCursorSettingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, ISettingsRepository<MouseButtonLockSettings> mouseButtonLockSettingsRepository, ISettingsRepository<SeamlessCursorSettings> seamlessCursorSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -164,6 +175,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mouseButtonLockHoldDurationMs = MouseButtonLockSettingsConfig.Properties.HoldDurationMs.Value;
             _mouseButtonLockMoveCancelPixels = MouseButtonLockSettingsConfig.Properties.MoveCancelPixels.Value;
 
+            ArgumentNullException.ThrowIfNull(seamlessCursorSettingsRepository);
+
+            SeamlessCursorSettingsConfig = seamlessCursorSettingsRepository.SettingsConfig;
+            SeamlessCursorSettingsConfig.UpgradeSettingsConfiguration();
+            _seamlessCursorStopAtEmptyEdges = SeamlessCursorSettingsConfig.Properties.StopAtEmptyEdges.Value;
+            _seamlessCursorMapCursorWrap = SeamlessCursorSettingsConfig.Properties.MapCursorWrap.Value;
+            SeamlessCursorCalibrateCommand = new RelayCommand(() => SendSeamlessCursorCustomAction("calibrate"));
+            SeamlessCursorResetCalibrationCommand = new RelayCommand(() => SendSeamlessCursorCustomAction("reset_calibration"));
+            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            _seamlessCursorSettingsRepository = seamlessCursorSettingsRepository;
+            _seamlessCursorSettingsRepository.SettingsChanged += OnSeamlessCursorSettingsChanged;
+            UpdateSeamlessCursorNotices();
+
             int isEnabled = 0;
 
             Utilities.NativeMethods.SystemParametersInfo(Utilities.NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
@@ -252,6 +276,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // policy-managed.
                 _mouseButtonLockEnabledStateIsGPOConfigured = false;
                 _isMouseButtonLockEnabled = GeneralSettingsConfig.Enabled.MouseButtonLock;
+            }
+
+            _seamlessCursorEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredSeamlessCursorEnabledValue();
+            _seamlessCursorEnabledStateIsGPOConfigured =
+                _seamlessCursorEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled ||
+                _seamlessCursorEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            if (_seamlessCursorEnabledStateIsGPOConfigured)
+            {
+                _isSeamlessCursorEnabled = _seamlessCursorEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isSeamlessCursorEnabled = GeneralSettingsConfig.Enabled.SeamlessCursor;
             }
         }
 
@@ -1574,6 +1611,182 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SettingsUtils.SaveSettings(MouseButtonLockSettingsConfig.ToJsonString(), MouseButtonLockSettings.ModuleName);
         }
 
+        public bool IsSeamlessCursorEnabled
+        {
+            get => _isSeamlessCursorEnabled;
+            set
+            {
+                if (_seamlessCursorEnabledStateIsGPOConfigured)
+                {
+                    return;
+                }
+
+                if (_isSeamlessCursorEnabled != value)
+                {
+                    _isSeamlessCursorEnabled = value;
+                    GeneralSettingsConfig.Enabled.SeamlessCursor = value;
+                    OnPropertyChanged(nameof(IsSeamlessCursorEnabled));
+
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                    SendConfigMSG(outgoing.ToString());
+                    NotifySeamlessCursorPropertyChanged();
+                    UpdateSeamlessCursorNotices();
+                }
+            }
+        }
+
+        public bool IsSeamlessCursorEnabledGpoConfigured => _seamlessCursorEnabledStateIsGPOConfigured;
+
+        public bool SeamlessCursorStopAtEmptyEdges
+        {
+            get => _seamlessCursorStopAtEmptyEdges;
+            set
+            {
+                if (value != _seamlessCursorStopAtEmptyEdges)
+                {
+                    _seamlessCursorStopAtEmptyEdges = value;
+                    SeamlessCursorSettingsConfig.Properties.StopAtEmptyEdges.Value = value;
+                    NotifySeamlessCursorPropertyChanged();
+                }
+            }
+        }
+
+        public bool SeamlessCursorMapCursorWrap
+        {
+            get => _seamlessCursorMapCursorWrap;
+            set
+            {
+                if (value != _seamlessCursorMapCursorWrap)
+                {
+                    _seamlessCursorMapCursorWrap = value;
+                    SeamlessCursorSettingsConfig.Properties.MapCursorWrap.Value = value;
+                    NotifySeamlessCursorPropertyChanged();
+                }
+            }
+        }
+
+        public bool ShowSeamlessCursorSingleMonitorNotice => _isSeamlessCursorEnabled && _monitorCount < 2;
+
+        public bool ShowSeamlessCursorNotCalibratedNotice => _isSeamlessCursorEnabled && _monitorCount >= 2 && !_isSeamlessCursorCalibrated;
+
+        public ICommand SeamlessCursorCalibrateCommand { get; }
+
+        public ICommand SeamlessCursorResetCalibrationCommand { get; }
+
+        private void SendSeamlessCursorCustomAction(string actionName)
+        {
+            SendConfigMSG("{\"action\":{\"SeamlessCursor\":{\"action_name\":\"" + actionName + "\",\"value\":\"\"}}}");
+        }
+
+        public override void OnPageLoaded()
+        {
+            base.OnPageLoaded();
+            WatchSeamlessCursorCalibration();
+
+            // Monitors may have been connected or disconnected while the page was away.
+            UpdateSeamlessCursorNotices();
+        }
+
+        public void OnPageUnloaded()
+        {
+            StopWatchingSeamlessCursorCalibration();
+        }
+
+        private void UpdateSeamlessCursorNotices()
+        {
+            _monitorCount = Utilities.NativeMethods.GetSystemMetrics(Utilities.NativeMethods.SM_CMONITORS);
+            _isSeamlessCursorCalibrated = HasSeamlessCursorCalibration();
+            OnPropertyChanged(nameof(ShowSeamlessCursorSingleMonitorNotice));
+            OnPropertyChanged(nameof(ShowSeamlessCursorNotCalibratedNotice));
+        }
+
+        // calibration.json is written only by the module; any saved border counts as calibrated.
+        private bool HasSeamlessCursorCalibration()
+        {
+            try
+            {
+                var path = SettingsUtils.GetSettingsFilePath(SeamlessCursorSettings.ModuleName, SeamlessCursorCalibrationFileName);
+                if (!File.Exists(path))
+                {
+                    return false;
+                }
+
+                // Share write and delete access, so reading rarely blocks the module from replacing or deleting the file;
+                // the module retries briefly when it does.
+                using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                using var document = JsonDocument.Parse(stream);
+                var root = document.RootElement;
+                return root.ValueKind == JsonValueKind.Object &&
+                       root.TryGetProperty("borders", out var borders) &&
+                       borders.ValueKind == JsonValueKind.Array &&
+                       borders.GetArrayLength() > 0;
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is JsonException)
+            {
+                Logger.LogError("Failed to read the Seamless Multi-Screen Cursor calibration.", ex);
+                return false;
+            }
+        }
+
+        private void WatchSeamlessCursorCalibration()
+        {
+            if (_seamlessCursorCalibrationWatcher != null)
+            {
+                return;
+            }
+
+            _seamlessCursorCalibrationWatcher = Helper.GetFileWatcher(SeamlessCursorSettings.ModuleName, SeamlessCursorCalibrationFileName, OnSeamlessCursorCalibrationChanged);
+
+            // The module replaces the file with a rename and deletes it on reset; Changed alone misses both.
+            _seamlessCursorCalibrationWatcher.NotifyFilter |= NotifyFilters.FileName;
+            _seamlessCursorCalibrationWatcher.Renamed += (s, e) => OnSeamlessCursorCalibrationChanged();
+            _seamlessCursorCalibrationWatcher.Deleted += (s, e) => OnSeamlessCursorCalibrationChanged();
+        }
+
+        private void StopWatchingSeamlessCursorCalibration()
+        {
+            _seamlessCursorCalibrationWatcher?.Dispose();
+            _seamlessCursorCalibrationWatcher = null;
+        }
+
+        private void OnSeamlessCursorCalibrationChanged()
+        {
+            _dispatcherQueue?.TryEnqueue(UpdateSeamlessCursorNotices);
+        }
+
+        // The calibration overlay changes "stop at empty edges" too and saves it to the module's settings file.
+        private void OnSeamlessCursorSettingsChanged(SeamlessCursorSettings settings)
+        {
+            _dispatcherQueue?.TryEnqueue(() =>
+            {
+                settings.UpgradeSettingsConfiguration();
+                SeamlessCursorSettingsConfig = settings;
+
+                // Only refresh the toggles; the module already has these values, so nothing is sent back.
+                if (_seamlessCursorStopAtEmptyEdges != settings.Properties.StopAtEmptyEdges.Value)
+                {
+                    _seamlessCursorStopAtEmptyEdges = settings.Properties.StopAtEmptyEdges.Value;
+                    OnPropertyChanged(nameof(SeamlessCursorStopAtEmptyEdges));
+                }
+
+                if (_seamlessCursorMapCursorWrap != settings.Properties.MapCursorWrap.Value)
+                {
+                    _seamlessCursorMapCursorWrap = settings.Properties.MapCursorWrap.Value;
+                    OnPropertyChanged(nameof(SeamlessCursorMapCursorWrap));
+                }
+            });
+        }
+
+        private void NotifySeamlessCursorPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            OnPropertyChanged(propertyName);
+
+            SndSeamlessCursorSettings outsettings = new SndSeamlessCursorSettings(SeamlessCursorSettingsConfig);
+            SndModuleSettings<SndSeamlessCursorSettings> ipcMessage = new SndModuleSettings<SndSeamlessCursorSettings>(outsettings);
+            SendConfigMSG(ipcMessage.ToJsonString());
+            SettingsUtils.SaveSettings(SeamlessCursorSettingsConfig.ToJsonString(), SeamlessCursorSettings.ModuleName);
+        }
+
         public void RefreshEnabledState()
         {
             InitializeEnabledValues();
@@ -1586,10 +1799,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsCursorWrapEnabled));
             OnPropertyChanged(nameof(IsMouseButtonLockEnabled));
             OnPropertyChanged(nameof(IsMouseButtonLockEnabledGpoConfigured));
+            OnPropertyChanged(nameof(IsSeamlessCursorEnabled));
+            UpdateSeamlessCursorNotices();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                StopWatchingSeamlessCursorCalibration();
+                _seamlessCursorSettingsRepository.SettingsChanged -= OnSeamlessCursorSettingsChanged;
+            }
+
+            base.Dispose(disposing);
         }
 
         private Func<string, int> SendConfigMSG { get; }
 
+        private readonly ISettingsRepository<SeamlessCursorSettings> _seamlessCursorSettingsRepository;
         private GpoRuleConfigured _autoHideCursorEnabledGpoRuleConfiguration;
         private bool _autoHideCursorEnabledStateIsGPOConfigured;
         private bool _isAutoHideCursorEnabled;
@@ -1664,5 +1891,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _mouseButtonLockMmbEnabled;
         private int _mouseButtonLockHoldDurationMs;
         private int _mouseButtonLockMoveCancelPixels;
+
+        private GpoRuleConfigured _seamlessCursorEnabledGpoRuleConfiguration;
+        private bool _seamlessCursorEnabledStateIsGPOConfigured;
+        private bool _isSeamlessCursorEnabled;
+        private bool _seamlessCursorStopAtEmptyEdges;
+        private bool _seamlessCursorMapCursorWrap;
+        private bool _isSeamlessCursorCalibrated;
+        private int _monitorCount;
+        private IFileSystemWatcher _seamlessCursorCalibrationWatcher;
+        private DispatcherQueue _dispatcherQueue;
     }
 }

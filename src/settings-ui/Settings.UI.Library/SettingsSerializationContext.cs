@@ -76,6 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(PowerPreviewSettings))]
     [JsonSerializable(typeof(PowerRenameSettings))]
     [JsonSerializable(typeof(RegistryPreviewSettings))]
+    [JsonSerializable(typeof(SeamlessCursorSettings))]
     [JsonSerializable(typeof(ShortcutGuideSettings))]
     [JsonSerializable(typeof(WorkspacesSettings))]
     [JsonSerializable(typeof(GrabAndMoveSettings))]
@@ -118,6 +119,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(PowerRenameProperties))]
     [JsonSerializable(typeof(PowerRenameLocalProperties))]
     [JsonSerializable(typeof(RegistryPreviewProperties))]
+    [JsonSerializable(typeof(SeamlessCursorProperties))]
     [JsonSerializable(typeof(ShortcutConflictProperties))]
     [JsonSerializable(typeof(ShortcutGuideProperties))]
     [JsonSerializable(typeof(WorkspacesProperties))]
@@ -178,6 +180,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(SndPowerAccentSettings))]
     [JsonSerializable(typeof(SndPowerPreviewSettings))]
     [JsonSerializable(typeof(SndPowerRenameSettings))]
+    [JsonSerializable(typeof(SndSeamlessCursorSettings))]
     [JsonSerializable(typeof(SndShortcutGuideSettings))]
 
     // IPC Message Generic Wrapper Types (SndModuleSettings<T>)
@@ -193,6 +196,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(SndModuleSettings<SndPowerAccentSettings>))]
     [JsonSerializable(typeof(SndModuleSettings<SndPowerPreviewSettings>))]
     [JsonSerializable(typeof(SndModuleSettings<SndPowerRenameSettings>))]
+    [JsonSerializable(typeof(SndModuleSettings<SndSeamlessCursorSettings>))]
     [JsonSerializable(typeof(SndModuleSettings<SndShortcutGuideSettings>))]
 
     public partial class SettingsSerializationContext : JsonSerializerContext

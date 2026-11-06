@@ -47,6 +47,7 @@ public static class SettingsConfigHelper
         "PowerToys Run",
         "QuickAccent",
         "RegistryPreview",
+        "SeamlessCursor",
         "Shortcut Guide",
         "TextExtractor",
         "Workspaces",
