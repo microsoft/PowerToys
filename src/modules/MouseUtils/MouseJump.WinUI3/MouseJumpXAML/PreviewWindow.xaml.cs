@@ -110,8 +110,7 @@ internal sealed partial class PreviewWindow : Window
         }
 
         this.Activated += this.PreviewWindow_Activated;
-        this.StackPanel.PreviewKeyDown += this.PreviewWindow_PreviewKeyDown;
-        this.PreviewImage.PreviewKeyDown += this.PreviewWindow_PreviewKeyDown;
+        this.FocusHost.PreviewKeyDown += this.PreviewWindow_PreviewKeyDown;
         this.PreviewImage.PointerPressed += this.PreviewImage_PointerPressed;
     }
 
@@ -120,23 +119,51 @@ internal sealed partial class PreviewWindow : Window
         switch (e.WindowActivationState)
         {
             case WindowActivationState.CodeActivated:
-                this.PreviewImage.Focus(FocusState.Programmatic);
+                this.FocusPreviewHost(FocusState.Programmatic);
                 break;
             case WindowActivationState.Deactivated:
                 this.HideWindow();
                 break;
             case WindowActivationState.PointerActivated:
-                this.PreviewImage.Focus(FocusState.Pointer);
+                this.FocusPreviewHost(FocusState.Pointer);
                 break;
             default:
                 throw new InvalidOperationException();
         }
     }
 
+    /// <summary>
+    /// Gives keyboard focus to <see cref="FocusHost"/> so its PreviewKeyDown handler
+    /// receives Escape and the screen navigation keys.
+    /// </summary>
+    /// <remarks>
+    /// Image and StackPanel aren't focusable, so focusing them fails silently and key
+    /// presses never reach the handler. See https://github.com/microsoft/PowerToys/issues/50533.
+    /// Focus can also fail if layout hasn't completed yet (e.g. the first activation after
+    /// the app starts), so retry once on the next UI thread tick.
+    /// </remarks>
+    private void FocusPreviewHost(FocusState focusState)
+    {
+        if (this.FocusHost.Focus(focusState))
+        {
+            return;
+        }
+
+        _ = this.DispatcherQueue.TryEnqueue(
+            () =>
+            {
+                if (!this.FocusHost.Focus(focusState))
+                {
+                    Logger.LogWarning("Unable to set keyboard focus on the preview window.");
+                }
+            });
+    }
+
     private void PreviewWindow_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Key == VirtualKey.Escape)
         {
+            e.Handled = true;
             this.HideWindow();
             return;
         }
@@ -434,43 +461,7 @@ internal sealed partial class PreviewWindow : Window
                 }
 
                 var hWnd = (HWND)WinRT.Interop.WindowNative.GetWindowHandle(this);
-
-                // use raw Win32 calls instead of WinUI3's AppWindow.Show()/Activate()/Focus()
-                // because WinUI3's activation sequence intermittently fails to transfer keyboard
-                // focus, which causes the Window.Activated "Deactivated" event to never fire
-                // when the user clicks away, leaving the preview window stuck open.
-                _ = PInvoke.ShowWindow(hWnd, SHOW_WINDOW_CMD.SW_SHOW);
-
-                var setForegroundResult = PInvoke.SetForegroundWindow(hWnd);
-                ResultHandler.HandleResult(
-                    result: (int)setForegroundResult,
-                    success: (bool)setForegroundResult,
-                    getLastError: false,
-                    nameof(PInvoke.SetForegroundWindow));
-
-                PInvoke.SetLastError(0);
-                var setFocusResult = PInvoke.SetFocus(hWnd);
-                if (setFocusResult.IsNull)
-                {
-                    var lastError = Marshal.GetLastPInvokeError();
-                    ResultHandler.HandleResult(
-                        result: setFocusResult,
-                        success: lastError == 0,
-                        lastError: lastError,
-                        nameof(PInvoke.SetFocus));
-                }
-
-                PInvoke.SetLastError(0);
-                var setActiveResult = PInvoke.SetActiveWindow(hWnd);
-                if (setActiveResult.IsNull)
-                {
-                    var lastError = Marshal.GetLastPInvokeError();
-                    ResultHandler.HandleResult(
-                        result: setActiveResult,
-                        success: lastError == 0,
-                        lastError: lastError,
-                        nameof(PInvoke.SetActiveWindow));
-                }
+                ForegroundHelper.ShowAndActivate(hWnd);
             }).ConfigureAwait(false);
     }
 

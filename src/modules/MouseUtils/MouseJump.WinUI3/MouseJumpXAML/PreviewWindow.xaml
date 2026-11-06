@@ -8,13 +8,26 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="MouseJump.WinUI3"
     mc:Ignorable="d">
-    <StackPanel
-        x:Name="StackPanel"
+    <!--
+        Image and StackPanel can't take keyboard focus, so the preview is hosted in a
+        focusable control to receive Escape and the screen navigation keys.
+    -->
+    <ContentControl
+        x:Name="FocusHost"
         HorizontalAlignment="Stretch"
-        VerticalAlignment="Stretch">
-        <Image
-            x:Name="PreviewImage"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center" />
-    </StackPanel>
+        VerticalAlignment="Stretch"
+        HorizontalContentAlignment="Stretch"
+        VerticalContentAlignment="Stretch"
+        IsTabStop="True"
+        UseSystemFocusVisuals="False">
+        <StackPanel
+            x:Name="StackPanel"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch">
+            <Image
+                x:Name="PreviewImage"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center" />
+        </StackPanel>
+    </ContentControl>
 </Window>
