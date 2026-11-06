@@ -5,6 +5,7 @@
 using System;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using SamplePagesExtension.Pages;
 using SamplePagesExtension.Pages.IssueSpecificPages;
 using Windows.System;
 
@@ -54,8 +55,11 @@ public partial class SamplePagesCommandsProvider : CommandProvider
         return _commands;
     }
 
-    public override ICommandItem GetCommandItem(string id) =>
-        id == SampleCompactPinToDockPage.PinnableItem.Command.Id ? SampleCompactPinToDockPage.PinnableItem : null;
+    public override ICommandItem GetCommandItem(string id) => id switch
+    {
+        SamplePageMenuPage.CommandId => SamplePageMenuPage.Item,
+        _ => id == SampleCompactPinToDockPage.PinnableItem.Command.Id ? SampleCompactPinToDockPage.PinnableItem : null,
+    };
 
     public override ICommandItem[] GetDockBands()
     {

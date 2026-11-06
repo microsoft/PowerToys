@@ -56,7 +56,7 @@ public sealed partial class AccessKeyModeController : IDisposable
     {
         IsNativeDisplayModeSuppressed = false;
         var key = (VirtualKey)chord.Vkey;
-        if (IsAltKey(key))
+        if (key.IsAltKey())
         {
             _isAltTapCandidate =
                 !chord.Modifiers.HasFlag(VirtualKeyModifiers.Control) &&
@@ -66,7 +66,7 @@ public sealed partial class AccessKeyModeController : IDisposable
         }
 
         _isAltTapCandidate = false;
-        return IsActive && !IsModifierKey(key) ? _generation : null;
+        return IsActive && !key.IsModifierKey() ? _generation : null;
     }
 
     /// <summary>
@@ -75,7 +75,7 @@ public sealed partial class AccessKeyModeController : IDisposable
     /// <param name="key">The released key.</param>
     public void HandleKeyUp(VirtualKey key)
     {
-        if (!IsAltKey(key))
+        if (!key.IsAltKey())
         {
             return;
         }
@@ -161,13 +161,4 @@ public sealed partial class AccessKeyModeController : IDisposable
         IsActive = isActive;
         IsActiveChanged?.Invoke(this, EventArgs.Empty);
     }
-
-    private static bool IsAltKey(VirtualKey key) =>
-        key is VirtualKey.Menu or VirtualKey.LeftMenu or VirtualKey.RightMenu;
-
-    private static bool IsModifierKey(VirtualKey key) =>
-        key is VirtualKey.Shift or VirtualKey.LeftShift or VirtualKey.RightShift or
-            VirtualKey.Control or VirtualKey.LeftControl or VirtualKey.RightControl or
-            VirtualKey.Menu or VirtualKey.LeftMenu or VirtualKey.RightMenu or
-            VirtualKey.LeftWindows or VirtualKey.RightWindows;
 }

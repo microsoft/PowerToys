@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CommandPalette.Extensions;
 using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -102,8 +103,28 @@ public sealed partial class PageInteractionCoordinator(ICommandBarInteractionTar
 
     public void CloseContextMenu() => commandBar.CloseContextMenu();
 
-    public bool TryCommandKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key) =>
-        commandBar.TryCommandKeybinding(ctrl, alt, shift, win, key);
+    public bool TryCommandKeybinding(KeyChord chord)
+    {
+        IContextMenuContext? context = CurrentCommandContext;
+        var command = context?.CanOpenContextMenu == true ? context.FindKeybinding(chord) : null;
+        var isPageMenu = false;
+
+        if (command is null && ((VirtualKey)chord.Vkey).IsPageMenuShortcut(chord.Modifiers))
+        {
+            context = CurrentPage?.PageMenu;
+            command = context?.CanOpenContextMenu == true ? context.FindKeybinding(chord) : null;
+            isPageMenu = true;
+        }
+
+        if (command is null || context is null)
+        {
+            return false;
+        }
+
+        commandBar.InvokeContextCommand(context, command, () =>
+            !_isDisposed && ReferenceEquals(context, isPageMenu ? CurrentPage?.PageMenu : CurrentCommandContext));
+        return true;
+    }
 
     private void Page_CommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e)
     {

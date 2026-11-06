@@ -11,6 +11,7 @@ using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -33,6 +34,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     public TaskScheduler Scheduler { get; private set; }
 
     private readonly ExtensionObject<IPage> _pageModel;
+
+    public PageMenuViewModel PageMenu { get; }
 
     public bool IsLoading => ModelIsLoading || (!IsInitialized);
 
@@ -130,7 +133,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public DockCommandRoute? DockRoute { get; internal set; }
 
-    public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost, ICommandProviderContext providerContext)
+    public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost, ICommandProviderContext providerContext, IContextMenuFactory? contextMenuFactory = null)
         : base(scheduler)
     {
         InitializeSelfAsPageContext();
@@ -139,6 +142,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         ExtensionHost = extensionHost;
         ProviderContext = providerContext;
         Icon = new(null);
+        PageMenu = new(_pageModel, PageContext, contextMenuFactory ?? DefaultContextMenuFactory.Instance);
 
         ExtensionHost.StatusMessages.CollectionChanged += StatusMessages_CollectionChanged;
         UpdateHasStatusMessage();
@@ -190,6 +194,9 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
                 // TODO: Do we want an event/signal here that the Page Views can listen to? (i.e. ListPage setting the selected index to 0, however, in async world the user may have already started navigating around page...)
             });
+
+        // Page navigation must not wait for optional menu commands from the extension.
+        _ = Task.Run(RefreshPageMenu);
         return Task.FromResult(true);
     }
 
@@ -309,6 +316,11 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
                 this.Icon = new(incomingIcon);
                 this.Icon.InitializeProperties();
                 break;
+            case nameof(CommandViewModel.Properties):
+            case WellKnownExtensionAttributes.PageMenuCommands:
+                _ = Task.Run(RefreshPageMenu);
+                updateProperty = false;
+                break;
             default:
                 updateProperty = false;
                 break;
@@ -323,6 +335,15 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         if (updateProperty)
         {
             UpdateProperty(propertyName);
+        }
+    }
+
+    private void RefreshPageMenu()
+    {
+        using var operation = TryBeginPageOperation();
+        if (operation is not null)
+        {
+            PageMenu.InitializeProperties();
         }
     }
 
@@ -353,6 +374,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         base.UnsafeCleanup();
 
         ExtensionHost.StatusMessages.CollectionChanged -= StatusMessages_CollectionChanged;
+        PageMenu.SafeCleanup();
 
         var model = _pageModel.Unsafe;
         if (model is not null)

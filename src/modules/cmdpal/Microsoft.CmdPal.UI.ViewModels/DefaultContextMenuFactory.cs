@@ -16,7 +16,11 @@ public partial class DefaultContextMenuFactory : IContextMenuFactory
 
     public List<IContextItemViewModel> UnsafeBuildAndInitMoreCommands(
         IContextItem[] items,
-        CommandItemViewModel commandItem)
+        CommandItemViewModel commandItem) => UnsafeBuildAndInitMoreCommands(items, commandItem.PageContext);
+
+    internal List<IContextItemViewModel> UnsafeBuildAndInitMoreCommands(
+        IContextItem[] items,
+        WeakReference<IPageContext> pageContext)
     {
         List<IContextItemViewModel> results = [];
         if (items is null)
@@ -24,21 +28,37 @@ public partial class DefaultContextMenuFactory : IContextMenuFactory
             return results;
         }
 
-        foreach (var item in items)
+        try
         {
-            if (item is ICommandContextItem contextItem)
+            foreach (var item in items)
             {
-                var contextItemViewModel = new CommandContextItemViewModel(contextItem, commandItem.PageContext);
-                contextItemViewModel.SlowInitializeProperties();
-                results.Add(contextItemViewModel);
+                if (item is ICommandContextItem contextItem)
+                {
+                    var contextItemViewModel = new CommandContextItemViewModel(contextItem, pageContext);
+                    results.Add(contextItemViewModel);
+                    contextItemViewModel.SlowInitializeProperties();
+                }
+                else
+                {
+                    results.Add(new SeparatorViewModel());
+                }
             }
-            else
-            {
-                results.Add(new SeparatorViewModel());
-            }
+        }
+        catch
+        {
+            CleanupCommands(results);
+            throw;
         }
 
         return results;
+    }
+
+    internal static void CleanupCommands(IEnumerable<IContextItemViewModel> commands)
+    {
+        foreach (var command in commands.OfType<CommandContextItemViewModel>())
+        {
+            command.SafeCleanup();
+        }
     }
 
     public void AddMoreCommandsToTopLevel(
@@ -47,5 +67,10 @@ public partial class DefaultContextMenuFactory : IContextMenuFactory
         List<IContextItem?> contextItems)
     {
         // do nothing
+    }
+
+    public void AddMoreCommandsToPage(PageViewModel page, List<IContextItem> contextItems)
+    {
+        // The default factory only uses commands supplied by the extension.
     }
 }

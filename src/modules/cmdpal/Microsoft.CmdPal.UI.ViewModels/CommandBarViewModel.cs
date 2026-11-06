@@ -146,9 +146,19 @@ public sealed partial class CommandBarViewModel : ObservableObject
         PerformCommand(SecondaryCommand);
     }
 
-    public void InvokeContextCommand(CommandContextItemViewModel command) => PerformCommand(command);
+    public static void InvokeContextCommand(CommandContextItemViewModel command, Action<CommandContextItemViewModel> openSubmenu)
+    {
+        if (command.HasSubmenu)
+        {
+            openSubmenu(command);
+        }
+        else
+        {
+            PerformCommand(command);
+        }
+    }
 
-    private void PerformCommand(CommandItemViewModel? command)
+    private static void PerformCommand(CommandItemViewModel? command)
     {
         if (command is not null)
         {

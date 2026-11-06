@@ -727,6 +727,13 @@ Home: highest position. End: lowest position.</value>
   <data name="MoreCommandsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More</value>
   </data>
+  <data name="PageMenuButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
+    <value>Open page commands</value>
+  </data>
+  <data name="PageMenu_ExtensionSettings_Name" xml:space="preserve">
+    <value>Extension settings</value>
+    <comment>Command in a page's title menu that opens the settings of the extension that owns the page</comment>
+  </data>
   <data name="Run_Radio_Position_LastPosition.Content" xml:space="preserve">
     <value>Last position</value>
     <comment>Reopen the window where it was last closed</comment>

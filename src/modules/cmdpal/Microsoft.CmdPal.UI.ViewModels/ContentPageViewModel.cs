@@ -47,8 +47,8 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
-    public ContentPageViewModel(IContentPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext)
-        : base(model, scheduler, host, providerContext)
+    public ContentPageViewModel(IContentPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory? contextMenuFactory = null)
+        : base(model, scheduler, host, providerContext, contextMenuFactory)
     {
         _model = new(model);
     }
@@ -195,7 +195,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                         RefreshCommandSnapshotsUnsafe(contextItemsChanged: true);
                     }
 
-                    CleanupCommandViewModels(removedItems);
+                    DefaultContextMenuFactory.CleanupCommands(removedItems);
                 }
                 else
                 {
@@ -207,7 +207,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                         RefreshCommandSnapshotsUnsafe(contextItemsChanged: true);
                     }
 
-                    CleanupCommandViewModels(removedItems);
+                    DefaultContextMenuFactory.CleanupCommands(removedItems);
                 }
 
                 NotifyCommandsChanged();
@@ -268,14 +268,6 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         foreach (var contextItem in commands.OfType<CommandContextItemViewModel>())
         {
             initialize(contextItem);
-        }
-    }
-
-    private static void CleanupCommandViewModels(IEnumerable<IContextItemViewModel> commands)
-    {
-        foreach (var contextItem in commands.OfType<CommandContextItemViewModel>())
-        {
-            contextItem.SafeCleanup();
         }
     }
 
@@ -418,7 +410,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
             RefreshCommandSnapshotsUnsafe(contextItemsChanged: true);
         }
 
-        CleanupCommandViewModels(removedItems);
+        DefaultContextMenuFactory.CleanupCommands(removedItems);
 
         foreach (var item in Content)
         {

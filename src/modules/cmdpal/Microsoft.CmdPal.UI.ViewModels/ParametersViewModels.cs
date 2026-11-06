@@ -661,7 +661,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     private readonly IContextMenuFactory _contextMenuFactory;
 
     public ParametersPageViewModel(IParametersPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory)
-        : base(model, scheduler, host, providerContext)
+        : base(model, scheduler, host, providerContext, contextMenuFactory)
     {
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
