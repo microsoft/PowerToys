@@ -24,6 +24,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\QuickAccess.UI\Services\QuickAccessFlyoutState.cs" Link="QuickAccess\QuickAccessFlyoutState.cs" />
+    <Compile Include="..\QuickAccess.UI\QuickAccessLaunchContext.cs" Link="QuickAccess\QuickAccessLaunchContext.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Settings.UI\PowerToys.Settings.csproj" />
     <ProjectReference Include="..\Settings.UI.Cli\PowerToys.Settings.Cli.csproj" />

@@ -4,13 +4,16 @@
 
 using System;
 using ManagedCommon;
+using Microsoft.PowerToys.QuickAccess.Services;
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.PowerToys.QuickAccess;
 
-public partial class App : Application
+public sealed partial class App : Application, IDisposable
 {
-    private static MainWindow? _window;
+    private QuickAccessFlyoutHost? _flyoutHost;
+    private bool _isExiting;
+    private bool _disposed;
 
     public App()
     {
@@ -23,9 +26,7 @@ public partial class App : Application
         try
         {
             var launchContext = QuickAccessLaunchContext.Parse(Environment.GetCommandLineArgs());
-            _window = new MainWindow(launchContext);
-            _window.Closed += OnWindowClosed;
-            _window.Activate();
+            _flyoutHost = new QuickAccessFlyoutHost(launchContext, ExitApplication);
         }
         catch (Exception ex)
         {
@@ -37,14 +38,29 @@ public partial class App : Application
         }
     }
 
-    private static void OnWindowClosed(object sender, WindowEventArgs args)
+    private void ExitApplication()
     {
-        if (sender is MainWindow window)
+        if (_isExiting)
         {
-            window.Closed -= OnWindowClosed;
+            return;
         }
 
-        _window = null;
+        _isExiting = true;
+        Dispose();
+        Exit();
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _flyoutHost?.Dispose();
+        _flyoutHost = null;
+        _disposed = true;
+        GC.SuppressFinalize(this);
     }
 
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

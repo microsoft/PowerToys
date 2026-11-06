@@ -29,8 +29,7 @@
 
   <ItemGroup>
     <ApplicationDefinition Include="QuickAccessXaml\App.xaml" />
-    <Page Include="QuickAccessXaml\MainWindow.xaml" />
-    <Page Include="QuickAccessXaml\Flyout\ShellPage.xaml" />
+    <Page Include="QuickAccessXaml\Flyout\QuickAccessFlyout.xaml" />
     <Page Include="QuickAccessXaml\Flyout\LaunchPage.xaml" />
     <Page Include="QuickAccessXaml\Flyout\AppsListPage.xaml" />
   </ItemGroup>
@@ -70,8 +69,9 @@
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
+    <PackageReference Include="DesktopFlyouts.WinUI" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="WinUIEx" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" VersionOverride="10.0.28000.1839" />
   </ItemGroup>
 
   <ItemGroup>
@@ -80,7 +80,6 @@
     <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\common\Common.UI\Common.UI.csproj" />
-    <ProjectReference Include="..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Settings.UI.Controls\Settings.UI.Controls.csproj" />
   </ItemGroup>
