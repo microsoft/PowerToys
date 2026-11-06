@@ -17,7 +17,7 @@
 
 namespace diagnostic_privacy
 {
-    inline bool contains_security_key_name(std::string_view contents)
+    inline bool might_contain_security_key_name(std::string_view contents)
     {
         constexpr std::string_view name = "SecurityKey";
         constexpr std::string_view hexDigits = "0123456789abcdefABCDEF";
@@ -47,6 +47,11 @@ namespace diagnostic_privacy
                     }
                     if (valid)
                     {
+                        // An escaped backslash can introduce another JSON escaping layer.
+                        if (code == '\\')
+                        {
+                            return true;
+                        }
                         character = code <= 0x7f ? static_cast<char>(code) : '\0';
                         index += 5;
                     }
@@ -183,7 +188,7 @@ namespace diagnostic_privacy
             }
 
             const auto prefix = contents.substr(cursor, position - cursor);
-            if (contains_security_key_name(prefix))
+            if (might_contain_security_key_name(prefix))
             {
                 return false;
             }
@@ -192,7 +197,7 @@ namespace diagnostic_privacy
             cursor = *valueEnd;
             position = contents.find('"', cursor);
         }
-        if (contains_security_key_name(std::string_view{ contents }.substr(cursor)))
+        if (might_contain_security_key_name(std::string_view{ contents }.substr(cursor)))
         {
             return false;
         }
@@ -217,7 +222,7 @@ namespace diagnostic_privacy
             std::string contents{ std::istreambuf_iterator<char>{ input }, std::istreambuf_iterator<char>{} };
             input.close();
 
-            if (contents.find('\0') == std::string::npos && !contains_security_key_name(contents) &&
+            if (contents.find('\0') == std::string::npos && !might_contain_security_key_name(contents) &&
                 contents.find("GETSECKEY:") == std::string::npos)
             {
                 continue;
