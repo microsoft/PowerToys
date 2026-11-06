@@ -135,24 +135,19 @@ namespace ShortcutGuide.Helpers
                     // Process exited between enumeration and access.
                 }
 
-                if (name is not null)
+                if (name is not null &&
+                    FindForegroundMatch(indexFile.Index, name, () => WindowAppUserModelIdHelper.GetAppUserModelId(foregroundWindowHandle)) is IndexFile.IndexItem match)
                 {
-                    try
+                    string? pathForApp = match.WindowFilter == "*" ? null : executablePath;
+                    foreach (var item in match.Apps)
                     {
-                        IndexFile.IndexItem match = indexFile.Index.First((s) => !s.BackgroundProcess && IsMatch(name, s.WindowFilter));
-                        string? pathForApp = match.WindowFilter == "*" ? null : executablePath;
-                        foreach (var item in match.Apps)
-                        {
-                            applicationIds[item] = pathForApp;
-                        }
-                    }
-                    catch (InvalidOperationException)
-                    {
+                        applicationIds[item] = pathForApp;
                     }
                 }
             }
 
-            foreach (var item in indexFile.Index.Where((s) => s.BackgroundProcess))
+            // AppUserModelId identifies a window, so it only applies to foreground matching.
+            foreach (var item in indexFile.Index.Where((s) => s.BackgroundProcess && string.IsNullOrEmpty(s.AppUserModelId)))
             {
                 string filter = item.WindowFilter;
 
@@ -209,6 +204,53 @@ namespace ShortcutGuide.Helpers
             }
 
             return applicationIds;
+        }
+
+        /// <summary>
+        /// Finds the index entry that applies to the foreground window.
+        /// </summary>
+        /// <remarks>
+        /// Entries that declare an <see cref="IndexFile.IndexItem.AppUserModelId"/> only match windows
+        /// with that AppUserModelID and take precedence over entries that match the process name alone.
+        /// This lets web apps hosted by a browser process (for example a YouTube Music PWA running in
+        /// <c>chrome.exe</c>) show their own shortcuts instead of the browser's.
+        /// </remarks>
+        /// <param name="index">The entries of the index file.</param>
+        /// <param name="processName">The module name of the foreground process.</param>
+        /// <param name="getAppUserModelId">Returns the AppUserModelID of the foreground window. Only called when an entry requires it.</param>
+        /// <returns>The matching entry, or <c>null</c> when no entry applies.</returns>
+        public static IndexFile.IndexItem? FindForegroundMatch(IndexFile.IndexItem[] index, string processName, Func<string?> getAppUserModelId)
+        {
+            IndexFile.IndexItem? processMatch = null;
+            string? appUserModelId = null;
+            bool appUserModelIdRead = false;
+
+            foreach (var item in index)
+            {
+                if (item.BackgroundProcess || !IsMatch(processName, item.WindowFilter))
+                {
+                    continue;
+                }
+
+                if (string.IsNullOrEmpty(item.AppUserModelId))
+                {
+                    processMatch ??= item;
+                    continue;
+                }
+
+                if (!appUserModelIdRead)
+                {
+                    appUserModelId = getAppUserModelId();
+                    appUserModelIdRead = true;
+                }
+
+                if (appUserModelId is not null && IsAppUserModelIdMatch(appUserModelId, item.AppUserModelId))
+                {
+                    return item;
+                }
+            }
+
+            return processMatch;
 
             static bool IsMatch(string input, string filter)
             {
@@ -232,6 +274,26 @@ namespace ShortcutGuide.Helpers
                     }
 
                     if (string.Equals(input, target, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            // Filters are separated by ';'. A trailing '*' matches any AppUserModelID that starts
+            // with the preceding text, because browsers can append profile-specific suffixes.
+            static bool IsAppUserModelIdMatch(string input, string filter)
+            {
+                string[] filterParts = filter.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                foreach (var part in filterParts)
+                {
+                    bool isMatch = part.EndsWith('*')
+                        ? input.StartsWith(part[..^1], StringComparison.OrdinalIgnoreCase)
+                        : string.Equals(input, part, StringComparison.OrdinalIgnoreCase);
+
+                    if (isMatch)
                     {
                         return true;
                     }

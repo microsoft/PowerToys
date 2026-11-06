@@ -568,4 +568,65 @@ BackgroundProcess: true
 
         Assert.IsFalse(needsRegen, "NeedsIndexRegeneration should ignore explicitly passed file names.");
     }
+
+    [TestMethod]
+    public void CreateIndexYmlFile_WithAppUserModelId_GroupsSeparatelyFromProcessOnlyManifests()
+    {
+        string browserManifest = @"
+PackageName: Browser.App
+Name: Browser
+WindowFilter: browser.exe
+BackgroundProcess: false
+";
+        string webAppManifest = @"
+PackageName: Web.App
+Name: Web App
+WindowFilter: browser.exe
+AppUserModelId: ""Browser._crx_app*"" # web app windows only
+BackgroundProcess: false
+Shortcuts:
+  - SectionName: Main
+    Properties:
+      - Name: Action
+        Shortcut:
+          - Win: false
+            Keys: A
+";
+        File.WriteAllText(Path.Combine(_tempDirectory, "Browser.App.en-US.yml"), browserManifest);
+        File.WriteAllText(Path.Combine(_tempDirectory, "Web.App.en-US.yml"), webAppManifest);
+
+        ManifestIndexGenerator.CreateIndexYmlFile(_tempDirectory);
+
+        string indexContent = File.ReadAllText(Path.Combine(_tempDirectory, "index.yml"));
+        StringAssert.Contains(indexContent, "  AppUserModelId: 'Browser._crx_app*'");
+
+        var deserialized = new YamlDotNet.Serialization.Deserializer().Deserialize<ShortcutGuide.Models.IndexFile>(indexContent);
+        Assert.AreEqual(2, deserialized.Index.Length, "Manifests with and without an AppUserModelId must not share an index entry.");
+
+        var browserItem = Array.Find(deserialized.Index, i => i.AppUserModelId == null);
+        Assert.AreEqual(1, browserItem.Apps.Length);
+        Assert.AreEqual("Browser.App", browserItem.Apps[0]);
+
+        var webAppItem = Array.Find(deserialized.Index, i => i.AppUserModelId == "Browser._crx_app*");
+        Assert.AreEqual("browser.exe", webAppItem.WindowFilter);
+        Assert.AreEqual(1, webAppItem.Apps.Length);
+        Assert.AreEqual("Web.App", webAppItem.Apps[0]);
+    }
+
+    [TestMethod]
+    public void CreateIndexYmlFile_WithoutAppUserModelId_DoesNotEmitAppUserModelIdField()
+    {
+        string manifest = @"
+PackageName: Plain.App
+Name: Plain App
+WindowFilter: plain.exe
+BackgroundProcess: false
+";
+        File.WriteAllText(Path.Combine(_tempDirectory, "Plain.App.en-US.yml"), manifest);
+
+        ManifestIndexGenerator.CreateIndexYmlFile(_tempDirectory);
+
+        string indexContent = File.ReadAllText(Path.Combine(_tempDirectory, "index.yml"));
+        Assert.IsFalse(indexContent.Contains("AppUserModelId", StringComparison.Ordinal), "index.yml should stay unchanged for manifests without an AppUserModelId.");
+    }
 }
