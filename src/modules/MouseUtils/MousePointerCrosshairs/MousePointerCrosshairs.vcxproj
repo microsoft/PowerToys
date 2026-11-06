@@ -84,6 +84,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CursorVisibility.h" />
     <ClInclude Include="InclusiveCrosshairs.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="trace.h" />

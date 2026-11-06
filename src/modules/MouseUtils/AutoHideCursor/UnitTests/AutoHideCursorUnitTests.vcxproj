@@ -33,11 +33,13 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>User32.lib;Gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AutoHideCursorStateTests.cpp" />
+    <ClCompile Include="CursorVisibilityTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\AutoHideCursorState.h" />

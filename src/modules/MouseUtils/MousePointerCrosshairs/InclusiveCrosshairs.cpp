@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "InclusiveCrosshairs.h"
+#include "CursorVisibility.h"
 #include "trace.h"
 
 #ifdef COMPOSITION
@@ -151,8 +152,10 @@ private:
     bool m_drawing = false;
     bool m_destroyed = false;
     bool m_hiddenCursor = false;
+    bool m_cursorVisibilityQueryFailed = false;
     bool m_externalControl = false;
     void SetAutoHideTimer() noexcept;
+    void UpdateCursorVisibility();
 
     // Configurable Settings
     winrt::Windows::UI::Color m_crosshairs_border_color = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_BORDER_COLOR;
@@ -384,13 +387,7 @@ void InclusiveCrosshairs::StartDrawing()
     m_hiddenCursor = false;
     if (m_crosshairs_auto_hide)
     {
-        CURSORINFO cursorInfo{};
-        cursorInfo.cbSize = sizeof(cursorInfo);
-        if (GetCursorInfo(&cursorInfo))
-        {
-            m_hiddenCursor = !(cursorInfo.flags & CURSOR_SHOWING);
-        }
-
+        UpdateCursorVisibility();
         SetAutoHideTimer();
     }
 
@@ -518,27 +515,7 @@ LRESULT CALLBACK InclusiveCrosshairs::WndProc(HWND hWnd, UINT message, WPARAM wP
     case WM_TIMER:
         if (wParam == AUTO_HIDE_TIMER_ID && instance->m_drawing)
         {
-            CURSORINFO cursorInfo{};
-            cursorInfo.cbSize = sizeof(cursorInfo);
-            if (GetCursorInfo(&cursorInfo))
-            {
-                if (cursorInfo.flags & CURSOR_SHOWING)
-                {
-                    if (instance->m_hiddenCursor)
-                    {
-                        instance->m_hiddenCursor = false;
-                        ShowWindow(instance->m_hwnd, SW_SHOWNOACTIVATE);
-                    }
-                }
-                else
-                {
-                    if (!instance->m_hiddenCursor)
-                    {
-                        instance->m_hiddenCursor = true;
-                        ShowWindow(instance->m_hwnd, SW_HIDE);
-                    }
-                }
-            }
+            instance->UpdateCursorVisibility();
         }
         break;
     default:
@@ -585,6 +562,32 @@ void InclusiveCrosshairs::Terminate()
     if (!enqueueSucceeded)
     {
         Logger::error("Couldn't enqueue message to destroy the window.");
+    }
+}
+
+void InclusiveCrosshairs::UpdateCursorVisibility()
+{
+    CURSORINFO cursorInfo{};
+    cursorInfo.cbSize = sizeof(cursorInfo);
+    const auto visible = GetCursorInfo(&cursorInfo) ?
+                             mouse_pointer_crosshairs::IsCursorVisible(cursorInfo) :
+                             std::nullopt;
+    if (!visible.has_value())
+    {
+        if (!m_cursorVisibilityQueryFailed)
+        {
+            Logger::warn("Could not query cursor visibility; preserving the current crosshairs visibility.");
+        }
+        m_cursorVisibilityQueryFailed = true;
+        return;
+    }
+
+    m_cursorVisibilityQueryFailed = false;
+    const bool hidden = !*visible;
+    if (m_hiddenCursor != hidden)
+    {
+        m_hiddenCursor = hidden;
+        ShowWindow(m_hwnd, m_hiddenCursor ? SW_HIDE : SW_SHOWNOACTIVATE);
     }
 }
 
