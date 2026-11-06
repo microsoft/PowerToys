@@ -63,8 +63,8 @@ internal sealed class IconModel : IAdaptiveVisualModel
     /// <summary>Gets whether the name has a glyph. Without one, the renderer draws the fallback.</summary>
     public bool RendersItself => Glyph is not null;
 
-    /// <summary>Gets the size in pixels, from the Fluent icon sizes.</summary>
-    public double PixelSize => Size switch
+    /// <summary>Gets the font size in device-independent pixels (DIPs), from the Fluent icon sizes.</summary>
+    public double FontSizeInDips => Size switch
     {
         IconSize.XxSmall => 12,
         IconSize.XSmall => 16,
