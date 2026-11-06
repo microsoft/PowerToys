@@ -80,7 +80,7 @@ public sealed class SnippetAnswersPageTests
         var result = ((IInvokableCommand)page.Command.Command!).Invoke(null);
 
         Assert.AreEqual(CommandResultKind.Dismiss, result.Kind);
-        Assert.AreEqual("Hi Your name,\nthanks for the notes.\nYour colleague", environment.Clipboard.Writes.Single().Text);
+        Assert.AreEqual("Hi Your name,\r\nthanks for the notes.\r\nYour colleague", environment.Clipboard.Writes.Single().Text);
         Assert.AreEqual("Something the user copied", environment.Clipboard.Text);
         Assert.IsTrue(answers.All(answer => answer.Text.Length == 0), "Answers aren't kept after the paste.");
     }

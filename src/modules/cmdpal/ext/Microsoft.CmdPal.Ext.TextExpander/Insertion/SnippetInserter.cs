@@ -119,6 +119,8 @@ internal sealed class SnippetInserter
             return (null, false);
         }
 
+        // With CR LF line breaks, as the clipboard has text: the console runs pasted lines with a lone LF as one.
+        text = ClipboardFormats.WithClipboardLineBreaks(text);
         var write = _clipboard.WriteText(text, keepOutOfHistory: true);
         if (write == ClipboardWrite.Refused)
         {

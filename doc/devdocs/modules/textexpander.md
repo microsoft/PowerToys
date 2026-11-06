@@ -170,6 +170,8 @@ keys out of an insertion.
 - The snippet carries `ExcludeClipboardContentFromMonitorProcessing`,
   `CanIncludeInClipboardHistory` = 0 and `CanUploadToCloudClipboard` = 0. So does the restored
   clipboard, unless it had one already.
+- On the clipboard, each line break is CR LF (`ClipboardFormats.WithClipboardLineBreaks`), as text
+  there has it: the console ran two lines pasted with a lone LF between them as one.
 - The restore comes at least 150 ms after the V, once the target reads. Otherwise it comes at 350 ms,
   if the target answers `WM_NULL` within 50 ms. A busy target gets up to 5 s. Then the snippet stays,
   and the user is told once per run.

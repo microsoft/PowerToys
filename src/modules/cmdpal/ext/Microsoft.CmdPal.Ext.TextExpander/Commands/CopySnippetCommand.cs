@@ -7,6 +7,7 @@ using Microsoft.CmdPal.Ext.TextExpander.Insertion;
 using Microsoft.CmdPal.Ext.TextExpander.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.PowerToys.TextExpander;
 
 namespace Microsoft.CmdPal.Ext.TextExpander.Commands;
 
@@ -43,7 +44,8 @@ internal sealed partial class CopySnippetCommand : InvokableCommand
             return CommandResult.ShowToast(new ToastArgs { Message = Resources.toast_off, Result = CommandResult.KeepOpen() });
         }
 
-        if (_clipboard.WriteText(text, keepOutOfHistory: false) != ClipboardWrite.Written)
+        // With CR LF line breaks, as the clipboard has text: the console runs pasted lines with a lone LF as one.
+        if (_clipboard.WriteText(ClipboardFormats.WithClipboardLineBreaks(text), keepOutOfHistory: false) != ClipboardWrite.Written)
         {
             return CommandResult.ShowToast(new ToastArgs { Message = Resources.copy_failed_toast, Result = CommandResult.KeepOpen() });
         }

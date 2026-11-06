@@ -390,6 +390,45 @@ public sealed class InjectorDispatchTests
         }
     }
 
+    [TestMethod]
+    public void APasteHasCrLfLineBreaksOnTheClipboard()
+    {
+        // The console ran two lines pasted with a lone LF between them as one. A lone CR, a control character, stays.
+        using var box = new FakeTextBox("!lines");
+        var pasted = new List<string>();
+        InjectionBackend original = Injector.Backend;
+        try
+        {
+            Injector.Backend = InjectionBackend.Clipboard;
+            Assert.IsTrue(Injector.ReplaceCore(
+                6,
+                "echo one\necho two\r\nthree\rfour ",
+                IntPtr.Zero,
+                0,
+                _ => true,
+                box.Guard,
+                box.Hook.InputGeneration,
+                () => new IntPtr(1),
+                (text, window, send, keepAlive) =>
+                {
+                    pasted.Add(text);
+                    return box.Paste(text, window, send, keepAlive);
+                },
+                box.Dispatch,
+                getAsyncKeyState: _ => 0,
+                sleep: _ => { },
+                isOpenByTarget: box.TookPaste,
+                givenBack: 1));
+        }
+        finally
+        {
+            Injector.Backend = original;
+        }
+
+        Assert.AreEqual("echo one\r\necho two\r\nthree\rfour ", pasted.Single());
+        Assert.AreEqual("echo one\necho two\nthree\rfour |", box.ToString());
+    }
+
     private static string Calls(FakeTextBox box) => string.Join(" | ", box.Batches.Select(FakeTextBox.Describe));
 
     /// <summary>The injector's pauses for an erase of <paramref name="erased"/> keys and a paste: before the erase, between its keys, and before Ctrl.</summary>

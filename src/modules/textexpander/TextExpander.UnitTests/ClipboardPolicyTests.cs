@@ -394,4 +394,25 @@ public sealed class ClipboardPolicyTests
             }
         }
     }
+
+    [TestMethod]
+    [DataRow("echo one\necho two", "echo one\r\necho two")]
+    [DataRow("\nfirst\n\nlast\n", "\r\nfirst\r\n\r\nlast\r\n")]
+    [DataRow("already\r\nwindows\r\n", "already\r\nwindows\r\n")]
+    [DataRow("mixed\r\nand\nlone", "mixed\r\nand\r\nlone")]
+    [DataRow("a lone\rCR stays", "a lone\rCR stays")]
+    [DataRow("CR then\r\rLF\n", "CR then\r\rLF\r\n")]
+    [DataRow("", "")]
+    public void ClipboardTextHasCrLfLineBreaks(string text, string expected)
+    {
+        // The console runs two lines pasted with a lone LF between them as one. A lone CR is a control character: kept.
+        Assert.AreEqual(expected, ClipboardFormats.WithClipboardLineBreaks(text));
+    }
+
+    [TestMethod]
+    public void ClipboardTextWithoutLoneLineFeedsIsTheSameString()
+    {
+        const string text = "one line\r\nand a tab\t";
+        Assert.AreSame(text, ClipboardFormats.WithClipboardLineBreaks(text));
+    }
 }

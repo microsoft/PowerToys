@@ -128,4 +128,42 @@ internal static class ClipboardFormats
         int end = text.IndexOf('\0');
         return new string(end < 0 ? text : text[..end]);
     }
+
+    /// <summary>
+    /// Gets <paramref name="text"/> with each line break that's a lone LF written as CR LF, as text on the clipboard has it.
+    /// Apps that paste read that, and the console runs two lines pasted with a lone LF between them as one. A lone CR, a
+    /// control character, stays as it is. The same string when there's nothing to change.
+    /// </summary>
+    public static string WithClipboardLineBreaks(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+
+        int lone = 0;
+        for (int at = text.IndexOf('\n'); at >= 0; at = text.IndexOf('\n', at + 1))
+        {
+            if (at == 0 || text[at - 1] != '\r')
+            {
+                lone++;
+            }
+        }
+
+        if (lone == 0)
+        {
+            return text;
+        }
+
+        return string.Create(text.Length + lone, text, static (written, text) =>
+        {
+            int next = 0;
+            for (int i = 0; i < text.Length; i++)
+            {
+                if (text[i] == '\n' && (i == 0 || text[i - 1] != '\r'))
+                {
+                    written[next++] = '\r';
+                }
+
+                written[next++] = text[i];
+            }
+        });
+    }
 }

@@ -63,6 +63,18 @@ public sealed class SnippetCommandsTests
     }
 
     [TestMethod]
+    public void Copy_Lines_HaveCrLfLineBreaksOnTheClipboard()
+    {
+        // As the clipboard has text: the console ran pasted lines with a lone LF between them as one.
+        using var environment = new TestEnvironment();
+        var command = new CopySnippetCommand(() => "cd ~/project\nls", environment.Clipboard);
+
+        _ = command.Invoke();
+
+        Assert.AreEqual(("cd ~/project\r\nls", false), environment.Clipboard.Writes.Single());
+    }
+
+    [TestMethod]
     public void Insert_TextExpanderSetToAlwaysType_TypesWithoutTouchingTheClipboard()
     {
         using var environment = new TestEnvironment();

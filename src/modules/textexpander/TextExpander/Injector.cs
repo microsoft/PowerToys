@@ -271,7 +271,8 @@ internal static class Injector
         {
             if (pasting)
             {
-                outcome = tryPaste(text, targetWindow, () => (Insert(paste: true), sentAny), () => guard.Renew());
+                // With CR LF line breaks, as the clipboard has text: the console runs pasted lines with a lone LF as one.
+                outcome = tryPaste(ClipboardFormats.WithClipboardLineBreaks(text), targetWindow, () => (Insert(paste: true), sentAny), () => guard.Renew());
             }
 
             // Typing is the fallback, inside the same guard, only when the paste was refused before anything went out. Not

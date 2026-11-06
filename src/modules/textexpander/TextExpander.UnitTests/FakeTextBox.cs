@@ -300,7 +300,8 @@ internal sealed class FakeTextBox : IDisposable
                     Insert("\n");
                     break;
                 case Native.VK_V when Late ? _ctrlNow : _ctrl:
-                    Insert(Clipboard);
+                    // A CR LF from the clipboard is one line break here, as in a text box.
+                    Insert(Clipboard.Replace("\r\n", "\n", StringComparison.Ordinal));
                     _pastes++;
                     break;
                 case Native.VK_V:

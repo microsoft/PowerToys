@@ -14,6 +14,9 @@ namespace Microsoft.CmdPal.Ext.TextExpander.UnitTests;
 public sealed class SnippetInserterTests
 {
     private const string Signature = "Best regards,\nYour name";
+
+    // As the clipboard has text: the console ran pasted lines with a lone LF between them as one.
+    private const string SignatureOnTheClipboard = "Best regards,\r\nYour name";
     private const string UsersCopy = "Something the user copied";
 
     private readonly FakeClipboard _clipboard = new() { Text = UsersCopy };
@@ -40,9 +43,9 @@ public sealed class SnippetInserterTests
 
         Assert.AreEqual(InsertOutcome.Inserted, outcome);
         Assert.AreEqual(1, _desktop.HideRequests);
-        Assert.AreEqual((Signature, true), _clipboard.Writes.Single());
+        Assert.AreEqual((SignatureOnTheClipboard, true), _clipboard.Writes.Single());
         Assert.IsTrue(_desktop.Pasted);
-        Assert.AreEqual(Signature, readByApp, "The app must read the snippet, not the user's copy.");
+        Assert.AreEqual(SignatureOnTheClipboard, readByApp, "The app must read the snippet, not the user's copy.");
         Assert.AreEqual(UsersCopy, _clipboard.Text);
     }
 
@@ -163,7 +166,7 @@ public sealed class SnippetInserterTests
 
         Assert.AreEqual(InsertOutcome.ClipboardNotRestored, Insert(Signature));
         Assert.AreEqual(0, _clipboard.Restores);
-        Assert.AreEqual(Signature, _clipboard.Text);
+        Assert.AreEqual(SignatureOnTheClipboard, _clipboard.Text);
     }
 
     [TestMethod]
