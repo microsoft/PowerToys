@@ -1153,7 +1153,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         CancelAndDisposeTokenSource(ref _selectedItemCts);
 
-        SetCommandBarContext(null);
+        // An empty list keeps its empty content's command, such as an extension's Open settings, in the command bar. The
+        // view clears the selection once the empty list comes in, which can be after UpdateEmptyContent showed it.
+        SetCommandBarContext(ShowEmptyContent && EmptyContent.Model.Unsafe is not null ? EmptyContent : null);
         SetDetails(null);
         SetSearchSuggestion(string.Empty);
         TextToSuggest = string.Empty;
@@ -1426,6 +1428,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
             case nameof(EmptyContent):
                 EmptyContent = new(new(model.EmptyContent), PageContext, contextMenuFactory: null);
                 EmptyContent.SlowInitializeProperties();
+
+                // The command bar shows the new empty content's command if the list is empty now, not the old one's.
+                UpdateEmptyContent();
                 break;
             case nameof(Filters):
                 Filters?.PropertyChanged -= FiltersPropertyChanged;
