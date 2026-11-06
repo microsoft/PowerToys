@@ -316,5 +316,54 @@ namespace EditorHelpersTests
             Assert::IsTrue(EditorHelpers::IsShortcutIllegal(Shortcut(std::vector<int32_t>{ VK_CONTROL, 0x4C })) == ShortcutErrorType::NoError);
             Assert::IsTrue(EditorHelpers::IsShortcutIllegal(Shortcut(std::vector<int32_t>{ VK_LWIN, VK_CONTROL, 0x41 })) == ShortcutErrorType::NoError);
         }
+
+        // Test if LayoutMap provides distinct (Numpad) labels for non-digit numpad keys
+        TEST_METHOD (LayoutMap_ShouldProvideDistinctNumpadLabels_ForNonDigitKeys)
+        {
+            LayoutMap layoutMap;
+            Assert::AreEqual(std::wstring(L"* (Numpad)"), layoutMap.GetKeyName(VK_MULTIPLY));
+            Assert::AreEqual(std::wstring(L"+ (Numpad)"), layoutMap.GetKeyName(VK_ADD));
+            Assert::AreEqual(std::wstring(L"- (Numpad)"), layoutMap.GetKeyName(VK_SUBTRACT));
+            Assert::AreEqual(std::wstring(L"Separator (Numpad)"), layoutMap.GetKeyName(VK_SEPARATOR));
+            Assert::AreEqual(std::wstring(L"/ (Numpad)"), layoutMap.GetKeyName(VK_DIVIDE));
+
+            constexpr DWORD numpadOriginBit = 1ull << 31;
+            Assert::AreEqual(std::wstring(L"/ (Numpad)"), layoutMap.GetKeyName(VK_DIVIDE | numpadOriginBit));
+
+            std::wstring decimalName = layoutMap.GetKeyName(VK_DECIMAL);
+            Assert::IsTrue(decimalName.find(L" (Numpad)") != std::wstring::npos);
+        }
+
+        // Test if LayoutMap::GetKeyCodeList includes non-digit numpad keys without duplicate VK_DIVIDE
+        TEST_METHOD (LayoutMap_GetKeyCodeList_ShouldIncludeNumpadKeysWithoutDuplicates)
+        {
+            LayoutMap layoutMap;
+            std::vector<DWORD> keyCodes = layoutMap.GetKeyCodeList(false);
+            constexpr DWORD numpadOriginBit = 1ull << 31;
+
+            int divideNumpadCount = 0;
+            int divideBareCount = 0;
+            int multiplyCount = 0;
+            int addCount = 0;
+            int subtractCount = 0;
+            int decimalCount = 0;
+
+            for (DWORD code : keyCodes)
+            {
+                if (code == (VK_DIVIDE | numpadOriginBit)) divideNumpadCount++;
+                if (code == VK_DIVIDE) divideBareCount++;
+                if (code == VK_MULTIPLY) multiplyCount++;
+                if (code == VK_ADD) addCount++;
+                if (code == VK_SUBTRACT) subtractCount++;
+                if (code == VK_DECIMAL) decimalCount++;
+            }
+
+            Assert::AreEqual(1, divideNumpadCount);
+            Assert::AreEqual(0, divideBareCount);
+            Assert::AreEqual(1, multiplyCount);
+            Assert::AreEqual(1, addCount);
+            Assert::AreEqual(1, subtractCount);
+            Assert::AreEqual(1, decimalCount);
+        }
     };
 }
