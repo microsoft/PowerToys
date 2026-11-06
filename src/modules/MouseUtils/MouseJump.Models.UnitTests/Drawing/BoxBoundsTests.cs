@@ -4,7 +4,9 @@
 
 using System.Drawing;
 using System.Text.Json;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using MouseJump.Models.Drawing;
 using MouseJump.Models.Styles;
 

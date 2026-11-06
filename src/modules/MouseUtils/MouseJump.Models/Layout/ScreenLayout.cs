@@ -26,7 +26,7 @@ public sealed class ScreenLayout
 
         /// <summary>
         /// Gets or sets the layout bounds for the screen.
-        /// Coordinates are relative to the origin on the containing Form.
+        /// Coordinates are relative to the origin on the containing Preview.
         /// </summary>
         public BoxBounds ScreenBounds
         {
@@ -66,7 +66,7 @@ public sealed class ScreenLayout
 
     /// <summary>
     /// Gets the layout bounds for the screen.
-    /// Coordinates are relative to the origin on the containing Form.
+    /// Coordinates are relative to the origin on the containing Preview.
     /// </summary>
     public BoxBounds ScreenBounds
     {
