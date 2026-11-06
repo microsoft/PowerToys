@@ -120,6 +120,7 @@ azureaiinference
 azureinference
 azureopenai
 backticks
+baddualview
 Badflags
 Badmode
 Badparam
@@ -219,6 +220,7 @@ CHOOSEFONT
 chu
 CIBUILD
 cidl
+ciede
 CIELCh
 cim
 cla
@@ -281,6 +283,7 @@ COMPOSITIONFULL
 CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
+conhost
 CONOUT
 constexpr
 contentdialog
@@ -404,10 +407,12 @@ DESKTOPHORZRES
 desktopshorcutinstalled
 DESKTOPVERTRES
 devblogs
+devcon
 devdocs
 devenv
 DEVICEINTERFACE
 devicetype
+devinfo
 DEVINTERFACE
 devmgmt
 DEVMODE
@@ -418,6 +423,8 @@ devpal
 DEVTYP
 dfx
 DIALOGEX
+dicd
+dif
 diffs
 digicert
 DINORMAL
@@ -486,6 +493,7 @@ DWMWINDOWATTRIBUTE
 DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
 dworigin
+dwpos
 dxgi
 Dxva
 eab
@@ -543,6 +551,7 @@ EXECUTEDEFAULT
 executionpolicy
 exename
 exf
+exitcode
 EXITCOMMAND
 EXITMENULOOP
 EXITSIZEMOVE
@@ -570,6 +579,7 @@ fesf
 FFFF
 fffffffzzz
 FFh
+fhd
 Figma
 figma
 FILEEXPLORER
@@ -640,6 +650,8 @@ GETHOTKEY
 GETICON
 GETLBTEXT
 GETMINMAXINFO
+getmouse
+getmousespeed
 GETNONCLIENTMETRICS
 GETPROPERTYSTOREFLAGS
 GETSCREENSAVERRUNNING
@@ -682,6 +694,7 @@ Hantai
 Hanzi
 Hardlines
 hardlinks
+hardwareid
 HARDWAREINPUT
 Hashset
 hashtag
@@ -856,6 +869,7 @@ INPUTSINK
 INPUTTYPE
 INSTALLDESKTOPSHORTCUT
 installdir
+installflag
 INSTALLFOLDER
 INSTALLFOLDERTOBOOTSTRAPPERINSTALLFOLDER
 INSTALLFOLDERTOPREVIOUSINSTALLFOLDER
@@ -864,6 +878,7 @@ INSTALLMESSAGE
 INSTALLPROPERTY
 INSTALLSTARTMENUSHORTCUT
 INSTALLSTATE
+instanceid
 Inste
 Interlop
 intput
@@ -888,6 +903,7 @@ issuecomment
 istep
 Italicise
 ith
+itu
 IUI
 IUWP
 IWIC
@@ -1079,6 +1095,7 @@ metapackage
 mfc
 mfcm
 Mgmt
+mickeys
 Microwaved
 middleclickaction
 midl
@@ -1155,6 +1172,7 @@ msvcp
 mswhql
 MT
 MTND
+multimon
 multimonitor
 Multiplayer
 MULTIPLEUSE
@@ -1421,6 +1439,7 @@ PMs
 PMSIHANDLE
 pnid
 PNMLINK
+pnputil
 Poc
 Podcasts
 PARGB
@@ -1528,6 +1547,7 @@ PWSTR
 pwsz
 pwtd
 qdc
+qhd
 qit
 QITAB
 QITABENT
@@ -1572,6 +1592,7 @@ REFIID
 REGCLS
 regfile
 REGISTERCLASSFAILED
+registerdevice
 REGISTRYHEADER
 REGISTRYPREVIEWEXT
 registryroot
@@ -1687,6 +1708,8 @@ SETFOREGROUND
 SETHOTKEY
 SETICON
 SETLOWPOWERACTIVE
+setmouse
+setmousespeed
 setparams
 SETPOWEROFFACTIVE
 SETRANGE
@@ -1700,6 +1723,7 @@ settingscard
 SETTINGSCHANGED
 settingsheader
 settingshotkeycontrol
+setupapi
 setvariable
 SETWORKAREA
 SFBS
@@ -1797,6 +1821,8 @@ sparkline
 spdisp
 spdlog
 spdo
+spdrp
+spectre
 spesi
 splitwstring
 Spongebob
@@ -1924,6 +1950,7 @@ telephon
 templatenamespace
 TESTONLY
 testprocess
+testsigning
 TEXCOORD
 TEXTBOXNEWLINE
 textextractor
@@ -2036,6 +2063,7 @@ unvirtualized
 unwide
 unzoom
 UOI
+updateinifile
 UPDATENOW
 updown
 UPGRADINGPRODUCTCODE
@@ -2129,6 +2157,7 @@ wcsicmp
 wcsncpy
 wcsnicmp
 WDA
+wdk
 wdm
 wdp
 wdupenv
