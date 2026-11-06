@@ -56,6 +56,7 @@ public partial class PowerScriptsViewModel
             KeyboardManagerConsumer.Update(keyboardManager);
             _consumerSettingsLoaded = true;
             OnPropertyChanged(nameof(IsEnabled));
+            OnPropertyChanged(nameof(ExecutionSettingsSummary));
             OnPropertyChanged(nameof(IsPowerScriptsPolicyControlled));
         }
         catch

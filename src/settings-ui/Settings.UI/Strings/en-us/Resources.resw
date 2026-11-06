@@ -6791,6 +6791,27 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>Open PowerScripts editor</value>
   </data>
   <data name="PowerScripts_OpenEditorCard.Description" xml:space="preserve">
-    <value>Manage My scripts, Consumer modules, and Activity in a separate window.</value>
+    <value>Create and manage scripts, metadata, approvals, and activity in a separate window.</value>
   </data>
+  <data name="PowerScripts_AgentSkillsGroup.Header" xml:space="preserve"><value>AI agent skills</value></data>
+  <data name="PowerScripts_AgentSkillsHelp.Message" xml:space="preserve"><value>Teach a local AI agent to create PowerScripts and guide you through module setup. Install the agent separately. Installing this skill does not approve scripts or grant permissions. Remote, WSL, and cloud agents need separate setup.</value></data>
+  <data name="PowerScripts_AgentSelection.Header" xml:space="preserve"><value>Install for</value></data>
+  <data name="PowerScripts_AgentSelection.Description" xml:space="preserve"><value>Choose an agent's personal skills folder, or select Custom to choose another skills folder.</value></data>
+  <data name="PowerScripts_AgentCopilot.Content" xml:space="preserve"><value>Copilot CLI / VS Code Copilot</value></data>
+  <data name="PowerScripts_AgentClaude.Content" xml:space="preserve"><value>Claude Code</value></data>
+  <data name="PowerScripts_AgentCodex.Content" xml:space="preserve"><value>Codex</value></data>
+  <data name="PowerScripts_AgentCustom.Content" xml:space="preserve"><value>Custom</value></data>
+  <data name="PowerScripts_AgentDestination.Header" xml:space="preserve"><value>Skill destination</value></data>
+  <data name="PowerScripts_AgentKeepUpdated.Content" xml:space="preserve"><value>Keep this skill updated when PowerScripts Settings opens</value></data>
+  <data name="PowerScripts_AgentInstallLabel" xml:space="preserve"><value>Install</value></data>
+  <data name="PowerScripts_AgentUpdateLabel" xml:space="preserve"><value>Update</value></data>
+  <data name="PowerScripts_AgentBrowse.Content" xml:space="preserve"><value>Choose folder</value></data>
+  <data name="PowerScripts_AgentChooseFolderHelp" xml:space="preserve"><value>Select your agent's skills folder. PowerToys creates a powertoys-powerscripts folder inside it.</value></data>
+  <data name="PowerScripts_AgentChooseFolderStatus" xml:space="preserve"><value>Choose a folder before installing the skill.</value></data>
+  <data name="PowerScripts_AgentStateNotInstalled" xml:space="preserve"><value>Not installed. Bundled version: {1}.</value></data>
+  <data name="PowerScripts_AgentStateInstalled" xml:space="preserve"><value>Up to date. Installed version: {0}. Bundled version: {1}.</value></data>
+  <data name="PowerScripts_AgentStateUpdateAvailable" xml:space="preserve"><value>Update available: {0} to {1}.</value></data>
+  <data name="PowerScripts_AgentStateModified" xml:space="preserve"><value>Locally modified: version {0}. Your files are preserved; automatic updates are paused. Choose a different Custom folder to install a separate copy for comparison.</value></data>
+  <data name="PowerScripts_AgentStateConflict" xml:space="preserve"><value>An unmanaged skill already exists here. PowerToys will not overwrite it. Choose a different Custom folder to install a separate copy.</value></data>
+  <data name="PowerScripts_AgentInstalledHelp" xml:space="preserve"><value>Skill ready. Start a fresh agent session to discover the new instructions. In Copilot CLI, you can instead use /skills reload, then /skills info powertoys-powerscripts. Installation does not guarantee automatic selection; explicitly request the skill when needed.</value></data>
 </root>

@@ -15,8 +15,8 @@ namespace PowerScripts.Editor;
 
 public sealed partial class MainWindow : Window
 {
-    private readonly Frame[] _frames = { new(), new(), new() };
-    private readonly Type[] _pages = { typeof(MyScriptsPage), typeof(ConsumerModulesPage), typeof(PowerScriptsActivityPage) };
+    private readonly Frame[] _frames = { new(), new() };
+    private readonly Type[] _pages = { typeof(MyScriptsPage), typeof(PowerScriptsActivityPage) };
     private readonly PowerScriptsViewModel _viewModel;
 
     public MainWindow()
@@ -32,6 +32,13 @@ public sealed partial class MainWindow : Window
         };
         AppWindow.Resize(new SizeInt32(1100, 800));
         Navigation.SelectedItem = MyScriptsTab;
+        Activated += async (_, args) =>
+        {
+            if (args.WindowActivationState != WindowActivationState.Deactivated && _frames[0].Content is MyScriptsPage page)
+            {
+                await page.RefreshConfigurationAsync();
+            }
+        };
     }
 
     private void Navigation_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

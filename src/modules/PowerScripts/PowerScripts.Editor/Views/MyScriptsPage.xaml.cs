@@ -5,7 +5,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 using ManagedCommon;
@@ -21,6 +20,7 @@ namespace PowerScripts.Editor.Views
     public sealed partial class MyScriptsPage : Page
     {
         private bool _preserveCatalogueOnLoad;
+        private bool _refreshingConfiguration;
 
         private PowerScriptsViewModel ViewModel { get; set; }
 
@@ -41,6 +41,52 @@ namespace PowerScripts.Editor.Views
 
         public static Visibility InvertBoolToVisibility(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
 
+        public static bool IsDisabled(bool value) => !value;
+
+        public async Task RefreshConfigurationAsync()
+        {
+            if (ViewModel is null || _refreshingConfiguration)
+            {
+                return;
+            }
+
+            _refreshingConfiguration = true;
+            try
+            {
+                ViewModel.RefreshConfiguration();
+                await ViewModel.RefreshConsumersAsync();
+                await ViewModel.RefreshMxcPlatformSupportAsync();
+                if (ViewModel.IsManagedLinuxMode)
+                {
+                    await ViewModel.RefreshLinuxContainerAsync();
+                }
+
+                await RefreshScriptsAsync();
+            }
+            catch (Exception exception)
+            {
+                ShowScriptSettingsError(exception);
+            }
+            finally
+            {
+                _refreshingConfiguration = false;
+            }
+        }
+
+        private void OpenGlobalSettings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var runner = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "PowerToys.exe"));
+                using var process = Process.Start(new ProcessStartInfo(runner, "--open-settings=PowerScripts") { UseShellExecute = false })
+                    ?? throw new InvalidOperationException("Unable to open PowerToys Settings.");
+            }
+            catch (Exception exception)
+            {
+                ShowScriptSettingsError(exception);
+            }
+        }
+
         private void ScriptIcon_ImageFailed(object sender, ExceptionRoutedEventArgs e)
         {
             if (sender is FrameworkElement { DataContext: PowerScriptListItem script })
@@ -52,18 +98,12 @@ namespace PowerScripts.Editor.Views
 
         private async void MyScriptsPage_Loaded(object sender, RoutedEventArgs e)
         {
-            await RefreshConsumersAsync();
             if (_preserveCatalogueOnLoad)
             {
                 return;
             }
 
-            await RefreshScriptsAsync();
-            await ViewModel.RefreshMxcPlatformSupportAsync();
-            if (ViewModel.IsManagedLinuxMode)
-            {
-                await ViewModel.RefreshLinuxContainerAsync();
-            }
+            await RefreshConfigurationAsync();
         }
 
         private async Task RefreshConsumersAsync()
@@ -78,70 +118,6 @@ namespace PowerScripts.Editor.Views
             }
         }
 
-        private async void PowerScriptsEnabledToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (sender is ToggleSwitch toggle && ViewModel.CanChangePowerScriptsEnabled && toggle.IsOn != ViewModel.IsEnabled)
-            {
-                try
-                {
-                    ViewModel.IsEnabled = toggle.IsOn;
-                    await ViewModel.RefreshConsumersAsync();
-                }
-                catch (Exception exception)
-                {
-                    ShowScriptSettingsError(exception);
-                }
-            }
-        }
-
-        private async void PythonEnvironment_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (sender is ComboBox { SelectedIndex: 2 } && ViewModel.IsMxcEnabled)
-            {
-                await ViewModel.RefreshLinuxContainerAsync();
-            }
-        }
-
-        private async void CheckLinuxContainer_Click(object sender, RoutedEventArgs e) =>
-            await ViewModel.RefreshLinuxContainerAsync();
-
-        private async void RecoverLinuxContainer_Click(object sender, RoutedEventArgs e)
-        {
-            var resources = ResourceLoaderInstance.ResourceLoader;
-            var dialog = new ContentDialog
-            {
-                XamlRoot = XamlRoot,
-                Title = resources.GetString("PowerScripts_LinuxRecoverTitle"),
-                Content = resources.GetString("PowerScripts_LinuxRecoverHelp"),
-                PrimaryButtonText = resources.GetString("PowerScripts_LinuxRecoverConfirm"),
-                CloseButtonText = resources.GetString("PowerScripts_Cancel"),
-                DefaultButton = ContentDialogButton.Close,
-            };
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
-            {
-                await ViewModel.RefreshLinuxContainerAsync(recover: true);
-            }
-        }
-
-        private async void SetupLinuxContainer_Click(object sender, RoutedEventArgs e)
-        {
-            var resources = ResourceLoaderInstance.ResourceLoader;
-            var dialog = new ContentDialog
-            {
-                XamlRoot = XamlRoot,
-                Title = resources.GetString("PowerScripts_LinuxSetupTitle"),
-                Content = resources.GetString("PowerScripts_LinuxSetupHelp")
-                    .Replace("{0}", ViewModel.LinuxContainerImage, StringComparison.Ordinal),
-                PrimaryButtonText = resources.GetString("PowerScripts_LinuxSetupConfirm"),
-                CloseButtonText = resources.GetString("PowerScripts_Cancel"),
-                DefaultButton = ContentDialogButton.Close,
-            };
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
-            {
-                await ViewModel.RefreshLinuxContainerAsync(prepare: true);
-            }
-        }
-
         private void CreateScriptButton_Click(object sender, RoutedEventArgs e)
         {
             if (!Frame.Navigate(typeof(PowerScriptTemplatesPage), ViewModel))
@@ -149,22 +125,6 @@ namespace PowerScripts.Editor.Views
                 ShowScriptSettingsError(new InvalidOperationException(
                     ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_TemplateNavigationFailed")));
             }
-        }
-
-        private async void BrowseScriptsFolderButton_Click(object sender, RoutedEventArgs e)
-        {
-            var folder = await PickSingleFolderDialog();
-            if (!string.IsNullOrWhiteSpace(folder))
-            {
-                ViewModel.SetScriptsFolder(folder);
-                await RefreshScriptsAsync();
-            }
-        }
-
-        private async void ResetScriptsFolderButton_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel.ResetScriptsFolder();
-            await RefreshScriptsAsync();
         }
 
         private async Task RefreshScriptsAsync()
@@ -206,6 +166,7 @@ namespace PowerScripts.Editor.Views
 
         private void ShowScriptSettingsError(Exception exception)
         {
+            Logger.LogError("Unable to manage PowerScripts.", exception);
             ScriptSettingsError.Message = exception.Message;
             ScriptSettingsError.IsOpen = true;
         }
@@ -224,105 +185,8 @@ namespace PowerScripts.Editor.Views
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to open PowerScripts folder '{folder}'.", ex);
+                ShowScriptSettingsError(ex);
             }
-        }
-
-        private void BrowsePythonInterpreterButton_Click(object sender, RoutedEventArgs e)
-        {
-            var file = PickFileDialog(
-                "Python Executable\0python.exe;python3.exe;py.exe\0All Executables\0*.exe\0",
-                "Select Python interpreter");
-            if (!string.IsNullOrWhiteSpace(file))
-            {
-                ViewModel.SetPythonInterpreterPath(file);
-            }
-        }
-
-        private async void MxcEnabledToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (sender is not ToggleSwitch toggle || toggle.IsOn == ViewModel.IsMxcEnabled)
-            {
-                return;
-            }
-
-            var isConfirmed = toggle.IsOn ||
-                              await ShowMxcWeakeningWarningAsync(
-                                  ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_MxcDisableWarning"));
-            if (!ViewModel.TrySetMxcEnabled(toggle.IsOn, isConfirmed))
-            {
-                toggle.IsOn = ViewModel.IsMxcEnabled;
-            }
-            else if (ViewModel.IsManagedLinuxMode)
-            {
-                await ViewModel.RefreshLinuxContainerAsync();
-            }
-        }
-
-        private async void GlobalMxcPolicyToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (sender is not ToggleSwitch { Tag: string policy } toggle ||
-                toggle.IsOn == ViewModel.IsGlobalMxcPolicyEnabled(policy))
-            {
-                return;
-            }
-
-            var isConfirmed = toggle.IsOn ||
-                              await ShowMxcWeakeningWarningAsync(
-                                  ResourceLoaderInstance.ResourceLoader
-                                      .GetString("PowerScripts_MxcDisablePolicyWarning")
-                                      .Replace(
-                                          "{0}",
-                                          PowerScriptListItem.GetMxcPolicyDisplayName(policy),
-                                          StringComparison.Ordinal));
-            if (!ViewModel.TrySetGlobalMxcPolicy(policy, toggle.IsOn, isConfirmed))
-            {
-                toggle.IsOn = ViewModel.IsGlobalMxcPolicyEnabled(policy);
-            }
-        }
-
-        private async Task<bool> ShowMxcWeakeningWarningAsync(string changeDescription)
-        {
-            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-            var dialog = new ContentDialog
-            {
-                XamlRoot = XamlRoot,
-                Title = resourceLoader.GetString("PowerScripts_MxcRiskDialogTitle"),
-                Content = resourceLoader.GetString("PowerScripts_MxcRiskDialogContent")
-                    .Replace("{0}", changeDescription, StringComparison.Ordinal),
-                PrimaryButtonText = resourceLoader.GetString("PowerScripts_MxcRiskDialogAccept"),
-                CloseButtonText = resourceLoader.GetString("PowerScripts_Cancel"),
-                DefaultButton = ContentDialogButton.Close,
-            };
-
-            return await dialog.ShowAsync() == ContentDialogResult.Primary;
-        }
-
-        // Uses the Win32 OpenFileName dialog as FileOpenPicker doesn't work when Settings runs elevated.
-        private static string PickFileDialog(string filter, string title)
-        {
-            OpenFileName openFileName = new OpenFileName();
-            openFileName.StructSize = Marshal.SizeOf(openFileName);
-            openFileName.Filter = filter;
-
-            // Make buffer double MAX_PATH since it can use 2 chars per char.
-            openFileName.File = new string(new char[260 * 2]);
-            openFileName.MaxFile = openFileName.File.Length;
-            openFileName.FileTitle = new string(new char[260 * 2]);
-            openFileName.MaxFileTitle = openFileName.FileTitle.Length;
-            openFileName.Title = title;
-            openFileName.DefExt = null;
-            openFileName.Flags = (int)OpenFileNameFlags.OFN_NOCHANGEDIR;
-            openFileName.Hwnd = WinRT.Interop.WindowNative.GetWindowHandle(PowerScripts.Editor.App.MainWindow);
-
-            return NativeMethods.GetOpenFileName(openFileName) ? openFileName.File : null;
-        }
-
-        private async Task<string> PickSingleFolderDialog()
-        {
-            // Use the shell32 folder dialog (works even when Settings runs elevated), matching GeneralPage.
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(PowerScripts.Editor.App.MainWindow);
-            return await Task.FromResult(ShellGetFolder.GetFolderDialog(hwnd));
         }
     }
 }

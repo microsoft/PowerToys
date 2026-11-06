@@ -125,6 +125,14 @@
 		<ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
 		<ProjectReference Include="..\Settings.UI.Controls\Settings.UI.Controls.csproj" />
 		<ProjectReference Include="..\..\modules\PowerScripts\PowerScripts.Editor\UI\PowerScripts.UI.csproj" />
+		<ProjectReference Include="..\..\modules\PowerScripts\PowerScripts.Core\PowerScripts.Core.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="..\..\modules\PowerScripts\AgentSkills\powertoys-powerscripts\**\*">
+			<Link>PowerScriptsAgentSkill\%(RecursiveDir)%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
 	</ItemGroup>
 
 	<!-- XamlIndexBuilder now outputs directly to Assets\Settings -->

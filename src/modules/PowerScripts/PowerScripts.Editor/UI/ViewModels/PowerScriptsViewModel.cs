@@ -167,6 +167,33 @@ namespace PowerScripts.UI.ViewModels
         public bool IsCustomFolder =>
             !string.Equals(ScriptsFolder, DefaultScriptsFolder, StringComparison.OrdinalIgnoreCase);
 
+        public string ExecutionSettingsSummary => string.Join(
+            " | ",
+            GetResourceString(IsEnabled ? "PowerScripts_EditorEnabled" : "PowerScripts_EditorNotEnabled"),
+            PythonEnvironmentDescription,
+            GetResourceString(IsMxcEnabled ? "PowerScripts_EditorSandboxOn" : "PowerScripts_EditorSandboxOff"));
+
+        public void RefreshConfiguration()
+        {
+            ScriptsFolder = ResolveScriptsFolder();
+            LoadMxcSettings();
+            LoadPythonSettings();
+            OnPropertyChanged(nameof(PythonModeIndex));
+            OnPropertyChanged(nameof(PythonInterpreterPath));
+            OnPropertyChanged(nameof(WslDistribution));
+            OnPropertyChanged(nameof(IsWindowsMode));
+            OnPropertyChanged(nameof(IsMxcEnabled));
+            OnPropertyChanged(nameof(IsMxcFilesystemRestrictionEnabled));
+            OnPropertyChanged(nameof(IsMxcNetworkRestrictionEnabled));
+            OnPropertyChanged(nameof(IsMxcUiRestrictionEnabled));
+            OnPropertyChanged(nameof(IsMxcLeastPrivilegeRestrictionEnabled));
+            OnPropertyChanged(nameof(LinuxContainerImage));
+            OnPropertyChanged(nameof(CanPrepareLinuxContainer));
+            NotifyPythonEnvironmentChanged();
+            RefreshScriptMxcStates();
+            OnPropertyChanged(nameof(ExecutionSettingsSummary));
+        }
+
         public bool IsEnabled
         {
             get => _isEnabled;
@@ -234,6 +261,7 @@ namespace PowerScripts.UI.ViewModels
             OnPropertyChanged(nameof(IsWslMode));
             OnPropertyChanged(nameof(IsManagedLinuxMode));
             OnPropertyChanged(nameof(PythonEnvironmentDescription));
+            OnPropertyChanged(nameof(ExecutionSettingsSummary));
         }
 
         public bool IsMxcEnabled => _isMxcEnabled;

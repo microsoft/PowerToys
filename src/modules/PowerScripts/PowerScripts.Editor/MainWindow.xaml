@@ -19,15 +19,10 @@
                     Icon="Library"
                     Tag="0" />
                 <NavigationViewItem
-                    x:Uid="PowerScripts_ConsumerModulesTab"
-                    AutomationProperties.AutomationId="PowerScriptsConsumerModulesTab"
-                    Icon="Link"
-                    Tag="1" />
-                <NavigationViewItem
                     x:Uid="PowerScripts_ActivityTab"
                     AutomationProperties.AutomationId="PowerScriptsActivityTab"
                     Icon="Clock"
-                    Tag="2" />
+                    Tag="1" />
             </NavigationView.MenuItems>
             <ContentControl
                 x:Name="TabContent"
