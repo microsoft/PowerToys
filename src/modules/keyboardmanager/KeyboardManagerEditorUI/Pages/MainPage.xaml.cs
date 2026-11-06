@@ -446,7 +446,17 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.ValidationStateChanged += UnifiedMappingControl_ValidationStateChanged;
             RemappingDialog.IsPrimaryButtonEnabled = UnifiedMappingControl.IsInputComplete();
 
-            await RemappingDialog.ShowAsync();
+            // Suspend the KBM engine only while a mapping is being edited, so recording and typing
+            // in the dialog see physical keys while saved remaps can still be tried in the editor.
+            EngineSuspendHelper.Acquire();
+            try
+            {
+                await RemappingDialog.ShowAsync();
+            }
+            finally
+            {
+                EngineSuspendHelper.Release();
+            }
 
             RemappingDialog.PrimaryButtonClick -= RemappingDialog_PrimaryButtonClick;
             UnifiedMappingControl.ValidationStateChanged -= UnifiedMappingControl_ValidationStateChanged;
