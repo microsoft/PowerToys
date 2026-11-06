@@ -116,6 +116,11 @@ namespace PowerDisplay.Common.Drivers
         /// </summary>
         public const int DmPelsHeight = 0x00100000;
 
+        /// <summary>
+        /// DmDisplayFrequency field is valid.
+        /// </summary>
+        public const int DmDisplayFrequency = 0x00400000;
+
         // ==================== ChangeDisplaySettings flags ====================
 
         /// <summary>

@@ -39,6 +39,9 @@ namespace PowerDisplay.Common.Models
         [JsonPropertyName("volume")]
         public int? Volume { get; set; }
 
+        [JsonPropertyName("refreshRate")]
+        public int? RefreshRate { get; set; }
+
         /// <summary>
         /// Gets or sets the known-good VCP observations cached for this exact DevicePath monitor entry.
         /// Nullable because deserialization writes an explicit JSON <c>null</c> straight over the

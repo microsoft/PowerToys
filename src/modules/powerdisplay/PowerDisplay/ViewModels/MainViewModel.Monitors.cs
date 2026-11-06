@@ -183,6 +183,22 @@ public partial class MainViewModel
     }
 
     /// <summary>
+    /// Re-read display modes after a resolution, refresh-rate, or Extend/Duplicate change made
+    /// outside PowerDisplay. Lightweight: no DDC/CI rescan. The refresh-rate rows update
+    /// themselves from the monitor models.
+    /// </summary>
+    public void RefreshDisplayModes()
+    {
+        if (IsScanning || Monitors.Count == 0)
+        {
+            return;
+        }
+
+        _monitorManager.RefreshDisplayModes();
+        UIRefreshRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
     /// Get set of hidden monitor IDs from settings
     /// </summary>
     private HashSet<string> GetHiddenMonitorIds(PowerDisplaySettings settings)

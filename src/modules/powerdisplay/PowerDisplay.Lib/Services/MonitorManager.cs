@@ -31,6 +31,7 @@ namespace PowerDisplay.Common.Services
         private readonly Dictionary<string, Monitor> _monitorLookup = new(MonitorIdComparer.Instance);
         private readonly SemaphoreSlim _discoveryLock = new(1, 1);
         private readonly DisplayRotationService _rotationService = new();
+        private readonly DisplayRefreshRateService _refreshRateService = new();
 
         // Built-in entries are loaded automatically by the service constructor.
         private readonly MonitorBlacklistService _blacklistService = new();
@@ -122,6 +123,7 @@ namespace PowerDisplay.Common.Services
                 // (the CLI relies on this for `get`/`set --orientation` round-tripping, and the GUI
                 // shows the correct value on initial load).
                 RefreshAllOrientations();
+                RefreshDisplayModes();
 
                 return _monitors.AsReadOnly();
             }
@@ -380,6 +382,138 @@ namespace PowerDisplay.Common.Services
             }
 
             return Task.FromResult(result);
+        }
+
+        public Task<MonitorOperationResult> SetRefreshRateAsync(string monitorId, int refreshRate, CancellationToken cancellationToken = default)
+        {
+            var monitor = GetMonitor(monitorId);
+            if (monitor == null)
+            {
+                return Task.FromResult(MonitorOperationResult.Failure("Monitor not found"));
+            }
+
+            // In Duplicate mode each display keeps its own refresh rate, but the source-level API
+            // lists the union of their modes and clamps a change per display, which can leave the
+            // duplicated displays running at different rates. Refuse instead.
+            if (monitor.SharesDisplaySource)
+            {
+                return Task.FromResult(MonitorOperationResult.Failure("Refresh rate can't be changed while displays are duplicated"));
+            }
+
+            var result = _refreshRateService.SetRefreshRate(monitor, refreshRate);
+            if (result.IsSuccess)
+            {
+                // The available-rate list was already validated by the service. Update the
+                // current value directly instead of re-enumerating modes while the WinUI
+                // ComboBox is processing its selection change. Re-enumeration can temporarily
+                // produce an empty list and clear the bound selection.
+                monitor.CurrentRefreshRate = refreshRate;
+                monitor.ReadValues |= MonitorReadFlags.RefreshRate;
+            }
+            else
+            {
+                Logger.LogWarning($"[MonitorManager] SetRefreshRate {refreshRate} Hz for {monitorId} failed: {result.ErrorMessage}");
+            }
+
+            return Task.FromResult(result);
+        }
+
+        /// <summary>
+        /// Lightweight refresh after a display mode or topology change: re-map each monitor to
+        /// its current display source, then re-read refresh rates. No DDC/CI rescan.
+        /// </summary>
+        public void RefreshDisplayModes()
+        {
+            if (ApplyDisplaySources(_monitors, DisplayConfigInventory.GetAllMonitorDisplayInfo().Values))
+            {
+                // Orientation is also read per display source.
+                RefreshAllOrientations();
+            }
+
+            RefreshAllRefreshRates();
+        }
+
+        /// <summary>
+        /// Switching between Extend and Duplicate does not add or remove devices, so discovery
+        /// does not rerun, but each target's source (GdiDeviceName) can change — in Duplicate
+        /// mode several targets share one source. Re-map by monitor Id so display-settings calls
+        /// go to the source that is actually active, and flag monitors whose source is shared.
+        /// Every active display counts toward sharing, including ones PowerDisplay doesn't
+        /// control. Monitors missing from <paramref name="displays"/> keep their current values.
+        /// </summary>
+        /// <returns>True if any monitor's display source changed.</returns>
+        internal static bool ApplyDisplaySources(IEnumerable<Monitor> monitors, IEnumerable<MonitorDisplayInfo> displays)
+        {
+            var sourceById = new Dictionary<string, string>(MonitorIdComparer.Instance);
+            var targetsPerSource = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            foreach (var display in displays)
+            {
+                if (string.IsNullOrEmpty(display.GdiDeviceName))
+                {
+                    continue;
+                }
+
+                targetsPerSource.TryGetValue(display.GdiDeviceName, out var count);
+                targetsPerSource[display.GdiDeviceName] = count + 1;
+
+                var id = MonitorIdentity.FromDevicePath(display.DevicePath);
+                if (!string.IsNullOrEmpty(id))
+                {
+                    sourceById[id] = display.GdiDeviceName;
+                }
+            }
+
+            var changed = false;
+            foreach (var monitor in monitors)
+            {
+                if (!sourceById.TryGetValue(monitor.Id, out var gdiDeviceName))
+                {
+                    continue;
+                }
+
+                if (!string.Equals(monitor.GdiDeviceName, gdiDeviceName, StringComparison.OrdinalIgnoreCase))
+                {
+                    Logger.LogInfo($"[MonitorManager] Display source for {monitor.Id} changed: {monitor.GdiDeviceName} -> {gdiDeviceName}");
+                    monitor.GdiDeviceName = gdiDeviceName;
+                    changed = true;
+                }
+
+                monitor.SharesDisplaySource = targetsPerSource[gdiDeviceName] > 1;
+            }
+
+            return changed;
+        }
+
+        /// <summary>
+        /// Re-read the current refresh rate and supported rates for every display source.
+        /// Uses EnumDisplaySettings only (no DDC/CI), so it is cheap enough to call on
+        /// WM_DISPLAYCHANGE or before the flyout is shown.
+        /// </summary>
+        public void RefreshAllRefreshRates()
+        {
+            foreach (var monitor in _monitors)
+            {
+                if (string.IsNullOrEmpty(monitor.GdiDeviceName))
+                {
+                    continue;
+                }
+
+                // Mode enumeration can briefly return nothing mid-transition; keep the last known
+                // list rather than clearing the options. Skip unchanged lists so the bound ComboBox
+                // isn't rebuilt needlessly.
+                var rates = _refreshRateService.GetAvailableRefreshRates(monitor.GdiDeviceName);
+                if (rates.Count > 0 && !rates.SequenceEqual(monitor.AvailableRefreshRates))
+                {
+                    monitor.AvailableRefreshRates = rates;
+                }
+
+                var currentRate = _refreshRateService.GetCurrentRefreshRate(monitor.GdiDeviceName);
+                if (currentRate > 0)
+                {
+                    monitor.CurrentRefreshRate = currentRate;
+                    monitor.ReadValues |= MonitorReadFlags.RefreshRate;
+                }
+            }
         }
 
         /// <summary>

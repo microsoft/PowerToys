@@ -30,6 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _enableRotation;
         private bool _enableColorTemperature;
         private bool _enablePowerState;
+        private bool _enableRefreshRate;
         private System.DateTime? _lastSeenUtc;
         private string _capabilitiesRaw = string.Empty;
         private List<VcpCodeDisplayInfo> _vcpCodesFormatted = new List<VcpCodeDisplayInfo>();
@@ -43,6 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _supportsVolume;
         private bool _supportsInputSource;
         private bool _supportsPowerState;
+        private bool _supportsRefreshRate;
 
         // Cached color temperature presets (computed from VcpCodesFormatted)
         private ObservableCollection<ColorPresetItem> _availableColorPresetsCache;
@@ -332,6 +334,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        [JsonPropertyName("enableRefreshRate")]
+        public bool EnableRefreshRate
+        {
+            get => _enableRefreshRate;
+            set
+            {
+                if (_enableRefreshRate != value)
+                {
+                    _enableRefreshRate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         /// <summary>
         /// Gets or sets the UTC timestamp of the last time PowerDisplay successfully
         /// discovered this monitor. Used to age out entries for monitors that have
@@ -523,6 +539,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 if (_supportsPowerState != value)
                 {
                     _supportsPowerState = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        [JsonPropertyName("supportsRefreshRate")]
+        public bool SupportsRefreshRate
+        {
+            get => _supportsRefreshRate;
+            set
+            {
+                if (_supportsRefreshRate != value)
+                {
+                    _supportsRefreshRate = value;
                     OnPropertyChanged();
                 }
             }
@@ -762,6 +792,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             EnableRotation = other.EnableRotation;
             EnableColorTemperature = other.EnableColorTemperature;
             EnablePowerState = other.EnablePowerState;
+            EnableRefreshRate = other.EnableRefreshRate;
             CapabilitiesRaw = other.CapabilitiesRaw;
             ReplaceVcpCodesFormatted(other.VcpCodesFormatted);
             SupportsBrightness = other.SupportsBrightness;
@@ -770,6 +801,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SupportsVolume = other.SupportsVolume;
             SupportsInputSource = other.SupportsInputSource;
             SupportsPowerState = other.SupportsPowerState;
+            SupportsRefreshRate = other.SupportsRefreshRate;
             MonitorNumber = other.MonitorNumber;
             LastSeenUtc = other.LastSeenUtc;
         }

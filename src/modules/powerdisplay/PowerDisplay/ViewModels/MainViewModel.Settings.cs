@@ -390,12 +390,13 @@ public partial class MainViewModel
                     continue;
                 }
 
-                var (brightness, colorTemp, contrast, volume) = savedState.Value;
+                var (brightness, colorTemp, contrast, volume, refreshRate) = savedState.Value;
 
                 TryRestore(updateTasks, brightness, monitorVm.ShowBrightness, monitorVm.SetBrightnessAsync);
                 TryRestore(updateTasks, colorTemp, monitorVm.ShowColorTemperature, monitorVm.SetColorTemperatureAsync);
                 TryRestore(updateTasks, contrast, monitorVm.ShowContrast, monitorVm.SetContrastAsync);
                 TryRestore(updateTasks, volume, monitorVm.ShowVolume, monitorVm.SetVolumeAsync);
+                TryRestore(updateTasks, refreshRate, monitorVm.ShowRefreshRate, monitorVm.SetRefreshRateAsync);
             }
 
             if (updateTasks.Count > 0)
@@ -429,6 +430,7 @@ public partial class MainViewModel
             monitorVm.ShowVolume = monitorSettings.EnableVolume && monitorVm.SupportsVolume;
             monitorVm.ShowInputSource = monitorSettings.EnableInputSource && monitorVm.SupportsInputSource;
             monitorVm.ShowRotation = monitorSettings.EnableRotation;
+            monitorVm.IsRefreshRateEnabled = monitorSettings.EnableRefreshRate;
             monitorVm.ShowColorTemperature = monitorSettings.EnableColorTemperature && monitorVm.SupportsColorTemperature;
             monitorVm.ShowPowerState = monitorSettings.EnablePowerState && monitorVm.SupportsPowerState;
         }
@@ -584,6 +586,7 @@ public partial class MainViewModel
             SupportsInputSource = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x60) ?? false,
             SupportsVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
             SupportsPowerState = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0xD6) ?? false,
+            SupportsRefreshRate = vm.SupportsRefreshRate,
 
             // Default Enable* for new monitors (first-time setup):
             // - Contrast / Volume: enabled if the monitor advertises the VCP code (low-risk features).
@@ -596,6 +599,7 @@ public partial class MainViewModel
             EnableInputSource = false,
             EnableColorTemperature = false,
             EnablePowerState = false,
+            EnableRefreshRate = vm.SupportsRefreshRate,
 
             // Monitor number for display name formatting
             MonitorNumber = vm.MonitorNumber,
@@ -635,6 +639,7 @@ public partial class MainViewModel
         target.EnableRotation = source.EnableRotation;
         target.EnableColorTemperature = source.EnableColorTemperature;
         target.EnablePowerState = source.EnablePowerState;
+        target.EnableRefreshRate = source.EnableRefreshRate;
     }
 
     /// <summary>
