@@ -29,4 +29,18 @@ namespace ImageResizer.Models
         Rle = 5,
         Zip = 6,
     }
+
+    /// <summary>
+    /// Output image format. KeepOriginal re-encodes with the input's own format.
+    /// Integer values are persisted in settings JSON.
+    /// </summary>
+    public enum OutputFormat
+    {
+        KeepOriginal = 0,
+        Png = 1,
+        Jpeg = 2,
+        Bmp = 3,
+        Tiff = 4,
+        Gif = 5,
+    }
 }
