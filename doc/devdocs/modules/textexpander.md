@@ -310,8 +310,9 @@ Rules a change must keep:
 - A snippet that picks from clipboard history while it's off gets a note under Replacement and in the
   Clipboard panel, with a link to Windows Settings unless a policy turned history off.
 - **Refresh** re-reads the file in the editor only.
-- **Open in text editor** opens a `.json` file in the app Windows uses for `.json`, or Notepad, and
-  any other file in Notepad. So a script or shortcut chosen as the database never runs.
+- **Open in text editor** opens a `.json` file in the app Windows uses for `.json`, and any other file
+  in Notepad. So a script or shortcut chosen as the database never runs. With no app set for `.json`,
+  Notepad opens it too (`TextExpanderFileAssociation`), rather than Windows asking which app to use.
 - A reload advances `SnippetRevision`, so an open edit of an existing snippet must be reopened to
   save.
 

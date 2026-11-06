@@ -274,25 +274,56 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void AFileTypeWithNoAppOpensInNotepad()
+        public void AJsonFileWithNoAppSetForItOpensInNotepadWithoutAsking()
+        {
+            // Opened through the shell, it brought up Windows' "How do you want to open this file?" instead.
+            string file = @"C:\Users\alex\OneDrive\My snippets\PowerToysTextExpanderSnippets.json";
+            var started = new List<ProcessStartInfo>();
+            var lookedUp = new List<string>();
+
+            TextExpanderViewModel.OpenFile(file, started.Add, extension =>
+            {
+                lookedUp.Add(extension);
+                return false;
+            });
+
+            Assert.AreEqual(".json", lookedUp.Single());
+            ProcessStartInfo info = started.Single();
+            Assert.AreEqual(Path.Combine(Environment.SystemDirectory, "notepad.exe"), info.FileName);
+            CollectionAssert.AreEqual(new[] { file }, info.ArgumentList.ToArray());
+            Assert.IsFalse(info.UseShellExecute);
+        }
+
+        [TestMethod]
+        public void AnAppSetForJsonThatGoesAwayBeforeTheFileOpensLeavesItToNotepad()
         {
             string file = @"C:\Users\alex\OneDrive\My snippets\PowerToysTextExpanderSnippets.json";
             var started = new List<ProcessStartInfo>();
 
-            TextExpanderViewModel.OpenFile(file, info =>
-            {
-                started.Add(info);
-                if (info.UseShellExecute)
+            TextExpanderViewModel.OpenFile(
+                file,
+                info =>
                 {
-                    throw new Win32Exception(1155, "No application is associated with the specified file for this operation.");
-                }
-            });
+                    started.Add(info);
+                    if (info.UseShellExecute)
+                    {
+                        throw new Win32Exception(1155, "No application is associated with the specified file for this operation.");
+                    }
+                },
+                _ => true);
 
             Assert.AreEqual(2, started.Count);
             Assert.AreEqual(file, started[0].FileName, "The app Windows uses for the file type comes first.");
             Assert.AreEqual(Path.Combine(Environment.SystemDirectory, "notepad.exe"), started[1].FileName);
             CollectionAssert.AreEqual(new[] { file }, started[1].ArgumentList.ToArray());
             Assert.IsFalse(started[1].UseShellExecute);
+        }
+
+        [TestMethod]
+        public void TheAppForAFileTypeIsLookedUpWithoutOpenWithStandingInForNone()
+        {
+            Assert.IsTrue(TextExpanderFileAssociation.HasDefaultApp(".exe"), "Windows runs .exe files itself.");
+            Assert.IsFalse(TextExpanderFileAssociation.HasDefaultApp(".te-no-app-" + Guid.NewGuid().ToString("N")), "No app is set for a made-up type.");
         }
 
         [TestMethod]
@@ -305,7 +336,7 @@ namespace ViewModelTests
         {
             var started = new List<ProcessStartInfo>();
 
-            TextExpanderViewModel.OpenFile(file, started.Add);
+            TextExpanderViewModel.OpenFile(file, started.Add, _ => true);
 
             ProcessStartInfo info = started.Single();
             Assert.AreEqual(shell, info.UseShellExecute, "Opening a script or a shortcut in the app for its type would run it.");
@@ -318,11 +349,14 @@ namespace ViewModelTests
         {
             int starts = 0;
 
-            Assert.ThrowsException<Win32Exception>(() => TextExpanderViewModel.OpenFile(@"C:\snippets.json", _ =>
-            {
-                starts++;
-                throw new Win32Exception(5);
-            }));
+            Assert.ThrowsException<Win32Exception>(() => TextExpanderViewModel.OpenFile(
+                @"C:\snippets.json",
+                _ =>
+                {
+                    starts++;
+                    throw new Win32Exception(5);
+                },
+                _ => true));
 
             Assert.AreEqual(1, starts);
         }

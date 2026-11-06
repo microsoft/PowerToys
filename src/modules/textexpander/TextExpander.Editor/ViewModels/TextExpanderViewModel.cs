@@ -1256,16 +1256,17 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 or System.ComponentModel.Win32Exception;
 
         private static void OpenFileWithDefaultApplication(string path)
-            => OpenFile(path, info => Process.Start(info)?.Dispose());
+            => OpenFile(path, info => Process.Start(info)?.Dispose(), TextExpanderFileAssociation.HasDefaultApp);
 
         /// <summary>
         /// Opens <paramref name="path"/> through <paramref name="start"/> in the app Windows uses for .json files, or in
-        /// Notepad when no app is set for them. Any other file opens in Notepad, since opening a script or a shortcut
-        /// in the app for its type would run it.
+        /// Notepad when no app is set for them (<paramref name="hasDefaultApp"/>, given the extension): Windows would ask
+        /// which app to use instead. Any other file opens in Notepad, since opening a script or a shortcut in the app for
+        /// its type would run it.
         /// </summary>
-        internal static void OpenFile(string path, Action<ProcessStartInfo> start)
+        internal static void OpenFile(string path, Action<ProcessStartInfo> start, Func<string, bool> hasDefaultApp)
         {
-            if (string.Equals(Path.GetExtension(path), ".json", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(Path.GetExtension(path), ".json", StringComparison.OrdinalIgnoreCase) && hasDefaultApp(".json"))
             {
                 try
                 {
@@ -1274,7 +1275,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 }
                 catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == ErrorNoAssociation)
                 {
-                    // No app opens .json files on this PC, so Notepad does.
+                    // The app for .json files went away since it was looked up, so Notepad opens it.
                 }
             }
 

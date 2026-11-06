@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -397,6 +398,64 @@ public sealed class TextExpanderEditorTests : TextExpanderTestBase
         Assert.IsTrue(editor.WaitForRow(synced.Trigger, present: true), $"The snippet written to the file isn't listed. Rows: {editor.DescribeRows()}.");
     }
 
+    /// <summary>
+    /// With no app set for .json files, as on a new PC, Open in text editor opens the database in Notepad, rather than
+    /// Windows asking which app to use.
+    /// </summary>
+    [TestMethod("TextExpander.Editor.OpensTheDatabaseInNotepadWhenNoAppIsSetForJson")]
+    [TestCategory("TextExpander")]
+    [TestCategory("TextExpander.Editor")]
+    public void OpensTheDatabaseInNotepadWhenNoAppIsSetForJson()
+    {
+        if (HasAppFor(".json"))
+        {
+            Assert.Inconclusive("An app is set for .json files here, so it opens the database.");
+        }
+
+        var editor = OpenEditor(OpenTextExpanderPage());
+        editor.WaitForCount(DefaultSnippets.Count);
+        int[] before = ProcessIds("notepad");
+        editor.OpenDatabaseMenu();
+        Step("Selecting Open in text editor");
+        editor.Session.Find<Button>(By.AccessibilityId("Button_TextExpander_OpenSnippetFile"), 10_000).Invoke(msPostAction: 0);
+
+        var openWith = false;
+        var opened = WaitHelper.WaitForStable(
+            () =>
+            {
+                openWith |= ProcessIds("OpenWith").Length > 0;
+                return WindowControl.EnumerateAllWindows().FirstOrDefault(window =>
+                    window.IsVisible
+                    && window.Title.Contains(TextExpanderFiles.SnippetsFileName, StringComparison.OrdinalIgnoreCase)
+                    && ProcessIds("notepad").Contains(window.ProcessId));
+            },
+            window => window.Hwnd != IntPtr.Zero,
+            timeoutMS: 20_000,
+            pollIntervalMS: 250);
+        try
+        {
+            Assert.IsFalse(openWith, "Windows asked which app to open the database with.");
+            Assert.IsTrue(opened.Succeeded, $"Notepad didn't open the database. Windows: {string.Join(", ", WindowsFinder.ListAll().Select(window => $"{window.ProcessName} '{window.Title}'"))}.");
+            Step($"Notepad shows '{opened.LastObservation.Title}'");
+        }
+        finally
+        {
+            WindowControl.TryKillProcessTreeByNameAndWait("OpenWith", 5_000);
+            foreach (int id in ProcessIds("notepad").Except(before))
+            {
+                try
+                {
+                    using var notepad = Process.GetProcessById(id);
+                    notepad.Kill();
+                    notepad.WaitForExit(5_000);
+                }
+                catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception)
+                {
+                }
+            }
+        }
+    }
+
     private static void AssertDatabase(IReadOnlyList<Snippet> expected)
     {
         IReadOnlyList<Snippet>? actual = null;
@@ -428,4 +487,23 @@ public sealed class TextExpanderEditorTests : TextExpanderTestBase
 
         Step($"The Clipboard panel shows '{heading}'");
     }
+
+    /// <summary>Whether an app is set to open files with <paramref name="extension"/>: a command or a packaged app's handler.</summary>
+    private static bool HasAppFor(string extension)
+    {
+        // ASSOCF_INIT_IGNOREUNKNOWN, so no app is an error rather than the "Unknown" type, which is Open With.
+        foreach (int what in new[] { 1, 18 })
+        {
+            uint length = 0;
+            if (AssocQueryStringW(0x400, what, extension, null, IntPtr.Zero, ref length) is 0 or 1 && length > 1)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    [System.Runtime.InteropServices.DllImport("shlwapi.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    private static extern int AssocQueryStringW(uint flags, int what, string association, string? extra, IntPtr output, ref uint length);
 }
