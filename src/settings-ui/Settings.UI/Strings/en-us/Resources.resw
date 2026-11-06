@@ -326,6 +326,12 @@
   <data name="MouseWithoutBorders_CopyMachineName.Text" xml:space="preserve">
     <value>Copy to clipboard</value>
   </data>
+  <data name="MouseWithoutBorders_CopyMachineNameButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Copy machine name</value>
+  </data>
+  <data name="MouseWithoutBorders_SecurityKeyTextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Security key</value>
+  </data>
   <data name="MouseWithoutBorders_ReconnectButton.Text" xml:space="preserve">
     <value>Refresh connections</value>
   </data>
@@ -2258,7 +2264,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Reset to default provider</value>
     <comment>Tooltip for button that clears the provider selection back to default</comment>
   </data>
-  <data name="AdvancedPaste_ClearProviderSelection.AutomationProperties.Name" xml:space="preserve">
+  <data name="AdvancedPaste_ClearProviderSelection.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Reset to default provider</value>
     <comment>Accessible name for button that clears the provider selection back to default</comment>
   </data>
@@ -2266,7 +2272,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Provider options</value>
     <comment>Tooltip for the button that opens a provider's options menu</comment>
   </data>
-  <data name="AdvancedPaste_ProviderOptions.AutomationProperties.Name" xml:space="preserve">
+  <data name="AdvancedPaste_ProviderOptions.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Provider options</value>
     <comment>Accessible name for the button that opens a provider's options menu</comment>
   </data>
@@ -2278,7 +2284,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>When enabled, shows a preview with an explanation of what was fixed and why.</value>
     <comment>Description for the coaching mode settings section</comment>
   </data>
-  <data name="AdvancedPaste_CoachingToggle.AutomationProperties.Name" xml:space="preserve">
+  <data name="AdvancedPaste_CoachingToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Enable coaching mode</value>
     <comment>Accessible name for the coaching mode toggle</comment>
   </data>
@@ -2388,7 +2394,7 @@ Take a look around and explore how some of the PowerToys utilities work and can 
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
     <value>Documentation</value>
   </data>
-  <data name="Oobe_Overview_ConfigurePowerToysButton.AutomationProperties.Name" xml:space="preserve">
+  <data name="Oobe_Overview_ConfigurePowerToysButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Configure PowerToys</value>
   </data>
   <data name="Oobe_Overview_ConfigurePowerToysButton_Text.Text" xml:space="preserve">
@@ -2882,7 +2888,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_AutoHideCursor_IdleDelay.Description" xml:space="preserve">
     <value>Choose a delay from 1 to 60 seconds</value>
   </data>
-  <data name="MouseUtils_AutoHideCursor_IdleDelayInput.AutomationProperties.Name" xml:space="preserve">
+  <data name="MouseUtils_AutoHideCursor_IdleDelayInput.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Idle delay in seconds</value>
   </data>
   <data name="MouseUtils_Enable_CursorWrap.Header" xml:space="preserve">
@@ -6442,6 +6448,9 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_AddProfileButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Save current settings as new profile</value>
   </data>
+  <data name="PowerDisplay_AddProfileButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Add profile</value>
+  </data>
   <data name="PowerDisplay_Monitor_CapabilitiesWarning.Title" xml:space="preserve">
     <value>Monitor capabilities unavailable</value>
   </data>
@@ -6498,11 +6507,20 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_AddCustomMappingButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Add custom mapping</value>
   </data>
+  <data name="PowerDisplay_AddCustomMappingButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Add mapping</value>
+  </data>
   <data name="PowerDisplay_EditCustomMapping_Button.ToolTipService.ToolTip" xml:space="preserve">
     <value>Edit</value>
   </data>
   <data name="PowerDisplay_DeleteCustomMapping_Button.ToolTipService.ToolTip" xml:space="preserve">
     <value>Delete</value>
+  </data>
+  <data name="PowerDisplay_EditCustomMapping_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Edit custom mapping</value>
+  </data>
+  <data name="PowerDisplay_DeleteCustomMapping_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Delete custom mapping</value>
   </data>
   <data name="PowerDisplay_AddCustomMapping_Text.Text" xml:space="preserve">
     <value>Add mapping</value>

@@ -71,7 +71,10 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBox IsReadOnly="True" Text="{x:Bind ViewModel.SecurityKey, Mode=OneWay}" />
+                            <TextBox
+                                x:Uid="MouseWithoutBorders_SecurityKeyTextBox"
+                                IsReadOnly="True"
+                                Text="{x:Bind ViewModel.SecurityKey, Mode=OneWay}" />
                             <Button
                                 x:Uid="MouseWithoutBorders_NewKey"
                                 Command="{x:Bind GenerateNewKeyCommand, Mode=OneTime}"
@@ -113,6 +116,7 @@
                                 IsTextSelectionEnabled="True"
                                 Text="{x:Bind ViewModel.MachineHostName, Mode=OneTime}" />
                             <Button
+                                x:Uid="MouseWithoutBorders_CopyMachineNameButton"
                                 Padding="4"
                                 Command="{x:Bind CopyPCNameCommand, Mode=OneTime}"
                                 Content="{ui:FontIcon Glyph=&#xE8C8;,
