@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -438,7 +439,7 @@ internal abstract partial class WidgetPage : OnLoadContentPage
 
     protected Dictionary<WidgetPageState, string> Template { get; set; } = new();
 
-    protected JsonObject ContentDataJson
+    internal JsonObject ContentDataJson
     {
         get
         {
@@ -996,6 +997,9 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
 
 internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDisposable
 {
+    // Windows IF_TYPE_PROP_VIRTUAL is not named in NetworkInterfaceType.
+    private const NetworkInterfaceType ProprietaryVirtualType = (NetworkInterfaceType)53;
+
     public override string Id => "com.microsoft.cmdpal.network_widget";
 
     public override string Title => Resources.GetResource("Network_Usage_Title");
@@ -1004,13 +1008,16 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
     private readonly DataManager _dataManager;
     private readonly SettingsManager _settingsManager;
-    private int _networkIndex;
-    private bool _defaultNetworkInitialized;
+    private readonly Func<NetworkStats> _getNetworkStats;
+    private string? _networkAdapterId;
 
-    public SystemNetworkUsageWidgetPage(SettingsManager settingsManager)
+    private string SelectedNetworkAdapterId => _networkAdapterId ??= _settingsManager.DefaultNetworkAdapterId;
+
+    public SystemNetworkUsageWidgetPage(SettingsManager settingsManager, Func<NetworkStats>? getNetworkStats = null)
     {
         _settingsManager = settingsManager;
         _dataManager = new(DataType.Network, () => UpdateWidget());
+        _getNetworkStats = getNetworkStats ?? _dataManager.GetNetworkStats;
         Commands = [
             new CommandContextItem(new PrevNetworkCommand(this) { Name = Resources.GetResource("Previous_Network_Title") }),
             new CommandContextItem(new NextNetworkCommand(this) { Name = Resources.GetResource("Next_Network_Title") }),
@@ -1028,28 +1035,28 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
             var timer = Stopwatch.StartNew();
 
-            var currentData = _dataManager.GetNetworkStats();
-
-            if (!_defaultNetworkInitialized)
-            {
-                var defaultNetworkIndex = currentData.GetNetworkIndex(_settingsManager.DefaultNetworkAdapterId);
-                if (defaultNetworkIndex >= 0)
-                {
-                    _networkIndex = defaultNetworkIndex;
-                    _defaultNetworkInitialized = true;
-                }
-            }
+            var adapter = _getNetworkStats().GetNetworkAdapter(SelectedNetworkAdapterId);
 
             var dataDuration = timer.ElapsedMilliseconds;
 
-            var netName = currentData.GetNetworkName(_networkIndex);
-            var networkStats = currentData.GetNetworkUsage(_networkIndex);
+            var networkStats = adapter.Usage;
 
             ContentData["networkUsage"] = FloatToPercentString(networkStats.Usage);
             ContentData["netSent"] = SpeedToString(networkStats.Sent);
             ContentData["netReceived"] = SpeedToString(networkStats.Received);
-            ContentData["networkName"] = netName;
-            ContentData["netGraphUrl"] = currentData.CreateNetImageUrl(_networkIndex);
+            ContentData["networkName"] = adapter.Name;
+            if (adapter.Snapshot is { } snapshot)
+            {
+                if (!string.IsNullOrWhiteSpace(snapshot.Description) && !string.Equals(snapshot.Name, snapshot.Description, StringComparison.OrdinalIgnoreCase))
+                {
+                    ContentData["networkDescription"] = snapshot.Description;
+                }
+
+                ContentData["networkType"] = GetNetworkTypeText(snapshot.Type, snapshot.IsHardware);
+                ContentData["networkStatus"] = GetNetworkStatusText(snapshot.Status);
+            }
+
+            ContentData["netGraphUrl"] = ChartHelper.CreateImageUrl(adapter.ChartValues, ChartHelper.ChartType.Net);
             ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
             ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
 
@@ -1087,6 +1094,42 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
     }
 
+    private static string GetNetworkTypeText(NetworkInterfaceType type, bool isHardware)
+    {
+        if (type == ProprietaryVirtualType && !isHardware)
+        {
+            return Resources.GetResource("Network_Adapter_Type_Virtual");
+        }
+
+        var typeName = Resources.GetResource(type switch
+        {
+            NetworkInterfaceType.Ethernet or NetworkInterfaceType.Ethernet3Megabit or NetworkInterfaceType.FastEthernetT
+                or NetworkInterfaceType.FastEthernetFx or NetworkInterfaceType.GigabitEthernet => "Network_Adapter_Type_Ethernet",
+            NetworkInterfaceType.Wireless80211 => "Network_Adapter_Type_WiFi",
+            NetworkInterfaceType.Ppp => "Network_Adapter_Type_Ppp",
+            NetworkInterfaceType.Tunnel => "Network_Adapter_Type_Tunnel",
+            NetworkInterfaceType.Wman or NetworkInterfaceType.Wwanpp or NetworkInterfaceType.Wwanpp2 => "Network_Adapter_Type_MobileBroadband",
+            NetworkInterfaceType.Unknown => "Network_Adapter_Type_Unknown",
+            _ => "Network_Adapter_Type_Other",
+        });
+        var adapterKind = Resources.GetResource(isHardware ? "Network_Adapter_Physical" : "Network_Adapter_Virtual");
+        return $"{typeName} · {adapterKind}";
+    }
+
+    private static string GetNetworkStatusText(OperationalStatus status)
+    {
+        return Resources.GetResource(status switch
+        {
+            OperationalStatus.Up => "Network_Adapter_Status_Connected",
+            OperationalStatus.Down => "Network_Adapter_Status_Disconnected",
+            OperationalStatus.Testing => "Network_Adapter_Status_Testing",
+            OperationalStatus.Dormant => "Network_Adapter_Status_Dormant",
+            OperationalStatus.NotPresent => "Network_Adapter_Status_NotPresent",
+            OperationalStatus.LowerLayerDown => "Network_Adapter_Status_LowerLayerDown",
+            _ => "Network_Adapter_Status_Unknown",
+        });
+    }
+
     public string GetUpSpeed()
     {
         return ContentData.TryGetValue("netSent", out var upSpeed) ? upSpeed : "???";
@@ -1113,28 +1156,25 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
     private void HandlePrevNetwork()
     {
-        _defaultNetworkInitialized = true;
-        _networkIndex = _dataManager.GetNetworkStats().GetPrevNetworkIndex(_networkIndex);
+        _networkAdapterId = _getNetworkStats().GetAdjacentNetworkId(SelectedNetworkAdapterId, forward: false);
         UpdateWidget();
     }
 
     private void HandleNextNetwork()
     {
-        _defaultNetworkInitialized = true;
-        _networkIndex = _dataManager.GetNetworkStats().GetNextNetworkIndex(_networkIndex);
+        _networkAdapterId = _getNetworkStats().GetAdjacentNetworkId(SelectedNetworkAdapterId, forward: true);
         UpdateWidget();
     }
 
     private ICommandResult HandleSetDefaultNetwork()
     {
-        _defaultNetworkInitialized = true;
-        var networkStats = _dataManager.GetNetworkStats();
-        var networkName = networkStats.GetNetworkName(_networkIndex);
-        _settingsManager.SetDefaultNetworkAdapterId(networkStats.GetNetworkId(_networkIndex));
+        var adapter = _getNetworkStats().GetNetworkAdapter(SelectedNetworkAdapterId);
+        _networkAdapterId = adapter.Id;
+        _settingsManager.SetDefaultNetworkAdapterId(_networkAdapterId);
 
         return CommandResult.ShowToast(new ToastArgs
         {
-            Message = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Set_Default_Network_Success"), networkName),
+            Message = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Set_Default_Network_Success"), adapter.Name),
             Result = CommandResult.KeepOpen(),
         });
     }
