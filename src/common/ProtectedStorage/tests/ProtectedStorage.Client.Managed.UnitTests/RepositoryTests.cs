@@ -160,7 +160,7 @@ public sealed class RepositoryTests
     }
 
     [TestMethod]
-    public async Task PurgeSuppressionNeverReadsLegacyButAllowsExplicitImport()
+    public async Task PurgeSuppressionNeverReadsLegacy()
     {
         var client = new FakeClient { AutoImportSuppressed = true };
         var source = new FakeSource("corrupt old file must not be read");
@@ -171,22 +171,7 @@ public sealed class RepositoryTests
         Assert.AreEqual(0, source.Deletes);
         Assert.IsNull(client.LastWrite!.MigrationSource);
 
-        string path = Path.Combine(Directory.GetCurrentDirectory(), $"explicit-import-{Guid.NewGuid():N}.json");
-        try
-        {
-            const string imported = """
-                {"workspaces":[{"id":"{00112233-4455-6677-8899-AABBCCDDEEFF}","name":"Explicit import","creation-time":0,"applications":[],"monitor-configuration":[]}]}
-                """;
-            File.WriteAllText(path, imported);
-            await repository.ImportAsync(path, snapshot.Revision);
-            Assert.AreEqual(1, (await repository.LoadAsync()).Projects.Count);
-            Assert.AreEqual(snapshot.Revision, client.LastWrite.Expected);
-            Assert.AreEqual(0, source.Reads);
-        }
-        finally
-        {
-            File.Delete(path);
-        }
+        Assert.AreEqual(1, client.Writes);
     }
 
     [TestMethod]
@@ -267,6 +252,33 @@ public sealed class RepositoryTests
     }
 
     [TestMethod]
+    public async Task ReopeningRetainsPendingCleanupAcrossSavesAndRetriesOnlyCleanup()
+    {
+        var client = new FakeClient();
+        var source = new FakeSource("{\"workspaces\":[]}") { CanDelete = false };
+        var repository = new WorkspacesRepository(client, source);
+        var initial = await repository.EnsureReadyAsync();
+        var migration = client.LastWrite!.OperationId;
+        await repository.SaveAsync(initial.Projects, initial.Revision);
+
+        var reopenedSource = new FakeSource("must not be imported again") { CanDelete = false };
+        var reopened = new WorkspacesRepository(client, reopenedSource);
+        Assert.IsTrue((await reopened.LoadAsync()).SourceCleanupPending);
+        Assert.IsTrue((await reopened.EnsureReadyAsync()).SourceCleanupPending);
+        Assert.AreEqual(0, reopenedSource.Reads);
+        Assert.AreEqual(2, client.Writes);
+
+        reopenedSource.CanDelete = true;
+        var completed = await new WorkspacesRepository(client, reopenedSource).EnsureReadyAsync();
+        Assert.IsFalse(completed.SourceCleanupPending);
+        Assert.AreEqual(migration, (await client.GetStateAsync(WorkspacesRepository.Target)).InitializationOperationId);
+        Assert.AreEqual(0, reopenedSource.Reads);
+        Assert.AreEqual(2, client.Writes);
+        Assert.AreEqual(1, client.Acknowledgements);
+        Assert.IsFalse((await reopened.LoadAsync()).SourceCleanupPending);
+    }
+
+    [TestMethod]
     public async Task MalformedCleanupReceiptNeverDeletesOrReimportsCommittedData()
     {
         var client = new FakeClient();
@@ -298,6 +310,120 @@ public sealed class RepositoryTests
         Assert.AreEqual("RevisionConflict", error.ErrorCode);
         Assert.AreEqual(before.Revision, client.LastWrite!.Expected);
         Assert.AreEqual(1, client.Writes);
+    }
+
+    [TestMethod]
+    public async Task EditorSaveMergesHistoryWithoutChangingTheDraftOrUndoingAddDelete()
+    {
+        var client = new FakeClient();
+        var kept = Project("Kept", 10);
+        var removed = Project("Removed", 20);
+        client.SetProjects([kept, removed]);
+        var repository = new WorkspacesRepository(client, new FakeSource("unused"));
+        var baseline = await repository.LoadAsync();
+        var edited = kept with { Name = "Edited", LastLaunchedTime = 0 };
+        var added = Project("Added", 5);
+        var draft = new[] { edited, added };
+        client.SetProjects([kept with { LastLaunchedTime = 100 }, removed with { LastLaunchedTime = 200 }]);
+
+        var saved = await repository.SaveWithLaunchHistoryAsync(draft, baseline);
+
+        Assert.AreEqual(2, client.Writes);
+        Assert.AreEqual(2, saved.Projects.Count);
+        Assert.AreEqual("Edited", saved.Projects[0].Name);
+        Assert.AreEqual(100L, saved.Projects[0].LastLaunchedTime);
+        Assert.AreEqual(added.Id, saved.Projects[1].Id);
+        Assert.AreEqual(0L, draft[0].LastLaunchedTime);
+        Assert.AreEqual(10L, baseline.Projects[0].LastLaunchedTime);
+        var again = await repository.SaveWithLaunchHistoryAsync(draft, saved);
+        Assert.AreEqual(100L, again.Projects[0].LastLaunchedTime);
+        Assert.AreEqual(3, client.Writes);
+    }
+
+    [TestMethod]
+    public async Task EditorSaveRejectsRealConfigurationChangesAndPreservesTheDraft()
+    {
+        var client = new FakeClient();
+        var project = Project("Original", 10);
+        client.SetProjects([project]);
+        var repository = new WorkspacesRepository(client, new FakeSource("unused"));
+        var baseline = await repository.LoadAsync();
+        var draft = new[] { project with { Name = "Unsaved edit" } };
+        client.SetProjects([project with { Name = "Concurrent edit", LastLaunchedTime = 30 }]);
+
+        var error = await Assert.ThrowsExactlyAsync<ProtectedStorageException>(() => repository.SaveWithLaunchHistoryAsync(draft, baseline));
+
+        Assert.AreEqual("RevisionConflict", error.ErrorCode);
+        Assert.AreEqual(1, client.Writes);
+        Assert.AreEqual("Unsaved edit", draft[0].Name);
+        Assert.AreEqual("Concurrent edit", (await repository.LoadAsync()).Projects[0].Name);
+    }
+
+    [TestMethod]
+    public async Task EditorSaveDoesNotRebaseAcrossAReinitializedStore()
+    {
+        var client = new FakeClient();
+        var project = Project("Original", 10);
+        client.SetProjects([project]);
+        var repository = new WorkspacesRepository(client, new FakeSource("unused"));
+        var baseline = await repository.LoadAsync();
+        client.SetProjects([project with { LastLaunchedTime = 30 }], resetEpoch: true);
+        var error = await Assert.ThrowsExactlyAsync<ProtectedStorageException>(() => repository.SaveWithLaunchHistoryAsync([project with { Name = "Edit" }], baseline));
+        Assert.AreEqual("RevisionConflict", error.ErrorCode);
+        Assert.AreEqual(1, client.Writes);
+    }
+
+    [TestMethod]
+    public async Task EditorHistoryRebaseHasABoundedNumberOfConditionalWrites()
+    {
+        var client = new FakeClient();
+        var project = Project("Original", 10);
+        client.SetProjects([project]);
+        var repository = new WorkspacesRepository(client, new FakeSource("unused"));
+        var baseline = await repository.LoadAsync();
+        long timestamp = 10;
+        client.BeforeWrite = () => client.SetProjects([project with { LastLaunchedTime = ++timestamp }]);
+
+        var error = await Assert.ThrowsExactlyAsync<ProtectedStorageException>(() => repository.SaveWithLaunchHistoryAsync([project with { Name = "Edit" }], baseline));
+
+        Assert.AreEqual("RevisionConflict", error.ErrorCode);
+        Assert.AreEqual(3, client.Writes);
+        Assert.IsNotNull(client.LastWrite!.Expected);
+        Assert.AreEqual("Original", (await repository.LoadAsync()).Projects[0].Name);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task RebasedUnknownWriteResolvesOriginalIntentWithoutDuplicateCommit(bool changeDraft)
+    {
+        var client = new FakeClient { DisconnectAfterCommit = true, CancelQuery = true };
+        var project = Project("Original", 10);
+        client.SetProjects([project]);
+        var repository = new WorkspacesRepository(client, new FakeSource("unused"));
+        var baseline = await repository.LoadAsync();
+        var draft = new[] { project with { Name = "Saved edit" } };
+        client.SetProjects([project with { LastLaunchedTime = 50 }]);
+        var unknown = await Assert.ThrowsExactlyAsync<ProtectedStorageException>(() => repository.SaveWithLaunchHistoryAsync(draft, baseline));
+        Assert.AreEqual("OutcomeUnknown", unknown.ErrorCode);
+        Assert.AreEqual(2, client.Writes);
+
+        client.CancelQuery = false;
+        if (changeDraft)
+        {
+            draft[0] = draft[0] with { Name = "Different intent" };
+            var conflict = await Assert.ThrowsExactlyAsync<ProtectedStorageException>(() => repository.SaveWithLaunchHistoryAsync(draft, baseline));
+            Assert.AreEqual("RevisionConflict", conflict.ErrorCode);
+        }
+        else
+        {
+            var saved = await repository.SaveWithLaunchHistoryAsync(draft, baseline);
+            Assert.AreEqual(50L, saved.Projects[0].LastLaunchedTime);
+        }
+
+        Assert.AreEqual(2, client.Writes);
+        Assert.AreEqual(unknown.OperationId, client.Queried);
+        Assert.AreEqual("Saved edit", (await repository.LoadAsync()).Projects[0].Name);
     }
 
     [TestMethod]
@@ -362,6 +488,15 @@ public sealed class RepositoryTests
         }
     }
 
+    private static ProjectWrapper Project(string name, long lastLaunched) => new()
+    {
+        Id = Guid.NewGuid().ToString("B"),
+        Name = name,
+        LastLaunchedTime = lastLaunched,
+        Applications = [],
+        MonitorConfiguration = [],
+    };
+
     private sealed class FakeSource(string json) : ILegacyWorkspaceSource
     {
         public int Reads { get; private set; }
@@ -389,12 +524,16 @@ public sealed class RepositoryTests
 
     private sealed class FakeClient : IProtectedStoreClient
     {
-        private readonly Guid epoch = Guid.NewGuid();
         private readonly Dictionary<Guid, byte[]> previews = new();
         private readonly Dictionary<Guid, ulong> previewSequences = new();
         private readonly Dictionary<Guid, (Guid Id, Revision Expected, byte[] Bytes, WriteResult Result)> previewReceipts = new();
+        private Guid epoch = Guid.NewGuid();
         private byte[] bytes = Encoding.UTF8.GetBytes("{\"workspaces\":[]}");
         private ulong sequence = 1;
+        private JsonElement? migrationSource;
+        private Guid? initializationOperation;
+
+        public Action? BeforeWrite { get; set; }
 
         public StorageCapabilities Capabilities { get; set; } = new(1, 0, PipeProtocol.MaximumBlob, PipeProtocol.MaximumMetadata, ProtectedStoreClient.ReleaseVersion, false, false, new HashSet<string> { "cas", "write-query", "source-receipt", "transient", "transient-cas", "purge-suppression" });
 
@@ -428,6 +567,17 @@ public sealed class RepositoryTests
 
         public Guid Queried { get; private set; }
 
+        public void SetProjects(ProjectWrapper[] projects, bool resetEpoch = false)
+        {
+            Initialized = true;
+            bytes = WorkspacesValidator.Serialize(projects);
+            sequence++;
+            if (resetEpoch)
+            {
+                epoch = Guid.NewGuid();
+            }
+        }
+
         public Task<StorageCapabilities> GetCapabilitiesAsync(CancellationToken cancellationToken = default)
         {
             CapabilityQueries++;
@@ -441,7 +591,7 @@ public sealed class RepositoryTests
                 throw new ProtectedStorageException("Unauthorized");
             }
 
-            return Task.FromResult(new TargetInfo(Initialized ? "Initialized" : "Uninitialized", Initialized ? new Revision(epoch, sequence) : null, LastWrite?.MigrationSource, Acknowledgements > 0, LastWrite?.OperationId, AutoImportSuppressed));
+            return Task.FromResult(new TargetInfo(Initialized ? "Initialized" : "Uninitialized", Initialized ? new Revision(epoch, sequence) : null, migrationSource, Acknowledgements > 0, initializationOperation, AutoImportSuppressed));
         }
 
         public Task<BlobValue> GetBlobAsync(string target, CancellationToken cancellationToken = default) =>
@@ -451,6 +601,7 @@ public sealed class RepositoryTests
         {
             LastWrite = request;
             Writes++;
+            BeforeWrite?.Invoke();
             if (LoseInitializationRace)
             {
                 Initialized = true;
@@ -458,9 +609,20 @@ public sealed class RepositoryTests
                 throw new ProtectedStorageException("AlreadyInitialized");
             }
 
-            if (Conflict)
+            if (Conflict || (request.Expected != null && request.Expected != new Revision(epoch, sequence)))
             {
                 throw new ProtectedStorageException("RevisionConflict");
+            }
+
+            if (request.Expected == null)
+            {
+                if (Initialized)
+                {
+                    throw new ProtectedStorageException("AlreadyInitialized");
+                }
+
+                migrationSource = request.MigrationSource;
+                initializationOperation = request.OperationId;
             }
 
             Initialized = true;
@@ -487,7 +649,7 @@ public sealed class RepositoryTests
 
         public Task AcknowledgeSourceCleanupAsync(string target, Guid operationId, CancellationToken cancellationToken = default)
         {
-            Assert.AreEqual(LastWrite!.OperationId, operationId);
+            Assert.AreEqual(initializationOperation, operationId);
             Acknowledgements++;
             return Task.CompletedTask;
         }

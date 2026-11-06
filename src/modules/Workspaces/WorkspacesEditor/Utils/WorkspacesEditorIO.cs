@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -19,7 +18,7 @@ namespace WorkspacesEditor.Utils
     public class WorkspacesEditorIO
     {
         private readonly WorkspacesRepository repository = new();
-        private Revision revision;
+        private WorkspaceSnapshot snapshot;
 
         public Guid? PreviewId { get; set; }
 
@@ -27,8 +26,8 @@ namespace WorkspacesEditor.Utils
         {
             try
             {
-                var snapshot = initialize ? await repository.EnsureReadyAsync() : await repository.LoadAsync();
-                revision = snapshot.Revision;
+                snapshot = initialize ? await repository.EnsureReadyAsync() : await repository.LoadAsync();
+                mainViewModel.IsSourceCleanupPending = snapshot.SourceCleanupPending;
                 WorkspacesData.WorkspacesListWrapper workspaces = new() { Workspaces = snapshot.Projects.ToList() };
 
                 if (!SetWorkspaces(mainViewModel, workspaces))
@@ -37,7 +36,7 @@ namespace WorkspacesEditor.Utils
                     return new ParsingResult(false, WorkspacesEditor.Properties.Resources.Error_Parsing_Message);
                 }
 
-                return new ParsingResult(true, snapshot.SourceCleanupPending ? Properties.Resources.ProtectedStorageCleanupPending : string.Empty);
+                return new ParsingResult(true);
             }
             catch (Exception e)
             {
@@ -58,12 +57,12 @@ namespace WorkspacesEditor.Utils
 
         public async Task SerializeWorkspacesAsync(List<Project> workspaces)
         {
-            if (revision == null)
+            if (snapshot == null)
             {
                 throw new ProtectedStorageException("NotProvisioned");
             }
 
-            revision = await repository.SaveAsync(ToWrappers(workspaces), revision);
+            snapshot = await repository.SaveWithLaunchHistoryAsync(ToWrappers(workspaces), snapshot);
         }
 
         private static List<ProjectWrapper> ToWrappers(List<Project> workspaces)
@@ -198,21 +197,6 @@ namespace WorkspacesEditor.Utils
         public Task<bool> RetrySourceCleanupAsync()
         {
             return repository.RetrySourceCleanupAsync();
-        }
-
-        public async Task ImportAsync(string path)
-        {
-            if (revision == null)
-            {
-                throw new ProtectedStorageException("NotProvisioned");
-            }
-
-            revision = await repository.ImportAsync(path, revision);
-        }
-
-        public Task ExportAsync(string path)
-        {
-            return repository.ExportAsync(path);
         }
     }
 }

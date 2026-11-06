@@ -302,8 +302,11 @@ Code remains private. Existing Data is migrated at runtime startup after
 identity/ACL/link validation; no user data or ownership is rewritten.
 New files and index replacements inherit the grants. Open diagnostic files with
 read/write/delete sharing to avoid blocking saves and generation reclamation.
-Raw `blob.<GUID>` files include an internal frame; use Export for a portable,
-consistent workspace JSON snapshot. Read access also means same-user software
+Raw `blob.<GUID>` files include an internal frame and are not legacy workspace
+JSON. Automatic migration reads only the fixed legacy location; the Editor has
+no arbitrary-file Import/Export product entry points. The local-test backup
+helper can still decode a fixture for repeatable development tests.
+Read access also means same-user software
 can read these files; this is integrity protection, not confidentiality from
 the owner or a machine administrator.
 
@@ -328,8 +331,16 @@ storage timeouts.
 - Migration validates the whole input, commits durably, then deletes only the
   matching legacy source. Initialized data never silently falls back to old
   `workspaces.json` or `temp-workspaces.json`.
+- An unacknowledged migration source remains recorded across saves and restarts.
+  Opening the Editor retries only cleanup, not migration. A non-blocking notice
+  and retry action appear only while that source cleanup is pending.
 - Ordinary saves and preview updates use revision checks and retain operation
   IDs across uncertain outcomes. Retry does not repeat application launches.
+- Editor saves preserve newer launch timestamps, as the original file writer
+  did. Only history-only changes in the same store epoch may be rebased, with at
+  most three conditional write attempts. Real configuration changes retain the
+  draft and report a conflict; they are never silently overwritten. Returning
+  from editing loads the latest collection without a permanent Reload control.
 - The elevated arranger receives an immutable, signed-peer-bound placement
   handoff rather than reading another user's store or profile.
 - Routine update synchronization never elevates or creates a first service.

@@ -1,6 +1,6 @@
 # Workspaces Protected Storage 验收台账
 
-最后更新：2026-11-05（UTC+08:00；E53首次迁移/源清理成功；E54修复已push，private6010构建162959015已启动，与绿色6007组成待验证升级候选）
+最后更新：2026-11-06（UTC+08:00；E57确认本地6011已匹配、B08解除，6010 CI整体绿色；发布E56范围纠正并准备6012 private构建，真实配置冲突UI测试尚需受控writer）
 
 **这是验收状态的唯一维护入口。每执行完一项，就更新本文件；不能只在聊天里报告通过。**
 
@@ -11,68 +11,78 @@
 
 ## 1. 当前基线与结论
 
-### 2026-11-05统计快照（E53补充首次迁移及源清理证据）
+### 2026-11-06统计快照（E56纠正需求范围及并发预期）
 
-按下方126个唯一正式验收ID统计整项状态；不重复计入E33/E36子项、风险编号、
-历史执行记录和环境矩阵行。该比例不是独立测试数、剩余工作量或风险消除比例。
+保留126个唯一历史ID，其中125项为有效要求，DATA-17因用户未提出显式文件
+Import/Export需求而撤回为N/A。N/A不算通过或未完成；不重复计入子项、风险、
+历史记录和环境矩阵。该比例不是独立测试数、剩余工作量或风险消除比例。
 
 | 状态 | 条数 |
 |---|---:|
-| PASS | 24 |
+| PASS | 25 |
 | PARTIAL | 22 |
-| FAIL | 3 |
-| RETEST | 2 |
+| FAIL | 0 |
+| RETEST | 3 |
 | BLOCKED | 1 |
 | NOT RUN | 74 |
+| N/A（已撤回） | 1 |
 | 合计 | 126 |
 
-24条PASS由AUTO 12条、UNIT 6条、LOCAL-01、PERF-02/03及E37关闭的
-DATA-09、DATA-17、CLI-01组成；仍不代表核心架构和正式安装验收已完成。
-显式标P0的45条中，整项PASS 3条、PARTIAL 16条、FAIL 3条、RETEST 0条、BLOCKED 1条、
+25条PASS由AUTO 12条、UNIT 6条、LOCAL-01、PERF-02/03、E37关闭的
+CLI-01及E55关闭的DATA-01、CLI-03/07组成；
+仍不代表核心架构和正式安装验收已完成。
+显式标P0的45条中，整项PASS 6条、PARTIAL 16条、FAIL 0条、RETEST 0条、BLOCKED 1条、
 NOT RUN 22条。当前正式BLOCKED为REL-01（PM决策）；E40将DATA-14补到PARTIAL，
-E40/E41分别记录CLI-03/CLI-07的实际FAIL；
+E40/E41分别记录CLI-03/CLI-07的历史FAIL，E55补记修复后的人工PASS；
 不要与E33的三个BLOCKED子项混淆。
 R06已有E36定向实机PASS，但DATA-10包含更多条件，仍只计PARTIAL。
-E50将DATA-12记为FAIL；AUTO-02/13因当前Photos名称一致性用例失败回到RETEST，
-保留原通过记录。用户报告6008管理员CLI成功，尚未补独立入口证据，不覆盖旧失败历史。
-E53首次迁移、全字段保真及匹配源清理通过；尚未关闭重开Editor，DATA-01记PARTIAL。
+E50的Capture重复ID失败历史保留；E55用户确认修复后的捕获/保存/重开通过，
+DATA-12转PARTIAL，尚未由本次确认覆盖取消分支。E53迁移/源清理证据加E55重开确认，
+DATA-01转PASS。AUTO-02/13的Photos名称一致性失败仍记RETEST；
+人工业务回归通过不代表这两个单测缺口消失，也不覆盖旧失败历史。
+E56将DATA-17从有效范围撤回；DATA-09过去把仅启动历史变化报冲突当作成功，
+这一预期不符合原Workspaces自动保留启动时间的行为。现改为区分历史变化与真正
+配置冲突，置RETEST；新模块单测通过不冒充完整实机竞争验收。
 
-### 分类总览：126条条件，不是126场独立测试
+### 分类总览：125项有效要求，另保留1个N/A历史项
 
-目前有102条尚未整项关闭，但其中只有74条记为NOT RUN；另有22条已部分覆盖、
-3条FAIL、2条RETEST、1条受阻，不能全部当作“从零开始”。E39关闭的RETEST历史保留，
-E50另记录当前回归问题。台账混合多种检查粒度，因此24/126不是工作量完成百分比。
+目前有100条尚未整项关闭，但其中只有74条记为NOT RUN；另有22条已部分覆盖、
+3条RETEST、1条受阻，不能全部当作“从零开始”。历史结果保留，
+DATA-17不再计入有效范围；25/125不是工作量完成百分比。
 
-下面按**主要验证目标**将每个正式ID归入一个类别，互不重复、没有删减或新增要求。
+下面按**主要验证目标**将有效ID归入一个类别；E56明确撤回DATA-17，不以此增加通过数。
 “未关闭”包含PARTIAL/FAIL/RETEST/BLOCKED/NOT RUN；“未跑”仅指NOT RUN。
 
 | 类别 | 总条数 | 整项PASS | 未关闭 | 其中未跑 |
 |---|---:|---:|---:|---:|
 | 工程基线与自动化 | 27 | 18 | 9 | 3 |
-| 日常功能、交互和性能 | 19 | 4 | 15 | 6 |
-| 跨权限执行与运行上下文 | 7 | 0 | 7 | 4 |
+| 日常功能、交互和性能 | 18 | 3 | 15 | 6 |
+| 跨权限执行与运行上下文 | 7 | 2 | 5 | 4 |
 | 写保护、授权和用户隔离 | 9 | 0 | 9 | 5 |
 | 数据迁移、一致性与恢复 | 17 | 1 | 16 | 13 |
 | 安装、升级、卸载与生命周期 | 36 | 1 | 35 | 34 |
 | 生产信任、环境与发布门槛 | 11 | 0 | 11 | 9 |
-| 合计 | 126 | 24 | 102 | 74 |
+| 合计（有效项） | 125 | 25 | 100 | 74 |
 
 | 类别 | 唯一归属的正式ID |
 |---|---|
 | 工程基线与自动化 | AUTO-01～14；BUILD-01～05；UNIT-01～08 |
-| 日常功能、交互和性能 | LOCAL-03；DATA-10～13、16～17；CLI-01～02、05～06；UX-01～05；PERF-01～03 |
+| 日常功能、交互和性能 | LOCAL-03；DATA-10～13、16；CLI-01～02、05～06；UX-01～05；PERF-01～03 |
 | 跨权限执行与运行上下文 | DATA-14；CLI-03～04、07；INST-07～08；ENV-02 |
 | 写保护、授权和用户隔离 | ACL-01～04；SEC-01～05 |
 | 数据迁移、一致性与恢复 | DATA-01～09、15、18；BLOB-01～03；CLEAN-01～03 |
 | 安装、升级、卸载与生命周期 | LOCAL-01～02、04；INST-01～06；LIFE-01；UPD-01～15；REM-01～11 |
 | 生产信任、环境与发布门槛 | SEC-06～11；ENV-01、03～04；REL-01～02 |
 
+DATA-17仅作为已撤回功能的历史记录保留，不归入上述有效类别。
+
 剩余最多的是安装生命周期35条、数据生命周期16条、日常功能15条。安装类中
 INST-01～06、UPD-01～15、REM-01～11共32条属于正式安装/升级/卸载条件，
 不能要求当前Debug样本先把它们全部关闭。
 
-已通过的24条集中在：工程/自动化18条；日常功能4条（DATA-17、CLI-01、
-PERF-02/03）；数据一致性1条（DATA-09）；部署核对1条（LOCAL-01）。
+已通过的25条分布在：工程/自动化18条；日常功能3条（CLI-01、
+PERF-02/03）；跨权限2条（CLI-03/07）；数据一致性1条（DATA-01）；
+部署核对1条（LOCAL-01）。
 “整项0 PASS”不等于完全没测：写保护类已有4条PARTIAL，普通owner拒写和
 未注册caller拒绝已实测；日常功能另有9条PARTIAL。跨权限、跨owner及生产生命周期
 仍然是真实缺口，不能仅靠调整分类消除。
@@ -81,17 +91,17 @@ PERF-02/03）；数据一致性1条（DATA-09）；部署核对1条（LOCAL-01�
 
 | 项目 | 当前记录 |
 |---|---|
-| 待验收代码 | `feature/workspaces-protected-storage-main-20261028`；实现提交`0a59eeafe9`已push到origin及fork，包含E49 SDK整合、E50 Capture ID/错误提示修复及E46～E54证据。E51完整Debug6009已构建，E53首次迁移成功；live Capture仍未补验收 |
-| 正式签名构建 | E54：[162529587](https://dev.azure.com/microsoft/Dart/_build/results?buildId=162529587)人工重试后6007整体SUCCEEDED，x64/ARM64正常Release artifact存在；E42首轮失败历史保留。新6010 [162959015](https://dev.azure.com/microsoft/Dart/_build/results?buildId=162959015)于11-05 20:00:59排队并进入inProgress，固定`0a59eeafe9`、private分支、Release/x64+ARM64；尚未绿色或执行已安装/升级验收 |
+| 待验收代码 | `feature/workspaces-protected-storage-main-20261028`；本次发布E56范围纠正、历史合并和条件清理UI。59项托管回归、实际Editor Release及完整Debug6011构建通过；E57已确认客户端/服务6011匹配，未将真实配置冲突或cleanup失败UI补PASS |
+| 正式签名构建 | E57确认6010 [162959015](https://dev.azure.com/microsoft/Dart/_build/results?buildId=162959015)于11-05 23:19:26整体SUCCEEDED，固定`0a59eeafe9`，x64/ARM64均成功且正常产物存在；更早6007/162529587同样绿色。本次范围纠正将由新6012构建覆盖；真实MSI升级未执行 |
 | 主线基线 | `8056ba09721708bceee6176291b24af7ebabb0b3`；包含 PR #51114，合并提交 `06e6ae43e225cac51c2f282b0eebc42c6f995c97` |
 | 集成 worktree | `D:\PowerToys-Workspaces-Integration` |
-| 待测本地包 | x64 Debug **`0.101.6009.0`**；E52 Reset后用户完成首次Setup，E53服务及两条迁移记录已就绪，legacy源已清理；Editor保持打开 |
+| 待测本地包 | 完整x64 Debug **`0.101.6011.0`**已构建并通过pinned CMS正/负检查；E57确认运行service也为6011、recovery=0，实际CLI读取当前两条记录成功。没有关闭或重开用户当前Editor |
 | 原代码备份 | `backup/workspaces-protected-storage-20261028`，提交 `c576e95f70d4247efeb68afe1c50bc5f7e57f4e2`；含原 worktree 全部已跟踪/未跟踪源码改动 |
 | 原 worktree | `D:\PowerToys-Workspaces-E2E`；原 HEAD `146518e3a3c3120257799b89e061b304f81fdab7`、索引和源码保留 |
-| 最近确认的运行环境 | E53 19:44：服务6009 Running、host36448/worker23468、recovery=0；普通owner新CLI进程读取两条完整记录与迁移样例逐字段相同；不等于High CLI或Capture复测通过 |
-| 新包部署状态 | E51取消及E52清理均为历史记录；E53确认重置后新6009服务运行，首次迁移sequence=1，源hash匹配、cleanupAcknowledged=true、legacy已删除 |
-| 数据保护结果 | E40先完整备份，收尾经Cancel冲突/Reload/真实Import恢复原两条记录，全字段及payload字节一致；settings、桌面恢复，测试进程/夹具目录无残留，服务和Debug文件未变。没有直接覆盖protected blob/index |
-| 当前验收结论 | 用户报告6008管理员CLI list/launch成功，尚未补齐CLI入口证据。E50 Capture重复应用ID的源码修复及定向回归通过；6009匹配部署已观察，但live Capture未复测，DATA-12仍FAIL。完整原生194项有1个Photos本地化名称差异，AUTO-02/13 RETEST；E53首次Setup/迁移主流程通过，DATA-01补到PARTIAL；当前24 PASS |
+| 最近确认的运行环境 | E57只读确认：service6011、host20940/worker6992、recovery=0，Editor/CLI文件版本6011，CLI list成功读取当前两条记录。E55的6009人工通过不自动继承成6011所有UI场景通过 |
+| 新包部署状态 | E56的UAC取消保留为历史；随后用户独立完成部署，13:46及E57均已观察到6011匹配。代理未见证外部Repair过程，不将该过程或数据前后保真补记为代理执行PASS；本轮不再请求UAC |
+| 数据保护结果 | E56停止本地Debug UI后备份两条当前工作区及index/blob；UAC取消后再次核对两个保护文件的名字/哈希与备份完全一致。未Reset、未直接覆盖保护文件；旧迁移状态和数据保留 |
+| 当前验收结论 | E55的6009人工通过记录保留。E56撤回DATA-17并纠正DATA-09预期；原Capture重复ID回归通过不覆盖取消分支。Photos名称差异仍待复测；当前25 PASS/1 N/A，不外推6011完整实机、正式安装/OTS/ARM64 |
 
 `6003`、`6004`、`6005`、`6006`、`6008`、`6009` 都是合入 main 后的**本地 E2E 测试构建**，使用
 `ProtectedStorage.LocalLifecycle.exe` 和本地测试 bundle，不是正式 carrier MSI 部署。
@@ -134,7 +144,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | 环境 ID | 范围 |
 |---|---|
 | `AUTO` | 非安装的编译、单元/协议/授权 fixture、发布 authoring/mock 检查 |
-| `L64` | 当前为已匹配部署的 x64 Debug 6006（E33）；旧6003/6004/6005结果单独保留 |
+| `L64` | 当前x64 Debug6011客户端/runtime匹配已由E57确认，B08解除；具体UI/业务测试仍按各自版本和证据记录，不能继承6009全部PASS |
 | `P-XU` / `P-XM` | 包含本次集成代码的正式签名 x64 per-user / per-machine 安装 |
 | `P-AU` / `P-AM` | 包含本次集成代码的正式签名 ARM64 per-user / per-machine 安装及 ARM64 运行 |
 
@@ -147,20 +157,21 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | 编号 | 事实 | 影响与解除条件 |
 |---|---|---|
 | B01（已解除） | 早前提权取消后服务留在 6002；14:39 发现新 6003 客户端反复被旧 catalog 拒绝 | 2026-10-28 14:49 已授权保留数据更新，核对新 ready/catalog 和不变的数据哈希（E13/E15）。未执行的用例转为 NOT RUN，不自动变为 PASS |
-| B02 | E54确认6007重试后x64/ARM64整体绿色且正常Release产物存在；升级候选配对为6007/162529587 -> 6010/162959015，新包构建中，实际字节/签名和已安装资格仍需核验 | 绿色构建及候选配对不等于P环境安装/升级/卸载已执行；不能用本地helper或历史3000/3001结果替代 |
+| B02 | E57确认6007和6010两版均绿色且有正常Release产物；新候选为6012，后续可测6010 -> 6012，6007仍保留更早版本基线。实际包字节/签名与安装资格仍需核验 | 绿色构建及候选配对不等于P环境安装/升级/卸载已执行；不能用本地helper或历史3000/3001结果替代 |
 | B03（历史探测取消） | 6004 隔离 High Arranger 探测曾返回 1223；之后用户已完成 6004 服务更新（E21） | High/OTS 完整资格仍需独立证据；不再把部署列为 6004 阻塞。6005 更新单独记录 |
 | B04（已解除） | E31 的6006更新曾返回1223；E33 开始时已观察到匹配的6006客户端/runtime | 本轮实际业务验证已执行；不把历史授权取消继续当作当前部署阻塞 |
-| B05 | E33 当前会话与Runner均非管理员；WIP skill要求跳过管理员变体 | High目标/OTS仍需另行授权的适用环境；未为覆盖率发起UAC |
+| B05（E33限制非当前High入口阻塞） | E33会话与Runner非管理员，历史验证跳过管理员变体；E55用户另行确认同owner普通/High入口回归通过 | 不扩大为OTS或另一owner通过；本轮代理未另行提权/采集High进程证据 |
 | B06（E33缺口保留；E36新一轮已补足） | E33未保留完整事前字节，旧结果不能追溯改PASS；E36在任何变更前保存完整blob和逐记录详情 | E36清理后原记录全字段及2225字节业务payload一致；blob整体变化来自revision/operationId/requestDigest信封元数据。此证据仅证明E36相对其自身起点的保真 |
 | B07 | E33 canonical resource receipt保留4个未解析launch记录及旧PID31508查询拒绝 | 已实测当前5个自有fixture退出、无剩余fixture进程、借用UI恢复；不手改旧receipt消除hold，不终止无法确认身份的PID |
+| B08（E57已解除） | E56的维护UAC取消曾使磁盘6011/service6009不匹配；E57已只读确认运行service6011及真实CLI可用 | 取消历史不删除；不再将匹配部署列为当前阻塞，也不据此关闭尚未执行的业务case |
 | R01（6003 失败；6004 已完成实机会话） | 6003 的额外握手失败保留 E16；6004 两次 shared session 正常完成（E22），没有再卡在 protected-plan | 不把未采集 token 的已退出 Arranger 当作 High 证明；目标应用的 elevation 复用缺陷见 R05 |
 | R02 | 通用 “protected storage unavailable” 曾掩盖启动会话错误；授权不匹配还曾提供无效 Retry | 后一问题已修复并实测（E11/E12）；UX-01 的其他错误分类仍需逐项验证，不能根据弹窗直接诊断服务坏了 |
 | R03（已绕开慢路径，快慢差异尚未闭环） | 6005清单47.152秒；独立x64诊断定位到AppsFolder首次Next等待。10-29 23:10最新main仍使用相同枚举循环（E32），不是已找到main的另一套快速实现 | E29/E32：新路径分别697/2924ms，旧路径36958/37383ms；没有改服务timeout。未对原版main二进制做同机同权限A/B，不能据源码相同断言原版必慢，也不能把6006优化说成已证明的分支回归根因修复 |
 | R04 | 服务删除不等于 VA profile 已卸载；旧测试曾报告 profile 仍 loaded | 清理应报告准确残留，不强制卸载 hive；REM-06/CLEAN-02 单独判断 |
 | R05 | 6004 `move-existing-windows=true` 时只匹配名称/路径/PWA，没有比较实际 token elevation；普通 Notepad14436 可满足 elevated 条目，绕过新启动路径 | 6005 在既有窗口选择和新窗口认领处均要求 elevation 匹配；仅用 limited process query，查询失败不当作普通窗口，不引入身份握手或 DACL 修改 |
 | R06（L64定向实机PASS） | E35修复复制构造函数；E36实际新建自有工作区，再连续两次改名、Save、Reload、重开 | 创建时间三次均 `1793347374`，last-launched三次均0，除改名外全部字段一致；不是只读内存或单测结论。Debug6006 Editor已包含修复；既有零值不自动恢复 |
-| R08（E44已定位当前同路径失败） | E40原始exit1保留；E44同一6006二进制的High/no-app复现捕获`open own token DACL: access denied (win32=5)`。Medium Launcher的主token内容IL为Medium，但token对象label仍High/NW、owner为Administrators，普通身份不能WRITE_DAC | `ConnectOwnerPipe -> AllowIdentityQuery -> GrantIdentityQuery`在建立pipe前失败；Unauthorized/5经host通用catch丢失为internalError/exit1。创建Medium进程本身不足以满足SDK身份准备；未修改ACL绕过或修复产品，详见E44 |
-| R09（E41定位） | High CLI直接执行list，没有Medium读取宿主；本机同账号linked token为TokenImpersonation/SecurityIdentification，真实native客户端构造返回OwnerContextRequired/1346。CLI统一映射成storageUnavailable，Resources又缺该码映射，最终显示unexpected error | CLI-07 FAIL。不能只加现有Medium宿主便认为已修复：E44证明该宿主仍可能不满足SDK token对象权限要求。应共同明确通用owner-context/身份准备契约及保真错误映射，不放宽token检查、不回退明文、不重装服务 |
+| R08（E55同owner L64回归通过） | E40/E44的6006 High启动失败及token对象WRITE_DAC/native5根因保留；E49已改为data client仅授予process查询权限，运行6009包含修复 | E55用户确认普通/High GUI及CLI入口回归通过，CLI-03 PASS；不再把旧故障标作当前未修复。异常错误传递仍按UX-01单独覆盖 |
+| R09（E55同owner L64回归通过） | E41的6006 High list因Identification linked token返回OwnerContextRequired/1346，历史失败保留；E49已使用验证过的同owner/session普通Explorer连接token | E55用户确认普通/High list回归通过，CLI-07 PASS；不等于失效桌面、错误owner或所有异常错误映射已测，不扩大到OTS |
 | R07 | E33 重新捕获后快捷方式复选框显示未勾选，现有快捷方式仍在；Revert后恢复勾选 | `DataContext` 赋值后才调用 `CheckShortcutPresence`，对应属性无变更通知；该顺序可追溯到2024-08-23初始PR #34324（`579619952d`），当前main仍保留。本轮未证明快捷方式被删除，也未修产品代码 |
 | Q02 | 首次管理员授权时机、fail-closed 范围和 UX 仍需 PM 结论 | 当前不得启用不受保护 fallback；技术检查通过不等于 PM 已批准 |
 
@@ -170,9 +181,9 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 | ID | 检查与通过标准 | 当前状态 | 最近结果 / 证据 |
 |---|---|---|---|
-| AUTO-01 | 新 worktree 完整构建同版本 Runner、Settings、Quick Access、Editor、Launcher、LauncherUI、SnapshotTool、Arranger、CLI 和本地服务 bundle | PASS | 2026-10-29；6006，E30；不宣称全包零警告/完整符号，仍有既有XAML警告 |
+| AUTO-01 | 新 worktree 完整构建同版本 Runner、Settings、Quick Access、Editor、Launcher、LauncherUI、SnapshotTool、Arranger、CLI 和本地服务 bundle | PASS | E56完整Debug6011构建通过，所有入口PE版本检查及build-pinned CMS正/负检查通过；不等于已更新运行service。E30/E51旧构建记录保留 |
 | AUTO-02 | 本次集成的默认原生 Workspaces 单测全部通过，含 repository、CLI 合同、元数据及缺少 protected preview 的拒绝行为 | RETEST | E50：194项中193 PASS/1 FAIL，失败为Photos与照片查看器的名称一致性，单独复跑同样失败。重复Capture ID回归及RepositoryTests10项通过；E39的193/193历史保留 |
-| AUTO-03 | 托管存储/协议/迁移/repository 测试通过 | PASS | E50：51 passed，包括CaptureFailed不再显示为输入无效；E49的50项和E19的49项历史保留 |
+| AUTO-03 | 托管存储/协议/迁移/repository 测试通过 | PASS | E56：59 passed，新增历史自动合并/真正冲突/新epoch拒绝/有限重试/结果未知原意图查询、重开后仅重试cleanup等回归；撤掉无需求的显式Import分支。E50的51项历史保留 |
 | AUTO-04 | 最终目标代码的 native storage 套件及 20,000 次 framing mutation 全部通过 | PASS | 2026-10-29；3,018 assertions + 20,000 mutations，E19。少的一条是已删除 peer helper 的参数断言；服务端映像和权限检查没有删除 |
 | AUTO-05 | 原生 Setup/Lifecycle/Broker/MsiAction 编译及安装器契约检查通过 | PASS | E39：四个native helper重新编译，4,129 installer contracts通过；另核对非安装fixture MSI的RemoveFile/Media表。WIX1105明确保留：本机ICE未执行，不替代生产签名/安装或REL-02 |
 | AUTO-06 | 发布流程的 mocked gates、最终文件字节/哈希、固定 policy/version、篡改拒绝检查通过 | PASS | 2026-10-29；E19，含新 inventory；仍是 process-scoped mock，不是实际发布/servicing |
@@ -207,7 +218,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 | ID / 优先级 | 操作与通过标准 | 当前状态 | 证据 / 阻塞 |
 |---|---|---|---|
-| LOCAL-01 / P0 | 核对新目录全部 PE 版本和 catalog；不得夹带旧 worktree 客户端 | PASS | E30 的6006构建/bundle检查；E33实际客户端版本和runtime6006匹配，旧“服务仍6005”只属E31历史 |
+| LOCAL-01 / P0 | 核对新目录全部 PE 版本和 catalog；不得夹带旧 worktree 客户端 | PASS | E56的6011包内全部PE版本/catalog及pinned trust检查通过；E57补充service6011、recovery=0及真实CLI读取成功。仅匹配/读取证据，不扩大为全UI/升级验收 |
 | LOCAL-02 / P0 | 退出旧 UI；保留数据更新服务；记录 Code 前后版本、ready、index/blob 哈希及回退证据 | PARTIAL | E33已确认6006部署后状态，B04解除；本轮没有执行或完整见证该次更新的前后数据/回退流程，不能据此把整项判PASS。6004 -> 6005 的PASS保留E25 |
 | LOCAL-03 / P0 | 从新 Runner 的 Settings、Quick Access、热键打开 Editor；实际进程全部来自新包，读到正确集合 | PARTIAL | E33真实Settings入口恢复同一6006 Editor并读取原集合；当前版本的Quick Access/热键入口未全部重测，不再归因于部署阻塞 |
 | LOCAL-04 / P1 | 开发构建的 settings/log/mutex/event 与正式安装隔离；不改正式配置、不自动更新/卸载正式版本 | NOT RUN | 部署前置已满足；新旧 LocalE2E 本身并非不同命名空间 |
@@ -225,7 +236,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 | ID / 优先级 | 操作与通过标准 | 当前状态 | 证据 / 注意事项 |
 |---|---|---|---|
-| DATA-01 / P0 | 真正未初始化的 store + 两个旧工作区；完整校验、提交并重开；持久化后才删除匹配旧源 | PARTIAL | E52真实Reset后仅放置两条legacy记录；E53用户首次Setup后UI显示1/2个应用，独立CLI逐字段与样例一致；新index sequence=1、source hash/operation ID相符、cleanupAcknowledged=true、legacy已删除。未关闭重开Editor；6002历史H04不替代本轮证据 |
+| DATA-01 / P0 | 真正未初始化的 store + 两个旧工作区；完整校验、提交并重开；持久化后才删除匹配旧源 | PASS | L64/6009：E52真实Reset，E53独立CLI全字段一致、初始sequence=1、source hash/operation ID匹配、cleanupAcknowledged=true且legacy已删除；E55用户确认测试1重开/Reload后数据不变、不重复Setup/迁移。重开部分为人工报告，不冒充代理采证 |
 | DATA-02 / P1 | 旧 JSON 损坏、版本/条目不支持；整体拒绝，无部分发布/成功标记，源保留且可修复重试 | NOT RUN | 部署前置已满足；需要独立迁移 fixture |
 | DATA-03 / P1 | 旧数据含 elevated/参数等敏感字段；按 module 规则完整验证/迁移，service 不解释业务 JSON | NOT RUN | 部署前置已满足；不能为迁移成功静默丢弃字段 |
 | DATA-04 / P2 | 读取/迁移/清理之间替换源文件；提交验证过的同一快照，不能删除后来替换的源 | NOT RUN | 部署前置已满足；独立 fixture，记录文件 identity/hash |
@@ -233,15 +244,15 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | DATA-06 / P1 | 阻止旧源清理；target 仍权威，显示 pending；Retry cleanup 只删除匹配源，不重复迁移 | NOT RUN | 部署前置已满足；不是 blob GC/服务修复 |
 | DATA-07 / P0 | 已初始化后重启/更新/KeepData 重装，或放回旧文件；不得再次自动导入旧副本 | PARTIAL | E37：真实Import合法空集合，放回不同ID的legacy marker，关闭并重新启动Editor、Reload后仍为0条，无再导入；marker恢复。更新/KeepData重装及OS重启组合未测 |
 | DATA-08 / P2 | 初始化记录存在但 record 缺失/损坏；明确 recovery-required，不回退明文、不初始化为空 | NOT RUN | 部署前置已满足；仅 disposable VM/数据 |
-| DATA-09 / P1 | 编辑器和受支持 writer 产生真实 CAS 竞争；冲突可见、草稿保留、不覆盖无关修改 | PASS | L64 E37：Editor保留待保存改名草稿，外部CLI实际启动并写回history后Save触发Conflict；最新保存记录未变，取消错误仍保留草稿，Cancel draft/Reload后有效编辑成功。范围为同owner Editor↔CLI；不宣称跨owner矩阵或CAS Retry有效 |
+| DATA-09 / P1 | 并发仅改变启动时间时自动保留最新历史并有限CAS重试；真正配置冲突拒绝覆盖且保留草稿；结果未知先查询原操作 | RETEST | E56纠正E37将单纯history变化报Conflict当作通过的预期。新模块回归覆盖历史合并、真实配置差异、epoch变化、最多3次条件写及未知结果不重复提交；完整新UI竞争/草稿恢复仍待实机验证。E37原记录保留但不作为新预期PASS |
 | DATA-10 / P0 | 创建、改名/参数/布局、保存、重开、删除；完整持久化；保存失败保留可恢复草稿 | PARTIAL | E36创建/两次改名保存重开/删除及本轮原记录保真PASS，R06关闭；完整参数/布局、失败恢复等组合仍未全部对新版本复测。E33历史FAIL和旧B06证据缺口保留 |
 | DATA-11 / P0 | Capture/取消；preview 归属正确、有大小/生命周期限制、可回收，不写可篡改临时计划 | PARTIAL | E33：6006实际Capture/取消/重新捕获；四个自有应用身份、DPI、最小化/最大化状态匹配，包含晚创建窗口；无LocalE2E legacy live文件。跨owner/大小/过期仍未测 |
-| DATA-12 / P0 | 已保存/未保存工作区 Launch & Edit；使用准确 preview，重新捕获/保存/取消符合预期 | FAIL | E50：6008真实Launch & edit后Capture失败；两个Explorer窗口复用同一应用ID，预览整体被InvalidPayload拒绝。只读重放及修复红绿回归已完成；E52已观察6009匹配部署，但live Capture未复测，随后按授权Reset，不能关闭。E33通过的限定样本及R07保留 |
+| DATA-12 / P0 | 已保存/未保存工作区 Launch & Edit；使用准确 preview，重新捕获/保存/取消符合预期 | PARTIAL | E50重复应用ID失败及修复红绿回归保留；E55用户确认测试2：已保存/未保存工作区Launch & Edit、Capture、Save、重开通过，不报错、不丢窗口、ID唯一。原Capture问题的L64修复回归已通过；取消属于未确认的测试4，不因测试2通过将其补PASS。R07独立保留 |
 | DATA-13 / P0 | Editor/快捷方式/CLI 启动普通工作区；目标、参数、布局、move-existing、最小化/最大化正确 | PARTIAL | E33：自有快捷方式启动3个Win32 fixture及包Paint，实际普通token、PNG参数、DPI布局/最小化正确；move-existing开关的同一原窗口行为正确。全入口/全部状态组合未覆盖 |
 | DATA-14 / P0 | Medium 执行核心 -> High Arranger；同账号提升和 OTS 分别测试；原 owner/会话/精确计划不变，目标应用 elevation 正确 | PARTIAL | E40：用户授权后，普通CLI20828 -> High Arranger24616，普通目标8420/High目标18376均同owner/session2并按保存布局排列，exit0；已有普通同映像29704保持原窗/位置，没有冒充High目标。OTS及其他入口未测；E27/E22历史保留 |
 | DATA-15 / P0 | 安装元数据与 last-launched 经可观察 CAS 写回；不覆盖新编辑，不在 destructor 静默 I/O，不因重试重复启动 | PARTIAL | E37：实际CLI报告persistenceStatus=updated并产生非零last-launched；随后编辑Save/Reload保留创建时间和该非零时间，且真实CAS冲突未覆盖native写回。安装元数据变更、写回失败/未知结果等组合未完整覆盖 |
 | DATA-16 / P1 | CmdPal/ModuleServices 枚举与启动使用同一 repository/owner；读取不预配，无 legacy escape | NOT RUN | 部署前置已满足；相关正式 host 还需新 catalog/构建证据 |
-| DATA-17 / P1 | Export 得到一致显式副本；Import 确认后完整替换，坏 JSON 整体拒绝；副本不是 live source | PASS | L64 E37：实际Export全字段一致，修改那个导出文件不改live；真实确认Import完整替换自有fixture；截断JSON和错误集合类型均拒绝，index/记录不变；修正同一输入后Retry成功。原集合最后也经Import恢复并验证完整payload |
+| DATA-17 / P1 | 已撤回：用户选择文件的显式Import/Export产品功能 | N/A | E56：用户只要求固定旧文件自动迁移，未要求通用导入/导出。删除相应产品入口和专用API；E37测试仅保留历史，不再计PASS或发布门槛。本地测试备份工具不等于新增产品需求 |
 | DATA-18 / P2 | 已接受 save 时进入维护/停止/重启；已接受写入结果可确定，未接受请求可重试，不假成功 | NOT RUN | 部署前置已满足；保留 operation ID，未知结果先查询 |
 
 ## 7. PR #51114 的共享执行与 CLI
@@ -250,11 +261,11 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 |---|---|---|---|
 | CLI-01 / P0 | 普通终端 list/filter/details/JSON 与 Editor 同一集合；不修改 index/blob，不读旧明文 | PASS | L64 E37：text/JSON及按ID/名称details匹配；最终6次读取前后全部index/blob文件名与字节完全相同。错误选项/缺失名称另验证exit2/3；合法空集合放回legacy后CLI仍读protected空集合 |
 | CLI-02 / P0 | GUI 和 CLI 的 Medium 入口使用共享执行核心；CLI 同步等最终 arrangement 结果，失败/部分成功不报全成功 | PARTIAL | E37：CLI普通启动exit0/completed/arranged/updated，真实新目标为普通token、参数及144 DPI位置匹配；deadline为exit9/timeout，未伪报成功。全部GUI入口和部分应用失败矩阵仍未覆盖 |
-| CLI-03 / P0 | High GUI/CLI launch 先交给同用户/会话的 Medium host；按保存的 elevation 标志启动，不因高权限终端把所有目标提权 | FAIL | E40目标未启动；E44用不存在ID作无应用诊断，普通exit3，而High直接及调试复现均exit1。Medium进程已进入client，但为VA准备token只读查询权限时无法取得自身token的WRITE_DAC，native5；root见R08/E44。未修复，也不是High GUI/完整启动已通过 |
+| CLI-03 / P0 | High GUI/CLI launch 先交给同用户/会话的 Medium host；按保存的 elevation 标志启动，不因高权限终端把所有目标提权 | PASS | E55用户确认L64/6009测试3：普通/High CLI及GUI入口、owner/session/IL检查通过，普通目标未随高权限入口整体提权。按人工报告记录，不伪造本轮PID/原始token采样；E40/E44的旧失败保留，OTS/跨owner另测 |
 | CLI-04 / P1 | 拒绝错误 owner/会话、失效进程/映像、非法 private host 输入；普通调用不能注入任意 workspace snapshot | NOT RUN | 部署前置已满足；保护存储和 plan 的身份要求不得因合并而悄悄移除 |
 | CLI-05 / P1 | GUI Cancel/Ctrl+C/deadline/owner exit/第二次启动；停止后续应用，保留已启动应用，释放锁，结果未知不自动重放 | PARTIAL | E37的deadline/已有进程保留/新会话证据保留。E40计划取消UAC，但实际exit0并启动High目标，用户操作无法确认，未发生可证实的denial；不能改为取消PASS。该新启动仅证明此前High失败后会话可再次使用 |
 | CLI-06 / P1 | 控制台应用独立控制台；CLI stdin/stdout/JSON、退出码、code page、隐私遥测合同保持主线行为 | NOT RUN | 部署前置已满足；错误/警告不得污染 JSON 流，参数/工作区内容不进遥测 |
-| CLI-07 / P0 | 普通与提升终端分别验证 list 的 owner 上下文和错误反馈 | FAIL | E41：同一Debug6006 CLI，普通exit0读到两条；同owner/session2 High exit8、storageUnavailable/unexpected error。匹配native库诊断确认构造期OwnerContextRequired/1346，linked token只有SecurityIdentification；不是服务停机。尚未修复，见R09 |
+| CLI-07 / P0 | 普通与提升终端分别验证 list 的 owner 上下文和错误反馈 | PASS | E55用户确认L64/6009测试3的普通/High list回归通过，旧OwnerContextRequired/1346正常路径故障不再作为当前FAIL；本轮为人工确认。E41历史失败保留，错误owner/失效桌面等负向上下文不由此扩展为通过 |
 
 ## 8. 权限、隔离与信任
 
@@ -282,7 +293,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 |---|---|---|---|
 | UX-01 / P0 | 区分未设置、服务停机、存储恢复、arranger 身份/通信、UAC 取消、应用启动失败；日志保留阶段/native error | PARTIAL | E37结果保留。E41 list的OwnerContextRequired/1346被泛化；E44 Medium host内的token DACL native5先映射Unauthorized，再被host的std::exception catch丢为internalError/exit1。原始错误传递仍需修复，不能把它们诊断成runtime停机 |
 | UX-02 / P0 | Launch & Edit 连点不产生第二次启动；页面 busy 可恢复，失败保留草稿，busy/failed 非“坏数据” | NOT RUN | 部署前置已满足；历史 H03 不直接沿用 |
-| UX-03 / P1 | 进度 UI 冷启动能收到状态；关闭/取消无挂死；Import/Export/Reload/Retry cleanup 作用明确 | NOT RUN | 部署前置已满足；Reload 不重新预配，Retry cleanup 不做 blob GC |
+| UX-03 / P1 | 进度UI冷启动能收到状态、关闭/取消无挂死；正常界面无额外工具栏，待清理时仅显示旧源清理提示/重试 | NOT RUN | E56移除Import/Export和常驻Reload；pending由持久化迁移回执推导，下次打开先仅重试cleanup。清理不等于重新迁移、blob GC或服务/profile修复；UI失败/恢复完整路径仍需实机验证 |
 | UX-04 / P1 | 中英文、长路径/错误文本等可读且本地化；无 console/JSON 内容泄漏或无响应错误循环 | NOT RUN | 部署前置已满足；真实 UI 观察另留证据 |
 | PERF-01 / P1 | 正常 launch/arranger 不重复全量枚举；记录 metadata/首应用/arrangement 分段耗时，legacy fallback 有说明 | NOT RUN | 部署前置已满足；另见 R03；用同机同数据比较，不凭印象认定更快 |
 | PERF-02 / P1 | Capture 独立量测全量枚举和 UI 响应；不得因 launch 优化宣称 Capture 已改善 | PASS | 量测范围：E26，清单 47.152 秒/整体约 47.293 秒，进度可见。**不表示性能达标或已加速**；R03 性能问题保留 |
@@ -360,17 +371,17 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 **前置工程门禁：** 按受影响项目批量构建、跑单测/协议/authoring检查，并把同一份
 结果映射到对应AUTO/UNIT/BUILD条件；不要为了每个ID分别重跑相同套件。
-当前工程类20/27已整项通过，剩余生产配置/打包等缺口分开补。
+当前工程类18/27已整项通过，剩余生产配置/打包及Photos一致性复测等缺口分开补。
 任何实机包先核对实际客户端/runtime/catalog及程序集，不为切换case反复清VA或Reset。
 
 | 工作包 | 一次准备后串起来执行的主要场景 | 主要对应要求 | 当前缺口和环境 |
 |---|---|---|---|
-| A 日常业务回归 | 创建/Capture→编辑保存→重开→GUI/CLI启动→复用/重捕获；串接Import/Export、坏输入、CAS、取消及结果/时间字段检查 | LOCAL-03；DATA-09～13、15～17；CLI-01/02/05/06；UX；PERF | E33/E36/E37已覆盖较多，不从头重跑；补R07修复回归、未保存/重捕获后Save、GUI取消/Ctrl+C等明确缺口。多数可用当前Debug；CmdPal须匹配本地host/catalog |
-| B 权限边界与A/B隔离 | 普通/High前端×普通/提升目标的关键组合；同账号后补OTS；复用不匹配窗口、授权取消；同一批Data/Code/client身份探针再覆盖A/B隔离 | DATA-14；CLI-03/04/07；INST-07/08；ACL；SEC-01～05；ENV-02 | 下一阶段最高优先级。普通owner拒写/caller拒绝已有证据，缺真实High、管理员、第二账号/VA及身份分支；需相应授权和真实登录环境。Debug能测机制，但不关闭正式安装注册条件 |
-| C 数据迁移与恢复 | 在可还原基线中做首次迁移、坏源、合法空集合、不再导入、清理失败、CAS/提交中断、操作结果查询、blob回收及服务/系统重启 | DATA-01～09、15、18；BLOB；CLEAN；LIFE-01及相关恢复子条件 | 主要剩余数据风险；需专用账号或隔离VM。空集合/旧文件和CAS已有部分证据；E53首次迁移及匹配源清理通过，重开及故障边界仍待覆盖。不能在当前store手删index冒充首次初始化 |
+| A 日常业务回归 | 创建/Capture→编辑保存→重开→GUI/CLI启动→复用/重捕获；区分历史自动合并与真正CAS冲突，再测取消/结果字段 | LOCAL-03；DATA-09～13、15～16；CLI-01/02/05/06；UX；PERF | E56撤回显式Import/Export，不再用其搭建产品验收场景。补历史合并、真实冲突、R07、未保存/重捕获后Save及取消等缺口；不要重复已通过案例 |
+| B 权限边界与A/B隔离 | 普通/High前端×普通/提升目标的关键组合；同账号后补OTS；复用不匹配窗口、授权取消；同一批Data/Code/client身份探针再覆盖A/B隔离 | DATA-14；CLI-03/04/07；INST-07/08；ACL；SEC-01～05；ENV-02 | E55已有同owner普通/High入口人工通过，普通owner拒写/caller拒绝另有证据；仍缺管理员文件权限、OTS、第二账号/VA及负向身份分支，需相应授权和真实登录环境。Debug能测机制，但不关闭正式安装注册条件 |
+| C 数据迁移与恢复 | 在可还原基线中做首次迁移、坏源、合法空集合、不再导入、清理失败、CAS/提交中断、操作结果查询、blob回收及服务/系统重启 | DATA-01～09、15、18；BLOB；CLEAN；LIFE-01及相关恢复子条件 | 主要剩余数据风险；需专用账号或隔离VM。E53首次迁移/匹配源清理及E55人工重开确认已闭合DATA-01；空集合/旧文件和CAS已有部分证据，故障边界仍待覆盖。不能在当前store手删index冒充首次初始化 |
 | D 安装升级卸载旅程 | 按安装scope执行：首次安装/预配→第二用户→A先升级/B留旧版→B升级→repair→单用户卸载/KeepData重装→机器级清理；每阶段检查注册、VA、Code、数据和peer状态 | LOCAL-01/02/04；INST-01～06；UPD；REM；LIFE-01 | 条目最多，但不是每条做一次全新安装。32个正式安装/升级/卸载条件需当前正式包和配对旧版；本地helper只能补L64机制。特别保留UPD-15旧卸载hook检查 |
 | E 生产信任与最终产物 | 围绕同一发布候选和受控签名fixture执行有效/非法catalog、身份、timestamp、吊销/离线、生产配置及原始MSI字节检查 | SEC-06～11；BUILD-02/04及相关生产构建；REL-02的证据组成部分 | 需要生产verifier路径和适用产物；Debug/local signer、mock或旧包不能代替 |
-| F 环境兼容与性能收尾 | 选择明确的安装路径、架构/OS、屏幕/DPI/断接配置，重跑与该维度有关的核心路径；补冷暖/重复性能样本 | ENV-01/03/04；PERF及受影响业务项 | 要有真实设备/环境；不默认每个组合机械重跑126条，也不把单屏/一次4.982秒当全矩阵通过。正式发布组合仍须分别留证据 |
+| F 环境兼容与性能收尾 | 选择明确的安装路径、架构/OS、屏幕/DPI/断接配置，重跑与该维度有关的核心路径；补冷暖/重复性能样本 | ENV-01/03/04；PERF及受影响业务项 | 要有真实设备/环境；不默认每个组合机械重跑全部有效条目，也不把单屏/一次4.982秒当全矩阵通过。正式发布组合仍须分别留证据 |
 
 **当前Debug阶段的顺序：B的可执行部分→C的隔离数据场景→A剩余回归→F可用硬件子集。**
 工程复测可与准备工作协调进行；不要因UAC/第二账号暂不可用而重复已通过的普通CRUD。
@@ -1455,6 +1466,104 @@ Photos名称差异失败或尚未进行的live Capture复测改成PASS。
 构建API、artifact和installer阶段证据保存在会话files的
 `nov05-private-build-6010`，包括旧版绿色build/timeline/artifacts、两个误排的取消回执、
 正确`queued-build.json`、`verified-build.json`和初始timeline。
+
+### E55：2026-11-05，用户确认本地测试1/2/3通过
+
+20:57用户明确回复“1/2/3 均通过 请更新台账”。对应上一轮建议中的
+L64/x64 Debug6009测试清单，作为**用户人工确认**记录，不冒充代理新一轮UI自动化
+或进程/token/退出码采集。所附图片展示四个操作按钮，不单独作为这些回归的截图证据。
+
+| 用户确认的测试 | 本次结果 | 正式条目更新 |
+|---|---|---|
+| 1：迁移后关闭重开Editor、Reload，记录不变且不重复Setup/迁移 | PASS（人工） | 与E52/E53首次迁移及源清理证据合并，DATA-01转PASS |
+| 2：已保存/未保存工作区Launch & Edit、Capture、Save、重开；重复ID场景不报错、不丢窗口、ID唯一 | PASS（人工） | 原Capture故障的修复回归通过；DATA-12转PARTIAL，保留其尚未由本次确认覆盖的取消条件 |
+| 3：普通/High CLI list/launch及High GUI，核对owner/session/IL，普通目标不随入口整体提权 | PASS（人工） | 同owner L64的CLI-03、CLI-07转PASS；不继承为OTS、另一用户或P环境通过 |
+
+测试4的取消/重复操作、测试5权限回归、测试6异常迁移没有收到通过确认，
+本轮不改为PASS。Photos名称差异仍在AUTO-02/13的RETEST中，生产安装/升级/
+ARM64运行也不由这次人工回归覆盖。正式统计为27 PASS、22 PARTIAL、0 FAIL、
+2 RETEST、1 BLOCKED、74 NOT RUN；旧E40/E41/E44/E50失败记录保留。
+本轮只更新台账并讨论四按钮的用途/呈现，没有修改按钮或产品逻辑。
+
+### E56：2026-11-06，收回额外功能并恢复原保存语义
+
+用户明确仅要求固定旧文件data migration，未要求任意文件Import或Export，
+并同意正常时隐藏清理入口、重开后只重试未完成cleanup。
+本轮移除四按钮工具栏中的Import/Export/Reload，删除相应专用产品方法和资源；
+没有把它们搬进另一个菜单继续作为需求。自动migration和本地测试备份工具保留。
+DATA-17保留历史ID但改N/A；E37实际测试不被删除，也不再贡献当前通过数。
+
+核对main基线`8056ba`：原IOUtils已有文件锁、原子替换/读回校验和较新
+last-launched-time合并，Editor启动完成后也会自动重读。
+因此“CLI只更新启动时间就要求用户Reload”不是合理的保护存储验收预期，
+DATA-09改为区分历史自动合并与真正配置冲突，置RETEST。
+
+实现位于Workspaces模块，通用service协议/JSON不改变：
+- Editor保存保留已读和并发更新的较新启动时间；仅同epoch且除此字段外完全相同
+  的集合可自动重基，最多3次条件写；新增/删除和用户编辑不被历史合并覆盖。
+- 真正配置差异或新epoch仍报Conflict，草稿保留；不提供原revision的无效Retry。
+  用户明确取消编辑后返回列表会自动读取最新状态；删除冲突后也刷新列表。
+- 结果未知时保存原始编辑意图与实际合并后的请求，先查询原operation；
+  重试同意图不重复提交，不同意图不能冒充已提交的原请求。
+- Cleanup banner从服务端migration receipt/ack推导；普通读取也反映pending，
+  重开自动只尝试旧源清理。成功后隐藏；失败时保留入口、禁止同按钮并发重试。
+  不再在正常主界面放维护工具栏，也不在启动时为cleanup弹阻塞警告。
+
+验证：托管59/59通过；实际Editor Release构建及变更XAML Styler检查通过。
+初次构建暴露的字段排序、属性通知参数和StyleCop格式错误均已修正后再通过。
+新增回归覆盖历史合并/原草稿不变、增删保留、真正配置冲突、新epoch、
+有界重试、合并后未知结果的同/不同意图，以及重开/普通保存后仍能仅清理原迁移源。
+未改Photos枚举实现，不将旧名称差异失败说成已解决。
+
+本地构建前已关闭同owner/本Debug目录程序，备份两条当前工作区全部字段、
+index/blob原字节和哈希；没有Reset。完整Debug6011构建、包内PE版本检查及
+pinned CMS正/负检查已通过。
+
+随后一次保留数据Repair提权返回“operation canceled by the user”，没有取得
+提升控制器进程或repair-result；未重复请求或借用既有管理员窗口绕过确认。
+收尾ready仍为6009、host36448/worker23468、recovery=0，两份保护文件名字/哈希
+与构建前完全一致，本地Debug进程0。**源码与完整Debug构建完成，不代表新UI已可运行
+或6011实机验收通过。** B08记录这一实际部署阻塞。
+
+获准后可在同账号管理员PowerShell执行保留数据更新（不要Reset）：
+
+```powershell
+& 'D:\PowerToys-Workspaces-Integration\tools\build\Build-PowerToysLocalE2E.ps1' -Mode Repair -SkipBuild -Version 0.101.6011.0
+```
+
+证据位于会话files的`nov06-ui-scope-results`，包含59项TRX、Release/Debug构建、
+XAML检查结果、基线副本和`final-environment.json`；用户数据副本不提交。
+本轮未commit/push，也未修改6010 CI源码或安装正式MSI。
+
+### E57：2026-11-06，发布范围纠正，说明真实配置冲突的测试方法
+
+用户询问如何验证真正配置冲突、能否启动多个Editor，同时要求commit/push并
+在ADO启动新的private build。本轮不执行冲突写入、不修改单实例规则、不Reset。
+
+Editor使用`Local\PowerToys_Workspaces_Editor_InstanceMutex`，LocalTest另加后缀；
+同一登录会话的第二个同类实例会退出。正式版与LocalTest、或不同业务owner的
+实例也不共享同一目标数据，不能用它们冒充同一记录的并发配置冲突。
+完整实机case需另行准备匹配LocalTest catalog的受控writer：
+先让Editor保留revision R的草稿，再由writer经真实SDK/CAS对同一owner、
+同一workspace提交实质配置变化为R+1；随后Editor保存必须拒绝覆盖，
+错误关闭后仍保留草稿，明确取消编辑再返回列表时自动读到R+1。
+不使用未授权脚本直写保护文件，不把CLI只更新启动时间当作这个case。
+现有59项单测已有真实配置变化拒绝/草稿输入保留逻辑覆盖，但这个writer/UI
+组合尚未准备或执行，DATA-09仍RETEST。
+
+本地状态已变化：13:46及本轮均确认client/runtime6011匹配；
+本轮ready为host20940/worker6992、recovery=0，实际CLI list读取两条记录成功。
+部署由用户独立完成，不伪造代理Repair执行、UAC或数据前后不变证据。
+B08解除；E56当时取消的事实和最后数据哈希仍保留。本轮不打断正在测试的UI。
+
+CI查询确认6010/build162959015于11-05 23:19:26（UTC+08:00）
+整体`completed/succeeded`，source为`0a59eeafe9`，x64/ARM64/SDK/发布均成功，
+`build-x64-Release`与`build-arm64-Release`正常产物存在。
+新候选使用6012、同一private branch、固定本次实现commit、Release/x64+ARM64，
+不发布public symbols；使用已验证的`az pipelines run --branch --commit-id`方式，
+不重复E54通用Runs API误排路径。排队后补充精确run身份。
+升级可选6010 -> 6012，旧6007仍保留；本轮不执行安装或升级测试。
+证据保存于会话files的`nov06-private-build-6012`。
 
 ### 本次证据
 

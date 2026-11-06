@@ -42,6 +42,20 @@ namespace WorkspacesEditor.ViewModels
         private WorkspacesSettings settings;
         private PwaHelper _pwaHelper;
         private bool _isExistingProjectLaunched;
+        private bool _isSourceCleanupPending;
+
+        public bool IsSourceCleanupPending
+        {
+            get => _isSourceCleanupPending;
+            set
+            {
+                if (_isSourceCleanupPending != value)
+                {
+                    _isSourceCleanupPending = value;
+                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsSourceCleanupPending)));
+                }
+            }
+        }
 
         public ObservableCollection<Project> Workspaces { get; set; } = new ObservableCollection<Project>();
 
@@ -378,6 +392,11 @@ namespace WorkspacesEditor.ViewModels
             var candidates = Workspaces.Where(project => project != selectedProject).ToList();
             if (!await WorkspacesFailureViewModel.ExecuteAsync(() => _workspacesEditorIO.SerializeWorkspacesAsync(candidates)))
             {
+                if (WorkspacesFailureViewModel.LastFailure?.Stage == "RevisionConflict")
+                {
+                    await WorkspacesFailureViewModel.ExecuteAsync(async () => await _workspacesEditorIO.ParseWorkspacesAsync(this));
+                }
+
                 return;
             }
 
@@ -408,8 +427,9 @@ namespace WorkspacesEditor.ViewModels
             _mainWindow = mainWindow;
         }
 
-        public void SwitchToMainView()
+        public async Task SwitchToMainViewAsync()
         {
+            await WorkspacesFailureViewModel.ExecuteAsync(async () => await _workspacesEditorIO.ParseWorkspacesAsync(this));
             _mainWindow.SwitchToMainView();
             SearchTerm = string.Empty;
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(SearchTerm)));

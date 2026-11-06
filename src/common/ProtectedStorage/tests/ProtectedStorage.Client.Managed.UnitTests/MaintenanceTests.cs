@@ -57,6 +57,15 @@ public sealed class MaintenanceTests
     }
 
     [TestMethod]
+    public void ConfigurationConflictDoesNotOfferAnIdenticalStaleWriteRetry()
+    {
+        var failure = WorkspacesCsharpLibrary.Data.WorkspacesFailurePresentation.For("RevisionConflict", false, true);
+        Assert.AreEqual("ProtectedStorageConflict", failure.MessageKey);
+        Assert.IsFalse(failure.CanRetry);
+        Assert.IsFalse(failure.CanSetup);
+    }
+
+    [TestMethod]
     public void ShippingClientCannotSelectTheLocalTestNamespace()
     {
         Assert.IsFalse(StorageIdentity.IsLocalTest);

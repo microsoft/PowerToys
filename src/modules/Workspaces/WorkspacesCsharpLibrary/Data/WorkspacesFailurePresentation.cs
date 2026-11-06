@@ -36,12 +36,13 @@ public sealed record WorkspacesFailurePresentation(string MessageKey, string Ret
             "Unauthorized" or "TargetDenied" => "RetryAfterComponentRecovery",
             "NotProvisioned" or "OwnerContextRequired" or "SetupAuthorizationRequired" => "RetryAfterAuthorization",
             "InvalidPayload" or "SetupFailed" => "RetryAfterInputFix",
+            "RevisionConflict" => "RetryAfterReload",
             _ => "RetryNow",
         };
         return new(
             message,
             retry,
             allowSetup && code is "NotProvisioned" or "AuthorizationRequired" or "RecoveryRequired" or "SetupAuthorizationRequired",
-            allowRetry && retry is not ("RetryAfterRestart" or "RetryAfterAuthorization" or "RetryAfterServiceRecovery" or "RetryAfterComponentRecovery"));
+            allowRetry && retry is not ("RetryAfterRestart" or "RetryAfterAuthorization" or "RetryAfterServiceRecovery" or "RetryAfterComponentRecovery" or "RetryAfterReload"));
     }
 }

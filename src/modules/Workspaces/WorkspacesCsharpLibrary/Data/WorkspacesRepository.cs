@@ -19,6 +19,7 @@ public sealed class WorkspacesRepository
     private readonly Dictionary<Guid, Revision> previewRevisions = new();
     private readonly Dictionary<Guid, PendingPreview> pendingPreviews = new();
     private WriteRequest pendingWrite;
+    private WriteRequest pendingSaveIntent;
 
     public WorkspacesRepository()
         : this(new ProtectedStoreClient(), new LegacyWorkspaceSource(), new ProtectedStorageSetupClient())
@@ -35,9 +36,10 @@ public sealed class WorkspacesRepository
     public async Task<WorkspaceSnapshot> LoadAsync(CancellationToken cancellationToken = default)
     {
         await VerifyReadyAsync(cancellationToken).ConfigureAwait(false);
+        var state = await client.GetStateAsync(Target, cancellationToken).ConfigureAwait(false);
         var blob = await client.GetBlobAsync(Target, cancellationToken).ConfigureAwait(false);
         CheckSchema(blob);
-        return new WorkspaceSnapshot(WorkspacesValidator.Parse(blob.Bytes), blob.Revision);
+        return new WorkspaceSnapshot(WorkspacesValidator.Parse(blob.Bytes), blob.Revision, state.MigrationSource != null && !state.CleanupAcknowledged);
     }
 
     public async Task<WorkspaceSnapshot> EnsureReadyAsync(CancellationToken cancellationToken = default)
@@ -125,22 +127,92 @@ public sealed class WorkspacesRepository
 
     public async Task<Revision> SaveAsync(IReadOnlyList<ProjectWrapper> projects, Revision expected, CancellationToken cancellationToken = default)
     {
+        return (await SaveCoreAsync(projects, expected, null, cancellationToken).ConfigureAwait(false)).Revision;
+    }
+
+    public Task<WorkspaceSnapshot> SaveWithLaunchHistoryAsync(IReadOnlyList<ProjectWrapper> projects, WorkspaceSnapshot baseline, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(baseline);
+        return SaveCoreAsync(projects, baseline.Revision, baseline, cancellationToken);
+    }
+
+    private async Task<WorkspaceSnapshot> SaveCoreAsync(IReadOnlyList<ProjectWrapper> projects, Revision expected, WorkspaceSnapshot baseline, CancellationToken cancellationToken)
+    {
         await VerifyReadyAsync(cancellationToken).ConfigureAwait(false);
         ArgumentNullException.ThrowIfNull(expected);
         var bytes = WorkspacesValidator.Serialize(projects);
         if (pendingWrite != null)
         {
             var previous = pendingWrite;
+            var intent = pendingSaveIntent ?? previous;
             var committed = await ResolvePendingAsync(cancellationToken).ConfigureAwait(false);
-            if (previous.Expected != expected || !previous.Bytes.AsSpan().SequenceEqual(bytes))
+            if (intent.Expected != expected || !intent.Bytes.AsSpan().SequenceEqual(bytes))
             {
                 throw new ProtectedStorageException("RevisionConflict", previous.OperationId);
             }
 
-            return committed;
+            return new WorkspaceSnapshot(WorkspacesValidator.Parse(previous.Bytes), committed, baseline?.SourceCleanupPending ?? false);
         }
 
-        return await CommitAsync(new WriteRequest(Guid.NewGuid(), Target, expected, ContentSchema, bytes), cancellationToken).ConfigureAwait(false);
+        pendingSaveIntent = new WriteRequest(Guid.NewGuid(), Target, expected, ContentSchema, bytes);
+        var candidates = WorkspacesValidator.Parse(bytes);
+        var configuration = baseline == null ? null : ConfigurationBytes(baseline.Projects);
+        if (baseline != null)
+        {
+            PreserveLaunchHistory(candidates, baseline.Projects);
+        }
+
+        try
+        {
+            for (int attempt = 0; ; attempt++)
+            {
+                try
+                {
+                    var revision = await CommitAsync(
+                        new WriteRequest(Guid.NewGuid(), Target, expected, ContentSchema, WorkspacesValidator.Serialize(candidates)),
+                        cancellationToken).ConfigureAwait(false);
+                    return new WorkspaceSnapshot(candidates, revision, baseline?.SourceCleanupPending ?? false);
+                }
+                catch (ProtectedStorageException exception) when (exception.ErrorCode == "RevisionConflict" && baseline != null && attempt < 2)
+                {
+                    var latest = await LoadAsync(cancellationToken).ConfigureAwait(false);
+                    if (latest.Revision.Epoch != expected.Epoch || latest.Revision.Sequence <= expected.Sequence ||
+                        !configuration.AsSpan().SequenceEqual(ConfigurationBytes(latest.Projects)))
+                    {
+                        throw;
+                    }
+
+                    // Rebase only launch history. A changed configuration must preserve the draft and report a conflict.
+                    PreserveLaunchHistory(candidates, latest.Projects);
+                    expected = latest.Revision;
+                }
+            }
+        }
+        finally
+        {
+            if (pendingWrite == null)
+            {
+                pendingSaveIntent = null;
+            }
+        }
+    }
+
+    private static byte[] ConfigurationBytes(IReadOnlyList<ProjectWrapper> projects)
+    {
+        return WorkspacesValidator.Serialize(projects.Select(project => project with { LastLaunchedTime = 0 }).ToList());
+    }
+
+    private static void PreserveLaunchHistory(List<ProjectWrapper> candidates, IReadOnlyList<ProjectWrapper> current)
+    {
+        var history = current.ToDictionary(project => Guid.Parse(project.Id), project => project.LastLaunchedTime);
+        for (int index = 0; index < candidates.Count; index++)
+        {
+            var project = candidates[index];
+            if (history.TryGetValue(Guid.Parse(project.Id), out long timestamp))
+            {
+                candidates[index] = project with { LastLaunchedTime = Math.Max(project.LastLaunchedTime, timestamp) };
+            }
+        }
     }
 
     public async Task<Guid> CreatePreviewAsync(ProjectWrapper project, CancellationToken cancellationToken = default)
@@ -207,28 +279,6 @@ public sealed class WorkspacesRepository
         pendingPreviews.Remove(id);
     }
 
-    public async Task<Revision> ImportAsync(string selectedPath, Revision expected, CancellationToken cancellationToken = default)
-    {
-        using var source = new FileStream(selectedPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-        if (source.Length <= 0 || source.Length > WorkspacesValidator.MaximumBytes)
-        {
-            throw new InvalidDataException("The import file is empty or too large.");
-        }
-
-        byte[] bytes = new byte[(int)source.Length];
-        await source.ReadExactlyAsync(bytes, cancellationToken).ConfigureAwait(false);
-        return await SaveAsync(WorkspacesValidator.Parse(bytes, convertLegacy: true), expected, cancellationToken).ConfigureAwait(false);
-    }
-
-    public async Task ExportAsync(string selectedPath, CancellationToken cancellationToken = default)
-    {
-        var snapshot = await LoadAsync(cancellationToken).ConfigureAwait(false);
-        byte[] bytes = WorkspacesValidator.Serialize(snapshot.Projects);
-        using var output = new FileStream(selectedPath, FileMode.Create, FileAccess.Write, FileShare.None);
-        await output.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
-        output.Flush(true);
-    }
-
     private async Task<Revision> CommitAsync(WriteRequest request, CancellationToken cancellationToken)
     {
         pendingWrite = request;
@@ -271,6 +321,7 @@ public sealed class WorkspacesRepository
         {
             var operation = pendingWrite.OperationId;
             pendingWrite = null;
+            pendingSaveIntent = null;
             throw new ProtectedStorageException("RetryRequired", operation);
         }
 
@@ -280,6 +331,7 @@ public sealed class WorkspacesRepository
         }
 
         pendingWrite = null;
+        pendingSaveIntent = null;
         return result.Revision;
     }
 

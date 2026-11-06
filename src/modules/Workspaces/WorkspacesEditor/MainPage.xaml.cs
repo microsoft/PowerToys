@@ -16,52 +16,23 @@ namespace WorkspacesEditor
     /// </summary>
     public partial class MainPage : Page
     {
-        private async void ImportWorkspaces_Click(object sender, RoutedEventArgs e)
+        private async void RetryCleanup_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new Microsoft.Win32.OpenFileDialog { Filter = "Workspaces (*.json)|*.json", CheckFileExists = true };
-            if (dialog.ShowDialog() != true ||
-                MessageBox.Show(Properties.Resources.ProtectedStorageReplaceConfirm, Properties.Resources.ProtectedStorageTitle, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
-            {
-                return;
-            }
-
-            IsEnabled = false;
+            var button = (Button)sender;
+            button.IsEnabled = false;
             try
             {
-                if (await ViewModels.WorkspacesFailureViewModel.ExecuteAsync(() => App.WorkspacesEditorIO.ImportAsync(dialog.FileName)))
-                {
-                    await ViewModels.WorkspacesFailureViewModel.ExecuteAsync(async () => await App.WorkspacesEditorIO.ParseWorkspacesAsync((ViewModels.MainViewModel)DataContext));
-                }
+                await WorkspacesFailureViewModel.ExecuteAsync(
+                    async () =>
+                    {
+                        _mainViewModel.IsSourceCleanupPending = !await App.WorkspacesEditorIO.RetrySourceCleanupAsync();
+                    },
+                    allowRetry: false);
             }
             finally
             {
-                IsEnabled = true;
+                button.IsEnabled = true;
             }
-        }
-
-        private async void ExportWorkspaces_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new Microsoft.Win32.SaveFileDialog { Filter = "Workspaces (*.json)|*.json", DefaultExt = ".json", AddExtension = true, OverwritePrompt = true };
-            if (dialog.ShowDialog() == true)
-            {
-                await ViewModels.WorkspacesFailureViewModel.ExecuteAsync(() => App.WorkspacesEditorIO.ExportAsync(dialog.FileName));
-            }
-        }
-
-        private async void ReloadWorkspaces_Click(object sender, RoutedEventArgs e)
-        {
-            await ViewModels.WorkspacesFailureViewModel.ExecuteAsync(async () => await App.WorkspacesEditorIO.ParseWorkspacesAsync((ViewModels.MainViewModel)DataContext));
-        }
-
-        private async void RetryCleanup_Click(object sender, RoutedEventArgs e)
-        {
-            await ViewModels.WorkspacesFailureViewModel.ExecuteAsync(async () =>
-            {
-                if (!await App.WorkspacesEditorIO.RetrySourceCleanupAsync())
-                {
-                    throw new PowerToys.ProtectedStorage.ProtectedStorageException("CleanupPending");
-                }
-            });
         }
 
         private MainViewModel _mainViewModel;

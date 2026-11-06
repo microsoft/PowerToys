@@ -52,7 +52,7 @@ namespace WorkspacesEditor
                     }
                 }
 
-                _mainViewModel.SwitchToMainView();
+                await _mainViewModel.SwitchToMainViewAsync();
             }
             finally
             {
@@ -62,9 +62,16 @@ namespace WorkspacesEditor
 
         private async void CancelButtonClicked(object sender, RoutedEventArgs e)
         {
-            await _mainViewModel.ReleasePreviewAsync();
-
-            _mainViewModel.SwitchToMainView();
+            IsEnabled = false;
+            try
+            {
+                await _mainViewModel.ReleasePreviewAsync();
+                await _mainViewModel.SwitchToMainViewAsync();
+            }
+            finally
+            {
+                IsEnabled = true;
+            }
         }
 
         private void DeleteButtonClicked(object sender, RoutedEventArgs e)

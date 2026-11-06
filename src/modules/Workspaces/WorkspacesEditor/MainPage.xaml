@@ -60,12 +60,20 @@
             </StackPanel>
         </Button>
 
-        <StackPanel Grid.Row="1" Margin="24,0,24,12" Orientation="Horizontal">
-            <Button Margin="0,0,8,0" Click="ImportWorkspaces_Click" Content="{x:Static props:Resources.ProtectedStorageImport}" />
-            <Button Margin="0,0,8,0" Click="ExportWorkspaces_Click" Content="{x:Static props:Resources.ProtectedStorageExport}" />
-            <Button Margin="0,0,8,0" Click="ReloadWorkspaces_Click" Content="{x:Static props:Resources.ProtectedStorageReload}" />
-            <Button Click="RetryCleanup_Click" Content="{x:Static props:Resources.ProtectedStorageRetryCleanup}" />
-        </StackPanel>
+        <DockPanel
+            Grid.Row="1"
+            Margin="24,0,24,12"
+            Visibility="{Binding IsSourceCleanupPending, Converter={StaticResource BoolToVis}}">
+            <Button
+                Margin="12,0,0,0"
+                Click="RetryCleanup_Click"
+                Content="{x:Static props:Resources.ProtectedStorageRetryCleanup}"
+                DockPanel.Dock="Right" />
+            <TextBlock
+                VerticalAlignment="Center"
+                Text="{x:Static props:Resources.ProtectedStorageCleanupPending}"
+                TextWrapping="Wrap" />
+        </DockPanel>
 
         <!--  search + sort  -->
         <StackPanel
