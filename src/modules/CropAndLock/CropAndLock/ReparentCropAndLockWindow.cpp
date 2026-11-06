@@ -145,15 +145,13 @@ void ReparentCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
     targetStyle |= WS_CHILD;
     SetWindowLongPtrW(m_currentTarget, GWL_STYLE, targetStyle);
 
-    // ⚠ FIX (client area must not change when the window becomes a child):
-    //   A top-level window's client area = window rect minus its non-client ring (caption/border).
-    //   After adding WS_CHILD that ring is no longer part of the client calculation, so the SAME
-    //   window rectangle now yields a LARGER client area (measured ~8px on a maximized browser).
-    //   Applications that lay out by client area (Chromium/Electron, i.e. any browser) re-layout
-    //   or shift their view accordingly, so the cropped view no longer shows the region the user
-    //   picked - while mouse hit-testing stays correct (that asymmetry is the reported symptom:
-    //   "the picture is offset, clicks are fine").
-    //   Keep the client area pixel-identical to the pre-reparent one.
+    // Let Windows recalculate the frame before measuring it.
+    winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, 0, 0, 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOACTIVATE));
+
+    // Becoming a child removes the non-client ring (caption/border) from the client-area
+    // calculation, so the same window rectangle yields a larger client area. Client-area driven
+    // apps (browsers) re-layout or shift their view, and the crop no longer shows the selected
+    // region. Keep the client area identical to the pre-reparent one.
     const auto originalClientWidth = clientRect.right - clientRect.left;
     const auto originalClientHeight = clientRect.bottom - clientRect.top;
     RECT childWindowRect = {};
@@ -162,21 +160,18 @@ void ReparentCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
     winrt::check_bool(GetClientRect(m_currentTarget, &childClientRect));
     const auto nonClientWidth = (childWindowRect.right - childWindowRect.left) - childClientRect.right;
     const auto nonClientHeight = (childWindowRect.bottom - childWindowRect.top) - childClientRect.bottom;
-    winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, 0, 0,
-                                  static_cast<int>(originalClientWidth + nonClientWidth),
-                                  static_cast<int>(originalClientHeight + nonClientHeight),
-                                  SWP_NOMOVE | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOACTIVATE));
+    winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, 0, 0, static_cast<int>(originalClientWidth + nonClientWidth), static_cast<int>(originalClientHeight + nonClientHeight), SWP_NOMOVE | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOACTIVATE));
 
-    // The resize above can also move where the client area starts inside the window, so measure
-    // it again and offset the child with the *measured* values (never with the pre-reparent ones).
+    // The resize can also move where the client area starts inside the window, so measure it again.
+    // cropRect already contains the pre-reparent client-origin shift (diffX/diffY); subtract it
+    // before applying the measured offset so the shift is not counted twice.
     RECT finalWindowRect = {};
     POINT clientOrigin = { 0, 0 };
     winrt::check_bool(GetWindowRect(m_currentTarget, &finalWindowRect));
     winrt::check_bool(ClientToScreen(m_currentTarget, &clientOrigin));
-    auto x = -(cropRect.left + (clientOrigin.x - finalWindowRect.left));
-    auto y = -(cropRect.top + (clientOrigin.y - finalWindowRect.top));
-    if (0 == SetWindowPos(m_currentTarget, nullptr, static_cast<int>(x), static_cast<int>(y), 0, 0,
-                          SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOACTIVATE))
+    auto x = -(cropRect.left - diffX + (clientOrigin.x - finalWindowRect.left));
+    auto y = -(cropRect.top - diffY + (clientOrigin.y - finalWindowRect.top));
+    if (0 == SetWindowPos(m_currentTarget, nullptr, static_cast<int>(x), static_cast<int>(y), 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOACTIVATE))
     {
         MessageBoxW(nullptr, L"CropAndLock couldn't properly reparent the target window. It might not handle reparenting well.", L"CropAndLock", MB_ICONERROR);
     }
