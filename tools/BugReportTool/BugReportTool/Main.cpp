@@ -21,6 +21,7 @@
 #include "EventViewer.h"
 #include "InstallationFolder.h"
 #include "ReportGPOValues.h"
+#include "DiagnosticPrivacy.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -399,6 +400,17 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     ReportInstallerLogs(tempDir, reportDir);
 
     ReportInstalledContextMenuPackages(reportDir);
+
+    try
+    {
+        diagnostic_privacy::sanitize_report(reportDir);
+    }
+    catch (...)
+    {
+        printf("Failed to sanitize the report; no ZIP was created\n");
+        DeleteFolder(reportDir);
+        return 1;
+    }
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);
