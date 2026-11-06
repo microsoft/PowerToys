@@ -149,13 +149,11 @@ internal static class MainListPageResultFactory
                 result[writePos++] = fallbacksSeparator;
             }
 
+            // The caller passes only the fallbacks this render shows, rereading their live titles
+            // here can drop one the caller already decided to show.
             for (int i = 0; i < fallbackItems.Count; i++)
             {
-                var item = fallbackItems[i].Item.Safe;
-                if (!string.IsNullOrEmpty(item.Title))
-                {
-                    result[writePos++] = item;
-                }
+                result[writePos++] = fallbackItems[i].Item.Safe;
             }
         }
 
