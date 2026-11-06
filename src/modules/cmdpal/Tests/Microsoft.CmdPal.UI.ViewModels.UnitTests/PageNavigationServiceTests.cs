@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -27,6 +29,82 @@ public sealed partial class PageNavigationServiceTests
         }
 
         public override void InitializeProperties() => _initialize();
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task PreparePageAsync_ResolvesContextAndCreatesPageOnWorker(bool rootPage)
+    {
+        var host = new TestAppExtensionHost();
+        var provider = Mock.Of<ICommandProviderContext>();
+        var current = new PageViewModel(new Page(), TaskScheduler.Default, host, provider);
+        var page = new ListPage();
+        var command = new CommandViewModel(page, new(current));
+        command.FastInitializeProperties();
+        var message = new PerformCommandMessage(command, current);
+        var appHost = new Mock<IAppHostService>();
+        appHost.Setup(service => service.GetHostForCommand(null, host)).Returns(() =>
+        {
+            Assert.IsTrue(Thread.CurrentThread.IsThreadPoolThread);
+            Assert.AreSame(TaskScheduler.Default, TaskScheduler.Current);
+            return host;
+        });
+        appHost.Setup(service => service.GetProviderContextForCommand(null, provider)).Returns(provider);
+        var expectedProvider = rootPage ? CommandProviderContext.Empty : provider;
+        var viewModel = new PageViewModel(page, TaskScheduler.Default, host, expectedProvider);
+        var factory = new Mock<IPageViewModelFactoryService>();
+        factory.Setup(f => f.TryCreatePageViewModel(page, !rootPage, host, expectedProvider)).Returns(() =>
+        {
+            Assert.IsTrue(Thread.CurrentThread.IsThreadPoolThread);
+            Assert.AreSame(TaskScheduler.Default, TaskScheduler.Current);
+            return viewModel;
+        });
+        var service = new PageNavigationService(factory.Object, appHost.Object);
+
+        try
+        {
+            var prepared = await service.PreparePageAsync(
+                message,
+                current,
+                !rootPage,
+                CancellationToken.None,
+                rootPage ? CommandProviderContext.Empty : null);
+
+            Assert.AreSame(viewModel, prepared);
+            Assert.AreEqual(rootPage, viewModel.IsRootPage);
+            Assert.AreEqual(!rootPage, viewModel.HasBackButton);
+            appHost.Verify(service => service.GetProviderContextForCommand(null, provider), rootPage ? Times.Never() : Times.Once());
+        }
+        finally
+        {
+            await viewModel.CleanupAsync();
+            await current.CleanupAsync();
+        }
+    }
+
+    [TestMethod]
+    public async Task PreparePageAsync_RpcFailurePropagatesWithoutCreatingPage()
+    {
+        var current = new TestPageViewModel(() => { });
+        var command = new CommandViewModel(new ListPage(), new(current));
+        command.FastInitializeProperties();
+        var appHost = new Mock<IAppHostService>();
+        appHost.Setup(service => service.GetHostForCommand(null, current.ExtensionHost))
+            .Throws(Marshal.GetExceptionForHR(unchecked((int)0x800706BA))!);
+        var factory = new Mock<IPageViewModelFactoryService>(MockBehavior.Strict);
+        var service = new PageNavigationService(factory.Object, appHost.Object);
+
+        try
+        {
+            await Assert.ThrowsExactlyAsync<COMException>(() =>
+                service.PreparePageAsync(new(command), current, true, CancellationToken.None));
+            factory.VerifyNoOtherCalls();
+        }
+        finally
+        {
+            await current.CleanupAsync();
+        }
     }
 
     [TestMethod]

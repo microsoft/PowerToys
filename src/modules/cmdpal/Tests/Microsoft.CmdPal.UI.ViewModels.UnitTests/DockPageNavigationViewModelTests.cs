@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AdaptiveCards.ObjectModel.WinUI3;
@@ -268,6 +269,103 @@ public sealed partial class DockPageNavigationViewModelTests
     }
 
     [TestMethod]
+    public async Task NavigateAsync_PreparesPagesOffTheUiSchedulerAndPublishesOnIt()
+    {
+        var route = NewRoute();
+        var scheduler = new QueuedTaskScheduler();
+        TaskScheduler? preparationScheduler = null;
+        TaskScheduler? publicationScheduler = null;
+        var factory = new Mock<IPageViewModelFactoryService>();
+        factory
+            .Setup(f => f.TryCreatePageViewModel(It.IsAny<IPage>(), It.IsAny<bool>(), It.IsAny<AppExtensionHost>(), It.IsAny<ICommandProviderContext>()))
+            .Returns((IPage page, bool nested, AppExtensionHost host, ICommandProviderContext provider) =>
+            {
+                preparationScheduler = TaskScheduler.Current;
+                return new PageViewModel(page, scheduler, host, provider);
+            });
+        using var navigation = CreateNavigation(route, scheduler, factory.Object);
+        navigation.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(DockPageNavigationViewModel.CurrentPage))
+            {
+                publicationScheduler = TaskScheduler.Current;
+            }
+        };
+
+        Assert.IsTrue(await DrainUntilCompleteAsync(
+            scheduler,
+            navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty))));
+
+        Assert.AreSame(TaskScheduler.Default, preparationScheduler);
+        Assert.AreSame(scheduler, publicationScheduler);
+    }
+
+    [TestMethod]
+    public async Task NavigateAsync_PreparationRpcFailureDoesNotPreventNextNavigation()
+    {
+        var route = NewRoute();
+        var factory = new Mock<IPageViewModelFactoryService>();
+        factory
+            .SetupSequence(f => f.TryCreatePageViewModel(It.IsAny<IPage>(), It.IsAny<bool>(), It.IsAny<AppExtensionHost>(), It.IsAny<ICommandProviderContext>()))
+            .Throws(Marshal.GetExceptionForHR(unchecked((int)0x800706BA))!)
+            .Returns(new PageViewModel(new ListPage(), TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty));
+        using var navigation = CreateNavigation(route, factory: factory.Object);
+        var message = CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty);
+
+        await Assert.ThrowsExactlyAsync<COMException>(() => navigation.NavigateAsync(message));
+        Assert.IsNull(navigation.CurrentPage);
+        Assert.IsTrue(await navigation.NavigateAsync(message));
+        Assert.IsNotNull(navigation.CurrentPage);
+    }
+
+    [TestMethod]
+    public async Task Dispose_DuringPreparation_DiscardsThePreparedPageWithoutPublishingIt()
+    {
+        var route = NewRoute();
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var release = new ManualResetEventSlim();
+        var prepared = new PageViewModel(new ListPage(), TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty);
+        var factory = new Mock<IPageViewModelFactoryService>();
+        factory
+            .Setup(f => f.TryCreatePageViewModel(It.IsAny<IPage>(), It.IsAny<bool>(), It.IsAny<AppExtensionHost>(), It.IsAny<ICommandProviderContext>()))
+            .Returns(() =>
+            {
+                started.TrySetResult();
+                if (!release.Wait(TimeSpan.FromSeconds(10)))
+                {
+                    throw new TimeoutException("Preparation was not released.");
+                }
+
+                return prepared;
+            });
+        using var navigation = CreateNavigation(route, factory: factory.Object);
+        var navigate = navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty));
+
+        try
+        {
+            await started.Task.WaitAsync(WaitTimeout);
+            navigation.Dispose();
+            release.Set();
+            try
+            {
+                Assert.IsFalse(await navigate.WaitAsync(WaitTimeout));
+            }
+            catch (OperationCanceledException)
+            {
+            }
+
+            Assert.IsNull(navigation.CurrentPage);
+            Assert.IsTrue(prepared.IsDiscarded);
+            await prepared.CleanupAsync().WaitAsync(WaitTimeout);
+        }
+        finally
+        {
+            release.Set();
+            await prepared.CleanupAsync().WaitAsync(WaitTimeout);
+        }
+    }
+
+    [TestMethod]
     public async Task Dispose_DuringInitialization_ReleasesThePageAfterTheExtensionCallReturns()
     {
         var route = NewRoute();
@@ -463,14 +561,14 @@ public sealed partial class DockPageNavigationViewModelTests
 
         foreach (var result in results)
         {
-            Assert.IsFalse(navigation.HandleCommandResult(page, result));
+            Assert.IsFalse(navigation.HandleCommandResult(page, result.Kind));
         }
 
         // The flyout closing while the command runs must not swallow these.
         navigation.Dispose();
         foreach (var result in results)
         {
-            Assert.IsFalse(navigation.HandleCommandResult(page, result));
+            Assert.IsFalse(navigation.HandleCommandResult(page, result.Kind));
         }
     }
 
@@ -486,7 +584,7 @@ public sealed partial class DockPageNavigationViewModelTests
         Assert.IsTrue(await DrainUntilCompleteAsync(scheduler, navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation))));
         var source = navigation.CurrentPage!;
 
-        Assert.IsTrue(navigation.HandleCommandResult(source, CommandResult.GoBack()));
+        Assert.IsTrue(navigation.HandleCommandResult(source, CommandResultKind.GoBack));
         Assert.AreSame(source, navigation.CurrentPage);
 
         await DrainUntilAsync(scheduler, () => !ReferenceEquals(source, navigation.CurrentPage));
@@ -506,7 +604,7 @@ public sealed partial class DockPageNavigationViewModelTests
         var closeRequested = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         navigation.CloseRequested += (_, _) => closeRequested.TrySetResult();
 
-        Assert.IsTrue(navigation.HandleCommandResult(navigation.CurrentPage!, CreateResult(kind)));
+        Assert.IsTrue(navigation.HandleCommandResult(navigation.CurrentPage!, kind));
 
         await closeRequested.Task.WaitAsync(WaitTimeout);
     }
@@ -520,7 +618,7 @@ public sealed partial class DockPageNavigationViewModelTests
         Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation)));
         Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestParametersPage(), navigation)));
 
-        Assert.IsTrue(navigation.HandleCommandResult(navigation.CurrentPage!, CommandResult.GoHome()));
+        Assert.IsTrue(navigation.HandleCommandResult(navigation.CurrentPage!, CommandResultKind.GoHome));
 
         await WaitUntilAsync(() => navigation.BackStackDepth == 0);
         Assert.IsInstanceOfType<ListViewModel>(navigation.CurrentPage);
@@ -541,8 +639,8 @@ public sealed partial class DockPageNavigationViewModelTests
         var closeRequests = 0;
         navigation.CloseRequested += (_, _) => closeRequests++;
 
-        Assert.IsTrue(navigation.HandleCommandResult(root, CommandResult.Dismiss()));
-        Assert.IsTrue(navigation.HandleCommandResult(root, CommandResult.GoBack()));
+        Assert.IsTrue(navigation.HandleCommandResult(root, CommandResultKind.Dismiss));
+        Assert.IsTrue(navigation.HandleCommandResult(root, CommandResultKind.GoBack));
         scheduler.RunAll();
 
         Assert.AreSame(current, navigation.CurrentPage);
@@ -584,15 +682,6 @@ public sealed partial class DockPageNavigationViewModelTests
         viewModel.FastInitializeProperties();
         return viewModel;
     }
-
-    private static CommandResult CreateResult(CommandResultKind kind) =>
-        kind switch
-        {
-            CommandResultKind.Dismiss => CommandResult.Dismiss(),
-            CommandResultKind.Hide => CommandResult.Hide(),
-            CommandResultKind.GoBack => CommandResult.GoBack(),
-            _ => throw new ArgumentOutOfRangeException(nameof(kind)),
-        };
 
     private static async Task WaitUntilAsync(Func<bool> condition)
     {
