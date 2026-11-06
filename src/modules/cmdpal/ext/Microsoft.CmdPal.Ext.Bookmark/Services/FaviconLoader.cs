@@ -49,7 +49,7 @@ public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
         // Check if the image already exists in the cache
         ApplicationInfoService applicationInfoService = new();
 
-        var cacheDirectory = Path.Combine(applicationInfoService.CacheDirectory, "Microsoft.CmdPal", "favicons");
+        var cacheDirectory = Path.Combine(applicationInfoService.CacheDirectory, "favicons");
         Directory.CreateDirectory(cacheDirectory); // Create the cache directory if it does not already exist
 
         // Hash the hostname, and generate the file path for it
