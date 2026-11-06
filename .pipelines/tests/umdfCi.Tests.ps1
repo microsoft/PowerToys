@@ -4,6 +4,30 @@
 
 . (Join-Path $PSScriptRoot '..\umdf\UmdfCi.Common.ps1')
 
+Describe 'UMDF manager artifact forwarding' {
+    It 'passes the known artifact for <Kind> <Action> without changing context arguments' -TestCases @(
+        @{ Suite = 'PowerDisplay.UITests'; Kind = 'Display'; Action = 'Cleanup'; HasArtifact = $true }
+        @{ Suite = 'PowerDisplay.UITests'; Kind = 'Display'; Action = 'Install'; HasArtifact = $true }
+        @{ Suite = 'GrabAndMove.UITests'; Kind = 'Hid'; Action = 'Cleanup'; HasArtifact = $false }
+        @{ Suite = 'GrabAndMove.UITests'; Kind = 'Hid'; Action = 'Install'; HasArtifact = $true }
+    ) {
+        param($Suite, $Kind, $Action, $HasArtifact)
+        $context = Get-UmdfFixtureContext -Suite $Suite -RepositoryRoot $TestDrive -ArtifactRoot $TestDrive `
+            -Platform x64 -StateDirectory $TestDrive -ResultsDirectory $TestDrive
+        $context.Manager = {
+            param($Action, $StatePath, $ResultsDirectory, $ArtifactDirectory, [switch]$IsolatedGuest)
+            $script:managerArguments = $PSBoundParameters
+        }
+        Invoke-UmdfFixtureManager -Context $context -Action $Action
+        $script:managerArguments.Action | Should Be $Action
+        $script:managerArguments.StatePath | Should Be $context.Arguments.StatePath
+        $script:managerArguments.ContainsKey('IsolatedGuest') | Should Be ($Kind -eq 'Display')
+        $script:managerArguments.ContainsKey('ArtifactDirectory') | Should Be $HasArtifact
+        if ($HasArtifact) { $script:managerArguments.ArtifactDirectory | Should Be $context.Artifact }
+        $context.Arguments.ContainsKey('ArtifactDirectory') | Should Be $false
+    }
+}
+
 Describe 'Shared UMDF fixture lifecycle orchestration' {
     BeforeEach {
         Mock Write-Host {}

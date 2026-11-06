@@ -245,18 +245,19 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
 
         Step("Measuring complete second and third profile rows before the drag");
         list.ScrollToEdge(toBottom: false);
-        Element? firstRow = null;
-        Element? secondRow = null;
-        Element? thirdRow = null;
+        ProfileRow? firstRow = null;
+        ProfileRow? secondRow = null;
+        ProfileRow? thirdRow = null;
         var topViewport = WaitHelper.WaitForStable(
             observe: () =>
             {
-                firstRow = FindProfileRow(1);
-                secondRow = FindProfileRow(2);
-                thirdRow = FindProfileRow(3);
+                var rows = ReadProfileRows(ReadProfilesTree());
+                firstRow = FindProfileRow(rows, 1);
+                secondRow = FindProfileRow(rows, 2);
+                thirdRow = FindProfileRow(rows, 3);
                 return firstRow is { Height: > 0 } && secondRow is { Height: > 0 } && thirdRow is { Height: > 0 } &&
                     Math.Abs(secondRow.Height - thirdRow.Height) <= 1 && firstRow.Y > page.Y &&
-                    IsProfileButtonVisible(1, MoreButtonId);
+                    IsProfileButtonVisible(firstRow, MoreButtonId);
             },
             isMatch: complete => complete,
             timeoutMS: 30_000,
@@ -273,13 +274,13 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
 
         Step("Locating the bottom edge of the profile viewport using the complete last row");
         Find<Element>(By.AccessibilityId("ProfilesList")).ScrollToEdge(toBottom: true);
-        Element? lastRow = null;
+        ProfileRow? lastRow = null;
         var bottomViewport = WaitHelper.WaitForStable(
             observe: () =>
             {
                 lastRow = FindProfileRow(VirtualizedProfileCount);
                 return lastRow is not null && Math.Abs(lastRow.Height - fullRowHeight) <= 1 &&
-                    IsProfileButtonVisible(VirtualizedProfileCount, MoreButtonId);
+                    IsProfileButtonVisible(lastRow, MoreButtonId);
             },
             isMatch: complete => complete,
             timeoutMS: 30_000,
@@ -294,10 +295,11 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
         Assert.IsTrue(
             Session.WaitFor(() =>
             {
-                firstRow = FindProfileRow(1);
+                var rows = ReadProfileRows(ReadProfilesTree());
+                firstRow = FindProfileRow(rows, 1);
                 return firstRow is not null && Math.Abs(firstRow.Height - firstRowBaselineHeight) <= 1 && firstRow.Y > page.Y &&
-                    IsProfileButtonVisible(1, MoreButtonId) &&
-                    !IsProfileButtonVisible(VirtualizedProfileCount, MoreButtonId);
+                    IsProfileButtonVisible(firstRow, MoreButtonId) &&
+                    !IsProfileButtonVisible(FindProfileRow(rows, VirtualizedProfileCount), MoreButtonId);
             }),
             "The drag must start with the first row at its observed baseline and the last row outside the viewport.");
 
@@ -364,8 +366,8 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
                     // WinUI scales items during a drag, so their unscaled setup height no longer
                     // determines readiness. Require a visible row and its visible More button.
                     return lastRow is { Width: > 0, Height: > 0 } &&
-                        string.Equals(lastRow.GetProperty("IsOffscreen"), "False", StringComparison.OrdinalIgnoreCase) &&
-                        IsProfileButtonVisible(VirtualizedProfileCount, MoreButtonId);
+                        !lastRow.IsOffscreen &&
+                        IsProfileButtonVisible(lastRow, MoreButtonId);
                 },
                 isMatch: complete => complete,
                 timeoutMS: 20_000,
@@ -378,7 +380,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
             TestContext.WriteLine($"Profile list ScrollVerticalPercent at end of drag hold: {list.GetProperty("ScrollVerticalPercent")}");
             TestContext.WriteLine(lastRow is null
                 ? "Last profile at end of drag hold: no ListItem found."
-                : $"Last profile at end of drag hold: Name='{lastRow.Name}', bounds=({lastRow.X}, {lastRow.Y}, {lastRow.Width}, {lastRow.Height}), IsOffscreen={lastRow.GetProperty("IsOffscreen")}");
+                : $"Last profile at end of drag hold: Name='{lastRow.Name}', bounds=({lastRow.X}, {lastRow.Y}, {lastRow.Width}, {lastRow.Height}), IsOffscreen={lastRow.IsOffscreen}");
             var heldEndScreenshot = Path.Combine(TestContext.TestResultsDirectory ?? Path.GetTempPath(), $"powerdisplay-drag-held-end-{Guid.NewGuid():N}.png");
             if (ScreenCapture.TryCaptureDesktop(heldEndScreenshot))
             {
@@ -546,7 +548,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
     private void ScrollOuterPageDown(int x, int y)
     {
         AssertMovePhysicalPointer(x, y);
-        MouseHelper.ScrollWheel(-30);
+        MouseHelper.ScrollDown();
     }
 
     private static string ProfileName(int id) => $"{FixtureNamePrefix}{id:D2}";
@@ -616,7 +618,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
         var viewport = WaitHelper.WaitForStable(
             observe: () => useVirtualizedList
                 ? IsProfileButtonVisible(1, MoreButtonId)
-                : AreAllProfilesVisible(Session.FindAll<Button>(By.AccessibilityId(ApplyButtonId), 1_000)),
+                : ObserveOrder().AllProfilesVisible,
             isMatch: visible => visible,
             timeoutMS: 30_000,
             requiredConsecutiveMatches: 2,
@@ -627,12 +629,10 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
 
     private Button GetProfileButton(int profileId, string buttonId)
     {
-        // HelpText identifies the fixture without relying on the button's translated caption.
-        var buttons = Session.FindAll<Button>(By.AccessibilityId(buttonId))
-            .Where(button => button.HelpText.Contains(ProfileName(profileId), StringComparison.Ordinal))
-            .ToArray();
-        Assert.AreEqual(1, buttons.Length, $"Expected one {buttonId} for profile {profileId}.");
-        return buttons[0];
+        var button = FindVisibleProfileButton(profileId, buttonId);
+        Assert.IsNotNull(button, $"Expected one visible {buttonId} for profile {profileId}.");
+        Assert.IsTrue(button.HelpText.Contains(ProfileName(profileId), StringComparison.Ordinal), $"The {buttonId} HelpText did not identify profile {profileId}.");
+        return button;
     }
 
     private void FocusProfileButton(int profileId, string buttonId)
@@ -656,8 +656,8 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
             timeoutMS: timeoutMS,
             requiredConsecutiveMatches: 3,
             pollIntervalMS: 100,
-            shouldRetryException: ex => ex is IOException || (ex is AssertFailedException && ex.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase)));
-        Assert.IsTrue(result.Succeeded, $"Expected order {expectedOrder} after save/reload. Last state: {result.LastObservation}; error: {result.LastException}");
+            shouldRetryException: ex => ex is IOException or JsonException || (ex is AssertFailedException && ex.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase)));
+        Assert.IsTrue(result.Succeeded, $"Expected order {expectedOrder} after save/reload. Consecutive matches: {result.ConsecutiveMatches}. Last state: {result.LastObservation}; error: {result.LastException}");
     }
 
     private void AssertStablePersistedOrder(string expectedOrder)
@@ -669,76 +669,126 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
             timeoutMS: 30_000,
             requiredConsecutiveMatches: 3,
             pollIntervalMS: 100,
-            shouldRetryException: ex => ex is IOException);
+            shouldRetryException: ex => ex is IOException or JsonException);
         Assert.IsTrue(result.Succeeded, $"Expected persisted order {expectedOrder} after save. Last order: {result.LastObservation}; error: {result.LastException}");
     }
 
     private bool IsProfileButtonVisible(int profileId, string buttonId)
     {
-        return FindVisibleProfileButton(profileId, buttonId) is not null;
+        return IsProfileButtonVisible(FindProfileRow(profileId), buttonId);
     }
 
     private Button? FindVisibleProfileButton(int profileId, string buttonId)
     {
         var row = FindProfileRow(profileId);
-        if (row is null || row.Width <= 0 || row.Height <= 0)
+        var node = FindProfileButtonNode(row, buttonId);
+        if (node.ValueKind == JsonValueKind.Undefined)
         {
             return null;
         }
 
-        // Bounds only associate a candidate with this row; they do not prove full visibility.
-        // Validate its HelpText and IsOffscreen instead of reading every virtualized button.
-        var candidates = Session.FindAll<Button>(By.AccessibilityId(buttonId), 1_000)
-            .Where(button => button.Width > 0 && button.Height > 0 &&
-                button.X >= row.X && button.Y >= row.Y &&
-                button.X + button.Width <= row.X + row.Width && button.Y + button.Height <= row.Y + row.Height)
-            .ToArray();
-        if (candidates.Length != 1)
-        {
-            return null;
-        }
-
-        var candidate = candidates[0];
-        return candidate.HelpText.Contains(ProfileName(profileId), StringComparison.Ordinal) && IsButtonVisible(candidate)
-            ? candidate
-            : null;
+        return Session.Find<Button>(By.Slug(SnapshotText(node, "selector")), 1_000);
     }
 
-    private Element? FindProfileRow(int profileId)
-    {
-        return Session.FindAll<Element>(By.Name(ProfileName(profileId)), 1_000)
-            .SingleOrDefault(element => string.Equals(element.ControlType, "ListItem", StringComparison.OrdinalIgnoreCase));
-    }
+    private ProfileRow? FindProfileRow(int profileId) => FindProfileRow(ReadProfileRows(ReadProfilesTree()), profileId);
+
+    private static ProfileRow? FindProfileRow(IReadOnlyCollection<ProfileRow> rows, int profileId) =>
+        rows.SingleOrDefault(row => row.Name.Contains(ProfileName(profileId), StringComparison.Ordinal));
 
     private OrderObservation ObserveOrder()
     {
-        var buttons = Session.FindAll<Button>(By.AccessibilityId(ApplyButtonId), 1_000);
-        var visibleOrder = buttons.OrderBy(button => button.Y).Select(button =>
-        {
-            var helpText = button.HelpText;
-            return ProfileIds.SingleOrDefault(id => helpText.Contains(ProfileName(id), StringComparison.Ordinal));
-        });
-        var enabled = string.Equals(Find<Element>(By.AccessibilityId("ProfilesList"), 1_000).GetProperty("IsEnabled"), "True", StringComparison.OrdinalIgnoreCase);
-        var allProfilesVisible = AreAllProfilesVisible(buttons);
+        // Per-button subprocesses can consume the whole stability budget before three samples fit.
+        var tree = ReadProfilesTree();
+        var rows = ReadProfileRows(tree);
+        var visibleOrder = rows.OrderBy(row => row.Y).Select(row =>
+            ProfileIds.SingleOrDefault(id => row.Name.Contains(ProfileName(id), StringComparison.Ordinal)));
+        var enabled = tree.ValueKind == JsonValueKind.Object &&
+            tree.TryGetProperty("isEnabled", out var value) && value.ValueKind == JsonValueKind.True;
+        var allProfilesVisible = rows.Length == ProfileIds.Length && rows.All(row => IsProfileButtonVisible(row, ApplyButtonId));
         return new OrderObservation(string.Join(",", visibleOrder), ReadPersistedOrder(), enabled, allProfilesVisible);
     }
 
     private static string ReadPersistedOrder()
     {
-        using var document = JsonDocument.Parse(File.ReadAllText(ProfilesPath));
+        using var stream = new FileStream(ProfilesPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        using var document = JsonDocument.Parse(stream);
         return string.Join(",", document.RootElement.GetProperty("profiles").EnumerateArray()
             .Select(profile => profile.GetProperty("id").GetInt32()));
     }
 
-    private static bool AreAllProfilesVisible(IReadOnlyCollection<Button> buttons)
+    private JsonElement ReadProfilesTree() =>
+        SnapshotNodes(WinappCli.InvokeJson("ui", "inspect", "ProfilesList", Session.TargetFlag, Session.TargetValue, "--json", "-d", "12"))
+            .FirstOrDefault(node => SnapshotText(node, "automationId") == "ProfilesList");
+
+    private static ProfileRow[] ReadProfileRows(JsonElement tree) =>
+        SnapshotNodes(tree)
+            .Where(node => SnapshotText(node, "type") == "ListItem" &&
+                SnapshotText(node, "name").StartsWith(FixtureNamePrefix, StringComparison.Ordinal))
+            .Select(node => new ProfileRow(
+                SnapshotText(node, "name"),
+                SnapshotNumber(node, "x"),
+                SnapshotNumber(node, "y"),
+                SnapshotNumber(node, "width"),
+                SnapshotNumber(node, "height"),
+                !SnapshotOnscreen(node),
+                node))
+            .ToArray();
+
+    private static bool IsProfileButtonVisible(ProfileRow? row, string buttonId) =>
+        FindProfileButtonNode(row, buttonId).ValueKind != JsonValueKind.Undefined;
+
+    private static JsonElement FindProfileButtonNode(ProfileRow? row, string buttonId)
     {
-        return buttons.Count == ProfileIds.Length && buttons.All(IsButtonVisible);
+        if (row is null || row.Width <= 0 || row.Height <= 0 || row.IsOffscreen)
+        {
+            return default;
+        }
+
+        return SnapshotNodes(row.Tree).SingleOrDefault(node =>
+            SnapshotText(node, "type") == "Button" && SnapshotText(node, "automationId") == buttonId &&
+            SnapshotOnscreen(node) && SnapshotNumber(node, "width") > 0 && SnapshotNumber(node, "height") > 0 &&
+            SnapshotNumber(node, "x") >= row.X && SnapshotNumber(node, "y") >= row.Y &&
+            SnapshotNumber(node, "x") + SnapshotNumber(node, "width") <= row.X + row.Width &&
+            SnapshotNumber(node, "y") + SnapshotNumber(node, "height") <= row.Y + row.Height);
     }
 
-    private static bool IsButtonVisible(Button button) =>
-        button.Width > 0 && button.Height > 0 && string.Equals(button.GetProperty("IsOffscreen"), "False", StringComparison.OrdinalIgnoreCase);
+    private static IEnumerable<JsonElement> SnapshotNodes(JsonElement node)
+    {
+        if (node.ValueKind == JsonValueKind.Object)
+        {
+            yield return node;
+            foreach (var property in node.EnumerateObject())
+            {
+                foreach (var child in SnapshotNodes(property.Value))
+                {
+                    yield return child;
+                }
+            }
+        }
+        else if (node.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var value in node.EnumerateArray())
+            {
+                foreach (var child in SnapshotNodes(value))
+                {
+                    yield return child;
+                }
+            }
+        }
+    }
+
+    private static string SnapshotText(JsonElement node, string property) =>
+        node.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() ?? string.Empty : string.Empty;
+
+    private static int SnapshotNumber(JsonElement node, string property) =>
+        node.TryGetProperty(property, out var value) && value.TryGetInt32(out var number) ? number : 0;
+
+    private static bool SnapshotOnscreen(JsonElement node) =>
+        node.TryGetProperty("isOffscreen", out var value) && value.ValueKind == JsonValueKind.False;
 
     private void Step(string message) => TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
 
     private sealed record OrderObservation(string UiOrder, string PersistedOrder, bool Enabled, bool AllProfilesVisible);
+
+    private sealed record ProfileRow(string Name, int X, int Y, int Width, int Height, bool IsOffscreen, JsonElement Tree);
 }

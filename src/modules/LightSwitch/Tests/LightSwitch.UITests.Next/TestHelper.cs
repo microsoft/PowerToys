@@ -191,14 +191,29 @@ internal sealed class TestHelper
     {
         Step($"Opening {pickerId}");
         scheduleUpdate = new LogCursor();
-        FindDescendant<Button>(pickerId, "Button").Invoke(msPostAction: 0);
-        var minute = ui.Find(By.AccessibilityId("MinuteLoopingSelector"), 10_000);
-        Step($"Moving the minute selection in {pickerId}");
         RequireForeground();
-        minute.Focus();
+        FindDescendant<Button>(pickerId, "Button").Invoke(msPostAction: 0);
+        var flyout = WindowsFinder.WaitForWindowByApp(
+            window.ProcessId.ToString(CultureInfo.InvariantCulture),
+            candidate => candidate.ClassName == "Microsoft.UI.Content.PopupWindowSiteBridge",
+            timeoutMS: 10_000);
+        Assert.IsNotNull(flyout, $"The {pickerId} time picker did not expose its popup window.");
+        var minute = flyout.Find(By.AccessibilityId("MinuteLoopingSelector"), 10_000);
+        Step($"Moving the minute selection in {pickerId}");
+        Assert.IsTrue(
+            WindowControl.WaitForForeground(new IntPtr(flyout.WindowHandle), 5_000, 2),
+            $"The {pickerId} time picker could not gain foreground. Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        minute.Click(msPostAction: 0);
         KeyboardHelper.SendKeys(Key.Up);
-        ui.Find<Button>(By.AccessibilityId("AcceptButton"), 10_000).Invoke(msPostAction: 0);
-        Assert.IsTrue(minute.WaitForGone(10_000), "The time picker flyout did not close after accepting.");
+        flyout.Find<Button>(By.AccessibilityId("AcceptButton"), 10_000).Invoke(msPostAction: 0);
+        var closed = WaitHelper.WaitForStable(
+            () => WindowControl.EnumerateProcessWindows([window.ProcessId])
+                .Any(candidate => candidate.Hwnd.ToInt64() == flyout.WindowHandle && candidate.IsVisible),
+            visible => !visible,
+            timeoutMS: 10_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 100);
+        Assert.IsTrue(closed.Succeeded, "The time picker flyout did not close after accepting.");
     }
 
     public int WaitForChangedTime(string name, int previous)

@@ -94,7 +94,7 @@ function Get-UmdfFixtureContext {
 function Invoke-UmdfFixtureManager {
     param([Parameter(Mandatory)]$Context, [Parameter(Mandatory)][ValidateSet('Install', 'Cleanup')][string]$Action)
     $arguments = $Context.Arguments.Clone()
-    if ($Action -eq 'Install') { $arguments.ArtifactDirectory = $Context.Artifact }
+    if ($Action -eq 'Install' -or $Context.Fixture.Kind -eq 'Display') { $arguments.ArtifactDirectory = $Context.Artifact }
     & $Context.Manager -Action $Action @arguments | Out-Host
 }
 

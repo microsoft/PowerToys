@@ -26,6 +26,8 @@ $end = $source.IndexOf('$state =', $start)
 if ($start -lt 0 -or $end -le $start) { throw 'Virtual display artifact preflight was not found.' }
 $installPreflight = [scriptblock]::Create($source.Substring($start, $end - $start))
 
+function Invoke-TestDisplayProbe { throw 'Unmocked fixture probe invocation.' }
+
 function New-DisplayArtifact {
     param([string]$Subject = 'CN=PowerToys Isolated IDD POC', [switch]$Expired, [switch]$PrivateKey)
     $script:ArtifactDirectory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
@@ -43,6 +45,7 @@ function New-DisplayArtifact {
         $notAfter = if ($Expired) { [DateTimeOffset]::UtcNow.AddMinutes(-1) } else { [DateTimeOffset]::UtcNow.AddDays(1) }
         $cert = $request.CreateSelfSigned([DateTimeOffset]::UtcNow.AddHours(-1), $notAfter)
         try {
+            $script:artifactThumbprint = $cert.Thumbprint
             $type = if ($PrivateKey) { [Security.Cryptography.X509Certificates.X509ContentType]::Pfx } else {
                 [Security.Cryptography.X509Certificates.X509ContentType]::Cert
             }
@@ -61,6 +64,10 @@ function New-DisplayArtifact {
     } | ConvertTo-Json | Set-Content (Join-Path $ArtifactDirectory 'production-hashes.json')
     @{ Platform = [Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString(); DriverVersion = '0.0.1.0' } |
         ConvertTo-Json | Set-Content (Join-Path $ArtifactDirectory 'build.json')
+    # Redirect only this fake artifact's native entry point, leaving the real cleanup body intact.
+    $probePath = Join-Path $driverPath 'IddProbe.exe'
+    Set-Alias -Name $probePath -Value Invoke-TestDisplayProbe -Scope Script
+    $script:probeAliases.Add($probePath)
 }
 
 Describe 'Virtual display fixture ownership and approval' {
@@ -82,21 +89,50 @@ Describe 'Virtual display fixture ownership and approval' {
             BeforeInfs = @()
         }
         $script:devices = @()
+        $script:unrelatedDeviceIds = @()
         $script:nativeExit = 0
         $script:leaveDevice = $false
+        $script:removeOnReboot = $false
         $script:nativeCalls = [Collections.Generic.List[string]]::new()
+        $script:ArtifactDirectory = ''
+        $script:probeAliases = [Collections.Generic.List[string]]::new()
+        $script:probeFailure = ''
+        $script:probeVerified = $false
+        $script:invalidProbeSignature = $false
+        $script:cleanupSnapshotJson = '{"Version":2,"Monitors":[{"Connected":false},{"Connected":false}]}'
+        $script:bootTime = [datetime]::new(2026, 11, 4, 0, 0, 0, [DateTimeKind]::Utc)
         $IsolatedGuest = $true
         Mock Test-Administrator { $true }
-        Mock Get-CimInstance { [pscustomobject]@{ Manufacturer = 'Microsoft Corporation'; Model = 'Virtual Machine' } }
+        Mock Get-CimInstance {
+            if ($ClassName -eq 'Win32_OperatingSystem') { [pscustomobject]@{ LastBootUpTime = $script:bootTime } }
+            else { [pscustomobject]@{ Manufacturer = 'Microsoft Corporation'; Model = 'Virtual Machine' } }
+        }
         Mock Get-PnpDevice { $script:devices }
-        Mock Get-PnpDeviceProperty { [pscustomobject]@{ Data = @($hardwareId) } }
+        Mock Get-PnpDeviceProperty {
+            [pscustomobject]@{ Data = @($(if ($InstanceId -in $script:unrelatedDeviceIds) { 'ROOT\Unrelated' } else { $hardwareId })) }
+        }
+        Mock Get-AuthenticodeSignature {
+            if ($script:invalidProbeSignature -and (Split-Path $FilePath -Leaf) -eq 'IddProbe.exe') {
+                return [pscustomobject]@{ Status = 'HashMismatch'; SignerCertificate = $null }
+            }
+            if ((Split-Path $FilePath -Leaf) -eq 'IddProbe.exe') { $script:probeVerified = $true }
+            [pscustomobject]@{ Status = 'Valid'; SignerCertificate = [pscustomobject]@{ Thumbprint = $script:artifactThumbprint } }
+        }
+        Mock Invoke-TestDisplayProbe {
+            if (-not $script:probeVerified) { throw 'Probe invoked before signature verification.' }
+            $command = $args -join ' '
+            $script:nativeCalls.Add($command)
+            $global:LASTEXITCODE = if ($command -eq $script:probeFailure) { 5 } else { 0 }
+            $script:cleanupSnapshotJson
+        }
         Mock pnputil.exe {
             $script:nativeCalls.Add($args[0])
             $global:LASTEXITCODE = $script:nativeExit
-            if ($args[0] -eq '/delete-driver' -and $script:nativeExit -eq 0) {
+            $removed = $script:nativeExit -eq 0 -or ($script:nativeExit -eq 3010 -and $script:removeOnReboot)
+            if ($args[0] -eq '/delete-driver' -and $removed) {
                 Remove-Item -LiteralPath (Join-Path $env:WINDIR "INF\$($args[1])")
             }
-            if ($args[0] -eq '/remove-device' -and -not $script:leaveDevice -and $script:nativeExit -eq 0) {
+            if ($args[0] -eq '/remove-device' -and -not $script:leaveDevice -and $removed) {
                 $removed = $args[1]
                 $script:devices = @($script:devices | Where-Object InstanceId -NE $removed)
             }
@@ -108,6 +144,7 @@ Describe 'Virtual display fixture ownership and approval' {
     }
 
     AfterEach {
+        foreach ($alias in $script:probeAliases) { Remove-Alias -Name $alias -Scope Script }
         $env:WINDIR = $originalWindows
         $global:LASTEXITCODE = $originalExitCode
     }
@@ -164,6 +201,8 @@ Describe 'Virtual display fixture ownership and approval' {
     }
 
     It 'removes only newly owned matching packages, devices and imported stores' {
+        New-DisplayArtifact
+        $journal.Thumbprint = $artifactThumbprint
         $journal.BeforeInfs = @('oem1.inf')
         $journal.ImportedStores = @('TrustedPublisher')
         $journal | ConvertTo-Json | Set-Content $StatePath
@@ -174,18 +213,22 @@ Describe 'Virtual display fixture ownership and approval' {
             [pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'OK' }
             [pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0002'; Status = 'OK' }
         )
-        Mock Get-PnpDeviceProperty { [pscustomobject]@{ Data = @('ROOT\Unrelated') } } -ParameterFilter { $InstanceId -eq 'ROOT\DISPLAY\0002' }
+        $script:unrelatedDeviceIds = @('ROOT\DISPLAY\0002')
         & $cleanupAction
         Test-Path -LiteralPath $StatePath | Should Be $false
         Test-Path (Join-Path $env:WINDIR 'INF\oem1.inf') | Should Be $true
         Test-Path (Join-Path $env:WINDIR 'INF\oem8.inf') | Should Be $true
         $script:devices.Count | Should Be 1
-        $script:nativeCalls.ToArray() | Should Be @('/remove-device', '/delete-driver')
+        $script:nativeCalls.ToArray() | Should Be @('--connected 0 0', '--connected 1 0', '--snapshot', '/remove-device', '/delete-driver')
+        (Get-Content (Join-Path $ResultsDirectory 'cleanup-snapshot.json') -Raw | ConvertFrom-Json).Version | Should Be 2
+        (Get-Content (Join-Path $ResultsDirectory 'cleanup.json') -Raw | ConvertFrom-Json).Removed | Should Be $true
         Assert-MockCalled pnputil.exe -Times 2 -Exactly -Scope It
-        Assert-MockCalled Remove-Item -Times 1 -Exactly -Scope It -ParameterFilter { $Path -eq "Cert:\LocalMachine\TrustedPublisher\$('A' * 40)" }
+        Assert-MockCalled Remove-Item -Times 1 -Exactly -Scope It -ParameterFilter { $Path -eq "Cert:\LocalMachine\TrustedPublisher\$artifactThumbprint" }
     }
 
     It 'retains ownership and trust when device removal fails' {
+        New-DisplayArtifact
+        $journal.Thumbprint = $artifactThumbprint
         $journal.ImportedStores = @('Root')
         $journal | ConvertTo-Json | Set-Content $StatePath
         $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'Unknown' })
@@ -197,11 +240,160 @@ Describe 'Virtual display fixture ownership and approval' {
     }
 
     It 'retains ownership when a present fixture remains after removal' {
+        New-DisplayArtifact
+        $journal.Thumbprint = $artifactThumbprint
         $journal | ConvertTo-Json | Set-Content $StatePath
         $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'Unknown' })
         $script:leaveDevice = $true
         { & $cleanupAction } | Should Throw 'Fixture device remains'
         Test-Path -LiteralPath $StatePath | Should Be $true
+    }
+
+    It 'refuses <Case> cleanup artifacts before any native mutation' -TestCases @(
+        @{ Case = 'missing'; Expected = 'requires its original artifact directory' }
+        @{ Case = 'mutated-probe'; Expected = 'artifact hash' }
+        @{ Case = 'wrong-subject'; Expected = 'Unexpected, expired, or non-public' }
+        @{ Case = 'different-signing-identity'; Expected = 'does not match the ownership journal' }
+        @{ Case = 'invalid-probe-signature'; Expected = 'Driver signature validation failed: IddProbe.exe' }
+    ) {
+        param($Case, $Expected)
+        $certificateSubject = if ($Case -eq 'wrong-subject') { 'CN=Unrelated' } else { $subject }
+        New-DisplayArtifact -Subject $certificateSubject
+        if ($Case -ne 'different-signing-identity') { $journal.Thumbprint = $artifactThumbprint }
+        $journal.ImportedStores = @('Root', 'TrustedPublisher')
+        $journal | ConvertTo-Json | Set-Content $StatePath
+        $originalJournal = Get-Content $StatePath -Raw
+        $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'OK' })
+        if ($Case -eq 'missing') { $script:ArtifactDirectory = '' }
+        if ($Case -eq 'mutated-probe') { 'mutated' | Set-Content (Join-Path $ArtifactDirectory 'driver\IddProbe.exe') }
+        $script:invalidProbeSignature = $Case -eq 'invalid-probe-signature'
+        { & $cleanupAction } | Should Throw $Expected
+        $script:nativeCalls.Count | Should Be 0
+        Get-Content $StatePath -Raw | Should Be $originalJournal
+        (Get-Content (Join-Path $ResultsDirectory 'cleanup.json') -Raw | ConvertFrom-Json).Removed | Should Be $false
+        Assert-MockCalled Remove-Item -Times 0 -Exactly -Scope It -ParameterFilter { $Path -like 'Cert:*' }
+    }
+
+    It 'refuses to control multiple matching roots through the first-interface probe' {
+        $journal | ConvertTo-Json | Set-Content $StatePath
+        $script:devices = @(
+            [pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'OK' }
+            [pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0002'; Status = 'OK' }
+        )
+        { & $cleanupAction } | Should Throw 'exactly one owned display fixture root'
+        $script:nativeCalls.Count | Should Be 0
+        Test-Path -LiteralPath $StatePath | Should Be $true
+    }
+
+    It 'preserves ownership, package and trust when probe command <Command> fails' -TestCases @(
+        @{ Command = '--connected 0 0'; Expected = 'Fixture monitor departure failed' }
+        @{ Command = '--connected 1 0'; Expected = 'Fixture monitor departure failed' }
+        @{ Command = '--snapshot'; Expected = 'Fixture departure snapshot failed' }
+    ) {
+        param($Command, $Expected)
+        New-DisplayArtifact
+        $journal.Thumbprint = $artifactThumbprint
+        $journal.ImportedStores = @('Root')
+        $journal | ConvertTo-Json | Set-Content $StatePath
+        $originalJournal = Get-Content $StatePath -Raw
+        $hardwareId | Set-Content (Join-Path $env:WINDIR 'INF\oem7.inf')
+        $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'OK' })
+        $script:probeFailure = $Command
+        { & $cleanupAction } | Should Throw $Expected
+        Get-Content $StatePath -Raw | Should Be $originalJournal
+        Test-Path (Join-Path $env:WINDIR 'INF\oem7.inf') | Should Be $true
+        (Get-Content (Join-Path $ResultsDirectory 'cleanup.json') -Raw | ConvertFrom-Json).Removed | Should Be $false
+        $script:nativeCalls[$script:nativeCalls.Count - 1] | Should Be $Command
+        Assert-MockCalled pnputil.exe -Times 0 -Exactly -Scope It
+        Assert-MockCalled Remove-Item -Times 0 -Exactly -Scope It -ParameterFilter { $Path -like 'Cert:*' }
+    }
+
+    It 'rejects an unconfirmed departure snapshot: <Case>' -TestCases @(
+        @{ Case = 'still-connected'; Json = '{"Version":2,"Monitors":[{"Connected":false},{"Connected":true}]}' }
+        @{ Case = 'missing-connected'; Json = '{"Version":2,"Monitors":[{"Connected":false},{}]}' }
+        @{ Case = 'non-boolean'; Json = '{"Version":2,"Monitors":[{"Connected":false},{"Connected":0}]}' }
+        @{ Case = 'wrong-count'; Json = '{"Version":2,"Monitors":[{"Connected":false}]}' }
+        @{ Case = 'wrong-version'; Json = '{"Version":1,"Monitors":[{"Connected":false},{"Connected":false}]}' }
+    ) {
+        param($Case, $Json)
+        New-DisplayArtifact
+        $journal.Thumbprint = $artifactThumbprint
+        $journal.ImportedStores = @('Root')
+        $journal | ConvertTo-Json | Set-Content $StatePath
+        $originalJournal = Get-Content $StatePath -Raw
+        $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'OK' })
+        $script:cleanupSnapshotJson = $Json
+        { & $cleanupAction } | Should Throw 'must confirm both monitors are disconnected'
+        Get-Content $StatePath -Raw | Should Be $originalJournal
+        (Get-Content (Join-Path $ResultsDirectory 'cleanup.json') -Raw | ConvertFrom-Json).Removed | Should Be $false
+        Assert-MockCalled pnputil.exe -Times 0 -Exactly -Scope It
+        Assert-MockCalled Remove-Item -Times 0 -Exactly -Scope It -ParameterFilter { $Path -like 'Cert:*' }
+    }
+
+    It 'does not claim immediate cleanup when <Operation> removal requires a reboot even if it disappears' -TestCases @(
+        @{ Operation = 'device'; Expected = 'Device removal requires a reboot' }
+        @{ Operation = 'package'; Expected = 'Package removal requires a reboot' }
+    ) {
+        param($Operation, $Expected)
+        if ($Operation -eq 'device') {
+            New-DisplayArtifact
+            $journal.Thumbprint = $artifactThumbprint
+            $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'OK' })
+        }
+        $journal.ImportedStores = @('Root')
+        $journal | ConvertTo-Json | Set-Content $StatePath
+        $originalJournal = Get-Content $StatePath -Raw
+        $hardwareId | Set-Content (Join-Path $env:WINDIR 'INF\oem7.inf')
+        $script:nativeExit = 3010
+        $script:removeOnReboot = $true
+        { & $cleanupAction } | Should Throw $Expected
+        $retained = Get-Content $StatePath -Raw | ConvertFrom-Json
+        $retained.RemovalPendingBootTicks | Should Be $script:bootTime.Ticks
+        $retained.PSObject.Properties.Remove('RemovalPendingBootTicks')
+        ($retained | ConvertTo-Json) | Should Be $originalJournal.TrimEnd()
+        (Get-Content (Join-Path $ResultsDirectory 'cleanup.json') -Raw | ConvertFrom-Json).Removed | Should Be $false
+        $script:devices.Count | Should Be 0
+        if ($Operation -eq 'device') {
+            Test-Path (Join-Path $env:WINDIR 'INF\oem7.inf') | Should Be $true
+            Assert-MockCalled pnputil.exe -Times 0 -Exactly -Scope It -ParameterFilter { $args[0] -eq '/delete-driver' }
+        }
+        else { Test-Path (Join-Path $env:WINDIR 'INF\oem7.inf') | Should Be $false }
+        Assert-MockCalled Remove-Item -Times 0 -Exactly -Scope It -ParameterFilter { $Path -like 'Cert:*' }
+    }
+
+    It 'blocks same-boot retries after <Operation> exit 3010 despite empty device and package enumeration' -TestCases @(
+        @{ Operation = 'device'; Expected = 'Device removal requires a reboot' }
+        @{ Operation = 'package'; Expected = 'Package removal requires a reboot' }
+    ) {
+        param($Operation, $Expected)
+        if ($Operation -eq 'device') {
+            New-DisplayArtifact
+            $journal.Thumbprint = $artifactThumbprint
+            $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'OK' })
+        }
+        $journal.ImportedStores = @('Root')
+        $journal | ConvertTo-Json | Set-Content $StatePath
+        $infPath = Join-Path $env:WINDIR 'INF\oem7.inf'
+        $hardwareId | Set-Content $infPath
+        $script:nativeExit = 3010
+        $script:removeOnReboot = $true
+        { & $cleanupAction } | Should Throw $Expected
+        if (Test-Path $infPath) { Remove-Item $infPath }
+        $script:devices.Count | Should Be 0
+        $retainedJournal = Get-Content $StatePath -Raw
+        $script:nativeExit = 0
+        $script:ArtifactDirectory = ''
+        { & $cleanupAction } | Should Throw 'requires an actual reboot'
+        Get-Content $StatePath -Raw | Should Be $retainedJournal
+        (Get-Content (Join-Path $ResultsDirectory 'cleanup.json') -Raw | ConvertFrom-Json).Removed | Should Be $false
+        Assert-MockCalled pnputil.exe -Times 1 -Exactly -Scope It
+        Assert-MockCalled Remove-Item -Times 0 -Exactly -Scope It -ParameterFilter { $Path -like 'Cert:*' }
+        $script:bootTime = $script:bootTime.AddHours(1)
+        & $cleanupAction
+        Test-Path -LiteralPath $StatePath | Should Be $false
+        (Get-Content (Join-Path $ResultsDirectory 'cleanup.json') -Raw | ConvertFrom-Json).Removed | Should Be $true
+        Assert-MockCalled pnputil.exe -Times 1 -Exactly -Scope It
+        Assert-MockCalled Remove-Item -Times 1 -Exactly -Scope It -ParameterFilter { $Path -like 'Cert:*' }
     }
 
     It 'retains ownership and trust when package removal fails' {

@@ -6,6 +6,7 @@ param(
     [Parameter(Mandatory)][ValidateSet('Install', 'Cleanup')][string]$Action,
     [Parameter(Mandatory)][string]$StatePath,
     [Parameter(Mandatory)][string]$ResultsDirectory,
+    # Cleanup of a present root also requires the original, journal-matching signed artifact.
     [string]$ArtifactDirectory,
     [Parameter(Mandatory)][switch]$IsolatedGuest
 )
@@ -44,13 +45,74 @@ if ($Action -eq 'Cleanup') {
     if (-not (Test-Path -LiteralPath $StatePath)) { throw 'No ownership journal; nothing may be removed.' }
     $state = Read-UmdfJournal -StatePath $StatePath -HardwareId $hardwareId -Subject $subject -InfProperty BeforeInfs
     $errors = [Collections.Generic.List[string]]::new()
-    Remove-UmdfDevices -Devices @(Get-FixtureDevices) -Errors $errors
-    Remove-UmdfPackages -InfNames @(Find-OwnedInfs) -HardwareId $hardwareId -Errors $errors
-    if (@(Get-FixtureDevices).Count) { $errors.Add('Fixture device remains.') }
-    # Keep test trust while a package still needs cleanup.
-    if ($errors.Count -eq 0) {
-        Remove-UmdfTestTrust -State $state -Subject $subject
+    try {
+        $lastBoot = (Get-CimInstance Win32_OperatingSystem -ErrorAction Stop).LastBootUpTime
+        if ($lastBoot -isnot [datetime]) { throw 'Cannot determine the guest boot identity for safe fixture cleanup.' }
+        $bootTicks = $lastBoot.ToUniversalTime().Ticks
+        $barrier = $state.PSObject.Properties['RemovalPendingBootTicks']
+        if ($barrier) {
+            if ($barrier.Value -isnot [long] -or $barrier.Value -le 0) { throw 'Invalid fixture removal reboot barrier.' }
+            if ($bootTicks -le $barrier.Value) {
+                throw 'An interrupted or reboot-required fixture removal requires an actual reboot before cleanup can retry.'
+            }
+        }
+        $devices = @(Get-FixtureDevices)
+        if ($devices.Count) {
+            # The probe opens the first fixture interface; never control an ambiguous set of roots.
+            if ($devices.Count -ne 1) { throw 'Expected exactly one owned display fixture root.' }
+            if ([string]::IsNullOrWhiteSpace($ArtifactDirectory)) {
+                throw 'Cleanup of a present fixture requires its original artifact directory.'
+            }
+            $driver = Join-Path (Resolve-Path -LiteralPath $ArtifactDirectory).Path 'driver'
+            Assert-UmdfFileManifest -Directory $driver -ManifestPath (Join-Path $ArtifactDirectory 'driver-hashes.json') `
+                -RequiredFiles PtDisplayIdd.dll, PtDisplayIdd.inf, PtDisplayIdd.cat, PtDisplayIdd.cer, IddProbe.exe
+            $certificate = Read-UmdfPublicCertificate -Path (Join-Path $driver 'PtDisplayIdd.cer') -Subject $subject
+            try {
+                if ($certificate.Thumbprint -ne $state.Thumbprint) { throw 'Cleanup artifact certificate does not match the ownership journal.' }
+                Assert-UmdfPackageSignatures -DriverDirectory $driver -Files PtDisplayIdd.dll, PtDisplayIdd.cat, IddProbe.exe -Thumbprint $state.Thumbprint
+            }
+            finally { $certificate.Dispose() }
+            $probe = Join-Path $driver 'IddProbe.exe'
+            foreach ($connector in @(0, 1)) {
+                & $probe --connected $connector 0 | Out-Null
+                if ($LASTEXITCODE) { throw "Fixture monitor departure failed: connector=$connector, exit=$LASTEXITCODE." }
+            }
+            $snapshotJson = & $probe --snapshot
+            $snapshotExit = $LASTEXITCODE
+            $snapshotJson | Set-Content (Join-Path $ResultsDirectory 'cleanup-snapshot.json')
+            if ($snapshotExit) { throw "Fixture departure snapshot failed: exit=$snapshotExit." }
+            $snapshot = $snapshotJson | ConvertFrom-Json
+            if ($snapshot.Version -ne 2 -or @($snapshot.Monitors).Count -ne 2 -or
+                @($snapshot.Monitors | Where-Object { $_.Connected -isnot [bool] -or $_.Connected }).Count) {
+                throw 'Fixture departure snapshot must confirm both monitors are disconnected.'
+            }
+        }
+        $ownedInfs = @(Find-OwnedInfs)
+        if ($devices.Count -or $ownedInfs.Count) {
+            # Persist before PnP so disappearance or interruption cannot bypass a same-boot retry barrier.
+            $state | Add-Member -NotePropertyName RemovalPendingBootTicks -NotePropertyValue $bootTicks -Force
+            Save-Journal
+            $removalCompleted = $false
+            $rebootRequired = $false
+            try {
+                Remove-UmdfDevices -Devices $devices -Errors $errors -RequireImmediateRemoval -RebootRequired ([ref]$rebootRequired)
+                if ($errors.Count -eq 0) {
+                    Remove-UmdfPackages -InfNames $ownedInfs -HardwareId $hardwareId -Errors $errors -RequireImmediateRemoval -RebootRequired ([ref]$rebootRequired)
+                }
+                $removalCompleted = $true
+            }
+            finally {
+                if ($removalCompleted -and -not $rebootRequired) {
+                    $state.PSObject.Properties.Remove('RemovalPendingBootTicks')
+                    Save-Journal
+                }
+            }
+        }
+        if (@(Get-FixtureDevices).Count) { $errors.Add('Fixture device remains.') }
+        # Keep test trust and ownership on any teardown failure.
+        if ($errors.Count -eq 0) { Remove-UmdfTestTrust -State $state -Subject $subject }
     }
+    catch { $errors.Add($_.Exception.Message) }
     [ordered]@{ Removed = $errors.Count -eq 0; Errors = @($errors) } |
         ConvertTo-Json | Set-Content (Join-Path $ResultsDirectory 'cleanup.json')
     if ($errors.Count) { throw ($errors -join '; ') }
