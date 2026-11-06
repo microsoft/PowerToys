@@ -36,5 +36,19 @@ namespace ColorPicker.Helpers
             var result = ColorRepresentationHelper.GetStringRepresentation(Color.Black, ColorFormatHelper.GetDefaultFormat(type));
             Assert.AreEqual(expected, result);
         }
+
+        [TestMethod]
+        [DataRow(0, 128, 255, "%ReF", "0")]
+        [DataRow(0, 128, 255, "r=%ReF", "r=0")]
+        [DataRow(0, 128, 255, "%ReF%Gr", "0128")]
+        [DataRow(0, 128, 255, "%ReF,%GrF,%BlF", "0,.5,1")]
+        [DataRow(1, 2, 255, "%ReF,%GrF,%BlF", "0,.01,1")]
+        [DataRow(0, 0, 0, "%ReF%GrF%BlF", "000")]
+        [DataRow(0, 128, 255, "%Ref,%Grf,%Blf", "0,0.5,1")]
+        public void GetStringRepresentationFloatFormatWithZeroChannelTest(int red, int green, int blue, string format, string expected)
+        {
+            var result = ColorRepresentationHelper.GetStringRepresentation(Color.FromArgb(red, green, blue), format);
+            Assert.AreEqual(expected, result);
+        }
     }
 }
