@@ -1,6 +1,8 @@
 ﻿#include "pch.h"
 #include "MappingConfiguration.h"
 
+#include <filesystem>
+
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/logger/logger.h>
@@ -472,10 +474,13 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
     return result;
 }
 
-bool MappingConfiguration::LoadSettings()
+bool MappingConfiguration::LoadSettings(LoadOutcome* outcome)
 {
     Logger::trace(L"SettingsHelper::LoadSettings()");
     configurationNameResolved = false;
+    LoadOutcome ignoredOutcome;
+    LoadOutcome& loadOutcome = outcome ? *outcome : ignoredOutcome;
+    loadOutcome = LoadOutcome::Failed;
     try
     {
         PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::load_from_settings_file(KeyboardManagerConstants::ModuleName);
@@ -490,9 +495,42 @@ bool MappingConfiguration::LoadSettings()
     configurationNameResolved = true;
 
         // Read the config file and load the remaps.
-        auto configFile = json::from_file(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + *current_config + L".json");
+        const auto configPath = PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + *current_config + L".json";
+        auto configFile = json::from_file(configPath);
         if (!configFile)
         {
+            // Distinguish a genuinely absent profile from a transient read failure — json::from_file
+            // returns the same falsy for both, but they need opposite handling. Clear only when the
+            // file is *confirmed* absent: std::filesystem::exists also returns false when the check
+            // itself fails (ec set, e.g. a momentary directory lock), and that uncertainty must fall to
+            // the safe side (keep the tables), never the destructive side (wipe every remap).
+            std::error_code ec;
+            const bool configExists = std::filesystem::exists(configPath, ec);
+            if (!configExists && !ec)
+            {
+                // The profile's config file does not exist — a deleted profile that another path can
+                // still make active (a cycle-hotkey step, or a fresh setup with no default.json yet).
+                // Clear every remap table so the previous profile's mappings don't stay live under the
+                // now-empty profile; without this the engine returns here with its old tables intact
+                // and strands them. Covers every switch path (the editor also guarantees the fallback
+                // file exists via ProfileManager.EnsureDefaultProfileExists).
+                ClearSingleKeyRemaps();
+                ClearSingleKeyToTextRemaps();
+                ClearSingleKeyAloneRemaps();
+                ClearOSLevelShortcuts();
+                ClearAppSpecificShortcuts();
+                loadOutcome = LoadOutcome::ConfirmedAbsent;
+            }
+            else
+            {
+                // The file exists but couldn't be read/parsed right now (a transient read while another
+                // process is mid-write), or the existence check itself failed — either way keep the
+                // current tables and let the next settings-changed event retry, rather than disabling
+                // every remap on a momentary failure (matching SwitchActiveProfile's "leave it
+                // untouched" stance).
+                Logger::error(L"MappingConfiguration::LoadSettings: '{}.json' could not be read and is not confirmed absent; keeping current remaps", *current_config);
+            }
+
             return false;
         }
 
@@ -503,6 +541,7 @@ bool MappingConfiguration::LoadSettings()
         result = LoadShortcutRemaps(*configFile, KeyboardManagerConstants::RemapShortcutsToTextSettingName) && result;
         result = LoadSingleKeyToTextRemaps(*configFile) && result;
 
+        loadOutcome = LoadOutcome::Loaded;
         return result;
     }
     catch (...)
@@ -511,6 +550,20 @@ bool MappingConfiguration::LoadSettings()
     }
 
     return false;
+}
+
+void MappingConfiguration::SwapMappings(MappingConfiguration& other) noexcept
+{
+    singleKeyReMap.swap(other.singleKeyReMap);
+    aloneSingleKeyReMap.swap(other.aloneSingleKeyReMap);
+    scanMap.swap(other.scanMap);
+    singleKeyToTextReMap.swap(other.singleKeyToTextReMap);
+    osLevelShortcutReMap.swap(other.osLevelShortcutReMap);
+    osLevelShortcutReMapSortedKeys.swap(other.osLevelShortcutReMapSortedKeys);
+    appSpecificShortcutReMap.swap(other.appSpecificShortcutReMap);
+    appSpecificShortcutReMapSortedKeys.swap(other.appSpecificShortcutReMapSortedKeys);
+    currentConfig.swap(other.currentConfig);
+    std::swap(configurationNameResolved, other.configurationNameResolved);
 }
 
 bool MappingConfiguration::IsConfigurationNameResolved() const

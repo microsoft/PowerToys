@@ -2,6 +2,19 @@
 #include "State.h"
 #include <optional>
 
+void State::AdoptConfiguration(MappingConfiguration& configuration, const bool resetRuntimeState) noexcept
+{
+    SwapMappings(configuration);
+
+    if (resetRuntimeState)
+    {
+        activatedAppSpecificShortcutTarget.clear();
+        singleKeyRemapInjectionFailedKeys.clear();
+        ClearAllAloneKeyState();
+        numpadKeyPressed.clear();
+    }
+}
+
 // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
 std::optional<SingleKeyRemapTable::iterator> State::GetSingleKeyRemap(const DWORD& originalKey)
 {
