@@ -210,7 +210,7 @@ void FancyZonesWindowUtils::SwitchToWindow(HWND window) noexcept
     }
 }
 
-void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect, BOOL snapZone) noexcept
+void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect, BOOL snapZone, bool afterDrag) noexcept
 {
     WINDOWPLACEMENT placement{};
     ::GetWindowPlacement(window, &placement);
@@ -250,7 +250,27 @@ void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect, BOOL snapZo
     ScreenToWorkAreaCoords(window, rect);
 
     placement.rcNormalPosition = rect;
-    placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
+
+    // Windows Snap resizes a dragged window before its move/size loop ends, while FancyZones snaps it
+    // only after the loop has ended. Some apps (e.g. Hyper-V VMConnect) apply a new size only on
+    // WM_EXITSIZEMOVE, so repeat the loop notifications around the resize. That needs a synchronous
+    // placement, as the window processes an async one only after sent messages such as WM_EXITSIZEMOVE.
+    const bool notifySizeMove = afterDrag && placement.showCmd == SW_RESTORE;
+    bool synchronous = false;
+    if (notifySizeMove)
+    {
+        // Bounded wait, so a busy or hung window can't block FancyZones; such a window gets the async placement
+        synchronous = SendMessageTimeoutW(window, WM_ENTERSIZEMOVE, 0, 0, SMTO_ABORTIFHUNG, 100, nullptr) != 0;
+        if (!synchronous)
+        {
+            Logger::warn(L"WM_ENTERSIZEMOVE not delivered in time, {}", get_last_error_or_default(GetLastError()));
+        }
+    }
+
+    if (!synchronous)
+    {
+        placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
+    }
 
     auto result = ::SetWindowPlacement(window, &placement);
     if (!result)
@@ -270,6 +290,12 @@ void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect, BOOL snapZo
     if (!result)
     {
         Logger::error(L"SetWindowPlacement failed, {}", get_last_error_or_default(GetLastError()));
+    }
+
+    if (notifySizeMove)
+    {
+        // Sent even if WM_ENTERSIZEMOVE timed out: that message may still be delivered and must not stay unpaired
+        SendNotifyMessageW(window, WM_EXITSIZEMOVE, 0, 0);
     }
 }
 
@@ -303,7 +329,7 @@ void FancyZonesWindowUtils::SaveWindowSizeAndOrigin(HWND window) noexcept
     }
 }
 
-void FancyZonesWindowUtils::RestoreWindowSize(HWND window) noexcept
+void FancyZonesWindowUtils::RestoreWindowSize(HWND window, bool afterDrag) noexcept
 {
     auto windowSizeData = GetPropW(window, ZonedWindowProperties::PropertyRestoreSizeID);
     if (windowSizeData)
@@ -322,7 +348,7 @@ void FancyZonesWindowUtils::RestoreWindowSize(HWND window) noexcept
             rect.right = rect.left + static_cast<int>(windowWidth);
             rect.bottom = rect.top + static_cast<int>(windowHeight);
             Logger::info("Restore window size");
-            SizeWindowToRect(window, rect);
+            SizeWindowToRect(window, rect, true, afterDrag);
         }
 
         ::RemoveProp(window, ZonedWindowProperties::PropertyRestoreSizeID);
