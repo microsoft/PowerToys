@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Text.Json.Serialization;
@@ -118,11 +119,13 @@ namespace Wox.Plugin
             SubTitleHighlightData = subTitleHighlightData;
         }
 
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Already-compiled third-party PowerToys Run plugins call this public setter; preserve its binary signature.")]
         public IList<int> TitleHighlightData { get; set; }
 
         /// <summary>
         /// Gets or sets a list of indexes for the characters to be highlighted in SubTitle
         /// </summary>
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Already-compiled third-party PowerToys Run plugins call this public setter; preserve its binary signature.")]
         public IList<int> SubTitleHighlightData { get; set; }
 
         /// <summary>

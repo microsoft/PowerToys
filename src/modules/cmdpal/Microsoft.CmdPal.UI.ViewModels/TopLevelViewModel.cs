@@ -47,7 +47,7 @@ public partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedA
     public virtual bool IsFallback => false;
 
     [ObservableProperty]
-    public partial ObservableCollection<Tag> Tags { get; set; } = [];
+    public partial ObservableCollection<Tag> Tags { get; private set; } = [];
 
     public string Id => string.IsNullOrWhiteSpace(IdFromModel) ? _generatedId : IdFromModel;
 

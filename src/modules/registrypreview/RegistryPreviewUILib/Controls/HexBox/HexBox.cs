@@ -9,6 +9,7 @@
 // </history>
 #pragma warning disable SA1210 // Using directives should be ordered alphabetically by namespace
 #pragma warning disable SA1208 // System using directives should be placed before other using directives
+using System.Diagnostics.CodeAnalysis;
 using RegistryPreviewUILib.HexBox.Library.EndianConvert;
 using Microsoft.UI;
 using Microsoft.UI.Input;
@@ -598,6 +599,7 @@ namespace RegistryPreviewUILib.HexBox
             }
         }
 
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This dependency-property wrapper must remain writable so XAML and runtime bindings can replace the collection.")]
         public List<HighlightedRegion> HighlightedRegions
         {
             get { return (List<HighlightedRegion>)GetValue(HighlightedRegionsProperty); }

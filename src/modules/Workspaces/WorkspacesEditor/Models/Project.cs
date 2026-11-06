@@ -147,7 +147,7 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public List<Application> Applications { get; set; }
+        public List<Application> Applications { get; internal set; }
 
         public List<object> ApplicationsListed
         {

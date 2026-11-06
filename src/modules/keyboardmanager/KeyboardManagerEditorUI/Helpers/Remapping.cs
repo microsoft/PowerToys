@@ -16,7 +16,7 @@ namespace KeyboardManagerEditorUI.Helpers
     {
         public List<string> Shortcut { get; set; } = new List<string>();
 
-        public List<string> RemappedKeys { get; set; } = new List<string>();
+        public List<string> RemappedKeys { get; internal set; } = new List<string>();
 
         public bool IsAllApps { get; set; } = true;
 
