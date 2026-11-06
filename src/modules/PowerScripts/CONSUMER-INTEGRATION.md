@@ -123,7 +123,7 @@ Keyboard Manager PowerScript bindings to regenerate their command line.
 
 ### Central integration settings and Group Policy
 
-Put each consumer's integration switch in **PowerToys Settings > PowerScripts > Use PowerScripts in**, not
+Put each consumer's integration switch in **PowerScripts app > Consumer modules**, not
 in the consumer's settings page. PowerScripts owns `config.json`'s
 `consumers: { "advanced-paste": true, "keyboard-manager": true }` preferences. Advanced Paste uses
 its legacy `properties.powerscripts-enabled` value until a central preference exists (default off).
@@ -151,11 +151,11 @@ even if a consumer policy enables its integration; a policy disabling the parent
 Enabling an integration does not enable its parent utility, enable a runtime, approve a script, or
 relax MXC. Policies do not overwrite user preferences, so removing a policy restores the preference.
 Malformed or inaccessible policies are reported as errors, not treated as permission to execute.
-PowerToys Settings shows effective values and locks policy-managed controls.
+The PowerScripts app shows effective integration values and locks policy-managed controls.
 
 The generic per-consumer policy resolver accepts stable consumer IDs, so adding a consumer needs no
 new execution gate. Register its parent utility/default in `ConsumerSettings`, add its central
-Settings card in `Settings.UI\SettingsXAML\Views\PowerScriptsPage.xaml` and ADMX/ADML policy, and use
+app card in `PowerScripts.Editor\Views\ConsumerModulesPage.xaml` and ADMX/ADML policy, and use
 the same ID in discovery, execution, and policy values. The standalone editor does not own global
 configuration. Relocating these controls changes no Host commands, consumer IDs, preferences,
 default values, policies, or module-owned bindings.
@@ -213,7 +213,7 @@ automatic discovery when a consumer can offer every applicable script. Saved ass
 configuration picker are only necessary for consumers that need explicit bindings.
 
 Advanced Paste is the automatic-discovery example. Its integration toggle lives in
-PowerToys Settings > PowerScripts > Use PowerScripts in and defaults off. When enabled, the paste window offers every available script with
+PowerScripts app > Consumer modules and defaults off. When enabled, the paste window offers every available script with
 compatible clipboard input and a pasteable output. Text, files, bitmap images, and audio are
 matched against the declared contracts, including file/media restrictions. No-input scripts are
 excluded. AP stores no per-script selection or exclusion list.

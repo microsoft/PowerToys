@@ -89,35 +89,6 @@ public sealed partial class PowerScriptsPage : NavigablePage, IRefreshablePage
         }
     }
 
-    private async void ConsumerEnabledToggle_Toggled(object sender, RoutedEventArgs e)
-    {
-        if (sender is not ToggleSwitch { Tag: string id } toggle || !ViewModel.AreConsumerSettingsReady)
-        {
-            return;
-        }
-
-        var consumer = id switch
-        {
-            "advanced-paste" => ViewModel.AdvancedPasteConsumer,
-            "keyboard-manager" => ViewModel.KeyboardManagerConsumer,
-            _ => throw new InvalidOperationException("Unknown PowerScripts consumer."),
-        };
-        if (!consumer.CanChange || toggle.IsOn == consumer.IsEnabled)
-        {
-            return;
-        }
-
-        try
-        {
-            await ViewModel.SetConsumerEnabledAsync(consumer, toggle.IsOn);
-            EditorError.IsOpen = false;
-        }
-        catch (Exception exception)
-        {
-            ShowError(exception);
-        }
-    }
-
     private void OpenScriptsFolderButton_Click(object sender, RoutedEventArgs e)
     {
         try
