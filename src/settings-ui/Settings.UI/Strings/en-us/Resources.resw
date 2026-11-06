@@ -2608,6 +2608,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Awake_DisplaySettingsCard.Description" xml:space="preserve">
     <value>This setting is only available when keeping the PC awake</value>
   </data>
+  <data name="Awake_AllowDisplayOffWhileLockedSettingsCard.Header" xml:space="preserve">
+    <value>Allow screen to turn off while locked</value>
+  </data>
+  <data name="Awake_AllowDisplayOffWhileLockedSettingsCard.Description" xml:space="preserve">
+    <value>When off, "Keep screen on" stays in effect while Windows is locked. On Modern Standby systems, Windows may still turn off the display.</value>
+  </data>
   <data name="Awake_ExpirationSettingsExpander.Description" xml:space="preserve">
     <value>Keep custom awake state until a specific date and time</value>
   </data>
