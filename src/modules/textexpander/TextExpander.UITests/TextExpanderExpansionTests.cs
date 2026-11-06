@@ -185,7 +185,9 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
     /// Question and choice windows leave nothing behind once they close. Windows App SDK kept each closed window's title
     /// bar, about 20 GDI objects and 25 handles, and each window loaded its icon again, so an engine asked often enough
     /// ran out of GDI objects. The first windows of each kind set WinUI and its caches up, so the count starts after two
-    /// of each, and allows the few objects those caches still come and go by.
+    /// of each. A closed window's GDI objects can also stay until a later window has come and gone, up to a window's
+    /// worth on Windows 10, so each count is the lowest the engine settled at over five pairs of windows. Objects that
+    /// linger don't raise it; a leak raises it by about 200 over the ten windows between the two.
     /// </summary>
     [TestMethod("TextExpander.Expansion.ClosedWindowsLeaveNothingBehind")]
     [TestCategory("TextExpander")]
@@ -200,18 +202,11 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
         }
 
         using var engine = Process.GetProcessById(ProcessIds(EngineProcessName).Single());
-        var (gdi, user, handles) = SettledObjects(engine);
-
-        for (var i = 0; i < 5; i++)
-        {
-            AnswerTheTicketQuestion();
-            PickTheFirstLink();
-        }
-
-        var (gdiAfter, userAfter, handlesAfter) = SettledObjects(engine);
-        var counts = $"GDI {gdi} -> {gdiAfter}, USER {user} -> {userAfter}, handles {handles} -> {handlesAfter}";
-        Assert.IsTrue(gdiAfter - gdi <= 25, $"Ten more windows left GDI objects behind: {counts}.");
-        Assert.IsTrue(userAfter - user <= 6, $"Ten more windows left USER objects behind: {counts}.");
+        var before = LowestAfterFivePairs(engine);
+        var after = LowestAfterFivePairs(engine);
+        var counts = $"lowest GDI {before.Gdi} -> {after.Gdi}, USER {before.User} -> {after.User}; GDI/USER/handles after each pair: {before.Seen}, then {after.Seen}";
+        Assert.IsTrue(after.Gdi - before.Gdi <= 25, $"Ten more windows left GDI objects behind: {counts}.");
+        Assert.IsTrue(after.User - before.User <= 6, $"Ten more windows left USER objects behind: {counts}.");
     }
 
     /// <summary>
@@ -515,11 +510,36 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
         AssertTargetShows("Track: https://example.com/track/1042 ");
     }
 
-    /// <summary>The engine's GDI objects, USER objects and handles, once what closed has had time to go.</summary>
+    /// <summary>
+    /// Answers the question and picks a link five times, and returns the lowest GDI and USER counts the engine settled at
+    /// after a pair, with each pair's counts.
+    /// </summary>
+    private (int Gdi, int User, string Seen) LowestAfterFivePairs(Process engine)
+    {
+        int gdi = int.MaxValue;
+        int user = int.MaxValue;
+        var seen = new List<string>();
+        for (var i = 0; i < 5; i++)
+        {
+            AnswerTheTicketQuestion();
+            PickTheFirstLink();
+            var settled = SettledObjects(engine);
+            gdi = Math.Min(gdi, settled.Gdi);
+            user = Math.Min(user, settled.User);
+            seen.Add($"{settled.Gdi}/{settled.User}/{settled.Handles}");
+        }
+
+        return (gdi, user, string.Join(" ", seen));
+    }
+
+    /// <summary>
+    /// The engine's GDI objects, USER objects and handles, once it has collected what closed: it collects 1.5 s after a
+    /// window closes.
+    /// </summary>
     private (int Gdi, int User, int Handles) SettledObjects(Process engine)
     {
         Step("Letting the closed windows go");
-        Thread.Sleep(5_000);
+        Thread.Sleep(3_000);
         engine.Refresh();
         return ((int)GetGuiResources(engine.Handle, 0), (int)GetGuiResources(engine.Handle, 1), engine.HandleCount);
     }
