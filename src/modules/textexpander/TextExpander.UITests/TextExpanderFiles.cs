@@ -61,6 +61,22 @@ internal static class TextExpanderFiles
         WriteAtomically(SettingsPath, Encoding.UTF8.GetBytes(settings.ToJsonString(new JsonSerializerOptions { WriteIndented = true })));
     }
 
+    /// <summary>
+    /// Turns off Run at startup in the global settings.json, before PowerToys starts. While it's on, the runner deletes and
+    /// re-creates its "Autorun for" scheduled task each time it starts, once per test here, and the pipeline's launcher,
+    /// which polls a scheduled task of its own by name, fails when a poll meets that churn. The framework puts the global
+    /// settings back after each test.
+    /// </summary>
+    public static void TurnOffRunAtStartup()
+    {
+        var path = Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, "settings.json");
+        var bytes = ReadAllBytesShared(path);
+        var root = bytes is null ? null : JsonNode.Parse(WithoutByteOrderMark(bytes).Span, documentOptions: LenientReadOptions) as JsonObject;
+        root ??= new JsonObject();
+        root["startup"] = false;
+        WriteAtomically(path, Encoding.UTF8.GetBytes(root.ToJsonString(new JsonSerializerOptions { WriteIndented = true })));
+    }
+
     /// <summary>Reads a bool option, which settings.json stores bare.</summary>
     public static bool? ReadBoolOption(string name) =>
         ReadOption(name) is JsonValue value && value.TryGetValue(out bool result) ? result : null;

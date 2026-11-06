@@ -436,7 +436,9 @@ Privacy:
   extension, with an in-memory clipboard, desktop and clock.
 - `TextExpander.UITests`: Settings, editor and expansion, end to end, plus Windows Terminal where it's
   installed. Each test seeds the files, runs PowerToys with only Text Expander on, then restores the
-  files. The notice tests (`TestCategory=TextExpander.Notice`) run the notice window in the test
+  files. It also turns Run at startup off: while it's on, the runner deletes and re-creates its scheduled
+  task each time it starts, and the pipeline's launcher fails when it polls its own task during that churn.
+  The notice tests (`TestCategory=TextExpander.Notice`) run the notice window in the test
   process, from the engine's sources, with an English `EngineText`.
 
 UI tests must run without administrator rights, because the engine refuses elevated targets. The

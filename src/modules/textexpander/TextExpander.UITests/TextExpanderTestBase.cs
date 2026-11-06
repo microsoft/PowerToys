@@ -144,6 +144,7 @@ public abstract class TextExpanderTestBase : UITestBase
         Assert.IsTrue(WindowControl.TryKillProcessTreeByNameAndWait(EngineProcessName, 15_000), "A Text Expander engine from an earlier run did not exit.");
 
         snapshot ??= TextExpanderDataSnapshot.Capture();
+        TextExpanderFiles.TurnOffRunAtStartup();
         TextExpanderFiles.WriteOptions(InitialOptions);
         if (InitialSnippets is { } snippets)
         {
