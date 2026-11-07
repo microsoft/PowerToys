@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Buffers;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -16,29 +17,20 @@ internal sealed class FileSystemHttpResourceCacheStore : IHttpResourceCacheStore
 {
     private const string MetadataFileName = "metadata.json";
     private const string DefaultPayloadFileName = "payload.bin";
-    private static readonly Action<MEL.ILogger, string, Exception?> LogFailedToEnumerateHttpResourceCacheMessage = LoggerMessage.Define<string>(
-        LogLevel.Error,
-        new EventId(1, nameof(LogFailedToEnumerateHttpResourceCache)),
-        "Failed to enumerate HTTP resource cache '{CacheDirectory}' for pruning.");
+    private static readonly Action<MEL.ILogger, string, Exception?> LogCacheFailureMessage = LoggerMessage.Define<string>(
+        LogLevel.Warning,
+        new EventId(1, nameof(LogCacheFailure)),
+        "Failed to access HTTP resource cache at '{Path}'. Further cache failures will be logged at Debug.");
 
-    private static readonly Action<MEL.ILogger, string, Exception?> LogFailedToLoadCachedMetadataMessage = LoggerMessage.Define<string>(
-        LogLevel.Error,
-        new EventId(2, nameof(LogFailedToLoadCachedMetadata)),
-        "Failed to load cached metadata from '{MetadataPath}'.");
-
-    private static readonly Action<MEL.ILogger, string, Exception?> LogFailedToSaveCachedMetadataMessage = LoggerMessage.Define<string>(
-        LogLevel.Error,
-        new EventId(3, nameof(LogFailedToSaveCachedMetadata)),
-        "Failed to save cached metadata to '{MetadataPath}'.");
-
-    private static readonly Action<MEL.ILogger, string, Exception?> LogFailedToDeleteCachedHttpResourceDirectoryMessage = LoggerMessage.Define<string>(
-        LogLevel.Error,
-        new EventId(4, nameof(LogFailedToDeleteCachedHttpResourceDirectory)),
-        "Failed to delete cached HTTP resource directory '{EntryDirectory}'.");
+    private static readonly Action<MEL.ILogger, string, Exception?> LogSubsequentCacheFailureMessage = LoggerMessage.Define<string>(
+        LogLevel.Debug,
+        new EventId(2, nameof(LogCacheFailure)),
+        "Failed to access HTTP resource cache at '{Path}'.");
 
     private readonly string _cacheDirectory;
     private readonly TimeSpan _defaultTimeToLive;
     private readonly MEL.ILogger _logger;
+    private int _hasLoggedFailure;
 
     public FileSystemHttpResourceCacheStore(string cacheDirectory, TimeSpan defaultTimeToLive, MEL.ILogger logger)
     {
@@ -57,8 +49,6 @@ internal sealed class FileSystemHttpResourceCacheStore : IHttpResourceCacheStore
         ArgumentNullException.ThrowIfNull(resourceUri);
 
         var entryDirectory = GetEntryDirectory(resourceUri);
-        Directory.CreateDirectory(entryDirectory);
-
         var metadataPath = Path.Combine(entryDirectory, MetadataFileName);
         var metadata = TryLoadMetadata(metadataPath);
         var payloadFileName = ResolvePayloadFileName(resourceUri, fileNameHint, metadata);
@@ -122,18 +112,34 @@ internal sealed class FileSystemHttpResourceCacheStore : IHttpResourceCacheStore
         try
         {
             await using var sourceStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-            await using (var destinationStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, FileOptions.Asynchronous))
+            try
             {
-                await sourceStream.CopyToAsync(destinationStream, cancellationToken);
-            }
+                Directory.CreateDirectory(entry.EntryDirectory);
+                await using (var destinationStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, FileOptions.Asynchronous))
+                {
+                    await CopyResponseAsync(sourceStream, destinationStream, cancellationToken);
+                }
 
-            File.Move(tempPath, entry.PayloadPath, overwrite: true);
+                File.Move(tempPath, entry.PayloadPath, overwrite: true);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                LogCacheFailure(entry.PayloadPath, ex);
+                throw new HttpResourceCacheStoreException(entry.PayloadPath, ex);
+            }
         }
         finally
         {
-            if (File.Exists(tempPath))
+            try
             {
-                File.Delete(tempPath);
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                LogCacheFailure(tempPath, ex);
             }
         }
 
@@ -172,7 +178,39 @@ internal sealed class FileSystemHttpResourceCacheStore : IHttpResourceCacheStore
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or DirectoryNotFoundException)
         {
-            LogFailedToEnumerateHttpResourceCache(_logger, _cacheDirectory, ex);
+            LogCacheFailure(_cacheDirectory, ex);
+        }
+    }
+
+    private static async Task CopyResponseAsync(Stream source, Stream destination, CancellationToken cancellationToken)
+    {
+        var buffer = ArrayPool<byte>.Shared.Rent(81920);
+        try
+        {
+            while (true)
+            {
+                int count;
+                try
+                {
+                    count = await source.ReadAsync(buffer.AsMemory(), cancellationToken);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // Source failures must not be classified as cache write failures
+                    throw new HttpRequestException("Could not read the HTTP response body.", ex);
+                }
+
+                if (count == 0)
+                {
+                    break;
+                }
+
+                await destination.WriteAsync(buffer.AsMemory(0, count), cancellationToken);
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
         }
     }
 
@@ -213,13 +251,15 @@ internal sealed class FileSystemHttpResourceCacheStore : IHttpResourceCacheStore
         string payloadFileName,
         DateTimeOffset now)
     {
+        // Only a 304 keeps the stored representation and its metadata
+        var retainedMetadata = response.StatusCode == HttpStatusCode.NotModified ? metadata : null;
         return new HttpResourceCacheMetadata
         {
-            ContentType = response.Content?.Headers.ContentType?.MediaType ?? metadata?.ContentType,
-            ETag = response.Headers.ETag?.ToString() ?? metadata?.ETag,
+            ContentType = response.Content?.Headers.ContentType?.MediaType ?? retainedMetadata?.ContentType,
+            ETag = response.Headers.ETag?.ToString() ?? retainedMetadata?.ETag,
             ExpiresUtc = GetExpirationUtc(response, now),
             FileName = payloadFileName,
-            LastModifiedUtc = response.Content?.Headers.LastModified ?? metadata?.LastModifiedUtc,
+            LastModifiedUtc = response.Content?.Headers.LastModified ?? retainedMetadata?.LastModifiedUtc,
             LastValidatedUtc = now,
             SourceUri = resourceUri.AbsoluteUri,
         };
@@ -321,9 +361,9 @@ internal sealed class FileSystemHttpResourceCacheStore : IHttpResourceCacheStore
             var json = File.ReadAllText(metadataPath);
             return JsonSerializer.Deserialize(json, HttpResourceCacheJsonContext.Default.HttpResourceCacheMetadata) as HttpResourceCacheMetadata;
         }
-        catch (Exception ex) when (ex is IOException or JsonException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
         {
-            LogFailedToLoadCachedMetadata(_logger, metadataPath, ex);
+            LogCacheFailure(metadataPath, ex);
             return null;
         }
     }
@@ -337,7 +377,7 @@ internal sealed class FileSystemHttpResourceCacheStore : IHttpResourceCacheStore
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            LogFailedToSaveCachedMetadata(_logger, metadataPath, ex);
+            LogCacheFailure(metadataPath, ex);
         }
     }
 
@@ -349,27 +389,19 @@ internal sealed class FileSystemHttpResourceCacheStore : IHttpResourceCacheStore
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or DirectoryNotFoundException)
         {
-            LogFailedToDeleteCachedHttpResourceDirectory(_logger, entryDirectory, ex);
+            LogCacheFailure(entryDirectory, ex);
         }
     }
 
-    private static void LogFailedToEnumerateHttpResourceCache(MEL.ILogger logger, string cacheDirectory, Exception exception)
+    private void LogCacheFailure(string path, Exception exception)
     {
-        LogFailedToEnumerateHttpResourceCacheMessage(logger, cacheDirectory, exception);
-    }
-
-    private static void LogFailedToLoadCachedMetadata(MEL.ILogger logger, string metadataPath, Exception exception)
-    {
-        LogFailedToLoadCachedMetadataMessage(logger, metadataPath, exception);
-    }
-
-    private static void LogFailedToSaveCachedMetadata(MEL.ILogger logger, string metadataPath, Exception exception)
-    {
-        LogFailedToSaveCachedMetadataMessage(logger, metadataPath, exception);
-    }
-
-    private static void LogFailedToDeleteCachedHttpResourceDirectory(MEL.ILogger logger, string entryDirectory, Exception exception)
-    {
-        LogFailedToDeleteCachedHttpResourceDirectoryMessage(logger, entryDirectory, exception);
+        if (Interlocked.Exchange(ref _hasLoggedFailure, 1) == 0)
+        {
+            LogCacheFailureMessage(_logger, path, exception);
+        }
+        else
+        {
+            LogSubsequentCacheFailureMessage(_logger, path, exception);
+        }
     }
 }

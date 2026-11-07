@@ -16,7 +16,7 @@ internal sealed partial class HttpResourceCacheHandler : DelegatingHandler
     private static readonly HttpRequestOptionsKey<HttpResourceCacheRequestOptions> RequestOptionsKey = new("CmdPal.HttpResourceCache.RequestOptions");
     private static readonly HttpRequestOptionsKey<CachedHttpResponseInfo> ResponseInfoKey = new("CmdPal.HttpResourceCache.ResponseInfo");
     private static readonly Action<MEL.ILogger, string, Exception?> LogFailedToCacheHttpResourceMessage = LoggerMessage.Define<string>(
-        LogLevel.Error,
+        LogLevel.Debug,
         new EventId(0, nameof(LogFailedToCacheHttpResource)),
         "Failed to cache HTTP resource '{ResourceUri}'.");
 
@@ -160,7 +160,7 @@ internal sealed partial class HttpResourceCacheHandler : DelegatingHandler
 
         try
         {
-            using var networkRequest = CloneRequest(request, entry.Metadata);
+            using var networkRequest = CloneRequest(request, File.Exists(entry.PayloadPath) ? entry.Metadata : null);
             using var response = await base.SendAsync(networkRequest, cancellationToken);
 
             if (response.StatusCode == HttpStatusCode.NotModified)
@@ -191,7 +191,7 @@ internal sealed partial class HttpResourceCacheHandler : DelegatingHandler
 
             throw;
         }
-        catch (IOException ex)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             LogFailedToCacheHttpResource(_logger, request.RequestUri!.AbsoluteUri, ex);
 
@@ -207,13 +207,22 @@ internal sealed partial class HttpResourceCacheHandler : DelegatingHandler
 
     private static HttpResponseMessage CreateResponse(HttpRequestMessage request, CachedHttpResponseInfo responseInfo)
     {
-        var contentStream = new FileStream(
-            responseInfo.Resource!.ContentPath,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.Read,
-            81920,
-            FileOptions.Asynchronous | FileOptions.SequentialScan);
+        FileStream contentStream;
+        try
+        {
+            contentStream = new FileStream(
+                responseInfo.Resource!.ContentPath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                81920,
+                FileOptions.Asynchronous | FileOptions.SequentialScan);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            throw new HttpResourceCacheStoreException(responseInfo.Resource!.ContentPath, ex);
+        }
+
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StreamContent(contentStream),
