@@ -316,7 +316,7 @@
     <value>Sentence case</value>
   </data>
   <data name="ToggleButton_Titlecase.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Capitalize major words; leave others lowercase (title case)</value>
+    <value>Capitalize major words, keep minor words lowercase (title case)</value>
   </data>
   <data name="ToggleButton_Titlecase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Title case</value>
