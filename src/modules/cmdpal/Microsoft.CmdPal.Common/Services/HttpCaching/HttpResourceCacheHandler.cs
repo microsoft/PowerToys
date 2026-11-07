@@ -40,13 +40,15 @@ internal sealed partial class HttpResourceCacheHandler : DelegatingHandler
         HttpRequestMessage request,
         string? fileNameHint = null,
         bool forceRefresh = false,
-        TimeSpan? timeToLiveOverride = null)
+        TimeSpan? timeToLiveOverride = null,
+        TimeSpan? minimumTimeToLive = null,
+        bool reuseFailedRedirects = false)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         request.Options.Set(
             RequestOptionsKey,
-            new HttpResourceCacheRequestOptions(fileNameHint, forceRefresh, timeToLiveOverride));
+            new HttpResourceCacheRequestOptions(fileNameHint, forceRefresh, timeToLiveOverride, minimumTimeToLive, reuseFailedRedirects));
     }
 
     public static CachedHttpResponseInfo GetResponseInfo(HttpResponseMessage response)
@@ -153,9 +155,19 @@ internal sealed partial class HttpResourceCacheHandler : DelegatingHandler
         CancellationToken cancellationToken)
     {
         var entry = _cacheStore.GetEntry(request.RequestUri!, options.FileNameHint);
-        if (!options.ForceRefresh && _cacheStore.TryGetFresh(entry, options.TimeToLiveOverride) is { } freshResource)
+        if (!options.ForceRefresh)
         {
-            return new CachedHttpResponseInfo(freshResource, usedFallbackCache: false);
+            if (_cacheStore.TryGetFresh(entry, options.TimeToLiveOverride, options.MinimumTimeToLive) is { } freshResource)
+            {
+                return new CachedHttpResponseInfo(freshResource, usedFallbackCache: false);
+            }
+
+            if (options.ReuseFailedRedirects && _cacheStore.TryGetFreshRedirect(entry, options.TimeToLiveOverride, options.MinimumTimeToLive) is { } cachedRedirect)
+            {
+                throw new HttpResourceRequestException(
+                    cachedRedirect,
+                    new HttpRequestException($"HTTP resource '{request.RequestUri}' has a cached redirect failure.", null, entry.Metadata?.RedirectStatusCode));
+            }
         }
 
         try
@@ -171,7 +183,17 @@ internal sealed partial class HttpResourceCacheHandler : DelegatingHandler
                     : new CachedHttpResponseInfo(revalidatedResource, usedFallbackCache: false);
             }
 
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                response.EnsureSuccessStatusCode();
+            }
+            catch (HttpRequestException ex)
+            {
+                var finalUri = response.RequestMessage?.RequestUri;
+                _cacheStore.SaveRedirectMetadata(entry, finalUri, response.StatusCode);
+                throw new HttpResourceRequestException(finalUri, ex);
+            }
+
             var cachedResource = await _cacheStore.SaveResponseAsync(entry, response, cancellationToken);
             return new CachedHttpResponseInfo(cachedResource, usedFallbackCache: false);
         }
@@ -179,7 +201,7 @@ internal sealed partial class HttpResourceCacheHandler : DelegatingHandler
         {
             throw;
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex) when (ex is HttpRequestException or IOException or UnauthorizedAccessException)
         {
             LogFailedToCacheHttpResource(_logger, request.RequestUri!.AbsoluteUri, ex);
 
@@ -189,16 +211,20 @@ internal sealed partial class HttpResourceCacheHandler : DelegatingHandler
                 return new CachedHttpResponseInfo(cachedResource, usedFallbackCache: true);
             }
 
-            throw;
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            LogFailedToCacheHttpResource(_logger, request.RequestUri!.AbsoluteUri, ex);
-
-            var cachedResource = _cacheStore.TryGetCached(entry, fromCache: true, wasRevalidated: false);
-            if (cachedResource is not null)
+            if (ex is HttpResourceRequestException or HttpResourceCacheStoreException)
             {
-                return new CachedHttpResponseInfo(cachedResource, usedFallbackCache: true);
+                throw;
+            }
+
+            if (Uri.TryCreate(entry.Metadata?.FinalUri, UriKind.Absolute, out var finalUri) && IsSupportedHttpUri(finalUri))
+            {
+                var requestException = ex as HttpRequestException ?? new HttpRequestException($"Could not reach HTTP resource '{request.RequestUri}'.", ex);
+                throw new HttpResourceRequestException(finalUri, requestException, finalUriAlreadyChecked: false);
+            }
+
+            if (ex is HttpRequestException)
+            {
+                throw;
             }
 
             throw new HttpRequestException($"Could not reach HTTP resource '{request.RequestUri}'.", ex);
@@ -282,9 +308,9 @@ internal sealed partial class HttpResourceCacheHandler : DelegatingHandler
         LogFailedToCacheHttpResourceMessage(logger, resourceUri, exception);
     }
 
-    private sealed record HttpResourceCacheRequestOptions(string? FileNameHint, bool ForceRefresh, TimeSpan? TimeToLiveOverride)
+    private sealed record HttpResourceCacheRequestOptions(string? FileNameHint, bool ForceRefresh, TimeSpan? TimeToLiveOverride, TimeSpan? MinimumTimeToLive, bool ReuseFailedRedirects)
     {
-        public static HttpResourceCacheRequestOptions Default { get; } = new(FileNameHint: null, ForceRefresh: false, TimeToLiveOverride: null);
+        public static HttpResourceCacheRequestOptions Default { get; } = new(FileNameHint: null, ForceRefresh: false, TimeToLiveOverride: null, MinimumTimeToLive: null, ReuseFailedRedirects: false);
     }
 
     internal sealed class CachedHttpResponseInfo(CachedHttpResource? resource, bool usedFallbackCache)

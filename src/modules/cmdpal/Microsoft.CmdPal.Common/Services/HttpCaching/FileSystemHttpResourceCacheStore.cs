@@ -17,6 +17,7 @@ internal sealed class FileSystemHttpResourceCacheStore : IHttpResourceCacheStore
 {
     private const string MetadataFileName = "metadata.json";
     private const string DefaultPayloadFileName = "payload.bin";
+
     private static readonly Action<MEL.ILogger, string, Exception?> LogCacheFailureMessage = LoggerMessage.Define<string>(
         LogLevel.Warning,
         new EventId(1, nameof(LogCacheFailure)),
@@ -63,16 +64,32 @@ internal sealed class FileSystemHttpResourceCacheStore : IHttpResourceCacheStore
             metadata);
     }
 
-    public CachedHttpResource? TryGetFresh(CachedHttpResourceEntry entry, TimeSpan? timeToLiveOverride)
+    public CachedHttpResource? TryGetFresh(CachedHttpResourceEntry entry, TimeSpan? timeToLiveOverride, TimeSpan? minimumTimeToLive)
     {
         ArgumentNullException.ThrowIfNull(entry);
 
-        if (!File.Exists(entry.PayloadPath) || !IsFresh(entry.Metadata, timeToLiveOverride))
+        if (!File.Exists(entry.PayloadPath) || !IsFresh(entry.Metadata, timeToLiveOverride, minimumTimeToLive))
         {
             return null;
         }
 
         return CreateCachedResource(entry.PayloadPath, entry.Metadata, fromCache: true, wasRevalidated: false);
+    }
+
+    public Uri? TryGetFreshRedirect(CachedHttpResourceEntry entry, TimeSpan? timeToLiveOverride, TimeSpan? minimumTimeToLive)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+
+        var metadata = entry.Metadata;
+        return metadata?.IsRedirectOnly == true
+            && metadata.RedirectStatusCode is HttpStatusCode.NotFound or HttpStatusCode.Gone
+            && !File.Exists(entry.PayloadPath)
+            && IsFresh(metadata, timeToLiveOverride, minimumTimeToLive)
+            && Uri.TryCreate(metadata.FinalUri, UriKind.Absolute, out var finalUri)
+            && IsSupportedHttpUri(finalUri)
+            && finalUri != entry.ResourceUri
+                ? finalUri
+                : null;
     }
 
     public CachedHttpResource? TryGetCached(CachedHttpResourceEntry entry, bool fromCache, bool wasRevalidated)
@@ -148,6 +165,37 @@ internal sealed class FileSystemHttpResourceCacheStore : IHttpResourceCacheStore
         return CreateCachedResource(entry.PayloadPath, updatedMetadata, fromCache: false, wasRevalidated: entry.Metadata is not null);
     }
 
+    public void SaveRedirectMetadata(CachedHttpResourceEntry entry, Uri? finalUri, HttpStatusCode statusCode)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        if (finalUri is null
+            || !finalUri.IsAbsoluteUri
+            || !IsSupportedHttpUri(finalUri)
+            || finalUri == entry.ResourceUri
+            || File.Exists(entry.PayloadPath))
+        {
+            return;
+        }
+
+        try
+        {
+            Directory.CreateDirectory(entry.EntryDirectory);
+            TrySaveMetadata(entry.MetadataPath, new HttpResourceCacheMetadata
+            {
+                FileName = entry.PayloadFileName,
+                FinalUri = finalUri.AbsoluteUri,
+                IsRedirectOnly = true,
+                RedirectStatusCode = statusCode,
+                SourceUri = entry.ResourceUri.AbsoluteUri,
+                LastValidatedUtc = DateTimeOffset.UtcNow,
+            });
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            LogCacheFailure(entry.MetadataPath, ex);
+        }
+    }
+
     public void Prune(IEnumerable<Uri> retainedResourceUris)
     {
         ArgumentNullException.ThrowIfNull(retainedResourceUris);
@@ -214,7 +262,7 @@ internal sealed class FileSystemHttpResourceCacheStore : IHttpResourceCacheStore
         }
     }
 
-    private bool IsFresh(HttpResourceCacheMetadata? metadata, TimeSpan? timeToLiveOverride)
+    private bool IsFresh(HttpResourceCacheMetadata? metadata, TimeSpan? timeToLiveOverride, TimeSpan? minimumTimeToLive)
     {
         if (metadata is null)
         {
@@ -222,6 +270,11 @@ internal sealed class FileSystemHttpResourceCacheStore : IHttpResourceCacheStore
         }
 
         var now = DateTimeOffset.UtcNow;
+        if (minimumTimeToLive is { } minimum && metadata.LastValidatedUtc + minimum > now)
+        {
+            return true;
+        }
+
         if (metadata.ExpiresUtc is { } expiresUtc)
         {
             return expiresUtc > now;
@@ -241,7 +294,8 @@ internal sealed class FileSystemHttpResourceCacheStore : IHttpResourceCacheStore
             payloadPath,
             metadata?.ContentType,
             fromCache,
-            wasRevalidated);
+            wasRevalidated,
+            Uri.TryCreate(metadata?.FinalUri, UriKind.Absolute, out var finalUri) && IsSupportedHttpUri(finalUri) ? finalUri : null);
     }
 
     private static HttpResourceCacheMetadata UpdateMetadata(
@@ -259,6 +313,9 @@ internal sealed class FileSystemHttpResourceCacheStore : IHttpResourceCacheStore
             ETag = response.Headers.ETag?.ToString() ?? retainedMetadata?.ETag,
             ExpiresUtc = GetExpirationUtc(response, now),
             FileName = payloadFileName,
+            FinalUri = response.RequestMessage?.RequestUri is { IsAbsoluteUri: true } finalUri && IsSupportedHttpUri(finalUri)
+                ? finalUri.AbsoluteUri
+                : retainedMetadata?.FinalUri,
             LastModifiedUtc = response.Content?.Headers.LastModified ?? retainedMetadata?.LastModifiedUtc,
             LastValidatedUtc = now,
             SourceUri = resourceUri.AbsoluteUri,

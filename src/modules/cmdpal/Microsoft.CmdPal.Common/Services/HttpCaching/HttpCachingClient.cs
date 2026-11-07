@@ -7,7 +7,7 @@ using MEL = Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.Common.Services.HttpCaching;
 
-internal sealed partial class HttpCachingClient : IDisposable
+public sealed partial class HttpCachingClient : IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly IHttpResourceCacheStore _cacheStore;
@@ -19,22 +19,25 @@ internal sealed partial class HttpCachingClient : IDisposable
         TimeSpan timeout,
         string? userAgent,
         HttpMessageHandler? innerHandler,
-        MEL.ILogger logger)
+        MEL.ILogger logger,
+        string? accept = null)
         : this(
             new FileSystemHttpResourceCacheStore(cacheDirectory, defaultTimeToLive, logger),
             timeout,
             userAgent,
             innerHandler,
-            logger)
+            logger,
+            accept)
     {
     }
 
-    public HttpCachingClient(
+    internal HttpCachingClient(
         IHttpResourceCacheStore cacheStore,
         TimeSpan timeout,
         string? userAgent,
         HttpMessageHandler? innerHandler,
-        MEL.ILogger logger)
+        MEL.ILogger logger,
+        string? accept = null)
     {
         ArgumentNullException.ThrowIfNull(cacheStore);
         ArgumentNullException.ThrowIfNull(logger);
@@ -47,6 +50,11 @@ internal sealed partial class HttpCachingClient : IDisposable
         {
             _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
         }
+
+        if (!string.IsNullOrWhiteSpace(accept))
+        {
+            _httpClient.DefaultRequestHeaders.Accept.ParseAdd(accept);
+        }
     }
 
     public async Task<CachedHttpFetchResult> GetResourceAsync(
@@ -54,6 +62,8 @@ internal sealed partial class HttpCachingClient : IDisposable
         string? fileNameHint = null,
         bool forceRefresh = false,
         TimeSpan? timeToLiveOverride = null,
+        TimeSpan? minimumTimeToLive = null,
+        bool reuseFailedRedirects = false,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(resourceUri);
@@ -68,7 +78,9 @@ internal sealed partial class HttpCachingClient : IDisposable
             request,
             fileNameHint: fileNameHint,
             forceRefresh: forceRefresh,
-            timeToLiveOverride: timeToLiveOverride);
+            timeToLiveOverride: timeToLiveOverride,
+            minimumTimeToLive: minimumTimeToLive,
+            reuseFailedRedirects: reuseFailedRedirects);
 
         using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         response.EnsureSuccessStatusCode();
@@ -82,12 +94,33 @@ internal sealed partial class HttpCachingClient : IDisposable
         return new CachedHttpFetchResult(cacheInfo.Resource, cacheInfo.UsedFallbackCache);
     }
 
-    public void Prune(IEnumerable<Uri> retainedResourceUris)
+    /// <summary>Removes cached resources that are no longer needed.</summary>
+    /// <remarks>
+    /// The optional selector maps saved redirect destinations to additional resource URIs to retain, without making network requests.
+    /// </remarks>
+    public void Prune(IEnumerable<Uri> retainedResourceUris, Func<Uri, Uri>? getRedirectResourceUri = null)
     {
         ArgumentNullException.ThrowIfNull(retainedResourceUris);
 
         List<Uri> retainedUris = [.. retainedResourceUris];
         _cacheHandler.AddInflightResourceUris(retainedUris);
+        if (getRedirectResourceUri is not null)
+        {
+            foreach (var resourceUri in retainedUris.ToArray())
+            {
+                if (!resourceUri.IsAbsoluteUri || !IsSupportedHttpUri(resourceUri))
+                {
+                    continue;
+                }
+
+                var metadata = _cacheStore.GetEntry(resourceUri).Metadata;
+                if (Uri.TryCreate(metadata?.FinalUri, UriKind.Absolute, out var finalUri) && IsSupportedHttpUri(finalUri))
+                {
+                    retainedUris.Add(getRedirectResourceUri(finalUri));
+                }
+            }
+        }
+
         _cacheStore.Prune(retainedUris);
     }
 

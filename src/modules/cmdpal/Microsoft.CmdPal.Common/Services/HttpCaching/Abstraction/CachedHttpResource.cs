@@ -4,15 +4,26 @@
 
 namespace Microsoft.CmdPal.Common.Services.HttpCaching.Abstraction;
 
-internal sealed class CachedHttpResource(string contentPath, string? contentType, bool fromCache, bool wasRevalidated)
+public sealed class CachedHttpResource
 {
-    public string ContentPath { get; } = Path.GetFullPath(contentPath);
+    public string ContentPath { get; }
 
     public Uri ContentUri => new(ContentPath);
 
-    public string? ContentType { get; } = contentType;
+    public string? ContentType { get; }
 
-    public bool FromCache { get; } = fromCache;
+    public Uri? FinalUri { get; }
 
-    public bool WasRevalidated { get; } = wasRevalidated;
+    public bool FromCache { get; }
+
+    public bool WasRevalidated { get; }
+
+    public CachedHttpResource(string contentPath, string? contentType, bool fromCache, bool wasRevalidated, Uri? finalUri = null)
+    {
+        ContentPath = Path.GetFullPath(contentPath);
+        ContentType = contentType;
+        FinalUri = finalUri;
+        FromCache = fromCache;
+        WasRevalidated = wasRevalidated;
+    }
 }
