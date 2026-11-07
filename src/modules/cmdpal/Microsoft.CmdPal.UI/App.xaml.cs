@@ -13,6 +13,7 @@ using Microsoft.CmdPal.Common.WinGet.Services;
 using Microsoft.CmdPal.Ext.Actions;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
+using Microsoft.CmdPal.Ext.Bookmarks.Services;
 using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.ClipboardHistory;
 using Microsoft.CmdPal.Ext.Indexer;
@@ -40,6 +41,7 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -188,9 +190,12 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider>(files);
 
-        var bookmarks = BookmarksCommandProvider.CreateWithDefaultStore();
-        services.AddSingleton<ICommandProvider>(bookmarks);
-        services.AddSingleton<IBookmarksManager>(bookmarks.BookmarksManager);
+        services.AddSingleton<IFaviconLoader>(sp => new FaviconLoader(
+            Path.Combine(sp.GetRequiredService<IApplicationInfoService>().CacheDirectory, "BookmarkFavicons"),
+            sp.GetRequiredService<ILogger<FaviconLoader>>()));
+        services.AddSingleton<BookmarksCommandProvider>(sp => BookmarksCommandProvider.CreateWithDefaultStore(sp.GetRequiredService<IFaviconLoader>()));
+        services.AddSingleton<ICommandProvider>(sp => sp.GetRequiredService<BookmarksCommandProvider>());
+        services.AddSingleton<IBookmarksManager>(sp => sp.GetRequiredService<BookmarksCommandProvider>().BookmarksManager);
 
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();

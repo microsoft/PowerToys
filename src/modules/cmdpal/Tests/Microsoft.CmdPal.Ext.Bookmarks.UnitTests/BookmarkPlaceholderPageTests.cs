@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -97,5 +98,9 @@ public sealed class BookmarkPlaceholderPageTests
     {
         public Task<IIconInfo> GetIconForPath(Classification classification, CancellationToken cancellationToken = default) =>
             Task.FromResult<IIconInfo>(null!);
+
+        public void PruneCache(IEnumerable<Classification> retainedBookmarks)
+        {
+        }
     }
 }

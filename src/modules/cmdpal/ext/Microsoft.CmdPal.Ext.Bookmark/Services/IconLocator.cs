@@ -15,12 +15,7 @@ internal class IconLocator : IBookmarkIconLocator
 {
     private readonly IFaviconLoader _faviconLoader;
 
-    public IconLocator()
-        : this(new FaviconLoader())
-    {
-    }
-
-    private IconLocator(IFaviconLoader faviconLoader)
+    public IconLocator(IFaviconLoader faviconLoader)
     {
         ArgumentNullException.ThrowIfNull(faviconLoader);
         _faviconLoader = faviconLoader;
@@ -46,12 +41,14 @@ internal class IconLocator : IBookmarkIconLocator
 
     private async Task<IIconInfo?> TryGetWebIcon(string target)
     {
-        // Get the base url up to the first placeholder
-        var placeholderIndex = target.IndexOf('{');
-        var baseString = placeholderIndex > 0 ? target[..placeholderIndex] : target;
+        var uri = TryGetWebIconUri(target);
+        if (uri is null)
+        {
+            return null;
+        }
+
         try
         {
-            var uri = new Uri(baseString);
             var iconStream = await _faviconLoader.TryGetFaviconAsync(uri, CancellationToken.None);
             if (iconStream != null)
             {
@@ -60,10 +57,35 @@ internal class IconLocator : IBookmarkIconLocator
         }
         catch (Exception ex)
         {
-            Logger.LogError("Failed to get web bookmark favicon for " + baseString, ex);
+            Logger.LogError("Failed to get web bookmark favicon for " + target, ex);
         }
 
         return null;
+    }
+
+    public void PruneCache(IEnumerable<Classification> retainedBookmarks)
+    {
+        ArgumentNullException.ThrowIfNull(retainedBookmarks);
+        var retainedSiteUris = new List<Uri>();
+        foreach (var bookmark in retainedBookmarks)
+        {
+            if (bookmark.Kind == CommandKind.WebUrl && TryGetWebIconUri(bookmark.Target) is { } uri)
+            {
+                retainedSiteUris.Add(uri);
+            }
+        }
+
+        _faviconLoader.Prune(retainedSiteUris);
+    }
+
+    private static Uri? TryGetWebIconUri(string target)
+    {
+        var placeholderIndex = target.IndexOf('{');
+        var baseString = placeholderIndex > 0 ? target[..placeholderIndex] : target;
+        return Uri.TryCreate(baseString, UriKind.Absolute, out var uri)
+            && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
+                ? uri
+                : null;
     }
 
     private static async Task<IIconInfo?> TryGetExecutableIcon(string target)

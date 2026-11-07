@@ -6,6 +6,8 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Pages;
 using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
@@ -23,12 +25,13 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
     private readonly IPlaceholderParser _placeholderParser = new PlaceholderParser();
     private readonly IBookmarksManager _bookmarksManager;
     private readonly IBookmarkResolver _commandResolver;
-    private readonly IBookmarkIconLocator _iconLocator = new IconLocator();
+    private readonly IBookmarkIconLocator _iconLocator;
 
     public IBookmarksManager BookmarksManager => _bookmarksManager;
 
     private readonly ListItem _addNewItem;
     private readonly Lock _bookmarksLock = new();
+    private readonly Lock _cachePruneLock = new();
 
     private ICommandItem[] _commands = [];
     private List<BookmarkListItem> _bookmarks = [];
@@ -41,17 +44,21 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
         return Path.Combine(directory, "bookmarks.json");
     }
 
-    public static BookmarksCommandProvider CreateWithDefaultStore()
+    public static BookmarksCommandProvider CreateWithDefaultStore(IFaviconLoader faviconLoader)
     {
-        return new BookmarksCommandProvider(new BookmarksManager(new FileBookmarkDataSource(StateJsonPath())));
+        ArgumentNullException.ThrowIfNull(faviconLoader);
+        return new BookmarksCommandProvider(new BookmarksManager(new FileBookmarkDataSource(StateJsonPath())), new IconLocator(faviconLoader));
     }
 
-    internal BookmarksCommandProvider(IBookmarksManager bookmarksManager)
+    internal BookmarksCommandProvider(IBookmarksManager bookmarksManager, IBookmarkIconLocator iconLocator)
     {
         ArgumentNullException.ThrowIfNull(bookmarksManager);
+        ArgumentNullException.ThrowIfNull(iconLocator);
         _bookmarksManager = bookmarksManager;
+        _iconLocator = iconLocator;
         _bookmarksManager.BookmarkAdded += OnBookmarkAdded;
         _bookmarksManager.BookmarkRemoved += OnBookmarkRemoved;
+        _bookmarksManager.BookmarkUpdated += OnBookmarkUpdated;
 
         _commandResolver = new BookmarkResolver(_placeholderParser);
 
@@ -62,6 +69,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
         var addBookmarkPage = new AddBookmarkPage(null);
         addBookmarkPage.AddedCommand += (_, e) => _bookmarksManager.Add(e.Name, e.Bookmark);
         _addNewItem = new ListItem(addBookmarkPage);
+        PruneIconCache();
     }
 
     private void OnBookmarkAdded(BookmarkData bookmarkData)
@@ -73,6 +81,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
         }
 
         NotifyChange();
+        PruneIconCache();
     }
 
     private void OnBookmarkRemoved(BookmarkData bookmarkData)
@@ -83,6 +92,39 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
         }
 
         NotifyChange();
+        PruneIconCache();
+    }
+
+    private void OnBookmarkUpdated(BookmarkData original, BookmarkData updated)
+    {
+        if (!string.Equals(original.Bookmark, updated.Bookmark, StringComparison.Ordinal))
+        {
+            PruneIconCache();
+        }
+    }
+
+    private void PruneIconCache()
+    {
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                lock (_cachePruneLock)
+                {
+                    var retainedBookmarks = new List<Classification>();
+                    foreach (var bookmark in _bookmarksManager.Bookmarks)
+                    {
+                        retainedBookmarks.Add(_commandResolver.ClassifyOrUnknown(bookmark.Bookmark));
+                    }
+
+                    _iconLocator.PruneCache(retainedBookmarks);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogDebug($"Failed to prune bookmark icons: {ex.Message}");
+            }
+        });
     }
 
     public override ICommandItem[] TopLevelCommands()

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -13,6 +14,7 @@ using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 using Microsoft.CmdPal.Ext.Bookmarks.Services;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
@@ -25,7 +27,7 @@ public class BookmarksCommandProviderTests
     {
         // Setup
         var mockBookmarkManager = new MockBookmarkManager();
-        var provider = new BookmarksCommandProvider(mockBookmarkManager);
+        var provider = new BookmarksCommandProvider(mockBookmarkManager, Mock.Of<IBookmarkIconLocator>());
 
         // Assert
         Assert.AreEqual("Bookmarks", provider.Id);
@@ -36,7 +38,7 @@ public class BookmarksCommandProviderTests
     {
         // Setup
         var mockBookmarkManager = new MockBookmarkManager();
-        var provider = new BookmarksCommandProvider(mockBookmarkManager);
+        var provider = new BookmarksCommandProvider(mockBookmarkManager, Mock.Of<IBookmarkIconLocator>());
 
         // Assert
         Assert.IsNotNull(provider.DisplayName);
@@ -48,7 +50,7 @@ public class BookmarksCommandProviderTests
     {
         // Setup
         var mockBookmarkManager = new MockBookmarkManager();
-        var provider = new BookmarksCommandProvider(mockBookmarkManager);
+        var provider = new BookmarksCommandProvider(mockBookmarkManager, Mock.Of<IBookmarkIconLocator>());
 
         // Assert
         Assert.IsNotNull(provider.Icon);
@@ -59,7 +61,7 @@ public class BookmarksCommandProviderTests
     {
         // Setup
         var mockBookmarkManager = new MockBookmarkManager();
-        var provider = new BookmarksCommandProvider(mockBookmarkManager);
+        var provider = new BookmarksCommandProvider(mockBookmarkManager, Mock.Of<IBookmarkIconLocator>());
 
         // Act
         var commands = provider.TopLevelCommands();
@@ -77,7 +79,7 @@ public class BookmarksCommandProviderTests
         var mockBookmarkManager = new MockBookmarkManager(
             new BookmarkData("Test Bookmark", "http://test.com"),
             new BookmarkData("Another Bookmark", "http://another.com"));
-        var provider = new BookmarksCommandProvider(mockBookmarkManager);
+        var provider = new BookmarksCommandProvider(mockBookmarkManager, Mock.Of<IBookmarkIconLocator>());
 
         // Act
         var commands = provider.TopLevelCommands();
@@ -111,7 +113,7 @@ public class BookmarksCommandProviderTests
                 bookmark,
                 bookmarkManager,
                 new BlockAfterFirstBookmarkResolver(),
-                new IconLocator(),
+                new IconLocator(Mock.Of<IFaviconLoader>()),
                 new PlaceholderParser());
 
             await item.IsInitialized;
@@ -142,7 +144,7 @@ public class BookmarksCommandProviderTests
     {
         // Arrange
         var mockBookmarkManager = new MockBookmarkManager();
-        var provider = new BookmarksCommandProvider(mockBookmarkManager);
+        var provider = new BookmarksCommandProvider(mockBookmarkManager, Mock.Of<IBookmarkIconLocator>());
 
         // Act
         var commands = provider.TopLevelCommands();
@@ -162,7 +164,7 @@ public class BookmarksCommandProviderTests
     {
         // Arrange
         var dataSource = new MockBookmarkDataSource("invalid json");
-        var provider = new BookmarksCommandProvider(new MockBookmarkManager());
+        var provider = new BookmarksCommandProvider(new MockBookmarkManager(), Mock.Of<IBookmarkIconLocator>());
 
         // Act
         var commands = provider.TopLevelCommands();
@@ -182,7 +184,7 @@ public class BookmarksCommandProviderTests
     {
         // Arrange
         var bookmark = new BookmarkData("Test Bookmark", "http://test.com");
-        var provider = new BookmarksCommandProvider(new MockBookmarkManager(bookmark));
+        var provider = new BookmarksCommandProvider(new MockBookmarkManager(bookmark), Mock.Of<IBookmarkIconLocator>());
 
         // Act
         var bands = provider.GetDockBands();
@@ -203,7 +205,7 @@ public class BookmarksCommandProviderTests
             bookmark,
             new MockBookmarkManager(bookmark),
             new BlockingBookmarkResolver(),
-            new IconLocator(),
+            new IconLocator(Mock.Of<IFaviconLoader>()),
             new PlaceholderParser(),
             asBand: true);
         using var dockItem = new BookmarkDockItem(bookmarkItem, "test-id");
@@ -222,7 +224,7 @@ public class BookmarksCommandProviderTests
             bookmark,
             new MockBookmarkManager(bookmark),
             new BookmarkResolver(new PlaceholderParser()),
-            new IconLocator(),
+            new IconLocator(Mock.Of<IFaviconLoader>()),
             new PlaceholderParser(),
             asBand: true);
         using var dockItem = new BookmarkDockItem(bookmarkItem, "test-id");
@@ -242,6 +244,58 @@ public class BookmarksCommandProviderTests
 
         // Assert
         Assert.AreSame(finalIcon, dockItem.Icon);
+    }
+
+    [TestMethod]
+    [DataRow("add")]
+    [DataRow("remove")]
+    [DataRow("update")]
+    [DataRow("clear")]
+    public async Task PrunesFaviconCacheAtStartupAndAfterBookmarkChanges(string change)
+    {
+        var original = new BookmarkData("Original", "https://example.test/{query}");
+        BookmarkData[] bookmarks = [new("Without scheme", "www.example.test"), original, new("Settings", "ms-settings:display")];
+        var manager = new Mock<IBookmarksManager>();
+        manager.SetupGet(value => value.Bookmarks).Returns(() => bookmarks);
+        var pruned = new TaskCompletionSource<Uri[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var faviconLoader = new Mock<IFaviconLoader>();
+        faviconLoader.Setup(value => value.Prune(It.IsAny<IEnumerable<Uri>>()))
+            .Callback<IEnumerable<Uri>>(uris => pruned.TrySetResult(uris.ToArray()));
+        var provider = new BookmarksCommandProvider(manager.Object, new IconLocator(faviconLoader.Object));
+
+        var retained = await pruned.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        CollectionAssert.AreEquivalent(new[] { new Uri("https://www.example.test"), new Uri("https://example.test/") }, retained);
+
+        pruned = new TaskCompletionSource<Uri[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var updated = original with { Bookmark = "https://changed.example.test/{query}" };
+        Uri[] expected;
+        switch (change)
+        {
+            case "add":
+                bookmarks = [.. bookmarks, updated with { Id = Guid.NewGuid() }];
+                manager.Raise(value => value.BookmarkAdded += null, bookmarks[^1]);
+                expected = [new("https://www.example.test"), new("https://example.test/"), new("https://changed.example.test/")];
+                break;
+            case "remove":
+                bookmarks = [bookmarks[0], bookmarks[2]];
+                manager.Raise(value => value.BookmarkRemoved += null, original);
+                expected = [new("https://www.example.test")];
+                break;
+            case "update":
+                bookmarks = [bookmarks[0], updated, bookmarks[2]];
+                manager.Raise(value => value.BookmarkUpdated += null, original, updated);
+                expected = [new("https://www.example.test"), new("https://changed.example.test/")];
+                break;
+            default:
+                bookmarks = [];
+                manager.Raise(value => value.BookmarkRemoved += null, original);
+                expected = [];
+                break;
+        }
+
+        retained = await pruned.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        CollectionAssert.AreEquivalent(expected, retained);
+        GC.KeepAlive(provider);
     }
 
     private sealed class BlockingBookmarkResolver : IBookmarkResolver

@@ -12,4 +12,6 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Services;
 public interface IBookmarkIconLocator
 {
     Task<IIconInfo> GetIconForPath(Classification classification, CancellationToken cancellationToken = default);
+
+    void PruneCache(IEnumerable<Classification> retainedBookmarks);
 }
