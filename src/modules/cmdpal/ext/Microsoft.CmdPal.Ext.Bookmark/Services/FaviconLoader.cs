@@ -248,6 +248,7 @@ public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
                 var buffer = new byte[(uint)stream.Size];
                 reader.ReadBytes(buffer);
                 await File.WriteAllBytesAsync(path, buffer, ct);
+                reader.DetachStream(); // Stops the stream from being disposed along with the reader
             }
         }
         catch (OperationCanceledException)
