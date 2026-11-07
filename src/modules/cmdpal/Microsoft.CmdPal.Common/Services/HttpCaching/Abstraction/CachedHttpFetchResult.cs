@@ -4,9 +4,15 @@
 
 namespace Microsoft.CmdPal.Common.Services.HttpCaching.Abstraction;
 
-internal sealed class CachedHttpFetchResult(CachedHttpResource resource, bool usedFallbackCache)
+public sealed class CachedHttpFetchResult
 {
-    public CachedHttpResource Resource { get; } = resource;
+    public CachedHttpResource Resource { get; }
 
-    public bool UsedFallbackCache { get; } = usedFallbackCache;
+    public bool UsedFallbackCache { get; }
+
+    public CachedHttpFetchResult(CachedHttpResource resource, bool usedFallbackCache)
+    {
+        Resource = resource;
+        UsedFallbackCache = usedFallbackCache;
+    }
 }
