@@ -14,4 +14,6 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Services;
 public interface IFaviconLoader
 {
     Task<IRandomAccessStream?> TryGetFaviconAsync(Uri siteUri, CancellationToken ct = default);
+
+    void Prune(IEnumerable<Uri> retainedSiteUris);
 }
