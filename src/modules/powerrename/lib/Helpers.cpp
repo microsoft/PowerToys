@@ -191,7 +191,7 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
                 }
             }
         }
-        else if (flags & Titlecase)
+        else if (flags & TitleCase)
         {
             if (!(flags & ExtensionOnly))
             {
@@ -271,6 +271,33 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
                         {
                             stem[i] = towupper(stem[i]);
                         }
+                    }
+                    else
+                    {
+                        stem[i] = towlower(stem[i]);
+                    }
+                }
+                hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), extension.c_str());
+            }
+            else
+            {
+                hr = StringCchCopy(result, cchMax, source);
+            }
+        }
+        else if (flags & SentenceCase)
+        {
+            if (!(flags & ExtensionOnly))
+            {
+                std::wstring stem = isFolder ? source : fs::path(source).stem().wstring();
+                std::wstring extension = isFolder ? L"" : fs::path(source).extension().wstring();
+                bool isFirstAlpha = true;
+
+                for (size_t i = 0; i < stem.length(); i++)
+                {
+                    if (isFirstAlpha && iswalpha(stem[i]))
+                    {
+                        stem[i] = towupper(stem[i]);
+                        isFirstAlpha = false;
                     }
                     else
                     {

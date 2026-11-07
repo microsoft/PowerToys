@@ -201,7 +201,7 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
     // as nullptr so we clear the renamed column
     // Except string transformation is selected.
 
-    if (newName == nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase || flags & Capitalized))
+    if (newName == nullptr && (flags & Uppercase || flags & Lowercase || flags & TitleCase || flags & SentenceCase || flags & Capitalized))
     {
         SHStrDup(sourceName, &newName);
     }
@@ -247,7 +247,7 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
     }
 
     wchar_t transformedName[MAX_PATH] = { 0 };
-    if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase || flags & Capitalized))
+    if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & TitleCase || flags & SentenceCase || flags & Capitalized))
     {
         try
         {

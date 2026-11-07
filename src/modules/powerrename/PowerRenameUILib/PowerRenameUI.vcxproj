@@ -3,10 +3,8 @@
   <PropertyGroup Label="NuGet">
     <!-- Tell NuGet this is PackageReference style -->
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-
     <!-- Tell NuGet we're a native project -->
     <NuGetTargetMoniker>native,Version=v0.0</NuGetTargetMoniker>
-
     <!-- Tell NuGet we target Windows (use your existing WindowsTargetPlatformVersion) -->
     <NuGetTargetPlatformIdentifier>Windows</NuGetTargetPlatformIdentifier>
     <NuGetTargetPlatformVersion>$(WindowsTargetPlatformVersion)</NuGetTargetPlatformVersion>
@@ -49,7 +47,6 @@
     <ConfigurationType>Application</ConfigurationType>
     <!-- Keep a private UCRT: PowerRenameLib's std::locale::global would otherwise change the C locale WinUI 3 uses. -->
     <EnableHybridCRT>false</EnableHybridCRT>
-    
     <CharacterSet>Unicode</CharacterSet>
     <DesktopCompatible>true</DesktopCompatible>
   </PropertyGroup>
@@ -199,6 +196,9 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
+    <PRIResource Include="Strings\en-us\Resources.resw">
+      <SubType>Designer</SubType>
+    </PRIResource>
     <_WildCardPRIResource Include="Strings\*\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
