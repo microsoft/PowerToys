@@ -63,6 +63,7 @@
     <ClInclude Include="Package.h" />
     <ClInclude Include="ReportGPOValues.h" />
     <ClInclude Include="ReportMonitorInfo.h" />
+    <ClInclude Include="TextExpanderPrivacy.h" />
     <ClInclude Include="$(RepoRoot)src\common\utils\json.h" />
     <ClInclude Include="RegistryUtils.h" />
     <ClInclude Include="resource.h" />

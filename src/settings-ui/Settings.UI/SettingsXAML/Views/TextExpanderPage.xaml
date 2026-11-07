@@ -1,0 +1,85 @@
+<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.TextExpanderPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI">
+    <controls:SettingsPageControl x:Uid="TextExpander" IsTabStop="False" ModuleImageSource="ms-appx:///Assets/Settings/Modules/TextExpander.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel>
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="TextExpander_Enable" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExpander.png}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" AutomationProperties.AutomationId="Toggle_TextExpander" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
+                <tkcontrols:SettingsCard x:Uid="TextExpander_ManageSnippets" HeaderIcon="{ui:FontIcon Glyph=&#xE70F;}">
+                    <Button x:Uid="TextExpander_ManageSnippetsButton" AutomationProperties.AutomationId="Button_TextExpander_ManageSnippets" Click="ManageSnippets_Click" IsEnabled="{x:Bind ViewModel.CanLaunchEditor, Mode=OneWay}" />
+                </tkcontrols:SettingsCard>
+                <InfoBar x:Uid="TextExpander_EditorLaunchError" IsClosable="False" IsOpen="{x:Bind ViewModel.HasEditorLaunchError, Mode=OneWay}" Severity="Error" />
+                <InfoBar
+                    x:Uid="TextExpander_OptionsReadError"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.HasSettingsReadError, Mode=OneWay}"
+                    Severity="Error">
+                    <InfoBar.ActionButton>
+                        <Button x:Uid="TextExpander_OptionsReadError_OpenFolder" Click="OpenSettingsFolder_Click" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+                <InfoBar x:Uid="TextExpander_OptionsSaveError" IsClosable="False" IsOpen="{x:Bind ViewModel.HasSettingsSaveError, Mode=OneWay}" Severity="Error" />
+                <InfoBar x:Uid="TextExpander_ElevatedEditingNotice" IsClosable="False" IsOpen="{x:Bind ViewModel.IsElevated, Mode=OneWay}" Severity="Warning" />
+                    <controls:SettingsGroup x:Uid="TextExpander_Advanced_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsCard x:Uid="TextExpander_RequireWordBoundary" HeaderIcon="{ui:FontIcon Glyph=&#xE75A;}">
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="Toggle_TextExpander_RequireWordBoundary"
+                                IsOn="{x:Bind ViewModel.RequireWordBoundary, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsExpander
+                            x:Uid="TextExpander_InjectionBackend"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE8C8;}"
+                            IsExpanded="True">
+                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.InjectionBackendIndex, Mode=TwoWay}">
+                                <ComboBoxItem x:Uid="TextExpander_Backend_Auto" />
+                                <ComboBoxItem x:Uid="TextExpander_Backend_Clipboard" />
+                                <ComboBoxItem x:Uid="TextExpander_Backend_Type" />
+                            </ComboBox>
+                            <tkcontrols:SettingsExpander.Items>
+                                <!--  Only Automatic chooses by length, so the other methods disable it.  -->
+                                <tkcontrols:SettingsCard
+                                    x:Uid="TextExpander_ClipboardThreshold"
+                                    HeaderIcon="{ui:FontIcon Glyph=&#xE8C8;}"
+                                    IsEnabled="{x:Bind ViewModel.IsClipboardThresholdEnabled, Mode=OneWay}">
+                                    <NumberBox
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        LargeChange="10"
+                                        Maximum="1000"
+                                        Minimum="1"
+                                        SmallChange="1"
+                                        SpinButtonPlacementMode="Compact"
+                                        Value="{x:Bind ViewModel.ClipboardThresholdChars, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
+                        <tkcontrols:SettingsCard x:Uid="TextExpander_CaseSensitive" HeaderIcon="{ui:FontIcon Glyph=&#xE8D2;}">
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="Toggle_TextExpander_CaseSensitive"
+                                IsOn="{x:Bind ViewModel.CaseSensitive, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="TextExpander_TreatRemapsAsTyping" HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="Toggle_TextExpander_TreatRemapsAsTyping"
+                                IsOn="{x:Bind ViewModel.TreatRemapsAsTyping, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+
+                    </controls:SettingsGroup>
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink x:Uid="Attribution_TextExpander" Link="https://howdygary.github.io/text-expander/" />
+        </controls:SettingsPageControl.SecondaryLinks>
+    </controls:SettingsPageControl>
+</local:NavigablePage>

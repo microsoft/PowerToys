@@ -389,6 +389,7 @@ jobs:
         'RegistryPreview.UITests',
         'ScreenRuler.UITests.Next',
         'ShortcutGuide.UITests',
+        'TextExpander.UITests',
         'Workspaces.UITests.Next',
         'ZoomIt.UITests'
       ) + $newPlusModules
@@ -597,7 +598,7 @@ jobs:
       New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
       . "$(Build.SourcesDirectory)\.pipelines\umdf\UmdfCi.Common.ps1"
 
-      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'PowerDisplay.UITests', 'PowerOCR.UITests.Next', 'Workspaces.UITests.Next')
+      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'PowerDisplay.UITests', 'PowerOCR.UITests.Next', 'TextExpander.UITests', 'Workspaces.UITests.Next')
       . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
       $locationStatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\LightSwitchLocation.json"
       $failed = 0

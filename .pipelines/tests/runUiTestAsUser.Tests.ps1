@@ -542,6 +542,7 @@ Describe 'UI-test pipeline non-elevated dispatch' {
         @{ Suite = 'CropAndLock.UITests' }
         @{ Suite = 'GrabAndMove.UITests' }
         @{ Suite = 'PowerOCR.UITests.Next' }
+        @{ Suite = 'TextExpander.UITests' }
         @{ Suite = 'Workspaces.UITests.Next' }
     ) {
         param($Suite)

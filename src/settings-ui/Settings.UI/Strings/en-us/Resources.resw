@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema
@@ -6942,5 +6942,120 @@ Text uses the current drawing color.</value>
   </data>
   <data name="MouseWithoutBorders_PairingUpdateFailed.Message" xml:space="preserve">
     <value>Pairing could not be loaded or updated. Try again.</value>
+  </data>
+  <data name="TextExpander.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
+  </data>
+  <data name="Attribution_TextExpander.Text" xml:space="preserve">
+    <value>Created by Gary Hsu</value>
+    <comment>Gary Hsu is a person's name. Do not localize the name; localize the attribution wording.</comment>
+  </data>
+  <data name="Shell_TextExpander.Content" xml:space="preserve">
+    <value>Text Expander</value>
+  </data>
+  <data name="TextExpander_Enable.Header" xml:space="preserve">
+    <value>Enable Text Expander</value>
+  </data>
+  <data name="TextExpander_InjectionBackend.Header" xml:space="preserve">
+    <value>Insertion method</value>
+  </data>
+  <data name="TextExpander_InjectionBackend.Description" xml:space="preserve">
+    <value>Automatic pastes long snippets and types short ones. Use Always type if an app blocks pasting.</value>
+  </data>
+  <data name="TextExpander_Backend_Auto.Content" xml:space="preserve">
+    <value>Automatic</value>
+  </data>
+  <data name="TextExpander_Backend_Clipboard.Content" xml:space="preserve">
+    <value>Always paste</value>
+  </data>
+  <data name="TextExpander_Backend_Type.Content" xml:space="preserve">
+    <value>Always type</value>
+  </data>
+  <data name="TextExpander_ClipboardThreshold.Header" xml:space="preserve">
+    <value>Minimum length to paste</value>
+  </data>
+  <data name="TextExpander_ClipboardThreshold.Description" xml:space="preserve">
+    <value>With Automatic, one-line snippets shorter than this are typed. Snippets with several lines are always pasted.</value>
+    <comment>"Automatic" is a choice of the Insertion method setting just above.</comment>
+  </data>
+  <data name="TextExpander_Advanced_GroupSettings.Header" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="TextExpander_CaseSensitive.Header" xml:space="preserve">
+    <value>Case-sensitive snippets</value>
+  </data>
+  <data name="TextExpander_CaseSensitive.Description" xml:space="preserve">
+    <value>When on, snippet triggers must match the capitalization you saved. When off, capitalization is ignored.</value>
+  </data>
+  <data name="TextExpander_TreatRemapsAsTyping.Header" xml:space="preserve">
+    <value>Use PowerToys Keyboard Manager remaps when matching triggers</value>
+  </data>
+  <data name="TextExpander_TreatRemapsAsTyping.Description" xml:space="preserve">
+    <value>For example, if PowerToys Keyboard Manager remaps A to B, pressing A can match a trigger that contains B. Turn this off to use only the physical keys you press.</value>
+  </data>
+  <data name="Oobe_TextExpander.Title" xml:space="preserve">
+    <value>Text Expander</value>
+  </data>
+  <data name="Oobe_TextExpander.Description" xml:space="preserve">
+    <value>Stop typing the same things over and over. Save text you use often as a snippet, then type a short trigger to insert it in any app.</value>
+  </data>
+  <data name="Oobe_TextExpander_HowToUse.Text" xml:space="preserve">
+    <value>1. Turn on Text Expander.
+2. Select **Manage snippets** and add a snippet: your text and the short trigger that inserts it, like **!mysig**.
+3. In any app, type the trigger and a space, and watch your text appear.
+
+Don't save passwords, Social Security numbers, credit card numbers or other sensitive info in snippets. They're saved as plain text and aren't encrypted.</value>
+    <comment>Markdown numbered list; **text** is bold. "Manage snippets" is the name of a button in Settings. !mysig is an example of what the user types and is not translated. The last paragraph warns that snippets aren't encrypted; replace "Social Security numbers" with the national ID number people know in your market.</comment>
+  </data>
+  <data name="TextExpander_RequireWordBoundary.Header" xml:space="preserve">
+    <value>Wait for space or punctuation</value>
+  </data>
+  <data name="TextExpander_RequireWordBoundary.Description" xml:space="preserve">
+    <value>Prevents expansion while you’re still typing a longer trigger.</value>
+  </data>
+  <data name="TextExpander.ModuleTitle" xml:space="preserve">
+    <value>Text Expander</value>
+  </data>
+  <data name="TextExpander.ModuleDescription" xml:space="preserve">
+    <value>Stop typing the same things over and over. Save text you use often, like your email signature, address or a standard reply, as a snippet, then type a short trigger to insert it in any app.</value>
+  </data>
+  <data name="TextExpander_ManageSnippets.Header" xml:space="preserve">
+    <value>Manage snippets</value>
+  </data>
+  <data name="TextExpander_ManageSnippets.Description" xml:space="preserve">
+    <value>Add, edit, and organize snippets in the Text Expander editor.</value>
+  </data>
+  <data name="TextExpander_ManageSnippetsButton.Content" xml:space="preserve">
+    <value>Manage snippets</value>
+  </data>
+  <data name="TextExpander_EditorLaunchError.Title" xml:space="preserve">
+    <value>Can't open the snippet editor</value>
+  </data>
+  <data name="TextExpander_EditorLaunchError.Message" xml:space="preserve">
+    <value>Try opening the editor again. If the problem persists, repair your PowerToys installation.</value>
+  </data>
+  <data name="TextExpander_ElevatedEditingNotice.Title" xml:space="preserve">
+    <value>Snippet editing is unavailable while running as administrator</value>
+  </data>
+  <data name="TextExpander_ElevatedEditingNotice.Message" xml:space="preserve">
+    <value>Restart PowerToys without administrator privileges to manage snippets.</value>
+  </data>
+  <data name="TextExpander_OptionsSaveError.Title" xml:space="preserve">
+    <value>Can't save Text Expander options</value>
+  </data>
+  <data name="TextExpander_OptionsSaveError.Message" xml:space="preserve">
+    <value>Your changes could not be confirmed. Reopen this page to reload the saved options before trying again.</value>
+  </data>
+  <data name="TextExpander_OptionsReadError.Title" xml:space="preserve">
+    <value>Can't read Text Expander options</value>
+  </data>
+  <data name="TextExpander_OptionsReadError.Message" xml:space="preserve">
+    <value>Showing default options, and your settings file is left as it is. Fix settings.json, then reopen this page.</value>
+    <comment>{Locked="settings.json"} settings.json is the Text Expander settings file. The "Open folder" button next to this message shows it in File Explorer.</comment>
+  </data>
+  <data name="TextExpander_OptionsReadError_OpenFolder.Content" xml:space="preserve">
+    <value>Open folder</value>
+    <comment>Button that opens the folder holding the Text Expander settings file in File Explorer.</comment>
   </data>
 </root>

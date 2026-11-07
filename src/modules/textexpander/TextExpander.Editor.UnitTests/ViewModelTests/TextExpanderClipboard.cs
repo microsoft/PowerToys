@@ -1,0 +1,255 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Xml.Linq;
+using Microsoft.PowerToys.TextExpander;
+using Microsoft.PowerToys.TextExpander.Editor.Helpers;
+using Microsoft.PowerToys.TextExpander.Editor.UnitTests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Kind = Microsoft.PowerToys.TextExpander.Editor.Helpers.TextExpanderPreviewSegmentKind;
+
+namespace ViewModelTests
+{
+    /// <summary>
+    /// Clipboard variables in the snippet editor: Insert variable's Clipboard menu, the Clipboard panel that clicking or F2
+    /// opens on one, and what bubbles, rows and screen readers call each.
+    /// </summary>
+    [TestClass]
+    public class TextExpanderClipboard
+    {
+        private static readonly DateTime Now = new(2026, 10, 17, 14, 5, 9);
+
+        private static readonly string[] ReplyTrigger = { ";reply" };
+
+        private static readonly Lazy<Dictionary<string, string>> English = new(() => RepositoryFiles.Xml(RepositoryFiles.EditorResources)
+            .Descendants("data")
+            .ToDictionary(data => (string)data.Attribute("name"), data => data.Element("value").Value));
+
+        [TestMethod]
+        [DataRow("{{clipboard}}", "Clipboard")]
+        [DataRow("{{clipboard:email}}", "Email from clipboard")]
+        [DataRow("{{clipboard:link}}", "Link from clipboard")]
+        [DataRow("{{clipboard:phone}}", "Phone number from clipboard")]
+        [DataRow("{{clipboard:number}}", "Number from clipboard")]
+        [DataRow("{{clipboard:pick}}", "Copy from clipboard history")]
+        [DataRow("{{clipboard:pick:email}}", "Email from clipboard history")]
+        public void EachVariableHasABubbleThatSaysWhatItInserts(string token, string label)
+        {
+            IReadOnlyList<TextExpanderPreviewSegment> segments = TextExpanderSnippetPreview.Build("Send " + token + " today", Now);
+            TextExpanderPreviewSegment bubble = segments.Single(segment => segment.IsBubble);
+            Assert.AreEqual(Kind.Clipboard, bubble.Kind);
+            Assert.IsTrue(ClipboardVariable.TryParse(token, out ClipboardVariable variable));
+            Assert.AreEqual(variable, bubble.Clipboard);
+
+            (string glyph, string shown) = TextExpanderInlines.ValueText(bubble, Resource);
+            Assert.AreEqual("\uE77F", glyph);
+            Assert.AreEqual(label, shown);
+            Assert.AreEqual(
+                token == "{{clipboard}}" ? "Clipboard, filled in when the snippet runs" : label + ", filled in when the snippet runs",
+                TextExpanderClipboardText.Description(variable, Resource));
+        }
+
+        [TestMethod]
+        public void EveryPartAndChoiceHasItsWords()
+        {
+            foreach (ClipboardPart part in TextExpanderClipboardText.Parts)
+            {
+                foreach (bool pickCopy in new[] { false, true })
+                {
+                    string label = TextExpanderClipboardText.Label(new ClipboardVariable(pickCopy, part), Resource);
+                    Assert.IsFalse(label.Contains("TextExpander_", StringComparison.Ordinal), $"{part} {pickCopy}: {label}");
+                    Assert.IsFalse(label.Contains('{', StringComparison.Ordinal), label);
+                }
+
+                Assert.IsTrue(English.Value.ContainsKey("TextExpander_ClipboardPart_" + part), part.ToString());
+                Assert.IsTrue(English.Value.ContainsKey("TextExpander_ClipboardFlyout_Part_" + part), part.ToString());
+            }
+
+            // Two or more matches ask which, so there's no choice of which to make ahead.
+            Assert.IsFalse(English.Value.Keys.Any(key => key.StartsWith("TextExpander_ClipboardFlyout_Match", StringComparison.Ordinal)));
+            Assert.IsFalse(English.Value.Keys.Any(key => key.StartsWith("TextExpander_ClipboardWhat_", StringComparison.Ordinal) && key.Count(character => character == '_') > 2));
+        }
+
+        [TestMethod]
+        public void RowsReadClipboardPartsAloudByName()
+        {
+            TextExpanderRowDescription row = TextExpanderRowDescriber.Describe(
+                ";reply",
+                "Thanks! I'll send it to {{clipboard:email}} today. Copied: {{clipboard}}",
+                false,
+                new TextExpanderTriggerSet(ReplyTrigger),
+                wordMode: false,
+                Now,
+                Resource);
+
+            Assert.AreEqual("\uE77F", row.KindGlyph);
+            Assert.AreEqual(";reply: Thanks! I'll send it to (Email from clipboard) today. Copied: (what you copied)", row.AutomationName);
+            Assert.AreEqual("Text Clipboard Text Clipboard", string.Join(" ", row.Chip.Select(segment => segment.Kind)));
+        }
+
+        [TestMethod]
+        public void ClickingOrF2FindsTheClipboardVariableAtTheCaret()
+        {
+            const string text = "To {{clipboard:pick:link}} and {{prompt:Name}} {{clipboard}}";
+            int link = text.IndexOf("{{clipboard:pick:link}}", StringComparison.Ordinal);
+            int whole = text.LastIndexOf("{{clipboard}}", StringComparison.Ordinal);
+
+            Assert.IsTrue(TextExpanderClipboardText.TryFindAtSelection(text, link + 3, link + 3, out int start, out int end, out ClipboardVariable variable), "The caret inside it.");
+            Assert.AreEqual((link, link + "{{clipboard:pick:link}}".Length), (start, end));
+            Assert.AreEqual(new ClipboardVariable(PickCopy: true, Part: ClipboardPart.Link), variable);
+
+            Assert.IsTrue(TextExpanderClipboardText.TryFindAtSelection(text, whole + "{{clipboard}}".Length, whole, out start, out _, out variable), "It, selected backwards.");
+            Assert.AreEqual(whole, start);
+            Assert.AreEqual(default, variable);
+
+            Assert.IsFalse(TextExpanderClipboardText.TryFindAtSelection(text, link, link, out _, out _, out _), "A caret just before it isn't in it.");
+            int prompt = text.IndexOf("{{prompt", StringComparison.Ordinal);
+            Assert.IsFalse(TextExpanderClipboardText.TryFindAtSelection(text, prompt + 3, prompt + 3, out _, out _, out _), "A question opens its own panel.");
+            Assert.IsFalse(TextExpanderClipboardText.TryFindAtSelection("{{clipboard:Link}}", 3, 3, out _, out _, out _), "Text that only looks like one isn't one.");
+        }
+
+        [TestMethod]
+        public void TheClipboardMenuAndPanelAreBuiltAsTheMockupShows()
+        {
+            XDocument page = RepositoryFiles.Xml(RepositoryFiles.EditorPage);
+            XElement flyout = RepositoryFiles.WithName(page, "ClipboardFlyout");
+            foreach (string id in new[] { "TextExpander_ClipboardCopy", "TextExpander_ClipboardPart", "Button_TextExpander_ClipboardUpdate", "Button_TextExpander_ClipboardCancel" })
+            {
+                Assert.IsTrue(flyout.Descendants().Any(element => (string)element.Attribute(XName.Get("AutomationProperties.AutomationId")) == id), id);
+            }
+
+            // Copy and Insert only: two or more matches ask which when the snippet runs, as the panel's note says.
+            Assert.AreEqual(2, flyout.Descendants().Count(element => element.Name.LocalName == "ComboBox"));
+            Assert.AreEqual("TextExpander_ClipboardFlyout_NoMatch", (string)RepositoryFiles.WithName(flyout, "ClipboardNoMatch").Attribute(XName.Get("Uid", "http://schemas.microsoft.com/winfx/2006/xaml")));
+            StringAssert.StartsWith(Resource("TextExpander_ClipboardFlyout_NoMatch.Text"), "If there's more than one, it asks which one when the snippet runs.");
+
+            string code = RepositoryFiles.Text(RepositoryFiles.EditorPage + ".cs");
+            StringAssert.Contains(code, "_replacementEditor.ClipboardEditRequested += ReplacementEditor_ClipboardEditRequested;");
+            StringAssert.Contains(code, "\"TextExpander_Variable_ClipboardNow\"");
+            StringAssert.Contains(code, "Style = (Style)Resources[\"MenuHeadingItemStyle\"]");
+            StringAssert.Contains(code, "_replacementEditor.ReplaceVariable(", "Update changes the variable as one undo step.");
+
+            string editor = RepositoryFiles.Text(@"src\modules\textexpander\TextExpander.Editor\Helpers\TextExpanderReplacementEditor.cs");
+            StringAssert.Contains(editor, "ClipboardEditRequested?.Invoke(", "Clicking a clipboard variable or pressing F2 on it opens the panel.");
+        }
+
+        [TestMethod]
+        [DataRow("en-US")]
+        [DataRow("de-DE")]
+        public void EachKindsHintAndExamplesComeFromTheRules(string region)
+        {
+            var culture = System.Globalization.CultureInfo.GetCultureInfo(region);
+            Assert.AreEqual("A name, an @ and a domain with a dot, such as you@example.com.", TextExpanderClipboardText.Hint(ClipboardPart.Email, culture, Resource));
+            Assert.AreEqual("Starts with https://, http:// or www., such as https://example.com/track. Just example.com isn't found.", TextExpanderClipboardText.Hint(ClipboardPart.Link, culture, Resource));
+            Assert.AreEqual("7 to 15 digits in groups, such as (425) 555-0123, or all together after a +.", TextExpanderClipboardText.Hint(ClipboardPart.Phone, culture, Resource));
+            Assert.AreEqual(
+                $"Digits, with a minus sign and your region's separators, such as {ClipboardPartExamples.SampleNumber(culture)}. Times, dates and phone numbers don't count.",
+                TextExpanderClipboardText.Hint(ClipboardPart.Number, culture, Resource));
+            StringAssert.Contains(TextExpanderClipboardText.Hint(ClipboardPart.Number, culture, Resource), region == "de-DE" ? "-1.234,5" : "-1,234.5", "Written the region's way.");
+
+            foreach (ClipboardPart part in TextExpanderClipboardText.Parts)
+            {
+                StringAssert.StartsWith(TextExpanderClipboardText.CountsHeading(part, Resource), "Counts as ");
+                foreach (ClipboardPartExample example in ClipboardPartExamples.For(part, culture))
+                {
+                    string spoken = TextExpanderClipboardText.Spoken(example, Resource);
+                    if (example.Counts)
+                    {
+                        Assert.IsNull(TextExpanderClipboardText.Why(example, Resource));
+                        Assert.AreEqual("Counts: " + example.Text, spoken);
+                    }
+                    else
+                    {
+                        Assert.IsTrue(English.Value.ContainsKey("TextExpander_ClipboardExample_" + example.Why), example.Why);
+                        Assert.AreEqual($"Doesn't count: {example.Text}, {TextExpanderClipboardText.Why(example, Resource)}", spoken);
+                    }
+                }
+            }
+
+            Assert.AreEqual("add a + or spaces", TextExpanderClipboardText.Why(ClipboardPartExamples.For(ClipboardPart.Phone, culture).First(example => !example.Counts), Resource));
+        }
+
+        [TestMethod]
+        public void TheMenuShowsEachKindsHintAndThePanelShowsWhatCounts()
+        {
+            string code = RepositoryFiles.Text(RepositoryFiles.EditorPage + ".cs");
+            StringAssert.Contains(code, "string hint = TextExpanderClipboardText.Hint(kind, CultureInfo.CurrentCulture, resource);");
+            StringAssert.Contains(code, "AutomationProperties.SetHelpText(item, hint);", "Screen readers hear the hint too.");
+            StringAssert.Contains(code, "ToolTipService.SetToolTip(item, hint);");
+            StringAssert.Contains(code, "ShowClipboardExamples(variable.Part);", "The examples follow the kind.");
+            StringAssert.Contains(code, "AutomationProperties.SetName(text, TextExpanderClipboardText.Spoken(example, resource));", "The check or cross is said in words.");
+
+            XDocument page = RepositoryFiles.Xml(RepositoryFiles.EditorPage);
+            XElement examples = RepositoryFiles.WithName(page, "ClipboardExamples");
+            Assert.AreEqual("Collapsed", (string)examples.Attribute("Visibility"), "Only for a part.");
+            Assert.AreSame(RepositoryFiles.WithName(page, "ClipboardPartBox"), examples.ElementsBeforeSelf().Last(), "Right under Insert.");
+            foreach (string id in new[] { "TextExpander_ClipboardExamples_Counts", "TextExpander_ClipboardExamples_DoesntCount" })
+            {
+                XElement heading = examples.Descendants().Single(element => (string)element.Attribute(XName.Get("AutomationProperties.AutomationId")) == id);
+                Assert.AreEqual("Level3", (string)heading.Attribute(XName.Get("AutomationProperties.HeadingLevel")), id);
+            }
+
+            XElement glyphStyle = page.Descendants().Single(element => (string)element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml")) == "ClipboardExampleCountsGlyphStyle");
+            XElement unread = glyphStyle.Elements().Single(setter => (string)setter.Attribute("Property") == "AutomationProperties.AccessibilityView");
+            Assert.AreEqual("Raw", (string)unread.Attribute("Value"), "The check or cross isn't read; the example's name says it.");
+        }
+
+        [TestMethod]
+        [DataRow("{{clipboard:pick}}", true)]
+        [DataRow("Here: {{clipboard:pick:link}}", true)]
+        [DataRow("{{clipboard:pick:email}}", true)]
+        [DataRow("{{clipboard:pick:link:2}}", false)]
+        [DataRow("{{clipboard:link:pick}}", false)]
+        [DataRow("{{clipboard}} and {{clipboard:email}}", false)]
+        [DataRow("{{Clipboard:pick}}", false)]
+        [DataRow("{{date:'{{clipboard:pick}}'}}", false)]
+        [DataRow("", false)]
+        public void ASnippetPicksFromClipboardHistoryOnlyWithAVariableThatPicksACopy(string replacement, bool picks)
+            => Assert.AreEqual(picks, TextExpanderClipboardText.PicksFromHistory(replacement));
+
+        [TestMethod]
+        public void TheEditorSaysWhenClipboardHistoryIsOffAndWhetherItCanBeTurnedOn()
+        {
+            Assert.IsNull(TextExpanderClipboardHistory.Note(on: true, turnedOffByPolicy: false, Resource));
+            Assert.AreEqual(
+                "Clipboard history is off, so there's no copy to pick when this runs, and nothing is inserted in its place.",
+                TextExpanderClipboardHistory.Note(on: false, turnedOffByPolicy: false, Resource));
+            Assert.AreEqual(
+                "Your organization has turned off clipboard history, so there's no copy to pick when this runs, and nothing is inserted in its place.",
+                TextExpanderClipboardHistory.Note(on: false, turnedOffByPolicy: true, Resource));
+            Assert.AreEqual("ms-settings:clipboard", TextExpanderClipboardHistory.SettingsUri);
+        }
+
+        [TestMethod]
+        public void PickingACopyIsOfferedInTheMenuAndThePanelWithANoteWhenHistoryIsOff()
+        {
+            string code = RepositoryFiles.Text(RepositoryFiles.EditorPage + ".cs");
+            StringAssert.Contains(code, "\"TextExpander_Variable_ClipboardHistory\"");
+            StringAssert.Contains(code, "Tag = new ClipboardVariable(PickCopy: true).ToToken()", "Pick a copy when it runs inserts {{clipboard:pick}}.");
+            StringAssert.Contains(code, "Content = resource(\"TextExpander_ClipboardFlyout_CopyPick\"), Tag = true", "The panel always offers a copy from history.");
+            StringAssert.Contains(code, "ShowHistoryNote(replacement);", "The note follows the typing.");
+            StringAssert.Contains(code, "Clipboard.HistoryEnabledChanged += ClipboardHistory_EnabledChanged;");
+            StringAssert.Contains(code, "Clipboard.HistoryEnabledChanged -= ClipboardHistory_EnabledChanged;", "Only while the page is shown.");
+            StringAssert.Contains(code, "e.OriginalSource is not (ButtonBase or ComboBox or ComboBoxItem)", "Enter on the panel's link opens Settings rather than updating.");
+
+            XDocument page = RepositoryFiles.Xml(RepositoryFiles.EditorPage);
+            foreach ((string note, string link) in new[] { ("HistoryOffNote", "HistoryOffSettingsButton"), ("ClipboardHistoryOffNote", "ClipboardHistorySettingsButton") })
+            {
+                XElement element = RepositoryFiles.WithName(page, note);
+                Assert.AreEqual("Collapsed", (string)element.Attribute("Visibility"), note);
+                Assert.AreEqual("OpenClipboardHistorySettings_Click", (string)RepositoryFiles.WithName(element, link).Attribute("Click"), link);
+            }
+
+            // In the dialog, after the privacy note and the near-miss note; in the panel, right under Copy.
+            XElement box = RepositoryFiles.WithName(page, "ReplacementBox");
+            Assert.AreSame(RepositoryFiles.WithName(page, "HistoryOffNote"), box.ElementsAfterSelf().ElementAt(2));
+            Assert.AreSame(RepositoryFiles.WithName(page, "ClipboardHistoryOffNote"), RepositoryFiles.WithName(page, "ClipboardCopyBox").ElementsAfterSelf().First());
+        }
+
+        private static string Resource(string key) => English.Value.TryGetValue(key, out string value) ? value : key;
+    }
+}
