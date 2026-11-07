@@ -81,6 +81,9 @@
     <ClCompile Include="Window.Tests.cpp">
       <Filter>Source Files\Process</Filter>
     </ClCompile>
+    <ClCompile Include="WindowBorderGeometry.Tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Exec.Tests.cpp">
       <Filter>Source Files\Process</Filter>
     </ClCompile>

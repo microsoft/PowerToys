@@ -6,6 +6,7 @@
 
 #include <FrameDrawer.h>
 #include <ScalingUtils.h>
+#include <WindowBorder/CompositionBorder.h>
 #include <Settings.h>
 #include <WindowCornersUtil.h>
 
@@ -42,6 +43,12 @@ WindowBorder::WindowBorder(HWND window) :
 
 WindowBorder::~WindowBorder()
 {
+    if (m_compositionBorder)
+    {
+        m_compositionBorder->Hide();
+        m_compositionBorder = nullptr;
+    }
+
     if (m_frameDrawer)
     {
         m_frameDrawer->Hide();
@@ -95,19 +102,33 @@ bool WindowBorder::Init(HINSTANCE hinstance)
     wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     RegisterClassExW(&wcex);
 
-    m_window = CreateWindowExW(WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW
-        , NonLocalizable::ToolWindowClassName
-        , L""
-        , WS_POPUP | WS_DISABLED
-        , windowRect.left
-        , windowRect.top
-        , windowRect.right - windowRect.left
-        , windowRect.bottom - windowRect.top
-        , nullptr
-        , nullptr
-        , hinstance
-        , this);
+    if (PowerToysWindowBorder::CompositionBorder::EnsureCompositor())
+    {
+        m_window = CreateBorderWindow(hinstance, PowerToysWindowBorder::CompositionBorder::WindowExStyle, windowRect);
+        if (m_window)
+        {
+            m_compositionBorder = PowerToysWindowBorder::CompositionBorder::Attach(m_window, PowerToysWindowBorder::Style{});
+            if (!m_compositionBorder)
+            {
+                Logger::warn(L"Composition border unavailable, falling back to Direct2D");
+                SetWindowLongPtrW(m_window, GWLP_USERDATA, 0);
+                DestroyWindow(m_window);
+                m_window = nullptr;
+            }
+        }
+    }
 
+    if (m_compositionBorder)
+    {
+        // Keep the border behind the tracked window.
+        SetWindowPos(m_trackingWindow, m_window, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+        UpdateCompositionBorder(true);
+        m_compositionBorder->Show();
+        m_timer_id = SetTimer(m_window, REFRESH_BORDER_TIMER_ID, REFRESH_BORDER_INTERVAL, nullptr);
+        return true;
+    }
+
+    m_window = CreateBorderWindow(hinstance, WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW, windowRect);
     if (!m_window)
     {
         return false;
@@ -158,8 +179,69 @@ bool WindowBorder::Init(HINSTANCE hinstance)
     return true;
 }
 
+HWND WindowBorder::CreateBorderWindow(HINSTANCE hinstance, DWORD exStyle, const RECT& windowRect)
+{
+    return CreateWindowExW(exStyle
+        , NonLocalizable::ToolWindowClassName
+        , L""
+        , WS_POPUP | WS_DISABLED
+        , windowRect.left
+        , windowRect.top
+        , windowRect.right - windowRect.left
+        , windowRect.bottom - windowRect.top
+        , nullptr
+        , nullptr
+        , hinstance
+        , this);
+}
+
+COLORREF WindowBorder::BorderColor() const
+{
+    const auto settings = AlwaysOnTopSettings::settings();
+    if (settings->frameAccentColor)
+    {
+        winrt::Windows::UI::ViewManagement::UISettings uiSettings;
+        auto accentValue = uiSettings.GetColorValue(winrt::Windows::UI::ViewManagement::UIColorType::Accent);
+        return RGB(accentValue.R, accentValue.G, accentValue.B);
+    }
+
+    return settings->frameColor;
+}
+
+void WindowBorder::UpdateCompositionBorder(bool refreshColor) const
+{
+    if (!m_trackingWindow || !m_compositionBorder)
+    {
+        return;
+    }
+
+    RECT frame{};
+    if (!SUCCEEDED(DwmGetWindowAttribute(m_trackingWindow, DWMWA_EXTENDED_FRAME_BOUNDS, &frame, sizeof(frame))))
+    {
+        m_compositionBorder->Hide();
+        return;
+    }
+
+    if (refreshColor)
+    {
+        m_compositionColor = BorderColor();
+    }
+
+    const auto settings = AlwaysOnTopSettings::settings();
+    const float scalingFactor = ScalingUtils::ScalingFactor(m_trackingWindow);
+    const float thickness = settings->frameThickness * scalingFactor;
+    const float cornerRadius = settings->roundCornersEnabled ? WindowCornerUtils::CornersRadius(m_trackingWindow) * scalingFactor : 0.f;
+    m_compositionBorder->Update(m_trackingWindow, frame, scalingFactor, cornerRadius, thickness, m_compositionColor, settings->frameOpacity / 100.0f);
+}
+
 void WindowBorder::UpdateBorderPosition() const
 {
+    if (m_compositionBorder)
+    {
+        UpdateCompositionBorder(false);
+        return;
+    }
+
     if (!m_trackingWindow || !m_frameDrawer || !m_window)
     {
         return;
@@ -178,6 +260,12 @@ void WindowBorder::UpdateBorderPosition() const
 
 void WindowBorder::UpdateBorderProperties() const
 {
+    if (m_compositionBorder)
+    {
+        UpdateCompositionBorder(true);
+        return;
+    }
+
     if (!m_trackingWindow || !m_frameDrawer)
     {
         return;
@@ -195,17 +283,7 @@ void WindowBorder::UpdateBorderProperties() const
     RECT frameRect{ 0, 0, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top };
 
     const auto settings = AlwaysOnTopSettings::settings();
-    COLORREF color;
-    if (settings->frameAccentColor)
-    {
-        winrt::Windows::UI::ViewManagement::UISettings settings;
-        auto accentValue = settings.GetColorValue(winrt::Windows::UI::ViewManagement::UIColorType::Accent);
-        color = RGB(accentValue.R, accentValue.G, accentValue.B);
-    }
-    else
-    {
-        color = settings->frameColor;
-    }
+    const COLORREF color = BorderColor();
 
     float opacity = settings->frameOpacity / 100.0f;
     float scalingFactor = ScalingUtils::ScalingFactor(m_trackingWindow);
@@ -221,6 +299,15 @@ void WindowBorder::UpdateBorderProperties() const
 
 LRESULT WindowBorder::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
+    if (m_compositionBorder)
+    {
+        LRESULT result = 0;
+        if (PowerToysWindowBorder::CompositionBorder::HandleMessage(message, result))
+        {
+            return result;
+        }
+    }
+
     switch (message)
     {
     case WM_TIMER:
@@ -230,6 +317,12 @@ LRESULT WindowBorder::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexce
         case REFRESH_BORDER_TIMER_ID:
             KillTimer(m_window, m_timer_id);
             m_timer_id = SetTimer(m_window, REFRESH_BORDER_TIMER_ID, REFRESH_BORDER_INTERVAL, nullptr);
+            if (m_compositionBorder)
+            {
+                UpdateCompositionBorder(true);
+                break;
+            }
+
             UpdateBorderPosition();
             UpdateBorderProperties();
             break;

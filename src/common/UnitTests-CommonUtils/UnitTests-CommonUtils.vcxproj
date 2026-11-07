@@ -54,6 +54,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Window.Tests.cpp" />
+    <ClCompile Include="WindowBorderGeometry.Tests.cpp" />
     <ClCompile Include="GameMode.Tests.cpp" />
     <ClCompile Include="Gpo.Tests.cpp" />
     <ClCompile Include="MsiUtils.Tests.cpp" />
