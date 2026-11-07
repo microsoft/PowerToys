@@ -46,6 +46,12 @@
     <Filter Include="PowerRenameXAML">
       <UniqueIdentifier>{B997F68E-02BE-4493-B417-9EC3ED2AEBE5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Strings">
+      <UniqueIdentifier>{1A00FDA3-97AB-460A-867A-ADACAE6531E3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Strings\en-us">
+      <UniqueIdentifier>{C0F2ED17-0CB8-466E-8257-CA76DD8CF4B2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="app.manifest" />
@@ -67,5 +73,10 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="Strings\en-us\Resources.resw">
+      <Filter>Strings\en-us</Filter>
+    </PRIResource>
   </ItemGroup>
 </Project>

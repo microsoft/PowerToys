@@ -608,12 +608,20 @@
                         Content="AA"
                         FontWeight="Medium" />
                     <ToggleButton
+                        x:Name="toggleButton_sentenceCase"
+                        x:Uid="ToggleButton_SentenceCase"
+                        Height="32"
+                        MinHeight="0"
+                        AutomationProperties.AutomationId="toggleButton_sentenceCase"
+                        Content="Aa"
+                        FontWeight="Medium" />
+                    <ToggleButton
                         x:Name="toggleButton_titleCase"
                         x:Uid="ToggleButton_TitleCase"
                         Height="32"
                         MinHeight="0"
                         AutomationProperties.AutomationId="toggleButton_titleCase"
-                        Content="Aa"
+                        Content="Aa a"
                         FontWeight="Medium" />
                     <ToggleButton
                         x:Name="toggleButton_capitalize"
