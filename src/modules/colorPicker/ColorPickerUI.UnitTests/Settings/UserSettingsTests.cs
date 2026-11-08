@@ -24,6 +24,22 @@ namespace ColorPicker.UnitTests.Settings
             StringAssert.Contains(json, "\"showcolorname\"");
             StringAssert.Contains(json, "\"copiedcolorrepresentation\"");
             StringAssert.Contains(json, "\"changecursor\"");
+            StringAssert.Contains(json, "\"samplesize\"");
+        }
+
+        [TestMethod]
+        public void Sample_size_defaults_to_a_single_pixel()
+        {
+            Assert.AreEqual(1, new ColorPickerProperties().SampleSize);
+        }
+
+        [TestMethod]
+        public void Sample_size_defaults_to_a_single_pixel_when_missing_from_json()
+        {
+            // Settings files written before the sample size option existed don't have the key.
+            var properties = JsonSerializer.Deserialize<ColorPickerProperties>("{\"showcolorname\":{\"value\":true}}");
+            Assert.IsNotNull(properties);
+            Assert.AreEqual(1, properties.SampleSize);
         }
     }
 }

@@ -22,12 +22,15 @@ namespace ColorPicker.Mouse
     {
         private const double DefaultDisplayRefreshRate = 60.0;
 
-        // Reused 1x1 GDI surface for the per-tick screen-pixel sample. Allocating a fresh Bitmap +
-        // Graphics on every timer tick (which fires at the monitor refresh rate while a pick session
-        // is active) churns the GC heap and grows the process working set on each activation; reuse a
-        // single cached surface instead (mirrors ZoomWindowHelper's static _bmp/_graphics). All access
-        // is on the UI thread (the constructor and the DispatcherQueueTimer tick).
-        private static readonly Bitmap _screenPixelBitmap = new Bitmap(1, 1, PixelFormat.Format32bppArgb);
+        // Largest supported sample area (9x9 pixels). Must match the largest option in Settings.
+        internal const int MaxSampleSize = 9;
+
+        // Reused GDI surface for the per-tick screen sample, sized for the largest sample area.
+        // Allocating a fresh Bitmap + Graphics on every timer tick (which fires at the monitor refresh
+        // rate while a pick session is active) churns the GC heap and grows the process working set on
+        // each activation; reuse a single cached surface instead (mirrors ZoomWindowHelper's static
+        // _bmp/_graphics). All access is on the UI thread (the constructor and the DispatcherQueueTimer tick).
+        private static readonly Bitmap _screenPixelBitmap = new Bitmap(MaxSampleSize, MaxSampleSize, PixelFormat.Format32bppArgb);
         private static readonly Graphics _screenPixelGraphics = Graphics.FromImage(_screenPixelBitmap);
 
         private readonly double _mousePullInfoIntervalInMs;
@@ -59,13 +62,7 @@ namespace ColorPicker.Mouse
             _userSettings.CopiedColorRepresentation.PropertyChanged += CopiedColorRepresentation_PropertyChanged;
             _previousMousePosition = GetCursorPosition();
             var initPos = _previousMousePosition;
-            if (TryGetPixelColor(
-                () =>
-                {
-                    _screenPixelGraphics.CopyFromScreen((int)initPos.X, (int)initPos.Y, 0, 0, _screenPixelBitmap.Size, CopyPixelOperation.SourceCopy);
-                    return _screenPixelBitmap.GetPixel(0, 0);
-                },
-                out var initialColor))
+            if (TryGetPixelColor(() => CaptureColor(initPos), out var initialColor))
             {
                 _previousColor = initialColor;
             }
@@ -103,13 +100,7 @@ namespace ColorPicker.Mouse
                 MousePositionChanged?.Invoke(this, mousePosition);
             }
 
-            if (TryGetPixelColor(
-                () =>
-                {
-                    _screenPixelGraphics.CopyFromScreen((int)mousePosition.X, (int)mousePosition.Y, 0, 0, _screenPixelBitmap.Size, CopyPixelOperation.SourceCopy);
-                    return _screenPixelBitmap.GetPixel(0, 0);
-                },
-                out var color))
+            if (TryGetPixelColor(() => CaptureColor(mousePosition), out var color))
             {
                 if (_previousColor != color || _colorFormatChanged)
                 {
@@ -118,6 +109,88 @@ namespace ColorPicker.Mouse
                     MouseColorChanged?.Invoke(this, color);
                 }
             }
+        }
+
+        private Color CaptureColor(Point position)
+        {
+            var x = (int)position.X;
+            var y = (int)position.Y;
+            var sampleSize = NormalizeSampleSize(_userSettings.SampleSize.Value);
+
+            if (sampleSize == 1)
+            {
+                _screenPixelGraphics.CopyFromScreen(x, y, 0, 0, new Size(1, 1), CopyPixelOperation.SourceCopy);
+                return _screenPixelBitmap.GetPixel(0, 0);
+            }
+
+            var sampleArea = GetSampleArea(x, y, sampleSize, GetMonitorBounds(x, y));
+            _screenPixelGraphics.CopyFromScreen(sampleArea.X, sampleArea.Y, 0, 0, sampleArea.Size, CopyPixelOperation.SourceCopy);
+            return GetAverageColor(_screenPixelBitmap, sampleArea.Width, sampleArea.Height);
+        }
+
+        /// <summary>
+        /// Returns a usable sample size: an odd number between 1 and <see cref="MaxSampleSize"/>,
+        /// so the sample area is always centered on the cursor. Values outside that range (e.g. a
+        /// hand-edited settings file) are clamped, and even values are rounded down.
+        /// </summary>
+        internal static int NormalizeSampleSize(int sampleSize)
+        {
+            sampleSize = Math.Clamp(sampleSize, 1, MaxSampleSize);
+            return sampleSize % 2 == 0 ? sampleSize - 1 : sampleSize;
+        }
+
+        /// <summary>
+        /// Returns the <paramref name="sampleSize"/> x <paramref name="sampleSize"/> square centered on
+        /// (<paramref name="x"/>, <paramref name="y"/>), clipped to <paramref name="monitorBounds"/> so
+        /// that off-screen pixels (captured as black) don't darken the average near a screen edge.
+        /// An empty <paramref name="monitorBounds"/> means the bounds are unknown and nothing is clipped.
+        /// </summary>
+        internal static Rectangle GetSampleArea(int x, int y, int sampleSize, Rectangle monitorBounds)
+        {
+            var halfSize = sampleSize / 2;
+            var sampleArea = new Rectangle(x - halfSize, y - halfSize, sampleSize, sampleSize);
+            if (!monitorBounds.IsEmpty)
+            {
+                sampleArea.Intersect(monitorBounds);
+            }
+
+            return sampleArea.IsEmpty ? new Rectangle(x, y, 1, 1) : sampleArea;
+        }
+
+        /// <summary>
+        /// Returns the average color of the <paramref name="width"/> x <paramref name="height"/> area
+        /// in the top-left corner of <paramref name="bitmap"/>, rounding each channel to the nearest value.
+        /// </summary>
+        internal static Color GetAverageColor(Bitmap bitmap, int width, int height)
+        {
+            var red = 0;
+            var green = 0;
+            var blue = 0;
+            for (var y = 0; y < height; y++)
+            {
+                for (var x = 0; x < width; x++)
+                {
+                    var pixel = bitmap.GetPixel(x, y);
+                    red += pixel.R;
+                    green += pixel.G;
+                    blue += pixel.B;
+                }
+            }
+
+            var count = width * height;
+            return Color.FromArgb((red + (count / 2)) / count, (green + (count / 2)) / count, (blue + (count / 2)) / count);
+        }
+
+        private static Rectangle GetMonitorBounds(int x, int y)
+        {
+            var monitor = MonitorFromPoint(new POINT { x = x, y = y }, MonitorDefaultToNearest);
+            var info = new MonitorInfoEx();
+            if (monitor == IntPtr.Zero || !GetMonitorInfo(new HandleRef(null, monitor), info))
+            {
+                return Rectangle.Empty;
+            }
+
+            return Rectangle.FromLTRB(info.rcMonitor.left, info.rcMonitor.top, info.rcMonitor.right, info.rcMonitor.bottom);
         }
 
         /// <summary>

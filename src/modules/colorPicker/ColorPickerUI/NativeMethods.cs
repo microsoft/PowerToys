@@ -19,6 +19,7 @@ namespace ColorPicker
         public const int KfAltdown = 0x2000;
         public const int LlkhfAltdown = KfAltdown >> 8;
         public const int MonitorinfofPrimary = 0x00000001;
+        public const uint MonitorDefaultToNearest = 0x00000002;
         public const int CCHDEVICENAME = 32;
         public const int CCHFORMNAME = 32;
         public const uint ENUM_CURRENT_SETTINGS = 4294967295;
@@ -51,6 +52,9 @@ namespace ColorPicker
         [ResourceExposure(ResourceScope.None)]
         internal static extern bool GetMonitorInfo(
             HandleRef hmonitor, [In, Out] MonitorInfoEx info);
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
 
         [DllImport("user32.dll", ExactSpelling = true)]
         [ResourceExposure(ResourceScope.None)]

@@ -253,6 +253,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        // The sample size combo box lists the odd sizes 1x1, 3x3, ..., 9x9, so index n maps to a size of (2n + 1).
+        public int SampleSizeIndex
+        {
+            get => (Math.Clamp(_colorPickerSettings.Properties.SampleSize, 1, 9) - 1) / 2;
+
+            set
+            {
+                var sampleSize = (value * 2) + 1;
+                if (value >= 0 && sampleSize != _colorPickerSettings.Properties.SampleSize)
+                {
+                    _colorPickerSettings.Properties.SampleSize = sampleSize;
+                    OnPropertyChanged(nameof(SampleSizeIndex));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public ObservableCollection<ColorFormatModel> ColorFormats { get; } = new ObservableCollection<ColorFormatModel>();
 
         public ObservableCollection<KeyValuePair<string, string>> ColorFormatsPreview => _colorFormatsPreview;
