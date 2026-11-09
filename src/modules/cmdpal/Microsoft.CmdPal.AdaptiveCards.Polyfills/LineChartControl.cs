@@ -47,8 +47,8 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
     private static readonly TimeSpan DefaultScrollDuration = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan MinimumScrollDuration = TimeSpan.FromMilliseconds(250);
     private static readonly TimeSpan MaximumScrollDuration = TimeSpan.FromMilliseconds(1500);
-    private static readonly CompositeFormat SeriesNameFormat = CompositeFormat.Parse(ChartStrings.Get("AdaptiveChart_SeriesName"));
-    private static readonly CompositeFormat SeriesSummaryFormat = CompositeFormat.Parse(ChartStrings.Get("AdaptiveChart_SeriesSummary"));
+    private static readonly CompositeFormat SeriesNameFormat = CompositeFormat.Parse(Properties.Resources.AdaptiveChart_SeriesName);
+    private static readonly CompositeFormat SeriesSummaryFormat = CompositeFormat.Parse(Properties.Resources.AdaptiveChart_SeriesSummary);
 
     private readonly RowDefinition _plotRow = new() { Height = new GridLength(120) };
     private readonly TextBlock _titleText = new()
@@ -166,7 +166,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
             _model.Title,
             _model.YAxisTitle,
             _model.Series.Count > 0 ? _model.Series[0].Legend : null)
-            ?? ChartStrings.Get("AdaptiveChart_LineChart");
+            ?? Properties.Resources.AdaptiveChart_LineChart;
         AutomationProperties.SetName(this, name);
     }
 

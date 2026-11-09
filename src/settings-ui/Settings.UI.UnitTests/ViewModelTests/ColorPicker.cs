@@ -5,6 +5,7 @@
 using System.Text.Json;
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -72,6 +73,90 @@ namespace ViewModelTests
             {
                 Assert.IsTrue(viewModel.IsEnabled);
             }
+        }
+
+        [TestMethod]
+        public void ColorFormatsPreviewNotifiesWhenFormatsAreReordered()
+        {
+            var settingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ColorPickerSettings>();
+            var generalSettingsRepository = new Mock<ISettingsRepository<GeneralSettings>>();
+            generalSettingsRepository.SetupGet(repository => repository.SettingsConfig).Returns(new GeneralSettings());
+            var colorPickerSettingsRepository = new Mock<ISettingsRepository<ColorPickerSettings>>();
+            colorPickerSettingsRepository.SetupGet(repository => repository.SettingsConfig).Returns(new ColorPickerSettings());
+
+            using var viewModel = new ColorPickerViewModel(
+                settingsUtils.Object,
+                generalSettingsRepository.Object,
+                colorPickerSettingsRepository.Object,
+                _ => 0);
+
+            var preview = viewModel.ColorFormatsPreview;
+            var expectedFirstName = viewModel.ColorFormats[1].Name;
+            var selectedFormatName = viewModel.SelectedColorRepresentationValue;
+            var collectionChanged = false;
+            preview.CollectionChanged += (_, _) => collectionChanged = true;
+
+            viewModel.ColorFormats.Move(1, 0);
+
+            Assert.AreSame(preview, viewModel.ColorFormatsPreview);
+            Assert.IsTrue(collectionChanged);
+            Assert.AreEqual(expectedFirstName, preview[0].Key);
+            Assert.AreEqual(selectedFormatName, viewModel.SelectedColorRepresentationValue);
+            Assert.AreEqual(selectedFormatName, preview[viewModel.ColorFormatsPreviewIndex].Key);
+        }
+
+        [TestMethod]
+        public void ColorFormatsPreviewRestoresSelectionAfterSynchronousCollectionFeedback()
+        {
+            using var viewModel = CreateIsolatedViewModel();
+            var preview = viewModel.ColorFormatsPreview;
+            var selected = viewModel.SelectedColorRepresentationValue;
+            var feedbackCount = 0;
+            preview.CollectionChanged += (_, _) =>
+            {
+                // Model the ComboBox clearing its selection while ItemsSource changes.
+                feedbackCount++;
+                viewModel.ColorFormatsPreviewIndex = -1;
+                viewModel.SelectedColorRepresentationValue = null;
+            };
+
+            viewModel.ColorFormats.Move(1, 0);
+
+            Assert.IsTrue(feedbackCount > 0);
+            Assert.AreSame(preview, viewModel.ColorFormatsPreview);
+            Assert.AreEqual(selected, viewModel.SelectedColorRepresentationValue);
+            Assert.AreEqual(selected, preview[viewModel.ColorFormatsPreviewIndex].Key);
+        }
+
+        [TestMethod]
+        public void ColorFormatsPreviewTracksRenamedSelectedFormat()
+        {
+            using var viewModel = CreateIsolatedViewModel();
+            var preview = viewModel.ColorFormatsPreview;
+            var selected = viewModel.ColorFormats[viewModel.ColorFormatsPreviewIndex];
+            var oldName = selected.Name;
+            selected.Name = "Renamed format";
+
+            viewModel.UpdateColorFormat(oldName, selected);
+
+            Assert.AreSame(preview, viewModel.ColorFormatsPreview);
+            Assert.AreEqual(selected.Name, viewModel.SelectedColorRepresentationValue);
+            Assert.AreEqual(selected.Name, preview[viewModel.ColorFormatsPreviewIndex].Key);
+        }
+
+        private static ColorPickerViewModel CreateIsolatedViewModel()
+        {
+            var settingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ColorPickerSettings>();
+            var generalSettingsRepository = new Mock<ISettingsRepository<GeneralSettings>>();
+            generalSettingsRepository.SetupGet(repository => repository.SettingsConfig).Returns(new GeneralSettings());
+            var colorPickerSettingsRepository = new Mock<ISettingsRepository<ColorPickerSettings>>();
+            colorPickerSettingsRepository.SetupGet(repository => repository.SettingsConfig).Returns(new ColorPickerSettings());
+
+            return new ColorPickerViewModel(
+                settingsUtils.Object,
+                generalSettingsRepository.Object,
+                colorPickerSettingsRepository.Object,
+                _ => 0);
         }
 
         private static int ColorPickerIsEnabledByDefaultIPC(string msg)

@@ -29,7 +29,7 @@ public class StringMatcher
     {
         opt = opt ?? new MatchOption();
 
-        if (string.IsNullOrEmpty(stringToCompare))
+        if (string.IsNullOrEmpty(stringToCompare) || string.IsNullOrWhiteSpace(query))
         {
             return new MatchResult(false, SearchPrecisionScore.Regular);
         }

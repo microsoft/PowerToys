@@ -55,7 +55,7 @@
                         x:Name="ImagesSizesListView"
                         x:Uid="ImagesSizesListView"
                         ContainerContentChanging="ImagesSizesListView_ContainerContentChanging"
-                        ItemsSource="{x:Bind ViewModel.Sizes, Mode=TwoWay}"
+                        ItemsSource="{x:Bind ViewModel.Sizes, Mode=OneWay}"
                         SelectionMode="None">
                         <ListView.ItemTemplate>
                             <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize">

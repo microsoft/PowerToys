@@ -9,6 +9,13 @@ variables:
     value: true
 
 parameters:
+  - name: umdfHidArm64Image
+    type: string
+    default: SHINE-W11-Preview-Testing-arm64-TestSigning
+    values:
+      - disabled
+      - SHINE-W11-Preview-Testing-arm64-TestSigning
+    displayName: "Isolated ARM64 UMDF image (disabled turns off the route)"
   - name: buildPlatforms
     type: object
     default:
@@ -39,27 +46,49 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
+  - name: umdfHidSmokeOnly
+    type: boolean
+    default: false
+    displayName: "Experimental UMDF HID smoke only (no PowerToys build)"
 
 stages:
-  - ${{ each platform in parameters.buildPlatforms }}:
-    # Full build path: buildNow runs the complete artifact in place; buildNowSlim
-    # downloads and installs its installer. MWB requires one of these current-source paths.
-    - ${{ if or(eq(parameters.buildSource, 'buildNow'), eq(parameters.buildSource, 'buildNowSlim')) }}:
-      - template: pipeline-ui-tests-full-build.yml
-        parameters:
-          platform: ${{ platform }}
-          buildSource: ${{ parameters.buildSource }}
-          enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
-          useVSPreview: ${{ parameters.useVSPreview }}
-          useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-          uiTestModules: ${{ parameters.uiTestModules }}
+  - ${{ if eq(parameters.umdfHidSmokeOnly, true) }}:
+    - template: pipeline-umdf-hid-smoke.yml
+      parameters:
+        ${{ if eq(parameters.umdfHidArm64Image, 'disabled') }}:
+          umdfHidArm64Image: ''
+        ${{ else }}:
+          umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
+        buildPlatforms: ${{ parameters.buildPlatforms }}
+        uiTestModules: ${{ parameters.uiTestModules }}
+  - ${{ if eq(parameters.umdfHidSmokeOnly, false) }}:
+    - ${{ each platform in parameters.buildPlatforms }}:
+      # Full build path: buildNow runs the complete artifact in place; buildNowSlim
+      # downloads and installs its installer. MWB requires one of these current-source paths.
+      - ${{ if or(eq(parameters.buildSource, 'buildNow'), eq(parameters.buildSource, 'buildNowSlim')) }}:
+        - template: pipeline-ui-tests-full-build.yml
+          parameters:
+            ${{ if eq(parameters.umdfHidArm64Image, 'disabled') }}:
+              umdfHidArm64Image: ''
+            ${{ else }}:
+              umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
+            platform: ${{ platform }}
+            buildSource: ${{ parameters.buildSource }}
+            enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+            useVSPreview: ${{ parameters.useVSPreview }}
+            useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+            uiTestModules: ${{ parameters.uiTestModules }}
 
-    # Official build path: build UI tests only and download the selected official build.
-    - ${{ if and(ne(parameters.buildSource, 'buildNow'), ne(parameters.buildSource, 'buildNowSlim')) }}:
-      - template: pipeline-ui-tests-official-build.yml
-        parameters:
-          platform: ${{ platform }}
-          buildSource: ${{ parameters.buildSource }}
-          specificBuildId: ${{ parameters.specificBuildId }}
-          useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-          uiTestModules: ${{ parameters.uiTestModules }}
+      # Official build path: build UI tests only and download the selected official build.
+      - ${{ if and(ne(parameters.buildSource, 'buildNow'), ne(parameters.buildSource, 'buildNowSlim')) }}:
+        - template: pipeline-ui-tests-official-build.yml
+          parameters:
+            ${{ if eq(parameters.umdfHidArm64Image, 'disabled') }}:
+              umdfHidArm64Image: ''
+            ${{ else }}:
+              umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
+            platform: ${{ platform }}
+            buildSource: ${{ parameters.buildSource }}
+            specificBuildId: ${{ parameters.specificBuildId }}
+            useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+            uiTestModules: ${{ parameters.uiTestModules }}
