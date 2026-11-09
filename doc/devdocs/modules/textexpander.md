@@ -53,6 +53,9 @@ erases each trigger and pastes or types the snippet. A separate editor manages t
   engine's random tag sets that bit, so Keyboard Manager's key remaps skip it.
 - Keys count in the foreground window unless its check refused it, and never in standard password
   boxes. `ToUnicodeEx` uses that window's layout and flag `0x4`, which keeps dead-key state intact.
+- The key after a dead key never releases or completes a trigger. The app keeps the accent until that
+  key comes, so swallowing it would leave the accent to take the erase's first Backspace. An accent
+  that doesn't combine counts with the key after it, and Backspace after a dead key only drops it.
 - The foreground event can name a window before Windows reports it in front, as Windows Terminal
   does for a new window. Then the first key typed there asks for the check. Keys typed while it runs
   count, but nothing expands until the window passes.

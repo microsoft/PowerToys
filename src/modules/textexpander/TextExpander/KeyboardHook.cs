@@ -58,6 +58,9 @@ internal sealed class KeyboardHook : IDisposable
     // Grows with the longest trigger (EnsureCapacity); guarded by _bufferLock.
     private char[] _buffer = new char[MinimumBufferCapacity];
     private int _count;
+
+    // The last key typed nothing yet: a dead key, whose accent the app keeps for the next key. Guarded by _bufferLock.
+    private bool _afterDeadKey;
     private bool _disposed;
     private UndoEntry? _undo;
     private long _inputGeneration;
@@ -132,6 +135,15 @@ internal sealed class KeyboardHook : IDisposable
 
     /// <summary>Gets whether a standard password box has the focus, where keys don't count. Tests pass their own.</summary>
     internal Func<bool> InPasswordBox { get; init; } = IsFocusedPasswordEdit;
+
+    /// <summary>
+    /// What a key types into <c>typed</c>, as the window in front's layout makes it: the number of characters (one, or
+    /// two when a dead key's accent doesn't combine with the key after it), zero for none, or -1 for a dead key.
+    /// </summary>
+    internal delegate int KeyDecoder(uint vk, uint scanCode, Span<char> typed);
+
+    /// <summary>Gets what decodes each key. Tests pass their own, to type as a layout with dead keys does.</summary>
+    internal KeyDecoder Decode { get; init; } = DecodeWithForegroundLayout;
 
     /// <summary>
     /// Gets or sets a value indicating whether when false, keystrokes are still observed but never expanded. Turning this off is how a
@@ -225,6 +237,7 @@ internal sealed class KeyboardHook : IDisposable
     {
         int live = _count;
         _count = 0;
+        _afterDeadKey = false;
         if (live > 0)
         {
             Array.Clear(_buffer, 0, live);
@@ -467,6 +480,13 @@ internal sealed class KeyboardHook : IDisposable
         {
             ClearUndo();
 
+            // After a dead key, Backspace only drops the accent the app was keeping: no character goes.
+            if (_afterDeadKey && !(ctrl || alt || win))
+            {
+                _afterDeadKey = false;
+                return false;
+            }
+
             // Ctrl+Backspace deletes a whole word, and with Alt or Win it is a shortcut, so only a
             // plain or shifted Backspace is known to remove exactly one character.
             if (ctrl || alt || win)
@@ -530,13 +550,39 @@ internal sealed class KeyboardHook : IDisposable
             return false;
         }
 
-        if (!TryDecode(vk, scanCode, out char ch))
+        Span<char> typed = stackalloc char[2];
+        int written = Decode(vk, scanCode, typed);
+        if (written < 0)
+        {
+            _afterDeadKey = true;
+            return false;
+        }
+
+        if (written == 0)
         {
             return false;
         }
 
+        bool afterDeadKey = _afterDeadKey;
+        _afterDeadKey = false;
+
         EnsureCapacity(snapshot.MaxTriggerLength);
-        Append(ch);
+        for (int i = 0; i < written; i++)
+        {
+            Append(typed[i]);
+        }
+
+        char ch = typed[written - 1];
+
+        // The key after a dead key types what the app composes from the two: the accent alone, for a space. The app keeps
+        // the accent until this key comes, so swallowing the key to release or complete a trigger left the accent waiting
+        // in the app, where it took the erase's first Backspace and the trigger's first character stayed
+        // ("!Layout letters OK^"). Such a key never releases or completes a trigger. ToUnicodeEx gives the composed
+        // character here only once the app has taken the dead key, so what was appended can also be the key's own.
+        if (afterDeadKey)
+        {
+            return false;
+        }
 
         bool wordMode = WordBoundary.Required;
 
@@ -641,7 +687,7 @@ internal sealed class KeyboardHook : IDisposable
     }
 
     /// <summary>
-    /// Translates a virtual key to a character using the *foreground window's* keyboard layout.
+    /// Decodes a key with the *foreground window's* keyboard layout (see <see cref="KeyDecoder"/>).
     /// The 0x4 flag is essential: without it ToUnicodeEx mutates kernel dead-key state and
     /// breaks accented input on international layouts.
     ///
@@ -652,10 +698,8 @@ internal sealed class KeyboardHook : IDisposable
     /// miss. <c>stackalloc</c> costs a pointer bump and is zeroed by the runtime.
     /// </para>
     /// </summary>
-    private static unsafe bool TryDecode(uint vk, uint scanCode, out char ch)
+    private static unsafe int DecodeWithForegroundLayout(uint vk, uint scanCode, Span<char> typed)
     {
-        ch = '\0';
-
         // Unicode-injected input (touch keyboard, emoji picker, remote desktop, automation)
         // carries the character in scanCode rather than a real virtual key, and ToUnicodeEx
         // cannot translate it.
@@ -664,11 +708,11 @@ internal sealed class KeyboardHook : IDisposable
             char packet = (char)scanCode;
             if (packet == '\0' || char.IsControl(packet))
             {
-                return false;
+                return 0;
             }
 
-            ch = packet;
-            return true;
+            typed[0] = packet;
+            return 1;
         }
 
         IntPtr foreground = Native.GetForegroundWindow();
@@ -697,21 +741,23 @@ internal sealed class KeyboardHook : IDisposable
         }
         }
 
-        // written < 0 is a dead key; the composed character arrives later and we cannot observe
-        // it reliably from here, so the buffer is dropped rather than corrupted.
-        if (written <= 0)
+        // written < 0 is a dead key: it types nothing until the next key, whose character the app composes from the two.
+        if (written < 0)
         {
-            return false;
+            return -1;
         }
 
-        char candidate = buffer[written - 1];
-        if (char.IsControl(candidate))
+        // Two or more characters: a dead key's accent that the key after it doesn't combine with, then that key's own.
+        int count = 0;
+        for (int i = Math.Max(0, written - 2); i < written; i++)
         {
-            return false;
+            if (!char.IsControl(buffer[i]))
+            {
+                typed[count++] = buffer[i];
+            }
         }
 
-        ch = candidate;
-        return true;
+        return count;
     }
 
     private static void SetKeyState(Span<byte> state, int generic, int left, int right)
