@@ -25,13 +25,13 @@ Extension authors: see `ExtensionTemplate\TemplateCmdPalExtension\.github\skills
 
 ```csharp
 AdaptiveCardPolyfills.RegisterParsers(AdaptiveCardParserRegistrations.ElementParsers);
-AdaptiveCardPolyfills.RegisterRenderers(renderer);
+AdaptiveCardPolyfills.RegisterRenderers(renderer, RS_.GetString);
 _cardUpdater = new IncrementalAdaptiveCardUpdater(..., AdaptiveCardPolyfills.PatchableElements);
 ```
 
 The library is self-contained, so deleting it only means removing these calls and the project reference:
 
-- **Strings.** The `AdaptiveChart_*` strings live in this library's `Properties\Resources.resx`: chart names and summaries for screen readers, and the suffixes of compact numbers such as 12.3K.
+- **Strings.** Line and bar chart strings and compact-number formats live in this library's `Properties\Resources.resx`. `RegisterRenderers` also takes a lookup for the remaining charts' `AdaptiveChart_*` strings in Command Palette's `Resources.resw`.
 - **Element JSON.** `AdaptiveCustomElementJson` is internal. Command Palette's settings inputs keep their own copy, so nothing outside this library depends on it.
 
 The host provides **container styles**. `roundedCorners` and `showBorder` apply the `CmdPal.Adaptive.Container.Rounded`, `CmdPal.Adaptive.Container.Bordered`, and `CmdPal.Adaptive.Container.RoundedBordered` styles from the renderer's override styles (`CardOverrideStyles` in `ContentFormControl.xaml`).
