@@ -10,7 +10,7 @@
 class CSilentFilesInUseBAFunctions : public CBalBaseBAFunctions
 {
 public: // IBootstrapperApplication
-    virtual STDMETHODIMP OnCreate(IBootstrapperEngine* engine, BOOTSTRAPPER_COMMAND* command)
+    virtual STDMETHODIMP OnCreate(IBootstrapperEngine* engine, BOOTSTRAPPER_COMMAND* command) override
     {
         m_relatedBundle = command->relationType != BOOTSTRAPPER_RELATION_NONE;
         return CBalBaseBAFunctions::OnCreate(engine, command);
@@ -21,7 +21,7 @@ public: // IBootstrapperApplication
         __in BOOTSTRAPPER_REGISTRATION_TYPE registrationType,
         __in DWORD cPackages,
         __inout BOOL* pfCancel
-        )
+        ) override
     {
         HRESULT hr = S_OK;
 
@@ -34,7 +34,7 @@ public: // IBAFunctions
     virtual STDMETHODIMP OnPlanBegin(
         __in DWORD cPackages,
         __inout BOOL* pfCancel
-        )
+        ) override
     {
         HRESULT hr = S_OK;
 
@@ -57,7 +57,7 @@ public: // IBAFunctions
     virtual STDMETHODIMP OnExecuteBegin(
         __in DWORD cExecutingPackages,
         __inout BOOL* pfCancel
-        )
+        ) override
     {
         HRESULT hr = S_OK;
 
@@ -73,7 +73,7 @@ public: // IBAFunctions
         __in int nRecommendation,
         __in BOOTSTRAPPER_FILES_IN_USE_TYPE /* source */,
         __inout int* pResult
-        )
+        ) override
     {
         HRESULT hr = S_OK;
 
@@ -103,13 +103,12 @@ public: // IBAFunctions
     }
 
     virtual STDMETHODIMP OnExecuteComplete(
-        __in HRESULT hrStatus,
-        __inout BOOL* pfCancel
-        )
+        __in HRESULT hrStatus
+        ) override
     {
         HRESULT hr = S_OK;
 
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "*** CUSTOM BA FUNCTION SYSTEM ACTIVE *** Running execute complete BA function. hrStatus=0x%x, fCancel=%d", hrStatus, *pfCancel);
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "*** CUSTOM BA FUNCTION SYSTEM ACTIVE *** Running execute complete BA function. hrStatus=0x%x", hrStatus);
 
         if (m_removeOwner && SUCCEEDED(hrStatus) && !m_removeAttempted)
         {

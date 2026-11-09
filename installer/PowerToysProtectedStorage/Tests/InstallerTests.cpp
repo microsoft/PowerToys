@@ -3,6 +3,10 @@
 #include "MaintenanceContract.h"
 #include "..\..\..\src\common\ProtectedStorage\ProtectedStorage.Lifecycle\StorageInitialization.h"
 #include "..\..\..\src\common\ProtectedStorage\ProtectedStorage.MsiAction\PayloadCleanup.h"
+#include <commctrl.h>
+#include <IBootstrapperApplication.h>
+#include <BAFunctions.h>
+#include <IBAFunctions.h>
 #include <functional>
 #include <cstddef>
 #include <iterator>
@@ -24,6 +28,114 @@ namespace
         try { operation(); }
         catch (const failure&) { return; }
         throw std::runtime_error("unsafe input accepted");
+    }
+
+    class LoggingBootstrapperEngine : public IBootstrapperEngine
+    {
+    public:
+        std::vector<std::wstring> messages;
+
+        HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, void** value) override
+        {
+            if (!value) return E_POINTER;
+            *value = nullptr;
+            if (!IsEqualIID(id, __uuidof(IUnknown)) && !IsEqualIID(id, __uuidof(IBootstrapperEngine)))
+                return E_NOINTERFACE;
+            *value = static_cast<IBootstrapperEngine*>(this);
+            AddRef();
+            return S_OK;
+        }
+        ULONG STDMETHODCALLTYPE AddRef() override { return InterlockedIncrement(&references); }
+        ULONG STDMETHODCALLTYPE Release() override { return InterlockedDecrement(&references); }
+        HRESULT STDMETHODCALLTYPE Log(BOOTSTRAPPER_LOG_LEVEL, LPCWSTR message) override
+        {
+            messages.emplace_back(message);
+            return S_OK;
+        }
+        HRESULT STDMETHODCALLTYPE GetPackageCount(DWORD*) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE GetVariableNumeric(LPCWSTR, LONGLONG*) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE GetVariableString(LPCWSTR, LPWSTR, SIZE_T*) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE GetVariableVersion(LPCWSTR, LPWSTR, SIZE_T*) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE FormatString(LPCWSTR, LPWSTR, SIZE_T*) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE EscapeString(LPCWSTR, LPWSTR, SIZE_T*) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE EvaluateCondition(LPCWSTR, BOOL*) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE SendEmbeddedError(DWORD, LPCWSTR, DWORD, int*) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE SendEmbeddedProgress(DWORD, DWORD, int*) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE SetUpdate(LPCWSTR, LPCWSTR, DWORD64, BOOTSTRAPPER_UPDATE_HASH_TYPE, LPCWSTR, LPCWSTR) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE SetLocalSource(LPCWSTR, LPCWSTR, LPCWSTR) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE SetDownloadSource(LPCWSTR, LPCWSTR, LPCWSTR, LPCWSTR, LPCWSTR, LPCWSTR) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE SetVariableNumeric(LPCWSTR, LONGLONG) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE SetVariableString(LPCWSTR, LPCWSTR, BOOL) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE SetVariableVersion(LPCWSTR, LPCWSTR) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE CloseSplashScreen() override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE Detect(HWND) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE Plan(BOOTSTRAPPER_ACTION) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE Elevate(HWND) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE Apply(HWND) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE Quit(DWORD) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE LaunchApprovedExe(HWND, LPCWSTR, LPCWSTR, DWORD) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE SetUpdateSource(LPCWSTR, LPCWSTR) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE CompareVersions(LPCWSTR, LPCWSTR, int*) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE GetRelatedBundleVariable(LPCWSTR, LPCWSTR, LPWSTR, SIZE_T*) override { return E_NOTIMPL; }
+
+    private:
+        LONG references = 1;
+    };
+
+    void BootstrapperCallbackTests()
+    {
+        LoggingBootstrapperEngine engine;
+        const auto path = std::filesystem::path(product::module_path()).parent_path() / L"SilentFilesInUseBAFunction.dll";
+        struct library
+        {
+            HMODULE value;
+            ~library() { if (value) FreeLibrary(value); }
+        } module{ LoadLibraryExW(path.c_str(), nullptr, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32) };
+        check(module.value != nullptr, "load actual bootstrapper functions DLL");
+        const auto create = reinterpret_cast<PFN_BA_FUNCTIONS_CREATE>(GetProcAddress(module.value, "BAFunctionsCreate"));
+        const auto destroy = reinterpret_cast<PFN_BA_FUNCTIONS_DESTROY>(GetProcAddress(module.value, "BAFunctionsDestroy"));
+        Expect(create && destroy, "bootstrapper exports");
+        BA_FUNCTIONS_CREATE_RESULTS callbacks{};
+        callbacks.cbSize = sizeof(callbacks);
+        struct cleanup
+        {
+            BA_FUNCTIONS_CREATE_RESULTS& callbacks;
+            PFN_BA_FUNCTIONS_DESTROY destroy;
+            ~cleanup()
+            {
+                if (callbacks.pvBAFunctionsProcContext)
+                    static_cast<IBAFunctions*>(callbacks.pvBAFunctionsProcContext)->Release();
+                BA_FUNCTIONS_DESTROY_ARGS args{};
+                args.cbSize = sizeof(args);
+                BA_FUNCTIONS_DESTROY_RESULTS results{};
+                results.cbSize = sizeof(results);
+                destroy(&args, &results);
+            }
+        } release{ callbacks, destroy };
+        BOOTSTRAPPER_COMMAND command{};
+        command.relationType = BOOTSTRAPPER_RELATION_NONE;
+        BA_FUNCTIONS_CREATE_ARGS createArgs{};
+        createArgs.cbSize = sizeof(createArgs);
+        createArgs.pEngine = &engine;
+        createArgs.pCommand = &command;
+        Expect(SUCCEEDED(create(&createArgs, &callbacks)), "create actual bootstrapper functions");
+        Expect(callbacks.pfnBAFunctionsProc && callbacks.pvBAFunctionsProcContext, "WiX dispatch entry point");
+
+        // Never dispatch PlanBegin: exercise the real callback without arming installed-owner removal.
+        for (const HRESULT status : { S_OK, E_FAIL })
+        {
+            engine.messages.clear();
+            BA_ONEXECUTECOMPLETE_ARGS args{ WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION, status };
+            BA_ONEXECUTECOMPLETE_RESULTS results{ WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION };
+            Expect(SUCCEEDED(callbacks.pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTECOMPLETE, &args, &results,
+                callbacks.pvBAFunctionsProcContext)), "WiX ExecuteComplete dispatch result");
+            std::wostringstream expected;
+            expected << L"hrStatus=0x" << std::hex << static_cast<unsigned long>(status);
+            Expect(std::count_if(engine.messages.begin(), engine.messages.end(), [&](const auto& message) {
+                return message.find(L"Running execute complete BA function.") != std::wstring::npos &&
+                    message.find(expected.str()) != std::wstring::npos;
+            }) == 1, "WiX ExecuteComplete was not dispatched to the product callback");
+        }
     }
 
     void ParserTests()
@@ -336,6 +448,7 @@ int wmain()
 {
     try
     {
+        BootstrapperCallbackTests();
         ParserTests();
         OwnerTests();
         StateTests();

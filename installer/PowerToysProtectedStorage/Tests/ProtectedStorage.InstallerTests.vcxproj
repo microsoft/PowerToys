@@ -6,8 +6,30 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\..\..\src\common\ProtectedStorage\ProtectedStorage.Setup\Installer.props" />
   <PropertyGroup><TargetName>ProtectedStorage.InstallerTests</TargetName></PropertyGroup>
+  <PropertyGroup>
+    <NuGetTargetMoniker>native,Version=v0.0</NuGetTargetMoniker>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectCapability Include="PackageReferences" />
+    <PackageReference Include="WixToolset.BootstrapperApplicationApi" />
+    <PackageReference Include="WixToolset.WixStandardBootstrapperApplicationFunctionApi" />
+  </ItemGroup>
   <ItemDefinitionGroup><Link><SubSystem>Console</SubSystem></Link></ItemDefinitionGroup>
   <ItemGroup><ClCompile Include="InstallerTests.cpp" /></ItemGroup>
   <ItemGroup><ProjectReference Include="..\..\..\src\common\ProtectedStorage\ProtectedStorage.Common\ProtectedStorage.Common.vcxproj"><Project>{918F71A9-BC92-481E-9501-769353CE45EB}</Project></ProjectReference></ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\PowerToysSetupVNext\SilentFilesInUseBA\SilentFilesInUseBAFunction.vcxproj">
+      <Project>{F8B9F842-F5C3-4A2D-8C85-7F8B9E2B4F1D}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="CopyBootstrapperFunctionsForTests" AfterTargets="Build">
+    <MSBuild Projects="..\..\PowerToysSetupVNext\SilentFilesInUseBA\SilentFilesInUseBAFunction.vcxproj"
+             Targets="GetTargetPath" Properties="Configuration=$(Configuration);Platform=$(Platform)">
+      <Output TaskParameter="TargetOutputs" ItemName="BootstrapperFunctionsForTests" />
+    </MSBuild>
+    <Copy SourceFiles="@(BootstrapperFunctionsForTests)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
 </Project>
