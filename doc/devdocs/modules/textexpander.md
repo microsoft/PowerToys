@@ -213,7 +213,9 @@ keys out of an insertion.
   on into the app, and a click on it only dismisses it. One shows at a time.
 - It sits under the caret with its arrow pointing at it, or above it when there's no room, inside the
   monitor's work area. It follows the light, dark and high contrast themes, the monitor's DPI and the
-  text size setting. Narrator reads it through a UI Automation notification.
+  text size setting. Narrator reads it through a UI Automation notification, raised 250 ms after the
+  notice shows: screen readers connect to the window as it appears, and one raised before they have
+  reaches none, which left a new window's first notice unannounced.
 - It fades after 4 s, or later if Windows keeps notifications up longer. The user's next key-down or
   click fades it sooner, but not before it has been up 1 s. The hooks report those with
   `NoticeBubble.OnUserInput()`, which costs one `volatile` read, or one `PostMessage` while a notice

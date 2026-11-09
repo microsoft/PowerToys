@@ -48,6 +48,15 @@ public sealed class NoticeBubbleTests
     }
 
     [TestMethod]
+    public void ScreenReadersAreToldOnceTheyCanBeWhileItsStillUp()
+    {
+        // Told as it appears, a new window's first notice reached no screen reader: none had connected to the window yet.
+        Assert.IsTrue(NoticeTiming.AnnounceDelayMs >= 100, "Screen readers connect to the window as it appears.");
+        Assert.IsTrue(NoticeTiming.AnnounceDelayMs < NoticeTiming.MinimumVisibleMs, "No key or click fades it before it's told.");
+        Assert.IsTrue(NoticeTiming.AnnounceDelayMs < NoticeTiming.LifetimeMs);
+    }
+
+    [TestMethod]
     public void FadesInAndOutSmoothly()
     {
         Assert.AreEqual(0, NoticeTiming.Opacity(0, NoticeTiming.FadeInMs, 0, 255));

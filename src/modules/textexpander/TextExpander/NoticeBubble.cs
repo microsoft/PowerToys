@@ -44,9 +44,11 @@ internal static class NoticeBubble
     // The rest is only used on the notice's thread.
     private static long _synced;
 
-    // Each notice's own timers: KillTimer leaves a tick already posted, which mustn't fade the notice that replaced it.
+    // Each notice's own timers: KillTimer leaves a tick already posted, which mustn't fade the notice that replaced it, or
+    // announce it.
     private static IntPtr _lifetimeTimer;
     private static IntPtr _inputTimer;
+    private static IntPtr _announceTimer;
     private static NoticePainter? _painter;
     private static NoticePainter.Frame? _frame;
     private static NoticeAutomation? _automation;
@@ -410,7 +412,9 @@ internal static class NoticeBubble
             _ = Native.KillTimer(hwnd, AnimationTimer);
         }
 
-        _automation?.Announce();
+        // Screen readers are told a moment later, once they've connected to the window as it appeared.
+        _announceTimer = new IntPtr((generation << 2) | 3);
+        _ = Native.SetTimer(hwnd, _announceTimer, NoticeTiming.AnnounceDelayMs, IntPtr.Zero);
     }
 
     private static void OnInput(IntPtr hwnd)
@@ -440,6 +444,16 @@ internal static class NoticeBubble
         }
 
         _ = Native.KillTimer(hwnd, timer);
+        if (timer == _announceTimer)
+        {
+            if (Volatile.Read(ref _shown) != 0)
+            {
+                _automation?.Announce();
+            }
+
+            return;
+        }
+
         if (timer == _lifetimeTimer || timer == _inputTimer)
         {
             FadeOut(hwnd);
@@ -470,6 +484,7 @@ internal static class NoticeBubble
     {
         _ = Native.KillTimer(hwnd, _lifetimeTimer);
         _ = Native.KillTimer(hwnd, _inputTimer);
+        _ = Native.KillTimer(hwnd, _announceTimer);
     }
 
     private static void Animate(IntPtr hwnd)

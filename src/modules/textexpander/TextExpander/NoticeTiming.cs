@@ -22,6 +22,13 @@ internal static class NoticeTiming
 
     public const int FrameMs = 15;
 
+    /// <summary>
+    /// How long after a notice shows screen readers are told about it. They connect to the window as it appears, and
+    /// what it raises before any has connected to a new window reaches none, so its first notice went unannounced.
+    /// Well within <see cref="MinimumVisibleMs"/>, so it's told while the notice is up.
+    /// </summary>
+    public const int AnnounceDelayMs = 250;
+
     // Windows' own "Dismiss notifications after this amount of time", unless someone made it longer.
     private const uint DefaultMessageDurationSeconds = 5;
 
