@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.WinUI.Converters;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Helpers;
@@ -19,6 +20,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
@@ -34,7 +37,6 @@ namespace Microsoft.CmdPal.UI.Tray;
 public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShowPaletteAtMessage>, IDisposable
 {
     // Tile rows + content padding (12 top/bottom) + divider + footer; must match TrayPaletteWindow.xaml.
-    private const int TileRowHeight = 100;
     private const int QuickActionsChromeHeight = 12 + 12 + 1 + 48;
 
     private readonly IThemeService _themeService;
@@ -47,6 +49,7 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
     private bool _visible;
     private bool _isDragging;
     private bool _refreshPending;
+    private TrayPaletteItemViewModel? _draggedItem;
     private TrayPaletteItemViewModel? _contextItem;
     private int _contextRequestVersion;
 
@@ -123,9 +126,12 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
         try
         {
             await ViewModel.RefreshAsync();
-            if (!_closed && _visible)
+            if (!_closed && _visible && !_pageHost.IsOpen)
             {
-                if (!_pageHost.IsOpen)
+                await ViewModel.LoadSmallContentAsync(
+                    TaskScheduler.FromCurrentSynchronizationContext(),
+                    new(TrayPaletteLayout.Width, TrayPaletteLayout.SmallContentHeight));
+                if (!_closed && _visible && !_pageHost.IsOpen)
                 {
                     PositionWindow();
                     CommandsGrid.Focus(FocusState.Programmatic);
@@ -143,15 +149,16 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
         var display = DisplayArea.GetFromPoint(new((_anchor.left + _anchor.right) / 2, (_anchor.top + _anchor.bottom) / 2), DisplayAreaFallback.Nearest);
         var scale = FlyoutWindowHelper.GetDpiScale(display);
         var work = display.WorkArea;
-        var rows = Math.Max(1, (ViewModel.Items.Count + 2) / 3);
-        var heightDip = _pageHost.IsOpen ? 560 : (rows * TileRowHeight) + QuickActionsChromeHeight + (ViewModel.HasLoadError ? 40 : 0);
+        var bounds = TrayPaletteLayout.GetItemBounds(ViewModel.Items.Select(item => item.HasSmallContent));
+        var contentHeight = Math.Max(TrayPaletteLayout.TileHeight, bounds.LastOrDefault().Bottom);
+        var heightDip = _pageHost.IsOpen ? 560 : contentHeight + QuickActionsChromeHeight + (ViewModel.HasLoadError ? 40 : 0);
 
         // Leave the full tile grid in the client area, including on a different-DPI monitor.
         var currentScale = Root.XamlRoot?.RasterizationScale ?? scale;
         var borderWidth = (int)Math.Ceiling((AppWindow.Size.Width - AppWindow.ClientSize.Width) * scale / currentScale);
         var borderHeight = (int)Math.Ceiling((AppWindow.Size.Height - AppWindow.ClientSize.Height) * scale / currentScale);
         var width = Math.Min(FlyoutWindowHelper.ScaleToPhysicalPixels(_pageHost.IsOpen ? 500 : 360, scale) + borderWidth, work.Width);
-        var height = Math.Min(FlyoutWindowHelper.ScaleToPhysicalPixels(heightDip, scale) + borderHeight, work.Height - FlyoutWindowHelper.ScaleToPhysicalPixels(16, scale));
+        var height = Math.Min(FlyoutWindowHelper.ScaleToPhysicalPixels((int)Math.Ceiling(heightDip), scale) + borderHeight, work.Height - FlyoutWindowHelper.ScaleToPhysicalPixels(16, scale));
         var gap = FlyoutWindowHelper.ScaleToPhysicalPixels(8, scale);
         var x = Math.Clamp(_anchor.right - width, work.X, work.X + work.Width - width);
         var y = _anchor.top >= work.Y + (work.Height / 2)
@@ -163,7 +170,7 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
 
     private void CommandsGrid_ItemClick(object sender, ItemClickEventArgs e)
     {
-        if (_isDragging || e.ClickedItem is not TrayPaletteItemViewModel item)
+        if (_isDragging || e.ClickedItem is not TrayPaletteItemViewModel item || item.HasSmallContent)
         {
             return;
         }
@@ -260,24 +267,86 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
         }
     }
 
-    private void CommandsGrid_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    private void TrayItem_Loaded(object sender, RoutedEventArgs args)
     {
-        if (!args.InRecycleQueue && args.Item is TrayPaletteItemViewModel item)
+        if (sender is FrameworkElement { DataContext: TrayPaletteItemViewModel item } &&
+            CommandsGrid.ContainerFromItem(item) is SelectorItem container)
         {
-            AutomationProperties.SetName(args.ItemContainer, item.Item.Title);
-            AutomationProperties.SetAutomationId(args.ItemContainer, $"TrayPalette_{item.Pin.ProviderId}_{item.Pin.CommandId}");
+            AutomationProperties.SetName(container, item.Item.Title);
+            AutomationProperties.SetAutomationId(container, $"TrayPalette_{item.Pin.ProviderId}_{item.Pin.CommandId}");
+            container.SetBinding(FrameworkElement.StyleProperty, new Binding
+            {
+                Source = item,
+                Path = new PropertyPath(nameof(TrayPaletteItemViewModel.HasSmallContent)),
+                Mode = BindingMode.OneWay,
+                Converter = new BoolToObjectConverter
+                {
+                    TrueValue = Root.Resources["TrayWidgetContainerStyle"],
+                    FalseValue = Root.Resources["TrayButtonContainerStyle"],
+                },
+            });
+        }
+    }
+
+    private void SmallContent_SizeChanged(object sender, SizeChangedEventArgs args)
+    {
+        if (sender is Border border)
+        {
+            var visual = ElementCompositionPreview.GetElementVisual(border);
+            var geometry = visual.Compositor.CreateRoundedRectangleGeometry();
+            geometry.Size = new((float)args.NewSize.Width, (float)args.NewSize.Height);
+            geometry.CornerRadius = new((float)border.CornerRadius.TopLeft);
+            visual.Clip = visual.Compositor.CreateGeometricClip(geometry);
         }
     }
 
     private void CommandsGrid_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
     {
-        e.Cancel = ViewModel.IsLoading;
+        _draggedItem = e.Items.Count == 1 ? e.Items[0] as TrayPaletteItemViewModel : null;
+        e.Cancel = ViewModel.IsLoading || _draggedItem is null;
         _isDragging = !e.Cancel;
+        if (_isDragging)
+        {
+            e.Data.RequestedOperation = DataPackageOperation.Move;
+        }
+    }
+
+    private void CommandsGrid_DragOver(object sender, DragEventArgs e)
+    {
+        e.AcceptedOperation = _isDragging ? DataPackageOperation.Move : DataPackageOperation.None;
+        e.Handled = true;
+    }
+
+    private void CommandsGrid_Drop(object sender, DragEventArgs e)
+    {
+        if (!_isDragging || _draggedItem is null || CommandsGrid.ItemsPanelRoot is not { } panel)
+        {
+            return;
+        }
+
+        var sourceIndex = ViewModel.Items.IndexOf(_draggedItem);
+        if (sourceIndex < 0)
+        {
+            return;
+        }
+
+        var bounds = TrayPaletteLayout.GetItemBounds(ViewModel.Items.Select(item => item.HasSmallContent));
+        var targetIndex = TrayPaletteLayout.GetInsertionIndex(bounds, e.GetPosition(panel));
+        if (targetIndex > sourceIndex)
+        {
+            targetIndex--;
+        }
+
+        ViewModel.Items.Move(sourceIndex, targetIndex);
+        PositionWindow();
+        e.AcceptedOperation = DataPackageOperation.Move;
+        e.Handled = true;
     }
 
     private void CommandsGrid_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
     {
         _isDragging = false;
+        _draggedItem = null;
         if (args.DropResult == DataPackageOperation.Move)
         {
             ViewModel.SaveOrder();
@@ -328,11 +397,13 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
         _visible = false;
         ItemContextMenu.Hide();
         _pageController.Deactivate();
+        ViewModel.ClearSmallContent();
         AppWindow.Hide();
     }
 
     private void PageHost_Opened(object? sender, EventArgs e)
     {
+        ViewModel.ClearSmallContent();
         QuickActions.Visibility = Visibility.Collapsed;
         PositionWindow();
     }
@@ -350,6 +421,7 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
         QuickActions.Visibility = Visibility.Visible;
         PositionWindow();
         CommandsGrid.Focus(FocusState.Programmatic);
+        _ = RefreshAsync();
     }
 
     void IRecipient<RequestShowPaletteAtMessage>.Receive(RequestShowPaletteAtMessage message)

@@ -471,6 +471,13 @@ namespace Microsoft.CommandPalette.Extensions
     };
 
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandProvider5 requires ICommandProvider4
+    {
+        String[] GetAvailableSmallContent();
+        IContent GetSmallContent(String commandId, Windows.Foundation.Size availableSpace);
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IImageContent requires IContent {
         IIconInfo Image { get; };
         Int32 MaxWidth { get; };

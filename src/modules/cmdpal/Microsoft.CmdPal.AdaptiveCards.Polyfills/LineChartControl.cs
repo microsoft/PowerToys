@@ -65,6 +65,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
     private readonly TextBlock _minLabelText = ChartShapes.CreateText(string.Empty, ChartShapes.CaptionStyle);
     private readonly Grid _headerRow;
     private readonly Grid _footerRow;
+    private readonly Grid _layout = new() { RowSpacing = 4 };
     private readonly Canvas _plotCanvas = new();
     private readonly Path _gridLinesPath = new() { StrokeThickness = 1 };
     private readonly TranslateTransform _scrollTransform = new();
@@ -127,7 +128,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
     {
         _plotCanvas.Children.Add(_gridLinesPath);
         _plotCanvas.Children.Add(_seriesLayer);
-        var root = new Grid { RowSpacing = 4 };
+        var root = _layout;
         FrameworkElement[] rows = [_titleText, _headerRow, _plotCanvas, _xLabelsCanvas, _footerRow, _legendPanel];
         for (var i = 0; i < rows.Length; i++)
         {
@@ -154,6 +155,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
 
     private void ApplyText()
     {
+        _layout.RowSpacing = _isCompact ? 0 : 4;
         var title = _model.ShowTitle && !_isCompact ? _model.Title : null;
         _titleText.Text = title ?? string.Empty;
         _titleText.Visibility = string.IsNullOrEmpty(title) ? Visibility.Collapsed : Visibility.Visible;

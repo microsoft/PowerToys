@@ -34,6 +34,13 @@ public partial class TrayPaletteViewModelTests
 
         public int LookupCount { get; private set; }
 
+        public Func<string, Size, IContent?>? SmallContentFactory { get; init; }
+
+        public override string[] GetAvailableSmallContent() => SmallContentFactory is null ? [] : ["command"];
+
+        public override IContent? GetSmallContent(string commandId, Size availableSpace) =>
+            SmallContentFactory?.Invoke(commandId, availableSpace);
+
         public override ICommandItem[] TopLevelCommands() => IncludeTopLevelCommand ? [Item] : [];
 
         public override ICommandItem? GetCommandItem(string id)

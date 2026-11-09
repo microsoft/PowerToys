@@ -436,6 +436,18 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         return null;
     }
 
+    internal IEnumerable<WidgetPage> GetSmallContentWidgets()
+    {
+        WidgetPage?[] widgets = [_cpuPage, _memoryPage, _networkPage, _diskPage, _gpuPage, _batteryPage];
+        foreach (var widget in widgets)
+        {
+            if (widget is not null)
+            {
+                yield return widget;
+            }
+        }
+    }
+
     internal static string GetBandId(PerformanceMetricKind? metric)
     {
         return metric is null ? BaseId : $"{BaseId}.{GetMetricSuffix(metric.Value)}";
@@ -524,6 +536,21 @@ internal abstract partial class WidgetPage : OnLoadContentPage
     }
 
     private readonly FormContent _formContent = new();
+
+    internal virtual JsonObject GetSmallContentData()
+    {
+        var metric = this switch
+        {
+            SystemCPUUsageWidgetPage => PerformanceMetricKind.Cpu,
+            SystemMemoryUsageWidgetPage => PerformanceMetricKind.Memory,
+            SystemNetworkUsageWidgetPage => PerformanceMetricKind.Network,
+            SystemDiskUsageWidgetPage => PerformanceMetricKind.Disk,
+            SystemGPUUsageWidgetPage => PerformanceMetricKind.Gpu,
+            SystemBatteryUsageWidgetPage => PerformanceMetricKind.Battery,
+            _ => throw new InvalidOperationException("Unsupported performance widget."),
+        };
+        return PerformanceSmallContent.CreateData(metric, Title, GetDataSnapshot());
+    }
 
     public void UpdateWidget()
     {

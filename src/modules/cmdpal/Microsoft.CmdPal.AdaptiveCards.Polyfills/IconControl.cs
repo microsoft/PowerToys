@@ -49,7 +49,7 @@ internal sealed partial class IconControl : AdaptiveVisualControl
         Content = new FontIcon
         {
             Glyph = _model.Glyph,
-            FontSize = _model.PixelSize,
+            FontSize = _model.FontSizeInDips,
             Foreground = ChartTheme.ToBrush(GetColor(_model.Color, IsDarkTheme)),
         };
     }

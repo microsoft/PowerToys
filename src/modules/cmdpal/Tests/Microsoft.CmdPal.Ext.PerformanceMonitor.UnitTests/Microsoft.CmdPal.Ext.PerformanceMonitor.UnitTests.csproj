@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AdaptiveCards.Templating" />
     <PackageReference Include="MSTest" />
   </ItemGroup>
 

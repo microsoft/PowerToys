@@ -2405,6 +2405,49 @@ In neither of those scenarios was the full "display" of the item needed. In
 pinning scenarios, however, we need everything that the user would see in the UI
 for that item, which is all in the `ICommandItem`.
 
+### Small content in the tray flyout
+
+Providers can offer a compact representation of a command for surfaces such as
+the tray flyout:
+
+```csharp
+interface ICommandProvider5 requires ICommandProvider4
+{
+    String[] GetAvailableSmallContent();
+    IContent GetSmallContent(String commandId, Windows.Foundation.Size availableSpace);
+};
+```
+
+`GetAvailableSmallContent` returns the non-empty command IDs for which the
+provider offers small content. IDs are matched exactly, within that provider.
+Advertising content does not pin it: the user must pin a command with the same
+ID to the tray. Dock bands and top-level commands may share that ID while
+providing different experiences on each surface.
+
+The host calls `GetSmallContent` when displaying the pinned command. The
+`availableSpace` is a recommendation in device-independent pixels, not a
+requirement or a promise. The host owns the final size and may constrain or
+scroll the content. Each piece of small content occupies a dedicated full-width
+row in the tray flyout. Existing `IContent` types and their property-change
+notifications work as on content pages. Providers should start live updates
+when the host subscribes to the content's `PropChanged` event and stop them when
+the last subscriber is removed.
+
+If a provider does not implement this interface, does not advertise the pinned
+ID, returns null, or returns content the host cannot display, the host displays
+the normal command button instead. Failures fetching content are reported and
+also fall back to the button. Hosts must release their content subscriptions
+when the flyout closes.
+
+In CmdPal, use **Pin to...** > **Tray menu** in a command's context menu to add
+it to quick actions. With the tray icon action set to **Open quick actions**,
+the existing tray menu displays small content in its own row, between the
+normal three-button rows. Tray pins remain independent of home and dock pins.
+
+The [sample media player](../../ext/SamplePagesExtension/SampleMediaPlayerPage.cs)
+uses one ID for a list-page dock band and a compact Adaptive Card in the tray.
+Performance Monitor also exposes compact, live metric cards.
+
 ## Addenda V: Extra content types
 
 Extra content types for [Content Pages](#content-pages) views so we can provide extra functionality to the user.

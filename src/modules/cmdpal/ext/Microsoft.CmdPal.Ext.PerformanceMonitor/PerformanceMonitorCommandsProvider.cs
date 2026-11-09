@@ -4,12 +4,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using CoreWidgetProvider.Helpers;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 
@@ -87,9 +89,43 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
     {
         lock (_stateLock)
         {
-            // The individual widget pages (CPU, memory, ...) are nested in the main page,
-            // so they're not top-level commands. Look them up so they can be pinned.
-            return _mainPage?.FindWidgetItem(id);
+            return _commands.Concat(_bands).Concat(_mainPage?.GetItems() ?? [])
+                .FirstOrDefault(item => item.Command?.Id == id);
+        }
+    }
+
+    public override string[] GetAvailableSmallContent()
+    {
+        lock (_stateLock)
+        {
+            return _softDisabled ? [] : _bands.Select(item => item.Command!.Id)
+                .Concat((_mainPage?.GetItems() ?? []).Select(item => item.Command!.Id))
+                .Distinct(StringComparer.Ordinal).ToArray();
+        }
+    }
+
+    public override IContent? GetSmallContent(string commandId, Size availableSpace)
+    {
+        lock (_stateLock)
+        {
+            if (_softDisabled || _mainPage is null)
+            {
+                return null;
+            }
+
+            var band = _bands.FirstOrDefault(item => item.Command?.Id == commandId)?.Command as PerformanceWidgetsPage;
+            if (band is not null)
+            {
+                return new PerformanceSmallContent(band.GetSmallContentWidgets().ToArray(), availableSpace);
+            }
+
+            if (_mainPage.GetItems().Any(item => item.Command is SystemOverviewWidgetPage && item.Command.Id == commandId))
+            {
+                return new PerformanceSmallContent(_mainPage.GetSmallContentWidgets().ToArray(), availableSpace);
+            }
+
+            var widget = _mainPage.GetSmallContentWidgets().FirstOrDefault(item => item.Id == commandId);
+            return widget is null ? null : new PerformanceSmallContent(widget, availableSpace);
         }
     }
 

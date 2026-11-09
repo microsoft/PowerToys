@@ -11,6 +11,7 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.Foundation;
 using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
@@ -42,6 +43,61 @@ public partial class ContentPageViewModelTests
 
     private static ContentPageViewModel CreateViewModel(TestContentPage page) =>
         new(page, new ImmediateTaskScheduler(), new TestAppExtensionHost(), CommandProviderContext.Empty);
+
+    [TestMethod]
+    public void SmallContent_UnsupportedContentHasNoViewModel()
+    {
+        var context = CreateViewModel(new TestContentPage());
+        Assert.IsNull(CommandPaletteContentPageViewModel.CreateViewModel(new UnsupportedContent(), new(context)));
+        context.SafeCleanup();
+    }
+
+    private sealed partial class UnsupportedContent : BaseObservable, IContent
+    {
+    }
+
+    [TestMethod]
+    public void FormCleanup_ReleasesTheLiveContentSubscription()
+    {
+        var context = CreateViewModel(new TestContentPage());
+        var form = new TrackingFormContent();
+        var viewModel = new ContentFormViewModel(form, new(context));
+        try
+        {
+            viewModel.InitializeProperties();
+            Assert.AreEqual(1, form.SubscriberCount);
+
+            viewModel.SafeCleanup();
+            Assert.AreEqual(0, form.SubscriberCount);
+            Assert.IsNull(viewModel.Card);
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+            context.SafeCleanup();
+        }
+    }
+
+    private sealed partial class TrackingFormContent : IFormContent
+    {
+        private TypedEventHandler<object, IPropChangedEventArgs>? _propChanged;
+
+        public int SubscriberCount => _propChanged?.GetInvocationList().Length ?? 0;
+
+        public string TemplateJson => """{"type":"AdaptiveCard","version":"1.5","body":[]}""";
+
+        public string DataJson => "{}";
+
+        public string StateJson => "{}";
+
+        public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged
+        {
+            add => _propChanged += value;
+            remove => _propChanged -= value;
+        }
+
+        public ICommandResult SubmitForm(string inputs, string data) => CommandResult.KeepOpen();
+    }
 
     [TestMethod]
     [DataRow(false, true)]

@@ -20,6 +20,27 @@ Additional pins create additional rows.
 The footer has buttons that open Command Palette and Command Palette settings.
 When the window reaches the monitor's available height, the grid scrolls.
 
+Providers implementing `ICommandProvider5` can advertise small content for a
+pinned command ID. The tray menu replaces that command's button with content
+occupying a dedicated full-width row. Other commands keep their three-button
+layout and saved order; a widget never shares its row with a button.
+The host suggests 336 by 100 device-independent pixels, the height of one button
+row, and constrains the rendered content to that row. Widgets have no host-added
+inner padding or button hover background, and the host clips their content to
+rounded corners. Providers retain control over spacing inside their content.
+Unsupported, missing, or failed content falls
+back to the normal button. Live content is released when quick actions are
+dismissed or a page is opened, and fetched again when quick actions return.
+
+Performance Monitor's metric widgets use the same numeric history and native
+`Chart.Line` sparklines as its detail cards, rather than generated graph images.
+Battery content uses a native `ProgressBar`. The default Performance Monitor pin
+shows CPU and memory side by side in one form. Its Overview pin shows all available
+metrics in two compact rows, without charts, so the summary fits the XS height.
+Both overview command IDs (the detail page and the dock band) provide this content.
+Opening and closing the tray shares the metric pages' activation counts with the
+dock and detail cards; closing one surface does not stop sampling for another.
+
 Select a command button to run it.
 A chevron identifies a page button.
 Select a page button to open the page in the tray window.
@@ -52,7 +73,8 @@ It preserves the saved positions of unavailable commands.
 
 ## Implementation
 
-- `TrayPaletteWindow` owns the WinUIEx window, grid, tray positioning, and drag events.
+- `TrayPaletteWindow` owns the WinUIEx window, tray positioning, and drag events.
+- `TrayPalettePanel` uses `TrayPaletteLayout` to arrange button groups and full-width content rows in pin order.
 - `TrayPaletteViewModel` resolves pins and owns the resulting command item view models.
 - `DockPageFlyoutController` routes page commands and results for both dock and tray hosts.
 - `FlyoutDockPageHost` preserves the dock's existing Flyout presentation.
@@ -70,3 +92,5 @@ It preserves the saved positions of unavailable commands.
 8. Switch the tray icon action to **Open command palette** and confirm the previous behavior.
 9. Check light dismissal, Escape, keyboard activation, and work-area positioning on each monitor.
 10. Open a tile's context menu with the mouse and keyboard, then invoke a command or remove its pin.
+11. Pin Sample media player and a Performance Monitor metric between normal commands; confirm each widget gets a whole row and the buttons remain in order.
+12. Reorder buttons and widgets across rows, dismiss and reopen quick actions, and confirm the order and live updates resume.
