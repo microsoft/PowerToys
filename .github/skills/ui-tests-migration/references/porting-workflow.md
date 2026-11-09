@@ -27,7 +27,7 @@ tools\build\build.cmd -Path src\modules\<Module>\Tests\<Module>.UITests -Platfor
 
 # 2. Run ELEVATED. Put the run in a .ps1 and launch it with -Verb RunAs (one UAC prompt) so the
 #    harness's runas launch has an elevated host. The script should start WinAppDriver + run vstest:
-#      $dll = "$PWD\x64\Debug\tests\<Module>.UITests\net10.0-windows10.0.26100.0\<Module>.UITests.dll"
+#      $dll = "$PWD\x64\Debug\tests\<Module>.UITests\net11.0-windows10.0.26100.0\<Module>.UITests.dll"
 #      Start-Process "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe" -ArgumentList "127.0.0.1","4723"
 #      vstest.console.exe $dll /Platform:x64 /InIsolation /Logger:"trx;LogFileName=legacy.trx" /ResultsDirectory:<dir>
 #    Have the script write a DONE marker at the end; poll for it, then read the .trx.

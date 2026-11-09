@@ -35,7 +35,7 @@ without requiring a provider.
 ## Execution requirements
 
 - A logged-on interactive, non-administrator Windows desktop.
-- Matching PowerToys and test architecture, the pinned winapp CLI, and .NET 10.
+- Matching PowerToys and test architecture, the pinned winapp CLI, and .NET 11.
 - English UI, Segoe UI, the built-in `en-US` Windows OCR language, and the standard
   Windows audio/video codecs. No separately installed inference engine is needed.
 - Release Runner/Settings companion signing through the existing test pipeline

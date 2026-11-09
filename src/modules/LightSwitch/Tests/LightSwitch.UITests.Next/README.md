@@ -21,7 +21,7 @@ test account and machine where granting this permission is acceptable.
 
 Required runtime setup:
 
-- .NET 10 Windows Desktop Runtime, the repository-pinned winappcli, and a complete
+- .NET 11 Windows Desktop Runtime, the repository-pinned winappcli, and a complete
   matching PowerToys runtime, including `WinUI3Apps` and `LightSwitchService`.
   Building this test project does not build the product.
 - English Windows display language and English PowerToys Settings language
@@ -44,7 +44,7 @@ From the repository root, build with the existing repository tooling:
 
 ```powershell
 tools\build\build.cmd -Path src\modules\LightSwitch\Tests\LightSwitch.UITests.Next -Platform x64 -Configuration Debug
-$exe = '.\x64\Debug\tests\LightSwitch.UITests.Next\net10.0-windows10.0.26100.0\LightSwitch.UITests.Next.exe'
+$exe = '.\x64\Debug\tests\LightSwitch.UITests.Next\net11.0-windows10.0.26100.0\LightSwitch.UITests.Next.exe'
 & $exe --filter 'TestCategory=LightSwitch' --report-trx --results-directory .\TestResults\LightSwitch
 ```
 

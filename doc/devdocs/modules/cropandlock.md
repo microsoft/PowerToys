@@ -66,7 +66,7 @@ pipeline-like VM runs fail the prerequisite instead.
 
 ### Build the matching runtime and tests
 
-Use an unlocked English-language desktop with .NET 10 Desktop Runtime, winappcli,
+Use an unlocked English-language desktop with .NET 11 Desktop Runtime, winappcli,
 and, for Test Explorer, Visual Studio. Building/signing also requires the Windows
 SDK tools (`makeappx.exe` and `signtool.exe`). Start with a complete PowerToys
 Release runtime built for the target architecture, not just the test project.
@@ -91,7 +91,7 @@ repository root:
 
 ```powershell
 $runtime = (Resolve-Path .\x64\Release).Path
-$tests = (Resolve-Path .\x64\Release\tests\CropAndLock.UITests\net10.0-windows10.0.26100.0).Path
+$tests = (Resolve-Path .\x64\Release\tests\CropAndLock.UITests\net11.0-windows10.0.26100.0).Path
 $marker = Join-Path $env:TEMP 'CropAndLock-UITestSigning.txt'
 
 .\.pipelines\signSparsePackages.ps1 `
@@ -125,7 +125,7 @@ root:
 
 ```powershell
 $env:POWERTOYS_INSTALL_DIR = (Resolve-Path .\x64\Release).Path
-$tests = (Resolve-Path .\x64\Release\tests\CropAndLock.UITests\net10.0-windows10.0.26100.0).Path
+$tests = (Resolve-Path .\x64\Release\tests\CropAndLock.UITests\net11.0-windows10.0.26100.0).Path
 
 & (Join-Path $tests 'CropAndLock.UITests.exe') `
     --report-trx --report-trx-filename CropAndLock.trx `
