@@ -119,8 +119,8 @@
     <comment>Accessible name for the button that picks a new color</comment>
   </data>
   <data name="Pick_color.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Pick color from screen</value>
-    <comment>Tooltip that shows that the user can click this button to pick a new color</comment>
+    <value>Pick color from screen (I)</value>
+    <comment>Tooltip that shows that the user can click this button to pick a new color. "(I)" is the keyboard shortcut (the I key).</comment>
   </data>
   <data name="Red_value.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Red value</value>
