@@ -9,9 +9,11 @@ using System.Threading.Tasks;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Windows.Foundation;
+using WinRT;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
@@ -62,12 +64,24 @@ public partial class TrayPaletteViewModelTests
         using var model = new TrayPaletteViewModel(service.Object, manager, DefaultContextMenuFactory.Instance);
         await model.RefreshAsync();
 
+        object bindingSource = model.Items[0];
+        Assert.IsInstanceOfType<IBindableCustomPropertyImplementation>(bindingSource);
+        var property = ((IBindableCustomPropertyImplementation)bindingSource).GetProperty(nameof(TrayPaletteItemViewModel.HasSmallContent));
+        Assert.IsNotNull(property);
+        using var marshaler = MarshalInspectable<object>.CreateMarshaler(property);
+        var customProperty = MarshalInterface<ICustomProperty>.FromAbi(marshaler.ThisPtr);
+        Assert.IsTrue(customProperty.CanRead);
+        Assert.IsFalse(customProperty.CanWrite);
+        Assert.AreEqual(typeof(bool), customProperty.Type);
+        Assert.AreEqual(false, customProperty.GetValue(bindingSource));
+
         await model.LoadSmallContentAsync(new ImmediateTaskScheduler(), size);
 
         Assert.HasCount(1, model.Items);
         var item = model.Items[0];
         Assert.AreEqual(1, requests);
         Assert.AreEqual(kind == "supported", item.HasSmallContent);
+        Assert.AreEqual(item.HasSmallContent, customProperty.GetValue(bindingSource));
         Assert.AreEqual(kind != "supported", item.IsButton);
         Assert.AreEqual("command", item.Pin.CommandId);
         Assert.AreEqual("provider", item.CreateMessage().Context?.ProviderContext.ProviderId);
@@ -84,6 +98,7 @@ public partial class TrayPaletteViewModelTests
 
         model.ClearSmallContent();
         Assert.IsTrue(item.IsButton);
+        Assert.AreEqual(false, customProperty.GetValue(bindingSource));
         Assert.IsNull(item.SmallContent);
         if (kind == "supported")
         {

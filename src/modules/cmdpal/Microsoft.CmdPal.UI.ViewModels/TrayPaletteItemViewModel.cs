@@ -10,6 +10,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
+[WinRT.GeneratedBindableCustomProperty([nameof(HasSmallContent)], [])]
 public sealed partial class TrayPaletteItemViewModel : ObservableObject, IDisposable
 {
     private readonly CommandResolution _resolution;
