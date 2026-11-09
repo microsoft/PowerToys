@@ -100,6 +100,7 @@ public sealed partial class PowerScriptsPage : NavigablePage, IRefreshablePage
         {
             "advanced-paste" => ViewModel.AdvancedPasteConsumer,
             "keyboard-manager" => ViewModel.KeyboardManagerConsumer,
+            "command-palette" => ViewModel.CommandPaletteConsumer,
             _ => throw new InvalidOperationException("Unknown PowerScripts consumer."),
         };
         if (!consumer.CanChange || toggle.IsOn == consumer.IsEnabled)

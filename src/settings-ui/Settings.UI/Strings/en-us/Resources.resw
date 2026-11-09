@@ -6758,6 +6758,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_ActivityError.Title" xml:space="preserve"><value>Activity could not be updated. Previously loaded entries may be out of date.</value></data>
   <data name="PowerScripts_ActivityAdvancedPaste" xml:space="preserve"><value>Advanced Paste</value></data>
   <data name="PowerScripts_ActivityKeyboardManager" xml:space="preserve"><value>Keyboard Manager</value></data>
+  <data name="PowerScripts_ActivityCommandPalette" xml:space="preserve"><value>Command Palette</value></data>
   <data name="PowerScripts_ActivityCommandLine" xml:space="preserve"><value>Command line</value></data>
   <data name="PowerScripts_ActivityDetails" xml:space="preserve"><value>{0} | {1} | {2}</value></data>
   <data name="PowerScripts_ActivityRunning" xml:space="preserve"><value>Running</value></data>
@@ -6770,6 +6771,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_Consumers.Header" xml:space="preserve"><value>Use PowerScripts in</value></data>
   <data name="PowerScripts_AdvancedPasteConsumer.Header" xml:space="preserve"><value>Advanced Paste</value></data>
   <data name="PowerScripts_KeyboardManagerConsumer.Header" xml:space="preserve"><value>Keyboard Manager</value></data>
+  <data name="PowerScripts_CommandPaletteConsumer.Header" xml:space="preserve"><value>Command Palette</value></data>
   <data name="PowerScripts_ConsumerDescription" xml:space="preserve"><value>Allow this module to discover and run scripts. Turning this off keeps existing bindings.</value></data>
   <data name="PowerScripts_ConsumerModuleDisabled" xml:space="preserve"><value>Enable PowerScripts first. Your integration preference is kept.</value></data>
   <data name="PowerScripts_ConsumerParentPolicyDisabled" xml:space="preserve"><value>This module is disabled by your organization. Your integration preference is kept.</value></data>

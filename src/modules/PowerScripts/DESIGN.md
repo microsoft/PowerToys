@@ -23,8 +23,11 @@ Advanced Paste automatically offers all clipboard-compatible scripts when its co
 toggle in PowerScripts settings is enabled and policy permits it. It has no per-script assignments
 or exclusions; no-input scripts are not offered.
 Consumers requiring saved bindings own their assignment UI and persistence, using the shared
-Host/client contracts for discovery and execution. This version has no standalone script launcher
-or shared configuration picker. The client remains headless, with no Settings UI dependency.
+Host/client contracts for discovery and execution. Command Palette provides a PowerScripts entry
+with an internally filtered script list and parameter/run pages for `none` input and `none`/`text`
+output. It uses `command-palette` attribution and the shared Host, without registering each script
+as a home-page command or fallback. This version has no shared configuration picker.
+The client remains headless, with no Settings UI dependency.
 See the [onboarding recipe](CONSUMER-INTEGRATION.md#automatic-discovery-or-saved-bindings).
 
 ## Descriptor contract
@@ -67,9 +70,9 @@ shared trust, never-elevated execution, or isolation.
 ## Host API
 
 ```text
-Host.exe list --json [--input <shape>] [--output <shape>]
-Host.exe run <id> [--files ...] [--set name=value ...]
-Host.exe transform <id>                   (UTF-8 JSON stdin/stdout)
+Host.exe list --json [--consumer <id>] [--input <shape>] [--output <shape>]
+Host.exe run <id> --consumer <id> [--files ...] [--set name=value ...]
+Host.exe transform <id> --consumer <id>   (UTF-8 JSON stdin/stdout)
 ```
 
 Discovery includes schema-authoritative `inputSchema`/`outputSchema` and derived

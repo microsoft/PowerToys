@@ -311,17 +311,19 @@ public class HostCliTests
 
     [TestMethod]
     [DoNotParallelize]
-    [DataRow("run")]
-    [DataRow("transform")]
-    public void CentralConsumerDisableFiltersDiscoveryAndRecordsRefusedExistingBindings(string command)
+    [DataRow("run", "keyboard-manager")]
+    [DataRow("transform", "keyboard-manager")]
+    [DataRow("run", "command-palette")]
+    [DataRow("transform", "command-palette")]
+    public void CentralConsumerDisableFiltersDiscoveryAndRecordsRefusedExistingBindings(string command, string consumer)
     {
         var originalStore = SettingsStore.Current;
         var directory = Directory.CreateDirectory(Path.Combine(_root, "consumer-settings")).FullName;
         try
         {
             SettingsStore.Current = new FileSettingsStore(directory);
-            SettingsStore.Current.WriteBlob("config.json", """{"enabled":true,"consumers":{"keyboard-manager":false,"advanced-paste":true}}""");
-            var (listExit, json) = RunHostInProcess("list", "--json", "--consumer", "keyboard-manager",
+            SettingsStore.Current.WriteBlob("config.json", $$"""{"enabled":true,"consumers": {"{{consumer}}":false,"advanced-paste":true} }""");
+            var (listExit, json) = RunHostInProcess("list", "--json", "--consumer", consumer,
                 "--include-disabled", "--include-unconfigured", "--root", _root);
             Assert.AreEqual(0, listExit);
             Assert.AreEqual(0, ParseList(json).Count);
@@ -329,19 +331,49 @@ public class HostCliTests
             Assert.AreEqual(0, adminExit);
             Assert.IsTrue(ParseList(catalogue).Count > 0, "Settings must retain administrative discovery.");
 
-            var (exit, _) = RunHostInProcess(command, "act_hello", "--consumer", "keyboard-manager", "--no-consent", "--root", _root);
+            var (exit, _) = RunHostInProcess(command, "act_hello", "--consumer", consumer, "--no-consent", "--root", _root);
             Assert.AreEqual(4, exit, "A saved binding must be refused before consent or execution.");
             var activity = new ActivityStore(directory).List().Single();
-            Assert.AreEqual("keyboard-manager", activity.ConsumerId);
+            Assert.AreEqual(consumer, activity.ConsumerId);
             Assert.AreEqual(4, activity.ExitCode);
 
-            var (setExit, _) = RunHostInProcess("consumers", "set", "keyboard-manager", "on");
+            var (setExit, _) = RunHostInProcess("consumers", "set", consumer, "on");
             Assert.AreEqual(0, setExit);
-            (listExit, json) = RunHostInProcess("list", "--json", "--consumer", "keyboard-manager", "--include-disabled", "--root", _root);
+            (listExit, json) = RunHostInProcess("list", "--json", "--consumer", consumer, "--include-disabled", "--root", _root);
             Assert.AreEqual(0, listExit);
             Assert.IsTrue(ParseList(json).Count > 0);
-            (exit, _) = RunHostInProcess(command, "act_hello", "--consumer", "keyboard-manager", "--no-consent", "--root", _root);
+            (exit, _) = RunHostInProcess(command, "act_hello", "--consumer", consumer, "--no-consent", "--root", _root);
             Assert.AreEqual(3, exit, "Re-enabling restores the existing ID without bypassing trust.");
+        }
+        finally
+        {
+            SettingsStore.Current = originalStore;
+        }
+    }
+
+    [TestMethod]
+    [DoNotParallelize]
+    public void ConsumerSettingsSnapshotIsCompatibleWithClientAndAddingCommandPalettePreservesExistingConsumers()
+    {
+        var originalStore = SettingsStore.Current;
+        var directory = Directory.CreateDirectory(Path.Combine(_root, "consumer-settings")).FullName;
+        try
+        {
+            SettingsStore.Current = new FileSettingsStore(directory);
+            SettingsStore.Current.WriteBlob("config.json", """{"enabled":true,"consumers":{"keyboard-manager":false,"advanced-paste":true},"custom":"keep"}""");
+            var (listExit, json) = RunHostInProcess("consumers", "list");
+            Assert.AreEqual(0, listExit);
+            Assert.IsTrue(PowerScriptConsumerState.ParseSnapshot(json, PowerScriptConsumer.CommandPalette).IsEnabled);
+            Assert.IsTrue(PowerScriptConsumerState.ParseSnapshot(json, PowerScriptConsumer.AdvancedPaste).IsEnabled);
+            Assert.IsFalse(PowerScriptConsumerState.ParseSnapshot(json, PowerScriptConsumer.KeyboardManager).IsEnabled);
+
+            var (setExit, savedJson) = RunHostInProcess("consumers", "set", "command-palette", "off");
+            Assert.AreEqual(0, setExit);
+            Assert.IsFalse(PowerScriptConsumerState.ParseSnapshot(savedJson, PowerScriptConsumer.CommandPalette).IsEnabled);
+            Assert.IsTrue(PowerScriptConsumerState.ParseSnapshot(savedJson, PowerScriptConsumer.AdvancedPaste).IsEnabled);
+            Assert.IsFalse(PowerScriptConsumerState.ParseSnapshot(savedJson, PowerScriptConsumer.KeyboardManager).IsEnabled);
+            using var config = JsonDocument.Parse(SettingsStore.Current.ReadBlob("config.json")!);
+            Assert.AreEqual("keep", config.RootElement.GetProperty("custom").GetString());
         }
         finally
         {

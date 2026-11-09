@@ -1,6 +1,6 @@
 ---
 name: powertoys-powerscripts
-description: Design, create, and validate PowerToys PowerScripts for compatible consumers. Use when asked to automate a task through PowerToys, transform clipboard content, process selected files, or trigger an action with a shortcut. Determine consumer capabilities, input/output schemas, PowerShell or Python runtime, Windows/WSL compatibility, dependencies, and error handling before writing code. Preserve user consent, exact-content trust, and sandbox policies.
+description: Design, create, and validate PowerToys PowerScripts for compatible consumers. Use when asked to automate a task through PowerToys, run a script from Command Palette, transform clipboard content, process selected files, or trigger an action with a shortcut. Determine consumer capabilities, input/output schemas, PowerShell or Python runtime, Windows/WSL compatibility, dependencies, and error handling before writing code. Preserve user consent, exact-content trust, and sandbox policies.
 license: MIT
 ---
 

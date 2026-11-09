@@ -154,6 +154,47 @@ public sealed class PowerScriptsClient
         }
     }
 
+    /// <summary>
+    /// Reads the effective integration preference and policy state for this client's registered
+    /// consumer using <c>consumers list</c>. This does not discover or execute scripts.
+    /// Interactive consumers should supply a cancellation token with a bounded timeout.
+    /// </summary>
+    public async Task<PowerScriptConsumerState> GetConsumerStateAsync(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!IsAvailable)
+        {
+            throw new FileNotFoundException("The PowerScripts Host is not installed.", _hostPath);
+        }
+
+        var psi = CreateStartInfo(redirectStdOut: true, redirectStdErr: true);
+        psi.ArgumentList.Add("consumers");
+        psi.ArgumentList.Add("list");
+
+        // Consumer settings are global: the Host rejects --root and --consumer for this verb.
+        using var process = Process.Start(psi)
+            ?? throw new InvalidOperationException("Failed to start the PowerScripts Host.");
+        try
+        {
+            var stdout = process.StandardOutput.ReadToEndAsync(cancellationToken);
+            var stderr = process.StandardError.ReadToEndAsync(cancellationToken);
+            await Task.WhenAll(stdout, stderr).ConfigureAwait(false);
+            await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+            if (process.ExitCode != PowerScriptsProtocol.ExitCode.Ok)
+            {
+                throw new InvalidOperationException($"PowerScripts integration settings failed ({process.ExitCode}): {await stderr}");
+            }
+
+            return PowerScriptConsumerState.ParseSnapshot(await stdout, _consumerId);
+        }
+        catch (OperationCanceledException)
+        {
+            TryKill(process);
+            await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
+            throw;
+        }
+    }
+
     /// <summary>Enumerates the scripts that consume <paramref name="input"/> — e.g. <c>ListAccepting(PowerScriptIO.Text)</c> when text is on the clipboard.</summary>
     public IReadOnlyList<PowerScriptInfo> ListAccepting(PowerScriptIO input) =>
         List().Where(s => s.Accepts(input)).ToList();
