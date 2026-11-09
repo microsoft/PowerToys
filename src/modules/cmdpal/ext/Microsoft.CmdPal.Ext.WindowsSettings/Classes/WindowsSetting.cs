@@ -70,6 +70,11 @@ internal sealed class WindowsSetting
     public int AppHomepageScore { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether this setting should be preferred when the query matches its name.
+    /// </summary>
+    public bool IsPreferredForNameSearch { get; set; }
+
+    /// <summary>
     /// Gets or sets the value with the generated area path as string.
     /// This Property IS NOT PART OF THE DATA IN "WindowsSettings.json".
     /// This property will be filled on runtime by "WindowsSettingsPathHelper".
@@ -82,5 +87,14 @@ internal sealed class WindowsSetting
     /// This property will be filled on runtime by "WindowsSettingsPathHelper".
     /// </summary>
     public string? JoinedFullSettingsPath { get; set; }
+
+    /// <summary>
+    /// Gets or sets the shell item id list (PIDL) of a Control Panel task.
+    /// This Property IS NOT PART OF THE DATA IN "WindowsSettings.json".
+    /// It is filled on runtime by "ControlPanelTasksHelper" for entries
+    /// enumerated from the shell, and is used to launch them — these items
+    /// have no executable command line and cannot be re-parsed by name.
+    /// </summary>
+    internal byte[]? TaskIdList { get; set; }
 #pragma warning restore CS8632
 }

@@ -14,7 +14,7 @@ namespace WorkspacesLauncherUI.Data
         public struct AppLaunchInfoListWrapper
         {
             [JsonPropertyName("appLaunchInfos")]
-            public List<AppLaunchInfoWrapper> AppLaunchInfoList { get; set; }
+            public List<AppLaunchInfoWrapper> AppLaunchInfoList { get; init; }
         }
     }
 }

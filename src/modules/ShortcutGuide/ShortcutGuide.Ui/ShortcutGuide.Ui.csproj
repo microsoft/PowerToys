@@ -32,13 +32,20 @@
     <None Remove="ShortcutGuideXAML\CustomNavigationViewStyle.xaml" />
     <None Remove="ShortcutGuideXAML\Pages\ShortcutsPage.xaml" />
     <None Remove="ShortcutGuideXAML\TaskbarIndicator.xaml" />
-    <None Remove="ShortcutGuideXAML\TaskbarWindow.xaml" />
+    <None Remove="ShortcutGuideXAML\OverlayWindow.xaml" />
+    <None Remove="ShortcutGuideXAML\Controls\MainPaneControl.xaml" />
+    <None Remove="ShortcutGuideXAML\Controls\TaskbarPaneControl.xaml" />
     <None Include="Assets\ShortcutGuide\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Assets\ShortcutGuide\Manifests\*.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <!-- Manifest files use a ".en-US.yml" suffix that MakePri misreads as a resource qualifier (PRI249); they are plain content, not MRT resources. -->
+  <ItemGroup>
+    <_AppxLayoutAssetPackageFiles Include="$(MSBuildProjectDirectory)\Assets\ShortcutGuide\Manifests\*.yml" />
   </ItemGroup>
 
   <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
@@ -48,7 +55,8 @@
       <PRIFile Include="$(OutDir)**\PowerToys.ShortcutGuide.pri" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
+    <!-- Wildcard can match nothing (e.g. build-cache restore, incremental build); skip instead of failing with MSB3030. -->
+    <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" Condition="'@(PRIFile)' != ''" />
 
     <Message Text="Copied CopyPRIFileToOutputDir files" Importance="High" />
   </Target>
@@ -59,18 +67,6 @@
   <ItemGroup>
     <ApplicationDefinition Include="ShortcutGuideXAML\App.xaml" />
   </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="UIAutomationClient">
-      <WrapperTool>tlbimp</WrapperTool>
-      <VersionMinor>0</VersionMinor>
-      <VersionMajor>1</VersionMajor>
-      <Guid>944de083-8fb8-45cf-bcb7-c477acb2f897</Guid>
-      <Lcid>0</Lcid>
-      <Isolated>false</Isolated>
-      <EmbedInteropTypes>true</EmbedInteropTypes>
-    </COMReference>
-  </ItemGroup>
-
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
   <PropertyGroup>
     <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
@@ -98,11 +94,14 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\common\Common.Search\Common.Search.csproj" />
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\ShortcutGuide.IndexYmlGenerator\ShortcutGuide.IndexYmlGenerator.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="ShortcutGuideXAML\CustomNavigationViewStyle.xaml">
@@ -110,7 +109,17 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="ShortcutGuideXAML\TaskbarWindow.xaml">
+    <Page Update="ShortcutGuideXAML\OverlayWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ShortcutGuideXAML\Controls\MainPaneControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ShortcutGuideXAML\Controls\TaskbarPaneControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
@@ -125,6 +134,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="ShortcutGuideXAML\Helpers\" />
     <Folder Include="ShortcutGuideXAML\Styles\" />
   </ItemGroup>
   <!-- 

@@ -15,7 +15,6 @@ using ManagedCommon;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Win32;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Data.Html;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
@@ -121,9 +120,12 @@ internal static class DataPackageHelpers
                 Logger.LogDebug($"Cleaning up temporary file with extension [{tempFile.Extension}] from data package after delay");
 
                 tempFile.Delete();
-                if (NormalizeDirectoryPath(tempFile.Directory?.Parent?.FullName) == NormalizeDirectoryPath(Path.GetTempPath()))
+                var tempDirectory = tempFile.Directory;
+                if (tempDirectory is not null &&
+                    NormalizeDirectoryPath(tempDirectory.Parent?.FullName) == NormalizeDirectoryPath(Path.GetTempPath()))
                 {
-                    tempFile.Directory?.Delete();
+                    AdvancedPasteTempFileManager.RemoveOwnershipMarkerIfDirectoryWillBeEmpty(tempDirectory);
+                    tempDirectory.Delete();
                 }
             }
         }
@@ -173,8 +175,7 @@ internal static class DataPackageHelpers
         }
         else if (dataPackageView.Contains(StandardDataFormats.Html))
         {
-            var html = await dataPackageView.GetHtmlFormatAsync();
-            return HtmlUtilities.ConvertToText(html);
+            return await GetHtmlTextAsync(dataPackageView);
         }
         else
         {
@@ -195,8 +196,7 @@ internal static class DataPackageHelpers
 
             if (dataPackageView.Contains(StandardDataFormats.Html))
             {
-                var html = await dataPackageView.GetHtmlFormatAsync();
-                return HtmlUtilities.ConvertToText(html);
+                return await GetHtmlTextAsync(dataPackageView);
             }
 
             if (dataPackageView.Contains(StandardDataFormats.Bitmap))
@@ -220,6 +220,13 @@ internal static class DataPackageHelpers
     {
         var message = ResourceLoaderInstance.ResourceLoader.GetString("ClipboardEmptyWarning");
         return new PasteActionException(message, innerException ?? new InvalidOperationException("Clipboard does not contain text content."));
+    }
+
+    private static async Task<string> GetHtmlTextAsync(DataPackageView dataPackageView)
+    {
+        var html = await dataPackageView.GetHtmlFormatAsync();
+        var fragment = HtmlFormatHelper.GetStaticFragment(html);
+        return HtmlToTextHelper.ToPlainText(fragment);
     }
 
     internal static async Task<string> GetHtmlContentAsync(this DataPackageView dataPackageView) =>

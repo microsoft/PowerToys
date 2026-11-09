@@ -374,12 +374,12 @@ public:
             {
                 Logger::trace(L"ApplyProfile action received");
 
-                // Get the profile name from the action value
-                std::wstring profileName = action_object.get_value();
-                Logger::trace(L"ApplyProfile: profile name = '{}'", profileName);
+                // Get the profile ID from the action value.
+                std::wstring profileId = action_object.get_value();
+                Logger::trace(L"ApplyProfile: profile ID = '{}'", profileId);
 
-                // Send ApplyProfile message with profile name via Named Pipe
-                TrySendMessage(CommonSharedConstants::POWER_DISPLAY_APPLY_PROFILE_MESSAGE, profileName, L"ApplyProfile action");
+                // Send the ApplyProfile message with the profile ID via Named Pipe.
+                TrySendMessage(CommonSharedConstants::POWER_DISPLAY_APPLY_PROFILE_MESSAGE, profileId, L"ApplyProfile action");
             }
         }
         catch (std::exception&)

@@ -21,11 +21,12 @@ public sealed class ResourceOption : Option<string>
     private readonly IList<string> _resources = [];
 
     public ResourceOption(IList<string> resources)
-        : base("--resource", Resources.ResourceOptionDescription)
+        : base("--resource")
     {
         _resources = resources;
-        IsRequired = true;
-        AddValidator(OptionValidator);
+        Description = Resources.ResourceOptionDescription;
+        Required = true;
+        Validators.Add(OptionValidator);
     }
 
     /// <summary>
@@ -37,7 +38,7 @@ public sealed class ResourceOption : Option<string>
         var value = result.GetValueOrDefault<string>() ?? string.Empty;
         if (!_resources.Contains(value))
         {
-            result.ErrorMessage = string.Format(CultureInfo.InvariantCulture, InvalidResourceNameError, string.Join(", ", _resources));
+            result.AddError(string.Format(CultureInfo.InvariantCulture, InvalidResourceNameError, string.Join(", ", _resources)));
         }
     }
 }
