@@ -97,10 +97,11 @@ internal sealed class EndpointRecoveryFixture : IDisposable
         var product = Path.GetFullPath(Environment.GetEnvironmentVariable("POWERTOYS_INSTALL_DIR")
             ?? throw new InvalidOperationException("Missing protected product staging.")).TrimEnd('\\');
         Assert.IsTrue(string.Equals(product, provision[nameof(ProductRoot)]!.GetValue<string>().TrimEnd('\\'), StringComparison.OrdinalIgnoreCase));
+        var configuration = provision["Configuration"]?.GetValue<string>()
+            ?? throw new InvalidDataException("Protected provisioning must identify the payload configuration.");
         foreach (var path in new[] { "PowerToys.MouseWithoutBorders.dll", @"WinUI3Apps\PowerToys.Settings.dll" })
         {
-            TwoEndpointFixture.AssertConfiguredAssembly(Path.Combine(product, path), provision["Configuration"]?.GetValue<string>()
-                ?? throw new InvalidDataException("Protected provisioning must identify the payload configuration."));
+            TwoEndpointFixture.AssertConfiguredAssembly(Path.Combine(product, path), configuration);
         }
 
         foreach (var (field, file) in new[] { ("ExecutableSha256", "PowerToys.MouseWithoutBorders.exe"), ("LibrarySha256", "PowerToys.MouseWithoutBorders.dll") })

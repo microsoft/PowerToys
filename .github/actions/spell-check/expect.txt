@@ -505,7 +505,9 @@ ENABLETAB
 ENABLETEMPLATE
 encodedlaunch
 encryptor
+endfacet
 ENDSESSION
+endsolid
 ENSUREVISIBLE
 ENTERIDLE
 ENTERMENULOOP
@@ -2231,6 +2233,7 @@ wprp
 wql
 wregex
 WResize
+WRITEFAULT
 WRITEOBJECTS
 Wrk
 wrl
