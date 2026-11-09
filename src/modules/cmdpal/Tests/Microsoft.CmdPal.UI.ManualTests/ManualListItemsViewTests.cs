@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Reflection;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
@@ -254,7 +255,7 @@ public sealed partial class ManualListItemsViewTests
         var viewModel = CreateViewModel(page, scheduler);
         var hosts = new Mock<IAppHostService>();
         hosts.Setup(service => service.GetDefaultHost()).Returns(new TestHost());
-        using var shell = new ShellViewModel(scheduler, Mock.Of<IRootPageService>(), Mock.Of<IPageViewModelFactoryService>(), hosts.Object);
+        using var shell = new ShellViewModel(scheduler, Mock.Of<IRootPageService>(), Mock.Of<IPageViewModelFactoryService>(), hosts.Object, new WindowDismissalService());
         var frame = new Frame();
         frame.Navigated += (_, args) => shell.CurrentPage =
             (args.Parameter as AsyncNavigationRequest)?.TargetViewModel as PageViewModel ?? shell.NullPage;

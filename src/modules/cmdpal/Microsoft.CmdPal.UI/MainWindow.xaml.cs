@@ -10,6 +10,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
@@ -82,6 +83,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly AccessKeyModeController _accessKeyMode;
     private readonly List<long> _breakthroughTimestamps = [];
     private readonly ShellViewModel _shellViewModel;
+    private readonly WindowDismissalService _windowDismissal;
     private ShellIconCacheInvalidator? _shellIconCacheInvalidator;
 
     private bool _ignoreHotKeyWhenFullScreen = true;
@@ -121,6 +123,7 @@ public sealed partial class MainWindow : WindowEx,
     private WindowPosition _currentWindowPosition = new();
 
     private bool _preventHideWhenDeactivated;
+    private bool _deactivationPending;
     private bool _isLoadedFromDock;
     private bool _isShowing;
 
@@ -156,6 +159,8 @@ public sealed partial class MainWindow : WindowEx,
 
         ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
         _shellViewModel = App.Current.Services.GetRequiredService<ShellViewModel>();
+        _windowDismissal = App.Current.Services.GetRequiredService<WindowDismissalService>();
+        _windowDismissal.LastHoldReleased += WindowDismissal_LastHoldReleased;
         _shellViewModel.PageNavigationRequested += ShellViewModel_PageNavigationRequested;
         ShellContent.DragStateChanged += ShellContent_DragStateChanged;
 
@@ -1150,6 +1155,9 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HideWindow()
     {
+        _deactivationPending = false;
+        _windowDismissal.Reset((nint)_hwnd);
+
         // Cloak our HWND to avoid all animations.
         var cloaked = Cloak();
 
@@ -1515,6 +1523,10 @@ public sealed partial class MainWindow : WindowEx,
     internal void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
         _localKeyboardListener.EnableRaisingEvents = args.WindowActivationState != WindowActivationState.Deactivated;
+        if (args.WindowActivationState != WindowActivationState.Deactivated)
+        {
+            _deactivationPending = false;
+        }
 
         if (!_themeServiceInitialized && args.WindowActivationState != WindowActivationState.Deactivated)
         {
@@ -1547,11 +1559,9 @@ public sealed partial class MainWindow : WindowEx,
                 return;
             }
 
-            // Are we disabled? If we are, then we don't want to dismiss on focus lost.
-            // This can happen if an extension wanted to show a modal dialog on top of our
-            // window i.e. in the case of an MSAL auth window.
-            if (PInvoke.IsWindowEnabled(_hwnd) == 0)
+            if (_windowDismissal.IsSuppressed((nint)_hwnd))
             {
+                _deactivationPending = true;
                 return;
             }
 
@@ -1561,11 +1571,7 @@ public sealed partial class MainWindow : WindowEx,
                 return;
             }
 
-            // This will DWM cloak our window:
-            EndSession("LostFocus");
-            HideWindow();
-
-            PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
+            DismissOnLostFocus();
         }
         else if (_copilotKeyRegistration is null && !IsVisibleToUser && !_isShowing)
         {
@@ -1579,6 +1585,35 @@ public sealed partial class MainWindow : WindowEx,
         {
             RootElement.SetIsInputActive(args.WindowActivationState != WindowActivationState.Deactivated);
         }
+    }
+
+    private void WindowDismissal_LastHoldReleased(object? sender, nint ownerHwnd)
+    {
+        if (ownerHwnd != (nint)_hwnd)
+        {
+            return;
+        }
+
+        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+        {
+            if (!_deactivationPending || !IsVisibleToUser || _windowDismissal.IsSuppressed(ownerHwnd))
+            {
+                return;
+            }
+
+            _deactivationPending = false;
+            if (!Debugger.IsAttached && !_preventHideWhenDeactivated && !WindowHelper.HasForegroundWindow(ownerHwnd))
+            {
+                DismissOnLostFocus();
+            }
+        });
+    }
+
+    private void DismissOnLostFocus()
+    {
+        EndSession("LostFocus");
+        HideWindow();
+        PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
     }
 
     public void HandleLaunchNonUI(AppActivationArguments? activatedEventArgs)
@@ -2119,6 +2154,9 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Dispose()
     {
+        _deactivationPending = false;
+        _windowDismissal.LastHoldReleased -= WindowDismissal_LastHoldReleased;
+        _windowDismissal.Reset((nint)_hwnd);
         _keyboardListener.Dispose();
         _shellViewModel.PageNavigationRequested -= ShellViewModel_PageNavigationRequested;
         ShellContent.DragStateChanged -= ShellContent_DragStateChanged;

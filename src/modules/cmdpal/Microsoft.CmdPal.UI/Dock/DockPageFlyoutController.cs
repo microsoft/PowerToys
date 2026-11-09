@@ -4,6 +4,8 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
@@ -56,6 +58,7 @@ internal sealed partial class DockPageFlyoutController :
 
     internal DockPageFlyoutController(
         Flyout flyout,
+        WindowDismissalService windowDismissal,
         DispatcherQueue dispatcherQueue,
         TaskScheduler uiScheduler,
         IPageViewModelFactoryService pageFactory,
@@ -64,7 +67,7 @@ internal sealed partial class DockPageFlyoutController :
         Func<DockSide> dockSide,
         Func<bool> shouldRestoreFocus,
         Action restoreFocus)
-        : this(new FlyoutDockPageHost(flyout), dispatcherQueue, uiScheduler, pageFactory, appHostService, ownerHwnd, dockSide, shouldRestoreFocus, restoreFocus)
+        : this(new FlyoutDockPageHost(flyout, ownerHwnd, windowDismissal), dispatcherQueue, uiScheduler, pageFactory, appHostService, ownerHwnd, dockSide, shouldRestoreFocus, restoreFocus)
     {
     }
 
@@ -350,7 +353,7 @@ internal sealed partial class DockPageFlyoutController :
         {
             StartRequest(pending);
         }
-        else if (_isActive && _shouldRestoreFocus())
+        else if (_isActive && _shouldRestoreFocus() && WindowHelper.HasForegroundWindow(_ownerHwnd()))
         {
             _restoreFocus();
         }

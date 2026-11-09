@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Helpers;
@@ -113,6 +114,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         var services = App.Current.Services;
         _pageFlyoutController = new(
             DockPageFlyout,
+            services.GetRequiredService<WindowDismissalService>(),
             DispatcherQueue,
             TaskScheduler.FromCurrentSynchronizationContext(),
             services.GetRequiredService<IPageViewModelFactoryService>(),
