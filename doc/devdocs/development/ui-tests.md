@@ -171,7 +171,9 @@ the x64 Grab and Move suite. Implicit ARM64 selections skip that suite with an i
 warning while the dedicated image is unconfigured; explicitly requesting it reports
 `BLOCKED_INFRASTRUCTURE` rather than a passing zero-test run.
 
-#### Dedicated ARM64 Grab and Move CI image
+<a id="dedicated-arm64-grab-and-move-ci-image"></a>
+
+#### Dedicated ARM64 UMDF fixture CI image
 
 The `umdfHidArm64Image` template parameter is declared by
 `.pipelines\v2\templates\pipeline-ui-tests-automation.yml` and `pipeline-ci-build.yml`, then passed
@@ -183,7 +185,7 @@ explicitly through the stage/job templates so it is available during structural 
 - PR CI enables the image only in the verified internal collection (`SHINE-INT-Testing-arm64`).
   The shared CI template defaults to disabled; public `shine-oss` PR CI explicitly keeps it
   disabled until the image is provisioned and verified there. Implicit ARM64 selections then
-  skip Grab and Move with a warning while other suites still run.
+  skip the UMDF fixture suites with a warning while other suites still run.
 - Image isolation is explicit: ordinary jobs retain the pool's default image. Do not make the
   TESTSIGNING image the pool default. Registering the image in an OSS pool alone does not opt
   public CI into it; its root pipeline configuration must also be updated.
@@ -193,8 +195,14 @@ explicitly through the stage/job templates so it is available during structural 
   does not alter them. Actual driver-load readiness is still checked separately.
 
 Once configured, PR selection, full builds and official/specific-build runs route only
-`GrabAndMove.UITests` to a separate `_UmdfHid` job. All/mixed selections keep every other suite on
-the ordinary pool. Official/specific-build runs retain both machine-level and per-user jobs.
+`GrabAndMove.UITests` to a separate `_UmdfHid` job and `PowerDisplay.UITests` to a
+separate `_UmdfDisplay` job. Each dedicated job selects exactly its own suite;
+all/mixed selections keep other suites on the ordinary pool.
+Power Display's test-only [IddCx fixture](../../../.pipelines/powerdisplay-idd-poc/README.txt)
+requires architecture-matched build/provisioning and exports native readiness,
+protocol and owned-cleanup evidence. This route verifies emulated DDC/CI, not
+physical backlight, WMI or mixed-DPI hardware behavior.
+Official/specific-build runs retain both machine-level and per-user jobs.
 Native ARM64 driver artifacts are built on the ordinary build agents, never installed there.
 The experimental ARM64 transport-smoke path also explicitly selects the TESTSIGNING image.
 
