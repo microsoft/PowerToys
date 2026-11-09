@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -45,6 +46,17 @@ public sealed partial class TrayPaletteViewModel : ObservableObject, IDisposable
     public partial bool HasLoadError { get; private set; }
 
     public bool IsEmpty => !IsLoading && Items.Count == 0;
+
+    public Task LoadSmallContentAsync(TaskScheduler scheduler, Size availableSpace) =>
+        Task.WhenAll(Items.Select(item => item.LoadSmallContentAsync(scheduler, availableSpace)));
+
+    public void ClearSmallContent()
+    {
+        foreach (var item in Items)
+        {
+            item.ClearSmallContent();
+        }
+    }
 
     public void SaveOrder()
     {

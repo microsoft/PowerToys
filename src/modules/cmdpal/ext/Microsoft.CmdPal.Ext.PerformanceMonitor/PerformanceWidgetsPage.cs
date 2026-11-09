@@ -385,6 +385,18 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _batteryPage?.Dispose();
     }
 
+    internal IEnumerable<WidgetPage> GetSmallContentWidgets()
+    {
+        WidgetPage?[] widgets = [_cpuPage, _memoryPage, _networkPage, _diskPage, _gpuPage, _batteryPage];
+        foreach (var widget in widgets)
+        {
+            if (widget is not null)
+            {
+                yield return widget;
+            }
+        }
+    }
+
     internal static string GetBandId(PerformanceMetricKind? metric)
     {
         return metric is null ? BaseId : $"{BaseId}.{GetMetricSuffix(metric.Value)}";
@@ -459,6 +471,48 @@ internal abstract partial class WidgetPage : OnLoadContentPage
     }
 
     private readonly FormContent _formContent = new();
+
+    internal JsonObject GetSmallContentData()
+    {
+        var (valueKey, detailKey, graphKey) = this switch
+        {
+            SystemCPUUsageWidgetPage => ("cpuUsage", "cpuSpeed", "cpuGraphUrl"),
+            SystemMemoryUsageWidgetPage => ("memUsage", "usedMem", "memGraphUrl"),
+            SystemNetworkUsageWidgetPage => ("netReceived", "netSent", "netGraphUrl"),
+            SystemDiskUsageWidgetPage => ("diskRead", "diskWrite", "diskGraphUrl"),
+            SystemGPUUsageWidgetPage => ("gpuUsage", "gpuName", "gpuGraphUrl"),
+            SystemBatteryUsageWidgetPage => ("batteryCharge", "batteryStatus", string.Empty),
+            _ => throw new InvalidOperationException("Unsupported performance widget."),
+        };
+        lock (ContentData)
+        {
+            var result = new JsonObject
+            {
+                ["title"] = Title,
+                ["value"] = ContentData.GetValueOrDefault(valueKey, string.Empty),
+                ["detail"] = ContentData.GetValueOrDefault(detailKey, string.Empty),
+                ["graph"] = ContentData.GetValueOrDefault(graphKey, string.Empty),
+                ["hasGraph"] = ContentData.ContainsKey(graphKey),
+                ["error"] = ContentData.GetValueOrDefault("errorMessage", string.Empty),
+            };
+            if (this is SystemMemoryUsageWidgetPage && ContentData.TryGetValue("allMem", out var total))
+            {
+                result["detail"] = $"{result["detail"]} / {total}";
+            }
+            else if (this is SystemNetworkUsageWidgetPage)
+            {
+                result["detail"] = $"{Resources.GetResource("Network_Send_Subtitle")}: {result["detail"]}";
+                result["value"] = $"{Resources.GetResource("Network_Receive_Subtitle")}: {result["value"]}";
+            }
+            else if (this is SystemDiskUsageWidgetPage)
+            {
+                result["detail"] = $"{Resources.GetResource("Disk_Write_Subtitle")}: {result["detail"]}";
+                result["value"] = $"{Resources.GetResource("Disk_Read_Subtitle")}: {result["value"]}";
+            }
+
+            return result;
+        }
+    }
 
     public void UpdateWidget()
     {

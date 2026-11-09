@@ -58,6 +58,14 @@
                 PlainTextTemplate="{StaticResource PlainTextContentTemplate}"
                 TreeTemplate="{StaticResource TreeContentTemplate}" />
 
+            <cmdpalUI:ContentTemplateSelector
+                x:Key="UnpaddedContentTemplateSelector"
+                FormTemplate="{StaticResource NestedFormContentTemplate}"
+                ImageTemplate="{StaticResource UnpaddedImageContentTemplate}"
+                MarkdownTemplate="{StaticResource UnpaddedMarkdownContentTemplate}"
+                PlainTextTemplate="{StaticResource UnpaddedPlainTextContentTemplate}"
+                TreeTemplate="{StaticResource UnpaddedTreeContentTemplate}" />
+
             <DataTemplate x:Key="FormContentTemplate" x:DataType="viewModels:ContentFormViewModel">
                 <Grid Margin="0,4,4,4" Padding="12,8,8,8">
                     <cmdPalControls:ContentFormControl ViewModel="{x:Bind}" />
@@ -101,6 +109,39 @@
                 </Grid>
             </DataTemplate>
 
+            <DataTemplate x:Key="UnpaddedMarkdownContentTemplate" x:DataType="viewModels:ContentMarkdownViewModel">
+                <tkcontrols:MarkdownTextBlock
+                    Config="{StaticResource DefaultMarkdownConfig}"
+                    Text="{x:Bind Body, Mode=OneWay}"
+                    UseEmphasisExtras="True"
+                    UsePipeTables="True" />
+            </DataTemplate>
+
+            <DataTemplate x:Key="UnpaddedPlainTextContentTemplate" x:DataType="viewModels:ContentPlainTextViewModel">
+                <extViews:PlainTextContentViewer
+                    Text="{x:Bind Text, Mode=OneWay}"
+                    UseMonospace="{x:Bind UseMonospace, Mode=OneWay}"
+                    WordWrapEnabled="{x:Bind WordWrapEnabled, Mode=OneWay}" />
+            </DataTemplate>
+
+            <DataTemplate x:Key="UnpaddedImageContentTemplate" x:DataType="viewModels:ContentImageViewModel">
+                <extViews:ImageContentViewer DataContext="{x:Bind}" />
+            </DataTemplate>
+
+            <DataTemplate x:Key="UnpaddedTreeContentTemplate" x:DataType="viewModels:ContentTreeViewModel">
+                <StackPanel>
+                    <ItemsRepeater
+                        ItemTemplate="{StaticResource UnpaddedContentTemplateSelector}"
+                        ItemsSource="{x:Bind Root, Mode=OneWay}"
+                        Layout="{StaticResource VerticalStackLayout}" />
+                    <ItemsRepeater
+                        ItemTemplate="{StaticResource UnpaddedContentTemplateSelector}"
+                        ItemsSource="{x:Bind Children, Mode=OneWay}"
+                        Layout="{StaticResource VerticalStackLayout}"
+                        Visibility="{x:Bind HasChildren, Mode=OneWay}" />
+                </StackPanel>
+            </DataTemplate>
+
             <DataTemplate x:Key="TreeContentTemplate" x:DataType="viewModels:ContentTreeViewModel">
                 <StackPanel
                     Margin="0,4,4,4"
@@ -141,6 +182,7 @@
     <Grid>
         <ScrollView VerticalAlignment="Top" VerticalScrollMode="Enabled">
             <ItemsRepeater
+                x:Name="ContentItems"
                 VerticalAlignment="Stretch"
                 ItemTemplate="{StaticResource ContentTemplateSelector}"
                 ItemsSource="{x:Bind ViewModel.Content, Mode=OneWay}"

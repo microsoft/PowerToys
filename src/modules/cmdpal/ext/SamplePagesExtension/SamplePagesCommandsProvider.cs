@@ -6,6 +6,7 @@ using System;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using SamplePagesExtension.Pages.IssueSpecificPages;
+using Windows.Foundation;
 using Windows.System;
 
 namespace SamplePagesExtension;
@@ -14,12 +15,13 @@ public partial class SamplePagesCommandsProvider : CommandProvider
 {
     private readonly SampleButtonsDockBand _buttonsBand = new();
     private readonly ICommandItem[] _bands;
+    private readonly CommandItem _mediaPlayer = new(new SampleMediaPlayerPage()) { Title = "Sample media player" };
 
     public SamplePagesCommandsProvider()
     {
         DisplayName = "Sample Pages Commands";
         Icon = new IconInfo("\uE82D");
-        _bands = [new SampleDockBand(), _buttonsBand];
+        _bands = [new SampleDockBand(), _buttonsBand, _mediaPlayer];
     }
 
     private readonly ICommandItem[] _commands = [
@@ -51,11 +53,17 @@ public partial class SamplePagesCommandsProvider : CommandProvider
 
     public override ICommandItem[] TopLevelCommands()
     {
-        return _commands;
+        return [.. _commands, _mediaPlayer];
     }
 
     public override ICommandItem GetCommandItem(string id) =>
+        id == SampleMediaPlayerPage.CommandId ? _mediaPlayer :
         id == SampleCompactPinToDockPage.PinnableItem.Command.Id ? SampleCompactPinToDockPage.PinnableItem : null;
+
+    public override string[] GetAvailableSmallContent() => [SampleMediaPlayerPage.CommandId];
+
+    public override IContent GetSmallContent(string commandId, Size availableSpace) =>
+        commandId == SampleMediaPlayerPage.CommandId ? SampleMediaPlayerPage.CreateSmallContent() : null;
 
     public override ICommandItem[] GetDockBands()
     {

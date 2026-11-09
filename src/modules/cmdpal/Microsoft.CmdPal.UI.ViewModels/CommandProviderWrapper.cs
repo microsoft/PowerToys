@@ -413,6 +413,17 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         DockBandItems = bands.ToArray();
     }
 
+    public IContent? GetSmallContent(string commandId, Size availableSpace)
+    {
+        if (!IsActive || _commandProvider.Unsafe is not ICommandProvider5 provider ||
+            !provider.GetAvailableSmallContent().Contains(commandId, StringComparer.Ordinal))
+        {
+            return null;
+        }
+
+        return provider.GetSmallContent(commandId, availableSpace);
+    }
+
     internal TopLevelViewModel? ResolveCommandItem(string commandId, IServiceProvider serviceProvider)
     {
         if (!isValid || !IsActive || _commandProvider.Unsafe is not ICommandProvider4 provider)

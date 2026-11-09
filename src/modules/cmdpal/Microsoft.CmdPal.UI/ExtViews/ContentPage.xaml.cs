@@ -24,9 +24,25 @@ public sealed partial class ContentPage : Page, IPageInteractionTarget
     public static readonly DependencyProperty ViewModelProperty =
         DependencyProperty.Register(nameof(ViewModel), typeof(ContentPageViewModel), typeof(ContentPage), new PropertyMetadata(null));
 
+    public bool UsePagePadding
+    {
+        get => (bool)GetValue(UsePagePaddingProperty);
+        set => SetValue(UsePagePaddingProperty, value);
+    }
+
+    public static readonly DependencyProperty UsePagePaddingProperty =
+        DependencyProperty.Register(nameof(UsePagePadding), typeof(bool), typeof(ContentPage), new PropertyMetadata(true, OnUsePagePaddingChanged));
+
     public ContentPage()
     {
         this.InitializeComponent();
+    }
+
+    private static void OnUsePagePaddingChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
+    {
+        var page = (ContentPage)sender;
+        var key = page.UsePagePadding ? "ContentTemplateSelector" : "UnpaddedContentTemplateSelector";
+        page.ContentItems.ItemTemplate = (ContentTemplateSelector)page.Resources[key];
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)

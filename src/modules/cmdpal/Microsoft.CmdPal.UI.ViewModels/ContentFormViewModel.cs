@@ -86,6 +86,17 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
         model.PropChanged += Model_PropChanged;
     }
 
+    protected override void UnsafeCleanup()
+    {
+        base.UnsafeCleanup();
+        if (_formModel.Unsafe is { } model)
+        {
+            model.PropChanged -= Model_PropChanged;
+        }
+
+        Card = null;
+    }
+
     private void RenderCard()
     {
         if (TryBuildCard(TemplateJson, DataJson, out var builtCard, out var renderingError))

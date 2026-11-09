@@ -6,6 +6,8 @@
     xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:tray="using:Microsoft.CmdPal.UI.Tray"
+    xmlns:ui="using:Microsoft.CmdPal.UI"
     xmlns:vm="using:Microsoft.CmdPal.UI.ViewModels"
     xmlns:winui="using:WinUIEx">
     <Grid x:Name="Root">
@@ -20,6 +22,43 @@
                 <Setter Property="Width" Value="32" />
                 <Setter Property="Height" Value="32" />
                 <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
+            </Style>
+            <Style x:Key="TrayButtonContainerStyle" TargetType="GridViewItem">
+                <Setter Property="Margin" Value="0" />
+                <Setter Property="MinWidth" Value="0" />
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="Padding" Value="8,4,8,8" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            </Style>
+            <Style x:Key="TrayWidgetContainerStyle" BasedOn="{StaticResource TrayButtonContainerStyle}" TargetType="GridViewItem">
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="GridViewItem">
+                            <ListViewItemPresenter
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                ContentMargin="{TemplateBinding Padding}"
+                                ContentTransitions="{TemplateBinding ContentTransitions}"
+                                Control.IsTemplateFocusTarget="True"
+                                CornerRadius="{ThemeResource OverlayCornerRadius}"
+                                DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+                                DragBackground="{ThemeResource GridViewItemDragBackground}"
+                                DragForeground="{ThemeResource GridViewItemDragForeground}"
+                                DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}"
+                                FocusBorderBrush="{ThemeResource GridViewItemFocusBorderBrush}"
+                                FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
+                                FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}"
+                                FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}"
+                                FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}"
+                                FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}"
+                                PointerOverBackground="Transparent"
+                                PressedBackground="Transparent"
+                                SelectionCheckMarkVisualEnabled="False" />
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
             <Flyout
                 x:Name="ItemContextMenu"
@@ -53,13 +92,14 @@
                         AllowDrop="True"
                         AutomationProperties.AutomationId="TrayPalette_Commands"
                         CanDragItems="True"
-                        CanReorderItems="True"
-                        ContainerContentChanging="CommandsGrid_ContainerContentChanging"
                         ContextRequested="CommandsGrid_ContextRequested"
                         DragItemsCompleted="CommandsGrid_DragItemsCompleted"
                         DragItemsStarting="CommandsGrid_DragItemsStarting"
+                        DragOver="CommandsGrid_DragOver"
+                        Drop="CommandsGrid_Drop"
                         IsItemClickEnabled="True"
                         ItemClick="CommandsGrid_ItemClick"
+                        ItemContainerStyle="{StaticResource TrayButtonContainerStyle}"
                         ItemsSource="{x:Bind ViewModel.Items}"
                         SelectionMode="None">
                         <GridView.ItemContainerTransitions>
@@ -67,46 +107,53 @@
                         </GridView.ItemContainerTransitions>
                         <GridView.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <ItemsWrapGrid ItemHeight="100" ItemWidth="112" MaximumRowsOrColumns="3" Orientation="Horizontal" />
+                                <tray:TrayPalettePanel />
                             </ItemsPanelTemplate>
                         </GridView.ItemsPanel>
-                        <GridView.ItemContainerStyle>
-                            <Style TargetType="GridViewItem">
-                                <Setter Property="Margin" Value="0" />
-                                <Setter Property="MinWidth" Value="0" />
-                                <Setter Property="MinHeight" Value="0" />
-                                <Setter Property="Padding" Value="8,4,8,8" />
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                            </Style>
-                        </GridView.ItemContainerStyle>
                         <GridView.ItemTemplate>
                             <DataTemplate x:DataType="vm:TrayPaletteItemViewModel">
-                                <StackPanel Width="96" Spacing="8" ToolTipService.ToolTip="{x:Bind Item.Title, Mode=OneWay}">
-                                    <Border
-                                        Height="48"
-                                        Background="{ThemeResource ControlFillColorDefaultBrush}"
-                                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-                                        BorderThickness="1"
-                                        CornerRadius="{ThemeResource ControlCornerRadius}">
-                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal" Spacing="12">
-                                            <controls:IconBox
-                                                Width="24"
-                                                Height="24"
-                                                AutomationProperties.AccessibilityView="Raw"
-                                                SourceKey="{x:Bind Item.Icon, Mode=OneWay}"
-                                                SourceRequested="{x:Bind help:IconProvider.SourceRequested32}" />
-                                            <FontIcon FontSize="12" Glyph="&#xE76C;" Visibility="{x:Bind IsPage}" />
-                                        </StackPanel>
-                                    </Border>
-                                    <TextBlock
+                                <Grid Loaded="TrayItem_Loaded">
+                                    <StackPanel
                                         Width="96"
-                                        MaxLines="1"
-                                        Style="{StaticResource CaptionTextBlockStyle}"
-                                        Text="{x:Bind Item.Title, Mode=OneWay}"
-                                        TextAlignment="Center"
-                                        TextTrimming="CharacterEllipsis"
-                                        TextWrapping="NoWrap" />
-                                </StackPanel>
+                                        Spacing="8"
+                                        ToolTipService.ToolTip="{x:Bind Item.Title, Mode=OneWay}"
+                                        Visibility="{x:Bind IsButton, Mode=OneWay}">
+                                        <Border
+                                            Height="48"
+                                            Background="{ThemeResource ControlFillColorDefaultBrush}"
+                                            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="{ThemeResource ControlCornerRadius}">
+                                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal" Spacing="12">
+                                                <controls:IconBox
+                                                    Width="24"
+                                                    Height="24"
+                                                    AutomationProperties.AccessibilityView="Raw"
+                                                    SourceKey="{x:Bind Item.Icon, Mode=OneWay}"
+                                                    SourceRequested="{x:Bind help:IconProvider.SourceRequested32}" />
+                                                <FontIcon FontSize="12" Glyph="&#xE76C;" Visibility="{x:Bind IsPage}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <TextBlock
+                                            Width="96"
+                                            MaxLines="1"
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            Text="{x:Bind Item.Title, Mode=OneWay}"
+                                            TextAlignment="Center"
+                                            TextTrimming="CharacterEllipsis"
+                                            TextWrapping="NoWrap" />
+                                    </StackPanel>
+                                    <Border
+                                        CornerRadius="{ThemeResource OverlayCornerRadius}"
+                                        SizeChanged="SmallContent_SizeChanged"
+                                        Visibility="{x:Bind HasSmallContent, Mode=OneWay}">
+                                        <ui:ContentPage
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch"
+                                            UsePagePadding="False"
+                                            ViewModel="{x:Bind SmallContent, Mode=OneWay}" />
+                                    </Border>
+                                </Grid>
                             </DataTemplate>
                         </GridView.ItemTemplate>
                     </GridView>
