@@ -235,8 +235,9 @@ public class RunPageTests : CommandPaletteUnitTestBase
     public async Task TestListFilesEnvVar()
     {
         // Setup
-        var nativeService = CreateMockHistoryService().Object;
-        using var page = new RunListPage(nativeService, telemetryService: null);
+        const string searchText = "%SystemRoot%\\";
+        var historyService = CreateMockHistoryService();
+        using var page = new RunListPage(historyService.Object, telemetryService: null);
 
         var systemRoot = Environment.GetEnvironmentVariable("SystemRoot");
         if (string.IsNullOrEmpty(systemRoot))
@@ -244,8 +245,12 @@ public class RunPageTests : CommandPaletteUnitTestBase
             Assert.Fail("SystemRoot env var not set");
         }
 
+        // Evaluate the real Shell parser before the page starts its 200 ms timeout.
+        historyService.Setup(x => x.ParseCommandline(searchText, string.Empty))
+                      .Returns(RunHistory.ParseCommandline(searchText, string.Empty));
+
         var filesInSystemRoot = EnumerateFiles(systemRoot);
-        await UpdatePageAndWaitForItems(page, () => { page.SearchText = "%SystemRoot%\\"; });
+        await UpdatePageAndWaitForItems(page, () => { page.SearchText = searchText; });
 
         var commandList = page.GetItems();
         Assert.AreEqual(filesInSystemRoot.Count() + ExeItemCount, commandList.Length);
@@ -292,8 +297,9 @@ public class RunPageTests : CommandPaletteUnitTestBase
     public async Task TestListFilesEnvVarUserProfile()
     {
         // Setup
-        var nativeService = CreateMockHistoryService().Object;
-        using var page = new RunListPage(nativeService, telemetryService: null);
+        const string searchText = "%userprofile%\\";
+        var historyService = CreateMockHistoryService();
+        using var page = new RunListPage(historyService.Object, telemetryService: null);
 
         var userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
         if (string.IsNullOrEmpty(userProfile))
@@ -301,8 +307,12 @@ public class RunPageTests : CommandPaletteUnitTestBase
             Assert.Fail("USERPROFILE env var not set");
         }
 
+        // Evaluate the real Shell parser before the page starts its 200 ms timeout.
+        historyService.Setup(static x => x.ParseCommandline(searchText, string.Empty))
+                      .Returns(RunHistory.ParseCommandline(searchText, string.Empty));
+
         var filesInUserProfile = EnumerateFiles(userProfile);
-        await UpdatePageAndWaitForItems(page, () => { page.SearchText = "%userprofile%\\"; });
+        await UpdatePageAndWaitForItems(page, () => { page.SearchText = searchText; });
 
         var commandList = page.GetItems();
         Assert.AreEqual(filesInUserProfile.Count() + ExeItemCount, commandList.Length);

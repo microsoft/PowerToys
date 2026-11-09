@@ -65,7 +65,8 @@ public partial class MainViewModel
         try
         {
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
-            settings.Properties.ExcludedFromSyncMonitorIds = _excludedMonitorIds.ToList();
+            settings.Properties.ExcludedFromSyncMonitorIds.Clear();
+            settings.Properties.ExcludedFromSyncMonitorIds.AddRange(_excludedMonitorIds);
 
             _settingsUtils.SaveSettings(
                 System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
@@ -77,14 +78,24 @@ public partial class MainViewModel
         }
     }
 
+    /// <summary>
+    /// Queues an absolute write of <paramref name="savedValue"/> onto the monitor.
+    /// </summary>
+    /// <remarks>
+    /// The write is unconditional. A restore used to be skipped when the saved value already equalled
+    /// the value the UI was showing, but that value is only an observation when the discovery-time VCP
+    /// read succeeded. Otherwise it is a placeholder — 50 brightness from
+    /// <c>MonitorDiscoveryHelper</c>, or <c>Monitor</c>'s never-read backing-field defaults of 50
+    /// contrast, 50 volume and <c>0x05</c> color temperature — and a saved value that happened to match
+    /// one of those silently dropped the restore.
+    /// </remarks>
     private static void TryRestore(
         List<Task> tasks,
         int? savedValue,
         bool isVisible,
-        int currentValue,
         Func<int, Task> setter)
     {
-        if (savedValue.HasValue && isVisible && savedValue.Value != currentValue)
+        if (savedValue.HasValue && isVisible)
         {
             tasks.Add(setter(savedValue.Value));
         }
@@ -341,16 +352,16 @@ public partial class MainViewModel
             }
 
             // Apply brightness if included in profile
-            TryRestore(updateTasks, setting.Brightness, monitorVm.ShowBrightness, monitorVm.Brightness, monitorVm.SetBrightnessAsync);
+            TryRestore(updateTasks, setting.Brightness, monitorVm.ShowBrightness, monitorVm.SetBrightnessAsync);
 
             // Apply contrast if supported and value provided
-            TryRestore(updateTasks, setting.Contrast, monitorVm.ShowContrast, monitorVm.Contrast, monitorVm.SetContrastAsync);
+            TryRestore(updateTasks, setting.Contrast, monitorVm.ShowContrast, monitorVm.SetContrastAsync);
 
             // Apply volume if supported and value provided
-            TryRestore(updateTasks, setting.Volume, monitorVm.ShowVolume, monitorVm.Volume, monitorVm.SetVolumeAsync);
+            TryRestore(updateTasks, setting.Volume, monitorVm.ShowVolume, monitorVm.SetVolumeAsync);
 
             // Apply color temperature if included in profile
-            TryRestore(updateTasks, setting.ColorTemperatureVcp, monitorVm.ShowColorTemperature, monitorVm.ColorTemperature, monitorVm.SetColorTemperatureAsync);
+            TryRestore(updateTasks, setting.ColorTemperatureVcp, monitorVm.ShowColorTemperature, monitorVm.SetColorTemperatureAsync);
         }
 
         // Wait for all updates to complete
@@ -362,7 +373,7 @@ public partial class MainViewModel
 
     /// <summary>
     /// Restore monitor settings from state file - ONLY called at startup when RestoreSettingsOnStartup is enabled.
-    /// Compares saved values with current hardware values and only writes when different.
+    /// Writes every saved value the monitor exposes a control for.
     /// </summary>
     public async Task RestoreMonitorSettingsAsync()
     {
@@ -381,10 +392,10 @@ public partial class MainViewModel
 
                 var (brightness, colorTemp, contrast, volume) = savedState.Value;
 
-                TryRestore(updateTasks, brightness, monitorVm.ShowBrightness, monitorVm.Brightness, monitorVm.SetBrightnessAsync);
-                TryRestore(updateTasks, colorTemp, monitorVm.ShowColorTemperature, monitorVm.ColorTemperature, monitorVm.SetColorTemperatureAsync);
-                TryRestore(updateTasks, contrast, monitorVm.ShowContrast, monitorVm.Contrast, monitorVm.SetContrastAsync);
-                TryRestore(updateTasks, volume, monitorVm.ShowVolume, monitorVm.Volume, monitorVm.SetVolumeAsync);
+                TryRestore(updateTasks, brightness, monitorVm.ShowBrightness, monitorVm.SetBrightnessAsync);
+                TryRestore(updateTasks, colorTemp, monitorVm.ShowColorTemperature, monitorVm.SetColorTemperatureAsync);
+                TryRestore(updateTasks, contrast, monitorVm.ShowContrast, monitorVm.SetContrastAsync);
+                TryRestore(updateTasks, volume, monitorVm.ShowVolume, monitorVm.SetVolumeAsync);
             }
 
             if (updateTasks.Count > 0)
@@ -526,7 +537,8 @@ public partial class MainViewModel
                 retentionDays: PowerDisplaySettings.MonitorEntryRetentionDays);
 
             // Update monitors list
-            settings.Properties.Monitors = monitors;
+            settings.Properties.Monitors.Clear();
+            settings.Properties.Monitors.AddRange(monitors);
 
             // Save back to settings.json using source-generated context for AOT
             _settingsUtils.SaveSettings(
@@ -741,13 +753,12 @@ public partial class MainViewModel
 
             // Populate value list for Settings UI ComboBox
             // Store raw name (without formatting) so Settings UI can format it consistently
-            result.ValueList = info.SupportedValues
+            result.ValueList.AddRange(info.SupportedValues
                 .Select(v => new Microsoft.PowerToys.Settings.UI.Library.VcpValueInfo
                 {
                     Value = $"0x{v:X2}",
                     Name = Common.Utils.VcpNames.GetValueName(code, v),
-                })
-                .ToList();
+                }));
         }
         else
         {

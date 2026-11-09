@@ -4,72 +4,77 @@
 #include <common/utils/json.h>
 
 #include <workspaces-common/MonitorUtils.h>
+#include <workspaces-common/GuidUtils.h>
 
 #include <WorkspacesLib/trace.h>
 
 #include <AppLauncher.h>
 #include <WorkspacesLib/AppUtils.h>
+#include <WorkspacesLib/CliCommands.h>
+#include <WorkspacesLib/LauncherUiMessage.h>
 
-Launcher::Launcher(const WorkspacesData::WorkspacesProject& project, 
-    std::vector<WorkspacesData::WorkspacesProject>& workspaces,
-    InvokePoint invokePoint) :
+Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
+                   InvokePoint invokePoint,
+                   const WorkspacesSession::ExecutionOptions& options) :
     m_project(project),
-    m_workspaces(workspaces),
     m_invokePoint(invokePoint),
     m_start(std::chrono::high_resolution_clock::now()),
-    m_uiHelper(std::make_unique<LauncherUIHelper>(std::bind(&Launcher::handleUIMessage, this, std::placeholders::_1))),
-    m_windowArrangerHelper(std::make_unique<WindowArrangerHelper>(std::bind(&Launcher::handleWindowArrangerMessage, this, std::placeholders::_1))),
-    m_launchingStatus(m_project)
+    m_uiHelper(std::make_unique<LauncherUIHelper>(std::bind(&Launcher::handleUIMessage, this, std::placeholders::_1),
+                                                options.operationId, options.presentation == WorkspacesSession::Presentation::ConfirmationOnly)),
+    m_windowArrangerHelper(std::make_unique<WindowArrangerHelper>(
+        std::bind(&Launcher::handleWindowArrangerMessage, this, std::placeholders::_1),
+        options.operationId)),
+    m_launchingStatus(m_project),
+    m_options(options)
 {
     // main thread
     Logger::info(L"Launch Workspace {} : {}", m_project.name, m_project.id);
 
-    m_uiHelper->LaunchUI();
-    m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
+    if (m_options.presentation == WorkspacesSession::Presentation::Progress && m_uiHelper->LaunchUI([&] { return ShouldStop(); }))
+    {
+        m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
+    }
+    else if (m_options.presentation == WorkspacesSession::Presentation::Progress && !ShouldStop())
+    {
+        Logger::error(L"Workspaces UI is unavailable; unverified elevated applications will not launch");
+    }
 
     bool launchElevated = std::find_if(m_project.apps.begin(), m_project.apps.end(), [](const WorkspacesData::WorkspacesProject::Application& app) { return app.isElevated; }) != m_project.apps.end();
-    m_windowArrangerHelper->Launch(m_project.id, launchElevated, [&]() -> bool
-        {
-            if (m_launchingStatus.AllLaunchedAndMoved())
+    m_arrangerError = m_windowArrangerHelper->Launch(m_project.id, launchElevated, [&]() -> bool {
+            if (ShouldStop())
             {
+                m_stopping = true;
+                m_launchingStatus.Cancel();
                 return false;
             }
-
-            if (m_launchingStatus.AllLaunched())
-            {
-                static auto arrangerTimeDelay = std::chrono::high_resolution_clock::now();
-                auto currentTime = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<double> timeDiff = currentTime - arrangerTimeDelay;
-                if (timeDiff.count() >= 5)
-                {
-                    return false;
-                }
-            }
-            
-            return true;
-        });
+            return !m_arrangerCompleted; }, options.timeoutSeconds);
+    {
+        m_stopping = true;
+        std::lock_guard lock(m_launchThreadMutex);
+        if (m_launchThread.joinable())
+            m_launchThread.join();
+    }
 }
 
 Launcher::~Launcher()
 {
+    m_stopping = true;
+    m_approval.Cancel();
+    {
+        std::lock_guard lock(m_launchThreadMutex);
+        if (m_launchThread.joinable())
+        {
+            m_launchThread.join();
+        }
+    }
+    // Stop callbacks while all launch state and synchronization objects are still alive.
+    m_windowArrangerHelper->StopCallbacks();
+    m_windowArrangerHelper.reset();
+    m_uiHelper.reset();
+    if (m_options.presentation == WorkspacesSession::Presentation::ConfirmationOnly)
+        return;
     // main thread, will wait until arranger is finished
     Logger::trace(L"Finalizing launch");
-
-    // update last-launched time
-    if (m_invokePoint != InvokePoint::LaunchAndEdit)
-    {
-        time_t launchedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        m_project.lastLaunchedTime = launchedTime;
-        for (int i = 0; i < m_workspaces.size(); i++)
-        {
-            if (m_workspaces[i].id == m_project.id)
-            {
-                m_workspaces[i] = m_project;
-                break;
-            }
-        }
-        json::to_file(WorkspacesData::WorkspacesFile(), WorkspacesData::WorkspacesListJSON::ToJson(m_workspaces));
-    }
 
     // telemetry
     auto end = std::chrono::high_resolution_clock::now();
@@ -97,17 +102,32 @@ Launcher::~Launcher()
 
 void Launcher::Launch() // Launching thread
 {
+    const HRESULT initialized = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    if (FAILED(initialized))
+    {
+        Logger::error(L"Unable to initialize the Workspaces launch thread: {:#010x}", static_cast<uint32_t>(initialized));
+        m_approval.Cancel();
+        m_launchingStatus.Cancel();
+        return;
+    }
+    auto uninitialize = wil::scope_exit([] { CoUninitialize(); });
+
     const long maxWaitTimeMs = 3000;
     const long ms = 100;
 
     // Launch apps
     for (auto appState = m_launchingStatus.GetNext(LaunchingState::Waiting);appState.has_value();appState = m_launchingStatus.GetNext(LaunchingState::Waiting))
     {
+        if (ShouldStop())
+        {
+            m_launchingStatus.Cancel();
+            break;
+        }
         auto app = appState.value().application;
         
         long waitingTime = 0;
         bool additionalWait = false;
-        while (!m_launchingStatus.AllInstancesOfTheAppLaunchedAndMoved(app) && waitingTime < maxWaitTimeMs)
+        while (!ShouldStop() && !m_launchingStatus.AllInstancesOfTheAppLaunchedAndMoved(app) && waitingTime < maxWaitTimeMs)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(ms));
             waitingTime += ms;
@@ -120,7 +140,14 @@ void Launcher::Launch() // Launching thread
             // Launching Outlook instances right one after another causes error message.
             // Launching Outlook instances with less than 1-second delay causes the second window not to appear
             // even though there wasn't a launch error.
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            for (long elapsed = 0; elapsed < 1000 && !ShouldStop(); elapsed += ms)
+                std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+        }
+
+        if (ShouldStop())
+        {
+            m_launchingStatus.Cancel();
+            break;
         }
 
         if (waitingTime >= maxWaitTimeMs)
@@ -128,15 +155,49 @@ void Launcher::Launch() // Launching thread
             Logger::info(L"Waiting time for launching next {} instance expired", app.name);
         }
 
-        bool launched{ false };
+        AppLauncher::LaunchResult result;
         {
+            std::mutex heartbeatMutex;
+            std::condition_variable_any heartbeatChanged;
+            std::jthread heartbeat;
+            if (app.isElevated)
+            {
+                heartbeat = std::jthread([&](std::stop_token stop) {
+                    std::unique_lock heartbeatLock(heartbeatMutex);
+                    while (!stop.stop_requested())
+                    {
+                        {
+                            std::lock_guard lock(m_windowArrangerHelperMutex);
+                            m_windowArrangerHelper->KeepLaunchingAlive();
+                        }
+                        heartbeatChanged.wait_for(heartbeatLock, stop, std::chrono::seconds(1), [] { return false; });
+                    }
+                });
+            }
             std::lock_guard lock(m_launchErrorsMutex);
-            launched = AppLauncher::Launch(app, m_launchErrors);
+            DWORD nativeError = ERROR_SUCCESS;
+            result = AppLauncher::Launch(app, m_launchErrors,
+                [&](const auto& path, const auto& arguments, const auto& verification) {
+                    const auto decision = requestApproval(app.name, path, arguments, verification);
+                    m_approvalDecisions[app.id] = decision;
+                    return decision;
+                },
+                [&] { return m_approval.IsCanceled() || ShouldStop(); }, &nativeError);
+            if (result != AppLauncher::LaunchResult::Launched)
+                m_applicationErrors[app.id] = nativeError;
         }
 
-        if (launched)
+        if (result == AppLauncher::LaunchResult::Launched)
         {
             m_launchingStatus.Update(app, LaunchingState::Launched);
+        }
+        else if (result == AppLauncher::LaunchResult::Canceled)
+        {
+            m_launchingStatus.Update(app, LaunchingState::Canceled);
+        }
+        else if (result == AppLauncher::LaunchResult::Skipped)
+        {
+            m_launchingStatus.Update(app, LaunchingState::Skipped);
         }
         else
         {
@@ -156,29 +217,57 @@ void Launcher::Launch() // Launching thread
 
         {
             std::lock_guard lock(m_uiHelperMutex);
-            m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
+            if (m_uiHelper)
+                m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
         };
     }
 }
 
 void Launcher::handleWindowArrangerMessage(const std::wstring& msg) // WorkspacesArranger IPC thread
 {
+    if (msg.size() > 1024 * 1024)
+    {
+        m_stopping = true;
+        return;
+    }
+    if (msg == L"snapshot-request")
+    {
+        m_windowArrangerHelper->SendSnapshot(m_project);
+        return;
+    }
     if (msg == L"ready")
     {
-        std::thread([&]() { Launch(); }).detach();
+        std::lock_guard lock(m_launchThreadMutex);
+        if (!m_approval.IsCanceled() && !ShouldStop() && !m_launchStarted.exchange(true))
+        {
+            m_launchThread = std::thread([&]() { Launch(); });
+        }
     }
     else
     {
         try
         {
-            auto data = WorkspacesData::AppLaunchInfoJSON::FromJson(json::JsonValue::Parse(msg).GetObjectW());
+            const auto object = json::JsonValue::Parse(msg).GetObjectW();
+            if (object.GetNamedString(L"kind", L"") == L"arranger-result")
+            {
+                const auto result = WorkspacesCli::ParseArrangerResult(object, m_launchingStatus.Get(), m_options.operationId);
+                for (const auto& [application, outcome] : result)
+                {
+                    m_launchingStatus.Update(application, outcome.state);
+                }
+                m_windowArrangerHelper->AcknowledgeResult();
+                m_arrangerCompleted = true;
+                return;
+            }
+            auto data = WorkspacesData::AppLaunchInfoJSON::FromJson(object);
             if (data.has_value())
             {
                 m_launchingStatus.Update(data.value().application, data.value().state);
                 
                 {
                     std::lock_guard lock(m_uiHelperMutex);
-                    m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
+                    if (m_uiHelper)
+                        m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
                 }
             }
             else
@@ -189,14 +278,121 @@ void Launcher::handleWindowArrangerMessage(const std::wstring& msg) // Workspace
         catch (const winrt::hresult_error&)
         {
             Logger::error(L"Failed to parse message from WorkspacesWindowArranger");
+            m_stopping = true;
+        }
+        catch (const std::exception&)
+        {
+            Logger::error(L"Invalid WorkspacesWindowArranger result");
+            m_stopping = true;
         }
     }
 }
 
 void Launcher::handleUIMessage(const std::wstring& msg) // UI IPC thread
 {
-    if (msg == L"cancel")
+    const auto message = LauncherUiMessage::Parse(msg);
+    if (!message)
     {
-        m_launchingStatus.Cancel();
+        Logger::error(L"Invalid Workspaces UI message");
+        m_approval.Fail(LaunchDecision::InvalidResponse);
+        return;
     }
+    if (message->type == LauncherUiMessage::Type::Cancel)
+    {
+        m_uiCanceled = true;
+        if (!SetEvent(m_options.cancelEvent))
+            Logger::error(L"Unable to signal session cancellation: {}", GetLastError());
+        m_approval.Cancel();
+        m_launchingStatus.Cancel();
+        return;
+    }
+    const bool accepted = message->type == LauncherUiMessage::Type::WarningShown ?
+                              m_approval.Acknowledge(message->requestId) :
+                              m_approval.Complete(message->requestId, message->decision);
+    if (!accepted)
+    {
+        Logger::warn(L"Ignoring a stale, early, or duplicate elevation confirmation message");
+    }
+    else if (m_options.presentation == WorkspacesSession::Presentation::ConfirmationOnly && message->type == LauncherUiMessage::Type::WarningShown)
+    {
+        Logger::info("Workspaces CLI: confirmation dialog rendered; waiting for a decision.");
+    }
+}
+
+LaunchDecision Launcher::requestApproval(const std::wstring& name, const std::wstring& path, const std::wstring& arguments, const SignatureVerification::Result& result)
+{
+    if (m_approval.IsCanceled() || ShouldStop())
+    {
+        return LaunchDecision::Canceled;
+    }
+    if (m_options.presentation == WorkspacesSession::Presentation::ConfirmationOnly)
+        Logger::info("Workspaces CLI: preparing the shared confirmation dialog.");
+    if (!m_uiHelper || !m_uiHelper->LaunchUI([&] { return m_approval.IsCanceled() || ShouldStop(); }))
+    {
+        Logger::error(L"Cannot request elevation confirmation: Workspaces UI is unavailable");
+        return m_approval.IsCanceled() || ShouldStop() ? LaunchDecision::Canceled : LaunchDecision::UiUnavailable;
+    }
+    const std::wstring requestId = CreateGuidString();
+    if (!m_approval.Begin(requestId))
+    {
+        Logger::error(L"Unable to create an elevation confirmation request");
+        return m_approval.IsCanceled() ? LaunchDecision::Canceled : LaunchDecision::InvalidResponse;
+    }
+    auto finish = wil::scope_exit([&] {
+        m_approval.End();
+        std::lock_guard lock(m_uiHelperMutex);
+        m_uiHelper->DismissApproval(requestId);
+    });
+    {
+        std::lock_guard lock(m_uiHelperMutex);
+        if (!m_uiHelper->RequestApproval(requestId, name, path, arguments, result))
+        {
+            m_approval.Fail(LaunchDecision::UiUnavailable);
+        }
+    }
+    for (;;)
+    {
+        if (ShouldStop())
+            m_approval.Cancel();
+        if (const auto decision = m_approval.WaitFor(std::chrono::milliseconds(250)); decision.has_value())
+        {
+            if (ShouldStop())
+                return LaunchDecision::Canceled;
+            if (m_options.presentation == WorkspacesSession::Presentation::ConfirmationOnly)
+                Logger::info("Workspaces CLI: confirmation finished, decision={}", static_cast<int>(decision.value()));
+            return decision.value();
+        }
+        if (!m_uiHelper->IsRunning())
+        {
+            m_approval.Fail(LaunchDecision::UiUnavailable);
+        }
+    }
+}
+
+bool Launcher::ShouldStop() const
+{
+    return m_stopping || IsCanceled() ||
+           (m_options.deadline && GetTickCount64() >= m_options.deadline);
+}
+
+bool Launcher::IsCanceled() const
+{
+    return m_uiCanceled || WaitForSingleObject(m_options.cancelEvent, 0) == WAIT_OBJECT_0;
+}
+
+WorkspacesData::LaunchingAppStateMap Launcher::GetResult()
+{
+    return m_launchingStatus.Get();
+}
+
+std::map<std::wstring, DWORD> Launcher::GetApplicationErrors()
+{
+    std::lock_guard lock(m_launchErrorsMutex);
+    return m_applicationErrors;
+}
+
+std::map<std::wstring, LaunchDecision> Launcher::GetApprovalDecisions()
+{
+    std::lock_guard lock(m_launchErrorsMutex);
+    return m_approvalDecisions;
 }

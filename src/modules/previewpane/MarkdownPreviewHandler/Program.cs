@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
     {
         private static CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
-        private static MarkdownPreviewHandlerControl _previewHandlerControl;
+        private static MarkdownPreviewHandlerControl? _previewHandlerControl;
 
         /// <summary>
         ///  The main entry point for the application.
@@ -23,12 +23,24 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         [STAThread]
         public static void Main(string[] args)
         {
+            try
+            {
+                // The out-of-process preview host inherits File Explorer's working directory, which can be
+                // an AppContainer-ACL-restricted folder that breaks WebView2's sandboxed child processes.
+                // Reset it to this handler's own install directory. Best-effort by design: if the directory
+                // cannot be changed we still continue, so only the expected filesystem/ACL exceptions are swallowed.
+                System.IO.Directory.SetCurrentDirectory(AppContext.BaseDirectory);
+            }
+            catch (Exception ex) when (ex is System.IO.IOException or System.UnauthorizedAccessException or System.Security.SecurityException or System.ArgumentException)
+            {
+            }
+
             ApplicationConfiguration.Initialize();
             if (args != null)
             {
                 if (args.Length == 6)
                 {
-                    ETWTrace etwTrace = new ETWTrace(Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), "AppData", "LocalLow", "Microsoft", "PowerToys", "etw"));
+                    ETWTrace etwTrace = new ETWTrace(Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE")!, "AppData", "LocalLow", "Microsoft", "PowerToys", "etw"));
 
                     string filePath = args[0];
                     IntPtr hwnd = IntPtr.Parse(args[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture);

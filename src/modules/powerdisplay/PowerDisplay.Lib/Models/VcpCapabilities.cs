@@ -38,19 +38,19 @@ namespace PowerDisplay.Common.Models
         public string? MccsVersion { get; set; }
 
         /// <summary>
-        /// Gets or sets supported command codes
+        /// Gets supported command codes
         /// </summary>
-        public List<byte> SupportedCommands { get; set; } = new();
+        public List<byte> SupportedCommands { get; } = new();
 
         /// <summary>
-        /// Gets or sets supported VCP codes with their information
+        /// Gets supported VCP codes with their information
         /// </summary>
-        public Dictionary<byte, VcpCodeInfo> SupportedVcpCodes { get; set; } = new();
+        public Dictionary<byte, VcpCodeInfo> SupportedVcpCodes { get; } = new();
 
         /// <summary>
-        /// Gets or sets window capabilities for PIP/PBP support
+        /// Gets window capabilities for PIP/PBP support
         /// </summary>
-        public List<WindowCapability> Windows { get; set; } = new();
+        public List<WindowCapability> Windows { get; } = new();
 
         /// <summary>
         /// Gets a value indicating whether check if display supports PIP/PBP windows

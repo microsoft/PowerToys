@@ -39,8 +39,7 @@
                 Visibility="{x:Bind ViewModel.ShowBackgroundImage, Mode=OneWay}" />
         </controls:CmdPalMainControl.BackgroundLayer>
         <controls:CmdPalMainControl.MainContent>
-            <pages:ShellPage HostWindow="{x:Bind}" />
+            <pages:ShellPage x:Name="ShellContent" HostWindow="{x:Bind}" />
         </controls:CmdPalMainControl.MainContent>
     </controls:CmdPalMainControl>
 </winuiex:WindowEx>
-

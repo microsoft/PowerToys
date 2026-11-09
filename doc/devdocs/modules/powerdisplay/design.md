@@ -14,6 +14,7 @@
 6. [Component Design](#component-design)
    - [PowerDisplay Module Internal Structure](#powerdisplay-module-internal-structure)
    - [DisplayChangeWatcher - Monitor Hot-Plug Detection](#displaychangewatcher---monitor-hot-plug-detection)
+   - [Tray Icon Mouse Wheel Control](#tray-icon-mouse-wheel-control)
    - [DDC/CI and WMI Interaction Architecture](#ddcci-and-wmi-interaction-architecture)
    - [IMonitorController Interface Methods](#imonitorcontroller-interface-methods)
    - [Why WmiLight Instead of System.Management](#why-wmilight-instead-of-systemmanagement)
@@ -34,7 +35,8 @@
 9. [Future Considerations](#future-considerations)
    - [Already Implemented](#already-implemented)
    - [Potential Future Enhancements](#potential-future-enhancements)
-10. [References](#references)
+10. [UI Tests](#ui-tests)
+11. [References](#references)
 
 ---
 
@@ -412,6 +414,66 @@ _deviceWatcher.Updated += OnDeviceUpdated;  // Monitor properties changed
 - Each device change event schedules a `DisplayChanged` event after 1 second
 - Subsequent events within the debounce window cancel the previous timer
 - This prevents excessive refreshes when multiple monitors change simultaneously
+
+---
+
+### Tray Icon Mouse Wheel Control
+
+Scrolling the mouse wheel over the notification-area icon adjusts brightness without opening the
+flyout. The scope comes from the **Tray icon mouse wheel** setting
+(`PowerDisplayProperties.MouseWheelControlMode`): `Disabled` (default), `PrimaryDisplay` or
+`AllDisplays`. The per-notch step reuses the existing **Mouse wheel increment** setting.
+
+**Off by default, on purpose.** The gesture claims a wheel notch that would otherwise reach the
+window under the pointer, and acting on it installs a system-wide `WH_MOUSE_LL` hook. Neither is
+something an existing installation should acquire silently on upgrade, so the feature is opt-in:
+`Disabled` also means the hook is never installed at all.
+
+The setting is scoped to the tray icon. The flyout sliders accept wheel input regardless, as they
+always have.
+
+**No feedback UI, on purpose.** Brightness is self-evidencing: the screen changes as you scroll, so
+there is nothing for a readout to add that the display itself does not already show. The tray icon
+keeps the standard Shell tooltip and its existing text, and the notification icon stays on the
+legacy protocol. This is a deliberate departure from volume-style tray controls, where an on-screen
+readout is the only feedback available.
+
+**Why a low-level hook.** The Shell does not forward `WM_MOUSEWHEEL` to a notification icon's
+callback window under any `NOTIFYICON_VERSION`, and a click-through overlay placed over the icon
+cannot receive wheel input either. `TrayIconMouseWheelListener` therefore installs a `WH_MOUSE_LL`
+hook - but only transiently:
+
+- The hook is installed in `EnsureHook()` when the UI thread confirms the pointer is inside the
+  rectangle returned by `Shell_NotifyIconGetRect` **and** `CanAdjustBrightnessFromTrayWheel` says
+  some monitor can accept a brightness write.
+- It is removed in `DisarmCore()` as soon as either condition stops holding, the pointer leaves the
+  rectangle, or the mode changes.
+- A notch is consumed (the hook proc returns non-zero) only while armed and only for points inside
+  the armed rectangle, so a wheel event PowerDisplay will not act on still reaches the window under
+  the cursor.
+
+The hook runs on a dedicated background thread with its own message loop. Deltas are queued as
+`TrayWheelSample` values and marshalled to the UI thread in batches; `WheelDeltaAccumulator` folds
+high-resolution deltas (precision wheels, touchpads) into whole notches. Each sample carries the
+hover generation it was captured under, so samples from a hover the UI thread has already retired
+are discarded rather than applied late.
+
+**Hover detection.** The Shell sends `WM_MOUSEMOVE` to the icon's callback window while the pointer
+is over it. `TrayIconService.HandleTrayMouseMove` resolves the icon rectangle with
+`Shell_NotifyIconGetRect`, caching it for a second because that message repeats for every pixel of
+travel.
+
+**Linked brightness.** While linked brightness is on, a wheel notch must move the whole group, so it
+is routed through `MainViewModel.LinkedBrightness` rather than the individual monitor setters. The
+new master value is derived from `TrayWheelAdjustmentPlanner`'s value for the monitor the wheel
+named, not from the current master: the master is positional only (`SeedInitialLinkedBrightness`
+takes it from the lowest-numbered linked monitor and never writes hardware, and every monitor-list
+rebuild re-seeds it), so stepping it relative to itself would apply a wrong-sized or wrong-signed
+change.
+
+**Testing.** Target selection and wheel accumulation are pure logic in `PowerDisplay.Lib/Services`
+with unit tests in `PowerDisplay.Lib.UnitTests`. The Win32 glue in `TrayIconService` and
+`TrayIconMouseWheelListener` is not unit tested and needs manual verification.
 
 ---
 
@@ -1358,6 +1420,33 @@ Implementation notes:
 
 ---
 
+### Profile Display Order
+
+Each profile has a stable integer `id` that identifies it. Its position in the `profiles` array
+defines its display position in Settings, the flyout, LightSwitch selection, and CLI `profiles`
+output. Reordering moves the existing entry within that array while preserving its ID and monitor
+settings. Editing a profile retains its array position; new profiles receive the next integer ID
+and are appended to the array.
+
+The relevant fields in `profiles.json` are shown below; monitor settings and timestamps are omitted.
+Night is displayed first because it is the first array entry, even though its ID is larger than Day's.
+
+```json
+{
+  "profiles": [
+    { "id": 7, "name": "Night" },
+    { "id": 3, "name": "Day" }
+  ],
+  "nextId": 8
+}
+```
+
+Reorder requests identify the source profile and its destination neighbor by stable ID. The profile
+store reloads the current array and applies the move under its existing lock before atomically
+saving it. Reordering is available through drag and drop, Move up/Move down menu actions, or
+Alt+Shift+arrow keys. Drag and drop is disabled in elevated Settings. LightSwitch references and
+CLI/IPC profile commands continue to use integer IDs with schema version `1.0`.
+
 ### Sequence: Creating and Saving a Profile
 
 ```mermaid
@@ -1617,6 +1706,81 @@ sequenceDiagram
 1. **Advanced Color Management**: Integration with Windows Color Management APIs (HDR, ICC profiles)
 2. **PIP/PBP Control**: Picture-in-Picture and Picture-by-Picture configuration (VcpCapabilities already parses window capabilities)
 3. **Power State Control**: Monitor power on/off via VCP code 0xD6
+
+---
+
+## UI Tests
+
+`src\modules\powerdisplay\PowerDisplay.UITests` uses `Microsoft.PowerToys.UITest.Next`
+and the repository-pinned winappcli. It covers module lifecycle, the notification icon,
+shortcut activation, monitor discovery and refresh, identification overlays, flyout
+Settings navigation, and brightness round-trip when supported hardware is available.
+Five additional `PowerDisplayVirtualMonitors` cases require the test-only UMDF/IddCx
+fixture: independent brightness, hot-plug/identity preservation, empty-state recovery,
+unsupported brightness and rejected writes without false persisted success.
+See the [fixture build/provisioning/cleanup instructions](../../../../.pipelines/powerdisplay-idd-poc/README.txt).
+
+Build from the repository root with the existing build scripts. Wait for exit code 0
+before launching the suite:
+
+```powershell
+& .\tools\build\build-essentials.cmd -Platform x64 -Configuration Debug
+& .\tools\build\build.cmd -Path src\modules\powerdisplay\PowerDisplayModuleInterface -Platform x64 -Configuration Debug
+& .\tools\build\build.cmd -Path src\modules\powerdisplay\PowerDisplay -Platform x64 -Configuration Debug
+& .\tools\build\build.cmd -Path src\modules\powerdisplay\PowerDisplay.UITests -Platform x64 -Configuration Debug
+```
+
+Provision the architecture-matched fixture through the separate elevated channel
+in an approved disposable guest. Run the produced Microsoft.Testing.Platform
+executable from its standard-user console, with the probe path set:
+
+```powershell
+$env:POWERTOYS_POWERDISPLAY_IDD_PROBE = 'C:\IddPoc\artifact\driver\IddProbe.exe'
+& .\x64\Debug\tests\PowerDisplay.UITests\net10.0-windows10.0.26100.0\PowerDisplay.UITests.exe `
+    --report-trx --report-trx-filename PowerDisplay.UITests.trx `
+    --results-directory .\TestResults\PowerDisplay
+```
+
+For an explicitly non-fixture run, omit the probe environment variable and add
+`--filter "TestCategory!=PowerDisplayVirtualMonitors"`. This exercises only the
+original hardware-optional scenarios and is not driver-backed signoff. Selecting
+the fixture cases without provisioning fails rather than silently skipping them.
+
+For focused iteration, add
+`--filter "Name=FlyoutSettingsButtonNavigatesToPowerDisplay"`.
+Use `.github\skills\ui-tests-local-vm` for persistent Hyper-V execution and the full
+Windows 10/Windows 11 default and constrained resource matrix; use
+`.github\skills\ui-tests-pipeline-ci` for the authorized post-local CI handoff.
+
+### Test environment and state
+
+- Use a disposable test desktop: the suite stops any running PowerToys processes,
+  temporarily enables only Power Display, and changes module settings. Settings,
+  profiles, monitor state, and affected Light Switch settings are restored afterward.
+- Runner, Settings, and Power Display must run non-elevated. The suite hands Runner
+  launch to Explorer so an elevated CI test host does not pass its token to the product.
+  An existing profile configured to always run as administrator fails the integrity
+  assertions. The launcher requires VBScript and the `.vbs` file association.
+- After stopping stale processes, the suite refuses to run while `discovery.lock` or
+  `crash_detected.flag` remains. It preserves crash evidence rather than deleting or
+  bypassing quarantine.
+- Release validation must use the existing Runner/Settings companion-signing setup
+  for authenticated Settings IPC. A visible switch change is not accepted without
+  the immediate runtime effect.
+
+### Hardware coverage
+
+The CI jobs provision virtual monitors whose native Windows/Dxva2 DDC/CI requests
+reach the IddCx fixture. The tests verify driver-observed reads/writes and topology
+changes, not just UI state. Removing both fixture monitors exercises the
+unsupported/empty state. Without the fixture, a hardware-optional run can still
+verify that state on a guest with no supported monitors.
+
+On supported hardware, the brightness case identifies the exact monitor by its stable,
+case-insensitive ID, changes brightness, checks persisted state and a fresh discovery
+readback, and restores the original value. Physical brightness and mixed-DPI,
+multi-monitor validation require suitable hardware; virtual-desktop green results
+must not be presented as that hardware sign-off.
 
 ---
 

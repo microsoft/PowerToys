@@ -24,19 +24,6 @@ namespace ExprtkCalculator::internal
         return std::tgamma(n + 1.0);
     }
 
-    static double sign(const double n)
-    {
-        // The sign of NaN is undefined.
-        if (std::isnan(n))
-        {
-            return std::numeric_limits<double>::quiet_NaN();
-        }
-
-        if (n > 0.0) return 1.0;
-        if (n < 0.0) return -1.0;
-        return 0.0;
-    }
-
     // The calculator's user-facing names for the inverse trigonometric and
     // hyperbolic functions (see CalculateHelper.cs) differ from exprtk's
     // built-in asin/acos/atan/asinh/acosh/atanh, so they are registered
@@ -202,7 +189,6 @@ namespace ExprtkCalculator::internal
         }
 
         symbol_table.add_function("factorial", factorial);
-        symbol_table.add_function("sign", sign);
 
         symbol_table.add_function("arcsin", arcsin);
         symbol_table.add_function("arccos", arccos);

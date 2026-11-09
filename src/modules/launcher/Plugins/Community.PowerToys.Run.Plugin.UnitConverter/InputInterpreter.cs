@@ -119,7 +119,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// </summary>
         public static void DegreePrefixer(ref string[] split)
         {
-            switch (split[1].ToLower(CultureInfo.CurrentCulture))
+            switch (split[1].ToLowerInvariant())
             {
                 case "celsius":
                     split[1] = "DegreeCelsius";
@@ -141,7 +141,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     break;
             }
 
-            switch (split[3].ToLower(CultureInfo.CurrentCulture))
+            switch (split[3].ToLowerInvariant())
             {
                 case "celsius":
                     split[3] = "DegreeCelsius";
@@ -261,8 +261,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
         public static void SquareHandler(ref string[] split)
         {
-            split[1] = Regex.Replace(split[1], "sq(s|μm|mm|cm|dm|m|km|mil|in|ft|yd|mi|nmi)", "$1²");
-            split[3] = Regex.Replace(split[3], "sq(s|μm|mm|cm|dm|m|km|mil|in|ft|yd|mi|nmi)", "$1²");
+            split[1] = Regex.Replace(split[1], "sq(nmi|mil|μm|mm|cm|dm|km|mi|in|ft|yd|m|s)", "$1²");
+            split[3] = Regex.Replace(split[3], "sq(nmi|mil|μm|mm|cm|dm|km|mi|in|ft|yd|m|s)", "$1²");
         }
 
         public static ConvertModel Parse(Query query)

@@ -34,12 +34,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <summary>
         /// WebView2 Control to display Svg.
         /// </summary>
-        private WebView2 _browser;
+        private WebView2? _browser;
 
         /// <summary>
         /// WebView2 Environment
         /// </summary>
-        private CoreWebView2Environment _webView2Environment;
+        private CoreWebView2Environment? _webView2Environment;
 
         /// <summary>
         /// Name of the virtual host
@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <summary>
         /// URI of the local file saved with the contents
         /// </summary>
-        private Uri _localFileURI;
+        private Uri? _localFileURI;
 
         /// <summary>
         /// Gets the path of the current assembly.
@@ -57,7 +57,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <remarks>
         /// Source: https://stackoverflow.com/a/283917/14774889
         /// </remarks>
-        private static string AssemblyDirectory
+        private static string? AssemblyDirectory
         {
             get
             {
@@ -71,7 +71,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <summary>
         /// Text box to display the information about blocked elements from Svg.
         /// </summary>
-        private RichTextBox _textBox;
+        private RichTextBox? _textBox;
 
         /// <summary>
         /// Represent if a text box info bar is added for showing message.
@@ -108,7 +108,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
 
             CleanupWebView2UserDataFolder();
 
-            string svgData = null;
+            string? svgData = null;
             bool blocked = false;
 
             try
@@ -186,10 +186,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// </summary>
         /// <param name="sender">Reference to resized control.</param>
         /// <param name="e">Provides data for the ContentsResized event.</param>
-        private void RTBContentsResized(object sender, ContentsResizedEventArgs e)
+        private void RTBContentsResized(object? sender, ContentsResizedEventArgs e)
         {
-            var richTextBox = sender as RichTextBox;
-            richTextBox.Height = e.NewRectangle.Height + 5;
+            if (sender is RichTextBox richTextBox)
+            {
+                richTextBox.Height = e.NewRectangle.Height + 5;
+            }
         }
 
         /// <summary>
@@ -197,21 +199,22 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// </summary>
         /// <param name="sender">Reference to resized control.</param>
         /// <param name="e">Provides data for the resize event.</param>
-        private void FormResized(object sender, EventArgs e)
+        private void FormResized(object? sender, EventArgs e)
         {
-            if (_infoBarAdded)
+            if (_infoBarAdded && _textBox != null)
             {
                 _textBox.Width = Width;
             }
         }
 
         // Disable loading resources.
-        private void CoreWebView2_BlockExternalResources(object sender, CoreWebView2WebResourceRequestedEventArgs e)
+        private void CoreWebView2_BlockExternalResources(object? sender, CoreWebView2WebResourceRequestedEventArgs e)
         {
             // Show local file we've saved with the svg contents. Block all else.
             if (new Uri(e.Request.Uri) != _localFileURI)
             {
-                e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
+                // This handler is only subscribed on _browser.CoreWebView2, so _browser is always set here.
+                e.Response = _browser!.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
             }
         }
 

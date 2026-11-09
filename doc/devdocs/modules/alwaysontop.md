@@ -90,6 +90,13 @@ The module provides a user interface for configuring settings in the PowerToys S
 3. Select the Release configuration and build the solution
 4. Run PowerToys.exe from the output directory to test the module
 
+#### Automated UI tests
+
+The winappcli-based suite is in `src/modules/alwaysontop/Tests/AlwaysOnTop.UITests`. It requires an
+interactive desktop and `winapp.exe` on `PATH` (or `WINAPP_CLI_PATH`). The virtual-desktop scenario
+creates a temporary desktop and closes it during cleanup. The sound scenario observes access to the
+Windows media file through an NTFS oplock, so it does not require an audio endpoint.
+
 ### Debug
 1. build the entire project
 2. launch the built Powertoys
