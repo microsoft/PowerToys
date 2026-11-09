@@ -30,11 +30,12 @@ namespace PowerScripts.Client;
 /// goes through the host's single, never-elevated, trust-gated execution path.
 /// </para>
 /// </summary>
-public sealed class PowerScriptsClient
+public sealed class PowerScriptsClient : IDisposable
 {
     private readonly string? _hostPath;
     private readonly string? _scriptsRoot;
     private readonly string _consumerId;
+    private readonly PowerScriptsHostSession? _session;
 
     /// <summary>
     /// Creates a client attributed to the required, stable <paramref name="consumerId"/> module ID.
@@ -44,6 +45,16 @@ public sealed class PowerScriptsClient
     /// tests and demos where you want to choose the folder).
     /// </summary>
     public PowerScriptsClient(string consumerId, string? hostPath = null, string? scriptsRoot = null)
+        : this(consumerId, reuseHost: false, hostPath, scriptsRoot)
+    {
+    }
+
+    /// <summary>
+    /// Optionally retains a consumer-owned Host for asynchronous discovery and non-interactive transforms.
+    /// Dispose a reusable client when its owner exits. Requests remain serialized and freshly validated;
+    /// cancellation terminates the Host and its child tree without replaying the interrupted invocation.
+    /// </summary>
+    public PowerScriptsClient(string consumerId, bool reuseHost, string? hostPath = null, string? scriptsRoot = null)
     {
         if (!PowerScriptConsumer.IsValid(consumerId))
         {
@@ -53,7 +64,13 @@ public sealed class PowerScriptsClient
         _consumerId = consumerId;
         _hostPath = string.IsNullOrWhiteSpace(hostPath) ? ResolveHostPath() : hostPath;
         _scriptsRoot = string.IsNullOrWhiteSpace(scriptsRoot) ? null : scriptsRoot;
+        _session = reuseHost
+            ? new PowerScriptsHostSession(() => CreateStartInfo(redirectStdIn: true, redirectStdOut: true, redirectStdErr: true))
+            : null;
     }
+
+    /// <summary>Terminates any reusable Host and its child processes.</summary>
+    public void Dispose() => _session?.Dispose();
 
     /// <summary>The resolved host path, or null when the host could not be found.</summary>
     public string? HostPath => _hostPath;
@@ -124,6 +141,23 @@ public sealed class PowerScriptsClient
         psi.ArgumentList.Add("--consumer");
         psi.ArgumentList.Add(_consumerId);
         AppendRoot(psi);
+        if (_session is not null)
+        {
+            var response = await _session.InvokeAsync(psi.ArgumentList, null, cancellationToken).ConfigureAwait(false);
+            if (response.ExitCode != PowerScriptsProtocol.ExitCode.Ok)
+            {
+                throw new InvalidOperationException($"PowerScripts discovery failed ({response.ExitCode}): {response.StdErr}");
+            }
+
+            using var document = JsonDocument.Parse(response.StdOut);
+            if (document.RootElement.ValueKind != JsonValueKind.Array)
+            {
+                throw new JsonException("PowerScripts discovery did not return a script list.");
+            }
+
+            return PowerScriptInfo.ParseList(response.StdOut);
+        }
+
         using var process = Process.Start(psi)
             ?? throw new InvalidOperationException("Failed to start the PowerScripts Host.");
         try
@@ -289,6 +323,12 @@ public sealed class PowerScriptsClient
         AppendRoot(psi);
 
         var payload = SerializeInput(input);
+        if (_session is not null && noConsent)
+        {
+            var response = await _session.InvokeAsync(psi.ArgumentList, payload, cancellationToken).ConfigureAwait(false);
+            return ParseTransformResult(response.StdOut, response.StdErr, response.ExitCode);
+        }
+
         using var process = Process.Start(psi)
             ?? throw new InvalidOperationException("Failed to start the PowerScripts host.");
 

@@ -66,6 +66,14 @@ security boundary; see the README for platform limits and the compatibility pin.
 encapsulates Host discovery, safe argument construction, process invocation, JSON parsing, and
 timeouts while keeping the consumer decoupled from `PowerScripts.Core`.
 
+Long-lived consumers can opt into `new PowerScriptsClient("my-module", reuseHost: true)` and
+dispose it when their owner exits. This keeps one private Host alive for `ListAsync` and
+`TransformAsync(..., noConsent: true)`, avoiding repeated managed startup. Requests are serialized;
+the Host reloads scripts/settings and performs the same approval, schema and MXC checks on every
+invocation. Interpreters and Windows sandboxes remain fresh. Cancellation kills the session's
+child tree; interrupted requests are never replayed. Interactive transforms and existing clients
+retain the one-shot contract. The stdio session does not expose trust approval or settings writes.
+
 ```csharp
 var client = new PowerScriptsClient("my-module");
 if (!client.IsAvailable)
