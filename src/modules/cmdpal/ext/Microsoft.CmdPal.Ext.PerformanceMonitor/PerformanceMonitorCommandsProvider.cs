@@ -116,11 +116,12 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
             var band = _bands.FirstOrDefault(item => item.Command?.Id == commandId)?.Command as PerformanceWidgetsPage;
             if (band is not null)
             {
-                return new TreeContent
-                {
-                    Children = band.GetSmallContentWidgets()
-                        .Select(widget => (IContent)new PerformanceSmallContent(widget, availableSpace)).ToArray(),
-                };
+                return new PerformanceSmallContent(band.GetSmallContentWidgets().ToArray(), availableSpace);
+            }
+
+            if (_mainPage.GetItems().Any(item => item.Command is SystemOverviewWidgetPage && item.Command.Id == commandId))
+            {
+                return new PerformanceSmallContent(_mainPage.GetSmallContentWidgets().ToArray(), availableSpace);
             }
 
             var widget = _mainPage.GetSmallContentWidgets().FirstOrDefault(item => item.Id == commandId);

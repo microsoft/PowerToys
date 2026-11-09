@@ -519,46 +519,19 @@ internal abstract partial class WidgetPage : OnLoadContentPage
 
     private readonly FormContent _formContent = new();
 
-    internal JsonObject GetSmallContentData()
+    internal virtual JsonObject GetSmallContentData()
     {
-        var (valueKey, detailKey, graphKey) = this switch
+        var metric = this switch
         {
-            SystemCPUUsageWidgetPage => ("cpuUsage", "cpuSpeed", "cpuGraphUrl"),
-            SystemMemoryUsageWidgetPage => ("memUsage", "usedMem", "memGraphUrl"),
-            SystemNetworkUsageWidgetPage => ("netReceived", "netSent", "netGraphUrl"),
-            SystemDiskUsageWidgetPage => ("diskRead", "diskWrite", "diskGraphUrl"),
-            SystemGPUUsageWidgetPage => ("gpuUsage", "gpuName", "gpuGraphUrl"),
-            SystemBatteryUsageWidgetPage => ("batteryCharge", "batteryStatus", string.Empty),
+            SystemCPUUsageWidgetPage => PerformanceMetricKind.Cpu,
+            SystemMemoryUsageWidgetPage => PerformanceMetricKind.Memory,
+            SystemNetworkUsageWidgetPage => PerformanceMetricKind.Network,
+            SystemDiskUsageWidgetPage => PerformanceMetricKind.Disk,
+            SystemGPUUsageWidgetPage => PerformanceMetricKind.Gpu,
+            SystemBatteryUsageWidgetPage => PerformanceMetricKind.Battery,
             _ => throw new InvalidOperationException("Unsupported performance widget."),
         };
-        lock (ContentData)
-        {
-            var result = new JsonObject
-            {
-                ["title"] = Title,
-                ["value"] = ContentData.GetValueOrDefault(valueKey, string.Empty),
-                ["detail"] = ContentData.GetValueOrDefault(detailKey, string.Empty),
-                ["graph"] = ContentData.GetValueOrDefault(graphKey, string.Empty),
-                ["hasGraph"] = ContentData.ContainsKey(graphKey),
-                ["error"] = ContentData.GetValueOrDefault("errorMessage", string.Empty),
-            };
-            if (this is SystemMemoryUsageWidgetPage && ContentData.TryGetValue("allMem", out var total))
-            {
-                result["detail"] = $"{result["detail"]} / {total}";
-            }
-            else if (this is SystemNetworkUsageWidgetPage)
-            {
-                result["detail"] = $"{Resources.GetResource("Network_Send_Subtitle")}: {result["detail"]}";
-                result["value"] = $"{Resources.GetResource("Network_Receive_Subtitle")}: {result["value"]}";
-            }
-            else if (this is SystemDiskUsageWidgetPage)
-            {
-                result["detail"] = $"{Resources.GetResource("Disk_Write_Subtitle")}: {result["detail"]}";
-                result["value"] = $"{Resources.GetResource("Disk_Read_Subtitle")}: {result["value"]}";
-            }
-
-            return result;
-        }
+        return PerformanceSmallContent.CreateData(metric, Title, GetDataSnapshot());
     }
 
     public void UpdateWidget()

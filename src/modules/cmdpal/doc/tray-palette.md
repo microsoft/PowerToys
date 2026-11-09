@@ -32,6 +32,15 @@ Unsupported, missing, or failed content falls
 back to the normal button. Live content is released when quick actions are
 dismissed or a page is opened, and fetched again when quick actions return.
 
+Performance Monitor's metric widgets use the same numeric history and native
+`Chart.Line` sparklines as its detail cards, rather than generated graph images.
+Battery content uses a native `ProgressBar`. The default Performance Monitor pin
+shows CPU and memory side by side in one form. Its Overview pin shows all available
+metrics in two compact rows, without charts, so the summary fits the XS height.
+Both overview command IDs (the detail page and the dock band) provide this content.
+Opening and closing the tray shares the metric pages' activation counts with the
+dock and detail cards; closing one surface does not stop sampling for another.
+
 Select a command button to run it.
 A chevron identifies a page button.
 Select a page button to open the page in the tray window.
