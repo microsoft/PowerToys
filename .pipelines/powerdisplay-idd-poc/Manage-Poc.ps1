@@ -44,6 +44,7 @@ function Find-OwnedInfs {
 if ($Action -eq 'Cleanup') {
     if (-not (Test-Path -LiteralPath $StatePath)) { throw 'No ownership journal; nothing may be removed.' }
     $state = Read-UmdfJournal -StatePath $StatePath -HardwareId $hardwareId -Subject $subject -InfProperty BeforeInfs
+    $cleanupStarted = Get-Date
     $errors = [Collections.Generic.List[string]]::new()
     try {
         $lastBoot = (Get-CimInstance Win32_OperatingSystem -ErrorAction Stop).LastBootUpTime
@@ -113,6 +114,40 @@ if ($Action -eq 'Cleanup') {
         if ($errors.Count -eq 0) { Remove-UmdfTestTrust -State $state -Subject $subject }
     }
     catch { $errors.Add($_.Exception.Message) }
+    if ($errors.Count) {
+        try {
+            # A later same-boot retry must not overwrite the original removal evidence.
+            $failureDirectory = Join-Path $ResultsDirectory "cleanup-failure-$([guid]::NewGuid().ToString('N'))"
+            New-Item -ItemType Directory -Path $failureDirectory -Force | Out-Null
+            [ordered]@{ Errors = @($errors); Ownership = $state } | ConvertTo-Json -Depth 8 |
+                Set-Content (Join-Path $failureDirectory 'failure.json')
+            Export-UmdfDriverDiagnostics -ResultsDirectory $failureDirectory -Started $cleanupStarted -EventLogs @{
+                'Kernel-PnP-Configuration.json' = 'Microsoft-Windows-Kernel-PnP/Configuration'
+                'UserPnp-DeviceInstall.json' = 'Microsoft-Windows-UserPnp/DeviceInstall'
+                'DriverFrameworks-UserMode.json' = 'Microsoft-Windows-DriverFrameworks-UserMode/Operational'
+            }
+            $displayDevices = @(Get-PnpDevice -Class Display, Monitor -PresentOnly -ErrorAction Stop | ForEach-Object {
+                $device = $_
+                $properties = try {
+                    @(Get-PnpDeviceProperty -InstanceId $device.InstanceId -ErrorAction Stop |
+                        Select-Object KeyName, Type, Data)
+                }
+                catch {
+                    Write-Warning "Cleanup device properties unavailable: $($device.InstanceId): $_"
+                    @([pscustomobject]@{ Error = $_.Exception.Message })
+                }
+                [pscustomobject]@{
+                    InstanceId = $device.InstanceId
+                    Class = $device.Class
+                    Status = $device.Status
+                    Properties = $properties
+                }
+            })
+            ConvertTo-Json -InputObject $displayDevices -Depth 8 |
+                Set-Content (Join-Path $failureDirectory 'display-devices.json')
+        }
+        catch { Write-Warning "Display cleanup diagnostics unavailable: $_" }
+    }
     [ordered]@{ Removed = $errors.Count -eq 0; Errors = @($errors) } |
         ConvertTo-Json | Set-Content (Join-Path $ResultsDirectory 'cleanup.json')
     if ($errors.Count) { throw ($errors -join '; ') }

@@ -138,6 +138,9 @@ Describe 'Virtual display fixture ownership and approval' {
             }
         }
         Mock certutil.exe { throw 'Trust mutation is forbidden in these preflight tests.' }
+        Mock Export-UmdfDriverDiagnostics {
+            'diagnostic setup log' | Set-Content (Join-Path $ResultsDirectory 'setupapi-tail.log')
+        }
         Mock Test-Path { $true } -ParameterFilter { $Path -like 'Cert:*' }
         Mock Get-Item { [pscustomobject]@{ Subject = $subject } } -ParameterFilter { $Path -like 'Cert:*' }
         Mock Remove-Item {} -ParameterFilter { $Path -like 'Cert:*' }
@@ -247,6 +250,44 @@ Describe 'Virtual display fixture ownership and approval' {
         $script:leaveDevice = $true
         { & $cleanupAction } | Should Throw 'Fixture device remains'
         Test-Path -LiteralPath $StatePath | Should Be $true
+    }
+
+    It 'preserves native removal evidence when a later same-boot retry is refused' {
+        New-DisplayArtifact
+        $journal.Thumbprint = $artifactThumbprint
+        $journal | ConvertTo-Json | Set-Content $StatePath
+        $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'OK' })
+        $script:nativeExit = 3010
+        $script:removeOnReboot = $true
+        { & $cleanupAction } | Should Throw 'Device removal requires a reboot'
+        { & $cleanupAction } | Should Throw 'requires an actual reboot'
+        $failures = @(Get-ChildItem -LiteralPath $ResultsDirectory -Directory -Filter 'cleanup-failure-*')
+        $failures.Count | Should Be 2
+        $messages = @($failures | ForEach-Object {
+            Test-Path (Join-Path $_.FullName 'setupapi-tail.log') | Should Be $true
+            Get-Content (Join-Path $_.FullName 'display-devices.json') -Raw | Should Match '^\s*\[\s*\]\s*$'
+            (Get-Content (Join-Path $_.FullName 'failure.json') -Raw | ConvertFrom-Json).Errors
+        }) -join '; '
+        $messages | Should Match 'Device removal requires a reboot'
+        $messages | Should Match 'requires an actual reboot'
+        Assert-MockCalled Export-UmdfDriverDiagnostics -Times 2 -Exactly -Scope It
+        Assert-MockCalled pnputil.exe -Times 1 -Exactly -Scope It
+        Test-Path -LiteralPath $StatePath | Should Be $true
+    }
+
+    It 'retains the original cleanup failure when diagnostic collection fails' {
+        New-DisplayArtifact
+        $journal.Thumbprint = $artifactThumbprint
+        $journal | ConvertTo-Json | Set-Content $StatePath
+        $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'OK' })
+        $script:nativeExit = 5
+        Mock Export-UmdfDriverDiagnostics { throw 'Diagnostic source unavailable.' }
+        { & $cleanupAction } | Should Throw 'Device removal failed'
+        $failure = Get-ChildItem -LiteralPath $ResultsDirectory -Directory -Filter 'cleanup-failure-*'
+        (Get-Content (Join-Path $failure.FullName 'failure.json') -Raw | ConvertFrom-Json).Errors[0] |
+            Should Match 'Device removal failed'
+        Test-Path -LiteralPath $StatePath | Should Be $true
+        Assert-MockCalled Remove-Item -Times 0 -Exactly -Scope It -ParameterFilter { $Path -like 'Cert:*' }
     }
 
     It 'refuses <Case> cleanup artifacts before any native mutation' -TestCases @(
