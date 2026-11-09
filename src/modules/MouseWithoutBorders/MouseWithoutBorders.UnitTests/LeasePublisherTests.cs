@@ -11,6 +11,9 @@ namespace MouseWithoutBorders.UnitTests;
 [TestClass]
 public sealed class LeasePublisherTests
 {
+    // The test envelope includes two cold shell initializations, not just lease operations.
+    private const int FixtureLifetimeMinutes = 5;
+
     private string root = null!;
     private string runId = null!;
     private EndpointChannel host = null!;
@@ -34,7 +37,7 @@ public sealed class LeasePublisherTests
     public void PublisherContinuesWhileOwnerWaitsAndPreservesCommittedGenerations()
     {
         using var owner = Process.GetCurrentProcess();
-        var deadline = DateTime.UtcNow.AddMinutes(2);
+        var deadline = DateTime.UtcNow.AddMinutes(FixtureLifetimeMinutes);
         using var publisher = CreatePublisher(owner, deadline);
         using var guestPublisher = CreatePublisher(owner, deadline, forGuest: true);
         publisher.WaitForReady();
@@ -79,7 +82,7 @@ public sealed class LeasePublisherTests
     public void PublisherStatusUpdatesPreserveOpenSnapshots()
     {
         using var owner = Process.GetCurrentProcess();
-        using var publisher = CreatePublisher(owner, DateTime.UtcNow.AddMinutes(2));
+        using var publisher = CreatePublisher(owner, DateTime.UtcNow.AddMinutes(FixtureLifetimeMinutes));
         publisher.WaitForReady();
         var path = Path.Combine(root, "Host-lease-publisher.json");
         using var snapshot = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
@@ -102,7 +105,7 @@ public sealed class LeasePublisherTests
     public void FailingGuestPublicationDoesNotStarveHostLeases()
     {
         using var owner = Process.GetCurrentProcess();
-        var deadline = DateTime.UtcNow.AddMinutes(2);
+        var deadline = DateTime.UtcNow.AddMinutes(FixtureLifetimeMinutes);
         using var hostPublisher = CreatePublisher(owner, deadline);
         hostPublisher.WaitForReady();
         Directory.Delete(Path.Combine(guest.InputRoot, "leases"), recursive: true);
@@ -128,14 +131,14 @@ public sealed class LeasePublisherTests
     {
         using var owner = Process.Start(new ProcessStartInfo(
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\WindowsPowerShell\v1.0\powershell.exe"),
-            "-NoLogo -NoProfile -NonInteractive -Command \"[Threading.Thread]::Sleep(60000)\"")
+            "-NoLogo -NoProfile -NonInteractive -Command \"[Threading.Thread]::Sleep(300000)\"")
         {
             UseShellExecute = false,
             CreateNoWindow = true,
         })!;
         try
         {
-            using var publisher = CreatePublisher(owner, DateTime.UtcNow.AddMinutes(1));
+            using var publisher = CreatePublisher(owner, DateTime.UtcNow.AddMinutes(FixtureLifetimeMinutes));
             publisher.WaitForReady();
             owner.Kill();
             Assert.IsTrue(owner.WaitForExit(5000));
@@ -177,7 +180,7 @@ public sealed class LeasePublisherTests
     public void PublisherRejectsAnUncorrelatedStopRequest()
     {
         using var owner = Process.GetCurrentProcess();
-        var publisher = CreatePublisher(owner, DateTime.UtcNow.AddMinutes(1));
+        var publisher = CreatePublisher(owner, DateTime.UtcNow.AddMinutes(FixtureLifetimeMinutes));
         try
         {
             publisher.WaitForReady();
@@ -193,13 +196,84 @@ public sealed class LeasePublisherTests
         }
     }
 
-    private LeasePublisher CreatePublisher(Process owner, DateTime deadline, bool forGuest = false) => new(
-        Path.Combine(AppContext.BaseDirectory, "ExperimentPayload"),
-        root,
-        root,
-        runId,
-        forGuest ? guest : host,
-        forGuest ? "Guest" : "Host",
-        deadline,
-        owner);
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void PublishedFailureIsReportedOnlyForTheOwnedRun(bool matchingRun)
+    {
+        using var owner = Process.GetCurrentProcess();
+        var reportedRun = matchingRun ? runId : Guid.NewGuid().ToString();
+        var body = $$"""
+            $config=Read-RunJson $ConfigurationPath
+            Write-RunJson $config.OutputPath @{RunId='{{reportedRun}}';Stage='Failed';Error='synthetic publisher failure'}
+            while(-not [IO.File]::Exists($config.StopPath+'.ready')){Start-Sleep -Milliseconds 20}
+            exit 1
+            """;
+        var publisher = CreatePublisher(owner, DateTime.UtcNow.AddMinutes(FixtureLifetimeMinutes), publisherScript: body);
+        using var child = Process.GetProcessById(publisher.ProcessId);
+        try
+        {
+            RunFiles.Wait(
+                () => File.Exists(Path.Combine(root, "Host-lease-publisher.json.ready")),
+                TimeSpan.FromSeconds(30),
+                "The fixture publisher did not commit its failure.");
+            Assert.IsFalse(child.HasExited, "The fixture must remain alive while its failure is observed.");
+            if (matchingRun)
+            {
+                var error = Assert.ThrowsExactly<InvalidOperationException>(publisher.ThrowIfFailed);
+                StringAssert.Contains(error.Message, "synthetic publisher failure");
+            }
+            else
+            {
+                publisher.ThrowIfFailed();
+            }
+
+            Assert.IsFalse(child.HasExited, "Failure observation must not terminate the publisher.");
+        }
+        finally
+        {
+            Assert.ThrowsExactly<AggregateException>(publisher.Dispose);
+        }
+    }
+
+    private LeasePublisher CreatePublisher(Process owner, DateTime deadline, bool forGuest = false, string? publisherScript = null)
+    {
+        var fixture = new PowerShellFixture(root);
+        var script = Path.Combine(AppContext.BaseDirectory, "ExperimentPayload", "Publish-Leases.ps1");
+        var support = Path.Combine(AppContext.BaseDirectory, "ExperimentPayload", "EndpointSupport.ps1");
+        var initialize = $". '{support.Replace("'", "''", StringComparison.Ordinal)}'; $null=Read-RunJson $ConfigurationPath";
+        var body = publisherScript ?? $"& '{script.Replace("'", "''", StringComparison.Ordinal)}' -ConfigurationPath $ConfigurationPath";
+        var wrappedScript = "param([string]$ConfigurationPath)" + Environment.NewLine +
+            fixture.Wrap(body, initialize);
+        File.WriteAllText(
+            Path.Combine(fixture.ScriptRoot, "Publish-Leases.ps1"),
+            wrappedScript);
+        var publisher = new LeasePublisher(
+            fixture.ScriptRoot,
+            root,
+            root,
+            runId,
+            forGuest ? guest : host,
+            forGuest ? "Guest" : "Host",
+            deadline,
+            owner);
+        try
+        {
+            fixture.WaitForStartup(publisher.ThrowIfFailed);
+            return publisher;
+        }
+        catch (Exception startupError)
+        {
+            try
+            {
+                publisher.Dispose();
+            }
+            catch (Exception cleanupError)
+            {
+                throw new AggregateException("Publisher fixture initialization and cleanup failed.", startupError, cleanupError);
+            }
+
+            throw;
+        }
+    }
 }

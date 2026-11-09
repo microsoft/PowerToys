@@ -3,9 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Text.Json;
+using System.Windows.Automation;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,7 +15,7 @@ namespace Microsoft.PowerDisplay.UITests;
 [TestClass]
 [DoNotParallelize]
 [TestCategory("PowerDisplay")]
-public sealed class PowerDisplayEndToEndTests : UITestBase
+public sealed partial class PowerDisplayEndToEndTests : UITestBase
 {
     private const string ProcessName = "PowerToys.PowerDisplay";
     private const string TerminateEvent = @"Local\PowerToysPowerDisplay-TerminateEvent-7b9c2e1f-8a5d-4c3e-9f6b-2a1d8c5e3b7a";
@@ -34,6 +35,7 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
         """;
 
     private static readonly List<IDisposable> Snapshots = [];
+    private static VirtualMonitorFixture? virtualMonitors;
     private Key[] activationKeys = [];
 
     public PowerDisplayEndToEndTests()
@@ -53,6 +55,8 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
         ArgumentNullException.ThrowIfNull(context);
         StopProduct();
         AssertNoCrashMarkers();
+        var probe = Environment.GetEnvironmentVariable("POWERTOYS_POWERDISPLAY_IDD_PROBE");
+        virtualMonitors = string.IsNullOrWhiteSpace(probe) ? null : new VirtualMonitorFixture(probe);
         try
         {
             Snapshots.Add(SettingsConfigHelper.PreserveModuleSettings("PowerDisplay"));
@@ -74,6 +78,7 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
         {
             StopProduct();
             AssertNoCrashMarkers();
+            virtualMonitors?.Reset();
         }
         finally
         {
@@ -93,6 +98,7 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
     [TestInitialize]
     public void OpenSettingsPage()
     {
+        virtualMonitors?.Reset();
         Step("Navigating to Power Display Settings");
         NavigateToModule();
         Assert.IsFalse(Session.IsElevated, "Settings must run as a standard user.");
@@ -116,6 +122,7 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
     public async Task CloseFlyoutAsync()
     {
         await CaptureFailureArtifactsBeforeCleanupAsync();
+        virtualMonitors?.Reset();
         WindowControl.TryCloseByApp(ProcessName, window => window.Title == "Power Display");
 
         NavigateToModule();
@@ -143,7 +150,7 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
     public void ConfiguredShortcutOpensStableMonitorInventory()
     {
         var flyout = OpenFlyout();
-        AssertStableInventory(flyout);
+        flyout = AssertStableInventory(flyout);
     }
 
     [TestMethod]
@@ -154,7 +161,7 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
         MouseHelper.LeftClickAt(icon.X + (icon.Width / 2), icon.Y + (icon.Height / 2));
         PowerDisplayTray.ParkCursor();
         var flyout = WaitForFlyout();
-        AssertStableInventory(flyout);
+        flyout = AssertStableInventory(flyout);
         CloseFlyout();
         AssertProcessState(true);
     }
@@ -163,7 +170,7 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
     public void RefreshRediscoversMonitorsAndReturnsToStableState()
     {
         var flyout = OpenFlyout();
-        AssertStableInventory(flyout);
+        flyout = AssertStableInventory(flyout);
         Refresh(flyout);
     }
 
@@ -171,7 +178,7 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
     public void IdentifyShowsAnOverlayOnEveryConnectedDisplay()
     {
         var flyout = OpenFlyout();
-        AssertStableInventory(flyout);
+        flyout = AssertStableInventory(flyout);
         var displays = MonitorInfo.GetAll();
         Assert.IsTrue(displays.Count > 0, "Windows must report at least one display.");
         var existingWindows = WindowsFinder.ListByApp(ProcessName).Select(window => window.Hwnd).ToHashSet();
@@ -222,7 +229,7 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
     public void BrightnessRoundTripsThroughMonitorRediscoveryWhenSupported()
     {
         var flyout = OpenFlyout();
-        AssertStableInventory(flyout);
+        flyout = AssertStableInventory(flyout);
         var sliders = BrightnessSliders(flyout);
         if (sliders.Length == 0)
         {
@@ -237,16 +244,16 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
             ReadMonitors().Any(monitor => string.Equals(monitor.GetProperty("id").GetString(), monitorId, StringComparison.OrdinalIgnoreCase)),
             "The brightness slider did not identify a discovered monitor.");
         slider = FindMonitorBrightnessSlider(flyout, monitorId);
-        var original = ReadBrightness(slider);
+        var original = ReadBrightness(flyout, slider);
         var target = original <= 90 ? original + 5 : original - 5;
         try
         {
             Step($"Setting monitor '{monitorId}' brightness from {original} to {target}");
             slider.SetValue(target);
-            Assert.IsTrue(slider.WaitForValue(target.ToString(CultureInfo.InvariantCulture), timeoutMS: 10_000), "The slider did not accept the requested brightness.");
+            Assert.IsTrue(WaitHelper.WaitForStable(() => ReadBrightness(flyout, slider), value => value == target, 10_000).Succeeded, "The slider did not accept the requested brightness.");
             AssertSavedBrightness(monitorId, target);
-            Refresh(flyout);
-            Assert.AreEqual(target, ReadBrightness(FindMonitorBrightnessSlider(flyout, monitorId)), "Rediscovery did not read the requested brightness back from the monitor.");
+            flyout = Refresh(flyout);
+            Assert.AreEqual(target, ReadBrightness(flyout, FindMonitorBrightnessSlider(flyout, monitorId)), "Rediscovery did not read the requested brightness back from the monitor.");
         }
         finally
         {
@@ -258,8 +265,8 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
 
             FindMonitorBrightnessSlider(flyout, monitorId).SetValue(original);
             AssertSavedBrightness(monitorId, original);
-            Refresh(flyout);
-            Assert.AreEqual(original, ReadBrightness(FindMonitorBrightnessSlider(flyout, monitorId)), "The original hardware brightness was not restored.");
+            flyout = Refresh(flyout);
+            Assert.AreEqual(original, ReadBrightness(flyout, FindMonitorBrightnessSlider(flyout, monitorId)), "The original hardware brightness was not restored.");
         }
     }
 
@@ -294,8 +301,15 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
         return matches[0];
     }
 
-    private static double ReadBrightness(Slider slider) =>
-        double.Parse(slider.GetValue(), CultureInfo.InvariantCulture);
+    private static double ReadBrightness(Session flyout, Slider slider)
+    {
+        // winapp get-value reads text, not RangeValuePattern, for WinUI sliders.
+        var root = AutomationElement.FromHandle(new IntPtr(flyout.WindowHandle));
+        var element = root.FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.AutomationIdProperty, slider.AutomationId));
+        Assert.IsNotNull(element, "The exact monitor brightness slider is missing from UIA.");
+        Assert.IsTrue(element.TryGetCurrentPattern(RangeValuePattern.Pattern, out var pattern), "The brightness slider did not expose RangeValuePattern.");
+        return ((RangeValuePattern)pattern).Current.Value;
+    }
 
     private static Process[] GetModuleProcesses() => Process.GetProcessesByName(ProcessName);
 
@@ -330,31 +344,45 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
         return document.RootElement.GetProperty("properties").GetProperty("monitors").EnumerateArray().Select(monitor => monitor.Clone()).ToArray();
     }
 
+    private static JsonElement[] ReadLiveMonitors()
+    {
+        var connected = virtualMonitors?.Snapshot().Monitors.Where(monitor => monitor.Connected)
+            .Select(monitor => monitor.Connector).ToHashSet();
+        return PowerDisplayInventory.CurrentBatch(ReadMonitors()).Where(monitor =>
+        {
+            var id = monitor.GetProperty("id").GetString()!;
+            return connected is null || !VirtualMonitorFixture.IsFixtureId(id) ||
+                connected.Contains(VirtualMonitorFixture.ConnectorForId(id));
+        }).ToArray();
+    }
+
     private static void AssertSavedBrightness(string monitorId, double expected)
     {
         var result = WaitHelper.WaitForStable(
-            () =>
-            {
-                var path = Path.Combine(ModuleDirectory, "monitor_state.json");
-                if (!File.Exists(path))
-                {
-                    return (double?)null;
-                }
-
-                using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-                using var document = JsonDocument.Parse(stream);
-                var monitor = document.RootElement.GetProperty("monitors").EnumerateObject()
-                    .FirstOrDefault(property => string.Equals(property.Name, monitorId, StringComparison.OrdinalIgnoreCase)).Value;
-                return monitor.ValueKind == JsonValueKind.Object &&
-                    monitor.TryGetProperty("brightness", out var brightness) && brightness.ValueKind == JsonValueKind.Number
-                    ? brightness.GetDouble() : (double?)null;
-            },
+            () => ReadSavedBrightness(monitorId),
             brightness => brightness == expected,
             15_000,
             2,
             200,
             shouldRetryException: exception => exception is IOException or JsonException);
         Assert.IsTrue(result.Succeeded, $"Monitor '{monitorId}' did not finish applying brightness {expected}. Last state: {result.LastObservation}.");
+    }
+
+    private static double? ReadSavedBrightness(string monitorId)
+    {
+        var path = Path.Combine(ModuleDirectory, "monitor_state.json");
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        using var document = JsonDocument.Parse(stream);
+        var monitor = document.RootElement.GetProperty("monitors").EnumerateObject()
+            .FirstOrDefault(property => string.Equals(property.Name, monitorId, StringComparison.OrdinalIgnoreCase)).Value;
+        return monitor.ValueKind == JsonValueKind.Object &&
+            monitor.TryGetProperty("brightness", out var brightness) && brightness.ValueKind == JsonValueKind.Number
+            ? brightness.GetDouble() : null;
     }
 
     private static void AssertNoCrashMarkers()
@@ -519,23 +547,57 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
         Assert.IsTrue(WaitHelper.WaitForStable(FlyoutVisible, visible => !visible, 10_000, 2).Succeeded, "Escape did not hide the flyout.");
     }
 
-    private void AssertStableInventory(Session flyout)
+    private static bool ShouldRetryInventoryException(Exception exception) =>
+        exception is IOException or JsonException or ElementNotAvailableException ||
+        (exception is AssertFailedException && exception.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase));
+
+    private Session AssertStableInventory(Session flyout)
     {
         Step("Waiting for discovery to finish and expose monitors or the informational empty state");
         var result = WaitHelper.WaitForStable(
-            () => flyout.Has(By.AccessibilityId("ScanningMonitorsTextBlock"), 0)
-                ? "scanning"
-                : flyout.Has(By.AccessibilityId("NoMonitorsInfoBar"), 0) ? "empty"
-                : flyout.Has(By.AccessibilityId("MonitorsRepeater"), 0) ? "monitors" : "unready",
+            () =>
+            {
+                if (!FlyoutVisible())
+                {
+                    flyout = OpenFlyout();
+                }
+
+                if (flyout.Has(By.AccessibilityId("ScanningMonitorsTextBlock"), 0))
+                {
+                    return "scanning";
+                }
+
+                if (flyout.Has(By.AccessibilityId("NoMonitorsInfoBar"), 0))
+                {
+                    return "empty";
+                }
+
+                return ReadLiveMonitors().Length > 0 ? "monitors" : "unready";
+            },
             state => state is "empty" or "monitors",
             60_000,
             2,
-            200);
+            200,
+            shouldRetryException: ShouldRetryInventoryException);
         Assert.IsTrue(result.Succeeded, $"Discovery did not reach a stable state: {result.LastObservation}.");
-        var monitors = ReadMonitors();
+
+        var monitors = ReadLiveMonitors();
+        if (virtualMonitors is not null)
+        {
+            foreach (var expected in virtualMonitors.Snapshot().Monitors.Where(monitor => monitor.Connected && monitor.Mode == 0))
+            {
+                Assert.IsTrue(
+                    monitors.Any(monitor =>
+                        VirtualMonitorFixture.IsFixtureId(monitor.GetProperty("id").GetString()!) &&
+                        VirtualMonitorFixture.ConnectorForId(monitor.GetProperty("id").GetString()!) == expected.Connector),
+                    $"Connected brightness-capable fixture connector {expected.Connector} is missing from discovery.");
+            }
+        }
+
         if (result.LastObservation == "empty")
         {
-            Assert.AreEqual(0, monitors.Length, "The flyout incorrectly reports no monitors.");
+            Assert.AreEqual(0, monitors.Length, "The flyout claims an empty inventory despite independently discovered live monitors.");
+            Assert.AreEqual(0, BrightnessSliders(flyout).Length, "The empty flyout still exposes a brightness control.");
             Assert.IsTrue(flyout.Has(By.Name("No monitors detected")), "The empty state did not explain that no monitors were detected.");
         }
         else
@@ -551,6 +613,7 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
         var path = EvidencePath("monitor-inventory.json");
         File.WriteAllText(path, JsonSerializer.Serialize(monitors));
         TestContext.AddResultFile(path);
+        return flyout;
     }
 
     private void OpenDiscoveryMenu(Session flyout)
@@ -559,7 +622,7 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
         flyout.Find<Button>(By.AccessibilityId("RefreshMenuButton")).Invoke(msPostAction: 0);
     }
 
-    private void Refresh(Session flyout)
+    private Session Refresh(Session flyout)
     {
         OpenDiscoveryMenu(flyout);
         var lastWrite = File.GetLastWriteTimeUtc(SettingsPath);
@@ -571,8 +634,9 @@ public sealed class PowerDisplayEndToEndTests : UITestBase
                 write => write > lastWrite,
                 60_000).Succeeded,
             "Refresh did not publish a new monitor inventory.");
-        AssertStableInventory(flyout);
+        flyout = AssertStableInventory(flyout);
         AssertProcessState(true);
+        return flyout;
     }
 
     private string EvidencePath(string name)
