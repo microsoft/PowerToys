@@ -17,6 +17,7 @@ using PowerDisplay.Common.Services;
 using PowerDisplay.Helpers;
 using PowerDisplay.Serialization;
 using PowerToys.Interop;
+using Windows.Graphics;
 
 namespace PowerDisplay
 {
@@ -184,6 +185,7 @@ namespace PowerDisplay
                 _trayIconService.CanProcessMouseWheel =
                     () => mainWindow.ViewModel.CanAdjustBrightnessFromTrayWheel;
                 _trayIconService.SetupTrayIcon();
+                mainWindow.TrayIconBoundsProvider = () => ToAnchorRectangle(_trayIconService?.GetTrayIconBounds());
                 Logger.LogTrace("OnLaunched: TrayIconService initialized");
 
                 // Window visibility depends on launch mode
@@ -192,10 +194,10 @@ namespace PowerDisplay
 
                 if (isStandaloneMode)
                 {
-                    // Standalone mode - activate and show window immediately
-                    Logger.LogInfo("OnLaunched: Activating window (standalone mode)");
-                    _mainWindow.Activate();
-                    Logger.LogInfo("OnLaunched: Window activated (standalone mode)");
+                    // Standalone mode uses the same placement and sizing path as other activations.
+                    Logger.LogInfo("OnLaunched: Showing window (standalone mode)");
+                    mainWindow.ShowWindow();
+                    Logger.LogInfo("OnLaunched: Window shown (standalone mode)");
                 }
                 else
                 {
@@ -299,13 +301,13 @@ namespace PowerDisplay
         /// <summary>
         /// Toggle the main window visibility
         /// </summary>
-        private void ToggleMainWindow()
+        private void ToggleMainWindow(TrayIconBounds? trayBounds)
         {
             Logger.LogInfo("ToggleMainWindow: Called");
             if (_mainWindow is MainWindow mainWindow)
             {
                 Logger.LogTrace($"ToggleMainWindow: MainWindow is valid, current visibility={mainWindow.IsWindowVisible()}");
-                mainWindow.ToggleWindow();
+                mainWindow.ToggleWindow(ToAnchorRectangle(trayBounds));
             }
             else
             {
@@ -321,6 +323,13 @@ namespace PowerDisplay
             // mainExecutableIsOnTheParentFolder = true because PowerDisplay is a WinUI 3 app
             // deployed in a subfolder (PowerDisplay\) while PowerToys.exe is in the parent folder
             SettingsDeepLink.OpenSettings(true);
+        }
+
+        private static RectInt32? ToAnchorRectangle(TrayIconBounds? bounds)
+        {
+            return bounds is TrayIconBounds rectangle && rectangle.IsValid
+                ? new RectInt32(rectangle.Left, rectangle.Top, rectangle.Right - rectangle.Left, rectangle.Bottom - rectangle.Top)
+                : null;
         }
 
         /// <summary>
