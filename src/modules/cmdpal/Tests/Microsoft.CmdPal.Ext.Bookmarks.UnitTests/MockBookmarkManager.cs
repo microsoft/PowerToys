@@ -14,7 +14,7 @@ internal sealed class MockBookmarkManager : IBookmarksManager
 {
     private readonly List<BookmarkData> _bookmarks;
 
-    public event Action<BookmarkData> BookmarkAdded;
+    public event Action<IReadOnlyList<BookmarkData>> BookmarksAdded;
 
     public event Action<BookmarkData, BookmarkData> BookmarkUpdated;
 
@@ -23,6 +23,8 @@ internal sealed class MockBookmarkManager : IBookmarksManager
     public IReadOnlyCollection<BookmarkData> Bookmarks => _bookmarks;
 
     public BookmarkData Add(string name, string bookmark) => throw new NotImplementedException();
+
+    public int AddRange(IReadOnlyCollection<(string Name, string Bookmark)> bookmarks) => throw new NotImplementedException();
 
     public bool Remove(Guid id) => throw new NotImplementedException();
 

@@ -8,7 +8,11 @@ internal static class Icons
 {
     internal static IconInfo BookmarksExtensionIcon { get; } = IconHelpers.FromRelativePath("Assets\\Bookmarks.svg");
 
-    internal static IconInfo AddBookmarkIcon { get; } = IconHelpers.FromRelativePath("Assets\\Bookmark.svg");
+    internal static IconInfo AddBookmarkIcon { get; } = IconHelpers.FromRelativePath("Assets\\Add-Bookmark.svg");
+
+    internal static IconInfo ImportBookmarksIcon { get; } = IconHelpers.FromRelativePath("Assets\\Import-Bookmarks.svg");
+
+    internal static IconInfo ExportBookmarksIcon { get; } = IconHelpers.FromRelativePath("Assets\\Export-Bookmarks.svg");
 
     internal static IconInfo DeleteIcon { get; } = new("\uE74D"); // Delete
 

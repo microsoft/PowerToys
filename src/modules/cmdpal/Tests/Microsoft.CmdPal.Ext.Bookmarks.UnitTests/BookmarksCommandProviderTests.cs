@@ -11,6 +11,7 @@ using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Pages;
 using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 using Microsoft.CmdPal.Ext.Bookmarks.Services;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.ApplicationModel.DataTransfer;
@@ -20,6 +21,132 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 [TestClass]
 public class BookmarksCommandProviderTests
 {
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    [Timeout(15000)]
+    public void ConcurrentRemove_CannotOvertakeTheAddedNotification(bool import)
+    {
+        using var manager = new BookmarksManager(new MockBookmarkDataSource());
+        using var notificationStarted = new ManualResetEventSlim();
+        using var finishNotification = new ManualResetEventSlim();
+        using var removalStarted = new ManualResetEventSlim();
+        using var removalFinished = new ManualResetEventSlim();
+        BookmarkData added = null;
+        var notificationWasReleased = false;
+        manager.BookmarksAdded += bookmarks =>
+        {
+            added = bookmarks.Single();
+            notificationStarted.Set();
+            notificationWasReleased = finishNotification.Wait(5000);
+        };
+        var provider = new BookmarksCommandProvider(manager);
+        _ = provider.TopLevelCommands();
+        Exception addError = null;
+        Exception removeError = null;
+        var removed = false;
+        var adding = new Thread(() =>
+        {
+            try
+            {
+                if (import)
+                {
+                    manager.AddRange([("Example", "https://example.com")]);
+                }
+                else
+                {
+                    manager.Add("Example", "https://example.com");
+                }
+            }
+            catch (Exception ex)
+            {
+                addError = ex;
+            }
+        }) { IsBackground = true };
+        var removing = new Thread(() =>
+        {
+            try
+            {
+                removalStarted.Set();
+                removed = manager.Remove(added.Id);
+            }
+            catch (Exception ex)
+            {
+                removeError = ex;
+            }
+            finally
+            {
+                removalFinished.Set();
+            }
+        }) { IsBackground = true };
+
+        adding.Start();
+        try
+        {
+            Assert.IsTrue(notificationStarted.Wait(3000));
+            removing.Start();
+            Assert.IsTrue(removalStarted.Wait(3000));
+            Assert.IsFalse(removalFinished.Wait(200), "Removal must wait for the added notification.");
+        }
+        finally
+        {
+            finishNotification.Set();
+            Assert.IsTrue(adding.Join(3000));
+            if ((removing.ThreadState & ThreadState.Unstarted) == 0)
+            {
+                Assert.IsTrue(removing.Join(3000));
+            }
+        }
+
+        Assert.IsTrue(notificationWasReleased);
+        Assert.IsNull(addError);
+        Assert.IsNull(removeError);
+        Assert.IsTrue(removed);
+        Assert.AreEqual(0, manager.Bookmarks.Count);
+        Assert.AreEqual(0, provider.TopLevelCommands().OfType<BookmarkListItem>().Count());
+    }
+
+    [TestMethod]
+    public void Add_RefreshesTheProviderOnce()
+    {
+        using var manager = new BookmarksManager(new MockBookmarkDataSource());
+        var provider = new BookmarksCommandProvider(manager);
+        _ = provider.TopLevelCommands();
+        var changes = 0;
+        provider.ItemsChanged += (_, _) => changes++;
+
+        var added = manager.Add("Example", "https://example.com");
+
+        Assert.AreEqual(1, changes);
+        var bookmarks = provider.TopLevelCommands().OfType<BookmarkListItem>().ToArray();
+        Assert.AreEqual(1, bookmarks.Length);
+        Assert.AreEqual(added.Id, bookmarks[0].BookmarkId);
+    }
+
+    [TestMethod]
+    public void Import_RefreshesTheProviderOnceForTheWholeBatch()
+    {
+        using var manager = new BookmarksManager(new MockBookmarkDataSource());
+        var provider = new BookmarksCommandProvider(manager);
+        _ = provider.TopLevelCommands();
+        var changes = 0;
+        provider.ItemsChanged += (_, _) => changes++;
+
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        try
+        {
+            File.WriteAllText(path, """[{"Path":"https://example.com/one"},{"Path":"https://example.com/two"}]""");
+            new BookmarkTransferService(manager).Import(path);
+
+            Assert.AreEqual(1, changes);
+            Assert.AreEqual(5, provider.TopLevelCommands().Length);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
     [TestMethod]
     public void ProviderHasCorrectId()
     {
@@ -85,8 +212,8 @@ public class BookmarksCommandProviderTests
         // Assert
         Assert.IsNotNull(commands, "commands != null");
 
-        // Should have three commands：Add + two custom bookmarks
-        Assert.AreEqual(3, commands.Length);
+        // Add, import, export, and two custom bookmarks.
+        Assert.AreEqual(5, commands.Length);
 
         // Wait until all BookmarkListItem commands are initialized
         await Task.WhenAll(commands.OfType<Pages.BookmarkListItem>().Select(t => t.IsInitialized));
@@ -138,7 +265,7 @@ public class BookmarksCommandProviderTests
     }
 
     [TestMethod]
-    public void ProviderWithEmptyData_HasOnlyAddCommand()
+    public void ProviderWithEmptyData_HasAddImportAndExportCommands()
     {
         // Arrange
         var mockBookmarkManager = new MockBookmarkManager();
@@ -150,11 +277,60 @@ public class BookmarksCommandProviderTests
         // Assert
         Assert.IsNotNull(commands);
 
-        // Only have Add command
-        Assert.AreEqual(1, commands.Length);
+        Assert.AreEqual(3, commands.Length);
 
         var addCommand = commands.FirstOrDefault(c => c.Title.Contains("Add bookmark"));
         Assert.IsNotNull(addCommand);
+    }
+
+    [TestMethod]
+    [DataRow("Bookmarks.Import", "Import")]
+    [DataRow("Bookmarks.Export", "Export")]
+    public void TransferCommand_OpensEmptyPageWithSingleAction(string id, string action)
+    {
+        var provider = new BookmarksCommandProvider(new MockBookmarkManager());
+        var command = provider.TopLevelCommands().Single(item => item.Command.Id == id);
+        var page = command.Command as IListPage;
+
+        Assert.IsNotNull(page);
+        Assert.AreEqual(0, page.GetItems().Length);
+        Assert.IsNotNull(page.EmptyContent);
+        Assert.AreEqual(action, page.EmptyContent.Command.Name);
+        Assert.IsInstanceOfType<IInvokableCommand>(page.EmptyContent.Command);
+        Assert.AreEqual(0, page.EmptyContent.MoreCommands.Length);
+        var expectedIcon = id == "Bookmarks.Import" ? Icons.ImportBookmarksIcon : Icons.ExportBookmarksIcon;
+        Assert.AreSame(expectedIcon, page.Icon);
+        Assert.AreSame(expectedIcon, page.EmptyContent.Command.Icon);
+    }
+
+    [TestMethod]
+    [DataRow("Bookmarks.Import", false)]
+    [DataRow("Bookmarks.Import", true)]
+    [DataRow("Bookmarks.Export", false)]
+    [DataRow("Bookmarks.Export", true)]
+    public void TransferCommand_RejectsMissingHostOwner(string id, bool clearPreviousOwner)
+    {
+        var provider = new BookmarksCommandProvider(new MockBookmarkManager());
+        var page = (IListPage)provider.TopLevelCommands().Single(item => item.Command.Id == id).Command;
+        var command = (IInvokableCommand)page.EmptyContent.Command;
+        var requiresHwnd = command as IRequiresHostHwnd;
+        Assert.IsNotNull(requiresHwnd);
+
+        for (var invocation = 1; invocation <= 2; invocation++)
+        {
+            if (clearPreviousOwner)
+            {
+                requiresHwnd.SetHostHwnd(101);
+                requiresHwnd.SetHostHwnd(0);
+            }
+
+            var result = command.Invoke(null);
+
+            Assert.AreEqual(CommandResultKind.ShowToast, result.Kind);
+            var toast = (ToastArgs)result.Args;
+            StringAssert.Contains(toast.Message, "Could not resolve a window to own the picker.");
+            Assert.AreEqual(CommandResultKind.KeepOpen, toast.Result.Kind);
+        }
     }
 
     [TestMethod]
@@ -170,8 +346,8 @@ public class BookmarksCommandProviderTests
         // Assert
         Assert.IsNotNull(commands);
 
-        // Only have one command. Will ignore json parse error.
-        Assert.AreEqual(1, commands.Length);
+        // Add, import, and export remain available without bookmarks.
+        Assert.AreEqual(3, commands.Length);
 
         var addCommand = commands.FirstOrDefault(c => c.Title.Contains("Add bookmark"));
         Assert.IsNotNull(addCommand);

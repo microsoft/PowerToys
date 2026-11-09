@@ -201,4 +201,101 @@ A placeholder looks like this:</value>
   <data name="bookmarks_form_bookmark_placeholder" xml:space="preserve">
     <value>Enter URL or file path, you can use {placeholders}, e.g. https://www.bing.com/search?q={Query}</value>
   </data>
+  <data name="bookmarks_import_title" xml:space="preserve">
+    <value>Import bookmarks</value>
+  </data>
+  <data name="bookmarks_export_title" xml:space="preserve">
+    <value>Export bookmarks</value>
+  </data>
+  <data name="bookmarks_import_name" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="bookmarks_export_name" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="bookmarks_import_description" xml:space="preserve">
+    <value>Add bookmarks from a JSON or TSV file. Existing bookmarks are kept and exact duplicates are skipped.</value>
+  </data>
+  <data name="bookmarks_export_description" xml:space="preserve">
+    <value>Save your bookmark names and paths to a JSON or TSV file.</value>
+  </data>
+  <data name="bookmarks_file_json" xml:space="preserve">
+    <value>JSON file</value>
+  </data>
+  <data name="bookmarks_file_supported" xml:space="preserve">
+    <value>Supported files</value>
+  </data>
+  <data name="bookmarks_file_all" xml:space="preserve">
+    <value>All files</value>
+  </data>
+  <data name="bookmarks_file_tsv" xml:space="preserve">
+    <value>Tab-separated text file</value>
+  </data>
+  <data name="bookmarks_file_invalid" xml:space="preserve">
+    <value>Choose a JSON array of bookmarks with Name and Path fields, or tab-separated text with a path and optional name per row. The optional text header is Path then Name. Each bookmark must have a non-empty path.</value>
+    <comment>Name and Path are literal field names in the file format and must not be translated.</comment>
+  </data>
+  <data name="bookmarks_import_success" xml:space="preserve">
+    <value>Bookmarks imported: {0}. Duplicates skipped: {1}.</value>
+    <comment>{0} is the number of new bookmarks added, {1} is the number of duplicates skipped.</comment>
+  </data>
+  <data name="bookmarks_export_success" xml:space="preserve">
+    <value>Bookmarks exported: {0}</value>
+    <comment>{0} is the number of bookmarks exported.</comment>
+  </data>
+  <data name="bookmarks_import_failed" xml:space="preserve">
+    <value>Could not import bookmarks: {0}</value>
+    <comment>{0} is the error message.</comment>
+  </data>
+  <data name="bookmarks_export_failed" xml:space="preserve">
+    <value>Could not export bookmarks: {0}</value>
+    <comment>{0} is the error message.</comment>
+  </data>
+  <data name="bookmarks_import_empty" xml:space="preserve">
+    <value>The file contains no bookmarks.</value>
+  </data>
+  <data name="bookmarks_export_active_store" xml:space="preserve">
+    <value>Choose a different file. This file stores your active bookmarks and cannot be used for export.</value>
+  </data>
+  <data name="bookmarks_file_too_large" xml:space="preserve">
+    <value>The file exceeds the 10 MiB import limit. Split it into smaller files.</value>
+  </data>
+  <data name="bookmarks_file_too_many" xml:space="preserve">
+    <value>The file contains more than 10,000 bookmarks. Split it into smaller files.</value>
+  </data>
+  <data name="bookmarks_file_encoding" xml:space="preserve">
+    <value>The file is not valid UTF-8. Save it with UTF-8 encoding and try again.</value>
+  </data>
+  <data name="bookmarks_file_entry_error" xml:space="preserve">
+    <value>Bookmark {0}: {1}</value>
+    <comment>{0} is the 1-based bookmark index; {1} is the error reason.</comment>
+  </data>
+  <data name="bookmarks_file_line_error" xml:space="preserve">
+    <value>Line {0}: {1}</value>
+    <comment>{0} is the 1-based physical line number; {1} is the error reason.</comment>
+  </data>
+  <data name="bookmarks_file_extension" xml:space="preserve">
+    <value>Choose a .json, .tsv, or .txt file.</value>
+    <comment>.json, .tsv, and .txt are literal file extensions; do not translate them.</comment>
+  </data>
+  <data name="bookmarks_file_duplicate_property" xml:space="preserve">
+    <value>A property is repeated. Keep only one value for each property.</value>
+  </data>
+  <data name="bookmarks_file_string_fields" xml:space="preserve">
+    <value>Name and Path must be strings. Omit Name or use an empty string for an unnamed bookmark.</value>
+    <comment>Name and Path are literal property names; do not translate them.</comment>
+  </data>
+  <data name="bookmarks_file_empty_path" xml:space="preserve">
+    <value>The path is missing or empty.</value>
+  </data>
+  <data name="bookmarks_file_columns" xml:space="preserve">
+    <value>Expected a path and an optional name, separated by one tab. Check for extra columns or characters after a closing quote.</value>
+  </data>
+  <data name="bookmarks_file_reversed_header" xml:space="preserve">
+    <value>Swap the columns so Path comes first and Name comes second.</value>
+    <comment>Name and Path are literal column names; do not translate them.</comment>
+  </data>
+  <data name="bookmarks_file_quotes" xml:space="preserve">
+    <value>Enclose the entire field in double quotes and double any quotes inside it. Check for a missing closing quote.</value>
+  </data>
 </root>

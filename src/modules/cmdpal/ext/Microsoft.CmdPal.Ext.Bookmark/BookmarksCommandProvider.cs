@@ -28,6 +28,8 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
     public IBookmarksManager BookmarksManager => _bookmarksManager;
 
     private readonly ListItem _addNewItem;
+    private readonly ListItem _importItem;
+    private readonly ListItem _exportItem;
     private readonly Lock _bookmarksLock = new();
 
     private ICommandItem[] _commands = [];
@@ -43,15 +45,16 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
 
     public static BookmarksCommandProvider CreateWithDefaultStore()
     {
-        return new BookmarksCommandProvider(new BookmarksManager(new FileBookmarkDataSource(StateJsonPath())));
+        var storagePath = StateJsonPath();
+        return new BookmarksCommandProvider(new BookmarksManager(new FileBookmarkDataSource(storagePath)), storagePath);
     }
 
-    internal BookmarksCommandProvider(IBookmarksManager bookmarksManager)
+    internal BookmarksCommandProvider(IBookmarksManager bookmarksManager, string? storagePath = null)
     {
         ArgumentNullException.ThrowIfNull(bookmarksManager);
         _bookmarksManager = bookmarksManager;
-        _bookmarksManager.BookmarkAdded += OnBookmarkAdded;
         _bookmarksManager.BookmarkRemoved += OnBookmarkRemoved;
+        _bookmarksManager.BookmarksAdded += OnBookmarksAdded;
 
         _commandResolver = new BookmarkResolver(_placeholderParser);
 
@@ -62,17 +65,9 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
         var addBookmarkPage = new AddBookmarkPage(null);
         addBookmarkPage.AddedCommand += (_, e) => _bookmarksManager.Add(e.Name, e.Bookmark);
         _addNewItem = new ListItem(addBookmarkPage);
-    }
-
-    private void OnBookmarkAdded(BookmarkData bookmarkData)
-    {
-        var newItem = new BookmarkListItem(bookmarkData, _bookmarksManager, _commandResolver, _iconLocator, _placeholderParser);
-        lock (_bookmarksLock)
-        {
-            _bookmarks.Add(newItem);
-        }
-
-        NotifyChange();
+        var transferService = new BookmarkTransferService(_bookmarksManager, storagePath);
+        _importItem = new ListItem(new TransferBookmarksPage(transferService, BookmarkTransferOperation.Import));
+        _exportItem = new ListItem(new TransferBookmarksPage(transferService, BookmarkTransferOperation.Export));
     }
 
     private void OnBookmarkRemoved(BookmarkData bookmarkData)
@@ -80,6 +75,20 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
         lock (_bookmarksLock)
         {
             _bookmarks.RemoveAll(t => t.BookmarkId == bookmarkData.Id);
+        }
+
+        NotifyChange();
+    }
+
+    private void OnBookmarksAdded(IReadOnlyList<BookmarkData> bookmarks)
+    {
+        lock (_bookmarksLock)
+        {
+            var ids = _bookmarks.Select(bookmark => bookmark.BookmarkId).ToHashSet();
+            _bookmarks.AddRange(
+                bookmarks
+                    .Where(bookmark => ids.Add(bookmark.Id))
+                    .Select(bookmark => new BookmarkListItem(bookmark, _bookmarksManager, _commandResolver, _iconLocator, _placeholderParser)));
         }
 
         NotifyChange();
@@ -129,7 +138,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
     }
 
     [Pure]
-    private ICommandItem[] BuildTopLevelCommandsUnsafe() => [_addNewItem, .. _bookmarks];
+    private ICommandItem[] BuildTopLevelCommandsUnsafe() => [_addNewItem, _importItem, _exportItem, .. _bookmarks];
 
     public override ICommandItem[]? GetDockBands()
     {

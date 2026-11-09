@@ -3,7 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
@@ -11,6 +15,128 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 [TestClass]
 public class BookmarkManagerTests
 {
+    [TestMethod]
+    [DataRow(nameof(IBookmarksManager.Add))]
+    [DataRow(nameof(IBookmarksManager.AddRange))]
+    [DataRow(nameof(IBookmarksManager.Remove))]
+    [DataRow(nameof(IBookmarksManager.Update))]
+    [Timeout(15000)]
+    public void Mutations_AllowConcurrentReadsDuringNotification(string operation)
+    {
+        using var manager = new BookmarksManager(new MockBookmarkDataSource());
+        var existing = manager.Add("Existing", "existing");
+        Task<BookmarkData[]> read = null;
+        var readCompletedDuringNotification = false;
+        void ReadDuringNotification()
+        {
+            read = Task.Run(() => manager.Bookmarks.ToArray());
+            readCompletedDuringNotification = read.Wait(3000);
+        }
+
+        manager.BookmarksAdded += _ => ReadDuringNotification();
+        manager.BookmarkRemoved += _ => ReadDuringNotification();
+        manager.BookmarkUpdated += (_, _) => ReadDuringNotification();
+
+        switch (operation)
+        {
+            case nameof(IBookmarksManager.Add):
+                manager.Add("Added", "added");
+                break;
+            case nameof(IBookmarksManager.AddRange):
+                manager.AddRange([("Imported", "imported")]);
+                break;
+            case nameof(IBookmarksManager.Remove):
+                manager.Remove(existing.Id);
+                break;
+            case nameof(IBookmarksManager.Update):
+                manager.Update(existing.Id, "Updated", "updated");
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(operation));
+        }
+
+        Assert.IsNotNull(read);
+        Assert.IsTrue(read.Wait(3000), "The reader must finish after the notification returns.");
+        Assert.IsTrue(readCompletedDuringNotification, "Notifications must not hold the data lock needed by provider reads.");
+        CollectionAssert.AreEqual(manager.Bookmarks.ToArray(), read.Result);
+    }
+
+    [TestMethod]
+    [Timeout(15000)]
+    public void AddRange_CannotBeOverwrittenByAnEarlierPendingSave()
+    {
+        using var saveStarted = new ManualResetEventSlim();
+        using var finishSave = new ManualResetEventSlim();
+        var attempts = 0;
+        var saveWasReleased = false;
+        var savedCounts = new ConcurrentQueue<int>();
+        var parser = new BookmarkJsonParser();
+        var dataSource = new MockBookmarkDataSource
+        {
+            BeforeSave = () =>
+            {
+                if (Interlocked.Increment(ref attempts) == 1)
+                {
+                    saveStarted.Set();
+                    saveWasReleased = finishSave.Wait(10000);
+                }
+            },
+            AfterSave = json => savedCounts.Enqueue(parser.ParseBookmarks(json).Data.Count),
+        };
+        using var manager = new BookmarksManager(dataSource);
+        manager.Add("Existing", "existing");
+        Assert.IsTrue(saveStarted.Wait(5000));
+
+        Exception batchError = null;
+        var imported = 0;
+        var batch = new Thread(() =>
+        {
+            try
+            {
+                imported = manager.AddRange([("Imported", "imported")]);
+            }
+            catch (Exception ex)
+            {
+                batchError = ex;
+            }
+        }) { IsBackground = true };
+        batch.Start();
+        try
+        {
+            // Wait for lock contention or completion, not merely for the worker to start.
+            Assert.IsTrue(SpinWait.SpinUntil(() => !batch.IsAlive || (batch.ThreadState & ThreadState.WaitSleepJoin) != 0, 5000));
+            Assert.IsTrue(batch.IsAlive, "The batch must wait for the pending save.");
+            Assert.AreEqual(1, Volatile.Read(ref attempts));
+        }
+        finally
+        {
+            finishSave.Set();
+            Assert.IsTrue(batch.Join(5000));
+        }
+
+        Assert.IsTrue(saveWasReleased, "The pending save must be released before its wait times out.");
+        Assert.IsNull(batchError);
+        Assert.AreEqual(1, imported);
+        int[] expectedCounts = [1, 2];
+        CollectionAssert.AreEqual(expectedCounts, savedCounts.ToArray());
+        using var reloaded = new BookmarksManager(dataSource);
+        CollectionAssert.AreEqual(manager.Bookmarks.ToArray(), reloaded.Bookmarks.ToArray());
+    }
+
+    [TestMethod]
+    public void AddRange_RejectsInvalidEntriesBeforeChangingTheCollection()
+    {
+        var dataSource = new MockBookmarkDataSource();
+        using var manager = new BookmarksManager(dataSource);
+        manager.BookmarksAdded += _ => Assert.Fail("An invalid batch must not notify.");
+
+        Assert.ThrowsException<ArgumentException>(() => manager.AddRange(
+            [("Valid", "https://example.com"), ("Invalid", string.Empty)]));
+
+        Assert.AreEqual(0, manager.Bookmarks.Count);
+        Assert.AreEqual(0, dataSource.SaveCount);
+    }
+
     [TestMethod]
     public void BookmarkManager_CanBeInstantiated()
     {
@@ -117,11 +243,13 @@ public class BookmarkManagerTests
     public void BookmarkManager_AddBookmark_WorksCorrectly()
     {
         // Arrange
-        var bookmarkManager = new BookmarksManager(new MockBookmarkDataSource());
-        var bookmarkAddedEventFired = false;
-        bookmarkManager.BookmarkAdded += (bookmark) =>
+        using var bookmarkManager = new BookmarksManager(new MockBookmarkDataSource());
+        var addedEventCount = 0;
+        bookmarkManager.BookmarksAdded += (added) =>
         {
-            bookmarkAddedEventFired = true;
+            addedEventCount++;
+            Assert.AreEqual(1, added.Count);
+            var bookmark = added[0];
             Assert.AreEqual("TestBookmark", bookmark.Name);
             Assert.AreEqual("C:\\TestPath", bookmark.Bookmark);
         };
@@ -133,7 +261,7 @@ public class BookmarkManagerTests
         var bookmarks = bookmarkManager.Bookmarks;
         Assert.AreEqual(1, bookmarks.Count);
         Assert.AreEqual(addedBookmark, bookmarks.First());
-        Assert.IsTrue(bookmarkAddedEventFired);
+        Assert.AreEqual(1, addedEventCount);
     }
 
     [TestMethod]

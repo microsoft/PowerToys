@@ -17,9 +17,12 @@ internal sealed partial class BookmarksManager : IDisposable, IBookmarksManager
     private readonly BookmarkJsonParser _parser = new();
     private readonly SupersedingAsyncGate _savingGate;
     private readonly Lock _lock = new();
+
+    // Keep mutations and their notifications ordered while allowing reads during callbacks.
+    private readonly Lock _mutationLock = new();
     private BookmarksData _bookmarksData = new();
 
-    public event Action<BookmarkData>? BookmarkAdded;
+    public event Action<IReadOnlyList<BookmarkData>>? BookmarksAdded;
 
     public event Action<BookmarkData, BookmarkData>? BookmarkUpdated; // old, new
 
@@ -49,54 +52,94 @@ internal sealed partial class BookmarksManager : IDisposable, IBookmarksManager
         var newBookmark = new BookmarkData(name, bookmark);
         Logger.LogDebug($"BookmarksManager.Add: created bookmark id={newBookmark.Id} name='{name}' value='{bookmark}'");
 
+        using var mutation = _mutationLock.EnterScope();
         lock (_lock)
         {
             _bookmarksData.Data.Add(newBookmark);
             _ = SaveChangesAsync();
-            BookmarkAdded?.Invoke(newBookmark);
-            return newBookmark;
         }
+
+        BookmarksAdded?.Invoke([newBookmark]);
+        return newBookmark;
+    }
+
+    public int AddRange(IReadOnlyCollection<(string Name, string Bookmark)> bookmarks)
+    {
+        ArgumentNullException.ThrowIfNull(bookmarks);
+        using var mutation = _mutationLock.EnterScope();
+        List<BookmarkData> added = [];
+        lock (_lock)
+        {
+            var existing = _bookmarksData.Data.Select(bookmark => (bookmark.Name, bookmark.Bookmark)).ToHashSet();
+            foreach (var bookmark in bookmarks)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(bookmark.Bookmark);
+                if (existing.Add((bookmark.Name, bookmark.Bookmark)))
+                {
+                    added.Add(new BookmarkData(bookmark.Name, bookmark.Bookmark));
+                }
+            }
+
+            if (added.Count == 0)
+            {
+                return 0;
+            }
+
+            var updated = new BookmarksData { Data = [.. _bookmarksData.Data, .. added] };
+            _dataSource.SaveBookmarkData(_parser.SerializeBookmarks(updated));
+            _bookmarksData = updated;
+        }
+
+        BookmarksAdded?.Invoke(added);
+        return added.Count;
     }
 
     public bool Remove(Guid id)
     {
+        using var mutation = _mutationLock.EnterScope();
+        BookmarkData? bookmark;
         lock (_lock)
         {
-            var bookmark = _bookmarksData.Data.FirstOrDefault(b => b.Id == id);
-            if (bookmark != null && _bookmarksData.Data.Remove(bookmark))
+            bookmark = _bookmarksData.Data.FirstOrDefault(b => b.Id == id);
+            if (bookmark is null || !_bookmarksData.Data.Remove(bookmark))
             {
-                _ = SaveChangesAsync();
-                BookmarkRemoved?.Invoke(bookmark);
-                return true;
+                return false;
             }
 
-            return false;
+            _ = SaveChangesAsync();
         }
+
+        BookmarkRemoved?.Invoke(bookmark);
+        return true;
     }
 
     public BookmarkData? Update(Guid id, string name, string bookmark)
     {
+        using var mutation = _mutationLock.EnterScope();
+        BookmarkData? existingBookmark;
+        BookmarkData updatedBookmark;
         lock (_lock)
         {
-            var existingBookmark = _bookmarksData.Data.FirstOrDefault(b => b.Id == id);
-            if (existingBookmark != null)
+            existingBookmark = _bookmarksData.Data.FirstOrDefault(b => b.Id == id);
+            if (existingBookmark is null)
             {
-                var updatedBookmark = existingBookmark with
-                {
-                    Name = name,
-                    Bookmark = bookmark,
-                };
-
-                var index = _bookmarksData.Data.IndexOf(existingBookmark);
-                _bookmarksData.Data[index] = updatedBookmark;
-
-                _ = SaveChangesAsync();
-                BookmarkUpdated?.Invoke(existingBookmark, updatedBookmark);
-                return updatedBookmark;
+                return null;
             }
 
-            return null;
+            updatedBookmark = existingBookmark with
+            {
+                Name = name,
+                Bookmark = bookmark,
+            };
+
+            var index = _bookmarksData.Data.IndexOf(existingBookmark);
+            _bookmarksData.Data[index] = updatedBookmark;
+
+            _ = SaveChangesAsync();
         }
+
+        BookmarkUpdated?.Invoke(existingBookmark, updatedBookmark);
+        return updatedBookmark;
     }
 
     private void LoadBookmarksFromFile()
@@ -140,20 +183,17 @@ internal sealed partial class BookmarksManager : IDisposable, IBookmarksManager
 
     private Task WriteData(CancellationToken arg)
     {
-        List<BookmarkData> dataToSave;
         lock (_lock)
         {
-            dataToSave = _bookmarksData.Data.ToList();
-        }
-
-        try
-        {
-            var jsonData = _parser.SerializeBookmarks(new BookmarksData { Data = dataToSave });
-            _dataSource.SaveBookmarkData(jsonData);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Failed to save bookmarks: {ex.Message}");
+            // Serialize all writes so a pending save cannot overwrite a completed batch.
+            try
+            {
+                _dataSource.SaveBookmarkData(_parser.SerializeBookmarks(_bookmarksData));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to save bookmarks", ex);
+            }
         }
 
         return Task.CompletedTask;

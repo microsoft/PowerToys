@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -169,6 +169,213 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Choose a different file. This file stores your active bookmarks and cannot be used for export..
+        /// </summary>
+        public static string bookmarks_export_active_store {
+            get {
+                return ResourceManager.GetString("bookmarks_export_active_store", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Save your bookmark names and paths to a JSON or TSV file..
+        /// </summary>
+        public static string bookmarks_export_description {
+            get {
+                return ResourceManager.GetString("bookmarks_export_description", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Could not export bookmarks: {0}.
+        /// </summary>
+        public static string bookmarks_export_failed {
+            get {
+                return ResourceManager.GetString("bookmarks_export_failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Export.
+        /// </summary>
+        public static string bookmarks_export_name {
+            get {
+                return ResourceManager.GetString("bookmarks_export_name", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Bookmarks exported: {0}.
+        /// </summary>
+        public static string bookmarks_export_success {
+            get {
+                return ResourceManager.GetString("bookmarks_export_success", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Export bookmarks.
+        /// </summary>
+        public static string bookmarks_export_title {
+            get {
+                return ResourceManager.GetString("bookmarks_export_title", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to All files.
+        /// </summary>
+        public static string bookmarks_file_all {
+            get {
+                return ResourceManager.GetString("bookmarks_file_all", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Expected a path and an optional name, separated by one tab. Check for extra columns or characters after a closing quote..
+        /// </summary>
+        public static string bookmarks_file_columns {
+            get {
+                return ResourceManager.GetString("bookmarks_file_columns", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to A property is repeated. Keep only one value for each property..
+        /// </summary>
+        public static string bookmarks_file_duplicate_property {
+            get {
+                return ResourceManager.GetString("bookmarks_file_duplicate_property", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The path is missing or empty..
+        /// </summary>
+        public static string bookmarks_file_empty_path {
+            get {
+                return ResourceManager.GetString("bookmarks_file_empty_path", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The file is not valid UTF-8. Save it with UTF-8 encoding and try again..
+        /// </summary>
+        public static string bookmarks_file_encoding {
+            get {
+                return ResourceManager.GetString("bookmarks_file_encoding", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Bookmark {0}: {1}.
+        /// </summary>
+        public static string bookmarks_file_entry_error {
+            get {
+                return ResourceManager.GetString("bookmarks_file_entry_error", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Choose a .json, .tsv, or .txt file..
+        /// </summary>
+        public static string bookmarks_file_extension {
+            get {
+                return ResourceManager.GetString("bookmarks_file_extension", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Choose a JSON array of bookmarks with Name and Path fields, or tab-separated text with a path and optional name per row. The optional text header is Path then Name. Each bookmark must have a non-empty path..
+        /// </summary>
+        public static string bookmarks_file_invalid {
+            get {
+                return ResourceManager.GetString("bookmarks_file_invalid", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to JSON file.
+        /// </summary>
+        public static string bookmarks_file_json {
+            get {
+                return ResourceManager.GetString("bookmarks_file_json", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Line {0}: {1}.
+        /// </summary>
+        public static string bookmarks_file_line_error {
+            get {
+                return ResourceManager.GetString("bookmarks_file_line_error", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Enclose the entire field in double quotes and double any quotes inside it. Check for a missing closing quote..
+        /// </summary>
+        public static string bookmarks_file_quotes {
+            get {
+                return ResourceManager.GetString("bookmarks_file_quotes", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Swap the columns so Path comes first and Name comes second..
+        /// </summary>
+        public static string bookmarks_file_reversed_header {
+            get {
+                return ResourceManager.GetString("bookmarks_file_reversed_header", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Name and Path must be strings. Omit Name or use an empty string for an unnamed bookmark..
+        /// </summary>
+        public static string bookmarks_file_string_fields {
+            get {
+                return ResourceManager.GetString("bookmarks_file_string_fields", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Supported files.
+        /// </summary>
+        public static string bookmarks_file_supported {
+            get {
+                return ResourceManager.GetString("bookmarks_file_supported", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The file exceeds the 10 MiB import limit. Split it into smaller files..
+        /// </summary>
+        public static string bookmarks_file_too_large {
+            get {
+                return ResourceManager.GetString("bookmarks_file_too_large", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The file contains more than 10,000 bookmarks. Split it into smaller files..
+        /// </summary>
+        public static string bookmarks_file_too_many {
+            get {
+                return ResourceManager.GetString("bookmarks_file_too_many", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Tab-separated text file.
+        /// </summary>
+        public static string bookmarks_file_tsv {
+            get {
+                return ResourceManager.GetString("bookmarks_file_tsv", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to URL or file path.
         /// </summary>
         public static string bookmarks_form_bookmark_label {
@@ -268,6 +475,60 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Properties {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Add bookmarks from a JSON or TSV file. Existing bookmarks are kept and exact duplicates are skipped..
+        /// </summary>
+        public static string bookmarks_import_description {
+            get {
+                return ResourceManager.GetString("bookmarks_import_description", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The file contains no bookmarks..
+        /// </summary>
+        public static string bookmarks_import_empty {
+            get {
+                return ResourceManager.GetString("bookmarks_import_empty", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Could not import bookmarks: {0}.
+        /// </summary>
+        public static string bookmarks_import_failed {
+            get {
+                return ResourceManager.GetString("bookmarks_import_failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Import.
+        /// </summary>
+        public static string bookmarks_import_name {
+            get {
+                return ResourceManager.GetString("bookmarks_import_name", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Bookmarks imported: {0}. Duplicates skipped: {1}..
+        /// </summary>
+        public static string bookmarks_import_success {
+            get {
+                return ResourceManager.GetString("bookmarks_import_success", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Import bookmarks.
+        /// </summary>
+        public static string bookmarks_import_title {
+            get {
+                return ResourceManager.GetString("bookmarks_import_title", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to (Refreshing bookmark...).
         /// </summary>
