@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Eventing.Reader;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI.Xaml;
@@ -13,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     public sealed partial class ShortcutDialogContentControl : UserControl
     {
-        public static readonly DependencyProperty KeysProperty = DependencyProperty.Register("Keys", typeof(List<object>), typeof(ShortcutDialogContentControl), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty KeysProperty = DependencyProperty.Register("Keys", typeof(List<object>), typeof(ShortcutDialogContentControl), new PropertyMetadata(default(List<object>)));
         public static readonly DependencyProperty IsErrorProperty = DependencyProperty.Register("IsError", typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false));
         public static readonly DependencyProperty IsWarningAltGrProperty = DependencyProperty.Register("IsWarningAltGr", typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false));
         public static readonly DependencyProperty HasConflictProperty = DependencyProperty.Register("HasConflict", typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false, OnConflictPropertyChanged));
@@ -63,10 +64,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             UpdateShouldShowConflict();
         }
 
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Dependency property wrappers must remain settable, and changing the public property type would break existing consumers.")]
         public List<object> Keys
         {
-            get { return (List<object>)GetValue(KeysProperty); }
-            set { SetValue(KeysProperty, value); }
+            get => (List<object>)GetValue(KeysProperty);
+            set => SetValue(KeysProperty, value);
         }
 
         public bool IsError
@@ -128,6 +130,36 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private void LearnMoreBtn_Click(object sender, RoutedEventArgs e)
         {
             LearnMoreClick?.Invoke(this, new RoutedEventArgs());
+        }
+
+        public bool JudgeIfKeyValueSame(List<object> newValue)
+        {
+            List<object> currentValue = (List<object>)GetValue(KeysProperty);
+
+            if (currentValue == null && newValue == null)
+            {
+                return true;
+            }
+
+            if (currentValue == null || newValue == null)
+            {
+                return false;
+            }
+
+            if (currentValue.Count != newValue.Count)
+            {
+                return false;
+            }
+
+            for (int index = 0; index < currentValue.Count; index++)
+            {
+                if (!Equals(currentValue[index], newValue[index]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

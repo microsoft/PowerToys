@@ -39,6 +39,16 @@ void Trace::InvokedRet(_In_ HRESULT hr) noexcept
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
+void Trace::ServicingWindowInitialization(_In_ HRESULT hr) noexcept
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "ImageResizer_ServicingWindowInitialization",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingHResult(hr),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
 void Trace::QueryContextMenuError(_In_ HRESULT hr) noexcept
 {
     TraceLoggingWriteWrapper(

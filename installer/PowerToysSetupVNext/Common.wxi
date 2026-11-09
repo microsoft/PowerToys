@@ -54,5 +54,21 @@
         <?define UpgradeCodeGUID="42B84BF7-5FBF-473B-9C8B-049DC16F7708" ?>
   <?endif?>
 
+  <!--
+    DACL for every folder PowerToys adds to the machine PATH.
+
+    D:P is the point: it drops inherited ACEs. A per-machine INSTALLFOLDER is overridable
+    (PowerToys.wxs InstallFolder), and a custom root such as C:\PowerToys inherits
+    "Authenticated Users: Modify" from the drive root - which would let any standard user plant
+    binaries in a folder that every process on the machine searches. SYSTEM and Administrators
+    keep full control; BUILTIN\Users keep read + execute so non-admins can still run the commands.
+
+    Author this on the same component as the folder's Environment PATH entry, so a new
+    PATH-visible folder cannot ship without it. Per-user installs live under %LOCALAPPDATA% and
+    must NOT use this - InstallPrivileges is "limited" there, and this SDDL would leave the
+    installing user with only read + execute on their own install.
+  -->
+  <?define MachinePathFolderSddl="D:PAI(A;OICI;GA;;;SY)(A;OICI;GA;;;BA)(A;OICI;GRGX;;;BU)(A;OICIIO;GA;;;CO)" ?>
+
   <?define BinX32Dir="$(var.RepoDir)x86\$(var.Configuration)\" ?>
 </Include>

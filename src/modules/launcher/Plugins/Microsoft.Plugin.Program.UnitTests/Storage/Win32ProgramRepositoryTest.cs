@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
@@ -28,6 +29,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         private List<IFileSystemWatcherWrapper> _fileSystemWatchers;
         private List<Mock<IFileSystemWatcherWrapper>> _fileSystemMocks;
         private static readonly string[] Path = new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" };
+        private static readonly string[] ExpectedFilters = new string[] { "*.exe", "*.lnk", "*.appref-ms", "*.url" };
 
         [TestInitialize]
         public void SetFileSystemWatchers()
@@ -37,8 +39,20 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             for (int index = 0; index < _pathsToWatch.Length; index++)
             {
                 var mockFileWatcher = new Mock<IFileSystemWatcherWrapper>();
+                mockFileWatcher.SetupGet(watcher => watcher.Filters).Returns(new Collection<string>());
                 _fileSystemMocks.Add(mockFileWatcher);
                 _fileSystemWatchers.Add(mockFileWatcher.Object);
+            }
+        }
+
+        [TestMethod]
+        public void Win32ProgramRepositoryAddsExpectedFileSystemWatcherFilters()
+        {
+            _ = new Win32ProgramRepository(_fileSystemWatchers, _settings, _pathsToWatch);
+
+            foreach (var watcher in _fileSystemWatchers)
+            {
+                CollectionAssert.AreEqual(ExpectedFilters, watcher.Filters);
             }
         }
 

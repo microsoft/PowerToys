@@ -9,28 +9,6 @@
         <!--  Other merged dictionaries here  -->
     </ResourceDictionary.MergedDictionaries>
 
-    <ResourceDictionary.ThemeDictionaries>
-        <!--  For slightly adjust the LayerOnAcrylicFillColorDefault color so that the cursor of the searchbox shows  -->
-        <ResourceDictionary x:Key="Default">
-            <SolidColorBrush
-                x:Key="ParameterBackground"
-                Opacity="0.2"
-                Color="{ThemeResource SystemAccentColor}" />
-            <SolidColorBrush x:Key="ParameterBackgroundFocused" Color="{ThemeResource ControlFillColorSecondary}" />
-        </ResourceDictionary>
-        <ResourceDictionary x:Key="Light">
-            <SolidColorBrush
-                x:Key="ParameterBackground"
-                Opacity="0.08"
-                Color="{ThemeResource SystemAccentColor}" />
-            <SolidColorBrush x:Key="ParameterBackgroundFocused" Color="{ThemeResource SolidBackgroundFillColorSecondary}" />
-        </ResourceDictionary>
-        <ResourceDictionary x:Key="HighContrast">
-            <SolidColorBrush x:Key="ParameterBackground" Color="{ThemeResource SystemColorButtonFaceColor}" />
-            <SolidColorBrush x:Key="ParameterBackgroundFocused" Color="{ThemeResource SystemColorHighlightColor}" />
-        </ResourceDictionary>
-    </ResourceDictionary.ThemeDictionaries>
-
     <converters:StringVisibilityConverter
         x:Key="ReverseStringVisibilityConverter"
         EmptyValue="Visible"
@@ -355,12 +333,12 @@
     </Style>
 
     <Style x:Key="SearchParameterTextBoxStyle" TargetType="TextBox">
-        <Setter Property="Foreground" Value="{ThemeResource AccentFillColorDefaultBrush}" />
-        <Setter Property="Background" Value="{ThemeResource ParameterBackground}" />
-        <Setter Property="PlaceholderForeground" Value="{ThemeResource AccentFillColorDefaultBrush}" />
-        <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextControlSelectionHighlightColor}" />
-        <Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderThemeThickness}" />
+        <Setter Property="Foreground" Value="{ThemeResource CmdPal.ParameterForegroundBrush}" />
+        <Setter Property="Background" Value="{ThemeResource CmdPal.ParameterBackgroundBrush}" />
+        <Setter Property="PlaceholderForeground" Value="{ThemeResource CmdPal.ParameterPlaceholderForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CmdPal.ParameterBorderBrush}" />
+        <Setter Property="SelectionHighlightColor" Value="{ThemeResource CmdPal.ParameterSelectionHighlightColor}" />
+        <Setter Property="BorderThickness" Value="1" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
@@ -371,11 +349,11 @@
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="MinHeight" Value="0" />
         <Setter Property="MinWidth" Value="0" />
-        <Setter Property="Padding" Value="6,2,6,2" />
+        <Setter Property="Padding" Value="8,3,8,3" />
         <Setter Property="UseSystemFocusVisuals" Value="{ThemeResource IsApplicationFocusVisualKindReveal}" />
         <Setter Property="ContextFlyout" Value="{StaticResource TextControlCommandBarContextFlyout}" />
         <Setter Property="SelectionFlyout" Value="{StaticResource TextControlCommandBarSelectionFlyout}" />
-        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="CornerRadius" Value="12" />
         <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
         <Setter Property="Template">
             <Setter.Value>
@@ -420,30 +398,51 @@
                                 <VisualState x:Name="Disabled">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBackgroundDisabled}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CmdPal.ParameterBackgroundDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBorderBrushDisabled}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CmdPal.ParameterBorderBrushDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundDisabled}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CmdPal.ParameterForegroundDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundDisabled}}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CmdPal.ParameterPlaceholderForegroundDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
-                                <VisualState x:Name="PointerOver" />
+                                <VisualState x:Name="PointerOver">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CmdPal.ParameterBackgroundPointerOverBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CmdPal.ParameterBorderBrushPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CmdPal.ParameterForegroundPointerOverBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CmdPal.ParameterPlaceholderForegroundPointerOverBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
                                 <VisualState x:Name="Focused">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CmdPal.ParameterPlaceholderForegroundFocusedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ParameterBackgroundFocused}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CmdPal.ParameterBackgroundFocusedBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CmdPal.ParameterBorderBrushFocused}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderThickness">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CmdPal.ParameterBorderThicknessFocused}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CmdPal.ParameterForegroundFocusedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>

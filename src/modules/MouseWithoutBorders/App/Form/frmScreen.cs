@@ -323,7 +323,7 @@ namespace MouseWithoutBorders
 
             try
             {
-                if (!WinAPI.IsMyDesktopActive() || Common.CurrentProcess.SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
+                if (!WinAPI.IsMyDesktopActive() || !WinAPI.IsCurrentSessionAllowed())
                 {
                     myDesktopNotActive = true;
 
@@ -374,7 +374,7 @@ namespace MouseWithoutBorders
                             if (myDesktopNotActive)
                             {
                                 myDesktopNotActive = false;
-                                Encryption.MyKey = Setting.Values.MyKey;
+                                Setting.Values.UpdateRuntimeKey();
                             }
 
                             MachineStuff.UpdateMachinePoolStringSetting();
@@ -497,7 +497,7 @@ namespace MouseWithoutBorders
                     {
                         if (!Encryption.GeneratedKey)
                         {
-                            Encryption.MyKey = Setting.Values.MyKey;
+                            Setting.Values.UpdateRuntimeKey();
 
                             if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                             {

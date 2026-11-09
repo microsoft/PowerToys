@@ -104,6 +104,18 @@ std::optional<GUID> LayoutHotkeys::GetLayoutId(int key) const noexcept
     return std::nullopt;
 }
 
+std::vector<GUID> LayoutHotkeys::GetLayoutIds() const noexcept
+{
+    std::vector<GUID> ids;
+    ids.reserve(m_hotkeyMap.size());
+    for (const auto& [key, id] : m_hotkeyMap)
+    {
+        ids.push_back(id);
+    }
+
+    return ids;
+}
+
 size_t LayoutHotkeys::GetHotkeysCount() const noexcept
 {
     return m_hotkeyMap.size();

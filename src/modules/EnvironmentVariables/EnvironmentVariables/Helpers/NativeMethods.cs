@@ -19,13 +19,14 @@ namespace EnvironmentVariables.Win32
         [DllImport("User32.dll")]
         internal static extern int GetDpiForWindow(IntPtr hwnd);
 
-        [DllImport("user32.dll", EntryPoint = "SetWindowLong")]
+        // Keep the WinUI window procedure Unicode, including when the system ANSI code page is UTF-8.
+        [DllImport("user32.dll", EntryPoint = "SetWindowLongW", ExactSpelling = true)]
         internal static extern int SetWindowLong32(IntPtr hWnd, WindowLongIndexFlags nIndex, WinProc newProc);
 
-        [DllImport("user32.dll", EntryPoint = "SetWindowLongPtr")]
+        [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW", ExactSpelling = true)]
         internal static extern IntPtr SetWindowLongPtr64(IntPtr hWnd, WindowLongIndexFlags nIndex, WinProc newProc);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", EntryPoint = "CallWindowProcW", ExactSpelling = true)]
         internal static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam);
 
         [Flags]

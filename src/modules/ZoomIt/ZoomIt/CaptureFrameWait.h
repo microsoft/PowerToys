@@ -57,6 +57,7 @@
 #include <chrono>
 #include <mutex>
 #include <deque>
+#include <utility>
 
 // robmikh.common
 #include <robmikh.common/composition.interop.h>
@@ -92,23 +93,39 @@ namespace util
 
 struct CaptureFrame
 {
+    struct Lease
+    {
+        explicit Lease(winrt::Direct3D11CaptureFrame frame) : Frame(std::move(frame)) {}
+        Lease(const Lease&) = delete;
+        Lease& operator=(const Lease&) = delete;
+        ~Lease() { Frame.Close(); }
+        winrt::Direct3D11CaptureFrame Frame;
+    };
+
     winrt::Direct3D11::IDirect3DSurface FrameTexture;
     winrt::SizeInt32 ContentSize;
     winrt::TimeSpan SystemRelativeTime;
+    // Return the pool buffer only after the last consumer releases this frame.
+    std::shared_ptr<Lease> Owner;
 };
 
 class CaptureFrameWait
 {
 public:
+    // borderRequired false suppresses the system capture border before the
+    // session starts; the process must already hold borderless capture
+    // access for it to take effect.
     CaptureFrameWait(
         winrt::Direct3D11::IDirect3DDevice const& device,
         winrt::GraphicsCaptureItem const& item,
-        winrt::SizeInt32 const& size );
+        winrt::SizeInt32 const& size,
+        bool borderRequired = true );
     ~CaptureFrameWait();
 
     std::optional<CaptureFrame> TryGetNextFrame();
     std::optional<CaptureFrame> TryGetNextFrame( DWORD timeoutMs );
     std::optional<CaptureFrame> PeekCurrentFrame() const;
+    void DiscardPendingFrames();
     void StopCapture();
     void EnableCursorCapture( bool enable = true )
     {
@@ -124,6 +141,13 @@ public:
             m_session.IsBorderRequired( show );
         }
     }
+    void RecreateFramePool( winrt::SizeInt32 const& size )
+    {
+        auto lock = m_lock.lock_exclusive();
+        m_pendingFrames.clear();
+        m_nextFrameEvent.ResetEvent();
+        m_framePool.Recreate( m_device, winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized, FrameBufferCount, size );
+    }
 
 private:
     void OnFrameArrived(
@@ -137,8 +161,10 @@ private:
     winrt::GraphicsCaptureSession m_session{ nullptr };
     wil::shared_event m_nextFrameEvent;
     wil::shared_event m_endEvent;
-    wil::shared_event m_closedEvent;
-    wil::srwlock m_lock;
+    mutable wil::srwlock m_lock;
+    std::once_flag m_stopOnce;
+    winrt::Direct3D11CaptureFramePool::FrameArrived_revoker m_frameArrived;
 
-    winrt::Direct3D11CaptureFrame m_currentFrame{ nullptr };
+    static constexpr int FrameBufferCount = 3;
+    std::deque<CaptureFrame> m_pendingFrames;
 };

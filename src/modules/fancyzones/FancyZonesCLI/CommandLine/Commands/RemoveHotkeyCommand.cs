@@ -4,7 +4,6 @@
 
 using System;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.Globalization;
 
 using FancyZonesEditorCommon.Data;
@@ -19,16 +18,16 @@ internal sealed partial class RemoveHotkeyCommand : FancyZonesBaseCommand
     public RemoveHotkeyCommand()
         : base("remove-hotkey", Properties.Resources.cmd_remove_hotkey)
     {
-        AddAlias("rhk");
+        Aliases.Add("rhk");
 
-        _key = new Argument<int>("key", Properties.Resources.remove_hotkey_arg_key);
-        AddArgument(_key);
+        _key = new Argument<int>("key") { Description = Properties.Resources.remove_hotkey_arg_key };
+        Arguments.Add(_key);
     }
 
-    protected override string Execute(InvocationContext context)
+    protected override string Execute(ParseResult parseResult)
     {
         // FancyZones running guard is handled by FancyZonesBaseCommand.
-        int key = context.ParseResult.GetValueForArgument(_key);
+        int key = parseResult.GetValue(_key);
 
         var hotkeysWrapper = FancyZonesDataIO.ReadLayoutHotkeys();
 

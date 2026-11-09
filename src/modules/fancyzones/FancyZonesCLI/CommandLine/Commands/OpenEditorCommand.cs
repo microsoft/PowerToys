@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.CommandLine.Invocation;
+using System.CommandLine;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -16,10 +16,10 @@ internal sealed partial class OpenEditorCommand : FancyZonesBaseCommand
     public OpenEditorCommand()
         : base("open-editor", Properties.Resources.cmd_open_editor)
     {
-        AddAlias("e");
+        Aliases.Add("e");
     }
 
-    protected override string Execute(InvocationContext context)
+    protected override string Execute(ParseResult parseResult)
     {
         const string FancyZonesEditorToggleEventName = "Local\\FancyZones-ToggleEditorEvent-1e174338-06a3-472b-874d-073b21c62f14";
 

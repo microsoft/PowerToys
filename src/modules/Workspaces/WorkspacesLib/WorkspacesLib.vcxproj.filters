@@ -20,10 +20,34 @@
     <ClInclude Include="WorkspacesData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CliCommands.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LaunchSession.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionHandoff.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionLogging.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OperationLifetime.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WorkspaceStore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="AppUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Result.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SignatureVerification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PendingLaunchApproval.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="JsonUtils.h">
@@ -38,7 +62,13 @@
     <ClInclude Include="LaunchingStateEnum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LaunchDecision.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="LaunchingStatus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LauncherUiMessage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PwaHelper.h">
@@ -70,6 +100,39 @@
     <ClCompile Include="WorkspacesData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CliCommands.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LaunchSession.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LaunchExecution.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\AppLauncher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\Launcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\LauncherUIHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\RegistryUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\WindowArrangerHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SessionHandoff.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WorkspaceStore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RepoRoot)src\common\interop\pipe_caller_auth.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="AppUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -86,6 +149,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PwaHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SignatureVerification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CommandLineArgsHelper.cpp">
