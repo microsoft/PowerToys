@@ -79,6 +79,10 @@ also checks that a hidden Command Palette instance can be re-shown without repla
 - Indexer tests create temporary files and uniquely named folders under `Documents`, an indexed
   location in Windows Search's Classic configuration, and need indexing enabled. Folder actions
   use test-owned indexed folders; they do not depend on the hidden `AppData` directory being indexed.
+  Windows Search readiness has a single 60-second ceiling before the Indexer class runs.
+- Routine UI lookups use the framework's five-second default; search-value confirmation has a
+  three-second ceiling, and result selection and page navigation have ten-second ceilings. These
+  waits finish as soon as the condition is satisfied, rather than delaying every test.
 
 ### Checklist coverage
 

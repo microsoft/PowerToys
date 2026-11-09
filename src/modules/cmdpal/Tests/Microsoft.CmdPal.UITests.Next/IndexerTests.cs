@@ -75,7 +75,7 @@ public class IndexerTests : CommandPaletteTestBase
                     .AsTask().GetAwaiter().GetResult()
                     .Select(file => file.Path).ToHashSet(StringComparer.OrdinalIgnoreCase),
                 isMatch: paths => paths is not null && paths.Contains(testFilePath) && paths.Contains(browseChildPath),
-                timeoutMS: 180_000,
+                timeoutMS: 60_000,
                 requiredConsecutiveMatches: 1,
                 pollIntervalMS: 1_000);
             indexed = readiness.Succeeded;
@@ -143,13 +143,13 @@ public class IndexerTests : CommandPaletteTestBase
         }
     }
 
-    // A freshly created item may not be indexed yet; re-run the query until it appears.
-    private NavigationViewItem FindIndexedItem(string name, int timeoutMS = 90_000)
+    // The OS index is ready; retry only while the extension's results catch up.
+    private NavigationViewItem FindIndexedItem(string name, int timeoutMS = 15_000)
     {
         var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMS);
         while (true)
         {
-            SetFilesExtensionSearchBox(name);
+            SetSearchBox(name);
             var item = CommandPaletteSession.FindAll<NavigationViewItem>(By.Name(name), timeoutMS: 3_000)
                 .FirstOrDefault(result => string.Equals(result.Name, name, StringComparison.OrdinalIgnoreCase));
             if (item is not null)
@@ -158,7 +158,7 @@ public class IndexerTests : CommandPaletteTestBase
             }
 
             Assert.IsTrue(DateTime.UtcNow < deadline, $"The indexer did not return '{name}' within {timeoutMS} ms.");
-            SetFilesExtensionSearchBox(string.Empty);
+            SetSearchBox(string.Empty);
             Thread.Sleep(1_000);
         }
     }
@@ -171,7 +171,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.AreEqual("Search files", searchFileItem.Name);
         Step("Opening the Search files extension");
         InvokeResultWithEnter(searchFileItem.Name);
-        Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 45_000));
+        Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 10_000));
     }
 
     private void AssertFixtureFolderOpened(IReadOnlySet<long> windowsBefore)
@@ -190,7 +190,7 @@ public class IndexerTests : CommandPaletteTestBase
     public void BasicIndexerSearchTest()
     {
         EnterIndexerExtension();
-        SetFilesExtensionSearchBox(TestFolderName);
+        SetSearchBox(TestFolderName);
         Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>(TestFolderName));
     }
 

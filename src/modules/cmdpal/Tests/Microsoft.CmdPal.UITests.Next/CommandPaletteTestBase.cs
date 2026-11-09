@@ -26,7 +26,7 @@ public class CommandPaletteTestBase : UITestBase
         commandPaletteSession ??= Session.FromProcess(
             Session.ProcessId.ToString(CultureInfo.InvariantCulture),
             PowerToysModule.CommandPalette,
-            timeoutMS: 10_000);
+            timeoutMS: 5_000);
 
     protected IDisposable BeginNavigationDiagnostics() =>
         diagnosticTrace = new CmdPalDiagnosticTrace(TestContext, Session);
@@ -35,11 +35,11 @@ public class CommandPaletteTestBase : UITestBase
     {
         EnsureCommandPaletteForeground();
         Step($"Setting Command Palette search to '{text}'");
-        var searchBox = CommandPaletteSession.Find<TextBox>(By.AccessibilityId("MainSearchBox"), timeoutMS: 45_000);
+        var searchBox = CommandPaletteSession.Find<TextBox>(By.AccessibilityId("MainSearchBox"));
         diagnosticTrace?.Record("MainSearchBox-found", new { Query = text, CommandPaletteSession.TargetFlag, CommandPaletteSession.TargetValue });
         searchBox.SetText(text);
         diagnosticTrace?.Record("MainSearchBox-value-set", new { Query = text });
-        Assert.IsTrue(searchBox.WaitForValue(text, timeoutMS: 10_000), $"The search box did not update to '{text}'.");
+        Assert.IsTrue(searchBox.WaitForValue(text, timeoutMS: 3_000), $"The search box did not update to '{text}'.");
         diagnosticTrace?.Record("MainSearchBox-value-confirmed", new { Query = text });
     }
 
@@ -78,7 +78,7 @@ public class CommandPaletteTestBase : UITestBase
             }
 
             Step($"Command Palette is not in the foreground (foreground: '{foreground.ProcessName}' '{foreground.Title}'); re-summoning");
-            SessionHelper.LaunchScope(PowerToysModule.CommandPalette);
+            SessionHelper.LaunchCommandPalette();
 
             // The relaunched process only redirects its activation to the running instance and then
             // exits. Wait for it to go away so winapp's process-name target resolves to the real window.
@@ -136,7 +136,7 @@ public class CommandPaletteTestBase : UITestBase
         }
     }
 
-    protected Element SelectResult(string resultName, int timeoutMS = 45_000)
+    protected Element SelectResult(string resultName, int timeoutMS = 10_000)
     {
         EnsureCommandPaletteForeground();
         Step($"Waiting for stable layout and selection of '{resultName}'");
@@ -205,19 +205,13 @@ public class CommandPaletteTestBase : UITestBase
             .FirstOrDefault(item => item.ControlType == "ListItem" &&
                 string.Equals(item.Name, resultName, StringComparison.OrdinalIgnoreCase));
 
-    protected void SetFilesExtensionSearchBox(string text) => SetSearchBox(text);
-
-    protected void SetCalculatorExtensionSearchBox(string text) => SetSearchBox(text);
-
-    protected void SetTimeAndDateExtensionSearchBox(string text) => SetSearchBox(text);
-
     protected void OpenExtension(string query, string title)
     {
         SetSearchBox(query);
         Step($"Opening the '{title}' extension");
         InvokeResultWithEnter(title);
         Step($"Waiting for the '{title}' destination page's Back control");
-        Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 45_000));
+        Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 10_000));
         diagnosticTrace?.Record("destination-Back-found", new { Extension = title });
     }
 
@@ -241,7 +235,7 @@ public class CommandPaletteTestBase : UITestBase
                 timeoutMS: 1_000),
             isMatch: settings => settings is not null &&
                 settings.FindAll<TextBox>(By.Name("Find a setting"), timeoutMS: 0).Count > 0,
-            timeoutMS: 60_000,
+            timeoutMS: 30_000,
             requiredConsecutiveMatches: 2,
             pollIntervalMS: 200,
             shouldRetryException: exception => exception is AssertFailedException &&
@@ -273,7 +267,7 @@ public class CommandPaletteTestBase : UITestBase
     {
         Step("Opening Command Palette settings");
         EnsureCommandPaletteForeground();
-        Assert.IsNotNull(CommandPaletteSession.Find<TextBox>(By.AccessibilityId("MainSearchBox"), timeoutMS: 45_000));
+        Assert.IsNotNull(CommandPaletteSession.Find<TextBox>(By.AccessibilityId("MainSearchBox")));
         for (var depth = 0; depth < 5 &&
              !CommandPaletteSession.Has(By.AccessibilityId("SettingsIconButton"), timeoutMS: 500); depth++)
         {

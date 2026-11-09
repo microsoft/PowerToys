@@ -259,36 +259,45 @@ public sealed class SessionHelper
 
     /// <summary>
     /// Issue a single detached launch for <paramref name="scope"/>: the runner with
-    /// <c>--open-settings</c> for the Settings scope (the runner owns the Settings UI — see
+    /// <c>--open-settings</c> for the Settings scope (the runner owns the Settings UI; see
     /// <see cref="EnsureRunning"/> remarks), or the scope's executable or registered application.
     /// </summary>
-    public static void LaunchScope(PowerToysModule scope)
+    private static void LaunchScope(PowerToysModule scope)
     {
         if (scope == PowerToysModule.PowerToysSettings)
         {
             LaunchViaShell(ModulePaths.ExePathFor(PowerToysModule.Runner), "--open-settings");
         }
+        else if (scope == PowerToysModule.CommandPalette)
+        {
+            LaunchCommandPalette();
+        }
         else
         {
-            var executable = ModulePaths.ExePathFor(scope);
-            if (scope == PowerToysModule.CommandPalette)
-            {
-                var package = ModulePaths.FindPackagedCommandPalette();
-                if (package is not null &&
-                    string.Equals(Path.GetDirectoryName(executable), package.InstalledLocation.Path, StringComparison.OrdinalIgnoreCase))
-                {
-                    // Windows 10 requires app activation rather than executing the WindowsApps file.
-                    var entries = package.GetAppListEntriesAsync().AsTask().GetAwaiter().GetResult();
-                    Assert.HasCount(1, entries, "The installed Command Palette package must expose exactly one application.");
-                    Assert.IsTrue(
-                        entries[0].LaunchAsync().AsTask().GetAwaiter().GetResult(),
-                        "Windows did not activate the installed Command Palette application.");
-                    return;
-                }
-            }
-
-            LaunchViaShell(executable, null);
+            LaunchViaShell(ModulePaths.ExePathFor(scope), null);
         }
+    }
+
+    /// <summary>
+    /// Launch Command Palette, redirecting activation to its running instance when already open.
+    /// </summary>
+    public static void LaunchCommandPalette()
+    {
+        var executable = ModulePaths.ExePathFor(PowerToysModule.CommandPalette);
+        var package = ModulePaths.FindPackagedCommandPalette();
+        if (package is not null &&
+            string.Equals(Path.GetDirectoryName(executable), package.InstalledLocation.Path, StringComparison.OrdinalIgnoreCase))
+        {
+            // Windows 10 requires app activation rather than executing the WindowsApps file.
+            var entries = package.GetAppListEntriesAsync().AsTask().GetAwaiter().GetResult();
+            Assert.HasCount(1, entries, "The installed Command Palette package must expose exactly one application.");
+            Assert.IsTrue(
+                entries[0].LaunchAsync().AsTask().GetAwaiter().GetResult(),
+                "Windows did not activate the installed Command Palette application.");
+            return;
+        }
+
+        LaunchViaShell(executable, null);
     }
 
     /// <summary>
@@ -505,7 +514,7 @@ public sealed class SessionHelper
         return null;
     }
 
-    internal static bool MatchesMainWindow(string expectedProcess, string expectedTitle, string processName, string title) =>
+    private static bool MatchesMainWindow(string expectedProcess, string expectedTitle, string processName, string title) =>
         !string.IsNullOrEmpty(expectedProcess) &&
         !string.IsNullOrEmpty(expectedTitle) &&
         processName.Contains(expectedProcess, StringComparison.OrdinalIgnoreCase) &&

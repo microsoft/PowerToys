@@ -50,9 +50,9 @@ public class BasicTests : CommandPaletteTestBase
         Assert.AreEqual("Search files", searchFileItem.Name);
         Step("Opening the Search files extension");
         InvokeResultWithEnter(searchFileItem.Name);
-        Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 45_000));
+        Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 10_000));
 
-        SetFilesExtensionSearchBox("Downloads");
+        SetSearchBox("Downloads");
         Assert.IsNotNull(FindExactResult("Downloads", timeoutMS: 20_000));
     }
 
@@ -66,7 +66,7 @@ public class BasicTests : CommandPaletteTestBase
         try
         {
             OpenExtension("calculator", "Calculator");
-            SetCalculatorExtensionSearchBox(expression);
+            SetSearchBox(expression);
             ClipboardHelper.Clear();
             InvokeResultWithEnter(expectedResult);
             Assert.AreEqual(expectedResult, ClipboardHelper.WaitForText(string.Empty, timeoutMS: 10_000));
@@ -88,9 +88,9 @@ public class BasicTests : CommandPaletteTestBase
         Assert.AreEqual("Time and date", timeAndDateItem.Name);
         InvokeResultWithEnter(timeAndDateItem.Name);
         Step("Waiting for the Time and date destination page's Back control");
-        Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 45_000));
+        Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 10_000));
 
-        SetTimeAndDateExtensionSearchBox("year");
+        SetSearchBox("year");
         var culture = CultureInfo.CurrentCulture;
         var expectedYear = culture.Calendar.GetYear(DateTime.Now).ToString(culture);
         Step($"Waiting for the Time/Date result for year {expectedYear}");
@@ -107,7 +107,7 @@ public class BasicTests : CommandPaletteTestBase
         try
         {
             OpenExtension("time and date", "Time and date");
-            SetTimeAndDateExtensionSearchBox(query);
+            SetSearchBox(query);
             var now = DateTime.Now;
             var culture = CultureInfo.CurrentCulture;
             var expected = query == "year"
@@ -134,7 +134,7 @@ public class BasicTests : CommandPaletteTestBase
     public void TimeAndDateNowMatchesLocalClock()
     {
         OpenExtension("time and date", "Time and date");
-        SetTimeAndDateExtensionSearchBox("now");
+        SetSearchBox("now");
         var culture = CultureInfo.CurrentCulture;
         TimeOnly observed = default;
         var found = CommandPaletteSession.WaitFor(
