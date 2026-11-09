@@ -108,10 +108,16 @@ internal sealed class OpenWindows
 
         var newWindow = new Window(hwnd);
 
-        if (newWindow.IsWindow && newWindow.Visible && newWindow.IsOwner &&
-            (!newWindow.IsToolWindow || newWindow.IsAppWindow) && !newWindow.TaskListDeleted &&
-            (newWindow.Desktop.IsVisible || !SettingsManager.Instance.ResultsFromVisibleDesktopOnly || WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.GetDesktopCount() < 2) &&
-            newWindow.ClassName != "Windows.UI.Core.CoreWindow" && newWindow.Process.Name != PowerLauncherExe)
+        // Skip owned windows unless WS_EX_APPWINDOW is set, matching taskbar behavior
+        if (newWindow.IsWindow
+            && newWindow.Visible
+            && (newWindow.IsAppWindow || (newWindow.IsOwner && !newWindow.IsToolWindow))
+            && !newWindow.TaskListDeleted
+            && (newWindow.Desktop.IsVisible
+                || !SettingsManager.Instance.ResultsFromVisibleDesktopOnly
+                || WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.GetDesktopCount() < 2)
+            && newWindow.ClassName != "Windows.UI.Core.CoreWindow"
+            && newWindow.Process.Name != PowerLauncherExe)
         {
             // To hide (not add) preloaded uwp app windows that are invisible to the user and other cloaked windows, we check the cloak state. (Issue #13637.)
             // (If user asking to see cloaked uwp app windows again we can add an optional plugin setting in the future.)

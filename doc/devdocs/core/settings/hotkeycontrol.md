@@ -9,7 +9,7 @@ The Settings project provides a custom hotkey control which consumes key presses
 
 #### [`HotkeySettingsControlHook.cs`](/src/settings-ui/Settings.UI.Library/HotkeySettingsControlHook.cs)
 
-- This function initializes and starts the [`keyboardHook`](src/common/interop/KeyboardHook.cpp) for the hotkey control.
+- This function initializes and starts the [`keyboardHook`](../../../../src/common/interop/KeyboardHook.cpp) for the hotkey control.
 
 ```csharp
         public HotkeySettingsControlHook(KeyEvent keyDown, KeyEvent keyUp, IsActive isActive, FilterAccessibleKeyboardEvents filterAccessibleKeyboardEvents)

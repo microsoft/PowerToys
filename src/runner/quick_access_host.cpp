@@ -184,7 +184,19 @@ namespace QuickAccessHost
 
         try
         {
-            quick_access_ipc->start(token.get());
+            interop_auth::CallerPolicy qa_caller_policy;
+            qa_caller_policy.enabled = true;
+            qa_caller_policy.expectedDirectory = get_module_folderpath() + L"\\WinUI3Apps";
+            qa_caller_policy.allowedBasenames = { L"PowerToys.QuickAccess.exe" };
+            qa_caller_policy.expectedVersion = interop_auth::GetOwnModuleVersion();
+            qa_caller_policy.requireMicrosoftSignature = true;
+            qa_caller_policy.logReject = [](const interop_auth::AuthResult& r) {
+                Logger::warn(L"Rejected unauthenticated Quick Access pipe client: pid={} image='{}' reason={}",
+                             r.pid,
+                             r.imagePath,
+                             r.reasonCode);
+            };
+            quick_access_ipc->start(token.get(), qa_caller_policy);
         }
         catch (...)
         {
@@ -217,6 +229,7 @@ namespace QuickAccessHost
         }
 
         quick_access_process.reset(process_info.hProcess);
+        const wil::unique_handle quick_access_thread{ process_info.hThread };
 
         // Assign to job object to ensure the process is killed if the runner exits unexpectedly (e.g. debugging stop)
         quick_access_job.reset(CreateJobObjectW(nullptr, nullptr));
@@ -241,8 +254,7 @@ namespace QuickAccessHost
             Logger::warn(L"QuickAccessHost: failed to create job object. error={}", GetLastError());
         }
 
-        ResumeThread(process_info.hThread);
-        CloseHandle(process_info.hThread);
+        ResumeThread(quick_access_thread.get());
     }
 
     void show()

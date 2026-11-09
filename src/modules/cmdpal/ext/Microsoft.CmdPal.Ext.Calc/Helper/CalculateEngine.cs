@@ -59,6 +59,9 @@ public static partial class CalculateEngine
         input = LogRegex().Replace(input, "log10(");
         input = LnRegex().Replace(input, "log(");
 
+        // ExprTK exposes the sign function as sgn, so forward the user-facing alias.
+        input = SignRegex().Replace(input, "sgn(");
+
         input = CalculateHelper.FixHumanMultiplicationExpressions(input);
 
         input = CalculateHelper.UpdateFactorialFunctions(input);
@@ -155,4 +158,7 @@ public static partial class CalculateEngine
 
     [GeneratedRegex("ln\\s*\\(", RegexOptions.IgnoreCase)]
     private static partial Regex LnRegex();
+
+    [GeneratedRegex("\\bsign\\s*\\(", RegexOptions.IgnoreCase)]
+    private static partial Regex SignRegex();
 }

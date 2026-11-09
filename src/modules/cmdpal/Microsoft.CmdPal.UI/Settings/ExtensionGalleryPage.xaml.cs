@@ -2,36 +2,81 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Gallery;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
 public sealed partial class ExtensionGalleryPage : Page, IDisposable
 {
+    private string? _extensionIdToOpen;
+    private bool _isGalleryLoaded;
+    private bool _disposed;
+
     public ExtensionGalleryViewModel ViewModel { get; }
 
     public ExtensionGalleryPage()
     {
+        // SettingsWindow disposes the page and its view model when navigating away.
+        NavigationCacheMode = NavigationCacheMode.Disabled;
         ViewModel = App.Current.Services.GetRequiredService<ExtensionGalleryViewModel>();
 
         this.InitializeComponent();
 
         Loaded += ExtensionGalleryPage_Loaded;
-        Unloaded += ExtensionGalleryPage_Unloaded;
-    }
-
-    private void ExtensionGalleryPage_Unloaded(object sender, RoutedEventArgs e)
-    {
-        ViewModel.Dispose();
     }
 
     private async void ExtensionGalleryPage_Loaded(object sender, RoutedEventArgs e)
     {
         await ViewModel.LoadAsync();
+
+        if (_disposed || !IsLoaded)
+        {
+            return;
+        }
+
+        _isGalleryLoaded = true;
+        OpenPendingExtension();
+    }
+
+    internal void OpenExtension(string extensionId)
+    {
+        if (string.IsNullOrWhiteSpace(extensionId))
+        {
+            return;
+        }
+
+        _extensionIdToOpen = extensionId;
+        OpenPendingExtension();
+    }
+
+    internal void ClearPendingExtension()
+    {
+        _extensionIdToOpen = null;
+    }
+
+    private void OpenPendingExtension()
+    {
+        if (!IsLoaded || !_isGalleryLoaded || _extensionIdToOpen is not { } extensionId)
+        {
+            return;
+        }
+
+        _extensionIdToOpen = null;
+        var extension = ViewModel.FindById(extensionId);
+        if (extension is not null)
+        {
+            NavigateToDetails(extension);
+        }
+        else
+        {
+            Logger.LogWarning($"Extension gallery entry '{extensionId}' was not found.");
+        }
     }
 
     private void GalleryItemsView_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
@@ -63,6 +108,10 @@ public sealed partial class ExtensionGalleryPage : Page, IDisposable
 
     public void Dispose()
     {
+        _disposed = true;
+        Loaded -= ExtensionGalleryPage_Loaded;
+        _extensionIdToOpen = null;
+        _isGalleryLoaded = false;
         ViewModel.Dispose();
     }
 }

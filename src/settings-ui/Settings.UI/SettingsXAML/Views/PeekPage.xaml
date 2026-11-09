@@ -47,6 +47,18 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.AlwaysRunNotElevated, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
+                        Name="PeekAlwaysOnTop"
+                        x:Uid="Peek_AlwaysOnTop"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7C4;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.AlwaysOnTop, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="PeekShowTaskbarIcon"
+                        x:Uid="Peek_ShowTaskbarIcon"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8F9;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowTaskbarIcon, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
                         Name="PeekCloseAfterLosingFocus"
                         x:Uid="Peek_CloseAfterLosingFocus"
                         HeaderIcon="{ui:FontIcon Glyph=&#xED1A;}">
@@ -98,6 +110,17 @@
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                                 <CheckBox x:Uid="Peek_SourceCode_Minimap" IsChecked="{x:Bind ViewModel.SourceCodeMinimap, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="PeekSourceCodeMaxFileSize"
+                                x:Uid="Peek_SourceCode_MaxFileSize"
+                                IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="102400"
+                                    Minimum="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.SourceCodeMaxFileSize, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>

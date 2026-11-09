@@ -1,0 +1,164 @@
+# Copyright (c) Microsoft Corporation
+# The Microsoft Corporation licenses this file to you under the MIT license.
+
+$scriptPath = Join-Path $PSScriptRoot '..\resolveUiTestModules.ps1'
+
+function New-UITestProject {
+    param(
+        [Parameter(Mandatory)]
+        [string] $RelativePath,
+
+        [ValidateSet('Next', 'Legacy', 'None')]
+        [string] $Framework = 'Next'
+    )
+
+    $path = Join-Path $TestDrive $RelativePath
+    New-Item -ItemType Directory -Path (Split-Path $path) -Force | Out-Null
+    $projectReference = switch ($Framework) {
+        'Next' { '<ProjectReference Include="..\UITestAutomation.Next\UITestAutomation.Next.csproj" />' }
+        'Legacy' { '<ProjectReference Include="..\UITestAutomation\UITestAutomation.csproj" />' }
+        default { '' }
+    }
+    @"
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    $projectReference
+  </ItemGroup>
+</Project>
+"@ | Set-Content -LiteralPath $path
+}
+
+Describe 'resolveUiTestModules' {
+    It 'selects both driver suites for a shared fixture change <File>' -TestCases @(
+        @{ File = '.pipelines/umdf/UmdfBuild.Common.ps1' }
+        @{ File = '.pipelines\umdf\UmdfDriver.Common.ps1' }
+        @{ File = '.pipelines/v2/templates/job-test-arm64.yml' }
+    ) {
+        param($File)
+        New-UITestProject 'src\modules\powerdisplay\PowerDisplay.UITests\PowerDisplay.UITests.csproj'
+        New-UITestProject 'src\modules\GrabAndMove\Tests\GrabAndMove.UITests\GrabAndMove.UITests.csproj'
+        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile $File
+        $result.UiTestModules | Should Be @('GrabAndMove.UITests', 'PowerDisplay.UITests')
+    }
+
+    It 'selects Grab and Move for its driver-only change' {
+        New-UITestProject 'src\modules\GrabAndMove\Tests\GrabAndMove.UITests\GrabAndMove.UITests.csproj'
+        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile '.pipelines/umdf-hid-smoke/Manage-SmokeDriver.ps1'
+        $result.UiTestModules | Should Be @('GrabAndMove.UITests')
+    }
+
+    It 'selects Power Display for a fixture-only change <File>' -TestCases @(
+        @{ File = '.pipelines/powerdisplay-idd-poc/Fixture.cpp' }
+        @{ File = '.pipelines\powerdisplay-idd-poc\Manage-Poc.ps1' }
+        @{ File = '.pipelines/v2/templates/steps-build-umdf-display.yml' }
+    ) {
+        param($File)
+        New-UITestProject 'src\modules\powerdisplay\PowerDisplay.UITests\PowerDisplay.UITests.csproj'
+        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile $File
+        $result.TouchedModules | Should Be @('powerdisplay')
+        $result.UiTestModules | Should Be @('PowerDisplay.UITests')
+        $result.InfrastructureChanged | Should Be $false
+    }
+
+    It 'selects the UI tests for a touched module' {
+        New-UITestProject 'src\modules\FileLocksmith\Tests\FileLocksmith.UITests\FileLocksmith.UITests.csproj'
+
+        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile @(
+            'PowerToys.slnx',
+            'src/modules/FileLocksmith/FileLocksmithUI/MainWindow.xaml.cs',
+            'src\modules\FileLocksmith\FileLocksmithLib\FileLocksmith.cpp'
+        )
+
+        $result.TouchedModules | Should Be @('FileLocksmith')
+        $result.UiTestModules | Should Be @('FileLocksmith.UITests')
+    }
+
+    It 'selects projects using the Next framework and ignores legacy siblings' {
+        New-UITestProject 'src\modules\fancyzones\FancyZones.UITests\FancyZones.UITests.csproj' -Framework Legacy
+        New-UITestProject 'src\modules\fancyzones\FancyZones.UITests.Next\FancyZones.UITests.Next.csproj'
+        New-UITestProject 'src\modules\fancyzones\FancyZonesEditor.UITests\FancyZonesEditor.UITests.csproj' -Framework Legacy
+        New-UITestProject 'src\modules\fancyzones\FancyZonesEditor.UITests.Next\FancyZonesEditor.UITests.Next.csproj'
+
+        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile 'src/modules/fancyzones/dll/FancyZones.cpp'
+
+        $result.UiTestModules | Should Be @(
+            'FancyZones.UITests.Next',
+            'FancyZonesEditor.UITests.Next'
+        )
+    }
+
+    It 'ignores modules with only legacy UI tests and non-module changes' {
+        New-UITestProject 'src\modules\Example\Tests\Example.UITests\Example.UITests.csproj' -Framework Legacy
+        New-UITestProject 'src\modules\Example\Tests\Example.UnitTests\Example.UnitTests.csproj' -Framework None
+
+        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile @(
+            'doc/devdocs/modules/example.md',
+            'src/modules/Example/Example.cpp'
+        )
+
+        $result.TouchedModules | Should Be @('Example')
+        @($result.UiTestModules).Count | Should Be 0
+    }
+
+    It 'selects MWB alongside other affected Release suites' {
+        New-UITestProject 'src\modules\MouseWithoutBorders\Tests\MouseWithoutBorders.UITests\MouseWithoutBorders.UITests.csproj'
+        New-UITestProject 'src\modules\FileLocksmith\Tests\FileLocksmith.UITests\FileLocksmith.UITests.csproj'
+
+        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile @(
+            'src/modules/MouseWithoutBorders/App/Main.cs',
+            'src/modules/FileLocksmith/FileLocksmithUI/MainWindow.xaml.cs'
+        )
+
+        $result.TouchedModules | Should Be @('FileLocksmith', 'MouseWithoutBorders')
+        $result.UiTestModules | Should Be @('FileLocksmith.UITests', 'MouseWithoutBorders.UITests')
+    }
+
+    It 'selects the smoke set when UI-test infrastructure changes' {
+        New-UITestProject 'src\modules\CropAndLock\Tests\CropAndLock.UITests\CropAndLock.UITests.csproj'
+        New-UITestProject 'src\modules\Hosts\Hosts.UITests.Next\Hosts.UITests.Next.csproj'
+        New-UITestProject 'src\modules\ZoomIt\Tests\ZoomIt.UITests\ZoomIt.UITests.csproj'
+        New-UITestProject 'src\modules\GrabAndMove\Tests\GrabAndMove.UITests\GrabAndMove.UITests.csproj'
+        New-UITestProject 'src\modules\powerdisplay\PowerDisplay.UITests\PowerDisplay.UITests.csproj'
+
+        foreach ($file in @(
+            '.pipelines/v2/templates/job-test-project.yml',
+            '.pipelines\signSparsePackages.ps1',
+            'src/common/UITestAutomation.Next/Session.cs'
+        )) {
+            $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile $file
+
+            $result.InfrastructureChanged | Should Be $true
+            $expected = @('CropAndLock.UITests', 'Hosts.UITests.Next')
+            if ($file -eq '.pipelines/v2/templates/job-test-project.yml') {
+                $expected = @('CropAndLock.UITests', 'GrabAndMove.UITests', 'Hosts.UITests.Next', 'PowerDisplay.UITests')
+            }
+            $result.UiTestModules | Should Be $expected
+        }
+    }
+
+    It 'merges the smoke set with touched module UI tests' {
+        New-UITestProject 'src\modules\CropAndLock\Tests\CropAndLock.UITests\CropAndLock.UITests.csproj'
+        New-UITestProject 'src\modules\Hosts\Hosts.UITests.Next\Hosts.UITests.Next.csproj'
+        New-UITestProject 'src\modules\ZoomIt\Tests\ZoomIt.UITests\ZoomIt.UITests.csproj'
+
+        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile @(
+            '.pipelines/resolveUiTestModules.ps1',
+            'src/modules/ZoomIt/ZoomIt/Zoomit.cpp',
+            'src/modules/Hosts/HostsUILib/Host.cs'
+        )
+
+        $result.UiTestModules | Should Be @('CropAndLock.UITests', 'Hosts.UITests.Next', 'ZoomIt.UITests')
+    }
+
+    It 'does not select the smoke set for unrelated pipeline changes' {
+        New-UITestProject 'src\modules\CropAndLock\Tests\CropAndLock.UITests\CropAndLock.UITests.csproj'
+
+        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile @(
+            '.pipelines/v2/templates/job-build-project.yml',
+            'src/common/UITestAutomation/Session.cs'
+        )
+
+        $result.InfrastructureChanged | Should Be $false
+        @($result.UiTestModules).Count | Should Be 0
+    }
+}

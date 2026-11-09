@@ -29,16 +29,29 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static HotkeySettings DefaultSnipToggleKey => new HotkeySettings(false, true, false, false, '6'); // Ctrl+6
 
         [CmdConfigureIgnore]
+        public static HotkeySettings DefaultSnipSaveToggleKey => new HotkeySettings(false, true, false, true, '6'); // Ctrl+Shift+6
+
+        [CmdConfigureIgnore]
         public static HotkeySettings DefaultSnipOcrToggleKey => new HotkeySettings(false, true, true, false, '6'); // Ctrl+Alt+6
+
+        // Dictation is normally armed by pressing Space during the snip drag.
+        [CmdConfigureIgnore]
+        public static HotkeySettings DefaultSnipDictateToggleKey => new HotkeySettings();
 
         [CmdConfigureIgnore]
         public static HotkeySettings DefaultSnipPanoramaToggleKey => new HotkeySettings(false, true, false, false, '8'); // Ctrl+8
+
+        [CmdConfigureIgnore]
+        public static HotkeySettings DefaultSnipPanoramaSaveToggleKey => new HotkeySettings(false, true, false, true, '8'); // Ctrl+Shift+8
 
         [CmdConfigureIgnore]
         public static HotkeySettings DefaultBreakTimerKey => new HotkeySettings(false, true, false, false, '3'); // Ctrl+3
 
         [CmdConfigureIgnore]
         public static HotkeySettings DefaultDemoTypeToggleKey => new HotkeySettings(false, true, false, false, '7'); // Ctrl+7
+
+        [CmdConfigureIgnore]
+        public static HotkeySettings DefaultMirrorToggleKey => new HotkeySettings(false, true, false, false, '9'); // Ctrl+9
 
         public KeyboardKeysProperty ToggleKey { get; set; }
 
@@ -50,9 +63,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public KeyboardKeysProperty SnipToggleKey { get; set; }
 
+        public KeyboardKeysProperty SnipSaveToggleKey { get; set; }
+
         public KeyboardKeysProperty SnipOcrToggleKey { get; set; }
 
+        public KeyboardKeysProperty SnipDictateToggleKey { get; set; }
+
         public KeyboardKeysProperty SnipPanoramaToggleKey { get; set; }
+
+        public KeyboardKeysProperty SnipPanoramaSaveToggleKey { get; set; }
 
         public KeyboardKeysProperty BreakTimerKey { get; set; }
 
@@ -95,6 +114,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public BoolProperty SmoothImage { get; set; }
 
+        public BoolProperty SnipCopyToClipboard { get; set; }
+
         public IntProperty ZoominSliderLevel { get; set; }
 
         public IntProperty RecordScaling { get; set; }
@@ -110,6 +131,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public BoolProperty MicMonoMix { get; set; }
 
         public StringProperty MicrophoneDeviceId { get; set; }
+
+        public BoolProperty SnipDictateEnabled { get; set; }
+
+        public BoolProperty SnipDictateOnSnip { get; set; }
+
+        public IntProperty SnipDictateGrace { get; set; }
+
+        public StringProperty SnipDictatePrefix { get; set; }
 
         public BoolProperty WebcamOverlay { get; set; }
 
@@ -130,5 +159,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public BoolProperty RecordAspectRatio { get; set; }
 
         public BoolProperty BreakLockWorkstation { get; set; }
+
+        public KeyboardKeysProperty MirrorToggleKey { get; set; }
+
+        public BoolProperty MirrorTrackWindow { get; set; }
     }
 }

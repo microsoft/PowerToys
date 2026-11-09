@@ -8,6 +8,8 @@ namespace winrt::PowerToys::Interop::implementation
         CommonManaged() = default;
 
         static hstring GetProductVersion();
+        static hstring GetProductVersionChannel();
+        static hstring GetProductVersionSourceCommit();
     };
 }
 namespace winrt::PowerToys::Interop::factory_implementation

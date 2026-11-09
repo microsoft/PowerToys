@@ -3,6 +3,8 @@
 #include "pch.h"
 #include "ContextMenuHandler.h"
 
+#include <strsafe.h>
+
 #include <Settings.h>
 #include <trace.h>
 
@@ -181,19 +183,21 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
 
 HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT* /*pReserved*/, LPSTR pszName, UINT cchMax)
 {
-    if (idCmd == ID_RESIZE_PICTURES)
-    {
-        if (uType == GCS_VERBW)
-        {
-            wcscpy_s(reinterpret_cast<LPWSTR>(pszName), cchMax, RESIZE_PICTURES_VERBW);
-        }
-    }
-    else
+    if (idCmd != ID_RESIZE_PICTURES)
     {
         return E_INVALIDARG;
     }
 
-    return S_OK;
+    switch (uType)
+    {
+    case GCS_VERBW:
+        return StringCchCopyW(reinterpret_cast<LPWSTR>(pszName), cchMax, RESIZE_PICTURES_VERBW);
+    case GCS_VALIDATEA:
+    case GCS_VALIDATEW:
+        return S_OK;
+    default:
+        return E_NOTIMPL;
+    }
 }
 
 HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)

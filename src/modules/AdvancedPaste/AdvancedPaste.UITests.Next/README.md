@@ -1,0 +1,161 @@
+# Advanced Paste UI tests
+
+Black-box UI tests using `Microsoft.PowerToys.UITest.Next` and the repository-pinned
+winapp CLI. The legacy `UITest-AdvancedPaste` test code and project are retained unchanged. Its
+HTML, XML, expected results, and initial settings are linked into this project's
+output rather than duplicated.
+
+## Coverage
+
+| Surface | Coverage |
+|---|---|
+| Legacy plain-text scenarios | Real rich-text paste control proves the source is formatted, then verifies formatting removal and subsequent normal paste through the direct hotkey, action list, and Ctrl+1. No WordPad dependency. |
+| Legacy Markdown scenarios | All three invocation routes and the existing HTML/result fixtures; HTML clipboard preference, emphasis, links, script and footnote removal. |
+| Legacy JSON scenarios | All three invocation routes and the existing XML/result fixtures; comma/semicolon/tab CSV, declared separators, escaped quotes, INI, plain-text fallback, and already-valid JSON. |
+| Text fidelity | Unicode, supplementary characters, line breaks, tabs, trailing spaces, and a large clipboard value. |
+| Windows OCR | Bitmap and file clipboard sources, preview acceptance by button and Enter, direct-hotkey bypass, Settings-controlled automatic paste, and no-text error recovery. Uses Windows OCR, not an AI provider. |
+| File paste | TXT, HTML, and PNG via action list and direct shortcuts; real Explorer paste, exact copied bytes, UTF-8 content, PNG dimensions and pixels, and source-file preservation. |
+| Media conversion | PCM audio to MP3, video audio extraction, and H.264/AAC MP4. Deterministic fixtures use Windows media APIs; output streams, dimensions, duration, and same-extension naming are checked. |
+| Clipboard history (temporarily quarantined) | Five ignored cases retain selection/deletion of exact Windows history IDs, baseline-ID preservation, capacity reset, Settings disable behavior, and repeated enable/disable coverage. See the quarantine explanation below; these cases do not currently execute. |
+| Lifecycle and keyboard | Real Settings OFF/ON with process exit/restart and all configured hotkeys disabled; live shortcut editing, cancel, reset, and clearing optional shortcuts. |
+| Settings and window behavior | Clipboard preview refresh/visibility, close-on-focus-loss, Escape, empty clipboard, offline action/group visibility, preference persistence, and unavailable AI with no providers. |
+
+## Deliberate exclusions
+
+The fixture enables only Advanced Paste and starts with AI disabled and no
+configured providers. Tests never supply credentials, download models, or execute
+cloud or local-provider inference.
+
+OpenAI/other provider requests, Foundry Local, Ollama/local inference, Phi Silica,
+custom AI transformations, spelling/coaching inference, and AI result
+regeneration/provider switching are excluded. Settings-only availability and
+visibility remain covered. OCR preview covers the shared preview/paste surface
+without requiring a provider.
+
+## Execution requirements
+
+- A logged-on interactive, non-administrator Windows desktop.
+- Matching PowerToys and test architecture, the pinned winapp CLI, and .NET 10.
+- English UI, Segoe UI, the built-in `en-US` Windows OCR language, and the standard
+  Windows audio/video codecs. No separately installed inference engine is needed.
+- Release Runner/Settings companion signing through the existing test pipeline
+  setup. The `AdvancedPaste` project family participates in
+  `$requiresAuthenticatedSettingsIpc`; lifecycle tests do not bypass IPC by editing
+  the enabled map and restarting the Runner.
+- CI dispatches `AdvancedPaste.UITests.Next` through the existing
+  `runUiTestAsUser.ps1` limited interactive task, not the elevated pipeline agent.
+  The fixture reports its user, session, and elevation and fails if the desktop
+  context is elevated or session 0. Windows clipboard history must be exercised
+  in the same non-elevated desktop context as the user workflow; a checked registry
+  preference alone does not prove that Windows captured a history item.
+
+Build with the existing repository tools:
+
+```powershell
+tools\build\build.cmd -Path src\modules\AdvancedPaste\AdvancedPaste.UITests.Next -Platform x64 -Configuration Release
+```
+
+Use the `ui-tests-local-vm` skill to stage the output and run the complete suite on
+separate Windows 10 and Windows 11 VMs. The executable is
+`AdvancedPaste.UITests.Next.exe`, and the category is `AdvancedPaste`.
+Focused filters are for diagnosis, not sign-off. Follow `ui-tests-pipeline-ci`
+only after the required full local matrix is green.
+
+The destination is a message-pumping STA rich-text window. Extended clipboard
+fixtures use real Windows clipboard formats; files are pasted into newly opened,
+uniquely named Explorer destinations. Hotkey input is queued as a complete native
+batch so the test's modifier releases cannot interrupt the module's own Ctrl+V.
+Settings and clipboard state are restored, generated files and windows are
+removed, and failure media is captured before cleanup.
+
+The paste destination and Settings keyboard-input surface are selected with a
+single click on their normal taskbar buttons. The destination acquires editor
+focus on its own STA thread. It is never forced topmost, minimized, or
+reactivated to rescue a failed paste. Its visibility is checked across AP
+activation, which sends the activation shortcut only once.
+
+Before file actions, the fixture focuses Explorer's empty content area and
+requires native keyboard focus under `SHELLDLL_DefView`; an empty `UIItemsView`
+does not expose a keyboard-focusable UIA item. Action-list commands are invoked
+once through their enabled UI Automation list items, like the other Settings and
+menu controls. No coordinate-click retry, paste retry, or direct file-copy
+substitute is used.
+File delivery is observed on disk before reading CF_HDROP, so the test does not
+open the clipboard while Explorer is consuming the product's Ctrl+V.
+Text, rich-text, and startup clipboard snapshot access use the fixture's message-pumping STA.
+Asynchronous snapshot reads stay on that thread across awaits, including when Test Explorer
+starts the test on an MTA worker with a nonempty desktop clipboard.
+Snapshots retry only the transient clipboard-busy HRESULT, asynchronously on the
+same STA and within a bounded deadline; no format is dropped to make a snapshot succeed.
+The backup regression uses the verified text fixture for text-only input and a
+desktop data object for HTML/RTF, with a bounded five-second native write retry
+budget. It does not retry the backup assertion or non-contention errors.
+Read errors are reported rather than converted to an empty string. RTF fixtures
+are copied from the real editor with Ctrl+C, and both text and RTF formats are
+verified before the formatting-removal scenarios start.
+
+Settings navigation and controls use a process-scoped session so a discarded
+startup HWND cannot invalidate an otherwise healthy Settings window. Physical
+keyboard interactions reacquire the current main HWND and still require foreground.
+
+History fixtures activate the feature through Windows' real clipboard Settings
+toggle, then copy text with Ctrl+C
+from the foreground editor. A registry write
+and a successful current-clipboard write do not establish the Windows capture
+service's readiness. Every copy still requires its exact Windows history ID before
+the next copy, and an additional regression covers three enable/disable cycles.
+Restoration drives the OS toggle before restoring the original registry value,
+including its presence and type.
+History failures preserve the original desktop, open Win+V, and attach a composed
+desktop screenshot and JSON containing the native popup's UIA subtree, explicit
+empty/populated/disabled/unknown state, visible test-owned content, and Windows API
+status/IDs before and after opening the popup on both the test thread and pumping STA.
+The popup is found through the desktop UIA root: a running TextInputHost or its
+empty CoreWindow tree does not prove the clipboard panel is visible or empty.
+Missing UIA content is reported as unavailable/unknown, never as an empty history.
+Native popup inspection is diagnostic-only. Normal selection, deletion, disabling,
+capacity-reset, and repeated-transition checks retain their authoritative history
+API and product-UI assertions without depending on an extra OS popup interaction.
+There is no unconditional Win+V warmup before fixture copies, and diagnostics never
+turn a failed capture into a passing test. Failures retain read-only clipboard-broker
+service state diagnostics; tests never alter service startup configuration or bypass
+clipboard policy.
+
+**Temporary clipboard-history quarantine:** all five methods in
+`AdvancedPasteClipboardHistoryTests` have explicit `Ignore` attributes. Windows 11
+x64 CI fails to capture the first fixture even though the current clipboard is
+correct, history is enabled, and the per-user broker is running. Builds
+[390674](https://dev.azure.com/shine-oss/PowerToys/_build/results?buildId=390674) and
+[390679](https://dev.azure.com/shine-oss/PowerToys/_build/results?buildId=390679)
+include visible Win+V empty-state screenshots, UIA trees, and matching zero-ID API
+observations. The change from image 23.0.0 to 25.0.0 is correlated, not proven causal.
+The image cannot currently be replaced or repaired. The detailed class comment
+records investigation limits and re-enable criteria. The quarantine also skips
+these cases on otherwise healthy Windows 10 and ARM64 workers; passing remaining
+tests does not constitute clipboard-history sign-off. Assertions and diagnostics
+are preserved for reactivation, not replaced with empty-history success fallbacks.
+
+History tests use a fresh process per case so restoring the OS history preference
+does not carry an old ItemsView and pending notifications into the next fixture.
+**The `DestructiveClipboardHistory` category can permanently clear saved Windows
+clipboard history.** Setup calls Windows' Clear history operation when there is
+insufficient capacity or the scenario requires an empty history. It logs the reset
+and waits for the required state before adding fixtures. Cleared unpinned entries
+are not restored. Pinned items are never removed by setup; the scenario fails with
+an explicit explanation if they prevent the required baseline. Exclude this category
+or use a disposable desktop if saved history must be retained.
+The current clipboard and the original OS history preference are still restored.
+Cleanup clears only the current test-owned clipboard content before re-enabling
+history, then drains late test-owned IDs while preserving entries in the post-setup baseline.
+
+## HTML-only conversion regression
+
+`HtmlOnlyClipboardIsPastedAsTextFile` guards against the former native process
+termination in `Windows.Data.Html.HtmlUtilities.ConvertToText` (`iertutil.dll`,
+exception `0xc0000409`). The product now extracts the CF_HTML fragment and uses
+managed HTML-to-text conversion for both clipboard HTML fallbacks, without
+changing its compatibility manifests or relying on native startup prewarming.
+
+`HtmlToTextHelperTests` additionally covers entity decoding, Unicode clipboard
+offsets, block and line-break boundaries, tables, preformatted text, excluded
+non-content nodes, deep markup, and plain-text precedence.
