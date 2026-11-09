@@ -108,7 +108,9 @@ public partial class DockBandViewModelLifecycleTests
             band.SafeCleanup();
             page.ReleaseGetItems();
 
-            var completed = await Task.WhenAny(initialization, Task.Delay(TimeSpan.FromSeconds(5)));
+            using var timeoutCts = new CancellationTokenSource();
+            var completed = await Task.WhenAny(initialization, Task.Delay(TimeSpan.FromSeconds(5), timeoutCts.Token));
+            timeoutCts.Cancel();
             Assert.AreSame(initialization, completed, "Dock band initialization did not finish.");
             await initialization;
 

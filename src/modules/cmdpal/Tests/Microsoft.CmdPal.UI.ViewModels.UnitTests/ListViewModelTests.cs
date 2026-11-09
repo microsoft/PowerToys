@@ -384,7 +384,9 @@ public partial class ListViewModelTests
         {
             viewModel.InitializeProperties();
 
-            var completed = await Task.WhenAny(errorObserved.Task, Task.Delay(TimeSpan.FromSeconds(2)));
+            using var timeoutCts = new CancellationTokenSource();
+            var completed = await Task.WhenAny(errorObserved.Task, Task.Delay(TimeSpan.FromSeconds(2), timeoutCts.Token));
+            timeoutCts.Cancel();
             Assert.AreSame(errorObserved.Task, completed);
             Assert.IsFalse(string.IsNullOrWhiteSpace(viewModel.ErrorMessage));
             Assert.AreEqual(0, page.GetItemsCallCount);
@@ -412,7 +414,9 @@ public partial class ListViewModelTests
 
         page.TriggerItemsChanged();
 
-        var completed = await Task.WhenAny(page.DeferredFetchObserved, Task.Delay(TimeSpan.FromSeconds(2)));
+        using var timeoutCts = new CancellationTokenSource();
+        var completed = await Task.WhenAny(page.DeferredFetchObserved, Task.Delay(TimeSpan.FromSeconds(2), timeoutCts.Token));
+        timeoutCts.Cancel();
         Assert.AreSame(page.DeferredFetchObserved, completed);
         Assert.AreEqual(2, page.GetItemsCallCount);
 
@@ -570,7 +574,9 @@ public partial class ListViewModelTests
         {
             action();
 
-            var completed = await Task.WhenAny(updateObserved.Task, Task.Delay(TimeSpan.FromSeconds(2)));
+            using var timeoutCts = new CancellationTokenSource();
+            var completed = await Task.WhenAny(updateObserved.Task, Task.Delay(TimeSpan.FromSeconds(2), timeoutCts.Token));
+            timeoutCts.Cancel();
             Assert.AreSame(updateObserved.Task, completed);
             return await updateObserved.Task;
         }
