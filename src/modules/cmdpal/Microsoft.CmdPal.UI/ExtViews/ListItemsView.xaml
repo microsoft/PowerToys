@@ -482,8 +482,8 @@
                         FontSize="14"
                         Foreground="{ThemeResource TextFillColorPrimary}"
                         Text="{x:Bind help:BindTransformers.ReserveTextLine(Title), Mode=OneWay}"
-                        TextAlignment="Center"
-                        TextTrimming="WordEllipsis"
+                        TextAlignment="Left"
+                        TextTrimming="CharacterEllipsis"
                         TextWrapping="NoWrap"
                         Visibility="{x:Bind LayoutShowsTitle, Mode=OneWay}" />
                     <TextBlock
@@ -496,8 +496,8 @@
                         FontSize="11"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Text="{x:Bind help:BindTransformers.ReserveTextLine(Subtitle), Mode=OneWay}"
-                        TextAlignment="Center"
-                        TextTrimming="WordEllipsis"
+                        TextAlignment="Left"
+                        TextTrimming="CharacterEllipsis"
                         TextWrapping="NoWrap"
                         Visibility="{x:Bind LayoutShowsSubtitle, Mode=OneWay}" />
                 </StackPanel>
