@@ -1,0 +1,13 @@
+parameters:
+  - name: condition
+    type: string
+    default: succeeded()
+
+steps:
+  - pwsh: |
+      & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Build-Smoke.ps1" `
+        -WorkRoot "$(Agent.TempDirectory)\pt-umdf-hid" `
+        -OutputRoot "$(JobOutputDirectory)\umdf-hid" `
+        -Platforms "$(BuildPlatform)" -DriverOnly
+    displayName: Build isolated virtual HID test driver (never included in installers)
+    condition: ${{ parameters.condition }}

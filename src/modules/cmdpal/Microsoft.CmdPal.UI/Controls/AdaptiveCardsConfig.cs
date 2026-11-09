@@ -3,340 +3,82 @@
 // See the LICENSE file in the project root for more information.
 
 using AdaptiveCards.Rendering.WinUI3;
+using Microsoft.UI.Xaml;
+using Windows.UI.ViewManagement;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
+/// <summary>Creates Adaptive Card host configs that match Command Palette's theme, accent color, and contrast colors.</summary>
 public sealed class AdaptiveCardsConfig
 {
-    public static AdaptiveHostConfig Light { get; }
+    // Accent and contrast changes create new configs, so keep only the latest few.
+    private const int MaximumCachedConfigs = 4;
 
-    public static AdaptiveHostConfig Dark { get; }
+    private static readonly UISettings UserInterfaceSettings = new();
+    private static readonly AccessibilitySettings AccessibilitySettings = new();
+    private static readonly Lock CacheLock = new();
+    private static readonly Dictionary<string, AdaptiveHostConfig> CachedConfigs = new(StringComparer.Ordinal);
 
-    static AdaptiveCardsConfig()
+    public static AdaptiveHostConfig Light => Create(ElementTheme.Light);
+
+    public static AdaptiveHostConfig Dark => Create(ElementTheme.Dark);
+
+    /// <summary>
+    /// Returns the host config for content shown in <paramref name="theme"/>. Calls that resolve to the
+    /// same colors return the same instance, so callers can compare by reference.
+    /// </summary>
+    public static AdaptiveHostConfig Create(ElementTheme theme)
     {
-        Light = AdaptiveHostConfig.FromJsonString(LightHostConfigString).HostConfig;
-        Dark = AdaptiveHostConfig.FromJsonString(DarkHostConfigString).HostConfig;
+        var json = AdaptiveHostConfigJson.Create(GetTokens(theme));
+        lock (CacheLock)
+        {
+            if (CachedConfigs.TryGetValue(json, out var cached))
+            {
+                return cached;
+            }
+
+            if (CachedConfigs.Count >= MaximumCachedConfigs)
+            {
+                CachedConfigs.Clear();
+            }
+
+            var config = AdaptiveHostConfig.FromJsonString(json).HostConfig;
+            CachedConfigs[json] = config;
+            return config;
+        }
     }
 
-    public static readonly string DarkHostConfigString = """
-{
-  "spacing": {
-    "small": 4,
-    "default": 8,
-    "medium": 20,
-    "large": 30,
-    "extraLarge": 40,
-    "padding": 8
-  },
-  "separator": {
-    "lineThickness": 0,
-    "lineColor": "#C8FFFFFF"
-  },
-  "supportsInteractivity": true,
-  "fontTypes": {
-    "default": {
-      "fontFamily": "'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
-      "fontSizes": {
-        "small": 12,
-        "default": 14,
-        "medium": 14,
-        "large": 20,
-        "extraLarge": 26
-      },
-      "fontWeights": {
-        "lighter": 200,
-        "default": 400,
-        "bolder": 600
-      }
-    },
-    "monospace": {
-      "fontFamily": "'Courier New', Courier, monospace",
-      "fontSizes": {
-        "small": 12,
-        "default": 12,
-        "medium": 14,
-        "large": 18,
-        "extraLarge": 26
-      },
-      "fontWeights": {
-        "lighter": 200,
-        "default": 400,
-        "bolder": 600
-      }
-    }
-  },
-  "containerStyles": {
-    "default": {
-      "backgroundColor": "#00000000",
-      "borderColor": "#00000000",
-      "foregroundColors": {
-        "default": {
-          "default": "#FFFFFF",
-          "subtle": "#C8FFFFFF"
-        },
-        "accent": {
-          "default": "#0063B1",
-          "subtle": "#880063B1"
-        },
-        "attention": {
-          "default": "#FF5555",
-          "subtle": "#DDFF5555"
-        },
-        "good": {
-          "default": "#54a254",
-          "subtle": "#DD54a254"
-        },
-        "warning": {
-          "default": "#c3ab23",
-          "subtle": "#DDc3ab23"
+    private static AdaptiveCardThemeTokens GetTokens(ElementTheme theme)
+    {
+        if (AccessibilitySettings.HighContrast)
+        {
+            return AdaptiveCardThemeTokens.HighContrast(
+                GetSystemColor(UIElementType.WindowText),
+                GetSystemColor(UIElementType.GrayText),
+                GetSystemColor(UIElementType.Highlight),
+                GetSystemColor(UIElementType.Window));
         }
-      }
-    },
-    "emphasis": {
-      "backgroundColor": "#09FFFFFF",
-      "borderColor": "#09FFFFFF",
-      "foregroundColors": {
-        "default": {
-          "default": "#FFFFFF",
-          "subtle": "#C8FFFFFF"
-        },
-        "accent": {
-          "default": "#2E89FC",
-          "subtle": "#882E89FC"
-        },
-        "attention": {
-          "default": "#FF5555",
-          "subtle": "#DDFF5555"
-        },
-        "good": {
-          "default": "#54a254",
-          "subtle": "#DD54a254"
-        },
-        "warning": {
-          "default": "#c3ab23",
-          "subtle": "#DDc3ab23"
-        }
-      }
-    }
-  },
-  "imageSizes": {
-    "small": 16,
-    "medium": 24,
-    "large": 32
-  },
-  "actions": {
-    "maxActions": 5,
-    "spacing": "default",
-    "buttonSpacing": 8,
-    "showCard": {
-      "actionMode": "inline",
-      "inlineTopMargin": 8
-    },
-    "actionsOrientation": "horizontal",
-    "actionAlignment": "stretch"
-  },
-  "adaptiveCard": {
-    "allowCustomStyle": false
-  },
-  "imageSet": {
-    "imageSize": "medium",
-    "maxImageHeight": 100
-  },
-  "factSet": {
-    "title": {
-      "color": "default",
-      "size": "default",
-      "isSubtle": false,
-      "weight": "bolder",
-      "wrap": true,
-      "maxWidth": 150
-    },
-    "value": {
-      "color": "default",
-      "size": "default",
-      "isSubtle": false,
-      "weight": "default",
-      "wrap": true
-    },
-    "spacing": 8
-  },
-  "textStyles": {
-    "heading": {
-      "size": "large",
-      "weight": "bolder",
-      "color": "default",
-      "isSubtle": false,
-      "fontType": "default"
-    },
-    "columnHeader": {
-      "size": "medium",
-      "weight": "bolder",
-      "color": "default",
-      "isSubtle": false,
-      "fontType": "default"
-    }
-  }
-}
-""";
 
-    public static readonly string LightHostConfigString = """
-{
-  "spacing": {
-    "small": 4,
-    "default": 8,
-    "medium": 20,
-    "large": 30,
-    "extraLarge": 40,
-    "padding": 8
-  },
-  "separator": {
-    "lineThickness": 0,
-    "lineColor": "#606060"
-  },
-  "supportsInteractivity": true,
-  "fontTypes": {
-    "default": {
-      "fontFamily": "'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
-      "fontSizes": {
-        "small": 12,
-        "default": 14,
-        "medium": 14,
-        "large": 20,
-        "extraLarge": 26
-      },
-      "fontWeights": {
-        "lighter": 200,
-        "default": 400,
-        "bolder": 600
-      }
-    },
-    "monospace": {
-      "fontFamily": "'Courier New', Courier, monospace",
-      "fontSizes": {
-        "small": 12,
-        "default": 12,
-        "medium": 14,
-        "large": 18,
-        "extraLarge": 26
-      },
-      "fontWeights": {
-        "lighter": 200,
-        "default": 400,
-        "bolder": 600
-      }
+        // Match AccentTextFillColorPrimaryBrush: a darker accent on light surfaces and a
+        // lighter accent on dark surfaces.
+        return theme == ElementTheme.Light
+            ? AdaptiveCardThemeTokens.Light(GetAccent(UIColorType.AccentDark2))
+            : AdaptiveCardThemeTokens.Dark(GetAccent(UIColorType.AccentLight3));
     }
-  },
-  "containerStyles": {
-    "default": {
-      "backgroundColor": "#00000000",
-      "borderColor": "#00000000",
-      "foregroundColors": {
-        "default": {
-          "default": "#E6000000",
-          "subtle": "#99000000"
-        },
-        "accent": {
-          "default": "#0063B1",
-          "subtle": "#880063B1"
-        },
-        "attention": {
-          "default": "#C00000",
-          "subtle": "#DDC00000"
-        },
-        "good": {
-          "default": "#54a254",
-          "subtle": "#DD54a254"
-        },
-        "warning": {
-          "default": "#c3ab23",
-          "subtle": "#DDc3ab23"
-        }
-      }
-    },
-    "emphasis": {
-      "backgroundColor": "#80F6F6F6",
-      "borderColor": "#80F6F6F6",
-      "foregroundColors": {
-        "default": {
-          "default": "#E6000000",
-          "subtle": "#99000000"
-        },
-        "accent": {
-          "default": "#2E89FC",
-          "subtle": "#882E89FC"
-        },
-        "attention": {
-          "default": "#C00000",
-          "subtle": "#DDC00000"
-        },
-        "good": {
-          "default": "#54a254",
-          "subtle": "#DD54a254"
-        },
-        "warning": {
-          "default": "#c3ab23",
-          "subtle": "#DDc3ab23"
-        }
-      }
+
+    private static string GetAccent(UIColorType type)
+    {
+        var color = UserInterfaceSettings.GetColorValue(type);
+        return AdaptiveCardThemeTokens.ToHex(color.A, color.R, color.G, color.B);
     }
-  },
-  "imageSizes": {
-    "small": 16,
-    "medium": 24,
-    "large": 32
-  },
-  "actions": {
-    "maxActions": 5,
-    "spacing": "default",
-    "buttonSpacing": 8,
-    "showCard": {
-      "actionMode": "inline",
-      "inlineTopMargin": 8
-    },
-    "actionsOrientation": "horizontal",
-    "actionAlignment": "stretch"
-  },
-  "adaptiveCard": {
-    "allowCustomStyle": false
-  },
-  "imageSet": {
-    "imageSize": "medium",
-    "maxImageHeight": 100
-  },
-  "factSet": {
-    "title": {
-      "color": "default",
-      "size": "default",
-      "isSubtle": false,
-      "weight": "bolder",
-      "wrap": true,
-      "maxWidth": 150
-    },
-    "value": {
-      "color": "default",
-      "size": "default",
-      "isSubtle": false,
-      "weight": "default",
-      "wrap": true
-    },
-    "spacing": 8
-  },
-  "textStyles": {
-    "heading": {
-      "size": "large",
-      "weight": "bolder",
-      "color": "default",
-      "isSubtle": false,
-      "fontType": "default"
-    },
-    "columnHeader": {
-      "size": "medium",
-      "weight": "bolder",
-      "color": "default",
-      "isSubtle": false,
-      "fontType": "default"
+
+    /// <summary>
+    /// Gets a contrast theme color with a typed call, since a color boxed in a resource dictionary
+    /// can't be unboxed under native AOT.
+    /// </summary>
+    private static string GetSystemColor(UIElementType type)
+    {
+        var color = UserInterfaceSettings.UIElementColor(type);
+        return AdaptiveCardThemeTokens.ToHex(color.A, color.R, color.G, color.B);
     }
-  }
-}
-""";
 }

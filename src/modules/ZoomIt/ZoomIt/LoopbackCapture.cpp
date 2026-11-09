@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "LoopbackCapture.h"
+#include "AudioQueueLimits.h"
 #include <functiondiscoverykeys_devpkey.h>
 
 #pragma comment(lib, "ole32.lib")
@@ -37,7 +38,6 @@ HRESULT LoopbackCapture::Initialize()
     {
         return hr;
     }
-
     // Get the default audio render device (speakers/headphones)
     hr = m_deviceEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, m_device.put());
     if (FAILED(hr))
@@ -56,6 +56,23 @@ HRESULT LoopbackCapture::Initialize()
     if (FAILED(hr))
     {
         return hr;
+    }
+    if (!m_pwfx)
+    {
+        return E_FAIL;
+    }
+
+    const bool isFloat = m_pwfx->wFormatTag == WAVE_FORMAT_IEEE_FLOAT ||
+        (m_pwfx->wFormatTag == WAVE_FORMAT_EXTENSIBLE &&
+         reinterpret_cast<WAVEFORMATEXTENSIBLE*>(m_pwfx)->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT);
+    const bool isPcm = m_pwfx->wFormatTag == WAVE_FORMAT_PCM ||
+        (m_pwfx->wFormatTag == WAVE_FORMAT_EXTENSIBLE &&
+         reinterpret_cast<WAVEFORMATEXTENSIBLE*>(m_pwfx)->SubFormat == KSDATAFORMAT_SUBTYPE_PCM);
+    if (!m_pwfx->nChannels || !m_pwfx->nSamplesPerSec ||
+        !((isFloat && m_pwfx->wBitsPerSample == 32) ||
+          (isPcm && (m_pwfx->wBitsPerSample == 16 || m_pwfx->wBitsPerSample == 32))))
+    {
+        return AUDCLNT_E_UNSUPPORTED_FORMAT;
     }
 
     // Initialize audio client in loopback mode
@@ -95,6 +112,7 @@ HRESULT LoopbackCapture::Start()
     }
 
     m_stopEvent.ResetEvent();
+    m_captureError.store(S_OK);
 
     HRESULT hr = m_audioClient->Start();
     if (FAILED(hr))
@@ -207,9 +225,7 @@ void LoopbackCapture::DrainCaptureClient()
 
             if (!samples.empty())
             {
-                auto lock = m_lock.lock_exclusive();
-                m_sampleQueue.push_back(std::move(samples));
-                m_samplesReadyEvent.SetEvent();
+                EnqueueSamples(std::move(samples));
             }
         }
 
@@ -229,6 +245,7 @@ void LoopbackCapture::CaptureThread()
         HRESULT hr = m_captureClient->GetNextPacketSize(&packetLength);
         if (FAILED(hr))
         {
+            m_captureError.store(hr);
             break;
         }
 
@@ -241,7 +258,8 @@ void LoopbackCapture::CaptureThread()
             hr = m_captureClient->GetBuffer(&pData, &numFramesAvailable, &flags, nullptr, nullptr);
             if (FAILED(hr))
             {
-                break;
+                m_captureError.store(hr);
+                return;
             }
 
             if (numFramesAvailable > 0)
@@ -296,22 +314,22 @@ void LoopbackCapture::CaptureThread()
 
                 if (!samples.empty())
                 {
-                    auto lock = m_lock.lock_exclusive();
-                    m_sampleQueue.push_back(std::move(samples));
-                    m_samplesReadyEvent.SetEvent();
+                    EnqueueSamples(std::move(samples));
                 }
             }
 
             hr = m_captureClient->ReleaseBuffer(numFramesAvailable);
             if (FAILED(hr))
             {
-                break;
+                m_captureError.store(hr);
+                return;
             }
 
             hr = m_captureClient->GetNextPacketSize(&packetLength);
             if (FAILED(hr))
             {
-                break;
+                m_captureError.store(hr);
+                return;
             }
         }
     }
@@ -326,6 +344,7 @@ bool LoopbackCapture::TryGetSamples(std::vector<float>& samples)
     }
 
     samples = std::move(m_sampleQueue.front());
+    m_queuedSampleCount -= samples.size();
     m_sampleQueue.pop_front();
 
     if (m_sampleQueue.empty())
@@ -334,4 +353,19 @@ bool LoopbackCapture::TryGetSamples(std::vector<float>& samples)
     }
 
     return true;
+}
+
+void LoopbackCapture::EnqueueSamples(std::vector<float>&& samples)
+{
+    auto lock = m_lock.lock_exclusive();
+    m_queuedSampleCount += samples.size();
+    m_sampleQueue.push_back(std::move(samples));
+
+    const auto maxSamples = audio_queue::MaxLiveSampleCount(m_pwfx->nSamplesPerSec, m_pwfx->nChannels);
+    while (m_sampleQueue.size() > 1 && m_queuedSampleCount > maxSamples)
+    {
+        m_queuedSampleCount -= m_sampleQueue.front().size();
+        m_sampleQueue.pop_front();
+    }
+    m_samplesReadyEvent.SetEvent();
 }

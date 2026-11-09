@@ -64,6 +64,7 @@ namespace Peek.FilePreviewer
         [NotifyPropertyChangedFor(nameof(AudioPreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
         [NotifyPropertyChangedFor(nameof(ArchivePreviewer))]
+        [NotifyPropertyChangedFor(nameof(SqlitePreviewer))]
         [NotifyPropertyChangedFor(nameof(ShellPreviewHandlerPreviewer))]
         [NotifyPropertyChangedFor(nameof(DrivePreviewer))]
         [NotifyPropertyChangedFor(nameof(SpecialFolderPreviewer))]
@@ -117,6 +118,8 @@ namespace Peek.FilePreviewer
         public IBrowserPreviewer? BrowserPreviewer => Previewer as IBrowserPreviewer;
 
         public IArchivePreviewer? ArchivePreviewer => Previewer as IArchivePreviewer;
+
+        public ISqlitePreviewer? SqlitePreviewer => Previewer as ISqlitePreviewer;
 
         public IShellPreviewHandlerPreviewer? ShellPreviewHandlerPreviewer => Previewer as IShellPreviewHandlerPreviewer;
 
@@ -185,6 +188,16 @@ namespace Peek.FilePreviewer
             return value == stateToMatch;
         }
 
+        public Visibility IsLoadingIndicatorVisible(PreviewState? state)
+        {
+            return MatchPreviewState(state, PreviewState.Loading) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public string GetPreviewStateText(PreviewState? state)
+        {
+            return (state ?? PreviewState.Uninitialized).ToString();
+        }
+
         public Visibility IsPreviewVisible(IPreviewer? previewer, PreviewState? state)
         {
             var isValidPreview = previewer != null && MatchPreviewState(state, PreviewState.Loaded);
@@ -238,6 +251,7 @@ namespace Peek.FilePreviewer
                 AudioPreview.Visibility = Visibility.Collapsed;
                 BrowserPreview.Visibility = Visibility.Collapsed;
                 ArchivePreview.Visibility = Visibility.Collapsed;
+                SqlitePreview.Visibility = Visibility.Collapsed;
                 DrivePreview.Visibility = Visibility.Collapsed;
                 UnsupportedFilePreview.Visibility = Visibility.Collapsed;
 
@@ -305,6 +319,7 @@ namespace Peek.FilePreviewer
             ImagePreview.Source = null;
             ArchivePreview.Source = null;
             BrowserPreview.Source = null;
+            SqlitePreview.Tables = null;
             DrivePreview.Source = null;
 
             ShellPreviewHandlerPreviewer?.Clear();

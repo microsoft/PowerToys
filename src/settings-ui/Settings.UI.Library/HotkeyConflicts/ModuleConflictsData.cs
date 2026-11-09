@@ -12,9 +12,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts
 {
     public class ModuleConflictsData
     {
-        public List<HotkeyConflictGroupData> InAppConflicts { get; set; } = new List<HotkeyConflictGroupData>();
+        public List<HotkeyConflictGroupData> InAppConflicts { get; init; } = new List<HotkeyConflictGroupData>();
 
-        public List<HotkeyConflictGroupData> SystemConflicts { get; set; } = new List<HotkeyConflictGroupData>();
+        public List<HotkeyConflictGroupData> SystemConflicts { get; init; } = new List<HotkeyConflictGroupData>();
 
         public bool HasConflicts => InAppConflicts.Count > 0 || SystemConflicts.Count > 0;
     }

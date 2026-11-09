@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading.Tasks;
 using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Settings;
 using ManagedCommon;
@@ -40,12 +39,18 @@ namespace KeyboardManagerEditorUI
         /// </summary>
         public App()
         {
-            this.InitializeComponent();
-
-            Task.Run(() =>
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
             {
-                Logger.InitializeLogger("\\Keyboard Manager\\WinUI3Editor\\Logs");
-            });
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
+            // Initialize the logger synchronously, before anything else can log. Doing this on a
+            // background task races window creation, so a failure during startup leaves no trace
+            // at all - which is exactly what happened in #49399.
+            Logger.InitializeLogger("\\Keyboard Manager\\WinUI3Editor\\Logs");
+
+            this.InitializeComponent();
 
             UnhandledException += App_UnhandledException;
 
@@ -58,6 +63,8 @@ namespace KeyboardManagerEditorUI
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            Logger.LogInfo("keyboard-manager WinUI3 editor is creating its main window");
+
             MainWindow = new MainWindow();
 
             MainWindow.DispatcherQueue.TryEnqueue(() =>

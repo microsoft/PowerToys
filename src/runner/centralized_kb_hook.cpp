@@ -212,6 +212,46 @@ namespace CentralizedKeyboardHook
         pressedKeyDescriptors.insert({ .virtualKey = vk, .moduleName = moduleName, .action = std::move(action), .idTimer = timerId, .millisecondsToPress = milliseconds });
     }
 
+    void ClearPressedKeyActions(const std::wstring& moduleName) noexcept
+    {
+        Logger::trace(L"UnRegister pressed key action for {}", moduleName);
+        std::unique_lock lock{ pressedKeyMutex };
+        const DWORD trackedKey = vkCodePressed.load();
+        bool removedTrackedKey = false;
+        auto it = pressedKeyDescriptors.begin();
+        while (it != pressedKeyDescriptors.end())
+        {
+            if (it->moduleName == moduleName)
+            {
+                removedTrackedKey |= it->virtualKey == trackedKey;
+                if (it->idTimer != 0)
+                {
+                    KillTimer(runnerWindow, it->idTimer);
+                }
+
+                it = pressedKeyDescriptors.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+
+        if (pressedKeyDescriptors.empty())
+        {
+            vkCodePressed = VK_DISABLED;
+        }
+        else if (removedTrackedKey)
+        {
+            PressedKeyDescriptor trackedKeyDescriptor{ .virtualKey = trackedKey };
+            const auto [first, last] = pressedKeyDescriptors.equal_range(trackedKeyDescriptor);
+            if (first == last)
+            {
+                vkCodePressed = VK_DISABLED;
+            }
+        }
+    }
+
     void ClearModuleHotkeys(const std::wstring& moduleName) noexcept
     {
         Logger::trace(L"UnRegister hotkey action for {}", moduleName);
@@ -230,21 +270,7 @@ namespace CentralizedKeyboardHook
                 }
             }
         }
-        {
-            std::unique_lock lock{ pressedKeyMutex };
-            auto it = pressedKeyDescriptors.begin();
-            while (it != pressedKeyDescriptors.end())
-            {
-                if (it->moduleName == moduleName)
-                {
-                    it = pressedKeyDescriptors.erase(it);
-                }
-                else
-                {
-                    ++it;
-                }
-            }
-        }
+        ClearPressedKeyActions(moduleName);
     }
 
     void Start() noexcept

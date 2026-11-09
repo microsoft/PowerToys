@@ -29,6 +29,7 @@ steps:
   displayName: 'Touchdown Build - 37400, PRODEXT'
   inputs:
     teamId: 37400
+    serviceTreeId: $(TouchdownServiceTreeId)
     FederatedIdentityTDBuildServiceConnection: $(TouchdownServiceConnection)
     authType: FederatedIdentityTDBuild
     resourceFilePath: |
