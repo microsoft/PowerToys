@@ -8,7 +8,7 @@ namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 public interface IBookmarksManager
 {
-    event Action<BookmarkData>? BookmarkAdded;
+    event Action<IReadOnlyList<BookmarkData>>? BookmarksAdded;
 
     event Action<BookmarkData, BookmarkData>? BookmarkUpdated;
 
@@ -17,6 +17,9 @@ public interface IBookmarksManager
     IReadOnlyCollection<BookmarkData> Bookmarks { get; }
 
     BookmarkData Add(string name, string bookmark);
+
+    /// <summary>Adds a batch with fresh IDs, skipping exact name/target duplicates, and persists it before notifying listeners.</summary>
+    int AddRange(IReadOnlyCollection<(string Name, string Bookmark)> bookmarks);
 
     bool Remove(Guid id);
 

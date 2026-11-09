@@ -13,5 +13,6 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 [JsonSerializable(typeof(BookmarkData))]
 [JsonSerializable(typeof(BookmarksData))]
 [JsonSerializable(typeof(List<BookmarkData>), TypeInfoPropertyName = "BookmarkList")]
+[JsonSerializable(typeof(List<BookmarkTransferFileEntry>), TypeInfoPropertyName = "BookmarkTransferFileEntries")]
 [JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true, IncludeFields = true, PropertyNameCaseInsensitive = true, AllowTrailingCommas = true)]
 internal sealed partial class BookmarkSerializationContext : JsonSerializerContext;

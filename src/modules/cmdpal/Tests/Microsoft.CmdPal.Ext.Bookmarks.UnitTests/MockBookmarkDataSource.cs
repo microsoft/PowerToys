@@ -13,6 +13,10 @@ internal sealed class MockBookmarkDataSource : IBookmarkDataSource
     private string _jsonData;
     private int _saveCount;
 
+    public Action BeforeSave { get; set; }
+
+    public Action<string> AfterSave { get; set; }
+
     public MockBookmarkDataSource(string initialJsonData = "[]")
     {
         _jsonData = initialJsonData;
@@ -25,8 +29,10 @@ internal sealed class MockBookmarkDataSource : IBookmarkDataSource
 
     public void SaveBookmarkData(string jsonData)
     {
+        BeforeSave?.Invoke();
         _jsonData = jsonData;
         Interlocked.Increment(ref _saveCount);
+        AfterSave?.Invoke(jsonData);
     }
 
     public int SaveCount => Volatile.Read(ref _saveCount);
