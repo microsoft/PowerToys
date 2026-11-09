@@ -38,8 +38,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("expirationDateTime")]
         public DateTimeOffset ExpirationDateTime { get; set; }
 
-        [JsonPropertyName("customTrayTimes")]
-
         [JsonPropertyName("show_theme_adaptive_tray_icon")]
         public bool ShowThemeAdaptiveTrayIcon { get; set; }
         public Dictionary<string, uint> CustomTrayTimes
