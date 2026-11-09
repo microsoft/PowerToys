@@ -60,7 +60,7 @@ tools\build\build.cmd -Path src\modules\awake\Awake.UITests -Platform x64 -Confi
 Run the resulting executable from a dedicated interactive test desktop:
 
 ```powershell
-& .\x64\Release\tests\Awake.UITests\net10.0-windows10.0.26100.0\Awake.UITests.exe `
+& .\x64\Release\tests\Awake.UITests\net11.0-windows10.0.26100.0\Awake.UITests.exe `
     --report-trx --report-trx-filename Awake.UITests.trx --results-directory .\TestResults\Awake
 ```
 

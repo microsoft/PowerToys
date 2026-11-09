@@ -189,7 +189,7 @@ On a connected, unlocked, non-elevated host you can run the unpackaged cases fro
 Visual Studio Test Explorer, or directly against the built executable:
 
 ```powershell
-$tests = (Resolve-Path .\x64\Debug\tests\Workspaces.UITests.Next\net10.0-windows10.0.26100.0).Path
+$tests = (Resolve-Path .\x64\Debug\tests\Workspaces.UITests.Next\net11.0-windows10.0.26100.0).Path
 & "$tests\Workspaces.UITests.Next.exe" `
     --filter "FullyQualifiedName~CancelLaunchStopsPendingAppsAndPreservesOpenedWindows" `
     --report-trx --results-directory .\TestResults
@@ -203,7 +203,7 @@ Sign the staged payload before packaging it for a VM. Use the existing signer
 without adding trust to the build host:
 
 ```powershell
-$tests = (Resolve-Path .\x64\Debug\tests\Workspaces.UITests.Next\net10.0-windows10.0.26100.0).Path
+$tests = (Resolve-Path .\x64\Debug\tests\Workspaces.UITests.Next\net11.0-windows10.0.26100.0).Path
 $runtime = 'C:\PowerToysUiTestPayload\Product'
 $certificate = 'C:\PowerToysUiTestPayload\workspaces-test-signing.cer'
 
