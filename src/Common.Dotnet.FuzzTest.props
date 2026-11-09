@@ -6,9 +6,9 @@
        was historically .NET 8 because OneFuzz did not support newer runtimes.
        Per the current OneFuzz .NET fuzzing docs the service is runtime-agnostic
        (".NET Core targets are preferred") and keys off the build drop directory,
-       so the fuzz projects now track net10 like the rest of the repo. -->
+       so the fuzz projects now track net11 like the rest of the repo. -->
   <PropertyGroup>
-    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework>net11.0-windows10.0.26100.0</TargetFramework>
   </PropertyGroup>
 
   <!--
