@@ -246,6 +246,7 @@ internal sealed partial class TrayIconService
                     }
                     else if (wParam == PInvoke.WM_USER + 2)
                     {
+                        Logger.LogInfo("Command Palette exit requested: tray menu Quit.");
                         WeakReferenceMessenger.Default.Send<QuitMessage>();
                     }
                 }

@@ -37,4 +37,9 @@ public enum DataType
     /// Battery related data.
     /// </summary>
     Battery,
+
+    /// <summary>
+    /// Disk related data.
+    /// </summary>
+    Disk,
 }

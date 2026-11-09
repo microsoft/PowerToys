@@ -10,9 +10,12 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
@@ -34,6 +37,12 @@ namespace Microsoft.PowerToys.Settings.UI
         /// </summary>
         public IList<IList<PowerToysReleaseInfo>> ReleaseGroups { get; private set; }
 
+        internal const int MaxReleaseFetchAttempts = 3;
+
+        internal static readonly TimeSpan InitialReleaseFetchRetryDelay = TimeSpan.FromSeconds(1);
+
+        private static readonly TimeSpan ReleaseFetchTimeout = TimeSpan.FromSeconds(30);
+
         private bool _isLoading;
 
         public ScoobeWindow()
@@ -43,6 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
             this.InitializeComponent();
 
+            WindowHelper.SetTheme(this, App.ThemeService.Theme);
             SetTitleBar();
 
             SetOpenMainWindowCallback((Type type) =>
@@ -56,17 +66,20 @@ namespace Microsoft.PowerToys.Settings.UI
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(this));
             this.ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(AppTitleBar);
-            Title = ResourceLoaderInstance.ResourceLoader.GetString("ScoobeWindow_Title");
-
-            // The built-in WinUI TitleBar does not tint the system caption buttons (min/max/close)
-            // to match the app's selected theme, so they can be unreadable when the OS theme differs
-            // from the PowerToys theme. Drive their colors from the window content's actual theme.
-            if (this.Content is FrameworkElement rootElement)
+            if (Content is FrameworkElement rootElement)
             {
-                TitleBarHelper.ApplySystemThemeToCaptionButtons(this, rootElement.ActualTheme);
-                rootElement.ActualThemeChanged += (s, e) =>
-                    TitleBarHelper.ApplySystemThemeToCaptionButtons(this, s.ActualTheme);
+                rootElement.ActualThemeChanged += OnActualThemeChanged;
+                OnActualThemeChanged(rootElement, null);
             }
+
+            Title = ResourceLoaderInstance.ResourceLoader.GetString("ScoobeWindow_Title");
+        }
+
+        private void OnActualThemeChanged(FrameworkElement sender, object args)
+        {
+            TitleBarHelper.SetPreferredTheme(
+                this,
+                sender.ActualTheme == ElementTheme.Dark ? TitleBarTheme.Dark : TitleBarTheme.Light);
         }
 
         private void Window_Activated(object sender, WindowActivatedEventArgs args)
@@ -83,6 +96,10 @@ namespace Microsoft.PowerToys.Settings.UI
             }
 
             App.ThemeService.ThemeChanged -= OnThemeChanged;
+            if (Content is FrameworkElement rootElement)
+            {
+                rootElement.ActualThemeChanged -= OnActualThemeChanged;
+            }
         }
 
         private void OnThemeChanged(object sender, ElementTheme theme)
@@ -110,7 +127,7 @@ namespace Microsoft.PowerToys.Settings.UI
             try
             {
                 var releases = await FetchReleasesFromGitHubAsync();
-                ReleaseGroups = GroupReleasesByMajorMinor(releases);
+                ReleaseGroups = CreateReleaseGroups(releases, ShouldShowPrereleases());
                 PopulateNavigationItems();
             }
             catch (Exception ex)
@@ -134,10 +151,12 @@ namespace Microsoft.PowerToys.Settings.UI
                 PreAuthenticate = true,
             };
 
-            using var httpClient = new HttpClient(proxyClientHandler);
+            using var httpClient = new HttpClient(proxyClientHandler) { Timeout = ReleaseFetchTimeout };
             httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "PowerToys");
 
-            string json = await httpClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases?per_page=20");
+            string json = await RetryWithBackoffAsync(
+                () => httpClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases?per_page=100"),
+                Task.Delay);
             var allReleases = JsonSerializer.Deserialize<IList<PowerToysReleaseInfo>>(json, SourceGenerationContextContext.Default.IListPowerToysReleaseInfo);
 
             if (allReleases is null || allReleases.Count == 0)
@@ -150,12 +169,74 @@ namespace Microsoft.PowerToys.Settings.UI
                 .ToList();
         }
 
-        private static IList<IList<PowerToysReleaseInfo>> GroupReleasesByMajorMinor(IList<PowerToysReleaseInfo> releases)
+        internal static async Task<T> RetryWithBackoffAsync<T>(Func<Task<T>> operation, Func<TimeSpan, Task> delay)
         {
-            return releases
+            var retryDelay = InitialReleaseFetchRetryDelay;
+            for (int attempt = 1; ; attempt++)
+            {
+                try
+                {
+                    return await operation();
+                }
+                catch (Exception ex) when (attempt < MaxReleaseFetchAttempts && IsTransientFetchFailure(ex))
+                {
+                    Logger.LogWarning($"Loading releases failed (attempt {attempt} of {MaxReleaseFetchAttempts}), retrying in {retryDelay.TotalSeconds}s: {ex.Message}");
+                    await delay(retryDelay);
+                    retryDelay *= 2;
+                }
+            }
+        }
+
+        // Rate limiting (403) and other client errors won't resolve within seconds, so only retry
+        // network failures, timeouts, and server-side errors.
+        internal static bool IsTransientFetchFailure(Exception ex) => ex switch
+        {
+            HttpRequestException { StatusCode: null } => true,
+            HttpRequestException { StatusCode: HttpStatusCode code } =>
+                code is HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests || (int)code >= 500,
+            TaskCanceledException => true,
+            _ => false,
+        };
+
+        internal static IList<IList<PowerToysReleaseInfo>> CreateReleaseGroups(IList<PowerToysReleaseInfo> releases, bool showPrereleases)
+        {
+            var groups = new List<IList<PowerToysReleaseInfo>>();
+            if (showPrereleases)
+            {
+                var previewReleases = releases
+                    .Where(r => r.IsPrerelease)
+                    .OrderByDescending(r => r.PublishedDate)
+                    .Take(10)
+                    .ToList();
+                if (previewReleases.Count > 0)
+                {
+                    groups.Add(previewReleases);
+                }
+            }
+
+            var stableGroups = releases
+                .Where(r => !r.IsPrerelease)
+                .OrderByDescending(r => r.PublishedDate)
+                .Take(20)
                 .GroupBy(GetMajorMinorVersion)
                 .Select(g => g.OrderByDescending(r => r.PublishedDate).ToList() as IList<PowerToysReleaseInfo>)
                 .ToList();
+            foreach (var stableGroup in stableGroups)
+            {
+                groups.Add(stableGroup);
+            }
+
+            return groups;
+        }
+
+        private static bool ShouldShowPrereleases()
+        {
+            var generalSettings = SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default).SettingsConfig;
+            bool isPreviewBuild = string.Equals(
+                global::PowerToys.Interop.CommonManaged.GetProductVersionChannel(),
+                "preview",
+                StringComparison.OrdinalIgnoreCase);
+            return generalSettings.IncludePrereleaseUpdates || isPreviewBuild;
         }
 
         private static string GetMajorMinorVersion(PowerToysReleaseInfo release)

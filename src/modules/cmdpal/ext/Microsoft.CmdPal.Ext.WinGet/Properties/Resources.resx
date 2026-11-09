@@ -170,6 +170,14 @@
   <value>Finished uninstall for {0}</value>
   <comment>{0} will be replaced by the name of an app package</comment>
 </data>
+<data name="winget_operation_failed" xml:space="preserve">
+  <value>Operation failed for {0}</value>
+  <comment>{0} will be replaced by the name of an app package</comment>
+</data>
+<data name="winget_operation_canceled" xml:space="preserve">
+  <value>Operation canceled for {0}</value>
+  <comment>{0} will be replaced by the name of an app package</comment>
+</data>
 <data name="winget_downloading" xml:space="preserve">
   <value>Downloading</value>
   <comment>JA: translate as "受信" not "受け取り" for consistency with "Upload" → "送信". "受け取り" implies physical package receipt; "受信" is the correct IT term for data download.</comment>

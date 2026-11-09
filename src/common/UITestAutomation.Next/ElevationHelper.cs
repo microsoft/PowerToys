@@ -14,7 +14,9 @@ namespace Microsoft.PowerToys.UITest.Next;
 /// </summary>
 public static class ElevationHelper
 {
+#pragma warning disable SA1310 // Field names should not contain underscore - Win32 constant name
     private const uint TOKEN_QUERY = 0x0008;
+#pragma warning restore SA1310
 
     // TOKEN_INFORMATION_CLASS.TokenElevation
     private const int TokenElevation = 20;

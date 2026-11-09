@@ -97,7 +97,7 @@ internal static class WindowPositionHelper
         return new RectInt32(savedRect.X, savedRect.Y, clampedSize.Width, clampedSize.Height);
     }
 
-    private static int GetDpiForDisplay(DisplayArea displayArea)
+    internal static int GetDpiForDisplay(DisplayArea displayArea)
     {
         var hMonitor = Win32Interop.GetMonitorFromDisplayId(displayArea.DisplayId);
         if (hMonitor == IntPtr.Zero)

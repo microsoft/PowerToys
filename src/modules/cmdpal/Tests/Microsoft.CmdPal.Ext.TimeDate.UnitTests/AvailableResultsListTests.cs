@@ -415,6 +415,28 @@ public class AvailableResultsListTests
     }
 
     [TestMethod]
+    public void ExplicitOffset_PreservesOffsetSensitiveFormats()
+    {
+        var time = new DateTimeOffset(2025, 7, 1, 14, 5, 6, TimeSpan.FromHours(-7));
+        var results = AvailableResultsList.GetList(true, new Settings(), currentTime: time);
+
+        Assert.AreEqual("2025-07-01T14:05:06-07:00", results.Single(x => x.Label == Resources.Microsoft_plugin_timedate_Iso8601Zone).Value);
+        Assert.AreEqual("Tue, 01 Jul 2025 21:05:06 GMT", results.Single(x => x.Label == Resources.Microsoft_plugin_timedate_Rfc1123).Value);
+        Assert.AreEqual("133958775060000000", results.Single(x => x.Label == Resources.Microsoft_plugin_timedate_WindowsFileTime).Value);
+    }
+
+    [TestMethod]
+    public void CustomClockDetailResult_PreservesExplicitOffset()
+    {
+        var time = new DateTimeOffset(2025, 7, 1, 14, 5, 6, TimeSpan.FromHours(-7));
+        var settings = new Settings(customFormats: ["TestFormat1=HH:mm zzz"]);
+
+        var result = TimeDateCalculator.ExecuteSearch(settings, string.Empty, time).Single(x => x.Subtitle == "TestFormat1");
+
+        Assert.AreEqual("14:05 -07:00", result.Title);
+    }
+
+    [TestMethod]
     public void ValidateEraResult()
     {
         // Setup

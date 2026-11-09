@@ -60,6 +60,84 @@ public static partial class InternalListHelpers
         }
     }
 
+    // Minimum item count before the parallel path earns back its partitioning and merge overhead,
+    // which keeps commands and small app sets on the serial path.
+    private const int ParallelScoringThreshold = 512;
+
+    /// <summary>
+    /// Order-preserving parallel variant of <see cref="FilterListWithScores{T}"/> that scores
+    /// contiguous index ranges on separate threads and concatenates them back in partition order,
+    /// producing a pre-sort buffer identical to the serial path. The scoring function has to be
+    /// pure per item, since each item is scored by exactly one thread.
+    /// </summary>
+    public static RoScored<T>[] FilterListWithScoresParallel<T>(
+        IReadOnlyList<T>? items,
+        in FuzzyQuery query,
+        in ScoringFunction<T> scoreFunction)
+    {
+        if (items is null || items.Count == 0)
+        {
+            return [];
+        }
+
+        var count = items.Count;
+        var partitions = Math.Min(Environment.ProcessorCount, Math.Max(1, count / ParallelScoringThreshold));
+
+        if (count < ParallelScoringThreshold || partitions <= 1)
+        {
+            return FilterListWithScores(items, query, scoreFunction);
+        }
+
+        // Copy the by-ref parameters into locals so the parallel body can capture them. FuzzyQuery
+        // is immutable, so one shared copy is safe to read from every thread.
+        var q = query;
+        var fn = scoreFunction;
+        var source = items;
+
+        var partitionResults = new List<RoScored<T>>[partitions];
+
+        System.Threading.Tasks.Parallel.For(0, partitions, p =>
+        {
+            var start = (int)((long)p * count / partitions);
+            var end = (int)((long)(p + 1) * count / partitions);
+
+            var local = new List<RoScored<T>>(end - start);
+            for (var i = start; i < end; i++)
+            {
+                var item = source[i];
+                var score = fn(in q, item);
+                if (score > 0)
+                {
+                    local.Add(new RoScored<T>(item, score));
+                }
+            }
+
+            partitionResults[p] = local;
+        });
+
+        var total = 0;
+        for (var p = 0; p < partitions; p++)
+        {
+            total += partitionResults[p].Count;
+        }
+
+        // Contiguous ranges merged in partition order reproduce the serial buffer's exact
+        // enumeration order.
+        var buffer = GC.AllocateUninitializedArray<RoScored<T>>(total);
+        var pos = 0;
+        for (var p = 0; p < partitions; p++)
+        {
+            var list = partitionResults[p];
+            for (var j = 0; j < list.Count; j++)
+            {
+                buffer[pos++] = list[j];
+            }
+        }
+
+        Array.Sort(buffer, 0, total, default(RoScoredDescendingComparer<T>));
+        return buffer;
+    }
+
     private static void GrowBuffer<T>(ref RoScored<T>[] buffer, int count)
     {
         var newBuffer = ArrayPool<RoScored<T>>.Shared.Rent(buffer.Length * 2);

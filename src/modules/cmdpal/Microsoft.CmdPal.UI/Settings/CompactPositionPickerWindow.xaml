@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<winuiex:WindowEx
+    x:Class="Microsoft.CmdPal.UI.Settings.CompactPositionPickerWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.CmdPal.UI.Settings"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winuiex="using:WinUIEx"
+    IsAlwaysOnTop="True"
+    IsMaximizable="False"
+    IsMinimizable="False"
+    IsResizable="False"
+    IsShownInSwitchers="False"
+    IsTitleBarVisible="False"
+    mc:Ignorable="d">
+
+    <Grid
+        x:Name="Root"
+        x:Uid="CompactPositionPickerWindow_Root"
+        Background="Transparent"
+        Loaded="Root_Loaded"
+        LosingFocus="Root_LosingFocus"
+        PointerWheelChanged="Root_PointerWheelChanged"
+        PreviewKeyDown="Root_PreviewKeyDown"
+        SizeChanged="Root_SizeChanged">
+        <Image
+            x:Name="DesktopScreenshot"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            IsHitTestVisible="False"
+            Stretch="Fill" />
+
+        <Grid x:Name="DesktopBlurHost" IsHitTestVisible="False" />
+
+        <Rectangle
+            x:Name="DesktopDimmer"
+            Fill="Black"
+            IsHitTestVisible="False"
+            Opacity="0.22" />
+
+        <Canvas
+            x:Name="ReservedAreaOverlay"
+            AutomationProperties.AccessibilityView="Raw"
+            IsHitTestVisible="False">
+            <Path
+                x:Name="ReservedAreaFill"
+                Fill="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                Opacity="0.2" />
+            <Path
+                x:Name="ReservedAreaHatching"
+                Opacity="0.35"
+                Stroke="{ThemeResource TextFillColorSecondaryBrush}"
+                StrokeEndLineCap="Round"
+                StrokeStartLineCap="Round"
+                StrokeThickness="0.8" />
+        </Canvas>
+
+        <Canvas x:Name="PreviewCanvas">
+            <Rectangle
+                x:Name="CompactShadowArea"
+                AutomationProperties.AccessibilityView="Raw"
+                Fill="{ThemeResource ControlAltFillColorTertiaryBrush}"
+                IsHitTestVisible="False"
+                RadiusX="24"
+                RadiusY="24"
+                Stroke="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+                StrokeDashArray="4,4"
+                StrokeThickness="1" />
+            <Rectangle
+                x:Name="ExpandedShadowArea"
+                AutomationProperties.AccessibilityView="Raw"
+                Fill="{ThemeResource ControlAltFillColorTertiaryBrush}"
+                IsHitTestVisible="False"
+                RadiusX="24"
+                RadiusY="24"
+                Stroke="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+                StrokeDashArray="4,4"
+                StrokeThickness="1" />
+            <Border
+                x:Name="ExpandedPreview"
+                AutomationProperties.AccessibilityView="Raw"
+                Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                IsHitTestVisible="False"
+                Visibility="Collapsed">
+                <StackPanel
+                    Margin="24,56,24,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="12">
+                    <FontIcon
+                        AutomationProperties.AccessibilityView="Raw"
+                        FontSize="32"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Glyph="&#xE8A5;" />
+                    <TextBlock
+                        x:Name="ExpandedPreviewHint"
+                        x:Uid="CompactPositionPickerWindow_ExpandedPreviewHint"
+                        AutomationProperties.AccessibilityView="Raw"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <local:CompactPositionPreview
+                x:Name="PaletteGhost"
+                x:Uid="CompactPositionPickerWindow_Preview"
+                Width="680"
+                Height="56"
+                AutomationProperties.AutomationId="CompactPositionPicker_Position"
+                Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+                BorderThickness="2"
+                CornerRadius="12"
+                FocusVisualMargin="3"
+                IsTabStop="True"
+                LargeChange="5"
+                Maximum="100"
+                PointerCanceled="PaletteGhost_PointerCanceled"
+                PointerCaptureLost="PaletteGhost_PointerCaptureLost"
+                PointerMoved="PaletteGhost_PointerMoved"
+                PointerPressed="PaletteGhost_PointerPressed"
+                PointerReleased="PaletteGhost_PointerReleased"
+                SmallChange="1"
+                UseSystemFocusVisuals="True"
+                ValueChanged="PaletteGhost_ValueChanged">
+                <local:CompactPositionPreview.Template>
+                    <ControlTemplate TargetType="local:CompactPositionPreview">
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                            <Grid>
+                                <Border
+                                    x:Name="PointerOverBackground"
+                                    Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                    IsHitTestVisible="False"
+                                    Opacity="0" />
+                                <Grid Padding="20,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon
+                                        Grid.Column="0"
+                                        Margin="0,0,14,0"
+                                        VerticalAlignment="Center"
+                                        FontSize="20"
+                                        Glyph="&#xE721;" />
+                                    <Rectangle
+                                        Grid.Column="1"
+                                        Width="160"
+                                        Height="12"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        Fill="{ThemeResource ControlStrongFillColorDefaultBrush}"
+                                        IsHitTestVisible="False"
+                                        RadiusX="4"
+                                        RadiusY="4" />
+                                    <FontIcon
+                                        Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        FontSize="20"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Glyph="&#xE74A;" />
+                                </Grid>
+                                <Rectangle
+                                    x:Name="PreviewOutline"
+                                    Margin="3"
+                                    IsHitTestVisible="False"
+                                    Opacity="0.8"
+                                    RadiusX="9"
+                                    RadiusY="9"
+                                    Stroke="{ThemeResource AccentFillColorDefaultBrush}"
+                                    StrokeDashArray="5,3"
+                                    StrokeThickness="1" />
+                            </Grid>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal" />
+                                    <VisualState x:Name="PointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="PointerOverBackground.Opacity" Value="1" />
+                                            <Setter Target="PreviewOutline.Opacity" Value="1" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Border>
+                    </ControlTemplate>
+                </local:CompactPositionPreview.Template>
+            </local:CompactPositionPreview>
+
+            <Border
+                x:Name="GuidancePanel"
+                Width="340"
+                Padding="20"
+                Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                SizeChanged="GuidancePanel_SizeChanged">
+                <StackPanel Spacing="16">
+                    <StackPanel Spacing="4">
+                        <TextBlock
+                            x:Uid="CompactPositionPickerWindow_Heading"
+                            FontWeight="SemiBold"
+                            Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <TextBlock
+                            x:Name="InstructionText"
+                            x:Uid="CompactPositionPickerWindow_Instruction"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            TextWrapping="Wrap" />
+                        <TextBlock
+                            x:Name="KeyboardInstructionText"
+                            x:Uid="CompactPositionPickerWindow_KeyboardInstruction"
+                            Margin="0,8,0,4"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            TextWrapping="Wrap" />
+                        <TextBlock
+                            x:Name="ReservedAreaHint"
+                            x:Uid="CompactPositionPickerWindow_ReservedAreaHint"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            TextWrapping="Wrap"
+                            Visibility="Collapsed" />
+                    </StackPanel>
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <HyperlinkButton
+                            x:Uid="CompactPositionPickerWindow_DefaultButton"
+                            Padding="0"
+                            HorizontalAlignment="Left"
+                            Click="DefaultButton_Click" />
+                        <Button
+                            x:Uid="CompactPositionPickerWindow_SaveButton"
+                            Grid.Column="1"
+                            Click="SaveButton_Click"
+                            Style="{StaticResource AccentButtonStyle}" />
+                        <Button
+                            x:Uid="CompactPositionPickerWindow_CancelButton"
+                            Grid.Column="2"
+                            Click="CancelButton_Click" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Canvas>
+
+        <Button
+            x:Name="CloseButton"
+            x:Uid="CompactPositionPickerWindow_CloseButton"
+            Width="52"
+            Height="52"
+            Margin="24"
+            Padding="0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+            BorderBrush="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            Click="CloseButton_Click"
+            CornerRadius="12"
+            Foreground="{ThemeResource TextFillColorPrimaryBrush}">
+            <Button.KeyboardAccelerators>
+                <KeyboardAccelerator Key="Escape" />
+            </Button.KeyboardAccelerators>
+            <FontIcon
+                AutomationProperties.AccessibilityView="Raw"
+                FontSize="18"
+                Glyph="&#xE711;" />
+        </Button>
+    </Grid>
+</winuiex:WindowEx>

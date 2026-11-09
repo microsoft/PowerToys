@@ -23,24 +23,52 @@
             <Flyout
                 x:Name="KeyListFlyout"
                 Closed="KeyListFlyout_Closed"
+                Opened="KeyListFlyout_Opened"
                 Opening="KeyListFlyout_Opening"
                 Placement="Bottom">
-                <ListView
-                    x:Name="KeyListView"
-                    MinWidth="200"
-                    MaxHeight="320"
-                    IsItemClickEnabled="True"
-                    ItemClick="KeyListView_ItemClick"
-                    SelectionMode="Single">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding DisplayName}" />
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                <Grid Width="240" RowSpacing="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <AutoSuggestBox
+                        x:Name="KeySearchBox"
+                        x:Uid="KeyDropDownButton_SearchBox"
+                        QueryIcon="Find"
+                        QuerySubmitted="KeySearchBox_QuerySubmitted"
+                        TextChanged="KeySearchBox_TextChanged" />
+                    <ListView
+                        x:Name="KeyListView"
+                        Grid.Row="1"
+                        MaxHeight="320"
+                        IsItemClickEnabled="True"
+                        ItemClick="KeyListView_ItemClick"
+                        SelectionMode="Single">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayName}" />
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                    <TextBlock
+                        x:Name="NoResultsText"
+                        x:Uid="KeyDropDownButton_NoResults"
+                        Grid.Row="1"
+                        Margin="12,4,12,8"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Visibility="Collapsed" />
+                </Grid>
             </Flyout>
         </DropDownButton.Flyout>
 
-        <commoncontrols:KeyCharPresenter x:Name="KeyNamePresenter" Content="{x:Bind KeyName, Mode=OneWay}" />
+        <Grid>
+            <commoncontrols:KeyCharPresenter x:Name="KeyNamePresenter" Content="{x:Bind KeyName, Mode=OneWay}" />
+            <TextBlock
+                x:Name="SelectKeyPlaceholderText"
+                x:Uid="KeyDropDownButton_SelectKeyPlaceholder"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </Grid>
     </DropDownButton>
 </UserControl>

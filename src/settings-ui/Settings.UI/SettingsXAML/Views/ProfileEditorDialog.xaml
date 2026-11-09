@@ -37,6 +37,11 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="16">
                 <TextBlock x:Uid="PowerDisplay_ProfileEditor_Description" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                <InfoBar
+                    x:Uid="PowerDisplay_ProfileEditor_PreservedSettings"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.HasPreservedSettings, Mode=OneWay}"
+                    Severity="Informational" />
                 <ItemsControl ItemsSource="{x:Bind ViewModel.Monitors, Mode=OneWay}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="viewmodels:MonitorSelectionItem">
@@ -53,7 +58,7 @@
                                     <tkcontrols:SettingsCard
                                         Padding="16,8,16,8"
                                         IsEnabled="{x:Bind IsSelected, Mode=OneWay}"
-                                        Visibility="{x:Bind Monitor.SupportsBrightness, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        Visibility="{x:Bind ShowBrightness, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                         <tkcontrols:SettingsCard.Header>
                                             <CheckBox IsChecked="{x:Bind IncludeBrightness, Mode=TwoWay}">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -65,6 +70,7 @@
                                         <Slider
                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                             VerticalAlignment="Center"
+                                            IsEnabled="{x:Bind SupportsBrightness, Mode=OneWay}"
                                             Maximum="100"
                                             Minimum="0"
                                             Value="{x:Bind Brightness, Mode=TwoWay}" />
@@ -76,7 +82,7 @@
                                     <tkcontrols:SettingsCard
                                         Padding="16,8,16,8"
                                         IsEnabled="{x:Bind IsSelected, Mode=OneWay}"
-                                        Visibility="{x:Bind Monitor.SupportsContrast, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        Visibility="{x:Bind ShowContrast, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                         <tkcontrols:SettingsCard.Header>
                                             <CheckBox IsChecked="{x:Bind IncludeContrast, Mode=TwoWay}">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -88,6 +94,7 @@
                                         <Slider
                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                             VerticalAlignment="Center"
+                                            IsEnabled="{x:Bind SupportsContrast, Mode=OneWay}"
                                             Maximum="100"
                                             Minimum="0"
                                             Value="{x:Bind Contrast, Mode=TwoWay}" />
@@ -95,7 +102,7 @@
                                     <tkcontrols:SettingsCard
                                         Padding="16,8,16,8"
                                         IsEnabled="{x:Bind IsSelected, Mode=OneWay}"
-                                        Visibility="{x:Bind Monitor.SupportsVolume, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        Visibility="{x:Bind ShowVolume, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                         <tkcontrols:SettingsCard.Header>
                                             <CheckBox IsChecked="{x:Bind IncludeVolume, Mode=TwoWay}">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -107,6 +114,7 @@
                                         <Slider
                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                             VerticalAlignment="Center"
+                                            IsEnabled="{x:Bind SupportsVolume, Mode=OneWay}"
                                             Maximum="100"
                                             Minimum="0"
                                             Value="{x:Bind Volume, Mode=TwoWay}" />
@@ -114,7 +122,7 @@
                                     <tkcontrols:SettingsCard
                                         Padding="16,8,16,8"
                                         IsEnabled="{x:Bind IsSelected, Mode=OneWay}"
-                                        Visibility="{x:Bind Monitor.SupportsColorTemperature, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        Visibility="{x:Bind ShowColorTemperature, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                         <tkcontrols:SettingsCard.Header>
                                             <CheckBox IsChecked="{x:Bind IncludeColorTemperature, Mode=TwoWay}">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -128,7 +136,8 @@
                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                             VerticalAlignment="Center"
                                             DisplayMemberPath="DisplayName"
-                                            ItemsSource="{x:Bind Monitor.ColorPresetsForDisplay, Mode=OneWay}"
+                                            IsEnabled="{x:Bind SupportsColorTemperature, Mode=OneWay}"
+                                            ItemsSource="{x:Bind ColorPresetsForDisplay, Mode=OneWay}"
                                             SelectedValue="{x:Bind ColorTemperature, Mode=TwoWay}"
                                             SelectedValuePath="VcpValue" />
                                     </tkcontrols:SettingsCard>
