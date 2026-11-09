@@ -9,13 +9,17 @@ using Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
 namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>
-/// Adds the schema features that the WinUI 3 renderer doesn't support yet: the <c>Chart.Line</c> element.
+/// Adds the schema features that the WinUI 3 renderer doesn't support yet: the <c>Chart.Line</c>, <c>ProgressBar</c>,
+/// <c>Badge</c>, and <c>Icon</c> elements, and <c>roundedCorners</c> and <c>showBorder</c> on containers.
 /// </summary>
 public static class AdaptiveCardPolyfills
 {
     private static readonly AdaptiveVisualElementType[] Types =
     [
         new("Chart.Line", (json, warnings) => LineChartModel.Parse(json, warnings), model => new LineChartControl((LineChartModel)model)),
+        new("ProgressBar", (json, warnings) => ProgressBarModel.Parse(json, warnings), model => new ProgressBarControl((ProgressBarModel)model)),
+        new("Badge", (json, warnings) => BadgeModel.Parse(json, warnings), model => new BadgeControl((BadgeModel)model)),
+        new("Icon", (json, warnings) => IconModel.Parse(json, warnings), model => new IconControl((IconModel)model), IconModel.HasGlyph),
     ];
 
     /// <summary>Gets the registration that lets these elements update in place.</summary>
@@ -29,13 +33,18 @@ public static class AdaptiveCardPolyfills
         }
     }
 
-    /// <summary>Registers the element renderers.</summary>
+    /// <summary>
+    /// Registers the element renderers, and wraps the container renderers to draw <c>roundedCorners</c> and
+    /// <c>showBorder</c> with the <c>CmdPal.Adaptive.Container.*</c> styles in the renderer's override styles.
+    /// </summary>
     public static void RegisterRenderers(AdaptiveCardRenderer renderer)
     {
         foreach (var type in Types)
         {
             renderer.ElementRenderers.Set(type.Name, new AdaptiveVisualElementRenderer(type));
         }
+
+        AdaptiveContainerDecoratorRenderer.Register(renderer);
     }
 
     private static IncrementalPatchableElements CreatePatchableElements()
