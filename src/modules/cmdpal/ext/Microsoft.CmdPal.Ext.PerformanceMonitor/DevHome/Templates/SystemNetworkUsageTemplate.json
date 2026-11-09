@@ -19,66 +19,217 @@
       "$when": "${errorMessage == null}",
       "items": [
         {
-          "type": "Image",
-          "url": "${netGraphUrl}",
-          "height": "${chartHeight}",
-          "width": "${chartWidth}",
-          "$when": "${$host.widgetSize != \"small\"}",
-          "horizontalAlignment": "center"
-        },
-        {
           "type": "ColumnSet",
           "columns": [
             {
               "type": "Column",
+              "width": "stretch",
               "items": [
                 {
-                  "text": "%NetworkUsage_Widget_Template/Sent%",
                   "type": "TextBlock",
-                  "spacing": "none",
+                  "isSubtle": true,
                   "size": "small",
-                  "isSubtle": true
+                  "text": "%NetworkUsage_Widget_Template/Received%"
                 },
                 {
-                  "text": "${netSent}",
                   "type": "TextBlock",
-                  "size": "large",
-                  "weight": "bolder"
+                  "size": "extraLarge",
+                  "weight": "bolder",
+                  "spacing": "none",
+                  "text": "${netReceived}"
                 }
               ]
             },
             {
               "type": "Column",
+              "width": "auto",
               "items": [
                 {
-                  "text": "%NetworkUsage_Widget_Template/Received%",
                   "type": "TextBlock",
-                  "spacing": "none",
-                  "size": "small",
                   "isSubtle": true,
-                  "horizontalAlignment": "right"
+                  "size": "small",
+                  "horizontalAlignment": "right",
+                  "text": "%NetworkUsage_Widget_Template/Sent%"
                 },
                 {
-                  "text": "${netReceived}",
                   "type": "TextBlock",
-                  "size": "large",
+                  "size": "extraLarge",
                   "weight": "bolder",
-                  "horizontalAlignment": "right"
+                  "spacing": "none",
+                  "horizontalAlignment": "right",
+                  "text": "${netSent}"
                 }
               ]
             }
           ]
         },
         {
-          "text": "%NetworkUsage_Widget_Template/Network_Name%",
-          "type": "TextBlock",
-          "size": "small",
-          "isSubtle": true
+          "type": "Chart.Line",
+          "spacing": "medium",
+          "yAxisTitle": "${netChartAxis}",
+          "xAxisTitle": "%CPUUsage_Widget_Template/Chart_X_Axis%",
+          "yMin": 0,
+          "data": "${netSeries}",
+          "fallback": "drop"
         },
         {
-          "text": "${networkName}",
-          "type": "TextBlock",
-          "size": "medium"
+          "type": "ColumnSet",
+          "spacing": "medium",
+          "columns": [
+            {
+              "type": "Column",
+              "width": "stretch",
+              "verticalContentAlignment": "center",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "isSubtle": true,
+                  "wrap": true,
+                  "text": "${networkName}"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "auto",
+              "$when": "${netConnectionType != null}",
+              "verticalContentAlignment": "center",
+              "items": [
+                {
+                  "type": "Badge",
+                  "text": "${netConnectionType}",
+                  "icon": "${netIcon}",
+                  "style": "informative",
+                  "appearance": "tint",
+                  "shape": "rounded",
+                  "fallback": "drop"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "ColumnSet",
+          "spacing": "small",
+          "columns": [
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "%NetworkUsage_Widget_Template/Link_Speed%"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "large",
+                      "spacing": "none",
+                      "text": "${netLinkSpeed}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "%NetworkUsage_Widget_Template/Network_Usage%"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "large",
+                      "spacing": "none",
+                      "text": "${networkUsage}"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "ColumnSet",
+          "$when": "${netIPv4 != null || netIPv6 != null}",
+          "spacing": "small",
+          "columns": [
+            {
+              "type": "Column",
+              "$when": "${netIPv4 != null}",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "height": "stretch",
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "%NetworkUsage_Widget_Template/IPv4%"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "medium",
+                      "spacing": "none",
+                      "wrap": true,
+                      "text": "${netIPv4}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "$when": "${netIPv6 != null}",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "height": "stretch",
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "%NetworkUsage_Widget_Template/IPv6%"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "medium",
+                      "spacing": "none",
+                      "wrap": true,
+                      "text": "${netIPv6}"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }

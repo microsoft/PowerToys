@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
 using ManagedCommon;
+using Microsoft.CmdPal.AdaptiveCards.Polyfills;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;

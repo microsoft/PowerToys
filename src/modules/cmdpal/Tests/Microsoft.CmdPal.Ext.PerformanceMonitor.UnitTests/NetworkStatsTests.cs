@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using CoreWidgetProvider.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.Win32.NetworkManagement.Ndis;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests;
 
@@ -118,9 +119,20 @@ public class NetworkStatsTests
     [TestMethod]
     public void GetKnownLinkSpeed_IgnoresUnknownSpeedSentinel()
     {
-        Assert.AreEqual(1_000_000UL, PhysicalNetworkInterfaceSnapshotProvider.GetKnownLinkSpeed(ulong.MaxValue, 1_000_000));
-        Assert.AreEqual(2_000_000UL, PhysicalNetworkInterfaceSnapshotProvider.GetKnownLinkSpeed(2_000_000, ulong.MaxValue));
-        Assert.AreEqual(0UL, PhysicalNetworkInterfaceSnapshotProvider.GetKnownLinkSpeed(ulong.MaxValue, ulong.MaxValue));
+        Assert.AreEqual(1_000_000UL, PhysicalNetworkInterfaceSnapshotProvider.GetKnownLinkSpeed(IF_OPER_STATUS.IfOperStatusUp, ulong.MaxValue, 1_000_000));
+        Assert.AreEqual(2_000_000UL, PhysicalNetworkInterfaceSnapshotProvider.GetKnownLinkSpeed(IF_OPER_STATUS.IfOperStatusUp, 2_000_000, ulong.MaxValue));
+        Assert.AreEqual(0UL, PhysicalNetworkInterfaceSnapshotProvider.GetKnownLinkSpeed(IF_OPER_STATUS.IfOperStatusUp, ulong.MaxValue, ulong.MaxValue));
+    }
+
+    [TestMethod]
+    public void GetKnownLinkSpeed_IsZeroUnlessTheInterfaceIsUp()
+    {
+        // A disconnected adapter can still report a speed, such as an unplugged dock's Ethernet.
+        foreach (var status in Enum.GetValues<IF_OPER_STATUS>())
+        {
+            var expected = status == IF_OPER_STATUS.IfOperStatusUp ? 1_000_000_000UL : 0UL;
+            Assert.AreEqual(expected, PhysicalNetworkInterfaceSnapshotProvider.GetKnownLinkSpeed(status, 1_000_000_000, 1_000_000_000), status.ToString());
+        }
     }
 
     private static NetworkStats CreateNetworkStats()

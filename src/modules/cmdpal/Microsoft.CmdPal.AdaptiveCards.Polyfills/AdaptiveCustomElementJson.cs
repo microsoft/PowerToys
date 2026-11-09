@@ -5,21 +5,23 @@
 using AdaptiveCards.ObjectModel.WinUI3;
 using Windows.Data.Json;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
-internal static class AdaptiveCustomElementJson
+/// <summary>Reads and writes the properties that every element has, for custom elements.</summary>
+public static class AdaptiveCustomElementJson
 {
     public static void ParseCommonProperties(
         IAdaptiveCardElement element,
         JsonObject inputJson,
         AdaptiveElementParserRegistration elementParsers,
         AdaptiveActionParserRegistration actionParsers,
-        IList<AdaptiveWarning> warnings)
+        IList<AdaptiveWarning> warnings,
+        bool requireId = true)
     {
         element.AdditionalProperties = JsonObject.Parse(inputJson.Stringify());
 
         element.Id = inputJson.GetNamedString("id", string.Empty);
-        if (string.IsNullOrEmpty(element.Id))
+        if (requireId && string.IsNullOrEmpty(element.Id))
         {
             warnings.Add(new AdaptiveWarning(
                 WarningStatusCode.RequiredPropertyMissing,
