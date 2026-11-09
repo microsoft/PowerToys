@@ -38,11 +38,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new MouseUtilsViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
+                SettingsRepository<AutoHideCursorSettings>.GetInstance(settingsUtils),
                 SettingsRepository<FindMyMouseSettings>.GetInstance(settingsUtils),
                 SettingsRepository<MouseHighlighterSettings>.GetInstance(settingsUtils),
                 SettingsRepository<MouseJumpSettings>.GetInstance(settingsUtils),
                 SettingsRepository<MousePointerCrosshairsSettings>.GetInstance(settingsUtils),
                 SettingsRepository<CursorWrapSettings>.GetInstance(settingsUtils),
+                SettingsRepository<MouseButtonLockSettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
 
             DataContext = ViewModel;
@@ -67,6 +69,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             catch (Exception ex)
             {
                 Logger.LogError("Error while trying to open the animations settings", ex);
+            }
+        }
+
+        private void OpenMouseSettings_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            try
+            {
+                StartProcessHelper.Start(StartProcessHelper.MouseSettings);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error while trying to open the mouse settings", ex);
             }
         }
     }

@@ -1,0 +1,100 @@
+# Copyright (c) Microsoft Corporation
+# The Microsoft Corporation licenses this file to you under the MIT license.
+
+param(
+    [Parameter(Mandatory)]
+    [string] $RepoRoot,
+
+    [string[]] $ChangedFile = @()
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+if (-not (Test-Path -LiteralPath $RepoRoot -PathType Container)) {
+    throw "Repository root does not exist: $RepoRoot"
+}
+
+$touchedModules = @(
+    $ChangedFile |
+        ForEach-Object { $_ -replace '\\', '/' } |
+        ForEach-Object {
+            if ($_ -match '^src/modules/([^/]+)(?:/|$)') {
+                $Matches[1]
+            }
+        } |
+        Sort-Object -Unique
+)
+
+$fixtureModules = @(
+    $ChangedFile | ForEach-Object {
+        if (($_ -replace '\\', '/') -match '^\.pipelines/(?:powerdisplay-idd-poc/|v2/templates/steps-build-umdf-display\.yml$)') {
+            'powerdisplay'
+        }
+        elseif (($_ -replace '\\', '/') -match '^\.pipelines/(?:umdf-hid-smoke/|v2/templates/steps-build-umdf-hid\.yml$)') {
+            'GrabAndMove'
+        }
+        elseif (($_ -replace '\\', '/') -match '^\.pipelines/(?:umdf/|v2/templates/job-test-(?:arm64|project)\.yml$)') {
+            'GrabAndMove', 'powerdisplay'
+        }
+    }
+)
+$touchedModules = @(@($touchedModules) + $fixtureModules | Sort-Object -Unique)
+
+$uiTestModules = foreach ($module in $touchedModules) {
+    $moduleRoot = Join-Path $RepoRoot "src\modules\$module"
+    if (-not (Test-Path -LiteralPath $moduleRoot -PathType Container)) {
+        continue
+    }
+
+    Get-ChildItem -LiteralPath $moduleRoot -Filter '*.csproj' -File -Recurse |
+        Where-Object {
+            [xml] $project = Get-Content -LiteralPath $_.FullName -Raw
+            @($project.SelectNodes("//*[local-name()='ProjectReference']")) |
+                Where-Object {
+                    ($_.Include -replace '\\', '/') -match '/UITestAutomation\.Next/UITestAutomation\.Next\.csproj$'
+                }
+        } |
+        ForEach-Object { $_.BaseName }
+}
+
+# Changes to the shared UI-test infrastructure (test job, resolver, install/sign/cleanup scripts,
+# UITestAutomation.Next) can break every suite without touching a module, so run a small smoke set
+# that covers a non-elevated suite with an MSIX fixture (CropAndLock) and an elevated suite (Hosts).
+$uiTestInfrastructurePatterns = @(
+    '^\.pipelines/resolveUiTestModules\.ps1$',
+    '^\.pipelines/installPowerToys\.ps1$',
+    '^\.pipelines/signSparsePackages\.ps1$',
+    '^\.pipelines/removeTestSigningCertificates\.ps1$',
+    '^\.pipelines/stopPowerToysProcesses\.ps1$',
+    '^\.pipelines/configureLightSwitchLocation\.ps1$',
+    '^\.pipelines/v2/templates/job-test-project\.yml$',
+    '^\.pipelines/v2/templates/job-resolve-ui-tests\.yml$',
+    '^\.pipelines/v2/templates/steps-download-artifacts-with-azure-cli\.yml$',
+    '^src/common/UITestAutomation\.Next/'
+)
+$smokeUiTestModules = @('CropAndLock.UITests', 'Hosts.UITests.Next')
+
+$infrastructureChanged = @(
+    $ChangedFile |
+        ForEach-Object { $_ -replace '\\', '/' } |
+        Where-Object {
+            $file = $_
+            @($uiTestInfrastructurePatterns | Where-Object { $file -match $_ }).Count -gt 0
+        }
+).Count -gt 0
+
+if ($infrastructureChanged) {
+    $smokeProjects = @(
+        Get-ChildItem -LiteralPath (Join-Path $RepoRoot 'src\modules') -Filter '*.csproj' -File -Recurse -ErrorAction SilentlyContinue |
+            Where-Object { $smokeUiTestModules -contains $_.BaseName } |
+            ForEach-Object { $_.BaseName }
+    )
+    $uiTestModules = @($uiTestModules) + $smokeProjects
+}
+
+[PSCustomObject]@{
+    TouchedModules = @($touchedModules)
+    InfrastructureChanged = $infrastructureChanged
+    UiTestModules = @($uiTestModules | Where-Object { $_ } | Sort-Object -Unique)
+}

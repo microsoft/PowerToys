@@ -10,4 +10,5 @@ public enum PasteActionSource
     InAppKeyboardShortcut,
     GlobalKeyboardShortcut,
     PromptBox,
+    CommandLine,
 }

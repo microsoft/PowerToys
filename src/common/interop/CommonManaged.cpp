@@ -9,4 +9,14 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return hstring{ get_product_version() };
     }
+
+    hstring CommonManaged::GetProductVersionChannel()
+    {
+        return hstring{ get_product_version_channel() };
+    }
+
+    hstring CommonManaged::GetProductVersionSourceCommit()
+    {
+        return hstring{ get_product_version_source_commit() };
+    }
 }

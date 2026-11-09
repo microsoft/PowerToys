@@ -19,19 +19,61 @@ namespace ManagedCommon
             var stackTrace = new StackTrace();
             var assembly = Assembly.GetCallingAssembly().GetName();
             PowerToysTelemetry.Log.WriteEvent(new DebugEvent() { Message = $"[{assembly}][{memberName}]WaitForPowerToysRunner waiting for Event powerToysPID={powerToysPID}" });
-            Task.Run(() =>
+            TryWaitForProcessExit(powerToysPID, () =>
             {
-                const uint INFINITE = 0xFFFFFFFF;
-                const uint WAIT_OBJECT_0 = 0x00000000;
-                const uint SYNCHRONIZE = 0x00100000;
-
-                IntPtr powerToysProcHandle = NativeMethods.OpenProcess(SYNCHRONIZE, false, powerToysPID);
-                if (NativeMethods.WaitForSingleObject(powerToysProcHandle, INFINITE) == WAIT_OBJECT_0)
-                {
-                    PowerToysTelemetry.Log.WriteEvent(new DebugEvent() { Message = $"[{assembly}][{memberName}]WaitForPowerToysRunner Event Notified powerToysPID={powerToysPID}" });
-                    act.Invoke();
-                }
+                PowerToysTelemetry.Log.WriteEvent(new DebugEvent() { Message = $"[{assembly}][{memberName}]WaitForPowerToysRunner Event Notified powerToysPID={powerToysPID}" });
+                act.Invoke();
             });
+        }
+
+        /// <summary>
+        /// Registers process-exit work using only wait access, without opening the process for modification.
+        /// </summary>
+        public static bool TryWaitForProcessExit(int processId, Action onExit)
+        {
+            ArgumentNullException.ThrowIfNull(onExit);
+            const uint synchronize = 0x00100000;
+            var processHandle = NativeMethods.OpenProcess(synchronize, false, processId);
+            if (processHandle == IntPtr.Zero)
+            {
+                Logger.LogError($"Could not open process {processId} for an exit notification.");
+                return false;
+            }
+
+            bool scheduled = false;
+            try
+            {
+                Task.Run(() =>
+                {
+                    uint result;
+                    try
+                    {
+                        result = NativeMethods.WaitForSingleObject(processHandle, uint.MaxValue);
+                    }
+                    finally
+                    {
+                        NativeMethods.CloseHandle(processHandle);
+                    }
+
+                    if (result == 0)
+                    {
+                        onExit();
+                    }
+                    else
+                    {
+                        Logger.LogError($"Waiting for process {processId} to exit failed: {result}.");
+                    }
+                });
+                scheduled = true;
+                return true;
+            }
+            finally
+            {
+                if (!scheduled)
+                {
+                    NativeMethods.CloseHandle(processHandle);
+                }
+            }
         }
 
         private static readonly string PowerToysRunnerProcessName = "PowerToys.exe";

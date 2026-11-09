@@ -105,6 +105,10 @@ public class QueryTests : CommandPaletteUnitTestBase
     [DataRow("sin(60)", "-0.30481", CalculateEngine.TrigMode.Radians)]
     [DataRow("sin(60)", "0.866025", CalculateEngine.TrigMode.Degrees)]
     [DataRow("sin(60)", "0.809016", CalculateEngine.TrigMode.Gradians)]
+    [DataRow("sec(60)", "2", CalculateEngine.TrigMode.Degrees)]
+    [DataRow("arccot(1)", "45", CalculateEngine.TrigMode.Degrees)]
+    [DataRow("arcsec(2)", "60", CalculateEngine.TrigMode.Degrees)]
+    [DataRow("cot(50)", "1", CalculateEngine.TrigMode.Gradians)]
     public void TrigModeSettingsTest(string input, string expected, CalculateEngine.TrigMode trigMode)
     {
         var settings = new Settings(trigUnit: trigMode, outputUseEnglishFormat: true);

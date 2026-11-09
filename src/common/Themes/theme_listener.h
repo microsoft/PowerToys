@@ -26,12 +26,12 @@ public:
 
     Theme AppTheme;
     Theme SystemTheme;
-    void ThemeListener::AddChangedHandler(THEME_HANDLE handle);
-    void ThemeListener::DelChangedHandler(THEME_HANDLE handle);
-    void ThemeListener::AddAppThemeChangedHandler(THEME_HANDLE handle);
-    void ThemeListener::DelAppThemeChangedHandler(THEME_HANDLE handle);
-    void ThemeListener::AddSystemThemeChangedHandler(THEME_HANDLE handle);
-    void ThemeListener::DelSystemThemeChangedHandler(THEME_HANDLE handle);
+    void AddChangedHandler(THEME_HANDLE handle);
+    void DelChangedHandler(THEME_HANDLE handle);
+    void AddAppThemeChangedHandler(THEME_HANDLE handle);
+    void DelAppThemeChangedHandler(THEME_HANDLE handle);
+    void AddSystemThemeChangedHandler(THEME_HANDLE handle);
+    void DelSystemThemeChangedHandler(THEME_HANDLE handle);
     void CheckTheme();
 
 private:

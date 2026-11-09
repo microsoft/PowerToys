@@ -110,7 +110,7 @@ public sealed class SettingsNavigationSmokeTests : UITestBase
         }
     }
 
-    public static string GetNavCaseDisplayName(MethodInfo _, object[] data)
+    public static string GetNavCaseDisplayName(MethodInfo methodInfo, object[] data)
     {
         var parent = (string)data[0];
         var item = (string)data[1];
@@ -142,12 +142,12 @@ public sealed class SettingsNavigationSmokeTests : UITestBase
         // Check by process name, not by launcher PID. Settings is single-instance: the EXE the
         // framework started often exits cleanly after handing off to an existing instance, so the
         // actual window may be owned by a different PID than the one we launched.
-        Assert.IsTrue(
-            SessionHelper.IsRunning(Scope),
+        bool stillRunning = SessionHelper.IsRunning(Scope);
+        string crashMessage =
             $"No {ScopeProcessName} process remains after invoking '{navItemSlug}'. " +
-            "Likely a navigation FailFast regression \u2014 see ShellViewModel.Frame_NavigationFailed.");
+            "Likely a navigation FailFast regression \u2014 see ShellViewModel.Frame_NavigationFailed.";
+        Assert.IsTrue(stillRunning, crashMessage);
     }
 
     private readonly record struct NavigationCase(string? ParentGroupSlug, string NavItemSlug);
 }
-
