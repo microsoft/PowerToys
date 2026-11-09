@@ -22,7 +22,7 @@ public class IconModelTests
         Assert.AreEqual("Calendar", model.Name);
         Assert.AreEqual("\uEA89", model.Glyph);
         Assert.AreEqual(IconSize.XLarge, model.Size);
-        Assert.AreEqual(40d, model.PixelSize);
+        Assert.AreEqual(40d, model.FontSizeInDips);
         Assert.AreEqual(IconStyle.Filled, model.Style);
         Assert.AreEqual(IconColor.Accent, model.Color);
         Assert.AreEqual(IconAlignment.Center, model.HorizontalAlignment);
@@ -37,13 +37,13 @@ public class IconModelTests
         Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
         Assert.AreEqual("\uE787", model.Glyph);
         Assert.AreEqual(IconSize.Standard, model.Size);
-        Assert.AreEqual(24d, model.PixelSize);
+        Assert.AreEqual(24d, model.FontSizeInDips);
         Assert.AreEqual(IconColor.Default, model.Color);
         Assert.AreEqual(IconAlignment.Left, model.HorizontalAlignment);
     }
 
     [TestMethod]
-    public void IconSizesFollowTheFluentSizes()
+    public void IconFontSizesInDipsFollowTheFluentSizes()
     {
         var sizes = new Dictionary<string, double>
         {
@@ -57,13 +57,13 @@ public class IconModelTests
             ["xxLarge"] = 48,
         };
 
-        foreach (var (size, pixels) in sizes)
+        foreach (var (size, fontSizeInDips) in sizes)
         {
             var warnings = new List<string>();
             var model = IconModel.Parse($$"""{ "type": "Icon", "name": "Add", "size": "{{size}}" }""", warnings);
 
             Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
-            Assert.AreEqual(pixels, model.PixelSize, size);
+            Assert.AreEqual(fontSizeInDips, model.FontSizeInDips, size);
         }
     }
 
