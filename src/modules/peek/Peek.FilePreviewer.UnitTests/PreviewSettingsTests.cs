@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -46,6 +46,23 @@ namespace Peek.FilePreviewer.UnitTests
 
             Assert.IsNotNull(settings);
             Assert.AreEqual(PeekPreviewSettings.DefaultSourceCodeMaxFileSize, settings.SourceCodeMaxFileSize.Value);
+        }
+
+        [TestMethod]
+        public void Deserialize_PeekMediaPlayback_UnsetStaysNullAndRoundTrips()
+        {
+            var legacy = JsonSerializer.Deserialize("{\"name\":\"Peek\",\"version\":\"0.0.2\",\"properties\":{}}", SettingsSerializationContext.Default.PeekSettings);
+            Assert.IsNotNull(legacy);
+            Assert.IsNull(legacy.Properties.MediaVolume);
+            Assert.IsNull(legacy.Properties.MediaMuted);
+
+            var settings = new PeekSettings();
+            settings.Properties.MediaVolume = new DoubleProperty(0d);
+            settings.Properties.MediaMuted = new BoolProperty(true);
+            var clone = JsonSerializer.Deserialize(settings.ToJsonString(), SettingsSerializationContext.Default.PeekSettings);
+            Assert.IsNotNull(clone);
+            Assert.AreEqual(0d, clone.Properties.MediaVolume.Value, 0.0000001d);
+            Assert.IsTrue(clone.Properties.MediaMuted.Value);
         }
     }
 }

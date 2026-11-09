@@ -41,6 +41,7 @@ namespace Peek.UI
                     CloseAfterLosingFocus = _settings.Properties.CloseAfterLosingFocus.Value;
                     ConfirmFileDelete = _settings.Properties.ConfirmFileDelete.Value;
                     ShowFilePreviewTooltip = _settings.Properties.ShowFilePreviewTooltip.Value;
+                    ReadMediaPlayback();
                 }
 
                 Changed?.Invoke(this, EventArgs.Empty);
@@ -81,8 +82,8 @@ namespace Peek.UI
                     _confirmFileDelete = value;
 
                     // We write directly to the settings file. The Settings UI will detect
-                    // this change via its file watcher and update accordingly. This is the only
-                    // setting that is modified by Peek itself.
+                    // this change via its file watcher and update accordingly. Peek also
+                    // writes the hidden media volume the same way.
                     lock (_settingsLock)
                     {
                         _settings.Properties.ConfirmFileDelete.Value = _confirmFileDelete;
@@ -97,6 +98,10 @@ namespace Peek.UI
         /// </summary>
         public bool ShowFilePreviewTooltip { get; private set; }
 
+        public double? MediaVolume { get; private set; }
+
+        public bool? MediaMuted { get; private set; }
+
         public UserSettings()
         {
             _settingsUtils = SettingsUtils.Default;
@@ -104,6 +109,23 @@ namespace Peek.UI
             LoadSettingsFromJson();
 
             _watcher = Helper.GetFileWatcher(PeekModuleName, SettingsUtils.DefaultFileName, LoadSettingsFromJson);
+        }
+
+        public void RememberMediaPlayback(double volume, bool isMuted)
+        {
+            if (NormalizeVolume(volume) is not double normalized || (MediaVolume == normalized && MediaMuted == isMuted))
+            {
+                return;
+            }
+
+            lock (_settingsLock)
+            {
+                MediaVolume = normalized;
+                MediaMuted = isMuted;
+                _settings.Properties.MediaVolume = new DoubleProperty(normalized);
+                _settings.Properties.MediaMuted = new BoolProperty(isMuted);
+                _settingsUtils.SaveSettings(_settings.ToJsonString(), PeekModuleName);
+            }
         }
 
         private void LoadSettingsFromJson()
@@ -140,6 +162,24 @@ namespace Peek.UI
         private static int CalculateRetryDelay(int attempt)
         {
             return (int)Math.Pow(2, attempt) * 100;
+        }
+
+        private void ReadMediaPlayback()
+        {
+            DoubleProperty savedVolume = _settings.Properties.MediaVolume;
+            MediaVolume = NormalizeVolume(savedVolume == null ? null : savedVolume.Value);
+            BoolProperty savedMuted = _settings.Properties.MediaMuted;
+            MediaMuted = savedMuted == null ? null : savedMuted.Value;
+        }
+
+        private static double? NormalizeVolume(double? volume)
+        {
+            if (volume is not double value || !double.IsFinite(value))
+            {
+                return null;
+            }
+
+            return Math.Clamp(value, 0d, 1d);
         }
     }
 }

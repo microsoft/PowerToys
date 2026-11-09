@@ -18,6 +18,12 @@ namespace Peek.UI
 
         public bool ShowFilePreviewTooltip { get; }
 
+        public double? MediaVolume { get; }
+
+        public bool? MediaMuted { get; }
+
+        public void RememberMediaPlayback(double volume, bool isMuted);
+
         public event EventHandler? Changed;
     }
 }
