@@ -130,6 +130,10 @@
     <value>Remove</value>
     <comment>Tooltip that shows that the user can remove an item from a list</comment>
   </data>
+  <data name="Remove.KeyboardAcceleratorTextOverride" xml:space="preserve">
+    <value>Del</value>
+    <comment>Keyboard shortcut hint shown next to the Remove context menu item (the Delete key). Localize the key name as appropriate.</comment>
+  </data>
   <data name="Export_by.Text" xml:space="preserve">
     <value>Export</value>
     <comment>Tooltip that shows the user can export the selected items to a file</comment>
