@@ -432,13 +432,7 @@ internal abstract partial class WidgetPage : OnLoadContentPage
 
     internal event EventHandler? Updated;
 
-    protected Dictionary<string, string> ContentData { get; } = new();
-
-    /// <summary>
-    /// Gets structured template data, such as chart series, that can't be expressed as strings.
-    /// Guarded by the <see cref="ContentData"/> lock.
-    /// </summary>
-    protected Dictionary<string, JsonNode> ContentJson { get; } = new();
+    protected Dictionary<string, JsonNode> ContentData { get; } = new();
 
     protected WidgetPageState Page { get; set; } = WidgetPageState.Unknown;
 
@@ -455,13 +449,8 @@ internal abstract partial class WidgetPage : OnLoadContentPage
                 {
                     if (kvp.Value is not null)
                     {
-                        json[kvp.Key] = kvp.Value;
+                        json[kvp.Key] = kvp.Value.DeepClone();
                     }
-                }
-
-                foreach (var kvp in ContentJson)
-                {
-                    json[kvp.Key] = kvp.Value.DeepClone();
                 }
             }
 
@@ -660,7 +649,6 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
         try
         {
             ContentData.Clear();
-            ContentJson.Clear();
 
             var timer = Stopwatch.StartNew();
 
@@ -677,12 +665,12 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
             ContentData["cpuHandles"] = currentData.HandleCount.ToString("N0", CultureInfo.CurrentCulture);
             ContentData["cpuUptime"] = UptimeToString(CPUStats.Uptime);
             ContentData["cpuLogicalProcessors"] = CPUStats.LogicalProcessorCount.ToString(CultureInfo.CurrentCulture);
-            ContentJson["cpuSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
+            ContentData["cpuSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
                 Resources.GetResource("CPUUsage_Widget_Template/Chart_Legend"),
                 PerformanceChartData.CpuColor,
                 PerformanceChartData.Snapshot(currentData.CpuChartValues)));
-            ContentJson["cpuCores"] = CreateCoreBars(currentData.CoreUsage);
-            ContentJson["cpuTopProcesses"] = CreateTopProcesses(currentData.TopProcesses);
+            ContentData["cpuCores"] = CreateCoreBars(currentData.CoreUsage);
+            ContentData["cpuTopProcesses"] = CreateTopProcesses(currentData.TopProcesses);
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -693,7 +681,6 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
         {
             // Log.Error(e, "Error retrieving stats.");
             ContentData.Clear();
-            ContentJson.Clear();
             ContentData["errorMessage"] = e.Message;
 
             // ContentData = content.ToJsonString();
@@ -716,7 +703,7 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
     {
         if (ContentData.TryGetValue("cpuUsage", out var usage))
         {
-            return isBandPage ? usage : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("CPU_Usage_Label"), usage);
+            return isBandPage ? usage.GetValue<string>() : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("CPU_Usage_Label"), usage);
         }
         else
         {
@@ -871,7 +858,7 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
     {
         if (ContentData.TryGetValue("memUsage", out var usage))
         {
-            return isBandPage ? usage : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Memory_Usage_Label"), usage);
+            return isBandPage ? usage.GetValue<string>() : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Memory_Usage_Label"), usage);
         }
         else
         {
@@ -985,7 +972,7 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
     {
         if (ContentData.TryGetValue("diskName", out var name) && ContentData.TryGetValue("diskUsage", out var usage))
         {
-            return isBandPage ? usage : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Disk_Usage_Label"), name, usage);
+            return isBandPage ? usage.GetValue<string>() : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Disk_Usage_Label"), name, usage);
         }
         else
         {
@@ -998,7 +985,7 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
     {
         if (ContentData.TryGetValue("diskRead", out var readSpeed))
         {
-            return readSpeed;
+            return readSpeed.GetValue<string>();
         }
         else
         {
@@ -1010,7 +997,7 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
     {
         if (ContentData.TryGetValue("diskWrite", out var writeSpeed))
         {
-            return writeSpeed;
+            return writeSpeed.GetValue<string>();
         }
         else
         {
@@ -1175,7 +1162,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     {
         if (ContentData.TryGetValue("networkName", out var name) && ContentData.TryGetValue("networkUsage", out var usage))
         {
-            return isBandPage ? usage : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Network_Usage_Label"), name, usage);
+            return isBandPage ? usage.GetValue<string>() : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Network_Usage_Label"), name, usage);
         }
         else
         {
@@ -1185,12 +1172,12 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
     public string GetUpSpeed()
     {
-        return ContentData.TryGetValue("netSent", out var upSpeed) ? upSpeed : "???";
+        return ContentData.TryGetValue("netSent", out var upSpeed) ? upSpeed.GetValue<string>() : "???";
     }
 
     public string GetDownSpeed()
     {
-        return ContentData.TryGetValue("netReceived", out var downSpeed) ? downSpeed : "???";
+        return ContentData.TryGetValue("netReceived", out var downSpeed) ? downSpeed.GetValue<string>() : "???";
     }
 
     private string SpeedToString(float bytesPerSec)
@@ -1377,7 +1364,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
     {
         if (ContentData.TryGetValue("gpuName", out var name) && ContentData.TryGetValue("gpuUsage", out var usage))
         {
-            return isBandPage ? usage : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("GPU_Usage_Label"), name, usage);
+            return isBandPage ? usage.GetValue<string>() : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("GPU_Usage_Label"), name, usage);
         }
         else
         {
@@ -1517,18 +1504,18 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
             return isBandPage ? Resources.GetResource("Battery_Usage_Unknown") : Resources.GetResource("Battery_Usage_Unknown_Label");
         }
 
-        if (charge == "—")
+        if (charge.GetValue<string>() == "—")
         {
             return isBandPage ? Resources.GetResource("Battery_Usage_Unknown") : Resources.GetResource("Battery_Usage_Unknown_Label");
         }
 
         if (isBandPage)
         {
-            return charge;
+            return charge.GetValue<string>();
         }
 
         var isCharging = ContentData.TryGetValue("batteryStatus", out var status)
-            && status == Resources.GetResource("Battery_Status_Charging");
+            && status.GetValue<string>() == Resources.GetResource("Battery_Status_Charging");
 
         var labelKey = isCharging ? "Battery_Usage_Charging_Label" : "Battery_Usage_Label";
         return string.Format(CultureInfo.CurrentCulture, Resources.GetResource(labelKey), charge);
