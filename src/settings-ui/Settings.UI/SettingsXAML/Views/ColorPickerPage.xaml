@@ -115,6 +115,7 @@
                             <ComboBoxItem x:Uid="ColorPicker_SampleSize_5" />
                             <ComboBoxItem x:Uid="ColorPicker_SampleSize_7" />
                             <ComboBoxItem x:Uid="ColorPicker_SampleSize_9" />
+                            <ComboBoxItem x:Uid="ColorPicker_SampleSize_25" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
                     <!--

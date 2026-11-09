@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
 
 using static ColorPicker.NativeMethods;
@@ -22,8 +23,8 @@ namespace ColorPicker.Mouse
     {
         private const double DefaultDisplayRefreshRate = 60.0;
 
-        // Largest supported sample area (9x9 pixels). Must match the largest option in Settings.
-        internal const int MaxSampleSize = 9;
+        // Largest supported sample area, in pixels.
+        internal static readonly int MaxSampleSize = ColorPickerProperties.SupportedSampleSizes[^1];
 
         // Reused GDI surface for the per-tick screen sample, sized for the largest sample area.
         // Allocating a fresh Bitmap + Graphics on every timer tick (which fires at the monitor refresh
@@ -115,7 +116,7 @@ namespace ColorPicker.Mouse
         {
             var x = (int)position.X;
             var y = (int)position.Y;
-            var sampleSize = NormalizeSampleSize(_userSettings.SampleSize.Value);
+            var sampleSize = ColorPickerProperties.NormalizeSampleSize(_userSettings.SampleSize.Value);
 
             if (sampleSize == 1)
             {
@@ -126,17 +127,6 @@ namespace ColorPicker.Mouse
             var sampleArea = GetSampleArea(x, y, sampleSize, GetMonitorBounds(x, y));
             _screenPixelGraphics.CopyFromScreen(sampleArea.X, sampleArea.Y, 0, 0, sampleArea.Size, CopyPixelOperation.SourceCopy);
             return GetAverageColor(_screenPixelBitmap, sampleArea.Width, sampleArea.Height);
-        }
-
-        /// <summary>
-        /// Returns a usable sample size: an odd number between 1 and <see cref="MaxSampleSize"/>,
-        /// so the sample area is always centered on the cursor. Values outside that range (e.g. a
-        /// hand-edited settings file) are clamped, and even values are rounded down.
-        /// </summary>
-        internal static int NormalizeSampleSize(int sampleSize)
-        {
-            sampleSize = Math.Clamp(sampleSize, 1, MaxSampleSize);
-            return sampleSize % 2 == 0 ? sampleSize - 1 : sampleSize;
         }
 
         /// <summary>
@@ -160,25 +150,35 @@ namespace ColorPicker.Mouse
         /// <summary>
         /// Returns the average color of the <paramref name="width"/> x <paramref name="height"/> area
         /// in the top-left corner of <paramref name="bitmap"/>, rounding each channel to the nearest value.
+        /// The area is read with a single LockBits call: up to 25x25 GetPixel calls per timer tick would be slow.
         /// </summary>
         internal static Color GetAverageColor(Bitmap bitmap, int width, int height)
         {
-            var red = 0;
-            var green = 0;
-            var blue = 0;
-            for (var y = 0; y < height; y++)
+            var bitmapData = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            try
             {
-                for (var x = 0; x < width; x++)
+                var red = 0;
+                var green = 0;
+                var blue = 0;
+                for (var y = 0; y < height; y++)
                 {
-                    var pixel = bitmap.GetPixel(x, y);
-                    red += pixel.R;
-                    green += pixel.G;
-                    blue += pixel.B;
+                    for (var x = 0; x < width; x++)
+                    {
+                        // Format32bppArgb pixels read as a little-endian 0xAARRGGBB value.
+                        var pixel = Marshal.ReadInt32(bitmapData.Scan0, (y * bitmapData.Stride) + (x * 4));
+                        red += (pixel >> 16) & 0xFF;
+                        green += (pixel >> 8) & 0xFF;
+                        blue += pixel & 0xFF;
+                    }
                 }
-            }
 
-            var count = width * height;
-            return Color.FromArgb((red + (count / 2)) / count, (green + (count / 2)) / count, (blue + (count / 2)) / count);
+                var count = width * height;
+                return Color.FromArgb((red + (count / 2)) / count, (green + (count / 2)) / count, (blue + (count / 2)) / count);
+            }
+            finally
+            {
+                bitmap.UnlockBits(bitmapData);
+            }
         }
 
         private static Rectangle GetMonitorBounds(int x, int y)

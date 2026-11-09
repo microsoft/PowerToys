@@ -2042,6 +2042,10 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>9 by 9 average</value>
     <comment>Average of a 9 by 9 pixel area</comment>
   </data>
+  <data name="ColorPicker_SampleSize_25.Content" xml:space="preserve">
+    <value>25 by 25 average</value>
+    <comment>Average of a 25 by 25 pixel area</comment>
+  </data>
   <data name="ImageResizer_DefaultSize_Large" xml:space="preserve">
     <value>Large</value>
     <comment>The size of the image</comment>

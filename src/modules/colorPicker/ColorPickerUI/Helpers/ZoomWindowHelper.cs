@@ -8,9 +8,11 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
+using ColorPicker.Settings;
 using ManagedCommon;
 using Microsoft.Graphics.Canvas;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Windows.Graphics;
@@ -45,6 +47,7 @@ namespace ColorPicker.Helpers
         private static readonly Graphics _graphics = Graphics.FromImage(_bmp);
 
         private readonly AppStateHandler _appStateHandler;
+        private readonly IUserSettings _userSettings;
 
         private int _currentZoomLevel;
         private int _previousZoomLevel;
@@ -54,9 +57,10 @@ namespace ColorPicker.Helpers
         private double _zoomDpiScale = 1;
         private bool _zoomWindowVisible;
 
-        public ZoomWindowHelper(AppStateHandler appStateHandler)
+        public ZoomWindowHelper(AppStateHandler appStateHandler, IUserSettings userSettings)
         {
             _appStateHandler = appStateHandler;
+            _userSettings = userSettings;
             _appStateHandler.AppClosed += (s, e) => CloseZoomWindow();
             _appStateHandler.AppHidden += (s, e) => CloseZoomWindow();
         }
@@ -238,6 +242,7 @@ namespace ColorPicker.Helpers
             }
 
             _zoomWindow ??= new ZoomWindow();
+            _zoomWindow.ZoomViewControl.SampleSize = ColorPickerProperties.NormalizeSampleSize(_userSettings.SampleSize.Value);
 
             if (!_zoomWindowVisible)
             {

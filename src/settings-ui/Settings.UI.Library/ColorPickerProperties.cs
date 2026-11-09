@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -90,6 +91,27 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // Width and height, in pixels, of the square area whose average color is picked. 1 picks the single pixel under the cursor.
         [JsonPropertyName("samplesize")]
         public int SampleSize { get; set; }
+
+        // The sample sizes offered in Settings, in the order they are listed. Odd so the area is centered on the cursor.
+        public static readonly ImmutableArray<int> SupportedSampleSizes = ImmutableArray.Create(1, 3, 5, 7, 9, 25);
+
+        /// <summary>
+        /// Returns the largest supported sample size that is not larger than <paramref name="sampleSize"/>,
+        /// so a value that isn't offered in Settings (e.g. from a hand-edited settings file) still works.
+        /// </summary>
+        public static int NormalizeSampleSize(int sampleSize)
+        {
+            var normalizedSampleSize = SupportedSampleSizes[0];
+            foreach (var supportedSampleSize in SupportedSampleSizes)
+            {
+                if (supportedSampleSize <= sampleSize)
+                {
+                    normalizedSampleSize = supportedSampleSize;
+                }
+            }
+
+            return normalizedSampleSize;
+        }
 
         public override string ToString()
             => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.ColorPickerProperties);
