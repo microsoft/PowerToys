@@ -21,6 +21,14 @@ Enabled forces this integration on. Disabled prevents discovery and execution fr
 Disabling PowerScripts always takes precedence. A policy disabling Advanced Paste also takes precedence. Enabling this integration does not enable either utility, approve scripts, enable runtimes, or weaken sandbox restrictions.
 
 Machine policy takes precedence over user policy for the same value. Policies never replace saved user preferences; removing a policy restores the preference. Consumer identity is caller-supplied and is not an authentication boundary. Use the PowerScripts utility policy to prevent execution by all consumers.</string>
+      <string id="ConfigurePowerScriptsCommandPalette">Command Palette: Allow PowerScripts integration</string>
+      <string id="ConfigurePowerScriptsCommandPaletteDescription">Controls whether Command Palette can discover and run PowerScripts.
+
+Enabled forces this integration on. Disabled prevents discovery and execution from this consumer. Not configured uses the user's preference in PowerScripts settings, which is enabled by default.
+
+Disabling PowerScripts always takes precedence. A policy disabling Command Palette also takes precedence. Enabling this integration does not enable either utility, approve scripts, enable runtimes, or weaken sandbox restrictions.
+
+Machine policy takes precedence over user policy for the same value. Policies never replace saved user preferences; removing a policy restores the preference. Consumer identity is caller-supplied and is not an authentication boundary. Use the PowerScripts utility policy to prevent execution by all consumers.</string>
       <string id="ConfigurePowerScriptsKeyboardManager">Keyboard Manager: Allow PowerScripts integration</string>
       <string id="ConfigurePowerScriptsKeyboardManagerDescription">Controls whether Keyboard Manager can discover and run PowerScripts.
 

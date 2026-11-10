@@ -82,6 +82,12 @@
       <enabledValue><decimal value="1" /></enabledValue>
       <disabledValue><decimal value="0" /></disabledValue>
     </policy>
+    <policy name="ConfigurePowerScriptsCommandPalette" class="Both" displayName="$(string.ConfigurePowerScriptsCommandPalette)" explainText="$(string.ConfigurePowerScriptsCommandPaletteDescription)" key="Software\Policies\PowerToys\PowerScripts\Consumers" valueName="command-palette">
+      <parentCategory ref="PowerScripts" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_POWERSCRIPTS" />
+      <enabledValue><decimal value="1" /></enabledValue>
+      <disabledValue><decimal value="0" /></disabledValue>
+    </policy>
 
     <policy name="ConfigurePowerScriptsFileExplorer" class="Both" displayName="$(string.ConfigurePowerScriptsFileExplorer)" explainText="$(string.ConfigurePowerScriptsFileExplorerDescription)" key="Software\Policies\PowerToys\PowerScripts\Consumers" valueName="file-explorer">
       <parentCategory ref="PowerScripts" />

@@ -9,6 +9,7 @@ public static class PowerScriptConsumer
 {
     public const string AdvancedPaste = "advanced-paste";
     public const string KeyboardManager = "keyboard-manager";
+    public const string CommandPalette = "command-palette";
     public const string CommandLine = "command-line";
 
     public static bool IsValid(string? id) =>

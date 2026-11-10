@@ -227,7 +227,32 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
         services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
         services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
-        services.AddSingleton<ICommandProvider, PowerScriptsCommandsProvider>();
+
+        // This navigation bridge is only for the in-process PowerScripts provider.
+        // Use the host's normal page navigation without extending the public SDK contract.
+        // Request navigation on the UI thread; Invoke normally runs in the background.
+        var powerScriptsDispatcher = DispatcherQueue.GetForCurrentThread();
+        services.AddSingleton<ICommandProvider>(serviceProvider => new PowerScriptsCommandsProvider(page =>
+        {
+            void RequestNavigation()
+            {
+                // Resolve the shell only when invoked to avoid a provider registration dependency cycle.
+                var sourcePage = serviceProvider.GetRequiredService<ShellViewModel>().CurrentPage;
+                var command = new CommandViewModel(page, new WeakReference<IPageContext>(sourcePage));
+                command.FastInitializeProperties();
+                WeakReferenceMessenger.Default.Send(new PerformCommandMessage(command, sourcePage));
+            }
+
+            if (powerScriptsDispatcher.HasThreadAccess)
+            {
+                RequestNavigation();
+            }
+            else if (!powerScriptsDispatcher.TryEnqueue(RequestNavigation))
+            {
+                throw new InvalidOperationException("Unable to request navigation to the PowerScripts result page.");
+            }
+        }));
+
         services.AddSingleton<ICommandProvider, RemoteDesktopCommandProvider>();
 
         var performanceMonitorSoftDisabled = providerLoadGuard.IsProviderDisabled(PerformanceMonitorCommandsProvider.ProviderIdValue);

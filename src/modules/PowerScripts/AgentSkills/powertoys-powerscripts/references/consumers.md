@@ -13,6 +13,7 @@ PowerScripts app > Consumer modules.
 |---|---|---|
 | `advanced-paste` | Clipboard text/files/image/audio; never none | Pasteable text/files/image/audio; typed prompts, automatic discovery |
 | `keyboard-manager` | Ordinary action: none | Prefer none; manual saved shortcut, required options need defaults/saved arguments |
+| `command-palette` | No primary input: none | None/text; no-parameter explicit activation runs and opens results; declared parameters use a form and Run |
 | `file-explorer` (integration builds only) | Selected files; one compatible image/audio file | None/text/files/image/audio; typed prompts and separate exported results |
 | `command-line` | Explicit authorized Host test | Any supported contract; does not test another consumer's UI/binding |
 
@@ -34,6 +35,35 @@ returned text/media. Prefer `none` to `none`; options are still allowed.
 Verify host-action/sandbox feasibility, then use [manual setup](keyboard-manager.md).
 Check the actual picker; older prototypes may not support current descriptors.
 Do not revive removed fields or edit KBM JSON.
+
+## Command Palette
+
+Open the **PowerScripts** entry to browse and filter compatible scripts: primary
+input `none`, output `none` or `text`. Individual scripts are not home-page commands
+or fallback suggestions. Refresh stays in the actions menu, with retry for discovery
+errors; it is not a script-list row.
+
+- Explicitly activate a script with no declared parameters to start it and open
+  its results page. Scripts declaring any parameters, including optional values
+  with defaults, open a form and require **Run**.
+- Discovery, browsing, filtering, page construction, and `GetContent()` never
+  start execution. Normal Host trust, policy, and runtime checks still apply.
+- Forms collect string, 32-bit integer, boolean, string-enum choice, and existing
+  Windows file-path options. Optional values can be omitted; omitted values receive
+  descriptor defaults. Supplied empty strings, zero, and false remain typed values.
+- Text results appear above parameter controls on the same results page, with
+  status, diagnostics, **Stop**, and explicit rerun. Empty text is valid; stderr
+  alone is not failure. Nonzero exits and invalid output remain failures.
+- The run bound is 60 seconds; runtime limits may be shorter. Stop/timeout attempt
+  termination without guaranteeing rollback or that separate runtime work stopped.
+  Navigating away preserves the current CmdPal session's run/result; returning
+  without a new execution action does not rerun it. No automatic retry occurs.
+
+Enable Command Palette and its PowerScripts extension, and check
+**PowerScripts app > Consumer modules > Command Palette**. This integration defaults on; enabling it does
+not enable the parent module or approve a script. Clipboard, primary file/media input,
+file/media output, rich markup, and result saving are not supported by this adapter.
+An auxiliary file-path option does not change primary input to `files`.
 
 ## File Explorer (separate integration builds)
 

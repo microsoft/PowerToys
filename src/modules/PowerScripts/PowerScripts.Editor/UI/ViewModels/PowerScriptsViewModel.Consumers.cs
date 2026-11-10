@@ -24,6 +24,8 @@ public partial class PowerScriptsViewModel
 
     public PowerScriptConsumerItem FileExplorerConsumer { get; } = new("file-explorer");
 
+    public PowerScriptConsumerItem CommandPaletteConsumer { get; } = new("command-palette");
+
     public bool CanChangePowerScriptsEnabled => AreConsumerSettingsReady && !_isPowerScriptsPolicyControlled;
 
     public bool AreConsumerSettingsReady => _consumerSettingsLoaded && !_consumerSettingsBusy;
@@ -53,11 +55,13 @@ public partial class PowerScriptsViewModel
                 ?? throw new InvalidOperationException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
             var keyboardManager = snapshot.Consumers.Single(item => item.Id == KeyboardManagerConsumer.Id);
             var fileExplorer = snapshot.Consumers.Single(item => item.Id == FileExplorerConsumer.Id);
+            var commandPalette = snapshot.Consumers.Single(item => item.Id == CommandPaletteConsumer.Id);
             _isEnabled = snapshot.IsPowerScriptsEnabled;
             _isPowerScriptsPolicyControlled = snapshot.IsPowerScriptsPolicyControlled;
             AdvancedPasteConsumer.Update(advancedPaste);
             KeyboardManagerConsumer.Update(keyboardManager);
             FileExplorerConsumer.Update(fileExplorer);
+            CommandPaletteConsumer.Update(commandPalette);
             _consumerSettingsLoaded = true;
             OnPropertyChanged(nameof(IsEnabled));
             OnPropertyChanged(nameof(ExecutionSettingsSummary));
