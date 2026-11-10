@@ -32,6 +32,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AdvancedPaste\AdvancedPaste.csproj" />
+    <ProjectReference Include="..\AdvancedPaste.Engine\AdvancedPaste.Engine.csproj" />
   </ItemGroup>
 
 </Project>

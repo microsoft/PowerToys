@@ -104,7 +104,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@bc8c008a419c5b7a29df6f5641edd35fd1c6ea85 # v0.87.10
+        uses: github/gh-aw-actions/setup@924af5fdc64061cfbf66fb584c8b07e2ac230c60 # v0.89.21
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -335,7 +335,7 @@ jobs:
           cp -a "${RUNNER_TEMP}/gh-aw/aw-prompts/." /tmp/gh-aw/aw-prompts/
       - name: Upload activation artifact
         if: success() || failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: activation
           include-hidden-files: true
@@ -402,7 +402,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@bc8c008a419c5b7a29df6f5641edd35fd1c6ea85 # v0.87.10
+        uses: github/gh-aw-actions/setup@924af5fdc64061cfbf66fb584c8b07e2ac230c60 # v0.89.21
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -434,7 +434,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Setup Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.12'
       - name: Create gh-aw temp directory
@@ -1110,7 +1110,7 @@ jobs:
       - name: Upload agent output fallback artifact
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: agent-output-fallback
           path: |
@@ -1120,7 +1120,7 @@ jobs:
       - name: Upload agent artifacts
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: agent
           path: |
@@ -1174,7 +1174,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@bc8c008a419c5b7a29df6f5641edd35fd1c6ea85 # v0.87.10
+        uses: github/gh-aw-actions/setup@924af5fdc64061cfbf66fb584c8b07e2ac230c60 # v0.89.21
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -1226,7 +1226,7 @@ jobs:
       - name: Upload usage artifact
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: usage
           path: |
@@ -1278,7 +1278,7 @@ jobs:
         id: upload-daily-aic-cache
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: aic-usage-cache
           path: /tmp/gh-aw/agentic-workflow-usage-cache.jsonl
@@ -1433,7 +1433,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@bc8c008a419c5b7a29df6f5641edd35fd1c6ea85 # v0.87.10
+        uses: github/gh-aw-actions/setup@924af5fdc64061cfbf66fb584c8b07e2ac230c60 # v0.89.21
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -1635,7 +1635,7 @@ jobs:
           if [ -d /tmp/gh-aw/sandbox/firewall/audit ]; then mkdir -p /tmp/gh-aw/threat-detection/sandbox/firewall/audit && cp -r /tmp/gh-aw/sandbox/firewall/audit/. /tmp/gh-aw/threat-detection/sandbox/firewall/audit/; fi
       - name: Upload threat detection artifact
         if: always() && steps.detection_guard.outputs.run_detection == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: detection
           path: |
@@ -1684,7 +1684,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@bc8c008a419c5b7a29df6f5641edd35fd1c6ea85 # v0.87.10
+        uses: github/gh-aw-actions/setup@924af5fdc64061cfbf66fb584c8b07e2ac230c60 # v0.89.21
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -1739,7 +1739,7 @@ jobs:
           persist-credentials: false
           ref: ${{ github.sha }}
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         env:
           GH_AW_AGENT_OUTPUT: ${{ runner.temp }}/gh-aw/safe-jobs/agent_output.json
         with:
@@ -2336,7 +2336,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@bc8c008a419c5b7a29df6f5641edd35fd1c6ea85 # v0.87.10
+        uses: github/gh-aw-actions/setup@924af5fdc64061cfbf66fb584c8b07e2ac230c60 # v0.89.21
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -2398,7 +2398,7 @@ jobs:
             await main();
       - name: Upload Safe Outputs Items
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: safe-outputs-items
           path: |

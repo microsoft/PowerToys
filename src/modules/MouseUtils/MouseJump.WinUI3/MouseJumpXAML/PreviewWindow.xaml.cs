@@ -19,7 +19,7 @@ using MouseJump.Common.Imaging;
 using MouseJump.Common.Interop;
 using MouseJump.Models.Display;
 using MouseJump.Models.Drawing;
-using MouseJump.Models.ViewModel;
+using MouseJump.Models.Layout;
 using MouseJump.WinUI3.Helpers;
 
 using Windows.Graphics;
@@ -44,7 +44,7 @@ internal sealed partial class PreviewWindow : Window
         this.InitializeWindow();
     }
 
-    private FormViewModel? FormLayout
+    private FormLayout? FormLayout
     {
         get;
         set;
@@ -315,14 +315,15 @@ internal sealed partial class PreviewWindow : Window
         var formLayout = LayoutHelper.GetFormLayout(
             previewStyle,
             displayInfo,
-            activatedScreen: activatedScreen,
-            activatedLocation: activatedLocation);
+            maximumSize: activatedScreen.DisplayArea.Size);
 
         // remember the layout so we can map the mouse clicks back to
         // the appropriate device and screen location
         this.FormLayout = formLayout;
 
-        await this.PositionWindowAsync(formLayout.FormBounds)
+        var formBounds = LayoutHelper.PositionOnScreen(
+            formLayout.CanvasLayout.CanvasBounds.OuterBounds, activatedScreen, activatedLocation);
+        await this.PositionWindowAsync(formBounds)
             .ConfigureAwait(false);
 
         var imageCopyServices = displayInfo.Devices

@@ -434,6 +434,10 @@ public partial class Win32Program : IProgram
                 }
             }
 
+            program.IcoPath = !string.IsNullOrEmpty(shellLinkHelper.IconLocation)
+                ? shellLinkHelper.IconLocation
+                : program.FullPath;
+
             return program;
 
             static bool StartsWithFolder(string path, Environment.SpecialFolder folder)

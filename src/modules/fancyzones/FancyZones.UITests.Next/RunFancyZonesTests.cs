@@ -30,9 +30,10 @@ public class RunFancyZonesTests : UITestBase
     [TestCategory("FancyZones")]
     public void RunFancyZones()
     {
-        Assert.IsTrue(
-            FancyZonesTestHelper.WaitForProcess(FancyZonesTestHelper.FancyZonesProcess, true, 30_000),
+        bool started = FancyZonesTestHelper.WaitForProcess(FancyZonesTestHelper.FancyZonesProcess, true, 30_000);
+        string startedMessage =
             $"The runner did not start {FancyZonesTestHelper.FancyZonesProcess}. " +
-            $"Live instances: {FancyZonesTestHelper.DescribeProcesses(FancyZonesTestHelper.FancyZonesProcess)}.");
+            $"Live instances: {FancyZonesTestHelper.DescribeProcesses(FancyZonesTestHelper.FancyZonesProcess)}.";
+        Assert.IsTrue(started, startedMessage);
     }
 }

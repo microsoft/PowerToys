@@ -314,10 +314,10 @@ public class MouseHighlighterTests : UITestBase
         }
 
         Assert.IsTrue(observedNearGlow, "The configured high-intensity Ripple glow did not render near the click point.");
-        Assert.IsTrue(
-            observedOuterRipple,
+        string rippleMessage =
             $"The configured 120px, 1.8-second Ripple was absent outside the default maximum radius after 900ms on three complete attempts; " +
-            $"annulus={defaultMaximumRadius + 4}-{configuredMaximumRadius + 4}px, maximum changed pixels={maximumChangedOuterSamples}.");
+            $"annulus={defaultMaximumRadius + 4}-{configuredMaximumRadius + 4}px, maximum changed pixels={maximumChangedOuterSamples}.";
+        Assert.IsTrue(observedOuterRipple, rippleMessage);
         Assert.IsTrue(
             WaitForRippleToClear(nearPoint, farPoint, nearBase, farBase, 2_000),
             "Ripple remained after its configured 1.8-second duration.");
@@ -508,7 +508,7 @@ public class MouseHighlighterTests : UITestBase
                 Near = WindowHelper.GetPixelColor(nearPoint.X, nearPoint.Y),
                 Far = WindowHelper.GetPixelColor(farPoint.X, farPoint.Y),
             },
-            sample => IsNear(sample.Near, nearBase, 5) && IsNear(sample.Far, farBase, 5),
+            sample => sample is not null && IsNear(sample.Near, nearBase, 5) && IsNear(sample.Far, farBase, 5),
             timeoutMs,
             requiredConsecutiveMatches: 5,
             pollIntervalMS: 50).Succeeded;

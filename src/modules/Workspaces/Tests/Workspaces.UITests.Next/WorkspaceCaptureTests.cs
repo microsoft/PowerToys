@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -37,7 +38,7 @@ namespace Microsoft.Workspaces.UITests
             var minimizedApp = AppByTitle(apps, minimizedTitle);
             var packagedApp = AppByTitle(apps, TestAppFixture.DefaultTitle);
 
-            Assert.AreEqual(State.Fixture.ExecutablePath, WorkspaceTestState.Text(normalApp, "application-path"), true);
+            Assert.AreEqual(State.Fixture.ExecutablePath, WorkspaceTestState.Text(normalApp, "application-path"), true, CultureInfo.InvariantCulture);
             Assert.AreEqual(string.Empty, WorkspaceTestState.Text(normalApp, "package-full-name"), "The unpackaged app must not acquire package identity.");
             Assert.IsFalse(normalApp["is-elevated"]!.GetValue<bool>(), "The non-elevated fixture was captured as administrator.");
             Assert.IsFalse(normalApp["minimized"]!.GetValue<bool>());

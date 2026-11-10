@@ -16,7 +16,7 @@ output rather than duplicated.
 | Windows OCR | Bitmap and file clipboard sources, preview acceptance by button and Enter, direct-hotkey bypass, Settings-controlled automatic paste, and no-text error recovery. Uses Windows OCR, not an AI provider. |
 | File paste | TXT, HTML, and PNG via action list and direct shortcuts; real Explorer paste, exact copied bytes, UTF-8 content, PNG dimensions and pixels, and source-file preservation. |
 | Media conversion | PCM audio to MP3, video audio extraction, and H.264/AAC MP4. Deterministic fixtures use Windows media APIs; output streams, dimensions, duration, and same-extension naming are checked. |
-| Clipboard history | Select/delete specific test-owned Windows history items, preserve other baseline IDs, reset a full history store, and disable history through Settings. Windows history APIs are the authoritative shared-state observation. |
+| Clipboard history (temporarily quarantined) | Five ignored cases retain selection/deletion of exact Windows history IDs, baseline-ID preservation, capacity reset, Settings disable behavior, and repeated enable/disable coverage. See the quarantine explanation below; these cases do not currently execute. |
 | Lifecycle and keyboard | Real Settings OFF/ON with process exit/restart and all configured hotkeys disabled; live shortcut editing, cancel, reset, and clearing optional shortcuts. |
 | Settings and window behavior | Clipboard preview refresh/visibility, close-on-focus-loss, Escape, empty clipboard, offline action/group visibility, preference persistence, and unavailable AI with no providers. |
 
@@ -42,6 +42,12 @@ without requiring a provider.
   setup. The `AdvancedPaste` project family participates in
   `$requiresAuthenticatedSettingsIpc`; lifecycle tests do not bypass IPC by editing
   the enabled map and restarting the Runner.
+- CI dispatches `AdvancedPaste.UITests.Next` through the existing
+  `runUiTestAsUser.ps1` limited interactive task, not the elevated pipeline agent.
+  The fixture reports its user, session, and elevation and fails if the desktop
+  context is elevated or session 0. Windows clipboard history must be exercised
+  in the same non-elevated desktop context as the user workflow; a checked registry
+  preference alone does not prove that Windows captured a history item.
 
 Build with the existing repository tools:
 
@@ -81,9 +87,53 @@ Asynchronous snapshot reads stay on that thread across awaits, including when Te
 starts the test on an MTA worker with a nonempty desktop clipboard.
 Snapshots retry only the transient clipboard-busy HRESULT, asynchronously on the
 same STA and within a bounded deadline; no format is dropped to make a snapshot succeed.
+The backup regression uses the verified text fixture for text-only input and a
+desktop data object for HTML/RTF, with a bounded five-second native write retry
+budget. It does not retry the backup assertion or non-contention errors.
 Read errors are reported rather than converted to an empty string. RTF fixtures
 are copied from the real editor with Ctrl+C, and both text and RTF formats are
 verified before the formatting-removal scenarios start.
+
+Settings navigation and controls use a process-scoped session so a discarded
+startup HWND cannot invalidate an otherwise healthy Settings window. Physical
+keyboard interactions reacquire the current main HWND and still require foreground.
+
+History fixtures activate the feature through Windows' real clipboard Settings
+toggle, then copy text with Ctrl+C
+from the foreground editor. A registry write
+and a successful current-clipboard write do not establish the Windows capture
+service's readiness. Every copy still requires its exact Windows history ID before
+the next copy, and an additional regression covers three enable/disable cycles.
+Restoration drives the OS toggle before restoring the original registry value,
+including its presence and type.
+History failures preserve the original desktop, open Win+V, and attach a composed
+desktop screenshot and JSON containing the native popup's UIA subtree, explicit
+empty/populated/disabled/unknown state, visible test-owned content, and Windows API
+status/IDs before and after opening the popup on both the test thread and pumping STA.
+The popup is found through the desktop UIA root: a running TextInputHost or its
+empty CoreWindow tree does not prove the clipboard panel is visible or empty.
+Missing UIA content is reported as unavailable/unknown, never as an empty history.
+Native popup inspection is diagnostic-only. Normal selection, deletion, disabling,
+capacity-reset, and repeated-transition checks retain their authoritative history
+API and product-UI assertions without depending on an extra OS popup interaction.
+There is no unconditional Win+V warmup before fixture copies, and diagnostics never
+turn a failed capture into a passing test. Failures retain read-only clipboard-broker
+service state diagnostics; tests never alter service startup configuration or bypass
+clipboard policy.
+
+**Temporary clipboard-history quarantine:** all five methods in
+`AdvancedPasteClipboardHistoryTests` have explicit `Ignore` attributes. Windows 11
+x64 CI fails to capture the first fixture even though the current clipboard is
+correct, history is enabled, and the per-user broker is running. Builds
+[390674](https://dev.azure.com/shine-oss/PowerToys/_build/results?buildId=390674) and
+[390679](https://dev.azure.com/shine-oss/PowerToys/_build/results?buildId=390679)
+include visible Win+V empty-state screenshots, UIA trees, and matching zero-ID API
+observations. The change from image 23.0.0 to 25.0.0 is correlated, not proven causal.
+The image cannot currently be replaced or repaired. The detailed class comment
+records investigation limits and re-enable criteria. The quarantine also skips
+these cases on otherwise healthy Windows 10 and ARM64 workers; passing remaining
+tests does not constitute clipboard-history sign-off. Assertions and diagnostics
+are preserved for reactivation, not replaced with empty-history success fallbacks.
 
 History tests use a fresh process per case so restoring the OS history preference
 does not carry an old ItemsView and pending notifications into the next fixture.

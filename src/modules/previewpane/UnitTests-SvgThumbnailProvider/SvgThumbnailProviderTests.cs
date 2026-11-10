@@ -29,7 +29,7 @@ namespace SvgThumbnailProviderUnitTests
             SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(null);
             svgThumbnailProvider.SvgContents = svgBuilder.ToString();
             svgThumbnailProvider.SvgContentsReady.Set();
-            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
+            Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
 
             Assert.IsNotNull(thumbnail);
             Assert.IsTrue(thumbnail.Width > 0);
@@ -49,7 +49,7 @@ namespace SvgThumbnailProviderUnitTests
             SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(null);
             svgThumbnailProvider.SvgContents = svgBuilder.ToString();
             svgThumbnailProvider.SvgContentsReady.Set();
-            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
+            Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
             Assert.IsTrue(thumbnail != null);
         }
 
@@ -70,7 +70,7 @@ namespace SvgThumbnailProviderUnitTests
 ";
 
             svgThumbnailProvider.SvgContentsReady.Set();
-            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
+            Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
             Assert.IsTrue(thumbnail != null);
         }
 
@@ -92,7 +92,7 @@ namespace SvgThumbnailProviderUnitTests
 ";
 
             svgThumbnailProvider.SvgContentsReady.Set();
-            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
+            Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
             Assert.IsTrue(thumbnail != null);
         }
 
@@ -113,7 +113,7 @@ namespace SvgThumbnailProviderUnitTests
    viewBox=""0 0 380.99999 304.79999"" width=""2000"" >
 ";
             svgThumbnailProvider.SvgContentsReady.Set();
-            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
+            Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
             Assert.IsTrue(thumbnail != null);
         }
 
@@ -126,7 +126,7 @@ namespace SvgThumbnailProviderUnitTests
             SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(null);
             svgThumbnailProvider.SvgContents = svgBuilder.ToString();
             svgThumbnailProvider.SvgContentsReady.Set();
-            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
+            Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
             Assert.IsTrue(thumbnail == null);
         }
 
@@ -136,7 +136,7 @@ namespace SvgThumbnailProviderUnitTests
             SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(null);
             svgThumbnailProvider.SvgContents = string.Empty;
             svgThumbnailProvider.SvgContentsReady.Set();
-            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
+            Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
             Assert.IsTrue(thumbnail == null);
         }
 
@@ -147,7 +147,7 @@ namespace SvgThumbnailProviderUnitTests
             svgThumbnailProvider.SvgContents = string.Empty;
             svgThumbnailProvider.SvgContentsReady.Set();
 
-            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
+            Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
             Assert.IsTrue(thumbnail == null);
         }
 
@@ -158,7 +158,7 @@ namespace SvgThumbnailProviderUnitTests
             SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(null);
             svgThumbnailProvider.SvgContents = content;
             svgThumbnailProvider.SvgContentsReady.Set();
-            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(0);
+            Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(0);
             Assert.IsTrue(thumbnail == null);
         }
 
@@ -183,7 +183,7 @@ namespace SvgThumbnailProviderUnitTests
             svgThumbnailProvider.SvgContents = svgBuilder.ToString();
             svgThumbnailProvider.SvgContentsReady.Set();
 
-            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
+            Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
             Assert.IsTrue(thumbnail != null);
         }
 
@@ -194,7 +194,7 @@ namespace SvgThumbnailProviderUnitTests
 
             SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(filePath);
 
-            Bitmap bitmap = svgThumbnailProvider.GetThumbnail(256);
+            Bitmap? bitmap = svgThumbnailProvider.GetThumbnail(256);
 
             Assert.IsTrue(bitmap != null);
         }
@@ -206,7 +206,7 @@ namespace SvgThumbnailProviderUnitTests
 
             SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(filePath);
 
-            Bitmap bitmap = svgThumbnailProvider.GetThumbnail(256);
+            Bitmap? bitmap = svgThumbnailProvider.GetThumbnail(256);
 
             Assert.IsTrue(bitmap != null);
         }
@@ -218,7 +218,7 @@ namespace SvgThumbnailProviderUnitTests
 
             SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(filePath);
 
-            Bitmap bitmap = svgThumbnailProvider.GetThumbnail(8);
+            Bitmap? bitmap = svgThumbnailProvider.GetThumbnail(8);
 
             Assert.IsTrue(bitmap != null);
         }
@@ -233,7 +233,7 @@ namespace SvgThumbnailProviderUnitTests
                 graphics.Clear(Color.FromArgb(128, 255, 0, 0));
             }
 
-            using Bitmap resized = SvgThumbnailProvider.ResizeImage(source, 32, 32);
+            using Bitmap? resized = SvgThumbnailProvider.ResizeImage(source, 32, 32);
 
             Assert.IsNotNull(resized);
             Assert.AreEqual(PixelFormat.Format32bppArgb, resized.PixelFormat);
@@ -255,7 +255,7 @@ namespace SvgThumbnailProviderUnitTests
             svgThumbnailProvider.SvgContents = svgBuilder.ToString();
             svgThumbnailProvider.SvgContentsReady.Set();
 
-            using Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
+            using Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
 
             Assert.IsNotNull(thumbnail);
             Assert.AreEqual(PixelFormat.Format32bppArgb, thumbnail.PixelFormat);

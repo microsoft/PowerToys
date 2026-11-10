@@ -5,7 +5,6 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
-using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -20,19 +19,19 @@ using WyHash;
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider, IPrecomputedListItem
+public partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider, IPrecomputedListItem, ICommandContextSource
 {
     private readonly ISettingsService _settingsService;
-    private readonly ProviderSettings _providerSettings;
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
     private readonly IContextMenuFactory _contextMenuFactory;
+    private int _contextItemsVersion;
 
     public ICommandProviderContext ProviderContext { get; private set; }
 
-    private string IdFromModel => IsFallback && !string.IsNullOrWhiteSpace(_fallbackId) ? _fallbackId : _commandItemViewModel.Command.Id;
+    protected ProviderSettings ProviderSettings { get; }
 
-    private string _fallbackId = string.Empty;
+    protected virtual string IdFromModel => _commandItemViewModel.Command.Id;
 
     private string _generatedId = string.Empty;
 
@@ -45,7 +44,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     private CommandAlias? Alias { get; set; }
 
-    public bool IsFallback { get; private set; }
+    public virtual bool IsFallback => false;
 
     [ObservableProperty]
     public partial ObservableCollection<Tag> Tags { get; set; } = [];
@@ -53,6 +52,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     public string Id => string.IsNullOrWhiteSpace(IdFromModel) ? _generatedId : IdFromModel;
 
     public CommandPaletteHost ExtensionHost { get; private set; }
+
+    AppExtensionHost? ICommandContextSource.ExtensionHost => ExtensionHost;
 
     public string ExtensionName => ExtensionHost.GetExtensionDisplayName() ?? string.Empty;
 
@@ -90,7 +91,11 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
 
     // Fallback items
-    public string DisplayTitle { get; private set; } = string.Empty;
+    public virtual string DisplayTitle => string.Empty;
+
+    internal string FallbackKey => $"{CommandProviderId}\0{Id}";
+
+    internal bool IncludeInGlobalResults => GetFallbackSettings()?.IncludeInGlobalResults == true;
 
     public HotkeySettings? Hotkey
     {
@@ -154,25 +159,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
     }
 
-    public bool IsEnabled
-    {
-        get
-        {
-            if (IsFallback)
-            {
-                if (_providerSettings.FallbackCommands.TryGetValue(_fallbackId, out var fallbackSettings))
-                {
-                    return fallbackSettings.IsEnabled;
-                }
-
-                return true;
-            }
-            else
-            {
-                return _providerSettings.IsEnabled;
-            }
-        }
-    }
+    public virtual bool IsEnabled => ProviderSettings.IsEnabled;
 
     // Dock properties
     public bool IsDockBand { get; private set; }
@@ -211,29 +198,24 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         ICommandProviderContext commandProviderContext,
         ProviderSettings providerSettings,
         IServiceProvider serviceProvider,
-        ICommandItem? commandItem,
         IContextMenuFactory? contextMenuFactory)
     {
         _serviceProvider = serviceProvider;
         _settingsService = serviceProvider.GetRequiredService<ISettingsService>();
-        _providerSettings = providerSettings;
+        ProviderSettings = providerSettings;
         ProviderContext = commandProviderContext;
         _commandItemViewModel = item;
+        _contextItemsVersion = item.ContextItemsVersion;
 
         _contextMenuFactory = contextMenuFactory ?? DefaultContextMenuFactory.Instance;
 
-        IsFallback = topLevelType == TopLevelType.Fallback;
         IsDockBand = topLevelType == TopLevelType.DockBand;
         ExtensionHost = extensionHost;
-        if (IsFallback && commandItem is IFallbackCommandItem2 fallback)
-        {
-            _fallbackId = fallback.Id;
-        }
 
         item.PropertyChangedBackground += Item_PropertyChanged;
     }
 
-    internal void InitializeProperties()
+    internal virtual void InitializeProperties()
     {
         // Init first, so that we get the ID & titles,
         // then generate the ID,
@@ -241,26 +223,27 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         ItemViewModel.InitializeProperties();
         GenerateId();
         ItemViewModel.SlowInitializeProperties();
-
-        if (IsFallback)
-        {
-            var model = _commandItemViewModel.Model.Unsafe;
-
-            // RPC to check type
-            if (model is IFallbackCommandItem fallback)
-            {
-                DisplayTitle = fallback.DisplayTitle;
-            }
-
-            UpdateInitialIcon(false);
-        }
     }
 
     private void Item_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (!string.IsNullOrEmpty(e.PropertyName))
         {
-            PropChanged?.Invoke(this, new PropChangedEventArgs(e.PropertyName));
+            var propertyName = e.PropertyName;
+            if (propertyName == nameof(CommandItemViewModel.AllCommands))
+            {
+                // Keep batched background delivery, but invalidate the SDK list only when its entries changed.
+                var version = _commandItemViewModel.ContextItemsVersion;
+                if (_contextItemsVersion == version)
+                {
+                    return;
+                }
+
+                _contextItemsVersion = version;
+                propertyName = nameof(ICommandItem.MoreCommands);
+            }
+
+            PropChanged?.Invoke(this, new PropChangedEventArgs(propertyName));
 
             if (e.PropertyName is nameof(CommandItemViewModel.Title) or nameof(CommandItemViewModel.Name))
             {
@@ -294,7 +277,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
     }
 
-    private void UpdateInitialIcon(bool raiseNotification = true)
+    protected void UpdateInitialIcon(bool raiseNotification = true)
     {
         if (_initialIcon != null || !_commandItemViewModel.Icon.IsSet)
         {
@@ -396,61 +379,19 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
     }
 
-    internal bool SafeUpdateFallbackTextSynchronous(string newQuery)
+    internal virtual bool SafeUpdateFallbackTextSynchronous(string newQuery) => false;
+
+    private FallbackSettings? GetFallbackSettings()
     {
-        if (!IsFallback)
-        {
-            return false;
-        }
-
-        if (!IsEnabled)
-        {
-            return false;
-        }
-
-        try
-        {
-            return UnsafeUpdateFallbackSynchronous(newQuery);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex.ToString());
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Calls UpdateQuery on our command, if we're a fallback item. This does
-    /// RPC work, so make sure you're calling it on a BG thread.
-    /// </summary>
-    /// <param name="newQuery">The new search text to pass to the extension</param>
-    /// <returns>true if our Title changed across this call</returns>
-    private bool UnsafeUpdateFallbackSynchronous(string newQuery)
-    {
-        var model = _commandItemViewModel.Model.Unsafe;
-
-        // RPC to check type
-        if (model is IFallbackCommandItem fallback)
-        {
-            var oldTitle = Title;
-
-            // RPC for method
-            fallback.FallbackHandler.UpdateQuery(newQuery);
-            var newTitle = Title;
-
-            // Report any title change, not just an empty <-> non-empty flip: the render path
-            // re-scores fallbacks off this signal, so a change like "server01" -> "server02"
-            // must still trigger a refresh or the fallback keeps its stale score and position.
-            return !string.Equals(oldTitle, newTitle, StringComparison.Ordinal);
-        }
-
-        return false;
+        var providerSettings = _settingsService.Settings.ProviderSettings.TryGetValue(CommandProviderId, out var current)
+            ? current
+            : ProviderSettings;
+        return providerSettings.FallbackCommands.TryGetValue(Id, out var settings) ? settings : null;
     }
 
     public PerformCommandMessage GetPerformCommandMessage()
     {
-        return new PerformCommandMessage(this.CommandViewModel.Model, new Models.ExtensionObject<IListItem>(this));
+        return new PerformCommandMessage(this.CommandViewModel, new Models.ExtensionObject<IListItem>(this));
     }
 
     public override string ToString()
@@ -486,17 +427,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     {
         List<IContextItem?> contextItems = new();
 
-        foreach (var item in _commandItemViewModel.MoreCommands)
-        {
-            if (item is ISeparatorContextItem)
-            {
-                contextItems.Add(item as IContextItem);
-            }
-            else if (item is CommandContextItemViewModel commandItem)
-            {
-                contextItems.Add(commandItem.Model.Unsafe);
-            }
-        }
+        _commandItemViewModel.CopySdkContextItemsTo(contextItems);
 
         _contextMenuFactory.AddMoreCommandsToTopLevel(this, this.ProviderContext, contextItems);
 
@@ -515,7 +446,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     /// and cleans up its resources so the TopLevelViewModel can be garbage
     /// collected after it is removed from the owning collections.
     /// </summary>
-    internal void Cleanup()
+    internal virtual void Cleanup()
     {
         _commandItemViewModel.PropertyChangedBackground -= Item_PropertyChanged;
         _commandItemViewModel.SafeCleanup();

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace PowerDisplay.Common.Models
@@ -44,6 +45,7 @@ namespace PowerDisplay.Common.Models
         /// initializer; readers must treat it as optional.
         /// </summary>
         [JsonPropertyName("knownGoodVcpFeatures")]
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "The JSON DTO setter preserves empty defaults for omitted members and existing explicit-null semantics during source-generated deserialization.")]
         public List<KnownGoodVcpFeature>? KnownGoodVcpFeatures { get; set; } = new();
 
         /// <summary>

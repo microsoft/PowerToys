@@ -208,6 +208,12 @@
   <data name="EditShortcuts_Visibility_Hidden" xml:space="preserve">
     <value>Hidden</value>
   </data>
+  <data name="EditShortcuts_Visibility_Minimized" xml:space="preserve">
+    <value>Minimized</value>
+  </data>
+  <data name="EditShortcuts_Visibility_Maximized" xml:space="preserve">
+    <value>Maximized</value>
+  </data>
   <data name="EditShortcuts_Label_If_Running" xml:space="preserve">
     <value>If running:</value>
   </data>

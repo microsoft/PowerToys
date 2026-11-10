@@ -50,6 +50,7 @@ ALLOWUNDO
 ALLVIEW
 ALPHATYPE
 altkey
+altwindowcycle
 amr
 animatedvisuals
 Animnate
@@ -115,6 +116,7 @@ authorable
 AUTOBUDDY
 AUTOCHECKBOX
 AUTOHIDE
+autohidecursor
 AUTOHSCROLL
 AUTOMATIONPROPERTIES
 autopf
@@ -278,6 +280,7 @@ clsids
 Clusion
 cmb
 cmder
+cmdnotfound
 CMDNOTFOUNDMODULEINTERFACE
 cmdpal
 CMIC
@@ -493,7 +496,7 @@ downmix
 downsampled
 downsampling
 downscale
-DPAPI
+dpapi
 DPICHANGED
 DPIs
 DPMS
@@ -556,9 +559,9 @@ ENABLETAB
 ENABLETEMPLATE
 encodedlaunch
 encryptor
-endgroup
+endfacet
 ENDSESSION
-endtask
+endsolid
 ENSUREVISIBLE
 ENTERIDLE
 ENTERMENULOOP
@@ -620,6 +623,7 @@ fancyzonescli
 FANCYZONESDRAWLAYOUTTEST
 fancyzoneseditor
 FARPROC
+faststart
 fdw
 fdx
 fesf
@@ -852,6 +856,7 @@ hotplug
 hotspot
 HPAINTBUFFER
 HPS
+hqdn
 HRAWINPUT
 HREDRAW
 hres
@@ -1093,6 +1098,7 @@ livezoom
 LLKH
 llkhf
 LLMHF
+lmb
 LMEM
 LMENU
 lng
@@ -1239,6 +1245,7 @@ Mip
 Miracast
 mkdn
 mlcfg
+mmb
 mmc
 mmcexe
 mmi
@@ -1258,6 +1265,7 @@ monitorinfof
 moof
 moooyo
 MOUSEACTIVATE
+mousebuttonlock
 mousecrosshairs
 MOUSEDATA
 MOUSEEVENTF
@@ -1267,7 +1275,7 @@ MOUSEINPUT
 mousejump
 MOUSEKEYBDHARDWAREINPUT
 mousepointer
-mouseutilities
+mousepointercrosshairs
 mouseutils
 MOVEFILE
 MOVESIZEEND
@@ -1345,6 +1353,8 @@ ncomment
 ncpa
 NCPAINT
 NCRENDERING
+ncrypt
+ncryptprotect
 ndp
 NEEDDISPATCH
 netcore
@@ -1506,7 +1516,7 @@ oplock
 OPTIMIZEFORINVOKE
 Optronics
 ORPHANEDDIALOGTITLE
-oscdimg
+osk
 oss
 OSVERSIONINFO
 OSVERSIONINFOEX
@@ -1699,7 +1709,7 @@ pscid
 pscredential
 pscustomobject
 PSECURITY
-psexec
+pseudolocalizer
 psfgao
 psfi
 PSMODULEPATH
@@ -1859,6 +1869,7 @@ riid
 Roamable
 Robo
 robocopyui
+rmb
 rollups
 ROUNDSMALL
 rpcrt
@@ -1934,6 +1945,7 @@ SETFOREGROUNDLOCKTIMEOUT
 SETHOTKEY
 SETICON
 SETLOWPOWERACTIVE
+setparams
 SETPOWEROFFACTIVE
 SETRANGE
 SETREDRAW
@@ -1952,8 +1964,6 @@ SETWORKAREA
 SFBS
 sfgao
 SFGAOF
-sfw
-sgn
 SGNR
 SHACF
 SHANDLE
@@ -2035,6 +2045,7 @@ slnx
 SMALLICON
 smartphone
 smileys
+smpte
 SMTO
 SNAPPROCESS
 snk
@@ -2045,6 +2056,7 @@ sourced
 sourcedoc
 SOURCEHEADER
 sourcesdirectory
+sparkline
 spdisp
 spdlog
 spdo
@@ -2268,7 +2280,8 @@ UIDs
 UIEx
 UIHWND
 uild
-uitest
+UIPI
+uitests
 UITo
 UIXAML
 ULONGLONG
@@ -2415,6 +2428,7 @@ wcsnicmp
 WDA
 WDAG
 WDDM
+wdk
 wdm
 wdp
 wdupenv
@@ -2464,6 +2478,7 @@ wingetpkgs
 Winhook
 WINL
 winlogon
+WINM
 winmd
 winml
 WINNT
@@ -2516,6 +2531,7 @@ wprp
 wql
 wregex
 WResize
+WRITEFAULT
 WRITEOBJECTS
 Wrk
 wrl
@@ -2539,7 +2555,6 @@ WUX
 WVk
 WVT
 Wwanpp
-WWOY
 Wzhudev
 xap
 Xbuttondown

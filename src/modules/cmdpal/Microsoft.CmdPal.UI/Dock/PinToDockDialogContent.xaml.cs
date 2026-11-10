@@ -43,7 +43,7 @@ public sealed partial class PinToDockDialogContent : UserControl
                 return null;
             }
 
-            return _monitors[MonitorComboBox.SelectedIndex].DeviceId;
+            return _monitors[MonitorComboBox.SelectedIndex].StableId;
         }
     }
 

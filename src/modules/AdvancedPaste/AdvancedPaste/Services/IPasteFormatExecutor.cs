@@ -13,5 +13,5 @@ namespace AdvancedPaste.Services;
 
 public interface IPasteFormatExecutor
 {
-    Task<DataPackage> ExecutePasteFormatAsync(PasteFormat pasteFormat, PasteActionSource source, CancellationToken cancellationToken, IProgress<double> progress);
+    Task<DataPackage> ExecutePasteFormatAsync(PasteFormat pasteFormat, DataPackageView input, PasteActionSource source, CancellationToken cancellationToken, IProgress<double> progress);
 }

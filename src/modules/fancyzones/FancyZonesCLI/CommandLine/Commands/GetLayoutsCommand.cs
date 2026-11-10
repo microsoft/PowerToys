@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.CommandLine.Invocation;
+using System.CommandLine;
 using System.Globalization;
 using System.Text.Json;
 
@@ -17,10 +17,10 @@ internal sealed partial class GetLayoutsCommand : FancyZonesBaseCommand
     public GetLayoutsCommand()
         : base("get-layouts", Properties.Resources.cmd_get_layouts)
     {
-        AddAlias("ls");
+        Aliases.Add("ls");
     }
 
-    protected override string Execute(InvocationContext context)
+    protected override string Execute(ParseResult parseResult)
     {
         var sb = new System.Text.StringBuilder();
 

@@ -480,6 +480,12 @@
                         TextChanged="EditVariableDialogValueTxtBox_TextChanged"
                         TextWrapping="Wrap" />
                     <MenuFlyoutSeparator Visibility="{Binding ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <Button
+                        x:Uid="RemoveDuplicatePathEntries"
+                        HorizontalAlignment="Right"
+                        AutomationProperties.AutomationId="RemoveDuplicatePathEntriesButton"
+                        Click="RemoveDuplicatePathEntriesButton_Click"
+                        Visibility="{Binding IsPath, Converter={StaticResource BoolToVisibilityConverter}}" />
                     <ItemsControl
                         x:Name="EditVariableValuesList"
                         Margin="0,-8,0,12"

@@ -2,25 +2,31 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CoreWidgetProvider.Helpers;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 
 internal static class PerformanceMonitorDockItemPresentation
 {
-    internal const string CpuLabelWidth = "5ch";
-    internal const string MemoryLabelWidth = "6ch";
-    internal const string NetworkUsageLabelWidth = "6ch";
-    internal const string DiskActiveTimeLabelWidth = "8ch";
-    internal const string GpuLabelWidth = "12ch";
-    internal const string BatteryLabelWidth = "6ch";
-    internal const string TransferRateLabelWidth = "10ch";
-    internal const string DisabledLabelWidth = "8ch";
+    internal static readonly DockLabelWidth DisabledLabelWidth = DockLabelWidth.Characters(8);
+    internal static readonly DockLabelWidth PercentageTitleWidth = DockLabelWidth.Sample("100%");
+    internal static readonly DockLabelWidth GpuSubtitleWidth = DockLabelWidth.Characters(12);
+    internal static readonly DockLabelWidth TransferRateLabelWidth = DockLabelWidth.Characters(10);
 
-    internal static ListItem ConfigureValueLabel(ListItem item, string labelWidth)
+    internal static ListItem ConfigureGpuValueLabel(ListItem item, GPUStats.DisplayInfo? gpu)
+    {
+        var hasMultipleAdapters = gpu is { AdapterCount: > 1 };
+        var modelName = hasMultipleAdapters ? gpu!.ShortName : string.Empty;
+        var hasModelName = !string.IsNullOrEmpty(modelName);
+        item.Subtitle = hasModelName ? modelName : Resources.GetResource("GPU_Usage_Subtitle");
+        return ConfigureValueLabel(item, PercentageTitleWidth, hasMultipleAdapters ? GpuSubtitleWidth : null);
+    }
+
+    internal static ListItem ConfigureValueLabel(ListItem item, DockLabelWidth titleWidth, DockLabelWidth? subtitleWidth = null)
     {
         item
-            .SetDockLabelWidth(labelWidth)
+            .SetDockLabelReservations(titleWidth, subtitleWidth ?? DockLabelWidth.Sample(item.Subtitle))
             .SetDockLabelTabularDigits();
 
         // item.SetDockLabelTrailingAlignment();

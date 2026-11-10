@@ -134,7 +134,6 @@ public abstract class PowerRenameTestBase : UITestBase
         TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
 
     // ---- fixtures -----------------------------------------------------------------------------
-
     protected string CreateTestFolder()
     {
         var folder = Path.Combine(Path.GetTempPath(), "PowerToys-PowerRename-UITests", Guid.NewGuid().ToString("N"));
@@ -171,7 +170,6 @@ public abstract class PowerRenameTestBase : UITestBase
             .ToList();
 
     // ---- module settings ----------------------------------------------------------------------
-
     /// <summary>
     /// Write PowerRename's own <c>power-rename-settings.json</c>. Both the shell extension (hosted in
     /// Explorer) and the UI reload it from disk, so seeding the file is enough — no runner restart.
@@ -253,7 +251,6 @@ public abstract class PowerRenameTestBase : UITestBase
     }
 
     // ---- PowerRename window --------------------------------------------------------------------
-
     /// <summary>
     /// Launch the PowerRename window over <paramref name="paths"/> and wait until its item list is
     /// populated. The item list is passed on the command line, matching how the shell extension
@@ -398,7 +395,6 @@ public abstract class PowerRenameTestBase : UITestBase
     }
 
     // ---- driving the PowerRename UI --------------------------------------------------------------
-
     protected void SetSearchText(Session window, string text) =>
         SetAutoSuggestText(window, SearchBoxAutomationId, "search", text);
 
@@ -500,7 +496,6 @@ public abstract class PowerRenameTestBase : UITestBase
     }
 
     // ---- preview -------------------------------------------------------------------------------
-
     /// <summary>The per-item checkbox, whose UIA name is the item's original name.</summary>
     protected static CheckBox? FindRowCheckBox(Session window, string originalName, int timeoutMS = 2_000) =>
         FindExact<CheckBox>(window, originalName, timeoutMS);
@@ -602,7 +597,6 @@ public abstract class PowerRenameTestBase : UITestBase
     }
 
     // ---- applying ------------------------------------------------------------------------------
-
     /// <summary>
     /// Press Apply and wait for the rename to land on disk. The Apply button is only enabled once at
     /// least one item will be renamed, so that is the readiness signal for the press.
@@ -650,7 +644,6 @@ public abstract class PowerRenameTestBase : UITestBase
         window.Find<Element>(By.AccessibilityId(ApplyButtonAutomationId), timeoutMS: PreviewTimeoutMS);
 
     // ---- lookup --------------------------------------------------------------------------------
-
     /// <summary>
     /// <c>By.Name</c> is a substring match in winappcli, so every lookup that must not collide with a
     /// longer caption goes through an exact-name filter.
@@ -665,7 +658,6 @@ public abstract class PowerRenameTestBase : UITestBase
             .FirstOrDefault(element => element.Name.Equals(name, comparison));
 
     // ---- cleanup -------------------------------------------------------------------------------
-
     private IReadOnlyList<Exception> RestoreModuleState()
     {
         var failures = new List<Exception>();

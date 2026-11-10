@@ -128,7 +128,7 @@ public class PowerDisplay
         monitor.ColorTemperatureVcp = 0x08;
         monitor.SupportsColorTemperature = false;
         monitor.CapabilitiesRaw = "(vcp(10))";
-        monitor.VcpCodesFormatted = new List<VcpCodeDisplayInfo>();
+        monitor.ReplaceVcpCodesFormatted([]);
 
         settingsUtils.Verify(
             utils => utils.SaveSettings(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
@@ -170,6 +170,93 @@ public class PowerDisplay
             Times.Never);
         Assert.AreEqual(0, ipcMessages.Count);
         Assert.AreEqual(0, namedEvents.Count);
+    }
+
+    [TestMethod]
+    public void SettingsSave_SharedFlyoutSettings_PreservesExclusions()
+    {
+        using var viewModel = CreateViewModel(out var settings, out var settingsUtils, out var ipcMessages);
+        settings.Properties.ExcludedFromSyncMonitorIds.Add("MON1");
+        settings.Properties.LinkedLevelsActive = true;
+        settingsUtils.Setup(utils => utils.GetSettingsOrDefault<PowerDisplaySettings>(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(settings);
+
+        viewModel.MouseWheelControlModeIndex = (int)MouseWheelControlMode.PrimaryDisplay;
+
+        var saved = GetSavedSettings(settingsUtils);
+        Assert.IsTrue(saved.Properties.LinkedLevelsActive);
+        Assert.AreEqual("MON1", settings.Properties.ExcludedFromSyncMonitorIds.Single());
+        Assert.AreEqual("MON1", saved.Properties.ExcludedFromSyncMonitorIds.Single());
+        Assert.AreEqual(1, ipcMessages.Count);
+    }
+
+    [TestMethod]
+    public void ReloadMonitors_SharedSettingsPreservesLegacyEntriesAndVisibleBindings()
+    {
+        var monitor = CreateMonitor();
+        Action reloadMonitors = null;
+        using var viewModel = CreateViewModel(
+            out var settings,
+            out var settingsUtils,
+            out var ipcMessages,
+            monitor,
+            (_, callback) => reloadMonitors = callback);
+        var monitors = viewModel.Monitors;
+        var legacy = new MonitorInfo { Id = "LegacyMonitor" };
+        settings.Properties.Monitors.Add(legacy);
+        settingsUtils.Setup(utils => utils.GetSettingsOrDefault<PowerDisplaySettings>(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(settings);
+
+        reloadMonitors();
+
+        Assert.AreSame(monitors, viewModel.Monitors);
+        Assert.AreSame(monitor, viewModel.Monitors.Single());
+        Assert.AreEqual(2, settings.Properties.Monitors.Count);
+        Assert.IsTrue(settings.Properties.Monitors.Contains(legacy));
+        settingsUtils.Verify(
+            utils => utils.SaveSettings(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never);
+        Assert.AreEqual(0, ipcMessages.Count);
+
+        monitor.EnableContrast = true;
+
+        var saved = GetSavedSettings(settingsUtils);
+        Assert.AreEqual(2, saved.Properties.Monitors.Count);
+        Assert.IsTrue(saved.Properties.Monitors.Any(item => item.Id == legacy.Id));
+        Assert.IsTrue(saved.Properties.Monitors.Single(item => item.Id == monitor.Id).EnableContrast);
+        Assert.AreEqual(1, ipcMessages.Count);
+    }
+
+    [TestMethod]
+    public void CustomVcpMappings_AddUpdateDeletePreserveSettingsCollectionAndSaveEachChangeOnce()
+    {
+        using var viewModel = CreateViewModel(out var settings, out var settingsUtils, out var ipcMessages);
+        var persistedMappings = settings.Properties.CustomVcpMappings;
+        var first = new CustomVcpValueMapping { VcpCode = 0x60, Value = 0x11, CustomName = "HDMI" };
+        var replacement = new CustomVcpValueMapping { VcpCode = 0x60, Value = 0x12, CustomName = "DisplayPort" };
+
+        viewModel.AddCustomVcpMapping(first);
+
+        Assert.AreSame(persistedMappings, settings.Properties.CustomVcpMappings);
+        Assert.AreEqual(first.CustomName, GetSavedSettings(settingsUtils).Properties.CustomVcpMappings.Single().CustomName);
+        Assert.AreEqual(1, ipcMessages.Count);
+        settingsUtils.Invocations.Clear();
+        ipcMessages.Clear();
+
+        viewModel.UpdateCustomVcpMapping(first, replacement);
+
+        Assert.AreSame(persistedMappings, settings.Properties.CustomVcpMappings);
+        Assert.AreEqual(replacement.CustomName, GetSavedSettings(settingsUtils).Properties.CustomVcpMappings.Single().CustomName);
+        Assert.AreEqual(1, ipcMessages.Count);
+        settingsUtils.Invocations.Clear();
+        ipcMessages.Clear();
+
+        viewModel.DeleteCustomVcpMapping(replacement);
+
+        Assert.AreSame(persistedMappings, settings.Properties.CustomVcpMappings);
+        Assert.AreEqual(0, GetSavedSettings(settingsUtils).Properties.CustomVcpMappings.Count);
+        Assert.AreEqual(0, viewModel.CustomVcpMappings.Count);
+        Assert.AreEqual(1, ipcMessages.Count);
     }
 
     private static MonitorInfo CreateMonitor()

@@ -27,18 +27,21 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         bool ModerationEnabled) : IKernelRuntimeConfiguration;
 
     private readonly IAICredentialsProvider credentialsProvider;
+    private readonly Func<PasteAIProviderDefinition, bool> isProviderAllowed;
 
     public AdvancedAIKernelService(
         IAICredentialsProvider credentialsProvider,
         IKernelQueryCacheService queryCacheService,
         IPromptModerationService promptModerationService,
         IUserSettings userSettings,
-        ICustomActionTransformService customActionTransformService)
+        ICustomActionTransformService customActionTransformService,
+        Func<PasteAIProviderDefinition, bool> isProviderAllowed = null)
         : base(queryCacheService, promptModerationService, userSettings, customActionTransformService)
     {
         ArgumentNullException.ThrowIfNull(credentialsProvider);
 
         this.credentialsProvider = credentialsProvider;
+        this.isProviderAllowed = isProviderAllowed ?? AdvancedPastePolicy.IsProviderAllowed;
     }
 
     protected override void AddChatCompletionService(IKernelBuilder kernelBuilder, IKernelRuntimeConfiguration runtimeConfig)
@@ -118,6 +121,11 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         if (!IsServiceTypeSupported(serviceType))
         {
             return false;
+        }
+
+        if (!this.isProviderAllowed(provider))
+        {
+            throw new ProviderPolicyDisabledException();
         }
 
         runtimeConfig = new RuntimeConfiguration(

@@ -33,19 +33,34 @@ public sealed partial class DockItemControl
         TextBlock.CharacterSpacingProperty,
         TextBlock.IsTextScaleFactorEnabledProperty,
         LanguageProperty,
+        FlowDirectionProperty,
         Typography.NumeralAlignmentProperty,
         Typography.NumeralStyleProperty,
     ];
 
     private FrameworkElement? _textPanel;
     private TextBlock? _titleText;
-    private double? _characterWidth;
+    private TextBlock? _subtitleText;
+    private double? _titleCharacterWidth;
+    private double? _subtitleCharacterWidth;
+    private double? _titleSampleWidth;
+    private double? _subtitleSampleWidth;
+    private double? _minimumSampleWidth;
+    private double? _maximumSampleWidth;
     private UISettings? _textSettings;
-    private long[]? _labelFontCallbackTokens;
+    private XamlRoot? _labelXamlRoot;
+    private double _labelRasterizationScale;
+    private long[]? _titleFontCallbackTokens;
+    private long[]? _subtitleFontCallbackTokens;
 
     private static void OnLabelWidthConstraintsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        ((DockItemControl)d).UpdateLabelWidth();
+        var control = (DockItemControl)d;
+        control._titleSampleWidth = null;
+        control._subtitleSampleWidth = null;
+        control._minimumSampleWidth = null;
+        control._maximumSampleWidth = null;
+        control.UpdateTextVisibility();
     }
 
     private void InitializeLabelWidth()
@@ -53,19 +68,25 @@ public sealed partial class DockItemControl
         StopWatchingLabelFont();
         _textPanel = GetTemplateChild("TextPanel") as FrameworkElement;
         _titleText = GetTemplateChild("TitleText") as TextBlock;
-        _characterWidth = null;
+        _subtitleText = GetTemplateChild("SubtitleText") as TextBlock;
+        _titleCharacterWidth = null;
+        _subtitleCharacterWidth = null;
+        _titleSampleWidth = null;
+        _subtitleSampleWidth = null;
+        _minimumSampleWidth = null;
+        _maximumSampleWidth = null;
     }
 
     private void UpdateLabelWidth()
     {
-        if (_textPanel is null || _titleText is null)
+        if (_textPanel is null || _titleText is null || _subtitleText is null)
         {
             return;
         }
 
-        var hasVisibleText = TextVisibility == Visibility.Visible && (HasTitle || (HasSubtitle && !IsCompact));
+        var hasVisibleText = TextVisibility == Visibility.Visible && HasText;
         var constraints = hasVisibleText ? LabelWidthConstraints ?? DockLabelWidthConstraints.Default : DockLabelWidthConstraints.Default;
-        if (constraints.UsesCharacters && IsLoaded)
+        if (constraints.UsesFontMeasurements && IsLoaded)
         {
             WatchLabelFont();
         }
@@ -74,10 +95,25 @@ public sealed partial class DockItemControl
             StopWatchingLabelFont();
         }
 
-        // Ordinary label updates reuse this measurement. Only a new template, font, or text scale invalidates it.
-        var characterWidth = constraints.UsesCharacters ? _characterWidth ??= MeasureCharacterWidth() : 0;
+        // Cache each row's font measurement across ordinary label updates.
+        var showTitle = ShowTitle;
+        var showSubtitle = ShowSubtitle && !IsCompact;
+        var titleCharacterWidth = constraints.UsesCharacters ? _titleCharacterWidth ??= MeasureTextWidth(_titleText, "0") : 0;
+        var subtitleCharacterWidth = constraints.SubtitleWidth?.InCharacters == true ? _subtitleCharacterWidth ??= MeasureTextWidth(_subtitleText, "0") : 0;
+        double? titleSampleWidth = showTitle && constraints.TitleWidth?.Sample is { } titleSample
+            ? _titleSampleWidth ??= MeasureTextWidth(_titleText, titleSample, useLayoutRounding: true)
+            : null;
+        double? subtitleSampleWidth = showSubtitle && constraints.SubtitleWidth?.Sample is { } subtitleSample
+            ? _subtitleSampleWidth ??= MeasureTextWidth(_subtitleText, subtitleSample, useLayoutRounding: true)
+            : null;
+        double? minimumSampleWidth = constraints.Minimum?.Sample is { } minimumSample
+            ? _minimumSampleWidth ??= MeasureTextWidth(_titleText, minimumSample, useLayoutRounding: true)
+            : null;
+        double? maximumSampleWidth = constraints.Maximum?.Sample is { } maximumSample
+            ? _maximumSampleWidth ??= MeasureTextWidth(_titleText, maximumSample, useLayoutRounding: true)
+            : null;
         var defaultMinimum = hasVisibleText && HasTitle ? 24 : 0;
-        var (minimum, maximum) = constraints.Resolve(characterWidth, defaultMinimum, 100);
+        var (minimum, maximum) = constraints.Resolve(titleCharacterWidth, subtitleCharacterWidth, defaultMinimum, 100, showTitle, showSubtitle, titleSampleWidth, subtitleSampleWidth, minimumSampleWidth, maximumSampleWidth);
 
         // A vertical Dock owns its width. A provider's reservation must not push the label outside it.
         if (_parentDock?.DockSide is DockSide.Left or DockSide.Right)
@@ -96,70 +132,106 @@ public sealed partial class DockItemControl
         }
     }
 
-    private double MeasureCharacterWidth()
+    // Literal samples need pixel rounding; character units retain fractional glyph widths.
+    private double MeasureTextWidth(TextBlock text, string sample, bool useLayoutRounding = false)
     {
         _textSettings ??= new UISettings();
-        var title = _titleText!;
-        var textScale = title.IsTextScaleFactorEnabled ? _textSettings.TextScaleFactor : 1;
+        var textScale = text.IsTextScaleFactorEnabled ? _textSettings.TextScaleFactor : 1;
         var measure = new TextBlock
         {
-            Text = "0",
-            FontFamily = title.FontFamily,
-            FontSize = title.FontSize * textScale,
-            FontWeight = title.FontWeight,
-            FontStyle = title.FontStyle,
-            FontStretch = title.FontStretch,
-            CharacterSpacing = title.CharacterSpacing,
-            Language = title.Language,
-            FlowDirection = title.FlowDirection,
+            Text = sample,
+            FontFamily = text.FontFamily,
+            FontSize = text.FontSize * textScale,
+            FontWeight = text.FontWeight,
+            FontStyle = text.FontStyle,
+            FontStretch = text.FontStretch,
+            CharacterSpacing = text.CharacterSpacing,
+            Language = text.Language,
+            FlowDirection = text.FlowDirection,
             IsTextScaleFactorEnabled = false,
-            UseLayoutRounding = false,
+            UseLayoutRounding = useLayoutRounding,
+            XamlRoot = text.XamlRoot,
         };
-        Typography.SetNumeralAlignment(measure, Typography.GetNumeralAlignment(title));
-        Typography.SetNumeralStyle(measure, Typography.GetNumeralStyle(title));
+        Typography.SetNumeralAlignment(measure, Typography.GetNumeralAlignment(text));
+        Typography.SetNumeralStyle(measure, Typography.GetNumeralStyle(text));
         measure.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         return measure.DesiredSize.Width;
     }
 
     private void WatchLabelFont()
     {
-        if (_labelFontCallbackTokens is not null || _titleText is null)
+        if (_titleFontCallbackTokens is not null || _titleText is null || _subtitleText is null)
         {
             return;
         }
 
-        _labelFontCallbackTokens = new long[LabelFontProperties.Length];
+        _titleFontCallbackTokens = new long[LabelFontProperties.Length];
+        _subtitleFontCallbackTokens = new long[LabelFontProperties.Length];
         for (var i = 0; i < LabelFontProperties.Length; i++)
         {
-            _labelFontCallbackTokens[i] = _titleText.RegisterPropertyChangedCallback(LabelFontProperties[i], OnLabelFontChanged);
+            _titleFontCallbackTokens[i] = _titleText.RegisterPropertyChangedCallback(LabelFontProperties[i], OnLabelFontChanged);
+            _subtitleFontCallbackTokens[i] = _subtitleText.RegisterPropertyChangedCallback(LabelFontProperties[i], OnLabelFontChanged);
         }
 
         _textSettings ??= new UISettings();
         _textSettings.TextScaleFactorChanged += TextSettings_TextScaleFactorChanged;
+        _labelXamlRoot = XamlRoot;
+        if (_labelXamlRoot is not null)
+        {
+            _labelRasterizationScale = _labelXamlRoot.RasterizationScale;
+            _labelXamlRoot.Changed += LabelXamlRoot_Changed;
+        }
     }
 
     private void StopWatchingLabelFont()
     {
-        if (_labelFontCallbackTokens is null)
+        if (_titleFontCallbackTokens is null || _subtitleFontCallbackTokens is null)
         {
             return;
         }
 
         for (var i = 0; i < LabelFontProperties.Length; i++)
         {
-            _titleText?.UnregisterPropertyChangedCallback(LabelFontProperties[i], _labelFontCallbackTokens[i]);
+            _titleText?.UnregisterPropertyChangedCallback(LabelFontProperties[i], _titleFontCallbackTokens[i]);
+            _subtitleText?.UnregisterPropertyChangedCallback(LabelFontProperties[i], _subtitleFontCallbackTokens[i]);
         }
 
-        _labelFontCallbackTokens = null;
+        _titleFontCallbackTokens = null;
+        _subtitleFontCallbackTokens = null;
         _textSettings!.TextScaleFactorChanged -= TextSettings_TextScaleFactorChanged;
-        _characterWidth = null;
+        if (_labelXamlRoot is not null)
+        {
+            _labelXamlRoot.Changed -= LabelXamlRoot_Changed;
+            _labelXamlRoot = null;
+        }
+
+        _titleCharacterWidth = null;
+        _subtitleCharacterWidth = null;
+        _titleSampleWidth = null;
+        _subtitleSampleWidth = null;
+        _minimumSampleWidth = null;
+        _maximumSampleWidth = null;
     }
 
     private void OnLabelFontChanged(DependencyObject sender, DependencyProperty dp) => InvalidateLabelFont();
 
+    private void LabelXamlRoot_Changed(XamlRoot sender, XamlRootChangedEventArgs args)
+    {
+        if (_labelRasterizationScale != sender.RasterizationScale)
+        {
+            _labelRasterizationScale = sender.RasterizationScale;
+            InvalidateLabelFont();
+        }
+    }
+
     private void InvalidateLabelFont()
     {
-        _characterWidth = null;
+        _titleCharacterWidth = null;
+        _subtitleCharacterWidth = null;
+        _titleSampleWidth = null;
+        _subtitleSampleWidth = null;
+        _minimumSampleWidth = null;
+        _maximumSampleWidth = null;
         UpdateLabelWidth();
     }
 

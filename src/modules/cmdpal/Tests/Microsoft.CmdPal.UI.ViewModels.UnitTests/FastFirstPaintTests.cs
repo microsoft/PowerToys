@@ -8,6 +8,7 @@ using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -65,11 +66,11 @@ public sealed partial class FastFirstPaintTests
     // A stand-in ranker that mirrors the real contract for fallbacks: an item with no
     // (resolved) title scores 0 and is dropped; otherwise it lands at the FallbackFloor tier
     // with a stronger within-floor score when its current title overlaps the query text.
-    private static ScoringFunction<IListItem> FloorScorerFor(string queryText)
+    private static ScoringFunction<InProcObject<IListItem>> FloorScorerFor(string queryText)
     {
-        return (in FuzzyQuery _, IListItem item) =>
+        return (in FuzzyQuery _, InProcObject<IListItem> item) =>
         {
-            var title = item.Title;
+            var title = item.Safe.Title;
             if (string.IsNullOrWhiteSpace(title))
             {
                 return 0;
@@ -80,19 +81,19 @@ public sealed partial class FastFirstPaintTests
         };
     }
 
-    private static RoScored<IListItem> ScoredFuzzy(string title, int within)
-        => new(score: MainListRanker.Pack(RankTier.Fuzzy, within), item: new MutableListItem { Title = title });
+    private static RoScored<InProcObject<IListItem>> ScoredFuzzy(string title, int within)
+        => new(score: MainListRanker.Pack(RankTier.Fuzzy, within), item: new(new MutableListItem { Title = title }));
 
-    private static RoScored<IListItem> ScoredFloorMax(string title)
-        => new(score: MainListRanker.Pack(RankTier.FallbackFloor, MainListRanker.TierStride - 1), item: new MutableListItem { Title = title });
+    private static RoScored<InProcObject<IListItem>> ScoredFloorMax(string title)
+        => new(score: MainListRanker.Pack(RankTier.FallbackFloor, MainListRanker.TierStride - 1), item: new(new MutableListItem { Title = title }));
 
     [TestMethod]
     public void FirstPaint_ProducesDeterministicResults_WithNoFallbackContribution()
     {
         var command = ScoredFuzzy("Notepad", within: 50);
         var app = ScoredFuzzy("Notepad++", within: 40);
-        var filtered = new List<RoScored<IListItem>> { command };
-        var apps = new List<RoScored<IListItem>> { app };
+        var filtered = new List<RoScored<InProcObject<IListItem>>> { command };
+        var apps = new List<RoScored<InProcObject<IListItem>>> { app };
 
         // No scored fallbacks and no fallback items: this models first paint before any slow
         // out-of-proc source has responded.
@@ -106,7 +107,7 @@ public sealed partial class FastFirstPaintTests
             appResultLimit: 10);
 
         CollectionAssert.AreEqual(
-            new IListItem[] { _resultsSeparator, command.Item, app.Item },
+            new IListItem[] { _resultsSeparator, command.Item.Safe, app.Item.Safe },
             result,
             "First paint must render the deterministic command/app results without any fallback contribution.");
     }
@@ -115,7 +116,7 @@ public sealed partial class FastFirstPaintTests
     public void UnresolvedFallback_IsAbsentAtFirstPaint()
     {
         var fallback = new MutableListItem { Title = string.Empty };
-        IReadOnlyList<IListItem> sources = new IListItem[] { fallback };
+        IReadOnlyList<InProcObject<IListItem>> sources = [new(fallback)];
 
         var scored = MainListPage.ScoreDeferredFallbacks(sources, default, FloorScorerFor("remote"));
 
@@ -126,7 +127,7 @@ public sealed partial class FastFirstPaintTests
     public void SlowFallback_FoldsIn_WhenItsTitleResolves()
     {
         var fallback = new MutableListItem { Title = string.Empty };
-        IReadOnlyList<IListItem> sources = new IListItem[] { fallback };
+        IReadOnlyList<InProcObject<IListItem>> sources = [new(fallback)];
         var scorer = FloorScorerFor("remote");
 
         // First paint: unresolved title -> not present.
@@ -140,7 +141,7 @@ public sealed partial class FastFirstPaintTests
 
         Assert.IsNotNull(after);
         Assert.AreEqual(1, after!.Count);
-        Assert.AreSame(fallback, after[0].Item);
+        Assert.AreSame(fallback, after[0].Item.Safe);
         Assert.AreEqual(RankTier.FallbackFloor, MainListRanker.TierOf(after[0].Score));
     }
 
@@ -148,7 +149,7 @@ public sealed partial class FastFirstPaintTests
     public void ReScore_ReflectsCurrentTitle_NotAFrozenValue()
     {
         var fallback = new MutableListItem { Title = "no match here" };
-        IReadOnlyList<IListItem> sources = new IListItem[] { fallback };
+        IReadOnlyList<InProcObject<IListItem>> sources = [new(fallback)];
         var scorer = FloorScorerFor("remote");
 
         var weak = MainListPage.ScoreDeferredFallbacks(sources, default, scorer);
@@ -173,7 +174,7 @@ public sealed partial class FastFirstPaintTests
         // written under lock (commands) in UpdateSearchTextCore and read under the same lock in
         // GetItems, so the swap is atomic; this test stands in for that behavior at the helper level.
         var fallback = new MutableListItem { Title = "Remote Desktop" };
-        IReadOnlyList<IListItem> sources = new IListItem[] { fallback };
+        IReadOnlyList<InProcObject<IListItem>> sources = [new(fallback)];
 
         // Query A ("remote") is a strong match for the current title.
         var a = MainListPage.ScoreDeferredFallbacks(sources, default, FloorScorerFor("remote"));
@@ -196,8 +197,8 @@ public sealed partial class FastFirstPaintTests
         var command = ScoredFuzzy("Notepad", within: 1);
         var fallback = ScoredFloorMax("Search the web for notepad");
 
-        var filtered = new List<RoScored<IListItem>> { command };
-        var scoredFallbacks = new List<RoScored<IListItem>> { fallback };
+        var filtered = new List<RoScored<InProcObject<IListItem>>> { command };
+        var scoredFallbacks = new List<RoScored<InProcObject<IListItem>>> { fallback };
 
         var result = MainListPageResultFactory.Create(
             filtered,
@@ -209,7 +210,7 @@ public sealed partial class FastFirstPaintTests
             appResultLimit: 10);
 
         Assert.AreEqual(_resultsSeparator, result[0]);
-        Assert.AreSame(command.Item, result[1], "Deterministic matches must sort above floor-tier fallbacks.");
-        Assert.AreSame(fallback.Item, result[2], "A late floor-tier fallback merges after deterministic results, never leapfrogging them.");
+        Assert.AreSame(command.Item.Safe, result[1], "Deterministic matches must sort above floor-tier fallbacks.");
+        Assert.AreSame(fallback.Item.Safe, result[2], "A late floor-tier fallback merges after deterministic results, never leapfrogging them.");
     }
 }

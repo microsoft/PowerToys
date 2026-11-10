@@ -25,29 +25,26 @@ public partial class DetailsViewModelTests
         }
     }
 
-    private static WeakReference<IPageContext> CreatePageContext()
-    {
-        var ctx = new TestPageContext();
-        return new WeakReference<IPageContext>(ctx);
-    }
-
     [TestMethod]
     public void InitializeProperties_SetsBodyAndTitle()
     {
         var details = new Details { Title = "Hello", Body = "World" };
-        var vm = new DetailsViewModel(details, CreatePageContext());
+        var context = new TestPageContext();
+        var vm = new DetailsViewModel(details, new WeakReference<IPageContext>(context));
 
         vm.InitializeProperties();
 
         Assert.AreEqual("Hello", vm.Title);
         Assert.AreEqual("World", vm.Body);
+        GC.KeepAlive(context);
     }
 
     [TestMethod]
     public void PropChanged_Body_UpdatesViewModelProperty()
     {
         var details = new Details { Title = "Initial", Body = "Initial body" };
-        var vm = new DetailsViewModel(details, CreatePageContext());
+        var context = new TestPageContext();
+        var vm = new DetailsViewModel(details, new WeakReference<IPageContext>(context));
         vm.InitializeProperties();
 
         // Act — toolkit Details raises PropChanged synchronously on set
@@ -58,19 +55,22 @@ public partial class DetailsViewModelTests
         vm.ApplyPendingUpdates();
 
         Assert.AreEqual("Updated body", vm.Body);
+        GC.KeepAlive(context);
     }
 
     [TestMethod]
     public void PropChanged_Title_UpdatesViewModelProperty()
     {
         var details = new Details { Title = "Original", Body = "Text" };
-        var vm = new DetailsViewModel(details, CreatePageContext());
+        var context = new TestPageContext();
+        var vm = new DetailsViewModel(details, new WeakReference<IPageContext>(context));
         vm.InitializeProperties();
 
         details.Title = "New Title";
         vm.ApplyPendingUpdates();
 
         Assert.AreEqual("New Title", vm.Title);
+        GC.KeepAlive(context);
     }
 
     [TestMethod]
@@ -82,7 +82,8 @@ public partial class DetailsViewModelTests
             Body = "B",
             Metadata = [],
         };
-        var vm = new DetailsViewModel(details, CreatePageContext());
+        var context = new TestPageContext();
+        var vm = new DetailsViewModel(details, new WeakReference<IPageContext>(context));
         vm.InitializeProperties();
         Assert.AreEqual(0, vm.Metadata.Count);
 
@@ -91,13 +92,15 @@ public partial class DetailsViewModelTests
         vm.ApplyPendingUpdates();
 
         Assert.AreEqual(1, vm.Metadata.Count);
+        GC.KeepAlive(context);
     }
 
     [TestMethod]
     public void Cleanup_UnsubscribesFromPropChanged()
     {
         var details = new Details { Title = "T", Body = "Original" };
-        var vm = new DetailsViewModel(details, CreatePageContext());
+        var context = new TestPageContext();
+        var vm = new DetailsViewModel(details, new WeakReference<IPageContext>(context));
         vm.InitializeProperties();
 
         // Act — cleanup unsubscribes, then change should not propagate
@@ -105,6 +108,7 @@ public partial class DetailsViewModelTests
         details.Body = "After cleanup";
 
         Assert.AreEqual("Original", vm.Body);
+        GC.KeepAlive(context);
     }
 
     [TestMethod]
@@ -112,13 +116,15 @@ public partial class DetailsViewModelTests
     {
         // IDetails that does NOT implement INotifyPropChanged
         var details = new NonObservableDetails();
-        var vm = new DetailsViewModel(details, CreatePageContext());
+        var context = new TestPageContext();
+        var vm = new DetailsViewModel(details, new WeakReference<IPageContext>(context));
 
         // Should not throw — just doesn't subscribe to anything
         vm.InitializeProperties();
 
         Assert.AreEqual("Static Title", vm.Title);
         Assert.AreEqual("Static Body", vm.Body);
+        GC.KeepAlive(context);
     }
 
     /// <summary>

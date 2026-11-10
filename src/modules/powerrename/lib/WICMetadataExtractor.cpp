@@ -1047,7 +1047,36 @@ void WICMetadataExtractor::ExtractAllXMPFields(IWICMetadataQueryReader* reader, 
     // Dublin Core schema - dc: namespace
     metadata.title = ReadString(reader, XMP_DC_TITLE);
     metadata.description = ReadString(reader, XMP_DC_DESCRIPTION);
+    // dc:creator is an ordered RDF sequence. Its root is a metadata reader,
+    // so read the string elements rather than treating the container as text.
+    // Keep the scalar fallback for files that store a single creator directly.
     metadata.creator = ReadString(reader, XMP_DC_CREATOR);
+
+    constexpr int MAX_XMP_CREATORS = 50;
+    std::wstring creators;
+    for (int i = 0; i < MAX_XMP_CREATORS; ++i)
+    {
+        const std::wstring creatorPath = XMP_DC_CREATOR + L"/{ulong=" + std::to_wstring(i) + L"}";
+        auto creator = ReadString(reader, creatorPath);
+        if (!creator.has_value())
+        {
+            if (!ReadMetadata(reader, creatorPath).has_value())
+            {
+                break;
+            }
+            continue;
+        }
+
+        if (!creators.empty())
+        {
+            creators.append(L"; ");
+        }
+        creators.append(creator.value());
+    }
+    if (!creators.empty())
+    {
+        metadata.creator = std::move(creators);
+    }
     
     // For dc:subject, we need to handle the array structure
     // Try to read individual elements

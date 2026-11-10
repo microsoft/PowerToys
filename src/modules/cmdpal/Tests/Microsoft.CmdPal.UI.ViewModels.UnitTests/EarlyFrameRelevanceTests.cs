@@ -9,6 +9,7 @@ using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -42,14 +43,14 @@ public sealed partial class EarlyFrameRelevanceTests
 
     private static IPrecomputedFuzzyMatcher CreateMatcher() => new PrecomputedFuzzyMatcher(new PrecomputedFuzzyMatcherOptions());
 
-    private static ScoringFunction<IListItem> BuildScoringFunction(IRecentCommandsManager history, IPrecomputedFuzzyMatcher matcher)
-        => (in FuzzyQuery query, IListItem item) => MainListPage.ScoreTopLevelItem(query, item, history, matcher, null);
+    private static ScoringFunction<InProcObject<IListItem>> BuildScoringFunction(IRecentCommandsManager history, IPrecomputedFuzzyMatcher matcher)
+        => (in FuzzyQuery query, InProcObject<IListItem> item) => MainListPage.ScoreTopLevelItem(query, item, history, matcher, null);
 
-    private static RoScored<IListItem>[] Score(IReadOnlyList<CatalogItem> apps, string rawQuery, IRecentCommandsManager history, IPrecomputedFuzzyMatcher matcher)
+    private static RoScored<InProcObject<IListItem>>[] Score(IReadOnlyList<CatalogItem> apps, string rawQuery, IRecentCommandsManager history, IPrecomputedFuzzyMatcher matcher)
     {
         var query = matcher.PrecomputeQuery(rawQuery);
         var fn = BuildScoringFunction(history, matcher);
-        return InternalListHelpers.FilterListWithScores(apps.Cast<IListItem>().ToArray(), query, fn);
+        return InternalListHelpers.FilterListWithScores(apps.Select(item => new InProcObject<IListItem>(item)).ToArray(), query, fn);
     }
 
     private static RecentCommandsManager SeedUses(RecentCommandsManager history, string commandId, int uses)
@@ -103,20 +104,20 @@ public sealed partial class EarlyFrameRelevanceTests
             Assert.AreEqual(
                 RankTier.Fuzzy,
                 MainListRanker.TierOf(s.Score),
-                $"Every 'x' match must be Fuzzy tier; '{s.Item.Title}' was {MainListRanker.TierOf(s.Score)}.");
+                $"Every 'x' match must be Fuzzy tier; '{s.Item.Safe.Title}' was {MainListRanker.TierOf(s.Score)}.");
         }
 
         // Seed heavy frecency on an app that was NOT already at the top, and confirm it floats up.
-        var seededId = noHistory[^1].Item is CatalogItem last ? last.Id : throw new InvalidOperationException();
-        var seededTitle = noHistory[^1].Item.Title;
+        var seededId = noHistory[^1].Item.Safe is CatalogItem last ? last.Id : throw new InvalidOperationException();
+        var seededTitle = noHistory[^1].Item.Safe.Title;
         var history = SeedUses(new RecentCommandsManager(), seededId, 40);
 
         var withHistory = Score(apps, "x", history, matcher);
 
-        TestContext.WriteLine($"no-history rank1='{noHistory[0].Item.Title}', seeded '{seededTitle}' -> rank1='{withHistory[0].Item.Title}'.");
+        TestContext.WriteLine($"no-history rank1='{noHistory[0].Item.Safe.Title}', seeded '{seededTitle}' -> rank1='{withHistory[0].Item.Safe.Title}'.");
 
         Assert.AreEqual(RankTier.Fuzzy, MainListRanker.TierOf(withHistory[0].Score), "The floated rank-1 item is still only a Fuzzy match.");
-        Assert.AreEqual(seededTitle, withHistory[0].Item.Title, "Frecency should float the seeded weak match to rank 1 within the Fuzzy tier.");
+        Assert.AreEqual(seededTitle, withHistory[0].Item.Safe.Title, "Frecency should float the seeded weak match to rank 1 within the Fuzzy tier.");
     }
 
     /// <summary>
@@ -165,7 +166,7 @@ public sealed partial class EarlyFrameRelevanceTests
         {
             Assert.IsTrue(
                 (int)MainListRanker.TierOf(s.Score) >= (int)RankTier.AcronymWordBoundary,
-                $"Filtered item '{s.Item.Title}' must be word-boundary tier or higher, was {MainListRanker.TierOf(s.Score)}.");
+                $"Filtered item '{s.Item.Safe.Title}' must be word-boundary tier or higher, was {MainListRanker.TierOf(s.Score)}.");
         }
 
         // Filtering preserves the scored order.
@@ -217,7 +218,7 @@ public sealed partial class EarlyFrameRelevanceTests
     {
         Assert.IsNull(MainListPage.FilterAppsForShortQueries(null, 1));
 
-        var empty = Array.Empty<RoScored<IListItem>>();
+        var empty = Array.Empty<RoScored<InProcObject<IListItem>>>();
         Assert.AreSame(empty, MainListPage.FilterAppsForShortQueries(empty, 1));
 
         var matcher = CreateMatcher();
@@ -231,8 +232,8 @@ public sealed partial class EarlyFrameRelevanceTests
     [TestMethod]
     public void GetHighConfidenceAppsCount_CountsLeadingHighTierEntries()
     {
-        RoScored<IListItem> Make(RankTier tier, int within)
-            => new(new CatalogItem($"{tier}", string.Empty, $"{tier}.{within}"), MainListRanker.Pack(tier, within));
+        RoScored<InProcObject<IListItem>> Make(RankTier tier, int within)
+            => new(new InProcObject<IListItem>(new CatalogItem($"{tier}", string.Empty, $"{tier}.{within}")), MainListRanker.Pack(tier, within));
 
         // Sorted descending by packed score: Exact(5) > Prefix(4) > WordBoundary(3) > Fuzzy(2) > Fallback(1).
         var scored = new[]
@@ -258,8 +259,8 @@ public sealed partial class EarlyFrameRelevanceTests
     [TestMethod]
     public void Filter_UsesSuppliedPublishedLength()
     {
-        RoScored<IListItem> Fuzzy(int within)
-            => new(new CatalogItem($"fuzzy.{within}", string.Empty, $"fuzzy.{within}"), MainListRanker.Pack(RankTier.Fuzzy, within));
+        RoScored<InProcObject<IListItem>> Fuzzy(int within)
+            => new(new InProcObject<IListItem>(new CatalogItem($"fuzzy.{within}", string.Empty, $"fuzzy.{within}")), MainListRanker.Pack(RankTier.Fuzzy, within));
 
         var scored = new[] { Fuzzy(30), Fuzzy(20), Fuzzy(10) };
 
@@ -310,6 +311,6 @@ public sealed partial class EarlyFrameRelevanceTests
         Assert.AreEqual(2, MainListPage.GetVisibleAppCount(mixed, queryLength: 3, appResultLimit: 2), "The app result limit should cap the count.");
 
         Assert.AreEqual(0, MainListPage.GetVisibleAppCount(null, 1, 1000));
-        Assert.AreEqual(0, MainListPage.GetVisibleAppCount(Array.Empty<RoScored<IListItem>>(), 1, 1000));
+        Assert.AreEqual(0, MainListPage.GetVisibleAppCount(Array.Empty<RoScored<InProcObject<IListItem>>>(), 1, 1000));
     }
 }

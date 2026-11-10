@@ -743,7 +743,7 @@ namespace AdvancedPaste.ViewModels
                 // Minimum time to show busy spinner for AI actions when triggered by global keyboard shortcut.
                 var aiActionMinTaskTime = TimeSpan.FromSeconds(1.5);
                 var delayTask = (Visible && source == PasteActionSource.GlobalKeyboardShortcut) ? Task.Delay(aiActionMinTaskTime) : Task.CompletedTask;
-                var dataPackage = await _pasteFormatExecutor.ExecutePasteFormatAsync(pasteFormat, source, _pasteActionCancellationTokenSource.Token, this);
+                var dataPackage = await _pasteFormatExecutor.ExecutePasteFormatAsync(pasteFormat, Clipboard.GetContent(), source, _pasteActionCancellationTokenSource.Token, this);
 
                 await delayTask;
 
@@ -911,37 +911,12 @@ namespace AdvancedPaste.ViewModels
 
         private void UpdateAllowedByGPO()
         {
-            IsAllowedByGPO = PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled;
+            IsAllowedByGPO = AdvancedPastePolicy.IsOnlineAIAllowed;
         }
 
         private bool IsProviderAllowedByGPO(PasteAIProviderDefinition provider)
         {
-            if (provider is null)
-            {
-                return false;
-            }
-
-            var serviceType = provider.ServiceType.ToAIServiceType();
-            var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
-
-            // Check global online AI GPO for online services
-            if (metadata.IsOnlineService && !IsAllowedByGPO)
-            {
-                return false;
-            }
-
-            // Check individual endpoint GPO
-            return serviceType switch
-            {
-                AIServiceType.OpenAI => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOpenAIValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
-                AIServiceType.AzureOpenAI => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteAzureOpenAIValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
-                AIServiceType.AzureAIInference => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteAzureAIInferenceValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
-                AIServiceType.Mistral => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteMistralValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
-                AIServiceType.Google => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteGoogleValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
-                AIServiceType.Ollama => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOllamaValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
-                AIServiceType.FoundryLocal => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteFoundryLocalValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
-                _ => true, // Allow unknown types by default
-            };
+            return AdvancedPastePolicy.IsProviderAllowed(provider);
         }
 
         private bool UpdateOpenAIKey()

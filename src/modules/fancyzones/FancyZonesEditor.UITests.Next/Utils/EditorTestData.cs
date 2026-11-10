@@ -778,7 +778,6 @@ public static class EditorTestData
         }));
     }
 
-
     public static void WriteForLayoutHotkeysTests(FancyZonesEditorFiles files)
     {
         files.Parameters.Write(new EditorParameters().Serialize(new EditorParameters.ParamsWrapper
@@ -1068,17 +1067,17 @@ public static class EditorTestData
 
         files.AppliedLayouts.Write(new AppliedLayouts().Serialize(new AppliedLayouts.AppliedLayoutsListWrapper
         {
-            AppliedLayouts = [.. (appliedLayouts ?? [])],
+            AppliedLayouts = [.. appliedLayouts ?? []],
         }));
 
         files.CustomLayouts.Write(new CustomLayouts().Serialize(new CustomLayouts.CustomLayoutListWrapper
         {
-            CustomLayouts = [.. (customLayouts ?? [])],
+            CustomLayouts = [.. customLayouts ?? []],
         }));
 
         files.DefaultLayouts.Write(new DefaultLayouts().Serialize(new DefaultLayouts.DefaultLayoutsListWrapper
         {
-            DefaultLayouts = [.. (defaultLayouts ?? [])],
+            DefaultLayouts = [.. defaultLayouts ?? []],
         }));
 
         files.LayoutHotkeys.Write(new LayoutHotkeys().Serialize(new LayoutHotkeys.LayoutHotkeysWrapper

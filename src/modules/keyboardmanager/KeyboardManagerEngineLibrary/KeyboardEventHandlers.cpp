@@ -1,9 +1,12 @@
 #include "pch.h"
+#include <atlbase.h>
 #include <shellapi.h>
+#include <shobjidl.h>
 #include "KeyboardEventHandlers.h"
 
 #include <common/interop/shared_constants.h>
 #include <common/utils/elevation.h>
+#include <wil/resource.h>
 
 #include <keyboardmanager/common/InputInterface.h>
 #include <keyboardmanager/common/Helpers.h>
@@ -88,6 +91,129 @@ namespace
 
 namespace KeyboardEventHandlers
 {
+    namespace ProgramLauncher
+    {
+        namespace
+        {
+            std::optional<std::wstring> ExpandEnvironmentVariables(const std::wstring& value)
+            {
+                DWORD capacity = ExpandEnvironmentStringsW(value.c_str(), nullptr, 0);
+                while (capacity != 0)
+                {
+                    std::wstring expanded(capacity, L'\0');
+                    const DWORD written = ExpandEnvironmentStringsW(value.c_str(), expanded.data(), capacity);
+                    if (written == 0)
+                    {
+                        return std::nullopt;
+                    }
+                    if (written <= capacity)
+                    {
+                        expanded.resize(written - 1);
+                        return expanded;
+                    }
+                    capacity = written;
+                }
+                return std::nullopt;
+            }
+
+            std::optional<std::wstring> GetLinkProcessName(const std::wstring& linkPath)
+            {
+                const HRESULT initialized = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+                if (FAILED(initialized) && initialized != RPC_E_CHANGED_MODE)
+                {
+                    return std::nullopt;
+                }
+
+                const auto uninitialize = wil::scope_exit([initialized] {
+                    if (SUCCEEDED(initialized))
+                    {
+                        CoUninitialize();
+                    }
+                });
+
+                CComPtr<IShellLinkW> link;
+                if (FAILED(link.CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER)))
+                {
+                    return std::nullopt;
+                }
+
+                CComPtr<IPersistFile> file;
+                if (FAILED(link->QueryInterface(IID_PPV_ARGS(&file))) || FAILED(file->Load(linkPath.c_str(), STGM_READ)))
+                {
+                    return std::nullopt;
+                }
+
+                // GetPath supports at most MAX_PATH characters. Read the stored target
+                // without searching for moved files or changing the shortcut.
+                wchar_t rawTarget[MAX_PATH]{};
+                if (link->GetPath(rawTarget, ARRAYSIZE(rawTarget), nullptr, SLGP_RAWPATH) != S_OK || rawTarget[0] == L'\0')
+                {
+                    return std::nullopt;
+                }
+
+                const auto expandedTarget = ExpandEnvironmentVariables(rawTarget);
+                if (!expandedTarget || expandedTarget->empty())
+                {
+                    return std::nullopt;
+                }
+
+                const std::filesystem::path target{ *expandedTarget };
+                const auto extension = target.extension().wstring();
+                if (!target.is_absolute() ||
+                    (_wcsicmp(extension.c_str(), L".exe") != 0 && _wcsicmp(extension.c_str(), L".com") != 0))
+                {
+                    return std::nullopt;
+                }
+
+                return target.filename().wstring();
+            }
+        }
+
+        std::optional<std::wstring> ExpandAndGetAbsolutePath(const std::wstring& value)
+        {
+            const auto expanded = ExpandEnvironmentVariables(value);
+            if (!expanded || expanded->empty())
+            {
+                return std::nullopt;
+            }
+
+            DWORD capacity = GetFullPathNameW(expanded->c_str(), 0, nullptr, nullptr);
+            while (capacity != 0)
+            {
+                std::wstring absolutePath(capacity, L'\0');
+                const DWORD written = GetFullPathNameW(expanded->c_str(), capacity, absolutePath.data(), nullptr);
+                if (written == 0)
+                {
+                    return std::nullopt;
+                }
+                if (written < capacity)
+                {
+                    absolutePath.resize(written);
+                    return absolutePath;
+                }
+                capacity = written;
+            }
+            return std::nullopt;
+        }
+
+        std::wstring GetWorkingDirectory(const std::wstring& filePath, const std::wstring& configuredDirectory)
+        {
+            if (!configuredDirectory.empty())
+            {
+                return configuredDirectory;
+            }
+
+            const std::filesystem::path path{ filePath };
+            const auto extension = path.extension().wstring();
+            if (_wcsicmp(extension.c_str(), L".exe") != 0 && _wcsicmp(extension.c_str(), L".com") != 0)
+            {
+                return {};
+            }
+
+            return path.parent_path().wstring();
+        }
+    }
+
     // Append a key event for an alone key's ORIGINAL (source) key while preserving its numpad origin.
     // Alone keys are tracked by the value of `data->lParam->vkCode`, which is stored numpad-origin
     // encoded (see EncodeKeyNumpadOrigin in KeyboardManager.cpp): the marker rides in bit 31, so a bare
@@ -1551,130 +1677,161 @@ namespace KeyboardEventHandlers
         } }.detach();*/
     }
 
-    void CreateOrShowProcessForShortcut(Shortcut shortcut) noexcept
+    void CreateOrShowProcessForShortcut(Shortcut shortcut, const ProgramLauncher::LaunchCallback& launchProgram) noexcept
     {
-        WCHAR fullExpandedFilePath[MAX_PATH];
-        DWORD result = ExpandEnvironmentStrings(shortcut.runProgramFilePath.c_str(), fullExpandedFilePath, MAX_PATH);
-
-        auto fileNamePart = GetFileNameFromPath(fullExpandedFilePath);
-
-        Logger::trace(L"ChordKeyboardHandler:{}, trying to run {}", fileNamePart, fullExpandedFilePath);
-        //lastKeyInChord = 0;
-
-        DWORD targetPid = GetProcessIdByName(fileNamePart);
-
-        /*if (fileNamePart != L"explorer.exe" && fileNamePart != L"powershell.exe" && fileNamePart != L"cmd.exe" && fileNamePart != L"msedge.exe")
+        try
         {
-            targetPid = GetProcessIdByName(fileNamePart);
-        }*/
-
-        Logger::trace(L"ChordKeyboardHandler:{}, already running, pid:{}, alreadyRunningAction:{}", fileNamePart, targetPid, shortcut.alreadyRunningAction);
-
-        if (targetPid != 0 && shortcut.alreadyRunningAction != Shortcut::ProgramAlreadyRunningAction::StartAnother)
-        {
-            if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::EndTask)
+            const auto launchPath = ProgramLauncher::ExpandAndGetAbsolutePath(shortcut.runProgramFilePath);
+            if (!launchPath)
             {
-                TerminateProcessesByName(fileNamePart);
+                toast(L"Error starting program", L"The program path was not valid. It could not be used.");
                 return;
             }
-            else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::Close)
-            {
-                CloseProcessByName(fileNamePart);
-                Logger::trace(L"ChordKeyboardHandler:{}, CloseProcessByName returning 3", fileNamePart);
-                return;
-            }
-            else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::ShowWindow)
-            {
-                auto processIds = GetProcessesIdByName(fileNamePart);
 
-                for (DWORD pid : processIds)
+            const std::filesystem::path path{ *launchPath };
+            const auto fileNamePart = path.filename().wstring();
+            Logger::trace(L"ChordKeyboardHandler:{}, trying to run {}", fileNamePart, *launchPath);
+
+            if (shortcut.alreadyRunningAction != Shortcut::ProgramAlreadyRunningAction::StartAnother)
+            {
+                auto processName = fileNamePart;
+                if (_wcsicmp(path.extension().c_str(), L".lnk") == 0)
                 {
-                    ShowProgram(targetPid, fileNamePart, false, false, 0);
+                    const auto linkProcessName = ProgramLauncher::GetLinkProcessName(*launchPath);
+                    if (!linkProcessName)
+                    {
+                        toast(fmt::format(L"Error starting {}", fileNamePart),
+                              L"The shortcut target could not be identified as a program. Its already-running action could not be applied.");
+                        return;
+                    }
+                    processName = *linkProcessName;
                 }
 
-                //if (!ShowProgram(targetPid, fileNamePart, false, false, 0))
-                //{
-                //    /*auto future = std::async(std::launch::async, [=] {
-                //    std::this_thread::sleep_for(std::chrono::milliseconds(30));
-                //    Logger::trace(L"ChordKeyboardHandler:{}, second try, pid:{}", fileNamePart, targetPid);
-                //    ShowProgram(targetPid, fileNamePart, false, false);
-                //});*/
-                //}
-                return;
-            }
-        }
-        else
-        {
-            DWORD dwAttrib = GetFileAttributesW(fullExpandedFilePath);
+                if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::CloseAndEndTask)
+                {
+                    if (CloseAndEndProcessesByName(processName))
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    const DWORD targetPid = GetProcessIdByName(processName);
+                    Logger::trace(L"ChordKeyboardHandler:{}, already running, pid:{}, alreadyRunningAction:{}", processName, targetPid, shortcut.alreadyRunningAction);
 
+                    if (targetPid != 0)
+                    {
+                        if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::EndTask)
+                        {
+                            TerminateProcessesByName(processName);
+                        }
+                        else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::Close)
+                        {
+                            CloseProcessByName(processName);
+                        }
+                        else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::ShowWindow)
+                        {
+                            for (DWORD pid : GetProcessesIdByName(processName))
+                            {
+                                TryShowExistingProgram(pid, processName);
+                            }
+                        }
+                        return;
+                    }
+                }
+            }
+
+            const DWORD dwAttrib = GetFileAttributesW(launchPath->c_str());
             if (dwAttrib == INVALID_FILE_ATTRIBUTES)
             {
-                std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
-                std::wstring message = fmt::format(L"The program was not found.");
-                toast(title, message);
+                toast(fmt::format(L"Error starting {}", fileNamePart), L"The program was not found.");
                 return;
             }
 
-            std::wstring expandedArgs;
-            DWORD dwSize = ExpandEnvironmentStrings(shortcut.runProgramArgs.c_str(), nullptr, 0);
-            expandedArgs.resize(dwSize);
-            DWORD result = ExpandEnvironmentStrings(shortcut.runProgramArgs.c_str(), expandedArgs.data(), dwSize);
-
-            WCHAR currentDir[MAX_PATH];
-            WCHAR* currentDirPtr = currentDir;
-            result = ExpandEnvironmentStrings(shortcut.runProgramStartInDir.c_str(), currentDir, MAX_PATH);
-
-            if (shortcut.runProgramStartInDir == L"")
+            const auto expandedArgs = ProgramLauncher::ExpandEnvironmentVariables(shortcut.runProgramArgs);
+            if (!expandedArgs)
             {
-                currentDirPtr = nullptr;
+                toast(fmt::format(L"Error starting {}", fileNamePart), L"The program arguments could not be expanded.");
+                return;
+            }
+
+            std::wstring currentDir;
+            if (shortcut.runProgramStartInDir.empty())
+            {
+                currentDir = ProgramLauncher::GetWorkingDirectory(*launchPath, {});
             }
             else
             {
-                DWORD dwAttrib = GetFileAttributesW(currentDir);
-
-                if (dwAttrib == INVALID_FILE_ATTRIBUTES)
+                const auto expandedCurrentDir = ProgramLauncher::ExpandAndGetAbsolutePath(shortcut.runProgramStartInDir);
+                if (!expandedCurrentDir)
                 {
-                    std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
-                    std::wstring message = fmt::format(L"The start in path was not valid. It could not be used.", currentDir);
-                    currentDirPtr = nullptr;
-                    toast(title, message);
+                    toast(fmt::format(L"Error starting {}", fileNamePart), L"The start in path was not valid. It could not be used.");
+                    return;
+                }
+
+                currentDir = ProgramLauncher::GetWorkingDirectory(*launchPath, *expandedCurrentDir);
+                const DWORD directoryAttributes = GetFileAttributesW(currentDir.c_str());
+                if (directoryAttributes == INVALID_FILE_ATTRIBUTES || (directoryAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
+                {
+                    toast(fmt::format(L"Error starting {}", fileNamePart), L"The start in path was not valid. It could not be used.");
                     return;
                 }
             }
 
-            DWORD processId = 0;
-            HANDLE newProcessHandle;
-
-            if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
+            if (launchProgram)
             {
-                newProcessHandle = run_elevated(fullExpandedFilePath, expandedArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
-                processId = GetProcessId(newProcessHandle);
-            }
-            else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
-            {
-                run_non_elevated(fullExpandedFilePath, expandedArgs, &processId, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
-            }
-            else if (shortcut.elevationLevel == Shortcut::ElevationLevel::DifferentUser)
-            {
-                newProcessHandle = run_as_different_user(fullExpandedFilePath, expandedArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
-                processId = GetProcessId(newProcessHandle);
-            }
-
-            if (processId == 0)
-            {
-                std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
-                std::wstring message = fmt::format(L"The application might not have started.");
-                toast(title, message);
+                launchProgram(*launchPath, *expandedArgs, currentDir);
                 return;
             }
 
-            if (shortcut.startWindowType == Shortcut::StartWindowType::Hidden)
+            DWORD processId = 0;
+            HANDLE newProcessHandle = nullptr;
+            bool processStarted = false;
+            const auto currentDirPtr = currentDir.empty() ? nullptr : currentDir.c_str();
+
+            if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
+            {
+                newProcessHandle = run_elevated(*launchPath, *expandedArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
+                processStarted = newProcessHandle != nullptr;
+            }
+            else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
+            {
+                if (ProgramLauncher::ShouldUseExplorerShell(shortcut.startWindowType))
+                {
+                    processStarted = RunNonElevatedEx(*launchPath, *expandedArgs, currentDir);
+                }
+                else
+                {
+                    processStarted = run_non_elevated(*launchPath, *expandedArgs, &processId, currentDirPtr, false);
+                }
+            }
+            else if (shortcut.elevationLevel == Shortcut::ElevationLevel::DifferentUser)
+            {
+                newProcessHandle = run_as_different_user(*launchPath, *expandedArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
+                processStarted = newProcessHandle != nullptr;
+            }
+
+            if (newProcessHandle != nullptr)
+            {
+                processId = GetProcessId(newProcessHandle);
+                CloseHandle(newProcessHandle);
+            }
+
+            if (!processStarted)
+            {
+                toast(fmt::format(L"Error starting {}", fileNamePart), L"The application might not have started.");
+                return;
+            }
+
+            if (processId != 0 && shortcut.startWindowType == Shortcut::StartWindowType::Hidden)
             {
                 HideProgram(processId, fileNamePart, 0);
             }
-            //ShowProgram(processId, fileNamePart, true, false, (shortcut.startWindowType == Shortcut::StartWindowType::Hidden), 0);
         }
-        return;
+        catch (...)
+        {
+            toast(L"Error starting program", L"The program settings could not be processed.");
+        }
     }
 
     void CloseProcessByName(const std::wstring& fileNamePart)
@@ -1728,6 +1885,114 @@ namespace KeyboardEventHandlers
         }
 
         Logger::trace(L"ChordKeyboardHandler:{}, CloseProcessByName returning", fileNamePart);
+    }
+
+    bool CloseAndEndProcessesByName(const std::wstring& fileNamePart)
+    {
+        // Toolhelp supplies PIDs, not process identities. Pin accessible process objects
+        // BEFORE the matching snapshot so their PIDs cannot be recycled in its open gap.
+        // A process first seen after this inventory is conservatively skipped.
+        std::vector<std::pair<DWORD, wil::unique_handle>> pinnedProcesses;
+        wil::unique_tool_help_snapshot inventory{ CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) };
+        PROCESSENTRY32 entry{};
+        entry.dwSize = sizeof(entry);
+        if (inventory && Process32First(inventory.get(), &entry))
+        {
+            do
+            {
+                wil::unique_handle process{ OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, entry.th32ProcessID) };
+                if (process)
+                {
+                    pinnedProcesses.emplace_back(entry.th32ProcessID, std::move(process));
+                }
+            } while (Process32Next(inventory.get(), &entry));
+        }
+
+        const auto processIds = GetProcessesIdByName(fileNamePart);
+        std::vector<ProcessCloser::ProcessSnapshot> snapshots;
+        for (const auto& [pid, process] : pinnedProcesses)
+        {
+            if (std::find(processIds.begin(), processIds.end(), pid) != processIds.end())
+            {
+                auto snapshot = ProcessCloser::SnapshotProcess(process.get());
+                if (snapshot && _wcsicmp(GetFileNameFromPath(snapshot->imagePath).c_str(), fileNamePart.c_str()) == 0)
+                {
+                    snapshots.push_back(std::move(*snapshot));
+                }
+            }
+        }
+
+        // Keep the pins alive until every destructive handle has been validated.
+        ProcessCloser::CloseAndEndProcesses(snapshots);
+        return !processIds.empty();
+    }
+
+    std::optional<ProcessCloser::ProcessSnapshot> ProcessCloser::SnapshotProcess(HANDLE process)
+    {
+        ProcessSnapshot snapshot{};
+        FILETIME exitTime{}, kernelTime{}, userTime{};
+        snapshot.pid = GetProcessId(process);
+        snapshot.imagePath.resize(32768);
+        DWORD length = static_cast<DWORD>(snapshot.imagePath.size());
+        if (!snapshot.pid ||
+            !GetProcessTimes(process, &snapshot.creationTime, &exitTime, &kernelTime, &userTime) ||
+            !QueryFullProcessImageNameW(process, 0, snapshot.imagePath.data(), &length))
+        {
+            return std::nullopt;
+        }
+        snapshot.imagePath.resize(length);
+        return snapshot;
+    }
+
+    void ProcessCloser::CloseAndEndProcesses(const std::vector<ProcessSnapshot>& snapshots)
+    {
+        std::vector<std::pair<DWORD, wil::unique_handle>> processes;
+        for (const auto& snapshot : snapshots)
+        {
+            wil::unique_handle process{ OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_QUERY_LIMITED_INFORMATION, FALSE, snapshot.pid) };
+            const auto opened = process ? SnapshotProcess(process.get()) : std::nullopt;
+            // Compare identities, not a wall-clock cutoff: clock adjustments and timestamp
+            // granularity cannot admit a replacement because the original object is pinned.
+            if (opened && opened->imagePath == snapshot.imagePath &&
+                CompareFileTime(&opened->creationTime, &snapshot.creationTime) == 0)
+            {
+                processes.emplace_back(snapshot.pid, std::move(process));
+            }
+        }
+
+        if (!processes.empty())
+        {
+            std::thread([processes = std::move(processes)]() {
+                // All instances share one grace period, regardless of their number.
+                const auto deadline = GetTickCount64() + 1000;
+                for (const auto& [pid, process] : processes)
+                {
+                    if (WaitForSingleObject(process.get(), 0) == WAIT_TIMEOUT)
+                    {
+                        HWND window = FindMainWindow(pid, false);
+                        if (!window)
+                        {
+                            window = FindMainWindow(pid, true);
+                        }
+                        if (window && WaitForSingleObject(process.get(), 0) == WAIT_TIMEOUT)
+                        {
+                            PostMessageW(window, WM_CLOSE, 0, 0);
+                        }
+                    }
+                }
+
+                for (const auto& [pid, process] : processes)
+                {
+                    const auto now = GetTickCount64();
+                    const DWORD remaining = now < deadline ? static_cast<DWORD>(deadline - now) : 0;
+                    // WAIT_FAILED is not evidence that a process is still running.
+                    if (WaitForSingleObject(process.get(), remaining) == WAIT_TIMEOUT)
+                    {
+                        TerminateProcess(process.get(), 0);
+                    }
+                }
+            }).detach();
+        }
     }
 
     void TerminateProcessesByName(const std::wstring& fileNamePart)
@@ -1799,44 +2064,18 @@ namespace KeyboardEventHandlers
         return true;
     }
 
-    bool ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess, bool minimizeIfVisible, int retryCount)
+    bool TryShowExistingProgram(DWORD pid, const std::wstring& programName)
     {
-        Logger::trace(L"ChordKeyboardHandler:ShowProgram starting with {},{},isNewProcess:{}, tryToHide:{} retryCount:{}", pid, programName, isNewProcess, retryCount);
+        Logger::trace(L"ChordKeyboardHandler:TryShowExistingProgram starting with {},{}", pid, programName);
 
-        // a good place to look for this...
-        // https://github.com/ritchielawrence/cmdow
-
-        // try by main window.
-        auto allowNonVisible = false;
-
-        HWND hwnd = FindMainWindow(pid, allowNonVisible);
-
-        if (hwnd == NULL)
-        {
-            if (retryCount < 20)
-            {
-                Logger::trace(L"ChordKeyboardHandler:hwnd not found will retry for pid:{}, allowNonVisible:{}", pid, allowNonVisible);
-
-                auto future = std::async(std::launch::async, [=] {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-                    auto result = ShowProgram(pid, programName, isNewProcess, minimizeIfVisible, retryCount + 1);
-                    return false;
-                });
-            }
-        }
-        else
+        HWND hwnd = FindMainWindow(pid, false);
+        if (hwnd != nullptr)
         {
             Logger::trace(L"ChordKeyboardHandler:{}, got hwnd from FindMainWindow", programName);
 
             if (hwnd == GetForegroundWindow())
             {
-                // only hide if this was a call from an already open program, don't make small if we just opened it.
-                if (!isNewProcess && minimizeIfVisible)
-                {
-                    Logger::trace(L"ChordKeyboardHandler:{}, got GetForegroundWindow, doing SW_MINIMIZE", programName);
-                    return ShowWindow(hwnd, SW_MINIMIZE);
-                }
-                return false;
+                return true;
             }
             else
             {
@@ -1869,56 +2108,13 @@ namespace KeyboardEventHandlers
             }
         }
 
-        if (isNewProcess)
-        {
-            return true;
-        }
-
-        if (false)
-        {
-            // try by console.
-            hwnd = FindWindow(nullptr, nullptr);
-            if (AttachConsole(pid))
-            {
-                Logger::trace(L"ChordKeyboardHandler:{}, success on AttachConsole", programName);
-
-                // Get the console window handle
-                hwnd = GetConsoleWindow();
-                auto showByConsoleSuccess = false;
-                if (hwnd != NULL)
-                {
-                    Logger::trace(L"ChordKeyboardHandler:{}, success on GetConsoleWindow, doing SW_RESTORE", programName);
-
-                    ShowWindow(hwnd, SW_RESTORE);
-
-                    if (!SetForegroundWindow(hwnd))
-                    {
-                        auto errorCode = GetLastError();
-                        Logger::warn(L"ChordKeyboardHandler:{}, failed to SetForegroundWindow, {}", programName, errorCode);
-                    }
-                    else
-                    {
-                        Logger::trace(L"ChordKeyboardHandler:{}, success on SetForegroundWindow", programName);
-                        showByConsoleSuccess = true;
-                    }
-                }
-
-                // Detach from the console
-                FreeConsole();
-                if (showByConsoleSuccess)
-                {
-                    return true;
-                }
-            }
-        }
-
-        // try to just show them all (if they have a title)!.
+        // Restore hidden titled windows immediately. An existing process without
+        // a window must not delay restoring windows owned by the remaining PIDs.
         hwnd = FindWindow(nullptr, nullptr);
 
-        auto anyHideResultFailed = false;
         if (hwnd)
         {
-            Logger::trace(L"ChordKeyboardHandler:{}:{},{}, FindWindow (show all mode)", programName, pid, retryCount);
+            Logger::trace(L"ChordKeyboardHandler:{}:{}, FindWindow (show all mode)", programName, pid);
             while (hwnd)
             {
                 DWORD pidForHwnd;
@@ -2096,7 +2292,7 @@ namespace KeyboardEventHandlers
         // reports it as up, so there is no reliable way to tell whether the user is
         // still physically holding the key or has released it. Re-pressing
         // unconditionally would risk leaving a modifier stuck down if the user let
-        // go during injection — the exact failure this change set prevents. Leaving
+        // go during injection - the exact failure this change set prevents. Leaving
         // the modifier released is always safe: the user taps it again to re-engage.
 
         return 1;

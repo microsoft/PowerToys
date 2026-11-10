@@ -111,10 +111,10 @@ public class CoreBehaviorTests : UITestBase
             5_000,
             requiredConsecutiveMatches: 2,
             pollIntervalMS: 100);
-        Assert.IsTrue(
-            nativeSnap.Succeeded,
+        string nativeSnapMessage =
             $"Win+Right did not change Explorer HWND {window} geometry while Override Windows Snap was disabled. " +
-            $"Before: {beforeNativeSnap}; after: {nativeSnap.LastObservation}.");
+            $"Before: {beforeNativeSnap}; after: {nativeSnap.LastObservation}.";
+        Assert.IsTrue(nativeSnap.Succeeded, nativeSnapMessage);
         Assert.AreEqual(
             0L,
             FancyZonesTestHelper.GetZoneBitmask(window),
@@ -152,10 +152,11 @@ public class CoreBehaviorTests : UITestBase
             window,
             reopened,
             "The last-zone restore assertion requires a newly created Explorer HWND.");
-        Assert.IsTrue(
-            FancyZonesTestHelper.WaitForZoneBitmask(reopened, FirstZoneBitmask, 10_000),
+        bool returnedToFirstZone = FancyZonesTestHelper.WaitForZoneBitmask(reopened, FirstZoneBitmask, 10_000);
+        string returnedMessage =
             $"The reopened Explorer HWND {reopened} did not return to zone 0. " +
-            $"Observed bitmask: 0x{FancyZonesTestHelper.GetZoneBitmask(reopened):X}.");
+            $"Observed bitmask: 0x{FancyZonesTestHelper.GetZoneBitmask(reopened):X}.";
+        Assert.IsTrue(returnedToFirstZone, returnedMessage);
     }
 
     private void Arrange(Action<FancyZonesSettingsSeed> configure)
@@ -186,10 +187,11 @@ public class CoreBehaviorTests : UITestBase
 
         FancyZonesTestHelper.Step(this, "Applying the 2x2 custom layout with Win+Ctrl+Alt+0");
         KeyboardHelper.SendKeys(Key.LWin, Key.Ctrl, Key.Alt, Key.Num0);
-        Assert.IsTrue(
-            FancyZonesTestHelper.AppliedLayoutContains(LayoutFixtures.GridCustomLayoutUuid, 15_000),
+        bool setupLayoutApplied = FancyZonesTestHelper.AppliedLayoutContains(LayoutFixtures.GridCustomLayoutUuid, 15_000);
+        string setupLayoutMessage =
             $"Could not apply setup layout {LayoutFixtures.GridCustomLayoutUuid}. " +
-            $"Last content: {FancyZonesTestHelper.ReadAppliedLayouts()}");
+            $"Last content: {FancyZonesTestHelper.ReadAppliedLayouts()}";
+        Assert.IsTrue(setupLayoutApplied, setupLayoutMessage);
 
         WindowHelper.MinimizeWindow(new IntPtr(Session.WindowHandle));
     }
@@ -215,10 +217,11 @@ public class CoreBehaviorTests : UITestBase
     private void SendWinArrowAndAssertZone(IntPtr window, Key arrow, long expectedBitmask)
     {
         SendWinArrow(window, arrow, $"FancyZones zone bitmask 0x{expectedBitmask:X}");
-        Assert.IsTrue(
-            FancyZonesTestHelper.WaitForZoneBitmask(window, expectedBitmask, 5_000),
+        bool movedToZone = FancyZonesTestHelper.WaitForZoneBitmask(window, expectedBitmask, 5_000);
+        string moveMessage =
             $"Win+{arrow} did not move Explorer HWND {window} to bitmask 0x{expectedBitmask:X}. " +
-            $"Observed: 0x{FancyZonesTestHelper.GetZoneBitmask(window):X}.");
+            $"Observed: 0x{FancyZonesTestHelper.GetZoneBitmask(window):X}.";
+        Assert.IsTrue(movedToZone, moveMessage);
     }
 
     private void SendWinArrow(IntPtr window, Key arrow, string purpose)

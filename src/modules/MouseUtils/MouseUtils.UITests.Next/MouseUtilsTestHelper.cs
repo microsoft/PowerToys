@@ -70,6 +70,30 @@ internal static class MouseUtilsTestHelper
         return toggle!;
     }
 
+    internal static void ExpandSettings(UITestBase testBase, string expanderId)
+    {
+        var session = testBase.Session;
+        var expander = session.Find<Element>(By.AccessibilityId(expanderId), 5_000);
+
+        // SettingsExpander exposes ExpandCollapsePattern on its inner WinUI Expander, not the group.
+        var tree = WinappCli.InvokeJson("ui", "inspect", expander.Selector, session.TargetFlag, session.TargetValue, "--json", "-d", "1");
+        var headers = tree.GetProperty("windows")[0].GetProperty("elements")[0].GetProperty("children")
+            .EnumerateArray()
+            .Where(child => child.TryGetProperty("className", out var className) &&
+                className.GetString() == "Microsoft.UI.Xaml.Controls.Expander")
+            .ToArray();
+        Assert.HasCount(1, headers, $"Expected one expandable header inside {expanderId}. Tree: {tree}");
+        var selector = headers[0].GetProperty("selector").GetString();
+        Assert.IsNotNull(selector, $"The expandable header inside {expanderId} had no selector.");
+        var header = session.Find<Button>(By.Slug(selector), 5_000);
+        if (header.GetProperty("ExpandCollapseState") == "Collapsed")
+        {
+            header.Invoke(msPostAction: 0);
+        }
+
+        Assert.IsTrue(header.WaitForProperty("ExpandCollapseState", "Expanded", 5_000), $"{expanderId} did not expand.");
+    }
+
     internal static WindowControl.ProcessWindow WaitForWindowClass(string className, int timeoutMs = 10_000)
     {
         var result = WaitHelper.WaitForStable(

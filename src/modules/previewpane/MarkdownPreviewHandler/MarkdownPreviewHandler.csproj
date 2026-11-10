@@ -5,6 +5,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
+    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyTitle>PowerToys.MarkdownPreviewHandler</AssemblyTitle>

@@ -24,7 +24,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", COMPANY_NAME
-            VALUE "FileDescription", "PowerToys Auto Hide Cursor Module Interface"
+            VALUE "FileDescription", "PowerToys CursorHide Module Interface"
             VALUE "FileVersion", FILE_VERSION_STRING
             VALUE "InternalName", "AutoHideCursor"
             VALUE "LegalCopyright", COPYRIGHT_NOTE
@@ -41,7 +41,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_AUTO_HIDE_CURSOR_NAME L"Auto Hide Cursor"
+    IDS_AUTO_HIDE_CURSOR_NAME L"CursorHide"
     IDS_AUTO_HIDE_CURSOR_HIDE_ON_TYPING L"Hide after keyboard input"
     IDS_AUTO_HIDE_CURSOR_HIDE_ON_IDLE L"Hide after pointer inactivity"
     IDS_AUTO_HIDE_CURSOR_IDLE_DELAY L"Pointer idle delay (milliseconds)"

@@ -40,7 +40,7 @@ internal sealed partial class SampleButtonsDockBand : WrappedDockItem, IDisposab
             Title = SizeConstraintValues[0],
             Subtitle = "Fixed width",
         }
-        .SetDockLabelWidth("12ch");
+        .SetDockLabelWidthLimits(DockLabelWidth.Characters(12), DockLabelWidth.Characters(12));
 
         _tabularDigitsItem = new ListItem(new ShowToastCommand("Equal-length values use tabular digits without changing alignment."))
         {
@@ -54,7 +54,7 @@ internal sealed partial class SampleButtonsDockBand : WrappedDockItem, IDisposab
             Title = FormatPercentage(AlignmentValues[0]),
             Subtitle = "Trailing aligned",
         }
-        .SetDockLabelWidth("12ch")
+        .SetDockLabelWidthLimits(DockLabelWidth.Characters(12), DockLabelWidth.Characters(12))
         .SetDockLabelTrailingAlignment();
 
         ListItem[] buttons = [

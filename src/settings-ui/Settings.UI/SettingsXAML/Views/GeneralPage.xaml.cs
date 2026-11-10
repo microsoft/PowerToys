@@ -99,11 +99,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void UpdateStatusCard_Click(object sender, RoutedEventArgs e)
-        {
-            ShellPage.ShellHandler?.OpenUpdateActivity();
-        }
-
         private void OpenColorsSettings_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -220,6 +215,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void GeneralPage_Unloaded(object sender, RoutedEventArgs e)
         {
             CleanupBugReportHandlers();
+
+            // x:Bind subscribes to app-lifetime objects (the shared UpdateViewModel and the shared
+            // GeneralSettings hotkey); stop tracking so they don't keep this page alive.
+            Bindings.StopTracking();
+            ViewModel?.Dispose();
         }
 
         private void CleanupBugReportHandlers()

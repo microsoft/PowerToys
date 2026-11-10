@@ -4,6 +4,7 @@
 
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerAccent.Common;
 using static PowerAccent.UITests.PowerAccentTestHelper;
 
 namespace PowerAccent.UITests;
@@ -30,6 +31,63 @@ public sealed class PowerAccentEndToEndTests : UITestBase
 
     [ClassCleanup]
     public static void RestoreClassState() => DisposeAll(ModuleSettings, UsageInfo);
+
+    [TestMethod]
+    [TestCategory("PowerAccent")]
+    public void ScrollbarSpacingAppearsOnlyForOverflowingCharacterLists()
+    {
+        using var clipboard = PreserveClipboardText();
+        using var notepad = NotepadFixture.Start(this);
+        var characters = CharacterMappings.GetCharacters(LetterKey.VK_E, [.. CharacterMappings.All.Select(language => language.Id)]);
+        var heights = new double[3];
+
+        for (var index = 0; index < 3; index++)
+        {
+            var overflowing = index != 1;
+            ReplaceSettings(this, new Settings(
+                Activation: ActivationKey.Both,
+                InputTimeMs: 200,
+                SelectedLanguage: overflowing ? "ALL" : "SP"));
+
+            var result = RunTriggeredGesture(
+                this,
+                notepad,
+                overflowing ? Key.E : Key.A,
+                Key.Space,
+                toolbar =>
+                {
+                    heights[index] = MeasureCharacterListHeightDip(this, toolbar);
+                    if (index == 0)
+                    {
+                        AssertKeyboardNavigationScrollsIntoView(this, toolbar, characters);
+                    }
+                });
+
+            if (overflowing)
+            {
+                Assert.AreEqual(
+                    characters[0],
+                    result,
+                    "The overflowing list should commit the selected character.");
+            }
+            else
+            {
+                Assert.AreEqual("á", result, "The short Spanish A list should commit its only character.");
+            }
+        }
+
+        // List height is a proxy for the visibility-bound spacer, not the scrollbar's
+        // pixels.
+        const double roundingToleranceDip = 1;
+        Assert.IsTrue(
+            heights[0] > heights[1] + roundingToleranceDip,
+            $"Scrollbar spacing should collapse for the short list: long={heights[0]} DIPs, short={heights[1]} DIPs.");
+        Assert.AreEqual(
+            heights[0],
+            heights[2],
+            roundingToleranceDip,
+            $"Scrollbar spacing should return for the long list: first={heights[0]} DIPs, repeated={heights[2]} DIPs.");
+    }
 
     [TestMethod]
     [TestCategory("PowerAccent")]
@@ -73,6 +131,72 @@ public sealed class PowerAccentEndToEndTests : UITestBase
                 Assert.AreEqual("â", GetSelectedCharacter(toolbar, FrenchACharacters), "Left should move to the previous character.");
             });
         Assert.AreEqual("â", leftResult, "Releasing the letter should commit the selected left-arrow character.");
+    }
+
+    [TestMethod]
+    [TestCategory("PowerAccent")]
+    public void ArrowActivationUsesNewCharacterListAfterLanguageChange()
+    {
+        ReplaceSettings(this, new Settings(
+            Activation: ActivationKey.Both,
+            InputTimeMs: 200,
+            SelectedLanguage: "CUR"));
+
+        using var clipboard = PreserveClipboardText();
+        using var notepad = NotepadFixture.Start(this);
+
+        Assert.AreEqual(
+            "₪",
+            RunTriggeredGesture(
+                this,
+                notepad,
+                Key.S,
+                Key.Right,
+                toolbar => Assert.AreEqual("₪", GetSelectedCharacter(toolbar, CurrencySCharacters))));
+
+        ReplaceSettings(this, new Settings(
+            Activation: ActivationKey.Both,
+            InputTimeMs: 200,
+            SelectedLanguage: "FR"));
+
+        var frenchECharacters = CharacterMappings.GetCharacters(LetterKey.VK_E, [Language.FR]);
+        Assert.AreEqual(
+            "ê",
+            RunTriggeredGesture(
+                this,
+                notepad,
+                Key.E,
+                Key.Right,
+                toolbar => Assert.AreEqual("ê", GetSelectedCharacter(toolbar, frenchECharacters))),
+            "The new selection must use the French list, not the retained two-item Currency list.");
+    }
+
+    [DataTestMethod]
+    [DataRow("Left", "è")]
+    [DataRow("Right", "ê")]
+    [TestCategory("PowerAccent")]
+    public void ArrowActivationUsesNewCharacterListAfterShortList(string triggerName, string expectedCharacter)
+    {
+        ReplaceSettings(this, new Settings(
+            Activation: ActivationKey.Both,
+            InputTimeMs: 200,
+            SelectedLanguage: "FR"));
+
+        using var clipboard = PreserveClipboardText();
+        using var notepad = NotepadFixture.Start(this);
+
+        Assert.AreEqual("ç", RunTriggeredGesture(this, notepad, Key.C, Key.Space));
+
+        var frenchECharacters = CharacterMappings.GetCharacters(LetterKey.VK_E, [Language.FR]);
+        Assert.AreEqual(
+            expectedCharacter,
+            RunTriggeredGesture(
+                this,
+                notepad,
+                Key.E,
+                Enum.Parse<Key>(triggerName),
+                toolbar => Assert.AreEqual(expectedCharacter, GetSelectedCharacter(toolbar, frenchECharacters))),
+            "An initial arrow selection must wait until the new list replaces the retained single-item list.");
     }
 
     [TestMethod]

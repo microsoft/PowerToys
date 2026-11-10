@@ -206,8 +206,8 @@ dotnet restore src\modules\<Module>\Tests\<Module>.UITests.Next\<Module>.UITests
 
 # 1. Build just the new test project (fast inner loop). Prefer the repo build script.
 tools\build\build.cmd -Path src\modules\<Module>\Tests\<Module>.UITests.Next -Platform x64 -Configuration Debug
-#    Exit code 0 = success; non-zero = failure. On failure read the errors log next to the project:
-#    build.<Configuration>.<Platform>.errors.log
+#    Exit code 0 = success; non-zero = failure. On failure read the errors log under the repo root:
+#    artifacts\logs\<Module>.UITests.Next\build.<Configuration>.<Platform>.errors.log
 #    Do not substitute `dotnet build` when UITestAutomation.Next's COM references are in the graph:
 #    .NET SDK MSBuild cannot run ResolveComReference and fails with MSB4803. Use the repo script or
 #    Visual Studio's full-framework MSBuild.exe; use `dotnet restore` only to create project.assets.json.

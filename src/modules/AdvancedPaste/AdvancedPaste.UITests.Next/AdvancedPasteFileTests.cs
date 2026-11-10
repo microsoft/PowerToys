@@ -53,7 +53,7 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
     [DataRow(true)]
     public async Task HtmlIsPastedAsHtmlFileWithoutClipboardMetadata(bool directShortcut)
     {
-        const string html = "<h2>Offline file</h2><p>alpha &amp; beta</p>";
+        const string html = "<h2>Offline file</h2><p>café 中文 &amp; beta</p>";
         SetHtmlClipboard(html);
         var output = await PasteFile(ProductStrings.PasteAsHtmlFile, Key.H, ".html", directShortcut);
         Assert.AreEqual(html, File.ReadAllText(output), "The HTML file changed the fragment or included CF_HTML metadata.");
@@ -82,6 +82,49 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
         Assert.AreEqual(ClipboardFixtures.ImageHeight, bitmap.Height);
         Assert.AreEqual(Color.CornflowerBlue.ToArgb(), bitmap.GetPixel(10, 10).ToArgb(), "PNG conversion changed the left fixture color.");
         Assert.AreEqual(Color.Gold.ToArgb(), bitmap.GetPixel(bitmap.Width - 10, 10).ToArgb(), "PNG conversion changed the right fixture color.");
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    public async Task ImageIsPastedAsJpgFile(bool fileInput, bool directShortcut)
+    {
+        var source = Path.Combine(TestDirectory, "source.png");
+        ClipboardFixtures.CreateImage(source);
+        if (fileInput)
+        {
+            SetFileClipboard(source);
+        }
+        else
+        {
+            await SetBitmapClipboard(source);
+        }
+
+        var output = await PasteFile(ProductStrings.PasteAsJpgFile, Key.K, ".jpg", directShortcut, source);
+        var header = new byte[3];
+        using (var stream = File.OpenRead(output))
+        {
+            stream.ReadExactly(header);
+        }
+
+        CollectionAssert.AreEqual(new byte[] { 0xFF, 0xD8, 0xFF }, header, "Pasted file is not JPEG encoded.");
+
+        using var bitmap = new Bitmap(output);
+        Assert.AreEqual(ClipboardFixtures.ImageWidth, bitmap.Width);
+        Assert.AreEqual(ClipboardFixtures.ImageHeight, bitmap.Height);
+
+        // JPEG is lossy, so compare colors with a tolerance instead of exactly.
+        AssertColorClose(Color.CornflowerBlue, bitmap.GetPixel(10, 10), "JPG conversion changed the left fixture color.");
+        AssertColorClose(Color.Gold, bitmap.GetPixel(bitmap.Width - 10, 10), "JPG conversion changed the right fixture color.");
+    }
+
+    private static void AssertColorClose(Color expected, Color actual, string message)
+    {
+        const int tolerance = 16;
+        Assert.IsTrue(
+            Math.Abs(expected.R - actual.R) <= tolerance && Math.Abs(expected.G - actual.G) <= tolerance && Math.Abs(expected.B - actual.B) <= tolerance,
+            $"{message} Expected {expected}, got {actual}.");
     }
 
     [TestMethod]
@@ -199,6 +242,8 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
 
     private void FocusExplorerItemsView(Session explorer)
     {
+        // A cold Shell UIA lookup can consume a minute on a single-core guest.
+        // Leave time to re-query after a transient stale-element response.
         var handle = new IntPtr(explorer.WindowHandle);
         (bool Visible, bool Foreground, bool ShellReady, bool EmptySelection, bool KeyboardFocus)? lastState = null;
         var ready = WaitHelper.WaitForStable(
@@ -222,7 +267,7 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
                 lastState = state;
                 return state.Visible && state.Foreground && state.ShellReady && state.EmptySelection && state.KeyboardFocus;
             },
-            timeoutMS: 30_000,
+            timeoutMS: 90_000,
             requiredConsecutiveMatches: 3,
             recover: view =>
             {

@@ -515,12 +515,16 @@ public class UITestBase : IDisposable
         {
             var localLow = Path.Combine(
                 Environment.GetEnvironmentVariable("USERPROFILE") ?? string.Empty,
-                "AppData", "LocalLow", "Microsoft", "PowerToys");
+                "AppData",
+                "LocalLow",
+                "Microsoft",
+                "PowerToys");
             CopyLogFiles(localLow);
 
             var localAppData = Path.Combine(
                 Environment.GetEnvironmentVariable("LOCALAPPDATA") ?? string.Empty,
-                "Microsoft", "PowerToys");
+                "Microsoft",
+                "PowerToys");
             CopyLogFiles(localAppData);
         }
         catch

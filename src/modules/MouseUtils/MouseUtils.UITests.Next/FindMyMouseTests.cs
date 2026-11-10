@@ -310,35 +310,35 @@ public class FindMyMouseTests : UITestBase
         }
     }
 
-        private static string CreateSettings(FindMyMouseConfiguration configuration) => new JsonObject
+    private static string CreateSettings(FindMyMouseConfiguration configuration) => new JsonObject
+    {
+        ["name"] = "FindMyMouse",
+        ["version"] = "1.1",
+        ["properties"] = new JsonObject
         {
-                ["name"] = "FindMyMouse",
-                ["version"] = "1.1",
-                ["properties"] = new JsonObject
-                {
-                        ["activation_method"] = new JsonObject { ["value"] = configuration.ActivationMethod },
-                        ["include_win_key"] = new JsonObject { ["value"] = configuration.IncludeWinKey },
-                        ["activation_shortcut"] = new JsonObject
-                        {
-                                ["win"] = true,
-                                ["ctrl"] = false,
-                                ["alt"] = false,
-                                ["shift"] = true,
-                                ["code"] = 70,
-                                ["key"] = string.Empty,
-                        },
-                        ["do_not_activate_on_game_mode"] = new JsonObject { ["value"] = false },
-                        ["background_color"] = new JsonObject { ["value"] = configuration.BackgroundColor },
-                        ["spotlight_color"] = new JsonObject { ["value"] = configuration.SpotlightColor },
-                        ["spotlight_radius"] = new JsonObject { ["value"] = configuration.Radius },
-                        ["animation_duration_ms"] = new JsonObject { ["value"] = configuration.AnimationDurationMs },
-                        ["spotlight_initial_zoom"] = new JsonObject { ["value"] = configuration.InitialZoom },
-                        ["excluded_apps"] = new JsonObject { ["value"] = configuration.ExcludedApps },
-                        ["shaking_minimum_distance"] = new JsonObject { ["value"] = 100 },
-                        ["shaking_interval_ms"] = new JsonObject { ["value"] = 2000 },
-                        ["shaking_factor"] = new JsonObject { ["value"] = 150 },
-                },
-        }.ToJsonString();
+            ["activation_method"] = new JsonObject { ["value"] = configuration.ActivationMethod },
+            ["include_win_key"] = new JsonObject { ["value"] = configuration.IncludeWinKey },
+            ["activation_shortcut"] = new JsonObject
+            {
+                ["win"] = true,
+                ["ctrl"] = false,
+                ["alt"] = false,
+                ["shift"] = true,
+                ["code"] = 70,
+                ["key"] = string.Empty,
+            },
+            ["do_not_activate_on_game_mode"] = new JsonObject { ["value"] = false },
+            ["background_color"] = new JsonObject { ["value"] = configuration.BackgroundColor },
+            ["spotlight_color"] = new JsonObject { ["value"] = configuration.SpotlightColor },
+            ["spotlight_radius"] = new JsonObject { ["value"] = configuration.Radius },
+            ["animation_duration_ms"] = new JsonObject { ["value"] = configuration.AnimationDurationMs },
+            ["spotlight_initial_zoom"] = new JsonObject { ["value"] = configuration.InitialZoom },
+            ["excluded_apps"] = new JsonObject { ["value"] = configuration.ExcludedApps },
+            ["shaking_minimum_distance"] = new JsonObject { ["value"] = 100 },
+            ["shaking_interval_ms"] = new JsonObject { ["value"] = 2000 },
+            ["shaking_factor"] = new JsonObject { ["value"] = 150 },
+        },
+    }.ToJsonString();
 
     private static void DoubleTap(Key controlKey)
     {

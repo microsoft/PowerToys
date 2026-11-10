@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
 {
     internal static class Program
     {
-        private static SvgThumbnailProvider _thumbnailProvider;
+        private static SvgThumbnailProvider? _thumbnailProvider;
 
         /// <summary>
         ///  The main entry point for the application.
@@ -39,8 +39,8 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                     string filePath = args[0];
                     uint cx = Convert.ToUInt32(args[1], 10);
 
-                    _thumbnailProvider = new SvgThumbnailProvider(filePath);
-                    Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
+                    _thumbnailProvider = new SvgThumbnailProvider(filePath, Path.ChangeExtension(filePath, ".WebView2"));
+                    Bitmap? thumbnail = _thumbnailProvider.GetThumbnail(cx);
                     if (thumbnail != null )
                     {
                         filePath = filePath.Replace(".svg", ".bmp");

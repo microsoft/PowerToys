@@ -9,7 +9,7 @@ It launches ZoomIt through the PowerToys runner, not as the standalone Sysintern
 | Checklist | Automated scenario and observable result |
 |---|---|
 | Enable ZoomIt | Settings off/on changes the actual process lifecycle; the configured shortcut then produces a magnified image. |
-| 1 | Left- and right-clicking the real notification icon each opens exactly Break Timer, Draw, Zoom, and Record. |
+| 1 | Left- and right-clicking the real notification icon each opens Settings, a separator, Break Timer, Draw, Zoom, Record, a separator, and Exit, in that order. Settings navigates from General to ZoomIt's PowerToys page, including when Settings is minimized. Exit removes the icon and stops only ZoomIt; Settings can then re-enable it. |
 | 2-3 | The Settings switch removes and restores the Shell icon, including the notification overflow. |
 | 4 | Static zoom doubles a known marker, freezes subsequent source updates, and exits with both Escape and the configured shortcut. |
 | 5 | Live Zoom magnifies the marker and displays subsequent source updates; its shortcut exits. |
@@ -30,24 +30,58 @@ It launches ZoomIt through the PowerToys runner, not as the standalone Sysintern
 
 ## Execution
 
-Run only in a disposable, isolated, English-language test desktop, not on a working
-developer machine: this suite rewrites the real signed-in user's
+Run through Visual Studio Test Explorer or the test executable on an English-language
+interactive host, or through the local VM/CI workflow. A quiet, isolated test desktop or
+disposable VM is recommended. The suite takes foreground, minimizes windows, restarts
+Explorer and PowerToys, and temporarily rewrites the real signed-in user's
 `HKCU\Software\Sysinternals\ZoomIt` settings, shared with standalone Sysinternals ZoomIt.
-It requires winappcli, .NET 10, and
-a PowerToys runtime. The executable embeds a PerMonitorV2 manifest. Pipeline-like runs
-normalize the desktop to 1920x1080. Recording requires a working Windows Graphics Capture
+Save work before starting, do not interact with the desktop during a run, and do not run
+while using an unsaved ZoomIt drawing or recording. Settings are backed up and restored
+as described below.
+
+The suite requires winappcli, .NET 10, and a PowerToys runtime. The executable embeds a
+PerMonitorV2 manifest. Host runs retain their display resolution and DPI; only pipeline-like
+runs normalize the desktop to 1920x1080. Recording assertions account for the encoder's
+even-pixel padding, and timer placement accounts for padded text and font-relative ink
+bounds. Recording requires a working Windows Graphics Capture
 display; lack of captured frames is an explicit failure, not a skipped or passing recording.
 Suppress unrelated desktop notifications in the test environment before running: Shell
 toasts can cover pixel samples even when ZoomIt's window is topmost.
 Native dialogs are clicked once, then polled separately for window appearance and
 HWND-scoped control readiness. A delayed Font dialog regression covers an eight-second
 opening delay, beyond the previous five-second discovery timeout.
+Before that single click, transient UIA errors invalidate the cached Browse/font button
+and re-resolve it from its settings card within the existing readiness timeout.
+`ZoomItDialogReadinessTests` covers replacement during preparation/polling, consecutive
+sample resets, missing controls, non-transient failures, and bounded stale-control timeouts.
+Notepad startup and Settings navigation are also gated on a stable, test-owned window and
+an interactive editor. A replaced startup HWND is rebound, and an existing owned document
+is required before acknowledging a restored-session missing-path message. Fixture files
+are retained with a diagnostic if closing their Notepad tab cannot be confirmed.
+
+The even-pixel expectation comes from
+[`VideoRecordingSession.cpp`](../../ZoomIt/VideoRecordingSession.cpp):
+`EnsureEven` returns an odd dimension plus one, and the recording constructor applies it
+to capture dimensions and output dimensions before setting the video encoding profile.
+At the tested 100% full-screen recording scale, this pads rather than crops an odd display
+dimension. It is a product rule, not an assumption about a particular encoder or OS build.
+Frame decoding leaves both
+[`GetThumbnailAsync`](https://learn.microsoft.com/uwp/api/windows.media.editing.mediacomposition.getthumbnailasync)
+dimensions at their documented zero defaults instead of requesting the expected size.
+`ZoomItCaptureHelpersTests` checks native frame dimensions using small synthetic MP4s;
+these helper regressions do not launch ZoomIt or provide additional UI coverage.
+
+The timer in [`Zoomit.cpp`](../../ZoomIt/Zoomit.cpp) uses `lfHeight = height / 5`
+and centers the complete `DrawText(DT_CALCRECT)` layout for `"% 2d:%02d"`, not its visible
+ink. Leading whitespace and font metrics therefore affect the measured ink center.
+The geometry regression tests pin the font-relative allowance, including its boundary;
+they do not replace live timer-placement validation.
 
 ```powershell
 dotnet restore src\modules\ZoomIt\Tests\ZoomIt.UITests\ZoomIt.UITests.csproj -p:Platform=x64
 tools\build\build.cmd -Path src\modules\ZoomIt\Tests\ZoomIt.UITests -Platform x64 -Configuration Debug
 
-# Execute only on the test desktop, normally through ui-tests-local-vm.
+# Run on the prepared host desktop, or use ui-tests-local-vm for isolation.
 .\x64\Debug\tests\ZoomIt.UITests\net10.0-windows10.0.26100.0\ZoomIt.UITests.exe --report-trx
 ```
 
@@ -79,6 +113,10 @@ bitmaps; full-screen scan timings are recorded without imposing a machine-speed 
 Successful screenshots, clipboard images, recordings, decoded frames, and microphone
 inventories are stored beside MSTest's deployment directory so they survive successful-run
 cleanup. Failure media is captured before teardown.
+Tray-icon readiness failures retain the last mismatch even if a later observation matches,
+and report the final consecutive-match count and any last transient Shell error.
+The tray wait parks the cursor away from the taskbar after opening the overflow, so the
+Windows 10 News and Interests hover feed cannot cover the overflow icons.
 
 For delivery, run the complete suite on Windows 10 and Windows 11 with both default and
 constrained VM profiles, then validate `[ZoomIt.UITests]` in UI Test Automation CI.

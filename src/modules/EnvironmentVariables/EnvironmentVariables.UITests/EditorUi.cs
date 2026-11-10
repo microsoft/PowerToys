@@ -55,10 +55,12 @@ internal sealed class EditorUi(Session session, TestContext context)
     {
         // Element.Find currently searches the whole session; inspect the actual subtree to avoid
         // confusing User, System, profile, and Applied rows that share the same variable name.
-        var match = WaitForDescendant(parent, node =>
-            Property(node, "className") == className &&
-            (name is null || Property(node, "name") == name) &&
-            (automationId is null || Property(node, "automationId") == automationId),
+        var match = WaitForDescendant(
+            parent,
+            node =>
+                Property(node, "className") == className &&
+                (name is null || Property(node, "name") == name) &&
+                (automationId is null || Property(node, "automationId") == automationId),
             $"{className} '{name ?? automationId}'");
         return Resolve<T>(match);
     }
@@ -116,6 +118,7 @@ internal sealed class EditorUi(Session session, TestContext context)
         Assert.IsTrue(index >= 0 && index < entries.Length, $"PATH entry {index} was not found.");
         Assert.IsFalse(string.IsNullOrWhiteSpace(entries[index].Name), "List-entry editors must expose an accessible name.");
         entries[index].SetText(value);
+
         // The product commits list-entry edits in EditVariableValuesListTextBox_LostFocus.
         Session.Find<TextBox>(By.AccessibilityId("EditVariableDialogNameTxtBox")).Focus();
     }
@@ -168,8 +171,10 @@ internal sealed class EditorUi(Session session, TestContext context)
 
     internal Element VariableCard(Element parent, string name)
     {
-        var match = WaitForDescendant(parent, node => Property(node, "className") == "SettingsCard" &&
-            Nodes(node).Any(child => Property(child, "type") == "Text" && Property(child, "name") == name),
+        var match = WaitForDescendant(
+            parent,
+            node => Property(node, "className") == "SettingsCard" &&
+                Nodes(node).Any(child => Property(child, "type") == "Text" && Property(child, "name") == name),
             $"variable card for {name}");
         return Resolve<Element>(match);
     }

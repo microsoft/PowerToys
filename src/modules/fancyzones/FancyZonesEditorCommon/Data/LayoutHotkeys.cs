@@ -27,7 +27,7 @@ namespace FancyZonesEditorCommon.Data
 
         public struct LayoutHotkeysWrapper
         {
-            public List<LayoutHotkeyWrapper> LayoutHotkeys { get; set; }
+            public List<LayoutHotkeyWrapper> LayoutHotkeys { get; init; }
         }
     }
 }

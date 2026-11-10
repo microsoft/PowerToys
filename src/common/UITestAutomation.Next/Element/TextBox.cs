@@ -15,8 +15,7 @@ public class TextBox : Element
     /// <summary>Set the textbox content via winappcli's <c>set-value</c> (UIA ValuePattern).</summary>
     public TextBox SetText(string value)
     {
-        EnsureBound();
-        WinappCli.InvokeAssertSuccess("ui", "set-value", Selector, value, Owner!.TargetFlag, Owner!.TargetValue);
+        WinappCli.InvokeAssertSuccess(BuildSetValueArguments(value));
         return this;
     }
 

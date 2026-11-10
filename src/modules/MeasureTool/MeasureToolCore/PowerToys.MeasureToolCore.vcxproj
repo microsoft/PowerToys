@@ -43,6 +43,8 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <GenerateManifest>false</GenerateManifest>
     <DesktopCompatible>true</DesktopCompatible>
+    <!-- Keep a private UCRT: InitUnhandledExceptionHandler's signal(SIGABRT) would otherwise apply to every module in MeasureToolUI. -->
+    <EnableHybridCRT>false</EnableHybridCRT>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">

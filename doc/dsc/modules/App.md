@@ -45,6 +45,7 @@ Controls which PowerToys utilities are enabled or disabled.
 - `ImageResizer` (boolean) - Enable/disable Image Resizer utility.
 - `KeyboardManager` (boolean) - Enable/disable Keyboard Manager utility.
 - `MeasureTool` (boolean) - Enable/disable Measure Tool utility.
+- `MouseButtonLock` (boolean) - Enable/disable Mouse Button Lock utility.
 - `MouseHighlighter` (boolean) - Enable/disable Mouse Highlighter utility.
 - `MouseJump` (boolean) - Enable/disable Mouse Jump utility.
 - `MousePointerCrosshairs` (boolean) - Enable/disable Mouse Pointer
@@ -105,6 +106,7 @@ $config = @{
                 ImageResizer = $false
                 KeyboardManager = $false
                 MeasureTool = $false
+                MouseButtonLock = $false
                 MouseHighlighter = $false
                 MouseJump = $false
                 MousePointerCrosshairs = $false
@@ -191,6 +193,7 @@ resources:
             ImageResizer: true
             KeyboardManager: true
             MeasureTool: true
+            MouseButtonLock: true
             MouseHighlighter: true
             MouseJump: true
             MousePointerCrosshairs: true

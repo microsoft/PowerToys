@@ -1,0 +1,33 @@
+{
+  "configVersion": 3,
+  "entries": [
+    {
+      "Fuzzer": {
+        "$type": "libfuzzer",
+        "FuzzingHarnessExecutableName": "MouseButtonLock.FuzzTests.exe"
+      },
+      "adoTemplate": {
+        "org": "microsoft",
+        "project": "OS",
+        "AssignedTo": "leilzh@microsoft.com",
+        "AreaPath": "OS\\Windows Client and Services\\WinPD\\DFX-Developer Fundamentals and Experiences\\DEFT\\SALT",
+        "IterationPath": "OS\\Future"
+      },
+      "jobNotificationEmail": "PowerToys@microsoft.com",
+      "skip": false,
+      "rebootAfterSetup": false,
+      "oneFuzzJobs": [
+        {
+          "projectName": "PowerToys.MouseButtonLock",
+          "targetName": "MouseButtonLock_Fuzzer"
+        }
+      ],
+      "jobDependencies": [
+        "MouseButtonLock.FuzzTests.exe",
+        "MouseButtonLock.FuzzTests.pdb",
+        "MouseButtonLock.FuzzTests.lib",
+        "clang_rt.asan_dynamic-x86_64.dll"
+      ]
+    }
+  ]
+}

@@ -120,9 +120,12 @@ internal static class DataPackageHelpers
                 Logger.LogDebug($"Cleaning up temporary file with extension [{tempFile.Extension}] from data package after delay");
 
                 tempFile.Delete();
-                if (NormalizeDirectoryPath(tempFile.Directory?.Parent?.FullName) == NormalizeDirectoryPath(Path.GetTempPath()))
+                var tempDirectory = tempFile.Directory;
+                if (tempDirectory is not null &&
+                    NormalizeDirectoryPath(tempDirectory.Parent?.FullName) == NormalizeDirectoryPath(Path.GetTempPath()))
                 {
-                    tempFile.Directory?.Delete();
+                    AdvancedPasteTempFileManager.RemoveOwnershipMarkerIfDirectoryWillBeEmpty(tempDirectory);
+                    tempDirectory.Delete();
                 }
             }
         }

@@ -170,7 +170,6 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
     }
 
     // ---- settings navigation --------------------------------------------------------------------
-
     private static Session NavigateToPowerRenameSettings()
     {
         var settings = Session.FromProcess("PowerToys.Settings", PowerToysModule.PowerToysSettings, timeoutMS: 15_000);
@@ -274,7 +273,6 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
     }
 
     // ---- context-menu assertions -----------------------------------------------------------------
-
     private enum ContextMenuSurface
     {
         /// <summary>The Windows 11 tier-1 (sparse-MSIX, <c>IExplorerCommand</c>) menu.</summary>
@@ -328,10 +326,10 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
                 timeoutMS: 5_000,
                 requiredConsecutiveMatches: expected ? 2 : 8,
                 pollIntervalMS: 250);
-            Assert.IsTrue(
-                observation.Succeeded,
+            string classicMenuMessage =
                 $"The classic Explorer context menu ({(extendedVerbs ? "extended" : "plain")}) did " +
-                $"{(expected ? "not show" : "show")} '{ContextMenuCaption}'. {Describe(observation.LastObservation)}");
+                $"{(expected ? "not show" : "show")} '{ContextMenuCaption}'. {Describe(observation.LastObservation)}";
+            Assert.IsTrue(observation.Succeeded, classicMenuMessage);
         }
         finally
         {
@@ -380,12 +378,12 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
         try
         {
             var entry = ShellMenu.FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: MenuSurfaceTimeoutMS);
+            string classicCaptions = surface == ContextMenuSurface.Classic
+                ? Describe(ShellMenu.TryReadClassicItemCaptions(new IntPtr(menu.WindowHandle)))
+                : string.Empty;
             Assert.IsNotNull(
                 entry,
-                $"The {surface} Explorer context menu did not show '{ContextMenuCaption}'. " +
-                (surface == ContextMenuSurface.Classic
-                    ? Describe(ShellMenu.TryReadClassicItemCaptions(new IntPtr(menu.WindowHandle)))
-                    : string.Empty));
+                $"The {surface} Explorer context menu did not show '{ContextMenuCaption}'. " + classicCaptions);
             Assert.IsTrue(ScreenCapture.TryCaptureDesktop(desktopPath), "The desktop could not be captured while the menu was open.");
 
             using (var desktop = new Bitmap(desktopPath))
@@ -393,10 +391,10 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
                 var bounds = Rectangle.Intersect(
                     new Rectangle(entry!.X, entry.Y, entry.Width, entry.Height),
                     new Rectangle(0, 0, desktop.Width, desktop.Height));
-                Assert.IsTrue(
-                    bounds.Width > 0 && bounds.Height > 0,
+                string offscreenMessage =
                     $"The '{ContextMenuCaption}' entry reported an off-screen rectangle " +
-                    $"({entry.X},{entry.Y},{entry.Width},{entry.Height}) on a {desktop.Width}x{desktop.Height} desktop.");
+                    $"({entry.X},{entry.Y},{entry.Width},{entry.Height}) on a {desktop.Width}x{desktop.Height} desktop.";
+                Assert.IsTrue(bounds.Width > 0 && bounds.Height > 0, offscreenMessage);
 
                 using var crop = desktop.Clone(bounds, desktop.PixelFormat);
                 crop.Save(entryPath, System.Drawing.Imaging.ImageFormat.Png);
@@ -559,7 +557,6 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
     }
 
     // ---- Explorer --------------------------------------------------------------------------------
-
     private void PrepareContextMenuTest()
     {
         contextMenuTest = true;

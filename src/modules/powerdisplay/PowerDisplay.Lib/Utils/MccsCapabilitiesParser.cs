@@ -231,11 +231,17 @@ namespace PowerDisplay.Common.Utils
                     break;
 
                 case "cmds":
-                    capabilities.SupportedCommands = ParseHexList(segment.Content);
+                    capabilities.SupportedCommands.Clear();
+                    capabilities.SupportedCommands.AddRange(ParseHexList(segment.Content));
                     break;
 
                 case "vcp":
-                    capabilities.SupportedVcpCodes = ParseVcpEntries(segment.Content);
+                    capabilities.SupportedVcpCodes.Clear();
+                    foreach (var entry in ParseVcpEntries(segment.Content))
+                    {
+                        capabilities.SupportedVcpCodes.Add(entry.Key, entry.Value);
+                    }
+
                     break;
 
                 case "vcpname":

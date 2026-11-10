@@ -403,6 +403,7 @@ function Test-CoreFiles {
         
         # Mouse utilities
         'PowerToys.FindMyMouse.dll',
+        'PowerToys.MouseButtonLock.dll',
         'PowerToys.MouseHighlighter.dll',
         'PowerToys.MouseJump.dll',
         'PowerToys.MouseJump.Common.dll',
@@ -442,8 +443,7 @@ function Test-CoreFiles {
         'PowerToys.ZoomItSettingsInterop.dll',
         
         # Command Palette
-        'PowerToys.CmdPalModuleInterface.dll',
-        'CmdPalKeyboardService.dll'
+        'PowerToys.CmdPalModuleInterface.dll'
     )
     
     # WinUI3Apps signed files (in WinUI3Apps subdirectory)

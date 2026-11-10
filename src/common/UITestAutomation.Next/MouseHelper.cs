@@ -11,6 +11,7 @@ namespace Microsoft.PowerToys.UITest.Next;
 /// Global mouse input via Win32 <c>SetCursorPos</c> and <c>SendInput</c>. Required for
 /// scenarios like clicking inside the ColorPicker overlay, which is a transparent window that
 /// can't be targeted via UIA / <c>winapp ui click</c>.
+/// An explicit <see cref="UmdfHidInput"/> scope uses the virtual HID device instead.
 /// </summary>
 public static class MouseHelper
 {
@@ -39,6 +40,7 @@ public static class MouseHelper
         public MOUSEINPUT Mi;
     }
 
+#pragma warning disable SA1310 // Field names should not contain underscore - Win32 constant names
     private const uint INPUT_MOUSE = 0;
 
     private const uint MouseEventMove = 0x01;
@@ -49,9 +51,11 @@ public static class MouseHelper
     private const uint MOUSEEVENTF_MIDDLEDOWN = 0x20;
     private const uint MOUSEEVENTF_MIDDLEUP = 0x40;
     private const uint MOUSEEVENTF_WHEEL = 0x0800;
+#pragma warning restore SA1310
 
     private const int ClickDelayMs = 100;
     private const int WheelTick = 120;
+
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool SetCursorPos(int x, int y);
 
@@ -66,6 +70,12 @@ public static class MouseHelper
     /// <exception cref="Win32Exception"><c>SetCursorPos</c> rejected the requested position.</exception>
     public static void MoveTo(int x, int y)
     {
+        if (UmdfHidInput.Active is { } hid)
+        {
+            hid.MoveTo(x, y);
+            return;
+        }
+
         if (!SetCursorPos(x, y))
         {
             throw new Win32Exception(Marshal.GetLastWin32Error());
@@ -217,6 +227,12 @@ public static class MouseHelper
     /// </summary>
     private static void SendMouseInput(uint flags, int data = 0, int dx = 0, int dy = 0)
     {
+        if (UmdfHidInput.Active is { } hid)
+        {
+            hid.SendMouseInput(flags, data, dx, dy);
+            return;
+        }
+
         var inputs = new INPUT[]
         {
             new INPUT

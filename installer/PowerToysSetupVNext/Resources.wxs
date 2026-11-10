@@ -74,7 +74,11 @@
       <?endforeach?>
     <?endif?>
 
+    <!-- Generated only for CLI satellite assemblies present in the build output. -->
+    <!--LightSwitchCliResourceDirectories-->
+
     <ComponentGroup Id="ResourcesComponentGroup">
+      <!--LightSwitchCliResourceComponents-->
       <!-- Resource components should be added only if the installer is built on the build farm -->
       <?ifdef env.IsPipeline?>
       <!-- Components for adding resource files -->
@@ -363,6 +367,12 @@
           <RegistryValue Type="string" Name="PowerDisplayCli_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes" />
         </RegistryKey>
         <File Id="PowerDisplayCli_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\WinUI3Apps\$(var.Language)\PowerToys.PowerDisplay.Cli.resources.dll" />
+      </Component>
+      <Component Id="WorkspacesLauncherUI_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER" Guid="$(var.CompGUIDPrefix)25">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="WorkspacesLauncherUI_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <File Id="WorkspacesLauncherUI_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.WorkspacesLauncherUI.resources.dll" />
       </Component>
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>
