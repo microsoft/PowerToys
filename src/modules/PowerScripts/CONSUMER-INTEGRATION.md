@@ -66,6 +66,14 @@ security boundary; see the README for platform limits and the compatibility pin.
 encapsulates Host discovery, safe argument construction, process invocation, JSON parsing, and
 timeouts while keeping the consumer decoupled from `PowerScripts.Core`.
 
+Long-lived consumers can opt into `new PowerScriptsClient("my-module", reuseHost: true)` and
+dispose it when their owner exits. This keeps one private Host alive for `ListAsync` and
+`TransformAsync(..., noConsent: true)`, avoiding repeated managed startup. Requests are serialized;
+the Host reloads scripts/settings and performs the same approval, schema and MXC checks on every
+invocation. Interpreters and Windows sandboxes remain fresh. Cancellation kills the session's
+child tree; interrupted requests are never replayed. Interactive transforms and existing clients
+retain the one-shot contract. The stdio session does not expose trust approval or settings writes.
+
 ```csharp
 var client = new PowerScriptsClient("my-module");
 if (!client.IsAvailable)
@@ -124,7 +132,7 @@ Keyboard Manager PowerScript bindings to regenerate their command line.
 
 ### Central integration settings and Group Policy
 
-Put each consumer's integration switch in **PowerToys Settings > PowerScripts > Use PowerScripts in**, not
+Put each consumer's integration switch in **PowerScripts app > Consumer modules**, not
 in the consumer's settings page. PowerScripts owns `config.json`'s
 `consumers: { "advanced-paste": true, "keyboard-manager": true, "command-palette": true }`
 preferences. Advanced Paste uses
@@ -154,13 +162,13 @@ even if a consumer policy enables its integration; a policy disabling the parent
 Enabling an integration does not enable its parent utility, enable a runtime, approve a script, or
 relax MXC. Policies do not overwrite user preferences, so removing a policy restores the preference.
 Malformed or inaccessible policies are reported as errors, not treated as permission to execute.
-PowerToys Settings shows effective values and locks policy-managed controls.
+The PowerScripts app shows effective integration values and locks policy-managed controls.
 
 The generic per-consumer policy resolver accepts stable consumer IDs, so adding a consumer needs no
 new execution gate. Register its parent utility/default in `ConsumerSettings`, add its central
-Settings card in `Settings.UI\SettingsXAML\Views\PowerScriptsPage.xaml` and ADMX/ADML policy, and use
-the same ID in discovery, execution, and policy values. The standalone editor does not own global
-configuration. Relocating these controls changes no Host commands, consumer IDs, preferences,
+app card in `PowerScripts.Editor\Views\ConsumerModulesPage.xaml` and ADMX/ADML policy, and use
+the same ID in discovery, execution, and policy values. Module enablement, runtime, and sandbox
+controls remain in PowerToys Settings. Relocating integration controls changes no Host commands, consumer IDs, preferences,
 default values, policies, or module-owned bindings.
 Refresh discovery when presenting actions; do not cache enablement as an authorization decision.
 Host enforcement also covers stale UI and saved bindings. Policy changes affect subsequent
@@ -216,7 +224,7 @@ automatic discovery when a consumer can offer every applicable script. Saved ass
 configuration picker are only necessary for consumers that need explicit bindings.
 
 Advanced Paste is the automatic-discovery example. Its integration toggle lives in
-PowerToys Settings > PowerScripts > Use PowerScripts in and defaults off. When enabled, the paste window offers every available script with
+PowerScripts app > Consumer modules and defaults off. When enabled, the paste window offers every available script with
 compatible clipboard input and a pasteable output. Text, files, bitmap images, and audio are
 matched against the declared contracts, including file/media restrictions. No-input scripts are
 excluded. AP stores no per-script selection or exclusion list.
@@ -277,8 +285,9 @@ that work in a separate runtime has stopped. Within the current CmdPal session, 
 does not discard the run or result. Returning without a new execution action shows that state;
 an explicit no-parameter invocation or **Run** can request a new run. No automatic retry occurs.
 
-Enable Command Palette and its PowerScripts extension, plus the central Command Palette integration
-switch, to use this consumer. The central preference defaults on and the Host applies the existing
+Enable Command Palette and its PowerScripts extension, plus
+**PowerScripts app > Consumer modules > Command Palette**, to use this consumer. The central
+preference defaults on and the Host applies the existing
 module, parent-utility, runtime, trust, and Group Policy gates again on each invocation, including
 one-action runs of scripts without parameters. Browsing never approves a script. Script review and
 management remain in the PowerScripts editor.
@@ -323,7 +332,7 @@ do not reference the Settings executable from a runtime module or add UI depende
    the shared Host/client discovery contract.
 5. Present script names and relevant contract/parameter information. If maintaining bindings,
    retain missing/invalid/incompatible entries with a warning and an explicit Remove action.
-6. Put integration enablement in PowerScripts' central consumer settings and register its Group Policy.
+6. Put integration enablement in **PowerScripts app > Consumer modules** and register its Group Policy.
    Persist module-owned bindings through the module's normal IPC/save path. For picker-based bindings,
    Cancel and discovery errors must not modify settings.
 7. Revalidate availability, current contract, parameters, and trust when invoking through the Host.
@@ -335,8 +344,9 @@ do not reference the Settings executable from a runtime module or add UI depende
    integration change. Record the module's purpose/ID, exact accepted I/O and result presentation,
    file/media limits, parameter UX, setup/bindings, timeout/cancellation/error behavior, and build
    availability. Check against the adapter, not just Host support; `consumers list` is not a
-   capability schema. Update related handoff guidance and bump `bundle.json` so managed copies
-   receive the new knowledge. Keep unavailable/separate-branch integrations explicitly conditional.
+   capability schema. Update related handoff guidance and bump `bundle.json` so agents can identify
+   the updated bundle when the setup instructions are copied again. Keep unavailable/separate-branch
+   integrations explicitly conditional.
 
 ## Script presentation and icons
 
@@ -511,8 +521,8 @@ fields are rejected, not migrated or inferred. Schema-local extensions refine pa
 ## Validation checklist
 
 - The consumer shows only scripts matching its actual input/output capabilities.
-- The shared picker is reused for Settings selection; the consumer's default page shows configured
-  bindings with input/output metadata, not a duplicate full catalogue.
+- Consumers needing saved assignments use their own binding UI and show configured bindings with
+  input/output metadata. Automatic-discovery consumers offer every compatible script.
 - Cancel, discovery failure, and search filtering do not erase assignments or change global settings.
 - Missing/incompatible saved IDs remain visible with an explicit Remove action.
 - Host unavailable, disabled, timeout, malformed output, and non-zero exit paths are handled.

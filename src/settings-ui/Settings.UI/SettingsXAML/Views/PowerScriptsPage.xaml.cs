@@ -28,11 +28,7 @@ public sealed partial class PowerScriptsPage : NavigablePage, IRefreshablePage
             SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default),
             ShellPage.SendDefaultIPCMessage);
         InitializeComponent();
-        Loaded += async (_, _) =>
-        {
-            RefreshEnabledState();
-            await RefreshAgentSkillsAsync(synchronize: true);
-        };
+        Loaded += (_, _) => RefreshEnabledState();
     }
 
     public static Visibility BoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
@@ -81,36 +77,6 @@ public sealed partial class PowerScriptsPage : NavigablePage, IRefreshablePage
             var path = Path.Combine(AppContext.BaseDirectory, "PowerToys.PowerScriptsEditor.exe");
             using var process = Process.Start(new ProcessStartInfo(path) { UseShellExecute = false })
                 ?? throw new InvalidOperationException("Unable to start the PowerScripts editor.");
-            EditorError.IsOpen = false;
-        }
-        catch (Exception exception)
-        {
-            ShowError(exception);
-        }
-    }
-
-    private async void ConsumerEnabledToggle_Toggled(object sender, RoutedEventArgs e)
-    {
-        if (sender is not ToggleSwitch { Tag: string id } toggle || !ViewModel.AreConsumerSettingsReady)
-        {
-            return;
-        }
-
-        var consumer = id switch
-        {
-            "advanced-paste" => ViewModel.AdvancedPasteConsumer,
-            "keyboard-manager" => ViewModel.KeyboardManagerConsumer,
-            "command-palette" => ViewModel.CommandPaletteConsumer,
-            _ => throw new InvalidOperationException("Unknown PowerScripts consumer."),
-        };
-        if (!consumer.CanChange || toggle.IsOn == consumer.IsEnabled)
-        {
-            return;
-        }
-
-        try
-        {
-            await ViewModel.SetConsumerEnabledAsync(consumer, toggle.IsOn);
             EditorError.IsOpen = false;
         }
         catch (Exception exception)

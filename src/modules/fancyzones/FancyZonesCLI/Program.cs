@@ -35,7 +35,7 @@ internal sealed class Program
         }
 
         RootCommand rootCommand = FancyZonesCliCommandFactory.CreateRootCommand();
-        int exitCode = await rootCommand.InvokeAsync(args);
+        int exitCode = await rootCommand.Parse(args).InvokeAsync();
 
         if (exitCode == 0)
         {

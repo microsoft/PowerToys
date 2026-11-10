@@ -4,7 +4,7 @@
 
 using System;
 using Microsoft.UI.Xaml.Data;
-using MouseJump.Common.Models.Settings;
+using MouseJump.Models.Settings;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {

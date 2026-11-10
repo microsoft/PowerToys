@@ -49,6 +49,7 @@ namespace CommonSharedConstants
     const wchar_t TERMINATE_COLOR_PICKER_SHARED_EVENT[] = L"Local\\TerminateColorPickerEvent-3d676258-c4d5-424e-a87a-4be22020e813";
 
     const wchar_t SHORTCUT_GUIDE_TRIGGER_EVENT[] = L"Local\\ShortcutGuide-TriggerEvent-d4275ad3-2531-4d19-9252-c0becbd9b496";
+    const wchar_t SHORTCUT_GUIDE_WIN_KEY_HOLD_EVENT[] = L"Local\\ShortcutGuide-WinKeyHoldEvent-b5eb7614-d1c4-49d7-9813-ab277aabdd80";
 
     const wchar_t SHORTCUT_GUIDE_EXIT_EVENT[] = L"Local\\ShortcutGuide-ExitEvent-35697cdd-a3d2-47d6-a246-34efcc73eac0";
 
@@ -156,6 +157,7 @@ namespace CommonSharedConstants
     const wchar_t ZOOMIT_LIVEZOOM_EVENT[] = L"Local\\PowerToysZoomIt-LiveZoomEvent-390bf0c7-616f-47dc-bafe-a2d228add20d";
     const wchar_t ZOOMIT_SNIP_EVENT[] = L"Local\\PowerToysZoomIt-SnipEvent-2fd9c211-436d-4f17-a902-2528aaae3e30";
     const wchar_t ZOOMIT_SNIPOCR_EVENT[] = L"Local\\PowerToysZoomIt-SnipOcrEvent-a7c3b1d2-9e4f-4a6b-8d5c-1f2e3a4b5c6d";
+    const wchar_t ZOOMIT_SNIPDICTATE_EVENT[] = L"Local\\PowerToysZoomIt-SnipDictateEvent-4b8e6f10-2c73-4f5a-9b21-7d0a6c5e8f43";
     const wchar_t ZOOMIT_RECORD_EVENT[] = L"Local\\PowerToysZoomIt-RecordEvent-74539344-eaad-4711-8e83-23946e424512";
 
     // Path to the events used by PowerDisplay

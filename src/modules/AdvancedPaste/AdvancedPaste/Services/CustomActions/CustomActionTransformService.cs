@@ -31,19 +31,27 @@ namespace AdvancedPaste.Services.CustomActions
         private readonly IPasteAIProviderFactory providerFactory;
         private readonly IAICredentialsProvider credentialsProvider;
         private readonly IUserSettings userSettings;
+        private readonly Func<PasteAIProviderDefinition, bool> isProviderAllowed;
 
-        public CustomActionTransformService(IPromptModerationService promptModerationService, IPasteAIProviderFactory providerFactory, IAICredentialsProvider credentialsProvider, IUserSettings userSettings)
+        public CustomActionTransformService(IPromptModerationService promptModerationService, IPasteAIProviderFactory providerFactory, IAICredentialsProvider credentialsProvider, IUserSettings userSettings, Func<PasteAIProviderDefinition, bool> isProviderAllowed = null)
         {
             this.promptModerationService = promptModerationService;
             this.providerFactory = providerFactory;
             this.credentialsProvider = credentialsProvider;
             this.userSettings = userSettings;
+            this.isProviderAllowed = isProviderAllowed ?? AdvancedPastePolicy.IsProviderAllowed;
         }
 
-        public async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, CancellationToken cancellationToken, IProgress<double> progress, string systemPromptOverride = null, string providerIdOverride = null)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var pasteConfig = userSettings?.PasteAIConfiguration;
-            var providerConfig = BuildProviderConfig(pasteConfig);
+            var providerConfig = BuildProviderConfig(pasteConfig, providerIdOverride);
+
+            if (systemPromptOverride != null)
+            {
+                providerConfig.SystemPrompt = systemPromptOverride;
+            }
 
             return await TransformAsync(prompt, inputText, imageBytes, providerConfig, cancellationToken, progress);
         }
@@ -148,13 +156,31 @@ namespace AdvancedPaste.Services.CustomActions
             return serviceType == AIServiceType.Unknown ? AIServiceType.OpenAI : serviceType;
         }
 
-        private PasteAIConfig BuildProviderConfig(PasteAIConfiguration config)
+        private PasteAIConfig BuildProviderConfig(PasteAIConfiguration config, string providerIdOverride = null)
         {
             config ??= new PasteAIConfiguration();
-            var provider = config.ActiveProvider ?? config.Providers?.FirstOrDefault() ?? new PasteAIProviderDefinition();
+            PasteAIProviderDefinition provider;
+
+            if (!string.IsNullOrWhiteSpace(providerIdOverride))
+            {
+                provider = config.Providers?.FirstOrDefault(p => string.Equals(p.Id, providerIdOverride, StringComparison.OrdinalIgnoreCase))
+                           ?? config.ActiveProvider
+                           ?? config.Providers?.FirstOrDefault()
+                           ?? new PasteAIProviderDefinition();
+            }
+            else
+            {
+                provider = config.ActiveProvider ?? config.Providers?.FirstOrDefault() ?? new PasteAIProviderDefinition();
+            }
+
+            if (!isProviderAllowed(provider))
+            {
+                throw new ProviderPolicyDisabledException();
+            }
+
             var serviceType = NormalizeServiceType(provider.ServiceTypeKind);
             var systemPrompt = string.IsNullOrWhiteSpace(provider.SystemPrompt) ? DefaultSystemPrompt : provider.SystemPrompt;
-            var apiKey = AcquireApiKey(serviceType);
+            var apiKey = AcquireApiKey(serviceType, provider.Id);
             var modelName = provider.ModelName;
 
             var providerConfig = new PasteAIConfig
@@ -173,15 +199,14 @@ namespace AdvancedPaste.Services.CustomActions
             return providerConfig;
         }
 
-        private string AcquireApiKey(AIServiceType serviceType)
+        private string AcquireApiKey(AIServiceType serviceType, string providerId)
         {
             if (!RequiresApiKey(serviceType))
             {
                 return string.Empty;
             }
 
-            credentialsProvider.Refresh();
-            return credentialsProvider.GetKey() ?? string.Empty;
+            return credentialsProvider.GetKey(serviceType, providerId ?? string.Empty);
         }
 
         private static bool RequiresApiKey(AIServiceType serviceType)
@@ -190,6 +215,8 @@ namespace AdvancedPaste.Services.CustomActions
             {
                 AIServiceType.Onnx => false,
                 AIServiceType.Ollama => false,
+                AIServiceType.FoundryLocal => false,
+                AIServiceType.PhiSilica => false,
                 _ => true,
             };
         }

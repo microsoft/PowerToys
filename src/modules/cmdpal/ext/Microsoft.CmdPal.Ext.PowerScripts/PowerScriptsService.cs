@@ -36,7 +36,7 @@ internal sealed class PowerScriptsService : IPowerScriptsService
         timeout.CancelAfter(TimeSpan.FromSeconds(5));
         try
         {
-            var client = _createClient();
+            using var client = _createClient();
             var state = await client.GetConsumerStateAsync(timeout.Token).ConfigureAwait(false);
             IReadOnlyList<PowerScriptInfo> scripts = state.IsEnabled && state.IsPowerScriptsEnabled
                 ? await client.ListAsync(timeout.Token).ConfigureAwait(false)
@@ -153,7 +153,8 @@ internal sealed class PowerScriptsService : IPowerScriptsService
             throw new InvalidOperationException(Properties.Resources.ScriptContractChanged);
         }
 
-        var result = await _createClient().TransformAsync(
+        using var client = _createClient();
+        var result = await client.TransformAsync(
             current.Id,
             new PowerScriptTransformInput { Parameters = parameters.Count == 0 ? null : parameters },
             cancellationToken: cancellationToken).ConfigureAwait(false);

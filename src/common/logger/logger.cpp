@@ -48,11 +48,8 @@ std::shared_ptr<spdlog::logger> Logger::logger = spdlog::null_logger_mt("null");
 
 bool Logger::wasLogFailedShown()
 {
-    wchar_t* pValue;
-    size_t len;
-    _wdupenv_s(&pValue, &len, logFailedShown.c_str());
-    delete[] pValue;
-    return len;
+    // init() sets the flag with SetEnvironmentVariable, which the CRT's copy of the environment doesn't see.
+    return GetEnvironmentVariableW(logFailedShown.c_str(), nullptr, 0) != 0;
 }
 
 void Logger::init(std::string loggerName, std::wstring logFilePath, std::wstring_view logSettingsPath)

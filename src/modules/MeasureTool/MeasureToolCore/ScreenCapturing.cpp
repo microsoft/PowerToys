@@ -295,6 +295,7 @@ void UpdateCaptureState(const CommonState& commonState,
                                     perColorChannelEdgeDetection,
                                     pixelTolerance);
     auto px2mmRatio = commonState.GetPhysicalPx2MmRatio(window);
+    auto monitorDpi = commonState.GetScreenDpi(window);
 
 #if defined(DEBUG_EDGES)
     char buffer[256];
@@ -312,7 +313,7 @@ void UpdateCaptureState(const CommonState& commonState,
     OutputDebugStringA(buffer);
 #endif
     state.Access([&](MeasureToolState& state) {
-        state.perScreen[window].measuredEdges = Measurement{ bounds, px2mmRatio };
+        state.perScreen[window].measuredEdges = Measurement{ bounds, px2mmRatio, monitorDpi };
     });
 }
 

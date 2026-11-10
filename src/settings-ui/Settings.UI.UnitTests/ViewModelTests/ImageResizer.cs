@@ -241,6 +241,71 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void CreateNewImageSizeModelShouldNotAddToCollection()
+        {
+            // arrange
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
+            Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
+            int sizeOfOriginalArray = viewModel.Sizes.Count;
+
+            // act
+            ImageSize workingCopy = viewModel.CreateNewImageSizeModel("New size");
+
+            // Assert - the working copy is populated but not committed to the collection
+            Assert.IsNotNull(workingCopy);
+            Assert.AreEqual("New size 1", workingCopy.Name);
+            Assert.AreEqual(sizeOfOriginalArray, viewModel.Sizes.Count);
+        }
+
+        [TestMethod]
+        public void AddImageSizeWithModelShouldCommitPreparedSize()
+        {
+            // arrange
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
+            Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
+            int sizeOfOriginalArray = viewModel.Sizes.Count;
+            ImageSize workingCopy = viewModel.CreateNewImageSizeModel("New size");
+
+            // act
+            viewModel.AddImageSize(workingCopy);
+
+            // Assert
+            Assert.AreEqual(sizeOfOriginalArray + 1, viewModel.Sizes.Count);
+            Assert.IsTrue(viewModel.Sizes.Contains(workingCopy));
+        }
+
+        [TestMethod]
+        public void UpdateImageSizeShouldApplyWorkingCopyValuesToOriginal()
+        {
+            // arrange
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
+            Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
+            viewModel.AddImageSize("Original");
+            ImageSize original = viewModel.Sizes.First(x => x.Id == 0);
+
+            ImageSize edited = original.Clone();
+            edited.Name = "Edited";
+            edited.Fit = ResizeFit.Stretch;
+            edited.Width = 320;
+            edited.Height = 240;
+            edited.Unit = ResizeUnit.Percent;
+
+            // act
+            viewModel.UpdateImageSize(original, edited);
+
+            // Assert - the edits are applied to the original preset in place
+            Assert.AreEqual("Edited", original.Name);
+            Assert.AreEqual(ResizeFit.Stretch, original.Fit);
+            Assert.AreEqual(320, original.Width);
+            Assert.AreEqual(240, original.Height);
+            Assert.AreEqual(ResizeUnit.Percent, original.Unit);
+            Assert.AreSame(original, viewModel.Sizes.First(x => x.Id == 0));
+        }
+
+        [TestMethod]
         public void DeleteImageSizeShouldDeleteImageSizeWhenSuccessful()
         {
             // arrange

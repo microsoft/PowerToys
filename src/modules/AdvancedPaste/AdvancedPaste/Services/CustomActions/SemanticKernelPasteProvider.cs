@@ -172,6 +172,9 @@ namespace AdvancedPaste.Services.CustomActions
         {
             return _serviceType switch
             {
+                // Do not set model-specific tuning properties such as ReasoningEffort here: models
+                // accept different value sets (or reject the parameter outright) and any hardcoded
+                // value makes every request fail with HTTP 400 on models that don't support it.
                 AIServiceType.OpenAI or AIServiceType.AzureOpenAI => new OpenAIPromptExecutionSettings
                 {
                     FunctionChoiceBehavior = null,

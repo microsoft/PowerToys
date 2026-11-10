@@ -1,142 +1,88 @@
-# Choose the consumer before designing the script
+# Consumer contracts
 
-The same package can appear in several consumers when its I/O fits. There is no
-per-script module assignment, audience, `surface`, or `kind` field. Do not add
-such fields to make a script visible. Each consumer owns matching, parameters,
-result presentation, and any bindings.
+Read the relevant section only. Matching scripts can appear in multiple consumers;
+there is no per-script module assignment, `surface`, or `kind`.
 
-## Confirm availability, not just catalogue membership
+`consumers list` reports enablement/policy, not UI installation/capabilities.
+Attributed discovery applies that gate, not actual clipboard/selection matching.
+Verify the installed adapter; unknown/newer contracts must remain unknown.
+Module enablement lives in PowerToys Settings; integration switches live in
+PowerScripts app > Consumer modules.
 
-Run the resolved Host's `consumers list` and inspect effective enablement and
-policy. This is not a capability schema or proof that a consumer UI is installed.
-Administrative `list --json --include-disabled --include-unconfigured` explains
-packages; `list --json --consumer <id>` applies that consumer's enablement gate,
-not its clipboard/selection matching logic. Verify the installed module and
-actual input/output compatibility separately.
-
-The core registers Advanced Paste, Keyboard Manager, and Command Palette. File Explorer integration
-is developed separately and is available only in builds containing that adapter;
-its profile below must not be interpreted as availability in every core build.
-If another integration or a newer contract is not documented, inspect its
-installed help/UI or obtain its contract. Do not guess its consumer ID, supported
-shapes, parameter UI, or binding API.
-
-## Compatibility overview
-
-| Consumer | Purpose and primary input | Output and presentation | Parameters and setup |
-|---|---|---|---|
-| Advanced Paste (`advanced-paste`) | Transform the current clipboard: `text`, `files`, `image`, or `audio`; never `none` | `text`, `files`, `image`, or `audio`; never `none`. The paste window consumes the result. | Collects typed options in its own window. Compatible scripts appear automatically; no per-script binding. |
-| Keyboard Manager (`keyboard-manager`) | Trigger an action from a configured shortcut. Design the ordinary hotkey case as `none`. | Prefer `none`: launching the Host is not a paste/save-results UI. Do not promise visible text/file/media results. | Required values need defaults or a verified saved-argument mechanism; no generic runtime parameter prompt. Manual shortcut assignment is separate from creation. |
-| Command Palette (`command-palette`) | Browse scripts and run a no-primary-input action: `none` | `none` or `text`. Status, diagnostics, and literal text stay on its results page; empty text is valid. | Explicit activation runs a script with no declared parameters and opens its results. Scripts declaring parameters use a form and Run. One PowerScripts entry; filtering is inside its list. No per-script binding. |
-| File Explorer (`file-explorer`, integration builds only) | Process selected local regular files: `files`, with extension/count matching | `none`, `text`, `files`, `image`, or `audio`. Its adapter exports separate results; see below. | Collects typed options and owns script selection and result destination. No direct mutation of selected originals is implied. |
-| Direct Host (`command-line`) | Explicit user-authorized test of any supported input | Structured `transform` results or `run` output, not consumer-specific UI | Agent supplies the declared request/parameters. This tests the engine, not another module's adapter or shortcut. |
+| Consumer ID | Input | Output/setup |
+|---|---|---|
+| `advanced-paste` | Clipboard text/files/image/audio; never none | Pasteable text/files/image/audio; typed prompts, automatic discovery |
+| `keyboard-manager` | Ordinary action: none | Prefer none; manual saved shortcut, required options need defaults/saved arguments |
+| `command-palette` | No primary input: none | None/text; no-parameter explicit activation runs and opens results; declared parameters use a form and Run |
+| `file-explorer` (integration builds only) | Selected files | None/text/files/image/audio; typed prompts and separate exported results |
+| `command-line` | Explicit authorized Host test | Any supported contract; does not test another consumer's UI/binding |
 
 ## Advanced Paste
 
-Choose this for requests such as "clean up copied text" or "turn copied files
-into a report to paste." A no-input action cannot appear in its action list,
-even if its output would be pasteable.
-
-- `text` uses the clipboard's text/HTML-text representation. Returned text,
-  including markup, remains literal text; do not promise rich HTML rendering.
-- `files` uses clipboard file paths and requires every selected extension and
-  the selection count to match. Return newly produced files, not originals.
-- `image` can use a clipboard bitmap or compatible image files; `audio` uses
-  compatible audio files. Check MIME types and scalar/array bounds, not merely
-  the word "image" or "audio".
+- Text/HTML-text input; output markup stays literal, not rich HTML.
+- Files must all match extensions/count. `files` results become a file selection,
+  not automatic content previews; produce new files.
+- Image input: clipboard bitmap or compatible files. Audio: compatible files.
+  Check MIME/scalar/array constraints in [media](media.md).
 - Scalar image output becomes a bitmap; image arrays/audio become files.
-  `files` output becomes a file selection, not an automatic preview of contents.
-- Empty text or an empty result collection is not a usable AP result.
-- Its current execution adapter has a 60-second cancellation bound; the runtime
-  may impose a shorter one. Do not promise unbounded background execution.
-
-Enable the module and its PowerScripts integration through Settings when the
-user chooses to do so. Then open the paste window with compatible clipboard
-content. There is no AP script-install list or per-script allowlist to edit.
+- Empty text/result collections are rejected. Current adapter bound: 60 seconds;
+  runtime may be shorter. No per-script installation list/allowlist.
 
 ## Keyboard Manager
 
-Choose this for an action such as "ensure this existing VPN profile is connected
-when I press Ctrl+Shift+3", not for a clipboard transform merely because the user
-mentioned a keyboard shortcut.
-
-`none` means no primary input; it does not mean no named parameters. Determine
-the provider/profile and all required options. A hotkey cannot collect missing
-answers unless its actual integration supports that configuration.
-Host-side VPN or desktop effects still need runtime/sandbox feasibility checks.
-
-Use the [conditional manual handoff](keyboard-manager.md). Check the installed
-picker before promising it exists. Older prototype UIs may not understand the
-current contract; do not resurrect removed descriptor fields to accommodate them.
-Do not edit bindings/KBM JSON or automatically approve trust.
+Hotkeys do not supply clipboard input, prompt for missing options, or present
+returned text/media. Prefer `none` to `none`; options are still allowed.
+Verify host-action/sandbox feasibility, then use [manual setup](keyboard-manager.md).
+Check the actual picker; older prototypes may not support current descriptors.
+Do not revive removed fields or edit KBM JSON.
 
 ## Command Palette
 
-Choose this for "run this action with options from Command Palette". Use `none`
-primary input and either `none` or `text` output. A file-path option is auxiliary
-input and does not change `none` to primary `files` input. Clipboard, primary
-file/media input, file/media output, rich markup, and result saving are not
-implemented by this adapter.
+Open the **PowerScripts** entry to browse and filter compatible scripts: primary
+input `none`, output `none` or `text`. Individual scripts are not home-page commands
+or fallback suggestions. Refresh stays in the actions menu, with retry for discovery
+errors; it is not a script-list row.
 
-Open the **PowerScripts** entry in Command Palette, then browse or filter its
-compatible scripts. Individual script names are not home-page commands or
-fallback suggestions. Explicitly activating a script with no declared parameters
-starts it and opens its results page in one action. Scripts declaring parameters,
-including optional ones with defaults, open a form and require **Run**. Browsing,
-filtering, page construction, and `GetContent()` never start execution. Refresh
-is in the actions menu; discovery errors retain a retry action.
+- Explicitly activate a script with no declared parameters to start it and open
+  its results page. Scripts declaring any parameters, including optional values
+  with defaults, open a form and require **Run**.
+- Discovery, browsing, filtering, page construction, and `GetContent()` never
+  start execution. Normal Host trust, policy, and runtime checks still apply.
+- Forms collect string, 32-bit integer, boolean, string-enum choice, and existing
+  Windows file-path options. Optional values can be omitted; omitted values receive
+  descriptor defaults. Supplied empty strings, zero, and false remain typed values.
+- Text results appear above parameter controls on the same results page, with
+  status, diagnostics, **Stop**, and explicit rerun. Empty text is valid; stderr
+  alone is not failure. Nonzero exits and invalid output remain failures.
+- The run bound is 60 seconds; runtime limits may be shorter. Stop/timeout attempt
+  termination without guaranteeing rollback or that separate runtime work stopped.
+  Navigating away preserves the current CmdPal session's run/result; returning
+  without a new execution action does not rerun it. No automatic retry occurs.
 
-The form supports string, integer, boolean, string-enum choice,
-and existing Windows file-path options, using descriptor defaults and constraints.
-Optional values can be omitted; supplied empty strings, zero, and false remain
-explicit typed values. Omitted values still receive any descriptor default in
-the Host. The user chooses **Run** after filling the form.
+Enable Command Palette and its PowerScripts extension, and check
+**PowerScripts app > Consumer modules > Command Palette**. This integration defaults on; enabling it does
+not enable the parent module or approve a script. Clipboard, primary file/media input,
+file/media output, rich markup, and result saving are not supported by this adapter.
+An auxiliary file-path option does not change primary input to `files`.
 
-Status, diagnostics, and literal text remain on the same results page, with text
-above any parameter controls. The page supports **Stop** while running and an
-explicit rerun after completion. Empty text is a
-valid success; stderr alone does not mean failure. The run has a 60-second
-cancellation bound, and the runtime can impose a shorter one. **Stop** and
-timeout attempt process termination without rolling back effects or guaranteeing
-that work in a separate runtime has stopped. Navigating away preserves the run
-within the current CmdPal session. Returning without a new execution action
-shows its running state or result; rendering the page does not rerun it.
+## File Explorer (separate integration builds)
 
-Confirm the installed Command Palette extension is enabled and check
-**Settings > PowerScripts > Use PowerScripts in > Command Palette**. This
-integration defaults on; parent/module policy, runtime availability, schema
-validation, and exact-content trust still apply, including one-action runs with
-no parameters. Review scripts in the
-PowerScripts editor. Do not promise that browsing grants trust, that the
-central switch enables Command Palette itself, or that a profile proves the
-adapter exists in an older installed build.
+Requires primary `files`, not merely a `file-path` option. Accepts 1-1024 local
+regular files, no directories; all must match extensions/count.
 
-## File Explorer integration builds
+| Output | Presentation |
+|---|---|
+| Text | Separate UTF-8 `.txt` |
+| Files | Copies of produced regular files; returning selected originals is rejected |
+| Image/audio | Separate media files |
+| None | No exported file; not permission to modify originals |
 
-Choose this for "run a script on these selected files". The adapter accepts
-1-1024 local regular files, not directories; every selected file must match
-the schema's extensions and count. A scalar `file-path` parameter alone does
-not make a script a primary `files` script.
+Use runtime workspace outputs; consumer handles destination names/collisions.
+Default isolation makes selected inputs read-only. Cancellation does not undo
+published files or script side effects.
 
-Results are exported to the consumer-selected destination:
+## Maintainers
 
-- `text`: a separate UTF-8 `.txt` file, not a notification or pasted text.
-- `files`: copies of produced regular files; returning selected originals is
-  rejected. Let the consumer handle destination names and collisions.
-- `image`/`audio`: separate files with the corresponding formats.
-- `none`: no result file. It does not grant permission to modify originals.
-
-Write outputs into the supplied runtime workspace, not beside the originals.
-Default filesystem isolation makes selected inputs read-only. Report failures
-and partial exported results honestly; cancellation does not roll back already
-published files or guarantee that a script's side effects were undone.
-
-## Adding or changing a consumer profile
-
-Keep this bundle aligned with integration releases. For each profile record:
-purpose and stable ID; supported inputs/outputs and their precise presentation;
-file/media constraints; parameter/default collection; automatic discovery versus
-saved bindings; enablement and trust setup; timeout/cancellation/error behavior;
-and availability/version caveats. Verify these against the actual adapter, not
-just the shared Host. Update this overview, any detailed handoff, and
-`bundle.json` together. An unknown consumer must remain explicitly unknown.
+Verify actual adapter I/O, presentation, file/media bounds, parameters/defaults,
+discovery/bindings, enablement/trust, timeout/errors, and build availability.
+Update affected references and `bundle.json` with integration contract changes.

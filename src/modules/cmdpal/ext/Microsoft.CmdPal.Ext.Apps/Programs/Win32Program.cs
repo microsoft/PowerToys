@@ -22,9 +22,11 @@ using Windows.System;
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 [Serializable]
-public class Win32Program : IProgram
+public partial class Win32Program : IProgram
 {
     public static readonly Win32Program InvalidProgram = new() { Valid = false, Enabled = false };
+
+    private static readonly Regex InternetShortcutURLPrefixes = InternetShortcutURLPrefixesGenerator();
 
     private static readonly IFileSystem FileSystem = new FileSystem();
     private static readonly IPath Path = FileSystem.Path;
@@ -286,8 +288,6 @@ public class Win32Program : IProgram
         }
     }
 
-    private static readonly Regex InternetShortcutURLPrefixes = new(@"^steam:\/\/(rungameid|run|open)\/|^com\.epicgames\.launcher:\/\/apps\/", RegexOptions.Compiled);
-
     // This function filters Internet Shortcut programs
     private static Win32Program InternetShortcutProgram(string path)
     {
@@ -433,6 +433,10 @@ public class Win32Program : IProgram
                     }
                 }
             }
+
+            program.IcoPath = !string.IsNullOrEmpty(shellLinkHelper.IconLocation)
+                ? shellLinkHelper.IconLocation
+                : program.FullPath;
 
             return program;
 
@@ -1121,4 +1125,23 @@ public class Win32Program : IProgram
         var identifier = program.GetAppIdentifier();
         return PathHelpers.IsShortcutFile(identifier);
     }
+
+    [GeneratedRegex(
+        """
+        (?:
+            ^steam://(?:rungameid|run|open)/
+            |
+            ^com\.epicgames\.launcher://apps/
+            |
+            ^origin2?://game/
+            |
+            ^link2ea://launchgame/
+            |
+            ^uplay://launch/
+            |
+            ^msgamelaunch://shortcutLaunch/
+        )
+        """,
+        RegexOptions.IgnorePatternWhitespace)]
+    private static partial Regex InternetShortcutURLPrefixesGenerator();
 }

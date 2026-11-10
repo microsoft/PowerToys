@@ -15,22 +15,56 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public static class ThumbnailHelper
 {
+    // Temporary until IShellItemImageFactory replaces image lists; the SDK does not own the extension lifecycle.
+    private static readonly Lazy<bool> ShellIconCacheInitialized = new(static () => NativeMethods.FileIconInit(true));
+
     private static readonly string[] ImageExtensions =
     [
         ".png",
         ".jpg",
         ".jpeg",
+        ".jfif",
         ".gif",
         ".bmp",
+        ".dib",
+        ".avif",
+        ".heic",
+        ".heif",
+        ".jxr",
+        ".svg",
+        ".tif",
         ".tiff",
         ".ico",
+        ".webp",
     ];
+
+    /// <summary>
+    /// Determines whether a path has an image extension supported by the thumbnail path.
+    /// </summary>
+    /// <param name="path">The filesystem path to classify.</param>
+    /// <returns><see langword="true"/> when image thumbnail extraction should be attempted.</returns>
+    public static bool IsImagePath(string? path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return false;
+        }
+
+        var extension = Path.GetExtension(path.AsSpan());
+        foreach (var imageExtension in ImageExtensions)
+        {
+            if (extension.Equals(imageExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public static async Task<IRandomAccessStream?> GetThumbnail(string path, bool jumbo = false)
     {
-        var extension = Path.GetExtension(path).ToLower(CultureInfo.InvariantCulture);
-        var isImage = ImageExtensions.Contains(extension);
-        if (isImage)
+        if (IsImagePath(path))
         {
             try
             {
@@ -76,35 +110,70 @@ public static class ThumbnailHelper
     private static MemoryStream GetMemoryStreamFromIcon(IntPtr hIcon)
     {
         var memoryStream = new MemoryStream();
-
-        // Ensure disposing the icon before freeing the handle
-        using (var icon = Icon.FromHandle(hIcon))
+        try
         {
-            icon.ToBitmap().Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
+            // Icon.FromHandle does not own hIcon. Dispose the managed wrappers before
+            // releasing the native handle in the finally block below.
+            using (var icon = Icon.FromHandle(hIcon))
+            using (var bitmap = icon.ToBitmap())
+            {
+                bitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
+            }
+
+            memoryStream.Position = 0;
+            return memoryStream;
         }
-
-        // Clean up the unmanaged handle without risking a use-after-free.
-        NativeMethods.DestroyIcon(hIcon);
-
-        memoryStream.Position = 0;
-        return memoryStream;
+        catch
+        {
+            memoryStream.Dispose();
+            throw;
+        }
+        finally
+        {
+            // Every caller transfers an owned HICON to this method.
+            _ = NativeMethods.DestroyIcon(hIcon);
+        }
     }
 
     private static async Task<IRandomAccessStream?> GetFileIconStream(string filePath, bool jumbo)
     {
+        if (TryParseIconReference(filePath, out var iconPath, out var iconIndex, requireIndex: true)
+            && !Path.Exists(filePath)
+            && (!Uri.TryCreate(filePath, UriKind.Absolute, out var uri) || uri.IsFile))
+        {
+            var icon = ExtractIconHandle(iconPath, iconIndex, jumbo);
+            return icon != 0 ? await FromHIconToStream(icon) : null;
+        }
+
+        // Initialize once before concurrent requests can race the Shell image-list setup.
+        _ = ShellIconCacheInitialized.Value;
         return await TryExtractUsingPIDL(filePath, jumbo)
                ?? await GetFileIconStreamUsingFilePath(filePath, jumbo);
     }
 
     private static async Task<IRandomAccessStream?> TryExtractUsingPIDL(string shellPath, bool jumbo)
     {
+        try
+        {
+            var hIcon = TryExtractIconUsingPidl(shellPath, jumbo);
+            return hIcon == 0 ? null : await FromHIconToStream(hIcon);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    private static nint TryExtractIconUsingPidl(string shellPath, bool jumbo)
+    {
+        using var errorMode = ShellThreadErrorModeScope.SuppressShellDialogs();
         IntPtr pidl = 0;
         try
         {
             var hr = NativeMethods.SHParseDisplayName(shellPath, IntPtr.Zero, out pidl, 0, out _);
             if (hr != 0 || pidl == IntPtr.Zero)
             {
-                return null;
+                return 0;
             }
 
             nint hIcon = 0;
@@ -125,14 +194,10 @@ public static class ThumbnailHelper
 
             if (hIcon == 0)
             {
-                return null;
+                return 0;
             }
 
-            return await FromHIconToStream(hIcon);
-        }
-        catch (Exception)
-        {
-            return null;
+            return hIcon;
         }
         finally
         {
@@ -145,6 +210,13 @@ public static class ThumbnailHelper
 
     private static async Task<IRandomAccessStream?> GetFileIconStreamUsingFilePath(string filePath, bool jumbo)
     {
+        var hIcon = GetFileIconHandleUsingFilePath(filePath, jumbo);
+        return hIcon == 0 ? null : await FromHIconToStream(hIcon);
+    }
+
+    private static nint GetFileIconHandleUsingFilePath(string filePath, bool jumbo)
+    {
+        using var errorMode = ShellThreadErrorModeScope.SuppressShellDialogs();
         nint hIcon = 0;
 
         // If requested, look up the Jumbo icon
@@ -163,7 +235,7 @@ public static class ThumbnailHelper
 
             if (hr == 0 || shinfo.hIcon == 0)
             {
-                return null;
+                return 0;
             }
 
             hIcon = shinfo.hIcon;
@@ -171,10 +243,10 @@ public static class ThumbnailHelper
 
         if (hIcon == 0)
         {
-            return null;
+            return 0;
         }
 
-        return await FromHIconToStream(hIcon);
+        return hIcon;
     }
 
     private static async Task<IRandomAccessStream?> GetImageThumbnailAsync(string filePath, bool jumbo)
@@ -192,33 +264,51 @@ public static class ThumbnailHelper
     private static nint GetLargestIcon(string path)
     {
         var shinfo = default(NativeMethods.SHFILEINFO);
-        NativeMethods.SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX);
-
-        var hIcon = IntPtr.Zero;
-        var iID_IImageList = IID_IImageList;
-
-        if (NativeMethods.SHGetImageList(SHIL_JUMBO, ref iID_IImageList, out var imageListPtr) == 0 && imageListPtr != IntPtr.Zero)
+        if (NativeMethods.SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX) == IntPtr.Zero)
         {
-            hIcon = NativeMethods.ImageList_GetIcon(imageListPtr, shinfo.iIcon, ILD_TRANSPARENT);
+            return 0;
         }
 
-        return hIcon;
+        var iID_IImageList = IID_IImageList;
+        var imageListPtr = IntPtr.Zero;
+        try
+        {
+            return NativeMethods.SHGetImageList(SHIL_JUMBO, ref iID_IImageList, out imageListPtr) == 0 && imageListPtr != IntPtr.Zero
+                ? NativeMethods.ImageList_GetIcon(imageListPtr, shinfo.iIcon, ILD_TRANSPARENT)
+                : IntPtr.Zero;
+        }
+        finally
+        {
+            if (imageListPtr != IntPtr.Zero)
+            {
+                _ = Marshal.Release(imageListPtr);
+            }
+        }
     }
 
     private static nint GetLargestIcon(IntPtr pidl)
     {
         var shinfo = default(NativeMethods.SHFILEINFO);
-        NativeMethods.SHGetFileInfo(pidl, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX | SHGFI_PIDL);
-
-        var hIcon = IntPtr.Zero;
-        var iID_IImageList = IID_IImageList;
-
-        if (NativeMethods.SHGetImageList(SHIL_JUMBO, ref iID_IImageList, out var imageListPtr) == 0 && imageListPtr != IntPtr.Zero)
+        if (NativeMethods.SHGetFileInfo(pidl, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX | SHGFI_PIDL) == IntPtr.Zero)
         {
-            hIcon = NativeMethods.ImageList_GetIcon(imageListPtr, shinfo.iIcon, ILD_TRANSPARENT);
+            return 0;
         }
 
-        return hIcon;
+        var iID_IImageList = IID_IImageList;
+        var imageListPtr = IntPtr.Zero;
+        try
+        {
+            return NativeMethods.SHGetImageList(SHIL_JUMBO, ref iID_IImageList, out imageListPtr) == 0 && imageListPtr != IntPtr.Zero
+                ? NativeMethods.ImageList_GetIcon(imageListPtr, shinfo.iIcon, ILD_TRANSPARENT)
+                : IntPtr.Zero;
+        }
+        finally
+        {
+            if (imageListPtr != IntPtr.Zero)
+            {
+                _ = Marshal.Release(imageListPtr);
+            }
+        }
     }
 
     /// <summary>
@@ -292,6 +382,7 @@ public static class ThumbnailHelper
 
     private static bool TryLoadIndirectString(string input, out string? output)
     {
+        using var errorMode = ShellThreadErrorModeScope.SuppressShellDialogs();
         var outBuffer = new StringBuilder(1024);
         var hr = NativeMethods.SHLoadIndirectString(input, outBuffer, outBuffer.Capacity, IntPtr.Zero);
         if (hr == 0)
@@ -321,6 +412,8 @@ public static class ThumbnailHelper
 
     private static string? QueryProtocolIconReference(string protocol)
     {
+        using var errorMode = ShellThreadErrorModeScope.SuppressShellDialogs();
+
         // First try DefaultIcon (most widely populated for protocols)
         // If you want to try AppIconReference as a fallback, you can repeat with AssocStr.AppIconReference.
         var iconReference = AssocQueryStringSafe(NativeMethods.AssocStr.DefaultIcon, protocol);
@@ -367,7 +460,7 @@ public static class ThumbnailHelper
         }
     }
 
-    private static bool TryParseIconReference(string iconRef, out string path, out int index)
+    private static bool TryParseIconReference(string iconRef, out string path, out int index, bool requireIndex = false)
     {
         // Typical shapes:
         //   "C:\Program Files\Outlook\OUTLOOK.EXE,-1"
@@ -380,54 +473,42 @@ public static class ThumbnailHelper
 
         // Split only on the last comma so paths with commas still work
         var lastComma = path.LastIndexOf(',');
-        if (lastComma >= 0)
+        var hasIndex = lastComma >= 0
+            && int.TryParse(path.AsSpan(lastComma + 1), NumberStyles.Integer, CultureInfo.InvariantCulture, out index);
+        if (hasIndex)
         {
-            var idxPart = path[(lastComma + 1)..].Trim();
             path = path[..lastComma].Trim();
-            _ = int.TryParse(idxPart, out index);
         }
 
         // Trim quotes around path
         path = path.Trim('"');
-        if (path.Length > 1 && path[0] == '"' && path[^1] == '"')
-        {
-            path = path.Substring(1, path.Length - 2);
-        }
-
-        // Basic sanity
-        return !string.IsNullOrWhiteSpace(path);
+        return !string.IsNullOrWhiteSpace(path) && (!requireIndex || hasIndex);
     }
 
     private static nint ExtractIconHandle(string path, int index, bool jumbo)
     {
-        // Request sizes: LOWORD=small, HIWORD=large.
-        // Ask for 256 when jumbo, else fall back to 32/16.
-        var small = jumbo ? 256 : 16;
-        var large = jumbo ? 256 : 32;
-        var sizeParam = (large << 16) | (small & 0xFFFF);
+        using var errorMode = ShellThreadErrorModeScope.SuppressShellDialogs();
 
-        var hr = NativeMethods.SHDefExtractIconW(path, index, 0, out var hLarge, out var hSmall, sizeParam);
-        if (hr == 0 && hLarge != 0)
+        path = Environment.ExpandEnvironmentVariables(path);
+        var hr = NativeMethods.SHDefExtractIconW(path, index, 0, out var icon, 0, jumbo ? 256 : 32);
+        if (hr != 0 && jumbo)
         {
-            return hLarge;
+            if (icon != 0)
+            {
+                NativeMethods.DestroyIcon(icon);
+            }
+
+            hr = NativeMethods.SHDefExtractIconW(path, index, 0, out icon, 0, 32);
         }
 
-        if (hr == 0 && hSmall != 0)
+        if (hr == 0)
         {
-            return hSmall;
+            return icon;
         }
 
-        // Final fallback: try 32/16 explicitly in case the resource can’t upscale
-        sizeParam = (32 << 16) | 16;
-        hr = NativeMethods.SHDefExtractIconW(path, index, 0, out hLarge, out hSmall, sizeParam);
-        if (hr == 0 && hLarge != 0)
+        if (icon != 0)
         {
-            return hLarge;
-        }
-
-        if (hr == 0 && hSmall != 0)
-        {
-            return hSmall;
+            NativeMethods.DestroyIcon(icon);
         }
 
         return 0;

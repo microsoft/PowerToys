@@ -1106,7 +1106,9 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_ConsumerModulesPage.ModuleDescription" xml:space="preserve">
     <value>Choose which PowerToys modules can use PowerScripts. Turning an integration off prevents new executions without deleting saved bindings. Organizational policies take precedence.</value>
   </data>
-  <data name="PowerScripts_OpenGlobalSettings.Header" xml:space="preserve"><value>PowerToys Settings</value></data>
+  <data name="PowerScripts_ExecutionSettings.Header" xml:space="preserve"><value>Execution settings</value></data>
+  <data name="PowerScripts_OpenGlobalSettingsButton.AutomationProperties.Name" xml:space="preserve"><value>Open PowerToys Settings</value></data>
+  <data name="PowerScripts_OpenGlobalSettingsButton.ToolTipService.ToolTip" xml:space="preserve"><value>Open PowerToys Settings</value></data>
   <data name="PowerScripts_EditorFolder.Header" xml:space="preserve"><value>Scripts folder</value></data>
   <data name="PowerScripts_OpenFolder.Content" xml:space="preserve"><value>Open folder</value></data>
   <data name="PowerScripts_EditorDisabled.Message" xml:space="preserve"><value>PowerScripts is disabled. Enable it in PowerToys Settings to manage and run scripts. Your scripts and bindings are kept.</value></data>

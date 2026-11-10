@@ -1242,7 +1242,10 @@ internal static class Common
                     tmpSk.Close(byUser);
                 }
 
-                Sk = new SocketStuff(tcpPort, byUser);
+                // Wait quietly for pairing setup instead of logging each automatic reopen.
+                Sk = !string.IsNullOrWhiteSpace(Encryption.MyKey)
+                    ? new SocketStuff(tcpPort, byUser)
+                    : null;
             }
             catch (Exception e)
             {

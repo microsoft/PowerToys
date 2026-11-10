@@ -29,8 +29,10 @@ using Microsoft.CmdPal.Ext.WindowsSettings;
 using Microsoft.CmdPal.Ext.WindowsTerminal;
 using Microsoft.CmdPal.Ext.WindowWalker;
 using Microsoft.CmdPal.Ext.WinGet;
+using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Services;
+using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
@@ -81,11 +83,18 @@ public partial class App : Application, IDisposable
         _globalErrorHandler.Register(this, GlobalErrorHandler.Options.Default, appInfoService);
 #endif
 
-        Services = ConfigureServices(appInfoService);
+        var persistenceService = new PersistenceService();
+        var settingsService = new SettingsService(persistenceService, appInfoService);
+        var languageService = new LanguageService();
+        var languageOverride = languageService.ApplyLanguageOverride(settingsService.Settings.Language);
+        appInfoService.SetLanguageOverride(languageOverride);
+        Services = ConfigureServices(appInfoService, persistenceService, settingsService, languageService);
 
         IconProvider.Initialize(Services);
 
         this.InitializeComponent();
+
+        ContentFormControl.RegisterCustomElements();
 
         // Ensure types used in XAML are preserved for AOT compilation
         TypePreservation.PreserveTypes();
@@ -93,6 +102,7 @@ public partial class App : Application, IDisposable
         NativeEventWaiter.WaitForEventLoop(
             "Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd", () =>
             {
+                Logger.LogInfo("Command Palette exit requested: PowerToys exit event.");
                 EtwTrace?.Dispose();
                 AppWindow?.Close();
                 Environment.Exit(0);
@@ -103,8 +113,9 @@ public partial class App : Application, IDisposable
         var logWrapper = new LogWrapper();
         CoreLogger.InitializeLogger(logWrapper);
 
-        // Now that CoreLogger is initialized, initialize the logger delegate in ApplicationInfoService
+        // Now that CoreLogger is initialized, initialize the logger delegates in ApplicationInfoService
         appInfoService.SetLogDirectory(() => Logger.CurrentVersionLogDirectoryPath);
+        appInfoService.SetLogFile(() => Logger.CurrentLogFile);
     }
 
     /// <summary>
@@ -117,12 +128,22 @@ public partial class App : Application, IDisposable
 
         var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
         ((MainWindow)AppWindow).HandleLaunchNonUI(activatedEventArgs);
+
+        // Initialize the palette window before creating dock windows.
+        if (Services.GetRequiredService<ISettingsService>().Settings.EnableDock)
+        {
+            WeakReferenceMessenger.Default.Send(new ShowHideDockMessage(true));
+        }
     }
 
     /// <summary>
     /// Configures the services for the application
     /// </summary>
-    private static ServiceProvider ConfigureServices(IApplicationInfoService appInfoService)
+    private static ServiceProvider ConfigureServices(
+        IApplicationInfoService appInfoService,
+        IPersistenceService persistenceService,
+        ISettingsService settingsService,
+        ILanguageService languageService)
     {
         // TODO: It's in the Labs feed, but we can use Sergio's AOT-friendly source generator for this: https://github.com/CommunityToolkit/Labs-Windows/discussions/463
         ServiceCollection services = new();
@@ -142,7 +163,9 @@ public partial class App : Application, IDisposable
 
         AddCoreServices(services, appInfoService);
 
-        AddUIServices(services, dispatcherQueue);
+        AddUIServices(services, dispatcherQueue, persistenceService, settingsService);
+
+        services.AddSingleton<ILanguageService>(languageService);
 
         return services.BuildServiceProvider();
     }
@@ -181,6 +204,11 @@ public partial class App : Application, IDisposable
             try
             {
                 var winget = new WinGetExtensionCommandsProvider(winGetPackageManagerService, winGetOperationTrackerService, uiScheduler);
+                winget.NotificationRequested += static (_, message) =>
+                    WeakReferenceMessenger.Default.Send(new ShowToastMessage(message)
+                    {
+                        Duration = TimeSpan.FromSeconds(4),
+                    });
                 winget.SetAllLookup(
                     query => allApps.LookupAppByPackageFamilyName(query, requireSingleMatch: true),
                     query => allApps.LookupAppByProductCode(query, requireSingleMatch: true));
@@ -204,9 +232,16 @@ public partial class App : Application, IDisposable
         // Use the host's normal page navigation without extending the public SDK contract.
         // Request navigation on the UI thread; Invoke normally runs in the background.
         var powerScriptsDispatcher = DispatcherQueue.GetForCurrentThread();
-        services.AddSingleton<ICommandProvider>(_ => new PowerScriptsCommandsProvider(page =>
+        services.AddSingleton<ICommandProvider>(serviceProvider => new PowerScriptsCommandsProvider(page =>
         {
-            void RequestNavigation() => WeakReferenceMessenger.Default.Send(new PerformCommandMessage(new ExtensionObject<ICommand>(page)));
+            void RequestNavigation()
+            {
+                // Resolve the shell only when invoked to avoid a provider registration dependency cycle.
+                var sourcePage = serviceProvider.GetRequiredService<ShellViewModel>().CurrentPage;
+                var command = new CommandViewModel(page, new WeakReference<IPageContext>(sourcePage));
+                command.FastInitializeProperties();
+                WeakReferenceMessenger.Default.Send(new PerformCommandMessage(command, sourcePage));
+            }
 
             if (powerScriptsDispatcher.HasThreadAccess)
             {
@@ -257,18 +292,30 @@ public partial class App : Application, IDisposable
         }
     }
 
-    private static void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)
+    private static void AddUIServices(
+        ServiceCollection services,
+        DispatcherQueue dispatcherQueue,
+        IPersistenceService persistenceService,
+        ISettingsService settingsService)
     {
         // Models & persistence services
-        services.AddSingleton<IPersistenceService, PersistenceService>();
-        services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton(persistenceService);
+        services.AddSingleton(settingsService);
         services.AddSingleton<IAppStateService, AppStateService>();
+        services.AddSingleton<ISettingsLinkResolver, SettingsLinkResolver>();
+        services.AddSingleton<ICmdPalProtocolActivation, CmdPalProtocolActivation>();
+        services.AddTransient<SettingsLinkContextMenuService>();
+        services.AddSingleton<IAtRestDataProtector, CurrentUserDataProtector>();
+        services.AddSingleton<IExternalCommandPermissionStore, ExternalCommandPermissionStore>();
 
         // Services
+        services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+        services.AddSingleton<ExternalCommandLinkCoordinatorFactory>();
         services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();
         services.AddSingleton<HotkeyManager>();
+        services.AddSingleton<AccessKeyModeController>();
 
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<TrayIconService>();
@@ -293,6 +340,9 @@ public partial class App : Application, IDisposable
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
+        services.AddSingleton<IRootPageAccessor>(static sp =>
+            new DeferredRootPageAccessor(() => sp.GetRequiredService<IRootPageService>()));
+
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
         services.AddSingleton<ITelemetryService, TelemetryForwarder>();
 

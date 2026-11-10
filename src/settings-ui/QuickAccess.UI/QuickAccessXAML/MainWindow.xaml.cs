@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.PowerToys.Common.UI.Controls.Flyout;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.QuickAccess.Services;
 using Microsoft.PowerToys.QuickAccess.ViewModels;
 using Microsoft.UI.Dispatching;
@@ -395,6 +395,7 @@ public sealed partial class MainWindow : WindowEx, IDisposable
 
             RemoveGlobalMouseHook();
 
+            _launcherViewModel.Dispose();
             _coordinator.Dispose();
         }
 

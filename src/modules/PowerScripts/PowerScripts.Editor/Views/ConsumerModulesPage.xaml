@@ -1,0 +1,59 @@
+<Page
+    x:Class="PowerScripts.Editor.Views.ConsumerModulesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:layout="using:PowerScripts.Editor.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls">
+    <layout:ManagementPage x:Uid="PowerScripts_ConsumerModulesPage">
+        <layout:ManagementPage.ModuleContent>
+            <StackPanel Spacing="8">
+                <InfoBar
+                    x:Uid="PowerScripts_ManagedPolicy"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.IsPowerScriptsPolicyControlled, Mode=OneWay}"
+                    Severity="Informational" />
+                <InfoBar
+                    x:Name="ConsumerError"
+                    AutomationProperties.AutomationId="PowerScriptsConsumerError"
+                    IsClosable="False"
+                    Severity="Error" />
+                <tkcontrols:SettingsCard
+                    x:Uid="PowerScripts_AdvancedPasteConsumer"
+                    Description="{x:Bind ViewModel.AdvancedPasteConsumer.Status, Mode=OneWay}"
+                    IsEnabled="{x:Bind ViewModel.AreConsumerSettingsReady, Mode=OneWay}">
+                    <ToggleSwitch
+                        AutomationProperties.AutomationId="PowerScriptsAdvancedPasteEnabled"
+                        AutomationProperties.Name="Advanced Paste"
+                        IsEnabled="{x:Bind ViewModel.AdvancedPasteConsumer.CanChange, Mode=OneWay}"
+                        IsOn="{x:Bind ViewModel.AdvancedPasteConsumer.IsEnabled, Mode=OneWay}"
+                        Tag="advanced-paste"
+                        Toggled="ConsumerEnabledToggle_Toggled" />
+                </tkcontrols:SettingsCard>
+                <tkcontrols:SettingsCard
+                    x:Uid="PowerScripts_KeyboardManagerConsumer"
+                    Description="{x:Bind ViewModel.KeyboardManagerConsumer.Status, Mode=OneWay}"
+                    IsEnabled="{x:Bind ViewModel.AreConsumerSettingsReady, Mode=OneWay}">
+                    <ToggleSwitch
+                        AutomationProperties.AutomationId="PowerScriptsKeyboardManagerEnabled"
+                        AutomationProperties.Name="Keyboard Manager"
+                        IsEnabled="{x:Bind ViewModel.KeyboardManagerConsumer.CanChange, Mode=OneWay}"
+                        IsOn="{x:Bind ViewModel.KeyboardManagerConsumer.IsEnabled, Mode=OneWay}"
+                        Tag="keyboard-manager"
+                        Toggled="ConsumerEnabledToggle_Toggled" />
+                </tkcontrols:SettingsCard>
+                <tkcontrols:SettingsCard
+                    x:Uid="PowerScripts_CommandPaletteConsumer"
+                    Description="{x:Bind ViewModel.CommandPaletteConsumer.Status, Mode=OneWay}"
+                    IsEnabled="{x:Bind ViewModel.AreConsumerSettingsReady, Mode=OneWay}">
+                    <ToggleSwitch
+                        AutomationProperties.AutomationId="PowerScriptsCommandPaletteEnabled"
+                        AutomationProperties.Name="Command Palette"
+                        IsEnabled="{x:Bind ViewModel.CommandPaletteConsumer.CanChange, Mode=OneWay}"
+                        IsOn="{x:Bind ViewModel.CommandPaletteConsumer.IsEnabled, Mode=OneWay}"
+                        Tag="command-palette"
+                        Toggled="ConsumerEnabledToggle_Toggled" />
+                </tkcontrols:SettingsCard>
+            </StackPanel>
+        </layout:ManagementPage.ModuleContent>
+    </layout:ManagementPage>
+</Page>

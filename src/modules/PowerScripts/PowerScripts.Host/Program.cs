@@ -14,6 +14,7 @@ using PowerScripts.Core.Registry;
 using PowerScripts.Core.Security;
 using PowerScripts.Core.Storage;
 using PowerScripts.Core.Templates;
+using Console = PowerScripts.Host.HostConsole;
 
 namespace PowerScripts.Host;
 
@@ -37,6 +38,11 @@ internal static class Program
         try
         {
             Console.OutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+            if (args.Length == 1 && args[0] == "session")
+            {
+                return HostSession.Run(Main);
+            }
+
             if (args.Length == 0)
             {
                 PrintUsage();
@@ -88,7 +94,7 @@ internal static class Program
                     ScriptTemplateOptions? templateOptions = null;
                     if (options.ContainsKey("configure"))
                     {
-                        using var reader = new StreamReader(Console.OpenStandardInput(), Encoding.UTF8);
+                        using var reader = Console.CreateInputReader();
                         var buffer = new char[16_385];
                         var length = reader.ReadBlock(buffer, 0, buffer.Length);
                         if (length == buffer.Length)
@@ -595,7 +601,7 @@ internal static class Program
             return gate;
         }
 
-        using var stdinReader = new StreamReader(Console.OpenStandardInput(), Encoding.UTF8);
+        using var stdinReader = Console.CreateInputReader();
         PythonTransformInput input;
         try
         {
@@ -894,6 +900,7 @@ internal static class Program
         Console.WriteLine("       Disabled runtimes are omitted; --include-disabled lists all installed scripts for configuration.");
         Console.WriteLine("  run <id> --consumer <module-id> [--files <f1> <f2> ...] [--set name=value ...] [--no-consent] [--root <dir>]");
         Console.WriteLine("  transform <id> --consumer <module-id> [--no-consent] (JSON payload on stdin, JSON result on stdout)");
+        Console.WriteLine("  session                            (consumer-owned framed stdio; list and non-interactive transforms)");
         Console.WriteLine("  activity list | clear              (local metadata-only history; clear preserves in-flight runs)");
         Console.WriteLine("  consumers list | set <advanced-paste|keyboard-manager|command-palette> <on|off> (central preferences and effective policy state)");
         Console.WriteLine("  mxc-support [--json]                (probe whether MXC is available on this host)");

@@ -1,0 +1,256 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="PowerAccent.UI.SelectorControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Common.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <!--
+            A recreation of the WPF Fluent scrollbar's resting track insets without its
+            invisible arrow buttons.
+        -->
+        <Style x:Key="AccentScrollBarStyle" TargetType="ScrollBar">
+            <Setter Property="Height" Value="12" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid
+                            x:Name="HorizontalRoot"
+                            Height="4"
+                            Background="{TemplateBinding Background}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <RepeatButton
+                                x:Name="HorizontalLargeDecrease"
+                                Width="0"
+                                IsTabStop="False">
+                                <RepeatButton.Template>
+                                    <ControlTemplate TargetType="RepeatButton">
+                                        <Grid Background="Transparent" />
+                                    </ControlTemplate>
+                                </RepeatButton.Template>
+                            </RepeatButton>
+                            <Thumb
+                                x:Name="HorizontalThumb"
+                                Grid.Column="1"
+                                Height="2"
+                                MinWidth="30"
+                                VerticalAlignment="Center"
+                                Background="{ThemeResource ScrollBarPanningThumbBackground}">
+                                <Thumb.Template>
+                                    <ControlTemplate TargetType="Thumb">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="1" />
+                                    </ControlTemplate>
+                                </Thumb.Template>
+                            </Thumb>
+                            <RepeatButton
+                                x:Name="HorizontalLargeIncrease"
+                                Grid.Column="2"
+                                IsTabStop="False">
+                                <RepeatButton.Template>
+                                    <ControlTemplate TargetType="RepeatButton">
+                                        <Grid Background="Transparent" />
+                                    </ControlTemplate>
+                                </RepeatButton.Template>
+                            </RepeatButton>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--
+            Keep the native scrollbar wiring, but omit the auto-hide visual states, as
+            this keyboard-only overlay never receives the pointer input that would reveal
+            them.
+        -->
+        <Style x:Key="AccentScrollViewerStyle" TargetType="ScrollViewer">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollViewer">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid
+                                Grid.RowSpan="2"
+                                Margin="{TemplateBinding Padding}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <ScrollContentPresenter
+                                    x:Name="ScrollContentPresenter"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                <Grid
+                                    Grid.Row="1"
+                                    Height="4"
+                                    Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" />
+                            </Grid>
+                            <ScrollBar
+                                x:Name="HorizontalScrollBar"
+                                Grid.Row="1"
+                                Margin="8,0"
+                                IndicatorMode="MouseIndicator"
+                                IsTabStop="False"
+                                Maximum="{TemplateBinding ScrollableWidth}"
+                                Orientation="Horizontal"
+                                Style="{StaticResource AccentScrollBarStyle}"
+                                ViewportSize="{TemplateBinding ViewportWidth}"
+                                Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
+                                Value="{TemplateBinding HorizontalOffset}" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <controls:TransientSurface x:Name="Surface" Margin="24,24,24,16">
+        <Grid x:Name="RootContent">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}">
+                <ListView
+                    x:Name="CharactersList"
+                    Padding="0"
+                    HorizontalAlignment="Center"
+                    AutomationProperties.AutomationId="QuickAccentCharacterList"
+                    IsHitTestVisible="False"
+                    IsItemClickEnabled="False"
+                    ItemsSource="{x:Bind ViewModel.Characters, Mode=OneWay}"
+                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                    ScrollViewer.HorizontalScrollMode="Enabled"
+                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                    ScrollViewer.VerticalScrollMode="Disabled"
+                    SelectionMode="Single">
+                    <ListView.Resources>
+                        <Style BasedOn="{StaticResource AccentScrollViewerStyle}" TargetType="ScrollViewer" />
+                    </ListView.Resources>
+                    <!--
+                        Disable default ListView item animations: the bar is rebuilt on every keystroke,
+                        and the built-in slide/fade transitions read as lag on a typing aid.
+                    -->
+                    <ListView.ItemContainerTransitions>
+                        <TransitionCollection />
+                    </ListView.ItemContainerTransitions>
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <!--
+                                Leave one DIP of scroll extent outside the first and last containers.
+                                When ScrollIntoView lands exactly at the maximum offset, WinUI can
+                                clip the last item's selection visual even though the item is visible.
+                            -->
+                            <StackPanel Margin="1,0,1,0" Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <!--
+                        Custom container template reproducing the WPF accent "pill": an inset, rounded,
+                        accent-filled rectangle shown only on selection (via VisualStateManager, since
+                        WinUI 3 has no Style/ControlTemplate triggers), with the glyph turning on-accent.
+                    -->
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="IsTabStop" Value="False" />
+                            <Setter Property="Margin" Value="0" />
+                            <Setter Property="Padding" Value="0" />
+                            <!--
+                                WinUI's ListViewItem defaults MinWidth to 88; without pinning it to the
+                                48px cell width each glyph is padded out, leaving wide gaps between accents.
+                            -->
+                            <Setter Property="MinWidth" Value="48" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListViewItem">
+                                        <Grid
+                                            Height="48"
+                                            MinWidth="48"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center">
+                                            <Border
+                                                x:Name="SelectionIndicator"
+                                                Margin="7"
+                                                Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                                BorderBrush="{ThemeResource AccentControlElevationBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="4"
+                                                Opacity="0" />
+                                            <ContentPresenter
+                                                x:Name="ContentPresenter"
+                                                Margin="12"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                            <VisualStateManager.VisualStateGroups>
+                                                <VisualStateGroup x:Name="CommonStates">
+                                                    <VisualState x:Name="Normal" />
+                                                    <VisualState x:Name="Selected">
+                                                        <VisualState.Setters>
+                                                            <Setter Target="SelectionIndicator.Opacity" Value="1" />
+                                                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                                                        </VisualState.Setters>
+                                                    </VisualState>
+                                                    <VisualState x:Name="PointerOverSelected">
+                                                        <VisualState.Setters>
+                                                            <Setter Target="SelectionIndicator.Opacity" Value="1" />
+                                                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                                                        </VisualState.Setters>
+                                                    </VisualState>
+                                                    <VisualState x:Name="PressedSelected">
+                                                        <VisualState.Setters>
+                                                            <Setter Target="SelectionIndicator.Opacity" Value="1" />
+                                                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                                                        </VisualState.Setters>
+                                                    </VisualState>
+                                                </VisualStateGroup>
+                                            </VisualStateManager.VisualStateGroups>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="18"
+                                Text="{x:Bind Mode=OneTime}"
+                                TextAlignment="Center" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+
+            <Grid Grid.Row="1" Visibility="{x:Bind ViewModel.DescriptionVisibility, Mode=OneWay}">
+                <TextBlock
+                    x:Name="CharacterName"
+                    MaxHeight="36"
+                    Margin="8"
+                    AutomationProperties.AutomationId="QuickAccentDescription"
+                    FontSize="12"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="{x:Bind ViewModel.Description, Mode=OneWay}"
+                    TextAlignment="Center"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="Wrap" />
+                <Rectangle
+                    Height="1"
+                    VerticalAlignment="Top"
+                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            </Grid>
+        </Grid>
+    </controls:TransientSurface>
+</UserControl>

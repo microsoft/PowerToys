@@ -19,8 +19,8 @@ validation, trust, runtime dispatch, and output normalization. Consumers own par
 UX, invocation timing, presentation, cancellation, and result lifetime. They do not
 launch scripts directly or reference the execution engine.
 
-Advanced Paste automatically offers all clipboard-compatible scripts when its consumer master
-toggle in PowerScripts settings is enabled and policy permits it. It has no per-script assignments
+Advanced Paste automatically offers all clipboard-compatible scripts when its integration toggle in
+**PowerScripts app > Consumer modules** is enabled and policy permits it. It has no per-script assignments
 or exclusions; no-input scripts are not offered.
 Consumers requiring saved bindings own their assignment UI and persistence, using the shared
 Host/client contracts for discovery and execution. Command Palette provides a PowerScripts entry
