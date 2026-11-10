@@ -5,6 +5,14 @@ Param(
 )
 
 $ErrorActionPreference = 'Stop'
+$originalWxs = @{}
+trap {
+    foreach ($path in $originalWxs.Keys) {
+        [IO.File]::WriteAllBytes($path, $originalWxs[$path])
+    }
+    throw $_
+}
+
 . "$PSScriptRoot\InstallerMedia.ps1"
 $fileListRoots = @{}
 $installerFiles = [Collections.Generic.List[object]]::new()
@@ -85,7 +93,7 @@ Function Generate-FileList() {
     $fileList = Get-ChildItem $fileDepsRoot -Include $fileInclusionList -Exclude $fileExclusionList -File -Name
     $fileListRoots[$fileListName] = $fileDepsRoot
 
-    $fileWxs = $fileWxs -replace "(<\?define $($fileListName)=)", "<?define $fileListName=$($fileList -join ';')"
+    $fileWxs = $fileWxs -replace "<\?define $([regex]::Escape($fileListName))=.*?\?>", "<?define $fileListName=$($fileList -join ';')?>"
 
     Set-Content -Path $wxsFilePath -Value $fileWxs
 }
@@ -158,6 +166,11 @@ Function Generate-FileComponents() {
     $wxsFile = $wxsFile -replace "\s+(</ComponentGroup>)", "$componentRef`r`n    </ComponentGroup>"
 
     Set-Content -Path $wxsFilePath -Value $wxsFile
+}
+
+# A failed harvest never reaches the MSI post-build template restore.
+foreach ($file in (Get-ChildItem -LiteralPath $PSScriptRoot -Filter '*.wxs' -File)) {
+    $originalWxs[$file.FullName] = [IO.File]::ReadAllBytes($file.FullName)
 }
 
 if ($platform -ceq "arm64") {

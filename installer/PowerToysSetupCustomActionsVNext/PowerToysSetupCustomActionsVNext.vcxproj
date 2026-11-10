@@ -47,7 +47,7 @@
   <ItemDefinitionGroup>
     <PreBuildEvent>
       <Command>
-      IF "$(CIBuild)" NEQ "true" IF NOT DEFINED IsPipeline (
+      IF NOT DEFINED IsPipeline (
       call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=$(Platform) -host_arch=amd64 -vcvars_ver=$(VCToolsVersion)
       IF ERRORLEVEL 1 EXIT /B 1
       SET PTRoot=$(ProjectDir)..\..

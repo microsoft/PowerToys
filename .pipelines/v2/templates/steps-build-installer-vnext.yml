@@ -43,6 +43,8 @@ steps:
   # that logic to run.
   - task: VSBuild@1
     displayName: Build Shared Support DLLs
+    env:
+      IsPipeline: '1'
     inputs:
       solution: "**/installer/PowerToysSetup.slnx"
       vsVersion: 18.0

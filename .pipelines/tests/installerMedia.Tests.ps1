@@ -295,7 +295,15 @@ Describe 'Installer Smart Cabbing media' {
         [xml]$msiProject = Get-Content -LiteralPath "$installer\PowerToysSetupVNext\PowerToysInstallerVNext.wixproj"
         $nativeEvent = $nativeProject.SelectSingleNode('//*[local-name()="PreBuildEvent"]/*[local-name()="Command"]').InnerText
         $msiEvents = @($msiProject.Project.PropertyGroup | Where-Object { $_.PreBuildEvent } | ForEach-Object PreBuildEvent)
-        foreach ($ciBuild in @('false', 'true')) {
+        $pipeline = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\steps-build-installer-vnext.yml') -Raw
+        $supportStep = [regex]::Match($pipeline, '(?ms)^  - task: VSBuild@1\r?\n    displayName: Build Shared Support DLLs.*?(?=^  - |\z)').Value
+        $pipelineFlag = [regex]::Match($supportStep, '(?m)^\s+IsPipeline:\s*[''"]?(\w+)').Groups[1].Value
+        $cases = @(
+            @{ CIBuild = 'false'; IsPipeline = ''; Expected = 'published' }
+            @{ CIBuild = 'true'; IsPipeline = ''; Expected = 'published' }
+            @{ CIBuild = 'true'; IsPipeline = $pipelineFlag; Expected = 'prepublished' }
+        )
+        foreach ($case in $cases) {
             foreach ($msiEvent in $msiEvents) {
                 $fixture = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
                 $null = New-Item -ItemType Directory -Path $fixture
@@ -310,17 +318,117 @@ Describe 'Installer Smart Cabbing media' {
                 $commands = $commands -replace '(?m)^.*call .*publish\.cmd.*$', "call `"$fixture\publish.cmd`""
                 $commands = $commands -replace '(?m)^.*call .*generateAllFileComponents\.ps1.*$', "call `"$fixture\harvest.cmd`""
                 $commands = $commands -replace '(?m)^.*call .*generateMonacoWxs\.ps1.*$', 'rem Monaco authoring'
-                $commands = $commands.Replace('$(CIBuild)', $ciBuild).Replace('$(Platform)', 'x64')
+                $commands = $commands.Replace('$(CIBuild)', $case.CIBuild).Replace('$(Platform)', 'x64')
                 $commands = $commands.Replace('$(ProjectDir)', "$fixture\").Replace('$(SolutionDir)', "$fixture\")
-                Set-Content -LiteralPath "$fixture\events.cmd" -Value "@echo off`r`nset IsPipeline=`r`n$commands"
+                Set-Content -LiteralPath "$fixture\events.cmd" -Value "@echo off`r`nset IsPipeline=$($case.IsPipeline)`r`n$commands"
                 & $env:ComSpec /d /c "$fixture\events.cmd" | Out-Null
                 $LASTEXITCODE | Should Be 0
 
                 $payload = Get-Content -LiteralPath "$fixture\input.bin" -Raw
                 (Get-Content -LiteralPath "$fixture\manifest.bin" -Raw) | Should Be $payload
-                $expected = if ($ciBuild -eq 'true') { 'prepublished' } else { 'published' }
-                $payload.Trim() | Should Be $expected
+                $payload.Trim() | Should Be $case.Expected
             }
         }
+    }
+
+    It 'passes lowercase runtime platforms to every preview-handler publish' {
+        $publish = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\..\installer\PowerToysSetupVNext\publish.cmd') -Raw
+        foreach ($platform in @('ARM64', 'arm64', 'x64', 'X64')) {
+            $fixture = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+            $null = New-Item -ItemType Directory -Path $fixture
+            Set-Content -LiteralPath "$fixture\compiler.cmd" -Value '@echo %*>> "%~dp0calls.txt"' -Encoding ASCII
+            $commands = $publish -replace '(?m)^msbuild\b', "call `"$fixture\compiler.cmd`""
+            Set-Content -LiteralPath "$fixture\publish.cmd" -Value $commands -Encoding ASCII
+            & $env:ComSpec /d /c "$fixture\publish.cmd" $platform | Out-Null
+            $LASTEXITCODE | Should Be 0
+
+            $calls = Get-Content -LiteralPath "$fixture\calls.txt"
+            $calls.Count | Should Be 4
+            foreach ($call in $calls) {
+                $actualPlatform = [regex]::Match($call, '-p:Platform="([^"]+)"').Groups[1].Value
+                [string]::Equals($actualPlatform, $platform.ToLowerInvariant(), [StringComparison]::Ordinal) | Should Be $true
+            }
+        }
+    }
+
+    It 'replaces a previously generated file list instead of appending to it' {
+        . Import-MediaTestHarvester
+        $fileListRoots = @{}
+        $installerFiles = [Collections.Generic.List[object]]::new()
+        $source = Join-Path $TestDrive 'payload'
+        $null = New-Item -ItemType Directory -Path $source
+        Set-Content -LiteralPath "$source\a.dll" -Value 'a'
+        $wxs = Join-Path $TestDrive 'Files.wxs'
+        @'
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <?define TestFiles=?>
+  <Fragment><DirectoryRef Id="INSTALLFOLDER">
+    <!--TestFiles_Component_Def-->
+  </DirectoryRef><ComponentGroup Id="Files">
+  </ComponentGroup></Fragment>
+</Wix>
+'@ | Set-Content -LiteralPath $wxs -Encoding UTF8
+        Generate-FileList -fileDepsJson '' -fileListName TestFiles -wxsFilePath $wxs -depsPath "$source\"
+        Remove-Item -LiteralPath "$source\a.dll"
+        Set-Content -LiteralPath "$source\b.dll" -Value 'b'
+        Generate-FileList -fileDepsJson '' -fileListName TestFiles -wxsFilePath $wxs -depsPath "$source\"
+        Generate-FileComponents -fileListName TestFiles -wxsFilePath $wxs
+
+        $layout = Get-InstallerMediaLayout -Files $installerFiles.ToArray()
+        $layout.Files.Count | Should Be 1
+        $installerFiles[0].SourcePath | Should Be "$source\b.dll"
+    }
+
+    It 'restores authoring after a hash failure and permits a clean retry' {
+        $generatorPath = Join-Path $PSScriptRoot '..\..\installer\PowerToysSetupVNext\generateAllFileComponents.ps1'
+        $generator = Get-Content -LiteralPath $generatorPath -Raw
+        $tokens = $null
+        $errors = $null
+        $ast = [Management.Automation.Language.Parser]::ParseInput($generator, [ref]$tokens, [ref]$errors)
+        $firstHarvest = $ast.Find({
+            param($node)
+            $node -is [Management.Automation.Language.CommandAst] -and $node.GetCommandName() -eq 'Generate-FileList'
+        }, $false)
+        $fixture = Join-Path $TestDrive 'failed-harvest'
+        $null = New-Item -ItemType Directory -Path "$fixture\payload"
+        Copy-Item -LiteralPath (Join-Path (Split-Path $generatorPath -Parent) 'InstallerMedia.ps1') -Destination $fixture
+        Set-Content -LiteralPath "$fixture\payload\a.dll" -Value 'payload'
+        @'
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <?define TestFiles=?>
+  <Fragment><DirectoryRef Id="INSTALLFOLDER">
+    <!--TestFiles_Component_Def-->
+  </DirectoryRef><ComponentGroup Id="Files">
+  </ComponentGroup></Fragment>
+</Wix>
+'@ | Set-Content -LiteralPath "$fixture\Files.wxs" -Encoding UTF8
+        @'
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="Test">
+    <Media Id="1" Cabinet="cab1.cab" EmbedCab="yes" CompressionLevel="high" />
+    <!--InstallerMedia-->
+    <!--/InstallerMedia-->
+  </Package>
+</Wix>
+'@ | Set-Content -LiteralPath "$fixture\Product.wxs" -Encoding UTF8
+        $body = @'
+Generate-FileList -fileDepsJson '' -fileListName TestFiles -wxsFilePath "$PSScriptRoot\Files.wxs" -depsPath "$PSScriptRoot\payload\"
+Generate-FileComponents -fileListName TestFiles -wxsFilePath "$PSScriptRoot\Files.wxs"
+Set-InstallerMedia -Files $installerFiles.ToArray() -ProductWxsPath "$PSScriptRoot\Product.wxs" -ManifestPath "$PSScriptRoot\obj\InstallerMedia.json"
+'@
+        $scriptPath = Join-Path $fixture 'harvest.ps1'
+        Set-Content -LiteralPath $scriptPath -Value ($generator.Substring(0, $firstHarvest.Extent.StartOffset) + $body) -Encoding UTF8
+        $before = (Get-FileHash -LiteralPath "$fixture\Files.wxs" -Algorithm SHA256).Hash
+        $handle = [IO.File]::Open("$fixture\payload\a.dll", [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::None)
+        try { Assert-MediaFailure { & $scriptPath -platform x64 } }
+        finally { $handle.Dispose() }
+        (Get-FileHash -LiteralPath "$fixture\Files.wxs" -Algorithm SHA256).Hash | Should Be $before
+
+        & $scriptPath -platform x64
+        $manifest = Get-Content -LiteralPath "$fixture\obj\InstallerMedia.json" -Raw | ConvertFrom-Json
+        @($manifest.Files).Count | Should Be 1
+        [xml]$actual = Get-Content -LiteralPath "$fixture\Files.wxs"
+        $actual.GetElementsByTagName('ComponentRef').Count | Should Be 1
+        $actual.GetElementsByTagName('File').Count | Should Be 1
     }
 }
