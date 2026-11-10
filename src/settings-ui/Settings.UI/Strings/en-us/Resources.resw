@@ -572,7 +572,7 @@ opera.exe</value>
     <value>Try reconnecting when connection is lost</value>
   </data>
   <data name="MouseWithoutBorders_Switch2AllPcShortcut.Header" xml:space="preserve">
-    <value>Control all computes are once</value>
+    <value>Control all computers at once</value>
   </data>
   <data name="Shell_Welcome.Content" xml:space="preserve">
     <value>Getting started</value>
