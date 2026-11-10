@@ -2,7 +2,6 @@
     x:Class="PowerScripts.Editor.Views.PowerScriptSettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:viewModels="using:PowerScripts.UI.ViewModels"
     AutomationProperties.AutomationId="PowerScriptsScriptSettingsPage"
@@ -102,11 +101,6 @@
                     x:Uid="PowerScripts_DetailsCode"
                     AutomationProperties.AutomationId="PowerScriptsDetailsCode"
                     Icon="Document" />
-                <SelectorBarItem
-                    x:Name="SecurityTab"
-                    x:Uid="PowerScripts_DetailsSecurity"
-                    AutomationProperties.AutomationId="PowerScriptsDetailsSecurity"
-                    Icon="Permissions" />
             </SelectorBar>
             <StackPanel x:Name="OverviewPanel" Spacing="20">
                 <Grid ColumnSpacing="12">
@@ -143,10 +137,6 @@
                         </StackPanel>
                     </Border>
                 </Grid>
-                <TextBlock
-                    x:Uid="PowerScripts_DetailsReviewHelp"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    TextWrapping="Wrap" />
                 <ItemsControl x:Name="MetadataSections">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="viewModels:PowerScriptMetadataSection">
@@ -180,6 +170,14 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+                <tkcontrols:SettingsCard
+                    x:Uid="PowerScripts_IconWarning"
+                    Description="{Binding IconWarning, Mode=OneWay}"
+                    Visibility="{Binding HasIconWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <TextBlock
+                    IsTextSelectionEnabled="True"
+                    Text="{Binding FolderPath, Mode=OneWay}"
+                    TextWrapping="Wrap" />
             </StackPanel>
             <StackPanel
                 x:Name="CodePanel"
@@ -233,51 +231,6 @@
                         IsReadOnly="True"
                         TextWrapping="Wrap" />
                 </Expander>
-            </StackPanel>
-            <StackPanel
-                x:Name="SecurityPanel"
-                Spacing="16"
-                Visibility="Collapsed">
-                <Border Style="{StaticResource EditorSurfaceStyle}">
-                    <StackPanel Spacing="8">
-                        <TextBlock x:Uid="PowerScripts_DetailsTrust" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                        <TextBlock Text="{Binding TrustDisplay, Mode=OneWay}" TextWrapping="Wrap" />
-                        <TextBlock
-                            x:Uid="PowerScripts_DetailsReviewHelp"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            TextWrapping="Wrap" />
-                    </StackPanel>
-                </Border>
-                <tkcontrols:SettingsCard
-                    x:Uid="PowerScripts_SettingsConfigurationErrors"
-                    Description="{Binding ConfigurationErrorDisplay, Mode=OneWay}"
-                    Visibility="{Binding HasConfigurationErrors, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                <tkcontrols:SettingsCard x:Uid="PowerScripts_ExecutionEnvironment" ContentAlignment="Vertical">
-                    <TextBlock
-                        AutomationProperties.AutomationId="PowerScriptsExecutionSummary"
-                        Text="{Binding ExecutionSummary, Mode=OneWay}"
-                        TextWrapping="Wrap" />
-                </tkcontrols:SettingsCard>
-                <InfoBar
-                    AutomationProperties.AutomationId="PowerScriptsExecutionBlocked"
-                    IsClosable="False"
-                    IsOpen="{Binding HasExecutionBlock, Mode=OneWay}"
-                    Message="{Binding ExecutionBlockedReason, Mode=OneWay}"
-                    Severity="Warning" />
-                <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcEffective" ContentAlignment="Vertical">
-                    <TextBlock
-                        AutomationProperties.AutomationId="PowerScriptsSecurityDetails"
-                        Text="{Binding ExecutionPolicyDisplay, Mode=OneWay}"
-                        TextWrapping="Wrap" />
-                </tkcontrols:SettingsCard>
-                <tkcontrols:SettingsCard
-                    x:Uid="PowerScripts_IconWarning"
-                    Description="{Binding IconWarning, Mode=OneWay}"
-                    Visibility="{Binding HasIconWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                <TextBlock
-                    IsTextSelectionEnabled="True"
-                    Text="{Binding FolderPath, Mode=OneWay}"
-                    TextWrapping="Wrap" />
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

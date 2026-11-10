@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -14,6 +13,8 @@ public sealed partial class ScriptCard : UserControl
 {
     public static readonly DependencyProperty ScriptProperty = DependencyProperty.Register(
         nameof(Script), typeof(PowerScriptListItem), typeof(ScriptCard), new PropertyMetadata(null, OnScriptChanged));
+
+    private static readonly string[] Palettes = { "Blue", "Purple", "Green", "Orange", "Teal", "Magenta", "Slate" };
 
     public PowerScriptListItem Script
     {
@@ -40,18 +41,14 @@ public sealed partial class ScriptCard : UserControl
 
     private void UpdatePalette()
     {
-        var palette = Script?.Io?.Input switch
+        // Decorative colors stay stable without encoding script capabilities or trust.
+        uint hash = 0;
+        foreach (var character in Script?.Id ?? string.Empty)
         {
-            "image" => "Magenta",
-            "audio" => "Teal",
-            "text" => "Purple",
-            "files" when Script.Io.Output == "files" => "Green",
-            "files" => "Blue",
-            _ when string.Equals(Script?.Runtime, "Python", StringComparison.OrdinalIgnoreCase) => "Magenta",
-            _ when Script?.Io?.Output == "files" => "Green",
-            _ => "Orange",
-        };
-        VisualStateManager.GoToState(this, palette, false);
+            hash = unchecked((hash * 31) + character);
+        }
+
+        VisualStateManager.GoToState(this, Palettes[hash % (uint)Palettes.Length], false);
     }
 
     private void Icon_ImageFailed(object sender, ExceptionRoutedEventArgs args)

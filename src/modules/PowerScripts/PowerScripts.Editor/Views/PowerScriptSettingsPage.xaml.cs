@@ -123,7 +123,6 @@ public sealed partial class PowerScriptSettingsPage : Page
         {
             OverviewPanel.Visibility = sender.SelectedItem == OverviewTab ? Visibility.Visible : Visibility.Collapsed;
             CodePanel.Visibility = sender.SelectedItem == CodeTab ? Visibility.Visible : Visibility.Collapsed;
-            SecurityPanel.Visibility = sender.SelectedItem == SecurityTab ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 

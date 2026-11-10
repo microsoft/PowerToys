@@ -2,8 +2,7 @@
     x:Class="PowerScripts.Editor.Controls.ScriptCard"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:PowerScripts.Editor.Controls"
-    AutomationProperties.HelpText="{x:Bind Script.TrustDisplay, Mode=OneWay}">
+    xmlns:local="using:PowerScripts.Editor.Controls">
     <Grid
         x:Name="CardSurface"
         MinHeight="164"
@@ -33,14 +32,6 @@
                     Source="{Binding IconSourcePath, Mode=OneWay}"
                     Visibility="{x:Bind local:ScriptCard.BoolToVisibility(Script.HasIcon), Mode=OneWay}" />
             </Grid>
-            <FontIcon
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                FontSize="16"
-                Foreground="{ThemeResource ScriptCardForegroundBrush}"
-                Glyph="&#xE72E;"
-                ToolTipService.ToolTip="{x:Bind Script.TrustDisplay, Mode=OneWay}"
-                Visibility="{x:Bind local:ScriptCard.BoolToVisibility(Script.Trusted), Mode=OneWay}" />
         </Grid>
         <StackPanel Grid.Row="1" Spacing="8">
             <TextBlock

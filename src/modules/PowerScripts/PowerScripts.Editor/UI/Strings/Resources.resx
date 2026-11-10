@@ -1124,14 +1124,11 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_CreationName.Text" xml:space="preserve"><value>3  Name it and make it yours</value></data>
   <data name="PowerScripts_DetailsOverview.Text" xml:space="preserve"><value>Overview</value></data>
   <data name="PowerScripts_DetailsCode.Text" xml:space="preserve"><value>Code</value></data>
-  <data name="PowerScripts_DetailsSecurity.Text" xml:space="preserve"><value>Security</value></data>
   <data name="PowerScripts_OverviewInput.Text" xml:space="preserve"><value>It takes</value></data>
   <data name="PowerScripts_OverviewOutput.Text" xml:space="preserve"><value>It gives back</value></data>
   <data name="PowerScripts_DetailsLanguage.Text" xml:space="preserve"><value>Script language</value></data>
-  <data name="PowerScripts_DetailsReviewHelp.Text" xml:space="preserve"><value>Review the script and its descriptor before running it from a connected module. Editing or viewing a script never grants approval.</value></data>
   <data name="PowerScripts_SourcePreview.Header" xml:space="preserve"><value>Script source</value></data>
   <data name="PowerScripts_DetailsSourceUnavailable" xml:space="preserve"><value>The script source is too large to preview here. Use Edit script to review it in your editor.</value></data>
-  <data name="PowerScripts_DetailsTrust.Text" xml:space="preserve"><value>Approval</value></data>
   <data name="PowerScripts_ConnectionHelp.Text" xml:space="preserve"><value>Connect your scripts to the places you work. Availability and organizational policies are checked by PowerScripts.</value></data>
   <data name="PowerScripts_TerminalConnection.Header" xml:space="preserve"><value>Terminal</value></data>
   <data name="PowerScripts_TerminalConnection.Description" xml:space="preserve"><value>Run scripts with PowerScripts.Host.exe. Input, approval and sandbox requirements still apply.</value></data>
