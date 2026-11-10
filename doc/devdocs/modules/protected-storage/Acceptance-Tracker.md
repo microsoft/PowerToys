@@ -1,6 +1,6 @@
 # Workspaces Protected Storage 验收台账
 
-最后更新：2026-11-09（UTC+08:00；E62修正WiX卸载完成回调签名，真实BA DLL分派回归先失败后通过；修复b64732533a已push，private6013/163342432已排队；正式外层卸载尚未复测，REM-11仍FAIL、REM-02仍BLOCKED）
+最后更新：2026-11-10（UTC+08:00；E66修正计划动作读取时机，11个完整Plan→Execute场景及4,230安装器检查通过；5fc28726f4已push，private6014/163468842已排队；6013外部重试已转绿但其卸载缺陷仍在，现场未清理；REM-11仍FAIL、REM-02仍BLOCKED）
 
 **这是验收状态的唯一维护入口。每执行完一项，就更新本文件；不能只在聊天里报告通过。**
 
@@ -11,7 +11,7 @@
 
 ## 1. 当前基线与结论
 
-### 2026-11-09统计快照（E62源码修复不替代正式卸载复测，统计不变）
+### 2026-11-10统计快照（E66候选修复不代替签名包卸载验收，统计不变）
 
 保留126个唯一历史ID，其中125项为有效要求，DATA-17因用户未提出显式文件
 Import/Export需求而撤回为N/A。N/A不算通过或未完成；不重复计入子项、风险、
@@ -54,7 +54,17 @@ E60确认实际服务和carrier均升级到6012，UPD-01/09转PARTIAL：
 E61普通外层卸载实际执行主MSI成功，但owner carrier清理回调未执行，
 REM-11记FAIL；仍在运行的store不能冒充KeepData卸载完成，REM-02暂受阻。
 E62已修正回调接口并以实际BA DLL验证WiX事件分派，原生安装器套件4,136项通过；
-6013已排队但未部署，没有实际卸载/重装结果，因此不关闭REM-11或REM-02。
+E63确认6013整体FAILED：x64产物已发布，ARM64在MSI验证环境中失败。
+E64随后只读确认用户部署后的x64正式实例已由6012切到6013，真实进程和
+提交记录相符；代理没有执行sync/repair来促成升级，也没有新的卸载/重装结果，
+因此不关闭REM-11或REM-02。
+E65随后实际观察到6013外层卸载仍未清理保护实例：E62的回调签名修复生效，
+但另一个动作判定时序缺陷使owner removal未启用。仍是同一REM-11要求失败，
+不重复增加FAIL计数；Data仍在活动store中，不作为成功KeepData卸载证据。
+E66将意图判断移到成功的OnPlanComplete，并补实际生产回调类的完整状态
+序列回归；最小验证先红后绿，不调用系统清理。6014已排队但未部署，
+因此仍不关闭REM-11/REM-02。另查6013已在同提交ARM64 attempt2后整体转绿，
+E63的初次CI失败作为历史保留，不与已确认的6013卸载逻辑缺陷混淆。
 
 ### 分类总览：125项有效要求，另保留1个N/A历史项
 
@@ -103,19 +113,19 @@ PERF-02/03）；跨权限2条（CLI-03/07）；数据一致性1条（DATA-01）�
 
 | 项目 | 当前记录 |
 |---|---|
-| 待验收代码 | `feature/workspaces-protected-storage-main-20261028`；E62卸载回调修复`b64732533a`已push至origin/fork。只修正WiX回调接口并增加真实DLL分派回归，不实施讨论中的Setup/Broker合并。E56的`264346e777`、59项托管回归和Debug6011记录保留 |
-| 正式签名构建 | E62：6013 [163342432](https://dev.azure.com/microsoft/Dart/_build/results?buildId=163342432)于11-09 17:20 +08:00排队，源码固定`b64732533a`，Release x64/ARM64，查询状态inProgress，尚无绿色/产物结论。6010/162959015与6012/163076849绿色历史保留 |
+| 待验收代码 | `feature/workspaces-protected-storage-main-20261028`；E66计划时序修复`5fc28726f4`已push至origin/fork，11个完整回调序列场景及4,230 installer checks通过。生产清理权限、KeepData及Setup/Broker分工不变；E62的回调签名修复保留 |
+| 正式签名构建 | E66：6014 [163468842](https://dev.azure.com/microsoft/Dart/_build/results?buildId=163468842)于11-10 18:13 +08:00排队，源码`5fc28726f4`，Release x64/ARM64，查询状态inProgress。6013/163342432于17:04已整体转绿（ARM64 attempt2、x64 attempt1，源码仍b64732533a）；本代理未发起该重试，E63初次失败保留 |
 | 主线基线 | `8056ba09721708bceee6176291b24af7ebabb0b3`；包含 PR #51114，合并提交 `06e6ae43e225cac51c2f282b0eebc42c6f995c97` |
 | 集成 worktree | `D:\PowerToys-Workspaces-Integration` |
 | 待测本地包 | 完整x64 Debug **`0.101.6011.0`**已构建，E57确认runtime匹配及CLI读取成功。E58停止调试应用但保留LocalTest service/data；正式首装测试不能使用此包或Local E2E快捷方式代替 |
 | 正式首装前基线 | E58 11-08 23:54：当前owner正式主程序/ARP bundle/carrier/service不存在，owner Code/Data/Policy/Installer及legacy源已清空或移出；自动下载更新关闭，普通启动配置保留。LocalTest与两个demo保留。旧正式VA profile loaded/native32，不能称全新机器 |
-| 正式安装现状 | E61：6012主程序目录、主MSI和用户bundle条目已移除，但6012 carrier仍注册于原owner/context2，正式service仍Running、Code存在，active/service-created标记未清。不是正常KeepData卸载完成状态 |
+| 正式安装现状 | E65：6013主程序目录、主MSI及Burn注册已移除；carrier `{6C2D8CEA-1996-58E7-B9FD-4F235686E9B3}`仍为原owner/context2、0.101.6013。正式服务Running/AutoStart，Code目录及active/service-created标记仍在 |
 | 原代码备份 | `backup/workspaces-protected-storage-20261028`，提交 `c576e95f70d4247efeb68afe1c50bc5f7e57f4e2`；含原 worktree 全部已跟踪/未跟踪源码改动 |
 | 原 worktree | `D:\PowerToys-Workspaces-E2E`；原 HEAD `146518e3a3c3120257799b89e061b304f81fdab7`、索引和源码保留 |
-| 最近确认的运行环境 | E61 11:44：正式service仍Running，Bootstrap38060/Runtime20804均存活，创建时间仍为01:14:29；不是单纯残留ready.txt。普通owner不能枚举Code属权限限制，不能误报目录不存在或为空 |
-| 新包部署状态 | 6013未部署。E61普通per-user外层卸载的主MSI/外层exit0，但owner清理未进入；E62只构建与运行非安装回归，没有补跑remove/repair、重装或改动服务/Data。原失败现场和升级证据保留 |
-| 数据保护结果 | E61离线只读解析当前live blob，contentHash与index/revision/receipt均匹配；两条工作区为Workspace 1（2应用）、Workspace 23（3应用），sequence=11，epoch/init ID与E60相同。数据仍完整，但store仍active，不据此宣称已完成KeepData卸载保留 |
-| 当前验收结论 | E62源码修复与真实DLL分派回归通过，但不等于正式外层卸载完成；E61的REM-11失败保留，REM-02仍BLOCKED。26 PASS、1 FAIL、1 N/A；不把构建、回调入口可达或数据仍在解释为卸载全部成功 |
+| 最近确认的运行环境 | E65卸载后16:44–17:01：Bootstrap43528/Runtime37908仍存活，精确出生时间与E64卸载前相同，映像仍指向正式Code；不是重启出的另一代进程。VA profile仍Loaded |
+| 新包部署状态 | 用户已执行6013普通外层/uninstall；主MSI和外层均exit0，但owner carrier/service/Code未移除。代理只做静态/进程/日志检查，没有补跑remove/repair、停止服务或清理文件来掩盖结果 |
+| 数据保护结果 | E65离线只读校验storage.index/live blob的frame、hash、revision及receipt一致，2条工作区、sequence=13；epoch/init ID与E61相同，owner/Admins仍FR。没有卸载前最后一刻全量快照，不声称逐字节前后无变化，也不把活动store冒充KeepData已卸载 |
+| 当前验收结论 | E65的6013真实卸载失败保留；E66候选已修正门控并完成隔离回归，但6014尚未真实卸载。REM-11继续FAIL，REM-02继续BLOCKED；26 PASS、1 FAIL、1 N/A不变 |
 
 `6003`、`6004`、`6005`、`6006`、`6008`、`6009` 都是合入 main 后的**本地 E2E 测试构建**，使用
 `ProtectedStorage.LocalLifecycle.exe` 和本地测试 bundle，不是正式 carrier MSI 部署。
@@ -171,14 +181,14 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | 编号 | 事实 | 影响与解除条件 |
 |---|---|---|
 | B01（已解除） | 早前提权取消后服务留在 6002；14:39 发现新 6003 客户端反复被旧 catalog 拒绝 | 2026-10-28 14:49 已授权保留数据更新，核对新 ready/catalog 和不变的数据哈希（E13/E15）。未执行的用例转为 NOT RUN，不自动变为 PASS |
-| B02 | E59正式首次Setup及E60的6010 -> 6012服务/carrier升级后置结果已有证据；完整servicing、数据前后比对及原始包验证仍待补。6007/6010/6012构建证据保留 | 不以一次成功关闭全部生产资格，也不以LocalTest或旧3000卸载结果替代升级验收 |
+| B02 | E59/E60正式首装及升级后置证据保留。E63的6013 x64构建成功，ARM64 Carrier ICE因1719失败，完整servicing/原始包/实机矩阵仍待补 | 不以单架构成功关闭整轮构建或生产资格；不跳过ICE换取绿色。6007/6010/6012历史保留 |
 | B03（历史探测取消） | 6004 隔离 High Arranger 探测曾返回 1223；之后用户已完成 6004 服务更新（E21） | High/OTS 完整资格仍需独立证据；不再把部署列为 6004 阻塞。6005 更新单独记录 |
 | B04（已解除） | E31 的6006更新曾返回1223；E33 开始时已观察到匹配的6006客户端/runtime | 本轮实际业务验证已执行；不把历史授权取消继续当作当前部署阻塞 |
 | B05（E33限制非当前High入口阻塞） | E33会话与Runner非管理员，历史验证跳过管理员变体；E55用户另行确认同owner普通/High入口回归通过 | 不扩大为OTS或另一owner通过；本轮代理未另行提权/采集High进程证据 |
 | B06（E33缺口保留；E36新一轮已补足） | E33未保留完整事前字节，旧结果不能追溯改PASS；E36在任何变更前保存完整blob和逐记录详情 | E36清理后原记录全字段及2225字节业务payload一致；blob整体变化来自revision/operationId/requestDigest信封元数据。此证据仅证明E36相对其自身起点的保真 |
 | B07 | E33 canonical resource receipt保留4个未解析launch记录及旧PID31508查询拒绝 | 已实测当前5个自有fixture退出、无剩余fixture进程、借用UI恢复；不手改旧receipt消除hold，不终止无法确认身份的PID |
 | B08（E57已解除） | E56的维护UAC取消曾使磁盘6011/service6009不匹配；E57已只读确认运行service6011及真实CLI可用 | 取消历史不删除；不再将匹配部署列为当前阻塞，也不据此关闭尚未执行的业务case |
-| B09 | E61主MSI卸载成功，但owner carrier/service/Code仍在；E62已修正OnExecuteComplete单参数接口并验证真实WiX分派，6013候选尚未部署 | 仍需新签名包的真实外层卸载复测；不要补删保护状态再宣称原卸载PASS。当前尚非KeepData已卸载状态，REM-02重装验收受阻 |
+| B09 | E65的6013过早读取动作导致owner cleanup未启用；E66已修正成功PlanComplete时机并补全序列回归，6014候选未部署，6013 carrier/service/Code仍在 | 仍需6014签名包真实外层卸载。隔离回调测试不代替实际owner helper/UAC/MSI/SCM移除，不补删现场掩盖结果 |
 | R01（6003 失败；6004 已完成实机会话） | 6003 的额外握手失败保留 E16；6004 两次 shared session 正常完成（E22），没有再卡在 protected-plan | 不把未采集 token 的已退出 Arranger 当作 High 证明；目标应用的 elevation 复用缺陷见 R05 |
 | R02 | 通用 “protected storage unavailable” 曾掩盖启动会话错误；授权不匹配还曾提供无效 Retry | 后一问题已修复并实测（E11/E12）；UX-01 的其他错误分类仍需逐项验证，不能根据弹窗直接诊断服务坏了 |
 | R03（已绕开慢路径，快慢差异尚未闭环） | 6005清单47.152秒；独立x64诊断定位到AppsFolder首次Next等待。10-29 23:10最新main仍使用相同枚举循环（E32），不是已找到main的另一套快速实现 | E29/E32：新路径分别697/2924ms，旧路径36958/37383ms；没有改服务timeout。未对原版main二进制做同机同权限A/B，不能据源码相同断言原版必慢，也不能把6006优化说成已证明的分支回归根因修复 |
@@ -200,7 +210,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | AUTO-02 | 本次集成的默认原生 Workspaces 单测全部通过，含 repository、CLI 合同、元数据及缺少 protected preview 的拒绝行为 | RETEST | E50：194项中193 PASS/1 FAIL，失败为Photos与照片查看器的名称一致性，单独复跑同样失败。重复Capture ID回归及RepositoryTests10项通过；E39的193/193历史保留 |
 | AUTO-03 | 托管存储/协议/迁移/repository 测试通过 | PASS | E56：59 passed，新增历史自动合并/真正冲突/新epoch拒绝/有限重试/结果未知原意图查询、重开后仅重试cleanup等回归；撤掉无需求的显式Import分支。E50的51项历史保留 |
 | AUTO-04 | 最终目标代码的 native storage 套件及 20,000 次 framing mutation 全部通过 | PASS | 2026-10-29；3,018 assertions + 20,000 mutations，E19。少的一条是已删除 peer helper 的参数断言；服务端映像和权限检查没有删除 |
-| AUTO-05 | 原生 Setup/Lifecycle/Broker/MsiAction 编译及安装器契约检查通过 | PASS | E62：Release x64 BA DLL及InstallerTests构建0错误/警告，4,136 checks通过；新增真实WiX分派回归先失败后通过。E39四个native helper/4,129 contracts及fixture MSI表检查历史保留；不替代签名包卸载、ICE或REL-02 |
+| AUTO-05 | 原生 Setup/Lifecycle/Broker/MsiAction 编译及安装器契约检查通过 | PASS | E66：Release x64构建0错误/警告，4,230 checks通过；11个Plan→Execute场景使用生产回调类和WiX分派器，仅替换清理副作用，先红后绿。E62真实DLL签名回归保留；不替代签名包卸载、ICE或REL-02 |
 | AUTO-06 | 发布流程的 mocked gates、最终文件字节/哈希、固定 policy/version、篡改拒绝检查通过 | PASS | 2026-10-29；E19，含新 inventory；仍是 process-scoped mock，不是实际发布/servicing |
 | AUTO-07 | 本地测试 CMS 正常签名接受，内容改变或不同 signer 拒绝 | PASS | 2026-10-29；6006 E30，`expiredFixture=False`；不代替生产时间戳/吊销检查 |
 | AUTO-08 | 新 CLI 的 `--version`、`--help` 正常退出且报告当前候选版本 | PASS | 2026-10-29；6004，E20；未连接 6004 服务执行 list/launch |
@@ -327,7 +337,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 | ID / 优先级 | 操作与通过标准 | 当前状态 | 前置 / 注意事项 |
 |---|---|---|---|
-| UPD-01 / P0 | A v1 -> v2 真实 MSI major upgrade；注册及两个 live PE 更新，VA、固定 ImagePath 和数据不变 | PARTIAL | E60/P-XU：用户升级6010 -> 6012；新carrier/context2、旧carrier已移除、实际Bootstrap/Runtime实例切换及6012 Ready均确认，VA/路径/epoch/init operation保留。两条业务记录可读，但缺用户升级前完整JSON作逐字段比对；授权次数/流程及重启未由本轮补证 |
+| UPD-01 / P0 | A v1 -> v2 真实 MSI major upgrade；注册及两个 live PE 更新，VA、固定 ImagePath 和数据不变 | PARTIAL | E60的6010→6012及数据证据保留；E64另确认6012→6013事务committed、新carrier、两实际VA进程/固定路径/出生时间与6013 ready相符。未补6013业务数据逐字段比较、主程序升级前完整基线、授权过程及重启，不能整项PASS |
 | UPD-02 / P0 | B 升级而 A 留 v1；A 的服务版本/数据不变 | NOT RUN | B02；P-XU/P-AU |
 | UPD-03 / P0 | A 随后升级；B 持续健康，双方集合正确 | NOT RUN | B02 |
 | UPD-04 / P1 | 用 v1 入口 repair 已注册 v2；修复正确 release，不重播内嵌旧 seed，不重新初始化 | NOT RUN | B02；健康同版本 sync/普通 repair 不重复首次授权 |
@@ -335,7 +345,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | UPD-06 / P2 | commit ack 丢失；查询同一 operation，不回滚已确认 committed 的更新 | NOT RUN | B02 |
 | UPD-07 / P1 | 真实 MSI 1618/服务 busy；有限等待、明确 Retry，无嵌套 MSI/无限轮询 | NOT RUN | B02；欢迎页停留不算 MSI 事务占用 |
 | UPD-08 / P2 | Bootstrap 损坏；普通维护不假成功，显式授权恢复启动组件且保留数据 | NOT RUN | B02；不承诺修复任意坏业务记录 |
-| UPD-09 / P0 | per-user 主更新后，在原 owner 的正常上下文协调 carrier | PARTIAL | E60新carrier仍为原owner/context2，实际owner runtime6012健康可读，update-state诊断completed/native0。已证明不是只换主程序；升级协调进程的原始token/授权过程未采集，用户可写诊断不独立构成授权证据 |
+| UPD-09 / P0 | per-user 主更新后，在原 owner 的正常上下文协调 carrier | PARTIAL | E60原owner/context2证据保留；E64签名Setup inspect确认6013 carrier及实时Ready，受保护事务表明6012→6013已提交，非只换主程序。未采集实际升级期间协调进程token/授权过程，不将后置检查扩充成完整过程验证 |
 | UPD-10 / P0 | per-machine 交互主更新；共享主文件更新，carrier 仍属于原普通业务用户 | NOT RUN | B02 |
 | UPD-11 / P2 | SYSTEM/企业无人值守主部署；不创建 SYSTEM-owned per-user carrier，owner 工作明确延期 | NOT RUN | B02；需要真实部署通道 |
 | UPD-12 / P1 | 另一 owner 离线；无强制全用户更新期限，登录后按其上下文协调兼容性 | NOT RUN | B02；机器版主文件共享，不要求主程序路径按用户保留旧版 |
@@ -348,7 +358,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | ID / 优先级 | 操作与通过标准 | 当前状态 | 前置 / 注意事项 |
 |---|---|---|---|
 | REM-01 / P0 | 正常卸载 B；B 的注册/服务按 scope 移除，A 的服务/版本/数据不变 | NOT RUN | B02；两个真实交互 owner |
-| REM-02 / P0 | KeepData 卸载重装；原集合、epoch/初始化状态恢复，不从旧明文覆盖或重置为空 | BLOCKED | E61/B09：正常owner carrier移除尚未完成，service仍Running且active标记仍在；当前数据可读不能冒充卸载KeepData结果。先修复REM-11，再验证真正的移除/重装；重新预配可需授权 |
+| REM-02 / P0 | KeepData 卸载重装；原集合、epoch/初始化状态恢复，不从旧明文覆盖或重置为空 | BLOCKED | E65确认6013的owner实例移除仍未完成，store仍active；Data完整可读不是成功KeepData卸载。先解决REM-11，再验证正常移除与重装；重新预配可需授权 |
 | REM-03 / P2 | 显式 PurgeData 仅删授权 owner 的业务数据并记录 import suppression | NOT RUN | B02；破坏性，只用可丢弃数据；不删真实用户账号/profile |
 | REM-04 / P0 | 正常机器版卸载实际触发全 owner 清理；新 report 覆盖 A/B，默认 KeepData | NOT RUN | B02；检查新 operation/time，不能拿旧 report 或退出 0 代表零残留 |
 | REM-05 / P1 | owner 离线导致 carrier 注册无法清理时，准确报告 residual，不手删 MSI 内部注册、不冒充用户嵌套安装 | NOT RUN | B02；允许设计内 best-effort 残留，不等于全量清理 PASS |
@@ -357,7 +367,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | REM-08 / P1 | 授权取消、访问拒绝或未知移除结果不误报成功/不存在；保留准确残留及恢复入口 | NOT RUN | B02 |
 | REM-09 / P1 | 已移除后重复清理幂等，不重建资源，不误删别的实例 | NOT RUN | B02 |
 | REM-10 / P2 | remove/rollback 失败仍有可恢复 Code/Data，不使成功的 peer 安装失效 | NOT RUN | B02；快照环境 |
-| REM-11 / P0 | per-user 正常外层 EXE/“已安装应用”卸载触发 owner 回调，或明确报告保留的服务/carrier | FAIL | E61/P-XU/6012真实外层卸载漏掉owner清理，carrier/service/Code残留的失败证据保留。E62以b64732533a修正WiX单参数回调及override，真实BA DLL分派先红后绿；6013已排队，但未真实卸载，不能关闭此行 |
+| REM-11 / P0 | per-user 正常外层 EXE/“已安装应用”卸载触发 owner 回调，或明确报告保留的服务/carrier | FAIL | E65/P-XU/6013：回调到达但owner removal未启用，carrier/service/Code残留。E66以5fc28726f4修正时机，完整Plan→Execute隔离回归通过、6014已排队；未进行新签名包卸载，E61/E65失败历史与整项FAIL保留 |
 
 ## 12. 环境矩阵、发布门槛和推荐顺序
 
@@ -1796,6 +1806,213 @@ definition76541，Release x64/ARM64；`releaseIntent=auto`、
 初次构建遇到WiX头文件缺失，按已修改的测试依赖执行显式`/t:Restore`后解决；
 一次测试DLL定位错误也已改为构建后复制实际目标路径。上述前置错误不混作
 回调缺陷的红灯证据，最终红/绿结果只引用对应的before/after记录。
+
+### E63：2026-11-10，6013 ARM64 Carrier ICE失败排查
+
+用户报告6013失败并要求分析。本轮只查询ADO、下载已有日志并核对源码，
+没有重跑job、排队新版本、修改产品/流水线或操作本机正式实例。
+
+[build163342432](https://dev.azure.com/microsoft/Dart/_build/results?buildId=163342432)
+在11-09 19:46:11（UTC+08:00）整体`completed/failed`；
+源码`b64732533a88d74c98428d1c1a0ac550ad024e9c`、6013版本及分支均正确。
+唯一失败task是ARM64 job的`Build Protected Storage Carrier`，log301，
+19:42:32–19:42:38执行；不是本轮卸载回调的C++编译错误。
+
+| 阶段 | x64 | ARM64 |
+|---|---|---|
+| PowerToys主项目 | 成功，log108 | 成功，log113 |
+| 安装器共享DLL | 成功；后续打包完成 | log289包含实际SilentFilesInUseBAFunctions.cpp编译，0 errors；5个非致命warning不是本次失败 |
+| Carrier输入验证 | log192通过生产trust verifier | log300通过生产trust verifier |
+| Carrier MSI | log193真实执行ICE后0 warning/0 error | WiX build产生中间MSI，随后WindowsInstallerValidation失败 |
+| 后续发布 | 主MSI/Bootstrapper完成，`build-x64-Release`正常产物存在 | Carrier签名及后续Broker/Setup、主MSI/Bootstrapper跳过，只有`build-arm64-Release-failure-1` |
+
+**直接失败原因已确认：** `wix.exe msi validate`运行ICE时，Windows Installer
+返回1719：`The Windows Installer Service could not be accessed`。
+WiX以WIX0217的external UI message logger错误包装它；97个ICE action重复
+出现该失败，外加MSBuild exit1形成task的98条error记录，不能解释成97处独立的MSI表缺陷。
+
+下载的failure artifact不仅有binlog，还包含原始服务和事件快照：
+
+- ARM64校验前是`Stopped / Manual`，成功的x64 job也同样如此；按需启动状态本身不是根因。
+- ARM64失败后`msiserver`已为`Running / LocalSystem / exit0`。
+  因此不能简单归因为服务没启动，也不能保证加一条Start-Service就能修复。
+- 捕获的最后30条MsiInstaller事件中，29条为11719，明确写出Error1719；
+  另一条1033含status0，只是会话摘要，不能覆盖验证错误或当成产品安装验收成功。
+- 两架构分别使用不同VM，均为非交互Windows Server2025、SHINE-VS18-Latest77.0.0、
+  agent5.281.1；成功一侧不是通过关闭ICE或使用另一套WiX版本绕过问题。
+
+与绿色6012的源码`264346e777`比较，
+`Product.wxs`、`PowerToysProtectedStorage.wixproj`和pipeline均未改变。
+本轮修复集中在BA回调接口与回归测试，且ARM64 BA已实际编译成功。
+E42/E43曾记录6007在x64侧出现同类1719；E54确认那一轮在同提交人工重试后转绿。
+这些证据支持**agent上的Windows Installer/ICE执行环境问题**，不支持回退回调修复。
+
+**尚未证明的部分：** 当前材料没有Windows Installer内部verbose trace、
+SCM/System相关事件或校验进程的实际token/elevation记录；
+不能进一步确定是服务访问权限、执行上下文、启动交互还是VM状态导致1719。
+也没有通过本轮重试证明它一定是一次性故障，不能承诺“重跑必过”。
+
+建议保持同一6013版本与源码，先只重跑失败的ARM64 job，保留完整ICE校验。
+若再现，再补上述诊断交给CI环境维护者；不通过SuppressValidation/SuppressIces
+或改产品代码来隐藏这类执行环境错误。本轮没有执行该重跑。
+正式验收计数不变，尤其不把x64包存在或回调编译成功改记为REM-11 PASS。
+
+证据位于会话files的`nov10-private6013-failure`：
+`build.json`、`timeline-raw.json`、`artifacts.json`、两架构agent/preflight/carrier日志、
+`arm64-shared-dlls-289.log`及下载的`arm64-diagnostics\windows-installer-*.json`。
+该failure artifact仅作诊断，不作为ARM64安装包或发布成功证据；
+x64安装器文件本轮未下载运行，未新增独立Authenticode或安装验证结论。
+
+### E64：2026-11-10，只读确认正式Bootstrap/Runtime已升级6013
+
+用户要求检查当前服务版本。16:14–16:20（UTC+08:00）只读核对正式
+`PowerToysProtectedStorage_<owner>`，不检查或混用LocalTest namespace，
+没有执行sync、repair、remove或数据写入来促成结果。
+
+| 项目 | 实际观察 |
+|---|---|
+| 签名Setup | per-user安装位置下的PowerToys.ProtectedStorageSetup.exe，文件版本0.101.6013.0，Authenticode Valid / Microsoft |
+| 实时inspect | `inspect --json`返回Ready/native0/exit0；productCode=`{6C2D8CEA-1996-58E7-B9FD-4F235686E9B3}`、installedVersion=0.101.6013 |
+| Bootstrap | PID43528，16:03:34创建，实际映像为固定Code\Bootstrap.exe，原owner对应VA，Session0，仍存活 |
+| Runtime | PID37908，父PID43528，16:03:35创建，实际映像为固定Code\Runtime.exe，同一VA、Session0，仍存活 |
+| 服务配置 | 注册表ImagePath为固定Bootstrap路径及owner参数，ObjectName为该owner的NT SERVICE虚拟账户，Start=2；SCM状态Running且PID匹配 |
+| 运行版本 | ready报告0.101.6013.0、data_recovery_required=0；原生GetProcessTimes取得的两个精确出生时间均与ready一致，不是复用陈旧PID或只看ready文件 |
+| 更新事务 | `04E41B0F-6808-4D61-B460-B6BBCAF0E226`明确old_version=0.101.6012.0、new_version=0.101.6013.0，包含两PE的新旧hash；journal已到committed，记录两实际VA进程/readiness再次验证 |
+
+运行release版本由实时签名inspect、匹配进程代际的ready和已提交双PE更新
+事务交叉确认；没有把主程序目录里的6013文件版本当作服务更新的唯一证据。
+最初WMI的StartName/PathName/ExecutablePath为空属于查询限制，没有被解释为
+缺失或错误配置；随后以最小只读进程权限、主token查询及服务注册表读取补齐。
+
+结论限于**当前x64保护实例已完成6012→6013代码切换并健康运行**。
+本轮未重新读取工作区JSON、未做逐字段数据保留比对，未还原用户操作的完整
+主程序升级前状态；不能据此区分完整主程序升级与重装主程序后的保护实例升级。
+6013外层卸载尚待结果，REM-11历史FAIL与REM-02 BLOCKED保留；
+本机版本确认也不改变E63的ARM64 CI失败记录。
+
+证据在会话files的`nov10-production-6013-check`：
+`service-processes.json`、`setup-inspect.json`、
+`actual-process-identities.json`、`update-transaction.json`。
+这些只读诊断不作为live数据源，不提交其中的本机身份或业务数据。
+
+### E65：2026-11-10，6013卸载后保护实例仍存活，定位第二处门控时序缺陷
+
+用户已卸载6013，要求静态文件和服务状态检查。本轮从16:44到17:01
+（UTC+08:00）只读取文件、注册表、MSI枚举、进程及日志；未使用
+Win32_Product，未执行remove/repair、服务停止、目录清理或再安装。
+
+| 项目 | 实际结果 |
+|---|---|
+| 外层入口 | 缓存的PowerToysUserSetup-0.101.6013.0-x64.exe，命令行`/uninstall`，perUser=1、WixBundleElevated=0 |
+| 主程序 | 用户安装目录不存在，native2/3；主MSI `{76F7CEB9-0881-4439-86C6-3BCC23EF3BF8}`及Burn `{D9B6C9CD-1E9C-45D2-A0B6-848FABA1D55D}`已移除，日志显示主MSI与外层exit0 |
+| Carrier | `{6C2D8CEA-1996-58E7-B9FD-4F235686E9B3}`仍注册于原owner/context2，版本0.101.6013、State5；ARP也仍有该条目 |
+| 正式服务 | Running，注册表Start=2、ObjectName仍为该owner的VA；Bootstrap43528、Runtime37908为E64同一代进程，出生FILETIME完全一致且仍存活 |
+| Code | 目录确认存在；两个实际映像仍指向该Code路径。普通owner读具体PE文件返回native5，记录为不可直接验证，不将其误报为文件不存在 |
+| Installer / Policy | 目录保留，active/service-created仍在；retained/purged/pending-remove/drain均无。lifecycle.log仍只有11-09初次seed/commit-install，没有本次remove |
+| Data | 当前blob与index、receipt及contentHash一致，可解析出2条工作区；sequence13，epoch/init ID与E61相同，owner/Admins为FR、SYSTEM/VA为FA |
+| VA profile | 仍存在且Loaded；正式服务仍运行，不能将这次失败解释成仅剩待重启删除的profile |
+| 范围隔离 | LocalTest服务和既有demo条目仍在且未动；本次失败判断仅针对正式owner实例 |
+
+Data在当前时点内部一致可读，但仍是**未移除的活动store**，不是已完成
+KeepData卸载后保留的数据。没有卸载前最后一刻完整快照，不伪造逐字节对照。
+sequence13的写入时间在卸载前，不能把相对E61的变化归因于卸载。
+
+**6013签名修复生效，但整体卸载修复不完整：**
+外层日志在16:38:13明确出现
+`Running execute complete BA function. hrStatus=0x0`，
+证明E62修正的WiX回调已被实际安装器调用。随后没有owner清理、token拒绝、
+payload失败或cleanup deferred日志；bundle-removal日志目录也没有产生。
+最新maintenance仍是E64的16:17 inspect，MsiAction日志最后更新16:03，
+没有新的remove receipt。不能归咎于用户改用管理员入口或取消清理授权。
+
+**另一处实现问题在动作判定时机：**
+本地`SilentFilesInUseBAFunctions.cpp`的`OnPlanBegin`立即读取
+`WixBundleAction`并保存`m_removeOwner`。核对实际使用的WiX5.0.2源码：
+
+- [variable.cpp](https://github.com/wixtoolset/wix/blob/v5.0.2/src/burn/engine/variable.cpp#L295)
+  将该内置动作变量初始化为0。
+- [core.cpp](https://github.com/wixtoolset/wix/blob/v5.0.2/src/burn/engine/core.cpp#L439)
+  先调用`BACallbackOnPlanBegin`，返回后才调用`PlanSetVariables`。
+- [plan.cpp](https://github.com/wixtoolset/wix/blob/v5.0.2/src/burn/engine/plan.cpp#L340)
+  才把本次action写入`BURN_BUNDLE_ACTION`。
+
+因此首次PlanBegin时还没有本次Uninstall动作4，清理开关提前计算为false；
+之后没有重新计算。日志末尾的`WixBundleAction=4`是后续状态，不能倒推
+回调早期读取值也是4。变量读取时机来自同版本源码对照，不冒充已采集
+当时内存中的门控值；现场“完成回调到了、owner removal没到”与其一致。
+
+E62的回归明确没有派发PlanBegin，以避免触发真实卸载；它成功覆盖了接口
+分派，却没有覆盖真实Plan变量发布时序。这是上一轮验证的缺口。
+后续需在动作已发布的时点判定清理意图，并覆盖完整Plan→Execute状态顺序，
+再做正式外层卸载；本轮仅检查和定位，没有修改产品实现或发起新构建。
+REM-11继续FAIL、REM-02继续BLOCKED，保留E61/E62/E64的历史与范围区分。
+
+证据在会话files的`nov10-production-6013-uninstall`：
+外层/主MSI卸载日志、`msi-inventory.json`、`arp.json`、`artifacts.json`、
+`service-processes.json`、`markers.json`、`latest-maintenance.json`、
+`storage.index`、`live-blob.bin`、`data-integrity.json`、`lifecycle.log`，
+以及只读获取的WiX5.0.2上游源码副本。本机身份及业务数据副本不提交仓库。
+
+### E66：2026-11-10，修复计划动作时序，最小隔离验证后排队6014
+
+用户要求先修复E65问题、做本地最小验证，再queue ADO private build。
+产品提交`5fc28726f48b909094d3a6ec7aec6bba31b88a9a`已推送origin/fork；
+不实施此前讨论中的Setup/Broker合并，也不修改其授权、数据或服务模型。
+
+**实际改动：**
+
+- `OnPlanBegin`只重置旧的清理意图；成功的`OnPlanComplete`才读取WiX已经
+  发布的动作和per-user标志，失败/取消或变量读取失败保持不启用。
+- `OnExecuteComplete`仍要求主MSI成功、非关联bundle、正常per-user卸载、
+  每个实例仅执行一次。新增计划变量读取结果、related/armed/attempted日志，
+  不再只能从“回调进入”猜测是否实际启用清理。
+- 将现有回调类共享到头文件，把原系统清理代码保留为生产factory固定绑定
+  的执行函数；测试仅替换这一副作用边界。没有运行时测试开关、新DLL导出、
+  签名豁免或普通owner权限扩大。原token检查、helper路径、KeepData调用和
+  错误处理不变。
+
+**本地最小验证（x64 Release，非安装运行）：**
+
+| 项目 | 实际结果 |
+|---|---|
+| 修复前负向控制 | 保留旧的提前读取逻辑，生产回调类经WiX SDK分派，在第3个check失败：`PlanBegin read a stale action before WiX published the new plan` |
+| 修复后正常卸载 | 变量初始0，PlanBegin后才发布Uninstall，再经PlanComplete/ExecuteComplete；清理计数为1，重复完成回调不再次清理 |
+| 不应清理的情形 | machine scope、关联upgrade bundle、Install/Modify/Repair、计划失败/取消、主执行失败、变量读取失败均为0 |
+| 重新规划 | Uninstall→Install及Uninstall→失败计划不会沿用旧的清理意图 |
+| 总结果 | 11个状态序列场景及完整套件`PASS 4230 installer contract checks`，exit0；Release x64构建零错误/警告，E62实际BA DLL分派回归也继续运行 |
+| 真实现场保护 | 正式服务仍为PID43528/Running，6013 carrier marker未变，storage.index和lifecycle.log与E65副本hash一致，未产生生产bundle-removal日志 |
+
+这里使用**同一份生产回调类及真实WiX消息分派器**，engine变量发布时间由
+fixture驱动，系统清理函数替换为计数器；不是仅检查布尔helper，也不是
+真实Burn外层安装/卸载、UAC或carrier/service/Code删除成功。
+新签名包仍必须做完整外层卸载验收，REM-11/REM-02不关闭。
+
+额外只读提取用户的6013 UserSetup BA容器，确认实际
+`SilentFilesInUseBAFunction.dll`与`PowerToys.ProtectedStorageSetup.exe`
+位于同一目录且签名均Valid，Setup文件版本为0.101.6013.0。
+未运行这些提取文件；该检查只排查既有cleanup payload缺失/位置问题，
+不作为6014产物或卸载成功证据。临时提取目录已删除，原Downloads EXE未动。
+
+早期尝试的进程内HKCU/KnownFolder隔离未能重定向LocalAppData，未用于测试；
+探针临时目录与键已清理，最终采用上述副作用边界替换，未重定向用户真实设置。
+测试直接链接SDK分派器所需的Windows `version.lib`依赖已补齐；
+红灯记录是在成功构建后取得，不将初次链接错误混作时序缺陷的复现。
+
+**构建状态：** 本轮重新查询发现6013/163342432已于17:04:53（UTC+08:00）
+整体succeeded，ARM64为attempt2、x64为attempt1，源码仍b64732533a；
+本代理没有发起该重试。E63的首次1719失败保留，绿色构建并未消除E65逻辑缺陷。
+
+2026-11-10 18:13:34（UTC+08:00）排队
+**0.101.6014.0 / [163468842](https://dev.azure.com/microsoft/Dart/_build/results?buildId=163468842)**，
+definition76541，Release x64/ARM64；沿用private-validation参数。
+独立Build API查询确认分支、版本和完整源码SHA均匹配5fc28726f4；
+状态inProgress，尚无该候选的绿色、签名产物或实际卸载结论。
+台账后续提交不改变该run固定的产品源码。
+
+证据在会话files的`nov10-plan-gate-fix`：before/after日志、构建日志、
+`production-preserved.json`、`bundle-payload-check.json`、
+`6013-now-green.json`、`6013-green-timeline.json`、
+`queued-6014.json`、`verified-6014.json`。
 
 ### 本次证据
 
