@@ -28,6 +28,8 @@ steps:
       if ($result.TotalCount -eq 0 -or $result.PassedCount -ne $result.TotalCount) {
         throw 'Installer media tests must all execute and pass.'
       }
+      # Negative script tests set LASTEXITCODE; report the Pester result instead.
+      exit 0
     displayName: Test installer Smart Cabbing assignments
 
   - pwsh: |-
