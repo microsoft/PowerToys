@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.TextExpander;
 /// <summary>
 /// What the engine's windows, for a question and for a choice, share: Text Expander's icon and name in a title bar that
 /// follows the theme, a dialog's frame above the app being typed into and out of the taskbar and Alt+Tab, and a size
-/// and place on that app's screen. Used on the prompt thread only.
+/// and place on the screen with that app's caret. Used on the prompt thread only.
 /// </summary>
 internal sealed class PromptWindowChrome
 {
@@ -31,7 +31,7 @@ internal sealed class PromptWindowChrome
     private readonly IntPtr _target;
     private RectInt32 _workArea;
 
-    /// <param name="target">The window being typed into. The window opens on its screen.</param>
+    /// <param name="target">The window being typed into. The window opens on the screen with its caret.</param>
     public PromptWindowChrome(Window window, IntPtr target, UIElement titleBar, Image titleBarIcon, TextBlock titleText)
     {
         _window = window;
@@ -123,23 +123,23 @@ internal sealed class PromptWindowChrome
     }
 
     /// <summary>
-    /// Sizes the window and centers it, a little above the middle, on the screen of the window being
-    /// typed into, or on the pointer's screen if that window has gone.
+    /// Sizes the window and centers it, a little above the middle, on the screen <see cref="PromptScreen"/> picks: the one
+    /// with the caret in the window being typed into, or that window's, or the pointer's if that window has gone.
     /// </summary>
     public void Place(double widthDip, double heightDip)
     {
         IntPtr monitor;
         DisplayArea area;
-        if (_target != IntPtr.Zero && Native.IsWindow(_target))
+        PromptScreen.Choice screen = PromptScreen.Choose(_target);
+        if (screen.Basis == PromptScreen.Basis.Window)
         {
             monitor = Native.MonitorFromWindow(_target, Native.MONITOR_DEFAULTTONEAREST);
             area = DisplayArea.GetFromWindowId(Win32Interop.GetWindowIdFromWindow(_target), DisplayAreaFallback.Nearest);
         }
         else
         {
-            Native.GetCursorPos(out Native.POINT pointer);
-            monitor = Native.MonitorFromPoint(pointer, Native.MONITOR_DEFAULTTONEAREST);
-            area = DisplayArea.GetFromPoint(new PointInt32(pointer.X, pointer.Y), DisplayAreaFallback.Nearest);
+            monitor = Native.MonitorFromPoint(screen.Point, Native.MONITOR_DEFAULTTONEAREST);
+            area = DisplayArea.GetFromPoint(new PointInt32(screen.Point.X, screen.Point.Y), DisplayAreaFallback.Nearest);
         }
 
         double scale = Native.GetDpiForMonitor(monitor, Native.MDT_EFFECTIVE_DPI, out uint dpi, out _) == 0 && dpi > 0 ? dpi / 96.0 : 1.0;

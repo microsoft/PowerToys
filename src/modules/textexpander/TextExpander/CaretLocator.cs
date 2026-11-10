@@ -24,37 +24,20 @@ internal static class CaretLocator
     /// </summary>
     public static Native.RECT Locate(IntPtr targetWindow) => Locate(targetWindow, Sources.System);
 
+    /// <summary>
+    /// Gets the caret's rectangle, or the focused element's bottom-left, as <see cref="Locate(IntPtr)"/> finds them, or
+    /// null when neither is found, without the fallbacks to the window, the pointer and the screen.
+    /// </summary>
+    public static Native.RECT? Find(IntPtr targetWindow) => Find(targetWindow, Sources.System);
+
     /// <summary>Finds the caret through <paramref name="sources"/>, in the order above.</summary>
     internal static Native.RECT Locate(IntPtr targetWindow, Sources sources)
     {
         // What's found is checked against the window, in case focus moved elsewhere since the insertion.
         Native.RECT? window = sources.Window(targetWindow);
-        if (sources.SystemCaret(targetWindow) is { } found && Ordered(found) is var system && IsCaret(system) && Overlaps(system, window))
+        if (FindIn(targetWindow, sources, window) is { } caret)
         {
-            return AsCaret(system);
-        }
-
-        // UI Automation's focus is in whichever window is in front, so it's the target's only while the target is: before
-        // the query and after it, since the query can take a moment.
-        if (sources.InFront(targetWindow) && sources.Automation(targetWindow) is { } focus && sources.InFront(targetWindow))
-        {
-            if (focus.Caret is { } caret && IsCaret(caret) && Overlaps(caret, window))
-            {
-                return AsCaret(caret);
-            }
-
-            if (focus.Selection is { } selection && IsCaret(selection) && Overlaps(selection, window))
-            {
-                return AsCaret(selection);
-            }
-
-            if (focus.Element is { } element && HasArea(element) && Overlaps(element, window))
-            {
-                // An element can reach far past the window, as a scrolled document does: the corner is kept inside it.
-                return window is { } box && HasArea(box)
-                    ? Point(Math.Clamp(element.Left, box.Left, box.Right - 1), Math.Clamp(element.Bottom, box.Top + 1, box.Bottom))
-                    : Point(element.Left, element.Bottom);
-            }
+            return caret;
         }
 
         if (window is { } frame && HasArea(frame))
@@ -70,6 +53,9 @@ internal static class CaretLocator
         Native.RECT work = sources.PrimaryWorkArea();
         return Point(work.Left + ((work.Right - work.Left) / 2), work.Top + ((work.Bottom - work.Top) / 2));
     }
+
+    /// <summary>Finds the caret, or the focused element, through <paramref name="sources"/>; null without either.</summary>
+    internal static Native.RECT? Find(IntPtr targetWindow, Sources sources) => FindIn(targetWindow, sources, sources.Window(targetWindow));
 
     /// <summary>
     /// Finds the caret in a text range from UI Automation: at the range's edge, its start for a caret range and its end
@@ -105,6 +91,40 @@ internal static class CaretLocator
     }
 
     private static bool OnScreen(double value) => double.IsFinite(value) && Math.Abs(value) < 1_000_000;
+
+    // The caret, the selection or the focused element, each only if it's in the target window.
+    private static Native.RECT? FindIn(IntPtr targetWindow, Sources sources, Native.RECT? window)
+    {
+        if (sources.SystemCaret(targetWindow) is { } found && Ordered(found) is var system && IsCaret(system) && Overlaps(system, window))
+        {
+            return AsCaret(system);
+        }
+
+        // UI Automation's focus is in whichever window is in front, so it's the target's only while the target is: before
+        // the query and after it, since the query can take a moment.
+        if (sources.InFront(targetWindow) && sources.Automation(targetWindow) is { } focus && sources.InFront(targetWindow))
+        {
+            if (focus.Caret is { } caret && IsCaret(caret) && Overlaps(caret, window))
+            {
+                return AsCaret(caret);
+            }
+
+            if (focus.Selection is { } selection && IsCaret(selection) && Overlaps(selection, window))
+            {
+                return AsCaret(selection);
+            }
+
+            if (focus.Element is { } element && HasArea(element) && Overlaps(element, window))
+            {
+                // An element can reach far past the window, as a scrolled document does: the corner is kept inside it.
+                return window is { } box && HasArea(box)
+                    ? Point(Math.Clamp(element.Left, box.Left, box.Right - 1), Math.Clamp(element.Bottom, box.Top + 1, box.Bottom))
+                    : Point(element.Left, element.Bottom);
+            }
+        }
+
+        return null;
+    }
 
     // A window laid out right to left maps the caret's left edge to the right one on the screen, which put the caret's
     // left past its right: it's put in order.

@@ -28,7 +28,7 @@ public sealed partial class PromptWindow : Window
     private bool _finished;
 
     /// <param name="label">The snippet's question.</param>
-    /// <param name="target">The window being typed into. The prompt opens on its screen.</param>
+    /// <param name="target">The window being typed into. The prompt opens on the screen with its caret.</param>
     /// <param name="done">Called once, on this thread, with the answer, or with null when cancelled.</param>
     internal PromptWindow(PromptRequest request, IntPtr target, Action<string?> done)
     {

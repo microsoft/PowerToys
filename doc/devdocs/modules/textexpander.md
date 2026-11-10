@@ -92,6 +92,10 @@ erases each trigger and pastes or types the snippet. A separate editor manages t
 - `{{prompt:…}}` needs an answer, and `{{prompt?:…}}` accepts a blank one.
 - `PromptHost` shows the WinUI 3 prompt on its own thread, and `ClassicPromptDialog` is the fallback.
   Meanwhile the hook is suspended, and only keys or clicks in the target window drop the work.
+- The question and choice windows open on the target window's screen. When that window reaches onto
+  another screen, they open on the caret's instead, as the notice does (`PromptScreen`). The caret is
+  looked for only then, since finding it can take up to 400 ms. Without one, it's the screen most of
+  the window is on, and once the window has gone, the pointer's.
 - Cancel drops the whole snippet. The swallowed key goes back, unless a modifier stays down for 1 s.
 - Keys typed after the last answer land after the snippet. The worker waits up to 350 ms for the
   target to return.

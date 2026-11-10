@@ -85,6 +85,18 @@ public sealed class CaretLocatorTests
         => Assert.AreEqual(Rect(640, 359, 641, 360), CaretLocator.Locate(Target, Fakes([], null, null, null, new() { X = 640, Y = 360 })));
 
     [TestMethod]
+    public void FindGivesTheCaretOrTheFocusedElementButNoneOfTheFallbacks()
+    {
+        // The question and the choice window go by the caret's screen only when something in the window was found.
+        Assert.AreEqual(SystemCaret, CaretLocator.Find(Target, Fakes([], SystemCaret, null, Window)));
+        Assert.AreEqual(Rect(200, 449, 201, 450), CaretLocator.Find(Target, Fakes([], null, new(null, null, Element), Window)));
+
+        var asked = new List<string>();
+        Assert.IsNull(CaretLocator.Find(Target, Fakes(asked, null, null, Window, new() { X = 640, Y = 360 })));
+        CollectionAssert.DoesNotContain(asked, "pointer");
+    }
+
+    [TestMethod]
     public void NeverReturnsAnEmptyRectangleAtTheOrigin()
     {
         Native.RECT last = CaretLocator.Locate(IntPtr.Zero, Fakes([], null, null, null, null));

@@ -28,7 +28,7 @@ public sealed partial class ClipboardChoiceWindow : Window
     private bool _finished;
 
     /// <param name="choice">What to pick from.</param>
-    /// <param name="target">The window being typed into. The window opens on its screen.</param>
+    /// <param name="target">The window being typed into. The window opens on the screen with its caret.</param>
     /// <param name="done">Called once, on this thread, with the pick, or with null when cancelled.</param>
     internal ClipboardChoiceWindow(ClipboardChoice choice, IntPtr target, Action<string?> done)
     {
