@@ -1079,10 +1079,6 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/PowerDisplay.Lib.UnitTests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
   </Folder>
   <Folder Name="/modules/MeasureTool/">
     <Project Path="src/modules/MeasureTool/MeasureToolCore/PowerToys.MeasureToolCore.vcxproj" Id="54a93af7-60c7-4f6c-99d2-fbb1f75f853a">
