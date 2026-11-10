@@ -101,10 +101,13 @@ Describe 'Virtual display fixture ownership and approval' {
         $script:invalidProbeSignature = $false
         $script:cleanupSnapshotJson = '{"Version":2,"Monitors":[{"Connected":false},{"Connected":false}]}'
         $script:bootTime = [datetime]::new(2026, 11, 4, 0, 0, 0, [DateTimeKind]::Utc)
+        $script:windowsBuild = 26200
         $IsolatedGuest = $true
         Mock Test-Administrator { $true }
         Mock Get-CimInstance {
-            if ($ClassName -eq 'Win32_OperatingSystem') { [pscustomobject]@{ LastBootUpTime = $script:bootTime } }
+            if ($ClassName -eq 'Win32_OperatingSystem') {
+                [pscustomobject]@{ LastBootUpTime = $script:bootTime; BuildNumber = $script:windowsBuild }
+            }
             else { [pscustomobject]@{ Manufacturer = 'Microsoft Corporation'; Model = 'Virtual Machine' } }
         }
         Mock Get-PnpDevice { $script:devices }
@@ -138,6 +141,11 @@ Describe 'Virtual display fixture ownership and approval' {
             }
         }
         Mock certutil.exe { throw 'Trust mutation is forbidden in these preflight tests.' }
+        Mock Invoke-UmdfSystemDeviceRemoval {
+            $script:nativeCalls.Add('system-remove')
+            if ($script:nativeExit -eq 0) { $script:devices = @() }
+            $script:nativeExit
+        }
         Mock Export-UmdfDriverDiagnostics {
             'diagnostic setup log' | Set-Content (Join-Path $ResultsDirectory 'setupapi-tail.log')
         }
@@ -240,6 +248,26 @@ Describe 'Virtual display fixture ownership and approval' {
         Test-Path -LiteralPath $StatePath | Should Be $true
         (Get-Content (Join-Path $ResultsDirectory 'cleanup.json') -Raw | ConvertFrom-Json).Removed | Should Be $false
         Assert-MockCalled Remove-Item -Times 0 -Exactly -Scope It -ParameterFilter { $Path -like 'Cert:*' }
+    }
+
+    It 'routes only the verified Windows 10 fixture through SYSTEM and preserves exit <Exit>' -TestCases @(
+        @{ Exit = 0; Success = $true }
+        @{ Exit = 3010; Success = $false }
+    ) {
+        param($Exit, $Success)
+        New-DisplayArtifact
+        $journal.Thumbprint = $artifactThumbprint
+        $journal | ConvertTo-Json | Set-Content $StatePath
+        $script:windowsBuild = 19045
+        $script:nativeExit = $Exit
+        $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'OK' })
+        if ($Success) { & $cleanupAction }
+        else { { & $cleanupAction } | Should Throw 'Device removal requires a reboot' }
+        Assert-MockCalled Invoke-UmdfSystemDeviceRemoval -Times 1 -Exactly -Scope It -ParameterFilter {
+            $InstanceId -eq 'ROOT\DISPLAY\0001' -and $IsolatedGuest -and $ResultsDirectory
+        }
+        Test-Path -LiteralPath $StatePath | Should Be (-not $Success)
+        Assert-MockCalled pnputil.exe -Times 0 -Exactly -Scope It -ParameterFilter { $args[0] -eq '/remove-device' }
     }
 
     It 'retains ownership when a present fixture remains after removal' {
