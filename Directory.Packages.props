@@ -4,7 +4,7 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <MSTestVersion>3.8.3</MSTestVersion>
     <!-- .NET 11 RC3 runtime. Update this when global.json changes. -->
-    <DotNetRuntimePackageVersion>11.0.0-rc.3.26522.148</DotNetRuntimePackageVersion>
+    <DotNetRuntimePackageVersion>11.0.0</DotNetRuntimePackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="AdaptiveCards.ObjectModel.WinUI3" Version="2.0.2-beta" />
