@@ -15,6 +15,7 @@ public class BasicTests : CommandPaletteTestBase
     [TestCategory("CmdPal")]
     public void HiddenPaletteCanBeReattachedWithoutRestart()
     {
+        Assert.IsNotNull(Session.Find<TextBox>(By.AccessibilityId("MainSearchBox"), timeoutMS: 0));
         SetSearchBox(string.Empty);
         var processId = Session.ProcessId;
         KeyboardHelper.SendChord(Key.Esc);
@@ -32,7 +33,7 @@ public class BasicTests : CommandPaletteTestBase
         {
             var reattached = helper.Init();
             Assert.AreEqual(processId, reattached.ProcessId, "Reattaching must preserve the running Command Palette process.");
-            Assert.IsNotNull(reattached.Find<TextBox>(By.AccessibilityId("MainSearchBox"), timeoutMS: 20_000));
+            Assert.IsNotNull(reattached.Find<TextBox>(By.AccessibilityId("MainSearchBox"), timeoutMS: 0));
         }
         finally
         {

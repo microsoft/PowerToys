@@ -84,7 +84,7 @@ public sealed class SessionHelper
     private Session ResolveMainWindowOrFail()
     {
         var window = WaitForMainWindow(scope, LaunchTimeout);
-        Assert.IsNotNull(window, $"Main window for {scope} did not appear via winappcli within {LaunchTimeout.TotalSeconds:0}s");
+        Assert.IsNotNull(window, $"Main window for {scope} was not ready via winappcli within {LaunchTimeout.TotalSeconds:0}s");
         return window!;
     }
 
@@ -448,8 +448,17 @@ public sealed class SessionHelper
                     }
                 });
             var mainWindow = ready.LastObservation;
-            return ready.Succeeded && mainWindow is not null
-                ? new Session(scope, mainWindow.Hwnd, mainWindow.Title, mainWindow.ProcessId, mainWindow.ProcessName)
+            if (!ready.Succeeded || mainWindow is null)
+            {
+                return null;
+            }
+
+            // The native window appears before startup finishes. Bind only after its search box is
+            // available, using the remaining launch budget rather than a later interaction's timeout.
+            var session = new Session(scope, mainWindow.Hwnd, mainWindow.Title, mainWindow.ProcessId, mainWindow.ProcessName);
+            var remainingMS = checked((int)Math.Max(0, (deadline - DateTime.UtcNow).TotalMilliseconds));
+            return remainingMS > 0 && session.WaitForElement(By.AccessibilityId("MainSearchBox"), remainingMS)
+                ? session
                 : null;
         }
 

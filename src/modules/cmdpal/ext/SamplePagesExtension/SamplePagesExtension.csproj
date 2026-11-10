@@ -6,7 +6,9 @@
     <RootNamespace>SamplePagesExtension</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
+    <UseWinUI>false</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\CmdPalExtensions\$(RootNamespace)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -46,8 +48,7 @@
 
   <ItemGroup>
     <PackageReference Include="Shmuelie.WinRTServer" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools.MSIX" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -55,7 +56,7 @@
   </ItemGroup>
   <!--
     Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
-    Tools extension to be activated for this project even if the MSIX build tools NuGet
+    Tools extension to be activated for this project even if the Windows App SDK Nuget
     package has not yet been restored.
   -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
@@ -69,7 +70,7 @@
   <!--
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
     Explorer "Package and Publish" context menu entry to be enabled for this project even if
-    the MSIX build tools NuGet package has not yet been restored.
+    the Windows App SDK Nuget package has not yet been restored.
   -->
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
