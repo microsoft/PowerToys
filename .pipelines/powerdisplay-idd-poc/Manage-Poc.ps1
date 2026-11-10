@@ -45,6 +45,8 @@ if ($Action -eq 'Cleanup') {
     if (-not (Test-Path -LiteralPath $StatePath)) { throw 'No ownership journal; nothing may be removed.' }
     $state = Read-UmdfJournal -StatePath $StatePath -HardwareId $hardwareId -Subject $subject -InfProperty BeforeInfs
     $cleanupStarted = Get-Date
+    $cleanupTraceName = $null
+    $cleanupTraceDirectory = $null
     $errors = [Collections.Generic.List[string]]::new()
     try {
         $lastBoot = (Get-CimInstance Win32_OperatingSystem -ErrorAction Stop).LastBootUpTime
@@ -73,6 +75,22 @@ if ($Action -eq 'Cleanup') {
                 Assert-UmdfPackageSignatures -DriverDirectory $driver -Files PtDisplayIdd.dll, PtDisplayIdd.cat, IddProbe.exe -Thumbprint $state.Thumbprint
             }
             finally { $certificate.Dispose() }
+            # Capture the driver-stack decision, not just SetupAPI's final removal veto.
+            $traceId = [guid]::NewGuid().ToString('N')
+            $cleanupTraceDirectory = Join-Path $ResultsDirectory "cleanup-trace-$traceId"
+            New-Item -ItemType Directory -Path $cleanupTraceDirectory | Out-Null
+            $providersPath = Join-Path $cleanupTraceDirectory 'providers.txt'
+            @(
+                '"{9C205A39-1250-487D-ABD7-E831C6290539}" 0xffffffffffffffff 5'
+                '"{2E35AAEB-857F-4BEB-A418-2E6C0E54D988}" 0xffffffffffffffff 5'
+                '"{D92BCB52-FA78-406F-A9A5-2037509FADEA}" 0xcf4 255'
+            ) | Set-Content -LiteralPath $providersPath
+            $traceName = "PowerToys-IddCleanup-$traceId"
+            & logman.exe create trace $traceName -pf $providersPath `
+                -o (Join-Path $cleanupTraceDirectory 'cleanup.etl') -f bincirc -max 16 -ets |
+                Set-Content (Join-Path $cleanupTraceDirectory 'start.txt')
+            if ($LASTEXITCODE) { throw "Cleanup trace start failed: exit=$LASTEXITCODE." }
+            $cleanupTraceName = $traceName
             $probe = Join-Path $driver 'IddProbe.exe'
             foreach ($connector in @(0, 1)) {
                 & $probe --connected $connector 0 | Out-Null
@@ -110,10 +128,23 @@ if ($Action -eq 'Cleanup') {
             }
         }
         if (@(Get-FixtureDevices).Count) { $errors.Add('Fixture device remains.') }
-        # Keep test trust and ownership on any teardown failure.
-        if ($errors.Count -eq 0) { Remove-UmdfTestTrust -State $state -Subject $subject }
     }
     catch { $errors.Add($_.Exception.Message) }
+    finally {
+        if ($cleanupTraceName) {
+            try {
+                & logman.exe stop $cleanupTraceName -ets |
+                    Set-Content (Join-Path $cleanupTraceDirectory 'stop.txt')
+                if ($LASTEXITCODE) { throw "Cleanup trace stop failed: session=$cleanupTraceName, exit=$LASTEXITCODE." }
+            }
+            catch { $errors.Add($_.Exception.Message) }
+        }
+    }
+    # Keep test trust and ownership on any teardown failure, including trace retirement.
+    if ($errors.Count -eq 0) {
+        try { Remove-UmdfTestTrust -State $state -Subject $subject }
+        catch { $errors.Add($_.Exception.Message) }
+    }
     if ($errors.Count) {
         try {
             # A later same-boot retry must not overwrite the original removal evidence.

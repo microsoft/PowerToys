@@ -94,6 +94,8 @@ Describe 'Virtual display fixture ownership and approval' {
         $script:leaveDevice = $false
         $script:removeOnReboot = $false
         $script:nativeCalls = [Collections.Generic.List[string]]::new()
+        $script:traceCalls = [Collections.Generic.List[object]]::new()
+        $script:traceFailure = ''
         $script:ArtifactDirectory = ''
         $script:probeAliases = [Collections.Generic.List[string]]::new()
         $script:probeFailure = ''
@@ -136,6 +138,10 @@ Describe 'Virtual display fixture ownership and approval' {
                 $removed = $args[1]
                 $script:devices = @($script:devices | Where-Object InstanceId -NE $removed)
             }
+        }
+        Mock logman.exe {
+            $script:traceCalls.Add(@($args))
+            $global:LASTEXITCODE = if ($args[0] -eq $script:traceFailure) { 5 } else { 0 }
         }
         Mock certutil.exe { throw 'Trust mutation is forbidden in these preflight tests.' }
         Mock Export-UmdfDriverDiagnostics {
@@ -250,6 +256,58 @@ Describe 'Virtual display fixture ownership and approval' {
         $script:leaveDevice = $true
         { & $cleanupAction } | Should Throw 'Fixture device remains'
         Test-Path -LiteralPath $StatePath | Should Be $true
+    }
+
+    It 'retires the exact bounded trace after successful cleanup or <Failure>' -TestCases @(
+        @{ Failure = 'none'; NativeExit = 0; ProbeFailure = ''; Expected = '' }
+        @{ Failure = 'native reboot requirement'; NativeExit = 3010; ProbeFailure = ''; Expected = 'requires a reboot' }
+        @{ Failure = 'monitor departure failure'; NativeExit = 0; ProbeFailure = '--connected 0 0'; Expected = 'monitor departure failed' }
+    ) {
+        param($Failure, $NativeExit, $ProbeFailure, $Expected)
+        New-DisplayArtifact
+        $journal.Thumbprint = $artifactThumbprint
+        $journal | ConvertTo-Json | Set-Content $StatePath
+        $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'OK' })
+        $script:nativeExit = $NativeExit
+        $script:probeFailure = $ProbeFailure
+        if ($Expected) { { & $cleanupAction } | Should Throw $Expected }
+        else { & $cleanupAction }
+        $script:traceCalls.Count | Should Be 2
+        $start = $script:traceCalls[0]
+        $stop = $script:traceCalls[1]
+        $start[0] | Should Be 'create'
+        $start[2] | Should Match '^PowerToys-IddCleanup-[a-f0-9]{32}$'
+        $start[$start.IndexOf('-f') + 1] | Should Be 'bincirc'
+        $start[$start.IndexOf('-max') + 1] | Should Be 16
+        $stop | Should Be @('stop', $start[2], '-ets')
+    }
+
+    It 'preserves ownership and trust without PnP mutation when tracing cannot start' {
+        New-DisplayArtifact
+        $journal.Thumbprint = $artifactThumbprint
+        $journal.ImportedStores = @('Root')
+        $journal | ConvertTo-Json | Set-Content $StatePath
+        $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'OK' })
+        $script:traceFailure = 'create'
+        { & $cleanupAction } | Should Throw 'Cleanup trace start failed'
+        $script:nativeCalls.Count | Should Be 0
+        Test-Path -LiteralPath $StatePath | Should Be $true
+        Assert-MockCalled Remove-Item -Times 0 -Exactly -Scope It -ParameterFilter { $Path -like 'Cert:*' }
+    }
+
+    It 'preserves the native removal error and ownership when trace retirement also fails' {
+        New-DisplayArtifact
+        $journal.Thumbprint = $artifactThumbprint
+        $journal.ImportedStores = @('Root')
+        $journal | ConvertTo-Json | Set-Content $StatePath
+        $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'OK' })
+        $script:nativeExit = 3010
+        $script:traceFailure = 'stop'
+        { & $cleanupAction } | Should Throw 'requires a reboot'
+        $cleanup = Get-Content (Join-Path $ResultsDirectory 'cleanup.json') -Raw | ConvertFrom-Json
+        ($cleanup.Errors -join '; ') | Should Match 'Cleanup trace stop failed'
+        Test-Path -LiteralPath $StatePath | Should Be $true
+        Assert-MockCalled Remove-Item -Times 0 -Exactly -Scope It -ParameterFilter { $Path -like 'Cert:*' }
     }
 
     It 'preserves native removal evidence when a later same-boot retry is refused' {
