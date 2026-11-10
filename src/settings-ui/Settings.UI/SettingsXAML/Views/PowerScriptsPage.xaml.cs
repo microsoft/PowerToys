@@ -28,11 +28,7 @@ public sealed partial class PowerScriptsPage : NavigablePage, IRefreshablePage
             SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default),
             ShellPage.SendDefaultIPCMessage);
         InitializeComponent();
-        Loaded += async (_, _) =>
-        {
-            RefreshEnabledState();
-            await RefreshAgentSkillsAsync(synchronize: true);
-        };
+        Loaded += (_, _) => RefreshEnabledState();
     }
 
     public static Visibility BoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
