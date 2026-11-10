@@ -49,6 +49,11 @@ parameters:
   - name: umdfHidArm64Dedicated
     type: boolean
     default: false
+  # Split the selected UI suites across this many parallel agents (1 = today's single job).
+  - name: uiTestShardCount
+    type: number
+    default: 1
+    values: [1, 2, 3, 4, 5, 6]
 
 jobs:
 - job: Test${{ parameters.platform }}${{ parameters.configuration }}${{ parameters.jobSuffix }}
@@ -57,6 +62,9 @@ jobs:
   condition: ${{ parameters.condition }}
   timeoutInMinutes: 300
   cancelTimeoutInMinutes: 15
+  ${{ if gt(parameters.uiTestShardCount, 1) }}:
+    strategy:
+      parallel: ${{ parameters.uiTestShardCount }}
   variables:
     ${{ if or(eq(parameters.platform, 'x64Win10'), eq(parameters.platform, 'x64Win11')) }}:
       BuildPlatform: x64
@@ -506,6 +514,26 @@ jobs:
         exit 1
       }
 
+      # Sharding: every parallel job packs the same suite list identically and keeps only its share.
+      $shardCount = if ($env:SHARD_COUNT) { [int]$env:SHARD_COUNT } else { 1 }
+      $shardIndex = 1
+      if ($shardCount -gt 1) {
+        $shardIndex = [int]$env:SHARD_INDEX
+        . "$(Build.SourcesDirectory)\.pipelines\UiTestShards.Common.ps1"
+        $candidates = @($entries | ForEach-Object { $_.Name -replace '\.runtimeconfig\.json$', '' })
+        if ($runMwbSandbox) { $candidates += 'MouseWithoutBorders.UITests' }
+        $mine = @(Get-UiTestShardSuites -Suites $candidates -ShardIndex $shardIndex -ShardCount $shardCount -Platform '$(TestPlatform)')
+        $entries = @($entries | Where-Object { $mine -contains ($_.Name -replace '\.runtimeconfig\.json$', '') })
+        if ($runMwbSandbox -and $mine -notcontains 'MouseWithoutBorders.UITests') {
+          # Another shard owns MWB; turn off its cleanup, diagnostics and TRX requirement here too.
+          $runMwbSandbox = $false
+          Write-Host "##vso[task.setvariable variable=RunMwbSandbox]false"
+        }
+        if ($entries.Count -eq 0 -and -not $runMwbSandbox) {
+          Write-Host "Shard $shardIndex/$shardCount has no suites to run."
+        }
+      }
+
       $resultsDir = "$(Common.TestResultsDirectory)"
       New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
       . "$(Build.SourcesDirectory)\.pipelines\umdf\UmdfCi.Common.ps1"
@@ -605,15 +633,15 @@ jobs:
           Write-Host "##[endgroup]"
         }
       }
-      if ($env:MWB_SELECTION_BLOCKED -eq 'true') {
+      if ($shardIndex -eq 1 -and $env:MWB_SELECTION_BLOCKED -eq 'true') {
         Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: MWB requires the selected revision's shared Release runtime bundle (buildNow or buildNowSlim). Older official/installed builds are not substituted; other selected suites run independently."
         $failed++
       }
-      if ($env:UMDF_HID_SELECTION_BLOCKED -eq 'true') {
+      if ($shardIndex -eq 1 -and $env:UMDF_HID_SELECTION_BLOCKED -eq 'true') {
         Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: explicitly selected GrabAndMove.UITests requires the configured dedicated ARM64 UMDF pool/image. No boot policies are changed; other selected suites run independently."
         $failed++
       }
-      if ($env:UMDF_DISPLAY_SELECTION_BLOCKED -eq 'true') {
+      if ($shardIndex -eq 1 -and $env:UMDF_DISPLAY_SELECTION_BLOCKED -eq 'true') {
         Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: PowerDisplay.UITests requires the isolated architecture-matched UMDF image. No boot policies are changed."
         $failed++
       }
@@ -637,6 +665,8 @@ jobs:
       EXCLUDE_UMDF_DISPLAY_SUITE: $(ExcludeUmdfDisplaySuite)
       UMDF_DISPLAY_SELECTION_BLOCKED: $(UmdfDisplaySelectionBlocked)
       POWERDISPLAY_UI_TEST_FILTER: $(PowerDisplayUiTestFilter)
+      SHARD_COUNT: ${{ parameters.uiTestShardCount }}
+      SHARD_INDEX: $(System.JobPositionInPhase)
       ${{ if eq(parameters.autoSelectUiTests, true) }}:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 

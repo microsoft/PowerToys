@@ -22,6 +22,16 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
+  # UI-test shards (parallel agents) per test platform; 1 = one job per platform, as before.
+  - name: uiTestShardsX64Win10
+    type: number
+    default: 1
+  - name: uiTestShardsX64Win11
+    type: number
+    default: 1
+  - name: uiTestShardsArm64
+    type: number
+    default: 1
 
 stages:
   # Stage 1: build the product and UI tests from the same source revision.
@@ -62,6 +72,7 @@ stages:
         - template: job-test-project.yml
           parameters:
             platform: x64Win10
+            uiTestShardCount: ${{ parameters.uiTestShardsX64Win10 }}
             configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
@@ -74,6 +85,7 @@ stages:
         - template: job-test-project.yml
           parameters:
             platform: x64Win11
+            uiTestShardCount: ${{ parameters.uiTestShardsX64Win11 }}
             configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
@@ -88,6 +100,7 @@ stages:
           parameters:
             umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
             platform: ${{ parameters.platform }}
+            uiTestShardCount: ${{ parameters.uiTestShardsArm64 }}
             configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
