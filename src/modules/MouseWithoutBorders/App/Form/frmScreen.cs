@@ -57,6 +57,8 @@ namespace MouseWithoutBorders
         private Cursor dropCur;
         private int[,] logonLogo;
         private Timer helperTimer;
+        private ManagedCommon.ThemeListener themeListener;
+        private int lastChangeIconCode = -1;
 #pragma warning restore CA2213
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -118,6 +120,7 @@ namespace MouseWithoutBorders
 
             NotifyIcon.Visible = false;
             NotifyIcon.Dispose();
+            DisposeTrayThemeListener();
             if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
             {
                 Helper.RunDDHelper(true);
@@ -251,6 +254,7 @@ namespace MouseWithoutBorders
                 // Common.HookClipboard();
                 CurIcon = Common.ICON_ONE;
                 ChangeIcon(-1);
+                ConfigureTrayThemeListener();
                 dotCur = CustomCursor.CreateDotCursor();
                 Cursor = dotCur;
                 dropCur = CustomCursor.CreateCursor(Icon.ToBitmap(), 0, 0);
@@ -623,9 +627,25 @@ namespace MouseWithoutBorders
         {
             try
             {
+                lastChangeIconCode = iconCode;
+                var themeAdaptive = Setting.Values.ShowThemeAdaptiveTrayIcon;
                 Graphics g;
                 Pen p;
                 Bitmap bm = Images.notify_default;
+                var disposeBitmap = false;
+
+                if (themeAdaptive)
+                {
+                    var iconPath = ManagedCommon.ThemeHelpers.GetSystemTheme() == ManagedCommon.AppTheme.Dark
+                        ? Path.Combine(Application.StartupPath, "LogoWhite.ico")
+                        : Path.Combine(Application.StartupPath, "LogoDark.ico");
+                    if (File.Exists(iconPath))
+                    {
+                        using Icon icon = new(iconPath);
+                        bm = icon.ToBitmap();
+                        disposeBitmap = true;
+                    }
+                }
 
                 /*
                 if (curIcon == Common.ICON_ONE)
@@ -649,30 +669,33 @@ namespace MouseWithoutBorders
                 }
                 */
 
+                var darkShell = ManagedCommon.ThemeHelpers.GetSystemTheme() == ManagedCommon.AppTheme.Dark;
+
                 if (CurIcon != Common.ICON_ONE)
                 {
-                    p = new Pen(Color.Red, 2);
+                    p = new Pen(themeAdaptive ? (darkShell ? Color.White : Color.Black) : Color.Red, 2);
                     g = Graphics.FromImage(bm);
                     g.DrawRectangle(p, 1, 1, bm.Width - 2, bm.Height - 2);
                     g.Dispose();
+                    p.Dispose();
                 }
 
                 if (iconCode == Common.ICON_SMALL_CLIPBOARD)
                 {
                     g = Graphics.FromImage(bm);
-                    g.FillEllipse(Brushes.Blue, 8, 8, 16, 16);
+                    g.FillEllipse(themeAdaptive ? (darkShell ? Brushes.White : Brushes.Black) : Brushes.Blue, 8, 8, 16, 16);
                     g.Dispose();
                 }
                 else if (iconCode == Common.ICON_BIG_CLIPBOARD)
                 {
                     g = Graphics.FromImage(bm);
-                    g.FillEllipse(Brushes.Yellow, 8, 8, 16, 16);
+                    g.FillEllipse(themeAdaptive ? (darkShell ? Brushes.LightGray : Brushes.DarkGray) : Brushes.Yellow, 8, 8, 16, 16);
                     g.Dispose();
                 }
                 else if (iconCode == Common.ICON_ERROR)
                 {
                     g = Graphics.FromImage(bm);
-                    g.FillEllipse(Brushes.Red, 8, 8, 16, 16);
+                    g.FillEllipse(themeAdaptive ? (darkShell ? Brushes.Gray : Brushes.DimGray) : Brushes.Red, 8, 8, 16, 16);
                     g.Dispose();
                 }
 
@@ -692,12 +715,53 @@ namespace MouseWithoutBorders
                 }
 
                 NotifyIcon.Icon = Icon.FromHandle(bm.GetHicon());
-                bm.Dispose();
+                if (disposeBitmap)
+                {
+                    bm.Dispose();
+                }
             }
             catch (Exception e)
             {
                 Logger.Log(e);
             }
+        }
+
+        internal void ConfigureTrayThemeListener()
+        {
+            DisposeTrayThemeListener();
+
+            if (!Setting.Values.ShowThemeAdaptiveTrayIcon)
+            {
+                return;
+            }
+
+            themeListener = new ManagedCommon.ThemeListener();
+            themeListener.SystemThemeChanged += OnTraySystemThemeChanged;
+        }
+
+        internal void RefreshTrayIcon()
+        {
+            ChangeIcon(lastChangeIconCode);
+        }
+
+        private void OnTraySystemThemeChanged(ManagedCommon.ThemeListener sender)
+        {
+            if (Setting.Values.ShowThemeAdaptiveTrayIcon)
+            {
+                Common.DoSomethingInUIThread(RefreshTrayIcon);
+            }
+        }
+
+        private void DisposeTrayThemeListener()
+        {
+            if (themeListener == null)
+            {
+                return;
+            }
+
+            themeListener.SystemThemeChanged -= OnTraySystemThemeChanged;
+            themeListener.Dispose();
+            themeListener = null;
         }
 
         internal void MenuAllPC_Click(object sender, EventArgs e)

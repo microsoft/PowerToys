@@ -83,6 +83,7 @@ public record SettingsModel
 
     public bool ShowSystemTrayIcon { get; init; } = true;
 
+    public bool ShowThemeAdaptiveTrayIcon { get; init; }
     public string Language { get; init; } = string.Empty;
 
     public bool IgnoreShortcutWhenFullscreen { get; init; } = true;
