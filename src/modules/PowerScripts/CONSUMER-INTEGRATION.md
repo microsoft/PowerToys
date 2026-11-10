@@ -381,6 +381,10 @@ delete original items need a separately reviewed security and UX design.
   short-lived, consumer-owned metadata cache out of process. Its flat submenu does not depend on
   nested flyouts working in the Windows 11 modern menu; the picker exposes the remaining catalogue.
   Cache data is presentation only, never execution authority.
+- One selected media file can also match primary image/audio MIME and scalar/array constraints.
+  Probe bounded headers on the shell's allowed slow/background state path, or during classic-menu
+  enumeration when no verified state is available. Keep the fast state callback free of media reads.
+  Defer full loading and validation to invocation. Never decode, transcode or hydrate media in the shell.
 - Pass one bounded selection request to the consumer process, not one process per file. Re-discover
   the script and revalidate compatibility/parameters immediately before calling the Host. Never
   replay a failed invocation automatically.

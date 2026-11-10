@@ -14,6 +14,11 @@ uses only `PowerScripts.Client` for execution and exports results as new, non-ov
 The existing `powerpreview` module starts/stops the catalogue process. Preview and thumbnail
 handlers do not load or execute scripts.
 
+The runner-owned app also receives context-menu requests through AppLifecycle activation,
+serialized per app instance. It retains private Host stdio sessions for catalogue and execution;
+metadata, approval and policy are still revalidated for every request. Windows sandboxes and
+interpreters remain fresh. Progress windows are constructed only after the configured delay.
+
 Enable the integration in **PowerScripts app > Consumer modules > File Explorer**. The
 **Show parameter options before running** preference is in File Explorer Add-ons settings
 and defaults on. With it off, required parameters without valid defaults disable the action.
@@ -38,8 +43,16 @@ selected originals read-only. Disabling isolation retains PowerScripts' existing
 Text becomes UTF-8 `.txt`; supported inline media is saved in its validated format. No result
 window is opened and returned files are never executed automatically.
 
-The initial selection contract is local regular files, including file-backed images/audio/video.
-Directories, reparse points, UNC/device paths and inline media input adaptation are excluded.
+The selection contract is local regular files, including file-backed images/audio/video.
+File-input scripts retain their extension/count matching. A single locally available PNG, JPEG,
+WebP, WAV, MP3 or FLAC can also match image/audio-input scripts that accept its MIME type.
+Menu classification reads at most 64 header bytes (plus a four-byte MP3 frame after ID3 metadata),
+on Explorer's allowed slow/background state path, or during classic-menu enumeration if
+no verified state is available. The fast state callback never reads media.
+Cloud placeholders are not hydrated, and media is not decoded or transcoded in Explorer.
+Invocation revalidates and supplies the existing scalar/array media payload, at most 16 MiB.
+Multiple selections, larger assets and unsupported formats remain file-input only.
+Directories, reparse points and UNC/device paths remain excluded.
 Windows and managed Linux execution continue to use PowerScripts' existing runtime configuration.
 
 Build the Core, native shell, app and `powerpreview` projects for the same architecture.
@@ -50,6 +63,14 @@ Modern-menu registration does not force an Explorer restart; the menu may requir
 window to appear. The classic menu uses the same `IExplorerCommand` implementation.
 
 See [consumer integration guidance](..\PowerScripts\CONSUMER-INTEGRATION.md) for the shared contract.
+
+The native menu integration check requires a running Debug consumer with the image/audio demo
+scripts in its catalogue. From the shell project folder in an x64 Developer Command Prompt:
+```
+cl /EHsc /std:c++20 /DUNICODE /D_UNICODE /DWIN32_LEAN_AND_MEAN /DNOMINMAX /I ..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.250303.1\include ShellExtensionTests.cpp /link windowsapp.lib shell32.lib shlwapi.lib ole32.lib user32.lib
+ShellExtensionTests.exe <shell DLL path> <valid PNG path> <valid WAV path> [invalid or non-media paths...]
+```
+This checks both callback orders, selection replacement, and fast/verified/classic menu latency.
 
 -  Add new C++ DLL project in the preview pane folder. This DLL is actual preview handler, i.e. implements IPreviewHandler/IThumbnailProvider interface.
 -  Add new .NET EXE project in the preview pane folder. This EXE is being spawned by C++ DLL to generate preview/thumbnail.

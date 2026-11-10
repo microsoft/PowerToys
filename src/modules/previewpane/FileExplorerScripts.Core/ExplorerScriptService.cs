@@ -38,7 +38,7 @@ public sealed class ExplorerScriptService
     {
         ArgumentNullException.ThrowIfNull(script);
         ArgumentNullException.ThrowIfNull(files);
-        if (script.Input != PowerScriptIO.Files)
+        if (script.Input is not (PowerScriptIO.Files or PowerScriptIO.Image or PowerScriptIO.Audio))
         {
             return false;
         }
@@ -47,7 +47,9 @@ public sealed class ExplorerScriptService
         try
         {
             ValidateSelection(selection);
-            return script.AcceptsFiles(selection);
+            return script.Input == PowerScriptIO.Files
+                ? script.AcceptsFiles(selection)
+                : selection.Length == 1 && MediaInput.Accepts(script, MediaInput.Probe(selection[0]));
         }
         catch (Exception ex) when (ex is ArgumentException or IOException or UnauthorizedAccessException)
         {
@@ -64,7 +66,13 @@ public sealed class ExplorerScriptService
         cancellationToken.ThrowIfCancellationRequested();
         ValidateSelection(selection);
         var scripts = await client.ListAsync(cancellationToken).ConfigureAwait(false);
-        return scripts.Where(script => script.Input == PowerScriptIO.Files && script.AcceptsFiles(selection)).ToArray();
+        var media = selection.Length == 1 ? MediaInput.Probe(selection[0]) : null;
+        return scripts.Where(script => script.Input switch
+        {
+            PowerScriptIO.Files => script.AcceptsFiles(selection),
+            PowerScriptIO.Image or PowerScriptIO.Audio => MediaInput.Accepts(script, media),
+            _ => false,
+        }).ToArray();
     }
 
     public Task<IReadOnlyList<string>> ExecuteAsync(
@@ -106,10 +114,28 @@ public sealed class ExplorerScriptService
             throw new ArgumentException("The script's input schema no longer declares parameters. Refresh its parameters before running.", nameof(parameters));
         }
 
+        var input = new PowerScriptTransformInput { Parameters = hasParameterBag ? validated : null };
+        if (current.Input == PowerScriptIO.Files)
+        {
+            input.FilePaths = selection;
+        }
+        else
+        {
+            var media = await MediaInput.ReadAsync(current, selection[0], cancellationToken).ConfigureAwait(false);
+            if (current.Input == PowerScriptIO.Image)
+            {
+                input.Image = media;
+            }
+            else
+            {
+                input.Audio = media;
+            }
+        }
+
         progress?.Report(ExplorerScriptStage.Running);
         var result = await client.TransformAsync(
             current.Id,
-            new PowerScriptTransformInput { FilePaths = selection, Parameters = hasParameterBag ? validated : null },
+            input,
             cancellationToken: cancellationToken).ConfigureAwait(false);
         if (result.ExitCode == 0)
         {

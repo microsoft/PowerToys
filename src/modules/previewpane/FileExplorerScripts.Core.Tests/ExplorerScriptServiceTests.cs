@@ -14,6 +14,51 @@ public sealed class ExplorerScriptServiceTests
     private static readonly string[] ExpectedCalls = ["list:file-explorer", "list:file-explorer", "transform:file-explorer"];
     private static readonly ExplorerScriptStage[] ExpectedStages = [ExplorerScriptStage.Preparing, ExplorerScriptStage.Running, ExplorerScriptStage.Saving];
 
+    [DataTestMethod]
+    [DataRow("image", "image/png", false)]
+    [DataRow("image", "image/png", true)]
+    [DataRow("audio", "audio/wav", false)]
+    [DataRow("audio", "audio/wav", true)]
+    public async Task SelectedMediaUsesVerifiedBytesAndDeclaredScalarOrArrayShape(string kind, string mime, bool array)
+    {
+        using var fixture = new Fixture();
+        var bytes = kind == "image" ? Fixture.Png() : Fixture.Wave();
+        var input = fixture.Write(kind == "image" ? "selected.png" : "selected.wav", bytes);
+        fixture.Write("catalogue.json", MediaCatalogue(kind, mime, array));
+        fixture.Write("result.json", """{"text":"produced"}""");
+        var service = Service(fixture);
+        var script = (await service.GetApplicableScriptsAsync([input])).Single();
+        var paths = await service.ExecuteAsync(script, [input], new Dictionary<string, JsonElement>(), fixture.Destination);
+        using var payload = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(fixture.Root, "payload.json")));
+        Assert.IsFalse(payload.RootElement.TryGetProperty("files", out _));
+        Assert.IsFalse(payload.RootElement.TryGetProperty("parameters", out _));
+        var media = payload.RootElement.GetProperty(kind);
+        Assert.AreEqual(array ? JsonValueKind.Array : JsonValueKind.Object, media.ValueKind);
+        var item = array ? media[0] : media;
+        Assert.AreEqual(mime, item.GetProperty("mimeType").GetString());
+        CollectionAssert.AreEqual(bytes, item.GetProperty("data").GetBytesFromBase64());
+        CollectionAssert.AreEqual(bytes, await File.ReadAllBytesAsync(input));
+        Assert.AreEqual("produced", await File.ReadAllTextAsync(paths.Single()));
+        CollectionAssert.AreEqual(ExpectedCalls, await File.ReadAllLinesAsync(Path.Combine(fixture.Root, "calls.txt")));
+    }
+
+    [TestMethod]
+    public async Task ChangedMediaBytesOrMimeContractNeverInvokesTransform()
+    {
+        using var fixture = new Fixture();
+        var input = fixture.Write("selected.png", Fixture.Png());
+        fixture.Write("catalogue.json", MediaCatalogue("image", "image/png", false));
+        var service = Service(fixture);
+        var script = (await service.GetApplicableScriptsAsync([input])).Single();
+        File.WriteAllText(input, "not an image anymore");
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => service.ExecuteAsync(script, [input], new Dictionary<string, JsonElement>(), fixture.Destination));
+        File.WriteAllBytes(input, Fixture.Png());
+        fixture.Write("catalogue.json", MediaCatalogue("image", "image/jpeg", false));
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => service.ExecuteAsync(script, [input], new Dictionary<string, JsonElement>(), fixture.Destination));
+        Assert.IsFalse(File.Exists(Path.Combine(fixture.Root, "payload.json")));
+        Assert.AreEqual(0, Directory.GetFiles(fixture.Destination).Length);
+    }
+
     [TestMethod]
     public async Task DiscoveryAndTransformAreAttributedAndUseTypedParametersAndCurrentMetadata()
     {
@@ -202,6 +247,9 @@ public sealed class ExplorerScriptServiceTests
 
     private static ExplorerScriptService Service(Fixture fixture) =>
         new(new PowerScriptsClient(ExplorerScriptService.ConsumerId, Path.Combine(AppContext.BaseDirectory, "fake-host", "FakeHost.exe"), fixture.Root));
+
+    private static string MediaCatalogue(string kind, string mime, bool array) =>
+        JsonSerializer.Serialize(new[] { new { id = "media", name = "Media script", io = new { input = kind, output = "text" }, inputSchema = Fixture.MediaSchema(kind, mime, array) } });
 
     private static string OptionalFileCatalogue(string? defaultValue) =>
         """

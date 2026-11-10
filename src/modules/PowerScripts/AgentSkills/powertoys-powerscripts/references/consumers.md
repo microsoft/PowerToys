@@ -13,7 +13,7 @@ PowerScripts app > Consumer modules.
 |---|---|---|
 | `advanced-paste` | Clipboard text/files/image/audio; never none | Pasteable text/files/image/audio; typed prompts, automatic discovery |
 | `keyboard-manager` | Ordinary action: none | Prefer none; manual saved shortcut, required options need defaults/saved arguments |
-| `file-explorer` (integration builds only) | Selected files | None/text/files/image/audio; typed prompts and separate exported results |
+| `file-explorer` (integration builds only) | Selected files; one compatible image/audio file | None/text/files/image/audio; typed prompts and separate exported results |
 | `command-line` | Explicit authorized Host test | Any supported contract; does not test another consumer's UI/binding |
 
 ## Advanced Paste
@@ -37,8 +37,11 @@ Do not revive removed fields or edit KBM JSON.
 
 ## File Explorer (separate integration builds)
 
-Requires primary `files`, not merely a `file-path` option. Accepts 1-1024 local
-regular files, no directories; all must match extensions/count.
+Primary `files` accepts 1-1024 local regular files matching extensions/count.
+Primary `image`/`audio` accepts one locally available PNG/JPEG/WebP/WAV/MP3/FLAC,
+matching the declared MIME and scalar/array bounds, at most 16 MiB. Headers are
+checked; no automatic transcoding or cloud hydration. Multiple selections/large
+media need `files`. A `file-path` option alone does not supply primary input.
 
 | Output | Presentation |
 |---|---|

@@ -10,6 +10,7 @@
 #include <winrt/Windows.Foundation.Collections.h>
 #include <algorithm>
 #include <chrono>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -86,11 +87,114 @@ namespace
         return files;
     }
 
-    bool Accepts(const JsonObject& script, const std::vector<std::wstring>& files)
+    std::wstring MediaMimeType(const std::wstring& file)
+    {
+        const auto extension = std::filesystem::path(file).extension().wstring();
+        for (const auto& [suffix, mime] : { std::pair{ L".png", L"image/png" }, { L".jpg", L"image/jpeg" }, { L".jpeg", L"image/jpeg" }, { L".webp", L"image/webp" }, { L".wav", L"audio/wav" }, { L".mp3", L"audio/mpeg" }, { L".flac", L"audio/flac" } })
+        {
+            if (CompareStringOrdinal(extension.c_str(), -1, suffix, -1, TRUE) == CSTR_EQUAL)
+            {
+                return mime;
+            }
+        }
+        return {};
+    }
+
+    std::wstring ProbeMedia(const std::wstring& path)
+    {
+        const auto mime = MediaMimeType(path);
+        const auto attributes = GetFileAttributesW(path.c_str());
+        if (mime.empty() || attributes == INVALID_FILE_ATTRIBUTES ||
+            (attributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_RECALL_ON_OPEN | FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS)))
+        {
+            return {};
+        }
+
+        const auto raw = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_OPEN_NO_RECALL, nullptr);
+        if (raw == INVALID_HANDLE_VALUE)
+        {
+            return {};
+        }
+        winrt::handle file{ raw };
+        BY_HANDLE_FILE_INFORMATION info{};
+        LARGE_INTEGER length{};
+        if (!GetFileInformationByHandle(file.get(), &info) || (info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) ||
+            !GetFileSizeEx(file.get(), &length) || length.QuadPart <= 0 || length.QuadPart > 16 * 1024 * 1024)
+        {
+            return {};
+        }
+
+        unsigned char header[64]{};
+        DWORD count = 0;
+        if (!ReadFile(file.get(), header, static_cast<DWORD>(std::min<LONGLONG>(sizeof(header), length.QuadPart)), &count, nullptr))
+        {
+            return {};
+        }
+        const auto tag = [&](size_t offset, const char* value, size_t size) { return count >= offset + size && std::memcmp(header + offset, value, size) == 0; };
+        const auto riffSize = count >= 8 ? static_cast<unsigned long>(header[4]) | (static_cast<unsigned long>(header[5]) << 8) |
+                                               (static_cast<unsigned long>(header[6]) << 16) | (static_cast<unsigned long>(header[7]) << 24) :
+                                           0;
+        bool valid = false;
+        if (mime == L"image/png")
+        {
+            valid = length.QuadPart >= 33 && tag(0, "\x89PNG\r\n\x1a\n", 8) && tag(12, "IHDR", 4);
+        }
+        else if (mime == L"image/jpeg")
+        {
+            valid = length.QuadPart >= 4 && count >= 3 && header[0] == 0xff && header[1] == 0xd8 && header[2] == 0xff;
+        }
+        else if (mime == L"image/webp" || mime == L"audio/wav")
+        {
+            valid = length.QuadPart >= (mime == L"image/webp" ? 20 : 44) && tag(0, "RIFF", 4) &&
+                    tag(8, mime == L"image/webp" ? "WEBP" : "WAVE", 4) && riffSize == length.QuadPart - 8;
+        }
+        else if (mime == L"audio/flac")
+        {
+            valid = length.QuadPart >= 42 && count >= 8 && tag(0, "fLaC", 4) &&
+                    (header[4] & 0x7f) == 0 && header[5] == 0 && header[6] == 0 && header[7] == 34;
+        }
+        else if (mime == L"audio/mpeg")
+        {
+            if (tag(0, "ID3", 3))
+            {
+                if (count < 10 || header[3] < 2 || header[3] > 4 || (header[6] | header[7] | header[8] | header[9]) >= 128)
+                {
+                    return {};
+                }
+                LARGE_INTEGER offset{};
+                offset.QuadPart = 10LL + (header[6] << 21 | header[7] << 14 | header[8] << 7 | header[9]);
+                if (header[3] == 4 && (header[5] & 16))
+                {
+                    offset.QuadPart += 10;
+                }
+                if (offset.QuadPart > length.QuadPart - 4 || !SetFilePointerEx(file.get(), offset, nullptr, FILE_BEGIN) ||
+                    !ReadFile(file.get(), header, 4, &count, nullptr))
+                {
+                    return {};
+                }
+            }
+            valid = count >= 4 && header[0] == 0xff && (header[1] & 0xe0) == 0xe0 &&
+                    (header[1] & 0x18) != 8 && (header[1] & 6) == 2 &&
+                    (header[2] & 0xf0) != 0 && (header[2] & 0xf0) != 0xf0 && (header[2] & 0x0c) != 0x0c;
+        }
+        return valid ? mime : L"";
+    }
+
+    bool Accepts(const JsonObject& script, const std::vector<std::wstring>& files, const std::wstring& mediaMime = {})
     {
         if (files.empty() || files.size() < script.GetNamedNumber(L"min", 0) || files.size() > script.GetNamedNumber(L"max", 1024))
         {
             return false;
+        }
+        const auto kind = script.GetNamedString(L"kind", L"files");
+        if (kind != L"files")
+        {
+            if (files.size() != 1 || mediaMime.empty() || !mediaMime.starts_with(std::wstring(kind) + L"/"))
+            {
+                return false;
+            }
+            const auto types = script.GetNamedArray(L"mimeTypes", JsonArray{});
+            return std::any_of(types.begin(), types.end(), [&](const auto& value) { return value.GetString() == mediaMime; });
         }
         const auto extensions = script.GetNamedArray(L"extensions", JsonArray{});
         return extensions.Size() == 0 || std::all_of(files.begin(), files.end(), [&](const auto& file) {
@@ -222,7 +326,7 @@ public:
         *guid = root ? __uuidof(ScriptCommand) : GUID_NULL;
         return S_OK;
     }
-    IFACEMETHODIMP GetState(IShellItemArray* selection, BOOL, EXPCMDSTATE* state) override
+    IFACEMETHODIMP GetState(IShellItemArray* selection, BOOL okToBeSlow, EXPCMDSTATE* state) override
     {
         *state = ECS_HIDDEN;
         try
@@ -232,13 +336,24 @@ public:
                 *state = enabled ? ECS_ENABLED : ECS_DISABLED;
                 return S_OK;
             }
-            files = GetFiles(selection ? selection : storedSelection.Get());
+            const auto currentFiles = GetFiles(selection ? selection : storedSelection.Get());
+            if (currentFiles != files)
+            {
+                mediaChecked = false;
+                mediaMime.clear();
+            }
+            files = currentFiles;
             catalogue = ReadCatalogue();
             if (!files.empty() && catalogue.GetNamedBoolean(L"enabled", false))
             {
                 const auto scripts = catalogue.GetNamedArray(L"scripts", JsonArray{});
+                const auto mediaState = CheckMedia(okToBeSlow);
+                if (mediaState != S_OK)
+                {
+                    return mediaState;
+                }
                 const auto available = catalogue.GetNamedBoolean(L"truncated", false) || catalogue.HasKey(L"error") ||
-                                       std::any_of(scripts.begin(), scripts.end(), [&](const auto& script) { return Accepts(script.GetObject(), files); });
+                                       std::any_of(scripts.begin(), scripts.end(), [&](const auto& script) { return Accepts(script.GetObject(), files, mediaMime); });
                 *state = available ? ECS_ENABLED : ECS_HIDDEN;
             }
             return S_OK;
@@ -268,6 +383,9 @@ public:
     IFACEMETHODIMP SetSelection(IShellItemArray* selection) override
     {
         storedSelection = selection;
+        files.clear();
+        mediaChecked = false;
+        mediaMime.clear();
         return S_OK;
     }
     IFACEMETHODIMP GetSelection(REFIID iid, void** selection) override
@@ -276,6 +394,27 @@ public:
     }
 
 private:
+    HRESULT CheckMedia(BOOL okToBeSlow)
+    {
+        const auto candidate = files.size() == 1 ? MediaMimeType(files[0]) : L"";
+        const auto scripts = catalogue.GetNamedArray(L"scripts", JsonArray{});
+        if (!mediaChecked && !candidate.empty() &&
+            std::any_of(scripts.begin(), scripts.end(), [&](const auto& value) {
+                const auto script = value.GetObject();
+                return script.GetNamedString(L"kind", L"files") != L"files" && Accepts(script, files, candidate);
+            }))
+        {
+            // Keep the fast GetState path free of media reads.
+            if (!okToBeSlow)
+            {
+                return E_PENDING;
+            }
+            mediaMime = ProbeMedia(files[0]);
+            mediaChecked = true;
+        }
+        return S_OK;
+    }
+
     bool root = true;
     std::wstring id;
     std::wstring name = L"PowerScripts";
@@ -283,6 +422,8 @@ private:
     std::wstring reason;
     std::vector<std::wstring> files;
     std::wstring iconLocation;
+    std::wstring mediaMime;
+    bool mediaChecked = false;
     JsonObject catalogue;
     ComPtr<IShellItemArray> storedSelection;
 };
@@ -340,12 +481,18 @@ HRESULT ScriptCommand::EnumSubCommands(IEnumExplorerCommand** result)
         {
             files = GetFiles(storedSelection.Get());
         }
+        if (files.empty() || !catalogue.GetNamedBoolean(L"enabled", false))
+        {
+            return list.CopyTo(result);
+        }
+        // The classic menu can enumerate without a preceding slow GetState callback.
+        winrt::check_hresult(CheckMedia(TRUE));
         const auto showParameters = catalogue.GetNamedBoolean(L"showParameters", true);
         auto needsPicker = catalogue.GetNamedBoolean(L"truncated", false) || catalogue.HasKey(L"error");
         for (const auto& item : catalogue.GetNamedArray(L"scripts", JsonArray{}))
         {
             const auto script = item.GetObject();
-            if (Accepts(script, files))
+            if (Accepts(script, files, mediaMime))
             {
                 if (list->commands.size() == 14)
                 {

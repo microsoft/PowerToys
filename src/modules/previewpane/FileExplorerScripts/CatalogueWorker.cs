@@ -31,7 +31,8 @@ internal static class CatalogueWorker
         try
         {
             await ShellRegistration.RegisterAsync();
-            var client = new PowerScriptsClient("file-explorer");
+            using var client = new PowerScriptsClient("file-explorer", reuseHost: true);
+            var defaultIconPath = Path.Combine(AppContext.BaseDirectory, "PowerToys.FileExplorerScripts.exe");
             string? lastError = null;
             do
             {
@@ -40,7 +41,7 @@ internal static class CatalogueWorker
                     using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
                     var enabled = ExplorerSettings.IsParentEnabled() && await IsConsumerEnabledAsync(client, timeout.Token);
                     var scripts = enabled ? await client.ListAsync(timeout.Token) : [];
-                    var fileScripts = scripts.Where(item => item.Input == PowerScriptIO.Files).Take(1025).ToArray();
+                    var fileScripts = scripts.Where(item => item.Input is PowerScriptIO.Files or PowerScriptIO.Image or PowerScriptIO.Audio).Take(1025).ToArray();
                     var showParameters = ExplorerSettings.ShowParameters();
                     WriteCache(writer =>
                     {
@@ -55,9 +56,11 @@ internal static class CatalogueWorker
                             writer.WriteStartObject();
                             writer.WriteString("id", script.Id);
                             writer.WriteString("name", script.Name.Length > 128 ? script.Name[..128] : script.Name);
-                            writer.WriteString("iconPath", script.IconPath);
-                            writer.WriteNumber("min", script.InputMinFiles);
-                            if (script.InputMaxFiles is int max)
+                            writer.WriteString("iconPath", string.IsNullOrEmpty(script.IconPath) ? defaultIconPath : script.IconPath);
+                            writer.WriteString("kind", script.Input.ToString().ToLowerInvariant());
+                            var media = script.Input == PowerScriptIO.Files ? null : MediaInput.GetContract(script);
+                            writer.WriteNumber("min", media?.Minimum ?? script.InputMinFiles);
+                            if ((media?.Maximum ?? script.InputMaxFiles) is int max)
                             {
                                 writer.WriteNumber("max", max);
                             }
@@ -70,6 +73,17 @@ internal static class CatalogueWorker
                             }
 
                             writer.WriteEndArray();
+                            if (media is not null)
+                            {
+                                writer.WriteStartArray("mimeTypes");
+                                foreach (var mime in media.MimeTypes)
+                                {
+                                    writer.WriteStringValue(mime);
+                                }
+
+                                writer.WriteEndArray();
+                            }
+
                             writer.WriteEndObject();
                         }
 

@@ -11,6 +11,64 @@ namespace FileExplorerScripts.Core.Tests;
 public sealed class SelectionTests
 {
     [TestMethod]
+    public void MediaMatchingChecksHeadersMimeAndSingleSelectionWithoutExcludingFileActions()
+    {
+        using var fixture = new Fixture();
+        var image = fixture.Write("image.PNG", Fixture.Png());
+        var audio = fixture.Write("audio.wav", Fixture.Wave());
+        var fake = fixture.Write("not-image.jpg", "not an image");
+        var mislabeled = fixture.Write("wrong.png", Fixture.Wave());
+        var png = new PowerScriptInfo { Input = PowerScriptIO.Image, InputSchema = Fixture.MediaSchema("image", "image/png") };
+        var wav = new PowerScriptInfo { Input = PowerScriptIO.Audio, InputSchema = Fixture.MediaSchema("audio", "audio/wav") };
+        Assert.IsTrue(ExplorerScriptService.IsApplicable(png, [image]));
+        Assert.IsTrue(ExplorerScriptService.IsApplicable(wav, [audio]));
+        Assert.IsFalse(ExplorerScriptService.IsApplicable(png, [audio]));
+        Assert.IsFalse(ExplorerScriptService.IsApplicable(wav, [image]));
+        Assert.IsFalse(ExplorerScriptService.IsApplicable(png, [fake]));
+        Assert.IsFalse(ExplorerScriptService.IsApplicable(png, [mislabeled]));
+        Assert.IsFalse(ExplorerScriptService.IsApplicable(png, [image, image]));
+        Assert.IsTrue(ExplorerScriptService.IsApplicable(new PowerScriptInfo { Input = PowerScriptIO.Files, InputExtensions = ["*"] }, [fake]));
+        Assert.IsFalse(ExplorerScriptService.IsApplicable(new PowerScriptInfo { Input = PowerScriptIO.Image, InputSchema = Fixture.MediaSchema("image", "image/jpeg") }, [image]));
+    }
+
+    [TestMethod]
+    public void OversizedAndTruncatedMediaRemainAvailableOnlyToFileScripts()
+    {
+        using var fixture = new Fixture();
+        var path = fixture.Write("large.png", Fixture.Png());
+        using (var stream = File.OpenWrite(path))
+        {
+            stream.SetLength(PowerScriptMedia.MaxItemBytes + 1L);
+        }
+
+        var png = new PowerScriptInfo { Input = PowerScriptIO.Image, InputSchema = Fixture.MediaSchema("image", "image/png") };
+        Assert.IsFalse(ExplorerScriptService.IsApplicable(png, [path]));
+        Assert.IsTrue(ExplorerScriptService.IsApplicable(new PowerScriptInfo { Input = PowerScriptIO.Files }, [path]));
+        var truncated = fixture.Write("short.png", Fixture.Png()[..15]);
+        Assert.IsFalse(ExplorerScriptService.IsApplicable(png, [truncated]));
+    }
+
+    [TestMethod]
+    public void TaggedAudioChecksTheFrameAfterMetadataInsteadOfAcceptingAnId3Label()
+    {
+        using var fixture = new Fixture();
+        var bytes = new byte[1028];
+        "ID3"u8.CopyTo(bytes);
+        bytes[3] = 4;
+        bytes[8] = 7;
+        bytes[9] = 118;
+        bytes[1024] = 0xff;
+        bytes[1025] = 0xfb;
+        bytes[1026] = 0x90;
+        var path = fixture.Write("tagged.mp3", bytes);
+        var script = new PowerScriptInfo { Input = PowerScriptIO.Audio, InputSchema = Fixture.MediaSchema("audio", "audio/mpeg") };
+        Assert.IsTrue(ExplorerScriptService.IsApplicable(script, [path]));
+        bytes[1024] = 0;
+        File.WriteAllBytes(path, bytes);
+        Assert.IsFalse(ExplorerScriptService.IsApplicable(script, [path]));
+    }
+
+    [TestMethod]
     public void EveryFileAndSelectionCountMustMatchWithoutMutatingSelection()
     {
         using var fixture = new Fixture();

@@ -28,6 +28,7 @@ public sealed partial class ExplorerExecutionWindow : Window
     private readonly TaskCompletionSource _closed = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private bool _running;
     private ExplorerScriptStage _stage;
+    private TimeSpan _elapsedOffset;
 
     internal ExplorerExecutionWindow(string name, int fileCount, CancellationTokenSource? cancellation = null)
     {
@@ -67,8 +68,9 @@ public sealed partial class ExplorerExecutionWindow : Window
 
     internal bool WasCancelled { get; private set; }
 
-    internal void Start(TimeSpan delay)
+    internal void Start(TimeSpan delay, TimeSpan elapsedOffset = default)
     {
+        _elapsedOffset = elapsedOffset;
         _running = true;
         Progress.IsActive = true;
         _elapsed.Start();
@@ -112,8 +114,9 @@ public sealed partial class ExplorerExecutionWindow : Window
         Progress.IsActive = false;
     }
 
-    internal Task ShowFailureAsync(Exception exception)
+    internal Task ShowFailureAsync(Exception exception, ExplorerScriptStage? stage = null)
     {
+        _stage = stage ?? _stage;
         Finish();
         ProgressRow.Visibility = Visibility.Collapsed;
         Failure.Title = Strings.Get(WasCancelled ? "CancelledTitle" : _stage == ExplorerScriptStage.Saving ? "SaveFailed" : "Failed");
@@ -150,7 +153,7 @@ public sealed partial class ExplorerExecutionWindow : Window
     }
 
     private void UpdateElapsed() =>
-        Elapsed.Text = string.Format(CultureInfo.CurrentCulture, Strings.Elapsed, _elapsed.Elapsed.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture));
+        Elapsed.Text = string.Format(CultureInfo.CurrentCulture, Strings.Elapsed, (_elapsed.Elapsed + _elapsedOffset).ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture));
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)
     {

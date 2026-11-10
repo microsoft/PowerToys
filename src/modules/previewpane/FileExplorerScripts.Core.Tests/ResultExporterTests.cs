@@ -174,6 +174,10 @@ public sealed class ResultExporterTests
         Assert.AreEqual(".wav", Path.GetExtension(audio.Single()));
         CollectionAssert.AreEqual(bitmap, await File.ReadAllBytesAsync(images[0]));
         CollectionAssert.AreEqual(wave, await File.ReadAllBytesAsync(audio[0]));
+        var png = Fixture.Png();
+        var compressed = await Export(new PowerScriptTransformResult { Image = new PowerScriptMedia(new PowerScriptMediaItem("image/png", png)) }, PowerScriptIO.Image, fixture);
+        Assert.AreEqual(".png", Path.GetExtension(compressed.Single()));
+        CollectionAssert.AreEqual(png, await File.ReadAllBytesAsync(compressed[0]));
     }
 
     [TestMethod]
@@ -338,21 +342,5 @@ public sealed class ResultExporterTests
         return bytes;
     }
 
-    private static byte[] Wave()
-    {
-        var bytes = new byte[46];
-        "RIFF"u8.CopyTo(bytes);
-        BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(4), 38);
-        "WAVEfmt "u8.CopyTo(bytes.AsSpan(8));
-        BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(16), 16);
-        BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(20), 1);
-        BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(22), 1);
-        BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(24), 44100);
-        BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(28), 88200);
-        BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(32), 2);
-        BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(34), 16);
-        "data"u8.CopyTo(bytes.AsSpan(36));
-        BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(40), 2);
-        return bytes;
-    }
+    private static byte[] Wave() => Fixture.Wave();
 }

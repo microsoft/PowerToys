@@ -4,6 +4,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FileExplorerScripts.Core;
 using ManagedCommon;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using PowerScripts.Client;
 using Windows.Data.Xml.Dom;
@@ -22,14 +24,30 @@ using Windows.UI.Notifications;
 
 namespace FileExplorerScripts;
 
-public partial class App : Application
+public sealed partial class App : Application, IDisposable
 {
+    private readonly PowerScriptsClient _client = new("file-explorer", reuseHost: true);
+    private readonly SemaphoreSlim _requests = new(1, 1);
+    private readonly CancellationTokenSource _shutdown = new();
+    private readonly Window? _lifetimeWindow;
     private ExplorerScriptWindow? _window;
     private ExplorerExecutionWindow? _executionWindow;
+    private ExplorerScriptStage _lastStage;
+    private bool _disposed;
+
+    internal DispatcherQueue UiDispatcher { get; } = DispatcherQueue.GetForCurrentThread();
 
     public App()
     {
         InitializeComponent();
+        var arguments = Environment.GetCommandLineArgs();
+        if (arguments.Length == 3 && arguments[1] == "--watch")
+        {
+            // WinUI exits when its last window closes. Keep the runner-owned app alive between requests.
+            _lifetimeWindow = new Window();
+            _lifetimeWindow.AppWindow.Hide();
+        }
+
         Logger.InitializeLogger("\\File Explorer\\PowerScripts\\Logs");
         UnhandledException += (_, e) => Logger.LogError("Unhandled Explorer PowerScripts exception.", e.Exception);
     }
@@ -43,11 +61,22 @@ public partial class App : Application
             if (arguments.Length == 3 && arguments[1] == "--watch")
             {
                 watching = true;
+                try
+                {
+                    using var warmup = CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token);
+                    warmup.CancelAfter(TimeSpan.FromSeconds(10));
+                    await _client.ListAsync(warmup.Token);
+                }
+                catch (Exception exception) when (exception is IOException or InvalidOperationException or Win32Exception or System.Text.Json.JsonException or OperationCanceledException)
+                {
+                    Logger.LogError("Unable to prewarm the Explorer PowerScripts Host. Catalogue refresh will report its current availability.", exception);
+                }
+
                 await CatalogueWorker.RunAsync(int.Parse(arguments[2], CultureInfo.InvariantCulture));
             }
             else if (arguments.Length == 3 && arguments[1] == "--request")
             {
-                await RunRequestAsync(InvocationRequest.Read(arguments[2]));
+                await ExecuteRequestAsync(arguments[2]);
             }
             else
             {
@@ -78,10 +107,70 @@ public partial class App : Application
         }
         finally
         {
+            _shutdown.Cancel();
+            _client.Dispose();
             _window?.Close();
+            _window = null;
             _executionWindow?.Finish();
             _executionWindow?.Close();
+            _executionWindow = null;
+            await _requests.WaitAsync();
+            Dispose();
+            _lifetimeWindow?.Close();
             Exit();
+        }
+    }
+
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            _disposed = true;
+            _shutdown.Cancel();
+            _client.Dispose();
+            _requests.Dispose();
+            _shutdown.Dispose();
+        }
+
+        GC.SuppressFinalize(this);
+    }
+
+    internal async Task ExecuteRequestAsync(string id)
+    {
+        var entered = false;
+        try
+        {
+            await _requests.WaitAsync(_shutdown.Token);
+            entered = true;
+            _lastStage = ExplorerScriptStage.Preparing;
+            await RunRequestAsync(InvocationRequest.Read(id));
+        }
+        catch (OperationCanceledException)
+        {
+            // Configuration cancellation and owner shutdown do not submit another invocation.
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or Win32Exception or System.Text.Json.JsonException or COMException or NotSupportedException)
+        {
+            Logger.LogError("Explorer PowerScript could not complete.", exception);
+            if (!_shutdown.IsCancellationRequested)
+            {
+                _window?.Close();
+                _window = null;
+                _executionWindow ??= new ExplorerExecutionWindow(Strings.Get("Title"), 0);
+                await _executionWindow.ShowFailureAsync(exception, _lastStage);
+            }
+        }
+        finally
+        {
+            if (entered)
+            {
+                _window?.Close();
+                _window = null;
+                _executionWindow?.Finish();
+                _executionWindow?.Close();
+                _executionWindow = null;
+                _requests.Release();
+            }
         }
     }
 
@@ -98,9 +187,9 @@ public partial class App : Application
             throw new InvalidOperationException("File Explorer Add-ons is disabled.");
         }
 
-        var client = new PowerScriptsClient("file-explorer");
-        var service = new ExplorerScriptService(client);
-        using var discoveryTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var service = new ExplorerScriptService(_client);
+        using var discoveryTimeout = CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token);
+        discoveryTimeout.CancelAfter(TimeSpan.FromSeconds(10));
         System.Collections.Generic.IReadOnlyList<PowerScriptInfo> scripts;
         try
         {
@@ -140,11 +229,44 @@ public partial class App : Application
         var destination = parents.Length == 1 ? parents[0] : await PickDestinationAsync(scripts, request);
         using var userCancellation = new CancellationTokenSource();
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(10));
-        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(userCancellation.Token, timeout.Token);
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(userCancellation.Token, timeout.Token, _shutdown.Token);
         var delay = ExplorerSettings.StatusDelay();
-        _executionWindow = new ExplorerExecutionWindow(script.Name, request.Files.Count, userCancellation);
-        _executionWindow.Start(delay);
-        var progress = new Progress<ExplorerScriptStage>(_executionWindow.ReportStage);
+        var elapsed = Stopwatch.StartNew();
+        var popup = new DispatcherTimer();
+        var finished = false;
+        void ShowProgress()
+        {
+            _executionWindow = new ExplorerExecutionWindow(script.Name, request.Files.Count, userCancellation);
+            _executionWindow.Start(TimeSpan.Zero, elapsed.Elapsed);
+            _executionWindow.ReportStage(_lastStage);
+        }
+
+        if (delay == TimeSpan.Zero)
+        {
+            ShowProgress();
+        }
+        else
+        {
+            popup.Interval = delay;
+            popup.Tick += (_, _) =>
+            {
+                popup.Stop();
+                if (!finished)
+                {
+                    ShowProgress();
+                }
+            };
+            popup.Start();
+        }
+
+        var progress = new Progress<ExplorerScriptStage>(stage =>
+        {
+            if (!finished)
+            {
+                _lastStage = stage;
+                _executionWindow?.ReportStage(stage);
+            }
+        });
         System.Collections.Generic.IReadOnlyList<string> outputs;
         try
         {
@@ -154,9 +276,15 @@ public partial class App : Application
         {
             throw new InvalidOperationException(Strings.Get(userCancellation.IsCancellationRequested ? "Cancelled" : "TimedOut"), exception);
         }
+        finally
+        {
+            finished = true;
+            popup.Stop();
+            elapsed.Stop();
+        }
 
-        _executionWindow.Finish();
-        _executionWindow.Close();
+        _executionWindow?.Finish();
+        _executionWindow?.Close();
         _executionWindow = null;
 
         try

@@ -50,6 +50,7 @@
     <ClCompile Include="ShellExtension.cpp" />
     <None Include="exports.def" />
     <None Include="AppxManifest.xml" />
+    <None Include="ShellExtensionTests.cpp" />
   </ItemGroup>
   <Target Name="BuildContextMenuPackage" AfterTargets="Build">
     <MakeDir Directories="$(IntDir)Package\Assets" />
