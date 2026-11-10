@@ -121,6 +121,7 @@ AUTOTICKS
 AUTOUPDATE
 AWAYMODE
 azcliversion
+AZERTY
 azman
 azureaiinference
 azureinference
@@ -1562,6 +1563,8 @@ quickaccent
 quicklinks
 quickmask
 QUNS
+qwaz
+qwazy
 RAII
 randi
 rasterization
