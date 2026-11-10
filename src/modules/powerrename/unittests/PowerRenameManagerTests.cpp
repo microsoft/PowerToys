@@ -271,7 +271,7 @@ namespace PowerRenameManagerTests
                 { L"Test", L"Test_norename", false, false, 0 }
             };
 
-            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Titlecase);
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | TitleCase);
         }      
 
         TEST_METHOD (VerifyTitlecaseWithApostropheTransform)
@@ -282,7 +282,7 @@ namespace PowerRenameManagerTests
                 { L"Test", L"Test_norename", false, false, 0 }
             };
 
-            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Titlecase);
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | TitleCase);
         }
 
         TEST_METHOD (VerifyCapitalizedTransform)
@@ -304,6 +304,68 @@ namespace PowerRenameManagerTests
             };
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Capitalized);
+        }
+
+        TEST_METHOD (VerifySentenceCaseTransform)
+        {
+            rename_pairs renamePairs[] = {
+                { L"foo and the to", L"Bar and the to", false, true, 0 },
+                { L"foo And The To.txt", L"Bar and the to.txt", true, true, 0 },
+                { L"01 - foo test.txt", L"01 - Bar test.txt", true, true, 0 },
+                { L"--foo test--.txt", L"--Bar test--.txt", true, true, 0 },
+                { L"Test", L"Test_norename", false, false, 0 }
+            };
+
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | SentenceCase);
+        }
+
+        TEST_METHOD (VerifySentenceCaseDirectTransform)
+        {
+            wchar_t result[MAX_PATH] = { 0 };
+
+            // Basic sentence case with file extension preserved.
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"just a test.txt", SentenceCase, false)));
+            Assert::AreEqual(L"Just a test.txt", result);
+
+            // Already capitalized.
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"Just a test.txt", SentenceCase, false)));
+            Assert::AreEqual(L"Just a test.txt", result);
+
+            // All uppercase stem with extension case preserved.
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"JUST A TEST.TXT", SentenceCase, false)));
+            Assert::AreEqual(L"Just a test.TXT", result);
+
+            // Leading numbers and symbols.
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"01 - just a test.txt", SentenceCase, false)));
+            Assert::AreEqual(L"01 - Just a test.txt", result);
+
+            // Leading punctuation.
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"--hello world--.txt", SentenceCase, false)));
+            Assert::AreEqual(L"--Hello world--.txt", result);
+
+            // Folder.
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"just a test folder", SentenceCase, true)));
+            Assert::AreEqual(L"Just a test folder", result);
+
+            // File without extension.
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"just a test", SentenceCase, false)));
+            Assert::AreEqual(L"Just a test", result);
+
+            // Single letter.
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"a.txt", SentenceCase, false)));
+            Assert::AreEqual(L"A.txt", result);
+
+            // No letters.
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"123_456.txt", SentenceCase, false)));
+            Assert::AreEqual(L"123_456.txt", result);
+
+            // Empty string.
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"", SentenceCase, false)));
+            Assert::AreEqual(L"", result);
+
+            // ExtensionOnly flag should leave name untouched.
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"just a test.txt", SentenceCase | ExtensionOnly, false)));
+            Assert::AreEqual(L"just a test.txt", result);
         }
 
         TEST_METHOD (VerifyNameOnlyTransform)
