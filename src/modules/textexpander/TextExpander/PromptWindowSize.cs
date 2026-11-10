@@ -28,4 +28,11 @@ internal static class PromptWindowSize
         // from adding a pixel.
         return (int)Math.Ceiling(Math.Round(dips * scale, 2));
     }
+
+    /// <summary>
+    /// Gets a width of <paramref name="dips"/> grown with Windows' text size, <paramref name="textScale"/>, so a window of
+    /// lines of text shows as much of each with larger text as without. <see cref="WindowPixels"/> keeps it on its screen.
+    /// </summary>
+    public static double ForTextScale(double dips, double textScale)
+        => double.IsFinite(textScale) && textScale > 1 ? dips * textScale : dips;
 }

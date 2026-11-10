@@ -110,7 +110,9 @@ erases each trigger and pastes or types the snippet. A separate editor manages t
   to 15 digits in groups, or all together after a `+`. Numbers follow the region's separators. Dates,
   times and IP addresses are neither, and nothing inside a link or an email address is either.
 - One match or copy goes straight in. Two or more open the chooser (`ClipboardChoiceWindow`, on the
-  prompt thread) with at most 100 options. Cancel cancels the snippet, as with a question.
+  prompt thread) with at most 100 options. Cancel cancels the snippet, as with a question. Its 420 DIP
+  width grows with Windows' text size, up to its screen's. A long option wraps to a second line before
+  it's cut short, and its tooltip has all of it.
 - For history, the engine reads up to 25 text copies on another thread while any questions are asked,
   waiting at most 3 s. One read runs at a time: while one that timed out still hangs, history counts
   as unreadable. `{{clipboard:pick:<part>}}` offers the different matches across the copies,

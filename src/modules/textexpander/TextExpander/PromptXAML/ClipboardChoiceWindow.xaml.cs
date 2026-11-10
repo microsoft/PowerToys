@@ -55,7 +55,8 @@ public sealed partial class ClipboardChoiceWindow : Window
         // The close button and Alt+F4 cancel, as Esc does.
         _chrome.OnClose(closing: () => Finish(null, close: false), closed: () => Complete(null));
 
-        _chrome.Place(WidthDip, EstimatedHeightDip);
+        // Wider with larger text, so as much of each match shows at 200% text as at 100%; up to its screen's width.
+        _chrome.Place(PromptWindowSize.ForTextScale(WidthDip, SystemTextScale.Current()), EstimatedHeightDip);
     }
 
     private string? Selected => (Options.SelectedItem as ClipboardChoiceOption)?.Text;

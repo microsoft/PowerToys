@@ -60,7 +60,10 @@
                 SelectionMode="Single">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="local:ClipboardChoiceOption">
-                        <!--  Numbered as they're listed, newest copy first. Screen readers hear each one's place in the list from the list itself.  -->
+                        <!--
+                            Numbered as they're listed, newest copy first. Screen readers hear each one's place in the list from the list itself.
+                            A long one wraps to a second line before it's cut short; its tooltip has all of it.
+                        -->
                         <Grid ColumnSpacing="12" ToolTipService.ToolTip="{x:Bind Tip}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -73,8 +76,10 @@
                                 Text="{x:Bind Number}" />
                             <TextBlock
                                 Grid.Column="1"
+                                MaxLines="2"
                                 Text="{x:Bind Shown}"
-                                TextTrimming="CharacterEllipsis" />
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="Wrap" />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>

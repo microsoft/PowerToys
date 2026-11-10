@@ -206,4 +206,15 @@ public sealed class PromptTests
         // A very long question never makes the window taller than the screen's work area.
         Assert.AreEqual(1140, PromptWindowSize.WindowPixels(windowPixels: 269, clientPixels: 260, contentDips: 2000, scale: 1.25, maxWindowPixels: 1140));
     }
+
+    [TestMethod]
+    public void TheChoiceWindowGrowsWithTheTextSize()
+    {
+        // At 200% text, its 420 DIPs cut a long link short (F5). Its screen still caps it, as above.
+        Assert.AreEqual(420, PromptWindowSize.ForTextScale(420, 1.0));
+        Assert.AreEqual(840, PromptWindowSize.ForTextScale(420, 2.0));
+        Assert.AreEqual(945, PromptWindowSize.ForTextScale(420, 2.25));
+        Assert.AreEqual(420, PromptWindowSize.ForTextScale(420, 0.5), "Never narrower.");
+        Assert.AreEqual(420, PromptWindowSize.ForTextScale(420, double.NaN));
+    }
 }

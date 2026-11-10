@@ -577,17 +577,7 @@ internal static class NoticeBubble
         => !Native.SystemParametersInfoW(Native.SPI_GETCLIENTAREAANIMATION, 0, out uint enabled, 0) || enabled != 0;
 
     // Accessibility > Text size, which Windows' own flyouts, and the prompt window, follow.
-    private static double TextScale()
-    {
-        try
-        {
-            return new global::Windows.UI.ViewManagement.UISettings().TextScaleFactor;
-        }
-        catch (Exception ex) when (ex is COMException or InvalidCastException or TypeLoadException)
-        {
-            return 1;
-        }
-    }
+    private static double TextScale() => SystemTextScale.Current();
 
     // Accessibility > Visual effects > Dismiss notifications after this amount of time.
     private static uint MessageDurationSeconds()

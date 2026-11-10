@@ -65,5 +65,6 @@
     <Compile Include="..\TextExpander\CaretLocator.cs" Link="Engine\CaretLocator.cs" />
     <Compile Include="..\TextExpander\CaretAutomation.cs" Link="Engine\CaretAutomation.cs" />
     <Compile Include="..\TextExpander\TimedWorker.cs" Link="Engine\TimedWorker.cs" />
+    <Compile Include="..\TextExpander\SystemTextScale.cs" Link="Engine\SystemTextScale.cs" />
   </ItemGroup>
 </Project>
