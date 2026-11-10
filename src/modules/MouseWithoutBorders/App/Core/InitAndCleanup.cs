@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -121,7 +121,7 @@ internal static class InitAndCleanup
                 InputSimulation.MoveMouseRelative(0, 0);
             }
         }
-        catch (Exception ex) when (ex is EntryPointNotFoundException or COMException)
+        catch (Exception ex) when (ex is EntryPointNotFoundException or COMException or UnauthorizedAccessException)
         {
             NativeMethods.InjectMouseInputAvailable = false;
             Logger.Log($"{nameof(NativeMethods.InjectMouseInputAvailable)} = false ({ex.GetType().Name})");
@@ -278,4 +278,3 @@ internal static class InitAndCleanup
         }
     }
 }
-

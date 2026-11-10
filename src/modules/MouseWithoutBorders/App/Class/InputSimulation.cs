@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -10,6 +10,7 @@
 //     2009-... modified by Truong Do (TruongDo).
 //     2023- Included in PowerToys.
 // </history>
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -85,7 +86,7 @@ namespace MouseWithoutBorders.Class
                     {
                         Injector.InjectMouseInput(new[] { MouseInputToInjectedInputMouseInfo(input64.mi) });
                     }
-                    catch (COMException ex)
+                    catch (Exception ex) when (ex is COMException or UnauthorizedAccessException)
                     {
                         NativeMethods.InjectMouseInputAvailable = false;
                         Logger.Log(ex);
@@ -107,7 +108,7 @@ namespace MouseWithoutBorders.Class
                     {
                         Injector.InjectMouseInput(new[] { MouseInputToInjectedInputMouseInfo(input.mi) });
                     }
-                    catch (COMException ex)
+                    catch (Exception ex) when (ex is COMException or UnauthorizedAccessException)
                     {
                         NativeMethods.InjectMouseInputAvailable = false;
                         Logger.Log(ex);
@@ -500,4 +501,3 @@ namespace MouseWithoutBorders.Class
         }
     }
 }
-
