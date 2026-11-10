@@ -73,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="SilentFilesInUseBAFunctions.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

@@ -7,6 +7,8 @@
 #include <IBootstrapperApplication.h>
 #include <BAFunctions.h>
 #include <IBAFunctions.h>
+#include <BalBaseBAFunctionsProc.h>
+#include "..\..\PowerToysSetupVNext\SilentFilesInUseBA\SilentFilesInUseBAFunctions.h"
 #include <functional>
 #include <cstddef>
 #include <iterator>
@@ -34,6 +36,10 @@ namespace
     {
     public:
         std::vector<std::wstring> messages;
+        LONGLONG perUser = 1;
+        LONGLONG action = BOOTSTRAPPER_ACTION_UNKNOWN;
+        HRESULT variableResult = S_OK;
+        unsigned actionReads = 0;
 
         HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, void** value) override
         {
@@ -53,7 +59,23 @@ namespace
             return S_OK;
         }
         HRESULT STDMETHODCALLTYPE GetPackageCount(DWORD*) override { return E_NOTIMPL; }
-        HRESULT STDMETHODCALLTYPE GetVariableNumeric(LPCWSTR, LONGLONG*) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE GetVariableNumeric(LPCWSTR name, LONGLONG* value) override
+        {
+            if (std::wstring_view(name) == L"WixBundleAction")
+            {
+                ++actionReads;
+                if (FAILED(variableResult)) return variableResult;
+                *value = action;
+                return S_OK;
+            }
+            if (std::wstring_view(name) == L"ProtectedStoragePerUserBundle")
+            {
+                if (FAILED(variableResult)) return variableResult;
+                *value = perUser;
+                return S_OK;
+            }
+            return E_NOTIMPL;
+        }
         HRESULT STDMETHODCALLTYPE GetVariableString(LPCWSTR, LPWSTR, SIZE_T*) override { return E_NOTIMPL; }
         HRESULT STDMETHODCALLTYPE GetVariableVersion(LPCWSTR, LPWSTR, SIZE_T*) override { return E_NOTIMPL; }
         HRESULT STDMETHODCALLTYPE FormatString(LPCWSTR, LPWSTR, SIZE_T*) override { return E_NOTIMPL; }
@@ -81,6 +103,60 @@ namespace
     private:
         LONG references = 1;
     };
+
+    void BootstrapperPlanTests()
+    {
+        using Plan = std::pair<BOOTSTRAPPER_ACTION, HRESULT>;
+        const auto run = [&](LONGLONG perUser, BOOTSTRAPPER_RELATION_TYPE relation, const std::vector<Plan>& plans,
+                             HRESULT execution, unsigned expected, HRESULT variables = S_OK) {
+            LoggingBootstrapperEngine engine;
+            engine.perUser = perUser;
+            engine.variableResult = variables;
+            BalInitialize(&engine);
+            struct cleanup { ~cleanup() { BalUninitialize(); } } reset;
+            unsigned removals = 0;
+            // Only the side-effecting remover is substituted; callbacks and SDK dispatch are production code.
+            CSilentFilesInUseBAFunctions callbacks(nullptr, [&] { ++removals; });
+            BOOTSTRAPPER_COMMAND command{};
+            command.relationType = relation;
+            Expect(SUCCEEDED(callbacks.OnCreate(&engine, &command)), "initialize plan callback fixture");
+            auto* context = static_cast<IBAFunctions*>(&callbacks);
+            for (const auto& [action, result] : plans)
+            {
+                const auto reads = engine.actionReads;
+                BA_ONPLANBEGIN_ARGS begin{ WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION, 1 };
+                BA_ONPLANBEGIN_RESULTS beginResult{ WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION, FALSE };
+                Expect(SUCCEEDED(BalBaseBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANBEGIN, &begin, &beginResult, context)),
+                    "dispatch PlanBegin");
+                Expect(engine.actionReads == reads, "PlanBegin read a stale action before WiX published the new plan");
+                engine.action = action;
+                BA_ONPLANCOMPLETE_ARGS complete{ WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION, result };
+                BA_ONPLANCOMPLETE_RESULTS completeResult{ WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION };
+                Expect(SUCCEEDED(BalBaseBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANCOMPLETE, &complete, &completeResult, context)),
+                    "dispatch PlanComplete");
+            }
+            BA_ONEXECUTECOMPLETE_ARGS complete{ WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION, execution };
+            BA_ONEXECUTECOMPLETE_RESULTS result{ WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION };
+            Expect(SUCCEEDED(BalBaseBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTECOMPLETE, &complete, &result, context)),
+                "dispatch planned ExecuteComplete");
+            Expect(removals == expected, "owner cleanup count does not match the completed plan and execution");
+            Expect(SUCCEEDED(BalBaseBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTECOMPLETE, &complete, &result, context)),
+                "dispatch duplicate ExecuteComplete");
+            Expect(removals == expected, "owner cleanup must not run twice");
+        };
+        run(1, BOOTSTRAPPER_RELATION_NONE, { { BOOTSTRAPPER_ACTION_UNINSTALL, S_OK } }, S_OK, 1);
+        run(0, BOOTSTRAPPER_RELATION_NONE, { { BOOTSTRAPPER_ACTION_UNINSTALL, S_OK } }, S_OK, 0);
+        run(1, BOOTSTRAPPER_RELATION_UPGRADE, { { BOOTSTRAPPER_ACTION_UNINSTALL, S_OK } }, S_OK, 0);
+        for (const auto action : { BOOTSTRAPPER_ACTION_INSTALL, BOOTSTRAPPER_ACTION_MODIFY, BOOTSTRAPPER_ACTION_REPAIR })
+            run(1, BOOTSTRAPPER_RELATION_NONE, { { action, S_OK } }, S_OK, 0);
+        run(1, BOOTSTRAPPER_RELATION_NONE, { { BOOTSTRAPPER_ACTION_UNINSTALL, E_ABORT } }, S_OK, 0);
+        run(1, BOOTSTRAPPER_RELATION_NONE, { { BOOTSTRAPPER_ACTION_UNINSTALL, S_OK } }, E_FAIL, 0);
+        run(1, BOOTSTRAPPER_RELATION_NONE, { { BOOTSTRAPPER_ACTION_UNINSTALL, S_OK } }, S_OK, 0, E_FAIL);
+        run(1, BOOTSTRAPPER_RELATION_NONE,
+            { { BOOTSTRAPPER_ACTION_UNINSTALL, S_OK }, { BOOTSTRAPPER_ACTION_INSTALL, S_OK } }, S_OK, 0);
+        run(1, BOOTSTRAPPER_RELATION_NONE,
+            { { BOOTSTRAPPER_ACTION_UNINSTALL, S_OK }, { BOOTSTRAPPER_ACTION_UNINSTALL, E_ABORT } }, S_OK, 0);
+    }
 
     void BootstrapperCallbackTests()
     {
@@ -448,6 +524,7 @@ int wmain()
 {
     try
     {
+        BootstrapperPlanTests();
         BootstrapperCallbackTests();
         ParserTests();
         OwnerTests();

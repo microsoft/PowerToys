@@ -15,7 +15,10 @@
     <PackageReference Include="WixToolset.BootstrapperApplicationApi" />
     <PackageReference Include="WixToolset.WixStandardBootstrapperApplicationFunctionApi" />
   </ItemGroup>
-  <ItemDefinitionGroup><Link><SubSystem>Console</SubSystem></Link></ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <ClCompile><AdditionalIncludeDirectories>$(RepoRoot)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories></ClCompile>
+    <Link><SubSystem>Console</SubSystem><AdditionalDependencies>version.lib;%(AdditionalDependencies)</AdditionalDependencies></Link>
+  </ItemDefinitionGroup>
   <ItemGroup><ClCompile Include="InstallerTests.cpp" /></ItemGroup>
   <ItemGroup><ProjectReference Include="..\..\..\src\common\ProtectedStorage\ProtectedStorage.Common\ProtectedStorage.Common.vcxproj"><Project>{918F71A9-BC92-481E-9501-769353CE45EB}</Project></ProjectReference></ItemGroup>
   <ItemGroup>
