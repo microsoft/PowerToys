@@ -36,8 +36,9 @@ also checks that a hidden Command Palette instance can be re-shown without repla
 - `SamplePagesExtension` generates its MSIX during its normal build. The test project references
   the extension for build order and copies that existing package as `SamplePagesExtension.msix`
   next to the test executable; it does not package the extension a second time.
-  The extension includes its Windows App SDK runtime files, so no separate Windows App Runtime
-  framework package needs to be installed. Sign the sample package and trust its signing
+  The extension uses build-only Windows SDK tooling for MSIX packaging, not Windows App SDK;
+  it does not bundle Windows App Runtime DLLs or require its framework package to be installed.
+  Sign the sample package and trust its signing
   certificate on the test machine before running the suite. `SamplePagesTests` installs it for the
   current user and removes it after the class; it preserves an extension installed beforehand.
   **Developer Mode is not required for this extension deployment.** Windows policy must permit
