@@ -445,6 +445,7 @@ dotnet
 downsampled
 downsampling
 downscale
+dpapi
 DPICHANGED
 DPIs
 dpm
@@ -503,7 +504,9 @@ ENABLETAB
 ENABLETEMPLATE
 encodedlaunch
 encryptor
+endfacet
 ENDSESSION
+endsolid
 ENSUREVISIBLE
 ENTERIDLE
 ENTERMENULOOP
@@ -1189,6 +1192,8 @@ NCMOUSEMOVE
 ncpa
 NCPAINT
 NCRENDERING
+ncrypt
+ncryptprotect
 ndp
 NEEDDISPATCH
 netcoreapp
@@ -1700,6 +1705,7 @@ SETWORKAREA
 SFBS
 sfgao
 SFGAOF
+SGNR
 SHACF
 SHANDLE
 sharepoint
@@ -2222,6 +2228,7 @@ wprp
 wql
 wregex
 WResize
+WRITEFAULT
 WRITEOBJECTS
 Wrk
 wrl
@@ -2237,6 +2244,7 @@ WTSAT
 Wubi
 WUX
 Wwanpp
+Wzhudev
 xap
 Xbuttondown
 xclip

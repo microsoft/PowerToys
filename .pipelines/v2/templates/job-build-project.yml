@@ -59,6 +59,28 @@ parameters:
   - name: buildTests
     type: boolean
     default: true
+  - name: buildInstallers
+    type: boolean
+    default: true
+  # Internal build-plan input, derived from UI-test module selection.
+  - name: prepareMwbRuntime
+    type: boolean
+    default: false
+  - name: prepareUmdfHid
+    type: boolean
+    default: false
+  - name: prepareUmdfDisplay
+    type: boolean
+    default: false
+  - name: umdfDisplayCondition
+    type: string
+    default: succeeded()
+  - name: umdfHidCondition
+    type: string
+    default: succeeded()
+  - name: mwbRuntimeCondition
+    type: string
+    default: succeeded()
   - name: useVSPreview
     type: boolean
     default: false
@@ -96,16 +118,6 @@ parameters:
   - name: metaPackageName
     type: string
     default: 'Microsoft.WindowsAppSDK'
-  - name: csProjectsToPublish
-    type: object
-    default:
-      - 'src/settings-ui/Settings.UI/PowerToys.Settings.csproj'
-      - 'src/modules/launcher/PowerLauncher/PowerLauncher.csproj'
-      - 'src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandler.csproj'
-      - 'src/modules/previewpane/MarkdownPreviewHandler/MarkdownPreviewHandler.csproj'
-      - 'src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj'
-      - 'src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.csproj'
-      - 'src/modules/FileLocksmith/FileLocksmithUI/FileLocksmithUI.csproj'
   - name: timeoutInMinutes
     type: number
     default: 240
@@ -149,7 +161,7 @@ jobs:
       EffectiveVersionNumber: ${{ parameters.resolvedVersionNumber }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
-    ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
+    ${{ if eq(parameters.runTests, true) }}:
       MSBuildMainBuildTargets: Build;Test
     ${{ else }}:
       MSBuildMainBuildTargets: Build
@@ -171,6 +183,16 @@ jobs:
       targetPath: $(LogOutputDirectory)
       condition: or(failed(), canceled())
   steps:
+  - ${{ if eq(parameters.prepareMwbRuntime, true) }}:
+    - pwsh: |
+        if ('$(BuildPlatform)' -cne 'x64' -or '$(BuildConfiguration)' -cne 'Release' -or
+            '${{ parameters.buildTests }}' -ne 'True' -or
+            '${{ parameters.artifactStem }}' -ne '') {
+          throw 'MWB CI preparation requires the shared build-x64-Release artifact and buildTests=true. ARM64 builds remain normal; only their MWB Sandbox execution is skipped.'
+        }
+      displayName: Validate gated MWB build preparation
+      condition: ${{ parameters.mwbRuntimeCondition }}
+
   - checkout: self
     clean: true
     submodules: true
@@ -182,6 +204,21 @@ jobs:
   - pwsh: |-
       & '.pipelines/verifyCommonProps.ps1' -sourceDir '$(build.sourcesdirectory)\src'
     displayName: Audit shared common props for CSharp projects in src sub-folder
+
+  - ${{ if or(eq(parameters.runTests, true), eq(parameters.codeSign, true)) }}:
+    - powershell: |-
+        # Use the inbox Pester version without installing modules on the build agent.
+        Import-Module Pester -MinimumVersion 3.4 -MaximumVersion 4.99
+        $result = Invoke-Pester -Script @(
+            '.pipelines/tests/versionAndSignCheck.Tests.ps1',
+            '.pipelines/tests/winmdSigningPolicy.Tests.ps1'
+        ) -PassThru
+        if ($result.FailedCount -gt 0 -or $result.TotalCount -eq 0) {
+            throw 'Release signing regression tests failed.'
+        }
+        # Negative script tests set LASTEXITCODE; report the Pester result instead.
+        exit 0
+      displayName: Test release signing checks
 
   - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
     - pwsh: |-
@@ -210,11 +247,9 @@ jobs:
       version: '8.0'
 
   - template: steps-ensure-dotnet-version.yml
-    parameters:
-      sdk: true
-      version: '10.0'
-      # SDK 10.0.303 contains runtime 10.0.11. Keep this aligned with DotNetRuntimePackageVersion in Directory.Packages.props.
-      exactVersion: '10.0.303'
+
+  - ${{ if eq(parameters.buildTests, true) }}:
+    - template: steps-test-mwb-infrastructure.yml
 
   - ${{ if eq(parameters.runTests, true) }}:
     - task: VisualStudioTestPlatformInstaller@1
@@ -223,34 +258,35 @@ jobs:
   - task: NuGetAuthenticate@1
     displayName: Authenticate NuGet feeds for verification
 
+  - ${{ if eq(parameters.official, true) }}:
+    - task: NuGetAuthenticate@1
+      displayName: Authenticate with permissions to Dependencies feed
+      inputs:
+        azureDevOpsServiceConnection: 'SHINE PowerToys Artifact Feed'
+        feedUrl: "https://pkgs.dev.azure.com/shine-oss/PowerToys/_packaging/PowerToysPublicDependencies/nuget/v3/index.json"
+
   - pwsh: |-
       & '.pipelines/verifyNugetPackages.ps1' -solution '$(build.sourcesdirectory)\PowerToys.slnx'
     displayName: Verify Nuget package versions for PowerToys.slnx
 
   - pwsh: |-
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\PowerToys.slnx'
-      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\BugReportTool\BugReportTool.sln'
-      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\StylesReportTool\StylesReportTool.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.slnx'
     displayName: Verify ARM64 configurations
 
+  # No restoreKeys: a fallback restore plus a save under the new key keeps every package version
+  # ever used, which grew these caches to ~10x what one restore needs. A key miss restores cold once.
   - ${{ if eq(parameters.enablePackageCaching, true) }}:
     - task: Cache@2
       displayName: 'Cache nuget packages (PackageReference)'
       inputs:
-        key: '"PackageReference" | "$(Agent.OS)" | Directory.Packages.props'
-        restoreKeys: |
-           "PackageReference" | "$(Agent.OS)"
-           "PackageReference"
+        key: '"PackageReference" | "v2" | "$(Agent.OS)" | Directory.Packages.props'
         path: $(NUGET_PACKAGES)
 
     - task: Cache@2
       displayName: 'Cache nuget packages (packages.config)'
       inputs:
-        key: '"packages.config" | "$(Agent.OS)" | **/packages.config'
-        restoreKeys: |
-           "packages.config" | "$(Agent.OS)"
-           "packages.config"
+        key: '"packages.config" | "v2" | "$(Agent.OS)" | **/packages.config'
         path: packages
   
   - ${{ if eq(parameters.useLatestWinAppSDK, true)}}:
@@ -413,67 +449,19 @@ jobs:
       targetFolder: $(JobOutputDirectory)/sdk/winmd
 
   - task: VSBuild@1
-    displayName: Build BugReportTool
+    displayName: Publish projects for Packaging
     inputs:
-      solution: '**/tools/BugReportTool/BugReportTool.sln'
+      solution: installer/PowerToysSetupVNext/PublishForPackaging.proj
       vsVersion: 18.0
       msbuildArgs: >-
-        -restore -graph
-        /p:RestorePackagesConfig=true
-        /p:CIBuild=true
-        /bl:$(LogOutputDirectory)\build-bug-report.binlog
-        ${{ parameters.additionalBuildOptions }}
-        $(MSBuildCacheParameters)
+        /target:Publish
+        /p:PowerToysRoot=$(Build.SourcesDirectory)
+        /bl:$(LogOutputDirectory)\publish-for-packaging.binlog
         $(RestoreAdditionalProjectSourcesArg)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
-    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-  - task: VSBuild@1
-    displayName: Build StylesReportTool
-    inputs:
-      solution: '**/tools/StylesReportTool/StylesReportTool.sln'
-      vsVersion: 18.0
-      msbuildArgs: >-
-        -restore -graph
-        /p:RestorePackagesConfig=true
-        /p:CIBuild=true
-        /bl:$(LogOutputDirectory)\build-styles-report.binlog
-        ${{ parameters.additionalBuildOptions }}
-        $(MSBuildCacheParameters)
-        $(RestoreAdditionalProjectSourcesArg)
-      platform: $(BuildPlatform)
-      configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
-      maximumCpuCount: true
-    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-  - ${{ each project in parameters.csProjectsToPublish }}:
-    - task: VSBuild@1
-      displayName: Publish ${{ project }} for Packaging
-      inputs:
-        solution: ${{ project }}
-        vsVersion: 18.0
-        msbuildArgs: >-
-          /target:Publish
-          /graph
-          /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
-          /p:VCRTForwarders-IncludeDebugCRT=false
-          /p:PowerToysRoot=$(Build.SourcesDirectory)
-          /p:PublishProfile=InstallationPublishProfile.pubxml
-          /p:TargetFramework=net10.0-windows10.0.26100.0
-          /bl:$(LogOutputDirectory)\publish-${{ join('_',split(project, '/')) }}.binlog
-          $(RestoreAdditionalProjectSourcesArg)
-        platform: $(BuildPlatform)
-        configuration: $(BuildConfiguration)
-        msbuildArchitecture: x64
-        maximumCpuCount: true
 
   ### HACK: On ARM64 builds, building an app with Windows App SDK copies the x64 WebView2 dll instead of the ARM64 one. This task makes sure the right dll is used.
   - task: CopyFiles@2
@@ -569,6 +557,10 @@ jobs:
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
     - pwsh: |-
+        & .pipelines/versionAndSignCheck.ps1 -targetDir '$(JobOutputDirectory)/CmdPalPackageContents' -WinmdOnly
+      displayName: Verify CmdPal metadata signatures
+
+    - pwsh: |-
         $outDir = New-Item -Type Directory "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
         $PackageFilename = Join-Path $outDir.FullName (Split-Path -Leaf "$(CmdPalPackagePath)")
         & "$(MakeAppxPath)" pack /h SHA256 /o /p $PackageFilename /d "$(JobOutputDirectory)/CmdPalPackageContents"
@@ -611,12 +603,13 @@ jobs:
 
 
 
-  - template: steps-build-installer-vnext.yml
-    parameters:
-      codeSign: ${{ parameters.codeSign }}
-      signingIdentity: ${{ parameters.signingIdentity }}
-      versionNumber: $(EffectiveVersionNumber)
-      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
+  - ${{ if eq(parameters.buildInstallers, true) }}:
+    - template: steps-build-installer-vnext.yml
+      parameters:
+        codeSign: ${{ parameters.codeSign }}
+        signingIdentity: ${{ parameters.signingIdentity }}
+        versionNumber: $(EffectiveVersionNumber)
+        additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
 
   # This saves ~1GiB per architecture. We won't need these later.
   # Removes:
@@ -633,14 +626,15 @@ jobs:
     displayName: Clean up static libs PDBs
     errorActionPreference: silentlyContinue # It's OK if this silently fails
 
-  - task: CopyFiles@2
-    displayName: Stage Installers
-    inputs:
-      contents: |-
-        **/PowerToys*Setup-*.exe
-        !**/PowerToysSetupVNext/obj/**
-      flattenFolders: True
-      targetFolder: $(JobOutputDirectory)
+  - ${{ if eq(parameters.buildInstallers, true) }}:
+    - task: CopyFiles@2
+      displayName: Stage Installers
+      inputs:
+        contents: |-
+          **/PowerToys*Setup-*.exe
+          !**/PowerToysSetupVNext/obj/**
+        flattenFolders: True
+        targetFolder: $(JobOutputDirectory)
 
   - pwsh: |-
       $Symbols = Get-ChildItem "$(BuildPlatform)" -Recurse -Filter *.pdb -Exclude "vc143.pdb","*test*.pdb" |
@@ -653,35 +647,51 @@ jobs:
       }
     displayName: Stage Unique Symbols (as hard links)
 
-  - pwsh: |-
-      $p = "$(JobOutputDirectory)\"
-      
-      # Calculate hashes for installers
-      $userSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysUserSetup*.exe"
-      $machineSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysSetup*.exe" | Where-Object { $_.Name -notmatch "PowerToysUserSetup" }
-      
-      if ($userSetupFiles.Count -gt 0) {
-          $userHash = ($userSetupFiles[0] | Get-FileHash).Hash;
-          $userPlat = "hash_user_$(BuildPlatform).txt";
-          $combinedUserPath = $p + $userPlat;
-          echo "User: $userHash"
-          $userHash | out-file -filepath $combinedUserPath
-      }
-      
-      if ($machineSetupFiles.Count -gt 0) {
-          $machineHash = ($machineSetupFiles[0] | Get-FileHash).Hash;
-          $machinePlat = "hash_machine_$(BuildPlatform).txt";
-          $combinedMachinePath = $p + $machinePlat;
-          echo "Machine: $machineHash"
-          $machineHash | out-file -filepath $combinedMachinePath
-      }
-    displayName: Calculate file hashes for all installers
+  - ${{ if eq(parameters.buildInstallers, true) }}:
+    - pwsh: |-
+        $p = "$(JobOutputDirectory)\"
+
+        # Calculate hashes for installers
+        $userSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysUserSetup*.exe"
+        $machineSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysSetup*.exe" | Where-Object { $_.Name -notmatch "PowerToysUserSetup" }
+
+        if ($userSetupFiles.Count -gt 0) {
+            $userHash = ($userSetupFiles[0] | Get-FileHash).Hash;
+            $userPlat = "hash_user_$(BuildPlatform).txt";
+            $combinedUserPath = $p + $userPlat;
+            echo "User: $userHash"
+            $userHash | out-file -filepath $combinedUserPath
+        }
+
+        if ($machineSetupFiles.Count -gt 0) {
+            $machineHash = ($machineSetupFiles[0] | Get-FileHash).Hash;
+            $machinePlat = "hash_machine_$(BuildPlatform).txt";
+            $combinedMachinePath = $p + $machinePlat;
+            echo "Machine: $machineHash"
+            $machineHash | out-file -filepath $combinedMachinePath
+        }
+      displayName: Calculate file hashes for all installers
 
   # Publishing the GPO files
   - pwsh: |-
       $GpoArchive = "$(JobOutputDirectory)\GroupPolicyObjectFiles-$(EffectiveVersionNumber).zip"
       tar -c -v --format=zip -C .\src\gpo\assets -f $GpoArchive *
     displayName: Stage GPO files
+
+  - ${{ if eq(parameters.prepareMwbRuntime, true) }}:
+    - task: VSBuild@1
+      displayName: Build isolated MWB UI-test variant without changing shipping outputs
+      condition: ${{ parameters.mwbRuntimeCondition }}
+      inputs:
+        solution: src/modules/MouseWithoutBorders/App/MouseWithoutBorders.csproj
+        msbuildArgs: >-
+          /t:Build
+          /p:BuildProjectReferences=false
+          /p:MwbUiTestBuild=true
+          /p:MwbUiTestSourceRevision=$(Build.SourceVersion)
+        platform: $(BuildPlatform)
+        configuration: $(BuildConfiguration)
+        msbuildArchitecture: x64
 
   - ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
     # Running the tests may result in future jobs consuming artifacts out of this build
@@ -695,6 +705,43 @@ jobs:
         New-Item -Type Directory $FinalOutputRoot -EA:Ignore
         Move-Item $ProjectBuildDirectory $FinalOutputRoot
       displayName: Move entire output directory into artifacts
+
+  - ${{ if eq(parameters.prepareMwbRuntime, true) }}:
+    - pwsh: |
+        $work = "$(Pipeline.Workspace)\mwb-ci-build-$(System.JobId)"
+        try {
+          & "$(Build.SourcesDirectory)\.pipelines\mwb\New-MwbSandboxCiArtifact.ps1" `
+            -ProductRoot "$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)\$(BuildPlatform)\$(BuildConfiguration)" `
+            -OutputRoot "$(JobOutputDirectory)\mwb-sandbox-ci" `
+            -WorkRoot $work `
+            -DotNetPath "$(DOTNET_ROOT)\dotnet.exe" `
+            -Platform "$(BuildPlatform)" `
+            -Configuration "$(BuildConfiguration)" `
+            -MwbUiTestBinaryPath "$(Build.SourcesDirectory)\artifacts\mwb-ui-test\$(BuildPlatform)\$(BuildConfiguration)\bin\PowerToys.MouseWithoutBorders.dll" `
+            -SourceRevision "$(Build.SourceVersion)" -ReadyToRun
+        } finally {
+          # Preserve preparation diagnostics, never downloaded tools or the package cache.
+          if (Test-Path -LiteralPath $work) {
+            foreach ($log in Get-ChildItem -LiteralPath $work -Filter '*.log' -File -Recurse) {
+              $destination = Join-Path "$(LogOutputDirectory)\mwb-ci" ([IO.Path]::GetRelativePath($work, $log.FullName))
+              $null = New-Item -ItemType Directory -Path (Split-Path $destination) -Force
+              Copy-Item -LiteralPath $log.FullName -Destination $destination
+            }
+          }
+        }
+      displayName: Prepare coherent lean MWB runtime and official winapp CLI release
+      condition: ${{ parameters.mwbRuntimeCondition }}
+      timeoutInMinutes: 35
+
+  - ${{ if eq(parameters.prepareUmdfHid, true) }}:
+    - template: steps-build-umdf-hid.yml
+      parameters:
+        condition: ${{ parameters.umdfHidCondition }}
+
+  - ${{ if eq(parameters.prepareUmdfDisplay, true) }}:
+    - template: steps-build-umdf-display.yml
+      parameters:
+        condition: ${{ parameters.umdfDisplayCondition }}
 
   - ${{ if eq(parameters.publishArtifacts, true) }}:
     - publish: $(JobOutputDirectory)

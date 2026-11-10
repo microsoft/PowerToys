@@ -87,7 +87,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public WelcomeHeroPlayback Playback { get; set; } = WelcomeHeroPlayback.Intro;
 
         /// <summary>
-        /// Gets the page elements (title, description, ...) that rise into view in sync with the hero.
+        /// Gets the page elements (title, description, ...) that rise into view in sync with the hero. Populate before the control is loaded.
         /// </summary>
         public IList<UIElement> RevealTargets { get; } = [];
 
@@ -116,6 +116,15 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             _layout = new WelcomeHeroLayout((float)Height);
             WatchAnimationsSetting(true);
 
+            foreach (var target in RevealTargets)
+            {
+                ElementCompositionPreview.SetIsTranslationEnabled(target, true);
+                if (_activePlayback != WelcomeHeroPlayback.Static)
+                {
+                    ElementCompositionPreview.GetElementVisual(target).Opacity = 0f;
+                }
+            }
+
             var scale = (float)(XamlRoot?.RasterizationScale ?? 1.0);
             var iconPixels = Math.Ceiling(WelcomeHeroLayout.IconSize * WelcomeHeroScene.MaxMagnification * scale);
             var logoPixels = Math.Ceiling(WelcomeHeroLayout.LogoSize * 1.2f * scale);
@@ -141,10 +150,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             _scene.EnablePointerEffects(ElementCompositionPreview.GetPointerPositionPropertySet(SceneHost));
             _scene.HideAll();
-            foreach (var target in RevealTargets)
-            {
-                ElementCompositionPreview.GetElementVisual(target).Opacity = 0f;
-            }
 
             // Start once every icon is decoded, so nothing pops in mid-flight; never wait forever though.
             _loadTimeout = DispatcherQueue.CreateTimer();
@@ -306,7 +311,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 var delay = TimeSpan.FromMilliseconds(startMs + (i * staggerMs));
                 var duration = TimeSpan.FromMilliseconds(durationMs);
 
-                ElementCompositionPreview.SetIsTranslationEnabled(target, true);
                 var visual = ElementCompositionPreview.GetElementVisual(target);
 
                 var fade = compositor.CreateScalarKeyFrameAnimation();

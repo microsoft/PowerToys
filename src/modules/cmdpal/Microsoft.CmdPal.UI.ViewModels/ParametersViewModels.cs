@@ -438,6 +438,11 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
             if (PageContext.TryGetTarget(out var pageContext))
             {
                 _listViewModel = new ListViewModel(list, pageContext.Scheduler, _extensionHost, _providerContext, _contextMenuFactory);
+                if (pageContext is PageViewModel page)
+                {
+                    _listViewModel.DockRoute = page.DockRoute;
+                }
+
                 _listViewModel.InitializeProperties();
             }
         }
@@ -514,7 +519,7 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
         }
 
         var sourcePage = PageContext.TryGetTarget(out var pageContext) ? pageContext as PageViewModel : null;
-        var message = new PerformCommandMessage(this._commandViewModel.Model, sourcePage);
+        var message = new PerformCommandMessage(this._commandViewModel, sourcePage);
         WeakReferenceMessenger.Default.Send(message);
     }
 
@@ -921,7 +926,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     {
         if (ShowCommand)
         {
-            var message = new PerformCommandMessage(this.Command.Command.Model, this);
+            var message = new PerformCommandMessage(this.Command.Command, this);
             WeakReferenceMessenger.Default.Send(message);
         }
     }

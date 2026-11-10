@@ -7,9 +7,10 @@ using System.Globalization;
 namespace Microsoft.PowerToys.UITest.Next;
 
 /// <summary>
-/// WinUI/WPF <c>Slider</c> (UIA ControlType <c>Slider</c>). Reads and writes the value directly
-/// through the CLI (<c>winapp ui get-value</c> / <c>set-value</c>, RangeValuePattern) — no
-/// arrow-key stepping like the legacy harness.
+/// WinUI/WPF <c>Slider</c> (UIA ControlType <c>Slider</c>). Uses CLI <c>get-value</c> for reads
+/// and <c>set-value</c> for writes, without arrow-key stepping.
+/// <c>get-value</c> can return accessible text rather than the numeric range value.
+/// Shared numeric RangeValuePattern support is tracked in microsoft/PowerToys#51900.
 /// </summary>
 public class Slider : Element
 {
@@ -31,14 +32,7 @@ public class Slider : Element
     /// <summary>Set the value directly via <c>winapp ui set-value</c> (RangeValuePattern).</summary>
     public Slider SetValue(double value)
     {
-        EnsureBound();
-        WinappCli.InvokeAssertSuccess(
-            "ui",
-            "set-value",
-            Selector,
-            value.ToString(CultureInfo.InvariantCulture),
-            Owner!.TargetFlag,
-            Owner!.TargetValue);
+        WinappCli.InvokeAssertSuccess(BuildSetValueArguments(value.ToString(CultureInfo.InvariantCulture)));
         return this;
     }
 }

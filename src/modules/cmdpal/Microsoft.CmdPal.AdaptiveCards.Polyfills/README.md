@@ -1,11 +1,21 @@
 # Adaptive Cards polyfills
 
+> [!WARNING] 
+> Here be basilisks!
+>
+> This entire library is maintained by LLMs. Humans didn't write the code, and
+> no human actually owns this code. 
+>
+> We're using this library to fill gaps in the WinUI 3 Adaptive Cards renderer.
+> Ideally, the upstream renderer will support these in the fullness of time, and
+> we'll be able to delete this library.
+
 The WinUI 3 Adaptive Cards renderer doesn't support everything in the current Adaptive Cards schema. This library fills the gaps until it does:
 
 - The `Chart.Line`, `Chart.VerticalBar`, `Chart.HorizontalBar`, `Chart.HorizontalBar.Stacked`, `ProgressBar`, `Badge`, and `Icon` elements.
 - `roundedCorners` and `showBorder` on containers, column sets, and columns.
 
-Cards stay standard Adaptive Cards JSON, and extensions give each element a `fallback` for other hosts. Nothing here is specific to Command Palette, so each piece can move to the open-source renderer and be deleted here (see [Upstream](#upstream)).
+Cards stay standard Adaptive Cards JSON, and extensions give each element a `fallback` for other hosts. These are partial implementations, not full schema conformance; see [Bar chart limitations](#bar-chart-limitations). Each piece can serve as a reference when adding support to the open-source renderer (see [Upstream](#upstream)).
 
 ## Use it
 
@@ -13,16 +23,16 @@ Cards stay standard Adaptive Cards JSON, and extensions give each element a `fal
 
 ```csharp
 AdaptiveCardPolyfills.RegisterParsers(AdaptiveCardParserRegistrations.ElementParsers);
-AdaptiveCardPolyfills.RegisterRenderers(renderer, RS_.GetString);
+AdaptiveCardPolyfills.RegisterRenderers(renderer);
 _cardUpdater = new IncrementalAdaptiveCardUpdater(..., AdaptiveCardPolyfills.PatchableElements);
 ```
 
-The host provides:
+The library is self-contained, so deleting it only means removing these calls and the project reference:
 
-- **Strings.** The library has no resources of its own, so `RegisterRenderers` takes a lookup for the `AdaptiveChart_*` strings in Command Palette's `Resources.resw`: chart names and summaries for screen readers, and the suffixes of compact numbers such as 12.3K.
-- **Container styles.** `roundedCorners` and `showBorder` apply the `CmdPal.Adaptive.Container.Rounded`, `CmdPal.Adaptive.Container.Bordered`, and `CmdPal.Adaptive.Container.RoundedBordered` styles from the renderer's override styles (`CardOverrideStyles` in `ContentFormControl.xaml`).
+- **Strings.** The `AdaptiveChart_*` strings live in this library's `Properties\Resources.resx`: chart names and summaries for screen readers, and the suffixes of compact numbers such as 12.3K.
+- **Element JSON.** `AdaptiveCustomElementJson` is internal. Command Palette's settings inputs keep their own copy, so nothing outside this library depends on it.
 
-`AdaptiveCustomElementJson` is public too: Command Palette's settings inputs, which are custom elements, use it to read and write the properties every element has.
+The host provides **container styles**. `roundedCorners` and `showBorder` apply the `CmdPal.Adaptive.Container.Rounded`, `CmdPal.Adaptive.Container.Bordered`, and `CmdPal.Adaptive.Container.RoundedBordered` styles from the renderer's override styles (`CardOverrideStyles` in `ContentFormControl.xaml`).
 
 ## How an element works
 
@@ -34,6 +44,8 @@ Each element has two parts, joined in `AdaptiveCardPolyfills`:
 Models read only the properties that the element's page in the [Adaptive Cards element reference](https://adaptivecards.microsoft.com/) defines, with the defaults it gives, such as `showTitle` off and `showLegend` on. Don't add properties of your own: a card that relies on one renders differently in other hosts, and the schema doesn't allow it. Make rendering choices in the control instead. For example, line charts are always smooth and filled, and a line chart narrower than `LineChartLayout.CompactWidth` draws as a sparkline.
 
 `AdaptiveCardPolyfills` lists every element with its parser and control factory. `PatchableElements` lets the incremental updater move a new model into an existing control instead of rebuilding the card, so a line chart that gains one sample scrolls instead of redrawing.
+
+A model whose `RendersItself` is false can't draw itself, so the element shows its `fallback` instead. `AdaptiveFallbackRenderer` draws it, since the WinUI 3 renderer drops fallback content.
 
 `AdaptiveContainerDecoratorRenderer` wraps the built-in container, column set, and column renderers to apply the container styles.
 
@@ -47,12 +59,20 @@ Models read only the properties that the element's page in the [Adaptive Cards e
 
 `Icon` elements and the `Badge` `icon` property name icons from the Fluent System Icons catalog that Adaptive Cards uses, such as `Calendar` or `Wifi1`. They're drawn with Segoe Fluent Icons, the font Command Palette already uses for glyphs, so `FluentIconGlyphs` maps each name to the Segoe Fluent Icons glyph that draws the same symbol, with a filled glyph where one exists. Names without a matching glyph aren't listed. For them, `AdaptiveFallbackRenderer` draws the icon's `fallback`, since the WinUI 3 renderer drops fallback content, and `IconModel.HasGlyph` tells the incremental updater that the icon doesn't draw itself.
 
+Icon sizes map to font sizes from 12 to 48 device-independent pixels (DIPs), with a default of 24 DIPs. `IconModel.FontSizeInDips` is assigned directly to WinUI's `FontIcon.FontSize`, so display scaling determines the physical pixel size; it does not specify the glyph's exact visible bounds.
+
 To add a name, check that it's in the Adaptive Cards icon catalog (the `IconName` type of `@microsoft/teams.cards`), and compare the two glyphs side by side before adding it. Some glyphs, such as `RAM`, are only in Segoe Fluent Icons; on Windows 10 without that font they don't draw, as with other Command Palette glyphs.
+
+## Bar chart limitations
+
+`Chart.VerticalBar` supports negative values. `Chart.HorizontalBar` and `Chart.HorizontalBar.Stacked` currently support only nonnegative values. Their parsers warn when negative data is supplied: horizontal bars clamp it to zero, and stacked bars omit negative segments from the drawing and totals. Original signed values remain in the model and accessibility summaries. A warning does not invoke the element's fallback.
+
+Supporting signed horizontal data requires a common zero baseline, bars extending to either side, and separate positive and negative totals for stacked groups. `PartToWhole` also needs an explicit policy for negative inputs before it can claim support.
 
 ## Add an element
 
 1. Add a model that implements `IAdaptiveVisualModel` with a static `Parse(string elementJson, ICollection<string> warnings)`. Read the properties on the element's reference page, and nothing else.
-2. Add a control that derives from `AdaptiveVisualControl`, and implement `RenderCore` and `ApplyModel`. Read any text it shows with `ChartStrings.Get`, and add the string to Command Palette's `Resources.resw`.
+2. Add a control that derives from `AdaptiveVisualControl`, and implement `RenderCore` and `ApplyModel`. Add any text it shows to this library's `Properties\Resources.resx`, and read it with `Properties.Resources`.
 3. Add the element to the list in `AdaptiveCardPolyfills`.
 4. Add parsing tests to `Tests\Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests`.
 
@@ -72,4 +92,4 @@ When a renderer release adds one:
 1. Update `AdaptiveCards.Rendering.WinUI3` in `Directory.Packages.props`. Registrations here replace the renderer's own, so the update alone doesn't change any card.
 2. Compare the two. The renderer's controls don't update in place, so a live chart would be rebuilt on every update unless the renderer adds that.
 3. Remove the element from `AdaptiveCardPolyfills`, with its files and tests. Extensions don't change, since they send schema JSON.
-4. When nothing is left, move `AdaptiveCustomElementJson` back to Command Palette, and delete this project and its tests.
+4. When nothing is left, delete this project and its tests, and remove the calls in `ContentFormControl`.

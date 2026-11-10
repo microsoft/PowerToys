@@ -25,6 +25,7 @@ public sealed class ApplicationInfoService : IApplicationInfoService
     private readonly Lazy<string> _logDirectory;
     private readonly Lazy<AppPackagingFlavor> _packagingFlavor;
     private Func<string>? _getLogDirectory;
+    private Func<string?>? _getLogFile;
 
     public string? LanguageOverride { get; private set; }
 
@@ -61,6 +62,12 @@ public sealed class ApplicationInfoService : IApplicationInfoService
         _getLogDirectory = getLogDirectory;
     }
 
+    public void SetLogFile(Func<string?> getLogFile)
+    {
+        ArgumentNullException.ThrowIfNull(getLogFile);
+        _getLogFile = getLogFile;
+    }
+
     public void SetLanguageOverride(string languageTag)
     {
         LanguageOverride = string.IsNullOrEmpty(languageTag) ? null : languageTag;
@@ -71,6 +78,8 @@ public sealed class ApplicationInfoService : IApplicationInfoService
     public AppPackagingFlavor PackagingFlavor => _packagingFlavor.Value;
 
     public string LogDirectory => _logDirectory.Value;
+
+    public string? LogFile => _getLogFile?.Invoke();
 
     public string ConfigDirectory => _configDirectory.Value;
 

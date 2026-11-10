@@ -57,6 +57,65 @@ public sealed partial class DockBandsCollection : ObservableCollection<TopLevelV
             Items.Add(snapshot[i]);
         }
 
+        RaiseReset();
+    }
+
+    /// <summary>
+    /// Appends <paramref name="newItems"/> to the end of this collection and
+    /// raises a single <see cref="NotifyCollectionChangedAction.Reset"/>
+    /// notification. No notification is raised if there is nothing to add.
+    /// </summary>
+    public void AddRange(IEnumerable<TopLevelViewModel> newItems)
+    {
+        ArgumentNullException.ThrowIfNull(newItems);
+
+        var added = false;
+        foreach (var item in newItems)
+        {
+            Items.Add(item);
+            added = true;
+        }
+
+        if (added)
+        {
+            RaiseReset();
+        }
+    }
+
+    /// <summary>
+    /// Removes every instance in <paramref name="itemsToRemove"/> (by
+    /// reference) from this collection and raises a single
+    /// <see cref="NotifyCollectionChangedAction.Reset"/> notification. No
+    /// notification is raised if nothing was removed.
+    /// </summary>
+    public void RemoveRange(IEnumerable<TopLevelViewModel> itemsToRemove)
+    {
+        ArgumentNullException.ThrowIfNull(itemsToRemove);
+
+        var toRemove = new HashSet<TopLevelViewModel>(itemsToRemove, ReferenceEqualityComparer.Instance);
+        if (toRemove.Count == 0)
+        {
+            return;
+        }
+
+        var removed = false;
+        for (var i = Items.Count - 1; i >= 0; i--)
+        {
+            if (toRemove.Contains(Items[i]))
+            {
+                Items.RemoveAt(i);
+                removed = true;
+            }
+        }
+
+        if (removed)
+        {
+            RaiseReset();
+        }
+    }
+
+    private void RaiseReset()
+    {
         OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
         OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
         OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));

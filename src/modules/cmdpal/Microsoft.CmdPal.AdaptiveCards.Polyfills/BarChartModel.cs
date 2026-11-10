@@ -75,6 +75,16 @@ internal sealed class BarChartModel : IAdaptiveVisualModel
         return (min, max);
     }
 
+    public ChartAxisRange GetAxisRange()
+    {
+        var (min, max) = GetValueExtent();
+        return ChartScale.Compute(
+            YMin,
+            YMax,
+            Orientation == BarOrientation.Vertical ? Math.Min(0, min) : 0,
+            Math.Max(0, max));
+    }
+
     /// <summary>Returns the sum of the positive values: the whole of a part-to-whole chart.</summary>
     public double GetPositiveTotal()
     {
@@ -99,6 +109,12 @@ internal sealed class BarChartModel : IAdaptiveVisualModel
             }
 
             var isVertical = orientation == BarOrientation.Vertical;
+            var points = ChartJson.GetDataPoints(element, "data", "x", "y", warnings);
+            if (!isVertical && points.Any(point => point.Value < 0))
+            {
+                warnings.Add("Chart.HorizontalBar does not support negative values; negative values are drawn as zero.");
+            }
+
             return new BarChartModel
             {
                 Orientation = orientation,
@@ -114,7 +130,7 @@ internal sealed class BarChartModel : IAdaptiveVisualModel
                 DisplayMode = isVertical
                     ? BarDisplayMode.AbsoluteWithAxis
                     : ChartJson.GetEnum(element, "displayMode", BarDisplayMode.AbsoluteWithAxis, warnings),
-                Data = ChartJson.GetDataPoints(element, "data", "x", "y", warnings),
+                Data = points,
                 IncrementalState = ChartJson.Canonicalize(element),
             };
         }

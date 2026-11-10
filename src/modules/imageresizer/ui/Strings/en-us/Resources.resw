@@ -308,6 +308,9 @@
   <data name="CLI_ErrorInvalidDimension" xml:space="preserve">
     <value>Width and height must be finite numbers greater than or equal to zero.</value>
   </data>
+  <data name="CLI_ErrorInvalidEnumValue" xml:space="preserve">
+    <value>Invalid value '{0}' for option '{1}'.</value>
+  </data>
   <data name="CLI_ErrorZeroDimensions" xml:space="preserve">
     <value>Width and height cannot both be zero for a custom size.</value>
   </data>

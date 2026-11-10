@@ -86,7 +86,7 @@ public partial class DockBandViewModelLifecycleTests
         };
         var root = new CommandItemViewModel(
             new(new CommandItem(page) { Title = page.Title }),
-            new(context),
+            new WeakReference<IPageContext>(context),
             DefaultContextMenuFactory.Instance);
         root.SlowInitializeProperties();
 
@@ -94,7 +94,7 @@ public partial class DockBandViewModelLifecycleTests
         settingsService.SetupGet(service => service.Settings).Returns(new SettingsModel());
         var band = new DockBandViewModel(
             root,
-            new(context),
+            new WeakReference<IPageContext>(context),
             new DockBandSettings { ProviderId = "test", CommandId = page.Id },
             settingsService.Object,
             DefaultContextMenuFactory.Instance);
@@ -123,6 +123,7 @@ public partial class DockBandViewModelLifecycleTests
             band.SafeCleanup();
             root.SafeCleanup();
             page.Dispose();
+            GC.KeepAlive(context);
         }
     }
 }

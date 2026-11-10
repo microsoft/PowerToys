@@ -234,7 +234,7 @@ Describe 'Light Switch pipeline prerequisite gating' {
         ($suites -contains 'LightSwitch.UITests.Next') | Should Be $false
         $yaml | Should Match "(?s)finally \{\s+try \{\s+if \(\`$base -eq 'LightSwitch.UITests.Next'\) \{\s+try \{\s+Restore-LightSwitchLocation"
         $yaml | Should Match 'displayName: Restore interrupted Light Switch location setup'
-        $yaml | Should Match '(?s)displayName: Restore Light Switch location prerequisites\s+condition: always\(\)'
+        $yaml | Should Match '(?s)displayName: Restore UI-test prerequisites\s+condition: always\(\)'
     }
 
     It 'continues later suites and counts a <Failure> failure once' -TestCases @(

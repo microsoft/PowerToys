@@ -10,6 +10,7 @@ using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.CmdPal.UI.ViewModels.UnitTests.ScoringTestCatalog;
@@ -46,11 +47,11 @@ public sealed partial class ScoringThroughputHarnessTests
 
     public TestContext TestContext { get; set; } = null!;
 
-    private static ScoringFunction<IListItem> BuildScoringFunction(
+    private static ScoringFunction<InProcObject<IListItem>> BuildScoringFunction(
         IRecentCommandsManager history,
         IPrecomputedFuzzyMatcher matcher,
-        Func<IListItem, ProviderSearchWeight>? providerWeightLookup = null)
-        => (in FuzzyQuery query, IListItem item) =>
+        Func<InProcObject<IListItem>, ProviderSearchWeight>? providerWeightLookup = null)
+        => (in FuzzyQuery query, InProcObject<IListItem> item) =>
             MainListPage.ScoreTopLevelItem(query, item, history, matcher, providerWeightLookup);
 
     // Averaged elapsed milliseconds after a warmup, report-only and never asserted against a
@@ -82,7 +83,7 @@ public sealed partial class ScoringThroughputHarnessTests
     {
         var apps = BuildCatalog(AppCount, "app");
         var commands = BuildCatalog(CommandCount, "cmd");
-        var globalFallbacks = BuildCatalog(GlobalFallbackCount, "gfb").Cast<IListItem>().ToList();
+        var globalFallbacks = BuildCatalog(GlobalFallbackCount, "gfb").Select(item => new InProcObject<IListItem>(item)).ToList();
         var matcher = CreateMatcher();
         var history = SeedHistory(apps, HistorySeedCount);
         var scoringFn = BuildScoringFunction(history, matcher);
@@ -105,16 +106,16 @@ public sealed partial class ScoringThroughputHarnessTests
                 _ = materialized.Where(a => !pinnedIds.Contains(a.Id)).ToList();
             });
 
-            RoScored<IListItem>[] cmdScored = [];
+            RoScored<InProcObject<IListItem>>[] cmdScored = [];
             var cmdMs = TimeAverageMs(() =>
             {
-                cmdScored = InternalListHelpers.FilterListWithScores(commands.Cast<IListItem>(), query, scoringFn);
+                cmdScored = InternalListHelpers.FilterListWithScores(commands.Select(item => new InProcObject<IListItem>(item)), query, scoringFn);
             });
 
-            RoScored<IListItem>[] appScored = [];
+            RoScored<InProcObject<IListItem>>[] appScored = [];
             var appMs = TimeAverageMs(() =>
             {
-                appScored = InternalListHelpers.FilterListWithScores(apps.Cast<IListItem>(), query, scoringFn);
+                appScored = InternalListHelpers.FilterListWithScores(apps.Select(item => new InProcObject<IListItem>(item)), query, scoringFn);
             });
 
             var fallbackMs = TimeAverageMs(() =>
@@ -131,7 +132,7 @@ public sealed partial class ScoringThroughputHarnessTests
             Assert.IsTrue(apps.Length > commands.Length, "Apps must outnumber commands in the catalog.");
 
             // Re-scoring the same catalog with the same query yields the same result set.
-            var appScoredAgain = InternalListHelpers.FilterListWithScores(apps.Cast<IListItem>(), query, scoringFn);
+            var appScoredAgain = InternalListHelpers.FilterListWithScores(apps.Select(item => new InProcObject<IListItem>(item)), query, scoringFn);
             Assert.AreEqual(appScored.Length, appScoredAgain.Length, $"App scoring must be deterministic for query '{raw}'.");
             for (var i = 0; i < Math.Min(10, appScored.Length); i++)
             {
@@ -153,7 +154,7 @@ public sealed partial class ScoringThroughputHarnessTests
         var scoringFn = BuildScoringFunction(history, matcher);
 
         var oneChar = matcher.PrecomputeQuery("c");
-        var firstMatches = InternalListHelpers.FilterListWithScores(apps.Cast<IListItem>(), oneChar, scoringFn);
+        var firstMatches = InternalListHelpers.FilterListWithScores(apps.Select(item => new InProcObject<IListItem>(item)), oneChar, scoringFn);
 
         // Extending to "ca" re-scores only the retained subset, but that subset is still large,
         // which is why the spike carries across frames.
@@ -188,6 +189,7 @@ public sealed partial class ScoringThroughputHarnessTests
         var subtitleTargets = apps.Select(a => a.GetSubtitleTarget(matcher)).ToArray();
         var extensionTargets = apps.Select(a => matcher.PrecomputeTarget($"{a.Title} Extension")).ToArray();
         var ids = apps.Select(a => a.Id).ToArray();
+        var inProcApps = apps.Select(item => new InProcObject<IListItem>(item)).ToArray();
 
         TestContext.WriteLine("Per-item sub-attribution (nanoseconds/item, averaged over the app catalog):");
         TestContext.WriteLine("query | full score | 2 DP | 3 DP | extDelta | classifyTier | wordBoundary | frecency");
@@ -200,7 +202,7 @@ public sealed partial class ScoringThroughputHarnessTests
             {
                 for (var i = 0; i < apps.Length; i++)
                 {
-                    _ = MainListPage.ScoreTopLevelItem(query, apps[i], history, matcher, null);
+                    _ = MainListPage.ScoreTopLevelItem(query, inProcApps[i], history, matcher, null);
                 }
             });
 
@@ -265,7 +267,7 @@ public sealed partial class ScoringThroughputHarnessTests
         var matcher = CreateMatcher();
         var history = SeedHistory(apps, HistorySeedCount);
         var scoringFn = BuildScoringFunction(history, matcher);
-        var source = apps.Cast<IListItem>().ToArray();
+        var source = apps.Select(item => new InProcObject<IListItem>(item)).ToArray();
 
         // Build the frecency index once, single-threaded, before the parallel pass reads it.
         history.PrewarmIndex();
@@ -277,13 +279,13 @@ public sealed partial class ScoringThroughputHarnessTests
         {
             var query = matcher.PrecomputeQuery(raw);
 
-            RoScored<IListItem>[] serialResult = [];
+            RoScored<InProcObject<IListItem>>[] serialResult = [];
             var serialMs = TimeAverageMs(() =>
             {
                 serialResult = InternalListHelpers.FilterListWithScores(source, query, scoringFn);
             });
 
-            RoScored<IListItem>[] parallelResult = [];
+            RoScored<InProcObject<IListItem>>[] parallelResult = [];
             var parallelMs = TimeAverageMs(() =>
             {
                 parallelResult = InternalListHelpers.FilterListWithScoresParallel(source, query, scoringFn);

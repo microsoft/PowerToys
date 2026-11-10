@@ -45,8 +45,7 @@ public class ComboBox : Element
     /// </summary>
     public ComboBox SelectByText(string text)
     {
-        EnsureBound();
-        WinappCli.InvokeAssertSuccess("ui", "set-value", Selector, text, Owner!.TargetFlag, Owner!.TargetValue);
+        WinappCli.InvokeAssertSuccess(BuildSetValueArguments(text));
         return this;
     }
 }

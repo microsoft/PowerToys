@@ -81,7 +81,7 @@ internal sealed partial class StackedBarChartControl : AdaptiveVisualControl
         }
 
         Content = root;
-        AutomationProperties.SetName(this, !string.IsNullOrWhiteSpace(_model.Title) ? _model.Title : ChartStrings.Get("AdaptiveChart_BarChart"));
+        AutomationProperties.SetName(this, !string.IsNullOrWhiteSpace(_model.Title) ? _model.Title : Properties.Resources.AdaptiveChart_BarChart);
         AutomationProperties.SetHelpText(this, CreateSummary());
     }
 

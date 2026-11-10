@@ -116,13 +116,40 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
-    public bool UseLowLevelGlobalHotkey
+    public bool IsWindowsKeyHotkeyAvailable => SettingsModel.IsWindowsKeyHotkeyFeatureEnabled;
+
+    public bool UseWindowsKey
     {
-        get => _settingsService.Settings.UseLowLevelGlobalHotkey;
+        get => _settingsService.Settings.IsWindowsKeyHotkeyActive;
         set
         {
+            if (!IsWindowsKeyHotkeyAvailable || value == UseWindowsKey)
+            {
+                return;
+            }
+
+            _settingsService.UpdateSettings(s => s with { UseWindowsKey = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseWindowsKey)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseLowLevelGlobalHotkey)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanEditLowLevelGlobalHotkey)));
+        }
+    }
+
+    public bool CanEditLowLevelGlobalHotkey => !UseWindowsKey;
+
+    public bool UseLowLevelGlobalHotkey
+    {
+        get => UseWindowsKey || _settingsService.Settings.UseLowLevelGlobalHotkey;
+        set
+        {
+            // A two-way binding can write the forced checked state back to the source.
+            if (!CanEditLowLevelGlobalHotkey || value == UseLowLevelGlobalHotkey)
+            {
+                return;
+            }
+
             _settingsService.UpdateSettings(s => s with { UseLowLevelGlobalHotkey = value });
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseLowLevelGlobalHotkey)));
         }
     }
 
@@ -591,7 +618,23 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         var fallbackRankings = new List<Scored<FallbackSettingsViewModel>>(fallbacks.Count);
         foreach (var fallback in fallbacks)
         {
-            var index = currentRankings.IndexOf(fallback.Id);
+            var index = currentRankings.IndexOf(fallback.RankId);
+
+            // settings migration note: Prior to cmdpal v0.14, fallback ranks
+            // were stored per ID. After that, we also store the provider ID as
+            // the RankId.
+            //
+            // This code here handles migrating the old key if we don't find the
+            // new one.
+            if (index < 0)
+            {
+                index = currentRankings.IndexOf(fallback.Id);
+                if (index >= 0)
+                {
+                    needsSave = true;
+                }
+            }
+
             var score = fallbacks.Count;
 
             if (index >= 0)
@@ -721,6 +764,10 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommandPaletteOpeningModeIndex)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowQuickAccessShelf)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanConfigureQuickAccessShelf)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseWindowsKey)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseLowLevelGlobalHotkey)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanEditLowLevelGlobalHotkey)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
             },
             CancellationToken.None,
             TaskCreationOptions.None,
@@ -735,7 +782,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
 
     public void ApplyFallbackSort()
     {
-        _settingsService.UpdateSettings(s => s with { FallbackRanks = FallbackRankings.Select(s2 => s2.Id).ToArray() });
+        _settingsService.UpdateSettings(s => s with { FallbackRanks = FallbackRankings.Select(s2 => s2.RankId).ToArray() });
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FallbackRankings)));
     }
 
