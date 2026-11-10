@@ -101,27 +101,14 @@ Describe 'Virtual display fixture ownership and approval' {
         $script:invalidProbeSignature = $false
         $script:cleanupSnapshotJson = '{"Version":2,"Monitors":[{"Connected":false},{"Connected":false}]}'
         $script:bootTime = [datetime]::new(2026, 11, 4, 0, 0, 0, [DateTimeKind]::Utc)
-        $script:windowsBuild = 26200
-        $script:disableExit = 0
-        $script:deviceDisabled = $false
-        $script:disabledProblem = 22
-        $script:disabledStatus = 0
         $IsolatedGuest = $true
         Mock Test-Administrator { $true }
         Mock Get-CimInstance {
-            if ($ClassName -eq 'Win32_OperatingSystem') {
-                [pscustomobject]@{ LastBootUpTime = $script:bootTime; BuildNumber = $script:windowsBuild }
-            }
+            if ($ClassName -eq 'Win32_OperatingSystem') { [pscustomobject]@{ LastBootUpTime = $script:bootTime } }
             else { [pscustomobject]@{ Manufacturer = 'Microsoft Corporation'; Model = 'Virtual Machine' } }
         }
         Mock Get-PnpDevice { $script:devices }
         Mock Get-PnpDeviceProperty {
-            if ($KeyName -eq 'DEVPKEY_Device_ProblemCode') {
-                return [pscustomobject]@{ Data = $(if ($script:deviceDisabled) { $script:disabledProblem } else { 0 }) }
-            }
-            if ($KeyName -eq 'DEVPKEY_Device_DevNodeStatus') {
-                return [pscustomobject]@{ Data = $(if ($script:deviceDisabled) { $script:disabledStatus } else { 0x8 }) }
-            }
             [pscustomobject]@{ Data = @($(if ($InstanceId -in $script:unrelatedDeviceIds) { 'ROOT\Unrelated' } else { $hardwareId })) }
         }
         Mock Get-AuthenticodeSignature {
@@ -140,11 +127,6 @@ Describe 'Virtual display fixture ownership and approval' {
         }
         Mock pnputil.exe {
             $script:nativeCalls.Add($args[0])
-            if ($args[0] -eq '/disable-device') {
-                $global:LASTEXITCODE = $script:disableExit
-                if ($script:disableExit -eq 0) { $script:deviceDisabled = $true }
-                return
-            }
             $global:LASTEXITCODE = $script:nativeExit
             $removed = $script:nativeExit -eq 0 -or ($script:nativeExit -eq 3010 -and $script:removeOnReboot)
             if ($args[0] -eq '/delete-driver' -and $removed) {
@@ -258,77 +240,6 @@ Describe 'Virtual display fixture ownership and approval' {
         Test-Path -LiteralPath $StatePath | Should Be $true
         (Get-Content (Join-Path $ResultsDirectory 'cleanup.json') -Raw | ConvertFrom-Json).Removed | Should Be $false
         Assert-MockCalled Remove-Item -Times 0 -Exactly -Scope It -ParameterFilter { $Path -like 'Cert:*' }
-    }
-
-    It 'normally stops only the owned Windows 10 adapter before immediate removal' {
-        New-DisplayArtifact
-        $journal.Thumbprint = $artifactThumbprint
-        $journal | ConvertTo-Json | Set-Content $StatePath
-        $script:windowsBuild = 19045
-        $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'OK' })
-        $hardwareId | Set-Content (Join-Path $env:WINDIR 'INF\oem7.inf')
-        & $cleanupAction
-        $script:nativeCalls.ToArray() | Should Be @('--connected 0 0', '--connected 1 0', '--snapshot', '/disable-device', '/remove-device', '/delete-driver')
-        $stopped = Get-Content (Join-Path $ResultsDirectory 'cleanup-stop.json') -Raw | ConvertFrom-Json
-        $stopped.Stopped | Should Be $true
-        Assert-MockCalled pnputil.exe -Times 1 -Exactly -Scope It -ParameterFilter {
-            $args[0] -eq '/disable-device' -and $args[1] -eq 'ROOT\DISPLAY\0001' -and $args.Count -eq 2
-        }
-        Test-Path -LiteralPath $StatePath | Should Be $false
-    }
-
-    It 'retains ownership and refuses removal after Windows 10 stop exit <Exit>' -TestCases @(
-        @{ Exit = 5; Expected = 'Fixture stop failed' }
-        @{ Exit = 3010; Expected = 'Fixture stop requires a reboot' }
-    ) {
-        param($Exit, $Expected)
-        New-DisplayArtifact
-        $journal.Thumbprint = $artifactThumbprint
-        $journal.ImportedStores = @('Root')
-        $journal | ConvertTo-Json | Set-Content $StatePath
-        $script:windowsBuild = 19045
-        $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'OK' })
-        $script:disableExit = $Exit
-        { & $cleanupAction } | Should Throw $Expected
-        (Get-Content $StatePath -Raw | ConvertFrom-Json).RemovalPendingBootTicks | Should Be $script:bootTime.Ticks
-        Assert-MockCalled pnputil.exe -Times 0 -Exactly -Scope It -ParameterFilter { $args[0] -eq '/remove-device' -or $args[0] -eq '/delete-driver' }
-        Assert-MockCalled Remove-Item -Times 0 -Exactly -Scope It -ParameterFilter { $Path -like 'Cert:*' }
-    }
-
-    It 'requires both Windows stop signals: problem=<Problem>, status=<Status>' -TestCases @(
-        @{ Problem = 0; Status = 0 }
-        @{ Problem = 22; Status = 8 }
-    ) {
-        param($Problem, $Status)
-        New-DisplayArtifact
-        $journal.Thumbprint = $artifactThumbprint
-        $journal | ConvertTo-Json | Set-Content $StatePath
-        $script:windowsBuild = 19045
-        $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'OK' })
-        $script:disabledProblem = $Problem
-        $script:disabledStatus = $Status
-        $script:stopClock = [datetime]::UtcNow
-        Mock Get-Date { $script:stopClock = $script:stopClock.AddSeconds(31); $script:stopClock }
-        Mock Start-Sleep { }
-        { & $cleanupAction } | Should Throw 'verified stopped state'
-        Test-Path -LiteralPath $StatePath | Should Be $true
-        Assert-MockCalled pnputil.exe -Times 0 -Exactly -Scope It -ParameterFilter { $args[0] -eq '/remove-device' }
-    }
-
-    It 'recovers an already stopped owned adapter only after the actual reboot barrier' {
-        New-DisplayArtifact
-        $journal.Thumbprint = $artifactThumbprint
-        $journal.RemovalPendingBootTicks = $script:bootTime.Ticks
-        $journal | ConvertTo-Json | Set-Content $StatePath
-        $script:windowsBuild = 19045
-        $script:deviceDisabled = $true
-        $script:devices = @([pscustomobject]@{ InstanceId = 'ROOT\DISPLAY\0001'; Status = 'Error' })
-        { & $cleanupAction } | Should Throw 'requires an actual reboot'
-        $script:nativeCalls.Count | Should Be 0
-        $script:bootTime = $script:bootTime.AddHours(1)
-        & $cleanupAction
-        $script:nativeCalls.ToArray() | Should Be @('/remove-device')
-        Test-Path -LiteralPath $StatePath | Should Be $false
     }
 
     It 'retains ownership when a present fixture remains after removal' {

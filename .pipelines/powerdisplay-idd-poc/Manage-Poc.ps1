@@ -40,18 +40,6 @@ function Find-OwnedInfs {
         $_.Name -notin $state.BeforeInfs -and (Select-String -LiteralPath $_.FullName -SimpleMatch $hardwareId -Quiet)
     } | Select-Object -ExpandProperty Name)
 }
-function Get-FixtureStopState {
-    param([Parameter(Mandatory)][string]$InstanceId)
-    $problem = (Get-PnpDeviceProperty -InstanceId $InstanceId -KeyName DEVPKEY_Device_ProblemCode -ErrorAction Stop).Data
-    $status = (Get-PnpDeviceProperty -InstanceId $InstanceId -KeyName DEVPKEY_Device_DevNodeStatus -ErrorAction Stop).Data
-    [pscustomobject]@{
-        InstanceId = $InstanceId
-        ProblemCode = $problem
-        DevNodeStatus = $status
-        # CM_PROB_DISABLED and no DN_STARTED establish that Windows completed the normal stop.
-        Stopped = $problem -eq 22 -and ($status -band 0x8) -eq 0
-    }
-}
 
 if ($Action -eq 'Cleanup') {
     if (-not (Test-Path -LiteralPath $StatePath)) { throw 'No ownership journal; nothing may be removed.' }
@@ -59,11 +47,8 @@ if ($Action -eq 'Cleanup') {
     $cleanupStarted = Get-Date
     $errors = [Collections.Generic.List[string]]::new()
     try {
-        $operatingSystem = Get-CimInstance Win32_OperatingSystem -ErrorAction Stop
-        $lastBoot = $operatingSystem.LastBootUpTime
+        $lastBoot = (Get-CimInstance Win32_OperatingSystem -ErrorAction Stop).LastBootUpTime
         if ($lastBoot -isnot [datetime]) { throw 'Cannot determine the guest boot identity for safe fixture cleanup.' }
-        if ([string]$operatingSystem.BuildNumber -notmatch '^\d+$') { throw 'Cannot determine the guest Windows build for safe fixture cleanup.' }
-        $stopBeforeRemoval = [int]$operatingSystem.BuildNumber -in 19041..19045
         $bootTicks = $lastBoot.ToUniversalTime().Ticks
         $barrier = $state.PSObject.Properties['RemovalPendingBootTicks']
         if ($barrier) {
@@ -88,22 +73,19 @@ if ($Action -eq 'Cleanup') {
                 Assert-UmdfPackageSignatures -DriverDirectory $driver -Files PtDisplayIdd.dll, PtDisplayIdd.cat, IddProbe.exe -Thumbprint $state.Thumbprint
             }
             finally { $certificate.Dispose() }
-            $stopState = if ($stopBeforeRemoval) { Get-FixtureStopState -InstanceId $devices[0].InstanceId } else { $null }
-            if ($null -eq $stopState -or -not $stopState.Stopped) {
-                $probe = Join-Path $driver 'IddProbe.exe'
-                foreach ($connector in @(0, 1)) {
-                    & $probe --connected $connector 0 | Out-Null
-                    if ($LASTEXITCODE) { throw "Fixture monitor departure failed: connector=$connector, exit=$LASTEXITCODE." }
-                }
-                $snapshotJson = & $probe --snapshot
-                $snapshotExit = $LASTEXITCODE
-                $snapshotJson | Set-Content (Join-Path $ResultsDirectory 'cleanup-snapshot.json')
-                if ($snapshotExit) { throw "Fixture departure snapshot failed: exit=$snapshotExit." }
-                $snapshot = $snapshotJson | ConvertFrom-Json
-                if ($snapshot.Version -ne 2 -or @($snapshot.Monitors).Count -ne 2 -or
-                    @($snapshot.Monitors | Where-Object { $_.Connected -isnot [bool] -or $_.Connected }).Count) {
-                    throw 'Fixture departure snapshot must confirm both monitors are disconnected.'
-                }
+            $probe = Join-Path $driver 'IddProbe.exe'
+            foreach ($connector in @(0, 1)) {
+                & $probe --connected $connector 0 | Out-Null
+                if ($LASTEXITCODE) { throw "Fixture monitor departure failed: connector=$connector, exit=$LASTEXITCODE." }
+            }
+            $snapshotJson = & $probe --snapshot
+            $snapshotExit = $LASTEXITCODE
+            $snapshotJson | Set-Content (Join-Path $ResultsDirectory 'cleanup-snapshot.json')
+            if ($snapshotExit) { throw "Fixture departure snapshot failed: exit=$snapshotExit." }
+            $snapshot = $snapshotJson | ConvertFrom-Json
+            if ($snapshot.Version -ne 2 -or @($snapshot.Monitors).Count -ne 2 -or
+                @($snapshot.Monitors | Where-Object { $_.Connected -isnot [bool] -or $_.Connected }).Count) {
+                throw 'Fixture departure snapshot must confirm both monitors are disconnected.'
             }
         }
         $ownedInfs = @(Find-OwnedInfs)
@@ -114,25 +96,6 @@ if ($Action -eq 'Cleanup') {
             $removalCompleted = $false
             $rebootRequired = $false
             try {
-                if ($devices.Count -and $stopBeforeRemoval) {
-                    if (-not $stopState.Stopped) {
-                        & pnputil.exe /disable-device $devices[0].InstanceId
-                        $disableExit = $LASTEXITCODE
-                        if ($disableExit -eq 3010) {
-                            $rebootRequired = $true
-                            throw "Fixture stop requires a reboot: $($devices[0].InstanceId), exit $disableExit."
-                        }
-                        if ($disableExit -ne 0) { throw "Fixture stop failed: $($devices[0].InstanceId), exit $disableExit." }
-                        $stopDeadline = (Get-Date).AddSeconds(30)
-                        do {
-                            $stopState = Get-FixtureStopState -InstanceId $devices[0].InstanceId
-                            if ($stopState.Stopped) { break }
-                            Start-Sleep -Milliseconds 200
-                        } while ((Get-Date) -lt $stopDeadline)
-                        if (-not $stopState.Stopped) { throw 'The owned virtual adapter did not reach a verified stopped state.' }
-                    }
-                    $stopState | ConvertTo-Json | Set-Content (Join-Path $ResultsDirectory 'cleanup-stop.json')
-                }
                 Remove-UmdfDevices -Devices $devices -Errors $errors -RequireImmediateRemoval -RebootRequired ([ref]$rebootRequired)
                 if ($errors.Count -eq 0) {
                     Remove-UmdfPackages -InfNames $ownedInfs -HardwareId $hardwareId -Errors $errors -RequireImmediateRemoval -RebootRequired ([ref]$rebootRequired)
