@@ -645,7 +645,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>Display user interface</value>
   </data>
   <data name="PowerScripts_CreateScriptButton.Text" xml:space="preserve">
-    <value>Create Script</value>
+    <value>New script</value>
   </data>
   <data name="PowerScripts_CreateScriptAction.AutomationProperties.Name" xml:space="preserve">
     <value>Create Script</value>
@@ -654,7 +654,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>Create Script</value>
   </data>
   <data name="PowerScripts_TemplatesPage.ModuleTitle" xml:space="preserve">
-    <value>Create Script</value>
+    <value>New script</value>
   </data>
   <data name="PowerScripts_TemplatesPage.ModuleDescription" xml:space="preserve">
     <value>Choose a runtime and input/output contract to generate a starter script.</value>
@@ -1086,7 +1086,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>My scripts</value>
   </data>
   <data name="PowerScripts_ConsumerModulesTab.Content" xml:space="preserve">
-    <value>Consumer modules</value>
+    <value>Connections</value>
   </data>
   <data name="PowerScripts_ActivityTab.Content" xml:space="preserve">
     <value>Activity</value>
@@ -1095,7 +1095,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>Activity</value>
   </data>
   <data name="PowerScripts_ConsumerModulesPage.ModuleTitle" xml:space="preserve">
-    <value>Consumer modules</value>
+    <value>Connections</value>
   </data>
   <data name="PowerScripts_ConsumerModulesPage.ModuleDescription" xml:space="preserve">
     <value>Choose which PowerToys modules can use PowerScripts. Turning an integration off prevents new executions without deleting saved bindings. Organizational policies take precedence.</value>
@@ -1110,4 +1110,46 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_EditorNotEnabled" xml:space="preserve"><value>PowerScripts disabled</value></data>
   <data name="PowerScripts_EditorSandboxOn" xml:space="preserve"><value>Sandbox enabled</value></data>
   <data name="PowerScripts_EditorSandboxOff" xml:space="preserve"><value>Sandbox disabled</value></data>
+  <data name="PowerScripts_WorkspaceSearch.PlaceholderText" xml:space="preserve"><value>Search scripts</value></data>
+  <data name="PowerScripts_WorkspaceSearch.AutomationProperties.Name" xml:space="preserve"><value>Search scripts</value></data>
+  <data name="PowerScripts_WorkspaceSettings.Content" xml:space="preserve"><value>Settings</value></data>
+  <data name="PowerScripts_LibraryHeading.Text" xml:space="preserve"><value>My scripts</value></data>
+  <data name="PowerScripts_LibraryHelp.Text" xml:space="preserve"><value>Your tools. Your workflow. Ready where you need them.</value></data>
+  <data name="PowerScripts_CreationPreview.Text" xml:space="preserve"><value>Preview</value></data>
+  <data name="PowerScripts_CreationUntitled" xml:space="preserve"><value>Untitled script</value></data>
+  <data name="PowerScripts_CreationFiles.Text" xml:space="preserve"><value>Files it creates</value></data>
+  <data name="PowerScripts_CreationSafety.Text" xml:space="preserve"><value>Creating a script does not run code, approve it or change sandbox protection.</value></data>
+  <data name="PowerScripts_CreationInput.Header" xml:space="preserve"><value>1  What does it start with?</value></data>
+  <data name="PowerScripts_CreationOutput.Header" xml:space="preserve"><value>2  What does it give back?</value></data>
+  <data name="PowerScripts_CreationName.Text" xml:space="preserve"><value>3  Name it and make it yours</value></data>
+  <data name="PowerScripts_DetailsOverview.Text" xml:space="preserve"><value>Overview</value></data>
+  <data name="PowerScripts_DetailsCode.Text" xml:space="preserve"><value>Code</value></data>
+  <data name="PowerScripts_DetailsSecurity.Text" xml:space="preserve"><value>Security</value></data>
+  <data name="PowerScripts_OverviewInput.Text" xml:space="preserve"><value>It takes</value></data>
+  <data name="PowerScripts_OverviewOutput.Text" xml:space="preserve"><value>It gives back</value></data>
+  <data name="PowerScripts_DetailsLanguage.Text" xml:space="preserve"><value>Script language</value></data>
+  <data name="PowerScripts_DetailsReviewHelp.Text" xml:space="preserve"><value>Review the script and its descriptor before running it from a connected module. Editing or viewing a script never grants approval.</value></data>
+  <data name="PowerScripts_SourcePreview.Header" xml:space="preserve"><value>Script source</value></data>
+  <data name="PowerScripts_DetailsSourceUnavailable" xml:space="preserve"><value>The script source is too large to preview here. Use Edit script to review it in your editor.</value></data>
+  <data name="PowerScripts_DetailsTrust.Text" xml:space="preserve"><value>Approval</value></data>
+  <data name="PowerScripts_ConnectionHelp.Text" xml:space="preserve"><value>Connect your scripts to the places you work. Availability and organizational policies are checked by PowerScripts.</value></data>
+  <data name="PowerScripts_TerminalConnection.Header" xml:space="preserve"><value>Terminal</value></data>
+  <data name="PowerScripts_TerminalConnection.Description" xml:space="preserve"><value>Run scripts with PowerScripts.Host.exe. Input, approval and sandbox requirements still apply.</value></data>
+  <data name="PowerScripts_ChoiceNone.Text" xml:space="preserve"><value>Nothing</value></data>
+  <data name="PowerScripts_ChoiceNoResult.Text" xml:space="preserve"><value>No result</value></data>
+  <data name="PowerScripts_ChoiceText.Text" xml:space="preserve"><value>Text</value></data>
+  <data name="PowerScripts_ChoiceFiles.Text" xml:space="preserve"><value>Files</value></data>
+  <data name="PowerScripts_ChoiceImage.Text" xml:space="preserve"><value>Image</value></data>
+  <data name="PowerScripts_ChoiceAudio.Text" xml:space="preserve"><value>Audio</value></data>
+  <data name="PowerScripts_ChoiceInputNone.AutomationProperties.Name" xml:space="preserve"><value>Start with nothing</value></data>
+  <data name="PowerScripts_ChoiceInputText.AutomationProperties.Name" xml:space="preserve"><value>Start with text</value></data>
+  <data name="PowerScripts_ChoiceInputFiles.AutomationProperties.Name" xml:space="preserve"><value>Start with files</value></data>
+  <data name="PowerScripts_ChoiceInputImage.AutomationProperties.Name" xml:space="preserve"><value>Start with an image</value></data>
+  <data name="PowerScripts_ChoiceInputAudio.AutomationProperties.Name" xml:space="preserve"><value>Start with audio</value></data>
+  <data name="PowerScripts_ChoiceOutputNone.AutomationProperties.Name" xml:space="preserve"><value>Return no result</value></data>
+  <data name="PowerScripts_ChoiceOutputText.AutomationProperties.Name" xml:space="preserve"><value>Return text</value></data>
+  <data name="PowerScripts_ChoiceOutputFiles.AutomationProperties.Name" xml:space="preserve"><value>Return files</value></data>
+  <data name="PowerScripts_ChoiceOutputImage.AutomationProperties.Name" xml:space="preserve"><value>Return an image</value></data>
+  <data name="PowerScripts_ChoiceOutputAudio.AutomationProperties.Name" xml:space="preserve"><value>Return audio</value></data>
+  <data name="PowerScripts_EditScriptAction.Content" xml:space="preserve"><value>Edit script</value></data>
 </root>

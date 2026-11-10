@@ -1,0 +1,95 @@
+﻿<UserControl
+    x:Class="PowerScripts.Editor.Controls.ScriptCard"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PowerScripts.Editor.Controls"
+    AutomationProperties.HelpText="{x:Bind Script.TrustDisplay, Mode=OneWay}">
+    <Grid
+        x:Name="CardSurface"
+        MinHeight="164"
+        Padding="16"
+        Background="{ThemeResource ScriptCardBlueBrush}"
+        BorderBrush="{ThemeResource ScriptCardBorderBrush}"
+        BorderThickness="1"
+        CornerRadius="{ThemeResource OverlayCornerRadius}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid
+                Width="32"
+                Height="32"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top">
+                <FontIcon
+                    FontSize="28"
+                    Foreground="{ThemeResource ScriptCardForegroundBrush}"
+                    Glyph="{x:Bind Script.DefaultIconGlyph, Mode=OneWay}"
+                    Visibility="{x:Bind local:ScriptCard.InvertBoolToVisibility(Script.HasIcon), Mode=OneWay}" />
+                <Image
+                    DataContext="{x:Bind Script, Mode=OneWay}"
+                    ImageFailed="Icon_ImageFailed"
+                    Source="{Binding IconSourcePath, Mode=OneWay}"
+                    Visibility="{x:Bind local:ScriptCard.BoolToVisibility(Script.HasIcon), Mode=OneWay}" />
+            </Grid>
+            <FontIcon
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                FontSize="16"
+                Foreground="{ThemeResource ScriptCardForegroundBrush}"
+                Glyph="&#xE72E;"
+                ToolTipService.ToolTip="{x:Bind Script.TrustDisplay, Mode=OneWay}"
+                Visibility="{x:Bind local:ScriptCard.BoolToVisibility(Script.Trusted), Mode=OneWay}" />
+        </Grid>
+        <StackPanel Grid.Row="1" Spacing="8">
+            <TextBlock
+                Foreground="{ThemeResource ScriptCardForegroundBrush}"
+                MaxLines="2"
+                Style="{StaticResource BodyStrongTextBlockStyle}"
+                Text="{x:Bind Script.Name, Mode=OneWay}"
+                TextTrimming="CharacterEllipsis"
+                TextWrapping="Wrap" />
+            <TextBlock
+                Foreground="{ThemeResource ScriptCardForegroundBrush}"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="{x:Bind Script.CatalogueSummary, Mode=OneWay}"
+                TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="Blue" />
+                <VisualState x:Name="Purple">
+                    <VisualState.Setters>
+                        <Setter Target="CardSurface.Background" Value="{ThemeResource ScriptCardPurpleBrush}" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Green">
+                    <VisualState.Setters>
+                        <Setter Target="CardSurface.Background" Value="{ThemeResource ScriptCardGreenBrush}" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Orange">
+                    <VisualState.Setters>
+                        <Setter Target="CardSurface.Background" Value="{ThemeResource ScriptCardOrangeBrush}" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Teal">
+                    <VisualState.Setters>
+                        <Setter Target="CardSurface.Background" Value="{ThemeResource ScriptCardTealBrush}" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Magenta">
+                    <VisualState.Setters>
+                        <Setter Target="CardSurface.Background" Value="{ThemeResource ScriptCardMagentaBrush}" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Slate">
+                    <VisualState.Setters>
+                        <Setter Target="CardSurface.Background" Value="{ThemeResource ScriptCardSlateBrush}" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Grid>
+</UserControl>

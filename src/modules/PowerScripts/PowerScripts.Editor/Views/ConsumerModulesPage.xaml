@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="PowerScripts.Editor.Views.ConsumerModulesPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,7 +6,11 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls">
     <layout:ManagementPage x:Uid="PowerScripts_ConsumerModulesPage">
         <layout:ManagementPage.ModuleContent>
-            <StackPanel Spacing="8">
+            <StackPanel Spacing="20">
+                <TextBlock
+                    x:Uid="PowerScripts_ConnectionHelp"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    TextWrapping="Wrap" />
                 <InfoBar
                     x:Uid="PowerScripts_ManagedPolicy"
                     IsClosable="False"
@@ -21,6 +25,9 @@
                     x:Uid="PowerScripts_AdvancedPasteConsumer"
                     Description="{x:Bind ViewModel.AdvancedPasteConsumer.Status, Mode=OneWay}"
                     IsEnabled="{x:Bind ViewModel.AreConsumerSettingsReady, Mode=OneWay}">
+                    <tkcontrols:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE77F;" />
+                    </tkcontrols:SettingsCard.HeaderIcon>
                     <ToggleSwitch
                         AutomationProperties.AutomationId="PowerScriptsAdvancedPasteEnabled"
                         AutomationProperties.Name="Advanced Paste"
@@ -33,6 +40,9 @@
                     x:Uid="PowerScripts_KeyboardManagerConsumer"
                     Description="{x:Bind ViewModel.KeyboardManagerConsumer.Status, Mode=OneWay}"
                     IsEnabled="{x:Bind ViewModel.AreConsumerSettingsReady, Mode=OneWay}">
+                    <tkcontrols:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE765;" />
+                    </tkcontrols:SettingsCard.HeaderIcon>
                     <ToggleSwitch
                         AutomationProperties.AutomationId="PowerScriptsKeyboardManagerEnabled"
                         AutomationProperties.Name="Keyboard Manager"
@@ -40,6 +50,11 @@
                         IsOn="{x:Bind ViewModel.KeyboardManagerConsumer.IsEnabled, Mode=OneWay}"
                         Tag="keyboard-manager"
                         Toggled="ConsumerEnabledToggle_Toggled" />
+                </tkcontrols:SettingsCard>
+                <tkcontrols:SettingsCard x:Uid="PowerScripts_TerminalConnection">
+                    <tkcontrols:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE756;" />
+                    </tkcontrols:SettingsCard.HeaderIcon>
                 </tkcontrols:SettingsCard>
             </StackPanel>
         </layout:ManagementPage.ModuleContent>

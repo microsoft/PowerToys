@@ -26,6 +26,8 @@ public sealed partial class PowerScriptTemplatesPage : Page
 
     private PowerScriptsViewModel ViewModel { get; set; }
 
+    internal bool IsCreating => _isCreating;
+
     public ObservableCollection<PowerScriptTemplateParameter> Parameters { get; } = new();
 
     public PowerScriptTemplatesPage()
@@ -37,9 +39,13 @@ public sealed partial class PowerScriptTemplatesPage : Page
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
-        ViewModel = e.Parameter as PowerScriptsViewModel ??
-            throw new ArgumentException("Creation navigation requires the PowerScripts view model.", nameof(e));
+        ViewModel = e.Parameter as PowerScriptsViewModel
+            ?? throw new ArgumentException("Creation navigation requires the PowerScripts view model.", nameof(e));
+        RuntimeComboBox.SelectedIndex = 0;
+        InputComboBox.SelectedIndex = 0;
+        OutputComboBox.SelectedIndex = 1;
         TemplateBreadcrumb.ItemsSource = new[] { "PowerScripts", ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_CreateScriptTitle") };
+        UpdatePreview();
     }
 
     private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -61,7 +67,11 @@ public sealed partial class PowerScriptTemplatesPage : Page
         }
     }
 
-    private void ProjectName_TextChanged(object sender, TextChangedEventArgs e) => UpdateCreateButton();
+    private void ProjectName_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        UpdateCreateButton();
+        UpdatePreview();
+    }
 
     private void UpdateCreateButton()
     {
@@ -69,7 +79,7 @@ public sealed partial class PowerScriptTemplatesPage : Page
         {
             var hasOptions = RuntimeComboBox.SelectedItem is not null &&
                 InputComboBox.SelectedItem is not null && OutputComboBox.SelectedItem is not null;
-            var hasFileCounts = (InputComboBox.SelectedItem as ComboBoxItem)?.Tag as string != "files" ||
+            var hasFileCounts = (InputComboBox.SelectedItem as GridViewItem)?.Tag as string != "files" ||
                 (!double.IsNaN(MinimumFilesNumberBox.Value) && !double.IsNaN(MaximumFilesNumberBox.Value));
             CreateButton.IsEnabled = !_isCreating && !string.IsNullOrWhiteSpace(ProjectNameTextBox.Text) &&
                 hasOptions && hasFileCounts;
@@ -104,14 +114,45 @@ public sealed partial class PowerScriptTemplatesPage : Page
             return;
         }
 
-        FileInputOptions.Visibility = (InputComboBox.SelectedItem as ComboBoxItem)?.Tag as string == "files" ? Visibility.Visible : Visibility.Collapsed;
+        FileInputOptions.Visibility = (InputComboBox.SelectedItem as GridViewItem)?.Tag as string == "files" ? Visibility.Visible : Visibility.Collapsed;
         PythonHelp.Visibility = (RuntimeComboBox.SelectedItem as ComboBoxItem)?.Tag as string == "python" ? Visibility.Visible : Visibility.Collapsed;
         UpdateCreateButton();
+        UpdatePreview();
     }
 
-    private static string SelectedToken(ComboBox comboBox) =>
-        (comboBox.SelectedItem as ComboBoxItem)?.Tag as string ??
-        throw new InvalidOperationException("Select a script runtime and input/output types.");
+    private void UpdatePreview()
+    {
+        if (PreviewCard is null || RuntimeComboBox?.SelectedItem is not ComboBoxItem runtime)
+        {
+            return;
+        }
+
+        PreviewCard.Script = new PowerScriptListItem
+        {
+            Name = string.IsNullOrWhiteSpace(ProjectNameTextBox.Text)
+                ? ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_CreationUntitled") : ProjectNameTextBox.Text,
+            Runtime = (string)runtime.Content,
+            Io = new PowerScriptIo
+            {
+                Input = (InputComboBox.SelectedItem as GridViewItem)?.Tag as string ?? "none",
+                Output = (OutputComboBox.SelectedItem as GridViewItem)?.Tag as string ?? "text",
+            },
+        };
+        var entry = (string)runtime.Tag == "python" ? "script.py" : "script.ps1";
+        PreviewFiles.Text = entry + Environment.NewLine + entry + ".tool.json" + Environment.NewLine + "README.md";
+    }
+
+    private static string SelectedToken(Control control)
+    {
+        var selected = control switch
+        {
+            ComboBox comboBox => comboBox.SelectedItem,
+            ListViewBase list => list.SelectedItem,
+            _ => null,
+        };
+        return (selected as FrameworkElement)?.Tag as string ??
+            throw new InvalidOperationException("Select a script runtime and input/output types.");
+    }
 
     private static int FileCount(NumberBox numberBox)
     {
@@ -124,6 +165,19 @@ public sealed partial class PowerScriptTemplatesPage : Page
         return (int)value;
     }
 
+    private void ChoiceGrid_Loaded(object sender, RoutedEventArgs e) => ResizeChoices((GridView)sender);
+
+    private void ChoiceGrid_SizeChanged(object sender, SizeChangedEventArgs e) => ResizeChoices((GridView)sender);
+
+    private static void ResizeChoices(GridView grid)
+    {
+        if (grid.ItemsPanelRoot is ItemsWrapGrid panel)
+        {
+            var columns = Math.Clamp((int)(grid.ActualWidth / 160), 1, 3);
+            panel.ItemWidth = Math.Max(120, (grid.ActualWidth - 8) / columns);
+        }
+    }
+
     private async void CreateButton_Click(object sender, RoutedEventArgs e)
     {
         if (_isCreating)
@@ -132,6 +186,8 @@ public sealed partial class PowerScriptTemplatesPage : Page
         }
 
         _isCreating = true;
+        App.MainWindow.UpdateBackButton();
+        CreateButton.IsEnabled = false;
         CreationForm.IsEnabled = false;
         TemplateStatus.IsOpen = false;
         string entry = null;
@@ -163,6 +219,7 @@ public sealed partial class PowerScriptTemplatesPage : Page
         finally
         {
             _isCreating = false;
+            App.MainWindow.UpdateBackButton();
             CreationForm.IsEnabled = true;
             UpdateCreateButton();
         }

@@ -4,9 +4,11 @@
 
 using System;
 using System.Globalization;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using PowerScripts.Editor.Helpers;
 using PowerScripts.Editor.Views;
 using PowerScripts.UI.ViewModels;
 using Windows.Graphics;
@@ -30,7 +32,14 @@ public sealed partial class MainWindow : Window
             "dark" => ElementTheme.Dark,
             _ => ElementTheme.Default,
         };
-        AppWindow.Resize(new SizeInt32(1100, 800));
+        ExtendsContentIntoTitleBar = true;
+        SetTitleBar(EditorTitleBar);
+        AppWindow.Resize(new SizeInt32(1400, 920));
+        foreach (var frame in _frames)
+        {
+            frame.Navigated += (_, _) => UpdateBackButton();
+        }
+
         Navigation.SelectedItem = MyScriptsTab;
         Activated += async (_, args) =>
         {
@@ -61,5 +70,53 @@ public sealed partial class MainWindow : Window
         }
 
         TabContent.Content = frame;
+        UpdateBackButton();
+    }
+
+    internal void UpdateBackButton()
+    {
+        EditorTitleBar.IsBackButtonEnabled = TabContent.Content is Frame { CanGoBack: true } frame &&
+            frame.Content is not PowerScriptTemplatesPage { IsCreating: true };
+        EditorSearch.IsEnabled = _frames[0].Content is not PowerScriptTemplatesPage;
+    }
+
+    private void TitleBar_BackRequested(TitleBar sender, object args)
+    {
+        if (TabContent.Content is Frame { CanGoBack: true } frame)
+        {
+            EditorNavigation.GoBack(frame);
+        }
+    }
+
+    private void TitleBar_PaneToggleRequested(TitleBar sender, object args) => Navigation.IsPaneOpen = !Navigation.IsPaneOpen;
+
+    private void Search_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+    {
+        if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput && TabContent is not null &&
+            _frames[0].Content is not PowerScriptTemplatesPage)
+        {
+            Navigation.SelectedItem = MyScriptsTab;
+            if (_frames[0].Content is not MyScriptsPage)
+            {
+                _frames[0].Navigate(typeof(MyScriptsPage), _viewModel);
+            }
+        }
+    }
+
+    private void Navigation_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+    {
+        if (args.InvokedItemContainer == GlobalSettingsItem)
+        {
+            try
+            {
+                EditorNavigation.OpenGlobalSettings();
+            }
+            catch (Exception exception)
+            {
+                Logger.LogError("Unable to open PowerScripts Settings.", exception);
+                ShellError.Message = exception.Message;
+                ShellError.IsOpen = true;
+            }
+        }
     }
 }
