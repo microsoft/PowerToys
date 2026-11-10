@@ -90,7 +90,6 @@ function Set-InstallerMedia {
         $assignments[$entry.Id] = $entry
     }
     $encoding = New-Object Text.UTF8Encoding($false)
-
     foreach ($group in ($Files | Group-Object WxsPath)) {
         $document = New-Object Xml.XmlDocument
         $document.PreserveWhitespace = $true
@@ -111,16 +110,17 @@ function Set-InstallerMedia {
     }
 
     $product = Get-Content -LiteralPath $ProductWxsPath -Raw
-    $marker = '<!--InstallerMedia-->'
-    if (-not $product.Contains($marker)) {
-        throw "Missing $marker in '$ProductWxsPath'"
+    $mediaPattern = '(?s)<!--InstallerMedia-->.*?<!--/InstallerMedia-->'
+    if ([regex]::Matches($product, $mediaPattern).Count -ne 1) {
+        throw "Expected one bounded InstallerMedia section in '$ProductWxsPath'"
     }
     $definitions = @(
         foreach ($cabinet in $layout.Media) {
             '    <Media Id="{0}" Cabinet="cab{0}.cab" EmbedCab="yes" CompressionLevel="high" />' -f $cabinet.Id
         }
     ) -join "`r`n"
-    [IO.File]::WriteAllText($ProductWxsPath, $product.Replace($marker, $definitions.TrimStart()), $encoding)
+    $section = "<!--InstallerMedia-->`r`n$definitions`r`n    <!--/InstallerMedia-->"
+    [IO.File]::WriteAllText($ProductWxsPath, [regex]::Replace($product, $mediaPattern, $section), $encoding)
 
     $null = New-Item -ItemType Directory -Path (Split-Path -Parent $ManifestPath) -Force
     [IO.File]::WriteAllText($ManifestPath, ($layout | ConvertTo-Json -Depth 5), $encoding)

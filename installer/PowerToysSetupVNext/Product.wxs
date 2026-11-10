@@ -29,6 +29,7 @@
 
     <Media Id="1" Cabinet="cab1.cab" EmbedCab="yes" CompressionLevel="high" />
     <!--InstallerMedia-->
+    <!--/InstallerMedia-->
 
     <Property Id="REINSTALLMODE" Value="amus" />
     <Property Id="WINDOWSBUILDNUMBER" Secure="yes">

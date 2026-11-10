@@ -25,6 +25,20 @@ function Assert-MediaFailure {
     $failed | Should Be $true
 }
 
+function Import-MediaTestHarvester {
+    $scriptPath = Join-Path $PSScriptRoot '..\..\installer\PowerToysSetupVNext\generateAllFileComponents.ps1'
+    $tokens = $null
+    $errors = $null
+    $ast = [Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$errors)
+    foreach ($function in $ast.FindAll({
+        param($node)
+        $node -is [Management.Automation.Language.FunctionDefinitionAst] -and
+            $node.Name -in @('Generate-FileList', 'Generate-FileComponents')
+    }, $false)) {
+        . ([scriptblock]::Create($function.Extent.Text))
+    }
+}
+
 Describe 'Installer Smart Cabbing media' {
     It 'keeps duplicate payloads together across an otherwise overflowing cabinet boundary' {
         $files = @(
@@ -117,17 +131,7 @@ Describe 'Installer Smart Cabbing media' {
     }
 
     It 'collects the exact source and component emitted by the file harvester' {
-        $scriptPath = Join-Path $PSScriptRoot '..\..\installer\PowerToysSetupVNext\generateAllFileComponents.ps1'
-        $tokens = $null
-        $errors = $null
-        $ast = [Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$errors)
-        foreach ($function in $ast.FindAll({
-            param($node)
-            $node -is [Management.Automation.Language.FunctionDefinitionAst] -and
-                $node.Name -in @('Generate-FileList', 'Generate-FileComponents')
-        }, $false)) {
-            . ([scriptblock]::Create($function.Extent.Text))
-        }
+        . Import-MediaTestHarvester
 
         $fileListRoots = @{}
         $installerFiles = [Collections.Generic.List[object]]::new()
@@ -181,6 +185,7 @@ Describe 'Installer Smart Cabbing media' {
     <MajorUpgrade DowngradeErrorMessage="Existing policy" />
     <Media Id="1" Cabinet="cab1.cab" EmbedCab="yes" CompressionLevel="high" />
     <!--InstallerMedia-->
+    <!--/InstallerMedia-->
   </Package>
 </Wix>
 '@ | Set-Content -LiteralPath $productPath -Encoding UTF8
@@ -205,5 +210,117 @@ Describe 'Installer Smart Cabbing media' {
         $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
         @($manifest.Files).Count | Should Be 2
         $manifest.Files[0].Hash | Should Be (Get-FileHash -LiteralPath $files[0].SourcePath -Algorithm SHA256).Hash
+    }
+
+    It 'replaces generated media on retry without retaining obsolete cabinets' {
+        $files = @(
+            New-MediaTestFile 'A' 'aa'
+            New-MediaTestFile 'B' 'bb'
+        )
+        $productPath = $files[0].WxsPath
+        $manifestPath = Join-Path $TestDrive 'obj\InstallerMedia.json'
+        @'
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="Test">
+    <Media Id="1" Cabinet="cab1.cab" EmbedCab="yes" CompressionLevel="high" />
+    <!--InstallerMedia-->
+    <!--/InstallerMedia-->
+  </Package>
+  <Fragment><Component Id="AComponent"><File Id="A" /></Component><Component Id="BComponent"><File Id="B" /></Component></Fragment>
+</Wix>
+'@ | Set-Content -LiteralPath $productPath -Encoding UTF8
+
+        Set-InstallerMedia -Files $files -ProductWxsPath $productPath -ManifestPath $manifestPath -MaximumUncompressedSize 2
+        [xml]$first = Get-Content -LiteralPath $productPath
+        @($first.Wix.Package.Media).Count | Should Be 3
+
+        Set-InstallerMedia -Files $files -ProductWxsPath $productPath -ManifestPath $manifestPath -MaximumUncompressedSize 4
+        [xml]$second = Get-Content -LiteralPath $productPath
+        @($second.Wix.Package.Media).Count | Should Be 2
+        ($second.Wix.Package.Media.Id -join ',') | Should Be '1,2'
+        [xml]$authoring = Get-Content -LiteralPath $files[0].WxsPath
+        @($authoring.GetElementsByTagName('File') | Where-Object DiskId -NE '2').Count | Should Be 0
+
+        Set-InstallerMedia -Files @() -ProductWxsPath $productPath -ManifestPath $manifestPath
+        [xml]$empty = Get-Content -LiteralPath $productPath
+        @($empty.Wix.Package.Media).Count | Should Be 1
+        $empty.Wix.Package.Media.Id | Should Be '1'
+    }
+
+    It 'restores the PowerDisplay template across consecutive local harvests' {
+        . Import-MediaTestHarvester
+        $installer = Join-Path $PSScriptRoot '..\..\installer'
+        [xml]$nativeProject = Get-Content -LiteralPath "$installer\PowerToysSetupCustomActionsVNext\PowerToysSetupCustomActionsVNext.vcxproj"
+        [xml]$msiProject = Get-Content -LiteralPath "$installer\PowerToysSetupVNext\PowerToysInstallerVNext.wixproj"
+        $backup = @($nativeProject.Project.ItemDefinitionGroup.PreBuildEvent.Command -split '\r?\n' |
+            Where-Object { $_ -match 'copy .*PowerDisplay\.wxs' }) -join "`r`n"
+        $restore = @($msiProject.Project.PropertyGroup.PostBuildEvent -split '\r?\n' |
+            Where-Object { $_ -match 'move .*PowerDisplay\.wxs' }) -join "`r`n"
+        $projectDir = Join-Path $TestDrive 'installer\PowerToysSetupCustomActionsVNext'
+        $wixDir = Join-Path $TestDrive 'installer\PowerToysSetupVNext'
+        $buildDir = Join-Path $wixDir 'x64\Release\MachineSetup'
+        $source = Join-Path $TestDrive 'assets'
+        $null = New-Item -ItemType Directory -Path $projectDir, $buildDir, $source
+        Set-Content -LiteralPath "$source\PowerDisplay.ico" -Value 'icon payload'
+        Copy-Item -LiteralPath "$installer\PowerToysSetupVNext\PowerDisplay.wxs" -Destination $wixDir
+        $wxs = Join-Path $wixDir 'PowerDisplay.wxs'
+        $template = Get-Content -LiteralPath $wxs -Raw
+        Set-Content -LiteralPath "$buildDir\backup.cmd" -Value $backup.Replace('$(ProjectDir)', "$projectDir\")
+        Set-Content -LiteralPath "$buildDir\restore.cmd" -Value $restore
+
+        Push-Location $buildDir
+        try {
+            foreach ($iteration in 1..2) {
+                & $env:ComSpec /d /c "$buildDir\backup.cmd" | Out-Null
+                $LASTEXITCODE | Should Be 0
+                $fileListRoots = @{}
+                $installerFiles = [Collections.Generic.List[object]]::new()
+                Generate-FileList -fileDepsJson '' -fileListName PowerDisplayAssetsFiles -wxsFilePath $wxs -depsPath "$source\"
+                Generate-FileComponents -fileListName PowerDisplayAssetsFiles -wxsFilePath $wxs
+                $layout = Get-InstallerMediaLayout -Files $installerFiles.ToArray()
+                $layout.Files.Count | Should Be 1
+                $installerFiles[0].SourcePath | Should Be "$source\PowerDisplay.ico"
+
+                & $env:ComSpec /d /c "$buildDir\restore.cmd" | Out-Null
+                $LASTEXITCODE | Should Be 0
+                (Get-Content -LiteralPath $wxs -Raw) | Should Be $template
+            }
+        }
+        finally { Pop-Location }
+    }
+
+    It 'publishes local inputs before harvesting and leaves CI inputs unchanged' {
+        $installer = Join-Path $PSScriptRoot '..\..\installer'
+        [xml]$nativeProject = Get-Content -LiteralPath "$installer\PowerToysSetupCustomActionsVNext\PowerToysSetupCustomActionsVNext.vcxproj"
+        [xml]$msiProject = Get-Content -LiteralPath "$installer\PowerToysSetupVNext\PowerToysInstallerVNext.wixproj"
+        $nativeEvent = $nativeProject.SelectSingleNode('//*[local-name()="PreBuildEvent"]/*[local-name()="Command"]').InnerText
+        $msiEvents = @($msiProject.Project.PropertyGroup | Where-Object { $_.PreBuildEvent } | ForEach-Object PreBuildEvent)
+        foreach ($ciBuild in @('false', 'true')) {
+            foreach ($msiEvent in $msiEvents) {
+                $fixture = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+                $null = New-Item -ItemType Directory -Path $fixture
+                Set-Content -LiteralPath "$fixture\input.bin" -Value 'prepublished'
+                Set-Content -LiteralPath "$fixture\publish.cmd" -Value '@echo published> "%~dp0input.bin"'
+                Set-Content -LiteralPath "$fixture\harvest.cmd" -Value '@copy /Y "%~dp0input.bin" "%~dp0manifest.bin" >nul'
+
+                # Exercise the real event ordering and conditions with only external work stubbed.
+                $commands = "$nativeEvent`r`n$msiEvent"
+                $commands = $commands -replace '(?m)^.*VsDevCmd\.bat.*$', 'rem developer environment'
+                $commands = $commands -replace '(?m)^.*call cmd /C "copy .*$', 'rem template backup'
+                $commands = $commands -replace '(?m)^.*call .*publish\.cmd.*$', "call `"$fixture\publish.cmd`""
+                $commands = $commands -replace '(?m)^.*call .*generateAllFileComponents\.ps1.*$', "call `"$fixture\harvest.cmd`""
+                $commands = $commands -replace '(?m)^.*call .*generateMonacoWxs\.ps1.*$', 'rem Monaco authoring'
+                $commands = $commands.Replace('$(CIBuild)', $ciBuild).Replace('$(Platform)', 'x64')
+                $commands = $commands.Replace('$(ProjectDir)', "$fixture\").Replace('$(SolutionDir)', "$fixture\")
+                Set-Content -LiteralPath "$fixture\events.cmd" -Value "@echo off`r`nset IsPipeline=`r`n$commands"
+                & $env:ComSpec /d /c "$fixture\events.cmd" | Out-Null
+                $LASTEXITCODE | Should Be 0
+
+                $payload = Get-Content -LiteralPath "$fixture\input.bin" -Raw
+                (Get-Content -LiteralPath "$fixture\manifest.bin" -Raw) | Should Be $payload
+                $expected = if ($ciBuild -eq 'true') { 'prepublished' } else { 'published' }
+                $payload.Trim() | Should Be $expected
+            }
+        }
     }
 }
