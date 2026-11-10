@@ -88,6 +88,7 @@
         Square44x44Logo="Images\Square44x44Logo.png"
         AppListEntry="none">
       </uap:VisualElements>
+    </Application>
     <Application Id="PowerToys.CmdPalExtension" Executable="Microsoft.CmdPal.Ext.PowerToys.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="PowerToys.CommandPaletteExtension"
