@@ -351,6 +351,25 @@ Describe 'Installer Smart Cabbing media' {
         }
     }
 
+    It 'stops publishing as soon as any preview-handler publish fails' {
+        $publish = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\..\installer\PowerToysSetupVNext\publish.cmd') -Raw
+        foreach ($failureAt in 1..4) {
+            $fixture = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+            $null = New-Item -ItemType Directory -Path $fixture
+            @'
+@echo call>> "%~dp0calls.txt"
+@set /a callNumber+=1 >nul
+@if %callNumber% equ %FAIL_AT% exit /b 7
+@exit /b 0
+'@ | Set-Content -LiteralPath "$fixture\compiler.cmd" -Encoding ASCII
+            $commands = $publish -replace '(?m)^msbuild\b', "call `"$fixture\compiler.cmd`""
+            Set-Content -LiteralPath "$fixture\publish.cmd" -Value "@set FAIL_AT=$failureAt`r`n@set callNumber=0`r`n$commands" -Encoding ASCII
+            & $env:ComSpec /d /c "$fixture\publish.cmd" x64 | Out-Null
+            $LASTEXITCODE | Should Not Be 0
+            @(Get-Content -LiteralPath "$fixture\calls.txt").Count | Should Be $failureAt
+        }
+    }
+
     It 'replaces a previously generated file list instead of appending to it' {
         . Import-MediaTestHarvester
         $fileListRoots = @{}

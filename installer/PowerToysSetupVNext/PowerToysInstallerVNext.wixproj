@@ -19,6 +19,7 @@
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
+    <!-- MSBuild CoreBuild.OnError also runs this restore for failed local WiX builds. -->
     <RunPostBuildEvent>Always</RunPostBuildEvent>
     <PostBuildEvent>
       call move /Y ..\..\..\AdvancedPaste.wxs.bk ..\..\..\AdvancedPaste.wxs
