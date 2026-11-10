@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
@@ -33,6 +34,7 @@ using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
@@ -197,7 +199,25 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
         services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
         services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
-        services.AddSingleton<ICommandProvider, PowerScriptsCommandsProvider>();
+
+        // This navigation bridge is only for the in-process PowerScripts provider.
+        // Use the host's normal page navigation without extending the public SDK contract.
+        // Request navigation on the UI thread; Invoke normally runs in the background.
+        var powerScriptsDispatcher = DispatcherQueue.GetForCurrentThread();
+        services.AddSingleton<ICommandProvider>(_ => new PowerScriptsCommandsProvider(page =>
+        {
+            void RequestNavigation() => WeakReferenceMessenger.Default.Send(new PerformCommandMessage(new ExtensionObject<ICommand>(page)));
+
+            if (powerScriptsDispatcher.HasThreadAccess)
+            {
+                RequestNavigation();
+            }
+            else if (!powerScriptsDispatcher.TryEnqueue(RequestNavigation))
+            {
+                throw new InvalidOperationException("Unable to request navigation to the PowerScripts result page.");
+            }
+        }));
+
         services.AddSingleton<ICommandProvider, RemoteDesktopCommandProvider>();
 
         var performanceMonitorSoftDisabled = providerLoadGuard.IsProviderDisabled(PerformanceMonitorCommandsProvider.ProviderIdValue);

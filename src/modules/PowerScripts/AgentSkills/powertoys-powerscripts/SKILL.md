@@ -64,6 +64,9 @@ do not ask the user questions already answered by read-only discovery.
 6. **Hand off through the chosen consumer.** Follow only its setup guidance.
    Read [Keyboard Manager setup](references/keyboard-manager.md) only for a
    requested hotkey. Do not impose shortcut setup on clipboard/file workflows.
+   In Command Palette, browse to inspect; explicitly activating a script with
+   no declared parameters starts it. Scripts declaring parameters require form
+   submission. Apply the same execution-consent and trust requirements.
    Report separately: package location and catalogue ID; contract/environment;
    discovery validated; execution actually tested; remaining trust, runtime,
    and consumer setup. Instructions given are not a completed binding.

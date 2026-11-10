@@ -110,6 +110,8 @@ internal class Resources
 
     internal static string Output => ResourceManager.GetString("Output", resourceCulture)!;
 
+    internal static string TextResultHint => ResourceManager.GetString("TextResultHint", resourceCulture)!;
+
     internal static string Diagnostics => ResourceManager.GetString("Diagnostics", resourceCulture)!;
 
     internal static string CopyOutput => ResourceManager.GetString("CopyOutput", resourceCulture)!;

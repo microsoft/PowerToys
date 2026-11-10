@@ -231,8 +231,9 @@ execution still validates availability, contracts, global policy, and trust thro
 
 Command Palette (`command-palette`) exposes one PowerScripts entry leading to an asynchronously
 loaded script list. Search filters this page's catalogue; individual scripts are not top-level
-commands, fallback suggestions, or entries in the Apps search channel. The list supports refresh
-and reports discovery failures separately from an empty compatible catalogue.
+commands, fallback suggestions, or entries in the Apps search channel. Refresh remains in the
+actions menu, not a row among the scripts. Discovery failures offer retry and are reported separately
+from an empty compatible catalogue.
 
 The adapter accepts only `input: none` and `output: none` or `text`. No primary input does not
 exclude named parameters. It does not supply clipboard content, selected files, or inline media,
@@ -246,14 +247,17 @@ var scripts = await client.ListAsync(cancellationToken);
 var actions = scripts.Where(script => script.Input == PowerScriptIO.None
     && script.Output is PowerScriptIO.None or PowerScriptIO.Text);
 
-// After selection and an explicit Run action, pass the form's typed JsonElement values.
+// After explicit no-parameter invocation or form Run, submit typed JsonElement values.
 var result = await client.TransformAsync(
     selectedScript.Id,
     new PowerScriptTransformInput { Parameters = collectedParameters },
     cancellationToken: cancellationToken);
 ```
 
-Selecting a script opens its run page without executing it. The form collects string, 32-bit
+Explicitly invoking a list item with no declared parameters starts the script and opens its results
+page in one action. Scripts declaring any parameters, including optional ones with defaults, open
+the form and require an explicit **Run** action. Discovery, browsing, filtering, page construction,
+and `GetContent()` do not start execution. The form collects string, 32-bit
 integer, boolean, string-enum choice, and auxiliary file-path parameters using descriptor labels,
 descriptions, required state, and defaults. Optional values can be omitted. An explicit empty
 string, zero, or false is a supplied value, not omission; omitted values still receive any
@@ -261,20 +265,23 @@ descriptor default in the Host. File fields accept existing Windows
 paths; the Host still enforces the declared constraints and performs runtime path translation.
 The adapter sends structured parameters through `TransformAsync` for both supported output shapes.
 
-Run shows progress on the same page and prevents duplicate submission while that session is active.
-Completion displays literal text or an explicit no-result state. Empty text is valid, and nonempty
+Run shows progress on the same results page and prevents duplicate submission while that session is
+active. Text results appear above any parameter controls; the page offers **Stop** while running
+and an explicit rerun after completion. Completion displays literal text or an explicit no-result
+state. Empty text is valid, and nonempty
 stderr is diagnostics rather than failure by itself; nonzero exit, invalid output, unavailable
 Host, and trust/policy refusal remain failures. Discovery and execution run off the UI thread.
 Execution has a 60-second cancellation bound, subject to any shorter runtime limit. **Stop** and
 timeout attempt to terminate the Host process tree; they cannot roll back side effects or guarantee
 that work in a separate runtime has stopped. Within the current CmdPal session, navigating away
-does not discard the run; returning to that script shows its running state or result. No automatic
-retry occurs.
+does not discard the run or result. Returning without a new execution action shows that state;
+an explicit no-parameter invocation or **Run** can request a new run. No automatic retry occurs.
 
 Enable Command Palette and its PowerScripts extension, plus the central Command Palette integration
 switch, to use this consumer. The central preference defaults on and the Host applies the existing
-module, parent-utility, runtime, trust, and Group Policy gates again on each invocation. Browsing or
-selecting a script does not approve it. Script review and management remain in the PowerScripts editor.
+module, parent-utility, runtime, trust, and Group Policy gates again on each invocation, including
+one-action runs of scripts without parameters. Browsing never approves a script. Script review and
+management remain in the PowerScripts editor.
 
 ### Assign one script to a trigger
 

@@ -110,11 +110,11 @@ internal sealed partial class PowerScriptPage : ContentPage, IDisposable
         // the form lock. Always refresh it before taking the page's content lock.
         _form.Value.Refresh();
         var result = _session.Result;
-        var content = new List<IContent> { _form.Value };
+        var content = new List<IContent>();
         var commands = new List<IContextItem>();
         if (result?.Text is { } output)
         {
-            content.Insert(0, CreateTextContent(Resources.Output, output, allowEmpty: true));
+            content.Add(CreateTextContent(Resources.Output, output, allowEmpty: true));
             commands.Add(new CommandContextItem(new CopyTextCommand(output) { Name = Resources.CopyOutput })
             {
                 Title = Resources.CopyOutput,
@@ -130,6 +130,8 @@ internal sealed partial class PowerScriptPage : ContentPage, IDisposable
                 Title = Resources.CopyDiagnostics,
             });
         }
+
+        content.Add(_form.Value);
 
         lock (_gate)
         {

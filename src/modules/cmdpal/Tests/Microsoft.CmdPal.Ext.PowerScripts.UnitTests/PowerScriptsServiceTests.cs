@@ -132,7 +132,7 @@ public sealed class PowerScriptsServiceTests
         {
             Catalog = new([TestScripts.Create()], true),
         };
-        using var provider = new PowerScriptsCommandsProvider(service);
+        using var provider = new PowerScriptsCommandsProvider(service, static _ => { });
 
         var commands = provider.TopLevelCommands();
 

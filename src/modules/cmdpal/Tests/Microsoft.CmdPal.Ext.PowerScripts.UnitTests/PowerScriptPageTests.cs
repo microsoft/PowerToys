@@ -31,6 +31,12 @@ public sealed class PowerScriptPageTests
         Assert.AreSame(first[0], second[0]);
         Assert.AreEqual(0, service.RunCalls);
         Assert.AreEqual(0, service.DiscoverCalls);
+        using var data = JsonDocument.Parse(page.ParameterForm.DataJson);
+        Assert.AreEqual(string.Empty, data.RootElement.GetProperty("intro").GetString());
+        Assert.AreEqual(Resources.Run, data.RootElement.GetProperty("actionTitle").GetString());
+        using var template = JsonDocument.Parse(page.ParameterForm.TemplateJson);
+        Assert.IsFalse(template.RootElement.GetProperty("body").EnumerateArray()
+            .Any(element => element.TryGetProperty("text", out var text) && text.GetString() is "${intro}" or "${resultHint}"));
     }
 
     [TestMethod]
@@ -143,6 +149,7 @@ public sealed class PowerScriptPageTests
         await service.RunStarted.WaitAsync(TimeSpan.FromSeconds(4));
 
         Assert.AreEqual(1, service.RunCalls);
+        AssertVisibleStatus(page.ParameterForm, Resources.Running, hasTextResult: false);
         Assert.AreEqual(JsonValueKind.False, service.LastParameters!["enabled"].ValueKind);
         Assert.AreEqual(0, service.LastParameters!["count"].GetInt32());
         Assert.AreEqual(string.Empty, service.LastParameters!["text"].GetString());
@@ -195,11 +202,42 @@ public sealed class PowerScriptPageTests
         Assert.AreEqual(PowerScriptRunState.Succeeded, session.State);
         Assert.HasCount(3, page.GetContent());
         Assert.IsInstanceOfType<PlainTextContent>(page.GetContent()[0]);
-        Assert.AreSame(page.ParameterForm, page.GetContent()[1]);
+        Assert.IsInstanceOfType<PlainTextContent>(page.GetContent()[1]);
+        Assert.AreSame(page.ParameterForm, page.GetContent()[2]);
+        AssertVisibleStatus(page.ParameterForm, Resources.Completed, hasTextResult: true);
         var copyCommands = page.Commands.OfType<ICommandContextItem>().Select(item => item.Command).OfType<CopyTextCommand>().ToArray();
         Assert.HasCount(2, copyCommands);
         Assert.IsTrue(copyCommands.Any(command => command.Text == string.Empty));
         Assert.IsTrue(copyCommands.Any(command => command.Text == "Diagnostic details."));
+    }
+
+    [TestMethod]
+    [Timeout(5000)]
+    public async Task SuccessfulNoOutputShowsAStatusHeadingWithoutTheTextCopyHint()
+    {
+        var service = new FakePowerScriptsService
+        {
+            RunHandler = _ => Task.FromResult(new PowerScriptTransformResult { StdErr = "Diagnostic details." }),
+        };
+        var script = new PowerScriptInfo
+        {
+            Id = "no.output",
+            Name = "No-output action",
+            Input = PowerScriptIO.None,
+            Output = PowerScriptIO.None,
+            Trusted = true,
+        };
+        using var session = new PowerScriptRunSession(service, script);
+        using var page = new PowerScriptPage(service, script, session);
+
+        page.ParameterForm.SubmitForm("{}", """{"action":"run"}""");
+        await session.Completion!.WaitAsync(TimeSpan.FromSeconds(4));
+
+        Assert.AreEqual(PowerScriptRunState.Succeeded, session.State);
+        AssertVisibleStatus(page.ParameterForm, Resources.CompletedNoOutput, hasTextResult: false);
+        Assert.HasCount(2, page.GetContent());
+        Assert.IsInstanceOfType<PlainTextContent>(page.GetContent()[0]);
+        Assert.AreSame(page.ParameterForm, page.GetContent()[1]);
     }
 
     [TestMethod]
@@ -296,5 +334,22 @@ public sealed class PowerScriptPageTests
         }
 
         Assert.AreEqual(0, service.RunCalls);
+    }
+
+    private static void AssertVisibleStatus(PowerScriptParameterForm form, string expectedStatus, bool hasTextResult)
+    {
+        using var data = JsonDocument.Parse(form.DataJson);
+        using var template = JsonDocument.Parse(form.TemplateJson);
+        var body = template.RootElement.GetProperty("body");
+
+        Assert.AreEqual(expectedStatus, data.RootElement.GetProperty("status").GetString());
+        Assert.AreEqual("${status}", body[0].GetProperty("text").GetString());
+        Assert.AreEqual("heading", body[0].GetProperty("style").GetString());
+        Assert.AreEqual(hasTextResult, body.EnumerateArray()
+            .Any(element => element.TryGetProperty("text", out var text) && text.GetString() == "${resultHint}"));
+        if (hasTextResult)
+        {
+            Assert.AreEqual(Resources.TextResultHint, data.RootElement.GetProperty("resultHint").GetString());
+        }
     }
 }

@@ -74,7 +74,7 @@
     <value>Completed</value>
   </data>
   <data name="CompletedNoOutput" xml:space="preserve">
-    <value>Completed with no output</value>
+    <value>Completed. The script returned no text output.</value>
   </data>
   <data name="Stopped" xml:space="preserve">
     <value>The host stopped after a stop request.</value>
@@ -89,7 +89,7 @@
     <value>The run failed (exit code {0}).</value>
   </data>
   <data name="ParametersIntro" xml:space="preserve">
-    <value>Fill in the parameters, then select Run.</value>
+    <value>Fill in the parameters, then select Run. Results appear on this page.</value>
   </data>
   <data name="NoParameters" xml:space="preserve">
     <value>This script has no parameters. Select Run to execute it.</value>
@@ -129,6 +129,9 @@
   </data>
   <data name="Output" xml:space="preserve">
     <value>Output</value>
+  </data>
+  <data name="TextResultHint" xml:space="preserve">
+    <value>The text result is shown above. Choose Copy output to copy the full text.</value>
   </data>
   <data name="Diagnostics" xml:space="preserve">
     <value>Diagnostics</value>

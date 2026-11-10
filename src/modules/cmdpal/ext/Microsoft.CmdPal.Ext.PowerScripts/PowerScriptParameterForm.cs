@@ -67,11 +67,26 @@ internal sealed partial class PowerScriptParameterForm : FormContent
                 ["fields"] = fields,
                 ["trustPrompt"] = Resources.TrustPrompt,
                 ["stopNotice"] = Resources.StopNotice,
-                ["intro"] = _script.Parameters.Count > 0 ? Resources.ParametersIntro : Resources.NoParameters,
+                ["intro"] = _script.Parameters.Count > 0 ? Resources.ParametersIntro : string.Empty,
                 ["optionalHint"] = Resources.OptionalParametersHint,
                 ["formError"] = _errors.TryGetValue("_form", out var formError) ? formError : Resources.FormErrors,
                 ["parametersChanged"] = Resources.ParametersChanged,
+                ["resultHint"] = Resources.TextResultHint,
             };
+
+            if (_session.State != PowerScriptRunState.Idle)
+            {
+                var status = Text("${status}");
+                status["weight"] = "Bolder";
+                status["size"] = "Medium";
+                status["style"] = "heading";
+                body.Add((JsonNode?)status);
+            }
+
+            if (_session.Result?.Text is not null)
+            {
+                body.Add((JsonNode?)Text("${resultHint}", subtle: true));
+            }
 
             if (!string.IsNullOrWhiteSpace(_script.Description))
             {
@@ -81,13 +96,6 @@ internal sealed partial class PowerScriptParameterForm : FormContent
             if (!_script.Trusted)
             {
                 body.Add((JsonNode?)Text("${trustPrompt}", subtle: true));
-            }
-
-            if (_session.State != PowerScriptRunState.Idle)
-            {
-                var status = Text("${status}");
-                status["weight"] = "Bolder";
-                body.Add((JsonNode?)status);
             }
 
             if (_session.StopWasRequested || _session.State == PowerScriptRunState.TimedOut)
@@ -107,7 +115,7 @@ internal sealed partial class PowerScriptParameterForm : FormContent
                 body.Add((JsonNode?)Text("${parametersChanged}"));
             }
 
-            if (!running)
+            if (!running && _script.Parameters.Count > 0)
             {
                 body.Add((JsonNode?)Text("${intro}", subtle: true));
                 if (_script.Parameters.Any(parameter => !parameter.IsRequired))
@@ -134,7 +142,9 @@ internal sealed partial class PowerScriptParameterForm : FormContent
             };
             data["actionTitle"] = running
                 ? Resources.Stop
-                : _session.State == PowerScriptRunState.Idle ? Resources.Run : Resources.RunAgain;
+                : _session.State is PowerScriptRunState.Succeeded or PowerScriptRunState.Failed or PowerScriptRunState.Stopped or PowerScriptRunState.TimedOut
+                    ? Resources.RunAgain
+                    : Resources.Run;
 
             var card = new JsonObject
             {

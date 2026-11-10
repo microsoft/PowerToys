@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -17,18 +18,21 @@ public sealed partial class PowerScriptsCommandsProvider : CommandProvider
     private readonly PowerScriptsListPage _page;
     private readonly ICommandItem[] _commands;
 
-    public PowerScriptsCommandsProvider()
-        : this(new PowerScriptsService())
+    public PowerScriptsCommandsProvider(Action<IPage> navigate)
+        : this(new PowerScriptsService(), navigate)
     {
     }
 
-    internal PowerScriptsCommandsProvider(IPowerScriptsService service)
+    internal PowerScriptsCommandsProvider(IPowerScriptsService service, Action<IPage> navigate)
     {
+        ArgumentNullException.ThrowIfNull(service);
+        ArgumentNullException.ThrowIfNull(navigate);
+
         Id = "com.microsoft.cmdpal.builtin.powerscripts";
         DisplayName = "PowerScripts";
         Icon = PowerScriptsIcon;
 
-        _page = new PowerScriptsListPage(service);
+        _page = new PowerScriptsListPage(service, navigate);
         _commands =
         [
             new CommandItem(_page)

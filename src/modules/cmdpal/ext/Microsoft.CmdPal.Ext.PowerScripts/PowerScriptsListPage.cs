@@ -19,9 +19,11 @@ internal sealed partial class PowerScriptsListPage : DynamicListPage, IDisposabl
     private static readonly TimeSpan CatalogLifetime = TimeSpan.FromSeconds(30);
     private readonly object _gate = new();
     private readonly IPowerScriptsService _service;
+    private readonly Action<IPage> _navigate;
     private readonly CancellationTokenSource _lifetime = new();
     private readonly Dictionary<string, PowerScriptRunSession> _sessions = new(StringComparer.Ordinal);
     private readonly Dictionary<string, PowerScriptPage> _pages = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, RunPowerScriptCommand> _runCommands = new(StringComparer.Ordinal);
     private readonly AnonymousCommand _refresh;
     private readonly OpenPowerScriptsSettingsCommand _settings = new();
     private PowerScriptsCatalog? _catalog;
@@ -32,9 +34,12 @@ internal sealed partial class PowerScriptsListPage : DynamicListPage, IDisposabl
     private Task? _discovery;
     private DateTimeOffset _lastDiscovery;
 
-    internal PowerScriptsListPage(IPowerScriptsService service)
+    internal PowerScriptsListPage(IPowerScriptsService service, Action<IPage> navigate)
     {
+        ArgumentNullException.ThrowIfNull(service);
+        ArgumentNullException.ThrowIfNull(navigate);
         _service = service;
+        _navigate = navigate;
         Id = "com.microsoft.cmdpal.builtin.powerscripts.list";
         Name = Resources.Open;
         Title = Resources.PowerScripts;
@@ -71,7 +76,6 @@ internal sealed partial class PowerScriptsListPage : DynamicListPage, IDisposabl
                 return [];
             }
 
-            var refresh = CreateRefreshItem();
             if (_discovering)
             {
                 EmptyContent = new CommandItem(new NoOpCommand())
@@ -124,7 +128,19 @@ internal sealed partial class PowerScriptsListPage : DynamicListPage, IDisposabl
                     _pages.Add(script.Id, page);
                 }
 
-                items.Add(new ListItem(page)
+                ICommand command = page;
+                if (script.Parameters.Count == 0)
+                {
+                    if (!_runCommands.TryGetValue(script.Id, out var runCommand))
+                    {
+                        runCommand = new RunPowerScriptCommand(script, _sessions[script.Id], page, _navigate);
+                        _runCommands.Add(script.Id, runCommand);
+                    }
+
+                    command = runCommand;
+                }
+
+                items.Add(new ListItem(command)
                 {
                     Title = script.Name,
                     Subtitle = script.Description,
@@ -149,7 +165,6 @@ internal sealed partial class PowerScriptsListPage : DynamicListPage, IDisposabl
             }
 
             EmptyContent = null;
-            items.Add(refresh);
             return [.. items];
         }
     }
@@ -182,14 +197,6 @@ internal sealed partial class PowerScriptsListPage : DynamicListPage, IDisposabl
             }
         }
     }
-
-    private ListItem CreateRefreshItem() => new(_refresh)
-    {
-        Title = Resources.Refresh,
-        Subtitle = Resources.RefreshDescription,
-        Icon = _refresh.Icon,
-        MoreCommands = [SettingsContextItem()],
-    };
 
     private CommandContextItem SettingsContextItem() => new(_settings)
     {
@@ -244,6 +251,11 @@ internal sealed partial class PowerScriptsListPage : DynamicListPage, IDisposabl
                     {
                         page.UpdateScript(script);
                     }
+
+                    if (_runCommands.TryGetValue(script.Id, out var runCommand))
+                    {
+                        runCommand.UpdateScript(script);
+                    }
                 }
 
                 var ids = catalog.Scripts.Select(script => script.Id).ToHashSet(StringComparer.Ordinal);
@@ -253,6 +265,7 @@ internal sealed partial class PowerScriptsListPage : DynamicListPage, IDisposabl
                     _sessions[id].Dispose();
                     _pages.Remove(id);
                     _sessions.Remove(id);
+                    _runCommands.Remove(id);
                 }
             }
         }

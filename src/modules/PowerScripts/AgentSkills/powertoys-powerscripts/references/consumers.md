@@ -27,7 +27,7 @@ shapes, parameter UI, or binding API.
 |---|---|---|---|
 | Advanced Paste (`advanced-paste`) | Transform the current clipboard: `text`, `files`, `image`, or `audio`; never `none` | `text`, `files`, `image`, or `audio`; never `none`. The paste window consumes the result. | Collects typed options in its own window. Compatible scripts appear automatically; no per-script binding. |
 | Keyboard Manager (`keyboard-manager`) | Trigger an action from a configured shortcut. Design the ordinary hotkey case as `none`. | Prefer `none`: launching the Host is not a paste/save-results UI. Do not promise visible text/file/media results. | Required values need defaults or a verified saved-argument mechanism; no generic runtime parameter prompt. Manual shortcut assignment is separate from creation. |
-| Command Palette (`command-palette`) | Browse scripts and run a no-primary-input action: `none` | `none` or `text`. Status, diagnostics, and literal text stay on its run page; empty text is valid. | Collects typed parameters in a form before an explicit Run action. One PowerScripts entry; filtering is inside its list. No per-script binding. |
+| Command Palette (`command-palette`) | Browse scripts and run a no-primary-input action: `none` | `none` or `text`. Status, diagnostics, and literal text stay on its results page; empty text is valid. | Explicit activation runs a script with no declared parameters and opens its results. Scripts declaring parameters use a form and Run. One PowerScripts entry; filtering is inside its list. No per-script binding. |
 | File Explorer (`file-explorer`, integration builds only) | Process selected local regular files: `files`, with extension/count matching | `none`, `text`, `files`, `image`, or `audio`. Its adapter exports separate results; see below. | Collects typed options and owns script selection and result destination. No direct mutation of selected originals is implied. |
 | Direct Host (`command-line`) | Explicit user-authorized test of any supported input | Structured `transform` results or `run` output, not consumer-specific UI | Agent supplies the declared request/parameters. This tests the engine, not another module's adapter or shortcut. |
 
@@ -80,24 +80,33 @@ implemented by this adapter.
 
 Open the **PowerScripts** entry in Command Palette, then browse or filter its
 compatible scripts. Individual script names are not home-page commands or
-fallback suggestions. Selecting a script opens its parameter/run page and does
-not execute it. The form supports string, integer, boolean, string-enum choice,
+fallback suggestions. Explicitly activating a script with no declared parameters
+starts it and opens its results page in one action. Scripts declaring parameters,
+including optional ones with defaults, open a form and require **Run**. Browsing,
+filtering, page construction, and `GetContent()` never start execution. Refresh
+is in the actions menu; discovery errors retain a retry action.
+
+The form supports string, integer, boolean, string-enum choice,
 and existing Windows file-path options, using descriptor defaults and constraints.
 Optional values can be omitted; supplied empty strings, zero, and false remain
 explicit typed values. Omitted values still receive any descriptor default in
 the Host. The user chooses **Run** after filling the form.
 
-Status, diagnostics, and literal text remain on the same page. Empty text is a
+Status, diagnostics, and literal text remain on the same results page, with text
+above any parameter controls. The page supports **Stop** while running and an
+explicit rerun after completion. Empty text is a
 valid success; stderr alone does not mean failure. The run has a 60-second
 cancellation bound, and the runtime can impose a shorter one. **Stop** and
 timeout attempt process termination without rolling back effects or guaranteeing
 that work in a separate runtime has stopped. Navigating away preserves the run
-within the current CmdPal session, so returning shows its running state or result.
+within the current CmdPal session. Returning without a new execution action
+shows its running state or result; rendering the page does not rerun it.
 
 Confirm the installed Command Palette extension is enabled and check
 **Settings > PowerScripts > Use PowerScripts in > Command Palette**. This
 integration defaults on; parent/module policy, runtime availability, schema
-validation, and exact-content trust still apply. Review scripts in the
+validation, and exact-content trust still apply, including one-action runs with
+no parameters. Review scripts in the
 PowerScripts editor. Do not promise that browsing grants trust, that the
 central switch enables Command Palette itself, or that a profile proves the
 adapter exists in an older installed build.
