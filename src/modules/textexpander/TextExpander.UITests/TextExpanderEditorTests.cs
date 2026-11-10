@@ -418,7 +418,7 @@ public sealed class TextExpanderEditorTests : TextExpanderTestBase
         Assert.IsTrue(editor.WaitForRow(Address.Trigger, present: true), $"The matching snippet isn't listed. Rows: {editor.DescribeRows()}.");
         Assert.IsTrue(editor.WaitForRow(Greeting.Trigger, present: false), $"A snippet that doesn't match is still listed. Rows: {editor.DescribeRows()}.");
 
-        editor.Search("Redmond");
+        editor.Search("Anytown");
         editor.WaitForFilteredCount(1, DefaultSnippets.Count);
         Assert.IsTrue(editor.WaitForRow(Address.Trigger, present: true), $"Search didn't match the replacement text. Rows: {editor.DescribeRows()}.");
 

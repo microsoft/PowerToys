@@ -21,7 +21,7 @@ public abstract class TextExpanderTestBase : UITestBase
     internal const string EngineMessageWindowClass = "PowerToys.TextExpander.MessageWindow.powertoys";
 
     internal static readonly Snippet Greeting = new(";tehi", "Hello from the Text Expander UI test");
-    internal static readonly Snippet Address = new(";teaddr", "One Microsoft Way\nRedmond, WA 98052");
+    internal static readonly Snippet Address = new(";teaddr", "123 Any Street\nAnytown, ST 00000");
     internal static readonly Snippet Letter = new(";tecur", "Dear $|$,\nSent {{isodate}}");
     internal static readonly Snippet Ticket = new(";teask", "Ticket {{prompt:Ticket number}} is resolved.");
     internal static readonly Snippet Note = new(";tenote", "Note: {{prompt:Your note}}.");
