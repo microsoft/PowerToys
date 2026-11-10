@@ -15,7 +15,7 @@ public sealed class ConsumerSettingsTests
     public void EffectiveConsumerStateHonorsEveryParentPolicyAndPreferenceCombination()
     {
         bool?[] policies = [null, false, true];
-        foreach (var id in new[] { "advanced-paste", "keyboard-manager" })
+        foreach (var id in new[] { "advanced-paste", "keyboard-manager", "command-palette" })
         {
             foreach (var moduleUser in new[] { false, true })
             {
@@ -32,7 +32,13 @@ public sealed class ConsumerSettingsTests
                                 {
                                     ["consumers"] = new JsonObject { [id] = user },
                                 }.ToJsonString());
-                                var parent = id == "advanced-paste" ? "AdvancedPaste" : "KeyboardManager";
+                                var parent = id switch
+                                {
+                                    "advanced-paste" => "AdvancedPaste",
+                                    "keyboard-manager" => "KeyboardManager",
+                                    "command-palette" => "CmdPal",
+                                    _ => throw new InvalidOperationException(),
+                                };
                                 bool? Read(string key, string name) =>
                                     key == PowerScriptsPolicies.ConsumersKey ? consumerPolicy :
                                     name == "ConfigureEnabledUtilityPowerScripts" ? modulePolicy :
@@ -44,6 +50,11 @@ public sealed class ConsumerSettingsTests
                                 Assert.AreEqual(parentsEnabled && (consumerPolicy ?? user), state.IsEnabled, scenario);
                                 Assert.AreEqual(parentsEnabled && !consumerPolicy.HasValue, state.CanChange, scenario);
                                 Assert.AreEqual(user, state.UserEnabled, scenario);
+                                Assert.AreEqual(consumerPolicy.HasValue || parentPolicy == false, state.IsPolicyControlled, scenario);
+                                Assert.AreEqual(
+                                    !(modulePolicy ?? moduleUser) ? "module-disabled" : parentPolicy == false ? "parent-policy-disabled" : null,
+                                    state.DisabledReason,
+                                    scenario);
                             }
                         }
                     }
@@ -59,6 +70,7 @@ public sealed class ConsumerSettingsTests
         var settings = new ConsumerSettings(store, (_, _) => null, () => true, () => false);
         Assert.IsFalse(settings.Get("advanced-paste").IsEnabled);
         Assert.IsTrue(settings.Get("keyboard-manager").IsEnabled);
+        Assert.IsTrue(settings.Get("command-palette").IsEnabled);
         Assert.IsTrue(settings.Get("future-module").IsEnabled);
         Assert.IsNull(store.ReadBlob("config.json"), "Discovery must not write preferences.");
 
@@ -76,10 +88,81 @@ public sealed class ConsumerSettingsTests
         var config = JsonNode.Parse(store.ReadBlob("config.json")!)!;
         Assert.IsTrue(config["consumers"]!["advanced-paste"]!.GetValue<bool>());
         Assert.IsFalse(config["consumers"]!["keyboard-manager"]!.GetValue<bool>());
+        Assert.IsTrue(config["consumers"]!["command-palette"]!.GetValue<bool>());
         Assert.IsTrue(config["mxc"]!["enabled"]!.GetValue<bool>());
         Assert.AreEqual("keep", config["custom"]!.GetValue<string>());
         settings = new ConsumerSettings(store, (_, _) => null, () => true, () => false);
         Assert.IsTrue(settings.Get("advanced-paste").UserEnabled, "Central settings must win over the legacy field.");
+    }
+
+    [TestMethod]
+    public void SavingCommandPalettePreservesExistingConsumersAndUnrelatedConfiguration()
+    {
+        var store = new MemoryStore();
+        store.WriteBlob("config.json", """{"consumers":{"advanced-paste":false,"keyboard-manager":false,"future-consumer":false},"mxc":{"enabled":true}}""");
+        var settings = new ConsumerSettings(store, (_, _) => null, () => true, () => true);
+        settings.Set("command-palette", false);
+
+        var config = JsonNode.Parse(store.ReadBlob("config.json")!)!;
+        Assert.IsFalse(config["consumers"]!["advanced-paste"]!.GetValue<bool>());
+        Assert.IsFalse(config["consumers"]!["keyboard-manager"]!.GetValue<bool>());
+        Assert.IsFalse(config["consumers"]!["future-consumer"]!.GetValue<bool>());
+        Assert.IsFalse(config["consumers"]!["command-palette"]!.GetValue<bool>());
+        Assert.IsTrue(config["mxc"]!["enabled"]!.GetValue<bool>());
+
+        settings.Set("keyboard-manager", true);
+        Assert.IsFalse(settings.Get("command-palette").UserEnabled, "Changing another integration must preserve the Command Palette choice.");
+        settings.Set("command-palette", true);
+        Assert.IsTrue(settings.Get("command-palette").IsEnabled);
+        Assert.IsFalse(settings.Get("advanced-paste").IsEnabled);
+    }
+
+    [TestMethod]
+    public void SnapshotIncludesCommandPaletteWhenExistingConfigurationContainsOnlyTwoConsumers()
+    {
+        var store = new MemoryStore();
+        const string configuration = """{"consumers":{"advanced-paste":true,"keyboard-manager":false},"custom":"keep"}""";
+        store.WriteBlob("config.json", configuration);
+        var settings = new ConsumerSettings(store, (_, _) => null, () => true, () => false);
+        var snapshot = settings.GetSnapshot();
+
+        CollectionAssert.AreEquivalent(
+            new[] { "advanced-paste", "keyboard-manager", "command-palette" },
+            snapshot.Consumers.Select(item => item.Id).ToArray());
+        Assert.IsTrue(snapshot.Consumers.Single(item => item.Id == "command-palette").IsEnabled);
+        Assert.IsTrue(snapshot.Consumers.Single(item => item.Id == "advanced-paste").IsEnabled);
+        Assert.IsFalse(snapshot.Consumers.Single(item => item.Id == "keyboard-manager").IsEnabled);
+        Assert.AreEqual(configuration, store.ReadBlob("config.json"), "Reading an old configuration must not rewrite it.");
+    }
+
+    [TestMethod]
+    public void CommandPaletteHonorsCmdPalParentPolicyAndRestoresSavedPreference()
+    {
+        var store = new MemoryStore();
+        const string configuration = """{"consumers":{"command-palette":true}}""";
+        store.WriteBlob("config.json", configuration);
+        bool? parentPolicy = false;
+        var reads = new List<string>();
+        bool? Read(string key, string name)
+        {
+            reads.Add(name);
+            return key == PowerScriptsPolicies.PolicyKey && name == "ConfigureEnabledUtilityCmdPal" ? parentPolicy : null;
+        }
+
+        var settings = new ConsumerSettings(store, Read, () => true, () => false);
+        var state = settings.Get("command-palette");
+        Assert.IsFalse(state.IsEnabled);
+        Assert.IsFalse(state.CanChange);
+        Assert.IsTrue(state.IsPolicyControlled);
+        Assert.AreEqual("parent-policy-disabled", state.DisabledReason);
+        CollectionAssert.Contains(reads, "ConfigureEnabledUtilityCmdPal");
+        CollectionAssert.DoesNotContain(reads, "ConfigureEnabledUtilityCommandPalette");
+        Assert.ThrowsException<InvalidOperationException>(() => settings.Set("command-palette", true));
+
+        parentPolicy = null;
+        Assert.IsTrue(settings.Get("command-palette").IsEnabled);
+        Assert.IsTrue(settings.Get("command-palette").CanChange);
+        Assert.AreEqual(configuration, store.ReadBlob("config.json"));
     }
 
     [TestMethod]

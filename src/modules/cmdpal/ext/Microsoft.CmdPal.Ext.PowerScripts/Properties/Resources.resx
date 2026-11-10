@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PowerScripts" xml:space="preserve">
+    <value>PowerScripts</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Browse and run PowerScripts</value>
+  </data>
+  <data name="Open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Search PowerScripts</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading scripts…</value>
+  </data>
+  <data name="LoadingDescription" xml:space="preserve">
+    <value>Discovering PowerScripts that can run from Command Palette.</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Refresh scripts</value>
+  </data>
+  <data name="RefreshDescription" xml:space="preserve">
+    <value>Reload the available PowerScripts and their parameters.</value>
+  </data>
+  <data name="DiscoveryFailed" xml:space="preserve">
+    <value>Could not load PowerScripts</value>
+  </data>
+  <data name="DiscoveryTimedOut" xml:space="preserve">
+    <value>PowerScripts discovery timed out. Refresh to try again.</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>PowerScripts is disabled</value>
+  </data>
+  <data name="DisabledByPolicy" xml:space="preserve">
+    <value>PowerScripts is disabled by your organization</value>
+  </data>
+  <data name="NoScripts" xml:space="preserve">
+    <value>No compatible scripts</value>
+  </data>
+  <data name="NoScriptsDescription" xml:space="preserve">
+    <value>Command Palette supports scripts with no main input and with text or no output. Add a compatible script, then refresh.</value>
+  </data>
+  <data name="NoMatches" xml:space="preserve">
+    <value>No matching scripts</value>
+  </data>
+  <data name="NoMatchesDescription" xml:space="preserve">
+    <value>Try a different name or description, or refresh the scripts.</value>
+  </data>
+  <data name="Run" xml:space="preserve">
+    <value>Run</value>
+  </data>
+  <data name="RunAgain" xml:space="preserve">
+    <value>Run again</value>
+  </data>
+  <data name="Stop" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>Running…</value>
+  </data>
+  <data name="StopRequested" xml:space="preserve">
+    <value>Stop requested. Waiting for the host to finish…</value>
+  </data>
+  <data name="StopNotice" xml:space="preserve">
+    <value>Stopping is best effort. Actions that already happened are not undone.</value>
+  </data>
+  <data name="Completed" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="CompletedNoOutput" xml:space="preserve">
+    <value>Completed. The script returned no text output.</value>
+  </data>
+  <data name="Stopped" xml:space="preserve">
+    <value>The host stopped after a stop request.</value>
+  </data>
+  <data name="TimedOut" xml:space="preserve">
+    <value>The run exceeded the 60-second limit.</value>
+  </data>
+  <data name="RunFailed" xml:space="preserve">
+    <value>Run error.</value>
+  </data>
+  <data name="RunFailedWithExitCode" xml:space="preserve">
+    <value>The run failed (exit code {0}).</value>
+  </data>
+  <data name="ParametersIntro" xml:space="preserve">
+    <value>Fill in the parameters, then select Run. Results appear on this page.</value>
+  </data>
+  <data name="NoParameters" xml:space="preserve">
+    <value>This script has no parameters. Select Run to execute it.</value>
+  </data>
+  <data name="IncludeParameter" xml:space="preserve">
+    <value>Pass {0}</value>
+  </data>
+  <data name="OptionalParametersHint" xml:space="preserve">
+    <value>Enable an optional parameter to pass its value, including false, zero, or empty text. Values that are not enabled are omitted; PowerScripts applies any declared defaults.</value>
+  </data>
+  <data name="RequiredLabel" xml:space="preserve">
+    <value>{0} (required)</value>
+  </data>
+  <data name="FilePathHint" xml:space="preserve">
+    <value>Enter the full path of an existing file.</value>
+  </data>
+  <data name="IntegerRange" xml:space="preserve">
+    <value>Integer from {0} to {1}.</value>
+  </data>
+  <data name="IntegerMin" xml:space="preserve">
+    <value>Integer of at least {0}.</value>
+  </data>
+  <data name="IntegerMax" xml:space="preserve">
+    <value>Integer of at most {0}.</value>
+  </data>
+  <data name="TrueValue" xml:space="preserve">
+    <value>True</value>
+  </data>
+  <data name="FalseValue" xml:space="preserve">
+    <value>False</value>
+  </data>
+  <data name="FormErrors" xml:space="preserve">
+    <value>Check the highlighted parameters.</value>
+  </data>
+  <data name="InvalidForm" xml:space="preserve">
+    <value>The form could not be read. Review the values and try again.</value>
+  </data>
+  <data name="Output" xml:space="preserve">
+    <value>Output</value>
+  </data>
+  <data name="TextResultHint" xml:space="preserve">
+    <value>The text result is shown above. Choose Copy output to copy the full text.</value>
+  </data>
+  <data name="Diagnostics" xml:space="preserve">
+    <value>Diagnostics</value>
+  </data>
+  <data name="CopyOutput" xml:space="preserve">
+    <value>Copy output</value>
+  </data>
+  <data name="CopyDiagnostics" xml:space="preserve">
+    <value>Copy diagnostics</value>
+  </data>
+  <data name="EmptyTextOutput" xml:space="preserve">
+    <value>(Empty text output)</value>
+  </data>
+  <data name="OutputTruncated" xml:space="preserve">
+    <value>Preview truncated. Use Copy output or Copy diagnostics to copy the full text.</value>
+  </data>
+  <data name="TrustPrompt" xml:space="preserve">
+    <value>PowerScripts may ask you to approve this script before it runs.</value>
+  </data>
+  <data name="RequiredValue" xml:space="preserve">
+    <value>Enter a value.</value>
+  </data>
+  <data name="InvalidInteger" xml:space="preserve">
+    <value>Enter a whole number from -2147483648 to 2147483647.</value>
+  </data>
+  <data name="MinValue" xml:space="preserve">
+    <value>Enter a value of at least {0}.</value>
+  </data>
+  <data name="MaxValue" xml:space="preserve">
+    <value>Enter a value of at most {0}.</value>
+  </data>
+  <data name="InvalidBoolean" xml:space="preserve">
+    <value>Choose True or False.</value>
+  </data>
+  <data name="InvalidChoice" xml:space="preserve">
+    <value>Choose one of the listed values.</value>
+  </data>
+  <data name="FileNotFound" xml:space="preserve">
+    <value>Enter the full path of an existing file.</value>
+  </data>
+  <data name="UnsupportedParameterType" xml:space="preserve">
+    <value>This parameter type is not supported by Command Palette.</value>
+  </data>
+  <data name="MinLength" xml:space="preserve">
+    <value>Enter at least {0} characters.</value>
+  </data>
+  <data name="MaxLength" xml:space="preserve">
+    <value>Enter no more than {0} characters.</value>
+  </data>
+  <data name="PatternMismatch" xml:space="preserve">
+    <value>The value does not match the script's required format.</value>
+  </data>
+  <data name="InvalidPattern" xml:space="preserve">
+    <value>The parameter's validation pattern could not be evaluated.</value>
+  </data>
+  <data name="OpenSettings" xml:space="preserve">
+    <value>Open PowerScripts settings</value>
+  </data>
+  <data name="OpenSettingsDescription" xml:space="preserve">
+    <value>Enable PowerScripts, manage scripts, and configure the Command Palette integration.</value>
+  </data>
+  <data name="SettingsUnavailable" xml:space="preserve">
+    <value>PowerToys settings could not be opened.</value>
+  </data>
+  <data name="ScriptUnavailable" xml:space="preserve">
+    <value>This script is no longer available or PowerScripts is disabled. Refresh the scripts and try again.</value>
+  </data>
+  <data name="ScriptContractChanged" xml:space="preserve">
+    <value>The script's parameters or input/output changed. Refresh the scripts and review the parameters before running.</value>
+  </data>
+  <data name="UnsupportedResult" xml:space="preserve">
+    <value>The script ran, but returned a type of output Command Palette cannot display.</value>
+  </data>
+  <data name="ModuleDisabledHint" xml:space="preserve">
+    <value>Open PowerToys settings and enable PowerScripts, then refresh.</value>
+  </data>
+  <data name="ModulePolicyDisabledHint" xml:space="preserve">
+    <value>Your organization disabled PowerScripts. Contact your administrator.</value>
+  </data>
+  <data name="ParentPolicyDisabledHint" xml:space="preserve">
+    <value>Your organization disabled Command Palette. Contact your administrator.</value>
+  </data>
+  <data name="IntegrationDisabledHint" xml:space="preserve">
+    <value>Open PowerScripts settings and enable the Command Palette integration, then refresh.</value>
+  </data>
+  <data name="IntegrationPolicyDisabledHint" xml:space="preserve">
+    <value>Your organization disabled the PowerScripts integration for Command Palette. Contact your administrator.</value>
+  </data>
+  <data name="ParametersChanged" xml:space="preserve">
+    <value>The script's parameter definition changed. Review the refreshed values before running.</value>
+  </data>
+</root>

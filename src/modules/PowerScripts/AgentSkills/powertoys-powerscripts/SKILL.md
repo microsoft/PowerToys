@@ -1,6 +1,6 @@
 ---
 name: powertoys-powerscripts
-description: Create and validate PowerToys PowerScripts for clipboard transforms, selected-file processing, and shortcut actions. Choose consumer, input/output schemas, typed parameters, PowerShell/Python, and Windows/WSL environment. Preserve consent, trust, and sandbox policies.
+description: Create and validate PowerToys PowerScripts for clipboard transforms, selected-file processing, Command Palette actions, and shortcut actions. Choose consumer, input/output schemas, typed parameters, PowerShell/Python, and Windows/WSL environment. Preserve consent, trust, and sandbox policies.
 license: MIT
 ---
 
@@ -33,6 +33,8 @@ Read only references relevant to the current task; do not load the whole bundle.
    normal trust; verify the real result. Read [KBM setup](references/keyboard-manager.md)
    only for requested shortcuts. Report package/ID, validation/test status,
    and remaining user setup separately.
+   In Command Palette, browse to inspect: explicit activation starts a script
+   with no declared parameters; scripts declaring parameters require form Run.
 
 ## Guardrails
 
@@ -48,7 +50,10 @@ Read only references relevant to the current task; do not load the whole bundle.
 
 ## Updates
 
-Managed skill updates are opt-in and preserve customized copies; reload skills
-or start a new session afterward. Updating this skill never updates user scripts.
+After updating PowerToys, use **Settings > PowerScripts > Copy AI setup instructions**
+to ask the agent to compare the shipped bundle with its supported local copy,
+preserving customizations. PowerToys copies a prompt; it does not install or manage
+skill copies. Reload skills or start a new session after changes. Updating this
+skill never updates user scripts.
 Consumer profiles do not prove installation. Maintainers verify adapter contracts
 and update the relevant reference and `bundle.json` together.

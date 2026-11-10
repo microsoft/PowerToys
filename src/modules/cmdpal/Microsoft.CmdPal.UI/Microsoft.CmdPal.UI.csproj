@@ -110,6 +110,9 @@
 
 
   <ItemGroup>
+    <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true">
+      <ExcludeAssets>compile</ExcludeAssets>
+    </PackageReference>
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
@@ -214,6 +217,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Track the native runtime as an app output so IncrementalClean cannot remove its transitive copy. -->
+    <Content Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\runtimes\win-$(Platform)\native\AdaptiveCards.ObjectModel.WinUI3.dll">
+      <Link>AdaptiveCards.ObjectModel.WinUI3.dll</Link>
+      <TargetPath>AdaptiveCards.ObjectModel.WinUI3.dll</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
     <Content Update="..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

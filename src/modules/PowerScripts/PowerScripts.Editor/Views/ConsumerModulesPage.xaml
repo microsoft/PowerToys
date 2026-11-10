@@ -51,6 +51,18 @@
                         Tag="keyboard-manager"
                         Toggled="ConsumerEnabledToggle_Toggled" />
                 </tkcontrols:SettingsCard>
+                <tkcontrols:SettingsCard
+                    x:Uid="PowerScripts_CommandPaletteConsumer"
+                    Description="{x:Bind ViewModel.CommandPaletteConsumer.Status, Mode=OneWay}"
+                    IsEnabled="{x:Bind ViewModel.AreConsumerSettingsReady, Mode=OneWay}">
+                    <ToggleSwitch
+                        AutomationProperties.AutomationId="PowerScriptsCommandPaletteEnabled"
+                        AutomationProperties.Name="Command Palette"
+                        IsEnabled="{x:Bind ViewModel.CommandPaletteConsumer.CanChange, Mode=OneWay}"
+                        IsOn="{x:Bind ViewModel.CommandPaletteConsumer.IsEnabled, Mode=OneWay}"
+                        Tag="command-palette"
+                        Toggled="ConsumerEnabledToggle_Toggled" />
+                </tkcontrols:SettingsCard>
                 <tkcontrols:SettingsCard x:Uid="PowerScripts_TerminalConnection">
                     <tkcontrols:SettingsCard.HeaderIcon>
                         <FontIcon Glyph="&#xE756;" />

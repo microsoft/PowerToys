@@ -74,7 +74,7 @@ internal static class Program
                     return 0;
                 }
 
-                Console.Error.WriteLine("consumers: use list or set <advanced-paste|keyboard-manager> <on|off>.");
+                Console.Error.WriteLine("consumers: use list or set <advanced-paste|keyboard-manager|command-palette> <on|off>.");
                 return 1;
             }
 
@@ -902,7 +902,7 @@ internal static class Program
         Console.WriteLine("  transform <id> --consumer <module-id> [--no-consent] (JSON payload on stdin, JSON result on stdout)");
         Console.WriteLine("  session                            (consumer-owned framed stdio; list and non-interactive transforms)");
         Console.WriteLine("  activity list | clear              (local metadata-only history; clear preserves in-flight runs)");
-        Console.WriteLine("  consumers list | set <advanced-paste|keyboard-manager> <on|off> (central preferences and effective policy state)");
+        Console.WriteLine("  consumers list | set <advanced-paste|keyboard-manager|command-palette> <on|off> (central preferences and effective policy state)");
         Console.WriteLine("  mxc-support [--json]                (probe whether MXC is available on this host)");
         Console.WriteLine("  linux-container-status             (check the managed Python image without downloading)");
         Console.WriteLine("  linux-container-recover            (safely reset only the idle PowerScripts Linux runtime, then check Python)");

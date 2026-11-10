@@ -4,8 +4,10 @@
 
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerScripts.Client;
+using PowerScripts.Core.Manifest;
 
 namespace PowerScripts.Core.Tests;
 
@@ -26,6 +28,173 @@ public class ClientTests
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         await Assert.ThrowsExceptionAsync<OperationCanceledException>(() => client.ListAsync(cancellation.Token));
+    }
+
+    [TestMethod]
+    public async Task ConsumerStateSurfacesMissingHostInsteadOfAnEnabledOrEmptyIntegration()
+    {
+        var client = new PowerScriptsClient(PowerScriptConsumer.CommandPalette, Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "host.exe"));
+        await Assert.ThrowsExceptionAsync<FileNotFoundException>(() => client.GetConsumerStateAsync());
+    }
+
+    [TestMethod]
+    public async Task CancelledConsumerStateDoesNotStartTheHost()
+    {
+        var client = new PowerScriptsClient(PowerScriptConsumer.CommandPalette, Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "host.exe"));
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        await Assert.ThrowsExceptionAsync<OperationCanceledException>(() => client.GetConsumerStateAsync(cancellation.Token));
+    }
+
+    private const string ConsumerSnapshotJson = """
+        {
+          "isPowerScriptsEnabled": true,
+          "isPowerScriptsPolicyControlled": false,
+          "consumers": [
+            { "id": "advanced-paste", "userEnabled": false, "isEnabled": false, "canChange": true, "isPolicyControlled": false, "disabledReason": null },
+            { "id": "keyboard-manager", "userEnabled": true, "isEnabled": true, "canChange": true, "isPolicyControlled": false, "disabledReason": null },
+            { "id": "command-palette", "userEnabled": true, "isEnabled": true, "canChange": true, "isPolicyControlled": false, "disabledReason": null }
+          ]
+        }
+        """;
+
+    [TestMethod]
+    public void ParseConsumerStateSelectsTheCallerAndPreservesPreferenceAndPolicyFields()
+    {
+        var state = PowerScriptConsumerState.ParseSnapshot(ConsumerSnapshotJson, PowerScriptConsumer.CommandPalette);
+
+        Assert.AreEqual("command-palette", state.Id);
+        Assert.IsTrue(state.IsPowerScriptsEnabled);
+        Assert.IsFalse(state.IsPowerScriptsPolicyControlled);
+        Assert.IsTrue(state.UserEnabled);
+        Assert.IsTrue(state.IsEnabled);
+        Assert.IsTrue(state.CanChange);
+        Assert.IsFalse(state.IsPolicyControlled);
+        Assert.IsNull(state.DisabledReason);
+        Assert.IsFalse(PowerScriptConsumerState.ParseSnapshot(ConsumerSnapshotJson, PowerScriptConsumer.AdvancedPaste).IsEnabled);
+    }
+
+    [DataTestMethod]
+    [DataRow(true, true, true, false)]
+    [DataRow(false, false, true, false)]
+    [DataRow(true, false, false, true)]
+    [DataRow(false, true, false, true)]
+    public void ParseConsumerStateReadsActualHostSnapshotWhenNullReasonsAreOmitted(
+        bool userEnabled,
+        bool enabled,
+        bool canChange,
+        bool policyControlled)
+    {
+        var snapshot = new ConsumerSettingsSnapshot(
+            true,
+            false,
+            [new ConsumerState(PowerScriptConsumer.CommandPalette, userEnabled, enabled, canChange, policyControlled, null)]);
+        var json = JsonSerializer.Serialize(snapshot, ToolDescriptorParser.JsonOptions);
+        using var document = JsonDocument.Parse(json);
+        Assert.IsFalse(
+            document.RootElement.GetProperty("consumers").EnumerateArray().Single().TryGetProperty("disabledReason", out _),
+            "The Host omits null fields; the Client must accept the actual serialized contract.");
+
+        var state = PowerScriptConsumerState.ParseSnapshot(json, PowerScriptConsumer.CommandPalette);
+
+        Assert.AreEqual(PowerScriptConsumer.CommandPalette, state.Id);
+        Assert.IsTrue(state.IsPowerScriptsEnabled);
+        Assert.IsFalse(state.IsPowerScriptsPolicyControlled);
+        Assert.AreEqual(userEnabled, state.UserEnabled);
+        Assert.AreEqual(enabled, state.IsEnabled);
+        Assert.AreEqual(canChange, state.CanChange);
+        Assert.AreEqual(policyControlled, state.IsPolicyControlled);
+        Assert.IsNull(state.DisabledReason);
+    }
+
+    [DataTestMethod]
+    [DataRow(false, true, true, false, "module-disabled")]
+    [DataRow(true, false, true, true, "parent-policy-disabled")]
+    [DataRow(true, false, false, true, null)]
+    [DataRow(true, false, false, false, null)]
+    public void ParseConsumerStatePreservesDisabledReasons(
+        bool moduleEnabled,
+        bool modulePolicyControlled,
+        bool userEnabled,
+        bool consumerPolicyControlled,
+        string? reason)
+    {
+        var snapshot = JsonNode.Parse(ConsumerSnapshotJson)!;
+        snapshot["isPowerScriptsEnabled"] = moduleEnabled;
+        snapshot["isPowerScriptsPolicyControlled"] = modulePolicyControlled;
+        var consumer = snapshot["consumers"]![2]!;
+        consumer["userEnabled"] = userEnabled;
+        consumer["isEnabled"] = false;
+        var canChange = moduleEnabled && reason is null && !consumerPolicyControlled;
+        consumer["canChange"] = canChange;
+        consumer["isPolicyControlled"] = consumerPolicyControlled;
+        consumer["disabledReason"] = reason;
+        var state = PowerScriptConsumerState.ParseSnapshot(snapshot.ToJsonString(), PowerScriptConsumer.CommandPalette);
+
+        Assert.AreEqual(moduleEnabled, state.IsPowerScriptsEnabled);
+        Assert.AreEqual(modulePolicyControlled, state.IsPowerScriptsPolicyControlled);
+        Assert.AreEqual(userEnabled, state.UserEnabled);
+        Assert.IsFalse(state.IsEnabled);
+        Assert.AreEqual(canChange, state.CanChange);
+        Assert.AreEqual(consumerPolicyControlled, state.IsPolicyControlled);
+        Assert.AreEqual(reason, state.DisabledReason);
+    }
+
+    [DataTestMethod]
+    [DataRow("id")]
+    [DataRow("userEnabled")]
+    [DataRow("isEnabled")]
+    [DataRow("canChange")]
+    [DataRow("isPolicyControlled")]
+    public void ParseConsumerStateRejectsMissingConsumerFields(string name)
+    {
+        var snapshot = JsonNode.Parse(ConsumerSnapshotJson)!;
+        ((JsonObject)snapshot["consumers"]![2]!).Remove(name);
+        Assert.ThrowsException<JsonException>(() => PowerScriptConsumerState.ParseSnapshot(snapshot.ToJsonString(), PowerScriptConsumer.CommandPalette));
+    }
+
+    [DataTestMethod]
+    [DataRow("isPowerScriptsEnabled")]
+    [DataRow("isPowerScriptsPolicyControlled")]
+    [DataRow("consumers")]
+    public void ParseConsumerStateRejectsMissingSnapshotFields(string name)
+    {
+        var snapshot = JsonNode.Parse(ConsumerSnapshotJson)!.AsObject();
+        snapshot.Remove(name);
+        Assert.ThrowsException<JsonException>(() => PowerScriptConsumerState.ParseSnapshot(snapshot.ToJsonString(), PowerScriptConsumer.CommandPalette));
+    }
+
+    [DataTestMethod]
+    [DataRow("userEnabled")]
+    [DataRow("isEnabled")]
+    [DataRow("canChange")]
+    [DataRow("isPolicyControlled")]
+    [DataRow("disabledReason")]
+    public void ParseConsumerStateRejectsInvalidConsumerFieldTypes(string name)
+    {
+        var snapshot = JsonNode.Parse(ConsumerSnapshotJson)!;
+        snapshot["consumers"]![2]![name] = 1;
+        Assert.ThrowsException<JsonException>(() => PowerScriptConsumerState.ParseSnapshot(snapshot.ToJsonString(), PowerScriptConsumer.CommandPalette));
+    }
+
+    [TestMethod]
+    public void ParseConsumerStateRejectsUnknownAndDuplicateConsumersInsteadOfAssumingEnabled()
+    {
+        Assert.ThrowsException<JsonException>(() => PowerScriptConsumerState.ParseSnapshot("[]", PowerScriptConsumer.CommandPalette));
+        Assert.ThrowsException<JsonException>(() => PowerScriptConsumerState.ParseSnapshot(ConsumerSnapshotJson, "future-module"));
+        var snapshot = JsonNode.Parse(ConsumerSnapshotJson)!;
+        var consumers = snapshot["consumers"]!.AsArray();
+        consumers.Add(consumers[2]!.DeepClone());
+        Assert.ThrowsException<JsonException>(() => PowerScriptConsumerState.ParseSnapshot(snapshot.ToJsonString(), PowerScriptConsumer.CommandPalette));
+    }
+
+    [TestMethod]
+    public void ParseConsumerStateToleratesAddedSnapshotFields()
+    {
+        var snapshot = JsonNode.Parse(ConsumerSnapshotJson)!;
+        snapshot["futureField"] = true;
+        snapshot["consumers"]![2]!["futurePreference"] = "keep-compatible";
+        Assert.IsTrue(PowerScriptConsumerState.ParseSnapshot(snapshot.ToJsonString(), PowerScriptConsumer.CommandPalette).IsEnabled);
     }
 
     private const string SampleJson = """

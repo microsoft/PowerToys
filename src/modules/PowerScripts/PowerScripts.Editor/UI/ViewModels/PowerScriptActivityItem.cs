@@ -42,6 +42,7 @@ public sealed class PowerScriptActivityItem : Observable
     {
         "advanced-paste" => PowerScriptsViewModel.GetResourceString("PowerScripts_ActivityAdvancedPaste"),
         "keyboard-manager" => PowerScriptsViewModel.GetResourceString("PowerScripts_ActivityKeyboardManager"),
+        "command-palette" => PowerScriptsViewModel.GetResourceString("PowerScripts_ActivityCommandPalette"),
         "command-line" => PowerScriptsViewModel.GetResourceString("PowerScripts_ActivityCommandLine"),
         _ => ConsumerId,
     };

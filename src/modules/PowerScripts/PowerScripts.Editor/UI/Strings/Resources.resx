@@ -995,6 +995,9 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_ActivityKeyboardManager" xml:space="preserve">
     <value>Keyboard Manager</value>
   </data>
+  <data name="PowerScripts_ActivityCommandPalette" xml:space="preserve">
+    <value>Command Palette</value>
+  </data>
   <data name="PowerScripts_ActivityCommandLine" xml:space="preserve">
     <value>Command line</value>
   </data>
@@ -1030,6 +1033,9 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   </data>
   <data name="PowerScripts_KeyboardManagerConsumer.Header" xml:space="preserve">
     <value>Keyboard Manager</value>
+  </data>
+  <data name="PowerScripts_CommandPaletteConsumer.Header" xml:space="preserve">
+    <value>Command Palette</value>
   </data>
   <data name="PowerScripts_ConsumerDescription" xml:space="preserve">
     <value>Allow this module to discover and run scripts. Turning this off keeps existing bindings.</value>

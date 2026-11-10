@@ -10,8 +10,23 @@ shows all scripts compatible with the current clipboard, such as text-input scri
 text. There is no AP-specific script configuration or saved selection list. No-input scripts
 are excluded, and parameters are collected inside the paste window when needed.
 Consumers that need saved assignments own their binding UI and persist script IDs, not catalogue
-copies. There is no standalone script launcher or per-consumer configuration picker in this version.
+copies. There is no shared per-consumer configuration picker in this version.
 See the [consumer onboarding guide](CONSUMER-INTEGRATION.md#automatic-discovery-or-saved-bindings).
+
+Command Palette provides one **PowerScripts** entry. Open it to browse and filter scripts with
+no primary input and either no output or a text result. Explicitly activate a script with no declared
+parameters to start it and open its results page in one action. Scripts declaring parameters open
+a form; fill it and choose **Run**. Browsing or filtering the list never runs scripts. Refresh is
+available in the actions menu, with a retry action for discovery failures. Text results appear above
+any parameter controls on the same results page, alongside status and diagnostics. The page provides
+**Stop** while running and supports an explicit rerun after completion; an empty text result is
+successful. Optional parameters may be omitted, while explicit
+empty strings, zero, and false retain their JSON types. Auxiliary file parameters accept existing
+Windows file paths. Scripts are not published as individual home-page commands or fallback results.
+Every run retains the Host's normal trust checks. The adapter uses the shared Host with the
+`command-palette` consumer ID; it does not add primary
+file/media input, output-file saving, or clipboard handling. See the
+[Command Palette integration](CONSUMER-INTEGRATION.md#command-palette).
 
 Open **Settings > PowerScripts > Edit scripts** to manage PowerScripts in a
 standalone WinUI 3 window. **My scripts** contains the library, creation flow, descriptor details,
@@ -21,10 +36,11 @@ controls and AI agent skills. The app owns integration switches in **Consumer mo
 effective configuration with a compact Settings button, and refreshes configuration when reactivated.
 The editor uses the existing Host and storage; moving the UI does not migrate scripts, trust, or bindings.
 
-Integration switches for Advanced Paste and Keyboard Manager live in **PowerScripts app > Consumer modules**.
+Integration switches for Advanced Paste, Keyboard Manager, and Command Palette live in
+**PowerScripts app > Consumer modules**.
 The shared Host enforces them for discovery and execution, retaining existing bindings when disabled.
-Advanced Paste's legacy preference is preserved; Keyboard Manager defaults on. Group Policy can
-manage the module and each integration without replacing saved preferences. A disabled PowerScripts
+Advanced Paste's legacy preference is preserved; Keyboard Manager and Command Palette default on.
+Group Policy can manage the module and each integration without replacing saved preferences. A disabled PowerScripts
 module or a policy-disabled parent utility always wins over a consumer enable policy.
 See [central settings and policy precedence](CONSUMER-INTEGRATION.md#central-integration-settings-and-group-policy).
 
@@ -43,8 +59,8 @@ managed. A skill is not an MCP server, an execution permission, a trust approval
 Remote, cloud and WSL agents
 need separate setup. The portable skill uses existing Host commands to scaffold and validate scripts
 after planning the consumer, input/output contract, typed parameters, runtime/environment,
-dependencies and failure behavior. It documents Advanced Paste, Keyboard Manager and conditional
-File Explorer integration capabilities; a profile does not mean that integration is installed.
+dependencies and failure behavior. It documents Advanced Paste, Keyboard Manager, Command Palette,
+and conditional File Explorer integration capabilities; a profile does not mean that integration is installed.
 Python guidance distinguishes Windows, the user's WSL distribution, and managed Linux containers,
 including environment-specific APIs, dependencies and paths. Keyboard Manager instructions are
 optional hotkey handoff guidance, not a separate skill or a prerequisite for other consumers.
@@ -130,7 +146,7 @@ declares no result. Only input may also contain a `parameters` object.
 
 Named options belong in `inputSchema.properties.parameters.properties`.
 Supported option types are string, 32-bit integer, and boolean. String `enum`
-provides choices; `format: "file-path"` identifies a consumer-picked auxiliary
+provides choices; `format: "file-path"` identifies an auxiliary
 file, not primary file input. Options support `title`, `description`, `default`,
 their object's `required`, integer `minimum`/`maximum`, and string
 `minLength`/`maxLength`/`pattern`. Required means presence; use `minLength` to
@@ -292,7 +308,8 @@ The UI itself is unchanged.
 Defaults are optional: a required parameter without a default must be supplied
 at invocation, while an optional parameter without a default may be omitted.
 An explicit default can be an empty string, zero, or false; it is not the same
-as an omitted default. Auxiliary file paths normally come from a consumer picker.
+as an omitted default. Auxiliary file paths are collected by the consumer, through a picker or
+an existing-file path field such as Command Palette's.
 The form's maximum-file value 0 means unlimited and generates an *omitted*
 `maxItems`; it is not serialized as `maxItems: 0`.
 The CLI equivalent is `template create --configure`, reading creation options

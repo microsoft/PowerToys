@@ -14,7 +14,7 @@ public sealed record ConsumerSettingsSnapshot(bool IsPowerScriptsEnabled, bool I
 /// <summary>Shared preference and policy resolution. Consumer identity is not authentication.</summary>
 public sealed class ConsumerSettings
 {
-    private static readonly string[] KnownConsumers = ["advanced-paste", "keyboard-manager"];
+    private static readonly string[] KnownConsumers = ["advanced-paste", "keyboard-manager", "command-palette"];
     private readonly ISettingsStore _store;
     private readonly Func<string, string, bool?> _readPolicy;
     private readonly Func<bool> _moduleEnabled;
@@ -50,6 +50,7 @@ public sealed class ConsumerSettings
         {
             "advanced-paste" => "AdvancedPaste",
             "keyboard-manager" => "KeyboardManager",
+            "command-palette" => "CmdPal",
             _ => null,
         };
         var parentDisabled = parent is not null && PowerScriptsPolicies.ReadUtility(parent, _readPolicy) == false;
@@ -86,9 +87,10 @@ public sealed class ConsumerSettings
         }
 
         // Copy the legacy choice once, without changing the Advanced Paste settings schema.
-        // Keyboard Manager stays enabled by default so existing bindings require no migration.
+        // Keyboard Manager and Command Palette stay enabled by default; existing bindings require no migration.
         preferences["advanced-paste"] ??= _legacyAdvancedPasteEnabled();
         preferences["keyboard-manager"] ??= true;
+        preferences["command-palette"] ??= true;
         preferences[consumerId] = enabled;
         _store.WriteBlob(PowerScriptsPaths.ConfigFileName, config.ToJsonString(new() { WriteIndented = true }));
     }

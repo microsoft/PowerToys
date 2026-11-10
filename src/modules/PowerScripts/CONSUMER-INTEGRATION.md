@@ -120,7 +120,8 @@ parameter values into a command line.
 
 Consumer identity is mandatory for both `run` and `transform`, including direct/native calls.
 Use 1-64 lowercase ASCII letters, digits or hyphens, beginning with a letter. Built-in IDs are
-`advanced-paste` and `keyboard-manager`; manual CLI invocations should explicitly use `command-line`.
+`advanced-paste`, `keyboard-manager`, and `command-palette`; manual CLI invocations should explicitly
+use `command-line`.
 The managed client requires `consumerId` as its first constructor argument and supplies the Host
 option automatically for discovery and execution. Unqualified administrative discovery, trust
 management, and Activity queries do not require attribution.
@@ -133,11 +134,12 @@ Keyboard Manager PowerScript bindings to regenerate their command line.
 
 Put each consumer's integration switch in **PowerScripts app > Consumer modules**, not
 in the consumer's settings page. PowerScripts owns `config.json`'s
-`consumers: { "advanced-paste": true, "keyboard-manager": true }` preferences. Advanced Paste uses
+`consumers: { "advanced-paste": true, "keyboard-manager": true, "command-palette": true }`
+preferences. Advanced Paste uses
 its legacy `properties.powerscripts-enabled` value until a central preference exists (default off).
 The first central edit copies the legacy choice; subsequent legacy writes cannot override it.
-Keyboard Manager defaults on to preserve existing bindings. Disabling an integration never deletes
-bindings or trust approvals.
+Keyboard Manager defaults on to preserve existing bindings, and Command Palette defaults on.
+Disabling an integration never deletes bindings or trust approvals.
 
 The Host applies the same decision to attributed discovery and `run`/`transform`. A disabled
 integration gets an empty catalogue; an existing invocation is refused with exit code 4 and recorded
@@ -151,6 +153,7 @@ Group Policy uses the 64-bit registry view under `Software\Policies\PowerToys` i
 | PowerScripts: Configure enabled state | `ConfigureEnabledUtilityPowerScripts` |
 | Advanced Paste: Allow PowerScripts integration | `PowerScripts\Consumers\advanced-paste` |
 | Keyboard Manager: Allow PowerScripts integration | `PowerScripts\Consumers\keyboard-manager` |
+| Command Palette: Allow PowerScripts integration | `PowerScripts\Consumers\command-palette` |
 
 Each value is `REG_DWORD`: 0 disables, 1 enables, absent uses the saved preference.
 HKLM wins over HKCU for each value. As with other utilities, an individual utility policy overrides
@@ -164,8 +167,8 @@ The PowerScripts app shows effective integration values and locks policy-managed
 The generic per-consumer policy resolver accepts stable consumer IDs, so adding a consumer needs no
 new execution gate. Register its parent utility/default in `ConsumerSettings`, add its central
 app card in `PowerScripts.Editor\Views\ConsumerModulesPage.xaml` and ADMX/ADML policy, and use
-the same ID in discovery, execution, and policy values. The standalone editor does not own global
-configuration. Relocating these controls changes no Host commands, consumer IDs, preferences,
+the same ID in discovery, execution, and policy values. Module enablement, runtime, and sandbox
+controls remain in PowerToys Settings. Relocating integration controls changes no Host commands, consumer IDs, preferences,
 default values, policies, or module-owned bindings.
 Refresh discovery when presenting actions; do not cache enablement as an authorization decision.
 Host enforcement also covers stale UI and saved bindings. Policy changes affect subsequent
@@ -177,8 +180,8 @@ PowerScripts policy to prevent execution through every Host consumer, including 
 The development enabled-state bypass cannot override Group Policy.
 
 `consumers list` returns effective/managed state as JSON.
-`consumers set <advanced-paste|keyboard-manager> <on|off>` changes a user preference, preserving
-unrelated configuration, and refuses edits when the module is disabled or policy controls the switch.
+`consumers set <advanced-paste|keyboard-manager|command-palette> <on|off>` changes a user preference,
+preserving unrelated configuration, and refuses edits when the module is disabled or policy controls the switch.
 
 The shared Host records the latest 200 invocations in local `activity.json`, independently of the
 selected scripts folder. PowerScripts editor > Activity shows the script, source, start time,
@@ -232,6 +235,63 @@ incompatible scripts as disabled. Refresh both the visible actions and their cou
 clipboard, catalogue, or master toggle changes. Parameters remain inside AP's own window;
 execution still validates availability, contracts, global policy, and trust through the Host.
 
+### Command Palette
+
+Command Palette (`command-palette`) exposes one PowerScripts entry leading to an asynchronously
+loaded script list. Search filters this page's catalogue; individual scripts are not top-level
+commands, fallback suggestions, or entries in the Apps search channel. Refresh remains in the
+actions menu, not a row among the scripts. Discovery failures offer retry and are reported separately
+from an empty compatible catalogue.
+
+The adapter accepts only `input: none` and `output: none` or `text`. No primary input does not
+exclude named parameters. It does not supply clipboard content, selected files, or inline media,
+and does not save output files or render markup. It uses `PowerScripts.Client`, not Core, and
+resolves the shared `PowerScripts\PowerScripts.Host.exe` from the PowerToys installation root.
+The CmdPal MSIX does not carry a second Host or runtime payload.
+
+```csharp
+var client = new PowerScriptsClient("command-palette", hostPath);
+var scripts = await client.ListAsync(cancellationToken);
+var actions = scripts.Where(script => script.Input == PowerScriptIO.None
+    && script.Output is PowerScriptIO.None or PowerScriptIO.Text);
+
+// After explicit no-parameter invocation or form Run, submit typed JsonElement values.
+var result = await client.TransformAsync(
+    selectedScript.Id,
+    new PowerScriptTransformInput { Parameters = collectedParameters },
+    cancellationToken: cancellationToken);
+```
+
+Explicitly invoking a list item with no declared parameters starts the script and opens its results
+page in one action. Scripts declaring any parameters, including optional ones with defaults, open
+the form and require an explicit **Run** action. Discovery, browsing, filtering, page construction,
+and `GetContent()` do not start execution. The form collects string, 32-bit
+integer, boolean, string-enum choice, and auxiliary file-path parameters using descriptor labels,
+descriptions, required state, and defaults. Optional values can be omitted. An explicit empty
+string, zero, or false is a supplied value, not omission; omitted values still receive any
+descriptor default in the Host. File fields accept existing Windows
+paths; the Host still enforces the declared constraints and performs runtime path translation.
+The adapter sends structured parameters through `TransformAsync` for both supported output shapes.
+
+Run shows progress on the same results page and prevents duplicate submission while that session is
+active. Text results appear above any parameter controls; the page offers **Stop** while running
+and an explicit rerun after completion. Completion displays literal text or an explicit no-result
+state. Empty text is valid, and nonempty
+stderr is diagnostics rather than failure by itself; nonzero exit, invalid output, unavailable
+Host, and trust/policy refusal remain failures. Discovery and execution run off the UI thread.
+Execution has a 60-second cancellation bound, subject to any shorter runtime limit. **Stop** and
+timeout attempt to terminate the Host process tree; they cannot roll back side effects or guarantee
+that work in a separate runtime has stopped. Within the current CmdPal session, navigating away
+does not discard the run or result. Returning without a new execution action shows that state;
+an explicit no-parameter invocation or **Run** can request a new run. No automatic retry occurs.
+
+Enable Command Palette and its PowerScripts extension, plus
+**PowerScripts app > Consumer modules > Command Palette**, to use this consumer. The central
+preference defaults on and the Host applies the existing
+module, parent-utility, runtime, trust, and Group Policy gates again on each invocation, including
+one-action runs of scripts without parameters. Browsing never approves a script. Script review and
+management remain in the PowerScripts editor.
+
 ### Assign one script to a trigger
 
 A shortcut-based consumer owns its binding UI. Discover compatible actions through the client;
@@ -254,7 +314,8 @@ Keep an unavailable binding with an explicit warning until the user replaces or 
 and discovery errors must not overwrite saved choices. Discovery needs a bounded timeout and
 cancellation, with failures shown explicitly.
 
-This version has no shared configuration picker or standalone script launcher. Consumers should
+This version has no shared configuration picker. Command Palette owns its script browsing and run
+pages as described above. Other consumers should
 not add a mandatory execution popup: Keyboard Manager needs no selector at shortcut time, while AP
 collects parameters inside its own window. Native/WPF consumers may use the Host contract directly;
 do not reference the Settings executable from a runtime module or add UI dependencies to the client.
@@ -271,7 +332,7 @@ do not reference the Settings executable from a runtime module or add UI depende
    the shared Host/client discovery contract.
 5. Present script names and relevant contract/parameter information. If maintaining bindings,
    retain missing/invalid/incompatible entries with a warning and an explicit Remove action.
-6. Put integration enablement in PowerScripts' central consumer settings and register its Group Policy.
+6. Put integration enablement in **PowerScripts app > Consumer modules** and register its Group Policy.
    Persist module-owned bindings through the module's normal IPC/save path. For picker-based bindings,
    Cancel and discovery errors must not modify settings.
 7. Revalidate availability, current contract, parameters, and trust when invoking through the Host.
@@ -283,8 +344,9 @@ do not reference the Settings executable from a runtime module or add UI depende
    integration change. Record the module's purpose/ID, exact accepted I/O and result presentation,
    file/media limits, parameter UX, setup/bindings, timeout/cancellation/error behavior, and build
    availability. Check against the adapter, not just Host support; `consumers list` is not a
-   capability schema. Update related handoff guidance and bump `bundle.json` so managed copies
-   receive the new knowledge. Keep unavailable/separate-branch integrations explicitly conditional.
+   capability schema. Update related handoff guidance and bump `bundle.json` so agents can identify
+   the updated bundle when the setup instructions are copied again. Keep unavailable/separate-branch
+   integrations explicitly conditional.
 
 ## Script presentation and icons
 
@@ -324,14 +386,16 @@ Each consumer decides when and how values are collected:
 - A consumer that has no parameter UX should expose only scripts whose required values have
   defaults.
 
-Pass values to `PowerScriptsClient.Run` or as repeated Host `--set name=value` arguments. When a
+Interactive forms can pass typed `JsonElement` values in `PowerScriptTransformInput.Parameters`
+through `TransformAsync`, including for no-primary-input actions. Alternatively, pass string values
+to `PowerScriptsClient.Run` or as repeated Host `--set name=value` arguments. When a
 native consumer must persist arbitrary values in a command line, use the Host's `--set-base64`
 transport: Base64-encode UTF-8 `name + NUL + value` and pass one encoded argument per value.
 
 A scalar `file` parameter is consumer-selected auxiliary input. It does not make the script a
 primary `files` script and does not make it eligible for Explorer discovery.
 
-Consumers always supply Windows paths for file-picker parameters, even when Python uses WSL.
+Consumers always supply Windows paths for auxiliary file parameters, even when Python uses WSL.
 After validation, the WSL runtime translates declared `file` parameters into `/mnt/<drive>/...`
 paths in a separate payload; ordinary strings and the original Windows security context are
 unchanged. This uses standard WSL drive mounts. UNC/device paths are explicitly unsupported for
@@ -369,7 +433,8 @@ delete original items need a separately reviewed security and UX design.
 
 ## Structured transforms
 
-Use `TransformAsync` when the consumer supplies content rather than an action or Explorer selection.
+Use `TransformAsync` when the consumer supplies structured input and consumes a validated result,
+including no-primary-input actions with typed options as used by Command Palette.
 Populate the field matching the script's input contract and consume the matching output field:
 
 ```csharp
@@ -456,8 +521,8 @@ fields are rejected, not migrated or inferred. Schema-local extensions refine pa
 ## Validation checklist
 
 - The consumer shows only scripts matching its actual input/output capabilities.
-- The shared picker is reused for Settings selection; the consumer's default page shows configured
-  bindings with input/output metadata, not a duplicate full catalogue.
+- Consumers needing saved assignments use their own binding UI and show configured bindings with
+  input/output metadata. Automatic-discovery consumers offer every compatible script.
 - Cancel, discovery failure, and search filtering do not erase assignments or change global settings.
 - Missing/incompatible saved IDs remain visible with an explicit Remove action.
 - Host unavailable, disabled, timeout, malformed output, and non-zero exit paths are handled.

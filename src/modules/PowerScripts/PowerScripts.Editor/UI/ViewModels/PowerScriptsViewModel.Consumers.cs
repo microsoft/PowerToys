@@ -22,6 +22,8 @@ public partial class PowerScriptsViewModel
 
     public PowerScriptConsumerItem KeyboardManagerConsumer { get; } = new("keyboard-manager");
 
+    public PowerScriptConsumerItem CommandPaletteConsumer { get; } = new("command-palette");
+
     public bool CanChangePowerScriptsEnabled => AreConsumerSettingsReady && !_isPowerScriptsPolicyControlled;
 
     public bool AreConsumerSettingsReady => _consumerSettingsLoaded && !_consumerSettingsBusy;
@@ -50,10 +52,12 @@ public partial class PowerScriptsViewModel
             var advancedPaste = snapshot.Consumers?.Single(item => item.Id == AdvancedPasteConsumer.Id)
                 ?? throw new InvalidOperationException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
             var keyboardManager = snapshot.Consumers.Single(item => item.Id == KeyboardManagerConsumer.Id);
+            var commandPalette = snapshot.Consumers.Single(item => item.Id == CommandPaletteConsumer.Id);
             _isEnabled = snapshot.IsPowerScriptsEnabled;
             _isPowerScriptsPolicyControlled = snapshot.IsPowerScriptsPolicyControlled;
             AdvancedPasteConsumer.Update(advancedPaste);
             KeyboardManagerConsumer.Update(keyboardManager);
+            CommandPaletteConsumer.Update(commandPalette);
             _consumerSettingsLoaded = true;
             OnPropertyChanged(nameof(IsEnabled));
             OnPropertyChanged(nameof(ExecutionSettingsSummary));
