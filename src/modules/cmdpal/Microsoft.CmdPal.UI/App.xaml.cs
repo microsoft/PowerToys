@@ -23,6 +23,7 @@ using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CmdPal.Ext.System;
 using Microsoft.CmdPal.Ext.TimeDate;
 using Microsoft.CmdPal.Ext.WebSearch;
+using Microsoft.CmdPal.Ext.WindowsPalettes;
 using Microsoft.CmdPal.Ext.WindowsServices;
 using Microsoft.CmdPal.Ext.WindowsSettings;
 using Microsoft.CmdPal.Ext.WindowsTerminal;
@@ -221,6 +222,11 @@ public partial class App : Application, IDisposable
 
         services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowsSettingsCommandsProvider>();
+        if (WindowsPalettesCommandsProvider.TryCreate() is { } windowsPalettes)
+        {
+            services.AddSingleton<ICommandProvider>(windowsPalettes);
+        }
+
         services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowsServicesCommandsProvider>();
         services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();

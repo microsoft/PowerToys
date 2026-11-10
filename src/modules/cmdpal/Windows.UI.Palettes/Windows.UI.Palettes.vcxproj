@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8E1D6C2B-3F0A-4F7E-9B5D-2C6A1E4F7B90}</ProjectGuid>
+    <RootNamespace>Windows.UI.Palettes</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <VcpkgEnabled>false</VcpkgEnabled>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <TargetName>Windows.UI.Palettes</TargetName>
+    <OutDir>$(MSBuildProjectDirectory)\bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(MSBuildProjectDirectory)\obj\$(Platform)\$(Configuration)\</IntDir>
+    <UnionMetadataDir>$(WindowsSdkDir)UnionMetadata\$(TargetPlatformVersion)</UnionMetadataDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Midl>
+      <EnableWindowsRuntime>true</EnableWindowsRuntime>
+      <MetadataFileName>$(OutDir)$(TargetName).winmd</MetadataFileName>
+      <HeaderFileName>$(IntDir)%(Filename).h</HeaderFileName>
+      <TypeLibraryName />
+      <AdditionalMetadataDirectories>$(UnionMetadataDir)</AdditionalMetadataDirectories>
+      <AdditionalOptions>/nomidl /reference "$(UnionMetadataDir)\Windows.winmd" %(AdditionalOptions)</AdditionalOptions>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Midl Include="Windows.UI.Palettes.idl" />
+    <!-- Report the midl-produced WinMD as this project's output (normally only linker-produced WinMDs are). -->
+    <WinMDFullPath Include="$(OutDir)$(TargetName).winmd">
+      <TargetPath>$(TargetName).winmd</TargetPath>
+      <Primary>true</Primary>
+    </WinMDFullPath>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

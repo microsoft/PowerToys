@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
+
+  <!-- C# projection of the Windows.UI.Palettes contract. By default the WinMD comes from
+       ..\Windows.UI.Palettes\Windows.UI.Palettes.vcxproj, which compiles the vendored IDL.
+       Set PalettesWinmdPath to project a prebuilt WinMD instead. -->
+  <PropertyGroup>
+    <CsWinRTIncludes>Windows.UI.Palettes</CsWinRTIncludes>
+    <CsWinRTPublicExclusiveToInterfaces>true</CsWinRTPublicExclusiveToInterfaces>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(PalettesWinmdPath)' == ''">
+    <!-- PrivateAssets keeps the WinMD from flowing to projects that reference this one, so they consume the projection rather than re-projecting (and packaging) the WinMD. -->
+    <ProjectReference Include="..\Windows.UI.Palettes\Windows.UI.Palettes.vcxproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(PalettesWinmdPath)' != ''">
+    <CsWinRTInputs Include="$([System.IO.Path]::GetFullPath('$(PalettesWinmdPath)'))" />
+  </ItemGroup>
+
+  <Target Name="ValidatePalettesWinmd" BeforeTargets="PrepareForBuild" Condition="'$(PalettesWinmdPath)' != ''">
+    <Error Condition="!Exists('$(PalettesWinmdPath)')"
+           Text="Windows.UI.Palettes contract WinMD not found at '$(PalettesWinmdPath)'." />
+  </Target>
+</Project>

@@ -260,6 +260,11 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/cmdpal/Windows.UI.Palettes.Projection/Windows.UI.Palettes.Projection.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Windows.UI.Palettes/Windows.UI.Palettes.vcxproj" Id="8e1d6c2b-3f0a-4f7e-9b5d-2c6a1e4f7b90" />
   </Folder>
   <Folder Name="/modules/CommandPalette/Built-in Extensions/">
     <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Actions/Microsoft.CmdPal.Ext.Actions.csproj">
@@ -326,6 +331,10 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WindowsSettings/Microsoft.CmdPal.Ext.WindowsSettings.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WindowsPalettes/Microsoft.CmdPal.Ext.WindowsPalettes.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -436,6 +445,10 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.WindowsSettings.UnitTests/Microsoft.CmdPal.Ext.WindowsSettings.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.WindowsPalettes.UnitTests/Microsoft.CmdPal.Ext.WindowsPalettes.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
