@@ -52,6 +52,14 @@ namespace MouseWithoutBorders
         {
             InitializeComponent();
 
+            ToolTip groupBoxToolTip = new ToolTip();
+            groupBoxToolTip.SetToolTip(groupBoxShortcuts, "These settings are controlled by the PowerToys.Settings application.");
+
+            foreach (Control control in groupBoxShortcuts.Controls)
+            {
+                control.Enabled = false;
+            }
+
             textBoxEnc.Font = new System.Drawing.Font(Control.DefaultFont.Name, 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0);
 
             Text = Application.ProductName + " " + Application.ProductVersion + " - Settings";
