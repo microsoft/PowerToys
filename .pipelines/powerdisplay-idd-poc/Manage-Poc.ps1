@@ -47,11 +47,8 @@ if ($Action -eq 'Cleanup') {
     $cleanupStarted = Get-Date
     $errors = [Collections.Generic.List[string]]::new()
     try {
-        $operatingSystem = Get-CimInstance Win32_OperatingSystem -ErrorAction Stop
-        $lastBoot = $operatingSystem.LastBootUpTime
+        $lastBoot = (Get-CimInstance Win32_OperatingSystem -ErrorAction Stop).LastBootUpTime
         if ($lastBoot -isnot [datetime]) { throw 'Cannot determine the guest boot identity for safe fixture cleanup.' }
-        if ([string]$operatingSystem.BuildNumber -notmatch '^\d+$') { throw 'Cannot determine the guest Windows build for safe fixture cleanup.' }
-        $systemRemoval = [int]$operatingSystem.BuildNumber -in 19041..19045
         $bootTicks = $lastBoot.ToUniversalTime().Ticks
         $barrier = $state.PSObject.Properties['RemovalPendingBootTicks']
         if ($barrier) {
@@ -99,8 +96,7 @@ if ($Action -eq 'Cleanup') {
             $removalCompleted = $false
             $rebootRequired = $false
             try {
-                Remove-UmdfDevices -Devices $devices -Errors $errors -RequireImmediateRemoval -RebootRequired ([ref]$rebootRequired) `
-                    -SystemContext:$systemRemoval -ResultsDirectory $ResultsDirectory
+                Remove-UmdfDevices -Devices $devices -Errors $errors -RequireImmediateRemoval -RebootRequired ([ref]$rebootRequired)
                 if ($errors.Count -eq 0) {
                     Remove-UmdfPackages -InfNames $ownedInfs -HardwareId $hardwareId -Errors $errors -RequireImmediateRemoval -RebootRequired ([ref]$rebootRequired)
                 }
