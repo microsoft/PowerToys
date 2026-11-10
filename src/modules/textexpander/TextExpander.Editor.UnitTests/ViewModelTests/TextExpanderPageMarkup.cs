@@ -4,10 +4,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using Microsoft.PowerToys.TextExpander;
+using Microsoft.PowerToys.TextExpander.Editor.Helpers;
 using Microsoft.PowerToys.TextExpander.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.PowerToys.TextExpander.Editor.UnitTests.RepositoryFiles;
@@ -26,6 +28,9 @@ namespace ViewModelTests
         private const string ReplacementEditor = @"src\modules\textexpander\TextExpander.Editor\Helpers\TextExpanderReplacementEditor.cs";
         private static readonly string[] MenuHandlers = { "EditSnippet_Click", "DuplicateSnippet_Click", "DeleteSnippet_Click" };
         private static readonly string[] MenuOrder = { "TextExpander_EditSnippet", "TextExpander_DuplicateSnippet", null, "TextExpander_DeleteSnippet" };
+        private static readonly string[] RowShortcutKeys = { "Delete", "D" };
+        private static readonly string[] RowShortcutModifiers = { null, "Control" };
+        private static readonly string[] RowShortcutHandlers = { "DeleteShortcut_Invoked", "DuplicateShortcut_Invoked" };
         private static readonly string[] ErrorBarHandlers = { "ReloadSnippets_Click", "UseSnippetsFile_Click" };
         private static readonly string[] PromptBackdrops = { "{ThemeResource SmokeFillColorDefault}", "{ThemeResource SolidBackgroundFillColorBaseAlt}", "{ThemeResource SystemColorWindowColor}" };
         private static readonly string[] SnippetFolderButtons = { "Button_TextExpander_OpenSnippetFile", "Button_TextExpander_ReloadSnippets", "Button_TextExpander_MoveSnippets", "Button_TextExpander_UseSnippetsFile" };
@@ -438,6 +443,48 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void TheKeyboardReachesARowsMenuAndItsShortcutsActOnTheFocusedRow()
+        {
+            // Tab doesn't stop on a row's More options button, so Shift+F10, the Menu key and a right-click open its
+            // menu, and Delete and Ctrl+D do what its Delete and Duplicate do, Delete still asking first (F4).
+            XElement list = SnippetList();
+            Assert.AreEqual("SnippetList_ContextRequested", (string)list.Attribute("ContextRequested"));
+            Assert.AreEqual("Hidden", (string)list.Attribute("KeyboardAcceleratorPlacementMode"), "No tooltip over the list.");
+            XElement[] shortcuts = list.Elements().Single(element => element.Name.LocalName == "ListView.KeyboardAccelerators").Elements().ToArray();
+            CollectionAssert.AreEqual(RowShortcutKeys, shortcuts.Select(shortcut => (string)shortcut.Attribute("Key")).ToArray());
+            CollectionAssert.AreEqual(RowShortcutModifiers, shortcuts.Select(shortcut => (string)shortcut.Attribute("Modifiers")).ToArray());
+            CollectionAssert.AreEqual(RowShortcutHandlers, shortcuts.Select(shortcut => (string)shortcut.Attribute("Invoked")).ToArray());
+            Assert.IsTrue(shortcuts.All(shortcut => (string)shortcut.Attribute("ScopeOwner") == "{x:Bind SnippetList}"), "Only while the focus is in the list.");
+
+            string code = Text(EditorPage + ".cs");
+            StringAssert.Contains(Member(code, "private void SnippetList_ContextRequested("), "MoreOptionsButton(row.Container) is not { Flyout: FlyoutBase menu } button");
+            StringAssert.Contains(Member(code, "private async void DeleteShortcut_Invoked("), "await DeleteSnippetAsync(row.Snippet);");
+            StringAssert.Contains(Member(code, "private async void DuplicateShortcut_Invoked("), "await DuplicateSnippetAsync(row.Snippet);");
+            StringAssert.Contains(Member(code, "private async Task DeleteSnippetAsync("), "await confirm.ShowAsync()");
+
+            // The menu shows the keys beside what they do.
+            Dictionary<string, string> values = Xml(EditorResources).Descendants("data").ToDictionary(element => (string)element.Attribute("name"), element => element.Element("value").Value);
+            Assert.AreEqual("Delete", values["TextExpander_DeleteSnippet.KeyboardAcceleratorTextOverride"]);
+            Assert.AreEqual("Ctrl+D", values["TextExpander_DuplicateSnippet.KeyboardAcceleratorTextOverride"]);
+        }
+
+        [TestMethod]
+        public void TheFocusGoesToTheRowASaveOrADeleteLeaves()
+        {
+            // After a dialog the focus went back to the row it left, which the list may have reused for another snippet or
+            // for none: a row with no name and no size (F3). Now it's the saved row, or the next one after a delete.
+            string code = Text(EditorPage + ".cs");
+            string focus = Member(code, "private void FocusRowWhenShown(");
+            StringAssert.Contains(focus, "SnippetList.ScrollIntoView(snippet);");
+            StringAssert.Contains(focus, "SnippetList.ContainerFromItem(snippet) is ListViewItem row");
+            StringAssert.Contains(focus, "row.Focus(FocusState.Keyboard);");
+            StringAssert.Contains(focus, "AddSnippetButton.Focus(FocusState.Keyboard);");
+            StringAssert.Contains(Member(code, "private async System.Threading.Tasks.Task ShowSnippetDialogAsync("), "if (row.Id == saved)");
+            StringAssert.Contains(Member(code, "private async Task DeleteSnippetAsync("), "rows[Math.Clamp(place, 0, rows.Count - 1)]");
+            Assert.AreEqual("AddSnippetButton", (string)Xml(EditorPage).Descendants().Single(element => (string)element.Attribute("AutomationProperties.AutomationId") == "Button_TextExpander_AddSnippet").Attribute(Name));
+        }
+
+        [TestMethod]
         public void ProblemsAndFileErrorsAreAnnouncedAndDescribeTheTrigger()
         {
             XDocument page = Xml(EditorPage);
@@ -460,6 +507,24 @@ namespace ViewModelTests
             StringAssert.Contains(code, "FrameworkElementAutomationPeer.CreatePeerForElement(SnippetErrorBar);");
             StringAssert.Contains(Member(code, "public string SnippetProblem"), "Announce(SnippetProblemBar, value,");
             StringAssert.Contains(Member(code, "private void ReloadSnippets_Click("), "Announce(SnippetErrorBar, ViewModel.SnippetError,");
+        }
+
+        [TestMethod]
+        public void TheSnippetDialogsContentFitsInsideItsFrame()
+        {
+            // The content was 2 pixels wider than the dialog leaves inside its border and padding, which cut off the right
+            // edge of Insert variable, Replacement and the preview (F10).
+            XElement dialog = WithName(Xml(EditorPage), "SnippetDialog");
+            XElement maxWidth = dialog.Descendants().Single(element => (string)element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml")) == "ContentDialogMaxWidth");
+            Assert.AreEqual(TextExpanderSnippetDialogSize.MaxWidth, double.Parse(maxWidth.Value, CultureInfo.InvariantCulture));
+            Assert.AreEqual(758, TextExpanderSnippetDialogSize.MaxContentWidth);
+            Assert.AreEqual(758, TextExpanderSnippetDialogSize.ContentWidth(1920));
+            Assert.AreEqual(504, TextExpanderSnippetDialogSize.ContentWidth(600));
+            Assert.AreEqual(320, TextExpanderSnippetDialogSize.ContentWidth(300));
+            StringAssert.Contains(Member(Text(EditorPage + ".cs"), "private void FitSnippetDialog("), "TextExpanderSnippetDialogSize.ContentWidth(XamlRoot.Size.Width)");
+
+            // The trigger box wraps, so its placeholder isn't cut off with 200% text, nor a long trigger.
+            Assert.AreEqual("Wrap", (string)WithName(dialog, "TriggerBox").Attribute("TextWrapping"));
         }
 
         [TestMethod]

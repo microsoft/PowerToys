@@ -230,6 +230,34 @@ internal sealed class SnippetEditor
         Session.WaitForId<Button>("CloseButton", "Cancel", 10_000).Invoke(msPostAction: 0);
     }
 
+    /// <summary>Gets whether the row of <paramref name="trigger"/> has the keyboard focus, or null where winappcli can't read it.</summary>
+    public bool? RowHasFocus(string trigger)
+    {
+        var value = Row(trigger)?.GetProperty("HasKeyboardFocus");
+        return string.IsNullOrEmpty(value) ? null : string.Equals(value, "True", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Presses a key, with <paramref name="modifiers"/> held, on whatever has the focus in the editor.</summary>
+    public void Press(string keys, ushort virtualKey, params ushort[] modifiers)
+    {
+        Assert.IsTrue(
+            WindowControl.WaitForForeground(Handle, timeoutMS: 10_000, requiredConsecutiveMatches: 2),
+            $"The snippet editor isn't in front for {keys}. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        step($"Pressing {keys}");
+        TextInput.Press(virtualKey, modifiers);
+    }
+
+    /// <summary>Waits for the snippet dialog titled <paramref name="title"/>, as a key or a menu opens it.</summary>
+    public void WaitForSnippetDialog(string title) =>
+        WaitForDialog(title, () => $"Rows: {DescribeRows()}. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+
+    /// <summary>Cancels the snippet dialog and waits for it to close.</summary>
+    public void CancelAndWait()
+    {
+        Cancel();
+        Assert.IsTrue(Session.WaitFor(() => !IsDialogOpen, 10_000, pollIntervalMS: 250), $"The snippet dialog did not close after Cancel. {DescribeDialog()}");
+    }
+
     public void Search(string text)
     {
         step($"Searching for '{text}'");

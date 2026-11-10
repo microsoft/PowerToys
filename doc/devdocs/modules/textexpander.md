@@ -340,8 +340,17 @@ Rules a change must keep:
 Accessibility contracts, checked by `TextExpanderPageMarkup` and `TextExpanderRows`:
 
 - A row is one Tab stop, and its menu items carry their snippet in `Tag="{x:Bind}"`.
+- Shift+F10, the Menu key or a right-click on a row opens its **More options** menu, the same menu as
+  the row's button. Delete and Ctrl+D delete (after asking) and duplicate the snippet whose row has the
+  focus. The menu shows those keys.
+- After **Save**, the focus goes to the saved row, scrolled into view: the edited one, or the new one
+  after **New snippet** or **Duplicate**. After a delete it goes to the next row, or the one before at
+  the end, or to **New snippet** when none is left or the row isn't in the search's results.
 - A row's name is "*trigger*: *text*", plus "Never expands: *reason*" when that applies.
 - The trigger box's full description is the current problem. Problem and error bars announce changes.
+- The snippet dialog's content is as wide as the window allows, up to what its 808 DIP maximum leaves
+  inside its border and padding (`TextExpanderSnippetDialogSize`). The trigger box wraps, so its
+  placeholder stays whole with large text.
 - Every visible string has an English resource. UI tests find controls by AutomationId; keep those
   stable.
 

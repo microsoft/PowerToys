@@ -780,8 +780,15 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         /// Adds or updates a snippet and writes the file. Pass null as <paramref name="id"/> to
         /// add. Returns null on success, or the reason it was refused.
         /// </summary>
-        public string SaveSnippet(int? id, string trigger, string replacement)
+        public string SaveSnippet(int? id, string trigger, string replacement) => SaveSnippet(id, trigger, replacement, out _);
+
+        /// <summary>
+        /// Adds or updates a snippet and writes the file, as above. On success <paramref name="savedId"/> is the snippet's
+        /// ID, a new one for a new snippet, which its row in the list has; otherwise it's -1.
+        /// </summary>
+        public string SaveSnippet(int? id, string trigger, string replacement, out int savedId)
         {
+            savedId = -1;
             if (!CanEditSnippets)
             {
                 return ElevatedSnippetAccessDeniedMessage();
@@ -798,9 +805,10 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
 
             SnippetFile previousFile = _file;
             _file = previousFile.Clone();
+            SnippetFile.Entry saved;
             try
             {
-                _file.Upsert(id, trigger, replacement, CaseSensitive);
+                saved = _file.Upsert(id, trigger, replacement, CaseSensitive);
             }
             catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
             {
@@ -809,7 +817,13 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 return _getResourceString("TextExpander_EditorFileChanged");
             }
 
-            return WriteEditedFile(previousFile);
+            string error = WriteEditedFile(previousFile);
+            if (error == null)
+            {
+                savedId = saved.Id;
+            }
+
+            return error;
         }
 
         public string ValidateSnippet(int? id, string trigger)

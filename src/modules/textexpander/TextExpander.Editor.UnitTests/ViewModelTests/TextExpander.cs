@@ -144,6 +144,25 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void ASaveGivesTheIdOfTheRowItAddedOrChanged()
+        {
+            // The page puts the focus on that row once the dialog closes (F3).
+            File.WriteAllText(_path, SnippetJson.Of("#sig=Your name", "#mail=you@example.com"));
+            TextExpanderViewModel model = CreateViewModel();
+
+            Assert.IsNull(model.SaveSnippet(null, "#new", "New snippet", out int added));
+            Assert.AreEqual("#new", model.Snippets.Single(row => row.Id == added).Trigger);
+
+            int mail = model.Snippets.Single(row => row.Trigger == "#mail").Id;
+            Assert.IsNull(model.SaveSnippet(mail, "#email", "you@example.com", out int changed));
+            Assert.AreEqual(mail, changed);
+            Assert.AreEqual("#email", model.Snippets.Single(row => row.Id == changed).Trigger);
+
+            Assert.IsNotNull(model.SaveSnippet(null, "#sig", "Taken", out int refused));
+            Assert.AreEqual(-1, refused);
+        }
+
+        [TestMethod]
         public void AMissingChosenFileIsReportedAndNeverCreated()
         {
             TextExpanderViewModel model = CreateViewModel();

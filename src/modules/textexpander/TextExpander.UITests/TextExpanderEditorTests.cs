@@ -349,6 +349,61 @@ public sealed class TextExpanderEditorTests : TextExpanderTestBase
         AssertDatabase([edited, Address, Letter, Ticket, new Snippet(copyTrigger, Address.Replacement)]);
     }
 
+    /// <summary>
+    /// The keyboard carries on from the snippet just saved, deleted or duplicated: the focus is on its row, or on the next one
+    /// after a delete, so Enter opens it. Delete, Ctrl+D and Shift+F10 act on the row with the focus, Delete after asking.
+    /// The focus used to go back to a row the list had reused, with no name and no size, and Tab never reached a row's
+    /// Duplicate and Delete.
+    /// </summary>
+    [TestMethod("TextExpander.Editor.TheKeyboardCarriesOnFromTheSnippetJustChanged")]
+    [TestCategory("TextExpander")]
+    [TestCategory("TextExpander.Editor")]
+    public void TheKeyboardCarriesOnFromTheSnippetJustChanged()
+    {
+        const ushort Delete = 0x2E;
+        const ushort D = 0x44;
+        const ushort F10 = 0x79;
+        const ushort Shift = 0x10;
+        const ushort Control = 0x11;
+
+        var editor = OpenEditor(OpenTextExpanderPage());
+        editor.WaitForCount(DefaultSnippets.Count);
+
+        editor.OpenRow(Address.Trigger);
+        var edited = Address with { Replacement = "Edited by the Text Expander UI test" };
+        editor.TypeReplacement(edited.Replacement);
+        editor.Save();
+        AssertEnterOpens(editor, edited.Trigger, "after Save");
+
+        WaitForRowFocus(editor, edited.Trigger, "after Cancel");
+        editor.Press("Delete", Delete);
+        Assert.IsTrue(editor.WaitForText("Delete snippet?"), "Delete on the row did not ask first.");
+        Step("Confirming Delete");
+        editor.Session.WaitForId<Button>("PrimaryButton", "Delete", 10_000).Invoke(msPostAction: 0);
+        Assert.IsTrue(editor.WaitForRow(Address.Trigger, present: false), $"The deleted snippet is still listed. Rows: {editor.DescribeRows()}.");
+        AssertEnterOpens(editor, Letter.Trigger, "after Delete, on the next row");
+
+        WaitForRowFocus(editor, Letter.Trigger, "after Cancel");
+        editor.Press("Ctrl+D", D, Control);
+        editor.WaitForSnippetDialog("New snippet");
+        var copyTrigger = editor.TriggerText;
+        Assert.AreNotEqual(Letter.Trigger, copyTrigger, "Ctrl+D suggested the original's trigger.");
+        Assert.IsTrue(editor.WaitForReplacementText(Letter.Replacement), $"Ctrl+D's copy has the replacement '{TextExpanderFiles.Visible(editor.ReplacementText)}'.");
+        editor.Save();
+        editor.WaitForCount(DefaultSnippets.Count);
+        AssertEnterOpens(editor, copyTrigger, "after Duplicate");
+
+        WaitForRowFocus(editor, copyTrigger, "after Cancel");
+        editor.Press("Shift+F10", F10, Shift);
+        Assert.IsTrue(editor.Session.WaitForElement(By.AccessibilityId("MenuItem_TextExpander_DeleteSnippet"), 10_000), "Shift+F10 on the row did not open its menu.");
+        editor.Press("Esc", 0x1B);
+        Assert.IsTrue(
+            editor.Session.WaitFor(() => !editor.Session.Has<Element>(By.AccessibilityId("MenuItem_TextExpander_DeleteSnippet"), timeoutMS: 0), 10_000, pollIntervalMS: 250),
+            "Esc did not close the row's menu.");
+
+        AssertDatabase([Greeting, Letter, Ticket, Note, new Snippet(copyTrigger, Letter.Replacement)]);
+    }
+
     /// <summary>Search filters by trigger and by replacement text, and Clear search shows every snippet again.</summary>
     [TestMethod("TextExpander.Editor.SearchFiltersSnippets")]
     [TestCategory("TextExpander")]
@@ -486,6 +541,29 @@ public sealed class TextExpanderEditorTests : TextExpanderTestBase
         }
 
         Step($"The Clipboard panel shows '{heading}'");
+    }
+
+    /// <summary>
+    /// Waits until the focus is on the row of <paramref name="trigger"/>, where the editor reports it. Where winappcli can't
+    /// read the focus, the key pressed next shows where it is instead.
+    /// </summary>
+    private void WaitForRowFocus(SnippetEditor editor, string trigger, string when)
+    {
+        bool? focused = null;
+        editor.Session.WaitFor(() => (focused = editor.RowHasFocus(trigger)) != false, 10_000, pollIntervalMS: 250);
+        Assert.AreNotEqual(false, focused, $"The focus isn't on the '{trigger}' row {when}. Rows: {editor.DescribeRows()}.");
+        Step($"The '{trigger}' row has the focus {when} (reported: {focused?.ToString() ?? "unknown"})");
+        Thread.Sleep(300);
+    }
+
+    /// <summary>Checks that the focus is on the row of <paramref name="trigger"/>: Enter opens that snippet, which is then cancelled.</summary>
+    private void AssertEnterOpens(SnippetEditor editor, string trigger, string when)
+    {
+        WaitForRowFocus(editor, trigger, when);
+        editor.Press("Enter", 0x0D);
+        editor.WaitForSnippetDialog("Edit snippet");
+        Assert.AreEqual(trigger, editor.TriggerText, $"Enter {when} opened another snippet.");
+        editor.CancelAndWait();
     }
 
     /// <summary>Whether an app is set to open files with <paramref name="extension"/>: a command or a packaged app's handler.</summary>

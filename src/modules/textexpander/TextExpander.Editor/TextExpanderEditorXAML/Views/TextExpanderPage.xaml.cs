@@ -44,6 +44,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         private readonly List<(MenuFlyoutItem Item, string Format)> _datePresetItems = new();
         private readonly List<(Button Chip, TextBlock Example, (string Code, string MeaningKey, string ExampleKey) Code)> _dateCodeChips = new();
         private int? _editingId;
+        private int? _savedSnippetId;
         private string _snippetProblem;
         private bool _isSnippetValid;
         private Control _lastEditedField;
@@ -1022,13 +1023,16 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         }
 
         private async void DuplicateSnippet_Click(object sender, RoutedEventArgs e)
+            => await DuplicateSnippetAsync(GetSnippetFromSender(sender));
+
+        private async Task DuplicateSnippetAsync(TextExpanderSnippetViewModel row)
         {
             if (!ViewModel.CanEditSnippets)
             {
                 return;
             }
 
-            TextExpanderSnippetViewModel snippet = await GetListedSnippetAsync(GetSnippetFromSender(sender));
+            TextExpanderSnippetViewModel snippet = await GetListedSnippetAsync(row);
             if (snippet == null)
             {
                 return;
@@ -1039,13 +1043,16 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         }
 
         private async void DeleteSnippet_Click(object sender, RoutedEventArgs e)
+            => await DeleteSnippetAsync(GetSnippetFromSender(sender));
+
+        private async Task DeleteSnippetAsync(TextExpanderSnippetViewModel row)
         {
             if (!ViewModel.CanEditSnippets)
             {
                 return;
             }
 
-            TextExpanderSnippetViewModel snippet = await GetListedSnippetAsync(GetSnippetFromSender(sender));
+            TextExpanderSnippetViewModel snippet = await GetListedSnippetAsync(row);
             if (snippet == null)
             {
                 return;
@@ -1072,6 +1079,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 return;
             }
 
+            // Its place in the list, for the row the focus goes to once it's gone.
+            int place = ViewModel.FilteredSnippets.IndexOf(snippet);
+
             // Refused if the list reloaded while this asked, since the row may name another snippet now.
             string error = ViewModel.DeleteSnippet(snippet);
             if (error != null)
@@ -1081,7 +1091,119 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             else
             {
                 AnnounceSnippetChange("TextExpander_SnippetDeleted");
+                FocusRowWhenShown(() =>
+                {
+                    // The next row, or the one before when it was last.
+                    var rows = ViewModel.FilteredSnippets;
+                    return rows.Count == 0 ? null : rows[Math.Clamp(place, 0, rows.Count - 1)];
+                });
             }
+        }
+
+        /// <summary>Delete deletes the snippet whose row has the focus, after asking, as its menu's Delete does.</summary>
+        private async void DeleteShortcut_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            if (_isSnippetDialogOpen || FocusedRow() is not { } row)
+            {
+                return;
+            }
+
+            args.Handled = true;
+            await DeleteSnippetAsync(row.Snippet);
+        }
+
+        /// <summary>Ctrl+D duplicates the snippet whose row has the focus, as its menu's Duplicate does.</summary>
+        private async void DuplicateShortcut_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            if (_isSnippetDialogOpen || FocusedRow() is not { } row)
+            {
+                return;
+            }
+
+            args.Handled = true;
+            await DuplicateSnippetAsync(row.Snippet);
+        }
+
+        /// <summary>
+        /// Opens a row's More options menu as its context menu: from the keyboard (Shift+F10 or the Menu key) under the
+        /// button, as a click there opens it, and where the row was right-clicked or held. A row isn't a tab stop's way into
+        /// its button, so this is the keyboard's way to Duplicate and Delete.
+        /// </summary>
+        private void SnippetList_ContextRequested(UIElement sender, ContextRequestedEventArgs args)
+        {
+            if (args.Handled || RowOf(args.OriginalSource as DependencyObject) is not { } row || MoreOptionsButton(row.Container) is not { Flyout: FlyoutBase menu } button)
+            {
+                return;
+            }
+
+            args.Handled = true;
+            if (args.TryGetPosition(row.Container, out Point point))
+            {
+                menu.ShowAt(row.Container, new FlyoutShowOptions { Position = point });
+            }
+            else
+            {
+                menu.ShowAt(button);
+            }
+        }
+
+        /// <summary>Gets the row with the focus and its snippet, or null when the focus isn't on a row or in one.</summary>
+        private (ListViewItem Container, TextExpanderSnippetViewModel Snippet)? FocusedRow()
+            => XamlRoot == null ? null : RowOf(FocusManager.GetFocusedElement(XamlRoot) as DependencyObject);
+
+        /// <summary>Gets the row <paramref name="element"/> is, or is in, and its snippet; null if it's in no row of the list.</summary>
+        private (ListViewItem Container, TextExpanderSnippetViewModel Snippet)? RowOf(DependencyObject element)
+        {
+            for (DependencyObject current = element; current != null && current != SnippetList; current = VisualTreeHelper.GetParent(current))
+            {
+                if (current is ListViewItem container)
+                {
+                    return SnippetList.ItemFromContainer(container) is TextExpanderSnippetViewModel snippet ? (container, snippet) : null;
+                }
+            }
+
+            return null;
+        }
+
+        private static Button MoreOptionsButton(ListViewItem row)
+        {
+            if (row.ContentTemplateRoot is Panel panel)
+            {
+                foreach (UIElement child in panel.Children)
+                {
+                    if (child is Button button && AutomationProperties.GetAutomationId(button) == "Button_TextExpander_MoreOptions")
+                    {
+                        return button;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Puts the focus on the row <paramref name="pick"/> gives once the list shows it, scrolled into view, or on New snippet
+        /// when it gives none. After a dialog the focus went back to the row it left, which the list may have reused for another
+        /// snippet, or for none: a row with no name and no size, that screen readers say nothing about.
+        /// </summary>
+        private void FocusRowWhenShown(Func<TextExpanderSnippetViewModel> pick)
+        {
+            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+            {
+                TextExpanderSnippetViewModel snippet = pick();
+                if (snippet == null)
+                {
+                    AddSnippetButton.Focus(FocusState.Keyboard);
+                    return;
+                }
+
+                SnippetList.ScrollIntoView(snippet);
+                SnippetList.UpdateLayout();
+                if (SnippetList.ContainerFromItem(snippet) is ListViewItem row)
+                {
+                    row.Focus(FocusState.Keyboard);
+                }
+            });
         }
 
         /// <summary>
@@ -1137,6 +1259,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             Validate();
 
             ContentDialogResult result;
+            _savedSnippetId = null;
             try
             {
                 result = await SnippetDialog.ShowAsync();
@@ -1156,6 +1279,23 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             if (result == ContentDialogResult.Primary)
             {
                 AnnounceSnippetChange("TextExpander_SnippetSaved");
+
+                // On the row of the snippet just saved: edited, added or duplicated.
+                if (_savedSnippetId is int saved)
+                {
+                    FocusRowWhenShown(() =>
+                    {
+                        foreach (TextExpanderSnippetViewModel row in ViewModel.FilteredSnippets)
+                        {
+                            if (row.Id == saved)
+                            {
+                                return row;
+                            }
+                        }
+
+                        return null;
+                    });
+                }
             }
         }
 
@@ -1174,7 +1314,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 return;
             }
 
-            string error = ViewModel.SaveSnippet(_editingId, TriggerBox.Text, _replacementEditor.Text);
+            string error = ViewModel.SaveSnippet(_editingId, TriggerBox.Text, _replacementEditor.Text, out int savedId);
             if (error != null)
             {
                 args.Cancel = true;
@@ -1187,6 +1327,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 return;
             }
 
+            _savedSnippetId = savedId;
             _allowDialogClose = true;
         }
 
@@ -1558,7 +1699,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         {
             if (XamlRoot != null)
             {
-                SnippetDialogContent.Width = Math.Clamp(XamlRoot.Size.Width - 96, 320, 760);
+                SnippetDialogContent.Width = TextExpanderSnippetDialogSize.ContentWidth(XamlRoot.Size.Width);
             }
 
             // A new window size or a new dialog: the preview tries eight lines again.

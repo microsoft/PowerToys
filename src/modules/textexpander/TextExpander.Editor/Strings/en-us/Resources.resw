@@ -315,8 +315,16 @@
   <data name="TextExpander_DuplicateSnippet.Text" xml:space="preserve">
     <value>Duplicate</value>
   </data>
+  <data name="TextExpander_DuplicateSnippet.KeyboardAcceleratorTextOverride" xml:space="preserve">
+    <value>Ctrl+D</value>
+    <comment>Shown beside Duplicate in a snippet's menu: the shortcut that duplicates the snippet whose row has the focus. Ctrl is the Control key as it's labeled on keyboards</comment>
+  </data>
   <data name="TextExpander_DeleteSnippet.Text" xml:space="preserve">
     <value>Delete</value>
+  </data>
+  <data name="TextExpander_DeleteSnippet.KeyboardAcceleratorTextOverride" xml:space="preserve">
+    <value>Delete</value>
+    <comment>Shown beside Delete in a snippet's menu: the key that deletes the snippet whose row has the focus, the Delete key as it's labeled on keyboards</comment>
   </data>
   <data name="TextExpander_DeleteSnippetDialog_Title" xml:space="preserve">
     <value>Delete snippet?</value>

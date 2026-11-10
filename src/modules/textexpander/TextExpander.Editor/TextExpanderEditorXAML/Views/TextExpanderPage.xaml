@@ -218,6 +218,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Button
+                    x:Name="AddSnippetButton"
                     AutomationProperties.AutomationId="Button_TextExpander_AddSnippet"
                     AutomationProperties.LabeledBy="{x:Bind AddSnippetLabel}"
                     Click="AddSnippet_Click"
@@ -455,16 +456,30 @@
                 <!--
                     Virtualized, so only the rows in view are built however long the list is. One Tab stop: the arrow keys move
                     row by row, and a click or Enter edits the row. Each row's name for screen readers is its item's text.
+                    Shift+F10, the Menu key or a right-click opens a row's More options menu; Delete and Ctrl+D act on the row with the focus.
                 -->
                 <ListView
                     x:Name="SnippetList"
                     Grid.Row="2"
                     AutomationProperties.AutomationId="TextExpander_SnippetList"
                     AutomationProperties.LabeledBy="{x:Bind SnippetsHeading}"
+                    ContextRequested="SnippetList_ContextRequested"
                     IsItemClickEnabled="True"
                     ItemClick="SnippetList_ItemClick"
                     ItemsSource="{x:Bind ViewModel.FilteredSnippets, Mode=OneWay}"
+                    KeyboardAcceleratorPlacementMode="Hidden"
                     SelectionMode="None">
+                    <ListView.KeyboardAccelerators>
+                        <KeyboardAccelerator
+                            Key="Delete"
+                            Invoked="DeleteShortcut_Invoked"
+                            ScopeOwner="{x:Bind SnippetList}" />
+                        <KeyboardAccelerator
+                            Key="D"
+                            Invoked="DuplicateShortcut_Invoked"
+                            Modifiers="Control"
+                            ScopeOwner="{x:Bind SnippetList}" />
+                    </ListView.KeyboardAccelerators>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="vm:TextExpanderSnippetViewModel">
                             <!--  The trigger as a key, the questions it asks, then what it inserts: Keyboard Manager's "keys maps to keys".  -->
@@ -522,7 +537,10 @@
                                             TextWrapping="NoWrap" />
                                     </Grid>
                                 </Border>
-                                <!--  Destructive row actions belong behind a flyout on clickable rows, which also prevents competing ContentDialogs on one XamlRoot.  -->
+                                <!--
+                                    Destructive row actions belong behind a flyout on clickable rows, which also prevents competing ContentDialogs on one XamlRoot.
+                                    The same menu is the row's context menu (SnippetList_ContextRequested).
+                                -->
                                 <Button
                                     x:Uid="TextExpander_MoreOptions"
                                     Grid.Column="3"
@@ -702,7 +720,7 @@
             IsPrimaryButtonEnabled="{x:Bind IsSnippetValid, Mode=OneWay}"
             PrimaryButtonClick="SnippetDialog_PrimaryButtonClick">
             <ContentDialog.Resources>
-                <!--  Room for Keyboard Manager's two columns. The page fits the content to the window.  -->
+                <!--  Room for Keyboard Manager's two columns. The page fits the content to the window and inside this (TextExpanderSnippetDialogSize).  -->
                 <x:Double x:Key="ContentDialogMaxWidth">808</x:Double>
             </ContentDialog.Resources>
             <ScrollViewer x:Name="SnippetDialogScroller" SizeChanged="SnippetDialogLayout_SizeChanged">
@@ -725,7 +743,10 @@
 
                     <StackPanel Spacing="8">
                         <TextBlock x:Uid="TextExpander_Dialog_Trigger" FontWeight="SemiBold" />
-                        <!--  Keyboard Manager's recording well, as a box the trigger is typed in. Red while the trigger is what's wrong.  -->
+                        <!--
+                            Keyboard Manager's recording well, as a box the trigger is typed in. Red while the trigger is what's wrong.
+                            It wraps, so its placeholder and a long trigger stay whole with larger text.
+                        -->
                         <Grid>
                             <TextBox
                                 x:Name="TriggerBox"
@@ -738,7 +759,8 @@
                                 FontSize="20"
                                 GotFocus="SnippetField_GotFocus"
                                 TextAlignment="Center"
-                                TextChanged="SnippetField_Changed" />
+                                TextChanged="SnippetField_Changed"
+                                TextWrapping="Wrap" />
                             <Border
                                 BorderBrush="{ThemeResource SystemFillColorCriticalBrush}"
                                 BorderThickness="1"
