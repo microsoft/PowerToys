@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class MonitorIdentityTests
 {
@@ -65,7 +66,7 @@ public class MonitorIdentityTests
         var moved = result.Single(c => c.MonitorDeviceId == monitor.StableId);
         Assert.IsTrue(moved.Enabled);
         Assert.AreEqual("a", moved.StartBands!.Single().CommandId);
-        Assert.IsFalse(result.Any(c => c.MonitorDeviceId == config.MonitorDeviceId));
+        Assert.DoesNotContain(c => c.MonitorDeviceId == config.MonitorDeviceId, result);
     }
 
     [TestMethod]
@@ -79,7 +80,7 @@ public class MonitorIdentityTests
 
         Assert.IsFalse(result.Single(c => c.MonitorDeviceId == twin1.StableId).Enabled);
         Assert.IsFalse(result.Single(c => c.MonitorDeviceId == twin2.StableId).Enabled);
-        Assert.IsTrue(result.Any(c => c.MonitorDeviceId == config.MonitorDeviceId));
+        Assert.Contains(c => c.MonitorDeviceId == config.MonitorDeviceId, result);
     }
 
     [TestMethod]
@@ -103,9 +104,9 @@ public class MonitorIdentityTests
 
         var result = MonitorConfigReconciler.Reconcile(ImmutableList.Create(existing, orphan), [Primary(), secondary]);
 
-        Assert.IsFalse(result.Any(c => c.MonitorDeviceId == orphan.MonitorDeviceId));
+        Assert.DoesNotContain(c => c.MonitorDeviceId == orphan.MonitorDeviceId, result);
         var merged = result.Single(c => c.MonitorDeviceId == secondary.StableId);
-        CollectionAssert.AreEqual(ExpectedMergedCommands, merged.StartBands!.Select(b => b.CommandId).ToArray());
+        Assert.AreSequenceEqual(ExpectedMergedCommands, merged.StartBands!.Select(b => b.CommandId).ToArray());
     }
 
     [TestMethod]
@@ -122,9 +123,10 @@ public class MonitorIdentityTests
         var result = MonitorConfigReconciler.Reconcile(ImmutableList.Create(existing, orphan), [Primary(), secondary]);
 
         var merged = result.Single(c => c.MonitorDeviceId == secondary.StableId);
-        CollectionAssert.AreEqual(ExpectedBandA, merged.StartBands!.Select(b => b.CommandId).ToArray());
-        Assert.AreEqual(0, merged.CenterBands!.Count);
-        CollectionAssert.AreEqual(ExpectedBandB, merged.EndBands!.Select(b => b.CommandId).ToArray());
+        Assert.AreSequenceEqual(ExpectedBandA, merged.StartBands!.Select(b => b.CommandId).ToArray());
+        Assert.IsNotNull(merged.CenterBands);
+        Assert.IsEmpty(merged.CenterBands);
+        Assert.AreSequenceEqual(ExpectedBandB, merged.EndBands!.Select(b => b.CommandId).ToArray());
     }
 
     [TestMethod]

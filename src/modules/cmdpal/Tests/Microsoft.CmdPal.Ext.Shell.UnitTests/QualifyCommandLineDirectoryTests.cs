@@ -13,6 +13,7 @@ namespace Microsoft.CmdPal.Ext.Shell.UnitTests;
 /// Ported from the OsClient RunNative.UnitTests project so we can verify the
 /// C# port has the same behavior as the C++ implementation.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class QualifyCommandLineDirectoryTests
 {
@@ -75,7 +76,7 @@ public class QualifyCommandLineDirectoryTests
         var result = RunHistory.QualifyCommandLineDirectory(commandLine, filePath, defaultDirectory);
 
         // Assert
-        Assert.IsTrue(result.Length > 0);
+        Assert.IsGreaterThan(0, result.Length);
         Assert.AreEqual(expectedDirectory, result, true, CultureInfo.InvariantCulture);
     }
 
@@ -118,7 +119,7 @@ public class QualifyCommandLineDirectoryTests
         var result = RunHistory.QualifyCommandLineDirectory(commandLine, filePath, defaultDirectory);
 
         // Assert
-        Assert.IsTrue(result.Length > 0);
+        Assert.IsGreaterThan(0, result.Length);
         var expectedDir = System.IO.Path.GetDirectoryName(filePath);
         if (!string.IsNullOrEmpty(expectedDir))
         {
@@ -139,6 +140,6 @@ public class QualifyCommandLineDirectoryTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.IsTrue(result.Length > 0);
+        Assert.IsGreaterThan(0, result.Length);
     }
 }

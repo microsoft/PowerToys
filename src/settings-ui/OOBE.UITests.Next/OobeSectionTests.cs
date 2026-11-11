@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.OOBE.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class OobeSectionTests : UITestBase
 {
@@ -33,7 +34,7 @@ public sealed class OobeSectionTests : UITestBase
         welcome = sharedWelcome;
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup]
     public static void ClearOnboardingSession()
     {
         sharedWelcome = null;
@@ -116,9 +117,9 @@ public sealed class OobeSectionTests : UITestBase
                 window => string.Equals(window.Title, OobeTestHelper.WhatsNewTitle, StringComparison.OrdinalIgnoreCase),
                 timeoutMS: 15_000),
             "Could not close a stale What's New window before testing the OOBE footer.");
-        Assert.IsFalse(
-            WindowsFinder.ListByApp(OobeTestHelper.SettingsProcess)
-                .Any(window => string.Equals(window.Title, OobeTestHelper.WhatsNewTitle, StringComparison.OrdinalIgnoreCase)),
+        Assert.DoesNotContain(
+            window => string.Equals(window.Title, OobeTestHelper.WhatsNewTitle, StringComparison.OrdinalIgnoreCase),
+            WindowsFinder.ListByApp(OobeTestHelper.SettingsProcess),
             "The What's New footer test requires no preexisting release-notes window.");
         Step("Opening What's new from OOBE");
         var link = welcome.Find<NavigationViewItem>(By.AccessibilityId("WhatIsNewNavItem"));

@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class WinAppSandboxPrerequisiteReportTests
 {
@@ -41,7 +42,7 @@ public sealed class WinAppSandboxPrerequisiteReportTests
             Assert.AreEqual(RuntimeInformation.OSArchitecture.ToString(), report["OsArchitecture"]!.GetValue<string>());
             Assert.AreEqual(new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator), report["IsElevated"]!.GetValue<bool>());
             var stages = report["Stages"]!.AsObject();
-            CollectionAssert.AreEquivalent(StageNames, stages.Select(stage => stage.Key).ToArray());
+            Assert.AreSequenceEqual(StageNames, stages.Select(stage => stage.Key).ToArray(), SequenceOrder.InAnyOrder);
             foreach (var stage in stages)
             {
                 Assert.AreEqual("NotChecked", stage.Value!["Status"]!.GetValue<string>());
@@ -74,7 +75,7 @@ public sealed class WinAppSandboxPrerequisiteReportTests
             var actual = Assert.ThrowsExactly<InvalidOperationException>(() =>
                 WinAppSandboxPrerequisiteReport.CapturePersistent(deployment, path => attached = path, _ =>
                 {
-                    Assert.AreEqual(1, Directory.GetFiles(root, WinAppSandboxPrerequisiteReport.FileName, SearchOption.AllDirectories).Length);
+                    Assert.HasCount(1, Directory.GetFiles(root, WinAppSandboxPrerequisiteReport.FileName, SearchOption.AllDirectories));
                     throw failure;
                 }));
             Assert.AreSame(failure, actual);
@@ -214,7 +215,7 @@ public sealed class WinAppSandboxPrerequisiteReportTests
                 Assert.AreEqual("NotChecked", stages[name]!["Status"]!.GetValue<string>());
             }
 
-            CollectionAssert.AreEqual(
+            Assert.AreSequenceEqual(
                 new[] { Path.Combine(root, "winapp-prerequisites.json") },
                 RunFiles.EvidenceFiles(root).ToArray(),
                 "Fixture cleanup must attach the public JSON, but not its publication marker.");
@@ -325,11 +326,11 @@ public sealed class WinAppSandboxPrerequisiteReportTests
             Assert.AreEqual("Failed", stage["Status"]!.GetValue<string>());
             Assert.IsNull(stage["VersionLine"]);
             Assert.IsTrue(stage["TimedOut"]!.GetValue<bool>());
-            CollectionAssert.Contains(stage["ErrorCodes"]!.AsArray().Select(code => code!.GetValue<string>()).ToArray(), "command_timeout");
+            Assert.Contains("command_timeout", stage["ErrorCodes"]!.AsArray().Select(code => code!.GetValue<string>()));
         });
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(0)]
     [DataRow(7)]
     public void VersionProbeRecordsActualExitAndOnlyAllowlistedOutputBeforeFailure(int exitCode)
@@ -361,7 +362,7 @@ public sealed class WinAppSandboxPrerequisiteReportTests
             Assert.AreEqual(exitCode == 0 ? "Passed" : "Failed", stage["Status"]!.GetValue<string>());
             if (exitCode != 0)
             {
-                CollectionAssert.Contains(stage["ErrorCodes"]!.AsArray().Select(code => code!.GetValue<string>()).ToArray(), "command_failed");
+                Assert.Contains("command_failed", stage["ErrorCodes"]!.AsArray().Select(code => code!.GetValue<string>()));
             }
         });
     }
@@ -406,7 +407,7 @@ public sealed class WinAppSandboxPrerequisiteReportTests
             var failure = new WinAppSandboxException(WinAppSandboxPrerequisite.UserPackageRegistration);
             var aggregate = Assert.ThrowsExactly<AggregateException>(() =>
                 WinAppSandboxPrerequisiteReport.Capture(root, RunId, _ => throw failure));
-            Assert.AreEqual(2, aggregate.InnerExceptions.Count);
+            Assert.HasCount(2, aggregate.InnerExceptions);
             Assert.AreSame(failure, aggregate.InnerExceptions[0]);
             Assert.AreEqual("prerequisite_report_write_failed", ((WinAppSandboxException)aggregate.InnerExceptions[1]).Code);
             Assert.IsFalse(aggregate.ToString().Contains(root, StringComparison.Ordinal));
@@ -417,7 +418,7 @@ public sealed class WinAppSandboxPrerequisiteReportTests
         });
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("0.4.3", "wsb 0.4.3")]
     [DataRow("0.4.3.0", "wsb 0.4.3.0")]
     [DataRow("wsb.exe version: 0.4.3.0\r\n", "wsb 0.4.3.0")]

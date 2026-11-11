@@ -15,6 +15,7 @@ namespace AdvancedPaste.UITests;
 [TestClass]
 [DoNotParallelize]
 [TestCategory("AdvancedPaste")]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
 {
     public enum Invocation
@@ -197,7 +198,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
                 return content.GetDataAsync(format).AsTask();
             });
         });
-        Assert.IsTrue(readAttempts >= formats.Length + (simulateContention ? 1 : 0), "The snapshot did not retry the injected clipboard contention.");
+        Assert.IsGreaterThanOrEqualTo(formats.Length + (simulateContention ? 1 : 0), readAttempts, "The snapshot did not retry the injected clipboard contention.");
 
         SetClipboardText("Replacement clipboard content");
         Step("Restoring the original text and formats after replacing the clipboard");

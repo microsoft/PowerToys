@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 public partial class CommandItemViewModelLifecycleTests
 {
     private sealed partial class TestCommand : TestObservable, ICommand
@@ -224,7 +225,7 @@ public partial class CommandItemViewModelLifecycleTests
 
         Assert.AreEqual(0, previous.SubscriberCount);
         Assert.AreEqual(0, next.SubscriberCount);
-        Assert.AreEqual(0, viewModel.AllCommands.Count);
+        Assert.IsEmpty(viewModel.AllCommands);
         GC.KeepAlive(context);
     }
 
@@ -264,7 +265,7 @@ public partial class CommandItemViewModelLifecycleTests
 
         await RunWithCleanup(viewModel, viewModel.FastInitializeProperties, block => command.BeforeSubscribe = block);
 
-        Assert.AreEqual(0, viewModel.AllCommands.Count);
+        Assert.IsEmpty(viewModel.AllCommands);
         Assert.AreEqual(0, command.CountSubscribers<CommandViewModel>());
         GC.KeepAlive(context);
     }

@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class WindowHelperTests
 {
     private const int EHandle = unchecked((int)0x80070006);
@@ -37,9 +38,9 @@ public sealed class WindowHelperTests
         var exception = Assert.ThrowsExactly<InvalidOperationException>(
             () => WindowHelper.IsWindowCloaked(TestWindow, _ => (EHandle, 0)));
 
-        StringAssert.Contains(exception.Message, "DWMWA_CLOAKED");
-        StringAssert.Contains(exception.Message, "0x80070006");
-        StringAssert.Contains(exception.Message, "0x1234");
+        Assert.Contains("DWMWA_CLOAKED", exception.Message);
+        Assert.Contains("0x80070006", exception.Message);
+        Assert.Contains("0x1234", exception.Message);
     }
 
     [TestMethod]
@@ -58,9 +59,9 @@ public sealed class WindowHelperTests
         var exception = Assert.ThrowsExactly<InvalidOperationException>(
             () => WindowHelper.GetVisibleBounds(TestWindow, _ => (EHandle, default)));
 
-        StringAssert.Contains(exception.Message, "DWMWA_EXTENDED_FRAME_BOUNDS");
-        StringAssert.Contains(exception.Message, "0x80070006");
-        StringAssert.Contains(exception.Message, "0x1234");
+        Assert.Contains("DWMWA_EXTENDED_FRAME_BOUNDS", exception.Message);
+        Assert.Contains("0x80070006", exception.Message);
+        Assert.Contains("0x1234", exception.Message);
     }
 
     [TestMethod]
@@ -71,7 +72,7 @@ public sealed class WindowHelperTests
                 TestWindow,
                 _ => (0, (Left: 20, Top: 30, Right: 20, Bottom: 80))));
 
-        StringAssert.Contains(exception.Message, "invalid bounds");
-        StringAssert.Contains(exception.Message, "(20,30)-(20,80)");
+        Assert.Contains("invalid bounds", exception.Message);
+        Assert.Contains("(20,30)-(20,80)", exception.Message);
     }
 }

@@ -16,10 +16,11 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 /// through app/command mocks (alias-exact and fallback-floor classification, and the packing
 /// guarantee that a higher tier always outranks a lower one regardless of within-tier score).
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class MainListRankerTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("gh", "GitHub", true, true, false, false, RankTier.AliasExact, DisplayName = "Alias-exact is the strongest, most explicit signal and beats even a fallback flag")]
     [DataRow("zzz", "Some Fallback", true, false, false, false, RankTier.FallbackFloor, DisplayName = "A fallback that did not match at all floors to FallbackFloor rather than dropping")]
     [DataRow("reload", "Reload", true, false, false, true, RankTier.ExactTitle, DisplayName = "A fallback whose dynamic title exactly matches the query earns ExactTitle")]
@@ -65,8 +66,9 @@ public class MainListRankerTests
         var fallbackScore = MainListRanker.Pack(fallbackTier, withinTierScore: 0);
         var fuzzyScore = MainListRanker.Pack(fuzzyTier, MainListRanker.TierStride - 1);
 
-        Assert.IsTrue(
-            fallbackScore > fuzzyScore,
+        Assert.IsGreaterThan(
+            fuzzyScore,
+            fallbackScore,
             "An exact-title fallback must outrank a fuzzy non-fallback even at the fuzzy item's best within-tier score");
     }
 
@@ -90,8 +92,9 @@ public class MainListRankerTests
         {
             var lower = MainListRanker.Pack(ascending[i], MainListRanker.TierStride - 1);
             var higher = MainListRanker.Pack(ascending[i + 1], 0);
-            Assert.IsTrue(
-                higher > lower,
+            Assert.IsGreaterThan(
+                lower,
+                higher,
                 $"{ascending[i + 1]} (min within-tier) must outrank {ascending[i]} (max within-tier)");
         }
     }
@@ -110,7 +113,7 @@ public class MainListRankerTests
         Assert.AreEqual(RankTier.Fuzzy, MainListRanker.TierOf(packed));
 
         var nextTierFloor = MainListRanker.Pack(RankTier.AcronymWordBoundary, 0);
-        Assert.IsTrue(packed < nextTierFloor, "A clamped within-tier score must stay below the next tier");
+        Assert.IsLessThan(nextTierFloor, packed, "A clamped within-tier score must stay below the next tier");
     }
 
     [TestMethod]
@@ -118,7 +121,7 @@ public class MainListRankerTests
     {
         var low = MainListRanker.Pack(RankTier.Prefix, 10);
         var high = MainListRanker.Pack(RankTier.Prefix, 20);
-        Assert.IsTrue(high > low, "Within the same tier, a higher within-tier score sorts higher");
+        Assert.IsGreaterThan(low, high, "Within the same tier, a higher within-tier score sorts higher");
         Assert.AreEqual(MainListRanker.TierOf(low), MainListRanker.TierOf(high), "Both remain in the same tier");
     }
 
@@ -143,7 +146,7 @@ public class MainListRankerTests
         // More lexical quality raises the within-tier score, all else equal.
         var lowLexical = MainListRanker.WithinTierScore(lexicalQuality: 5, frecencyWeight: 0, aliasSubstringBonus: 0, providerBonus: 0);
         var highLexical = MainListRanker.WithinTierScore(lexicalQuality: 6, frecencyWeight: 0, aliasSubstringBonus: 0, providerBonus: 0);
-        Assert.IsTrue(highLexical > lowLexical, "Higher lexical quality should raise the within-tier score");
+        Assert.IsGreaterThan(lowLexical, highLexical, "Higher lexical quality should raise the within-tier score");
     }
 
     [TestMethod]
@@ -151,17 +154,19 @@ public class MainListRankerTests
     {
         var noFrecency = MainListRanker.WithinTierScore(lexicalQuality: 5, frecencyWeight: 0, aliasSubstringBonus: 0, providerBonus: 0);
         var withFrecency = MainListRanker.WithinTierScore(lexicalQuality: 5, frecencyWeight: 3, aliasSubstringBonus: 0, providerBonus: 0);
-        Assert.IsTrue(withFrecency > noFrecency, "Frecency should raise the within-tier score for otherwise-equal items");
+        Assert.IsGreaterThan(noFrecency, withFrecency, "Frecency should raise the within-tier score for otherwise-equal items");
     }
 
     [TestMethod]
     public void ProviderBonus_LowerIsBelowNormalIsBelowHigher()
     {
-        Assert.IsTrue(
-            MainListRanker.ProviderBonus(ProviderSearchWeight.Lower) < MainListRanker.ProviderBonus(ProviderSearchWeight.Normal),
+        Assert.IsLessThan(
+            MainListRanker.ProviderBonus(ProviderSearchWeight.Normal),
+            MainListRanker.ProviderBonus(ProviderSearchWeight.Lower),
             "Lower should subtract relative to Normal");
-        Assert.IsTrue(
-            MainListRanker.ProviderBonus(ProviderSearchWeight.Normal) < MainListRanker.ProviderBonus(ProviderSearchWeight.Higher),
+        Assert.IsLessThan(
+            MainListRanker.ProviderBonus(ProviderSearchWeight.Higher),
+            MainListRanker.ProviderBonus(ProviderSearchWeight.Normal),
             "Higher should add relative to Normal");
         Assert.AreEqual(0.0, MainListRanker.ProviderBonus(ProviderSearchWeight.Normal), "Normal is the neutral default");
     }

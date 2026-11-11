@@ -20,7 +20,7 @@ internal sealed class VirtualMonitorFixture
         this.executable = executable;
         var snapshot = Snapshot();
         Assert.AreEqual(2, snapshot.Version, "The fixture and UI suite use incompatible protocols.");
-        Assert.AreEqual(2, snapshot.Monitors.Length, "The fixture must expose exactly two independently controlled monitor slots.");
+        Assert.HasCount(2, snapshot.Monitors, "The fixture must expose exactly two independently controlled monitor slots.");
     }
 
     public FixtureSnapshot Snapshot() => Invoke("--snapshot");

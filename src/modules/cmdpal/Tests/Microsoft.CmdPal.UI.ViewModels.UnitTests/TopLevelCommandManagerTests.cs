@@ -16,6 +16,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class TopLevelCommandManagerTests
 {
@@ -25,12 +26,12 @@ public partial class TopLevelCommandManagerTests
         using var services = CreateServices();
         using var manager = new TopLevelCommandManager(services, []);
 
-        var waitTask = manager.WaitForCurrentLoadAsync();
+        var waitTask = manager.WaitForCurrentLoadAsync(TestContext.CancellationToken);
         Assert.IsFalse(waitTask.IsCompleted);
 
         await manager.LoadExternalProvidersAsync();
 
-        await waitTask.WaitAsync(TimeSpan.FromSeconds(2));
+        await waitTask.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
         Assert.IsFalse(manager.IsLoading);
     }
 
@@ -41,7 +42,7 @@ public partial class TopLevelCommandManagerTests
         using var manager = new TopLevelCommandManager(services, []);
         await manager.LoadExternalProvidersAsync();
 
-        var waitTask = manager.WaitForCurrentLoadAsync();
+        var waitTask = manager.WaitForCurrentLoadAsync(TestContext.CancellationToken);
 
         Assert.IsTrue(waitTask.IsCompletedSuccessfully);
     }
@@ -55,7 +56,7 @@ public partial class TopLevelCommandManagerTests
         using var manager = new TopLevelCommandManager(services, [CreateExtensionService(wrapper).Object]);
         await manager.LoadExternalProvidersAsync();
 
-        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId, TestContext.CancellationToken);
 
         Assert.IsNotNull(resolution);
         Assert.AreSame(wrapper, resolution.Provider);
@@ -72,7 +73,7 @@ public partial class TopLevelCommandManagerTests
         using var manager = new TopLevelCommandManager(services, [CreateExtensionService(wrapper).Object]);
         await manager.LoadExternalProvidersAsync();
 
-        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId, TestContext.CancellationToken);
 
         Assert.IsNull(resolution);
         Assert.AreEqual(1, provider.LookupCount);
@@ -98,7 +99,7 @@ public partial class TopLevelCommandManagerTests
             ProviderSettings = settings.ProviderSettings.SetItem(provider.Id, new ProviderSettings(false)),
         });
 
-        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId, TestContext.CancellationToken);
 
         Assert.IsFalse(manager.IsProviderEnabled(provider.Id));
         Assert.IsNull(resolution);
@@ -117,15 +118,15 @@ public partial class TopLevelCommandManagerTests
         var providerSettings = new ProviderSettingsViewModel(wrapper, settingsService.Settings.ProviderSettings[provider.Id], settingsService);
 
         providerSettings.IsEnabled = false;
-        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId, TestContext.CancellationToken);
 
         Assert.IsNull(manager.LookupCommand(provider.Id, TestCommandProvider.NestedCommandId));
         Assert.IsNull(resolution);
         Assert.AreEqual(0, provider.LookupCount);
 
         providerSettings.IsEnabled = true;
-        await manager.WaitForCurrentLoadAsync().WaitAsync(TimeSpan.FromSeconds(5));
-        using var enabledResolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        await manager.WaitForCurrentLoadAsync(TestContext.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+        using var enabledResolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId, TestContext.CancellationToken);
         Assert.IsNotNull(enabledResolution);
     }
 
@@ -143,7 +144,7 @@ public partial class TopLevelCommandManagerTests
         using var manager = new TopLevelCommandManager(services, [CreateExtensionService(wrapper).Object]);
         await manager.LoadExternalProvidersAsync();
 
-        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId, TestContext.CancellationToken);
 
         Assert.IsNull(resolution);
         Assert.AreEqual(1, provider.LookupCount);
@@ -170,7 +171,7 @@ public partial class TopLevelCommandManagerTests
                 cleanupStarted.TrySetResult();
                 try
                 {
-                    Assert.IsTrue(continueCleanup.Wait(TimeSpan.FromSeconds(10)), "Cleanup was never released.");
+                    Assert.IsTrue(continueCleanup.Wait(TimeSpan.FromSeconds(10), TestContext.CancellationToken), "Cleanup was never released.");
                 }
                 finally
                 {
@@ -193,11 +194,11 @@ public partial class TopLevelCommandManagerTests
         await manager.LoadExternalProvidersAsync();
         provider.OnLookup = () => manager.ReloadAllCommandsAsync().GetAwaiter().GetResult();
 
-        var resolutionTask = manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        var resolutionTask = manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId, TestContext.CancellationToken);
         try
         {
-            await cleanupStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
-            var resolution = await resolutionTask.WaitAsync(TimeSpan.FromSeconds(2));
+            await cleanupStarted.Task.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
+            var resolution = await resolutionTask.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
 
             Assert.AreSame(replacement, manager.LookupProvider(provider.Id));
             Assert.IsNotNull(resolution);
@@ -210,8 +211,8 @@ public partial class TopLevelCommandManagerTests
         finally
         {
             continueCleanup.Set();
-            await cleanupFinished.Task.WaitAsync(TimeSpan.FromSeconds(2));
-            using var resolution = await resolutionTask.WaitAsync(TimeSpan.FromSeconds(2));
+            await cleanupFinished.Task.WaitAsync(TimeSpan.FromSeconds(2), System.Threading.CancellationToken.None);
+            using var resolution = await resolutionTask.WaitAsync(TimeSpan.FromSeconds(2), System.Threading.CancellationToken.None);
         }
     }
 
@@ -242,13 +243,13 @@ public partial class TopLevelCommandManagerTests
         await manager.LoadExternalProvidersAsync();
         provider.OnLookup = () => manager.ReloadAllCommandsAsync().GetAwaiter().GetResult();
 
-        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId, TestContext.CancellationToken);
 
         Assert.IsNull(resolution);
         Assert.AreSame(secondReplacement, manager.LookupProvider(provider.Id));
         Assert.AreEqual(2, provider.LookupCount);
-        Assert.IsTrue(await cleanupFinished.WaitAsync(TimeSpan.FromSeconds(2)));
-        Assert.IsTrue(await cleanupFinished.WaitAsync(TimeSpan.FromSeconds(2)));
+        Assert.IsTrue(await cleanupFinished.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
+        Assert.IsTrue(await cleanupFinished.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
         item.VerifyRemove(commandItem => commandItem.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>(), Times.Exactly(2));
     }
 
@@ -346,4 +347,6 @@ public partial class TopLevelCommandManagerTests
         {
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

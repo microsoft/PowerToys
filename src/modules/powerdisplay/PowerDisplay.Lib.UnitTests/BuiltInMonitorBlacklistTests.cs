@@ -8,6 +8,7 @@ using PowerDisplay.Models;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class BuiltInMonitorBlacklistTests
 {
@@ -38,8 +39,9 @@ public class BuiltInMonitorBlacklistTests
     [TestMethod]
     public void Entries_ContainNoEmptyEdidIds()
     {
-        Assert.IsFalse(
-            BuiltInMonitorBlacklist.Entries.Any(e => string.IsNullOrWhiteSpace(e.EdidId)),
+        Assert.DoesNotContain(
+            e => string.IsNullOrWhiteSpace(e.EdidId),
+            BuiltInMonitorBlacklist.Entries,
             "Built-in list should never contain blank EdidId entries.");
     }
 

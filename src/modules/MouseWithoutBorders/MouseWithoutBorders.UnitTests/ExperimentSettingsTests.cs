@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class ExperimentSettingsTests
 {
@@ -29,7 +30,7 @@ public sealed class ExperimentSettingsTests
         Assert.IsFalse(settings.Properties.TransferFile);
         Assert.AreEqual(string.Empty, settings.Properties.SecurityKey.Value);
         Assert.AreEqual(string.Empty, settings.Properties.Name2IP.Value);
-        Assert.AreEqual(0, settings.Properties.MachineMatrixString.Count);
+        Assert.IsEmpty(settings.Properties.MachineMatrixString);
         Assert.AreEqual(0x70, settings.Properties.HotKeySwitchMachine.Value);
     }
 }

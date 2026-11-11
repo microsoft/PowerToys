@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class DockDropHelperTests
 {
@@ -34,7 +35,7 @@ public class DockDropHelperTests
             SynchronizationContext.SetSynchronizationContext(originalContext);
         }
 
-        var bookmark = await lookup.WaitAsync(TimeSpan.FromSeconds(5));
+        var bookmark = await lookup.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.AreEqual("Test application", bookmark.Name);
         Assert.AreEqual("shell:AppsFolder\\Test.App", bookmark.Target);
@@ -76,7 +77,7 @@ public class DockDropHelperTests
                 lookupStarted.SetResult();
                 try
                 {
-                    Assert.IsTrue(releaseLookup.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.IsTrue(releaseLookup.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
                     if (failAfterCancellation)
                     {
                         throw new InvalidOperationException("Late Shell lookup failure");
@@ -93,17 +94,17 @@ public class DockDropHelperTests
 
         try
         {
-            await lookupStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await lookupStarted.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
             Assert.IsFalse(lookup.IsCompleted);
             cancellation.Cancel();
 
             await Assert.ThrowsExactlyAsync<TaskCanceledException>(
-                async () => await lookup.WaitAsync(TimeSpan.FromSeconds(5)));
+                async () => await lookup.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
         }
         finally
         {
             releaseLookup.Set();
-            await lookupFinished.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await lookupFinished.Task.WaitAsync(TimeSpan.FromSeconds(5), System.Threading.CancellationToken.None);
         }
 
         Assert.IsTrue(lookup.IsCanceled);
@@ -118,7 +119,7 @@ public class DockDropHelperTests
             CancellationToken.None);
 
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(
-            async () => await lookup.WaitAsync(TimeSpan.FromSeconds(5)));
+            async () => await lookup.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -202,9 +203,11 @@ public class DockDropHelperTests
     {
         var path = "CmdPal.Nonexistent.App." + Guid.NewGuid().ToString("N");
 
-        var bookmark = await DockDropHelper.GetBookmarkAsync(path, CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5));
+        var bookmark = await DockDropHelper.GetBookmarkAsync(path, CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.AreEqual(Path.GetFileNameWithoutExtension(path), bookmark.Name);
         Assert.AreEqual(path, bookmark.Target);
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

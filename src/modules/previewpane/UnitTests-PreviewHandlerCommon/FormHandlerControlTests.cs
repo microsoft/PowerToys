@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace PreviewHandlerCommonUnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class FormHandlerControlTests
     {

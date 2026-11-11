@@ -94,7 +94,7 @@ public abstract class SettingsResourceModuleTest<TSettingsConfig> : BaseDscTest
         Assert.IsTrue(result.Success);
         AssertSettingsHasChanged(settingsModifier);
         AssertStateAndSettingsAreEqual(GetSettings(), state);
-        CollectionAssert.AreEqual(DiffSettings, diff);
+        Assert.AreSequenceEqual(DiffSettings, diff);
     }
 
     [TestMethod]
@@ -114,7 +114,7 @@ public abstract class SettingsResourceModuleTest<TSettingsConfig> : BaseDscTest
         Assert.IsTrue(result.Success);
         AssertSettingsAreEqual(settingsBeforeExecute, GetSettings());
         AssertStateAndSettingsAreEqual(settingsBeforeExecute, state);
-        CollectionAssert.AreEqual(DiffEmpty, diff);
+        Assert.AreSequenceEqual(DiffEmpty, diff);
     }
 
     [TestMethod]
@@ -133,7 +133,7 @@ public abstract class SettingsResourceModuleTest<TSettingsConfig> : BaseDscTest
         Assert.IsTrue(result.Success);
         AssertSettingsAreEqual(settingsBeforeExecute, GetSettings());
         AssertStateAndSettingsAreEqual(settingsBeforeExecute, state);
-        CollectionAssert.AreEqual(DiffSettings, diff);
+        Assert.AreSequenceEqual(DiffSettings, diff);
         Assert.IsFalse(state.InDesiredState);
     }
 
@@ -154,7 +154,7 @@ public abstract class SettingsResourceModuleTest<TSettingsConfig> : BaseDscTest
         Assert.IsTrue(result.Success);
         AssertSettingsAreEqual(settingsBeforeExecute, GetSettings());
         AssertStateAndSettingsAreEqual(settingsBeforeExecute, state);
-        CollectionAssert.AreEqual(DiffEmpty, diff);
+        Assert.AreSequenceEqual(DiffEmpty, diff);
         Assert.IsTrue(state.InDesiredState);
     }
 

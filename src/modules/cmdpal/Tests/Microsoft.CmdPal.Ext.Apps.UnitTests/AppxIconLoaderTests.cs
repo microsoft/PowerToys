@@ -12,6 +12,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class AppxIconLoaderTests
 {
@@ -33,7 +34,7 @@ public class AppxIconLoaderTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(Theme.Dark, "AppLogo.targetsize-16.png", "AppLogo.scale-100.png", "AppLogo.scale-100.png")]
     [DataRow(Theme.Dark, "AppLogo.targetsize-16.png", "AppLogo.targetsize-32_contrast-black.png", "AppLogo.targetsize-32_contrast-black.png")]
     [DataRow(Theme.HighContrastWhite, "AppLogo.targetsize-32.png", "AppLogo.targetsize-32_contrast-white.png", "AppLogo.targetsize-32_contrast-white.png")]
@@ -106,7 +107,7 @@ public class AppxIconLoaderTests
         Assert.AreEqual(resolvedPath, result.LogoPath);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(Theme.System, "", "_contrast-black", false)]
     [DataRow(Theme.Dark, "", "_contrast-black", false)]
     [DataRow(Theme.Dark, "", "_contrast-black", true)]
@@ -144,7 +145,7 @@ public class AppxIconLoaderTests
         Assert.IsFalse(result.IsTargetSizeIcon);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(Theme.Dark, "", "_contrast-black")]
     [DataRow(Theme.Light, "", "_contrast-white")]
     [DataRow(Theme.HighContrastBlack, "_contrast-black", "")]
@@ -172,7 +173,7 @@ public class AppxIconLoaderTests
         Assert.IsFalse(result.IsTargetSizeIcon);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(Theme.Dark, "", "_contrast-black")]
     [DataRow(Theme.HighContrastBlack, "_contrast-black", "")]
     public void LogoPathFromUri_SplitPackage_OppositeTargetRemainsFallbackForUndersizedMatchingIcon(
@@ -322,7 +323,7 @@ public class AppxIconLoaderTests
         Assert.AreEqual(expectedPath, result.LogoPath);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("language-en", "language-ja", false)]
     [DataRow("language-en", "language-ja", true)]
     [DataRow("configuration-retail", "configuration-debug", false)]

@@ -14,6 +14,7 @@ using StreamJsonRpc;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class IpcSerializationCompatibilityTests
@@ -39,16 +40,16 @@ public sealed class IpcSerializationCompatibilityTests
         var get = contract.GetMethod("GetCurrentPairingKey")!;
 
         Assert.AreEqual(typeof(Task<string>), get.ReturnType);
-        Assert.AreEqual(0, get.GetParameters().Length);
+        Assert.IsEmpty(get.GetParameters());
         Assert.AreEqual(typeof(Task<string>), generate.ReturnType);
-        Assert.AreEqual(0, generate.GetParameters().Length);
+        Assert.IsEmpty(generate.GetParameters());
         Assert.AreEqual(typeof(Task), connect.ReturnType);
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[] { typeof(string), typeof(string) },
             connect.GetParameters().Select(parameter => parameter.ParameterType).ToArray());
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false, "CURRENT-RUNTIME-KEY")]
     [DataRow(true, "CURRENT-RUNTIME-KEY")]
     [DataRow(true, null)]
@@ -77,23 +78,23 @@ public sealed class IpcSerializationCompatibilityTests
             var pipeName = $"PowerToys.MWB.CurrentKey.UnitTest.{Guid.NewGuid():N}";
             await using var server = new NamedPipeServerStream(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
             await using var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
-            var connection = server.WaitForConnectionAsync();
-            await client.ConnectAsync(5000);
-            await connection.WaitAsync(TimeSpan.FromSeconds(5));
+            var connection = server.WaitForConnectionAsync(TestContext.CancellationToken);
+            await client.ConnectAsync(5000, TestContext.CancellationToken);
+            await connection.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
             using var serverRpc = JsonRpc.Attach(server, helper);
             using var clientRpc = JsonRpc.Attach(client);
             Encryption.MyKey = runtimeKey!;
             if (string.IsNullOrWhiteSpace(runtimeKey))
             {
-                var exception = await Assert.ThrowsExceptionAsync<RemoteInvocationException>(() =>
-                    clientRpc.InvokeAsync<string>("GetCurrentPairingKey").WaitAsync(TimeSpan.FromSeconds(5)));
+                var exception = await Assert.ThrowsExactlyAsync<RemoteInvocationException>(() =>
+                    clientRpc.InvokeAsync<string>("GetCurrentPairingKey").WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
                 Assert.AreEqual("Pairing setup is required.", exception.Message);
             }
             else
             {
-                Assert.AreEqual(runtimeKey, await clientRpc.InvokeAsync<string>("GetCurrentPairingKey").WaitAsync(TimeSpan.FromSeconds(5)));
+                Assert.AreEqual(runtimeKey, await clientRpc.InvokeAsync<string>("GetCurrentPairingKey").WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
                 Encryption.MyKey = "REPLACED-RUNTIME-KEY";
-                Assert.AreEqual(Encryption.MyKey, await clientRpc.InvokeAsync<string>("GetCurrentPairingKey").WaitAsync(TimeSpan.FromSeconds(5)));
+                Assert.AreEqual(Encryption.MyKey, await clientRpc.InvokeAsync<string>("GetCurrentPairingKey").WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
                 Encryption.MyKey = runtimeKey;
             }
 
@@ -133,7 +134,7 @@ public sealed class IpcSerializationCompatibilityTests
         Assert.IsFalse(method.Contains("Setting.Values", StringComparison.Ordinal));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow(" ")]
@@ -147,7 +148,7 @@ public sealed class IpcSerializationCompatibilityTests
             args: new object[] { false },
             culture: System.Globalization.CultureInfo.InvariantCulture)!;
         var connect = helperType.GetMethod("ConnectToMachine")!;
-        var exception = Assert.ThrowsException<TargetInvocationException>(() =>
+        var exception = Assert.ThrowsExactly<TargetInvocationException>(() =>
             connect.Invoke(helper, new object?[] { machineName, "TEST-KEY" }));
         if (machineName == null)
         {
@@ -172,13 +173,15 @@ public sealed class IpcSerializationCompatibilityTests
         var pipeName = $"PowerToys.MWB.RpcError.UnitTest.{Guid.NewGuid():N}";
         await using var server = new NamedPipeServerStream(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
         await using var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
-        var connection = server.WaitForConnectionAsync();
-        await client.ConnectAsync(5000);
-        await connection.WaitAsync(TimeSpan.FromSeconds(5));
+        var connection = server.WaitForConnectionAsync(TestContext.CancellationToken);
+        await client.ConnectAsync(5000, TestContext.CancellationToken);
+        await connection.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         using var serverRpc = JsonRpc.Attach(server, helper);
         using var clientRpc = JsonRpc.Attach(client);
-        await Assert.ThrowsExceptionAsync<RemoteInvocationException>(() =>
-            clientRpc.InvokeAsync("ConnectToMachine", string.Empty, "TEST-KEY").WaitAsync(TimeSpan.FromSeconds(5)));
+        await Assert.ThrowsExactlyAsync<RemoteInvocationException>(() =>
+            clientRpc.InvokeAsync("ConnectToMachine", string.Empty, "TEST-KEY").WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

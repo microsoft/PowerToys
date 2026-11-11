@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FancyZonesEditor.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class TemplateLayoutsTests : FancyZonesEditorTestBase
 {
@@ -27,7 +28,7 @@ public class TemplateLayoutsTests : FancyZonesEditorTestBase
         EditorTestData.WriteForTemplateLayoutsTests(Files);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.ZoneNumber_Cancel")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.ZoneNumber_Cancel")]
     [TestCategory("FancyZones Editor #6")]
     public void ZoneNumber_Cancel()
     {
@@ -44,7 +45,7 @@ public class TemplateLayoutsTests : FancyZonesEditorTestBase
         Assert.AreEqual(expected, GetTemplateFromFile(type).ZoneCount);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.HighlightDistance_Initialize")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.HighlightDistance_Initialize")]
     [TestCategory("FancyZones Editor #6")]
     public void HighlightDistance_Initialize()
     {
@@ -60,7 +61,7 @@ public class TemplateLayoutsTests : FancyZonesEditorTestBase
         }
     }
 
-    [TestMethod("FancyZonesEditor.Basic.HighlightDistance_Save")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.HighlightDistance_Save")]
     [TestCategory("FancyZones Editor #6")]
     public void HighlightDistance_Save()
     {
@@ -82,7 +83,7 @@ public class TemplateLayoutsTests : FancyZonesEditorTestBase
         Assert.AreEqual(expected, GetTemplateFromFile(type).SensitivityRadius);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.HighlightDistance_Cancel")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.HighlightDistance_Cancel")]
     [TestCategory("FancyZones Editor #6")]
     public void HighlightDistance_Cancel()
     {
@@ -99,7 +100,7 @@ public class TemplateLayoutsTests : FancyZonesEditorTestBase
         Assert.AreEqual(expected, GetTemplateFromFile(type).SensitivityRadius);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Initialize")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.SpaceAroundZones_Initialize")]
     [TestCategory("FancyZones Editor #6")]
     public void SpaceAroundZones_Initialize()
     {
@@ -122,7 +123,7 @@ public class TemplateLayoutsTests : FancyZonesEditorTestBase
         }
     }
 
-    [TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Slider_Save")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.SpaceAroundZones_Slider_Save")]
     [TestCategory("FancyZones Editor #6")]
     public void SpaceAroundZones_Slider_Save()
     {
@@ -144,7 +145,7 @@ public class TemplateLayoutsTests : FancyZonesEditorTestBase
         Assert.AreEqual(expected, GetTemplateFromFile(type).Spacing);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Slider_Cancel")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.SpaceAroundZones_Slider_Cancel")]
     [TestCategory("FancyZones Editor #6")]
     public void SpaceAroundZones_Slider_Cancel()
     {
@@ -161,7 +162,7 @@ public class TemplateLayoutsTests : FancyZonesEditorTestBase
         Assert.AreEqual(expected, GetTemplateFromFile(type).Spacing);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Toggle_Save")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.SpaceAroundZones_Toggle_Save")]
     [TestCategory("FancyZones Editor #6")]
     public void SpaceAroundZones_Toggle_Save()
     {
@@ -183,7 +184,7 @@ public class TemplateLayoutsTests : FancyZonesEditorTestBase
         Assert.AreEqual(expected, GetTemplateFromFile(type).ShowSpacing);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Toggle_Cancel")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.SpaceAroundZones_Toggle_Cancel")]
     [TestCategory("FancyZones Editor #6")]
     public void SpaceAroundZones_Toggle_Cancel()
     {

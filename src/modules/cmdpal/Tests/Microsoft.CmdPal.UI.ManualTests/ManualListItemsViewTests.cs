@@ -22,6 +22,7 @@ using Windows.Graphics;
 
 namespace Microsoft.CmdPal.UI.ManualTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 [TestCategory("Manual")]
@@ -67,7 +68,7 @@ public sealed partial class ManualListItemsViewTests
         thread.SetApartmentState(ApartmentState.STA);
         thread.IsBackground = true;
         thread.Start();
-        _dispatcher = await ready.Task.WaitAsync(TimeSpan.FromSeconds(15));
+        _dispatcher = await ready.Task.WaitAsync(TimeSpan.FromSeconds(15), context.CancellationToken);
     }
 
     [ClassCleanup]
@@ -78,7 +79,7 @@ public sealed partial class ManualListItemsViewTests
         return Task.CompletedTask;
     });
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false, false)]
     [DataRow(true, false)]
     [DataRow(false, true)]
@@ -87,14 +88,14 @@ public sealed partial class ManualListItemsViewTests
     {
         using var fixture = await ShowAsync(isGrid, isRootPage);
         var rows = fixture.Page.Rows;
-        await Task.Run(() => fixture.Page.Replace([rows[1], rows[0], .. rows.Skip(2)]));
+        await Task.Run(() => fixture.Page.Replace([rows[1], rows[0], .. rows.Skip(2)]), TestContext.CancellationToken);
         fixture.Scheduler.Drain();
         await WaitUntilAsync(() => fixture.Items.SelectedItem is ListItemViewModel { Title: "Item 1" }, fixture.Scheduler);
         await FlushDispatcherAsync();
         var selected = fixture.Items.SelectedItem;
         fixture.Items.UpdateLayout();
         var scroll = FindScrollViewer(fixture.Items)!;
-        Assert.IsTrue(scroll.ScrollableHeight > 300);
+        Assert.IsGreaterThan(300, scroll.ScrollableHeight);
         var scrollRequested = scroll.ChangeView(null, 300, null, disableAnimation: true);
         await WaitUntilAsync(
             () => scroll.VerticalOffset > 200,
@@ -102,7 +103,7 @@ public sealed partial class ManualListItemsViewTests
             () => $"Scroll request accepted: {scrollRequested}; offset: {scroll.VerticalOffset}; height: {scroll.ScrollableHeight}; viewport: {scroll.ViewportHeight}.");
         await FlushDispatcherAsync();
         var offset = scroll.VerticalOffset;
-        Assert.IsTrue(offset > 200, "The control must remain scrolled before LoadMore starts.");
+        Assert.IsGreaterThan(200, offset, "The control must remain scrolled before LoadMore starts.");
 
         fixture.Page.OnLoadMore = () => fixture.Page.Replace(
             [rows[2], rows[1], rows[0], .. rows.Skip(3), CreateItem("More")], ListViewModel.IncrementalRefresh);
@@ -116,29 +117,29 @@ public sealed partial class ManualListItemsViewTests
         Assert.AreEqual(offset, scroll.VerticalOffset, 1, "LoadMore must not scroll a consumed reset back to the top.");
     });
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public Task HomeFollowsLateFirstResultsUntilUserSelection(bool isGrid) => OnUiThread(async () =>
     {
         using var fixture = await ShowAsync(isGrid, isRootPage: true, isMainPage: true);
         var rows = fixture.Page.Rows;
-        await Task.Run(() => fixture.Page.Replace([rows[1], rows[0], .. rows.Skip(2)]));
+        await Task.Run(() => fixture.Page.Replace([rows[1], rows[0], .. rows.Skip(2)]), TestContext.CancellationToken);
         fixture.Scheduler.Drain();
-        await Task.Run(() => fixture.Page.Replace([rows[2], rows[1], rows[0], .. rows.Skip(3)], ListViewModel.IncrementalRefresh));
+        await Task.Run(() => fixture.Page.Replace([rows[2], rows[1], rows[0], .. rows.Skip(3)], ListViewModel.IncrementalRefresh), TestContext.CancellationToken);
         fixture.Scheduler.Drain();
         await FlushDispatcherAsync();
         Assert.AreEqual("Item 2", ((ListItemViewModel)fixture.Items.SelectedItem).Title);
 
         var later = fixture.ViewModel.FilteredItems[8];
         fixture.Items.SelectedItem = later;
-        await Task.Run(() => fixture.Page.Replace(rows, ListViewModel.IncrementalRefresh));
+        await Task.Run(() => fixture.Page.Replace(rows, ListViewModel.IncrementalRefresh), TestContext.CancellationToken);
         fixture.Scheduler.Drain();
         await FlushDispatcherAsync();
         Assert.AreSame(later, fixture.Items.SelectedItem, "Explicit selection must end Home's first-result tracking.");
     });
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public Task ForcedRefreshAcknowledgesDirectSelectionWithoutReplayingEffects(bool isGrid) => OnUiThread(async () =>
@@ -159,7 +160,7 @@ public sealed partial class ManualListItemsViewTests
             var barsBefore = commandBars;
             var suggestionsBefore = suggestions;
             var rows = fixture.Page.Rows;
-            await Task.Run(() => fixture.Page.Replace([rows[1], rows[0], .. rows.Skip(2)]));
+            await Task.Run(() => fixture.Page.Replace([rows[1], rows[0], .. rows.Skip(2)]), TestContext.CancellationToken);
             fixture.Scheduler.Drain();
             await FlushDispatcherAsync();
 
@@ -180,7 +181,7 @@ public sealed partial class ManualListItemsViewTests
         void OnSearchSuggestionChanged(object? sender, PageSearchSuggestionChangedEventArgs e) => suggestions++;
     });
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public Task TemporarilyUnboundItemsCanClearAndReselectTheSameItem(bool isGrid) => OnUiThread(async () =>
@@ -223,7 +224,7 @@ public sealed partial class ManualListItemsViewTests
         {
             var later = fixture.ViewModel.FilteredItems[8];
             var rows = fixture.Page.Rows;
-            await Task.Run(() => fixture.Page.Replace([rows[1], rows[0], .. rows.Skip(2)]));
+            await Task.Run(() => fixture.Page.Replace([rows[1], rows[0], .. rows.Skip(2)]), TestContext.CancellationToken);
             fixture.Scheduler.Drain();
             Assert.IsTrue(reentered);
             Assert.IsTrue(fixture.View.GridItems.HasPendingChanges);
@@ -242,7 +243,7 @@ public sealed partial class ManualListItemsViewTests
         }
     });
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false, false)]
     [DataRow(true, false)]
     [DataRow(false, true)]
@@ -275,13 +276,13 @@ public sealed partial class ManualListItemsViewTests
         try
         {
             frame.Navigate(typeof(Microsoft.CmdPal.UI.ListPage), new AsyncNavigationRequest(viewModel, CancellationToken.None));
-            await Task.Run(viewModel.InitializeProperties);
+            await Task.Run(viewModel.InitializeProperties, TestContext.CancellationToken);
             var original = (ListItemsView)((Microsoft.CmdPal.UI.ListPage)frame.Content).FindName("ListView");
             await WaitUntilAsync(() => ItemView(original).SelectedItem is not null, scheduler);
             await FlushDispatcherAsync();
             var rows = page.Rows;
             interruptNext = interruptPublication;
-            await Task.Run(() => page.Replace([rows[1], rows[0], .. rows.Skip(2)]));
+            await Task.Run(() => page.Replace([rows[1], rows[0], .. rows.Skip(2)]), TestContext.CancellationToken);
             if (interruptPublication)
             {
                 scheduler.Drain();
@@ -472,7 +473,7 @@ public sealed partial class ManualListItemsViewTests
                 return;
             }
 
-            Assert.IsTrue(elapsed.Elapsed < TimeSpan.FromSeconds(5), failureMessage?.Invoke() ?? "Native selection did not settle.");
+            Assert.IsLessThan(TimeSpan.FromSeconds(5), elapsed.Elapsed, failureMessage?.Invoke() ?? "Native selection did not settle.");
             await Task.Delay(10);
         }
     }
@@ -504,4 +505,6 @@ public sealed partial class ManualListItemsViewTests
         }));
         await finished.Task.WaitAsync(TimeSpan.FromSeconds(20));
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

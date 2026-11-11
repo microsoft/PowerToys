@@ -10,6 +10,7 @@ using Windows.Foundation;
 
 namespace ColorPicker.UnitTests.Views
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ZoomViewTests
     {
@@ -24,7 +25,7 @@ namespace ColorPicker.UnitTests.Views
             Assert.AreEqual(4.0, bounds.Height, 0.001);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(200.0, 3.0, 25)]
         [DataRow(200.0, 3.9, 25)]
         [DataRow(200.0, 4.0, 26)]
@@ -67,7 +68,7 @@ namespace ColorPicker.UnitTests.Views
             Assert.AreEqual(-1, pixelY);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(1.0, 100.0, 100.0, 0.5)]
         [DataRow(1.5, 100.0, 100.5, 0.0)]
         [DataRow(1.25, 101.0, 100.0, 1.2)]
@@ -115,7 +116,7 @@ namespace ColorPicker.UnitTests.Views
             Assert.AreEqual(200, ZoomView.ResizeDurationMilliseconds);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(100.0, false)]
         [DataRow(199.9, false)]
         [DataRow(200.0, true)]

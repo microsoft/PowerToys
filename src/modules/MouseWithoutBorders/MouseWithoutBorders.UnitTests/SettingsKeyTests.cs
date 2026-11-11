@@ -16,6 +16,7 @@ using MouseWithoutBorders.Core;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class SettingsKeyTests
@@ -23,8 +24,8 @@ public sealed class SettingsKeyTests
     [TestMethod]
     public void SettingsRequiresPairingKeyCodec()
     {
-        Assert.ThrowsException<ArgumentNullException>(() => new Class.Settings(null!));
-        Assert.ThrowsException<ArgumentNullException>(() => new Class.Settings(null!, new MouseWithoutBordersSettings(), null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new Class.Settings(null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new Class.Settings(null!, new MouseWithoutBordersSettings(), null!));
     }
 
     [TestMethod]
@@ -35,7 +36,7 @@ public sealed class SettingsKeyTests
         var listener = source.IndexOf("StartSettingSyncThread();", StringComparison.Ordinal);
 
         Assert.IsTrue(initialization >= 0 && listener > initialization);
-        StringAssert.Contains(source[initialization..listener], "if (!Common.RunOnLogonDesktop)");
+        Assert.Contains("if (!Common.RunOnLogonDesktop)", source[initialization..listener]);
         Assert.IsFalse(source[initialization..listener].Contains("Encryption.MyKey", StringComparison.Ordinal));
     }
 
@@ -43,21 +44,21 @@ public sealed class SettingsKeyTests
     public void LegacyFormsValidateBeforeChangingPairingState()
     {
         var matrix = ReadRepositorySource(@"src\modules\MouseWithoutBorders\App\Form\frmMatrix.cs");
-        StringAssert.Contains(matrix, "UpdateKey(Regex.Replace(textBoxEnc.Text, @\"\\s+\", string.Empty))");
+        Assert.Contains("UpdateKey(Regex.Replace(textBoxEnc.Text, @\"\\s+\", string.Empty))", matrix);
         var update = matrix[matrix.IndexOf("private bool UpdateKey(", StringComparison.Ordinal)..];
-        Assert.IsTrue(update.IndexOf("Encryption.IsKeyValid(newKey,", StringComparison.Ordinal) < update.IndexOf("Setting.Values.MyKey = newKey;", StringComparison.Ordinal));
+        Assert.IsLessThan(update.IndexOf("Setting.Values.MyKey = newKey;", StringComparison.Ordinal), update.IndexOf("Encryption.IsKeyValid(newKey,", StringComparison.Ordinal));
 
         var wizard = ReadRepositorySource(@"src\modules\MouseWithoutBorders\App\Form\Settings\SetupPage2a.cs");
-        StringAssert.Contains(wizard, "Encryption.IsKeyValid(Regex.Replace(SecurityCodeField.Text, @\"\\s+\", string.Empty), out _)");
+        Assert.Contains("Encryption.IsKeyValid(Regex.Replace(SecurityCodeField.Text, @\"\\s+\", string.Empty), out _)", wizard);
         var click = wizard[wizard.IndexOf("private void LinkButtonClick(", StringComparison.Ordinal)..];
         var validation = click.IndexOf("if (!Encryption.IsKeyValid(key,", StringComparison.Ordinal);
-        Assert.IsTrue(validation >= 0);
+        Assert.IsGreaterThanOrEqualTo(0, validation);
         foreach (var mutation in new[] { "Encryption.MyKey = key;", "Setting.Values.MyKey =", "MachineStuff.MachineMatrix =", "MachineStuff.MachinePool.Initialize(", "SendNextPage(" })
         {
-            Assert.IsTrue(click.IndexOf(mutation, StringComparison.Ordinal) > validation, mutation);
+            Assert.IsGreaterThan(validation, click.IndexOf(mutation, StringComparison.Ordinal), mutation);
         }
 
-        StringAssert.Contains(click[validation..click.IndexOf("Encryption.MyKey = key;", StringComparison.Ordinal)], "return;");
+        Assert.Contains("return;", click[validation..click.IndexOf("Encryption.MyKey = key;", StringComparison.Ordinal)]);
     }
 
     private static string ReadRepositorySource(string relativePath)
@@ -94,7 +95,7 @@ public sealed class SettingsKeyTests
         Assert.AreEqual("TEST-KEY", settings.MyKey);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("mwb-dpapi:v1:!")]
     [DataRow("mwb-dpapi:v1:")]
     [DataRow("mwb-dpapi:v2:TEST")]
@@ -106,11 +107,11 @@ public sealed class SettingsKeyTests
         var settings = CreateSettings(properties, new DpapiPairingKeyCodec(identity.User!));
 
         Assert.AreEqual(MouseWithoutBordersIpc.PairingConfiguredIndicator, settings.PairingKeyDisplayText);
-        Assert.ThrowsException<CryptographicException>(() => _ = settings.MyKey);
+        Assert.ThrowsExactly<CryptographicException>(() => _ = settings.MyKey);
         Assert.AreEqual(value, properties.SecurityKey.Value);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("TEST-KEY")]
     [DataRow("********")]
     [DataRow("                ")]
@@ -134,7 +135,7 @@ public sealed class SettingsKeyTests
 
         var document = new MouseWithoutBordersSettings { Properties = properties };
         var json = document.ToJsonString();
-        StringAssert.Contains(json, PairingKeyCodec.EncryptedPrefix);
+        Assert.Contains(PairingKeyCodec.EncryptedPrefix, json);
         Assert.IsFalse(json.Contains("TEST-KEY", StringComparison.Ordinal));
         Assert.AreEqual("TEST-KEY", settings.MyKey);
         Assert.AreEqual("TEST-KEY", settings.MyKey);
@@ -183,9 +184,9 @@ public sealed class SettingsKeyTests
         setter = setter.Substring(setter.IndexOf("set\n", StringComparison.Ordinal));
 
         Assert.IsFalse(setter.Contains("return", StringComparison.Ordinal));
-        StringAssert.Contains(
-            setter,
-            "_properties.SecurityKey.Value = storedKey;\n\n                    if (!PauseInstantSaving)\n                    {\n                        SaveSettings();\n                    }");
+        Assert.Contains(
+            "_properties.SecurityKey.Value = storedKey;\n\n                    if (!PauseInstantSaving)\n                    {\n                        SaveSettings();\n                    }",
+            setter);
     }
 
     [TestMethod]
@@ -204,7 +205,7 @@ public sealed class SettingsKeyTests
         Assert.AreEqual("TEST-KEY", properties.SecurityKey.Value);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("mwb-dpapi:v1:!")]
     [DataRow("mwb-dpapi:v1:")]
     [DataRow("mwb-dpapi:v2:TEST")]
@@ -223,7 +224,7 @@ public sealed class SettingsKeyTests
         Assert.AreEqual("REPLACEMENT", codec.Decrypt(properties.SecurityKey.Value));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow("mwb-dpapi:v1:!")]
@@ -238,7 +239,7 @@ public sealed class SettingsKeyTests
         Assert.AreEqual(value, properties.SecurityKey.Value);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow("")]
     public void InvalidNewServiceKeyDoesNotReuseUnreadableStoredValue(string value)
@@ -250,11 +251,11 @@ public sealed class SettingsKeyTests
 
         if (value is null)
         {
-            Assert.ThrowsException<ArgumentNullException>(() => settings.MyKey = value);
+            Assert.ThrowsExactly<ArgumentNullException>(() => settings.MyKey = value);
         }
         else
         {
-            Assert.ThrowsException<ArgumentException>(() => settings.MyKey = value);
+            Assert.ThrowsExactly<ArgumentException>(() => settings.MyKey = value);
         }
 
         Assert.AreEqual("mwb-dpapi:v1:!", properties.SecurityKey.Value);
@@ -269,7 +270,7 @@ public sealed class SettingsKeyTests
         settings.MyKey = "PREVIOUS-KEY";
         var stored = properties.SecurityKey.Value;
 
-        Assert.ThrowsException<ArgumentException>(() => settings.MyKey = "mwb-dpapi:v1:TEST");
+        Assert.ThrowsExactly<ArgumentException>(() => settings.MyKey = "mwb-dpapi:v1:TEST");
 
         Assert.AreEqual(stored, properties.SecurityKey.Value);
         Assert.AreEqual("PREVIOUS-KEY", settings.MyKey);
@@ -368,7 +369,7 @@ public sealed class SettingsKeyTests
         service.MyKey = "SERVICE-KEY";
         var stored = properties.SecurityKey.Value;
         var normal = CreateSettings(properties, new PassthroughPairingKeyCodec());
-        Assert.ThrowsException<CryptographicException>(() => _ = normal.MyKey);
+        Assert.ThrowsExactly<CryptographicException>(() => _ = normal.MyKey);
         Assert.AreEqual(stored, properties.SecurityKey.Value);
         Assert.AreEqual(MouseWithoutBordersIpc.PairingConfiguredIndicator, normal.PairingKeyDisplayText);
         normal.MyKey = "NORMAL-KEY";
@@ -383,7 +384,7 @@ public sealed class SettingsKeyTests
         var properties = new MouseWithoutBordersProperties();
         properties.SecurityKey.Value = "OLD-PLAINTEXT";
         var settings = CreateSettings(properties, new DpapiPairingKeyCodec(identity.User!));
-        Assert.ThrowsException<CryptographicException>(() => _ = settings.MyKey);
+        Assert.ThrowsExactly<CryptographicException>(() => _ = settings.MyKey);
         Assert.AreEqual("OLD-PLAINTEXT", properties.SecurityKey.Value);
         settings.MyKey = "NEW-KEY";
         Assert.AreEqual("NEW-KEY", settings.MyKey);
@@ -410,14 +411,14 @@ public sealed class SettingsKeyTests
     [TestMethod]
     public void PairingAuthorizationIsIndependentOfJson()
     {
-        Assert.ThrowsException<UnauthorizedAccessException>(() =>
+        Assert.ThrowsExactly<UnauthorizedAccessException>(() =>
             Program.EnsurePairingOperationAuthorized(true, false));
         Program.EnsurePairingOperationAuthorized(false, false);
         Program.EnsurePairingOperationAuthorized(false, true);
         Program.EnsurePairingOperationAuthorized(true, true);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false, false, false)]
     [DataRow(false, false, true)]
     [DataRow(false, true, false)]
@@ -448,7 +449,7 @@ public sealed class SettingsKeyTests
             Assert.AreEqual(0u, Encryption.MagicNumber);
             Assert.IsTrue(settings.IsPairingKeyModeMismatch);
             Assert.IsFalse(Encryption.KeyCorrupted);
-            Assert.ThrowsException<CryptographicException>(() => _ = settings.MyKey);
+            Assert.ThrowsExactly<CryptographicException>(() => _ = settings.MyKey);
             if (!serviceMode)
             {
                 Assert.AreEqual(MouseWithoutBordersIpc.PairingConfiguredIndicator, settings.PairingKeyDisplayText);
@@ -478,13 +479,13 @@ public sealed class SettingsKeyTests
     {
         // WinForms startup cannot run in this unit test; check its wiring to the runtime-tested settings boundary.
         var startup = ReadRepositorySource(@"src\modules\MouseWithoutBorders\App\Core\InitAndCleanup.cs");
-        StringAssert.Contains(startup, "Encryption.KeyCorrupted = !Setting.Values.IsPairingKeyModeMismatch;");
+        Assert.Contains("Encryption.KeyCorrupted = !Setting.Values.IsPairingKeyModeMismatch;", startup);
         var matrix = ReadRepositorySource(@"src\modules\MouseWithoutBorders\App\Core\MachineStuff.cs");
         matrix = matrix[matrix.IndexOf("internal static void ShowMachineMatrix()", StringComparison.Ordinal)..];
-        StringAssert.Contains(matrix, "if (!Setting.Values.ShowOriginalUI)");
-        StringAssert.Contains(matrix, "if (Setting.Values.FirstRun && !Setting.Values.IsPairingKeyModeMismatch && !Common.AtLeastOneSocketConnected())");
-        StringAssert.Contains(matrix, "MachineStuff.ShowSetupForm();");
-        StringAssert.Contains(matrix, "Common.MatrixForm = new FrmMatrix();");
+        Assert.Contains("if (!Setting.Values.ShowOriginalUI)", matrix);
+        Assert.Contains("if (Setting.Values.FirstRun && !Setting.Values.IsPairingKeyModeMismatch && !Common.AtLeastOneSocketConnected())", matrix);
+        Assert.Contains("MachineStuff.ShowSetupForm();", matrix);
+        Assert.Contains("Common.MatrixForm = new FrmMatrix();", matrix);
     }
 
     [TestMethod]
@@ -515,7 +516,7 @@ public sealed class SettingsKeyTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("")]
     [DataRow(null)]
     [DataRow(" \t\r\n")]
@@ -526,8 +527,8 @@ public sealed class SettingsKeyTests
         {
             Encryption.MyKey = key;
             using var stream = new MemoryStream();
-            Assert.ThrowsException<CryptographicException>(() => Encryption.GetEncryptedStream(stream));
-            Assert.ThrowsException<CryptographicException>(() => Encryption.GetDecryptedStream(stream));
+            Assert.ThrowsExactly<CryptographicException>(() => Encryption.GetEncryptedStream(stream));
+            Assert.ThrowsExactly<CryptographicException>(() => Encryption.GetDecryptedStream(stream));
             Assert.AreEqual(0L, stream.Length);
         }
         finally

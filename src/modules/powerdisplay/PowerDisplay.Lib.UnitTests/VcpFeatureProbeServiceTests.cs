@@ -12,6 +12,7 @@ using static PowerDisplay.UnitTests.DdcFakes;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class VcpFeatureProbeServiceTests
 {
@@ -30,7 +31,7 @@ public sealed class VcpFeatureProbeServiceTests
         Assert.AreEqual(100, result[0x10].Value.Maximum);
         Assert.AreEqual(1, result[0x10].Attempts);
         Assert.IsNull(result[0x10].LastError);
-        CollectionAssert.AreEqual(new[] { TimeSpan.FromMilliseconds(100) }, delays);
+        Assert.AreSequenceEqual(new[] { TimeSpan.FromMilliseconds(100) }, delays);
     }
 
     [TestMethod]
@@ -48,7 +49,7 @@ public sealed class VcpFeatureProbeServiceTests
         Assert.IsTrue(result[0x10].IsSuccess);
         Assert.AreEqual(2, result[0x10].Attempts);
         Assert.AreEqual(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageCommand, result[0x10].LastError);
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[] { TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100) },
             delays);
     }
@@ -85,7 +86,7 @@ public sealed class VcpFeatureProbeServiceTests
         Assert.AreEqual(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported, result[0x10].LastError);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(DdcErrorClassifier.ErrorGraphicsInvalidPhysicalMonitorHandle)]
     [DataRow(DdcErrorClassifier.ErrorGraphicsMonitorNoLongerExists)]
     public async Task ProbeAsync_PhysicalMonitorUnavailableStopsRemainingFeatureProbes(int errorCode)
@@ -96,8 +97,8 @@ public sealed class VcpFeatureProbeServiceTests
         var result = await service.ProbeAsync(new IntPtr(1), CancellationToken.None);
 
         Assert.AreEqual(1, reader.CallCount);
-        CollectionAssert.AreEqual(new byte[] { 0x10 }, reader.Codes);
-        Assert.AreEqual(1, result.Count);
+        Assert.AreSequenceEqual(new byte[] { 0x10 }, reader.Codes);
+        Assert.HasCount(1, result);
         Assert.IsTrue(result[0x10].IsPhysicalMonitorUnavailable);
         Assert.AreEqual(errorCode, result[0x10].LastError);
     }
@@ -113,7 +114,7 @@ public sealed class VcpFeatureProbeServiceTests
         var result = await service.ProbeAsync(new IntPtr(1), CancellationToken.None);
 
         Assert.AreEqual(2, reader.CallCount);
-        CollectionAssert.AreEqual(new byte[] { 0x10, 0x12 }, reader.Codes);
+        Assert.AreSequenceEqual(new byte[] { 0x10, 0x12 }, reader.Codes);
         Assert.IsFalse(result[0x10].IsSuccess);
         Assert.IsFalse(result[0x10].IsPhysicalMonitorUnavailable);
         Assert.IsTrue(result[0x12].IsSuccess);
@@ -188,7 +189,7 @@ public sealed class VcpFeatureProbeServiceTests
 
         await service.ProbeAsync(new IntPtr(1), CancellationToken.None);
 
-        CollectionAssert.AreEqual(new byte[] { 0x10, 0x12, 0x62 }, reader.Codes);
+        Assert.AreSequenceEqual(new byte[] { 0x10, 0x12, 0x62 }, reader.Codes);
     }
 
     [TestMethod]
@@ -200,10 +201,10 @@ public sealed class VcpFeatureProbeServiceTests
         cancellation.Cancel();
         var service = CreateService(reader, delays, new byte[] { 0x10 });
 
-        await Assert.ThrowsExceptionAsync<OperationCanceledException>(
+        await Assert.ThrowsExactlyAsync<OperationCanceledException>(
             () => service.ProbeAsync(new IntPtr(1), cancellation.Token));
 
-        Assert.AreEqual(0, delays.Count);
+        Assert.IsEmpty(delays);
         Assert.AreEqual(0, reader.CallCount);
     }
 
@@ -241,12 +242,12 @@ public sealed class VcpFeatureProbeServiceTests
 
         Assert.IsNotNull(exception);
 
-        CollectionAssert.AreEqual(new[] { TimeSpan.FromMilliseconds(100) }, delays);
+        Assert.AreSequenceEqual(new[] { TimeSpan.FromMilliseconds(100) }, delays);
         Assert.AreEqual(0, reader.CallCount);
     }
 
     [TestMethod]
-    [Timeout(5000)]
+    [Timeout(5000, CooperativeCancellation = true)]
     public async Task ProbeAsync_ReaderRunsOffCallerThread()
     {
         using var releaseReader = new ManualResetEventSlim();

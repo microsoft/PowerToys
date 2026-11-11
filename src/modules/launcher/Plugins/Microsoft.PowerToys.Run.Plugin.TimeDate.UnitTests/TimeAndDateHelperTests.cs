@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class TimeAndDateHelperTests
     {
@@ -26,7 +27,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             CultureInfo.CurrentUICulture = new CultureInfo("en-us", false);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(-1, null)] // default setting
         [DataRow(0, CalendarWeekRule.FirstDay)]
         [DataRow(1, CalendarWeekRule.FirstFullWeek)]
@@ -49,7 +50,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(-1, null)] // default setting
         [DataRow(1, DayOfWeek.Monday)]
         [DataRow(2, DayOfWeek.Tuesday)]
@@ -76,7 +77,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(0, "12/30/1899 12:00 PM", 0.5)] // OLE Automation date
         [DataRow(1, "12/31/1898 12:00 PM", null)] // Excel based 1900: Date to low
         [DataRow(1, "1/1/1900, 00:00 AM", 1.0)] // Excel based 1900
@@ -90,7 +91,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Assert
             if (valueExpected == null)
             {
-                Assert.ThrowsException<ArgumentOutOfRangeException>(() => TimeAndDateHelper.ConvertToOleAutomationFormat(dt, (OADateFormats)type));
+                Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => TimeAndDateHelper.ConvertToOleAutomationFormat(dt, (OADateFormats)type));
             }
             else
             {
@@ -99,7 +100,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("dow")]
         [DataRow("\\DOW")]
         [DataRow("wom")]
@@ -130,7 +131,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(format, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("DOW")]
         [DataRow("DIM")]
         [DataRow("WOM")]
@@ -151,7 +152,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.IsFalse(result.Contains(format, StringComparison.CurrentCulture));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("01/01/0001", 1)] // First possible date
         [DataRow("12/31/9999", 5)] // Last possible date
         [DataRow("03/20/2025", 4)]

@@ -10,6 +10,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class EventNotificationTests
 {
@@ -35,7 +36,7 @@ public class EventNotificationTests
 
         Assert.AreEqual("Second", page.Title);
         Assert.AreEqual(expectedFailures, failures);
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[] { ((object)page, nameof(Page.Title), "First"), ((object)page, nameof(Page.Title), "Second") },
             notifications);
     }
@@ -97,7 +98,7 @@ public class EventNotificationTests
         Assert.AreEqual(1, disconnectedCalls, source.GetType().Name);
         Assert.AreEqual(3, otherFailureCalls, "Ordinary failures must not unsubscribe the callback.");
         Assert.AreEqual(2, addedCalls, "Removing a dead callback must preserve a newly added subscriber.");
-        CollectionAssert.AreEqual(new[] { ((object)source, 1), ((object)source, 2) }, notifications);
+        Assert.AreSequenceEqual(new[] { ((object)source, 1), ((object)source, 2) }, notifications);
     }
 
     private sealed partial class TestListPage : ListPage

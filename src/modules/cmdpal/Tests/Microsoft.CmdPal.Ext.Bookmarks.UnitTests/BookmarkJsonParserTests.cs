@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class BookmarkJsonParserTests
 {
@@ -44,7 +45,7 @@ public class BookmarkJsonParserTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(2, result.Data.Count);
+        Assert.HasCount(2, result.Data);
         Assert.AreEqual("Google", result.Data[0].Name);
         Assert.AreEqual("https://www.google.com", result.Data[0].Bookmark);
         Assert.AreEqual("Local File", result.Data[1].Name);
@@ -62,7 +63,7 @@ public class BookmarkJsonParserTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(0, result.Data.Count);
+        Assert.IsEmpty(result.Data);
     }
 
     [TestMethod]
@@ -73,7 +74,7 @@ public class BookmarkJsonParserTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(0, result.Data.Count);
+        Assert.IsEmpty(result.Data);
     }
 
     [TestMethod]
@@ -84,7 +85,7 @@ public class BookmarkJsonParserTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(0, result.Data.Count);
+        Assert.IsEmpty(result.Data);
     }
 
     [TestMethod]
@@ -95,7 +96,7 @@ public class BookmarkJsonParserTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(0, result.Data.Count);
+        Assert.IsEmpty(result.Data);
     }
 
     [TestMethod]
@@ -109,7 +110,7 @@ public class BookmarkJsonParserTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(0, result.Data.Count);
+        Assert.IsEmpty(result.Data);
     }
 
     [TestMethod]
@@ -132,7 +133,7 @@ public class BookmarkJsonParserTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(0, result.Data.Count);
+        Assert.IsEmpty(result.Data);
     }
 
     [TestMethod]
@@ -159,7 +160,7 @@ public class BookmarkJsonParserTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(2, result.Data.Count);
+        Assert.HasCount(2, result.Data);
         Assert.AreEqual("Google", result.Data[0].Name);
         Assert.AreEqual("https://www.google.com", result.Data[0].Bookmark);
     }
@@ -184,7 +185,7 @@ public class BookmarkJsonParserTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(1, result.Data.Count);
+        Assert.HasCount(1, result.Data);
         Assert.AreEqual("Google", result.Data[0].Name);
         Assert.AreEqual("https://www.google.com", result.Data[0].Bookmark);
     }
@@ -207,11 +208,11 @@ public class BookmarkJsonParserTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.IsTrue(result.Contains("Google"));
-        Assert.IsTrue(result.Contains("https://www.google.com"));
-        Assert.IsTrue(result.Contains("Local File"));
-        Assert.IsTrue(result.Contains("C:\\\\temp\\\\file.txt")); // Escaped backslashes in JSON
-        Assert.IsTrue(result.Contains("Data"));
+        Assert.Contains("Google", result);
+        Assert.Contains("https://www.google.com", result);
+        Assert.Contains("Local File", result);
+        Assert.Contains("C:\\\\temp\\\\file.txt", result); // Escaped backslashes in JSON
+        Assert.Contains("Data", result);
     }
 
     [TestMethod]
@@ -225,8 +226,8 @@ public class BookmarkJsonParserTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.IsTrue(result.Contains("Data"));
-        Assert.IsTrue(result.Contains("[]"));
+        Assert.Contains("Data", result);
+        Assert.Contains("[]", result);
     }
 
     [TestMethod]
@@ -259,7 +260,7 @@ public class BookmarkJsonParserTests
 
         // Assert
         Assert.IsNotNull(parsedBookmarks);
-        Assert.AreEqual(originalBookmarks.Data.Count, parsedBookmarks.Data.Count);
+        Assert.HasCount(originalBookmarks.Data.Count, parsedBookmarks.Data);
 
         for (var i = 0; i < originalBookmarks.Data.Count; i++)
         {
@@ -296,7 +297,7 @@ public class BookmarkJsonParserTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(3, result.Data.Count);
+        Assert.HasCount(3, result.Data);
     }
 
     [TestMethod]
@@ -351,7 +352,7 @@ public class BookmarkJsonParserTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(9, result.Data.Count);
+        Assert.HasCount(9, result.Data);
     }
 
     [TestMethod]
@@ -386,6 +387,6 @@ public class BookmarkJsonParserTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(4, result.Data.Count);
+        Assert.HasCount(4, result.Data);
     }
 }

@@ -13,6 +13,7 @@ using Windows.System;
 
 namespace KeyboardManagerEditorUI.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class RemappingHelperTests
     {
@@ -116,7 +117,7 @@ namespace KeyboardManagerEditorUI.UnitTests
             RemappingHelper.SortModifierKeys(keys);
 
             // Assert
-            Assert.AreEqual(1, keys.Count);
+            Assert.HasCount(1, keys);
             Assert.AreEqual(VirtualKey.Control, keys[0]);
         }
 
@@ -131,7 +132,7 @@ namespace KeyboardManagerEditorUI.UnitTests
             RemappingHelper.SortModifierKeys(keys);
 
             // Assert
-            Assert.AreEqual(0, keys.Count);
+            Assert.IsEmpty(keys);
         }
 
         // Test GetModifierSortOrder returns correct values
@@ -198,7 +199,7 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.AreSame(replacement, settings.ShortcutSettingsDictionary[mappingId].Shortcut);
             Assert.IsTrue(settings.ShortcutSettingsDictionary[mappingId].IsActive);
             Assert.IsTrue(settings.ShortcutSettingsDictionary[mappingId].Shortcut.ExactMatch);
-            CollectionAssert.AreEqual(new[] { mappingId }, settings.ShortcutsByOperationType[ShortcutOperationType.RemapShortcut]);
+            Assert.AreSequenceEqual(new[] { mappingId }, settings.ShortcutsByOperationType[ShortcutOperationType.RemapShortcut]);
         }
 
         [TestMethod]
@@ -209,8 +210,8 @@ namespace KeyboardManagerEditorUI.UnitTests
             var replacement = CreateMapping(ShortcutOperationType.RemapText, "65", "replacement text");
 
             Assert.IsTrue(SettingsManager.TryApplyShortcutKeyMapping(settings, replacement, mappingId));
-            Assert.AreEqual(0, settings.ShortcutsByOperationType[ShortcutOperationType.RemapShortcut].Count);
-            CollectionAssert.AreEqual(new[] { mappingId }, settings.ShortcutsByOperationType[ShortcutOperationType.RemapText]);
+            Assert.IsEmpty(settings.ShortcutsByOperationType[ShortcutOperationType.RemapShortcut]);
+            Assert.AreSequenceEqual(new[] { mappingId }, settings.ShortcutsByOperationType[ShortcutOperationType.RemapText]);
         }
 
         [TestMethod]
@@ -223,7 +224,7 @@ namespace KeyboardManagerEditorUI.UnitTests
 
             Assert.IsFalse(SettingsManager.TryApplyShortcutKeyMapping(settings, replacement, "missing-id"));
             Assert.AreSame(original, settings.ShortcutSettingsDictionary[mappingId].Shortcut);
-            CollectionAssert.AreEqual(new[] { mappingId }, settings.ShortcutsByOperationType[ShortcutOperationType.RemapShortcut]);
+            Assert.AreSequenceEqual(new[] { mappingId }, settings.ShortcutsByOperationType[ShortcutOperationType.RemapShortcut]);
             Assert.IsFalse(settings.ShortcutsByOperationType.ContainsKey(ShortcutOperationType.RemapText));
         }
 
@@ -239,17 +240,17 @@ namespace KeyboardManagerEditorUI.UnitTests
             settings.ProfileDictionary["profile-two"] = new List<string> { mappingId };
 
             Assert.IsTrue(SettingsManager.TryApplyShortcutKeyMapping(settings, replacement, mappingId, "profile-two"));
-            Assert.AreEqual(2, settings.ShortcutSettingsDictionary.Count);
+            Assert.HasCount(2, settings.ShortcutSettingsDictionary);
             Assert.AreSame(original, settings.ShortcutSettingsDictionary[mappingId].Shortcut);
             Assert.IsFalse(settings.ShortcutSettingsDictionary[mappingId].IsActive);
-            CollectionAssert.AreEqual(new List<string> { "profile-one" }, settings.ShortcutSettingsDictionary[mappingId].Profiles);
+            Assert.AreSequenceEqual(new List<string> { "profile-one" }, settings.ShortcutSettingsDictionary[mappingId].Profiles);
 
             KeyValuePair<string, ShortcutSettings> replacementEntry = settings.ShortcutSettingsDictionary.Single(entry => entry.Key != mappingId);
             Assert.AreSame(replacement, replacementEntry.Value.Shortcut);
             Assert.IsTrue(replacementEntry.Value.IsActive);
-            CollectionAssert.AreEqual(new List<string> { "profile-two" }, replacementEntry.Value.Profiles);
-            CollectionAssert.AreEqual(new List<string> { mappingId }, settings.ProfileDictionary["profile-one"]);
-            CollectionAssert.AreEqual(new List<string> { replacementEntry.Key }, settings.ProfileDictionary["profile-two"]);
+            Assert.AreSequenceEqual(new List<string> { "profile-two" }, replacementEntry.Value.Profiles);
+            Assert.AreSequenceEqual(new List<string> { mappingId }, settings.ProfileDictionary["profile-one"]);
+            Assert.AreSequenceEqual(new List<string> { replacementEntry.Key }, settings.ProfileDictionary["profile-two"]);
         }
 
         [TestMethod]
@@ -288,15 +289,15 @@ namespace KeyboardManagerEditorUI.UnitTests
             };
 
             Assert.IsTrue(SettingsManager.NormalizeSettings(settings));
-            Assert.AreEqual(1, settings.ShortcutSettingsDictionary.Count);
+            Assert.HasCount(1, settings.ShortcutSettingsDictionary);
             Assert.AreEqual("valid-id", settings.ShortcutSettingsDictionary["valid-id"].Id);
-            CollectionAssert.AreEqual(new List<string> { "profile-one" }, settings.ShortcutSettingsDictionary["valid-id"].Profiles);
+            Assert.AreSequenceEqual(new List<string> { "profile-one" }, settings.ShortcutSettingsDictionary["valid-id"].Profiles);
             Assert.AreEqual(string.Empty, settings.ShortcutSettingsDictionary["valid-id"].Shortcut.TargetKeys);
             Assert.AreEqual(string.Empty, settings.ShortcutSettingsDictionary["valid-id"].Shortcut.TargetApp);
             Assert.AreEqual(string.Empty, settings.ShortcutSettingsDictionary["valid-id"].Shortcut.ProgramArgs);
-            CollectionAssert.AreEqual(new List<string> { "valid-id" }, settings.ProfileDictionary["profile-one"]);
+            Assert.AreSequenceEqual(new List<string> { "valid-id" }, settings.ProfileDictionary["profile-one"]);
             Assert.IsFalse(settings.ProfileDictionary.ContainsKey("profile-null"));
-            CollectionAssert.AreEqual(new List<string> { "valid-id" }, settings.ShortcutsByOperationType[ShortcutOperationType.RemapShortcut]);
+            Assert.AreSequenceEqual(new List<string> { "valid-id" }, settings.ShortcutsByOperationType[ShortcutOperationType.RemapShortcut]);
             Assert.AreEqual(string.Empty, settings.ActiveProfile);
         }
 
@@ -323,10 +324,10 @@ namespace KeyboardManagerEditorUI.UnitTests
             };
 
             Assert.IsTrue(SettingsManager.NormalizeSettings(settings));
-            Assert.AreEqual(1, settings.ShortcutSettingsDictionary.Count);
+            Assert.HasCount(1, settings.ShortcutSettingsDictionary);
             Assert.AreEqual("mapping-id", settings.ShortcutSettingsDictionary.Keys.Single());
             Assert.AreSame(retainedMapping, settings.ShortcutSettingsDictionary["MAPPING-ID"].Shortcut);
-            CollectionAssert.AreEqual(new List<string> { "mapping-id" }, settings.ShortcutsByOperationType[ShortcutOperationType.RemapShortcut]);
+            Assert.AreSequenceEqual(new List<string> { "mapping-id" }, settings.ShortcutsByOperationType[ShortcutOperationType.RemapShortcut]);
         }
 
         [TestMethod]
@@ -339,10 +340,10 @@ namespace KeyboardManagerEditorUI.UnitTests
             settings.ProfileDictionary["profile-two"] = new List<string> { mappingId };
 
             Assert.IsTrue(SettingsManager.TryApplyShortcutKeyMappingRemoval(settings, mappingId, "profile-two"));
-            Assert.AreEqual(1, settings.ShortcutSettingsDictionary.Count);
+            Assert.HasCount(1, settings.ShortcutSettingsDictionary);
             Assert.IsFalse(settings.ShortcutSettingsDictionary[mappingId].IsActive);
-            CollectionAssert.AreEqual(new List<string> { "profile-one" }, settings.ShortcutSettingsDictionary[mappingId].Profiles);
-            CollectionAssert.AreEqual(new List<string> { mappingId }, settings.ProfileDictionary["profile-one"]);
+            Assert.AreSequenceEqual(new List<string> { "profile-one" }, settings.ShortcutSettingsDictionary[mappingId].Profiles);
+            Assert.AreSequenceEqual(new List<string> { mappingId }, settings.ProfileDictionary["profile-one"]);
             Assert.IsFalse(settings.ProfileDictionary.ContainsKey("profile-two"));
         }
 
@@ -355,13 +356,13 @@ namespace KeyboardManagerEditorUI.UnitTests
             foreignSettings.ProfileDictionary["profile-one"] = new List<string> { mappingId };
 
             Assert.IsFalse(SettingsManager.TryApplyShortcutKeyMappingActiveState(foreignSettings, mappingId, true, "profile-two"));
-            CollectionAssert.AreEqual(new List<string> { "profile-one" }, foreignSettings.ShortcutSettingsDictionary[mappingId].Profiles);
+            Assert.AreSequenceEqual(new List<string> { "profile-one" }, foreignSettings.ShortcutSettingsDictionary[mappingId].Profiles);
 
             var legacySettings = CreateEditorSettings(mappingId, ShortcutOperationType.RemapShortcut, "65", "66");
             Assert.IsTrue(SettingsManager.TryApplyShortcutKeyMappingActiveState(legacySettings, mappingId, true, "profile-two"));
             Assert.IsTrue(legacySettings.ShortcutSettingsDictionary[mappingId].IsActive);
-            CollectionAssert.AreEqual(new List<string> { "profile-two" }, legacySettings.ShortcutSettingsDictionary[mappingId].Profiles);
-            CollectionAssert.AreEqual(new List<string> { mappingId }, legacySettings.ProfileDictionary["profile-two"]);
+            Assert.AreSequenceEqual(new List<string> { "profile-two" }, legacySettings.ShortcutSettingsDictionary[mappingId].Profiles);
+            Assert.AreSequenceEqual(new List<string> { mappingId }, legacySettings.ProfileDictionary["profile-two"]);
         }
 
         [TestMethod]
@@ -418,8 +419,8 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.AreEqual(string.Empty, settings.ShortcutSettingsDictionary["uri-id"].Shortcut.TargetKeys);
             Assert.IsTrue(settings.ShortcutSettingsDictionary["program-id"].IsActive);
             Assert.IsTrue(settings.ShortcutSettingsDictionary["uri-id"].IsActive);
-            CollectionAssert.AreEqual(new List<string> { "program-id" }, settings.ShortcutsByOperationType[ShortcutOperationType.RunProgram]);
-            CollectionAssert.AreEqual(new List<string> { "uri-id" }, settings.ShortcutsByOperationType[ShortcutOperationType.OpenUri]);
+            Assert.AreSequenceEqual(new List<string> { "program-id" }, settings.ShortcutsByOperationType[ShortcutOperationType.RunProgram]);
+            Assert.AreSequenceEqual(new List<string> { "uri-id" }, settings.ShortcutsByOperationType[ShortcutOperationType.OpenUri]);
         }
 
         [TestMethod]
@@ -437,10 +438,10 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.IsTrue(settings.ShortcutSettingsDictionary["matching-id"].IsActive);
             Assert.IsFalse(settings.ShortcutSettingsDictionary["duplicate-id"].IsActive);
             Assert.IsFalse(settings.ShortcutSettingsDictionary["stale-id"].IsActive);
-            CollectionAssert.AreEqual(
+            Assert.AreSequenceEqual(
                 new List<string> { "matching-id", "duplicate-id" },
                 settings.ShortcutsByOperationType[ShortcutOperationType.RemapShortcut]);
-            CollectionAssert.AreEqual(
+            Assert.AreSequenceEqual(
                 new List<string> { "stale-id" },
                 settings.ShortcutsByOperationType[ShortcutOperationType.RemapText]);
         }
@@ -466,16 +467,16 @@ namespace KeyboardManagerEditorUI.UnitTests
             settings.ActiveProfile = "profile-one";
 
             Assert.IsTrue(SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping> { profileTwoMapping }, "profile-two"));
-            Assert.AreEqual(2, settings.ShortcutSettingsDictionary.Count);
+            Assert.HasCount(2, settings.ShortcutSettingsDictionary);
             Assert.AreSame(profileOneMapping, settings.ShortcutSettingsDictionary["profile-one-id"].Shortcut);
             Assert.IsFalse(settings.ShortcutSettingsDictionary["profile-one-id"].IsActive);
-            CollectionAssert.AreEqual(new List<string> { "profile-one" }, settings.ShortcutSettingsDictionary["profile-one-id"].Profiles);
+            Assert.AreSequenceEqual(new List<string> { "profile-one" }, settings.ShortcutSettingsDictionary["profile-one-id"].Profiles);
 
             KeyValuePair<string, ShortcutSettings> activeEntry = settings.ShortcutSettingsDictionary.Single(entry => entry.Value.IsActive);
             Assert.AreSame(profileTwoMapping, activeEntry.Value.Shortcut);
-            CollectionAssert.AreEqual(new List<string> { "profile-two" }, activeEntry.Value.Profiles);
-            CollectionAssert.AreEqual(new List<string> { "profile-one-id" }, settings.ProfileDictionary["profile-one"]);
-            CollectionAssert.AreEqual(new List<string> { activeEntry.Key }, settings.ProfileDictionary["profile-two"]);
+            Assert.AreSequenceEqual(new List<string> { "profile-two" }, activeEntry.Value.Profiles);
+            Assert.AreSequenceEqual(new List<string> { "profile-one-id" }, settings.ProfileDictionary["profile-one"]);
+            Assert.AreSequenceEqual(new List<string> { activeEntry.Key }, settings.ProfileDictionary["profile-two"]);
             Assert.AreEqual("profile-two", settings.ActiveProfile);
         }
 
@@ -491,16 +492,16 @@ namespace KeyboardManagerEditorUI.UnitTests
             settings.ActiveProfile = "profile-two";
 
             Assert.IsTrue(SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping> { profileTwoMapping }, "profile-two"));
-            Assert.AreEqual(2, settings.ShortcutSettingsDictionary.Count);
+            Assert.HasCount(2, settings.ShortcutSettingsDictionary);
             Assert.AreSame(sharedMapping, settings.ShortcutSettingsDictionary["shared-id"].Shortcut);
             Assert.IsFalse(settings.ShortcutSettingsDictionary["shared-id"].IsActive);
-            CollectionAssert.AreEqual(new List<string> { "profile-one" }, settings.ShortcutSettingsDictionary["shared-id"].Profiles);
+            Assert.AreSequenceEqual(new List<string> { "profile-one" }, settings.ShortcutSettingsDictionary["shared-id"].Profiles);
 
             KeyValuePair<string, ShortcutSettings> activeEntry = settings.ShortcutSettingsDictionary.Single(entry => entry.Value.IsActive);
             Assert.AreSame(profileTwoMapping, activeEntry.Value.Shortcut);
-            CollectionAssert.AreEqual(new List<string> { "profile-two" }, activeEntry.Value.Profiles);
-            CollectionAssert.AreEqual(new List<string> { "shared-id" }, settings.ProfileDictionary["profile-one"]);
-            CollectionAssert.AreEqual(new List<string> { activeEntry.Key }, settings.ProfileDictionary["profile-two"]);
+            Assert.AreSequenceEqual(new List<string> { "profile-two" }, activeEntry.Value.Profiles);
+            Assert.AreSequenceEqual(new List<string> { "shared-id" }, settings.ProfileDictionary["profile-one"]);
+            Assert.AreSequenceEqual(new List<string> { activeEntry.Key }, settings.ProfileDictionary["profile-two"]);
         }
 
         [TestMethod]
@@ -534,7 +535,7 @@ namespace KeyboardManagerEditorUI.UnitTests
             var settings = CreateEditorSettings(("mapping-id", metadata, true));
 
             Assert.IsTrue(SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping> { persisted }));
-            Assert.AreEqual(1, settings.ShortcutSettingsDictionary.Count);
+            Assert.HasCount(1, settings.ShortcutSettingsDictionary);
             Assert.AreSame(persisted, settings.ShortcutSettingsDictionary["mapping-id"].Shortcut);
             Assert.IsTrue(settings.ShortcutSettingsDictionary["mapping-id"].IsActive);
         }
@@ -549,11 +550,11 @@ namespace KeyboardManagerEditorUI.UnitTests
             var settings = CreateEditorSettings(("legacy-id", legacyMetadata, false));
 
             Assert.IsTrue(SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping> { persisted }, "default"));
-            Assert.AreEqual(1, settings.ShortcutSettingsDictionary.Count);
+            Assert.HasCount(1, settings.ShortcutSettingsDictionary);
             Assert.AreSame(persisted, settings.ShortcutSettingsDictionary["legacy-id"].Shortcut);
             Assert.IsTrue(settings.ShortcutSettingsDictionary["legacy-id"].IsActive);
-            CollectionAssert.AreEqual(new List<string> { "default" }, settings.ShortcutSettingsDictionary["legacy-id"].Profiles);
-            CollectionAssert.AreEqual(new List<string> { "legacy-id" }, settings.ProfileDictionary["default"]);
+            Assert.AreSequenceEqual(new List<string> { "default" }, settings.ShortcutSettingsDictionary["legacy-id"].Profiles);
+            Assert.AreSequenceEqual(new List<string> { "legacy-id" }, settings.ProfileDictionary["default"]);
         }
 
         // Regression for #50933: a global mapping and app-specific overrides of the same trigger live in
@@ -600,12 +601,16 @@ namespace KeyboardManagerEditorUI.UnitTests
             var existing = CreateScopedMapping(ShortcutOperationType.RemapShortcut, IssueTrigger, existingApp);
             var settings = CreateEditorSettings(("existing-id", existing, true));
 
-            Assert.AreEqual(expectedDuplicate, DuplicateMappingHelper.IsDuplicateMapping(
+            Assert.AreEqual(
+                expectedDuplicate,
+                DuplicateMappingHelper.IsDuplicateMapping(
                 settings.ShortcutSettingsDictionary, IssueTrigger, isEditMode: false, proposedApp, editingId: null, AreKeysEqual));
 
             // A different action in the same scope is still a conflict; operation type is not an exemption.
             var proposed = CreateScopedMapping(ShortcutOperationType.RunProgram, IssueTrigger, proposedApp);
-            Assert.AreEqual(expectedDuplicate, DuplicateMappingHelper.HasDuplicateEditorMapping(
+            Assert.AreEqual(
+                expectedDuplicate,
+                DuplicateMappingHelper.HasDuplicateEditorMapping(
                 settings.ShortcutSettingsDictionary, proposed, "new-id", AreKeysEqual));
         }
 

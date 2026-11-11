@@ -20,6 +20,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class ProviderFallbackSettingsTests
 {
@@ -39,7 +40,7 @@ public partial class ProviderFallbackSettingsTests
         Assert.IsTrue(fallbackSettings.IsEnabled);
         Assert.IsTrue(fallbackSettings.IncludeInGlobalResults);
         Assert.IsTrue(wrapper.FallbackItems[0].IncludeInGlobalResults);
-        CollectionAssert.Contains(settingsService.Settings.GetGlobalFallbacks(), FallbackId);
+        Assert.Contains(FallbackId, settingsService.Settings.GetGlobalFallbacks());
     }
 
     [TestMethod]
@@ -128,7 +129,7 @@ public partial class ProviderFallbackSettingsTests
         Assert.AreEqual(writesAfterFirstLoad + 1, settingsService.WriteCount);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true, true)]
     [DataRow(false, true)]
     [DataRow(true, false)]

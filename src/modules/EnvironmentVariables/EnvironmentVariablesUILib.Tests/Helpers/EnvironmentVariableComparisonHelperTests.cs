@@ -10,6 +10,7 @@ using EnvironmentVariablesUILib.Models;
 
 namespace EnvironmentVariablesUILib.UnitTests.Helpers;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class EnvironmentVariableComparisonHelperTests
 {
@@ -44,8 +45,8 @@ public class EnvironmentVariableComparisonHelperTests
 
         var duplicates = EnvironmentVariableComparisonHelper.GetDuplicateNameGroups(variables).ToList();
 
-        Assert.AreEqual(1, duplicates.Count);
-        CollectionAssert.AreEquivalent(new[] { first, second }, duplicates[0].ToList());
+        Assert.HasCount(1, duplicates);
+        Assert.AreSequenceEqual(new[] { first, second }, duplicates[0].ToList(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]

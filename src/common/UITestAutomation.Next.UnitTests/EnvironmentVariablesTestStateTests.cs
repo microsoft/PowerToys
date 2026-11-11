@@ -12,6 +12,7 @@ using VariableSnapshot = Microsoft.EnvironmentVariables.UITests.TestState.UserVa
 namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class EnvironmentVariablesTestStateTests
 {
     private static readonly string[] PathVariableNames = ["Path", "Created"];
@@ -34,7 +35,7 @@ public sealed class EnvironmentVariablesTestStateTests
         var failure = Assert.ThrowsExactly<AggregateException>(state.Reset);
 
         Assert.HasCount(1, failure.InnerExceptions);
-        CollectionAssert.AreEqual(PathVariableNames, fixture.RestoreAttempts);
+        Assert.AreSequenceEqual(PathVariableNames, fixture.RestoreAttempts);
         Assert.AreEqual(original, fixture.Variables["Path"]);
         Assert.IsFalse(fixture.Variables.ContainsKey("Created"));
         Assert.AreEqual("[]", File.ReadAllText(fixture.ProfilesPath));
@@ -63,15 +64,15 @@ public sealed class EnvironmentVariablesTestStateTests
         var failure = Assert.ThrowsExactly<AggregateException>(state.Reset);
 
         Assert.HasCount(2, failure.InnerExceptions);
-        CollectionAssert.AreEqual(OrderedVariableNames, fixture.RestoreAttempts);
+        Assert.AreSequenceEqual(OrderedVariableNames, fixture.RestoreAttempts);
         Assert.AreEqual("original", fixture.Variables["Second"].Value);
         Assert.AreEqual("changed", fixture.Variables["First"].Value);
-        CollectionAssert.AreEqual(journal, File.ReadAllBytes(fixture.JournalPath));
+        Assert.AreSequenceEqual(journal, File.ReadAllBytes(fixture.JournalPath));
 
         fixture.FailedVariables.Clear();
         fixture.RestoreAttempts.Clear();
         state.Reset();
-        CollectionAssert.AreEqual(OrderedVariableNames, fixture.RestoreAttempts);
+        Assert.AreSequenceEqual(OrderedVariableNames, fixture.RestoreAttempts);
         Assert.IsTrue(fixture.Variables.Values.All(snapshot => snapshot.Value == "original"));
         state.Dispose();
         Assert.IsFalse(File.Exists(fixture.JournalPath));
@@ -129,7 +130,7 @@ public sealed class EnvironmentVariablesTestStateTests
                 fixture.AssertOriginalFile(key);
             }
 
-            CollectionAssert.AreEqual(journal, File.ReadAllBytes(fixture.JournalPath));
+            Assert.AreSequenceEqual(journal, File.ReadAllBytes(fixture.JournalPath));
         }
 
         state.Dispose();
@@ -144,13 +145,14 @@ public sealed class EnvironmentVariablesTestStateTests
         var state = fixture.CreateState();
         var journal = fixture.ReadJournal();
         Assert.AreEqual(1, journal["version"]!.GetValue<int>());
-        CollectionAssert.AreEquivalent(
+        Assert.AreSequenceEqual(
             FileKeys,
-            journal["files"]!.AsObject().Select(property => property.Key).ToArray());
+            journal["files"]!.AsObject().Select(property => property.Key).ToArray(),
+            SequenceOrder.InAnyOrder);
         Assert.IsEmpty(journal["userVariables"]!.AsObject());
         foreach (var (key, original) in fixture.OriginalFiles)
         {
-            CollectionAssert.AreEqual(original, Convert.FromBase64String(journal["files"]![key]!.GetValue<string>()));
+            Assert.AreSequenceEqual(original, Convert.FromBase64String(journal["files"]![key]!.GetValue<string>()));
         }
 
         fixture.MutateFiles();
@@ -260,7 +262,7 @@ public sealed class EnvironmentVariablesTestStateTests
             Assert.IsFalse(fixture.Variables.ContainsKey("Second"));
             fixture.AssertOriginalFile("moduleSettings");
             fixture.AssertOriginalFile("globalSettings");
-            CollectionAssert.AreEqual(journal, File.ReadAllBytes(fixture.JournalPath));
+            Assert.AreSequenceEqual(journal, File.ReadAllBytes(fixture.JournalPath));
         }
 
         fixture.FailStop = false;
@@ -357,7 +359,7 @@ public sealed class EnvironmentVariablesTestStateTests
         Assert.AreEqual("test mutation", fixture.Variables["Path"].Value);
         Assert.AreEqual("""{"run_elevated":false}""", File.ReadAllText(fixture.GlobalSettingsPath));
         Assert.AreEqual("must remain untouched", File.ReadAllText(unrelatedFile));
-        CollectionAssert.AreEqual(corruptJournal, File.ReadAllBytes(fixture.JournalPath));
+        Assert.AreSequenceEqual(corruptJournal, File.ReadAllBytes(fixture.JournalPath));
     }
 
     [TestMethod]
@@ -376,7 +378,7 @@ public sealed class EnvironmentVariablesTestStateTests
 
         Assert.ThrowsExactly<NotSupportedException>(() => state.TrackUserVariable("Unsupported"));
 
-        CollectionAssert.AreEqual(journal, File.ReadAllBytes(fixture.JournalPath));
+        Assert.AreSequenceEqual(journal, File.ReadAllBytes(fixture.JournalPath));
         fixture.Variables["Unsupported"] = new("supported", RegistryValueKind.String);
         state.TrackUserVariable("Unsupported");
         Assert.AreEqual(2, fixture.ReadAttempts);
@@ -419,7 +421,7 @@ public sealed class EnvironmentVariablesTestStateTests
             Assert.ThrowsExactly<IOException>(() => state.TrackUserVariable("Path"));
         }
 
-        CollectionAssert.AreEqual(originalJournal, File.ReadAllBytes(fixture.JournalPath));
+        Assert.AreSequenceEqual(originalJournal, File.ReadAllBytes(fixture.JournalPath));
         Assert.IsFalse(File.Exists(fixture.JournalPath + ".new"));
         fixture.Variables["Path"] = new("retry baseline", RegistryValueKind.String);
         state.TrackUserVariable("Path");
@@ -613,7 +615,7 @@ public sealed class EnvironmentVariablesTestStateTests
 
         internal void AssertOriginalFile(string key)
         {
-            CollectionAssert.AreEqual(OriginalFiles[key], File.ReadAllBytes(FilePaths[key]), key);
+            Assert.AreSequenceEqual(OriginalFiles[key], File.ReadAllBytes(FilePaths[key]), key);
         }
 
         internal void AssertOriginalFiles()

@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Workspaces.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     public sealed partial class WorkspacesTests
     {
         [TestMethod]
@@ -93,7 +94,7 @@ namespace Microsoft.Workspaces.UITests
                 "The cancelled capture window remained visible.");
             Assert.IsTrue(Editor.Has(By.AccessibilityId("NewProjectButton"), 15_000));
             AssertWorkspaceNames(name);
-            CollectionAssert.AreEqual(original, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Cancelling capture changed the stored workspaces.");
+            Assert.AreSequenceEqual(original, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Cancelling capture changed the stored workspaces.");
             Assert.IsFalse(File.Exists(WorkspaceTestState.TemporaryPath), "Cancelling before Capture unexpectedly created a snapshot.");
         }
 
@@ -108,7 +109,7 @@ namespace Microsoft.Workspaces.UITests
             Editor.Find<Button>(By.AccessibilityId("CancelButton")).Invoke(msPostAction: 0);
             Assert.IsTrue(Editor.Has(By.AccessibilityId("NewProjectButton"), 15_000));
             AssertWorkspaceNames();
-            CollectionAssert.AreEqual(original, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Cancelling the new workspace persisted it.");
+            Assert.AreSequenceEqual(original, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Cancelling the new workspace persisted it.");
             Assert.IsFalse(File.Exists(WorkspaceTestState.TemporaryPath), "The discarded temporary snapshot was not removed.");
         }
 

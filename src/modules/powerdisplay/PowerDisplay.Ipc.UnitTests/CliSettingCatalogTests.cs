@@ -15,6 +15,7 @@ namespace PowerDisplay.Ipc.UnitTests;
 /// metadata. These pin the catalog's shape so the read/write call sites that consume it cannot
 /// silently drift.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CliSettingCatalogTests
 {
@@ -23,7 +24,7 @@ public class CliSettingCatalogTests
     {
         var names = CliSettingCatalog.VcpSettings.Select(s => s.Name).ToArray();
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[]
             {
                 CliSettingNames.Brightness,
@@ -41,7 +42,7 @@ public class CliSettingCatalogTests
     {
         // Orientation is GDI-based, not a VCP setting, so it must not be in the VCP catalog.
         Assert.IsNull(CliSettingCatalog.TryGet(CliSettingNames.Orientation));
-        Assert.IsFalse(CliSettingCatalog.VcpSettings.Any(s => s.Name == CliSettingNames.Orientation));
+        Assert.DoesNotContain(s => s.Name == CliSettingNames.Orientation, CliSettingCatalog.VcpSettings);
     }
 
     [TestMethod]

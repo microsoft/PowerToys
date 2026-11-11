@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CardFormattingTests
 {
@@ -50,7 +51,7 @@ public class CardFormattingTests
     public void ScaleAndMaxCoverEverySeries()
     {
         var scaled = PerformanceChartData.Scale([1000f, 2500f], 1000f);
-        Assert.AreEqual(2, scaled.Length);
+        Assert.HasCount(2, scaled);
         Assert.AreEqual(1f, scaled[0]);
         Assert.AreEqual(2.5f, scaled[1]);
         Assert.AreEqual(9f, PerformanceChartData.Max([1f, 9f], [4f]));

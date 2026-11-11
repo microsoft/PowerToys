@@ -11,6 +11,7 @@ using AutomationButton = Microsoft.PowerToys.UITest.Next.Button;
 
 namespace Microsoft.CropAndLock.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     [DoNotParallelize]
     [TestCategory("CropAndLock")]

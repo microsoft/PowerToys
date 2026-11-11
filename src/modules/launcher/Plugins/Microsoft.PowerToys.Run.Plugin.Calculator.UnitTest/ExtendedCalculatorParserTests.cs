@@ -10,20 +10,21 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ExtendedCalculatorParserTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(null)]
         [DataRow("")]
         [DataRow("  ")]
         public void InputValid_ThrowError_WhenCalledNullOrEmpty(string input)
         {
             // Act
-            Assert.ThrowsException<ArgumentNullException>(() => CalculateHelper.InputValid(input));
+            Assert.ThrowsExactly<ArgumentNullException>(() => CalculateHelper.InputValid(input));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(null)]
         [DataRow("")]
         [DataRow("  ")]
@@ -33,10 +34,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var engine = new CalculateEngine();
 
             // Act
-            Assert.ThrowsException<ArgumentNullException>(() => engine.Interpret(input, CultureInfo.CurrentCulture, out _));
+            Assert.ThrowsExactly<ArgumentNullException>(() => engine.Interpret(input, CultureInfo.CurrentCulture, out _));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("test")]
         [DataRow("[10,10]")] // '[10,10]' is interpreted as array by mages engine
         public void Interpret_NoResult_WhenCalled(string input)
@@ -87,7 +88,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                 new object[] { "cosh(0)", 1M },
             };
 
-        [DataTestMethod]
+        [TestMethod]
         [DynamicData(nameof(Interpret_NoErrors_WhenCalledWithRounding_Data))]
         public void Interpret_NoErrors_WhenCalledWithRounding(string input, decimal expectedResult)
         {
@@ -99,7 +100,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.AreEqual(CalculateEngine.Round(expectedResult), result.RoundedResult);
         }
 
@@ -110,7 +110,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             };
 
         [DynamicData(nameof(Interpret_QuirkOutput_WhenCalled_Data))]
-        [DataTestMethod]
+        [TestMethod]
         public void Interpret_QuirkOutput_WhenCalled(string input, decimal expectedResult)
         {
             // Arrange
@@ -121,7 +121,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.AreEqual(expectedResult, result.Result);
         }
 
@@ -133,7 +132,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
     };
 
         [DynamicData(nameof(Interpret_GreaterPrecision_WhenCalled_Data))]
-        [DataTestMethod]
+        [TestMethod]
         public void Interpret_GreaterPrecision_WhenCalled(string input, decimal expectedResult)
         {
             // Arrange
@@ -144,7 +143,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.AreEqual(expectedResult, result.Result);
         }
 
@@ -156,7 +154,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                 new object[] { "4.5/3", 1.5M, "de-DE" },
             };
 
-        [DataTestMethod]
+        [TestMethod]
         [DynamicData(nameof(Interpret_DifferentCulture_WhenCalled_Data))]
         public void Interpret_DifferentCulture_WhenCalled(string input, decimal expectedResult, string cultureName)
         {
@@ -168,11 +166,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var result = engine.Interpret(input, cultureInfo, out _);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.AreEqual(CalculateEngine.Round(expectedResult), result.RoundedResult);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("log(3)", true)]
         [DataRow("ln(3)", true)]
         [DataRow("log2(3)", true)]
@@ -216,7 +213,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(valid, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("1-1")]
         [DataRow("sin(0)")]
         [DataRow("sinh(0)")]
@@ -230,7 +227,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.AreEqual(0.0M, result.Result);
         }
 
@@ -247,7 +243,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                new object[] { "0+(1*2)/0o004", 0.5M }, // Validate that division by an octal number with zeroes is not treated as division by zero.
            };
 
-        [DataTestMethod]
+        [TestMethod]
         [DynamicData(nameof(Interpret_MustReturnExpectedResult_WhenCalled_Data))]
         public void Interpret_MustReturnExpectedResult_WhenCalled(string input, decimal expectedResult)
         {
@@ -259,7 +255,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var result = engine.Interpret(input, new CultureInfo("en-us", false), out _);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.AreEqual(expectedResult, result.Result);
         }
 
@@ -270,7 +265,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                new object[] { "0,2E1", "pt-PT", 2M },
            };
 
-        [DataTestMethod]
+        [TestMethod]
         [DynamicData(nameof(Interpret_TestScientificNotation_WhenCalled_Data))]
         public void Interpret_TestScientificNotation_WhenCalled(string input, string sourceCultureName, decimal expectedResult)
         {
@@ -284,11 +279,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var result = engine.Interpret(translatedInput, new CultureInfo("en-US", false), out _);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.AreEqual(expectedResult, result.Result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("sin(90)", "sin((pi / 180) * (90))")]
         [DataRow("arcsin(0.5)", "(180 / pi) * (arcsin(0.5))")]
         [DataRow("sin(sin(30))", "sin((pi / 180) * (sin((pi / 180) * (30))))")]
@@ -319,7 +313,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(expectedResult, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("sin(90)", "sin((pi / 200) * (90))")]
         [DataRow("arcsin(0.5)", "(200 / pi) * (arcsin(0.5))")]
         [DataRow("sin(sin(30))", "sin((pi / 200) * (sin((pi / 200) * (30))))")]
@@ -350,7 +344,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(expectedResult, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("rad(30)", "(180 / pi) * (30)")]
         [DataRow("rad( 30 )", "(180 / pi) * ( 30 )")]
         [DataRow("deg(30)", "(30)")]
@@ -379,7 +373,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(expectedResult, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("rad(30)", "(30)")]
         [DataRow("rad( 30 )", "( 30 )")]
         [DataRow("deg(30)", "(pi / 180) * (30)")]
@@ -408,7 +402,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(expectedResult, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("rad(30)", "(200 / pi) * (30)")]
         [DataRow("rad( 30 )", "(200 / pi) * ( 30 )")]
         [DataRow("deg(30)", "(10 / 9) * (30)")]

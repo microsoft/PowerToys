@@ -7,10 +7,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Hosts.Tests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class EntryTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("\t\t10.1.1.1\t\thost\t\t", "10.1.1.1", "host", "", true)]
         [DataRow("  10.1.1.1  host  ", "10.1.1.1", "host", "", true)]
         [DataRow("10.1.1.1 host", "10.1.1.1", "host", "", true)]
@@ -37,7 +38,7 @@ namespace Hosts.Tests
             Assert.IsTrue(entry.Valid);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("\t\t10.1.1.1\t\thost host.local\t\t", "10.1.1.1", "host host.local", "", true)]
         [DataRow("  10.1.1.1  host  host.local  ", "10.1.1.1", "host host.local", "", true)]
         [DataRow("10.1.1.1 host host.local", "10.1.1.1", "host host.local", "", true)]
@@ -61,7 +62,7 @@ namespace Hosts.Tests
             Assert.IsTrue(entry.Valid);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("\t\t10.1.1.1\t\t")]
         [DataRow("  10.1.1.1  ")]
         [DataRow("10.1.1.1")]

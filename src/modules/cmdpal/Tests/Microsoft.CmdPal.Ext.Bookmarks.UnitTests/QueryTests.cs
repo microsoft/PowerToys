@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class QueryTests : CommandPaletteUnitTestBase
 {
@@ -20,7 +21,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         // Assert
         Assert.IsNotNull(bookmarks);
         Assert.IsNotNull(bookmarks.Data);
-        Assert.AreEqual(2, bookmarks.Data.Count);
+        Assert.HasCount(2, bookmarks.Data);
     }
 
     [TestMethod]

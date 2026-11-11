@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class FuzzyMatcherNormalizationTests
 {

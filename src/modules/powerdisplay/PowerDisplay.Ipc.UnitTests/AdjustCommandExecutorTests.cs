@@ -18,6 +18,7 @@ namespace PowerDisplay.Ipc.UnitTests;
 /// <summary>
 /// Unit tests for <see cref="AdjustCommandExecutor"/> (relative up/down on continuous settings).
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class AdjustCommandExecutorTests
 {

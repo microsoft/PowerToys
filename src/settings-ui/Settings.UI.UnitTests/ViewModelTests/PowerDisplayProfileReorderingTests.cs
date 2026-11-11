@@ -19,6 +19,7 @@ using PowerToys.Interop;
 
 namespace ViewModelTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class PowerDisplayProfileReorderingTests
 {
@@ -34,7 +35,7 @@ public class PowerDisplayProfileReorderingTests
     {
         var store = new ProfileSession();
         using var viewModel = CreateViewModel(store, elevated);
-        await viewModel.InitializeProfilesAsync();
+        await viewModel.InitializeProfilesAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(!elevated, viewModel.CanDragProfiles);
         Assert.AreEqual(elevated, viewModel.IsProfileDragDisabledByElevation);
@@ -54,7 +55,7 @@ public class PowerDisplayProfileReorderingTests
         var store = new ProfileSession();
         store.Data.Profiles.Clear();
         using var viewModel = CreateViewModel(store, elevated: true);
-        await viewModel.InitializeProfilesAsync();
+        await viewModel.InitializeProfilesAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(viewModel.IsProfileDragDisabledByElevation);
         Assert.IsFalse(viewModel.HasProfiles);
@@ -65,7 +66,7 @@ public class PowerDisplayProfileReorderingTests
     {
         var store = new ProfileSession();
         using var viewModel = CreateViewModel(store);
-        await viewModel.InitializeProfilesAsync();
+        await viewModel.InitializeProfilesAsync(TestContext.CancellationToken);
         var observedEmptyList = false;
         viewModel.PropertyChanged += (_, args) =>
         {
@@ -82,7 +83,7 @@ public class PowerDisplayProfileReorderingTests
         AssertOrder(viewModel, ThirdId, FirstId, SecondId);
 
         // The persisted array is the display order; moving an entry preserves its stable id.
-        CollectionAssert.AreEqual(new[] { ThirdId, FirstId, SecondId }, store.Data.Profiles.Select(profile => profile.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { ThirdId, FirstId, SecondId }, store.Data.Profiles.Select(profile => profile.Id).ToArray());
         Assert.AreEqual(1, store.Notifications);
         Assert.IsFalse(observedEmptyList);
         Assert.IsFalse(viewModel.IsProfileReorderError);
@@ -93,7 +94,7 @@ public class PowerDisplayProfileReorderingTests
     {
         var store = new ProfileSession { PendingWrite = new TaskCompletionSource<bool>() };
         using var viewModel = CreateViewModel(store);
-        await viewModel.InitializeProfilesAsync();
+        await viewModel.InitializeProfilesAsync(TestContext.CancellationToken);
 
         var save = viewModel.ReorderProfileAsync(ThirdId, FirstId);
         Assert.IsTrue(viewModel.IsProfilesLoading);
@@ -114,7 +115,7 @@ public class PowerDisplayProfileReorderingTests
     {
         var store = new ProfileSession();
         using var viewModel = CreateViewModel(store);
-        await viewModel.InitializeProfilesAsync();
+        await viewModel.InitializeProfilesAsync(TestContext.CancellationToken);
         viewModel.Profiles.Move(2, 0);
         store.Data.RemoveProfile(ThirdId);
 
@@ -129,7 +130,7 @@ public class PowerDisplayProfileReorderingTests
     {
         var store = new ProfileSession();
         using var viewModel = CreateViewModel(store);
-        await viewModel.InitializeProfilesAsync();
+        await viewModel.InitializeProfilesAsync(TestContext.CancellationToken);
         viewModel.Profiles.Move(2, 0);
         store.FailWrite = true;
 
@@ -151,7 +152,7 @@ public class PowerDisplayProfileReorderingTests
     {
         var store = new ProfileSession();
         using var viewModel = CreateViewModel(store);
-        await viewModel.InitializeProfilesAsync();
+        await viewModel.InitializeProfilesAsync(TestContext.CancellationToken);
         viewModel.Profiles.Move(2, 0);
         store.FailWrite = true;
         store.FailRead = true;
@@ -168,7 +169,7 @@ public class PowerDisplayProfileReorderingTests
     {
         var store = new ProfileSession();
         using var viewModel = CreateViewModel(store);
-        await viewModel.InitializeProfilesAsync();
+        await viewModel.InitializeProfilesAsync(TestContext.CancellationToken);
         store.FailRead = true;
 
         await viewModel.MoveProfileUpAsync(viewModel.Profiles[2]);
@@ -183,7 +184,7 @@ public class PowerDisplayProfileReorderingTests
     {
         var store = new ProfileSession();
         using var viewModel = CreateViewModel(store);
-        await viewModel.InitializeProfilesAsync();
+        await viewModel.InitializeProfilesAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(viewModel.CanMoveProfileUp(viewModel.Profiles[0]));
         Assert.IsFalse(viewModel.CanMoveProfileDown(viewModel.Profiles[2]));
@@ -200,7 +201,7 @@ public class PowerDisplayProfileReorderingTests
     {
         var store = new ProfileSession();
         using var viewModel = CreateViewModel(store, enabled: false);
-        await viewModel.InitializeProfilesAsync();
+        await viewModel.InitializeProfilesAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(viewModel.CanDragProfiles);
         Assert.IsFalse(viewModel.CanMoveProfileUp(viewModel.Profiles[1]));
@@ -214,14 +215,14 @@ public class PowerDisplayProfileReorderingTests
         var store = new ProfileSession { FailRead = true };
         using var viewModel = CreateViewModel(store);
 
-        await viewModel.InitializeProfilesAsync();
+        await viewModel.InitializeProfilesAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(viewModel.HasProfiles);
         Assert.IsFalse(viewModel.IsProfilesLoading);
         Assert.IsTrue(viewModel.IsProfileReorderError);
 
         store.FailRead = false;
-        await viewModel.InitializeProfilesAsync();
+        await viewModel.InitializeProfilesAsync(TestContext.CancellationToken);
         AssertOrder(viewModel, FirstId, SecondId, ThirdId);
         Assert.IsFalse(viewModel.IsProfileReorderError);
     }
@@ -233,7 +234,7 @@ public class PowerDisplayProfileReorderingTests
     {
         var store = new ProfileSession();
         using var viewModel = CreateViewModel(store);
-        await viewModel.InitializeProfilesAsync();
+        await viewModel.InitializeProfilesAsync(TestContext.CancellationToken);
         store.FailWrite = true;
         await viewModel.ReorderProfileAsync(ThirdId, FirstId);
         Assert.IsTrue(viewModel.IsProfileReorderError);
@@ -262,7 +263,7 @@ public class PowerDisplayProfileReorderingTests
     {
         var store = new ProfileSession();
         using var viewModel = CreateViewModel(store);
-        await viewModel.InitializeProfilesAsync();
+        await viewModel.InitializeProfilesAsync(TestContext.CancellationToken);
         store.FailWrite = true;
         await viewModel.ReorderProfileAsync(ThirdId, FirstId);
         Assert.IsTrue(viewModel.IsProfileReorderError);
@@ -281,7 +282,7 @@ public class PowerDisplayProfileReorderingTests
     {
         var store = new ProfileSession { FailRead = true };
         using var viewModel = CreateViewModel(store);
-        await viewModel.InitializeProfilesAsync();
+        await viewModel.InitializeProfilesAsync(TestContext.CancellationToken);
         Assert.IsTrue(viewModel.IsProfileReorderError);
 
         store.FailRead = false;
@@ -298,7 +299,7 @@ public class PowerDisplayProfileReorderingTests
     {
         var store = new ProfileSession { FailRead = true };
         using var viewModel = CreateViewModel(store);
-        await viewModel.InitializeProfilesAsync();
+        await viewModel.InitializeProfilesAsync(TestContext.CancellationToken);
         Assert.IsTrue(viewModel.IsProfileReorderError);
 
         await viewModel.CreateProfileAsync(CreateProfile(0, "Added"));
@@ -322,7 +323,7 @@ public class PowerDisplayProfileReorderingTests
         ]);
         using var viewModel = CreateViewModel(store);
 
-        await viewModel.InitializeProfilesAsync();
+        await viewModel.InitializeProfilesAsync(TestContext.CancellationToken);
 
         AssertOrder(viewModel, SecondId, ThirdId, FirstId);
         Assert.AreEqual(0, store.Writes);
@@ -337,7 +338,7 @@ public class PowerDisplayProfileReorderingTests
     }
 
     private static void AssertOrder(PowerDisplayViewModel viewModel, params int[] ids)
-        => CollectionAssert.AreEqual(ids, viewModel.Profiles.Select(p => p.Id).ToArray());
+        => Assert.AreSequenceEqual(ids, viewModel.Profiles.Select(p => p.Id).ToArray());
 
     private static PowerDisplayViewModel CreateViewModel(ProfileSession store, bool elevated = false, bool enabled = true)
     {
@@ -434,4 +435,6 @@ public class PowerDisplayProfileReorderingTests
             return Data.MoveProfileBefore(id, beforeId);
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

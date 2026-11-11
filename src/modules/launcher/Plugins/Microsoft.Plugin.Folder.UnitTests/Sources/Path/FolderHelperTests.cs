@@ -8,10 +8,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Plugin.Folder.Sources.Tests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class FolderHelperTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(@"%SYSTEMDRIVE%", true)]
         [DataRow(@"%O%S", false)]
         [DataRow(@"abcd", false)]

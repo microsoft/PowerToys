@@ -26,6 +26,7 @@ using Windows.ApplicationModel.DataTransfer;
 namespace AdvancedPaste.UnitTests.ServicesTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class KernelProviderRoutingTests
 {
     [TestMethod]
@@ -46,7 +47,7 @@ public sealed class KernelProviderRoutingTests
     public async Task SavedCustomActionTool_UsesSelectedProviderInsteadOfActiveProvider()
     {
         var fixture = new Fixture(provider => provider.Id == "B");
-        fixture.SetCompletion(kernel => kernel.InvokeAsync("Actions", "SavedAction"));
+        fixture.SetCompletion(kernel => kernel.InvokeAsync("Actions", "SavedAction", cancellationToken: TestContext.CancellationToken));
 
         var output = await fixture.TransformAsync("saved query", "B");
 
@@ -58,7 +59,7 @@ public sealed class KernelProviderRoutingTests
     public async Task CachedSavedActionChain_UsesCurrentInvocationProvider()
     {
         var fixture = new Fixture();
-        fixture.SetCompletion(kernel => kernel.InvokeAsync("Actions", "SavedAction"));
+        fixture.SetCompletion(kernel => kernel.InvokeAsync("Actions", "SavedAction", cancellationToken: TestContext.CancellationToken));
 
         var firstOutput = await fixture.TransformAsync("same query", "A");
         Assert.AreEqual("A", await firstOutput.GetView().GetTextAsync());
@@ -85,7 +86,7 @@ public sealed class KernelProviderRoutingTests
                 bothEntered.SetResult(true);
             }
 
-            await bothEntered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await bothEntered.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
             await InvokeStandardToolAsync(kernel, "concurrent prompt");
         });
 
@@ -121,7 +122,7 @@ public sealed class KernelProviderRoutingTests
                 {
                     try
                     {
-                        await kernel.InvokeAsync("Actions", nameof(PasteFormats.PlainText));
+                        await kernel.InvokeAsync("Actions", nameof(PasteFormats.PlainText), cancellationToken: TestContext.CancellationToken);
                     }
                     catch (Exception)
                     {
@@ -131,7 +132,7 @@ public sealed class KernelProviderRoutingTests
             },
             "assistant response");
 
-        await Assert.ThrowsExceptionAsync<ProviderPolicyDisabledException>(() => fixture.TransformAsync("query", "B"));
+        await Assert.ThrowsExactlyAsync<ProviderPolicyDisabledException>(() => fixture.TransformAsync("query", "B"));
 
         fixture.VerifyNoProviderAccess();
     }
@@ -145,7 +146,7 @@ public sealed class KernelProviderRoutingTests
         fixture.SetCompletion(
             async kernel =>
             {
-                await kernel.InvokeAsync("Actions", nameof(PasteFormats.PlainText));
+                await kernel.InvokeAsync("Actions", nameof(PasteFormats.PlainText), cancellationToken: TestContext.CancellationToken);
                 try
                 {
                     await InvokeStandardToolAsync(kernel, "tool prompt");
@@ -163,7 +164,7 @@ public sealed class KernelProviderRoutingTests
             },
             "assistant response");
 
-        await Assert.ThrowsExceptionAsync<ProviderPolicyDisabledException>(() => fixture.TransformAsync("query", "B"));
+        await Assert.ThrowsExactlyAsync<ProviderPolicyDisabledException>(() => fixture.TransformAsync("query", "B"));
 
         fixture.VerifyNoProviderAccess();
     }
@@ -237,7 +238,7 @@ public sealed class KernelProviderRoutingTests
             var serviceType = providerId == "A" ? AIServiceType.OpenAI : AIServiceType.AzureOpenAI;
             credentials.Verify(instance => instance.GetKey(serviceType, providerId), times);
             providerFactory.Verify(instance => instance.CreateProvider(It.Is<PasteAIConfig>(config => config.Model == providerId && config.ProviderType == serviceType)), times);
-            Assert.IsTrue(requests.Any(request => request.ProviderId == providerId && request.Prompt == prompt));
+            Assert.Contains(request => request.ProviderId == providerId && request.Prompt == prompt, requests);
         }
 
         public void VerifyCompletion(Times times) =>
@@ -289,4 +290,6 @@ public sealed class KernelProviderRoutingTests
 
         public bool ModerationEnabled => false;
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

@@ -17,6 +17,7 @@ namespace Microsoft.PowerToys.FileLocksmith.UITests;
 /// instead of Explorer, so a failure points at the window rather than at the shell.
 /// <see cref="FileLocksmithContextMenuTests"/> owns the context-menu surface.
 /// </remarks>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class FileLocksmithProcessListTests : UITestBase
@@ -64,7 +65,7 @@ public sealed class FileLocksmithProcessListTests : UITestBase
     /// Checklist: End task on each listed process terminates it and removes its row, leaving the
     /// empty-list state behind.
     /// </summary>
-    [TestMethod("FileLocksmith.List.EndTask")]
+    [TestMethod(DisplayName = "FileLocksmith.List.EndTask")]
     [TestCategory("File Locksmith")]
     public void EndTaskTerminatesEachProcessAndRemovesItsRow()
     {
@@ -77,7 +78,7 @@ public sealed class FileLocksmithProcessListTests : UITestBase
         for (var remaining = 2; remaining > 0; remaining--)
         {
             var endTaskLabels = FileLocksmithUi.EndTaskLabels(ui);
-            Assert.AreEqual(remaining, endTaskLabels.Count, "Every listed process must offer its own End task button.");
+            Assert.HasCount(remaining, endTaskLabels, "Every listed process must offer its own End task button.");
             endTaskLabels[0].Click();
 
             Assert.IsTrue(
@@ -98,7 +99,7 @@ public sealed class FileLocksmithProcessListTests : UITestBase
     /// <summary>
     /// Checklist: a process started after the scan is only picked up once Reload is pressed.
     /// </summary>
-    [TestMethod("FileLocksmith.List.Reload")]
+    [TestMethod(DisplayName = "FileLocksmith.List.Reload")]
     [TestCategory("File Locksmith")]
     public void ReloadRediscoversRestartedProcess()
     {
@@ -124,7 +125,7 @@ public sealed class FileLocksmithProcessListTests : UITestBase
     /// <summary>
     /// Checklist: closing a listed process delists it automatically, with no manual refresh.
     /// </summary>
-    [TestMethod("FileLocksmith.List.AutoDelist")]
+    [TestMethod(DisplayName = "FileLocksmith.List.AutoDelist")]
     [TestCategory("File Locksmith")]
     public void ExitedProcessIsDelistedWithoutReload()
     {
@@ -152,7 +153,7 @@ public sealed class FileLocksmithProcessListTests : UITestBase
     /// assertions live in the file and directory tests, and this one asserts the volume-wide scan
     /// produced rows at all and stayed alive while they were scrolled.
     /// </remarks>
-    [TestMethod("FileLocksmith.List.DriveScan")]
+    [TestMethod(DisplayName = "FileLocksmith.List.DriveScan")]
     [TestCategory("File Locksmith")]
     public void DriveScanListsLockingProcessesAndSurvivesScrolling()
     {
@@ -187,7 +188,7 @@ public sealed class FileLocksmithProcessListTests : UITestBase
     /// Checklist: a non-elevated File Locksmith cannot see a higher-integrity process and offers
     /// "Restart as administrator"; the elevated window drops that button and does see the process.
     /// </summary>
-    [TestMethod("FileLocksmith.List.Elevation")]
+    [TestMethod(DisplayName = "FileLocksmith.List.Elevation")]
     [TestCategory("File Locksmith")]
     public void NonElevatedInstanceCannotSeeElevatedProcess()
     {
@@ -267,8 +268,9 @@ public sealed class FileLocksmithProcessListTests : UITestBase
         FileLocksmithUi.WaitForProcess(FileLocksmithConstants.UiProcessName, expected: true, timeoutMS: 2_000),
         message);
 
-    private static void AssertListedProcesses(Session ui, string message) => Assert.IsTrue(
-        FileLocksmithUi.CountRows(ui, timeoutMS: 30_000) > 0,
+    private static void AssertListedProcesses(Session ui, string message) => Assert.IsGreaterThan(
+        0,
+        FileLocksmithUi.CountRows(ui, timeoutMS: 30_000),
         message);
 
     private LockingProcessFixture CreateFixture()

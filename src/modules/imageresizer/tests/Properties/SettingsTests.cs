@@ -20,6 +20,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ImageResizer.Properties
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class SettingsTests
     {
@@ -92,7 +93,7 @@ namespace ImageResizer.Properties
             };
 
             settings.Sizes.Add(new ResizeSize());
-            CollectionAssert.Contains(settings.AllSizes.ToList(), settings.Sizes[0]);
+            Assert.Contains(settings.Sizes[0], settings.AllSizes.ToList());
         }
 
         [TestMethod]
@@ -104,7 +105,7 @@ namespace ImageResizer.Properties
             };
             settings.Sizes.Clear();
 
-            CollectionAssert.Contains(settings.AllSizes.ToList(), settings.CustomSize);
+            Assert.Contains(settings.CustomSize, settings.AllSizes.ToList());
         }
 
         [TestMethod]
@@ -159,7 +160,7 @@ namespace ImageResizer.Properties
             settings.Save();
 
             var json = System.IO.File.ReadAllText(Settings.SettingsPath);
-            StringAssert.Contains(json, "\"imageresizer_fileName\"");
+            Assert.Contains("\"imageresizer_fileName\"", json);
             Assert.IsFalse(json.Contains("FileNameFormat", System.StringComparison.Ordinal), json);
         }
 
@@ -194,7 +195,7 @@ namespace ImageResizer.Properties
             Assert.AreEqual("{0}_old", settings.FileNameFormat);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(0)]
         [DataRow(1)]
         [DataRow(2)]
@@ -236,7 +237,7 @@ namespace ImageResizer.Properties
             Assert.AreEqual(result, string.Empty);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(0)]
         [DataRow(101)]
         public void IDataErrorInfoItemJpegQualityLevelReturnsErrorWhenOutOfRange(int value)
@@ -253,7 +254,7 @@ namespace ImageResizer.Properties
                 result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(1)]
         [DataRow(100)]
         public void IDataErrorInfoItemJpegQualityLevelReturnsEmptyWhenInRange(int value)
@@ -435,7 +436,7 @@ namespace ImageResizer.Properties
             Assert.AreEqual(1, (int)resultWrapper2.Properties.PngInterlaceOption);
             Assert.AreEqual(1, (int)resultWrapper2.Properties.TiffCompressOption);
             Assert.AreEqual("%1 %1 (%2)", resultWrapper2.Properties.FileName);
-            Assert.AreEqual(2, resultWrapper2.Properties.Sizes.Count);
+            Assert.HasCount(2, resultWrapper2.Properties.Sizes);
             Assert.IsFalse(resultWrapper2.Properties.KeepDateModified);
             Assert.AreEqual("Small-NotDefault", resultWrapper2.Properties.Sizes[0].Name);
         }
@@ -738,7 +739,7 @@ namespace ImageResizer.Properties
 
             settings.Reload();
 
-            Assert.AreEqual(2, settings.Sizes.Count, "There should be two sizes after reload.");
+            Assert.HasCount(2, settings.Sizes, "There should be two sizes after reload.");
             Assert.AreEqual(0, settings.Sizes[0].Id, "First size should keep its original ID.");
             Assert.AreEqual(1, settings.Sizes[1].Id, "Second size should have been assigned a new unique ID.");
             Assert.AreEqual(0, settings.SelectedSizeIndex, "SelectedSizeIndex should still refer to the first size.");

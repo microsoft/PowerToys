@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class PlaceholderParserTests
 {
@@ -88,22 +89,23 @@ public class PlaceholderParserTests
         // Assert
         Assert.AreEqual(expectedResult, result);
         Assert.AreEqual(expectedHead, head);
-        Assert.AreEqual(expectedPlaceholderNames.Length, placeholders.Count);
+        Assert.HasCount(expectedPlaceholderNames.Length, placeholders);
 
         var actualNames = placeholders.Select(p => p.Name).ToArray();
         var actualIndexes = placeholders.Select(p => p.Index).ToArray();
 
         // Validate names and indexes (allow duplicates, ignore order)
-        CollectionAssert.AreEquivalent(expectedPlaceholderNames, actualNames);
-        CollectionAssert.AreEquivalent(expectedIndexes, actualIndexes);
+        Assert.AreSequenceEqual(expectedPlaceholderNames, actualNames, SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(expectedIndexes, actualIndexes, SequenceOrder.InAnyOrder);
 
         // Validate name-index pairing exists for each expected placeholder occurrence
         for (var i = 0; i < expectedPlaceholderNames.Length; i++)
         {
             var expectedName = expectedPlaceholderNames[i];
             var expectedIndex = expectedIndexes[i];
-            Assert.IsTrue(
-                placeholders.Any(p => p.Name == expectedName && p.Index == expectedIndex),
+            Assert.Contains(
+                p => p.Name == expectedName && p.Index == expectedIndex,
+                placeholders,
                 $"Expected placeholder '{{{expectedName}}}' at index {expectedIndex} was not found.");
         }
     }
@@ -122,16 +124,16 @@ public class PlaceholderParserTests
         // Assert
         Assert.AreEqual(expectedResult, result);
         Assert.AreEqual(expectedHead, head);
-        Assert.AreEqual(expectedPlaceholderNames.Length, placeholders.Count);
+        Assert.HasCount(expectedPlaceholderNames.Length, placeholders);
 
         var actualNames = placeholders.Select(p => p.Name).ToArray();
-        CollectionAssert.AreEquivalent(expectedPlaceholderNames, actualNames);
+        Assert.AreSequenceEqual(expectedPlaceholderNames, actualNames, SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
     public void ParsePlaceholders_NullInput_ThrowsArgumentNullException()
     {
-        Assert.ThrowsException<ArgumentNullException>(() => _parser.ParsePlaceholders(null!, out _, out _));
+        Assert.ThrowsExactly<ArgumentNullException>(() => _parser.ParsePlaceholders(null!, out _, out _));
     }
 
     [TestMethod]
@@ -165,13 +167,13 @@ public class PlaceholderParserTests
     public void Placeholder_Constructor_ThrowsOnNull()
     {
         // Assert
-        Assert.ThrowsException<ArgumentNullException>(() => new PlaceholderInfo(null!, 0));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new PlaceholderInfo(null!, 0));
     }
 
     [TestMethod]
     public void Placeholder_Constructor_ThrowsArgumentOutOfRange()
     {
         // Assert
-        Assert.ThrowsException<ArgumentOutOfRangeException>(() => new PlaceholderInfo("Name", -1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new PlaceholderInfo("Name", -1));
     }
 }

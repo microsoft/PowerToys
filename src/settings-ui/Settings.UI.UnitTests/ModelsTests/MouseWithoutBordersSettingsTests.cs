@@ -11,6 +11,7 @@ using Settings.UI.Library.Attributes;
 
 namespace CommonLibTest
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class MouseWithoutBordersSettingsTests
     {
@@ -98,7 +99,7 @@ namespace CommonLibTest
         [DataRow("{\"properties\":{\"AllowNonConsoleSessions\":{\"value\":1}}}")]
         public void MalformedNonConsoleSettingIsNotSilentlyCoerced(string json)
         {
-            Assert.ThrowsException<JsonException>(() => JsonSerializer.Deserialize(json, SettingsSerializationContext.Default.MouseWithoutBordersSettings));
+            Assert.ThrowsExactly<JsonException>(() => JsonSerializer.Deserialize(json, SettingsSerializationContext.Default.MouseWithoutBordersSettings));
         }
     }
 }

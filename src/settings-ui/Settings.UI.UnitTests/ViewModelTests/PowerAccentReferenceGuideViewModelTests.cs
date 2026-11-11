@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ViewModelTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class PowerAccentReferenceGuideViewModelTests
     {
@@ -19,7 +20,7 @@ namespace ViewModelTests
             var selectedGroup = viewModel.FilteredGroups.First();
 
             Assert.AreEqual("Selected sets", selectedGroup.GroupHeader);
-            Assert.IsTrue(selectedGroup.Languages.Any(language => language.DisplayName == "French" && language.IsSelected));
+            Assert.Contains(language => language.DisplayName == "French" && language.IsSelected, selectedGroup.Languages);
         }
 
         [TestMethod]
@@ -29,7 +30,7 @@ namespace ViewModelTests
 
             var languageGroup = viewModel.FilteredGroups.First(group => group.GroupHeader == "Language sets");
 
-            Assert.IsTrue(languageGroup.Languages.Any(language => language.DisplayName == "German" && !language.IsSelected));
+            Assert.Contains(language => language.DisplayName == "German" && !language.IsSelected, languageGroup.Languages);
         }
 
         [TestMethod]
@@ -37,7 +38,7 @@ namespace ViewModelTests
         {
             var viewModel = CreateViewModel([]);
 
-            Assert.IsFalse(viewModel.FilteredGroups.Any(group => group.GroupHeader == "Selected sets"));
+            Assert.DoesNotContain(group => group.GroupHeader == "Selected sets", viewModel.FilteredGroups);
         }
 
         [TestMethod]
@@ -45,7 +46,7 @@ namespace ViewModelTests
         {
             var viewModel = CreateViewModel(["NotALanguage"]);
 
-            Assert.IsFalse(viewModel.FilteredGroups.Any(group => group.GroupHeader == "Selected sets"));
+            Assert.DoesNotContain(group => group.GroupHeader == "Selected sets", viewModel.FilteredGroups);
         }
 
         [TestMethod]
@@ -56,12 +57,13 @@ namespace ViewModelTests
             viewModel.SearchQuery = "ß";
 
             Assert.IsFalse(viewModel.IsEmpty);
-            Assert.IsTrue(viewModel.FilteredGroups.SelectMany(group => group.Languages).Any(language => language.DisplayName == "German"));
-            Assert.IsTrue(viewModel.FilteredGroups
+            Assert.Contains(language => language.DisplayName == "German", viewModel.FilteredGroups.SelectMany(group => group.Languages));
+            Assert.Contains(
+                character => character.Value.Contains('ß'),
+                viewModel.FilteredGroups
                 .SelectMany(group => group.Languages)
                 .SelectMany(language => language.KeyMappings)
-                .SelectMany(mapping => mapping.Characters)
-                .Any(character => character.Value.Contains('ß')));
+                .SelectMany(mapping => mapping.Characters));
         }
 
         [TestMethod]
@@ -72,7 +74,7 @@ namespace ViewModelTests
             viewModel.SearchQuery = "No matching character";
 
             Assert.IsTrue(viewModel.IsEmpty);
-            Assert.AreEqual(0, viewModel.FilteredGroups.Count);
+            Assert.IsEmpty(viewModel.FilteredGroups);
         }
 
         [TestMethod]
@@ -84,7 +86,7 @@ namespace ViewModelTests
             viewModel.SearchQuery = "ß";
             viewModel.SearchQuery = string.Empty;
 
-            Assert.AreEqual(originalCount, viewModel.FilteredGroups.Count);
+            Assert.HasCount(originalCount, viewModel.FilteredGroups);
         }
 
         [TestMethod]

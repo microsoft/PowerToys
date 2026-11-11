@@ -17,6 +17,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class DockMonitorRenameTests
 {
@@ -71,7 +72,7 @@ public class DockMonitorRenameTests
         Assert.AreEqual("办公桌右屏", viewModel.DisplayName);
         Assert.AreEqual("办公桌右屏", viewModel.DisplayNameInput);
         Assert.AreEqual("Wireless display", viewModel.DefaultDisplayName);
-        Assert.IsTrue(changedProperties.Contains(nameof(viewModel.DisplayName)));
+        Assert.Contains(nameof(viewModel.DisplayName), changedProperties);
         Assert.IsFalse(viewModel.SaveDisplayNameCommand.CanExecute(null));
         Assert.IsTrue(viewModel.ResetDisplayNameCommand.CanExecute(null));
         settingsService.Verify(s => s.UpdateSettings(It.IsAny<Func<SettingsModel, SettingsModel>>(), It.IsAny<bool>()), Times.Once);
@@ -191,7 +192,7 @@ public class DockMonitorRenameTests
         var config = reconnected.Single(c => string.Equals(c.MonitorDeviceId, WirelessMonitor.StableId, StringComparison.OrdinalIgnoreCase));
         var (newViewModel, _) = CreateEditor(config, reconnectedMonitor);
 
-        Assert.AreEqual(2, reconnected.Count);
+        Assert.HasCount(2, reconnected);
         Assert.AreEqual("客厅电视", newViewModel.DisplayName);
         Assert.AreEqual("客厅电视", newViewModel.DisplayNameInput);
         Assert.AreEqual("Updated hardware name", newViewModel.DefaultDisplayName);

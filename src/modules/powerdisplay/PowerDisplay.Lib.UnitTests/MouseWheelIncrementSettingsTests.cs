@@ -15,6 +15,7 @@ namespace PowerDisplay.UnitTests;
 /// settings.json written before the feature existed deserializes to the default of 5 with no
 /// migration.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class MouseWheelIncrementSettingsTests
 {
@@ -67,6 +68,6 @@ public class MouseWheelIncrementSettingsTests
 
         var json = JsonSerializer.Serialize(properties);
 
-        StringAssert.Contains(json, "\"mouse_wheel_increment\":10");
+        Assert.Contains("\"mouse_wheel_increment\":10", json);
     }
 }

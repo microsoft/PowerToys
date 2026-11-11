@@ -10,6 +10,7 @@ using PowerDisplay.Models;
 
 namespace CommonLibTest
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class AdditionalCollectionPropertySerializationTests
     {

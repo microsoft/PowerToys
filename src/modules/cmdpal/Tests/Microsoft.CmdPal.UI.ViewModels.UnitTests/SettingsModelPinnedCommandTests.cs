@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class SettingsModelPinnedCommandTests
 {
@@ -27,7 +28,7 @@ public class SettingsModelPinnedCommandTests
             placeAfter: false);
 
         string[] expectedOrder = ["first", "stale", "last", "target"];
-        CollectionAssert.AreEqual(expectedOrder, updated.PinnedCommands.Select(pin => pin.CommandId).ToArray());
+        Assert.AreSequenceEqual(expectedOrder, updated.PinnedCommands.Select(pin => pin.CommandId).ToArray());
     }
 
     [TestMethod]
@@ -47,8 +48,8 @@ public class SettingsModelPinnedCommandTests
 
         string[] expectedOrder = ["second", "target", "first"];
         string[] expectedProviderOrder = ["second", "first"];
-        CollectionAssert.AreEqual(expectedOrder, updated.PinnedCommands.Select(pin => pin.CommandId).ToArray());
-        CollectionAssert.AreEqual(expectedProviderOrder, updated.GetPinnedCommandIds("provider-a").ToArray());
+        Assert.AreSequenceEqual(expectedOrder, updated.PinnedCommands.Select(pin => pin.CommandId).ToArray());
+        Assert.AreSequenceEqual(expectedProviderOrder, updated.GetPinnedCommandIds("provider-a").ToArray());
     }
 
     [TestMethod]

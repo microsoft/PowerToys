@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class GeneratedIconProtocolTests
 {
@@ -20,7 +21,7 @@ public class GeneratedIconProtocolTests
     private static readonly GeneratedIconProtocolProcessor TestProcessor = new(TryCreateTestInitialsPathData);
     private static readonly IIconProtocolProcessor[] TestProcessors = [TestProcessor];
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("|Swatch|#07A|", "#0077AA", null)]
     [DataRow("|Swatch|#807A|", "#0077AA", "0.533")]
     [DataRow("|Swatch|#102030", "#102030", null)]
@@ -60,7 +61,7 @@ public class GeneratedIconProtocolTests
         Assert.AreEqual(ElementTheme.Default, GeneratedIconProtocol.GetCacheTheme(Value, ElementTheme.Dark));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("danger", "#C42B1C", "#FF99A4", true, null)]
     [DataRow("subtle", "#616161", "#C5C5C5", true, null)]
     [DataRow("info", "#0067C0", "#60CDFF", true, null)]
@@ -164,7 +165,7 @@ public class GeneratedIconProtocolTests
         Assert.AreNotEqual(GetBackgroundGeometry(circleSwatch), GetBackgroundGeometry(squareSwatch));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Æ")]
     [DataRow("Ж")]
     [DataRow("Ω")]
@@ -212,12 +213,12 @@ public class GeneratedIconProtocolTests
         var expected = GeneratedIconProtocol.GetCacheIdentity(Precomposed);
         Assert.AreEqual(expected, GeneratedIconProtocol.GetCacheIdentity(Decomposed));
         Assert.AreEqual(expected, GeneratedIconProtocol.GetCacheIdentity(EscapedPrecomposed));
-        StringAssert.Contains(
-            GeneratedIconProtocol.GetCacheIdentity("|Initials|A%7CB|#0067C0|circle|"),
-            "A%7CB");
-        StringAssert.Contains(
-            GeneratedIconProtocol.GetCacheIdentity("|Initials|%25|#0067C0|circle|"),
-            "%25");
+        Assert.Contains(
+            "A%7CB",
+            GeneratedIconProtocol.GetCacheIdentity("|Initials|A%7CB|#0067C0|circle|"));
+        Assert.Contains(
+            "%25",
+            GeneratedIconProtocol.GetCacheIdentity("|Initials|%25|#0067C0|circle|"));
         Assert.AreEqual(
             GeneratedIconProtocol.GetCacheIdentity(CanonicalAscii),
             GeneratedIconProtocol.GetCacheIdentity(LowercaseAscii));
@@ -226,7 +227,7 @@ public class GeneratedIconProtocolTests
             GeneratedIconProtocol.GetCacheIdentity(PaddedAscii));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("|Swatch|#fff|", "|Swatch|#FFF|")]
     [DataRow("|Swatch|#abcdef|#a1b2c3|", "|Swatch|#ABCDEF|#A1B2C3|")]
     [DataRow("|Swatch|INFO|SQUARE|", "|Swatch|info|square|")]
@@ -241,7 +242,7 @@ public class GeneratedIconProtocolTests
             GeneratedIconProtocol.GetCacheIdentity(value));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("|Swatch|#FFF|")]
     [DataRow("|Swatch|#ABCDEF|#A1B2C3|")]
     [DataRow("|Swatch|info|square|")]
@@ -265,7 +266,7 @@ public class GeneratedIconProtocolTests
         Assert.IsNull(root.Element(SvgName("path")));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow("|Swatch|")]
@@ -290,7 +291,7 @@ public class GeneratedIconProtocolTests
     {
         var (success, svg) = await TryCreateSvgAsync(value, ElementTheme.Light);
         Assert.IsFalse(success);
-        Assert.AreEqual(0, svg.Length);
+        Assert.IsEmpty(svg);
     }
 
     private static async Task<byte[]> CreateSvgAsync(string value, ElementTheme theme)

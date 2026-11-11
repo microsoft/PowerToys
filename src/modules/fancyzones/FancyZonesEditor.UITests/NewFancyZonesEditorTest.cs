@@ -14,7 +14,6 @@ using static FancyZonesEditorCommon.Data.EditorParameters;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
-    [TestClass]
     public class NewFancyZonesEditorTest
     {
         public NewFancyZonesEditorTest()
@@ -22,6 +21,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             // FancyZonesEditorHelper.InitFancyZonesLayout();
         }
 
+        [OSCondition(OperatingSystems.Windows)]
         [TestClass]
         public class TestCaseFirstLaunch : UITestBase
         {

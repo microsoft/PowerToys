@@ -51,6 +51,14 @@ selector and value. Keep this boundary when adding wrappers: application argumen
 
 ## Running tests
 
+PowerToys centrally pins MSTest 4.5.2 in `Directory.Packages.props`. Rebuild shared test libraries
+alongside their consumers when upgrading: MSTest v3 and v4 are not binary compatible.
+
+For an incremental v3-to-v4 upgrade, an obsolete
+`Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll` can remain in a test output directory
+and interfere with VSTest discovery or execution. Remove that obsolete v3 adapter from the affected
+output directory before rerunning VSTest; retain the v4 `MSTest.TestAdapter.dll`.
+
 ### `.Next` tests
 
 Build the focused project with the repository script, then run the produced Microsoft.Testing.Platform
@@ -405,7 +413,7 @@ legacy suites. Do not use it as the starting point for a new `.Next` project.
 
 **Example**
 ```
-[TestMethod("Hosts.Basic.EmptyViewShouldWork")]
+[TestMethod(DisplayName = "Hosts.Basic.EmptyViewShouldWork")]
 [TestCategory("Hosts File Editor #4")]
 public void TestEmptyView()
 {

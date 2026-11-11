@@ -8,6 +8,7 @@ using Microsoft.Win32;
 
 namespace Microsoft.PowerToys.ZoomIt.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [TestCategory("ZoomIt")]
 [DoNotParallelize]
@@ -66,7 +67,7 @@ public sealed class ZoomItStateTests
         {
             using var seeded = Registry.CurrentUser.OpenSubKey(registryPath);
             Assert.IsNotNull(seeded);
-            Assert.IsTrue(seeded.ValueCount > 0);
+            Assert.IsGreaterThan(0, seeded.ValueCount);
         }
 
         ZoomItState.RestorePending();
@@ -101,12 +102,12 @@ public sealed class ZoomItStateTests
             var values = backup.RootElement.GetProperty("Values").EnumerateArray().ToDictionary(value => value.GetProperty("Name").GetString()!);
             Assert.AreEqual(0x241, values["ToggleKey"].GetProperty("Value").GetInt32());
             Assert.AreEqual(@"%TEMP%\ZoomIt.txt", values["Expanded"].GetProperty("Value").GetString());
-            CollectionAssert.AreEqual(binary, values["Binary"].GetProperty("Value").GetBytesFromBase64());
-            CollectionAssert.AreEqual(multiple, values["Multiple"].GetProperty("Value").EnumerateArray().Select(value => value.GetString()).ToArray());
+            Assert.AreSequenceEqual(binary, values["Binary"].GetProperty("Value").GetBytesFromBase64());
+            Assert.AreSequenceEqual(multiple, values["Multiple"].GetProperty("Value").EnumerateArray().Select(value => value.GetString()).ToArray());
             Assert.AreEqual(0x123456789abcdefL, values["Large"].GetProperty("Value").GetInt64());
         }
 
-        CollectionAssert.AreEquivalent(original.Keys.ToArray(), key.GetValueNames());
+        Assert.AreSequenceEqual(original.Keys.ToArray(), key.GetValueNames(), SequenceOrder.InAnyOrder);
         foreach (var (name, entry) in original)
         {
             Assert.AreEqual(entry.Kind, key.GetValueKind(name));
@@ -115,7 +116,7 @@ public sealed class ZoomItStateTests
             {
                 if (actual is Array actualArray)
                 {
-                    CollectionAssert.AreEqual(expected, actualArray);
+                    Assert.AreSequenceEqual(expected, actualArray);
                 }
                 else
                 {

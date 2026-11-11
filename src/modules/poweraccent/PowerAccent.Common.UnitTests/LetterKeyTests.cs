@@ -8,6 +8,7 @@ using WinRtLetterKey = PowerToys.PowerAccentKeyboardService.LetterKey;
 
 namespace PowerAccent.Common.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class LetterKeyTests
 {

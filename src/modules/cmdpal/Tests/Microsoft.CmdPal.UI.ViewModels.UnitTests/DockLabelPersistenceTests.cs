@@ -17,6 +17,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed partial class DockLabelPersistenceTests
 {
@@ -67,7 +68,7 @@ public sealed partial class DockLabelPersistenceTests
         public override IListItem[] GetItems() => [];
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true, false, false)]
     [DataRow(true, false, true)]
     [DataRow(true, true, false)]
@@ -152,8 +153,8 @@ public sealed partial class DockLabelPersistenceTests
             dock.SaveBandOrder();
 
             var savedBand = settingsService.Settings.DockSettings.StartBands.Single();
-            Assert.AreEqual(true, savedBand.ShowTitles);
-            Assert.AreEqual(false, savedBand.ShowSubtitles);
+            Assert.IsTrue(savedBand.ShowTitles);
+            Assert.IsFalse(savedBand.ShowSubtitles);
         }
         finally
         {
@@ -203,8 +204,8 @@ public sealed partial class DockLabelPersistenceTests
 
             var monitor = settingsService.Settings.DockSettings.MonitorConfigs.Single();
             var savedBand = monitor.StartBands!.Single();
-            Assert.AreEqual(false, savedBand.ShowTitles);
-            Assert.AreEqual(false, savedBand.ShowSubtitles);
+            Assert.IsFalse(savedBand.ShowTitles);
+            Assert.IsFalse(savedBand.ShowSubtitles);
         }
         finally
         {

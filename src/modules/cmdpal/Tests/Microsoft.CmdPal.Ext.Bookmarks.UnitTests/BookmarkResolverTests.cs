@@ -54,7 +54,7 @@ public partial class BookmarkResolverTests
         }
     }
 
-    // must be public static to be used as DataTestMethod data source
+    // must be public static to be used as TestMethod data source
     public static string FromCase(MethodInfo method, object[] data)
         => data is [PlaceholderClassificationCase c]
             ? c.Name
@@ -69,7 +69,6 @@ public partial class BookmarkResolverTests
         var classification = await resolver.TryClassifyAsync(c.Input, CancellationToken.None);
 
         // Assert
-        Assert.IsNotNull(classification);
         Assert.AreEqual(c.ExpectSuccess, classification.Success, "Success flag mismatch.");
 
         if (c.ExpectSuccess)

@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class PerformanceMonitorDockItemPresentationTests
 {
@@ -31,7 +32,7 @@ public class PerformanceMonitorDockItemPresentationTests
         Assert.AreEqual("text:" + subtitle, properties[WellKnownExtensionAttributes.DockSubtitleWidth]);
         Assert.IsFalse(properties.ContainsKey(WellKnownExtensionAttributes.DockMinLabelWidth));
         Assert.IsFalse(properties.ContainsKey(WellKnownExtensionAttributes.DockMaxLabelWidth));
-        Assert.AreEqual(true, properties[WellKnownExtensionAttributes.DockLabelTabularDigits]);
+        Assert.IsTrue((bool?)properties[WellKnownExtensionAttributes.DockLabelTabularDigits]);
         Assert.IsFalse(properties.ContainsKey(WellKnownExtensionAttributes.DockLabelTrailingAlignment));
 
         item.Title = "100%";

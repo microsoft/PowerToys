@@ -17,6 +17,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Peek.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class PeekFilePreviewTests : UITestBase
 {
@@ -45,6 +46,7 @@ public class PeekFilePreviewTests : UITestBase
 
     private static void FixSettingsFileBeforeTests()
     {
+        Exception initializationFailure;
         try
         {
             // Default Peek settings
@@ -125,11 +127,14 @@ public class PeekFilePreviewTests : UITestBase
                 });
 
             Debug.WriteLine("Successfully updated all settings - Peek shortcut configured and all modules except Peek disabled");
+            return;
         }
         catch (Exception ex)
         {
-            Assert.Fail($"ERROR in FixSettingsFileBeforeTests: {ex.Message}");
+            initializationFailure = ex;
         }
+
+        throw new AssertFailedException($"ERROR in FixSettingsFileBeforeTests: {initializationFailure.Message}", initializationFailure);
     }
 
     [TestInitialize]
@@ -140,7 +145,7 @@ public class PeekFilePreviewTests : UITestBase
         SendKeys(Key.Win, Key.M);
     }
 
-    [TestMethod("Peek.FilePreview.Folder")]
+    [TestMethod(DisplayName = "Peek.FilePreview.Folder")]
     [TestCategory("Preview files")]
     public void PeekFolderFilePreview()
     {
@@ -158,7 +163,7 @@ public class PeekFilePreviewTests : UITestBase
     /// <summary>
     /// Test JPEG image preview
     /// </summary>
-    [TestMethod("Peek.FilePreview.JPEGImage")]
+    [TestMethod(DisplayName = "Peek.FilePreview.JPEGImage")]
     [TestCategory("Preview files")]
     public void PeekJPEGImagePreview()
     {
@@ -170,7 +175,7 @@ public class PeekFilePreviewTests : UITestBase
     /// Test PDF document preview
     /// ToDo: need to open settings to enable PDF preview in Peek
     /// </summary>
-    // [TestMethod("Peek.FilePreview.PDFDocument")]
+    // [TestMethod(DisplayName = "Peek.FilePreview.PDFDocument")]
     // [TestCategory("Preview files")]
     // public void PeekPDFDocumentPreview()
     // {
@@ -181,7 +186,7 @@ public class PeekFilePreviewTests : UITestBase
     /// <summary>
     /// Test QOI image preview
     /// </summary>
-    [TestMethod("Peek.FilePreview.QOIImage")]
+    [TestMethod(DisplayName = "Peek.FilePreview.QOIImage")]
     [TestCategory("Preview files")]
     public void PeekQOIImagePreview()
     {
@@ -192,7 +197,7 @@ public class PeekFilePreviewTests : UITestBase
     /// <summary>
     /// Test C++ source code preview
     /// </summary>
-    [TestMethod("Peek.FilePreview.CPPSourceCode")]
+    [TestMethod(DisplayName = "Peek.FilePreview.CPPSourceCode")]
     [TestCategory("Preview files")]
     public void PeekCPPSourceCodePreview()
     {
@@ -203,7 +208,7 @@ public class PeekFilePreviewTests : UITestBase
     /// <summary>
     /// Test Markdown document preview
     /// </summary>
-    [TestMethod("Peek.FilePreview.MarkdownDocument")]
+    [TestMethod(DisplayName = "Peek.FilePreview.MarkdownDocument")]
     [TestCategory("Preview files")]
     public void PeekMarkdownDocumentPreview()
     {
@@ -214,7 +219,7 @@ public class PeekFilePreviewTests : UITestBase
     /// <summary>
     /// Test ZIP archive preview
     /// </summary>
-    [TestMethod("Peek.FilePreview.ZIPArchive")]
+    [TestMethod(DisplayName = "Peek.FilePreview.ZIPArchive")]
     [TestCategory("Preview files")]
     public void PeekZIPArchivePreview()
     {
@@ -225,7 +230,7 @@ public class PeekFilePreviewTests : UITestBase
     /// <summary>
     /// Test PNG image preview
     /// </summary>
-    [TestMethod("Peek.FilePreview.PNGImage")]
+    [TestMethod(DisplayName = "Peek.FilePreview.PNGImage")]
     [TestCategory("Preview files")]
     public void PeekPNGImagePreview()
     {
@@ -237,7 +242,7 @@ public class PeekFilePreviewTests : UITestBase
     /// Test window pinning functionality - pin window and switch between different sized images
     /// Verify the window stays at the same place and the same size
     /// </summary>
-    [TestMethod("Peek.WindowPinning.PinAndSwitchImages")]
+    [TestMethod(DisplayName = "Peek.WindowPinning.PinAndSwitchImages")]
     [TestCategory("Window Pinning")]
     public void TestPinWindowAndSwitchImages()
     {
@@ -277,7 +282,7 @@ public class PeekFilePreviewTests : UITestBase
     /// Test window pinning persistence - pin window, close and reopen Peek
     /// Verify the new window is opened at the same place and the same size as before
     /// </summary>
-    [TestMethod("Peek.WindowPinning.PinAndReopen")]
+    [TestMethod(DisplayName = "Peek.WindowPinning.PinAndReopen")]
     [TestCategory("Window Pinning")]
     public void TestPinWindowAndReopen()
     {
@@ -315,7 +320,7 @@ public class PeekFilePreviewTests : UITestBase
     /// Test window unpinning - unpin window and switch to different file
     /// Verify the window is moved to the default place
     /// </summary>
-    [TestMethod("Peek.WindowPinning.UnpinAndSwitchFiles")]
+    [TestMethod(DisplayName = "Peek.WindowPinning.UnpinAndSwitchFiles")]
     [TestCategory("Window Pinning")]
     public void TestUnpinWindowAndSwitchFiles()
     {
@@ -367,7 +372,7 @@ public class PeekFilePreviewTests : UITestBase
     /// Test unpinned window behavior - unpin window, close and reopen Peek
     /// Verify the new window is opened on the default place
     /// </summary>
-    [TestMethod("Peek.WindowPinning.UnpinAndReopen")]
+    [TestMethod(DisplayName = "Peek.WindowPinning.UnpinAndReopen")]
     [TestCategory("Window Pinning")]
     public void TestUnpinWindowAndReopen()
     {
@@ -404,7 +409,7 @@ public class PeekFilePreviewTests : UITestBase
     /// <summary>
     /// Test opening file with default program by clicking a button
     /// </summary>
-    [TestMethod("Peek.OpenWithDefaultProgram.ClickButton")]
+    [TestMethod(DisplayName = "Peek.OpenWithDefaultProgram.ClickButton")]
     [TestCategory("Open with default program")]
     public void TestOpenWithDefaultProgramByButton()
     {
@@ -433,7 +438,7 @@ public class PeekFilePreviewTests : UITestBase
     /// <summary>
     /// Test opening file with default program by pressing Enter key
     /// </summary>
-    [TestMethod("Peek.OpenWithDefaultProgram.PressEnter")]
+    [TestMethod(DisplayName = "Peek.OpenWithDefaultProgram.PressEnter")]
     [TestCategory("Open with default program")]
     public void TestOpenWithDefaultProgramByEnter()
     {
@@ -458,7 +463,7 @@ public class PeekFilePreviewTests : UITestBase
     /// <summary>
     /// Test switching between files in a folder using Left and Right arrow keys
     /// </summary>
-    [TestMethod("Peek.FileNavigation.SwitchFilesWithArrowKeys")]
+    [TestMethod(DisplayName = "Peek.FileNavigation.SwitchFilesWithArrowKeys")]
     [TestCategory("File Navigation")]
     public void TestSwitchFilesWithArrowKeys()
     {
@@ -491,7 +496,7 @@ public class PeekFilePreviewTests : UITestBase
         }
 
         // Verify we navigated through the expected number of files
-        Assert.AreEqual(testFiles.Count, visitedFiles.Count, $"Should have navigated through all {testFiles.Count} files, but only visited {visitedFiles.Count} files: {string.Join(", ", visitedFiles)}");
+        Assert.HasCount(testFiles.Count, visitedFiles, $"Should have navigated through all {testFiles.Count} files, but only visited {visitedFiles.Count} files: {string.Join(", ", visitedFiles)}");
 
         // Navigate backward using Left arrow to verify reverse navigation
         for (int i = testFiles.Count - 2; i >= 0; i--)
@@ -515,7 +520,7 @@ public class PeekFilePreviewTests : UITestBase
         }
 
         // Verify backward navigation worked - should be back to the first file
-        Assert.AreEqual(1, visitedFiles.Count, $"After backward navigation, should be back to first file only. Remaining files: {string.Join(", ", visitedFiles)}");
+        Assert.HasCount(1, visitedFiles, $"After backward navigation, should be back to first file only. Remaining files: {string.Join(", ", visitedFiles)}");
 
         ClosePeekAndExplorer();
     }
@@ -524,7 +529,7 @@ public class PeekFilePreviewTests : UITestBase
     /// Test switching between multiple selected files
     /// Select first 3 files in Explorer, open with Peek, verify you can switch only between selected files using arrow keys
     /// </summary>
-    [TestMethod("Peek.FileNavigation.SwitchBetweenSelectedFiles")]
+    [TestMethod(DisplayName = "Peek.FileNavigation.SwitchBetweenSelectedFiles")]
     [TestCategory("File Navigation")]
     public void TestSwitchBetweenSelectedFiles()
     {
@@ -575,7 +580,7 @@ public class PeekFilePreviewTests : UITestBase
         var uniqueWindowsVisited = windowTitles.Distinct().Count();
 
         // We should see at most 3 unique windows (the 3 selected files), even after 6 navigation steps
-        Assert.IsTrue(uniqueWindowsVisited <= 3, $"Should only navigate through the 3 selected files, but found {uniqueWindowsVisited} unique windows. " + $"Window titles: {string.Join(" -> ", windowTitles)}");
+        Assert.IsLessThanOrEqualTo(3, uniqueWindowsVisited, $"Should only navigate through the 3 selected files, but found {uniqueWindowsVisited} unique windows. " + $"Window titles: {string.Join(" -> ", windowTitles)}");
 
         ClosePeekAndExplorer();
     }
@@ -908,6 +913,7 @@ public class PeekFilePreviewTests : UITestBase
         string peekWindowTitleWithoutExt = $"{fileNameWithoutExt} - Peek";
 
         Element? peekWindow = null;
+        Exception? lookupFailure = null;
 
         try
         {
@@ -921,11 +927,15 @@ public class PeekFilePreviewTests : UITestBase
                 // Then try without extension
                 peekWindow = Find(peekWindowTitleWithExt, timeout, true);
             }
-            catch
+            catch (Exception ex)
             {
-                // If neither works, let it fail with a clear message
-                Assert.Fail($"Could not find Peek window with title '{peekWindowTitleWithExt}' or '{peekWindowTitleWithoutExt}'");
+                lookupFailure = ex;
             }
+        }
+
+        if (lookupFailure is not null)
+        {
+            throw new AssertFailedException($"Could not find Peek window with title '{peekWindowTitleWithExt}' or '{peekWindowTitleWithoutExt}'", lookupFailure);
         }
 
         Assert.IsNotNull(peekWindow, $"Should find Peek window for file: {Path.GetFileName(filePath)}");

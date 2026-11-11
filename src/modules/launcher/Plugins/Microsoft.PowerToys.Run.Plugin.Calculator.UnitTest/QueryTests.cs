@@ -12,6 +12,7 @@ using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class QueryTests
     {
@@ -28,7 +29,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             _main.Object.Init(new PluginInitContext() { API = _api.Object });
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("=pi(9+)", "Expression wrong or incomplete (Did you forget some parentheses?)")]
         [DataRow("=pi,", "Expression wrong or incomplete (Did you forget some parentheses?)")]
         [DataRow("=log()", "Expression wrong or incomplete (Did you forget some parentheses?)")]
@@ -55,7 +56,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(expectedResult, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("pi(9+)")]
         [DataRow("pi,")]
         [DataRow("log()")]
@@ -81,7 +82,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(0, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("9+")]
         [DataRow("9-")]
         [DataRow("9*")]
@@ -107,7 +108,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(0, resultWithKeyword);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("10+(8*9)/0,5")]// German decimal digit separator
         [DataRow("10+(8*9)/0.5")]
         [DataRow("10+(8*9)/1,5")] // German decimal digit separator
@@ -127,7 +128,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual("Copy this number to the clipboard", resultWithKeyword);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("pie", "pi * e")]
         [DataRow("eln(100)", "e * ln(100)")]
         [DataRow("pi(1+1)", "pi * (1+1)")]
@@ -139,13 +140,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("(1+1)cos(pi)", "(1+1) * cos(pi)")]
         [DataRow("(1+1)(2+2)", "(1+1) * (2+2)")]
         [DataRow("2(1+1)", "2 * (1+1)")]
-        [DataRow("pi(1+1)", "pi * (1+1)")]
         [DataRow("pilog(100)", "pi * log(100)")]
         [DataRow("3log(100)", "3 * log(100)")]
         [DataRow("2e", "2 * e")]
         [DataRow("(1+1)(3+2)", "(1+1) * (3+2)")]
-        [DataRow("(1+1)cos(pi)", "(1+1) * cos(pi)")]
-        [DataRow("sin(pi)cos(pi)", "sin(pi) * cos(pi)")]
         [DataRow("2 (1+1)", "2 * (1+1)")]
         [DataRow("pi  (1+1)", "pi * (1+1)")]
         [DataRow("pi  log(100)", "pi * log(100)")]
@@ -165,7 +163,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("5/1.0E2", "5/(1.0 * 10^(2))")]
         [DataRow("0.1E2", "(0.1 * 10^(2))")]
         [DataRow(".1E2", "(.1 * 10^(2))")]
-        [DataRow(".1E2", "(.1 * 10^(2))")]
         [DataRow("5/5E3", "5/(5 * 10^(3))")]
         [DataRow("1.E2", "(1. * 10^(2))")]
         public void RightHumanMultiplicationExpressionTransformation(string typedString, string expectedQuery)
@@ -179,7 +176,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(expectedQuery, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("2(1+1)")]
         [DataRow("pi(1+1)")]
         [DataRow("pilog(100)")]
@@ -216,7 +213,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual("Copy this number to the clipboard", resultWithKeyword);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("2(1+1)", 4)]
         [DataRow("pi(1+1)", 6.2831853072)]
         [DataRow("pilog(100)", 6.2831853072)]
@@ -247,7 +244,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(answer.ToString(CultureInfo.CurrentCulture), resultWithKeyword);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("0x1234+0x1234", 9320)]
         [DataRow("0x1234-0x1234", 0)]
         [DataRow("0x12345678+0x12345678", 610839792)]
@@ -267,7 +264,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(answer.ToString(CultureInfo.CurrentCulture), resultWithKeyword);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("#", "#1+1=", true)]
         [DataRow("#", "#1+1", false)]
         [DataRow("#", "#1/0=", false)]

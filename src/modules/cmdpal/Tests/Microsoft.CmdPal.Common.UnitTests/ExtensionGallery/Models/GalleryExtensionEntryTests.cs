@@ -7,6 +7,7 @@ using Microsoft.CmdPal.Common.ExtensionGallery.Models;
 
 namespace Microsoft.CmdPal.Common.UnitTests.ExtensionGallery.Models;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class GalleryExtensionEntryTests
 {
@@ -40,7 +41,7 @@ public class GalleryExtensionEntryTests
         Assert.AreEqual("Sample title", entry.Title);
         Assert.AreEqual("Sample description", entry.Description);
         Assert.AreEqual("README.md", entry.Readme);
-        CollectionAssert.AreEqual(ExpectedScreenshotUrls, entry.ScreenshotUrls);
+        Assert.AreSequenceEqual(ExpectedScreenshotUrls, entry.ScreenshotUrls);
     }
 
     [TestMethod]
@@ -56,7 +57,7 @@ public class GalleryExtensionEntryTests
             }
             """;
 
-        Assert.ThrowsException<JsonException>(
+        Assert.ThrowsExactly<JsonException>(
             () => JsonSerializer.Deserialize(json, GallerySerializationContext.Default.GalleryExtensionEntry));
     }
 }

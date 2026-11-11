@@ -11,6 +11,7 @@ using Windows.Storage;
 
 namespace Microsoft.PowerToys.ZoomIt.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [TestCategory("ZoomIt")]
 public sealed class ZoomItCaptureHelpersTests
@@ -31,13 +32,15 @@ public sealed class ZoomItCaptureHelpersTests
             var profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Vga);
             profile.Video.Width = (uint)width;
             profile.Video.Height = (uint)height;
-            var folder = await StorageFolder.GetFolderFromPathAsync(directory).AsTask().WaitAsync(TimeSpan.FromSeconds(30));
-            var file = await folder.CreateFileAsync("native-dimensions.mp4").AsTask().WaitAsync(TimeSpan.FromSeconds(30));
+            var folder = await StorageFolder.GetFolderFromPathAsync(directory).AsTask().WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+            var file = await folder.CreateFileAsync("native-dimensions.mp4").AsTask().WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
             var result = await source.RenderToFileAsync(file, MediaTrimmingPreference.Precise, profile)
-                .AsTask().WaitAsync(TimeSpan.FromSeconds(45));
+                .AsTask().WaitAsync(
+                TimeSpan.FromSeconds(45),
+                TestContext.CancellationToken);
             Assert.AreEqual(TranscodeFailureReason.None, result, "Could not create the synthetic video fixture.");
 
-            var clip = await MediaClip.CreateFromFileAsync(file).AsTask().WaitAsync(TimeSpan.FromSeconds(45));
+            var clip = await MediaClip.CreateFromFileAsync(file).AsTask().WaitAsync(TimeSpan.FromSeconds(45), TestContext.CancellationToken);
             var encoding = clip.GetVideoEncodingProperties();
             Assert.AreEqual((uint)width, encoding.Width);
             Assert.AreEqual((uint)height, encoding.Height);

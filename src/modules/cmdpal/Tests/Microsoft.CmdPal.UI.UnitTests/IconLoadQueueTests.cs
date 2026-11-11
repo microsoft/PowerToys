@@ -7,11 +7,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class IconLoadQueueTests
 {
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task DemandedWorkRunsBeforeSpeculativeHighPriorityWork()
     {
         var queue = new IconLoadQueue(workerCount: 1);
@@ -41,7 +42,7 @@ public class IconLoadQueueTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task DemandLossMovesQueuedWorkBehindLiveRequests()
     {
         var queue = new IconLoadQueue(workerCount: 1);
@@ -64,7 +65,7 @@ public class IconLoadQueueTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task ReturnedDemandPromotesQueuedWork()
     {
         var queue = new IconLoadQueue(workerCount: 1);
@@ -86,7 +87,7 @@ public class IconLoadQueueTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task HighPriorityRemainsFirstWithinDemandClass()
     {
         var queue = new IconLoadQueue(workerCount: 1);
@@ -105,7 +106,7 @@ public class IconLoadQueueTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task CompletionDrainsQueuedWorkBeforeStoppingWorkers()
     {
         var queue = new IconLoadQueue(workerCount: 2);
@@ -132,7 +133,7 @@ public class IconLoadQueueTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task DequeueRejectsMoreConcurrentConsumersThanConfigured()
     {
         var queue = new IconLoadQueue(workerCount: 1);
@@ -148,7 +149,7 @@ public class IconLoadQueueTests
     [TestMethod]
     [DataRow(2)]
     [DataRow(4)]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task SpeculativeWorkLeavesOneWorkerAvailableForDemand(int workerCount)
     {
         var queue = new IconLoadQueue(workerCount);
@@ -184,7 +185,7 @@ public class IconLoadQueueTests
                     out _));
             }
 
-            await speculativeCapacityFilled.Task.WaitAsync(TimeSpan.FromSeconds(1));
+            await speculativeCapacityFilled.Task.WaitAsync(TimeSpan.FromSeconds(1), TestContext.CancellationToken);
 
             Assert.IsTrue(queue.TryEnqueue(
                 new TestOperation(() =>
@@ -196,7 +197,7 @@ public class IconLoadQueueTests
                 IconLoadDemand.CreateDemanded(),
                 out _));
 
-            await demandedWorkStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
+            await demandedWorkStarted.Task.WaitAsync(TimeSpan.FromSeconds(1), TestContext.CancellationToken);
             Assert.AreEqual(workerCount - 1, Volatile.Read(ref speculativeStarts));
         }
         finally
@@ -211,7 +212,7 @@ public class IconLoadQueueTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task SingleWorkerStillProcessesSpeculativeWork()
     {
         var queue = new IconLoadQueue(workerCount: 1);
@@ -229,7 +230,7 @@ public class IconLoadQueueTests
     }
 
     [TestMethod]
-    [Timeout(10_000)]
+    [Timeout(10_000, CooperativeCancellation = true)]
     public async Task DemandChurnDuringDequeueRunsEveryWorkExactlyOnce()
     {
         const int WorkerCount = 4;
@@ -273,7 +274,8 @@ public class IconLoadQueueTests
         }
 
         await firstBatchStarted.Task;
-        await Task.Run(() =>
+        await Task.Run(
+            () =>
         {
             Parallel.For(0, ItemCount, i =>
             {
@@ -283,7 +285,8 @@ public class IconLoadQueueTests
                     demands[i].AddRequester();
                 }
             });
-        });
+        },
+            TestContext.CancellationToken);
 
         queue.Complete();
         releaseFirstBatch.TrySetResult(true);
@@ -297,7 +300,7 @@ public class IconLoadQueueTests
     }
 
     [TestMethod]
-    [Timeout(10_000)]
+    [Timeout(10_000, CooperativeCancellation = true)]
     public async Task CompletionRacingEnqueueDoesNotLoseAcceptedWork()
     {
         const int RoundCount = 10;
@@ -322,7 +325,8 @@ public class IconLoadQueueTests
             var producers = new Task[ProducerCount];
             for (var i = 0; i < producers.Length; i++)
             {
-                producers[i] = Task.Run(async () =>
+                producers[i] = Task.Run(
+                    async () =>
                 {
                     await start.Task;
                     for (var attempt = 0; attempt < AttemptsPerProducer; attempt++)
@@ -343,15 +347,18 @@ public class IconLoadQueueTests
                         Interlocked.Increment(ref attempts);
                         Thread.Yield();
                     }
-                });
+                },
+                    TestContext.CancellationToken);
             }
 
-            var completion = Task.Run(async () =>
+            var completion = Task.Run(
+                async () =>
             {
                 await start.Task;
                 SpinWait.SpinUntil(() => Volatile.Read(ref attempts) >= 32, TimeSpan.FromSeconds(1));
                 queue.Complete();
-            });
+            },
+                TestContext.CancellationToken);
 
             start.TrySetResult(true);
             await Task.WhenAll(producers);
@@ -364,7 +371,7 @@ public class IconLoadQueueTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task CoordinatorFaultFailsQueuedOperationExactlyOnce()
     {
         var queue = new IconLoadQueue(workerCount: 1);
@@ -375,7 +382,7 @@ public class IconLoadQueueTests
         Assert.IsTrue(queue.TryEnqueue(operation, IconLoadPriority.High, demand, out _));
         queue.FailForTesting(failure);
 
-        Assert.AreSame(failure, await operation.Failure.WaitAsync(TimeSpan.FromSeconds(2)));
+        Assert.AreSame(failure, await operation.Failure.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
         Assert.AreEqual(1, operation.FailureCount);
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () => await queue.Completion);
 
@@ -389,7 +396,7 @@ public class IconLoadQueueTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task CoordinatorFaultWaitsForAcceptedPublisherAndFailsItsOperation()
     {
         var queue = new IconLoadQueue(workerCount: 1);
@@ -399,13 +406,13 @@ public class IconLoadQueueTests
             enqueued: (_, _) =>
             {
                 enqueueEntered.Set();
-                resumeEnqueue.Wait();
+                resumeEnqueue.Wait(TestContext.CancellationToken);
             });
         var failure = new InvalidOperationException("Injected coordinator failure.");
 
         var publisher = Task.Run(() =>
             queue.TryEnqueue(operation, IconLoadPriority.Low, IconLoadDemand.CreateDemanded(), out _));
-        Assert.IsTrue(enqueueEntered.Wait(TimeSpan.FromSeconds(2)));
+        Assert.IsTrue(enqueueEntered.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
 
         queue.FailForTesting(failure);
         Assert.IsTrue(
@@ -415,7 +422,7 @@ public class IconLoadQueueTests
 
         resumeEnqueue.Set();
         Assert.IsTrue(await publisher);
-        Assert.AreSame(failure, await operation.Failure.WaitAsync(TimeSpan.FromSeconds(2)));
+        Assert.AreSame(failure, await operation.Failure.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
         Assert.AreEqual(1, operation.FailureCount);
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () => await queue.Completion);
     }
@@ -457,4 +464,6 @@ public class IconLoadQueueTests
             _failure.TrySetResult(failure);
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

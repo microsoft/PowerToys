@@ -12,6 +12,7 @@ using Settings.UI.Library;
 
 namespace Settings.UI.UnitTests.Search
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     [DoNotParallelize]
     public class SearchIndexServiceTests
@@ -47,9 +48,9 @@ namespace Settings.UI.UnitTests.Search
         [DataRow(" \u0301 ")]
         public void Search_EmptyOrWhitespaceAfterNormalization_ReturnsNoResults(string query)
         {
-            Assert.AreEqual(1, SearchIndexService.Index.Length);
-            Assert.AreEqual(0, SearchIndexService.Search(query).Count);
-            Assert.AreEqual(0, SearchIndexService.Search(query, CancellationToken.None).Count);
+            Assert.HasCount(1, SearchIndexService.Index);
+            Assert.IsEmpty(SearchIndexService.Search(query, TestContext.CancellationToken));
+            Assert.IsEmpty(SearchIndexService.Search(query, CancellationToken.None));
         }
 
         [TestMethod]
@@ -83,7 +84,9 @@ namespace Settings.UI.UnitTests.Search
 
             Assert.AreEqual(expected, normalized);
             Assert.IsTrue(match.Success);
-            Assert.IsTrue(match.Score > 0);
+            Assert.IsGreaterThan(0, match.Score);
         }
+
+        public TestContext TestContext { get; set; } = null!;
     }
 }

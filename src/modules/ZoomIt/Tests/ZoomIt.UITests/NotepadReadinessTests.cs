@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.ZoomIt.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [TestCategory("ZoomIt")]
 public sealed class NotepadReadinessTests
@@ -100,7 +101,7 @@ public sealed class NotepadReadinessTests
             pollIntervalMS: 10);
 
         Assert.IsFalse(result.Succeeded);
-        Assert.IsTrue(observed > 0);
+        Assert.IsGreaterThan(0, observed);
     }
 
     [TestMethod]

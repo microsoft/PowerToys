@@ -21,8 +21,7 @@ namespace Microsoft.PowerToys.UITest.Next;
 /// <c>Directory.Build.props</c>) are everything Test Explorer and <c>dotnet test</c> need.
 /// </para>
 /// </remarks>
-[TestClass]
-public class UITestBase : IDisposable
+public abstract class UITestBase : IDisposable
 {
     /// <summary>
     /// Lazy one-shot probe for <c>winapp.exe</c>. Runs the first time any UITest in the
@@ -229,7 +228,7 @@ public class UITestBase : IDisposable
     /// tests finish. Runs after every derived class via inheritance; a no-op for classes that never
     /// kept a scope alive.
     /// </summary>
-    [ClassCleanup(InheritanceBehavior.BeforeEachDerivedClass, ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup(InheritanceBehavior.BeforeEachDerivedClass)]
     public static void StopSharedScope()
     {
         var failures = new List<Exception>();
@@ -337,7 +336,7 @@ public class UITestBase : IDisposable
 
         if (failureStateTail > TimeSpan.Zero)
         {
-            await Task.Delay(failureStateTail);
+            await Task.Delay(failureStateTail, CancellationToken.None);
         }
 
         await CaptureFailureArtifactsAsync();

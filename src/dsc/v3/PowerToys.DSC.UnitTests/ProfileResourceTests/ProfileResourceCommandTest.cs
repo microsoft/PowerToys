@@ -12,6 +12,7 @@ using PowerToys.DSC.Models;
 namespace PowerToys.DSC.UnitTests.ProfileResourceTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class ProfileResourceCommandTest : BaseDscTest
 {
     [TestMethod]
@@ -50,7 +51,7 @@ public sealed class ProfileResourceCommandTest : BaseDscTest
         Assert.IsNotNull(schema["properties"]?["profile"]);
         var required = schema["required"]?.AsArray();
         Assert.IsNotNull(required);
-        Assert.IsTrue(required.ToString().Contains("profile"));
+        Assert.Contains("profile", required.ToString());
     }
 
     [TestMethod]
@@ -62,7 +63,7 @@ public sealed class ProfileResourceCommandTest : BaseDscTest
 
         // Assert
         Assert.IsFalse(result.Success);
-        Assert.AreEqual(1, messages.Count);
+        Assert.HasCount(1, messages);
         Assert.AreEqual(DscMessageLevel.Error, messages[0].Level);
         Assert.AreEqual(GetResourceString("InputEmptyOrNullError"), messages[0].Message);
     }
@@ -76,7 +77,7 @@ public sealed class ProfileResourceCommandTest : BaseDscTest
 
         // Assert
         Assert.IsFalse(result.Success);
-        Assert.AreEqual(1, messages.Count);
+        Assert.HasCount(1, messages);
         Assert.AreEqual(DscMessageLevel.Error, messages[0].Level);
         Assert.AreEqual(GetResourceString("InputEmptyOrNullError"), messages[0].Message);
     }

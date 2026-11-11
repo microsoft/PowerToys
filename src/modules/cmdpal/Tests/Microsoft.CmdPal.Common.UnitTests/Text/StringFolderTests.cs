@@ -6,6 +6,7 @@ using Microsoft.CmdPal.Common.Text;
 
 namespace Microsoft.CmdPal.Common.UnitTests.Text;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class StringFolderTests
 {

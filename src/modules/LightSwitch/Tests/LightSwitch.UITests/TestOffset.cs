@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LightSwitch.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class TestOffset : UITestBase
     {
@@ -20,7 +21,7 @@ namespace LightSwitch.UITests
         {
         }
 
-        [TestMethod("LightSwitch.Offset")]
+        [TestMethod(DisplayName = "LightSwitch.Offset")]
         [TestCategory("Time")]
         public void TestTimeOffset()
         {

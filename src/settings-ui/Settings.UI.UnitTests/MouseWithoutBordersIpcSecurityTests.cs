@@ -29,10 +29,11 @@ using StreamJsonRpc;
 
 namespace Microsoft.PowerToys.Settings.UI.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class MouseWithoutBordersIpcSecurityTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public async Task RpcHelpersOwnFreshVerifiedPipesAcrossDelayedClosureAndServerRestart(bool failFirstRequest)
@@ -44,12 +45,12 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             {
                 using var identity = WindowsIdentity.GetCurrent();
                 await using var server = RestrictedNamedPipeServer.Create(pipeName, identity.User!);
-                var wait = server.WaitForConnectionAsync();
+                var wait = server.WaitForConnectionAsync(TestContext.CancellationToken);
                 var task = (Task)connect.Invoke(null, new object[] { pipeName, Path.GetFileName(GetCurrentExecutablePath()) })!;
-                await wait.WaitAsync(TimeSpan.FromSeconds(5));
+                await wait.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
                 var failRequest = failFirstRequest && attempt == 0;
                 using var rpc = JsonRpc.Attach(server, new PairingRpcTarget(failRequest));
-                await task.WaitAsync(TimeSpan.FromSeconds(5));
+                await task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
                 using var helper = (IDisposable)task.GetType().GetProperty("Result")!.GetValue(task)!;
                 var stream = (NamedPipeClientStream)helper.GetType().GetProperty("Stream")!.GetValue(helper)!;
                 var handle = stream.SafePipeHandle;
@@ -59,18 +60,18 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 var keyTask = (Task<string>)contract.GetMethod("GetCurrentPairingKey")!.Invoke(endpoint, null)!;
                 if (failRequest)
                 {
-                    await Assert.ThrowsExceptionAsync<RemoteInvocationException>(() => keyTask.WaitAsync(TimeSpan.FromSeconds(5)));
+                    await Assert.ThrowsExactlyAsync<RemoteInvocationException>(() => keyTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
                 }
                 else
                 {
-                    Assert.AreEqual("test-pairing-key", await keyTask.WaitAsync(TimeSpan.FromSeconds(5)));
+                    Assert.AreEqual("test-pairing-key", await keyTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
                 }
 
                 helper.Dispose();
                 Assert.IsTrue(handle.IsClosed);
 
                 // Leave the server alive after client disposal, as RPC read-loop cleanup can finish later.
-                await Task.Delay(50);
+                await Task.Delay(50, TestContext.CancellationToken);
                 previousStream = stream;
             }
         }
@@ -106,7 +107,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             using var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
             try
             {
-                await client.ConnectAsync(5000);
+                await client.ConnectAsync(5000, TestContext.CancellationToken);
                 await MouseWithoutBordersIpc.ShutdownAndWaitForServerExitAsync(
                     client,
                     () => client.WriteByte(1),
@@ -132,7 +133,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             await using var client = pair.Client;
             var shutdownRequested = false;
 
-            await Assert.ThrowsExceptionAsync<TimeoutException>(() =>
+            await Assert.ThrowsExactlyAsync<TimeoutException>(() =>
                 MouseWithoutBordersIpc.ShutdownAndWaitForServerExitAsync(
                     client,
                     () => shutdownRequested = true,
@@ -147,7 +148,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             Assert.AreEqual(
                 "PowerToys.MouseWithoutBorders.v2.SettingsSync.Session.42",
                 MouseWithoutBordersIpc.GetSettingsSyncPipeName(42));
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() => MouseWithoutBordersIpc.GetSettingsSyncPipeName(-1));
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => MouseWithoutBordersIpc.GetSettingsSyncPipeName(-1));
         }
 
         [TestMethod]
@@ -285,11 +286,11 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
 
             await using (var fakeServer = RestrictedNamedPipeServer.Create(pipeName, currentIdentity.User!))
             {
-                Assert.ThrowsException<Win32Exception>(() => RestrictedNamedPipeServer.Create(pipeName, currentIdentity.User!));
+                Assert.ThrowsExactly<Win32Exception>(() => RestrictedNamedPipeServer.Create(pipeName, currentIdentity.User!));
 
-                var waitTask = fakeServer.WaitForConnectionAsync();
+                var waitTask = fakeServer.WaitForConnectionAsync(TestContext.CancellationToken);
                 await using var fakeClient = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
-                await fakeClient.ConnectAsync(5000);
+                await fakeClient.ConnectAsync(5000, TestContext.CancellationToken);
                 await waitTask;
 
                 var accepted = NamedPipePeerVerification.TryVerifyServer(
@@ -305,9 +306,9 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             }
 
             await using var legitimateServer = RestrictedNamedPipeServer.Create(pipeName, currentIdentity.User!);
-            var legitimateWaitTask = legitimateServer.WaitForConnectionAsync();
+            var legitimateWaitTask = legitimateServer.WaitForConnectionAsync(TestContext.CancellationToken);
             await using var legitimateClient = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
-            await legitimateClient.ConnectAsync(5000);
+            await legitimateClient.ConnectAsync(5000, TestContext.CancellationToken);
             await legitimateWaitTask;
 
             var legitimateAccepted = NamedPipePeerVerification.TryVerifyServer(
@@ -333,7 +334,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             };
             var accessRules = server.GetAccessControl().GetAccessRules(true, false, typeof(SecurityIdentifier));
 
-            Assert.AreEqual(expectedIdentities.Length, accessRules.Count);
+            Assert.HasCount(expectedIdentities.Length, accessRules);
             foreach (AuthorizationRule rule in accessRules)
             {
                 var pipeRule = (PipeAccessRule)rule;
@@ -357,9 +358,9 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             for (var attempt = 0; attempt < 2; attempt++)
             {
                 await using var server = RestrictedNamedPipeServer.Create(pipeName, currentIdentity.User!);
-                var waitTask = server.WaitForConnectionAsync();
+                var waitTask = server.WaitForConnectionAsync(TestContext.CancellationToken);
                 await using var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
-                await client.ConnectAsync(5000);
+                await client.ConnectAsync(5000, TestContext.CancellationToken);
                 await waitTask;
 
                 var accepted = NamedPipePeerVerification.TryVerifyServer(
@@ -435,7 +436,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(1)]
         [DataRow(7)]
         public void CustomRootTrustChainAcceptsIntermediateFromExtraStore(int validityDays)
@@ -608,7 +609,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             Assert.AreEqual("""{"Name":"PC","Status":9}""", JsonConvert.SerializeObject(state));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("GenerateNewKey")]
         [DataRow("ConnectToMachine")]
         [DataRow("Reconnect")]
@@ -627,12 +628,11 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             {
                 var arguments = methodName == "ConnectToMachine" ? new object[] { "fixture-peer", "fixture-value" } : Array.Empty<object>();
                 var invocation = contract!.GetMethod(methodName)!.Invoke(endpoint, arguments);
-                Assert.IsInstanceOfType<Task>(invocation, "State-changing requests need an acknowledgement before their channel is disposed.");
-                var operation = (Task)invocation!;
-                await target.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                var operation = Assert.IsInstanceOfType<Task>(invocation, "State-changing requests need an acknowledgement before their channel is disposed.");
+                await target.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
                 Assert.IsFalse(operation.IsCompleted, "Sending the request is not completion of the remote operation.");
                 target.Release.SetResult();
-                await operation.WaitAsync(TimeSpan.FromSeconds(5));
+                await operation.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
                 if (methodName == "GenerateNewKey")
                 {
                     Assert.AreEqual("fixture-generated-key", await (Task<string>)operation);
@@ -659,17 +659,17 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 using var helper = (IDisposable)Activator.CreateInstance(helperType!, new object[] { client })!;
                 var endpoint = helperType!.GetProperty("Endpoint")!.GetValue(helper);
                 var polling = (Task)contract!.GetMethod("RequestMachineSocketStateAsync")!.Invoke(endpoint, null)!;
-                await polling.WaitAsync(TimeSpan.FromSeconds(5));
+                await polling.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
                 helper.Dispose();
 
                 // Pending RPC reads can finish disposal asynchronously; do not race the pipe's property getter.
-                await serverRpc.Completion.WaitAsync(TimeSpan.FromSeconds(5));
+                await serverRpc.Completion.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
                 Assert.IsTrue(pipeHandle.IsClosed, "The owned handle must close once pending pipe I/O has completed.");
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("ConnectToMachine")]
         [DataRow("GenerateNewKey")]
         [DataRow("Reconnect")]
@@ -693,7 +693,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                             var stream = GetSettingsSyncHelperStream(helper);
                             Assert.AreNotSame(previousStream, stream, "Every RPC helper must have its own verified pipe.");
                             previousStream = stream;
-                            await InvokeSettingsSyncHelperAsync(helper, request).WaitAsync(TimeSpan.FromSeconds(5));
+                            await InvokeSettingsSyncHelperAsync(helper, request).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
                             expectedCalls.Add(request);
                         }
 
@@ -705,7 +705,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 }
 
                 await serverTask;
-                CollectionAssert.AreEqual(expectedCalls, target.Calls.ToArray());
+                Assert.AreSequenceEqual(expectedCalls, target.Calls.ToArray());
                 if (methodName == "ConnectToMachine")
                 {
                     Assert.AreEqual("fixture-peer", target.MachineName);
@@ -718,7 +718,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("ConnectToMachine")]
         [DataRow("GenerateNewKey")]
         [DataRow("Reconnect")]
@@ -729,9 +729,9 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             var target = new DelayedSettingsCommandTarget();
             await using (var server = RestrictedNamedPipeServer.Create(pipeName, currentIdentity.User!))
             {
-                var waitTask = server.WaitForConnectionAsync();
+                var waitTask = server.WaitForConnectionAsync(TestContext.CancellationToken);
                 using var helper = await ConnectSettingsSyncHelperAsync(pipeName);
-                await waitTask.WaitAsync(TimeSpan.FromSeconds(5));
+                await waitTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
                 using var serverRpc = JsonRpc.Attach(server, target);
                 try
                 {
@@ -742,12 +742,12 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                         () => operation,
                         visible => errorVisible = visible,
                         () => successfulCompletions++);
-                    await target.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                    await target.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
                     serverRpc.Dispose();
                     server.Dispose();
 
-                    await Assert.ThrowsExceptionAsync<ConnectionLostException>(() => operation.WaitAsync(TimeSpan.FromSeconds(5)));
-                    Assert.IsFalse(await handledOperation.WaitAsync(TimeSpan.FromSeconds(5)));
+                    await Assert.ThrowsExactlyAsync<ConnectionLostException>(() => operation.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
+                    Assert.IsFalse(await handledOperation.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
                     Assert.IsTrue(errorVisible);
                     Assert.AreEqual(0, successfulCompletions);
                     Assert.AreEqual(1, target.InvocationCount, "State-changing requests must not be retried after an ambiguous disconnect.");
@@ -757,7 +757,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                     target.Release.TrySetResult();
                 }
 
-                await serverRpc.Completion.WaitAsync(TimeSpan.FromSeconds(5));
+                await serverRpc.Completion.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
             }
 
             var recoveredTarget = new SettingsCommandTarget();
@@ -768,11 +768,11 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 foreach (var request in new[] { "RequestMachineSocketStateAsync", methodName })
                 {
                     using var helper = await ConnectSettingsSyncHelperAsync(pipeName);
-                    await InvokeSettingsSyncHelperAsync(helper, request).WaitAsync(TimeSpan.FromSeconds(5));
+                    await InvokeSettingsSyncHelperAsync(helper, request).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
                 }
 
                 await serverTask;
-                CollectionAssert.AreEqual(new[] { "RequestMachineSocketStateAsync", methodName }, recoveredTarget.Calls.ToArray());
+                Assert.AreSequenceEqual(new[] { "RequestMachineSocketStateAsync", methodName }, recoveredTarget.Calls.ToArray());
                 Assert.AreEqual(1, target.InvocationCount);
             }
             finally
@@ -781,7 +781,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("image", "wrong-image")]
         [DataRow("user", "wrong-user")]
         [DataRow("session", "wrong-session")]
@@ -790,17 +790,17 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             var pipeName = UniquePipeName();
             using var currentIdentity = WindowsIdentity.GetCurrent();
             await using var server = RestrictedNamedPipeServer.Create(pipeName, currentIdentity.User!);
-            var waitTask = server.WaitForConnectionAsync();
+            var waitTask = server.WaitForConnectionAsync(TestContext.CancellationToken);
             var expectedImage = identityMismatch == "image" ? "unexpected-settings-server.exe" : Path.GetFileName(GetCurrentExecutablePath());
             var expectedUser = identityMismatch == "user" ? new SecurityIdentifier(WellKnownSidType.AnonymousSid, null).Value : GetCurrentUserSid();
             var expectedSession = Process.GetCurrentProcess().SessionId + (identityMismatch == "session" ? 1 : 0);
             var connectionTask = ConnectSettingsSyncHelperAsync(pipeName, expectedImage, expectedUser, expectedSession);
-            await waitTask.WaitAsync(TimeSpan.FromSeconds(5));
+            await waitTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
-            var exception = await Assert.ThrowsExceptionAsync<UnauthorizedAccessException>(() => connectionTask);
+            var exception = await Assert.ThrowsExactlyAsync<UnauthorizedAccessException>(() => connectionTask);
 
-            StringAssert.Contains(exception.Message, rejectionReason);
-            var bytesRead = await server.ReadAsync(new byte[1]).AsTask().WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Contains(rejectionReason, exception.Message);
+            var bytesRead = await server.ReadAsync(new byte[1], TestContext.CancellationToken).AsTask().WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
             Assert.AreEqual(0, bytesRead, "Rejected candidate pipes must be closed.");
         }
 
@@ -816,11 +816,11 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 using (var helper = await ConnectSettingsSyncHelperAsync(pipeName))
                 {
                     var shutdown = (Task)helper.GetType().GetMethod("ShutdownAsync")!.Invoke(helper, null)!;
-                    await shutdown.WaitAsync(TimeSpan.FromSeconds(5));
+                    await shutdown.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
                 }
 
                 await serverTask;
-                Assert.AreEqual(1, target.Calls.Count);
+                Assert.HasCount(1, target.Calls);
                 Assert.IsTrue(target.Calls.TryPeek(out var methodName));
                 Assert.AreEqual("Shutdown", methodName);
             }
@@ -914,9 +914,9 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             var connect = contract.GetMethod("ConnectToMachine")!;
 
             Assert.AreEqual(typeof(Task<string>), generate.ReturnType);
-            Assert.AreEqual(0, generate.GetParameters().Length);
+            Assert.IsEmpty(generate.GetParameters());
             Assert.AreEqual(typeof(Task), connect.ReturnType);
-            CollectionAssert.AreEqual(
+            Assert.AreSequenceEqual(
                 new[] { typeof(string), typeof(string) },
                 connect.GetParameters().Select(parameter => parameter.ParameterType).ToArray());
         }
@@ -936,7 +936,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("MouseWithoutBorders_SettingsSyncErrorInfoBar")]
         [DataRow("MouseWithoutBorders_PairingUpdateFailed")]
         public void SettingsCommandAndPairingFailuresAreAnnounced(string resourceId)
@@ -967,16 +967,16 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         public void PairingSetupWarningAndConnectSourceWiringDoesNotRequireAnExistingKey()
         {
             var viewModel = File.ReadAllText(FindRepositoryFile(@"src\settings-ui\Settings.UI\ViewModels\MouseWithoutBordersViewModel.cs"));
-            StringAssert.Contains(viewModel, "public bool ShowPairingSetupRequired => PairingSetupRequired;");
-            StringAssert.Contains(viewModel, "public bool CanConnectPairing => CanManagePairing;");
-            StringAssert.Contains(viewModel, "public bool CanManagePairing => !_isPairingPending && !_isServiceModeChanging && !_hasServiceModeError && (!UseService || IsElevated);");
+            Assert.Contains("public bool ShowPairingSetupRequired => PairingSetupRequired;", viewModel);
+            Assert.Contains("public bool CanConnectPairing => CanManagePairing;", viewModel);
+            Assert.Contains("public bool CanManagePairing => !_isPairingPending && !_isServiceModeChanging && !_hasServiceModeError && (!UseService || IsElevated);", viewModel);
 
             var program = File.ReadAllText(FindRepositoryFile(@"src\modules\MouseWithoutBorders\App\Class\Program.cs"));
             var start = program.IndexOf("public Task ConnectToMachine(", StringComparison.Ordinal);
             var end = program.IndexOf("public async Task<string> GenerateNewKey(", start, StringComparison.Ordinal);
             var connect = program.Substring(start, end - start);
-            StringAssert.Contains(connect, "EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _canManageServicePairing);");
-            StringAssert.Contains(connect, "Setting.Values.MyKey = securityKey;");
+            Assert.Contains("EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _canManageServicePairing);", connect);
+            Assert.Contains("Setting.Values.MyKey = securityKey;", connect);
             Assert.IsFalse(connect.Contains("_settings.HasPairingKey", StringComparison.Ordinal));
             Assert.IsFalse(program.Contains("EnsureConnectOperationAvailable", StringComparison.Ordinal));
         }
@@ -988,8 +988,8 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             var start = source.IndexOf("catch (Exception e) when (e is FormatException or CryptographicException or ArgumentException)", StringComparison.Ordinal);
             var end = source.IndexOf("Logger.Log(e.Message);", start, StringComparison.Ordinal);
             var failure = source.Substring(start, end - start);
-            StringAssert.Contains(failure, "Encryption.MyKey = string.Empty;");
-            StringAssert.Contains(failure, "Encryption.GeneratedKey = false;");
+            Assert.Contains("Encryption.MyKey = string.Empty;", failure);
+            Assert.Contains("Encryption.GeneratedKey = false;", failure);
             Assert.IsFalse(failure.Contains("Setting.Values.MyKey =", StringComparison.Ordinal));
             Assert.IsFalse(failure.Contains("CreateRandomKey", StringComparison.Ordinal));
         }
@@ -1254,5 +1254,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 ShutdownReceived.TrySetResult();
             }
         }
+
+        public TestContext TestContext { get; set; } = null!;
     }
 }

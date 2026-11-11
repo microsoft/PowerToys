@@ -13,10 +13,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.System.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class QueryTests : CommandPaletteUnitTestBase
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("shutdown", "Shutdown computer")]
     [DataRow("restart", "Restart computer")]
     [DataRow("sign out", "Sign out of computer")]
@@ -80,15 +81,15 @@ public class QueryTests : CommandPaletteUnitTestBase
         var ipv4Result = Query("IPv4", allCommands);
 
         Assert.IsNotNull(ipv4Result);
-        Assert.IsTrue(ipv4Result.Length > 0, "No IPv4 commands matched the query.");
+        Assert.IsNotEmpty(ipv4Result, "No IPv4 commands matched the query.");
 
         var ipv6Result = Query("IPv6", allCommands);
         Assert.IsNotNull(ipv6Result);
-        Assert.IsTrue(ipv6Result.Length > 0, "No IPv6 commands matched the query.");
+        Assert.IsNotEmpty(ipv6Result, "No IPv6 commands matched the query.");
 
         var macResult = Query("MAC", allCommands);
         Assert.IsNotNull(macResult);
-        Assert.IsTrue(macResult.Length > 0, "No MAC commands matched the query.");
+        Assert.IsNotEmpty(macResult, "No MAC commands matched the query.");
 
         var findDisconnectedMACResult = false;
         foreach (var item in macResult)
@@ -112,7 +113,7 @@ public class QueryTests : CommandPaletteUnitTestBase
 
         var macResult = Query("MAC", allCommands);
         Assert.IsNotNull(macResult);
-        Assert.IsTrue(macResult.Length > 0, "No MAC commands matched the query.");
+        Assert.IsNotEmpty(macResult, "No MAC commands matched the query.");
 
         var findDisconnectedMACResult = false;
         foreach (var item in macResult)
@@ -124,7 +125,7 @@ public class QueryTests : CommandPaletteUnitTestBase
             }
         }
 
-        Assert.IsTrue(!findDisconnectedMACResult, "Disconnected MAC address found in the results.");
+        Assert.IsFalse(findDisconnectedMACResult, "Disconnected MAC address found in the results.");
     }
 
     [TestMethod]
@@ -172,11 +173,13 @@ public class QueryTests : CommandPaletteUnitTestBase
         var result = Query("update", allCommands);
 
         Assert.IsNotNull(result);
-        Assert.IsTrue(
-            result.Any(i => i.Title.Equals("Update and restart", StringComparison.Ordinal)),
+        Assert.Contains(
+            i => i.Title.Equals("Update and restart", StringComparison.Ordinal),
+            result,
             "'update' query should match the 'Update and restart' command.");
-        Assert.IsTrue(
-            result.Any(i => i.Title.Equals("Update and shut down", StringComparison.Ordinal)),
+        Assert.Contains(
+            i => i.Title.Equals("Update and shut down", StringComparison.Ordinal),
+            result,
             "'update' query should match the 'Update and shut down' command.");
     }
 

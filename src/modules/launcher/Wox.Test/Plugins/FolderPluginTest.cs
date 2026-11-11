@@ -11,6 +11,7 @@ using Wox.Plugin;
 
 namespace Wox.Test.Plugins
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class FolderPluginTest
     {
@@ -28,7 +29,7 @@ namespace Wox.Test.Plugins
             List<ContextMenuResult> contextMenuResults = contextMenuLoader.LoadContextMenus(result);
 
             // Assert
-            Assert.AreEqual(2, contextMenuResults.Count);
+            Assert.HasCount(2, contextMenuResults);
             Assert.AreEqual(Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_copy_path, contextMenuResults[0].Title);
             Assert.AreEqual(Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_open_in_console, contextMenuResults[1].Title);
         }
@@ -47,7 +48,7 @@ namespace Wox.Test.Plugins
             List<ContextMenuResult> contextMenuResults = contextMenuLoader.LoadContextMenus(result);
 
             // Assert
-            Assert.AreEqual(3, contextMenuResults.Count);
+            Assert.HasCount(3, contextMenuResults);
             Assert.AreEqual(Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_open_containing_folder, contextMenuResults[0].Title);
             Assert.AreEqual(Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_copy_path, contextMenuResults[1].Title);
             Assert.AreEqual(Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_open_in_console, contextMenuResults[2].Title);

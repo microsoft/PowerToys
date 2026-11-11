@@ -15,6 +15,7 @@ using Windows.Graphics.Imaging;
 
 namespace ImageResizer.Models
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ResizeColorProfileTests
     {
@@ -58,8 +59,9 @@ namespace ImageResizer.Models
                     AssertUniformColor(displayed, expectedDisplayColor, 1);
                     for (var channel = 0; channel < 3; channel++)
                     {
-                        Assert.IsTrue(
-                            Math.Abs(expectedDisplayColor[channel] - SourceBgra[channel]) >= 20,
+                        Assert.IsGreaterThanOrEqualTo(
+                            20,
+                            Math.Abs(expectedDisplayColor[channel] - SourceBgra[channel]),
                             "The fixture must exercise an embedded profile, rather than compare unmodified sRGB samples.");
                     }
                 });
@@ -122,8 +124,9 @@ namespace ImageResizer.Models
             {
                 for (var channel = 0; channel < 3; channel++)
                 {
-                    Assert.IsTrue(
-                        Math.Abs(pixels[offset + channel] - color[channel]) <= tolerance,
+                    Assert.IsLessThanOrEqualTo(
+                        tolerance,
+                        Math.Abs(pixels[offset + channel] - color[channel]),
                         "Displayed color changed at pixel " + (offset / 4) + ", BGRA channel " + channel + ".");
                 }
             }

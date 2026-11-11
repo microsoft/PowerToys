@@ -11,6 +11,7 @@ using PowerToys.Interop;
 namespace Microsoft.Interop.Tests
 {
     [TestClass]
+    [OSCondition(OperatingSystems.Windows)]
     public class InteropTests : IDisposable
     {
         // Pipe names are machine-global, so two concurrent test runs on the same CI agent

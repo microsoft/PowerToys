@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.ImageResizer.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class ImageResizerEndToEndTests : UITestBase
@@ -96,7 +97,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         temporaryFolders.Clear();
     }
 
-    [TestMethod("ImageResizer.ContextMenu.EnabledState")]
+    [TestMethod(DisplayName = "ImageResizer.ContextMenu.EnabledState")]
     [TestCategory("Image Resizer")]
     public void ContextMenuTracksModuleEnabledState()
     {
@@ -137,7 +138,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         }
     }
 
-    [TestMethod("ImageResizer.Settings.CustomPreset")]
+    [TestMethod(DisplayName = "ImageResizer.Settings.CustomPreset")]
     [TestCategory("Image Resizer")]
     public void RemovedAndAddedPresetsPopulateResizeWindow()
     {
@@ -208,7 +209,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         Assert.IsTrue(dialog.Has(By.AccessibilityId("SizeComboBox")), "The Image Resizer window closed unexpectedly.");
     }
 
-    [TestMethod("ImageResizer.Resize.SingleAndMultiple")]
+    [TestMethod(DisplayName = "ImageResizer.Resize.SingleAndMultiple")]
     [TestCategory("Image Resizer")]
     public void ResizesSingleAndMultipleImages()
     {
@@ -236,7 +237,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             100);
     }
 
-    [TestMethod("ImageResizer.Resize.GifWarning")]
+    [TestMethod(DisplayName = "ImageResizer.Resize.GifWarning")]
     [TestCategory("Image Resizer")]
     public void GifSelectionShowsAnimationWarning()
     {
@@ -250,7 +251,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             $"The Image Resizer window did not show the expected GIF warning: '{warning}'.");
     }
 
-    [TestMethod("ImageResizer.Resize.FitModes")]
+    [TestMethod(DisplayName = "ImageResizer.Resize.FitModes")]
     [TestCategory("Image Resizer")]
     [DataRow("Fill", 0, 100, 100)]
     [DataRow("Fit", 1, 100, 50)]
@@ -278,7 +279,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         }
     }
 
-    [TestMethod("ImageResizer.Resize.Units")]
+    [TestMethod(DisplayName = "ImageResizer.Resize.Units")]
     [TestCategory("Image Resizer")]
     [DataRow("Centimeters", 0, 2.54, 2.54, 96, 96)]
     [DataRow("Inches", 1, 1.0, 1.0, 96, 96)]
@@ -301,7 +302,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         AssertImageDimensions(output, expectedWidth, expectedHeight);
     }
 
-    [TestMethod("ImageResizer.Resize.FilenameFormat")]
+    [TestMethod(DisplayName = "ImageResizer.Resize.FilenameFormat")]
     [TestCategory("Image Resizer")]
     public void AppliesFilenameFormatToResizedImage()
     {
@@ -318,7 +319,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             "The resized image filename did not apply all six format parameters.");
     }
 
-    [TestMethod("ImageResizer.Resize.KeepDateModified")]
+    [TestMethod(DisplayName = "ImageResizer.Resize.KeepDateModified")]
     [TestCategory("Image Resizer")]
     public void KeepsOriginalModifiedDateWhenReplacingImage()
     {
@@ -336,10 +337,10 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             originalModifiedTime,
             File.GetLastWriteTimeUtc(source),
             "Replacing the image changed its original modified timestamp.");
-        Assert.AreEqual(0, GetResizedCopies(new[] { source }).Count, "Replacing the image created an unexpected copy.");
+        Assert.IsEmpty(GetResizedCopies(new[] { source }), "Replacing the image created an unexpected copy.");
     }
 
-    [TestMethod("ImageResizer.Resize.ShrinkOnly")]
+    [TestMethod(DisplayName = "ImageResizer.Resize.ShrinkOnly")]
     [TestCategory("Image Resizer")]
     public void ShrinkOnlyDoesNotEnlargeSmallerImage()
     {
@@ -355,7 +356,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         AssertImageDimensions(output, 400, 200);
     }
 
-    [TestMethod("ImageResizer.Resize.ReplaceOriginal")]
+    [TestMethod(DisplayName = "ImageResizer.Resize.ReplaceOriginal")]
     [TestCategory("Image Resizer")]
     public void ReplacesOriginalImageWithoutCreatingCopy()
     {
@@ -367,10 +368,10 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         ClickResizeAndWait(dialog);
 
         AssertImageDimensions(source, 100, 50);
-        Assert.AreEqual(0, GetResizedCopies(new[] { source }).Count, "Replacing the image created an unexpected copy.");
+        Assert.IsEmpty(GetResizedCopies(new[] { source }), "Replacing the image created an unexpected copy.");
     }
 
-    [TestMethod("ImageResizer.Resize.Orientation")]
+    [TestMethod(DisplayName = "ImageResizer.Resize.Orientation")]
     [TestCategory("Image Resizer")]
     public void UncheckedIgnoreOrientationUsesUnswappedDimensions()
     {
@@ -451,7 +452,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
 
     private Session OpenResizeDialog(params string[] filePaths)
     {
-        Assert.IsTrue(filePaths.Length > 0, "At least one image must be selected.");
+        Assert.IsNotEmpty(filePaths, "At least one image must be selected.");
         var folderPath = Path.GetDirectoryName(filePaths[0])!;
         Assert.IsTrue(
             filePaths.All(path => string.Equals(Path.GetDirectoryName(path), folderPath, StringComparison.OrdinalIgnoreCase)),
@@ -838,8 +839,9 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             _ => byte.MaxValue,
         };
 
-        Assert.IsTrue(
-            expected >= otherMaximum + 40,
+        Assert.IsGreaterThanOrEqualTo(
+            otherMaximum + 40,
+            expected,
             $"Pixel ({x}, {y}) in '{path}' was {pixel}, not predominantly {expectedChannel}.");
     }
 
@@ -859,7 +861,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         }
         while (DateTime.UtcNow < deadline);
 
-        Assert.AreEqual(expectedCount, copies.Count, "The expected resized image copies were not created.");
+        Assert.HasCount(expectedCount, copies, "The expected resized image copies were not created.");
         return copies;
     }
 

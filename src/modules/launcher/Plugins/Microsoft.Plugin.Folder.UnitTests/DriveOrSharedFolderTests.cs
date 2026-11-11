@@ -13,12 +13,13 @@ using Moq;
 
 namespace Microsoft.Plugin.Folder.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class DriveOrSharedFolderTests
     {
         private static readonly string[] DriverNames = new[] { "c:", "d:" };
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(@"\\test-server\testdir", true)]
         [DataRow(@"//test-server/testdir", true)]
         [DataRow(@"c:", true)]
@@ -49,7 +50,7 @@ namespace Microsoft.Plugin.Folder.UnitTests
             Assert.AreEqual(expectedSuccess, isDriveOrSharedFolder);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow('A', true)]
         [DataRow('C', true)]
         [DataRow('c', true)]
@@ -69,7 +70,7 @@ namespace Microsoft.Plugin.Folder.UnitTests
             Assert.AreEqual(expectedSuccess, isDriveOrSharedFolder);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("C:", true)]
         [DataRow("C:\test", true)]
         [DataRow("D:", false)]
@@ -97,11 +98,11 @@ namespace Microsoft.Plugin.Folder.UnitTests
             // Assert
             if (hasValues)
             {
-                Assert.IsTrue(results.Any());
+                Assert.IsNotEmpty(results);
             }
             else
             {
-                Assert.IsFalse(results.Any());
+                Assert.IsEmpty(results);
             }
         }
     }

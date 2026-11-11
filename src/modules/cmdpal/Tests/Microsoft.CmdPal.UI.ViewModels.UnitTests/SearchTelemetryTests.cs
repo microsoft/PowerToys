@@ -22,6 +22,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 /// ranker tier) and never the raw query text or item content. The actual telemetry sink is not
 /// exercised - only the payload-building logic.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class SearchTelemetryTests
 {
@@ -98,7 +99,7 @@ public partial class SearchTelemetryTests
             .Where(p => p.PropertyType == typeof(string))
             .ToList();
 
-        Assert.AreEqual(0, stringProperties.Count, "Search results telemetry must not carry any string (potential query text).");
+        Assert.IsEmpty(stringProperties, "Search results telemetry must not carry any string (potential query text).");
     }
 
     [TestMethod]
@@ -120,7 +121,7 @@ public partial class SearchTelemetryTests
             .Where(p => p.PropertyType == typeof(string))
             .ToList();
 
-        Assert.AreEqual(0, stringProperties.Count, "Selection telemetry must not carry any string (potential query text or item title).");
+        Assert.IsEmpty(stringProperties, "Selection telemetry must not carry any string (potential query text or item title).");
     }
 
     [TestMethod]

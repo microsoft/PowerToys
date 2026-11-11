@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class SvgIconProtocolTests
 {
@@ -36,8 +37,8 @@ public class SvgIconProtocolTests
         Assert.IsTrue(SvgIconProtocol.TryCreateSvg(value, ElementTheme.Dark, out var darkSvg));
 
         var expected = Encoding.UTF8.GetBytes(Template);
-        CollectionAssert.AreEqual(expected, lightSvg);
-        CollectionAssert.AreEqual(expected, darkSvg);
+        Assert.AreSequenceEqual(expected, lightSvg);
+        Assert.AreSequenceEqual(expected, darkSvg);
     }
 
     [TestMethod]
@@ -48,7 +49,7 @@ public class SvgIconProtocolTests
 
         Assert.IsTrue(SvgIconProtocol.TryCreateSvg(value, ElementTheme.Light, out var result));
 
-        CollectionAssert.AreEqual(Encoding.UTF8.GetBytes(svg), result);
+        Assert.AreSequenceEqual(Encoding.UTF8.GetBytes(svg), result);
     }
 
     [TestMethod]
@@ -59,7 +60,7 @@ public class SvgIconProtocolTests
 
         Assert.IsTrue(SvgIconProtocol.TryCreateSvg(value, ElementTheme.Light, out var result));
 
-        CollectionAssert.AreEqual(Encoding.UTF8.GetBytes(svg), result);
+        Assert.AreSequenceEqual(Encoding.UTF8.GetBytes(svg), result);
     }
 
     [TestMethod]
@@ -80,7 +81,7 @@ public class SvgIconProtocolTests
             Assert.AreEqual(SvgIconProtocol.Kind.PlainFile, SvgIconProtocol.Classify(value));
             Assert.IsTrue(SvgIconProtocol.TryCreateSvg(value, ElementTheme.Dark, out var svg));
 
-            CollectionAssert.AreEqual(original, svg);
+            Assert.AreSequenceEqual(original, svg);
         }
         finally
         {
@@ -99,10 +100,10 @@ public class SvgIconProtocolTests
 
         var light = Encoding.UTF8.GetString(lightSvg);
         var dark = Encoding.UTF8.GetString(darkSvg);
-        StringAssert.Contains(light, "id=\"theme\" fill=\"#000000\"");
-        StringAssert.Contains(dark, "id=\"theme\" fill=\"#FFFFFF\"");
-        StringAssert.Contains(light, "id=\"accent\" fill=\"#0067C0\"");
-        StringAssert.Contains(dark, "id=\"accent\" fill=\"#60CDFF\"");
+        Assert.Contains("id=\"theme\" fill=\"#000000\"", light);
+        Assert.Contains("id=\"theme\" fill=\"#FFFFFF\"", dark);
+        Assert.Contains("id=\"accent\" fill=\"#0067C0\"", light);
+        Assert.Contains("id=\"accent\" fill=\"#60CDFF\"", dark);
         Assert.IsFalse(light.Contains("{{", StringComparison.Ordinal));
         Assert.IsFalse(dark.Contains("{{", StringComparison.Ordinal));
     }
@@ -117,15 +118,15 @@ public class SvgIconProtocolTests
 
         var light = Encoding.UTF8.GetString(lightSvg);
         var dark = Encoding.UTF8.GetString(darkSvg);
-        StringAssert.Contains(light, "color=\"#000000\"");
-        StringAssert.Contains(dark, "color=\"#FFFFFF\"");
-        StringAssert.Contains(light, "id=\"base\" fill=\"currentColor\"");
-        StringAssert.Contains(dark, "id=\"base\" fill=\"currentColor\"");
-        StringAssert.Contains(light, "id=\"overlay\" fill=\"#0F7B0F\"");
-        StringAssert.Contains(dark, "id=\"overlay\" fill=\"#6CCB5F\"");
+        Assert.Contains("color=\"#000000\"", light);
+        Assert.Contains("color=\"#FFFFFF\"", dark);
+        Assert.Contains("id=\"base\" fill=\"currentColor\"", light);
+        Assert.Contains("id=\"base\" fill=\"currentColor\"", dark);
+        Assert.Contains("id=\"overlay\" fill=\"#0F7B0F\"", light);
+        Assert.Contains("id=\"overlay\" fill=\"#6CCB5F\"", dark);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("danger", "#C42B1C", "#FF99A4")]
     [DataRow("subtle", "#616161", "#C5C5C5")]
     [DataRow("info", "#0067C0", "#60CDFF")]
@@ -144,11 +145,11 @@ public class SvgIconProtocolTests
         Assert.IsTrue(SvgIconProtocol.TryCreateSvg(value, ElementTheme.Light, out var lightSvg));
         Assert.IsTrue(SvgIconProtocol.TryCreateSvg(value, ElementTheme.Dark, out var darkSvg));
 
-        StringAssert.Contains(Encoding.UTF8.GetString(lightSvg), $"id=\"accent\" fill=\"{expectedLight}\"");
-        StringAssert.Contains(Encoding.UTF8.GetString(darkSvg), $"id=\"accent\" fill=\"{expectedDark}\"");
+        Assert.Contains($"id=\"accent\" fill=\"{expectedLight}\"", Encoding.UTF8.GetString(lightSvg));
+        Assert.Contains($"id=\"accent\" fill=\"{expectedDark}\"", Encoding.UTF8.GetString(darkSvg));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("#A4C")]
     [DataRow("#7A3E9D")]
     public void OpaqueCustomSvgHexAccentIsUsedVerbatim(string customAccent)
@@ -158,11 +159,11 @@ public class SvgIconProtocolTests
         Assert.IsTrue(SvgIconProtocol.TryCreateSvg(value, ElementTheme.Light, out var lightSvg));
         Assert.IsTrue(SvgIconProtocol.TryCreateSvg(value, ElementTheme.Dark, out var darkSvg));
 
-        StringAssert.Contains(Encoding.UTF8.GetString(lightSvg), $"id=\"accent\" fill=\"{customAccent}\"");
-        StringAssert.Contains(Encoding.UTF8.GetString(darkSvg), $"id=\"accent\" fill=\"{customAccent}\"");
+        Assert.Contains($"id=\"accent\" fill=\"{customAccent}\"", Encoding.UTF8.GetString(lightSvg));
+        Assert.Contains($"id=\"accent\" fill=\"{customAccent}\"", Encoding.UTF8.GetString(darkSvg));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("transparent")]
     [DataRow("#A4C8")]
     [DataRow("#7A3E9DCC")]
@@ -174,8 +175,8 @@ public class SvgIconProtocolTests
         Assert.AreEqual(SvgIconProtocol.Kind.ThemedFile, SvgIconProtocol.Classify(value));
         Assert.IsFalse(SvgIconProtocol.TryCreateSvg(value, ElementTheme.Light, out var lightSvg));
         Assert.IsFalse(SvgIconProtocol.TryCreateSvg(value, ElementTheme.Dark, out var darkSvg));
-        Assert.AreEqual(0, lightSvg.Length);
-        Assert.AreEqual(0, darkSvg.Length);
+        Assert.IsEmpty(lightSvg);
+        Assert.IsEmpty(darkSvg);
     }
 
     [TestMethod]
@@ -193,8 +194,8 @@ public class SvgIconProtocolTests
 
             var resolved = Encoding.UTF8.GetString(svg);
             Assert.IsFalse(resolved.Contains("<?xml", StringComparison.OrdinalIgnoreCase));
-            StringAssert.Contains(resolved, "id=\"theme\" fill=\"#FFFFFF\"");
-            StringAssert.Contains(resolved, "id=\"accent\" fill=\"#6CCB5F\"");
+            Assert.Contains("id=\"theme\" fill=\"#FFFFFF\"", resolved);
+            Assert.Contains("id=\"accent\" fill=\"#6CCB5F\"", resolved);
         }
         finally
         {
@@ -222,9 +223,9 @@ public class SvgIconProtocolTests
 
             var resolved = Encoding.UTF8.GetString(svg);
             Assert.IsFalse(resolved.Contains("<?xml", StringComparison.OrdinalIgnoreCase));
-            StringAssert.Contains(resolved, $"<title>{title}</title>");
-            StringAssert.Contains(resolved, "id=\"theme\" fill=\"#FFFFFF\"");
-            StringAssert.Contains(resolved, "id=\"accent\" fill=\"#6CCB5F\"");
+            Assert.Contains($"<title>{title}</title>", resolved);
+            Assert.Contains("id=\"theme\" fill=\"#FFFFFF\"", resolved);
+            Assert.Contains("id=\"accent\" fill=\"#6CCB5F\"", resolved);
         }
         finally
         {
@@ -232,7 +233,7 @@ public class SvgIconProtocolTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("|Svg|C:\\Icons\\plain.svg", "PlainFile")]
     [DataRow("|Svg|<svg />", "PlainInline")]
     [DataRow("|ThemedSvg|C:\\Icons\\themed.svg", "ThemedFile")]
@@ -272,7 +273,7 @@ public class SvgIconProtocolTests
         Assert.AreSame(plain, SvgIconProtocol.GetCacheIdentity(plain));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("|ThemedSvg||<svg />")]
     [DataRow("|ThemedSvg|unknown|<svg />")]
     [DataRow("|ThemedSvg|UNKNOWN|<svg />")]
@@ -282,7 +283,7 @@ public class SvgIconProtocolTests
     public void UnrecognizedAccentsAndSvgPayloadsKeepTheirCacheIdentity(string value) =>
         Assert.AreSame(value, SvgIconProtocol.GetCacheIdentity(value));
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow("|svg|<svg />")]
@@ -296,6 +297,6 @@ public class SvgIconProtocolTests
     public void InvalidSvgProtocolIsRejected(string? value)
     {
         Assert.IsFalse(SvgIconProtocol.TryCreateSvg(value, ElementTheme.Light, out var svg));
-        Assert.AreEqual(0, svg.Length);
+        Assert.IsEmpty(svg);
     }
 }

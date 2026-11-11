@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Registry.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class KeyNameTest
 {

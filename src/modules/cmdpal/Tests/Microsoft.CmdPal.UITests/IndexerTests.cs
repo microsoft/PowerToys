@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class IndexerTests : CommandPaletteTestBase
 {
@@ -154,7 +155,6 @@ public class IndexerTests : CommandPaletteTestBase
     }
 
     [STATestMethod]
-    [TestMethod]
     public void IndexerCopyPathTest()
     {
         EnterIndexerExtension();
@@ -170,7 +170,7 @@ public class IndexerTests : CommandPaletteTestBase
         copyPathButton.Click();
 
         var clipboardContent = System.Windows.Forms.Clipboard.GetText();
-        Assert.IsTrue(clipboardContent.Contains(TestFileName), $"Clipboard content does not contain the expected file name. clipboard: {clipboardContent}");
+        Assert.Contains(TestFileName, clipboardContent, $"Clipboard content does not contain the expected file name. clipboard: {clipboardContent}");
     }
 
     [TestMethod]

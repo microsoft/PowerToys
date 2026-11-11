@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Awake.ModuleServices.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class AwakeStateMappingTests
 {
     [TestMethod]

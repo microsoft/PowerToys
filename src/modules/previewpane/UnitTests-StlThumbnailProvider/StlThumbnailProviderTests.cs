@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace StlThumbnailProviderUnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [STATestClass]
     public class StlThumbnailProviderTests
     {
@@ -26,7 +27,7 @@ namespace StlThumbnailProviderUnitTests
 
             Bitmap? bitmap = provider.GetThumbnail(256);
 
-            Assert.IsTrue(bitmap != null);
+            Assert.IsNotNull(bitmap);
         }
 
         [TestMethod]
@@ -39,7 +40,7 @@ namespace StlThumbnailProviderUnitTests
 
             Bitmap? bitmap = provider.GetThumbnail(0);
 
-            Assert.IsTrue(bitmap == null);
+            Assert.IsNull(bitmap);
         }
 
         [TestMethod]
@@ -52,7 +53,7 @@ namespace StlThumbnailProviderUnitTests
 
             Bitmap? bitmap = provider.GetThumbnail(10001);
 
-            Assert.IsTrue(bitmap == null);
+            Assert.IsNull(bitmap);
         }
 
         [TestMethod]
@@ -61,7 +62,7 @@ namespace StlThumbnailProviderUnitTests
             using (var stream = new MemoryStream())
             {
                 Bitmap? thumbnail = StlThumbnailProvider.GetThumbnail(stream, 256);
-                Assert.IsTrue(thumbnail == null);
+                Assert.IsNull(thumbnail);
             }
         }
 
@@ -69,7 +70,7 @@ namespace StlThumbnailProviderUnitTests
         public void CheckNoStlNullStreamShouldReturnNullBitmap()
         {
             Bitmap? thumbnail = StlThumbnailProvider.GetThumbnail(null, 256);
-            Assert.IsTrue(thumbnail == null);
+            Assert.IsNull(thumbnail);
         }
 
         [TestMethod]
@@ -108,7 +109,7 @@ namespace StlThumbnailProviderUnitTests
             Assert.AreEqual(0L, stream.Position);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true, false, false, DisplayName = "Leading CRLF")]
         [DataRow(false, true, false, DisplayName = "UTF-8 BOM")]
         [DataRow(false, false, true, DisplayName = "Uppercase SOLID")]
@@ -190,8 +191,9 @@ namespace StlThumbnailProviderUnitTests
             Assert.IsNotNull(thumbnail);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
         [TestMethod]
-        [Timeout(5000)]
+        [Timeout(5000, CooperativeCancellation = false)]
         public void TruncatedAsciiStlWithUnterminatedFacetShouldBeDelegatedAndFailBoundedly()
         {
             const string lineEnding = "\r\n";
@@ -210,8 +212,9 @@ namespace StlThumbnailProviderUnitTests
             Assert.IsNull(StlThumbnailProvider.GetThumbnail(stream, 256));
 
             stopwatch.Stop();
-            Assert.IsTrue(
-                stopwatch.Elapsed < TimeSpan.FromSeconds(1),
+            Assert.IsLessThan(
+                TimeSpan.FromSeconds(1),
+                stopwatch.Elapsed,
                 $"Truncated ASCII facet rejection took {stopwatch.Elapsed}.");
         }
 

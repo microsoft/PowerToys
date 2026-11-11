@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class SeparatorTests
 {
@@ -24,6 +25,6 @@ public class SeparatorTests
         separator.Title = title;
 
         Assert.AreEqual(title, separator.Section);
-        CollectionAssert.AreEqual(new[] { nameof(Separator.Title), nameof(Separator.Section) }, notifications);
+        Assert.AreSequenceEqual(new[] { nameof(Separator.Title), nameof(Separator.Section) }, notifications);
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class ExperimentChannelTests
 {
@@ -157,9 +158,9 @@ public sealed class ExperimentChannelTests
                 File.WriteAllText(path, "fixture");
             }
 
-            CollectionAssert.AreEquivalent(new[] { phase, screenshot, log }, RunFiles.EvidenceFiles(root).ToArray());
+            Assert.AreSequenceEqual(new[] { phase, screenshot, log }, RunFiles.EvidenceFiles(root).ToArray(), SequenceOrder.InAnyOrder);
             Directory.Delete(Path.Combine(root, "logs"), recursive: true);
-            CollectionAssert.AreEquivalent(new[] { phase, screenshot }, RunFiles.EvidenceFiles(root).ToArray());
+            Assert.AreSequenceEqual(new[] { phase, screenshot }, RunFiles.EvidenceFiles(root).ToArray(), SequenceOrder.InAnyOrder);
         }
         finally
         {
@@ -189,7 +190,7 @@ public sealed class ExperimentChannelTests
             Assert.AreEqual(runId, second["RunId"]!.GetValue<string>());
             Assert.AreEqual(2, second["Sequence"]!.GetValue<int>());
             Assert.IsTrue(File.Exists(Path.Combine(input, "leases", "00000002.json.ready")));
-            CollectionAssert.AreEqual(original, File.ReadAllBytes(first));
+            Assert.AreSequenceEqual(original, File.ReadAllBytes(first));
             Assert.IsFalse(File.Exists(Path.Combine(input, "lease.json")));
         }
         finally
@@ -208,11 +209,13 @@ public sealed class ExperimentChannelTests
         {
             var path = Path.Combine(channel.InputRoot, "held.json");
             using var held = new FileStream(path, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.ReadWrite);
-            var release = Task.Run(() =>
+            var release = Task.Run(
+                () =>
             {
                 Thread.Sleep(300);
                 held.Dispose();
-            });
+            },
+                TestContext.CancellationToken);
             RunFiles.RemoveOwnedDirectory(channel.InputRoot, TimeSpan.FromSeconds(5));
             release.GetAwaiter().GetResult();
             Assert.IsFalse(Directory.Exists(channel.InputRoot));
@@ -238,4 +241,6 @@ public sealed class ExperimentChannelTests
             }
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

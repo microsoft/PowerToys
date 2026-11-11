@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ScreenRuler.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class TestSpacing : UITestBase
     {
@@ -15,7 +16,7 @@ namespace ScreenRuler.UITests
         {
         }
 
-        [TestMethod("ScreenRuler.SpacingTool")]
+        [TestMethod(DisplayName = "ScreenRuler.SpacingTool")]
         [TestCategory("Spacing")]
         public void TestScreenRulerSpacingTool()
         {

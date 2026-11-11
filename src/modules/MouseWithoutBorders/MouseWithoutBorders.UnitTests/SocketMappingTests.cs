@@ -7,13 +7,14 @@ using MouseWithoutBorders.Class;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class SocketMappingTests
 {
     private static readonly string[] SingleMapping = ["PEER 192.0.2.1"];
     private static readonly string[] CombinedMappings = ["PEER 192.0.2.1", "POLICY 192.0.2.2", "PEER 192.0.2.3", "USER 192.0.2.4"];
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow("\r\n")]
@@ -21,10 +22,10 @@ public sealed class SocketMappingTests
     {
         var mappings = SocketStuff.GetName2IpMappingLines(policyMappings!, "PEER 192.0.2.1");
 
-        CollectionAssert.AreEqual(SingleMapping, mappings);
+        Assert.AreSequenceEqual(SingleMapping, mappings);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("", "")]
     [DataRow("\r\n", "")]
     [DataRow("", "\r\n")]
@@ -35,12 +36,12 @@ public sealed class SocketMappingTests
             "PEER 192.0.2.1\r\nPOLICY 192.0.2.2" + policySuffix,
             userPrefix + "PEER 192.0.2.3\r\nUSER 192.0.2.4");
 
-        CollectionAssert.AreEqual(CombinedMappings, mappings);
+        Assert.AreSequenceEqual(CombinedMappings, mappings);
     }
 
     [TestMethod]
     public void EmptyMappingListsProduceNoRules()
     {
-        CollectionAssert.AreEqual(Array.Empty<string>(), SocketStuff.GetName2IpMappingLines(string.Empty, string.Empty));
+        Assert.AreSequenceEqual(Array.Empty<string>(), SocketStuff.GetName2IpMappingLines(string.Empty, string.Empty));
     }
 }

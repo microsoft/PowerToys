@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Shell.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class NormalizeCommandLineTests : CommandPaletteUnitTestBase
 {

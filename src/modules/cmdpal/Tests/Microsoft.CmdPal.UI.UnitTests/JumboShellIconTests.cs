@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class JumboShellIconTests
 {
@@ -40,7 +41,7 @@ public class JumboShellIconTests
             using var prepared = appIcon.TakePreparedIcon();
             Assert.IsNotNull(prepared?.SoftwareBitmap);
             var bitmap = prepared.SoftwareBitmap;
-            Assert.IsTrue(bitmap.PixelWidth >= requestedSize);
+            Assert.IsGreaterThanOrEqualTo(requestedSize, bitmap.PixelWidth);
             Assert.AreEqual(bitmap.PixelWidth, bitmap.PixelHeight);
 
             var pixels = new byte[bitmap.PixelWidth * bitmap.PixelHeight * 4];
@@ -52,7 +53,7 @@ public class JumboShellIconTests
             Assert.AreEqual(directIcon.PixelHeight, bitmap.PixelHeight);
             var directPixels = new byte[directIcon.PixelWidth * directIcon.PixelHeight * 4];
             directIcon.CopyToBuffer(directPixels.AsBuffer());
-            CollectionAssert.AreEqual(directPixels, pixels, "Shortcut hero rendering must preserve the configured icon without adding overlays or changing its frame.");
+            Assert.AreSequenceEqual(directPixels, pixels, "Shortcut hero rendering must preserve the configured icon without adding overlays or changing its frame.");
 
             for (var offset = 0; offset < pixels.Length; offset += 4)
             {

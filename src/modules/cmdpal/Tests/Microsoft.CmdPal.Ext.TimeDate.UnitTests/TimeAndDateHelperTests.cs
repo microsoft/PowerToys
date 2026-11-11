@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class TimeAndDateHelperTests
 {
@@ -33,7 +34,7 @@ public class TimeAndDateHelperTests
         CultureInfo.CurrentUICulture = originalUiCulture;
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(-1, null)] // default setting
     [DataRow(0, CalendarWeekRule.FirstDay)]
     [DataRow(1, CalendarWeekRule.FirstFullWeek)]
@@ -56,7 +57,7 @@ public class TimeAndDateHelperTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(-1, null)] // default setting
     [DataRow(0, DayOfWeek.Sunday)]
     [DataRow(1, DayOfWeek.Monday)]
@@ -83,7 +84,7 @@ public class TimeAndDateHelperTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("yyyy-MM-dd", "2023-12-25")]
     [DataRow("MM/dd/yyyy", "12/25/2023")]
     [DataRow("dd.MM.yyyy", "25.12.2023")]
@@ -114,7 +115,7 @@ public class TimeAndDateHelperTests
         Assert.AreEqual("12/25/2023", dateResult);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("yyyy-MM-dd HH:mm:ss", "2023-12-25 14:30:45")]
     [DataRow("dddd, MMMM dd, yyyy", "Monday, December 25, 2023")]
     [DataRow("HH:mm:ss tt", "14:30:45 PM")]

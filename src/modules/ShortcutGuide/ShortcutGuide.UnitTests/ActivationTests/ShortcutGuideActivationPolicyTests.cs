@@ -8,6 +8,7 @@ using ShortcutGuide.Helpers;
 
 namespace ShortcutGuide.UnitTests.ActivationTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class ShortcutGuideActivationPolicyTests
 {

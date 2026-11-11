@@ -8,10 +8,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Indexer.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class SearchNoticeInfoBuilderTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow((int)SearchQuery.QueryState.NullDataSource)]
     [DataRow((int)SearchQuery.QueryState.CreateSessionFailed)]
     [DataRow((int)SearchQuery.QueryState.CreateCommandFailed)]
@@ -52,7 +53,7 @@ public class SearchNoticeInfoBuilderTests
         Assert.AreEqual(Resources.Indexer_SearchFailedMessageTip, notice.Value.Subtitle);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow((int)SearchQuery.QueryState.Completed)]
     [DataRow((int)SearchQuery.QueryState.NoResults)]
     [DataRow((int)SearchQuery.QueryState.AllNoise)]
@@ -71,7 +72,7 @@ public class SearchNoticeInfoBuilderTests
 
         Assert.IsNotNull(notice);
         Assert.AreEqual(Resources.Indexer_SearchIndexingMessage, notice.Value.Title);
-        StringAssert.Contains(notice.Value.Subtitle, "42");
+        Assert.Contains("42", notice.Value.Subtitle);
     }
 
     [TestMethod]

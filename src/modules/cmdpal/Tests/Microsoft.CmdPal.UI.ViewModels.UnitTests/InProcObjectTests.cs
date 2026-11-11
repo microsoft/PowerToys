@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class InProcObjectTests
 {
@@ -59,7 +60,7 @@ public sealed class InProcObjectTests
         Assert.IsFalse(wrapped.Equals(new InProcObject<IListItem?>(new ListItem())));
 
         var set = new HashSet<InProcObject<IListItem?>> { wrapped };
-        Assert.IsTrue(set.Contains(same));
+        Assert.Contains(same, set);
     }
 
     [TestMethod]
@@ -86,8 +87,8 @@ public sealed class InProcObjectTests
         Assert.AreEqual(wrapped.GetHashCode(), same.GetHashCode());
 
         var set = new HashSet<InProcObject<object>> { wrapped };
-        Assert.IsTrue(set.Contains(same));
-        Assert.IsFalse(set.Contains(different));
+        Assert.Contains(same, set);
+        Assert.DoesNotContain(different, set);
     }
 
     private sealed class AlwaysEqual

@@ -8,20 +8,21 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ColorPicker.UnitTests.Helpers
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class MonitorResolutionHelperTests
     {
         [TestMethod]
         public void AllMonitors_has_at_least_one_named_monitor()
         {
-            Assert.IsTrue(MonitorResolutionHelper.AllMonitors.Any());
+            Assert.IsNotEmpty(MonitorResolutionHelper.AllMonitors);
             Assert.IsFalse(string.IsNullOrEmpty(MonitorResolutionHelper.AllMonitors.First().Name));
         }
 
         [TestMethod]
         public void Exactly_one_primary_monitor()
         {
-            Assert.AreEqual(1, MonitorResolutionHelper.AllMonitors.Count(m => m.IsPrimary));
+            Assert.ContainsSingle(m => m.IsPrimary, MonitorResolutionHelper.AllMonitors);
         }
 
         [TestMethod]

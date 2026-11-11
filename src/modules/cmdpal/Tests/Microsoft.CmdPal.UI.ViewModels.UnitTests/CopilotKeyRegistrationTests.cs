@@ -19,6 +19,7 @@ using Windows.Win32.UI.Shell.PropertiesSystem;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CopilotKeyRegistrationTests
 {
@@ -72,7 +73,7 @@ public class CopilotKeyRegistrationTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Package.appxmanifest")]
     [DataRow("Package-Dev.appxmanifest")]
     public void Manifest_SingleTapMatchesWindowMessageAndLaunchFallback(string manifestName)
@@ -87,7 +88,7 @@ public class CopilotKeyRegistrationTests
         Assert.AreEqual(CopilotKeyRegistration.SingleTap.ToString(CultureInfo.InvariantCulture), (string?)tap.Attribute("MessageWParam"));
         Assert.AreEqual("x-cmdpal://", tap.Value);
         var uri = new Uri(tap.Value);
-        Assert.IsTrue(manifest.Descendants(uap + "Protocol").Any(element => (string?)element.Attribute("Name") == uri.Scheme));
+        Assert.Contains(element => (string?)element.Attribute("Name") == uri.Scheme, manifest.Descendants(uap + "Protocol"));
 
         var protocolActivation = new CmdPalProtocolActivation(new SettingsLinkResolver());
         Assert.IsFalse(protocolActivation.TryParse(uri, out _), "The root URI must use the default summon path.");

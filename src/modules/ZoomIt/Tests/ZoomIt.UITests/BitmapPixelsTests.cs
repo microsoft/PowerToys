@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.ZoomIt.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [TestCategory("ZoomIt")]
 [DoNotParallelize]

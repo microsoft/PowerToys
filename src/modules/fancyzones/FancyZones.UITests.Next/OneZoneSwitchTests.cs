@@ -23,6 +23,7 @@ namespace FancyZones.UITests;
 /// windows share one <c>app-zone-history.json</c> entry, each exact HWND is verified through the
 /// <c>FancyZones_zones</c> property the product stamps when it assigns that window to a zone.
 /// </remarks>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class OneZoneSwitchTests : UITestBase
 {

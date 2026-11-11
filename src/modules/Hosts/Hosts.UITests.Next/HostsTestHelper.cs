@@ -68,7 +68,7 @@ namespace Hosts.UITests
             var matches = session.FindAll<ToggleSwitch>(By.Name("Active"))
                 .Where(toggle => string.Equals(toggle.Name, "Active", StringComparison.Ordinal))
                 .ToList();
-            Assert.IsTrue(matches.Count > 0, "The Add entry dialog Active toggle was not found.");
+            Assert.IsNotEmpty(matches, "The Add entry dialog Active toggle was not found.");
 
             // Existing rows also expose an Active toggle. The dialog control is the bottom-most
             // exact-name match because it follows the Address, Hosts, and Comment fields.
@@ -96,8 +96,9 @@ namespace Hosts.UITests
                     continue;
                 }
 
-                Assert.IsTrue(
-                    matches.Count <= 1,
+                Assert.IsLessThanOrEqualTo(
+                    1,
+                    matches.Count,
                     $"Expected at most one exact {typeof(T).Name} named '{name}', found {matches.Count}.");
                 if (matches.Count == 1)
                 {

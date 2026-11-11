@@ -10,6 +10,7 @@ using ShortcutGuide.Models;
 
 namespace ShortcutGuide.UnitTests.SearchTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class ShortcutSearchMatcherTests
 {

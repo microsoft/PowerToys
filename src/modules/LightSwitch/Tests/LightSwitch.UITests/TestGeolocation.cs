@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LightSwitch.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class TestGeolocation : UITestBase
     {
@@ -20,7 +21,7 @@ namespace LightSwitch.UITests
         {
         }
 
-        [TestMethod("LightSwitch.Geolocation")]
+        [TestMethod(DisplayName = "LightSwitch.Geolocation")]
         [TestCategory("Location")]
         public void TestGeolocationUpdate()
         {

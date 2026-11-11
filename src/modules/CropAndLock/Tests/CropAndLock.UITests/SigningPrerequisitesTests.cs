@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CropAndLock.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     [TestCategory("CropAndLock")]
     public sealed class SigningPrerequisitesTests
@@ -15,7 +16,7 @@ namespace Microsoft.CropAndLock.UITests
         {
             foreach (var signature in MissingSignatures())
             {
-                Assert.ThrowsException<AssertInconclusiveException>(() =>
+                Assert.ThrowsExactly<AssertInconclusiveException>(() =>
                     SigningPrerequisites.RequireSignature(signature, true, false, "Prepare local signing."));
             }
         }
@@ -25,7 +26,7 @@ namespace Microsoft.CropAndLock.UITests
         {
             foreach (var signature in MissingSignatures())
             {
-                Assert.ThrowsException<AssertFailedException>(() =>
+                Assert.ThrowsExactly<AssertFailedException>(() =>
                     SigningPrerequisites.RequireSignature(signature, true, true, "CI must prepare signing."));
             }
         }
@@ -42,7 +43,7 @@ namespace Microsoft.CropAndLock.UITests
         public void CorruptSignaturesAreNeverSkipped()
         {
             var signature = new SigningPrerequisites.Signature("HashMismatch", "File changed after signing.", "Microsoft Corporation", true);
-            Assert.ThrowsException<AssertFailedException>(() =>
+            Assert.ThrowsExactly<AssertFailedException>(() =>
                 SigningPrerequisites.RequireSignature(signature, false, false, "Corrupt fixture."));
         }
 

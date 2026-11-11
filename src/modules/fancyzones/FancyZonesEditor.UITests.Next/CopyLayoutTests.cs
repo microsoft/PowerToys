@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FancyZonesEditor.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CopyLayoutTests : FancyZonesEditorTestBase
 {
@@ -48,7 +49,7 @@ public class CopyLayoutTests : FancyZonesEditorTestBase
         EditorTestData.WriteForCopyLayoutTests(Files);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.CopyTemplate_FromEditLayoutWindow")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.CopyTemplate_FromEditLayoutWindow")]
     [TestCategory("FancyZones Editor #4")]
     public void CopyTemplate_FromEditLayoutWindow()
     {
@@ -62,11 +63,11 @@ public class CopyLayoutTests : FancyZonesEditorTestBase
         Assert.IsNotNull(Session.Find<Element>(copiedLayoutName));
 
         var data = EditorUiTestHelper.ReadCustomLayouts();
-        Assert.AreEqual(2, data.CustomLayouts.Count);
+        Assert.HasCount(2, data.CustomLayouts);
         Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == copiedLayoutName));
     }
 
-    [TestMethod("FancyZonesEditor.Basic.CopyTemplate_FromEditLayoutWindow")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.CopyTemplate_FromEditLayoutWindow")]
     [TestCategory("FancyZones Editor #4")]
     public void CopyTemplate_FromContextMenu()
     {
@@ -82,11 +83,11 @@ public class CopyLayoutTests : FancyZonesEditorTestBase
         Assert.IsNotNull(Session.Find<Element>(copiedLayoutName));
 
         var data = EditorUiTestHelper.ReadCustomLayouts();
-        Assert.AreEqual(2, data.CustomLayouts.Count);
+        Assert.HasCount(2, data.CustomLayouts);
         Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == copiedLayoutName));
     }
 
-    [TestMethod("FancyZonesEditor.Basic.CopyTemplate_DefaultLayout")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.CopyTemplate_DefaultLayout")]
     [TestCategory("FancyZones Editor #13")]
     public void CopyTemplate_DefaultLayout()
     {
@@ -100,7 +101,7 @@ public class CopyLayoutTests : FancyZonesEditorTestBase
         Assert.IsNotNull(Session.Find<Element>(copiedLayoutName));
 
         var customLayoutsData = EditorUiTestHelper.ReadCustomLayouts();
-        Assert.AreEqual(2, customLayoutsData.CustomLayouts.Count);
+        Assert.HasCount(2, customLayoutsData.CustomLayouts);
 
         EditorUiTestHelper.OpenEditLayoutDialog(this, Session, sourceLayoutName);
         Assert.IsNotNull(Session.Find<Button>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.HorizontalDefaultButtonChecked)));
@@ -115,7 +116,7 @@ public class CopyLayoutTests : FancyZonesEditorTestBase
         Assert.AreEqual(defaultLayouts.Serialize(ExpectedDefaultLayouts), defaultLayouts.Serialize(defaultLayoutsData));
     }
 
-    [TestMethod("FancyZonesEditor.Basic.CopyCustomLayout_FromEditLayoutWindow")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.CopyCustomLayout_FromEditLayoutWindow")]
     [TestCategory("FancyZones Editor #4")]
     public void CopyCustomLayout_FromEditLayoutWindow()
     {
@@ -128,11 +129,11 @@ public class CopyLayoutTests : FancyZonesEditorTestBase
         Assert.IsNotNull(Session.Find<Element>(copiedLayoutName));
 
         var data = EditorUiTestHelper.ReadCustomLayouts();
-        Assert.AreEqual(2, data.CustomLayouts.Count);
+        Assert.HasCount(2, data.CustomLayouts);
         Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == copiedLayoutName));
     }
 
-    [TestMethod("FancyZonesEditor.Basic.CopyCustomLayout_FromContextMenu")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.CopyCustomLayout_FromContextMenu")]
     [TestCategory("FancyZones Editor #4")]
     public void CopyCustomLayout_FromContextMenu()
     {
@@ -147,11 +148,11 @@ public class CopyLayoutTests : FancyZonesEditorTestBase
         Assert.IsNotNull(Session.Find<Element>(copiedLayoutName));
 
         var data = EditorUiTestHelper.ReadCustomLayouts();
-        Assert.AreEqual(2, data.CustomLayouts.Count);
+        Assert.HasCount(2, data.CustomLayouts);
         Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == copiedLayoutName));
     }
 
-    [TestMethod("FancyZonesEditor.Basic.CopyCustomLayout_DefaultLayout")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.CopyCustomLayout_DefaultLayout")]
     [TestCategory("FancyZones Editor #13")]
     public void CopyCustomLayout_DefaultLayout()
     {
@@ -164,7 +165,7 @@ public class CopyLayoutTests : FancyZonesEditorTestBase
         Assert.IsNotNull(Session.Find<Element>(copiedLayoutName));
 
         var customLayoutsData = EditorUiTestHelper.ReadCustomLayouts();
-        Assert.AreEqual(2, customLayoutsData.CustomLayouts.Count);
+        Assert.HasCount(2, customLayoutsData.CustomLayouts);
 
         EditorUiTestHelper.OpenEditLayoutDialog(this, Session, SourceCustomLayoutName);
         Assert.IsNotNull(Session.Find<Button>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.VerticalDefaultButtonChecked)));
@@ -179,7 +180,7 @@ public class CopyLayoutTests : FancyZonesEditorTestBase
         Assert.AreEqual(defaultLayouts.Serialize(ExpectedDefaultLayouts), defaultLayouts.Serialize(defaultLayoutsData));
     }
 
-    [TestMethod("FancyZonesEditor.Basic.CopyCustomLayout_Hotkey")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.CopyCustomLayout_Hotkey")]
     [TestCategory("FancyZones Editor #4")]
     public void CopyCustomLayout_Hotkey()
     {
@@ -192,7 +193,7 @@ public class CopyLayoutTests : FancyZonesEditorTestBase
         Assert.IsNotNull(Session.Find<Element>(copiedLayoutName));
 
         var customLayoutsData = EditorUiTestHelper.ReadCustomLayouts();
-        Assert.AreEqual(2, customLayoutsData.CustomLayouts.Count);
+        Assert.HasCount(2, customLayoutsData.CustomLayouts);
 
         EditorUiTestHelper.OpenEditLayoutDialog(this, Session, SourceCustomLayoutName);
         var hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(EditorUiTestHelper.AccessibilityId.HotkeyComboBox));

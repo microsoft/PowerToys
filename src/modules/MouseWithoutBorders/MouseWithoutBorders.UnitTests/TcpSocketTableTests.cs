@@ -9,10 +9,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class TcpSocketTableTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("0.0.0.0")]
     [DataRow("::")]
     public void ModuleReadinessRequiresBothOwnedListeners(string address)
@@ -25,7 +26,7 @@ public sealed class TcpSocketTableTests
         Assert.IsTrue(TcpSocketTable.HasMwbListeners(123, sockets));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(123, 15100, 15100, "Listen")]
     [DataRow(123, 15101, 15101, "Listen")]
     [DataRow(456, 15100, 15101, "Listen")]
@@ -59,7 +60,7 @@ public sealed class TcpSocketTableTests
         Assert.ThrowsExactly<ArgumentNullException>(() => TcpSocketTable.HasMwbListeners(123, null!));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void NativeSnapshotKeepsSocketAddressesPortsStatesAndOwner(bool ipv6)
@@ -83,10 +84,14 @@ public sealed class TcpSocketTableTests
             TimeSpan.FromSeconds(10),
             "The native table did not report the owned loopback connection.");
         Assert.IsTrue(sockets.All(socket => socket.OwningProcess == Environment.ProcessId));
-        Assert.IsTrue(sockets.Any(socket => socket.LocalAddress == address.ToString() &&
-            socket.LocalPort == endpoint.Port && socket.State == "Listen"));
-        Assert.IsTrue(sockets.Any(socket => socket.RemoteAddress == address.ToString() &&
-            socket.LocalPort == remote.Port && socket.RemotePort == endpoint.Port && socket.State == "Established"));
-        Assert.AreEqual(0, TcpSocketTable.Read(int.MaxValue).Length, "Unowned sockets must not be returned.");
+        Assert.Contains(
+            socket => socket.LocalAddress == address.ToString() &&
+            socket.LocalPort == endpoint.Port && socket.State == "Listen",
+            sockets);
+        Assert.Contains(
+            socket => socket.RemoteAddress == address.ToString() &&
+            socket.LocalPort == remote.Port && socket.RemotePort == endpoint.Port && socket.State == "Established",
+            sockets);
+        Assert.IsEmpty(TcpSocketTable.Read(int.MaxValue), "Unowned sockets must not be returned.");
     }
 }

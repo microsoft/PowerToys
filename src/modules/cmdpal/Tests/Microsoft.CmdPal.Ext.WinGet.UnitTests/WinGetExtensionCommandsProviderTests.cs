@@ -15,6 +15,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.Ext.WinGet.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class WinGetExtensionCommandsProviderTests : IDisposable
 {
@@ -55,7 +56,7 @@ public sealed class WinGetExtensionCommandsProviderTests : IDisposable
         Assert.AreEqual(expectedMessage, _page.Title);
         Assert.AreEqual(Resources.winget_page_name, _page.Name);
         Assert.AreEqual(Resources.winget_page_name, _provider.TopLevelCommands()[0].Title);
-        CollectionAssert.AreEqual(new[] { expectedMessage }, _notifications);
+        Assert.AreSequenceEqual(new[] { expectedMessage }, _notifications);
     }
 
     [TestMethod]

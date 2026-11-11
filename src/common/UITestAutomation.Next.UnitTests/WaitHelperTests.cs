@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public class WaitHelperTests
 {
     private static readonly int[] ExpectedRecoveredValues = [1, 2];
@@ -48,7 +49,7 @@ public class WaitHelperTests
             recover: value => recoveredValues.Add(value));
 
         Assert.IsTrue(result.Succeeded);
-        CollectionAssert.AreEqual(ExpectedRecoveredValues, recoveredValues);
+        Assert.AreSequenceEqual(ExpectedRecoveredValues, recoveredValues);
     }
 
     [TestMethod]
@@ -64,7 +65,7 @@ public class WaitHelperTests
 
         Assert.IsFalse(result.Succeeded);
         Assert.AreEqual(observation, result.LastObservation);
-        Assert.IsTrue(observation > 0);
+        Assert.IsGreaterThan(0, observation);
     }
 
     [TestMethod]

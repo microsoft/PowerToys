@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class StringParserTests
 {
@@ -25,7 +26,7 @@ public class StringParserTests
         CultureInfo.CurrentUICulture = new CultureInfo("en-us", false);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("10/29/2022 17:05:10", true, "G", "10/29/2022 5:05:10 PM")]
     [DataRow("Saturday, October 29, 2022 5:05:10 PM", true, "G", "10/29/2022 5:05:10 PM")]
     [DataRow("10/29/2022", true, "d", "10/29/2022")]

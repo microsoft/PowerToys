@@ -18,6 +18,7 @@ using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class DeleteLayoutTests : UITestBase
     {
@@ -216,7 +217,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.Find<Element>(CustomLayouts.CustomLayouts[0].Name).Click();
         }
 
-        [TestMethod("FancyZonesEditor.Basic.DeleteNotAppliedLayout")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.DeleteNotAppliedLayout")]
         [TestCategory("FancyZones Editor #5")]
         public void DeleteNotAppliedLayout()
         {
@@ -226,16 +227,16 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.SendKeySequence(Key.Tab, Key.Enter);
 
             // verify the layout is removed
-            Assert.IsTrue(Session.FindAll<Element>(deletedLayout).Count == 0);
+            Assert.IsEmpty(Session.FindAll<Element>(deletedLayout));
 
             // check the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            Assert.AreEqual(CustomLayouts.CustomLayouts.Count - 1, data.CustomLayouts.Count);
+            Assert.HasCount(CustomLayouts.CustomLayouts.Count - 1, data.CustomLayouts);
             Assert.IsFalse(data.CustomLayouts.Exists(x => x.Name == deletedLayout));
         }
 
-        [TestMethod("FancyZonesEditor.Basic.DeleteAppliedLayout")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.DeleteAppliedLayout")]
         [TestCategory("FancyZones Editor #5")]
         public void DeleteAppliedLayout()
         {
@@ -246,7 +247,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.SendKeySequence(Key.Tab, Key.Enter);
 
             // verify the layout is removed
-            Assert.IsTrue(Session.FindAll<Element>(deletedLayout).Count == 0);
+            Assert.IsEmpty(Session.FindAll<Element>(deletedLayout));
 
             // verify the empty layout is selected
             Assert.IsTrue(Session.Find<Element>(TestConstants.TemplateLayoutNames[LayoutType.Blank])!.Selected);
@@ -254,7 +255,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             // check the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            Assert.AreEqual(CustomLayouts.CustomLayouts.Count - 1, data.CustomLayouts.Count);
+            Assert.HasCount(CustomLayouts.CustomLayouts.Count - 1, data.CustomLayouts);
             Assert.IsFalse(data.CustomLayouts.Exists(x => x.Name == deletedLayout));
 
             var appliedLayouts = new AppliedLayouts();
@@ -262,7 +263,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(LayoutType.Blank.TypeToString(), appliedLayoutsData.AppliedLayouts.Find(x => x.Device.Monitor == Parameters.Monitors[0].Monitor).AppliedLayout.Type);
         }
 
-        [TestMethod("FancyZonesEditor.Basic.CancelDeletion")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.CancelDeletion")]
         [TestCategory("FancyZones Editor #5")]
         public void CancelDeletion()
         {
@@ -277,11 +278,11 @@ namespace Microsoft.FancyZonesEditor.UITests
             // check the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            Assert.AreEqual(CustomLayouts.CustomLayouts.Count, data.CustomLayouts.Count);
+            Assert.HasCount(CustomLayouts.CustomLayouts.Count, data.CustomLayouts);
             Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == deletedLayout));
         }
 
-        [TestMethod("FancyZonesEditor.Basic.DeleteFromContextMenu")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.DeleteFromContextMenu")]
         [TestCategory("FancyZones Editor #5")]
         public void DeleteFromContextMenu()
         {
@@ -290,16 +291,16 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.SendKeySequence(Key.Tab, Key.Enter);
 
             // verify the layout is removed
-            Assert.IsTrue(Session.FindAll<Element>(deletedLayout).Count == 0);
+            Assert.IsEmpty(Session.FindAll<Element>(deletedLayout));
 
             // check the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            Assert.AreEqual(CustomLayouts.CustomLayouts.Count - 1, data.CustomLayouts.Count);
+            Assert.HasCount(CustomLayouts.CustomLayouts.Count - 1, data.CustomLayouts);
             Assert.IsFalse(data.CustomLayouts.Exists(x => x.Name == deletedLayout));
         }
 
-        [TestMethod("FancyZonesEditor.Basic.DeleteDefaultLayout")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.DeleteDefaultLayout")]
         [TestCategory("FancyZones Editor #5")]
         public void DeleteDefaultLayout()
         {
@@ -319,7 +320,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(LayoutType.PriorityGrid.TypeToString(), data.DefaultLayouts.Find(x => x.MonitorConfiguration == configuration).Layout.Type);
         }
 
-        [TestMethod("FancyZonesEditor.Basic.DeleteLayoutWithHotkey")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.DeleteLayoutWithHotkey")]
         [TestCategory("FancyZones Editor #5")]
         public void DeleteLayoutWithHotkey()
         {
@@ -335,16 +336,9 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             var popup = Session.Find<Element>(PowerToys.UITest.By.ClassName(ClassName.Popup));
             Assert.IsNotNull(popup);
-            try
+            for (int i = 0; i < 10; i++)
             {
-                for (int i = 0; i < 10; i++)
-                {
-                    popup.Find<Element>($"{i}");
-                }
-            }
-            catch
-            {
-                Assert.Fail("Hotkey not found");
+                Assert.IsNotNull(popup.Find<Element>($"{i}"), $"Hotkey {i} not found.");
             }
 
             Session.Find<Button>(ElementName.Cancel).DoubleClick();

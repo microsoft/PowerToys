@@ -17,6 +17,7 @@ namespace Microsoft.PowerToys.FileLocksmith.UITests;
 /// "Unlock with File Locksmith" command on a file, a folder and a drive, and the fact that the
 /// Settings toggle gates it out of both context-menu tiers without breaking the menu itself.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class FileLocksmithContextMenuTests : UITestBase
@@ -79,7 +80,7 @@ public sealed class FileLocksmithContextMenuTests : UITestBase
     /// "Unlock with File Locksmith" is present, and that invoking it opens the File Locksmith window
     /// listing one row (with an "End task" button) per process holding the file.
     /// </summary>
-    [TestMethod("FileLocksmith.ContextMenu.LaunchOnLockedFile")]
+    [TestMethod(DisplayName = "FileLocksmith.ContextMenu.LaunchOnLockedFile")]
     [TestCategory("File Locksmith")]
     public void ContextMenuLaunchesFileLocksmithForLockedFile()
     {
@@ -116,7 +117,7 @@ public sealed class FileLocksmithContextMenuTests : UITestBase
     /// Checklist: right-click the directory containing the executable and confirm the command is
     /// present and lists the process(es) found recursively inside that directory tree.
     /// </summary>
-    [TestMethod("FileLocksmith.ContextMenu.Directory")]
+    [TestMethod(DisplayName = "FileLocksmith.ContextMenu.Directory")]
     [TestCategory("File Locksmith")]
     public void ContextMenuScansDirectoryRecursively()
     {
@@ -149,7 +150,7 @@ public sealed class FileLocksmithContextMenuTests : UITestBase
     /// The sparse package only registers <c>Directory</c> and <c>*</c> item types, so on Windows 11
     /// the drive command lives in the classic ("Show more options") menu.
     /// </summary>
-    [TestMethod("FileLocksmith.ContextMenu.DriveRoot")]
+    [TestMethod(DisplayName = "FileLocksmith.ContextMenu.DriveRoot")]
     [TestCategory("File Locksmith")]
     public void ContextMenuIsAvailableOnDriveRoot()
     {
@@ -180,7 +181,7 @@ public sealed class FileLocksmithContextMenuTests : UITestBase
     /// "Show more options", while a sibling PowerToys command stays put — proving the menu still
     /// renders and only File Locksmith was gated out. Re-enabling brings it back in both menus.
     /// </summary>
-    [TestMethod("FileLocksmith.ContextMenu.EnabledState")]
+    [TestMethod(DisplayName = "FileLocksmith.ContextMenu.EnabledState")]
     [TestCategory("File Locksmith")]
     public void ContextMenuTracksModuleEnabledState()
     {
@@ -234,7 +235,7 @@ public sealed class FileLocksmithContextMenuTests : UITestBase
     /// window. Verify the package-dedicated COM surrogate exposes that window, exits on WM_CLOSE,
     /// and can be activated again by Explorer.
     /// </summary>
-    [TestMethod("FileLocksmith.ContextMenu.ServicingShutdown")]
+    [TestMethod(DisplayName = "FileLocksmith.ContextMenu.ServicingShutdown")]
     [TestCategory("File Locksmith")]
     public void ContextMenuSurrogateHandlesServicingShutdown()
     {

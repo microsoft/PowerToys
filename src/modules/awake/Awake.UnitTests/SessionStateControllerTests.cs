@@ -9,6 +9,7 @@ using Microsoft.Win32;
 
 namespace Awake.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [SupportedOSPlatform("windows")]
 [TestClass]
 public class SessionStateControllerTests

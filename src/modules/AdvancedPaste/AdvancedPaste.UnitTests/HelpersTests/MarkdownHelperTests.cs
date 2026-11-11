@@ -13,6 +13,7 @@ using Windows.ApplicationModel.DataTransfer;
 namespace AdvancedPaste.UnitTests.HelpersTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public class MarkdownHelperTests
 {
     [TestMethod]
@@ -23,7 +24,7 @@ public class MarkdownHelperTests
 
         var result = await MarkdownHelper.ToMarkdownAsync(dataPackage.GetView(), CancellationToken.None);
 
-        StringAssert.Contains(result, "Hello **world**");
+        Assert.Contains("Hello **world**", result);
         Assert.IsFalse(result.Contains("StartHTML", StringComparison.Ordinal));
         Assert.IsFalse(result.Contains("StartFragment", StringComparison.Ordinal));
     }

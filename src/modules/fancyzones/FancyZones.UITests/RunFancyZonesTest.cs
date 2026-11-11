@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace UITests_FancyZones
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class RunFancyZonesTest
     {

@@ -16,6 +16,7 @@ using Windows.Graphics.Imaging;
 
 namespace ImageResizer.Models
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ResizeEncodingOptionsTests
     {
@@ -123,7 +124,7 @@ namespace ImageResizer.Models
             using var outputDirectory = new TestDirectory();
             var source = Path.Combine(inputDirectory, "source.tif");
             WriteMonochromeTiff(source);
-            CollectionAssert.AreEqual(new ushort[] { 1 }, ReadTiffShortTags(source, 258), "The CCITT and RLE fixture must be 1bpp.");
+            Assert.AreSequenceEqual(new ushort[] { 1 }, ReadTiffShortTags(source, 258), "The CCITT and RLE fixture must be 1bpp.");
             Assert.AreEqual(TiffCopyright, ReadTiffCopyright(source));
             await AssertEx.ImageAsync(
                 source,
@@ -140,7 +141,7 @@ namespace ImageResizer.Models
 
             // TIFF file tags differ from the settings/WIC option enumeration:
             // e.g. LZW is option 4 but Compression tag 259 must contain 5.
-            CollectionAssert.AreEqual(new ushort[] { (ushort)expectedTag }, ReadTiffShortTags(outputDirectory.File(), 259));
+            Assert.AreSequenceEqual(new ushort[] { (ushort)expectedTag }, ReadTiffShortTags(outputDirectory.File(), 259));
             Assert.AreEqual(removeMetadata ? null : TiffCopyright, ReadTiffCopyright(outputDirectory.File()));
             await AssertEx.ImageAsync(
                 outputDirectory.File(),
@@ -217,7 +218,7 @@ namespace ImageResizer.Models
 
             await new ResizeOperation(source, outputDirectory, settings).ExecuteAsync();
 
-            CollectionAssert.AreEqual(
+            Assert.AreSequenceEqual(
                 new ushort[] { (ushort)expectedTag, (ushort)expectedTag },
                 ReadTiffShortTags(outputDirectory.File(), 259),
                 "The selected compression must apply to each TIFF IFD.");
@@ -496,7 +497,7 @@ namespace ImageResizer.Models
                 {
                     var data = bytes[(offset + 8)..(offset + 8 + length)];
                     var separator = System.Array.IndexOf(data, (byte)0);
-                    Assert.IsTrue(separator > 0, "PNG text must have a keyword.");
+                    Assert.IsGreaterThan(0, separator, "PNG text must have a keyword.");
                     var keyword = Encoding.Latin1.GetString(data, 0, separator);
                     var valueOffset = separator + 1;
                     var compressed = type == "zTXt";
@@ -506,13 +507,13 @@ namespace ImageResizer.Models
                     }
                     else if (type == "iTXt")
                     {
-                        Assert.IsTrue(data[valueOffset] <= 1, "Invalid international PNG text compression flag.");
+                        Assert.IsLessThanOrEqualTo(1, data[valueOffset], "Invalid international PNG text compression flag.");
                         compressed = data[valueOffset++] == 1;
                         Assert.AreEqual((byte)0, data[valueOffset++]);
                         var languageEnd = System.Array.IndexOf(data, (byte)0, valueOffset);
-                        Assert.IsTrue(languageEnd >= valueOffset, "Missing PNG text language terminator.");
+                        Assert.IsGreaterThanOrEqualTo(valueOffset, languageEnd, "Missing PNG text language terminator.");
                         var translatedKeywordEnd = System.Array.IndexOf(data, (byte)0, languageEnd + 1);
-                        Assert.IsTrue(translatedKeywordEnd > languageEnd, "Missing translated PNG keyword terminator.");
+                        Assert.IsGreaterThan(languageEnd, translatedKeywordEnd, "Missing translated PNG keyword terminator.");
                         valueOffset = translatedKeywordEnd + 1;
                     }
 
@@ -548,9 +549,9 @@ namespace ImageResizer.Models
         private static int ReadPngInterlace(string path)
         {
             var bytes = File.ReadAllBytes(path);
-            Assert.IsTrue(bytes.Length >= 33, "PNG must contain a complete IHDR chunk.");
-            CollectionAssert.AreEqual(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }, bytes[..8]);
-            CollectionAssert.AreEqual(new byte[] { 0, 0, 0, 13, 73, 72, 68, 82 }, bytes[8..16], "IHDR must be the first PNG chunk.");
+            Assert.IsGreaterThanOrEqualTo(33, bytes.Length, "PNG must contain a complete IHDR chunk.");
+            Assert.AreSequenceEqual(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }, bytes[..8]);
+            Assert.AreSequenceEqual(new byte[] { 0, 0, 0, 13, 73, 72, 68, 82 }, bytes[8..16], "IHDR must be the first PNG chunk.");
             Assert.AreEqual(ReadUInt32(bytes, 29, littleEndian: false), CalculateCrc32(bytes, 12, 17), "IHDR checksum must be valid.");
             return bytes[28];
         }
@@ -660,7 +661,7 @@ namespace ImageResizer.Models
             // Inspect the output bytes independently of BitmapEncoder options or
             // BitmapProperties, including every IFD in a multipage TIFF.
             var bytes = File.ReadAllBytes(path);
-            Assert.IsTrue(bytes.Length >= 8, "Missing TIFF header.");
+            Assert.IsGreaterThanOrEqualTo(8, bytes.Length, "Missing TIFF header.");
             var littleEndian = bytes[0] == 'I' && bytes[1] == 'I';
             Assert.IsTrue(littleEndian || (bytes[0] == 'M' && bytes[1] == 'M'), "Invalid TIFF byte order.");
             Assert.AreEqual((ushort)42, ReadUInt16(bytes, 2, littleEndian), "Expected a classic TIFF header.");
@@ -670,10 +671,10 @@ namespace ImageResizer.Models
             while (offset != 0)
             {
                 Assert.IsTrue(visited.Add(offset), "TIFF IFD chain must not loop.");
-                Assert.IsTrue(offset <= bytes.Length - 2, "IFD offset is outside the TIFF.");
+                Assert.IsLessThanOrEqualTo<long>(bytes.Length - 2, offset, "IFD offset is outside the TIFF.");
                 var entryCount = ReadUInt16(bytes, (int)offset, littleEndian);
                 var nextIfdOffset = (long)offset + 2 + (entryCount * 12);
-                Assert.IsTrue(nextIfdOffset + 4 <= bytes.Length, "Incomplete TIFF IFD.");
+                Assert.IsLessThanOrEqualTo(bytes.Length, nextIfdOffset + 4, "Incomplete TIFF IFD.");
                 ushort[] fieldValues = null;
                 for (var index = 0; index < entryCount; index++)
                 {
@@ -690,7 +691,7 @@ namespace ImageResizer.Models
                         }
 
                         var valueOffset = count <= 2 ? entryOffset + 8 : (long)ReadUInt32(bytes, entryOffset + 8, littleEndian);
-                        Assert.IsTrue(valueOffset + (count * 2L) <= bytes.Length, "Incomplete SHORT TIFF values.");
+                        Assert.IsLessThanOrEqualTo(bytes.Length, valueOffset + (count * 2L), "Incomplete SHORT TIFF values.");
                         fieldValues = new ushort[(int)count];
                         for (var valueIndex = 0; valueIndex < fieldValues.Length; valueIndex++)
                         {
@@ -704,7 +705,7 @@ namespace ImageResizer.Models
                 offset = ReadUInt32(bytes, (int)nextIfdOffset, littleEndian);
             }
 
-            Assert.IsTrue(values.Count > 0, "TIFF must contain at least one IFD.");
+            Assert.IsNotEmpty(values, "TIFF must contain at least one IFD.");
             return values.ToArray();
         }
 

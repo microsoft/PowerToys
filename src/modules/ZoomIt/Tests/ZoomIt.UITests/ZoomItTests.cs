@@ -73,7 +73,7 @@ public sealed partial class ZoomItTests : UITestBase
         }
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup]
     public static void RestoreRegistryAfterInitializationFailure()
     {
         try

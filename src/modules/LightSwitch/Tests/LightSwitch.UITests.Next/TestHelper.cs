@@ -107,7 +107,7 @@ internal sealed class TestHelper
                 "alt" => Key.Alt,
                 _ => Enum.Parse<Key>(token, ignoreCase: true),
             }).ToArray();
-        Assert.IsTrue(keys.Any(key => key is >= Key.A and <= Key.Z), $"Shortcut '{text}' must include a main key.");
+        Assert.Contains(key => key is >= Key.A and <= Key.Z, keys, $"Shortcut '{text}' must include a main key.");
         Step($"Shortcut from Settings: {text}");
         return keys;
     }
@@ -385,7 +385,7 @@ internal sealed class TestHelper
             }
         }
 
-        Assert.HasCount(0, failed, $"Could not stop test-owned processes before restoring settings/themes: {string.Join(", ", failed)}.");
+        Assert.IsEmpty(failed, $"Could not stop test-owned processes before restoring settings/themes: {string.Join(", ", failed)}.");
     }
 
     public void SaveFailureState()

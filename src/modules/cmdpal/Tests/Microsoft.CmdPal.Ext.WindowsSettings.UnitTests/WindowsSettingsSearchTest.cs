@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.WindowsSettings.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class WindowsSettingsSearchTest
 {
@@ -39,7 +40,7 @@ public class WindowsSettingsSearchTest
 
         var results = page.Query("Display");
 
-        Assert.AreEqual(2, results.Count);
+        Assert.HasCount(2, results);
         Assert.AreEqual("Settings > System", results[0].Subtitle);
         Assert.AreEqual("Settings > Accessibility", results[1].Subtitle);
     }
@@ -51,7 +52,7 @@ public class WindowsSettingsSearchTest
 
         var results = page.Query("Disp");
 
-        Assert.AreEqual(2, results.Count);
+        Assert.HasCount(2, results);
         Assert.AreEqual("Settings > System", results[0].Subtitle);
         Assert.AreEqual("Settings > Accessibility", results[1].Subtitle);
     }
@@ -95,7 +96,7 @@ public class WindowsSettingsSearchTest
 
         var results = page.Query("Display");
 
-        Assert.AreEqual(1, results.Count);
+        Assert.HasCount(1, results);
     }
 
     [TestMethod]

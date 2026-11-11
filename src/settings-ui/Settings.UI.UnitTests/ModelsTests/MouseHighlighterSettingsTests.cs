@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CommonLibTest
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class MouseHighlighterSettingsTests
     {

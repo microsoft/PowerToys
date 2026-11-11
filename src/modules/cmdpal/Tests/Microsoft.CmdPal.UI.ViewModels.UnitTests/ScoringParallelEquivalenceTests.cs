@@ -22,6 +22,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 /// extend chain, and the retype rebuild) the parallel scorer has to match the sequential one item
 /// for item and score for score.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed partial class ScoringParallelEquivalenceTests
 {
@@ -49,7 +50,7 @@ public sealed partial class ScoringParallelEquivalenceTests
         RoScored<InProcObject<IListItem>>[] reference,
         RoScored<InProcObject<IListItem>>[] candidate)
     {
-        Assert.AreEqual(reference.Length, candidate.Length, $"[{context}] result count must match the sequential reference.");
+        Assert.HasCount(reference.Length, candidate, $"[{context}] result count must match the sequential reference.");
 
         for (var i = 0; i < reference.Length; i++)
         {
@@ -130,7 +131,7 @@ public sealed partial class ScoringParallelEquivalenceTests
             TestContext.WriteLine($"extend '{chain[step - 1]}' -> '{chain[step]}': retained {retained.Length}, kept {sequential.Length}.");
             AssertOrderedResultsIdentical($"extend '{chain[step - 1]}'->'{chain[step]}'", sequential, parallel);
 
-            Assert.IsTrue(sequential.Length <= retained.Length, "Extending a query cannot add matches beyond the retained set.");
+            Assert.IsLessThanOrEqualTo(retained.Length, sequential.Length, "Extending a query cannot add matches beyond the retained set.");
         }
     }
 

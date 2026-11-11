@@ -11,10 +11,11 @@ using Wox.Plugin;
 
 namespace Wox.Test
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class PluginManagerTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(">", "dummyQueryText", "dummyTitle", "> dummyQueryText")]
         [DataRow(">", null, "dummyTitle", "> dummyTitle")]
         [DataRow(">", "", "dummyTitle", "> dummyTitle")]
@@ -54,7 +55,7 @@ namespace Wox.Test
             Assert.AreEqual(expectedResult, queryOutput[0].QueryTextDisplay);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("", true)]
         [DataRow(null, true)]
         [DataRow(">", false)]

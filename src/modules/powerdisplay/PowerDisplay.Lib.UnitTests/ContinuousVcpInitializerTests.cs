@@ -12,6 +12,7 @@ using static PowerDisplay.UnitTests.DdcFakes;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class ContinuousVcpInitializerTests
 {
@@ -158,7 +159,7 @@ public sealed class ContinuousVcpInitializerTests
         Assert.IsNull(store.LastFeature);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(DdcErrorClassifier.ErrorGraphicsInvalidPhysicalMonitorHandle)]
     [DataRow(DdcErrorClassifier.ErrorGraphicsMonitorNoLongerExists)]
     public void Initialize_PhysicalMonitorUnavailableRejectsCacheAndStopsRemainingReads(int errorCode)
@@ -176,7 +177,7 @@ public sealed class ContinuousVcpInitializerTests
 
         Assert.IsFalse(result, "A handle-class read failure must tell the caller to drop the monitor.");
         Assert.AreEqual(1, reader.CallCount);
-        CollectionAssert.AreEqual(new byte[] { 0x10 }, reader.Codes);
+        Assert.AreSequenceEqual(new byte[] { 0x10 }, reader.Codes);
         Assert.AreEqual(initialBrightness, monitor.CurrentBrightness);
         Assert.AreEqual(initialContrast, monitor.CurrentContrast);
         Assert.AreEqual(MonitorReadFlags.None, monitor.ReadValues);
@@ -198,7 +199,7 @@ public sealed class ContinuousVcpInitializerTests
             CachedBrightnessAndContrastEvidence());
 
         Assert.IsTrue(result);
-        CollectionAssert.AreEqual(new byte[] { 0x10, 0x12 }, reader.Codes);
+        Assert.AreSequenceEqual(new byte[] { 0x10, 0x12 }, reader.Codes);
         Assert.AreEqual(45, monitor.CurrentBrightness);
         Assert.IsFalse(monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness));
         Assert.AreEqual(60, monitor.CurrentContrast);
@@ -215,9 +216,9 @@ public sealed class ContinuousVcpInitializerTests
         // catches; without an ApplyValue arm it is read and then discarded, which the per-feature
         // assertions catch. Ranges and percentages are all distinct so a cross-wired arm cannot
         // pass by coincidence.
-        Assert.AreEqual(
+        Assert.HasCount(
             3,
-            NativeConstants.ContinuousVcpCodes.Length,
+            NativeConstants.ContinuousVcpCodes,
             "ContinuousVcpCodes grew — give the new code an IsSupported and an ApplyValue arm, then extend this test.");
 
         var reader = new RecordingVcpReader(
@@ -230,7 +231,7 @@ public sealed class ContinuousVcpInitializerTests
         var result = initializer.Initialize(monitor, EmptyEvidence());
 
         Assert.IsTrue(result);
-        CollectionAssert.AreEqual(NativeConstants.ContinuousVcpCodes, reader.Codes);
+        Assert.AreSequenceEqual(NativeConstants.ContinuousVcpCodes, reader.Codes);
 
         Assert.AreEqual(30, monitor.CurrentBrightness);
         Assert.AreEqual(50, monitor.BrightnessVcpMax);

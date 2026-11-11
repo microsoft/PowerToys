@@ -14,6 +14,7 @@ namespace Microsoft.CmdPal.Ext.Shell.UnitTests;
 /// Ported from the OsClient RunNative.UnitTests project so we can verify the
 /// C# port has the same behavior as the C++ implementation.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ParseCommandlineTests
 {
@@ -45,7 +46,7 @@ public class ParseCommandlineTests
 
         if (expectedSuccess)
         {
-            StringAssert.Contains(result.FilePath, expectedFullFilePath, System.StringComparison.InvariantCultureIgnoreCase);
+            Assert.Contains(expectedFullFilePath, result.FilePath, System.StringComparison.InvariantCultureIgnoreCase);
             Assert.AreEqual(expectedArguments, result.Arguments, true, CultureInfo.InvariantCulture);
         }
     }
@@ -98,8 +99,8 @@ public class ParseCommandlineTests
         // Assert
         Assert.AreEqual(0, result.Result);
         Assert.IsFalse(result.IsUri);
-        StringAssert.Contains(result.FilePath, "wordpad.exe");
-        StringAssert.Contains(result.Arguments, "file with spaces.rtf");
+        Assert.Contains("wordpad.exe", result.FilePath);
+        Assert.Contains("file with spaces.rtf", result.Arguments);
     }
 
     [TestMethod]

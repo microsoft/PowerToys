@@ -14,6 +14,7 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed partial class PageInteractionCoordinatorTests
 {
@@ -113,8 +114,8 @@ public sealed partial class PageInteractionCoordinatorTests
         pageA.SetCommandBarContext(contextA);
         pageB.SetCommandBarContext(contextB);
 
-        CollectionAssert.AreEqual(new[] { contextA }, barA.Contexts);
-        CollectionAssert.AreEqual(new[] { contextB }, barB.Contexts);
+        Assert.AreSequenceEqual(new[] { contextA }, barA.Contexts);
+        Assert.AreSequenceEqual(new[] { contextB }, barB.Contexts);
     }
 
     [TestMethod]
@@ -138,10 +139,10 @@ public sealed partial class PageInteractionCoordinatorTests
         pageA.SetSearchSuggestion("alpha");
         pageA.RequestParameterFocus(null!);
 
-        Assert.AreEqual(1, suggestionsA.Count);
+        Assert.HasCount(1, suggestionsA);
         Assert.AreEqual("alpha", suggestionsA[0]);
         Assert.AreEqual(1, focusA);
-        Assert.AreEqual(0, suggestionsB.Count);
+        Assert.IsEmpty(suggestionsB);
         Assert.AreEqual(0, focusB);
     }
 
@@ -219,8 +220,8 @@ public sealed partial class PageInteractionCoordinatorTests
         oldPage.SetSearchSuggestion("stale");
         oldPage.SetDetails(null);
 
-        Assert.AreEqual(0, bar.Contexts.Count);
-        Assert.AreEqual(0, suggestions.Count);
+        Assert.IsEmpty(bar.Contexts);
+        Assert.IsEmpty(suggestions);
         Assert.AreEqual(0, detailsChanges);
     }
 
@@ -267,10 +268,10 @@ public sealed partial class PageInteractionCoordinatorTests
         targetA.SetDragging(true);
         targetA.SetDragging(false);
 
-        Assert.AreEqual(2, dragA.Count);
+        Assert.HasCount(2, dragA);
         Assert.IsTrue(dragA[0]);
         Assert.IsFalse(dragA[1]);
-        Assert.AreEqual(0, dragB.Count);
+        Assert.IsEmpty(dragB);
     }
 
     [TestMethod]
@@ -285,7 +286,7 @@ public sealed partial class PageInteractionCoordinatorTests
 
         page.SetCommandBarContext(Mock.Of<ICommandBarContext>());
 
-        Assert.AreEqual(1, bar.Contexts.Count);
+        Assert.HasCount(1, bar.Contexts);
 
         var oldPageReference = AttachAndReplacePage(host);
         GC.Collect();

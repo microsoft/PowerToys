@@ -57,11 +57,11 @@ namespace Microsoft.Workspaces.UITests
         internal Session OpenPackaged(TestContext context)
         {
             PreparePackage(context);
-            var entries = package!.GetAppListEntriesAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(20)).GetAwaiter().GetResult();
+            var entries = package!.GetAppListEntriesAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(20), context.CancellationToken).GetAwaiter().GetResult();
             var application = entries.Single(entry => entry.AppUserModelId == AppUserModelId);
             context.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Activating packaged fixture '{AppUserModelId}'.");
             Assert.IsTrue(
-                application.LaunchAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult(),
+                application.LaunchAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(30), context.CancellationToken).GetAwaiter().GetResult(),
                 "Windows did not activate the packaged fixture.");
             var window = WaitForWindow(DefaultTitle);
             Assert.AreEqual(PackageFullName, NativeMethods.PackageFullName(window.ProcessId), "The fixture window must have the installed package identity.");
@@ -156,7 +156,7 @@ namespace Microsoft.Workspaces.UITests
                 }
             }
 
-            Assert.HasCount(0, ProcessIds(), "A test-owned fixture process survived cleanup.");
+            Assert.IsEmpty(ProcessIds(), "A test-owned fixture process survived cleanup.");
         }
 
         public void Dispose()
@@ -189,7 +189,7 @@ namespace Microsoft.Workspaces.UITests
                         Assert.IsNull(removed.ExtendedErrorCode, $"Could not remove the fixture package: {removed.ErrorText}");
                     }
 
-                    Assert.HasCount(0, RegisteredPackages(), "The fixture package remained registered after cleanup.");
+                    Assert.IsEmpty(RegisteredPackages(), "The fixture package remained registered after cleanup.");
                     ownsRegistration = false;
                     package = null;
                 }
@@ -205,7 +205,7 @@ namespace Microsoft.Workspaces.UITests
 
             var packagePath = Path.Combine(AppContext.BaseDirectory, "Workspaces.TestApp.msix");
             PackagedFixturePrerequisites.RequireSignature(packagePath, EnvironmentConfig.IsInPipeline);
-            Assert.HasCount(0, RegisteredPackages(), "A previous fixture package is still registered; remove it before starting a new suite.");
+            Assert.IsEmpty(RegisteredPackages(), "A previous fixture package is still registered; remove it before starting a new suite.");
             context.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Installing the signed fixture for the current user: {packagePath}");
             ownsRegistration = true;
             DeploymentResult deployment;
@@ -213,7 +213,7 @@ namespace Microsoft.Workspaces.UITests
             {
                 installationOperation = packageManager.AddPackageAsync(new Uri(packagePath), [], DeploymentOptions.None);
                 installation = installationOperation.AsTask();
-                deployment = installation.WaitAsync(TimeSpan.FromSeconds(90)).GetAwaiter().GetResult();
+                deployment = installation.WaitAsync(TimeSpan.FromSeconds(90), context.CancellationToken).GetAwaiter().GetResult();
             }
             catch (COMException error) when (PackagedFixturePrerequisites.IsMissingSigning(error.HResult))
             {

@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class FileSystemAssertTests
 {
     private readonly string root = Path.Combine(Path.GetTempPath(), $"FileSystemAssertTests-{Guid.NewGuid():N}");
@@ -58,7 +59,7 @@ public sealed class FileSystemAssertTests
         File.WriteAllBytes(path, [1, 2, 3]);
         using var writer = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
 
-        CollectionAssert.AreEqual(new byte[] { 1, 2, 3 }, FileSystemAssert.ReadSharedBytes(path));
+        Assert.AreSequenceEqual(new byte[] { 1, 2, 3 }, FileSystemAssert.ReadSharedBytes(path));
     }
 
     [TestMethod]

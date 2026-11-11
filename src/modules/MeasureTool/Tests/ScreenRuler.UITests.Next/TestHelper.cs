@@ -70,7 +70,7 @@ public static class TestHelper
 
         var activationKeys = ReadActivationShortcut(testBase);
         Assert.IsNotNull(activationKeys, "Should be able to read activation shortcut");
-        Assert.IsTrue(activationKeys.Length > 0, "Activation shortcut should contain at least one key");
+        Assert.IsNotEmpty(activationKeys, "Activation shortcut should contain at least one key");
 
         Log($"InitializeTest: ready; activation shortcut = {string.Join(" + ", activationKeys)}");
         return activationKeys;

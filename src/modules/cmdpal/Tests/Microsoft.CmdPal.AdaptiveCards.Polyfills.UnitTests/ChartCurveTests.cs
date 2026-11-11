@@ -6,14 +6,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ChartCurveTests
 {
     [TestMethod]
     public void FewerThanTwoPointsHaveNoSegments()
     {
-        Assert.AreEqual(0, ChartCurve.CreateMonotoneSegments([]).Length);
-        Assert.AreEqual(0, ChartCurve.CreateMonotoneSegments([new ChartPoint(0, 0)]).Length);
+        Assert.IsEmpty(ChartCurve.CreateMonotoneSegments([]));
+        Assert.IsEmpty(ChartCurve.CreateMonotoneSegments([new ChartPoint(0, 0)]));
     }
 
     [TestMethod]
@@ -21,7 +22,7 @@ public class ChartCurveTests
     {
         var segments = ChartCurve.CreateMonotoneSegments([new ChartPoint(0, 0), new ChartPoint(3, 3)]);
 
-        Assert.AreEqual(1, segments.Length);
+        Assert.HasCount(1, segments);
         Assert.AreEqual(new ChartPoint(1, 1), segments[0].Control1);
         Assert.AreEqual(new ChartPoint(2, 2), segments[0].Control2);
         Assert.AreEqual(new ChartPoint(3, 3), segments[0].End);

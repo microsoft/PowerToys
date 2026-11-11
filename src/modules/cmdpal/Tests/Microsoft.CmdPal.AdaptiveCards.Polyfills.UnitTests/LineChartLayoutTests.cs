@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class LineChartLayoutTests
 {
@@ -40,7 +41,7 @@ public class LineChartLayoutTests
 
         var mapped = layout.MapPoints(points);
 
-        Assert.AreEqual(2, mapped.Length);
+        Assert.HasCount(2, mapped);
         Assert.AreEqual(30, mapped[0].X);
         Assert.AreEqual(40, mapped[1].X);
     }

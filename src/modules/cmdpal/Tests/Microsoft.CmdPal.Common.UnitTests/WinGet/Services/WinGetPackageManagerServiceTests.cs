@@ -7,6 +7,7 @@ using Microsoft.CmdPal.Common.WinGet.Services;
 
 namespace Microsoft.CmdPal.Common.UnitTests.WinGet.Services;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class WinGetPackageManagerServiceTests
 {
@@ -15,7 +16,7 @@ public class WinGetPackageManagerServiceTests
     {
         var service = new WinGetPackageManagerService(() => null);
 
-        var result = await service.SearchPackagesAsync("PowerToys");
+        var result = await service.SearchPackagesAsync("PowerToys", cancellationToken: TestContext.CancellationToken);
 
         Assert.IsFalse(service.State.IsAvailable);
         Assert.IsTrue(result.IsUnavailable);
@@ -29,9 +30,11 @@ public class WinGetPackageManagerServiceTests
     {
         var service = new WinGetPackageManagerService(() => null);
 
-        var refreshed = await service.RefreshCatalogsAsync();
+        var refreshed = await service.RefreshCatalogsAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(refreshed);
         Assert.IsFalse(service.State.IsAvailable);
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

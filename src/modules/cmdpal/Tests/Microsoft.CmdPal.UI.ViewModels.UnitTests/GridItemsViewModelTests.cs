@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class GridItemsViewModelTests
 {
@@ -32,17 +33,17 @@ public class GridItemsViewModelTests
         ObservableCollection<ListItemViewModel> source = [first, header, second, separator, repeatedTitle, third, Header("Trailing")];
         using var grid = CreateGrid(source);
 
-        Assert.AreEqual(5, grid.Groups.Count);
+        Assert.HasCount(5, grid.Groups);
         Assert.AreEqual(3, grid.ItemCount);
         Assert.IsNull(grid.Groups[0].Header);
         Assert.AreSame(first, grid.Groups[0].Items[0]);
         Assert.AreSame(header, grid.Groups[1].Header);
         Assert.AreSame(second, grid.Groups[1].Items[0]);
         Assert.IsTrue(grid.Groups[2].IsSeparator);
-        Assert.AreEqual(0, grid.Groups[2].Items.Count);
+        Assert.IsEmpty(grid.Groups[2].Items);
         Assert.AreSame(repeatedTitle, grid.Groups[3].Header);
         Assert.AreSame(third, grid.Groups[3].Items[0]);
-        Assert.AreEqual(0, grid.Groups[4].Items.Count);
+        Assert.IsEmpty(grid.Groups[4].Items);
         Assert.AreSame(grid.Groups[3], grid.GroupFromItemIndex(2));
         Assert.IsNull(grid.GroupFromItemIndex(3));
     });
@@ -80,7 +81,7 @@ public class GridItemsViewModelTests
         source.Move(3, 1);
         grid.Synchronize();
         Assert.AreSame(group, grid.Groups[0]);
-        CollectionAssert.AreEqual(new[] { third, first, second }, group.Items);
+        Assert.AreSequenceEqual(new[] { third, first, second }, group.Items);
         Assert.AreEqual(0, grid.IndexOf(third));
         Assert.AreEqual(2, grid.IndexOf(second));
         Assert.AreEqual(0, resetCount);
@@ -180,9 +181,9 @@ public class GridItemsViewModelTests
 
         source.Remove(header);
         grid.Synchronize();
-        Assert.AreEqual(1, grid.Groups.Count);
+        Assert.HasCount(1, grid.Groups);
         Assert.AreSame(prefix, grid.Groups[0]);
-        CollectionAssert.AreEqual(new[] { first, second }, prefix.Items);
+        Assert.AreSequenceEqual(new[] { first, second }, prefix.Items);
     });
 
     [TestMethod]
@@ -209,7 +210,7 @@ public class GridItemsViewModelTests
         Assert.IsTrue(grid.HasPendingChanges);
         grid.Synchronize();
         Assert.IsFalse(grid.HasPendingChanges);
-        CollectionAssert.AreEqual(new[] { first, second, third }, grid.Groups[0].Items);
+        Assert.AreSequenceEqual(new[] { first, second, third }, grid.Groups[0].Items);
     });
 
     [TestMethod]
@@ -227,7 +228,7 @@ public class GridItemsViewModelTests
         grid.SetSource(source);
         grid.Synchronize();
         Assert.AreSame(group, grid.Groups[0]);
-        Assert.AreEqual(2, group.Items.Count);
+        Assert.HasCount(2, group.Items);
 
         grid.SetSource(null);
         grid.Synchronize();
@@ -270,15 +271,17 @@ public class GridItemsViewModelTests
             };
         });
 
-        await Task.Run(() =>
+        await Task.Run(
+            () =>
         {
             item.LayoutShowsTitle = true;
             item.LayoutShowsSubtitle = true;
             item.ApplyPendingUpdates();
-        });
+        },
+            TestContext.CancellationToken);
 
-        Assert.AreSame(_schedulers.ExclusiveScheduler, await titleChanged.Task.WaitAsync(TimeSpan.FromSeconds(5)));
-        Assert.AreSame(_schedulers.ExclusiveScheduler, await subtitleChanged.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.AreSame(_schedulers.ExclusiveScheduler, await titleChanged.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
+        Assert.AreSame(_schedulers.ExclusiveScheduler, await subtitleChanged.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -415,4 +418,6 @@ public class GridItemsViewModelTests
 
         public void ShowException(Exception ex, string? extensionHint = null) => throw new AssertFailedException(ex.ToString());
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

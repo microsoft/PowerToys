@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class RemoteDesktopCommandProviderTests
 {
@@ -30,7 +31,7 @@ public class RemoteDesktopCommandProviderTests
 
         // Assert
         Assert.IsNotNull(provider.DisplayName);
-        Assert.IsTrue(provider.DisplayName.Length > 0);
+        Assert.IsGreaterThan(0, provider.DisplayName.Length);
     }
 
     [TestMethod]
@@ -54,7 +55,7 @@ public class RemoteDesktopCommandProviderTests
 
         // Assert
         Assert.IsNotNull(commands);
-        Assert.IsTrue(commands.Length > 0);
+        Assert.IsNotEmpty(commands);
     }
 
     [TestMethod]
@@ -68,7 +69,7 @@ public class RemoteDesktopCommandProviderTests
 
         // Assert
         Assert.IsNotNull(commands);
-        Assert.IsTrue(commands.Length > 0);
+        Assert.IsNotEmpty(commands);
     }
 
     [TestMethod]
@@ -81,7 +82,7 @@ public class RemoteDesktopCommandProviderTests
         var commands = provider.TopLevelCommands();
 
         // Assert
-        Assert.AreEqual(1, commands.Length);
+        Assert.HasCount(1, commands);
         Assert.IsInstanceOfType(commands.Single().Command, typeof(RemoteDesktopListPage));
     }
 
@@ -95,7 +96,7 @@ public class RemoteDesktopCommandProviderTests
         var commands = provider.FallbackCommands();
 
         // Assert
-        Assert.AreEqual(1, commands.Length);
+        Assert.HasCount(1, commands);
         Assert.IsInstanceOfType(commands.Single(), typeof(FallbackRemoteDesktopItem));
     }
 }

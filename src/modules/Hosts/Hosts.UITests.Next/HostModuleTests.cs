@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Hosts.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class HostModuleTests : UITestBase
     {
@@ -76,7 +77,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Next.Basic.EntryButtonsAndEmptyViewShouldWork")]
+        [TestMethod(DisplayName = "Hosts.Next.Basic.EntryButtonsAndEmptyViewShouldWork")]
         [TestCategory("Hosts File Editor #4")]
         public void TestEntryButtonsAndEmptyView()
         {
@@ -123,7 +124,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Next.Basic.CanNotAddMoreThenNighHosts")]
+        [TestMethod(DisplayName = "Hosts.Next.Basic.CanNotAddMoreThenNighHosts")]
         [TestCategory("Hosts File Editor #5")]
         public void TestTooManyHosts()
         {
@@ -202,7 +203,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Next.Basic.ErrorMessageShowupIfNotRunAsAdmin")]
+        [TestMethod(DisplayName = "Hosts.Next.Basic.ErrorMessageShowupIfNotRunAsAdmin")]
         [TestCategory("Hosts File Editor #8")]
         public void TestErrorMessageWithNonAdminPermission()
         {
@@ -226,7 +227,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Next.Basic.FiltersControlShouldWork")]
+        [TestMethod(DisplayName = "Hosts.Next.Basic.FiltersControlShouldWork")]
         [TestCategory("Hosts File Editor #6")]
         public void TestFilterControl()
         {
@@ -323,7 +324,7 @@ namespace Hosts.UITests
         /// Writing the hosts file requires the module to run elevated, so the file assertions only run
         /// when the current session is elevated (mirrors <see cref="HostsSettingTests.TestOpenAsAdministrator"/>).
         /// </summary>
-        [TestMethod("Hosts.Next.Basic.EntryTogglesAreAppliedToHostsFile")]
+        [TestMethod(DisplayName = "Hosts.Next.Basic.EntryTogglesAreAppliedToHostsFile")]
         [TestCategory("Hosts File Editor #2")]
         [TestCategory("Hosts File Editor #3")]
         public void TestEntryTogglesAreAppliedToHostsFile()
@@ -382,7 +383,7 @@ namespace Hosts.UITests
         /// Covers Release-checklist item #7 - Click the "Open hosts file" button and verify it opens in
         /// the default editor (Notepad).
         /// </summary>
-        [TestMethod("Hosts.Next.Basic.OpenHostsFileButtonShouldOpenNotepad")]
+        [TestMethod(DisplayName = "Hosts.Next.Basic.OpenHostsFileButtonShouldOpenNotepad")]
         [TestCategory("Hosts File Editor #7")]
         public void TestOpenHostsFileButtonOpensNotepad()
         {

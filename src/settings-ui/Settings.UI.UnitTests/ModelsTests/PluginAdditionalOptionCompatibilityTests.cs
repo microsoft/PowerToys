@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CommonLibTest
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class PluginAdditionalOptionCompatibilityTests
     {
@@ -27,7 +28,7 @@ namespace CommonLibTest
 
             Assert.IsNotNull(setter);
             Assert.IsTrue(setter.IsPublic);
-            CollectionAssert.DoesNotContain(setter.ReturnParameter.GetRequiredCustomModifiers(), typeof(IsExternalInit));
+            Assert.DoesNotContain(typeof(IsExternalInit), setter.ReturnParameter.GetRequiredCustomModifiers());
         }
 
         [TestMethod]
@@ -40,7 +41,7 @@ namespace CommonLibTest
 
             Assert.AreEqual("First", option.ComboBoxItems[0].Key);
             Assert.AreEqual("first\rsecond", option.TextValue);
-            CollectionAssert.AreEqual(MultilineLines, option.TextValueAsMultilineList);
+            Assert.AreSequenceEqual(MultilineLines, option.TextValueAsMultilineList);
             Assert.AreEqual("legacy-plugin", option.ComboBoxOptions[0]);
         }
     }

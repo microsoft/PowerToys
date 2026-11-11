@@ -14,6 +14,7 @@ namespace Microsoft.AltWindowCycle.UITests;
 [TestClass]
 [DoNotParallelize]
 [TestCategory("AltWindowCycle")]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class AltWindowCycleTests : UITestBase
 {
     private const string ModuleName = "AltWindowCycle";
@@ -43,7 +44,7 @@ public sealed class AltWindowCycleTests : UITestBase
 
     private WindowFixture Fixture => fixture ?? throw new InvalidOperationException("Window fixtures were not initialized.");
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup]
     public static void RemoveCopiedApplication() => WindowFixture.RemoveApplicationCopy();
 
     protected override void PrepareTestState()
@@ -283,8 +284,8 @@ public sealed class AltWindowCycleTests : UITestBase
             shouldRetryException: error => error is IOException or System.Text.Json.JsonException);
         Assert.IsTrue(persisted.Succeeded, $"Settings did not persist {property}: {persisted.LastObservation}.");
         var helpText = ShortcutButtons()[index].HelpText;
-        StringAssert.Contains(helpText, "Ctrl", "The saved shortcut must be exposed accessibly.");
-        StringAssert.Contains(helpText, keys[^1].ToString(), "The saved shortcut displays the wrong key.");
+        Assert.Contains("Ctrl", helpText, "The saved shortcut must be exposed accessibly.");
+        Assert.Contains(keys[^1].ToString(), helpText, "The saved shortcut displays the wrong key.");
     }
 
     private void StartCycle(Key[] keys)

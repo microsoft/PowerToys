@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class FuzzyMatcherPinyinLogicTests
 {
@@ -23,7 +24,7 @@ public class FuzzyMatcherPinyinLogicTests
         FuzzyStringMatcher.ClearCache();
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("bj", "北京")]
     [DataRow("sh", "上海")]
     [DataRow("nihao", "你好")]
@@ -33,14 +34,14 @@ public class FuzzyMatcherPinyinLogicTests
     [DataRow("你好", "nihao")]
     public void PinyinMatch_DataDriven(string needle, string haystack)
     {
-        Assert.IsTrue(FuzzyStringMatcher.ScoreFuzzy(needle, haystack) > 0, $"Expected match for '{needle}' in '{haystack}'");
+        Assert.IsGreaterThan(0, FuzzyStringMatcher.ScoreFuzzy(needle, haystack), $"Expected match for '{needle}' in '{haystack}'");
     }
 
     [TestMethod]
     public void PinyinPositions_ShouldBeEmpty()
     {
         var (score, positions) = FuzzyStringMatcher.ScoreFuzzyWithPositions("bj", "北京", true);
-        Assert.IsTrue(score > 0);
-        Assert.AreEqual(0, positions.Count);
+        Assert.IsGreaterThan(0, score);
+        Assert.IsEmpty(positions);
     }
 }

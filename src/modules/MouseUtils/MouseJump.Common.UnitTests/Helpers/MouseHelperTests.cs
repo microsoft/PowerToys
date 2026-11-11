@@ -11,6 +11,7 @@ namespace MouseJump.Common.UnitTests.Helpers;
 
 public static class MouseHelperTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class GetJumpLocationTests
     {

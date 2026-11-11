@@ -263,7 +263,7 @@ public abstract class PowerRenameTestBase : UITestBase
     /// </remarks>
     protected Session LaunchPowerRename(params string[] paths)
     {
-        Assert.IsTrue(paths.Length > 0, "PowerRename needs at least one item to rename.");
+        Assert.IsNotEmpty(paths, "PowerRename needs at least one item to rename.");
         ClosePowerRenameWindows();
 
         var exePath = SessionHelper.GetExecutablePath(PowerToysModule.PowerRename);

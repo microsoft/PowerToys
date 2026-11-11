@@ -9,6 +9,7 @@ using Peek.Common.Helpers;
 
 namespace Peek.Common.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class MathHelperTests
     {
@@ -139,17 +140,15 @@ namespace Peek.Common.UnitTests
         /// Why: Edge case — callers must handle zero divisor; the method does not guard against it
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void Modulo_ZeroDivisor_ShouldThrow()
         {
-            MathHelper.Modulo(5, 0);
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => MathHelper.Modulo(5, 0));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void Modulo_NegativeDivisor_ShouldThrow()
         {
-            MathHelper.Modulo(-1, -3);
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => MathHelper.Modulo(-1, -3));
         }
 
         /// <summary>
@@ -235,10 +234,9 @@ namespace Peek.Common.UnitTests
         /// Why: Edge case — Math.Abs(-2147483648) has no positive int representation
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(OverflowException))]
         public void NumberOfDigits_MinValue_ShouldThrowOverflow()
         {
-            MathHelper.NumberOfDigits(int.MinValue);
+            Assert.ThrowsExactly<OverflowException>(() => MathHelper.NumberOfDigits(int.MinValue));
         }
 
         /// <summary>

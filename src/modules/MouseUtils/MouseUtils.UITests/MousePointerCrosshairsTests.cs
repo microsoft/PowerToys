@@ -13,10 +13,11 @@ using Windows.Devices.Printers;
 
 namespace MouseUtils.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class MousePointerCrosshairsTests : UITestBase
     {
-        [TestMethod("MouseUtils.MousePointerCrosshairs.EnableMousePointerCrosshairs")]
+        [TestMethod(DisplayName = "MouseUtils.MousePointerCrosshairs.EnableMousePointerCrosshairs")]
         [TestCategory("Mouse Utils #29")]
         [TestCategory("Mouse Utils #30")]
         [TestCategory("Mouse Utils #31")]
@@ -49,7 +50,7 @@ namespace MouseUtils.UITests
             foundCustom = FindMouseUtilElement(MouseUtilsSettings.MouseUtils.MousePointerCrosshairs);
 
             MouseUtilsSettings.SetMouseUtilEnabled(foundCustom, MouseUtilsSettings.MouseUtils.MousePointerCrosshairs, false);
-            Task.Delay(500).Wait();
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
             MouseUtilsSettings.SetMouseUtilEnabled(foundCustom, MouseUtilsSettings.MouseUtils.MousePointerCrosshairs, true);
 
             Assert.IsNotNull(foundCustom);
@@ -75,36 +76,36 @@ namespace MouseUtils.UITests
             saveButton.Click(false, 500, 1000);
 
             SetMousePointerCrosshairsAppearanceBehavior(ref foundCustom, ref settings);
-            Task.Delay(500).Wait();
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
             // [Test Case]  Press the activation shortcut and verify the crosshairs appear, and that they follow the mouse around.
             var xy0 = Session.GetMousePosition();
             Session.MoveMouseTo(xy0.Item1 - 100, xy0.Item2);
 
             IOUtil.MouseClick();
-            Task.Delay(500).Wait();
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
             Session.SendKeys(Key.Win, Key.Alt, Key.A);
-            Task.Delay(1000).Wait();
+            Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
             xy0 = Session.GetMousePosition();
 
             VerifyMousePointerCrosshairsAppears(ref settings);
-            Task.Delay(500).Wait();
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
             for (int i = 0; i < 100; i++)
             {
                 IOUtil.MoveMouseBy(-1, 0);
-                Task.Delay(10).Wait();
+                Task.Delay(10, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
             }
 
             VerifyMousePointerCrosshairsAppears(ref settings);
 
             // [Test Case] Press the activation shortcut again and verify the crosshairs disappear.
             Session.SendKeys(Key.Win, Key.Alt, Key.A);
-            Task.Delay(1000).Wait();
+            Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
             VerifyMousePointerCrosshairsNotAppears(ref settings);
-            Task.Delay(500).Wait();
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
             // [Test Case] Disable Mouse Pointer Crosshairs and verify that the module is not activated when you press the activation shortcut.
             MouseUtilsSettings.SetMouseUtilEnabled(foundCustom, MouseUtilsSettings.MouseUtils.MousePointerCrosshairs, false);
@@ -112,12 +113,12 @@ namespace MouseUtils.UITests
             Session.MoveMouseTo(xy0.Item1 - 100, xy0.Item2);
             Session.PerformMouseAction(MouseActionType.LeftClick);
             Session.SendKeys(Key.Win, Key.Alt, Key.A);
-            Task.Delay(1000).Wait();
+            Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
             VerifyMousePointerCrosshairsNotAppears(ref settings);
         }
 
-        [TestMethod("MouseUtils.MousePointerCrosshairs.MousePointerCrosshairsDifferentSettings")]
+        [TestMethod(DisplayName = "MouseUtils.MousePointerCrosshairs.MousePointerCrosshairsDifferentSettings")]
         [TestCategory("Mouse Utils #32")]
         [TestCategory("Mouse Utils #33")]
         public void TestMousePointerCrosshairsDifferentSettings()
@@ -150,7 +151,7 @@ namespace MouseUtils.UITests
 
             // this.FindGroup("Enable Mouse Pointer Crosshairs");
             MouseUtilsSettings.SetMouseUtilEnabled(foundCustom, MouseUtilsSettings.MouseUtils.MousePointerCrosshairs, false);
-            Task.Delay(500).Wait();
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
             MouseUtilsSettings.SetMouseUtilEnabled(foundCustom, MouseUtilsSettings.MouseUtils.MousePointerCrosshairs, true);
 
             Assert.IsNotNull(foundCustom);
@@ -176,7 +177,7 @@ namespace MouseUtils.UITests
             saveButton.Click(false, 500, 1000);
 
             SetMousePointerCrosshairsAppearanceBehavior(ref foundCustom, ref settings);
-            Task.Delay(500).Wait();
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
             // [Test Case]  Test the different settings and verify they apply - Change activation shortcut and test it.
             // [Test Case]  Test the different settings and verify they apply - Crosshairs color.
@@ -184,26 +185,26 @@ namespace MouseUtils.UITests
             Session.MoveMouseTo(xy0.Item1 - 100, xy0.Item2);
 
             IOUtil.MouseClick();
-            Task.Delay(500).Wait();
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
             Session.SendKeys(Key.Win, Key.Alt, Key.P);
-            Task.Delay(1000).Wait();
+            Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
             xy0 = Session.GetMousePosition();
 
             VerifyMousePointerCrosshairsAppears(ref settings);
-            Task.Delay(500).Wait();
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
             for (int i = 0; i < 100; i++)
             {
                 IOUtil.MoveMouseBy(-1, 0);
-                Task.Delay(10).Wait();
+                Task.Delay(10, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
             }
 
             VerifyMousePointerCrosshairsAppears(ref settings);
 
             // Press the activation shortcut again and verify the crosshairs disappear.
             Session.SendKeys(Key.Win, Key.Alt, Key.P);
-            Task.Delay(1000).Wait();
+            Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
             VerifyMousePointerCrosshairsNotAppears(ref settings);
         }

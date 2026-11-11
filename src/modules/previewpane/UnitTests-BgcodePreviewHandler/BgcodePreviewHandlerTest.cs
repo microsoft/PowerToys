@@ -15,11 +15,12 @@ using Moq;
 
 namespace BgcodePreviewHandlerUnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [STATestClass]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "new Exception() is fine in test projects.")]
     public class BgcodePreviewHandlerTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("HelperFiles/sample.bgcode")]
         public void BgcodePreviewHandlerControlAddsControlsToFormWhenDoPreviewIsCalled(string filePath)
         {

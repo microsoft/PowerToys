@@ -6,10 +6,11 @@ using Microsoft.CmdPal.Common.Helpers;
 
 namespace Microsoft.CmdPal.Common.UnitTests.Helpers;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class ShellArgumentBuilderTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("plain", "plain")]
     [DataRow("C:\\Program Files\\PowerToys", "\"C:\\Program Files\\PowerToys\"")]
     [DataRow("say \"hello\"", "\"say \\\"hello\\\"\"")]

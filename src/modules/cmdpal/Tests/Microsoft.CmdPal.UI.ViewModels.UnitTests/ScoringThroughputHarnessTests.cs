@@ -24,6 +24,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 /// vs tier classification vs frecency. Timings go to <see cref="TestContext"/> and the assertions
 /// only lock structural facts, so nothing here flakes on a wall clock.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed partial class ScoringThroughputHarnessTests
 {
@@ -129,11 +130,11 @@ public sealed partial class ScoringThroughputHarnessTests
 
             // The app pass weighs thousands of items against the command pass's hundreds, which is
             // why it dominates the keystroke cost.
-            Assert.IsTrue(apps.Length > commands.Length, "Apps must outnumber commands in the catalog.");
+            Assert.IsGreaterThan(commands.Length, apps.Length, "Apps must outnumber commands in the catalog.");
 
             // Re-scoring the same catalog with the same query yields the same result set.
             var appScoredAgain = InternalListHelpers.FilterListWithScores(apps.Select(item => new InProcObject<IListItem>(item)), query, scoringFn);
-            Assert.AreEqual(appScored.Length, appScoredAgain.Length, $"App scoring must be deterministic for query '{raw}'.");
+            Assert.HasCount(appScored.Length, appScoredAgain, $"App scoring must be deterministic for query '{raw}'.");
             for (var i = 0; i < Math.Min(10, appScored.Length); i++)
             {
                 Assert.AreEqual(appScored[i].Score, appScoredAgain[i].Score, $"Top-10 scores must be stable for query '{raw}'.");
@@ -166,8 +167,8 @@ public sealed partial class ScoringThroughputHarnessTests
         TestContext.WriteLine($"1-char 'c' matches {firstMatches.Length}/{apps.Length} apps ({firstFraction:P1}); extending to 'ca' re-scores {retained.Count} and keeps {secondMatches.Length}.");
 
         // A narrower query can only keep a subset of the wider query's matches.
-        Assert.IsTrue(secondMatches.Length <= retained.Count, "Extending a query cannot add matches beyond the retained set.");
-        Assert.IsTrue(firstMatches.Length > 0, "The 1-char query should match a non-trivial set.");
+        Assert.IsLessThanOrEqualTo(retained.Count, secondMatches.Length, "Extending a query cannot add matches beyond the retained set.");
+        Assert.IsNotEmpty(firstMatches, "The 1-char query should match a non-trivial set.");
     }
 
     /// <summary>
@@ -251,7 +252,7 @@ public sealed partial class ScoringThroughputHarnessTests
                 $"{raw,-8}| {fullNs,10:F1} | {twoDpNs,6:F1} | {threeDpNs,6:F1} | {extDelta,8:F1} | {classifyNs,12:F1} | {wordBoundaryNs,12:F1} | {frecencyNs,8:F1}");
 
             // Adding a third DP score can't make the measurement cheaper.
-            Assert.IsTrue(threeDpNs >= twoDpNs * 0.5, "Three DP scores should not be dramatically cheaper than two; extension scoring is real added work.");
+            Assert.IsGreaterThanOrEqualTo(twoDpNs * 0.5, threeDpNs, "Three DP scores should not be dramatically cheaper than two; extension scoring is real added work.");
         }
     }
 
@@ -296,7 +297,7 @@ public sealed partial class ScoringThroughputHarnessTests
                 $"{raw,-8}| {serialMs,17:F3} | {parallelMs,18:F3} | {speedup,6:F2}x | {serialResult.Length,7}");
 
             // The parallel path returns the same match count, on any machine.
-            Assert.AreEqual(serialResult.Length, parallelResult.Length, $"Match count must match for query '{raw}'.");
+            Assert.HasCount(serialResult.Length, parallelResult, $"Match count must match for query '{raw}'.");
         }
     }
 

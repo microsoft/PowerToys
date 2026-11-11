@@ -214,7 +214,7 @@ internal sealed class TwoEndpointFixture : IDisposable
     {
         var desktop = NativeSupport.Desktop();
         Assert.IsTrue(desktop.Ready && !desktop.Elevated, "BLOCKED_INFRASTRUCTURE: an active, unlocked standard-user L1 desktop is required.");
-        Assert.AreEqual(1, System.Windows.Forms.Screen.AllScreens.Length, "The first nested-Sandbox pilot requires one L1 display.");
+        Assert.HasCount(1, System.Windows.Forms.Screen.AllScreens, "The first nested-Sandbox pilot requires one L1 display.");
         Assert.IsTrue(File.Exists(markerPath), $"BLOCKED_INFRASTRUCTURE: privileged provisioning marker is missing: {markerPath}");
         provision = RunFiles.Read(markerPath);
         var provisionedArchitecture = provision["Architecture"]?.GetValue<string>();
@@ -247,7 +247,7 @@ internal sealed class TwoEndpointFixture : IDisposable
             "Provisioning ProductRoot does not match POWERTOYS_INSTALL_DIR.");
         runId = Guid.Parse(provision["RunId"]!.GetValue<string>()).ToString();
         prerequisites.SetRunId(runId);
-        Assert.IsTrue(!string.IsNullOrWhiteSpace(provision["RuleName"]?.GetValue<string>()), "Missing scoped firewall rule identity.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(provision["RuleName"]?.GetValue<string>()), "Missing scoped firewall rule identity.");
         Assert.IsTrue(
             provision["Status"]?.GetValue<string>() is "WaitingForSandbox" or "Ready",
             "BLOCKED_INFRASTRUCTURE: privileged provisioning must be WaitingForSandbox or Ready before the test.");
@@ -519,16 +519,16 @@ internal sealed class TwoEndpointFixture : IDisposable
         var candidates = guestReady["Addresses"]!.AsArray()
             .Where(node => InSubnet(node!["IPAddress"]!.GetValue<string>(), subnet) &&
                 node["IPAddress"]!.GetValue<string>() != hostAddress).ToArray();
-        Assert.AreEqual(
+        Assert.HasCount(
             1,
-            candidates.Length,
+            candidates,
             $"NETWORK_CHANGED: the guest must have exactly one address in provisioned Sandbox subnet {subnet}; inspect guest ready.json and reprovision the actual Default Switch.");
         guestAddress = candidates[0]!["IPAddress"]!.GetValue<string>();
         var guestInterface = candidates[0]!["InterfaceIndex"]!.GetValue<int>();
         var gateways = guestReady["Gateways"]!.AsArray()
             .Where(node => node!["InterfaceIndex"]!.GetValue<int>() == guestInterface)
             .Select(node => node!["NextHop"]!.GetValue<string>()).Distinct().ToArray();
-        Assert.AreEqual(1, gateways.Length, "NETWORK_CHANGED: the selected guest interface must have one unambiguous default gateway.");
+        Assert.HasCount(1, gateways, "NETWORK_CHANGED: the selected guest interface must have one unambiguous default gateway.");
         Assert.AreEqual(
             hostAddress,
             gateways[0],
@@ -595,7 +595,7 @@ internal sealed class TwoEndpointFixture : IDisposable
 
         settings.Find<NavigationViewItem>(By.AccessibilityId("MouseWithoutBordersNavItem")).Invoke(msPostAction: 0);
         var buttons = settings.FindAll<UiButton>(By.Name("New key"), timeoutMS: 20_000).Where(button => button.Name == "New key").ToArray();
-        Assert.AreEqual(1, buttons.Length, "Expected one real Settings New key button.");
+        Assert.HasCount(1, buttons, "Expected one real Settings New key button.");
         var path = Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, @"MouseWithoutBorders\settings.json");
         var previous = RunFiles.Read(path)["properties"]!["SecurityKey"]!["value"]!.GetValue<string>();
         buttons[0].Invoke(msPostAction: 0);
@@ -611,7 +611,7 @@ internal sealed class TwoEndpointFixture : IDisposable
         host!.Request("VerifyPeerMapping");
         var connection = guest!.Request("Connect", new JsonObject { ["Key"] = key, ["PeerName"] = hostName }, timeoutSeconds: 600);
         Assert.IsTrue(
-            connection["Acknowledged"]?.GetValue<bool>() == true,
+            connection["Acknowledged"]?.GetValue<bool>(),
             "Settings Connect must be acknowledged by the guest's persisted matching key and peer before testing transport.");
     }
 
@@ -758,7 +758,7 @@ internal sealed class TwoEndpointFixture : IDisposable
         // the page has several unnamed ToggleSwitch controls and a TransferFile CheckBox.
         var toggles = Descendants(InspectSubtree(card)).Where(element =>
             element.TryGetProperty("className", out var className) && className.GetString() == "ToggleSwitch").ToArray();
-        Assert.AreEqual(1, toggles.Length, "Expected one clipboard-sharing toggle in its Settings card.");
+        Assert.HasCount(1, toggles, "Expected one clipboard-sharing toggle in its Settings card.");
         var toggle = settings.Find<ToggleSwitch>(By.Slug(toggles[0].GetProperty("selector").GetString()!));
         Assert.IsFalse(toggle.IsOn, "Host clipboard sharing must begin disabled.");
         toggle.Invoke(msPostAction: 0);

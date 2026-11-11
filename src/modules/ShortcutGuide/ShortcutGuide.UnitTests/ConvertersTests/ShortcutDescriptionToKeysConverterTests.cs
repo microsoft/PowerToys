@@ -9,6 +9,7 @@ using ShortcutGuide.Models;
 
 namespace ShortcutGuide.UnitTests.ConvertersTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class ShortcutDescriptionToKeysConverterTests
 {
@@ -28,7 +29,7 @@ public sealed class ShortcutDescriptionToKeysConverterTests
         // unchanged; KeyVisual strips the angle brackets when rendering.
         var result = Convert(new ShortcutDescription(ctrl: true, shift: false, alt: false, win: false, keys: [key]));
 
-        CollectionAssert.AreEqual(new object[] { "Ctrl", key }, result);
+        Assert.AreSequenceEqual(new object[] { "Ctrl", key }, result);
     }
 
     [TestMethod]
@@ -37,7 +38,7 @@ public sealed class ShortcutDescriptionToKeysConverterTests
         // Win -> 92, Ctrl -> "Ctrl", Alt -> "Alt", Shift -> 16, then the keys.
         var result = Convert(new ShortcutDescription(ctrl: true, shift: true, alt: true, win: true, keys: ["A"]));
 
-        CollectionAssert.AreEqual(new object[] { 92, "Ctrl", "Alt", 16, "A" }, result);
+        Assert.AreSequenceEqual(new object[] { 92, "Ctrl", "Alt", 16, "A" }, result);
     }
 
     [TestMethod]
@@ -46,7 +47,7 @@ public sealed class ShortcutDescriptionToKeysConverterTests
         // Non-numeric key strings (e.g. the "1 - 8" tab-range) render as-is.
         var result = Convert(new ShortcutDescription(ctrl: true, shift: false, alt: false, win: false, keys: ["1 - 8"]));
 
-        CollectionAssert.AreEqual(new object[] { "Ctrl", "1 - 8" }, result);
+        Assert.AreSequenceEqual(new object[] { "Ctrl", "1 - 8" }, result);
     }
 
     [TestMethod]
@@ -55,7 +56,7 @@ public sealed class ShortcutDescriptionToKeysConverterTests
         // Named arrow keys map to their VK codes (Up -> 38), independent of the digit handling.
         var result = Convert(new ShortcutDescription(ctrl: false, shift: false, alt: false, win: false, keys: ["Up"]));
 
-        CollectionAssert.AreEqual(new object[] { 38 }, result);
+        Assert.AreSequenceEqual(new object[] { 38 }, result);
     }
 
     [TestMethod]
@@ -66,7 +67,7 @@ public sealed class ShortcutDescriptionToKeysConverterTests
     {
         var result = Convert(new ShortcutDescription(ctrl: false, shift: false, alt: false, win: false, keys: [key]));
 
-        CollectionAssert.AreEqual(new object[] { expectedVk }, result);
+        Assert.AreSequenceEqual(new object[] { expectedVk }, result);
     }
 
     [TestMethod]
@@ -75,7 +76,7 @@ public sealed class ShortcutDescriptionToKeysConverterTests
         // "Back" maps to VK 8 (the Backspace key).
         var result = Convert(new ShortcutDescription(ctrl: false, shift: false, alt: false, win: false, keys: ["Back"]));
 
-        CollectionAssert.AreEqual(new object[] { 8 }, result);
+        Assert.AreSequenceEqual(new object[] { 8 }, result);
     }
 
     [TestMethod]
@@ -88,7 +89,7 @@ public sealed class ShortcutDescriptionToKeysConverterTests
         // Numeric strings for arrow VK codes (37-40) are parsed and added as ints, not mapped via GetKeyName.
         var result = Convert(new ShortcutDescription(ctrl: false, shift: false, alt: false, win: false, keys: [key]));
 
-        CollectionAssert.AreEqual(new object[] { expectedVk }, result);
+        Assert.AreSequenceEqual(new object[] { expectedVk }, result);
     }
 
     [TestMethod]
@@ -96,7 +97,7 @@ public sealed class ShortcutDescriptionToKeysConverterTests
     {
         var result = Convert(new ShortcutDescription(ctrl: false, shift: false, alt: false, win: false, keys: []));
 
-        Assert.AreEqual(0, result.Count);
+        Assert.IsEmpty(result);
     }
 
     [TestMethod]
@@ -104,6 +105,6 @@ public sealed class ShortcutDescriptionToKeysConverterTests
     {
         var result = Convert(new ShortcutDescription(ctrl: false, shift: false, alt: false, win: true, keys: []));
 
-        CollectionAssert.AreEqual(new object[] { 92 }, result);
+        Assert.AreSequenceEqual(new object[] { 92 }, result);
     }
 }

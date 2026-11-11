@@ -6,6 +6,7 @@ using Microsoft.CmdPal.Common.Services;
 
 namespace Microsoft.CmdPal.Common.UnitTests.Services;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public sealed class ApplicationInfoServiceTests
 {

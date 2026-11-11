@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class IconModelTests
 {
@@ -18,7 +19,7 @@ public class IconModelTests
             """{ "type": "Icon", "name": "Calendar", "size": "xLarge", "style": "Filled", "color": "Accent", "horizontalAlignment": "center" }""",
             warnings);
 
-        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+        Assert.IsEmpty(warnings, string.Join(", ", warnings));
         Assert.AreEqual("Calendar", model.Name);
         Assert.AreEqual("\uEA89", model.Glyph);
         Assert.AreEqual(IconSize.XLarge, model.Size);
@@ -34,7 +35,7 @@ public class IconModelTests
         var warnings = new List<string>();
         var model = IconModel.Parse("""{ "type": "Icon", "name": "calendar" }""", warnings);
 
-        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+        Assert.IsEmpty(warnings, string.Join(", ", warnings));
         Assert.AreEqual("\uE787", model.Glyph);
         Assert.AreEqual(IconSize.Standard, model.Size);
         Assert.AreEqual(24d, model.FontSizeInDips);
@@ -62,7 +63,7 @@ public class IconModelTests
             var warnings = new List<string>();
             var model = IconModel.Parse($$"""{ "type": "Icon", "name": "Add", "size": "{{size}}" }""", warnings);
 
-            Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+            Assert.IsEmpty(warnings, string.Join(", ", warnings));
             Assert.AreEqual(fontSizeInDips, model.FontSizeInDips, size);
         }
     }
@@ -73,7 +74,7 @@ public class IconModelTests
         var warnings = new List<string>();
         var model = IconModel.Parse("""{ "type": "Icon", "name": "Add", "style": "Filled" }""", warnings);
 
-        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+        Assert.IsEmpty(warnings, string.Join(", ", warnings));
         Assert.AreEqual("\uE710", model.Glyph);
     }
 
@@ -88,7 +89,7 @@ public class IconModelTests
         Assert.IsNull(missing.Glyph);
         Assert.IsFalse(((IAdaptiveVisualModel)unknown).RendersItself);
         Assert.IsFalse(((IAdaptiveVisualModel)missing).RendersItself);
-        Assert.AreEqual(2, warnings.Count);
+        Assert.HasCount(2, warnings);
     }
 
     [TestMethod]

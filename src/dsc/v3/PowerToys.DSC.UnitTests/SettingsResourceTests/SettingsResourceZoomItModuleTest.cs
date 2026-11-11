@@ -24,6 +24,7 @@ namespace PowerToys.DSC.UnitTests.SettingsResourceTests;
 /// store so they never touch the registry of the machine running them.
 /// </summary>
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class SettingsResourceZoomItModuleTest : BaseDscTest
 {
     // The shape the interop produces: every property wrapped in a "value" object
@@ -102,7 +103,7 @@ public sealed class SettingsResourceZoomItModuleTest : BaseDscTest
         Assert.AreEqual(10, state.Settings.Properties.BreakTimeout.Value);
         Assert.IsTrue(state.Settings.Properties.ShowTrayIcon.Value);
         Assert.AreEqual("GIF", state.Settings.Properties.RecordFormat.Value);
-        Assert.AreEqual(0, _saved.Count);
+        Assert.IsEmpty(_saved);
     }
 
     [TestMethod]
@@ -115,7 +116,7 @@ public sealed class SettingsResourceZoomItModuleTest : BaseDscTest
         // Assert
         Assert.IsTrue(result.Success);
         Assert.AreEqual(10, state.Settings.Properties.BreakTimeout.Value);
-        Assert.AreEqual(0, _saved.Count);
+        Assert.IsEmpty(_saved);
     }
 
     [TestMethod]
@@ -134,7 +135,7 @@ public sealed class SettingsResourceZoomItModuleTest : BaseDscTest
 
         // Assert
         Assert.IsTrue(result.Success);
-        CollectionAssert.AreEqual(new List<string> { SettingsResourceObject<ZoomItSettings>.SettingsJsonPropertyName }, diff);
+        Assert.AreSequenceEqual(new List<string> { SettingsResourceObject<ZoomItSettings>.SettingsJsonPropertyName }, diff);
         Assert.AreEqual(25, state.Settings.Properties.BreakTimeout.Value);
         Assert.IsFalse(state.Settings.Properties.ShowTrayIcon.Value);
 
@@ -143,7 +144,7 @@ public sealed class SettingsResourceZoomItModuleTest : BaseDscTest
         Assert.AreEqual("GIF", state.Settings.Properties.RecordFormat.Value);
 
         // The interop receives the complete settings in its own shape
-        Assert.AreEqual(1, _saved.Count);
+        Assert.HasCount(1, _saved);
         var saved = JsonNode.Parse(_saved[0]);
         Assert.AreEqual("ZoomIt", saved["name"].GetValue<string>());
         Assert.AreEqual(25, saved["properties"]["BreakTimeout"]["value"].GetValue<int>());
@@ -167,9 +168,9 @@ public sealed class SettingsResourceZoomItModuleTest : BaseDscTest
         // Assert
         Assert.IsTrue(firstResult.Success);
         Assert.IsTrue(secondResult.Success);
-        CollectionAssert.AreEqual(new List<string> { SettingsResourceObject<ZoomItSettings>.SettingsJsonPropertyName }, firstDiff);
-        CollectionAssert.AreEqual(new List<string>(), secondDiff);
-        Assert.AreEqual(1, _saved.Count);
+        Assert.AreSequenceEqual(new List<string> { SettingsResourceObject<ZoomItSettings>.SettingsJsonPropertyName }, firstDiff);
+        Assert.AreSequenceEqual(new List<string>(), secondDiff);
+        Assert.HasCount(1, _saved);
     }
 
     [TestMethod]
@@ -184,8 +185,8 @@ public sealed class SettingsResourceZoomItModuleTest : BaseDscTest
 
         // Assert
         Assert.IsTrue(result.Success);
-        CollectionAssert.AreEqual(new List<string>(), diff);
-        Assert.AreEqual(0, _saved.Count);
+        Assert.AreSequenceEqual(new List<string>(), diff);
+        Assert.IsEmpty(_saved);
     }
 
     [TestMethod]
@@ -201,8 +202,8 @@ public sealed class SettingsResourceZoomItModuleTest : BaseDscTest
         // Assert
         Assert.IsTrue(result.Success);
         Assert.IsFalse(state.InDesiredState);
-        CollectionAssert.AreEqual(new List<string> { SettingsResourceObject<ZoomItSettings>.SettingsJsonPropertyName }, diff);
-        Assert.AreEqual(0, _saved.Count);
+        Assert.AreSequenceEqual(new List<string> { SettingsResourceObject<ZoomItSettings>.SettingsJsonPropertyName }, diff);
+        Assert.IsEmpty(_saved);
     }
 
     [TestMethod]
@@ -218,7 +219,7 @@ public sealed class SettingsResourceZoomItModuleTest : BaseDscTest
         // Assert
         Assert.IsTrue(result.Success);
         Assert.IsTrue(state.InDesiredState);
-        CollectionAssert.AreEqual(new List<string>(), diff);
+        Assert.AreSequenceEqual(new List<string>(), diff);
     }
 
     [TestMethod]

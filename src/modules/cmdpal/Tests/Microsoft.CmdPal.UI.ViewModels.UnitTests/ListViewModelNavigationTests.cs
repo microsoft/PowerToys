@@ -21,6 +21,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed partial class ListViewModelNavigationTests
@@ -136,16 +137,16 @@ public sealed partial class ListViewModelNavigationTests
             while (!condition())
             {
                 Drain();
-                Assert.IsTrue(elapsed.Elapsed < TimeSpan.FromSeconds(3), "UI publication did not finish.");
+                Assert.IsLessThan(TimeSpan.FromSeconds(3), elapsed.Elapsed, "UI publication did not finish.");
                 Thread.Sleep(5);
             }
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task ReturningToRetainedPagePublishesSearchResultsAndIcons(bool isRootPage)
     {
         var page = new SearchPage();
@@ -183,7 +184,7 @@ public sealed partial class ListViewModelNavigationTests
     }
 
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task ReturningToStaticPageRestartsPendingRealizedIconsWithoutItemsChanged()
     {
         using var started = new ManualResetEventSlim();
@@ -203,7 +204,7 @@ public sealed partial class ListViewModelNavigationTests
         {
             await ObserveItemsAsync(viewModel, vm => vm.FilteredItems.Count == 48, viewModel.InitializeProperties);
             await WaitForPublishedAsync(viewModel);
-            Assert.IsTrue(started.Wait(TimeSpan.FromSeconds(2)));
+            Assert.IsTrue(started.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
             oldWorker = GetPrivateField<ListItemInitializationCoordinator>(viewModel, "_itemInitializationCoordinator").Completion;
             var pending = viewModel.FilteredItems.Single(item => ReferenceEquals(item.Model.Unsafe, last));
             Assert.AreEqual(0, last.InitializationCount);
@@ -211,18 +212,18 @@ public sealed partial class ListViewModelNavigationTests
 
             shell.CurrentPage = shell.NullPage;
             release.Set();
-            await oldWorker.WaitAsync(TimeSpan.FromSeconds(2));
+            await oldWorker.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
 
             // The page has no ItemsChanged event to restart work for us. A new
             // visual tree can publish realization before the shell restores its VM.
             registration = pending.BeginRealization();
             Assert.IsTrue(registration.IsValid);
             shell.CurrentPage = viewModel;
-            Assert.IsTrue(await pending.WaitForInitializationAsync(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(3)));
+            Assert.IsTrue(await pending.WaitForInitializationAsync(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(3), TestContext.CancellationToken));
 
             Assert.AreEqual(1, last.InitializationCount);
             Assert.AreEqual(SearchGlyph, pending.Icon.Light.Icon);
-            Assert.IsTrue(viewModel.FilteredItems.Contains(pending));
+            Assert.Contains(pending, viewModel.FilteredItems);
             Assert.AreEqual(1, page.GetItemsCount, "Restarting retained rows must not refetch an unchanged page.");
         }
         finally
@@ -233,7 +234,7 @@ public sealed partial class ListViewModelNavigationTests
             viewModel.Dispose();
             if (oldWorker is not null)
             {
-                await oldWorker.WaitAsync(TimeSpan.FromSeconds(2));
+                await oldWorker.WaitAsync(TimeSpan.FromSeconds(2), System.Threading.CancellationToken.None);
             }
 
             viewModel.SafeCleanup();
@@ -241,7 +242,7 @@ public sealed partial class ListViewModelNavigationTests
     }
 
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task FetchFromPreviousVisitCannotOverwriteResultsAfterReturn()
     {
         using var started = new ManualResetEventSlim();
@@ -260,19 +261,19 @@ public sealed partial class ListViewModelNavigationTests
                 if (count == 2)
                 {
                     started.Set();
-                    Assert.IsTrue(release.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.IsTrue(release.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
                 }
             };
 
-            oldFetch = Task.Run(() => page.ReplaceItems([CreateItem("Obsolete")]));
-            Assert.IsTrue(started.Wait(TimeSpan.FromSeconds(2)));
+            oldFetch = Task.Run(() => page.ReplaceItems([CreateItem("Obsolete")]), TestContext.CancellationToken);
+            Assert.IsTrue(started.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
             shell.CurrentPage = shell.NullPage;
             page.ReplaceItems([CreateItem("Current")]);
             Assert.AreEqual(2, page.GetItemsCount, "A hidden page must not restart fetching on ItemsChanged.");
 
             await ObserveItemsAsync(viewModel, "Current", () => shell.CurrentPage = viewModel);
             release.Set();
-            await oldFetch.WaitAsync(TimeSpan.FromSeconds(2));
+            await oldFetch.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
 
             Assert.AreEqual("Current", viewModel.FilteredItems.Single().Title);
             Assert.AreEqual(SearchGlyph, viewModel.FilteredItems.Single().Icon.Light.Icon);
@@ -283,7 +284,7 @@ public sealed partial class ListViewModelNavigationTests
             release.Set();
             if (oldFetch is not null)
             {
-                await oldFetch.WaitAsync(TimeSpan.FromSeconds(2));
+                await oldFetch.WaitAsync(TimeSpan.FromSeconds(2), System.Threading.CancellationToken.None);
             }
 
             WeakReferenceMessenger.Default.UnregisterAll(shell);
@@ -292,8 +293,9 @@ public sealed partial class ListViewModelNavigationTests
         }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = false)]
     public void QueuedPublicationFromPreviousVisitStaysInvalidAfterResume()
     {
         var scheduler = new QueuedTaskScheduler();
@@ -338,10 +340,11 @@ public sealed partial class ListViewModelNavigationTests
         }
     }
 
-    [DataTestMethod]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = false)]
     public void TerminalCleanupCannotBeReversedByBackNavigation(bool useSafeCleanup)
     {
         var scheduler = new QueuedTaskScheduler();
@@ -368,7 +371,7 @@ public sealed partial class ListViewModelNavigationTests
             page.ReplaceItems([CreateItem("Must not load")]);
             scheduler.Drain();
             Assert.AreEqual(1, page.GetItemsCount);
-            Assert.AreEqual(useSafeCleanup ? 0 : 1, viewModel.FilteredItems.Count);
+            Assert.HasCount(useSafeCleanup ? 0 : 1, viewModel.FilteredItems);
         }
         finally
         {
@@ -380,7 +383,7 @@ public sealed partial class ListViewModelNavigationTests
     }
 
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task NavigationHandoffDoesNotWaitForWorkerOwnedLocks()
     {
         using var held = new ManualResetEventSlim();
@@ -395,24 +398,28 @@ public sealed partial class ListViewModelNavigationTests
         try
         {
             await ObserveItemsAsync(viewModel, "Initial", viewModel.InitializeProperties);
-            lockHolder = Task.Run(() =>
+            lockHolder = Task.Run(
+                () =>
             {
                 using (GetPrivateField<Lock>(viewModel, "_initializationCoordinatorLock").EnterScope())
                 using (GetPrivateField<Lock>(viewModel, "_listLock").EnterScope())
                 using (GetPrivateField<Lock>(viewModel, "_fetchStateLock").EnterScope())
                 {
                     held.Set();
-                    Assert.IsTrue(release.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.IsTrue(release.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
                 }
-            });
+            },
+                TestContext.CancellationToken);
 
-            Assert.IsTrue(held.Wait(TimeSpan.FromSeconds(2)));
-            navigation = Task.Run(() =>
+            Assert.IsTrue(held.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
+            navigation = Task.Run(
+                () =>
             {
                 shell.CurrentPage = shell.NullPage;
                 shell.CurrentPage = viewModel;
-            });
-            await navigation.WaitAsync(TimeSpan.FromSeconds(2));
+            },
+                TestContext.CancellationToken);
+            await navigation.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
             Assert.IsFalse(lockHolder.IsCompleted, "Navigation must finish while the worker still owns the locks.");
         }
         finally
@@ -420,12 +427,12 @@ public sealed partial class ListViewModelNavigationTests
             release.Set();
             if (lockHolder is not null)
             {
-                await lockHolder.WaitAsync(TimeSpan.FromSeconds(2));
+                await lockHolder.WaitAsync(TimeSpan.FromSeconds(2), System.Threading.CancellationToken.None);
             }
 
             if (navigation is not null)
             {
-                await navigation.WaitAsync(TimeSpan.FromSeconds(2));
+                await navigation.WaitAsync(TimeSpan.FromSeconds(2), System.Threading.CancellationToken.None);
             }
 
             WeakReferenceMessenger.Default.UnregisterAll(shell);
@@ -435,7 +442,7 @@ public sealed partial class ListViewModelNavigationTests
     }
 
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task ReturningToUnchangedPageDoesNotFetchOrRepublish()
     {
         var scheduler = new QueuedTaskScheduler();
@@ -472,7 +479,7 @@ public sealed partial class ListViewModelNavigationTests
     }
 
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task DirectInitialFetchDeferredBySuspensionIsRecovered()
     {
         var scheduler = new QueuedTaskScheduler();
@@ -500,10 +507,10 @@ public sealed partial class ListViewModelNavigationTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task SupersededFetchDoesNotCreateRecoveryWhenItUnwinds(bool finishWhileSuspended)
     {
         using var started = new ManualResetEventSlim();
@@ -522,12 +529,12 @@ public sealed partial class ListViewModelNavigationTests
                 if (count == 2)
                 {
                     started.Set();
-                    Assert.IsTrue(release.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.IsTrue(release.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
                 }
             };
 
-            oldFetch = Task.Run(() => page.ReplaceItems([CreateItem("Obsolete")]));
-            Assert.IsTrue(started.Wait(TimeSpan.FromSeconds(2)));
+            oldFetch = Task.Run(() => page.ReplaceItems([CreateItem("Obsolete")]), TestContext.CancellationToken);
+            Assert.IsTrue(started.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
             page.ReplaceItems([CreateItem("Current")]);
             scheduler.Drain();
             Assert.AreEqual(ListPageFetchPhase.Published, GetWorkState(viewModel).Phase);
@@ -538,7 +545,7 @@ public sealed partial class ListViewModelNavigationTests
             }
 
             release.Set();
-            await oldFetch.WaitAsync(TimeSpan.FromSeconds(2));
+            await oldFetch.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
             if (!finishWhileSuspended)
             {
                 viewModel.SuspendForNavigation();
@@ -554,7 +561,7 @@ public sealed partial class ListViewModelNavigationTests
             release.Set();
             if (oldFetch is not null)
             {
-                await oldFetch.WaitAsync(TimeSpan.FromSeconds(2));
+                await oldFetch.WaitAsync(TimeSpan.FromSeconds(2), System.Threading.CancellationToken.None);
             }
 
             viewModel.Dispose();
@@ -563,10 +570,10 @@ public sealed partial class ListViewModelNavigationTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task InterruptedFetchRecoveryTracksOnlyTheCurrentFetch(bool finishOldFetchFirst)
     {
         using var started = new ManualResetEventSlim();
@@ -588,22 +595,22 @@ public sealed partial class ListViewModelNavigationTests
                 if (count == 2)
                 {
                     started.Set();
-                    Assert.IsTrue(release.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.IsTrue(release.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
                 }
                 else if (count == 3)
                 {
                     if (finishOldFetchFirst)
                     {
                         release.Set();
-                        oldFetch!.WaitAsync(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
+                        oldFetch!.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken).GetAwaiter().GetResult();
                     }
 
                     showEmptyDuringRecovery = viewModel.ShowEmptyContent;
                 }
             };
 
-            oldFetch = Task.Run(page.Refresh);
-            Assert.IsTrue(started.Wait(TimeSpan.FromSeconds(2)));
+            oldFetch = Task.Run(page.Refresh, TestContext.CancellationToken);
+            Assert.IsTrue(started.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
             viewModel.SuspendForNavigation();
 
             // No ItemsChanged while suspended, and the cancelled call has not
@@ -611,14 +618,14 @@ public sealed partial class ListViewModelNavigationTests
             await viewModel.ResumeAfterNavigation();
             scheduler.Drain();
             Assert.AreEqual(finishOldFetchFirst, oldFetch.IsCompleted);
-            Assert.AreEqual(false, showEmptyDuringRecovery, "The current recovery fetch is still running.");
-            Assert.AreEqual(0, viewModel.FilteredItems.Count);
+            Assert.IsFalse(showEmptyDuringRecovery, "The current recovery fetch is still running.");
+            Assert.IsEmpty(viewModel.FilteredItems);
             Assert.IsTrue(viewModel.ShowEmptyContent);
             Assert.AreEqual(ListPageFetchPhase.Published, GetWorkState(viewModel).Phase);
             Assert.AreEqual(3, page.GetItemsCount);
 
             release.Set();
-            await oldFetch.WaitAsync(TimeSpan.FromSeconds(2));
+            await oldFetch.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
             viewModel.SuspendForNavigation();
             await viewModel.ResumeAfterNavigation();
             scheduler.Drain();
@@ -630,7 +637,7 @@ public sealed partial class ListViewModelNavigationTests
             release.Set();
             if (oldFetch is not null)
             {
-                await oldFetch.WaitAsync(TimeSpan.FromSeconds(2));
+                await oldFetch.WaitAsync(TimeSpan.FromSeconds(2), System.Threading.CancellationToken.None);
             }
 
             viewModel.Dispose();
@@ -640,7 +647,7 @@ public sealed partial class ListViewModelNavigationTests
     }
 
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task CommittedSnapshotIsRepublishedWithoutGetItemsAndPreservesSelectionIntent()
     {
         var scheduler = new QueuedTaskScheduler();
@@ -665,7 +672,7 @@ public sealed partial class ListViewModelNavigationTests
 
             Assert.AreEqual(2, page.GetItemsCount);
             Assert.AreEqual("Current", viewModel.FilteredItems.Single().Title);
-            Assert.AreEqual(1, publications.Count);
+            Assert.HasCount(1, publications);
             Assert.IsTrue(publications[0].ForceFirstItem);
             Assert.IsTrue(publications[0].EnsureSelectionVisible);
             Assert.AreEqual(ListPageFetchPhase.Published, GetWorkState(viewModel).Phase);
@@ -673,7 +680,7 @@ public sealed partial class ListViewModelNavigationTests
             viewModel.SuspendForNavigation();
             await viewModel.ResumeAfterNavigation();
             scheduler.Drain();
-            Assert.AreEqual(1, publications.Count, "A recovered publication must not be repeated on the next Back.");
+            Assert.HasCount(1, publications, "A recovered publication must not be repeated on the next Back.");
         }
         finally
         {
@@ -685,7 +692,7 @@ public sealed partial class ListViewModelNavigationTests
     }
 
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task SuspendedFetchRequestsSubsumeACommittedSnapshot()
     {
         var scheduler = new QueuedTaskScheduler();
@@ -716,7 +723,7 @@ public sealed partial class ListViewModelNavigationTests
     }
 
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task CancelledProviderFetchRemainsRecoverable()
     {
         var scheduler = new QueuedTaskScheduler();
@@ -753,11 +760,11 @@ public sealed partial class ListViewModelNavigationTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Fetching")]
     [DataRow("Committed")]
     [DataRow("Published")]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task RepeatedNavigationBeforeRecoveryRunsPreservesTheRequiredPhase(string phaseName)
     {
         using var held = new ManualResetEventSlim();
@@ -785,23 +792,25 @@ public sealed partial class ListViewModelNavigationTests
                 page.ReplaceItems([CreateItem("Current")]);
             }
 
-            lockHolder = Task.Run(() =>
+            lockHolder = Task.Run(
+                () =>
             {
                 using (GetPrivateField<Lock>(viewModel, "_initializationCoordinatorLock").EnterScope())
                 using (GetPrivateField<Lock>(viewModel, "_fetchStateLock").EnterScope())
                 {
                     held.Set();
-                    Assert.IsTrue(release.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.IsTrue(release.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
                 }
-            });
-            Assert.IsTrue(held.Wait(TimeSpan.FromSeconds(2)));
+            },
+                TestContext.CancellationToken);
+            Assert.IsTrue(held.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
 
             firstResume = viewModel.ResumeAfterNavigation();
             viewModel.SuspendForNavigation();
             secondResume = viewModel.ResumeAfterNavigation();
             Assert.AreEqual(phase, GetWorkState(viewModel).Phase, "Queueing recovery must not consume it.");
             release.Set();
-            await Task.WhenAll(lockHolder, firstResume, secondResume).WaitAsync(TimeSpan.FromSeconds(3));
+            await Task.WhenAll(lockHolder, firstResume, secondResume).WaitAsync(TimeSpan.FromSeconds(3), TestContext.CancellationToken);
             scheduler.Drain();
 
             Assert.AreEqual(phase == ListPageFetchPhase.Published ? 1 : 2, page.GetItemsCount);
@@ -815,7 +824,7 @@ public sealed partial class ListViewModelNavigationTests
             {
                 if (task is not null)
                 {
-                    await task.WaitAsync(TimeSpan.FromSeconds(3));
+                    await task.WaitAsync(TimeSpan.FromSeconds(3), System.Threading.CancellationToken.None);
                 }
             }
 
@@ -826,7 +835,7 @@ public sealed partial class ListViewModelNavigationTests
     }
 
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task ItemsChangedRacingResumeIsNotLost()
     {
         var scheduler = new QueuedTaskScheduler();
@@ -843,18 +852,22 @@ public sealed partial class ListViewModelNavigationTests
                 var title = $"Visit {visit}";
                 viewModel.SuspendForNavigation();
                 page.ReplaceItems([CreateItem(title)], notify: false);
-                var request = Task.Run(() =>
+                var request = Task.Run(
+                    () =>
                 {
-                    Assert.IsTrue(begin.Wait(TimeSpan.FromSeconds(2)));
+                    Assert.IsTrue(begin.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
                     page.Refresh();
-                });
-                var resume = Task.Run(async () =>
+                },
+                    TestContext.CancellationToken);
+                var resume = Task.Run(
+                    async () =>
                 {
-                    Assert.IsTrue(begin.Wait(TimeSpan.FromSeconds(2)));
+                    Assert.IsTrue(begin.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
                     await viewModel.ResumeAfterNavigation();
-                });
+                },
+                    TestContext.CancellationToken);
                 begin.Set();
-                await Task.WhenAll(request, resume).WaitAsync(TimeSpan.FromSeconds(3));
+                await Task.WhenAll(request, resume).WaitAsync(TimeSpan.FromSeconds(3), TestContext.CancellationToken);
                 scheduler.Drain();
                 Assert.AreEqual(title, viewModel.FilteredItems.Single().Title);
                 Assert.AreEqual(visit + 1, page.GetItemsCount);
@@ -868,8 +881,9 @@ public sealed partial class ListViewModelNavigationTests
         }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = false)]
     public void FilteringCanRunQueuedPublicationWhileAnotherFetchWaitsForTheList()
     {
         var scheduler = new QueuedTaskScheduler();
@@ -946,8 +960,9 @@ public sealed partial class ListViewModelNavigationTests
         }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = false)]
     public void DeferredPublicationWaitsForTheFetchStateLock()
     {
         var scheduler = new QueuedTaskScheduler();
@@ -973,15 +988,17 @@ public sealed partial class ListViewModelNavigationTests
             Assert.AreEqual(ListPageFetchPhase.Committed, GetWorkState(viewModel).Phase);
             Assert.IsFalse(published.IsSet);
 
-            lockHolder = Task.Run(() =>
+            lockHolder = Task.Run(
+                () =>
             {
                 using (GetPrivateField<Lock>(viewModel, "_fetchStateLock").EnterScope())
                 {
                     held.Set();
-                    publishedWhileLocked = published.Wait(TimeSpan.FromSeconds(1));
+                    publishedWhileLocked = published.Wait(TimeSpan.FromSeconds(1), TestContext.CancellationToken);
                 }
-            });
-            Assert.IsTrue(held.Wait(TimeSpan.FromSeconds(3)));
+            },
+                TestContext.CancellationToken);
+            Assert.IsTrue(held.Wait(TimeSpan.FromSeconds(3), TestContext.CancellationToken));
         }
 
         try
@@ -994,7 +1011,7 @@ public sealed partial class ListViewModelNavigationTests
             viewModel.SearchTextBox = "Alpha";
 
             Assert.IsTrue(reentered);
-            Assert.IsTrue(lockHolder!.Wait(TimeSpan.FromSeconds(3)));
+            Assert.IsTrue(lockHolder!.Wait(TimeSpan.FromSeconds(3), TestContext.CancellationToken));
             Assert.IsFalse(publishedWhileLocked, "Deferred publication must serialize reset consumption with background fetches.");
             Assert.IsTrue(published.IsSet);
             Assert.AreEqual(ListPageFetchPhase.Published, GetWorkState(viewModel).Phase);
@@ -1005,7 +1022,7 @@ public sealed partial class ListViewModelNavigationTests
             viewModel.FilteredItems.CollectionChanged -= OnCollectionChanged;
             if (lockHolder is not null)
             {
-                Assert.IsTrue(lockHolder.Wait(TimeSpan.FromSeconds(3)));
+                Assert.IsTrue(lockHolder.Wait(TimeSpan.FromSeconds(3), System.Threading.CancellationToken.None));
             }
 
             viewModel.Dispose();
@@ -1014,8 +1031,9 @@ public sealed partial class ListViewModelNavigationTests
         }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = false)]
     public void DynamicParameterPickerRetainsResetAfterLaterSelection()
     {
         var scheduler = new QueuedTaskScheduler();
@@ -1057,10 +1075,11 @@ public sealed partial class ListViewModelNavigationTests
         }
     }
 
-    [DataTestMethod]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = false)]
     public void ForcedSelectionAcknowledgementSkipsUnchangedEffectsAndUpdatesChangedSelection(bool isRootPage)
     {
         var scheduler = new QueuedTaskScheduler();
@@ -1136,7 +1155,8 @@ public sealed partial class ListViewModelNavigationTests
         void OnSearchSuggestionChanged(object? sender, PageSearchSuggestionChangedEventArgs e) => Interlocked.Increment(ref suggestions);
     }
 
-    [DataTestMethod]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
+    [TestMethod]
     [DataRow(false, false, false)]
     [DataRow(false, false, true)]
     [DataRow(false, true, false)]
@@ -1145,7 +1165,7 @@ public sealed partial class ListViewModelNavigationTests
     [DataRow(true, false, true)]
     [DataRow(true, true, false)]
     [DataRow(true, true, true)]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = false)]
     public void LaterSelectionInvalidatesPendingSubpageReset(bool isRootPage, bool blockFetch, bool supersedeFetch)
     {
         var scheduler = new QueuedTaskScheduler();
@@ -1180,11 +1200,11 @@ public sealed partial class ListViewModelNavigationTests
                     if (count == 2)
                     {
                         started.Set();
-                        Assert.IsTrue(release.Wait(TimeSpan.FromSeconds(3)), "The pending refresh was not released.");
+                        Assert.IsTrue(release.Wait(TimeSpan.FromSeconds(3), TestContext.CancellationToken), "The pending refresh was not released.");
                     }
                 };
-                fetch = Task.Run(() => page.ReplaceItems([gamma, alpha, beta]));
-                Assert.IsTrue(started.Wait(TimeSpan.FromSeconds(3)));
+                fetch = Task.Run(() => page.ReplaceItems([gamma, alpha, beta]), TestContext.CancellationToken);
+                Assert.IsTrue(started.Wait(TimeSpan.FromSeconds(3), TestContext.CancellationToken));
             }
             else
             {
@@ -1195,7 +1215,7 @@ public sealed partial class ListViewModelNavigationTests
             release.Set();
             if (fetch is not null)
             {
-                Assert.IsTrue(fetch.Wait(TimeSpan.FromSeconds(3)));
+                Assert.IsTrue(fetch.Wait(TimeSpan.FromSeconds(3), TestContext.CancellationToken));
             }
 
             if (supersedeFetch)
@@ -1204,7 +1224,7 @@ public sealed partial class ListViewModelNavigationTests
             }
 
             scheduler.Drain();
-            Assert.AreEqual(1, updates.Count);
+            Assert.HasCount(1, updates);
             Assert.AreEqual(isRootPage, updates[0].ForceFirstItem, "A subpage must honor newer navigation; root pages retain their reset behavior.");
             Assert.AreSame(later, viewModel.FilteredItems[2]);
             completed = true;
@@ -1228,11 +1248,12 @@ public sealed partial class ListViewModelNavigationTests
         }
     }
 
-    [DataTestMethod]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
+    [TestMethod]
     [DataRow(true, false, true)]
     [DataRow(false, false, false)]
     [DataRow(false, true, true)]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = false)]
     public void ReturningToFirstRowCancelsOnlyTheRefreshAlreadyInFlight(bool navigateBeforeFetch, bool supersedeFetch, bool expectedReset)
     {
         var scheduler = new QueuedTaskScheduler();
@@ -1270,7 +1291,7 @@ public sealed partial class ListViewModelNavigationTests
             }
 
             scheduler.Drain();
-            Assert.AreEqual(1, updates.Count);
+            Assert.HasCount(1, updates);
             Assert.AreEqual(expectedReset, updates[0].ForceFirstItem, "Explicit navigation cancels an existing reset even when it ends on the old first row; a later fetch can request a new reset.");
             Assert.AreSame(first, viewModel.FilteredItems[2]);
         }
@@ -1283,10 +1304,11 @@ public sealed partial class ListViewModelNavigationTests
         }
     }
 
-    [DataTestMethod]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = false)]
     public void DeferredFirstSelectionSurvivesLaterFetches(bool incrementalUpdate)
     {
         var scheduler = new QueuedTaskScheduler();
@@ -1340,8 +1362,9 @@ public sealed partial class ListViewModelNavigationTests
         }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = false)]
     public void ReentrantPublicationDoesNotAdvanceThePhaseBeforeItsMutationRuns()
     {
         var scheduler = new QueuedTaskScheduler();
@@ -1389,7 +1412,7 @@ public sealed partial class ListViewModelNavigationTests
     }
 
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task FilterReplacingDeferredPublicationCompletesTheCurrentFetch()
     {
         var scheduler = new QueuedTaskScheduler();
@@ -1447,7 +1470,7 @@ public sealed partial class ListViewModelNavigationTests
     }
 
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task DuplicateSuspendedRequestsReuseTheirPendingRecord()
     {
         var scheduler = new QueuedTaskScheduler();
@@ -1480,10 +1503,10 @@ public sealed partial class ListViewModelNavigationTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task SuspendedSelectionIsReplayedOnlyAfterResume(bool clearSelection)
     {
         var scheduler = new QueuedTaskScheduler();
@@ -1502,11 +1525,11 @@ public sealed partial class ListViewModelNavigationTests
 
             var requested = clearSelection ? null : viewModel.FilteredItems[1];
             viewModel.UpdateSelectedItemCommand.Execute(requested);
-            Assert.AreEqual(0, contexts.Count, "A suspended page must not update the active page's command bar.");
+            Assert.IsEmpty(contexts, "A suspended page must not update the active page's command bar.");
 
             await viewModel.ResumeAfterNavigation();
             scheduler.Drain();
-            Assert.IsTrue(contexts.Count > 0, "The requested selection must be replayed on resume.");
+            Assert.IsNotEmpty(contexts, "The requested selection must be replayed on resume.");
             Assert.AreSame(requested, contexts[^1]);
         }
         finally
@@ -1528,7 +1551,7 @@ public sealed partial class ListViewModelNavigationTests
         var elapsed = Stopwatch.StartNew();
         while (GetWorkState(viewModel).Phase != ListPageFetchPhase.Published)
         {
-            Assert.IsTrue(elapsed.Elapsed < TimeSpan.FromSeconds(3), "The fetch did not finish publishing.");
+            Assert.IsLessThan(TimeSpan.FromSeconds(3), elapsed.Elapsed, "The fetch did not finish publishing.");
             await Task.Delay(1);
         }
     }
@@ -1575,4 +1598,6 @@ public sealed partial class ListViewModelNavigationTests
             viewModel.ItemsUpdated -= OnItemsUpdated;
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

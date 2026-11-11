@@ -15,6 +15,7 @@ namespace AdvancedPaste.UITests;
 [TestClass]
 [DoNotParallelize]
 [TestCategory("AdvancedPaste")]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
 {
     private readonly List<long> explorerWindows = [];
@@ -37,7 +38,7 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
         const string text = "Offline file\r\ncaf\u00e9 \u4e2d\u6587 \U0001f680\r\n\tindented";
         SetClipboardText(text);
         var output = await PasteFile(ProductStrings.PasteAsTxtFile, Key.T, ".txt", directShortcut);
-        CollectionAssert.AreEqual(Encoding.UTF8.GetBytes(text), File.ReadAllBytes(output), "The TXT file did not preserve UTF-8 text and whitespace.");
+        Assert.AreSequenceEqual(Encoding.UTF8.GetBytes(text), File.ReadAllBytes(output), "The TXT file did not preserve UTF-8 text and whitespace.");
     }
 
     [TestMethod]
@@ -108,7 +109,7 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
             stream.ReadExactly(header);
         }
 
-        CollectionAssert.AreEqual(new byte[] { 0xFF, 0xD8, 0xFF }, header, "Pasted file is not JPEG encoded.");
+        Assert.AreSequenceEqual(new byte[] { 0xFF, 0xD8, 0xFF }, header, "Pasted file is not JPEG encoded.");
 
         using var bitmap = new Bitmap(output);
         Assert.AreEqual(ClipboardFixtures.ImageWidth, bitmap.Width);
@@ -136,7 +137,7 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
         SetFileClipboard(source);
         var output = await PasteFile(ProductStrings.TranscodeToMp3, Key.F7, ".mp3", source: source);
         await AssertAudio(output);
-        CollectionAssert.AreEqual(original, File.ReadAllBytes(source), "Transcoding modified the source audio.");
+        Assert.AreSequenceEqual(original, File.ReadAllBytes(source), "Transcoding modified the source audio.");
     }
 
     [TestMethod]
@@ -167,7 +168,7 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
         Assert.IsTrue(string.Equals(MediaEncodingSubtypes.Aac, profile.Audio.Subtype, StringComparison.OrdinalIgnoreCase), $"Unexpected audio subtype: {profile.Audio.Subtype}");
         Assert.AreEqual(320U, profile.Video.Width);
         Assert.AreEqual(180U, profile.Video.Height);
-        CollectionAssert.AreEqual(original, File.ReadAllBytes(source), "Transcoding overwrote the source video.");
+        Assert.AreSequenceEqual(original, File.ReadAllBytes(source), "Transcoding overwrote the source video.");
     }
 
     private async Task<string> PasteFile(string action, Key directKey, string extension, bool directShortcut = false, string? source = null)
@@ -235,7 +236,7 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
             timeoutMS: 30_000,
             shouldRetryException: exception => exception is IOException);
         Assert.HasCount(1, destination.GetFiles(), "The action pasted more than one file.");
-        CollectionAssert.AreEqual(expectedBytes, await File.ReadAllBytesAsync(pasted), "Explorer received different file content.");
+        Assert.AreSequenceEqual(expectedBytes, await File.ReadAllBytesAsync(pasted), "Explorer received different file content.");
         WaitUntil(() => !IsAdvancedPasteVisible(), "Advanced Paste remained visible after file paste.");
         return pasted;
     }

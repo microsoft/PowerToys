@@ -7,10 +7,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ExtendedUriParserTests
     {
-        [DataTestMethod]
+        [TestMethod]
 
         // Standard web uri
         [DataRow("google.com", true, "https://google.com/", null)]

@@ -13,6 +13,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class AliasManagerTests
 {
@@ -35,8 +36,8 @@ public class AliasManagerTests
         _ = new AliasManager(null!, settingsService.Object);
 
         var aliases = getSettings().Aliases;
-        Assert.AreEqual(expectedAliases.Count, aliases.Count);
-        Assert.AreEqual(expectedAliases.Count, expectedAliases.Values.Select(alias => alias.CommandId).Distinct().Count());
+        Assert.HasCount(expectedAliases.Count, aliases);
+        Assert.HasCount(expectedAliases.Count, expectedAliases.Values.Select(alias => alias.CommandId).Distinct());
         foreach (var expectedAlias in expectedAliases)
         {
             Assert.IsTrue(aliases.TryGetValue(expectedAlias.Key, out var alias));
@@ -62,7 +63,7 @@ public class AliasManagerTests
         Assert.AreEqual(BuiltInCommandIds.Run, migratedAliases["run "].CommandId);
         Assert.IsFalse(migratedAliases["run "].IsDirect);
         Assert.AreEqual(BuiltInCommandIds.Calculator, migratedAliases["="].CommandId);
-        Assert.IsFalse(migratedAliases.Values.Any(alias => alias.CommandId == "com.microsoft.cmdpal.shell"));
+        Assert.DoesNotContain(alias => alias.CommandId == "com.microsoft.cmdpal.shell", migratedAliases.Values);
     }
 
     [TestMethod]
@@ -79,7 +80,7 @@ public class AliasManagerTests
         Assert.IsFalse(migratedAliases.ContainsKey(">"));
         Assert.AreEqual(BuiltInCommandIds.Run, migratedAliases["run "].CommandId);
         Assert.IsFalse(migratedAliases["run "].IsDirect);
-        Assert.IsFalse(migratedAliases.Values.Any(alias => alias.CommandId == "com.microsoft.cmdpal.shell"));
+        Assert.DoesNotContain(alias => alias.CommandId == "com.microsoft.cmdpal.shell", migratedAliases.Values);
     }
 
     private static (Mock<ISettingsService> Service, Func<SettingsModel> GetSettings) CreateSettingsService(SettingsModel initialSettings)

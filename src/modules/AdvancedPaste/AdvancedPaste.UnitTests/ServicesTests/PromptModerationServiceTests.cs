@@ -12,6 +12,7 @@ using Moq;
 namespace AdvancedPaste.UnitTests.ServicesTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class PromptModerationServiceTests
 {
     [TestMethod]

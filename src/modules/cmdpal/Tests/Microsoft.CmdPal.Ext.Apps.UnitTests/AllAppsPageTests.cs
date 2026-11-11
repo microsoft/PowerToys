@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class AllAppsPageTests : AppsTestBase
 {
@@ -18,7 +19,7 @@ public class AllAppsPageTests : AppsTestBase
     public void AllAppsPage_Constructor_ThrowsOnNullAppCache()
     {
         // Act & Assert
-        Assert.ThrowsException<ArgumentNullException>(() => new AllAppsPage(null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new AllAppsPage(null!));
     }
 
     [TestMethod]
@@ -45,7 +46,7 @@ public class AllAppsPageTests : AppsTestBase
 
         // Assert
         Assert.IsNotNull(items);
-        Assert.AreEqual(0, items.Length);
+        Assert.IsEmpty(items);
     }
 
     [TestMethod]
@@ -62,18 +63,18 @@ public class AllAppsPageTests : AppsTestBase
         var page = new AllAppsPage(mockCache);
 
         // Wait a bit for initialization to complete
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.CancellationToken);
 
         // Act
         var items = page.GetItems();
 
         // Assert
         Assert.IsNotNull(items);
-        Assert.AreEqual(2, items.Length);
+        Assert.HasCount(2, items);
 
         // we need to loop the items to ensure we got the correct ones
-        Assert.IsTrue(items.Any(i => i.Title == "Notepad"));
-        Assert.IsTrue(items.Any(i => i.Title == "Calculator"));
+        Assert.Contains(i => i.Title == "Notepad", items);
+        Assert.Contains(i => i.Title == "Calculator", items);
     }
 
     [TestMethod]
@@ -82,7 +83,7 @@ public class AllAppsPageTests : AppsTestBase
         var mockCache = new MockAppCache();
         mockCache.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe"));
         var page = new AllAppsPage(mockCache);
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.CancellationToken);
 
         var expected = page.GetItems().OfType<AppListItem>().Single();
 
@@ -105,13 +106,13 @@ public class AllAppsPageTests : AppsTestBase
             AllAppsSettings.Instance.Settings.Update("{\"apps.HideAppDescriptions\": \"true\"}");
 
             var page = new AllAppsPage(mockCache);
-            await Task.Delay(100);
+            await Task.Delay(100, TestContext.CancellationToken);
 
             // Act
             var items = page.GetItems();
 
             // Assert
-            Assert.AreEqual(1, items.Length);
+            Assert.HasCount(1, items);
             var appItem = items.OfType<AppListItem>().Single();
             Assert.AreEqual(string.Empty, appItem.Subtitle);
         }
@@ -134,13 +135,13 @@ public class AllAppsPageTests : AppsTestBase
             AllAppsSettings.Instance.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
 
             var page = new AllAppsPage(mockCache);
-            await Task.Delay(100);
+            await Task.Delay(100, TestContext.CancellationToken);
 
             // Act
             var items = page.GetItems();
 
             // Assert
-            Assert.AreEqual(1, items.Length);
+            Assert.HasCount(1, items);
             var appItem = items.OfType<AppListItem>().Single();
             Assert.IsFalse(string.IsNullOrEmpty(appItem.Subtitle));
         }
@@ -166,14 +167,14 @@ public class AllAppsPageTests : AppsTestBase
         var rowIcon = (IconInfo)item.Icon!;
         Assert.IsTrue(AppIconProtocol.TryParse(rowIcon.Light.Icon, out var rowCandidates, out var rowJumbo));
         Assert.IsFalse(rowJumbo);
-        CollectionAssert.AreEqual(new[] { app.IcoPath, app.ExePath }, rowCandidates);
+        Assert.AreSequenceEqual(new[] { app.IcoPath, app.ExePath }, rowCandidates);
         Assert.AreSame(rowIcon, item.Command.Icon);
 
         var details = (Details)item.Details!;
         var heroIcon = (IconInfo)details.HeroImage;
         Assert.IsTrue(AppIconProtocol.TryParse(heroIcon.Light.Icon, out var heroCandidates, out var heroJumbo));
         Assert.IsTrue(heroJumbo);
-        CollectionAssert.AreEqual(new[] { app.JumboIconPath, app.IcoPath, app.ExePath }, heroCandidates);
+        Assert.AreSequenceEqual(new[] { app.JumboIconPath, app.IcoPath, app.ExePath }, heroCandidates);
     }
 
     [TestMethod]
@@ -193,12 +194,12 @@ public class AllAppsPageTests : AppsTestBase
         var rowIcon = (IconInfo)item.Icon!;
         Assert.IsTrue(AppIconProtocol.TryParse(rowIcon.Light.Icon, out var rowCandidates, out var rowJumbo));
         Assert.IsFalse(rowJumbo);
-        CollectionAssert.AreEqual(new[] { app.IcoPath, app.FullExecutablePath }, rowCandidates);
+        Assert.AreSequenceEqual(new[] { app.IcoPath, app.FullExecutablePath }, rowCandidates);
 
         var heroIcon = (IconInfo)((Details)item.Details!).HeroImage;
         Assert.IsTrue(AppIconProtocol.TryParse(heroIcon.Light.Icon, out var heroCandidates, out var heroJumbo));
         Assert.IsTrue(heroJumbo);
-        CollectionAssert.AreEqual(new[] { app.ExePath, app.IcoPath, app.FullExecutablePath }, heroCandidates);
+        Assert.AreSequenceEqual(new[] { app.ExePath, app.IcoPath, app.FullExecutablePath }, heroCandidates);
     }
 
     [TestMethod]
@@ -217,7 +218,7 @@ public class AllAppsPageTests : AppsTestBase
 
         Assert.IsTrue(AppIconProtocol.TryParse(heroIcon.Light.Icon, out var candidates, out var jumbo));
         Assert.IsTrue(jumbo);
-        CollectionAssert.AreEqual(new[] { app.JumboIconPath, app.IcoPath, app.FullExecutablePath }, candidates);
+        Assert.AreSequenceEqual(new[] { app.JumboIconPath, app.IcoPath, app.FullExecutablePath }, candidates);
     }
 
     [TestMethod]
@@ -235,7 +236,7 @@ public class AllAppsPageTests : AppsTestBase
 
         Assert.IsTrue(AppIconProtocol.TryParse(heroIcon.Light.Icon, out var candidates, out var jumbo));
         Assert.IsTrue(jumbo);
-        CollectionAssert.AreEqual(new[] { shortcutPath }, candidates);
+        Assert.AreSequenceEqual(new[] { shortcutPath }, candidates);
     }
 
     [TestMethod]
@@ -258,4 +259,6 @@ public class AllAppsPageTests : AppsTestBase
         var heroIcon = (IconInfo)details.HeroImage;
         Assert.AreEqual(app.JumboIconPath, heroIcon.Light.Icon);
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

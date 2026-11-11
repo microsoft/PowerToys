@@ -17,6 +17,7 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class BookmarksCommandProviderTests
 {
@@ -40,7 +41,7 @@ public class BookmarksCommandProviderTests
 
         // Assert
         Assert.IsNotNull(provider.DisplayName);
-        Assert.IsTrue(provider.DisplayName.Length > 0);
+        Assert.IsGreaterThan(0, provider.DisplayName.Length);
     }
 
     [TestMethod]
@@ -66,11 +67,11 @@ public class BookmarksCommandProviderTests
 
         // Assert
         Assert.IsNotNull(commands);
-        Assert.IsTrue(commands.Length > 0);
+        Assert.IsNotEmpty(commands);
     }
 
     [TestMethod]
-    [Timeout(5000)]
+    [Timeout(5000, CooperativeCancellation = true)]
     public async Task ProviderWithMockData_LoadsBookmarksCorrectly()
     {
         // Arrange
@@ -86,7 +87,7 @@ public class BookmarksCommandProviderTests
         Assert.IsNotNull(commands, "commands != null");
 
         // Should have three commands：Add + two custom bookmarks
-        Assert.AreEqual(3, commands.Length);
+        Assert.HasCount(3, commands);
 
         // Wait until all BookmarkListItem commands are initialized
         await Task.WhenAll(commands.OfType<Pages.BookmarkListItem>().Select(t => t.IsInitialized));
@@ -99,7 +100,7 @@ public class BookmarksCommandProviderTests
     }
 
     [TestMethod]
-    [Timeout(5000)]
+    [Timeout(5000, CooperativeCancellation = true)]
     public async Task BookmarkListItem_LocalFileDataPackageTracksTargetUpdates()
     {
         var filePath = Path.GetTempFileName();
@@ -121,7 +122,7 @@ public class BookmarksCommandProviderTests
             Assert.AreEqual(DataPackageOperation.Copy, dataPackageView.RequestedOperation);
             Assert.IsTrue(dataPackageView.Contains(StandardDataFormats.StorageItems));
             var storageItems = await dataPackageView.GetStorageItemsAsync().AsTask();
-            Assert.AreEqual(1, storageItems.Count);
+            Assert.HasCount(1, storageItems);
             Assert.IsTrue(string.Equals(filePath, storageItems[0].Path, StringComparison.OrdinalIgnoreCase));
 
             var renamed = bookmark with { Name = "Renamed local file" };
@@ -151,7 +152,7 @@ public class BookmarksCommandProviderTests
         Assert.IsNotNull(commands);
 
         // Only have Add command
-        Assert.AreEqual(1, commands.Length);
+        Assert.HasCount(1, commands);
 
         var addCommand = commands.FirstOrDefault(c => c.Title.Contains("Add bookmark"));
         Assert.IsNotNull(addCommand);
@@ -171,7 +172,7 @@ public class BookmarksCommandProviderTests
         Assert.IsNotNull(commands);
 
         // Only have one command. Will ignore json parse error.
-        Assert.AreEqual(1, commands.Length);
+        Assert.HasCount(1, commands);
 
         var addCommand = commands.FirstOrDefault(c => c.Title.Contains("Add bookmark"));
         Assert.IsNotNull(addCommand);
@@ -189,7 +190,7 @@ public class BookmarksCommandProviderTests
 
         // Assert
         Assert.IsNotNull(bands);
-        Assert.AreEqual(1, bands.Length);
+        Assert.HasCount(1, bands);
         Assert.AreEqual(bookmark.Name, bands[0].Title);
         Assert.IsNotNull(bands[0].Icon);
     }
@@ -213,7 +214,7 @@ public class BookmarksCommandProviderTests
     }
 
     [TestMethod]
-    [Timeout(5000)]
+    [Timeout(5000, CooperativeCancellation = true)]
     public async Task BookmarkDockItem_TracksFinalTitleAndIcon()
     {
         // Arrange

@@ -10,6 +10,7 @@ using static MouseUtils.UITests.MouseUtilsTestHelper;
 
 namespace MouseUtils.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class MouseJumpTests : UITestBase
 {
@@ -125,8 +126,9 @@ public class MouseJumpTests : UITestBase
         var expectedX = primary.Left + (primary.Width / 2);
         var expectedY = primary.Top + (primary.Height / 2);
         var cursor = MouseHelper.GetMousePosition();
-        Assert.IsTrue(
-            Distance(cursor.X, cursor.Y, expectedX, expectedY) <= 20,
+        Assert.IsLessThanOrEqualTo(
+            20,
+            Distance(cursor.X, cursor.Y, expectedX, expectedY),
             $"Preview-center click mapped to ({cursor.X},{cursor.Y}), expected primary midpoint ({expectedX},{expectedY}).");
 
         MouseUtilsTestHelper.NavigateToMouseUtilities(this);
@@ -181,15 +183,16 @@ public class MouseJumpTests : UITestBase
         var width = bounds.Right - bounds.Left;
         var height = bounds.Bottom - bounds.Top;
         Assert.IsTrue(width is >= 620 and <= 650, $"Configured 640px preview width rendered as {width}px.");
-        Assert.IsTrue(height <= 480, $"Configured 480px maximum preview height rendered as {height}px.");
+        Assert.IsLessThanOrEqualTo(480, height, $"Configured 480px maximum preview height rendered as {height}px.");
 
         var primary = MonitorInfo.GetPrimary();
         Assert.IsNotNull(primary, "No primary monitor was reported.");
         var borderContribution = 2d * DefaultBorderThickness;
         var renderedContentAspectRatio = (width - borderContribution) / (height - borderContribution);
         var displayAspectRatio = primary.Width / (double)primary.Height;
-        Assert.IsTrue(
-            Math.Abs(renderedContentAspectRatio - displayAspectRatio) <= 0.02,
+        Assert.IsLessThanOrEqualTo(
+            0.02,
+            Math.Abs(renderedContentAspectRatio - displayAspectRatio),
             $"Preview content aspect ratio {renderedContentAspectRatio:F3} did not preserve display ratio {displayAspectRatio:F3}.");
     }
 
@@ -226,9 +229,9 @@ public class MouseJumpTests : UITestBase
                 }
             }
 
-            Assert.IsTrue(colors["#FF00FF"] > 100, $"Custom canvas background was not rendered; magenta sample count={colors["#FF00FF"]}.");
-            Assert.IsTrue(colors["#00FF00"] > 100, $"Custom canvas border was not rendered; green sample count={colors["#00FF00"]}.");
-            Assert.IsTrue(colors["#FFFF00"] > 100, $"Custom screen bezel was not rendered; yellow sample count={colors["#FFFF00"]}.");
+            Assert.IsGreaterThan(100, colors["#FF00FF"], $"Custom canvas background was not rendered; magenta sample count={colors["#FF00FF"]}.");
+            Assert.IsGreaterThan(100, colors["#00FF00"], $"Custom canvas border was not rendered; green sample count={colors["#00FF00"]}.");
+            Assert.IsGreaterThan(100, colors["#FFFF00"], $"Custom screen bezel was not rendered; yellow sample count={colors["#FFFF00"]}.");
         }
         finally
         {

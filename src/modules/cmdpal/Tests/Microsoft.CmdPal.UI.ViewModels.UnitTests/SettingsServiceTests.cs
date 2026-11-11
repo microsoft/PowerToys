@@ -20,6 +20,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 /// SettingsModel constructor initializes DockSettings which uses Microsoft.UI.Colors.Transparent,
 /// requiring WinUI3 runtime registration. Tests pass when run within VS Test Explorer with WinUI3 host.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class SettingsServiceTests
 {
@@ -198,7 +199,7 @@ public class SettingsServiceTests
         Assert.AreEqual(AltNumberShortcutBehavior.Select, settings.ListItemAltNumberBehavior);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(-1, 0, 0, 1)]
     [DataRow(100, 100, 99, 10)]
     public void QuickAccessLimits_OutOfRangePersistedValuesAreClamped(
@@ -427,7 +428,7 @@ public class SettingsServiceTests
     }
 
     [TestMethod]
-    [Timeout(10000)]
+    [Timeout(10000, CooperativeCancellation = true)]
     public async Task UpdateSettings_ConcurrentSavesDoNotOverlapOrPersistAnOlderSnapshotLast()
     {
         var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
@@ -447,7 +448,7 @@ public class SettingsServiceTests
                 if (Interlocked.Increment(ref saveCount) == 1)
                 {
                     firstSaveEntered.Set();
-                    Assert.IsTrue(releaseFirstSave.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.IsTrue(releaseFirstSave.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
                 }
                 else
                 {
@@ -458,22 +459,24 @@ public class SettingsServiceTests
             })
             .Returns(true);
 
-        var first = Task.Run(() => service.UpdateSettings(s => s with { ShowAppDetails = true }, hotReload: false));
+        var first = Task.Run(() => service.UpdateSettings(s => s with { ShowAppDetails = true }, hotReload: false), TestContext.CancellationToken);
         var second = Task.CompletedTask;
         var savesOverlapped = false;
         try
         {
-            Assert.IsTrue(firstSaveEntered.Wait(TimeSpan.FromSeconds(5)));
-            second = Task.Run(() => service.UpdateSettings(
+            Assert.IsTrue(firstSaveEntered.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
+            second = Task.Run(
+                () => service.UpdateSettings(
                 s =>
                 {
                     secondTransformEntered.Set();
                     return s with { SingleClickActivates = true };
                 },
-                hotReload: false));
+                hotReload: false),
+                TestContext.CancellationToken);
 
-            Assert.IsTrue(secondTransformEntered.Wait(TimeSpan.FromSeconds(5)));
-            savesOverlapped = secondSaveEntered.Wait(TimeSpan.FromMilliseconds(250));
+            Assert.IsTrue(secondTransformEntered.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
+            savesOverlapped = secondSaveEntered.Wait(TimeSpan.FromMilliseconds(250), TestContext.CancellationToken);
         }
         finally
         {
@@ -499,23 +502,27 @@ public class SettingsServiceTests
         var barrier = new System.Threading.Barrier(2);
 
         // Act — t1 sets ShowAppDetails=true, t2 sets SingleClickActivates=true
-        var t1 = System.Threading.Tasks.Task.Run(() =>
+        var t1 = System.Threading.Tasks.Task.Run(
+            () =>
         {
-            barrier.SignalAndWait();
+            barrier.SignalAndWait(TestContext.CancellationToken);
             for (var i = 0; i < iterations; i++)
             {
                 service.UpdateSettings(s => s with { ShowAppDetails = true }, hotReload: false);
             }
-        });
+        },
+            TestContext.CancellationToken);
 
-        var t2 = System.Threading.Tasks.Task.Run(() =>
+        var t2 = System.Threading.Tasks.Task.Run(
+            () =>
         {
-            barrier.SignalAndWait();
+            barrier.SignalAndWait(TestContext.CancellationToken);
             for (var i = 0; i < iterations; i++)
             {
                 service.UpdateSettings(s => s with { SingleClickActivates = true }, hotReload: false);
             }
-        });
+        },
+            TestContext.CancellationToken);
 
         System.Threading.Tasks.Task.WaitAll(t1, t2);
 
@@ -523,4 +530,6 @@ public class SettingsServiceTests
         Assert.IsTrue(service.Settings.ShowAppDetails, "ShowAppDetails lost — a stale snapshot overwrote it");
         Assert.IsTrue(service.Settings.SingleClickActivates, "SingleClickActivates lost — a stale snapshot overwrote it");
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

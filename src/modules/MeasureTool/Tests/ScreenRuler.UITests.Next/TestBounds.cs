@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ScreenRuler.UITests.Next;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class TestBounds : UITestBase
 {
@@ -57,9 +58,9 @@ public class TestBounds : UITestBase
             ruler.Find<Element>(By.AccessibilityId(TestHelper.CloseButtonId), 8000).Invoke(msPostAction: 0);
             Assert.IsTrue(original.WaitForExit(10000), "Close should act on the original toolbar.");
             Assert.IsFalse(additional.HasExited, "Closing the original toolbar must not close the other ruler.");
-            Assert.IsTrue(
-                WindowsFinder.ListByApp(additional.Id.ToString(CultureInfo.InvariantCulture))
-                    .Any(window => window.Hwnd == additionalWindow.WindowHandle),
+            Assert.Contains(
+                window => window.Hwnd == additionalWindow.WindowHandle,
+                WindowsFinder.ListByApp(additional.Id.ToString(CultureInfo.InvariantCulture)),
                 "The additional toolbar should remain visible.");
         }
         finally

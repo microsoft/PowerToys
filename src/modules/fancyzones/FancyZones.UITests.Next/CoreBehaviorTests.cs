@@ -14,6 +14,7 @@ namespace FancyZones.UITests;
 /// Focused backend workflows selected from the broader FancyZones manual checklist because they
 /// have durable one-monitor signals and do not duplicate editor-only coverage.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CoreBehaviorTests : UITestBase
 {
@@ -63,9 +64,8 @@ public class CoreBehaviorTests : UITestBase
         Assert.IsTrue(
             FancyZonesTestHelper.WaitForZonesOverlayHidden(2_000, requiredConsecutiveMatches: 10),
             "An excluded Explorer window should keep the zones overlay hidden.");
-        Assert.AreEqual(
-            0,
-            overlayWatcher.Events.Count,
+        Assert.IsEmpty(
+            overlayWatcher.Events,
             $"An excluded Explorer window triggered overlay events: {string.Join(", ", overlayWatcher.Events)}.");
 
         MouseHelper.LeftUp();

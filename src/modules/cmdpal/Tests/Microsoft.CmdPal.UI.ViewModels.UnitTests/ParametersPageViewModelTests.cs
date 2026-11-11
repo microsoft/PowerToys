@@ -13,6 +13,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class ParametersPageViewModelTests
 {

@@ -9,10 +9,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MouseUtils.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class MouseJumpTests : UITestBase
     {
-        [TestMethod("MouseUtils.MouseJump.EnableMouseJump")]
+        [TestMethod(DisplayName = "MouseUtils.MouseJump.EnableMouseJump")]
         [TestCategory("Mouse Utils #39")]
         [TestCategory("Mouse Utils #40")]
         [TestCategory("Mouse Utils #41")]
@@ -22,7 +23,7 @@ namespace MouseUtils.UITests
             LaunchFromSetting(true);
         }
 
-        [TestMethod("MouseUtils.MouseJump.EnableMouseJump2")]
+        [TestMethod(DisplayName = "MouseUtils.MouseJump.EnableMouseJump2")]
         [TestCategory("Mouse Utils #39")]
         [TestCategory("Mouse Utils #41")]
         [TestCategory("Mouse Utils #45")]
@@ -86,13 +87,13 @@ namespace MouseUtils.UITests
                 Session.SendKeys(Key.Win, Key.Shift, Key.Z);
                 VerifyWindowAppears();
 
-                Task.Delay(1000).Wait();
+                Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
                 // [TestCase] Enable Mouse Jump. Then - Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
                 foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseJumpToggle)).Toggle(false);
                 Session.MoveMouseTo(screenCenter.CenterX, screenCenter.CenterY - 300, 500, 1000);
                 Session.SendKeys(Key.Win, Key.Shift, Key.Z);
-                Task.Delay(500).Wait();
+                Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
                 VerifyWindowNotAppears();
             }
             else
@@ -100,10 +101,10 @@ namespace MouseUtils.UITests
                 Assert.Fail("Mouse Highlighter Custom not found.");
             }
 
-            Task.Delay(500).Wait();
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
         }
 
-        [TestMethod("MouseUtils.MouseJump.EnableMouseJump3")]
+        [TestMethod(DisplayName = "MouseUtils.MouseJump.EnableMouseJump3")]
         [TestCategory("Mouse Utils #40")]
         public void TestEnableMouseJump3()
         {
@@ -169,7 +170,7 @@ namespace MouseUtils.UITests
                 Assert.Fail("Mouse Highlighter Custom not found.");
             }
 
-            Task.Delay(500).Wait();
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
         }
 
         private void VerifyWindowAppears()
@@ -185,7 +186,7 @@ namespace MouseUtils.UITests
             var xy = Session.GetMousePosition();
 
             double distance = CalculateDistance(xy.Item1, xy.Item2, screenCenter.CenterX, screenCenter.CenterY);
-            Assert.IsTrue(distance <= 10, "Mouse Jump window should be opened and mouse should be moved to the center of the screen.");
+            Assert.IsLessThanOrEqualTo(10, distance, "Mouse Jump window should be opened and mouse should be moved to the center of the screen.");
         }
 
         private void VerifyWindowNotAppears()

@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class VisualAssertTests
 {
     [TestMethod]
@@ -63,7 +64,7 @@ public sealed class VisualAssertTests
         using var baseline = CreateSolid(32, 32, Color.White);
         using var actual = CreateSolid(32, 32, Color.Black);
 
-        Assert.IsTrue(VisualAssert.CalculateSimilarity(baseline, actual) < 1d);
+        Assert.IsLessThan(1d, VisualAssert.CalculateSimilarity(baseline, actual));
     }
 
     [TestMethod]
@@ -72,7 +73,7 @@ public sealed class VisualAssertTests
         using var baseline = CreateSolid(32, 32, Color.Black);
         using var actual = new Bitmap(32, 32, PixelFormat.Format32bppArgb);
 
-        Assert.IsTrue(VisualAssert.CalculateSimilarity(baseline, actual) < 1d);
+        Assert.IsLessThan(1d, VisualAssert.CalculateSimilarity(baseline, actual));
     }
 
     [TestMethod]
@@ -98,7 +99,7 @@ public sealed class VisualAssertTests
             }
         }
 
-        Assert.IsTrue(VisualAssert.CalculateSimilarity(baseline, actual) < 5d);
+        Assert.IsLessThan(5d, VisualAssert.CalculateSimilarity(baseline, actual));
     }
 
     [TestMethod]
@@ -112,7 +113,7 @@ public sealed class VisualAssertTests
         var similarity = VisualAssert.CalculateSimilarity(baseline, actual);
 
         Assert.IsTrue(VisualAssert.IsSimilar(similarity));
-        Assert.IsTrue(similarity < 100d, "Frame pixels must still affect the result; they are not cropped or masked.");
+        Assert.IsLessThan(100d, similarity, "Frame pixels must still affect the result; they are not cropped or masked.");
     }
 
     [TestMethod]
@@ -124,7 +125,7 @@ public sealed class VisualAssertTests
         var similarity = VisualAssert.CalculateSimilarity(baseline, actual);
 
         Assert.IsTrue(VisualAssert.IsSimilar(similarity));
-        Assert.IsTrue(similarity < 100d);
+        Assert.IsLessThan(100d, similarity);
     }
 
     [TestMethod]
@@ -134,7 +135,7 @@ public sealed class VisualAssertTests
         using var actual = CreateSolid(19, 11, Color.White);
         actual.SetPixel(18, 10, Color.Black);
 
-        Assert.IsTrue(VisualAssert.CalculateSimilarity(baseline, actual) < 100d);
+        Assert.IsLessThan(100d, VisualAssert.CalculateSimilarity(baseline, actual));
     }
 
     [TestMethod]

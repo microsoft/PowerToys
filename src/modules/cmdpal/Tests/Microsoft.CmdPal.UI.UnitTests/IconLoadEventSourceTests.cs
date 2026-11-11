@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class IconLoadEventSourceTests
@@ -97,52 +98,52 @@ public sealed class IconLoadEventSourceTests
         log.ShellImageListExtractionCompleted(11, 73, 74, 75, 76, 77);
         log.LoadWorkerReleased(11, 14, 3);
 
-        Assert.AreEqual(34, listener.Events.Count);
-        Assert.IsFalse(listener.Events.Any(e => e.EventId == 0), listener.GetEventSourceErrors());
+        Assert.HasCount(34, listener.Events);
+        Assert.DoesNotContain(e => e.EventId == 0, listener.Events, listener.GetEventSourceErrors());
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new object?[] { 11L, 12L, 13, 1.5 },
             listener.GetEvent(1).Payload!.ToArray());
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new object?[] { 11L, 32, true, 33L },
             listener.GetEvent(13).Payload!.ToArray());
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new object?[] { 11L, 12L, 42L, 43, "ListItem / SingleRow" },
             listener.GetEvent(19).Payload!.ToArray());
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new object?[] { 11L, 14L, 1, 47L, 48L, 49L, 4, 50L },
             listener.GetEvent(21).Payload!.ToArray());
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new object?[] { 11L, 58, 59L, 60L },
             listener.GetEvent(22).Payload!.ToArray());
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new object?[] { 11L, 1, 61L },
             listener.GetEvent(23).Payload!.ToArray());
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new object?[] { 11L, 62L },
             listener.GetEvent(24).Payload!.ToArray());
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new object?[] { 11L, 63, 64L },
             listener.GetEvent(25).Payload!.ToArray());
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new object?[] { 11L, 65, 66, 67L, 68L },
             listener.GetEvent(26).Payload!.ToArray());
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new object?[] { 11L, 14L, 52, 53, true, 54L },
             listener.GetEvent(35).Payload!.ToArray());
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new object?[] { 11L, 14L, 55, false, 56L },
             listener.GetEvent(36).Payload!.ToArray());
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new object?[] { 11L, 69L },
             listener.GetEvent(38).Payload!.ToArray());
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new object?[] { 11L, 70, 71, 72L },
             listener.GetEvent(39).Payload!.ToArray());
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new object?[] { 11L, 73, 74, 75, 76, 77L },
             listener.GetEvent(40).Payload!.ToArray());
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new object?[] { 11L, 14L, 3L },
             listener.GetEvent(41).Payload!.ToArray());
     }

@@ -8,6 +8,7 @@ using Forms = System.Windows.Forms;
 
 namespace Microsoft.PowerToys.ZoomIt.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [TestCategory("ZoomIt")]
 [DoNotParallelize]
@@ -46,8 +47,8 @@ public sealed class ZoomItFixtureTests
     [TestMethod]
     public void ShortcutParserPreservesSupportedKeys()
     {
-        CollectionAssert.AreEqual(new[] { Key.Ctrl, Key.Shift, Key.Num7 }, ZoomItUi.ParseShortcut("Demo", "Ctrl + Shift + 7"));
-        CollectionAssert.AreEqual(new[] { Key.LWin, Key.Alt, Key.F2 }, ZoomItUi.ParseShortcut("Zoom", "windows + alt + F2"));
+        Assert.AreSequenceEqual(new[] { Key.Ctrl, Key.Shift, Key.Num7 }, ZoomItUi.ParseShortcut("Demo", "Ctrl + Shift + 7"));
+        Assert.AreSequenceEqual(new[] { Key.LWin, Key.Alt, Key.F2 }, ZoomItUi.ParseShortcut("Zoom", "windows + alt + F2"));
     }
 
     [TestMethod]
@@ -56,8 +57,8 @@ public sealed class ZoomItFixtureTests
         const string card = "ZoomItDemoTypeShortcut";
         const string text = "Ctrl + UnsupportedKey";
         var error = Assert.ThrowsExactly<AssertFailedException>(() => ZoomItUi.ParseShortcut(card, text));
-        StringAssert.Contains(error.Message, card);
-        StringAssert.Contains(error.Message, text);
-        StringAssert.Contains(error.Message, "UnsupportedKey");
+        Assert.Contains(card, error.Message);
+        Assert.Contains(text, error.Message);
+        Assert.Contains("UnsupportedKey", error.Message);
     }
 }

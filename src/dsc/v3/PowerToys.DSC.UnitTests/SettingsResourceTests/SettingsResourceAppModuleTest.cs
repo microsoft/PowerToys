@@ -10,6 +10,7 @@ using PowerToys.DSC.DSCResources;
 namespace PowerToys.DSC.UnitTests.SettingsResourceTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class SettingsResourceAppModuleTest : SettingsResourceModuleTest<GeneralSettings>
 {
     public SettingsResourceAppModuleTest()

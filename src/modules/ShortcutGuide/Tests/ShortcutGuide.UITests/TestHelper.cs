@@ -68,8 +68,9 @@ internal static class TestHelper
         var keys = shortcutText.Split(" + ", StringSplitOptions.RemoveEmptyEntries)
             .Select(token => ParseKeyToken(token.Trim()))
             .ToArray();
-        Assert.IsTrue(
-            keys.Any(key => key is not (Key.LWin or Key.Ctrl or Key.Shift or Key.Alt)),
+        Assert.Contains(
+            key => key is not (Key.LWin or Key.Ctrl or Key.Shift or Key.Alt),
+            keys,
             $"The activation shortcut '{shortcutText}' has no main key.");
         Step(testBase, $"Activation shortcut: '{shortcutText}' [{string.Join(", ", keys)}].");
         return keys;

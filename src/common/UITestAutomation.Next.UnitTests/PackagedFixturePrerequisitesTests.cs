@@ -9,6 +9,7 @@ using Microsoft.Workspaces.UITests;
 namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class PackagedFixturePrerequisitesTests
 {
     [TestMethod]
@@ -18,8 +19,8 @@ public sealed class PackagedFixturePrerequisitesTests
         {
             var skipped = Assert.ThrowsExactly<AssertInconclusiveException>(
                 () => PackagedFixturePrerequisites.RequireSignature(path, isInPipeline: false));
-            StringAssert.Contains(skipped.Message, path);
-            StringAssert.Contains(skipped.Message, "doc\\devdocs\\modules\\workspaces.md");
+            Assert.Contains(path, skipped.Message);
+            Assert.Contains("doc\\devdocs\\modules\\workspaces.md", skipped.Message);
             Assert.ThrowsExactly<AssertFailedException>(
                 () => PackagedFixturePrerequisites.RequireSignature(path, isInPipeline: true));
         });

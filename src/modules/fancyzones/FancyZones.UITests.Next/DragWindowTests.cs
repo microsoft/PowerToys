@@ -39,6 +39,7 @@ namespace FancyZones.UITests;
 /// being clicked through the Settings page, which is both deterministic and locale independent.
 /// </para>
 /// </remarks>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class DragWindowTests : UITestBase
 {

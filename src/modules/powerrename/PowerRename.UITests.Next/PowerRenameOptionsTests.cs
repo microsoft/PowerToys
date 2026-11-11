@@ -28,7 +28,7 @@ public sealed partial class PowerRenameTests
 
     private static readonly string[] TextFormattingModes = { Uppercase, Lowercase, TitleCase, CapitalizeEachWord };
 
-    [TestMethod("PowerRename.Preview.SearchAndReplace")]
+    [TestMethod(DisplayName = "PowerRename.Preview.SearchAndReplace")]
     [TestCategory("PowerRename")]
     public void SearchAndReplaceUpdatesThePreview()
     {
@@ -47,7 +47,7 @@ public sealed partial class PowerRenameTests
         ApplyRenameAndAssertEntries(window, folder, "replaced.txt");
     }
 
-    [TestMethod("PowerRename.TextFormatting.MutuallyExclusive")]
+    [TestMethod(DisplayName = "PowerRename.TextFormatting.MutuallyExclusive")]
     [TestCategory("PowerRename")]
     public void TextFormattingModesAreMutuallyExclusive()
     {
@@ -68,7 +68,7 @@ public sealed partial class PowerRenameTests
         }
     }
 
-    [TestMethod("PowerRename.TextFormatting.Rename")]
+    [TestMethod(DisplayName = "PowerRename.TextFormatting.Rename")]
     [TestCategory("PowerRename")]
     [DataRow(Uppercase, "HELLO WORLD.TXT")]
     [DataRow(Lowercase, "hello world.txt")]
@@ -86,7 +86,7 @@ public sealed partial class PowerRenameTests
         ApplyRenameAndAssertEntries(window, folder, expectedName);
     }
 
-    [TestMethod("PowerRename.Exclude.FilesFoldersSubfolders")]
+    [TestMethod(DisplayName = "PowerRename.Exclude.FilesFoldersSubfolders")]
     [TestCategory("PowerRename")]
     public void ExcludingFilesFoldersAndSubfolderItemsFiltersTheRename()
     {
@@ -127,7 +127,7 @@ public sealed partial class PowerRenameTests
         WaitForRenamedCount(window, 0);
     }
 
-    [TestMethod("PowerRename.ApplyTo.Scope")]
+    [TestMethod(DisplayName = "PowerRename.ApplyTo.Scope")]
     [TestCategory("PowerRename")]
     [DataRow("RenamePartsFilenameAndExtension", "info.info")]
     [DataRow("RenamePartsFilenameOnly", "info.data")]
@@ -148,7 +148,7 @@ public sealed partial class PowerRenameTests
         ApplyRenameAndAssertEntries(window, folder, expectedName);
     }
 
-    [TestMethod("PowerRename.Enumerate.AdvancedCounter")]
+    [TestMethod(DisplayName = "PowerRename.Enumerate.AdvancedCounter")]
     [TestCategory("PowerRename")]
     public void EnumerateItemsHonoursAdvancedCounterSyntax()
     {
@@ -171,7 +171,7 @@ public sealed partial class PowerRenameTests
         ApplyRenameAndAssertEntries(window, folder, "item_0010.txt", "item_0012.txt", "item_0014.txt");
     }
 
-    [TestMethod("PowerRename.Search.CaseSensitive")]
+    [TestMethod(DisplayName = "PowerRename.Search.CaseSensitive")]
     [TestCategory("PowerRename")]
     public void CaseSensitiveSearchOnlyMatchesTheExactCasing()
     {
@@ -194,7 +194,7 @@ public sealed partial class PowerRenameTests
         ApplyRenameAndAssertEntries(window, folder, "match1.txt");
     }
 
-    [TestMethod("PowerRename.Search.MatchAllOccurrences")]
+    [TestMethod(DisplayName = "PowerRename.Search.MatchAllOccurrences")]
     [TestCategory("PowerRename")]
     public void MatchAllOccurrencesReplacesEveryMatch()
     {

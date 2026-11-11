@@ -8,6 +8,7 @@ using PowerToysExtension.Helpers;
 
 namespace Microsoft.CmdPal.Ext.PowerToys.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class PowerToysFallbackCommandItemTests
 {

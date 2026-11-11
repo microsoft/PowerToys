@@ -14,6 +14,7 @@ namespace PowerDisplay.UnitTests;
 /// that settings written before the feature existed deserialize to safe defaults without any
 /// migration step (the forward-compatibility promise made to the module owner).
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class LinkedBrightnessSettingsTests
 {
@@ -24,7 +25,7 @@ public class LinkedBrightnessSettingsTests
 
         Assert.IsFalse(properties.LinkedLevelsActive, "Linked brightness must default to off.");
         Assert.IsNotNull(properties.ExcludedFromSyncMonitorIds, "Exclusion list must never be null.");
-        Assert.AreEqual(0, properties.ExcludedFromSyncMonitorIds.Count, "Exclusion list must start empty.");
+        Assert.IsEmpty(properties.ExcludedFromSyncMonitorIds, "Exclusion list must start empty.");
     }
 
     [TestMethod]
@@ -46,7 +47,7 @@ public class LinkedBrightnessSettingsTests
         Assert.IsNotNull(properties);
         Assert.IsFalse(properties.LinkedLevelsActive);
         Assert.IsNotNull(properties.ExcludedFromSyncMonitorIds);
-        Assert.AreEqual(0, properties.ExcludedFromSyncMonitorIds.Count);
+        Assert.IsEmpty(properties.ExcludedFromSyncMonitorIds);
     }
 
     [TestMethod]
@@ -64,7 +65,7 @@ public class LinkedBrightnessSettingsTests
 
         Assert.IsNotNull(restored);
         Assert.IsTrue(restored.LinkedLevelsActive);
-        CollectionAssert.AreEqual(original.ExcludedFromSyncMonitorIds, restored.ExcludedFromSyncMonitorIds);
+        Assert.AreSequenceEqual(original.ExcludedFromSyncMonitorIds, restored.ExcludedFromSyncMonitorIds);
     }
 
     [TestMethod]
@@ -75,8 +76,8 @@ public class LinkedBrightnessSettingsTests
 
         var json = JsonSerializer.Serialize(properties);
 
-        StringAssert.Contains(json, "\"linked_levels_active\":true");
-        StringAssert.Contains(json, "\"excluded_from_sync_monitor_ids\"");
+        Assert.Contains("\"linked_levels_active\":true", json);
+        Assert.Contains("\"excluded_from_sync_monitor_ids\"", json);
     }
 
     [TestMethod]
@@ -88,9 +89,10 @@ public class LinkedBrightnessSettingsTests
         var properties = new PowerDisplayProperties();
         properties.ExcludedFromSyncMonitorIds.Add(@"\\?\DISPLAY#DELD1A8#5&abc&0&UID4357");
 
-        Assert.IsTrue(properties.ExcludedFromSyncMonitorIds.Contains(@"\\?\DISPLAY#DELD1A8#5&abc&0&UID4357"));
-        Assert.IsFalse(
-            properties.ExcludedFromSyncMonitorIds.Contains(@"\\?\DISPLAY#DELD1A8#5&abc&0&UID4358"),
+        Assert.Contains(@"\\?\DISPLAY#DELD1A8#5&abc&0&UID4357", properties.ExcludedFromSyncMonitorIds);
+        Assert.DoesNotContain(
+            @"\\?\DISPLAY#DELD1A8#5&abc&0&UID4358",
+            properties.ExcludedFromSyncMonitorIds,
             "A different physical port (UID) must not be treated as excluded.");
     }
 }

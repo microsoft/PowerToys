@@ -5,6 +5,7 @@ using FancyZonesEditor.Models;
 
 namespace UnitTestsFancyZonesEditor;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class DefaultLayoutsModelTests
 {
@@ -43,6 +44,6 @@ public class DefaultLayoutsModelTests
         var restoredLayouts = new Dictionary<MonitorConfigurationType, LayoutModel> { { MonitorConfigurationType.Horizontal, firstLayout }, { MonitorConfigurationType.Vertical, secondLayout } };
         defaultLayoutsModel.Restore(restoredLayouts);
 
-        CollectionAssert.AreEqual(defaultLayoutsModel.Layouts, restoredLayouts);
+        Assert.AreSequenceEqual(defaultLayoutsModel.Layouts, restoredLayouts);
     }
 }

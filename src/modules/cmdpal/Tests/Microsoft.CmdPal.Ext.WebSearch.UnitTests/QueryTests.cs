@@ -16,6 +16,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.WebSearch.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class QueryTests : CommandPaletteUnitTestBase
 {
@@ -32,16 +33,16 @@ public class QueryTests : CommandPaletteUnitTestBase
 
         // Act
         page.UpdateSearchText(string.Empty, query);
-        await Task.Delay(1000);
+        await Task.Delay(1000, TestContext.CancellationToken);
 
         var listItem = page.GetItems();
         Assert.IsNotNull(listItem);
-        Assert.AreEqual(1, listItem.Length);
+        Assert.HasCount(1, listItem);
 
         var expectedItem = listItem.FirstOrDefault();
 
         Assert.IsNotNull(expectedItem);
-        Assert.IsTrue(expectedItem.Subtitle.Contains("Search the web in"), $"Expected \"search the web in chrome/edge\" but got {expectedItem.Subtitle}");
+        Assert.Contains("Search the web in", expectedItem.Subtitle, $"Expected \"search the web in chrome/edge\" but got {expectedItem.Subtitle}");
         Assert.AreEqual(query, expectedItem.Title);
     }
 
@@ -62,13 +63,13 @@ public class QueryTests : CommandPaletteUnitTestBase
 
         // Act
         page.UpdateSearchText("abcdef", string.Empty);
-        await Task.Delay(1000);
+        await Task.Delay(1000, TestContext.CancellationToken);
 
         var listItem = page.GetItems();
 
         // Assert
         Assert.IsNotNull(listItem);
-        Assert.AreEqual(2, listItem.Length);
+        Assert.HasCount(2, listItem);
 
         foreach (var item in listItem)
         {
@@ -100,7 +101,7 @@ public class QueryTests : CommandPaletteUnitTestBase
 
         // Act
         page.UpdateSearchText("abcdef", string.Empty);
-        await Task.Delay(1000);
+        await Task.Delay(1000, TestContext.CancellationToken);
 
         var listItem = page.GetItems();
 
@@ -108,7 +109,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         Assert.IsNotNull(listItem);
 
         // Make sure only load five item.
-        Assert.AreEqual(5, listItem.Length);
+        Assert.HasCount(5, listItem);
     }
 
     [TestMethod]
@@ -132,7 +133,7 @@ public class QueryTests : CommandPaletteUnitTestBase
 
         // Act
         page.UpdateSearchText("abcdef", string.Empty);
-        await Task.Delay(1000);
+        await Task.Delay(1000, TestContext.CancellationToken);
 
         var listItem = page.GetItems();
 
@@ -140,6 +141,8 @@ public class QueryTests : CommandPaletteUnitTestBase
         Assert.IsNotNull(listItem);
 
         // Make sure only load five item.
-        Assert.AreEqual(0, listItem.Length);
+        Assert.IsEmpty(listItem);
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

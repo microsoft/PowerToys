@@ -17,6 +17,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace ViewModelTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class General
     {
@@ -81,7 +82,7 @@ namespace ViewModelTests
 
             viewModel.NotifyAllBackupAndRestoreProperties();
 
-            CollectionAssert.AreEquivalent(
+            Assert.AreSequenceEqual(
                 new[]
                 {
                     nameof(GeneralViewModel.LastSettingsBackupDate),
@@ -92,8 +93,9 @@ namespace ViewModelTests
                     nameof(GeneralViewModel.BackupRestoreMessageSeverity),
                     nameof(GeneralViewModel.SettingsBackupRestoreMessageVisible),
                 },
-                notifications);
-            Assert.AreEqual(0, sentMessages.Count);
+                notifications,
+                SequenceOrder.InAnyOrder);
+            Assert.IsEmpty(sentMessages);
             Assert.AreEqual(before, settings.ToJsonString());
         }
 
@@ -127,9 +129,9 @@ namespace ViewModelTests
             viewModel.IsBugReportRunning = true;
             viewModel.HideBackupAndRestoreMessageArea();
 
-            CollectionAssert.Contains(notifications, nameof(GeneralViewModel.IsBugReportRunning));
-            CollectionAssert.Contains(notifications, nameof(GeneralViewModel.SettingsBackupRestoreMessageVisible));
-            Assert.AreEqual(0, sentMessages.Count);
+            Assert.Contains(nameof(GeneralViewModel.IsBugReportRunning), notifications);
+            Assert.Contains(nameof(GeneralViewModel.SettingsBackupRestoreMessageVisible), notifications);
+            Assert.IsEmpty(sentMessages);
             Assert.AreEqual(before, settings.ToJsonString());
         }
 

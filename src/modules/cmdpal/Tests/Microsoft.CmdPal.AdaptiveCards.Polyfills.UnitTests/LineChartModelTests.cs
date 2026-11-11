@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class LineChartModelTests
 {
@@ -31,7 +32,7 @@ public class LineChartModelTests
             """,
             warnings);
 
-        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+        Assert.IsEmpty(warnings, string.Join(", ", warnings));
         Assert.AreEqual("CPU", model.Title);
         Assert.IsTrue(model.ShowTitle);
         Assert.AreEqual("60 seconds", model.XAxisTitle);
@@ -42,7 +43,7 @@ public class LineChartModelTests
         Assert.AreEqual(100d, model.YMax);
         Assert.IsFalse(model.ShowLegend);
         Assert.IsFalse(model.ShowsLegend);
-        Assert.AreEqual(1, model.Series.Count);
+        Assert.HasCount(1, model.Series);
         Assert.AreEqual("Utilization", model.Series[0].Legend);
         Assert.AreEqual("good", model.Series[0].Color);
         Assert.AreEqual(2.5, model.Series[0].Points[1].Y);
@@ -69,7 +70,7 @@ public class LineChartModelTests
             """{ "data": [{ "values": [{ "y": 1 }] }], "fill": "gradient", "curve": "linear", "style": "sparkline", "valueFormat": "percentage", "minHeight": "120px" }""",
             warnings);
 
-        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+        Assert.IsEmpty(warnings, string.Join(", ", warnings));
         Assert.AreEqual(plain.ShowTitle, extended.ShowTitle);
         Assert.AreEqual(plain.ShowLegend, extended.ShowLegend);
         Assert.AreEqual(plain.Series[0].Points[0], extended.Series[0].Points[0]);
@@ -81,9 +82,9 @@ public class LineChartModelTests
         var warnings = new List<string>();
         var model = LineChartModel.Parse("""{ "data": [{ "values": [{}, { "x": "Feb" }, { "y": 4 }] }] }""", warnings);
 
-        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+        Assert.IsEmpty(warnings, string.Join(", ", warnings));
         var points = model.Series[0].Points;
-        Assert.AreEqual(3, points.Count);
+        Assert.HasCount(3, points);
         Assert.AreEqual(0d, points[0].Y);
         Assert.AreEqual(0d, points[1].Y);
         Assert.AreEqual(4d, points[2].Y);
@@ -95,9 +96,9 @@ public class LineChartModelTests
         var warnings = new List<string>();
         var model = LineChartModel.Parse("""{ "data": [{ "values": [{ "y": null }, 7, { "y": 3 }] }] }""", warnings);
 
-        Assert.AreEqual(2, warnings.Count, string.Join(", ", warnings));
+        Assert.HasCount(2, warnings, string.Join(", ", warnings));
         var points = model.Series[0].Points;
-        Assert.AreEqual(2, points.Count);
+        Assert.HasCount(2, points);
         Assert.AreEqual(0d, points[0].Y);
         Assert.AreEqual(3d, points[1].Y);
     }
@@ -147,7 +148,7 @@ public class LineChartModelTests
 
         LineChartModel.Parse(json, warnings);
 
-        Assert.IsTrue(warnings.Count > 0);
+        Assert.IsNotEmpty(warnings);
     }
 
     [TestMethod]
@@ -158,7 +159,7 @@ public class LineChartModelTests
         var model = LineChartModel.Parse("{ not json", warnings);
 
         Assert.AreSame(LineChartModel.Empty, model);
-        Assert.AreEqual(1, warnings.Count);
+        Assert.HasCount(1, warnings);
     }
 
     [TestMethod]

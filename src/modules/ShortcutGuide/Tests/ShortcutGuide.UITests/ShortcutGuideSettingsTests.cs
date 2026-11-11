@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.ShortcutGuide.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ShortcutGuideSettingsTests : UITestBase
 {

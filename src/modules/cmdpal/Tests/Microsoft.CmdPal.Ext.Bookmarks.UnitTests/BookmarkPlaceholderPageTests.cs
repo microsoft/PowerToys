@@ -16,6 +16,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class BookmarkPlaceholderPageTests
 {
@@ -32,7 +33,7 @@ public sealed class BookmarkPlaceholderPageTests
         var result = InvokeLaunch(page);
 
         Assert.AreEqual(CommandResultKind.Dismiss, result.Kind);
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             ClearedPlaceholderValues,
             parameters.Select(parameter => parameter.Text).ToArray());
         Assert.AreEqual(string.Empty, page.Command.Subtitle);
@@ -49,7 +50,7 @@ public sealed class BookmarkPlaceholderPageTests
         var result = InvokeLaunch(page);
 
         Assert.AreEqual(CommandResultKind.KeepOpen, result.Kind);
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             PopulatedPlaceholderValues,
             parameters.Select(parameter => parameter.Text).ToArray());
         Assert.AreEqual(expectedSubtitle, page.Command.Subtitle);
@@ -68,11 +69,11 @@ public sealed class BookmarkPlaceholderPageTests
     private static StringParameterRun[] PopulatePlaceholderValues(BookmarkPlaceholderPage page)
     {
         var parameterOccurrences = page.Parameters.OfType<StringParameterRun>().ToArray();
-        Assert.AreEqual(3, parameterOccurrences.Length);
+        Assert.HasCount(3, parameterOccurrences);
         Assert.AreSame(parameterOccurrences[0], parameterOccurrences[2]);
 
         var parameters = parameterOccurrences.Distinct().ToArray();
-        Assert.AreEqual(2, parameters.Length);
+        Assert.HasCount(2, parameters);
         parameters[0].Text = "42";
         parameters[1].Text = "PowerToys";
         return parameters;

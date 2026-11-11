@@ -15,6 +15,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class MainListPageCacheTests
 {
@@ -124,16 +125,16 @@ public sealed class MainListPageCacheTests
 
             settings = settings.TryPinCommand(ProviderId, second.Id);
             commandManager.RebuildPinnedCache();
-            var newerRebuild = await Task.Run(page.GetItems).WaitAsync(TimeSpan.FromSeconds(5));
+            var newerRebuild = await Task.Run(page.GetItems).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
-            Assert.AreEqual(3, newerRebuild.Length);
+            Assert.HasCount(3, newerRebuild);
             Assert.AreSame(first, newerRebuild[1]);
             Assert.AreSame(second, newerRebuild[2]);
 
             providerContext.ContinueRead();
-            var olderRebuild = await rebuild.WaitAsync(TimeSpan.FromSeconds(5));
+            var olderRebuild = await rebuild.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
-            Assert.AreEqual(3, olderRebuild.Length);
+            Assert.HasCount(3, olderRebuild);
             Assert.AreSame(first, olderRebuild[1]);
             Assert.AreSame(second, olderRebuild[2]);
         }
@@ -196,13 +197,13 @@ public sealed class MainListPageCacheTests
 
             var invalidatedItems = page.GetItems();
             Assert.AreEqual(readsBeforeRebuild + 1, providerContext.ReadCount);
-            Assert.AreEqual(2, invalidatedItems.Length);
+            Assert.HasCount(2, invalidatedItems);
             Assert.AreEqual(Resources.home_sections_commands_title, invalidatedItems[0].Title);
             Assert.AreSame(command, invalidatedItems[1]);
 
             var retriedItems = page.GetItems();
             Assert.AreEqual(readsBeforeRebuild + 2, providerContext.ReadCount);
-            Assert.AreEqual(2, retriedItems.Length);
+            Assert.HasCount(2, retriedItems);
             Assert.AreEqual(Resources.home_sections_pinned_title, retriedItems[0].Title);
             Assert.AreSame(command, retriedItems[1]);
 
@@ -238,4 +239,6 @@ public sealed class MainListPageCacheTests
             DefaultContextMenuFactory.Instance);
         return topLevel;
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

@@ -18,6 +18,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class PageViewModelTests
 {

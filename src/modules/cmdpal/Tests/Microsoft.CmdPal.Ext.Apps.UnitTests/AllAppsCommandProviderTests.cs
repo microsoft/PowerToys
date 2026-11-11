@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class AllAppsCommandProviderTests : AppsTestBase
 {
@@ -20,7 +21,7 @@ public class AllAppsCommandProviderTests : AppsTestBase
 
         // Assert
         Assert.IsNotNull(provider.DisplayName);
-        Assert.IsTrue(provider.DisplayName.Length > 0);
+        Assert.IsGreaterThan(0, provider.DisplayName.Length);
     }
 
     [TestMethod]
@@ -44,7 +45,7 @@ public class AllAppsCommandProviderTests : AppsTestBase
 
         // Assert
         Assert.IsNotNull(commands);
-        Assert.IsTrue(commands.Length > 0);
+        Assert.IsNotEmpty(commands);
     }
 
     [TestMethod]
@@ -114,6 +115,6 @@ public class AllAppsCommandProviderTests : AppsTestBase
 
         // Assert
         Assert.IsNotNull(commands);
-        Assert.IsTrue(commands.Length >= 1); // At least the list item should be present
+        Assert.IsGreaterThanOrEqualTo(1, commands.Length); // At least the list item should be present
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ColorPicker.UnitTests.Settings
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class UserSettingsTests
     {
@@ -21,9 +22,9 @@ namespace ColorPicker.UnitTests.Settings
         public void Properties_serialize_with_lowercase_keys()
         {
             var json = JsonSerializer.Serialize(new ColorPickerProperties());
-            StringAssert.Contains(json, "\"showcolorname\"");
-            StringAssert.Contains(json, "\"copiedcolorrepresentation\"");
-            StringAssert.Contains(json, "\"changecursor\"");
+            Assert.Contains("\"showcolorname\"", json);
+            Assert.Contains("\"copiedcolorrepresentation\"", json);
+            Assert.Contains("\"changecursor\"", json);
         }
     }
 }

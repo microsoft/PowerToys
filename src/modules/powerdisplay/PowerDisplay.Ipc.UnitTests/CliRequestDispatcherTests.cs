@@ -20,6 +20,7 @@ namespace PowerDisplay.Ipc.UnitTests;
 /// Unit tests for <see cref="CliRequestDispatcher.BuildResponseAsync"/>.
 /// Tests drive the dispatcher directly, without the WinUI host adapter.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CliRequestDispatcherTests
 {
@@ -81,12 +82,12 @@ public class CliRequestDispatcherTests
     {
         var envelope = MakeEnvelope(CliCommandNames.List);
 
-        var json = await Dispatch(envelope, monitors: new[] { MakeMon(1, "A") });
+        var json = await Dispatch(envelope, monitors: new[] { MakeMon(1, "A") }, ct: TestContext.CancellationToken);
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliListResult);
         Assert.IsNotNull(result, "should deserialize to CliListResult");
         Assert.AreEqual("list", result.Command);
-        Assert.AreEqual(1, result.Monitors.Count);
+        Assert.HasCount(1, result.Monitors);
     }
 
     // ─── get command ──────────────────────────────────────────────────────────
@@ -99,12 +100,12 @@ public class CliRequestDispatcherTests
             Get = new GetRequest { MonitorNumber = null, MonitorId = null },
         };
 
-        var json = await Dispatch(envelope, monitors: new[] { MakeMon(1, "A"), MakeMon(2, "B") });
+        var json = await Dispatch(envelope, monitors: new[] { MakeMon(1, "A"), MakeMon(2, "B") }, ct: TestContext.CancellationToken);
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliGetResult);
         Assert.IsNotNull(result, "should deserialize to CliGetResult");
         Assert.AreEqual("get", result.Command);
-        Assert.AreEqual(2, result.Monitors.Count);
+        Assert.HasCount(2, result.Monitors);
     }
 
     [TestMethod]
@@ -116,7 +117,7 @@ public class CliRequestDispatcherTests
             Get = new GetRequest { MonitorNumber = 99 },
         };
 
-        var json = await Dispatch(envelope, monitors: new[] { MakeMon(1, "A") });
+        var json = await Dispatch(envelope, monitors: new[] { MakeMon(1, "A") }, ct: TestContext.CancellationToken);
 
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
@@ -140,7 +141,7 @@ public class CliRequestDispatcherTests
             },
         };
 
-        var json = await Dispatch(envelope, monitors: new[] { mon });
+        var json = await Dispatch(envelope, monitors: new[] { mon }, ct: TestContext.CancellationToken);
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliSetResult);
         Assert.IsNotNull(result, "should deserialize to CliSetResult");
@@ -175,7 +176,7 @@ public class CliRequestDispatcherTests
             Set = new SetRequest { MonitorNumber = 1, Setting = CliSettingNames.InputSource, RawValue = "0x12" },
         };
 
-        var json = await Dispatch(envelope, monitors: new[] { mon }, customMappings: mappings);
+        var json = await Dispatch(envelope, monitors: new[] { mon }, customMappings: mappings, ct: TestContext.CancellationToken);
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliSetResult);
         Assert.IsNotNull(result);
@@ -192,7 +193,7 @@ public class CliRequestDispatcherTests
             Set = null,
         };
 
-        var json = await Dispatch(envelope);
+        var json = await Dispatch(envelope, ct: TestContext.CancellationToken);
 
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
@@ -236,7 +237,7 @@ public class CliRequestDispatcherTests
             Capabilities = new CapabilitiesRequest { MonitorNumber = null, MonitorId = null },
         };
 
-        var json = await Dispatch(envelope);
+        var json = await Dispatch(envelope, ct: TestContext.CancellationToken);
 
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
@@ -253,7 +254,7 @@ public class CliRequestDispatcherTests
             Capabilities = new CapabilitiesRequest { MonitorNumber = 1 },
         };
 
-        var json = await Dispatch(envelope, monitors: new[] { mon });
+        var json = await Dispatch(envelope, monitors: new[] { mon }, ct: TestContext.CancellationToken);
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliCapabilitiesResult);
         Assert.IsNotNull(result, "should deserialize to CliCapabilitiesResult");
@@ -279,11 +280,11 @@ public class CliRequestDispatcherTests
             Capabilities = new CapabilitiesRequest { MonitorNumber = 1, SettingFilter = "input-source" },
         };
 
-        var json = await Dispatch(envelope, monitors: new[] { mon });
+        var json = await Dispatch(envelope, monitors: new[] { mon }, ct: TestContext.CancellationToken);
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliCapabilitiesResult);
         Assert.IsNotNull(result);
-        Assert.AreEqual(1, result!.VcpCodes.Count);
+        Assert.HasCount(1, result!.VcpCodes);
         Assert.AreEqual("0x60", result.VcpCodes[0].Code);
     }
 
@@ -300,12 +301,12 @@ public class CliRequestDispatcherTests
         };
         var envelope = MakeEnvelope(CliCommandNames.Profiles);
 
-        var json = await Dispatch(envelope, profiles: profiles);
+        var json = await Dispatch(envelope, profiles: profiles, ct: TestContext.CancellationToken);
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliProfileListResult);
         Assert.IsNotNull(result, "should deserialize to CliProfileListResult");
         Assert.AreEqual("profiles", result.Command);
-        Assert.AreEqual(1, result.Profiles.Count);
+        Assert.HasCount(1, result.Profiles);
         Assert.AreEqual("Night", result.Profiles[0].Name);
     }
 
@@ -321,11 +322,11 @@ public class CliRequestDispatcherTests
             },
         };
 
-        var json = await Dispatch(MakeEnvelope(CliCommandNames.Profiles), profiles: profiles);
+        var json = await Dispatch(MakeEnvelope(CliCommandNames.Profiles), profiles: profiles, ct: TestContext.CancellationToken);
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliProfileListResult);
         Assert.IsNotNull(result);
-        Assert.AreEqual(1, result.Profiles.Count);
+        Assert.HasCount(1, result.Profiles);
         Assert.AreEqual(2, result.Profiles[0].Id);
     }
 
@@ -342,7 +343,7 @@ public class CliRequestDispatcherTests
             ApplyProfile = new ApplyProfileRequest { ProfileId = 1 },
         };
 
-        var json = await Dispatch(envelope, applyProfile: applyFn);
+        var json = await Dispatch(envelope, applyProfile: applyFn, ct: TestContext.CancellationToken);
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliApplyProfileResult);
         Assert.IsNotNull(result, "should deserialize to CliApplyProfileResult");
@@ -373,7 +374,7 @@ public class CliRequestDispatcherTests
             ApplyProfile = new ApplyProfileRequest { ProfileId = 1 },
         };
 
-        var json = await Dispatch(envelope, applyProfile: applyFn, loadProfilesAsync: loadProfilesAsync);
+        var json = await Dispatch(envelope, applyProfile: applyFn, loadProfilesAsync: loadProfilesAsync, ct: TestContext.CancellationToken);
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliApplyProfileResult);
         Assert.IsNotNull(result, "should deserialize to CliApplyProfileResult");
@@ -393,7 +394,7 @@ public class CliRequestDispatcherTests
             ApplyProfile = new ApplyProfileRequest { ProfileId = 99 },
         };
 
-        var json = await Dispatch(envelope, applyProfile: applyFn);
+        var json = await Dispatch(envelope, applyProfile: applyFn, ct: TestContext.CancellationToken);
 
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
@@ -413,7 +414,7 @@ public class CliRequestDispatcherTests
             ApplyProfile = new ApplyProfileRequest { ProfileId = 0 },
         };
 
-        var json = await Dispatch(envelope);
+        var json = await Dispatch(envelope, ct: TestContext.CancellationToken);
 
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
@@ -432,7 +433,7 @@ public class CliRequestDispatcherTests
             ApplyProfile = new ApplyProfileRequest { ProfileId = 99 },
         };
 
-        var json = await Dispatch(envelope, applyProfile: applyFn);
+        var json = await Dispatch(envelope, applyProfile: applyFn, ct: TestContext.CancellationToken);
 
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
@@ -452,7 +453,7 @@ public class CliRequestDispatcherTests
             ApplyProfile = new ApplyProfileRequest { ProfileId = 0 },
         };
 
-        var json = await Dispatch(envelope, applyProfile: applyFn);
+        var json = await Dispatch(envelope, applyProfile: applyFn, ct: TestContext.CancellationToken);
 
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
@@ -470,7 +471,7 @@ public class CliRequestDispatcherTests
             ApplyProfile = new ApplyProfileRequest { ProfileId = 3 },
         };
 
-        var json = await Dispatch(envelope, applyProfile: applyFn);
+        var json = await Dispatch(envelope, applyProfile: applyFn, ct: TestContext.CancellationToken);
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliApplyProfileResult);
         Assert.IsNotNull(result, "should deserialize to CliApplyProfileResult");
@@ -489,7 +490,7 @@ public class CliRequestDispatcherTests
             Adjust = new AdjustRequest { MonitorNumber = 1, Setting = "brightness", Step = 10 },
         };
 
-        var json = await Dispatch(envelope, monitors: new[] { MakeMon() });
+        var json = await Dispatch(envelope, monitors: new[] { MakeMon() }, ct: TestContext.CancellationToken);
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliSetResult);
         Assert.IsNotNull(result, "should deserialize to CliSetResult");
@@ -506,7 +507,7 @@ public class CliRequestDispatcherTests
             Adjust = new AdjustRequest { MonitorNumber = 1, Setting = "brightness", Step = null },
         };
 
-        var json = await Dispatch(envelope, monitors: new[] { MakeMon() }, defaultStep: 5);
+        var json = await Dispatch(envelope, monitors: new[] { MakeMon() }, defaultStep: 5, ct: TestContext.CancellationToken);
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliSetResult);
         Assert.IsNotNull(result);
@@ -518,7 +519,7 @@ public class CliRequestDispatcherTests
     {
         var envelope = new CliRequestEnvelope { Command = CliCommandNames.Up, Adjust = null };
 
-        var json = await Dispatch(envelope);
+        var json = await Dispatch(envelope, ct: TestContext.CancellationToken);
 
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error);
@@ -534,7 +535,7 @@ public class CliRequestDispatcherTests
         // (exit 9). The offending command name is echoed back in the Command field.
         var envelope = MakeEnvelope("does-not-exist");
 
-        var json = await Dispatch(envelope);
+        var json = await Dispatch(envelope, ct: TestContext.CancellationToken);
 
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
@@ -542,4 +543,6 @@ public class CliRequestDispatcherTests
         Assert.AreEqual(CliExitCodes.ArgumentError, error.Error.ExitCode);
         Assert.AreEqual("does-not-exist", error.Command);
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

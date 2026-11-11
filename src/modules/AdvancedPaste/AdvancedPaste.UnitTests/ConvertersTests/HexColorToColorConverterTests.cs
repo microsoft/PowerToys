@@ -9,6 +9,7 @@ using Windows.UI;
 namespace AdvancedPaste.UnitTests.ConvertersTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class HexColorToColorConverterTests
 {
     [TestMethod]

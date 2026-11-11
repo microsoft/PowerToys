@@ -19,6 +19,7 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ItemActionControllerTests
 {

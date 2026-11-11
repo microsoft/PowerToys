@@ -11,6 +11,7 @@ using MouseWithoutBorders.Core;
 
 namespace MouseWithoutBorders.UnitTests.Core;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class EncryptionTests
 {
@@ -27,7 +28,7 @@ public sealed class EncryptionTests
         Encryption.MyKey = TestKey;
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("mwb-dpapi:v1:AQID", false)]
     [DataRow(" MWB-DPAPI:v2:AQID ", false)]
     [DataRow("mwb- dpapi:v1:AQID", false)]
@@ -56,7 +57,7 @@ public sealed class EncryptionTests
         var wire = Encrypt(plainText);
         var decrypted = Decrypt(wire, plainText.Length);
 
-        CollectionAssert.AreEqual(plainText, decrypted);
+        Assert.AreSequenceEqual(plainText, decrypted);
     }
 
     [TestMethod]
@@ -70,7 +71,7 @@ public sealed class EncryptionTests
         // A fresh random salt + IV is generated for every stream, so identical plaintext
         // must never produce identical bytes on the wire. This guards against regressing
         // to a fixed salt / IV (MSRC 118042).
-        CollectionAssert.AreNotEqual(wire1, wire2);
+        Assert.AreNotSequenceEqual(wire1, wire2);
     }
 
     [TestMethod]
@@ -81,7 +82,7 @@ public sealed class EncryptionTests
         var header1 = Encrypt(plainText)[..HeaderLength];
         var header2 = Encrypt(plainText)[..HeaderLength];
 
-        CollectionAssert.AreNotEqual(header1, header2);
+        Assert.AreNotSequenceEqual(header1, header2);
     }
 
     private static byte[] Encrypt(byte[] plainText)

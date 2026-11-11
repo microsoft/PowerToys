@@ -83,8 +83,9 @@ internal static class PowerAccentTestHelper
             EnglishUnitedStatesLanguageId,
             languageId,
             $"Quick Accent UI tests require the en-US keyboard layout (0x0409), but the active layout is 0x{languageId:X4}.");
-        Assert.IsFalse(
-            (GetKeyState(VkCapital) & 1) != 0,
+        Assert.AreEqual(
+            0,
+            GetKeyState(VkCapital) & 1,
             "Quick Accent UI tests require Caps Lock to be off because raw virtual-key input is asserted as lowercase text.");
     }
 
@@ -554,7 +555,7 @@ internal static class PowerAccentTestHelper
             .Select(character => (Character: character, Item: FindCharacterItem(toolbar, character)))
             .ToList();
         var missing = items.Where(item => item.Item is null).Select(item => item.Character).ToList();
-        Assert.AreEqual(0, missing.Count, $"Quick Accent toolbar was missing expected characters: {string.Join(", ", missing)}");
+        Assert.IsEmpty(missing, $"Quick Accent toolbar was missing expected characters: {string.Join(", ", missing)}");
 
         return items
             .OrderBy(item => item.Item!.X)
@@ -565,7 +566,7 @@ internal static class PowerAccentTestHelper
     internal static double MeasureCharacterListHeightDip(UITestBase testBase, Session toolbar)
     {
         var dpiScale = GetDpiForWindow(new IntPtr(toolbar.WindowHandle)) / 96d;
-        Assert.IsTrue(dpiScale > 0, "Could not determine Quick Accent window DPI.");
+        Assert.IsGreaterThan(0, dpiScale, "Could not determine Quick Accent window DPI.");
         var previous = default((int X, int Y, int Width, int Height)?);
         var result = WaitHelper.WaitForStable(
             () => toolbar.Find<Element>(By.AccessibilityId("QuickAccentCharacterList"), 1_000),
@@ -707,13 +708,15 @@ internal static class PowerAccentTestHelper
         var horizontalFailure = $"Toolbar horizontal {horizontalAnchor} coordinate was {bounds.Left}; " +
                                 $"expected {horizontalExpected} +/- {tolerance}. Visible bounds: {bounds}; " +
                                 $"character list width={characterList.Width}; work area={workArea}.";
-        Assert.IsTrue(
-            Math.Abs(bounds.Left - horizontalExpected) <= tolerance,
+        Assert.IsLessThanOrEqualTo(
+            tolerance,
+            Math.Abs(bounds.Left - horizontalExpected),
             horizontalFailure);
         var verticalFailure = $"Toolbar vertical {verticalAnchor} coordinate was {verticalActual}; " +
                               $"expected {verticalExpected} +/- {tolerance}. Visible bounds: {bounds}; work area={workArea}.";
-        Assert.IsTrue(
-            Math.Abs(verticalActual - verticalExpected) <= tolerance,
+        Assert.IsLessThanOrEqualTo(
+            tolerance,
+            Math.Abs(verticalActual - verticalExpected),
             verticalFailure);
     }
 

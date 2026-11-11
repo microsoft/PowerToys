@@ -2,7 +2,7 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-    <MSTestVersion>3.8.3</MSTestVersion>
+    <MSTestVersion>4.5.2</MSTestVersion>
     <!-- Update this when global.json changes. -->
     <DotNetRuntimePackageVersion>10.0.14</DotNetRuntimePackageVersion>
   </PropertyGroup>

@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ProcessCpuSamplerTests
 {
@@ -25,7 +26,7 @@ public class ProcessCpuSamplerTests
             processorCount: 2,
             count: 5);
 
-        Assert.AreEqual(3, ranked.Length);
+        Assert.HasCount(3, ranked);
         Assert.AreEqual("devenv", ranked[0].Name);
         Assert.AreEqual(20f, ranked[0].Percent, 1e-4);
         Assert.IsTrue(string.Equals("chrome", ranked[1].Name, StringComparison.OrdinalIgnoreCase));
@@ -38,7 +39,7 @@ public class ProcessCpuSamplerTests
     {
         var ranked = ProcessCpuSampler.Rank([("a", 3), ("b", 2), ("c", 1)], elapsedTicks: 10, processorCount: 1, count: 2);
 
-        Assert.AreEqual(2, ranked.Length);
+        Assert.HasCount(2, ranked);
         Assert.AreEqual("a", ranked[0].Name);
         Assert.AreEqual("b", ranked[1].Name);
     }
@@ -46,7 +47,7 @@ public class ProcessCpuSamplerTests
     [TestMethod]
     public void NoElapsedTimeMeansNoProcesses()
     {
-        Assert.AreEqual(0, ProcessCpuSampler.Rank([("a", 3)], elapsedTicks: 0, processorCount: 4, count: 5).Length);
+        Assert.IsEmpty(ProcessCpuSampler.Rank([("a", 3)], elapsedTicks: 0, processorCount: 4, count: 5));
     }
 
     [TestMethod]
@@ -54,7 +55,7 @@ public class ProcessCpuSamplerTests
     {
         var sampler = new ProcessCpuSampler();
 
-        Assert.AreEqual(0, sampler.Sample(5).Length);
+        Assert.IsEmpty(sampler.Sample(5));
 
         // Keep this process busy so the second snapshot has something to report.
         var deadline = DateTime.UtcNow.AddMilliseconds(200);
@@ -64,8 +65,8 @@ public class ProcessCpuSamplerTests
         }
 
         var processes = sampler.Sample(5);
-        Assert.IsTrue(processes.Length > 0);
-        Assert.IsTrue(processes[0].Percent > 0);
+        Assert.IsNotEmpty(processes);
+        Assert.IsGreaterThan(0, processes[0].Percent);
     }
 
     [TestMethod]
@@ -87,7 +88,7 @@ public class ProcessCpuSamplerTests
 
         ProcessCpuSampler.PruneHistory(history, now);
 
-        Assert.AreEqual(3, history.Count);
+        Assert.HasCount(3, history);
         Assert.AreEqual(SnapshotFrom(now, 3.5).Timestamp, history[0].Timestamp);
     }
 
@@ -99,7 +100,7 @@ public class ProcessCpuSamplerTests
 
         ProcessCpuSampler.PruneHistory(history, now);
 
-        Assert.AreEqual(2, history.Count);
+        Assert.HasCount(2, history);
     }
 
     [TestMethod]
@@ -110,7 +111,7 @@ public class ProcessCpuSamplerTests
 
         ProcessCpuSampler.PruneHistory(history, now);
 
-        Assert.AreEqual(0, history.Count);
+        Assert.IsEmpty(history);
     }
 
     [TestMethod]
@@ -121,7 +122,7 @@ public class ProcessCpuSamplerTests
 
         sampler.Reset();
 
-        Assert.AreEqual(0, sampler.Sample(5).Length);
+        Assert.IsEmpty(sampler.Sample(5));
     }
 
     private static ProcessCpuSampler.Snapshot SnapshotFrom(long now, double secondsAgo) =>

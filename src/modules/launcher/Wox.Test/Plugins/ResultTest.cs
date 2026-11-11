@@ -9,6 +9,7 @@ using Wox.Plugin;
 
 namespace Wox.Test.Plugins
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ResultTest
     {

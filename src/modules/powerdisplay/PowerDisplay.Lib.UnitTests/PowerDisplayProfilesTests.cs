@@ -14,6 +14,7 @@ using PowerDisplay.Models;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class PowerDisplayProfilesTests
 {
@@ -71,7 +72,7 @@ public class PowerDisplayProfilesTests
 
         var assigned = profiles.GetAssignedProfiles().Select(profile => profile.Name).ToArray();
 
-        CollectionAssert.AreEqual(ExpectedAssignedProfileNames, assigned);
+        Assert.AreSequenceEqual(ExpectedAssignedProfileNames, assigned);
     }
 
     [TestMethod]
@@ -103,7 +104,7 @@ public class PowerDisplayProfilesTests
         profiles.Profiles.Add(MakeProfile("B", id: 2));
 
         Assert.IsTrue(profiles.RemoveProfile(2));
-        Assert.AreEqual(1, profiles.Profiles.Count);
+        Assert.HasCount(1, profiles.Profiles);
         Assert.IsFalse(profiles.RemoveProfile(2));
     }
 
@@ -120,7 +121,7 @@ public class PowerDisplayProfilesTests
         Assert.AreEqual(1, a.Id);
         Assert.AreEqual(2, b.Id);
         Assert.AreEqual(3, profiles.NextId);
-        Assert.AreEqual(2, profiles.Profiles.Count); // both kept: duplicate names allowed
+        Assert.HasCount(2, profiles.Profiles); // both kept: duplicate names allowed
     }
 
     [TestMethod]
@@ -133,9 +134,9 @@ public class PowerDisplayProfilesTests
         var replacement = MakeProfile("A-edited", id: 5);
         profiles.SetProfile(replacement);
 
-        Assert.AreEqual(1, profiles.Profiles.Count);
+        Assert.HasCount(1, profiles.Profiles);
         Assert.AreSame(replacement, profiles.GetById(5));
-        Assert.IsTrue(profiles.NextId > 5); // healed past the explicit id
+        Assert.IsGreaterThan(5, profiles.NextId); // healed past the explicit id
     }
 
     [TestMethod]
@@ -217,7 +218,7 @@ public class PowerDisplayProfilesTests
         var edited = MakeProfile("A-renamed", id: editedId);
         profiles.SetProfile(edited);
 
-        Assert.AreEqual(2, profiles.Profiles.Count); // no duplicate created
+        Assert.HasCount(2, profiles.Profiles); // no duplicate created
         Assert.AreSame(edited, profiles.GetById(editedId));
         Assert.AreEqual("A-renamed", profiles.GetById(editedId)!.Name);
     }
@@ -237,8 +238,8 @@ public class PowerDisplayProfilesTests
         }
 
         var ids = profiles.Profiles.Select(p => p.Id).ToList();
-        Assert.AreEqual(ids.Count, ids.Distinct().Count(), "profile ids must be unique");
-        Assert.IsTrue(profiles.NextId > profiles.Profiles.Max(p => p.Id));
+        Assert.HasCount(ids.Count, ids.Distinct(), "profile ids must be unique");
+        Assert.IsGreaterThan(profiles.Profiles.Max(p => p.Id), profiles.NextId);
     }
 
     [TestMethod]
@@ -278,7 +279,7 @@ public class PowerDisplayProfilesTests
         Assert.IsFalse(profiles.RemoveProfile(0));
 
         Assert.AreEqual("3,2,4", DisplayOrder(profiles));
-        Assert.AreEqual(3, profiles.Profiles.Count);
+        Assert.HasCount(3, profiles.Profiles);
     }
 
     [TestMethod]
@@ -299,9 +300,9 @@ public class PowerDisplayProfilesTests
 
         Assert.AreEqual(expectedOrder, DisplayOrder(profiles));
         Assert.AreEqual(expectedOrder, string.Join(",", profiles.Profiles.Select(profile => profile.Id)));
-        Assert.AreEqual(originalProfiles.Count, profiles.Profiles.Count);
+        Assert.HasCount(originalProfiles.Count, profiles.Profiles);
         Assert.AreEqual(originalNextId, profiles.NextId);
-        Assert.IsTrue(profiles.LastUpdated > DateTime.UnixEpoch);
+        Assert.IsGreaterThan(DateTime.UnixEpoch, profiles.LastUpdated);
         foreach (var profile in profiles.Profiles)
         {
             Assert.AreSame(originalProfiles[profile.Id], profile);

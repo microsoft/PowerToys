@@ -12,6 +12,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed partial class PageNavigationServiceTests
 {
@@ -138,7 +139,7 @@ public sealed partial class PageNavigationServiceTests
         var page = new TestPageViewModel(() =>
         {
             started.SetResult(Thread.CurrentThread.IsThreadPoolThread);
-            if (!release.Wait(TimeSpan.FromSeconds(10)))
+            if (!release.Wait(TimeSpan.FromSeconds(10), TestContext.CancellationToken))
             {
                 throw new TimeoutException("Initialization was not released.");
             }
@@ -149,18 +150,20 @@ public sealed partial class PageNavigationServiceTests
 
         try
         {
-            Assert.IsTrue(await started.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+            Assert.IsTrue(await started.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
             cancellation.Cancel();
             Assert.IsFalse(initialization.IsCompleted);
             release.Set();
-            await initialization.WaitAsync(TimeSpan.FromSeconds(5));
+            await initialization.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
             Assert.IsTrue(finished);
         }
         finally
         {
             release.Set();
-            await initialization.WaitAsync(TimeSpan.FromSeconds(5));
+            await initialization.WaitAsync(TimeSpan.FromSeconds(5), System.Threading.CancellationToken.None);
             page.SafeCleanup();
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

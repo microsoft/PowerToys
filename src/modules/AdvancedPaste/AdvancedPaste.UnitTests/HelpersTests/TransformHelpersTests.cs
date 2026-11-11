@@ -19,6 +19,7 @@ using Windows.Storage;
 namespace AdvancedPaste.UnitTests.HelpersTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class TransformHelpersTests
 {
     [TestMethod]
@@ -27,8 +28,9 @@ public sealed class TransformHelpersTests
         var lowQualitySize = await GetJpgOutputFileSizeAsync(10);
         var highQualitySize = await GetJpgOutputFileSizeAsync(100);
 
-        Assert.IsTrue(
-            lowQualitySize < highQualitySize,
+        Assert.IsLessThan(
+            highQualitySize,
+            lowQualitySize,
             $"Expected low quality output ({lowQualitySize} bytes) to be smaller than high quality output ({highQualitySize} bytes)");
     }
 
@@ -39,7 +41,7 @@ public sealed class TransformHelpersTests
         var outputPackage = await TransformHelpers.TransformAsync(PasteFormats.PasteAsJpgFile, inputPackage.GetView(), CancellationToken.None, new NoOpProgress(), jpgQuality);
 
         var outputItems = await outputPackage.GetView().GetStorageItemsAsync();
-        Assert.AreEqual(1, outputItems.Count);
+        Assert.HasCount(1, outputItems);
         var outputFile = outputItems.Single() as StorageFile;
         Assert.IsNotNull(outputFile);
         Assert.AreEqual(".jpg", outputFile.FileType, ignoreCase: true, CultureInfo.InvariantCulture);

@@ -69,7 +69,13 @@ internal sealed class AwakeTerminal : IDisposable
             if (openedTerminal is not null)
             {
                 CollectCleanupFailure(
-                    () => Assert.IsTrue(WindowControl.TryCloseWindow(openedTerminal.WindowHandle), "The failed terminal window did not close."),
+                    () =>
+                    {
+                        if (!WindowControl.TryCloseWindow(openedTerminal.WindowHandle))
+                        {
+                            throw new InvalidOperationException("The failed terminal window did not close.");
+                        }
+                    },
                     failures);
             }
 

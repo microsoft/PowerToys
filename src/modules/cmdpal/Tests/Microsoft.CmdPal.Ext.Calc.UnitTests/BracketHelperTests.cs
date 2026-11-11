@@ -7,10 +7,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Calc.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class BracketHelperTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow("\t \r\n")]
@@ -32,7 +33,7 @@ public class BracketHelperTests
         Assert.IsTrue(result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("((((", "only opening brackets")]
     [DataRow("]]]", "only closing brackets")]
     [DataRow("([)(])", "inner bracket mismatch")]

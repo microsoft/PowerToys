@@ -7,10 +7,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ColorPicker.UnitTests.Controls
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ColorPickerControlTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("0", 0, true)]
         [DataRow("128", 128, true)]
         [DataRow("255", 255, true)]
@@ -28,7 +29,7 @@ namespace ColorPicker.UnitTests.Controls
             Assert.AreEqual(canBeEntered, ColorPickerControl.IsRgbTextValid(text));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("abc", true)]
         [DataRow("#abc", true)]
         [DataRow("aabbcc", true)]

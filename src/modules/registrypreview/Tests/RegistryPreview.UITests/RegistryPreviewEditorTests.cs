@@ -11,11 +11,12 @@ namespace Microsoft.PowerToys.RegistryPreview.UITests;
 
 /// <summary>Registry Preview editor, parser, file, value-grid, and registry-write scenarios.</summary>
 /// <remarks>Covers checklist items 1-5 of issue #40675.</remarks>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class RegistryPreviewEditorTests : RegistryPreviewTestBase
 {
-    [TestMethod("RegistryPreview.Editor.SaveEditAndSaveAs")]
+    [TestMethod(DisplayName = "RegistryPreview.Editor.SaveEditAndSaveAs")]
     [TestCategory("RegistryPreview")]
     public void EditorRepopulatesTreeAndSupportsSaveEditAndSaveAs()
     {
@@ -89,7 +90,7 @@ public sealed class RegistryPreviewEditorTests : RegistryPreviewTestBase
         }
     }
 
-    [TestMethod("RegistryPreview.Editor.ReloadAndOpen")]
+    [TestMethod(DisplayName = "RegistryPreview.Editor.ReloadAndOpen")]
     [TestCategory("RegistryPreview")]
     public void ReloadAndOpenReplaceTheDisplayedFile()
     {
@@ -118,7 +119,7 @@ public sealed class RegistryPreviewEditorTests : RegistryPreviewTestBase
             "Registry Preview did not switch its title to the newly opened file.");
     }
 
-    [TestMethod("RegistryPreview.Editor.RegistryValues")]
+    [TestMethod(DisplayName = "RegistryPreview.Editor.RegistryValues")]
     [TestCategory("RegistryPreview")]
     public void SelectingAKeyShowsItsStringAndBinaryValues()
     {
@@ -143,7 +144,7 @@ public sealed class RegistryPreviewEditorTests : RegistryPreviewTestBase
         AssertExactElement(window, "01 02 03 04", "Normalized binary value data");
     }
 
-    [TestMethod("RegistryPreview.Editor.WriteToRegistry")]
+    [TestMethod(DisplayName = "RegistryPreview.Editor.WriteToRegistry")]
     [TestCategory("RegistryPreview")]
     public void WriteToRegistryImportsOnlyTheIsolatedHkcuFixture()
     {
@@ -189,7 +190,7 @@ public sealed class RegistryPreviewEditorTests : RegistryPreviewTestBase
 
         using var imported = Registry.CurrentUser.OpenSubKey(subKey);
         Assert.IsNotNull(imported, "Registry Editor did not create the isolated HKCU key.");
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new byte[] { 1, 2, 3, 4 },
             imported!.GetValue("SampleBinary") as byte[],
             "Registry Editor did not import the binary value.");

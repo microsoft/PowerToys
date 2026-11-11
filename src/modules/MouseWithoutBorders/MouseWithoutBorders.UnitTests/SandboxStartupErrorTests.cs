@@ -7,10 +7,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class SandboxStartupErrorTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("WindowsSandboxClient.exe", "#32770")]
     [DataRow("WindowsSandbox.exe", "WindowsForms10.Window")]
     [DataRow("Unrelated.exe", "#32770")]

@@ -14,6 +14,7 @@ namespace PowerAccent.Core.UnitTests;
 /// the WinUI 3 Selector feeds into AppWindow.Move/Resize, so a regression here silently mis-places
 /// the accent popup (the classic high-DPI / multi-monitor "double scaling" failure mode).
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class CalculationTests
 {
@@ -28,7 +29,7 @@ public sealed class CalculationTests
 
     // At 100% scaling (dpi = 1.0) the physical window size equals the DIP size, so each of the nine
     // anchors lands at an easily hand-checkable coordinate.
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(Position.TopLeft, 24.0, 24.0)]
     [DataRow(Position.Top, 860.0, 24.0)]
     [DataRow(Position.TopRight, 1696.0, 24.0)]
@@ -49,7 +50,7 @@ public sealed class CalculationTests
     // At 150% scaling the physical window is 300x78. The centered anchors must subtract HALF of the
     // scaled size (not the DIP size) and the right/bottom anchors must subtract the FULL scaled size
     // plus the offset - this is exactly where a missing/extra dpi factor shows up.
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(Position.TopLeft, 24.0, 24.0)]
     [DataRow(Position.Center, 810.0, 501.0)]
     [DataRow(Position.BottomRight, 1596.0, 978.0)]
@@ -63,7 +64,7 @@ public sealed class CalculationTests
 
     // A secondary 2560x1440 monitor to the right of the primary at 200% scaling. Verifies the screen
     // origin (screen.X / screen.Y) is honored for every anchor, not just the primary-at-origin case.
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(Position.TopLeft, 1944.0, 24.0)]
     [DataRow(Position.Center, 3000.0, 668.0)]
     [DataRow(Position.BottomRight, 4056.0, 1312.0)]
@@ -96,7 +97,7 @@ public sealed class CalculationTests
     [TestMethod]
     public void GetRawCoordinatesFromPosition_UnknownPosition_Throws()
     {
-        Assert.ThrowsException<NotImplementedException>(
+        Assert.ThrowsExactly<NotImplementedException>(
             () => Calculation.GetRawCoordinatesFromPosition((Position)999, PrimaryScreen, Window, dpi: 1.0));
     }
 

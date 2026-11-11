@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class FuzzyMatcherUnicodeGarbageTests
 {
@@ -90,8 +91,8 @@ public sealed class FuzzyMatcherUnicodeGarbageTests
 
         // Keep assertions minimal: just ensure it doesn't act like "no match".
         // If your API returns score=0 for no match, this is stable.
-        Assert.IsTrue(result.Score > 0, "Expected emoji to produce a match score > 0.");
-        Assert.IsTrue(result.Positions.Count > 0, "Expected at least one matched position.");
+        Assert.IsGreaterThan(0, result.Score, "Expected emoji to produce a match score > 0.");
+        Assert.IsNotEmpty(result.Positions, "Expected at least one matched position.");
     }
 
     [TestMethod]
@@ -114,8 +115,8 @@ public sealed class FuzzyMatcherUnicodeGarbageTests
             allowNonContiguousMatches: true,
             removeDiacritics: false);
 
-        Assert.IsTrue(withDiacriticsRemoved.Score >= withoutDiacriticsRemoved.Score, "Removing diacritics should not make matching worse for 'CAFÉ' vs 'cafe'.");
-        Assert.IsTrue(withDiacriticsRemoved.Score > 0, "Expected a match when diacritics are removed.");
+        Assert.IsGreaterThanOrEqualTo(withoutDiacriticsRemoved.Score, withDiacriticsRemoved.Score, "Removing diacritics should not make matching worse for 'CAFÉ' vs 'cafe'.");
+        Assert.IsGreaterThan(0, withDiacriticsRemoved.Score, "Expected a match when diacritics are removed.");
     }
 
     [TestMethod]

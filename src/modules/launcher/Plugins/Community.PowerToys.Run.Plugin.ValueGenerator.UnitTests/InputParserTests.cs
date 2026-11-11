@@ -11,10 +11,11 @@ using Wox.Plugin;
 
 namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public partial class InputParserTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("md5 abc", typeof(Hashing.HashRequest))]
         [DataRow("sha1 abc", typeof(Hashing.HashRequest))]
         [DataRow("sha256 abc", typeof(Hashing.HashRequest))]

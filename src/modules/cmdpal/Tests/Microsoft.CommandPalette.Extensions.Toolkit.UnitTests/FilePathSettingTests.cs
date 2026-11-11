@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class FilePathSettingTests
 {
@@ -37,7 +38,7 @@ public class FilePathSettingTests
         Assert.AreEqual("Executable path", dictionary["placeholder"]);
         Assert.AreEqual(@"(?i)^.+\.(exe|cmd)$", dictionary["validationPattern"]);
         Assert.AreEqual("Choose an executable.", dictionary["validationErrorMessage"]);
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             _fileTypeFilters,
             ((List<string>)dictionary["fileTypeFilter"]).ToArray());
     }
@@ -100,10 +101,10 @@ public class FilePathSettingTests
     [TestMethod]
     public void FilePathSetting_InvalidOptions_Throw()
     {
-        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
             new FilePathSetting("path", string.Empty, (FilePathSelectionMode)42));
 
         var setting = new FilePathSetting("path", string.Empty);
-        Assert.ThrowsException<ArgumentException>(() => setting.ValidationPattern = "[");
+        Assert.ThrowsExactly<ArgumentException>(() => setting.ValidationPattern = "[");
     }
 }

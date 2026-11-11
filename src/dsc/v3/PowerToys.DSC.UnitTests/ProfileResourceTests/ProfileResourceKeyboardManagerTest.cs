@@ -21,6 +21,7 @@ using PowerToys.DSC.Models.ResourceObjects;
 namespace PowerToys.DSC.UnitTests.ProfileResourceTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class ProfileResourceKeyboardManagerTest : BaseDscTest
 {
     private const string DefaultProfileFileName = "default.json";
@@ -120,7 +121,7 @@ public sealed class ProfileResourceKeyboardManagerTest : BaseDscTest
 
         // Assert
         Assert.IsTrue(result.Success);
-        CollectionAssert.AreEqual(new List<string> { ProfileResourceObject.ProfileJsonPropertyName }, diff);
+        Assert.AreSequenceEqual(new List<string> { ProfileResourceObject.ProfileJsonPropertyName }, diff);
         AssertProfilesAreEqual(KbmProfileConverter.Canonicalize(CreateSampleProfileModel()), state.Profile);
 
         // The stored profile uses the exact editor encoding
@@ -146,8 +147,8 @@ public sealed class ProfileResourceKeyboardManagerTest : BaseDscTest
         // Assert
         Assert.IsTrue(firstResult.Success);
         Assert.IsTrue(secondResult.Success);
-        CollectionAssert.AreEqual(new List<string> { ProfileResourceObject.ProfileJsonPropertyName }, firstDiff);
-        CollectionAssert.AreEqual(new List<string>(), secondDiff);
+        Assert.AreSequenceEqual(new List<string> { ProfileResourceObject.ProfileJsonPropertyName }, firstDiff);
+        Assert.AreSequenceEqual(new List<string>(), secondDiff);
     }
 
     [TestMethod]
@@ -163,10 +164,10 @@ public sealed class ProfileResourceKeyboardManagerTest : BaseDscTest
         // Assert
         Assert.IsTrue(result.Success);
         Assert.IsFalse(state.InDesiredState);
-        CollectionAssert.AreEqual(new List<string> { ProfileResourceObject.ProfileJsonPropertyName }, diff);
+        Assert.AreSequenceEqual(new List<string> { ProfileResourceObject.ProfileJsonPropertyName }, diff);
 
         // Test must not modify the profile
-        Assert.AreEqual(0, GetProfile(DefaultProfileFileName).RemapKeys.InProcessRemapKeys.Count);
+        Assert.IsEmpty(GetProfile(DefaultProfileFileName).RemapKeys.InProcessRemapKeys);
     }
 
     [TestMethod]
@@ -184,7 +185,7 @@ public sealed class ProfileResourceKeyboardManagerTest : BaseDscTest
         // Assert
         Assert.IsTrue(result.Success);
         Assert.IsTrue(state.InDesiredState);
-        CollectionAssert.AreEqual(new List<string>(), diff);
+        Assert.AreSequenceEqual(new List<string>(), diff);
     }
 
     [TestMethod]
@@ -199,13 +200,13 @@ public sealed class ProfileResourceKeyboardManagerTest : BaseDscTest
 
         // Assert
         Assert.IsFalse(result.Success);
-        Assert.AreEqual(1, messages.Count);
+        Assert.HasCount(1, messages);
         Assert.AreEqual(DscMessageLevel.Error, messages[0].Level);
-        StringAssert.Contains(messages[0].Message, "Invalid key name 'CapsLok'");
-        Assert.AreEqual(0, GetProfile(DefaultProfileFileName).RemapKeys.InProcessRemapKeys.Count);
+        Assert.Contains("Invalid key name 'CapsLok'", messages[0].Message);
+        Assert.IsEmpty(GetProfile(DefaultProfileFileName).RemapKeys.InProcessRemapKeys);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(/*lang=json,strict*/ """{}""", "'profile' is required")]
     [DataRow(/*lang=json,strict*/ """{"profile":null}""", "'profile' is required")]
     [DataRow(/*lang=json,strict*/ """{"profile":[]}""", "'profile' must be an object")]
@@ -222,10 +223,10 @@ public sealed class ProfileResourceKeyboardManagerTest : BaseDscTest
 
         // Assert
         Assert.IsFalse(result.Success);
-        Assert.AreEqual(1, messages.Count);
+        Assert.HasCount(1, messages);
         Assert.AreEqual(DscMessageLevel.Error, messages[0].Level);
-        StringAssert.Contains(messages[0].Message, expectedError);
-        Assert.AreEqual(1, GetProfile(DefaultProfileFileName).RemapKeys.InProcessRemapKeys.Count);
+        Assert.Contains(expectedError, messages[0].Message);
+        Assert.HasCount(1, GetProfile(DefaultProfileFileName).RemapKeys.InProcessRemapKeys);
     }
 
     [TestMethod]
@@ -244,9 +245,9 @@ public sealed class ProfileResourceKeyboardManagerTest : BaseDscTest
         // Assert: the good entries are exported and the skipped one is reported
         Assert.IsTrue(result.Success);
         AssertProfilesAreEqual(KbmProfileConverter.Canonicalize(CreateSampleProfileModel()), state.Profile);
-        Assert.AreEqual(1, messages.Count);
+        Assert.HasCount(1, messages);
         Assert.AreEqual(DscMessageLevel.Warning, messages[0].Level);
-        StringAssert.Contains(messages[0].Message, "Skipping unparsable key remap entry 'abc'");
+        Assert.Contains("Skipping unparsable key remap entry 'abc'", messages[0].Message);
     }
 
     [TestMethod]
@@ -265,7 +266,7 @@ public sealed class ProfileResourceKeyboardManagerTest : BaseDscTest
         Assert.IsTrue(result.Success);
         Assert.IsTrue(_settingsUtils.SettingsExists(KeyboardManagerSettings.ModuleName, WorkProfileFileName));
         Assert.AreEqual("20", GetProfile(WorkProfileFileName).RemapKeys.InProcessRemapKeys[0].OriginalKeys);
-        Assert.AreEqual(0, GetProfile(DefaultProfileFileName).RemapKeys.InProcessRemapKeys.Count);
+        Assert.IsEmpty(GetProfile(DefaultProfileFileName).RemapKeys.InProcessRemapKeys);
     }
 
     [TestMethod]

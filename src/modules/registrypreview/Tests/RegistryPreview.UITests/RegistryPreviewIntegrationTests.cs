@@ -13,6 +13,7 @@ namespace Microsoft.PowerToys.RegistryPreview.UITests;
 /// issue #40675. The true-default-handler assertion in item 11 is stale: Windows owns UserChoice,
 /// while the product setting only registers PowerToys.RegistryPreview in OpenWithProgIDs.
 /// </remarks>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class RegistryPreviewIntegrationTests : RegistryPreviewTestBase
@@ -64,7 +65,7 @@ public sealed class RegistryPreviewIntegrationTests : RegistryPreviewTestBase
         }
     }
 
-    [TestMethod("RegistryPreview.Integration.ContextMenuEnabledState")]
+    [TestMethod(DisplayName = "RegistryPreview.Integration.ContextMenuEnabledState")]
     [TestCategory("RegistryPreview")]
     public void ContextMenuTracksEnabledStateAndLaunchesPreview()
     {
@@ -102,7 +103,7 @@ public sealed class RegistryPreviewIntegrationTests : RegistryPreviewTestBase
         AssertExactElement(editor, Path.GetFileName(keyPath), "Context-menu-launched visual-tree key");
     }
 
-    [TestMethod("RegistryPreview.Integration.SettingsLaunchAndOpenShortcut")]
+    [TestMethod(DisplayName = "RegistryPreview.Integration.SettingsLaunchAndOpenShortcut")]
     [TestCategory("RegistryPreview")]
     public void SettingsLaunchAndOpenShortcutWorkWhileEnabled()
     {
@@ -128,7 +129,7 @@ public sealed class RegistryPreviewIntegrationTests : RegistryPreviewTestBase
         AssertExactElement(registryPreview, Path.GetFileName(keyPath), "Ctrl+O-opened visual-tree key");
     }
 
-    [TestMethod("RegistryPreview.Integration.DefaultRegAppRegistration")]
+    [TestMethod(DisplayName = "RegistryPreview.Integration.DefaultRegAppRegistration")]
     [TestCategory("RegistryPreview")]
     public void DefaultAppSettingRegistersTheHandlerAndRestoresRegedit()
     {
@@ -149,8 +150,8 @@ public sealed class RegistryPreviewIntegrationTests : RegistryPreviewTestBase
         SetDefaultApp(toggle, settings, true);
         var registeredCommand = QueryRegistryPreviewOpenCommand();
         Assert.IsNotNull(registeredCommand, "The Registry Preview ProgID did not register an open command.");
-        StringAssert.Contains(registeredCommand!, "PowerToys.RegistryPreview.exe", "The registered .reg open command targets the wrong executable.");
-        StringAssert.Contains(registeredCommand, "%1", "The registered .reg open command does not forward the selected file.");
+        Assert.Contains("PowerToys.RegistryPreview.exe", registeredCommand!, "The registered .reg open command targets the wrong executable.");
+        Assert.Contains("%1", registeredCommand, "The registered .reg open command does not forward the selected file.");
 
         SetDefaultApp(toggle, settings, false);
         Assert.IsTrue(

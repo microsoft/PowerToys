@@ -417,16 +417,18 @@ public static class WinappCli
         {
             // Many --json commands (search, wait-for) return exit 1 with a valid envelope on
             // "no match" / "timed out". Still parse so the caller can branch on envelope fields.
+            JsonException parseFailure;
             try
             {
                 using var doc = JsonDocument.Parse(r.StdOut);
                 return doc.RootElement.Clone();
             }
-            catch
+            catch (JsonException ex)
             {
-                Assert.Fail($"{r.DescribeFailure()} (stdout was not JSON)");
-                return default;
+                parseFailure = ex;
             }
+
+            throw new AssertFailedException($"{r.DescribeFailure()} (stdout was not JSON)", parseFailure);
         }
 
         using var ok = JsonDocument.Parse(r.StdOut);

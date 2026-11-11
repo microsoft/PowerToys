@@ -18,6 +18,7 @@ using Moq;
 namespace AdvancedPaste.UnitTests.ServicesTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class CustomActionKernelQueryCacheServiceTests
 {
     private static readonly CacheKey CustomActionTestKey = new() { Prompt = "TestPrompt1", AvailableFormats = ClipboardFormat.Text };
@@ -163,13 +164,13 @@ public sealed class CustomActionKernelQueryCacheServiceTests
         Assert.IsNotNull(valueA);
         Assert.IsNotNull(valueB);
 
-        Assert.AreEqual(valueA.ActionChain.Count, valueB.ActionChain.Count);
+        Assert.HasCount(valueA.ActionChain.Count, valueB.ActionChain);
 
         foreach (var (itemA, itemB) in valueA.ActionChain.Zip(valueB.ActionChain))
         {
             Assert.AreEqual(itemA.Format, itemB.Format);
-            Assert.AreEqual(itemA.Arguments.Count, itemB.Arguments.Count);
-            Assert.IsFalse(itemA.Arguments.Except(itemB.Arguments).Any());
+            Assert.HasCount(itemA.Arguments.Count, itemB.Arguments);
+            Assert.IsEmpty(itemA.Arguments.Except(itemB.Arguments));
         }
     }
 

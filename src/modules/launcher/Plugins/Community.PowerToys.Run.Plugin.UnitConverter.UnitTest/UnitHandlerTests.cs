@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class UnitHandlerTests
     {
@@ -76,7 +77,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         {
             var convertModel = new ConvertModel(1, "aa", "bb");
             var results = UnitHandler.Convert(convertModel);
-            Assert.AreEqual(0, results.Count());
+            Assert.IsEmpty(results);
         }
 
         [TestMethod]

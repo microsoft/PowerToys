@@ -29,7 +29,7 @@ namespace Microsoft.Workspaces.UITests
             var window = State.Fixture.WaitForWindow(title);
             AssertPositioned(window, app);
             WaitForLaunchCompletion(project);
-            Assert.AreEqual(1, State.Fixture.ProcessIds().Count, "Launching one application created unexpected fixture processes.");
+            Assert.HasCount(1, State.Fixture.ProcessIds(), "Launching one application created unexpected fixture processes.");
         }
 
         [TestMethod]
@@ -100,7 +100,7 @@ namespace Microsoft.Workspaces.UITests
                 target,
                 true,
                 "The shortcut does not target the Workspaces launcher.");
-            StringAssert.Contains(shortcutArguments, WorkspaceTestState.Text(project, "id"), "The shortcut targets the wrong workspace.");
+            Assert.Contains(WorkspaceTestState.Text(project, "id"), shortcutArguments, "The shortcut targets the wrong workspace.");
 
             Step("Launching the actual desktop .lnk through the Windows Shell.");
             using var launch = Process.Start(new ProcessStartInfo(shortcut) { UseShellExecute = true });
@@ -172,7 +172,7 @@ namespace Microsoft.Workspaces.UITests
             LaunchWorkspace(WorkspaceTestState.Text(project, "name"));
             AssertPositioned(original, app);
             WaitForLaunchCompletion(project);
-            CollectionAssert.AreEqual(new[] { original.ProcessId }, State.Fixture.ProcessIds().ToArray(), "Move existing windows launched a duplicate application.");
+            Assert.AreSequenceEqual(new[] { original.ProcessId }, State.Fixture.ProcessIds().ToArray(), "Move existing windows launched a duplicate application.");
             var reused = State.Fixture.FindWindow(title);
             Assert.IsNotNull(reused, "Move existing windows closed the original window.");
             Assert.AreEqual(original.WindowHandle, reused.Hwnd, "Move existing windows replaced the existing HWND.");
@@ -285,7 +285,7 @@ namespace Microsoft.Workspaces.UITests
             }
 
             WaitForLaunchCompletion(project);
-            Assert.AreEqual(applications.Length, State.Fixture.ProcessIds().Count, "Dismiss did not allow every configured app to launch.");
+            Assert.HasCount(applications.Length, State.Fixture.ProcessIds(), "Dismiss did not allow every configured app to launch.");
         }
 
         private void LaunchWorkspace(string name)

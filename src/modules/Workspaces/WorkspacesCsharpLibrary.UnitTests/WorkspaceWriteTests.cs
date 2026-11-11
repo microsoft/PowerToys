@@ -13,6 +13,7 @@ using WorkspacesCsharpLibrary.Utils;
 
 namespace WorkspacesCsharpLibrary.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class WorkspaceWriteTests
 {
@@ -49,7 +50,7 @@ public class WorkspaceWriteTests
         var workspace = JsonNode.Parse(File.ReadAllText(file))!["workspaces"]![0]!;
         Assert.AreEqual("Edited", workspace["name"]!.GetValue<string>());
         Assert.AreEqual(100L, workspace["last-launched-time"]!.GetValue<long>());
-        Assert.AreEqual(0, Directory.GetFiles(directory, "*.tmp").Length);
+        Assert.IsEmpty(Directory.GetFiles(directory, "*.tmp"));
     }
 
     [TestMethod]
@@ -60,21 +61,23 @@ public class WorkspaceWriteTests
         new IOUtils().WriteFile(file, original);
         using var reader = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         using var started = new ManualResetEventSlim();
-        var writer = Task.Run(() =>
+        var writer = Task.Run(
+            () =>
         {
             started.Set();
             new IOUtils().WriteFile(file, updated);
-        });
+        },
+            TestContext.CancellationToken);
         try
         {
-            Assert.IsTrue(started.Wait(TimeSpan.FromSeconds(5)));
-            var completed = await Task.WhenAny(writer, Task.Delay(200));
+            Assert.IsTrue(started.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
+            var completed = await Task.WhenAny(writer, Task.Delay(200, TestContext.CancellationToken));
             Assert.AreNotSame(writer, completed, "The writer should wait for the short-lived reader.");
         }
         finally
         {
             reader.Dispose();
-            await writer.WaitAsync(TimeSpan.FromSeconds(5));
+            await writer.WaitAsync(TimeSpan.FromSeconds(5), System.Threading.CancellationToken.None);
         }
 
         Assert.IsTrue(JsonNode.DeepEquals(JsonNode.Parse(updated), JsonNode.Parse(File.ReadAllText(file))));
@@ -87,18 +90,12 @@ public class WorkspaceWriteTests
         new IOUtils().WriteFile(file, original);
         using var reader = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         var timer = Stopwatch.StartNew();
-        try
-        {
-            new IOUtils().WriteFile(file, """{"workspaces":[{"id":"new","name":"New"}]}""");
-            Assert.Fail("A persistent sharing conflict must not be reported as saved.");
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            Assert.IsTrue(timer.ElapsedMilliseconds >= 1800, "The bounded replacement retry should be exercised.");
-            Assert.IsTrue(timer.ElapsedMilliseconds < 5000);
-            Assert.IsTrue(JsonNode.DeepEquals(JsonNode.Parse(original), JsonNode.Parse(File.ReadAllText(file))));
-            Assert.AreEqual(0, Directory.GetFiles(directory, "*.tmp").Length);
-        }
+        var exception = Assert.Throws<Exception>(() => new IOUtils().WriteFile(file, """{"workspaces":[{"id":"new","name":"New"}]}"""));
+        Assert.IsTrue(exception is IOException or UnauthorizedAccessException);
+        Assert.IsGreaterThanOrEqualTo(1800, timer.ElapsedMilliseconds, "The bounded replacement retry should be exercised.");
+        Assert.IsLessThan(5000, timer.ElapsedMilliseconds);
+        Assert.IsTrue(JsonNode.DeepEquals(JsonNode.Parse(original), JsonNode.Parse(File.ReadAllText(file))));
+        Assert.IsEmpty(Directory.GetFiles(directory, "*.tmp"));
     }
 
     [TestMethod]
@@ -113,15 +110,8 @@ public class WorkspaceWriteTests
     public void MalformedCurrentDataIsNotOverwritten()
     {
         File.WriteAllText(file, "{broken");
-        try
-        {
-            new IOUtils().WriteFile(file, """{"workspaces":[]}""");
-            Assert.Fail("Malformed existing data must fail the save.");
-        }
-        catch (System.Text.Json.JsonException)
-        {
-            Assert.AreEqual("{broken", File.ReadAllText(file));
-        }
+        Assert.Throws<System.Text.Json.JsonException>(() => new IOUtils().WriteFile(file, """{"workspaces":[]}"""));
+        Assert.AreEqual("{broken", File.ReadAllText(file));
     }
 
     [TestMethod]
@@ -130,14 +120,9 @@ public class WorkspaceWriteTests
         const string data = """{"workspaces":[{"id":"id","name":"Original"}]}""";
         File.WriteAllText(file, data);
         File.SetAttributes(file, FileAttributes.ReadOnly);
-        try
-        {
-            new IOUtils().WriteFile(file, """{"workspaces":[]}""");
-            Assert.Fail("A failed replacement must be observable.");
-        }
-        catch (UnauthorizedAccessException)
-        {
-            Assert.AreEqual(data, File.ReadAllText(file));
-        }
+        Assert.Throws<UnauthorizedAccessException>(() => new IOUtils().WriteFile(file, """{"workspaces":[]}"""));
+        Assert.AreEqual(data, File.ReadAllText(file));
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

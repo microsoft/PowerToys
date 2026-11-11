@@ -18,6 +18,7 @@ namespace MouseJump.Common.UnitTests.Helpers;
 
 public static class DrawingHelperTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class GetPreviewLayoutTests
     {
@@ -236,6 +237,7 @@ public static class DrawingHelperTests
         }
     }
 
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class RenderPreviewAsyncTests
     {
@@ -302,22 +304,26 @@ public static class DrawingHelperTests
 
             // the whole point of maximumSize is to bound the rendered image - it must
             // never come out bigger than that in either dimension...
-            Assert.IsTrue(
-                actual.Width <= (int)maximumSize.Width,
+            Assert.IsLessThanOrEqualTo(
+                (int)maximumSize.Width,
+                actual.Width,
                 $"actual width {actual.Width} exceeds maximumSize.Width {maximumSize.Width}");
-            Assert.IsTrue(
-                actual.Height <= (int)maximumSize.Height,
+            Assert.IsLessThanOrEqualTo(
+                (int)maximumSize.Height,
+                actual.Height,
                 $"actual height {actual.Height} exceeds maximumSize.Height {maximumSize.Height}");
 
             // ...and the resulting image must be larger than activatedScreen's own tiny
             // display area (272x168) - this is the actual regression check: before the fix,
             // GetFormLayout clamped against activatedScreen.DisplayArea.Size instead of
             // maximumSize, so the preview came out far too small.
-            Assert.IsTrue(
-                actual.Width > (int)activatedScreen.DisplayArea.Width,
+            Assert.IsGreaterThan(
+                (int)activatedScreen.DisplayArea.Width,
+                actual.Width,
                 $"actual width {actual.Width} is no bigger than activatedScreen's own display area width {activatedScreen.DisplayArea.Width} - looks like maximumSize isn't being respected");
-            Assert.IsTrue(
-                actual.Height > (int)activatedScreen.DisplayArea.Height,
+            Assert.IsGreaterThan(
+                (int)activatedScreen.DisplayArea.Height,
+                actual.Height,
                 $"actual height {actual.Height} is no bigger than activatedScreen's own display area height {activatedScreen.DisplayArea.Height} - looks like maximumSize isn't being respected");
         }
 

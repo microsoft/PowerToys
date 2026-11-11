@@ -18,6 +18,7 @@ using WyHash;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class ProviderWeightingTests : CommandPaletteUnitTestBase
 {
@@ -68,9 +69,9 @@ public partial class ProviderWeightingTests : CommandPaletteUnitTestBase
         var higherA = MainListPage.ScoreTopLevelItem(q, new(itemA), EmptyHistory(), fuzzyMatcher, lookup);
         var lowerB = MainListPage.ScoreTopLevelItem(q, new(itemB), EmptyHistory(), fuzzyMatcher, lookup);
 
-        Assert.IsTrue(higherA > baseA, "Higher weight should raise the score");
-        Assert.IsTrue(lowerB < baseB, "Lower weight should reduce the score");
-        Assert.IsTrue(higherA > lowerB, "Higher-weighted provider should outrank the lower-weighted one within the tier");
+        Assert.IsGreaterThan(baseA, higherA, "Higher weight should raise the score");
+        Assert.IsLessThan(baseB, lowerB, "Lower weight should reduce the score");
+        Assert.IsGreaterThan(lowerB, higherA, "Higher-weighted provider should outrank the lower-weighted one within the tier");
 
         // Same tier the whole time - the nudge only reordered within it.
         Assert.AreEqual(MainListRanker.TierOf(baseA), MainListRanker.TierOf(higherA));
@@ -108,8 +109,9 @@ public partial class ProviderWeightingTests : CommandPaletteUnitTestBase
         Assert.IsTrue(
             MainListRanker.TierOf(exactScore) > MainListRanker.TierOf(lowerScore),
             "The exact match must live in a strictly higher tier");
-        Assert.IsTrue(
-            exactScore > lowerScore,
+        Assert.IsGreaterThan(
+            lowerScore,
+            exactScore,
             "A within-tier nudge (even Higher + heavy history) must never promote an item across a tier boundary");
     }
 
@@ -151,7 +153,7 @@ public partial class ProviderWeightingTests : CommandPaletteUnitTestBase
             fuzzyMatcher,
             LookupBy(new Dictionary<string, ProviderSearchWeight> { ["AllApps"] = ProviderSearchWeight.Higher }));
 
-        Assert.IsTrue(higher > normal, "An app-style item should also respond to its provider's Higher weight");
+        Assert.IsGreaterThan(normal, higher, "An app-style item should also respond to its provider's Higher weight");
     }
 
     [TestMethod]

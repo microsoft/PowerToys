@@ -14,6 +14,7 @@ using Windows.Storage;
 namespace AdvancedPaste.Cli.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public class AdvancedPasteTempFileManagerTests
 {
     [TestMethod]

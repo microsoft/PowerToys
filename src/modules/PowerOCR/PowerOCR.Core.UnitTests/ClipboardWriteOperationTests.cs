@@ -9,6 +9,7 @@ using PowerOCR.Helpers;
 
 namespace PowerOCR.Core.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class ClipboardWriteOperationTests
 {
@@ -20,12 +21,12 @@ public sealed class ClipboardWriteOperationTests
         var calls = new CallRecorder();
         calls.OnFlush = () => Assert.AreEqual(1, calls.SetCalls);
 
-        int attempts = await calls.ExecuteAsync();
+        int attempts = await calls.ExecuteAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(1, attempts);
         Assert.AreEqual(1, calls.SetCalls);
         Assert.AreEqual(1, calls.FlushCalls);
-        Assert.AreEqual(0, calls.DelayIntervals.Count);
+        Assert.IsEmpty(calls.DelayIntervals);
     }
 
     [TestMethod]
@@ -47,10 +48,10 @@ public sealed class ClipboardWriteOperationTests
         Assert.AreEqual(3, attempts);
         Assert.AreEqual(1, calls.SetCalls);
         Assert.AreEqual(3, calls.FlushCalls);
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[] { TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(50) },
             calls.DelayIntervals);
-        CollectionAssert.AreEqual(new[] { cancellation.Token, cancellation.Token }, calls.DelayTokens);
+        Assert.AreSequenceEqual(new[] { cancellation.Token, cancellation.Token }, calls.DelayTokens);
     }
 
     [TestMethod]
@@ -62,12 +63,12 @@ public sealed class ClipboardWriteOperationTests
         var calls = new CallRecorder();
         calls.OnFlush = () => throw failures[calls.FlushCalls - 1];
 
-        COMException actual = await Assert.ThrowsExactlyAsync<COMException>(() => calls.ExecuteAsync());
+        COMException actual = await Assert.ThrowsExactlyAsync<COMException>(() => calls.ExecuteAsync(TestContext.CancellationToken));
 
         Assert.AreSame(failures[^1], actual);
         Assert.AreEqual(1, calls.SetCalls);
         Assert.AreEqual(5, calls.FlushCalls);
-        Assert.AreEqual(4, calls.DelayIntervals.Count);
+        Assert.HasCount(4, calls.DelayIntervals);
         Assert.IsTrue(calls.DelayIntervals.All(interval => interval == TimeSpan.FromMilliseconds(50)));
     }
 
@@ -77,12 +78,12 @@ public sealed class ClipboardWriteOperationTests
         var failure = CreateComException("Different COM failure.", unchecked((int)0x80004005));
         var calls = new CallRecorder { OnFlush = () => throw failure };
 
-        COMException actual = await Assert.ThrowsExactlyAsync<COMException>(() => calls.ExecuteAsync());
+        COMException actual = await Assert.ThrowsExactlyAsync<COMException>(() => calls.ExecuteAsync(TestContext.CancellationToken));
 
         Assert.AreSame(failure, actual);
         Assert.AreEqual(1, calls.SetCalls);
         Assert.AreEqual(1, calls.FlushCalls);
-        Assert.AreEqual(0, calls.DelayIntervals.Count);
+        Assert.IsEmpty(calls.DelayIntervals);
     }
 
     [TestMethod]
@@ -91,12 +92,12 @@ public sealed class ClipboardWriteOperationTests
         var failure = new InvalidOperationException("Flush failed.");
         var calls = new CallRecorder { OnFlush = () => throw failure };
 
-        InvalidOperationException actual = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => calls.ExecuteAsync());
+        InvalidOperationException actual = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => calls.ExecuteAsync(TestContext.CancellationToken));
 
         Assert.AreSame(failure, actual);
         Assert.AreEqual(1, calls.SetCalls);
         Assert.AreEqual(1, calls.FlushCalls);
-        Assert.AreEqual(0, calls.DelayIntervals.Count);
+        Assert.IsEmpty(calls.DelayIntervals);
     }
 
     [TestMethod]
@@ -105,12 +106,12 @@ public sealed class ClipboardWriteOperationTests
         var failure = CreateComException("SetContent is busy.", CannotOpenClipboard);
         var calls = new CallRecorder { OnSet = () => throw failure };
 
-        COMException actual = await Assert.ThrowsExactlyAsync<COMException>(() => calls.ExecuteAsync());
+        COMException actual = await Assert.ThrowsExactlyAsync<COMException>(() => calls.ExecuteAsync(TestContext.CancellationToken));
 
         Assert.AreSame(failure, actual);
         Assert.AreEqual(1, calls.SetCalls);
         Assert.AreEqual(0, calls.FlushCalls);
-        Assert.AreEqual(0, calls.DelayIntervals.Count);
+        Assert.IsEmpty(calls.DelayIntervals);
     }
 
     [TestMethod]
@@ -126,7 +127,7 @@ public sealed class ClipboardWriteOperationTests
         Assert.AreEqual(cancellation.Token, actual.CancellationToken);
         Assert.AreEqual(0, calls.SetCalls);
         Assert.AreEqual(0, calls.FlushCalls);
-        Assert.AreEqual(0, calls.DelayIntervals.Count);
+        Assert.IsEmpty(calls.DelayIntervals);
     }
 
     [TestMethod]
@@ -143,7 +144,7 @@ public sealed class ClipboardWriteOperationTests
 
         Task<int> operation = calls.ExecuteAsync(cancellation.Token);
         Assert.IsFalse(operation.IsCompleted);
-        Assert.AreEqual(1, calls.DelayIntervals.Count);
+        Assert.HasCount(1, calls.DelayIntervals);
         Assert.AreEqual(cancellation.Token, calls.DelayTokens[0]);
         cancellation.Cancel();
 
@@ -153,7 +154,7 @@ public sealed class ClipboardWriteOperationTests
         Assert.AreEqual(cancellation.Token, actual.CancellationToken);
         Assert.AreEqual(1, calls.SetCalls);
         Assert.AreEqual(1, calls.FlushCalls);
-        Assert.AreEqual(1, calls.DelayIntervals.Count);
+        Assert.HasCount(1, calls.DelayIntervals);
     }
 
     [TestMethod]
@@ -168,7 +169,7 @@ public sealed class ClipboardWriteOperationTests
         Assert.AreEqual(cancellation.Token, actual.CancellationToken);
         Assert.AreEqual(1, calls.SetCalls);
         Assert.AreEqual(0, calls.FlushCalls);
-        Assert.AreEqual(0, calls.DelayIntervals.Count);
+        Assert.IsEmpty(calls.DelayIntervals);
     }
 
     [TestMethod]
@@ -191,7 +192,7 @@ public sealed class ClipboardWriteOperationTests
         Assert.AreEqual(cancellation.Token, actual.CancellationToken);
         Assert.AreEqual(1, calls.SetCalls);
         Assert.AreEqual(1, calls.FlushCalls);
-        Assert.AreEqual(1, calls.DelayIntervals.Count);
+        Assert.HasCount(1, calls.DelayIntervals);
     }
 
     [SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "Tests simulate COM exceptions and HRESULTs returned by the Windows clipboard API.")]
@@ -236,4 +237,6 @@ public sealed class ClipboardWriteOperationTests
             return OnDelay?.Invoke(interval, cancellationToken) ?? Task.CompletedTask;
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

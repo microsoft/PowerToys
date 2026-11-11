@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.Settings.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class MouseWithoutBordersMachineMatrixTests
 {
@@ -23,7 +24,7 @@ public sealed class MouseWithoutBordersMachineMatrixTests
 
         Assert.IsFalse(MouseWithoutBordersMachineMatrix.Reconcile(matrix, available));
         Assert.IsFalse(MouseWithoutBordersMachineMatrix.Reconcile(matrix, available));
-        CollectionAssert.AreEqual(HostOnlyMatrix, matrix);
+        Assert.AreSequenceEqual(HostOnlyMatrix, matrix);
     }
 
     [TestMethod]
@@ -34,7 +35,7 @@ public sealed class MouseWithoutBordersMachineMatrixTests
 
         Assert.IsTrue(MouseWithoutBordersMachineMatrix.Reconcile(matrix, available));
         Assert.IsFalse(MouseWithoutBordersMachineMatrix.Reconcile(matrix, available));
-        CollectionAssert.AreEqual(HostOnlyMatrix, matrix);
+        Assert.AreSequenceEqual(HostOnlyMatrix, matrix);
     }
 
     [TestMethod]
@@ -44,7 +45,7 @@ public sealed class MouseWithoutBordersMachineMatrixTests
         var available = new List<string> { "GUEST", "HOST" };
 
         Assert.IsTrue(MouseWithoutBordersMachineMatrix.Reconcile(matrix, available));
-        CollectionAssert.AreEqual(HostGuestMatrix, matrix);
+        Assert.AreSequenceEqual(HostGuestMatrix, matrix);
         Assert.IsFalse(MouseWithoutBordersMachineMatrix.Reconcile(matrix, available));
     }
 
@@ -55,7 +56,7 @@ public sealed class MouseWithoutBordersMachineMatrixTests
         var available = new List<string> { "A", "B", "C", "D", "E" };
 
         Assert.IsFalse(MouseWithoutBordersMachineMatrix.Reconcile(matrix, available));
-        CollectionAssert.AreEqual(FullMatrix, matrix);
+        Assert.AreSequenceEqual(FullMatrix, matrix);
     }
 
     [TestMethod]
@@ -65,7 +66,7 @@ public sealed class MouseWithoutBordersMachineMatrixTests
         var available = new List<string> { "HOST", "HOST" };
 
         Assert.IsTrue(MouseWithoutBordersMachineMatrix.Reconcile(matrix, available));
-        CollectionAssert.AreEqual(HostOnlyMatrix, matrix);
+        Assert.AreSequenceEqual(HostOnlyMatrix, matrix);
         Assert.IsFalse(MouseWithoutBordersMachineMatrix.Reconcile(matrix, available));
     }
 }

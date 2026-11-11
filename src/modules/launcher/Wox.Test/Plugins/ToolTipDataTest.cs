@@ -9,6 +9,7 @@ using Wox.Plugin;
 
 namespace Wox.Test.Plugins
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ToolTipDataTest
     {
@@ -20,7 +21,7 @@ namespace Wox.Test.Plugins
             string text = "text";
 
             // Assert
-            var ex = Assert.ThrowsException<ArgumentException>(() => new ToolTipData(title, text));
+            var ex = Assert.ThrowsExactly<ArgumentException>(() => new ToolTipData(title, text));
         }
     }
 }

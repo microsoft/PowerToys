@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public class IconLoadDiagnosticsTests
@@ -61,37 +62,37 @@ public class IconLoadDiagnosticsTests
 
         Assert.IsNotNull(report);
         Assert.AreEqual(sessionId, report.SessionId);
-        Assert.IsTrue(report.EndedUtc >= report.StartedUtc);
-        Assert.IsTrue(report.Duration >= TimeSpan.Zero);
-        StringAssert.Contains(report.Text, $"Session: {sessionId}");
-        StringAssert.Contains(report.Text, "Ended UTC:");
-        StringAssert.Contains(report.Text, "Process work during session");
-        StringAssert.Contains(report.Text, "Managed allocations:");
-        StringAssert.Contains(report.Text, "UI responsiveness probe");
-        StringAssert.Contains(report.Text, "  Enabled: no");
-        StringAssert.Contains(report.Text, "Started: 1");
-        StringAssert.Contains(report.Text, "Stale: 1");
-        StringAssert.Contains(report.Text, "NewLoad: 1");
-        StringAssert.Contains(report.Text, "Request to completion by resolution and result");
-        StringAssert.Contains(report.Text, "      Empty: count=1");
-        StringAssert.Contains(report.Text, "ShellBinary: 1");
-        StringAssert.Contains(report.Text, "    Enqueue to completion: count=1");
-        StringAssert.Contains(report.Text, "    Dispatcher wait: count=1");
-        StringAssert.Contains(report.Text, "Empty: 1");
-        StringAssert.Contains(report.Text, "Maximum low queue depth: 1");
-        StringAssert.Contains(report.Text, "Dispatcher wait: count=1");
-        StringAssert.Contains(report.Text, "Dispatcher materialization");
-        StringAssert.Contains(report.Text, "Measured STA execution slices: count=1");
-        StringAssert.Contains(report.Text, "    Binary");
-        StringAssert.Contains(report.Text, "Load demand");
-        StringAssert.Contains(report.Text, "Requests linked to session loads: 1");
-        StringAssert.Contains(report.Text, "    Completed: 1");
-        StringAssert.Contains(report.Text, "Loads completed with no live requester: 0");
-        StringAssert.Contains(report.Text, "Installed Apps icon extraction enters this pipeline as SpecializedAppIcon work");
-        StringAssert.Contains(report.Text, "Created: 1");
-        StringAssert.Contains(report.Text, "Reused: 1");
-        StringAssert.Contains(report.Text, "Update wall time: count=2");
-        StringAssert.Contains(report.Text, "Empty: created=1, reused=1");
+        Assert.IsGreaterThanOrEqualTo(report.StartedUtc, report.EndedUtc);
+        Assert.IsGreaterThanOrEqualTo(TimeSpan.Zero, report.Duration);
+        Assert.Contains($"Session: {sessionId}", report.Text);
+        Assert.Contains("Ended UTC:", report.Text);
+        Assert.Contains("Process work during session", report.Text);
+        Assert.Contains("Managed allocations:", report.Text);
+        Assert.Contains("UI responsiveness probe", report.Text);
+        Assert.Contains("  Enabled: no", report.Text);
+        Assert.Contains("Started: 1", report.Text);
+        Assert.Contains("Stale: 1", report.Text);
+        Assert.Contains("NewLoad: 1", report.Text);
+        Assert.Contains("Request to completion by resolution and result", report.Text);
+        Assert.Contains("      Empty: count=1", report.Text);
+        Assert.Contains("ShellBinary: 1", report.Text);
+        Assert.Contains("    Enqueue to completion: count=1", report.Text);
+        Assert.Contains("    Dispatcher wait: count=1", report.Text);
+        Assert.Contains("Empty: 1", report.Text);
+        Assert.Contains("Maximum low queue depth: 1", report.Text);
+        Assert.Contains("Dispatcher wait: count=1", report.Text);
+        Assert.Contains("Dispatcher materialization", report.Text);
+        Assert.Contains("Measured STA execution slices: count=1", report.Text);
+        Assert.Contains("    Binary", report.Text);
+        Assert.Contains("Load demand", report.Text);
+        Assert.Contains("Requests linked to session loads: 1", report.Text);
+        Assert.Contains("    Completed: 1", report.Text);
+        Assert.Contains("Loads completed with no live requester: 0", report.Text);
+        Assert.Contains("Installed Apps icon extraction enters this pipeline as SpecializedAppIcon work", report.Text);
+        Assert.Contains("Created: 1", report.Text);
+        Assert.Contains("Reused: 1", report.Text);
+        Assert.Contains("Update wall time: count=2", report.Text);
+        Assert.Contains("Empty: created=1, reused=1", report.Text);
         Assert.IsFalse(report.Text.Contains("secret", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(report.Text.Contains(@"C:\private", StringComparison.OrdinalIgnoreCase));
 
@@ -122,11 +123,11 @@ public class IconLoadDiagnosticsTests
         Assert.IsNotNull(report);
         var inputKindsStart = report.Text.IndexOf("Input kinds", StringComparison.Ordinal);
         var inputKindsEnd = report.Text.IndexOf("New-load result kinds", StringComparison.Ordinal);
-        Assert.IsTrue(inputKindsStart >= 0);
-        Assert.IsTrue(inputKindsEnd > inputKindsStart);
+        Assert.IsGreaterThanOrEqualTo(0, inputKindsStart);
+        Assert.IsGreaterThan(inputKindsStart, inputKindsEnd);
         var inputKinds = report.Text[inputKindsStart..inputKindsEnd];
-        StringAssert.Contains(inputKinds, "  String: 0");
-        StringAssert.Contains(inputKinds, "  ShellBinary: 1");
+        Assert.Contains("  String: 0", inputKinds);
+        Assert.Contains("  ShellBinary: 1", inputKinds);
     }
 
     [TestMethod]
@@ -156,7 +157,7 @@ public class IconLoadDiagnosticsTests
         probe.Stop();
         var report = session.CreateReport();
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[]
             {
                 DispatcherQueuePriority.Normal,
@@ -164,12 +165,12 @@ public class IconLoadDiagnosticsTests
                 DispatcherQueuePriority.Normal,
             },
             observedPriorities);
-        StringAssert.Contains(report.Text, "Callbacks enqueued: 3");
-        StringAssert.Contains(report.Text, "Callbacks completed: 1");
-        StringAssert.Contains(report.Text, "Callbacks outstanding at stop: 1");
-        StringAssert.Contains(report.Text, "Timer ticks skipped while a callback was pending: 1");
-        StringAssert.Contains(report.Text, "Callbacks rejected by DispatcherQueue: 1");
-        StringAssert.Contains(report.Text, "Normal-priority queue wait: count=1");
+        Assert.Contains("Callbacks enqueued: 3", report.Text);
+        Assert.Contains("Callbacks completed: 1", report.Text);
+        Assert.Contains("Callbacks outstanding at stop: 1", report.Text);
+        Assert.Contains("Timer ticks skipped while a callback was pending: 1", report.Text);
+        Assert.Contains("Callbacks rejected by DispatcherQueue: 1", report.Text);
+        Assert.Contains("Normal-priority queue wait: count=1", report.Text);
 
         bool TryEnqueue(DispatcherQueuePriority priority, DispatcherQueueHandler callback)
         {
@@ -209,14 +210,14 @@ public class IconLoadDiagnosticsTests
             $"    Empty: count=1";
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, "Direct glyph loads: 1");
-        StringAssert.Contains(report.Text, "Direct glyph construction: count=1");
-        StringAssert.Contains(report.Text, directGlyphResults);
-        StringAssert.Contains(report.Text, "Active at stop: 0");
-        StringAssert.Contains(report.Text, "Maximum active workers: 0");
-        StringAssert.Contains(report.Text, "Enqueue to completion: no samples");
-        StringAssert.Contains(report.Text, "New-load result kinds");
-        StringAssert.Contains(report.Text, "Empty: 1");
+        Assert.Contains("Direct glyph loads: 1", report.Text);
+        Assert.Contains("Direct glyph construction: count=1", report.Text);
+        Assert.Contains(directGlyphResults, report.Text);
+        Assert.Contains("Active at stop: 0", report.Text);
+        Assert.Contains("Maximum active workers: 0", report.Text);
+        Assert.Contains("Enqueue to completion: no samples", report.Text);
+        Assert.Contains("New-load result kinds", report.Text);
+        Assert.Contains("Empty: 1", report.Text);
     }
 
     [TestMethod]
@@ -242,11 +243,11 @@ public class IconLoadDiagnosticsTests
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, "  SpecializedAppIcon: 1");
+        Assert.Contains("  SpecializedAppIcon: 1", report.Text);
         Assert.IsFalse(report.Text.Contains("shell32", StringComparison.OrdinalIgnoreCase));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("|Swatch|#FF0067C0|", "GeneratedSwatch")]
     [DataRow("|Initials|CP|#FF005FB8|square|", "GeneratedInitials")]
     [DataRow("|Svg|C:\\Icons\\plain.svg", "SvgFile")]
@@ -277,12 +278,12 @@ public class IconLoadDiagnosticsTests
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, $"  {expectedKind}: 1");
+        Assert.Contains($"  {expectedKind}: 1", report.Text);
         Assert.IsFalse(report.Text.Contains(icon, StringComparison.Ordinal));
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task SchedulerReportCapturesCoordinatorAndWorkerHandoff()
     {
         using var coordinatorThreadListener = new CoordinatorThreadListener();
@@ -318,33 +319,33 @@ public class IconLoadDiagnosticsTests
             $"    WorkerReady: 1{Environment.NewLine}" +
             $"    Complete: 1";
 
-        StringAssert.Contains(report.Text, "Scheduler coordination");
-        StringAssert.Contains(report.Text, publishedCommands);
-        StringAssert.Contains(report.Text, processedCommands);
-        StringAssert.Contains(report.Text, "Commands outstanding at stop: 0");
-        StringAssert.Contains(report.Text, "    Enqueue: count=1");
-        StringAssert.Contains(report.Text, "    WorkerReady: count=1");
-        StringAssert.Contains(report.Text, "  Coordinator wake and batch processing");
-        StringAssert.Contains(report.Text, "    Signal to coordinator pass start for non-empty batches: count=");
+        Assert.Contains("Scheduler coordination", report.Text);
+        Assert.Contains(publishedCommands, report.Text);
+        Assert.Contains(processedCommands, report.Text);
+        Assert.Contains("Commands outstanding at stop: 0", report.Text);
+        Assert.Contains("    Enqueue: count=1", report.Text);
+        Assert.Contains("    WorkerReady: count=1", report.Text);
+        Assert.Contains("  Coordinator wake and batch processing", report.Text);
+        Assert.Contains("    Signal to coordinator pass start for non-empty batches: count=", report.Text);
 
         // Complete may be drained by a batch whose wake was triggered by another command.
         // Its publication and processing are asserted above instead of its trigger attribution.
-        StringAssert.Contains(report.Text, "    Commands drained: 3");
-        StringAssert.Contains(report.Text, "    Work items dispatched: 1");
-        StringAssert.Contains(report.Text, "    Non-empty batch command drain wall time: count=");
-        StringAssert.Contains(report.Text, "    Non-empty batch pass-start-to-dispatch-complete wall time: count=");
-        StringAssert.Contains(report.Text, "    Ready to work dispatch: count=1");
-        StringAssert.Contains(report.Text, "    Ready to demanded work dispatch: count=1");
-        StringAssert.Contains(report.Text, "    Ready to speculative work dispatch: no samples");
-        StringAssert.Contains(report.Text, "    Intervals started: 1");
-        StringAssert.Contains(report.Text, "    Intervals active at stop: 0");
-        StringAssert.Contains(report.Text, "    Maximum demanded queue depth during an interval: 1");
-        StringAssert.Contains(report.Text, "    Maximum available worker slots during an interval: 1");
-        StringAssert.Contains(report.Text, "    Interval duration: count=1");
+        Assert.Contains("    Commands drained: 3", report.Text);
+        Assert.Contains("    Work items dispatched: 1", report.Text);
+        Assert.Contains("    Non-empty batch command drain wall time: count=", report.Text);
+        Assert.Contains("    Non-empty batch pass-start-to-dispatch-complete wall time: count=", report.Text);
+        Assert.Contains("    Ready to work dispatch: count=1", report.Text);
+        Assert.Contains("    Ready to demanded work dispatch: count=1", report.Text);
+        Assert.Contains("    Ready to speculative work dispatch: no samples", report.Text);
+        Assert.Contains("    Intervals started: 1", report.Text);
+        Assert.Contains("    Intervals active at stop: 0", report.Text);
+        Assert.Contains("    Maximum demanded queue depth during an interval: 1", report.Text);
+        Assert.Contains("    Maximum available worker slots during an interval: 1", report.Text);
+        Assert.Contains("    Interval duration: count=1", report.Text);
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task SchedulerReportCapturesSpeculativeDemandReserve()
     {
         IconLoadDiagnostics.Start();
@@ -392,7 +393,7 @@ public class IconLoadDiagnosticsTests
             $"    Maximum configured worker count during an interval: 4{Environment.NewLine}" +
             $"    Maximum worker-ready slots retained during an interval: 1{Environment.NewLine}" +
             $"    Interval duration: count=2";
-        StringAssert.Contains(report.Text, reserveBlock);
+        Assert.Contains(reserveBlock, report.Text);
     }
 
     [TestMethod]
@@ -414,15 +415,15 @@ public class IconLoadDiagnosticsTests
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, "    Signal to coordinator pass start for non-empty batches: no samples");
-        StringAssert.Contains(report.Text, "    Signal to coordinator pass start for empty coalesced batches: count=1");
-        StringAssert.Contains(report.Text, "    Batches completed: 1");
-        StringAssert.Contains(report.Text, "    Empty batches: 1");
-        StringAssert.Contains(report.Text, "    Commands drained: 0");
+        Assert.Contains("    Signal to coordinator pass start for non-empty batches: no samples", report.Text);
+        Assert.Contains("    Signal to coordinator pass start for empty coalesced batches: count=1", report.Text);
+        Assert.Contains("    Batches completed: 1", report.Text);
+        Assert.Contains("    Empty batches: 1", report.Text);
+        Assert.Contains("    Commands drained: 0", report.Text);
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task SchedulerMeasurementsRemainPairedWithConcurrentPublishersAndWorkers()
     {
         const int WorkerCount = 4;
@@ -463,14 +464,14 @@ public class IconLoadDiagnosticsTests
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, $"    Enqueue: {WorkItemCount}");
-        StringAssert.Contains(report.Text, $"    WorkerReady: {WorkItemCount}");
-        StringAssert.Contains(report.Text, "    Complete: 1");
-        StringAssert.Contains(report.Text, "Commands outstanding at stop: 0");
-        StringAssert.Contains(report.Text, $"    Commands drained: {(WorkItemCount * 2) + 1}");
-        StringAssert.Contains(report.Text, $"    Work items dispatched: {WorkItemCount}");
-        StringAssert.Contains(report.Text, $"    Ready to work dispatch: count={WorkItemCount}");
-        StringAssert.Contains(report.Text, $"    Ready to demanded work dispatch: count={WorkItemCount}");
+        Assert.Contains($"    Enqueue: {WorkItemCount}", report.Text);
+        Assert.Contains($"    WorkerReady: {WorkItemCount}", report.Text);
+        Assert.Contains("    Complete: 1", report.Text);
+        Assert.Contains("Commands outstanding at stop: 0", report.Text);
+        Assert.Contains($"    Commands drained: {(WorkItemCount * 2) + 1}", report.Text);
+        Assert.Contains($"    Work items dispatched: {WorkItemCount}", report.Text);
+        Assert.Contains($"    Ready to work dispatch: count={WorkItemCount}", report.Text);
+        Assert.Contains($"    Ready to demanded work dispatch: count={WorkItemCount}", report.Text);
     }
 
     [TestMethod]
@@ -497,16 +498,16 @@ public class IconLoadDiagnosticsTests
             $"  A request coalesced with an in-flight load is a cache miss; see Provider resolution for in-flight reuse.{Environment.NewLine}" +
             $"  Capacity means the cache was over its limit when removal was attempted and takes precedence over LowScore; LowScore means score alone caused removal.{Environment.NewLine}" +
             "  20x20 Glyph cache, capacity 16";
-        StringAssert.Contains(report.Text, expectedHeader);
-        StringAssert.Contains(report.Text, "    Lookups: 2");
-        StringAssert.Contains(report.Text, "    Hits: 1");
-        StringAssert.Contains(report.Text, "    Misses: 1");
-        StringAssert.Contains(report.Text, "    Hit rate: 50 %");
-        StringAssert.Contains(report.Text, "    Maximum observed entries: 1");
+        Assert.Contains(expectedHeader, report.Text);
+        Assert.Contains("    Lookups: 2", report.Text);
+        Assert.Contains("    Hits: 1", report.Text);
+        Assert.Contains("    Misses: 1", report.Text);
+        Assert.Contains("    Hit rate: 50 %", report.Text);
+        Assert.Contains("    Maximum observed entries: 1", report.Text);
         var expectedRemovalReason =
             $"    Removal reasons{Environment.NewLine}" +
             "      Explicit: 1";
-        StringAssert.Contains(report.Text, expectedRemovalReason);
+        Assert.Contains(expectedRemovalReason, report.Text);
     }
 
     [TestMethod]
@@ -558,49 +559,49 @@ public class IconLoadDiagnosticsTests
             $"    Protocol: 1{Environment.NewLine}" +
             $"    FileUri: 0{Environment.NewLine}" +
             "    LegacyPath: 1";
-        StringAssert.Contains(report.Text, requestBlock);
+        Assert.Contains(requestBlock, report.Text);
         var invalidationBlock =
             $"  Location invalidation{Environment.NewLine}" +
             $"    Association-change notifications received: 1{Environment.NewLine}" +
             $"    Invalidations by reason{Environment.NewLine}" +
             $"      AssociationChanged: 1{Environment.NewLine}" +
             "      ShellRestarted: 1";
-        StringAssert.Contains(report.Text, invalidationBlock);
+        Assert.Contains(invalidationBlock, report.Text);
         var progressiveBlock =
             $"  Progressive type fallback{Environment.NewLine}" +
             $"    Succeeded: 1{Environment.NewLine}" +
             $"    Empty: 0{Environment.NewLine}" +
             "    Failed: 0";
-        StringAssert.Contains(report.Text, progressiveBlock);
-        StringAssert.Contains(report.Text, "    Request to type fallback: count=1");
+        Assert.Contains(progressiveBlock, report.Text);
+        Assert.Contains("    Request to type fallback: count=1", report.Text);
         var progressiveOutcomeBlock =
             $"    Intermediate dispatches accepted: 1{Environment.NewLine}" +
             $"    Intermediate dispatches rejected: 0{Environment.NewLine}" +
             $"    Intermediate UI updates applied: 1{Environment.NewLine}" +
             $"    Intermediate UI updates skipped: 0{Environment.NewLine}" +
             $"    Request to applied intermediate: count=1";
-        StringAssert.Contains(report.Text, progressiveOutcomeBlock);
+        Assert.Contains(progressiveOutcomeBlock, report.Text);
         var refinementBlock =
             $"    Exact refinement outcomes{Environment.NewLine}" +
             "      Same source: 1";
-        StringAssert.Contains(report.Text, refinementBlock);
-        StringAssert.Contains(report.Text, $"  Location aliases{Environment.NewLine}    Cache hits: 1{Environment.NewLine}    Cache misses: 1");
-        StringAssert.Contains(report.Text, "    Identity resolutions: 1");
-        StringAssert.Contains(report.Text, $"    Resolved identity kinds{Environment.NewLine}      SystemImageList: 1");
-        StringAssert.Contains(report.Text, $"  Canonical source outcomes{Environment.NewLine}    Cache hits: 1{Environment.NewLine}    In-flight joins: 0{Environment.NewLine}    New loads: 1{Environment.NewLine}    Reuse rate: 50%");
-        StringAssert.Contains(report.Text, $"  Shell extraction{Environment.NewLine}    Started: 1{Environment.NewLine}    Succeeded: 1{Environment.NewLine}    Empty: 0{Environment.NewLine}    Failed: 0");
-        StringAssert.Contains(report.Text, $"    Extraction routes{Environment.NewLine}      SystemImageList: 1");
-        StringAssert.Contains(report.Text, "    Requests avoiding extraction: 50%");
+        Assert.Contains(refinementBlock, report.Text);
+        Assert.Contains($"  Location aliases{Environment.NewLine}    Cache hits: 1{Environment.NewLine}    Cache misses: 1", report.Text);
+        Assert.Contains("    Identity resolutions: 1", report.Text);
+        Assert.Contains($"    Resolved identity kinds{Environment.NewLine}      SystemImageList: 1", report.Text);
+        Assert.Contains($"  Canonical source outcomes{Environment.NewLine}    Cache hits: 1{Environment.NewLine}    In-flight joins: 0{Environment.NewLine}    New loads: 1{Environment.NewLine}    Reuse rate: 50%", report.Text);
+        Assert.Contains($"  Shell extraction{Environment.NewLine}    Started: 1{Environment.NewLine}    Succeeded: 1{Environment.NewLine}    Empty: 0{Environment.NewLine}    Failed: 0", report.Text);
+        Assert.Contains($"    Extraction routes{Environment.NewLine}      SystemImageList: 1", report.Text);
+        Assert.Contains("    Requests avoiding extraction: 50%", report.Text);
         var imageListBlock =
             $"    Direct system image-list extraction{Environment.NewLine}" +
             $"      Attempts: 1{Environment.NewLine}" +
             $"      Image-list levels used{Environment.NewLine}" +
             "        Large: 1";
-        StringAssert.Contains(report.Text, imageListBlock);
-        StringAssert.Contains(report.Text, "      Requested physical edge: count=1, avg=20 px, max=20 px");
-        StringAssert.Contains(report.Text, "      Source image-list dimensions: count=1, avg=32x32 px, max edge=32 px");
-        StringAssert.Contains(report.Text, "      Source larger than request: 1");
-        StringAssert.Contains(report.Text, "      HICON to SoftwareBitmap: count=1");
+        Assert.Contains(imageListBlock, report.Text);
+        Assert.Contains("      Requested physical edge: count=1, avg=20 px, max=20 px", report.Text);
+        Assert.Contains("      Source image-list dimensions: count=1, avg=32x32 px, max edge=32 px", report.Text);
+        Assert.Contains("      Source larger than request: 1", report.Text);
+        Assert.Contains("      HICON to SoftwareBitmap: count=1", report.Text);
         Assert.IsFalse(report.Text.Contains("first.txt", StringComparison.Ordinal));
         Assert.IsFalse(report.Text.Contains("second.txt", StringComparison.Ordinal));
     }
@@ -645,17 +646,17 @@ public class IconLoadDiagnosticsTests
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, "Dispatcher materialization");
-        StringAssert.Contains(report.Text, "    Enqueued demanded: 1");
-        StringAssert.Contains(report.Text, "    Callbacks started speculative: 1");
-        StringAssert.Contains(report.Text, "    Callbacks completed speculative: 1");
-        StringAssert.Contains(report.Text, "    Measured STA execution slices: count=2");
-        StringAssert.Contains(report.Text, "    Asynchronous materialization suspension: count=1");
-        StringAssert.Contains(report.Text, "    BitmapStream");
-        StringAssert.Contains(report.Text, "phase=UiEntry");
-        StringAssert.Contains(report.Text, "phase=AsyncSuspension");
-        StringAssert.Contains(report.Text, "materialization=BitmapStream");
-        StringAssert.Contains(report.Text, "demand=Speculative");
+        Assert.Contains("Dispatcher materialization", report.Text);
+        Assert.Contains("    Enqueued demanded: 1", report.Text);
+        Assert.Contains("    Callbacks started speculative: 1", report.Text);
+        Assert.Contains("    Callbacks completed speculative: 1", report.Text);
+        Assert.Contains("    Measured STA execution slices: count=2", report.Text);
+        Assert.Contains("    Asynchronous materialization suspension: count=1", report.Text);
+        Assert.Contains("    BitmapStream", report.Text);
+        Assert.Contains("phase=UiEntry", report.Text);
+        Assert.Contains("phase=AsyncSuspension", report.Text);
+        Assert.Contains("materialization=BitmapStream", report.Text);
+        Assert.Contains("demand=Speculative", report.Text);
     }
 
     [TestMethod]
@@ -685,11 +686,11 @@ public class IconLoadDiagnosticsTests
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, "    Enqueued demanded: 1");
-        StringAssert.Contains(report.Text, "    Dispatcher enqueue failures: 1");
-        StringAssert.Contains(
-            report.Text,
-            $"    Speculative{Environment.NewLine}      Low-priority dispatcher wait: count=1");
+        Assert.Contains("    Enqueued demanded: 1", report.Text);
+        Assert.Contains("    Dispatcher enqueue failures: 1", report.Text);
+        Assert.Contains(
+            $"    Speculative{Environment.NewLine}      Low-priority dispatcher wait: count=1",
+            report.Text);
     }
 
     [TestMethod]
@@ -724,19 +725,19 @@ public class IconLoadDiagnosticsTests
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, "Requests linked to session loads: 2");
-        StringAssert.Contains(report.Text, "    Queued: 1");
-        StringAssert.Contains(report.Text, "  Invalidated requests by load stage");
-        StringAssert.Contains(report.Text, "  Demand-loss events after the last requester was invalidated");
-        StringAssert.Contains(report.Text, "    Queued: 1");
-        StringAssert.Contains(report.Text, "Workers started with no live requester: 1");
-        StringAssert.Contains(report.Text, "Loads completed with no live requester: 1");
-        StringAssert.Contains(report.Text, "Loads completed with no live requester by input kind");
-        StringAssert.Contains(report.Text, "Loads completed with no live requester by result kind");
-        StringAssert.Contains(report.Text, "Completed-without-requester loads later cache-hit: 1");
-        StringAssert.Contains(report.Text, "Later cache-hit requests: 1");
-        StringAssert.Contains(report.Text, "No-requester time before worker start: count=1");
-        StringAssert.Contains(report.Text, "No-requester time before load completion: count=1");
+        Assert.Contains("Requests linked to session loads: 2", report.Text);
+        Assert.Contains("    Queued: 1", report.Text);
+        Assert.Contains("  Invalidated requests by load stage", report.Text);
+        Assert.Contains("  Demand-loss events after the last requester was invalidated", report.Text);
+        Assert.Contains("    Queued: 1", report.Text);
+        Assert.Contains("Workers started with no live requester: 1", report.Text);
+        Assert.Contains("Loads completed with no live requester: 1", report.Text);
+        Assert.Contains("Loads completed with no live requester by input kind", report.Text);
+        Assert.Contains("Loads completed with no live requester by result kind", report.Text);
+        Assert.Contains("Completed-without-requester loads later cache-hit: 1", report.Text);
+        Assert.Contains("Later cache-hit requests: 1", report.Text);
+        Assert.Contains("No-requester time before worker start: count=1", report.Text);
+        Assert.Contains("No-requester time before load completion: count=1", report.Text);
     }
 
     [TestMethod]
@@ -774,18 +775,18 @@ public class IconLoadDiagnosticsTests
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, "Requests linked to session loads: 3");
-        StringAssert.Contains(report.Text, "Loads with multiple simultaneous requesters: 1");
-        StringAssert.Contains(report.Text, "Maximum simultaneous requesters per load: 2");
-        StringAssert.Contains(report.Text, "    Queued: 2");
-        StringAssert.Contains(report.Text, "    Queued: 1");
-        StringAssert.Contains(report.Text, "Loads where demand returned before completion: 1");
-        StringAssert.Contains(report.Text, "Queued demotions after demand loss: 1");
-        StringAssert.Contains(report.Text, "Queued promotions after demand returned: 1");
-        StringAssert.Contains(report.Text, "Workers started demanded: 1");
-        StringAssert.Contains(report.Text, "Workers started speculative: 0");
-        StringAssert.Contains(report.Text, "Workers started with no live requester: 0");
-        StringAssert.Contains(report.Text, "Loads completed with no live requester: 0");
+        Assert.Contains("Requests linked to session loads: 3", report.Text);
+        Assert.Contains("Loads with multiple simultaneous requesters: 1", report.Text);
+        Assert.Contains("Maximum simultaneous requesters per load: 2", report.Text);
+        Assert.Contains("    Queued: 2", report.Text);
+        Assert.Contains("    Queued: 1", report.Text);
+        Assert.Contains("Loads where demand returned before completion: 1", report.Text);
+        Assert.Contains("Queued demotions after demand loss: 1", report.Text);
+        Assert.Contains("Queued promotions after demand returned: 1", report.Text);
+        Assert.Contains("Workers started demanded: 1", report.Text);
+        Assert.Contains("Workers started speculative: 0", report.Text);
+        Assert.Contains("Workers started with no live requester: 0", report.Text);
+        Assert.Contains("Loads completed with no live requester: 0", report.Text);
     }
 
     [TestMethod]
@@ -868,27 +869,27 @@ public class IconLoadDiagnosticsTests
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, "Maximum demanded queue depth: 1");
-        StringAssert.Contains(report.Text, "Maximum speculative queue depth: 1");
-        StringAssert.Contains(report.Text, "Queued demotions after demand loss: 2");
-        StringAssert.Contains(report.Text, "Queued promotions after demand returned: 0");
-        StringAssert.Contains(report.Text, "Workers started demanded: 2");
-        StringAssert.Contains(report.Text, "Workers started speculative: 2");
-        StringAssert.Contains(report.Text, "Speculative starts with demanded loads queued: 2");
-        StringAssert.Contains(report.Text, "Speculative starts leaving demanded loads beyond remaining worker capacity: 1");
-        StringAssert.Contains(report.Text, "Demanded loads beyond remaining capacity across those starts: 1");
-        StringAssert.Contains(report.Text, "Maximum demanded loads beyond remaining capacity at one start: 1");
-        StringAssert.Contains(report.Text, "Capacity-interfering speculative starts by input kind");
-        StringAssert.Contains(report.Text, "      String: 1");
-        StringAssert.Contains(report.Text, "Demanded queue wait: count=2");
-        StringAssert.Contains(report.Text, "Speculative queue wait: count=2");
+        Assert.Contains("Maximum demanded queue depth: 1", report.Text);
+        Assert.Contains("Maximum speculative queue depth: 1", report.Text);
+        Assert.Contains("Queued demotions after demand loss: 2", report.Text);
+        Assert.Contains("Queued promotions after demand returned: 0", report.Text);
+        Assert.Contains("Workers started demanded: 2", report.Text);
+        Assert.Contains("Workers started speculative: 2", report.Text);
+        Assert.Contains("Speculative starts with demanded loads queued: 2", report.Text);
+        Assert.Contains("Speculative starts leaving demanded loads beyond remaining worker capacity: 1", report.Text);
+        Assert.Contains("Demanded loads beyond remaining capacity across those starts: 1", report.Text);
+        Assert.Contains("Maximum demanded loads beyond remaining capacity at one start: 1", report.Text);
+        Assert.Contains("Capacity-interfering speculative starts by input kind", report.Text);
+        Assert.Contains("      String: 1", report.Text);
+        Assert.Contains("Demanded queue wait: count=2", report.Text);
+        Assert.Contains("Speculative queue wait: count=2", report.Text);
 
         var stringInputMeasurements = GetTextBetween(
             report.Text,
             "  String: 4",
             "  ShellBinary: 0");
-        StringAssert.Contains(stringInputMeasurements, "    Demanded queue wait: count=2");
-        StringAssert.Contains(stringInputMeasurements, "    Speculative queue wait: count=2");
+        Assert.Contains("    Demanded queue wait: count=2", stringInputMeasurements);
+        Assert.Contains("    Speculative queue wait: count=2", stringInputMeasurements);
     }
 
     [TestMethod]
@@ -945,22 +946,23 @@ public class IconLoadDiagnosticsTests
             $"        Empty: 0{Environment.NewLine}" +
             $"        String: 1";
 
-        StringAssert.Contains(report.Text, "Active demanded workers at stop: 0");
-        StringAssert.Contains(report.Text, "Active speculative workers at stop: 0");
-        StringAssert.Contains(report.Text, "Maximum active speculative workers: 1");
-        StringAssert.Contains(report.Text, "Demanded queue arrivals: 2");
-        StringAssert.Contains(report.Text, "Arrivals with active speculative workers: 1");
-        StringAssert.Contains(report.Text, "Sum of active speculative workers observed at those arrivals: 1");
-        StringAssert.Contains(report.Text, "Maximum speculative workers active at one demanded arrival: 1");
-        StringAssert.Contains(report.Text, "Arrivals directly blocked by speculative worker capacity: 1");
-        StringAssert.Contains(report.Text, speculativeOccupancyBlock);
-        StringAssert.Contains(report.Text, directlyBlockedBlock);
-        StringAssert.Contains(report.Text, "Demand arrival to worker start with speculative workers active: count=1");
-        StringAssert.Contains(report.Text, "Directly blocked demand arrival to worker start: count=1");
+        Assert.Contains("Active demanded workers at stop: 0", report.Text);
+        Assert.Contains("Active speculative workers at stop: 0", report.Text);
+        Assert.Contains("Maximum active speculative workers: 1", report.Text);
+        Assert.Contains("Demanded queue arrivals: 2", report.Text);
+        Assert.Contains("Arrivals with active speculative workers: 1", report.Text);
+        Assert.Contains("Sum of active speculative workers observed at those arrivals: 1", report.Text);
+        Assert.Contains("Maximum speculative workers active at one demanded arrival: 1", report.Text);
+        Assert.Contains("Arrivals directly blocked by speculative worker capacity: 1", report.Text);
+        Assert.Contains(speculativeOccupancyBlock, report.Text);
+        Assert.Contains(directlyBlockedBlock, report.Text);
+        Assert.Contains("Demand arrival to worker start with speculative workers active: count=1", report.Text);
+        Assert.Contains("Directly blocked demand arrival to worker start: count=1", report.Text);
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = false)]
     public void ConcurrentActiveInvalidationAndCompletionDoNotLeakWorkerDemand()
     {
         IconLoadDiagnostics.Start();
@@ -989,8 +991,8 @@ public class IconLoadDiagnosticsTests
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, "Active demanded workers at stop: 0");
-        StringAssert.Contains(report.Text, "Active speculative workers at stop: 0");
+        Assert.Contains("Active demanded workers at stop: 0", report.Text);
+        Assert.Contains("Active speculative workers at stop: 0", report.Text);
     }
 
     [TestMethod]
@@ -1020,9 +1022,9 @@ public class IconLoadDiagnosticsTests
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, "    BeforeEnqueue: 1");
-        StringAssert.Contains(report.Text, "Workers started with no live requester: 1");
-        StringAssert.Contains(report.Text, "Loads completed with no live requester: 1");
+        Assert.Contains("    BeforeEnqueue: 1", report.Text);
+        Assert.Contains("Workers started with no live requester: 1", report.Text);
+        Assert.Contains("Loads completed with no live requester: 1", report.Text);
     }
 
     [TestMethod]
@@ -1042,7 +1044,7 @@ public class IconLoadDiagnosticsTests
         Assert.IsNotNull(report);
         foreach (var resolution in Enum.GetValues<IconProviderResolution>())
         {
-            StringAssert.Contains(report.Text, $"    {resolution}");
+            Assert.Contains($"    {resolution}", report.Text);
         }
 
         Assert.AreEqual(
@@ -1073,18 +1075,18 @@ public class IconLoadDiagnosticsTests
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, "Request origins");
-        StringAssert.Contains(report.Text, "  ListItem / SingleRow");
-        StringAssert.Contains(report.Text, "    Icon boxes: 2");
-        StringAssert.Contains(report.Text, "    Started: 3");
-        StringAssert.Contains(report.Text, "    Applied: 2");
-        StringAssert.Contains(report.Text, "    Stale: 1");
-        StringAssert.Contains(report.Text, "      NewLoad: 1");
-        StringAssert.Contains(report.Text, "      CacheHit: 2");
-        StringAssert.Contains(report.Text, "    Result kinds");
-        StringAssert.Contains(report.Text, "      Empty: 3");
-        StringAssert.Contains(report.Text, "      Applied: count=2");
-        StringAssert.Contains(report.Text, "      Stale: count=1");
+        Assert.Contains("Request origins", report.Text);
+        Assert.Contains("  ListItem / SingleRow", report.Text);
+        Assert.Contains("    Icon boxes: 2", report.Text);
+        Assert.Contains("    Started: 3", report.Text);
+        Assert.Contains("    Applied: 2", report.Text);
+        Assert.Contains("    Stale: 1", report.Text);
+        Assert.Contains("      NewLoad: 1", report.Text);
+        Assert.Contains("      CacheHit: 2", report.Text);
+        Assert.Contains("    Result kinds", report.Text);
+        Assert.Contains("      Empty: 3", report.Text);
+        Assert.Contains("      Applied: count=2", report.Text);
+        Assert.Contains("      Stale: count=1", report.Text);
         var globalAppliedResolutionBlock =
             $"  Applied request to completion by provider resolution{Environment.NewLine}" +
             $"    NewLoad: no samples{Environment.NewLine}" +
@@ -1093,9 +1095,9 @@ public class IconLoadDiagnosticsTests
             $"    Applied request to completion by provider resolution{Environment.NewLine}" +
             $"      NewLoad: no samples{Environment.NewLine}" +
             $"      CacheHit: count=2";
-        StringAssert.Contains(report.Text, globalAppliedResolutionBlock);
-        StringAssert.Contains(report.Text, originAppliedResolutionBlock);
-        StringAssert.Contains(report.Text, "Individual process-local IconBox IDs are available in RequestOrigin ETW events.");
+        Assert.Contains(globalAppliedResolutionBlock, report.Text);
+        Assert.Contains(originAppliedResolutionBlock, report.Text);
+        Assert.Contains("Individual process-local IconBox IDs are available in RequestOrigin ETW events.", report.Text);
     }
 
     [TestMethod]
@@ -1109,14 +1111,14 @@ public class IconLoadDiagnosticsTests
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, "  Settings");
+        Assert.Contains("  Settings", report.Text);
         Assert.IsFalse(report.Text.Contains("secret", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(report.Text.Contains("Injected", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(report.Text.Contains("C:\\private", StringComparison.OrdinalIgnoreCase));
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task WorkerArrivalBeforeEnqueueDoesNotBlockAndResumesAfterCommit()
     {
         IconLoadDiagnostics.Start();
@@ -1133,7 +1135,7 @@ public class IconLoadDiagnosticsTests
 
         Assert.IsFalse(workerStart.IsCompleted);
         load.Enqueued(IconLoadPriority.Low);
-        Assert.IsTrue(await workerStart.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.IsTrue(await workerStart.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
         load.SetResult(null);
         load.Complete();
         load.WorkerReleased();
@@ -1141,13 +1143,13 @@ public class IconLoadDiagnosticsTests
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, "Maximum low queue depth: 1");
-        StringAssert.Contains(report.Text, "Active at stop: 0");
-        StringAssert.Contains(report.Text, "Enqueue to completion: count=1");
+        Assert.Contains("Maximum low queue depth: 1", report.Text);
+        Assert.Contains("Active at stop: 0", report.Text);
+        Assert.Contains("Enqueue to completion: count=1", report.Text);
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task RejectionReleasesWorkerWaitingForEnqueueCommit()
     {
         IconLoadDiagnostics.Start();
@@ -1164,15 +1166,15 @@ public class IconLoadDiagnosticsTests
 
         Assert.IsFalse(workerStart.IsCompleted);
         load.Rejected();
-        Assert.IsFalse(await workerStart.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.IsFalse(await workerStart.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
         load.WorkerReleased();
 
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, "Rejected: 1");
-        StringAssert.Contains(report.Text, "Active at stop: 0");
-        StringAssert.Contains(report.Text, "Enqueue to completion: no samples");
+        Assert.Contains("Rejected: 1", report.Text);
+        Assert.Contains("Active at stop: 0", report.Text);
+        Assert.Contains("Enqueue to completion: no samples", report.Text);
     }
 
     [TestMethod]
@@ -1202,12 +1204,12 @@ public class IconLoadDiagnosticsTests
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, "Active at stop: 0");
-        StringAssert.Contains(report.Text, "Active demanded workers at stop: 0");
-        StringAssert.Contains(report.Text, "Active speculative workers at stop: 0");
-        StringAssert.Contains(report.Text, "    AwaitingSharedLoad: 1");
-        StringAssert.Contains(report.Text, "    Awaiting shared load: 1");
-        StringAssert.Contains(report.Text, "Enqueue to completion: no samples");
+        Assert.Contains("Active at stop: 0", report.Text);
+        Assert.Contains("Active demanded workers at stop: 0", report.Text);
+        Assert.Contains("Active speculative workers at stop: 0", report.Text);
+        Assert.Contains("    AwaitingSharedLoad: 1", report.Text);
+        Assert.Contains("    Awaiting shared load: 1", report.Text);
+        Assert.Contains("Enqueue to completion: no samples", report.Text);
 
         load.Fail();
     }
@@ -1236,12 +1238,12 @@ public class IconLoadDiagnosticsTests
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, "Abandoned before worker start: 1");
-        StringAssert.Contains(report.Text, "Active at stop: 0");
-        StringAssert.Contains(report.Text, "Demanded loads queued at stop: 0");
-        StringAssert.Contains(report.Text, "Speculative loads queued at stop: 0");
-        StringAssert.Contains(report.Text, "    Abandoned: 1");
-        StringAssert.Contains(report.Text, "Enqueue to completion: no samples");
+        Assert.Contains("Abandoned before worker start: 1", report.Text);
+        Assert.Contains("Active at stop: 0", report.Text);
+        Assert.Contains("Demanded loads queued at stop: 0", report.Text);
+        Assert.Contains("Speculative loads queued at stop: 0", report.Text);
+        Assert.Contains("    Abandoned: 1", report.Text);
+        Assert.Contains("Enqueue to completion: no samples", report.Text);
     }
 
     [TestMethod]
@@ -1264,8 +1266,8 @@ public class IconLoadDiagnosticsTests
         var report = IconLoadDiagnostics.StopAndCreateReport();
 
         Assert.IsNotNull(report);
-        StringAssert.Contains(report.Text, "Active at stop: 0");
-        StringAssert.Contains(report.Text, "Enqueue to completion: no samples");
+        Assert.Contains("Active at stop: 0", report.Text);
+        Assert.Contains("Enqueue to completion: no samples", report.Text);
     }
 
     [TestMethod]
@@ -1335,14 +1337,14 @@ public class IconLoadDiagnosticsTests
             var shellMeasurement = IconLoadDiagnostics.BeginShellIconRequest(shellRequest);
             shellMeasurement.LocationCacheMiss();
 
-            CollectionAssert.Contains(listener.EventIds.ToArray(), 1);
-            CollectionAssert.Contains(listener.EventIds.ToArray(), 4);
-            CollectionAssert.Contains(listener.EventIds.ToArray(), 22);
-            CollectionAssert.Contains(listener.EventIds.ToArray(), 23);
-            CollectionAssert.Contains(listener.EventIds.ToArray(), 24);
-            CollectionAssert.Contains(listener.EventIds.ToArray(), 25);
-            CollectionAssert.Contains(listener.EventIds.ToArray(), 26);
-            CollectionAssert.Contains(listener.EventIds.ToArray(), 39);
+            Assert.Contains(1, listener.EventIds.ToArray());
+            Assert.Contains(4, listener.EventIds.ToArray());
+            Assert.Contains(22, listener.EventIds.ToArray());
+            Assert.Contains(23, listener.EventIds.ToArray());
+            Assert.Contains(24, listener.EventIds.ToArray());
+            Assert.Contains(25, listener.EventIds.ToArray());
+            Assert.Contains(26, listener.EventIds.ToArray());
+            Assert.Contains(39, listener.EventIds.ToArray());
         }
 
         var inactiveRequest = IconLoadDiagnostics.BeginRequest(IconRequestReason.SourceChanged, 1.0);
@@ -1392,9 +1394,9 @@ public class IconLoadDiagnosticsTests
     private static string GetTextBetween(string value, string start, string end)
     {
         var startIndex = value.IndexOf(start, StringComparison.Ordinal);
-        Assert.IsTrue(startIndex >= 0, $"Missing report section start: {start}");
+        Assert.IsGreaterThanOrEqualTo(0, startIndex, $"Missing report section start: {start}");
         var endIndex = value.IndexOf(end, startIndex + start.Length, StringComparison.Ordinal);
-        Assert.IsTrue(endIndex > startIndex, $"Missing report section end: {end}");
+        Assert.IsGreaterThan(startIndex, endIndex, $"Missing report section end: {end}");
         return value[startIndex..endIndex];
     }
 
@@ -1429,4 +1431,6 @@ public class IconLoadDiagnosticsTests
         {
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

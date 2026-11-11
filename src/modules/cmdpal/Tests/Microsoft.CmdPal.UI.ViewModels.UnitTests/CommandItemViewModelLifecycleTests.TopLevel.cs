@@ -86,7 +86,7 @@ public partial class CommandItemViewModelLifecycleTests
         var source = new CommandItemViewModel(new(item), new(context), DefaultContextMenuFactory.Instance);
         source.InitializeProperties();
         source.ApplyPendingUpdates();
-        await ui.StartNew(() => { });
+        await ui.StartNew(() => { }, TestContext.CancellationToken);
         using var services = new ServiceCollection().AddSingleton(Mock.Of<ISettingsService>()).BuildServiceProvider();
         var topLevel = CreateTopLevelSource(source, services, fallback: false);
         IListItem presentation = recent ? new RecentCommandListItem(new InProcObject<IListItem>(topLevel), topLevel.Id) : topLevel;
@@ -119,7 +119,7 @@ public partial class CommandItemViewModelLifecycleTests
             newCommand.Name = "Updated command";
             newCommand.RaisePropertyChanged(nameof(ICommand.Name));
             source.Command.ApplyPendingUpdates();
-            await ui.StartNew(() => { });
+            await ui.StartNew(() => { }, TestContext.CancellationToken);
 
             Assert.AreEqual("Updated command", row.Name);
             Assert.AreEqual("Updated command", row.PrimaryMenuItem!.Title);

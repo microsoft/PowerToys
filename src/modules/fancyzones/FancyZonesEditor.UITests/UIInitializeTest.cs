@@ -19,6 +19,7 @@ using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class UIInitializeTest : UITestBase
     {
@@ -27,7 +28,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
         }
 
-        [TestMethod("FancyZonesEditor.Basic.EditorParams_VerifySelectedMonitor")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.EditorParams_VerifySelectedMonitor")]
         [TestCategory("FancyZones Editor #10")]
         public void EditorParams_VerifySelectedMonitor()
         {
@@ -642,7 +643,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             // check the file
             var data = appliedLayouts.Read(appliedLayouts.File);
-            Assert.AreEqual(parameters.Monitors.Count + appliedLayoutsWrapper.AppliedLayouts.Count, data.AppliedLayouts.Count);
+            Assert.HasCount(parameters.Monitors.Count + appliedLayoutsWrapper.AppliedLayouts.Count, data.AppliedLayouts);
 
             foreach (var monitor in parameters.Monitors)
             {
@@ -723,7 +724,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             // check the file
             var data = appliedLayouts.Read(appliedLayouts.File);
-            Assert.AreEqual(parameters.Monitors.Count + appliedLayoutsWrapper.AppliedLayouts.Count, data.AppliedLayouts.Count);
+            Assert.HasCount(parameters.Monitors.Count + appliedLayoutsWrapper.AppliedLayouts.Count, data.AppliedLayouts);
             Assert.IsNotNull(data.AppliedLayouts.Find(x => x.Device.VirtualDesktop == virtualDesktop1));
             Assert.IsNotNull(data.AppliedLayouts.Find(x => x.Device.VirtualDesktop == virtualDesktop2));
             Assert.AreEqual(appliedLayoutsWrapper.AppliedLayouts[0].AppliedLayout.Type, data.AppliedLayouts.Find(x => x.Device.VirtualDesktop == virtualDesktop2).AppliedLayout.Type);

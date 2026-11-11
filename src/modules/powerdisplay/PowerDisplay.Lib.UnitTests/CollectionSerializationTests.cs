@@ -10,6 +10,7 @@ using PowerDisplay.Models;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CollectionSerializationTests
 {
@@ -22,7 +23,7 @@ public class CollectionSerializationTests
         var profiles = JsonSerializer.Deserialize(json, ProfileSerializationContext.Default.PowerDisplayProfiles);
         Assert.IsNotNull(profiles);
         Assert.IsNotNull(profiles.Profiles);
-        Assert.AreEqual(0, profiles.GetAssignedProfiles().Count());
+        Assert.IsEmpty(profiles.GetAssignedProfiles());
         profiles.SetProfile(new PowerDisplayProfile("New", [new ProfileMonitorSetting("MON1", 50)]));
 
         var saved = JsonSerializer.Serialize(profiles, ProfileSerializationContext.Default.PowerDisplayProfiles);
@@ -41,7 +42,7 @@ public class CollectionSerializationTests
         Assert.IsNotNull(profiles);
         var profile = profiles.GetAssignedProfiles().Single();
         Assert.IsNotNull(profile.MonitorSettings);
-        Assert.AreEqual(0, profile.MonitorSettings.Count);
+        Assert.IsEmpty(profile.MonitorSettings);
         Assert.IsFalse(profile.IsValid());
         profile.MonitorSettings.Add(new ProfileMonitorSetting("MON1", 50));
         Assert.IsTrue(profile.IsValid());
@@ -61,9 +62,9 @@ public class CollectionSerializationTests
         var file = JsonSerializer.Deserialize(json, MonitorBlacklistSerializationContext.Default.BuiltInMonitorBlacklistFile);
         Assert.IsNotNull(file);
         Assert.IsNotNull(file.Entries);
-        Assert.AreEqual(count, file.Entries.Count);
+        Assert.HasCount(count, file.Entries);
         var saved = JsonSerializer.Serialize(file, MonitorBlacklistSerializationContext.Default.BuiltInMonitorBlacklistFile);
-        Assert.AreEqual(count, JsonSerializer.Deserialize(saved, MonitorBlacklistSerializationContext.Default.BuiltInMonitorBlacklistFile)!.Entries.Count);
+        Assert.HasCount(count, JsonSerializer.Deserialize(saved, MonitorBlacklistSerializationContext.Default.BuiltInMonitorBlacklistFile)!.Entries);
     }
 
     [TestMethod]
@@ -75,15 +76,15 @@ public class CollectionSerializationTests
         var file = JsonSerializer.Deserialize(json, MonitorStateSerializationContext.Default.MonitorStateFile);
         Assert.IsNotNull(file);
         Assert.IsNotNull(file.Monitors);
-        Assert.AreEqual(count, file.Monitors.Count);
+        Assert.HasCount(count, file.Monitors);
         foreach (var entry in file.Monitors.Values)
         {
             Assert.IsNotNull(entry.KnownGoodVcpFeatures);
-            Assert.AreEqual(0, entry.KnownGoodVcpFeatures.Count);
+            Assert.IsEmpty(entry.KnownGoodVcpFeatures);
         }
 
         var saved = JsonSerializer.Serialize(file, MonitorStateSerializationContext.Default.MonitorStateFile);
-        Assert.AreEqual(count, JsonSerializer.Deserialize(saved, MonitorStateSerializationContext.Default.MonitorStateFile)!.Monitors.Count);
+        Assert.HasCount(count, JsonSerializer.Deserialize(saved, MonitorStateSerializationContext.Default.MonitorStateFile)!.Monitors);
     }
 
     [TestMethod]
@@ -95,9 +96,12 @@ public class CollectionSerializationTests
         var entry = JsonSerializer.Deserialize(json, MonitorStateSerializationContext.Default.MonitorStateEntry);
         Assert.IsNotNull(entry);
         Assert.IsNotNull(entry.KnownGoodVcpFeatures);
-        Assert.AreEqual(count, entry.KnownGoodVcpFeatures.Count);
+        Assert.HasCount(count, entry.KnownGoodVcpFeatures);
         var saved = JsonSerializer.Serialize(entry, MonitorStateSerializationContext.Default.MonitorStateEntry);
-        Assert.AreEqual(count, JsonSerializer.Deserialize(saved, MonitorStateSerializationContext.Default.MonitorStateEntry)!.KnownGoodVcpFeatures!.Count);
+        var roundTripped = JsonSerializer.Deserialize(saved, MonitorStateSerializationContext.Default.MonitorStateEntry);
+        Assert.IsNotNull(roundTripped);
+        Assert.IsNotNull(roundTripped.KnownGoodVcpFeatures);
+        Assert.HasCount(count, roundTripped.KnownGoodVcpFeatures);
     }
 
     [TestMethod]

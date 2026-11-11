@@ -16,6 +16,7 @@ using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class CustomLayoutsTests : UITestBase
     {
@@ -258,8 +259,8 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             // verify new name
             Session.Find<Button>(ElementName.Cancel).Click();
-            Assert.IsTrue(Session.FindAll<Element>(oldName).Count == 0);
-            Assert.IsTrue(Session.FindAll<Element>(newName).Count != 0);
+            Assert.IsEmpty(Session.FindAll<Element>(oldName));
+            Assert.IsNotEmpty(Session.FindAll<Element>(newName));
         }
 
         [TestMethod]

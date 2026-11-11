@@ -7,6 +7,7 @@ using PowerLauncher.ViewModel;
 
 namespace Wox.Test
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class MainViewModelTest
     {
@@ -219,7 +220,7 @@ namespace Wox.Test
             bool result = MainViewModel.ShouldAutoCompleteTextBeEmpty(queryText, autoCompleteText);
 
             // Assert
-            Assert.AreEqual(false, result);
+            Assert.IsFalse(result);
         }
 
         [TestMethod]
@@ -233,7 +234,7 @@ namespace Wox.Test
             bool result = MainViewModel.ShouldAutoCompleteTextBeEmpty(queryText, autoCompleteText);
 
             // Assert
-            Assert.AreEqual(false, result);
+            Assert.IsFalse(result);
         }
 
         [TestMethod]
@@ -247,7 +248,7 @@ namespace Wox.Test
             bool result = MainViewModel.ShouldAutoCompleteTextBeEmpty(queryText, autoCompleteText);
 
             // Assert
-            Assert.AreEqual(true, result);
+            Assert.IsTrue(result);
         }
 
         [TestMethod]
@@ -261,7 +262,7 @@ namespace Wox.Test
             bool result = MainViewModel.ShouldAutoCompleteTextBeEmpty(queryText, autoCompleteText);
 
             // Assert
-            Assert.AreEqual(true, result);
+            Assert.IsTrue(result);
         }
     }
 }

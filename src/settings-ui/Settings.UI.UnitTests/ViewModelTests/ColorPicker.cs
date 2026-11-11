@@ -14,6 +14,7 @@ using Moq;
 
 namespace ViewModelTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ColorPicker
     {
@@ -122,7 +123,7 @@ namespace ViewModelTests
 
             viewModel.ColorFormats.Move(1, 0);
 
-            Assert.IsTrue(feedbackCount > 0);
+            Assert.IsGreaterThan(0, feedbackCount);
             Assert.AreSame(preview, viewModel.ColorFormatsPreview);
             Assert.AreEqual(selected, viewModel.SelectedColorRepresentationValue);
             Assert.AreEqual(selected, preview[viewModel.ColorFormatsPreviewIndex].Key);

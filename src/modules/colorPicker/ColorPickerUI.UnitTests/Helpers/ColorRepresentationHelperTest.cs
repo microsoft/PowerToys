@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ColorPicker.Helpers
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ColorRepresentationHelperTest
     {

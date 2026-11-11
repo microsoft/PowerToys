@@ -14,6 +14,7 @@ using MouseJump.Models.Styles;
 
 namespace MouseJump.Common.UnitTests.Capture;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class ScreenshotCapturePipelineTests
 {
@@ -39,13 +40,15 @@ public sealed class ScreenshotCapturePipelineTests
         pipeline.AddCaptureTasks(deviceLayout, provider);
         await pipeline.WaitForCompletionAsync();
 
-        Assert.AreEqual(2, sink.Received.Count);
-        CollectionAssert.AreEquivalent(
+        Assert.HasCount(2, sink.Received);
+        Assert.AreSequenceEqual(
             screenLayouts,
-            sink.Received.Select(entry => entry.ScreenLayout).ToList());
-        CollectionAssert.AreEquivalent(
+            sink.Received.Select(entry => entry.ScreenLayout).ToList(),
+            SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(
             new Bitmap[] { bitmap1, bitmap2 },
-            sink.Received.Select(entry => entry.Bitmap).ToList());
+            sink.Received.Select(entry => entry.Bitmap).ToList(),
+            SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -70,11 +73,11 @@ public sealed class ScreenshotCapturePipelineTests
 
         var exception = await Assert.ThrowsExactlyAsync<AggregateException>(
             () => pipeline.WaitForCompletionAsync());
-        Assert.AreEqual(1, exception.InnerExceptions.Count);
+        Assert.HasCount(1, exception.InnerExceptions);
         Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerExceptions[0].InnerException);
 
         // the screen that failed should never have reached the sink - only the one that succeeded
-        Assert.AreEqual(1, sink.Received.Count);
+        Assert.HasCount(1, sink.Received);
         Assert.AreEqual(screenLayouts[0], sink.Received[0].ScreenLayout);
     }
 
@@ -102,7 +105,7 @@ public sealed class ScreenshotCapturePipelineTests
         // (e.g. a newer activation superseded this one), not a failure
         await pipeline.WaitForCompletionAsync();
 
-        Assert.AreEqual(1, sink.Received.Count);
+        Assert.HasCount(1, sink.Received);
         Assert.AreEqual(screenLayouts[0], sink.Received[0].ScreenLayout);
     }
 
@@ -163,7 +166,7 @@ public sealed class ScreenshotCapturePipelineTests
         capture1.SetResult(bitmap1);
         await pipeline.WaitForCompletionAsync();
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[] { screenLayouts[1], screenLayouts[0] },
             sink.Received.Select(entry => entry.ScreenLayout).ToList());
     }

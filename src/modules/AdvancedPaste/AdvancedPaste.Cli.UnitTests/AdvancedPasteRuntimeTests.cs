@@ -20,6 +20,7 @@ using Windows.Storage.Streams;
 namespace AdvancedPaste.Cli.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public class AdvancedPasteRuntimeTests
 {
     [TestMethod]
@@ -121,7 +122,7 @@ public class AdvancedPasteRuntimeTests
         Assert.AreEqual("active", executor.LastPasteFormat?.ProviderId);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("markdown")]
     [DataRow("paste-with-ai")]
     public async Task HtmlOnlyInput_ReachesTextCompatibleExecutor(string action)
@@ -141,7 +142,7 @@ public class AdvancedPasteRuntimeTests
         Assert.IsTrue(executor.LastPasteFormat?.IsEnabled);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("paste-as-png-file", PasteFormats.PasteAsPngFile)]
     [DataRow("paste-as-jpg-file", PasteFormats.PasteAsJpgFile)]
     public async Task ImageFileActions_WithImageInput_ReachExecutor(string action, PasteFormats expectedFormat)
@@ -168,7 +169,7 @@ public class AdvancedPasteRuntimeTests
             },
         };
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
     public void GetProviders_ReportsDefaultAndPolicyWithoutExecutingAI(bool activeProviderSet)
@@ -191,7 +192,7 @@ public class AdvancedPasteRuntimeTests
 
         var providers = runtime.GetProviders();
 
-        Assert.AreEqual(2, providers.Count);
+        Assert.HasCount(2, providers);
         Assert.AreEqual("first", providers[0].Id);
         Assert.AreEqual("local-model", providers[0].Model);
         Assert.AreEqual(!activeProviderSet, providers[0].IsDefault);
@@ -209,10 +210,10 @@ public class AdvancedPasteRuntimeTests
             new TestUserSettings(isAIEnabled: false),
             isAdvancedPasteEnabled: () => true);
 
-        Assert.AreEqual(0, runtime.GetProviders().Count);
+        Assert.IsEmpty(runtime.GetProviders());
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("paste-with-ai")]
     [DataRow("fix-spelling-and-grammar")]
     [DataRow(null)]

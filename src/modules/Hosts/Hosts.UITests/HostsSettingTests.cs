@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Hosts.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class HostsSettingTests : UITestBase
     {
@@ -34,7 +35,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Settings.ShowWarningDialogIfRunAsAdmin")]
+        [TestMethod(DisplayName = "Hosts.Settings.ShowWarningDialogIfRunAsAdmin")]
         [TestCategory("Hosts File Editor #1")]
         [TestCategory("Hosts File Editor #9")]
         public void TestWarningDialog()
@@ -42,13 +43,13 @@ namespace Hosts.UITests
             this.LaunchFromSetting(showWarning: true);
 
             // Validating Warning-Dialog will be shown if 'Show a warning at startup' toggle is on
-            Assert.IsTrue(this.FindAll("Warning").Count > 0, "Should show warning dialog");
+            Assert.IsNotEmpty(this.FindAll("Warning"), "Should show warning dialog");
 
             // Quit Hosts File Editor
             this.Find<Button>("Quit").Click();
 
             // Wait for 500 ms to make sure Hosts File Editor is closed
-            Task.Delay(500).Wait();
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
             // Validating click 'Quit' button in Warning-Dialog, the Hosts File Editor window would be closed
             Assert.IsTrue(this.IsHostsFileEditorClosed(), "Hosts File Editor should be closed after click Quit button in Warning Dialog");
@@ -61,12 +62,12 @@ namespace Hosts.UITests
             this.Session.Attach(PowerToysModule.Hosts, WindowSize.Small_Vertical);
 
             // Should show warning dialog
-            Assert.IsTrue(this.FindAll("Warning").Count > 0, "Should show warning dialog");
+            Assert.IsNotEmpty(this.FindAll("Warning"), "Should show warning dialog");
 
             // Quit Hosts File Editor
             this.Find<Button>("Accept").Click();
 
-            Task.Delay(500).Wait();
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
             // Validating click 'Accept' button in Warning-Dialog, the Hosts File Editor window would NOT be closed
             Assert.IsFalse(this.IsHostsFileEditorClosed(), "Hosts File Editor should NOT be closed after click Accept button in Warning Dialog");
@@ -80,7 +81,7 @@ namespace Hosts.UITests
             this.LaunchFromSetting(showWarning: false);
 
             // Should NOT show warning dialog
-            Assert.IsTrue(this.FindAll("Warning").Count == 0, "Should NOT show warning dialog");
+            Assert.IsEmpty(this.FindAll("Warning"), "Should NOT show warning dialog");
 
             // Host Editor Window should not be closed
             Assert.IsFalse(this.IsHostsFileEditorClosed(), "Hosts File Editor should NOT be closed");

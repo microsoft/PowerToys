@@ -12,6 +12,7 @@ using Microsoft.Win32;
 
 namespace Microsoft.PowerToys.PreviewPane.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public class FileExplorerAddonsTests : UITestBase
@@ -167,7 +168,7 @@ public class FileExplorerAddonsTests : UITestBase
         temporaryFolders.Clear();
     }
 
-    [TestMethod("FileExplorerAddons.Preview.Markdown")]
+    [TestMethod(DisplayName = "FileExplorerAddons.Preview.Markdown")]
     [TestCategory("File Explorer Add-ons")]
     [TestCategory("Preview Pane")]
     public void MarkdownPreviewShowsReadmeContent()
@@ -181,7 +182,7 @@ public class FileExplorerAddonsTests : UITestBase
             "MDPrevHandler");
     }
 
-    [TestMethod("FileExplorerAddons.Preview.SVG")]
+    [TestMethod(DisplayName = "FileExplorerAddons.Preview.SVG")]
     [TestCategory("File Explorer Add-ons")]
     [TestCategory("Preview Pane")]
     public void SvgPreviewShowsImageContent()
@@ -189,7 +190,7 @@ public class FileExplorerAddonsTests : UITestBase
         TestPreview(".svg", SvgPreviewHandler, "sample.svg", "svg", "SvgPreviewHandler", "SvgPrevHandler");
     }
 
-    [TestMethod("FileExplorerAddons.Preview.PDF")]
+    [TestMethod(DisplayName = "FileExplorerAddons.Preview.PDF")]
     [TestCategory("File Explorer Add-ons")]
     [TestCategory("Preview Pane")]
     public void PdfPreviewShowsDocumentContent()
@@ -197,7 +198,7 @@ public class FileExplorerAddonsTests : UITestBase
         TestPreview(".pdf", PdfPreviewHandler, "sample.pdf", "pdf", "PdfPreviewHandler", "PdfPrevHandler");
     }
 
-    [TestMethod("FileExplorerAddons.Preview.Gcode")]
+    [TestMethod(DisplayName = "FileExplorerAddons.Preview.Gcode")]
     [TestCategory("File Explorer Add-ons")]
     [TestCategory("Preview Pane")]
     public void GcodePreviewShowsToolpathContent()
@@ -211,7 +212,7 @@ public class FileExplorerAddonsTests : UITestBase
             "GcodePreviewHandler");
     }
 
-    [TestMethod("FileExplorerAddons.Preview.SourceCode")]
+    [TestMethod(DisplayName = "FileExplorerAddons.Preview.SourceCode")]
     [TestCategory("File Explorer Add-ons")]
     [TestCategory("Preview Pane")]
     public void MonacoPreviewShowsSyntaxHighlightedSource()
@@ -225,7 +226,7 @@ public class FileExplorerAddonsTests : UITestBase
             "MonacoPrevHandler");
     }
 
-    [TestMethod("FileExplorerAddons.Thumbnail.SVG")]
+    [TestMethod(DisplayName = "FileExplorerAddons.Thumbnail.SVG")]
     [TestCategory("File Explorer Add-ons")]
     [TestCategory("Icon Preview")]
     public void SvgThumbnailRendersAtMultipleIconSizes()
@@ -238,7 +239,7 @@ public class FileExplorerAddonsTests : UITestBase
             "svg");
     }
 
-    [TestMethod("FileExplorerAddons.Thumbnail.PDF")]
+    [TestMethod(DisplayName = "FileExplorerAddons.Thumbnail.PDF")]
     [TestCategory("File Explorer Add-ons")]
     [TestCategory("Icon Preview")]
     public void PdfThumbnailRendersAtMultipleIconSizes()
@@ -251,7 +252,7 @@ public class FileExplorerAddonsTests : UITestBase
             "pdf");
     }
 
-    [TestMethod("FileExplorerAddons.Thumbnail.Gcode")]
+    [TestMethod(DisplayName = "FileExplorerAddons.Thumbnail.Gcode")]
     [TestCategory("File Explorer Add-ons")]
     [TestCategory("Icon Preview")]
     public void GcodeThumbnailRendersAtMultipleIconSizes()
@@ -264,7 +265,7 @@ public class FileExplorerAddonsTests : UITestBase
             "gcode");
     }
 
-    [TestMethod("FileExplorerAddons.Thumbnail.STL")]
+    [TestMethod(DisplayName = "FileExplorerAddons.Thumbnail.STL")]
     [TestCategory("File Explorer Add-ons")]
     [TestCategory("Icon Preview")]
     public void StlThumbnailRendersAtMultipleIconSizes()
@@ -913,7 +914,7 @@ public class FileExplorerAddonsTests : UITestBase
         string bucketsMessage =
             $"The captured {extension} Explorer item has only {colorBuckets.Count} sampled color buckets; " +
             "the thumbnail appears blank or generic.";
-        Assert.IsTrue(colorBuckets.Count >= 6, bucketsMessage);
+        Assert.IsGreaterThanOrEqualTo(6, colorBuckets.Count, bucketsMessage);
     }
 
     private static string? WaitForProviderLog(string logDirectory, string expectedText, int timeoutMS)

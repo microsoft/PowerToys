@@ -11,22 +11,23 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class BookmarkResolverTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(nameof(CommonClassificationData.CommonCases), typeof(CommonClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Common_ValidateCommonClassification(PlaceholderClassificationCase c) => await RunShared(c);
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(nameof(CommonClassificationData.UwpAumidCases), typeof(CommonClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Common_ValidateUwpAumidClassification(PlaceholderClassificationCase c) => await RunShared(c);
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(dynamicDataSourceName: nameof(CommonClassificationData.UnquotedRelativePaths), dynamicDataDeclaringType: typeof(CommonClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Common_ValidateUnquotedRelativePathScenarios(PlaceholderClassificationCase c) => await RunShared(c: c);
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(dynamicDataSourceName: nameof(CommonClassificationData.UnquotedShellProtocol), dynamicDataDeclaringType: typeof(CommonClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Common_ValidateUnquotedShellProtocolScenarios(PlaceholderClassificationCase c) => await RunShared(c: c);
 

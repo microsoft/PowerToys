@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("IDisposable", "CA1001:Types that own disposable fields should be disposable", Justification = "Disposed in TestCleanup")]
 public class NowDockBandTests
@@ -82,8 +83,8 @@ public class NowDockBandTests
 
         Assert.AreEqual(_band.Title, _band.CopyTitleCommand.Text);
         Assert.AreEqual(_band.Subtitle, _band.CopySubtitleCommand.Text);
-        StringAssert.StartsWith(_band.CopyTitleCommand.Name, "Copy time (");
-        StringAssert.StartsWith(_band.CopySubtitleCommand.Name, "Copy date (");
+        Assert.StartsWith("Copy time (", _band.CopyTitleCommand.Name);
+        Assert.StartsWith("Copy date (", _band.CopySubtitleCommand.Name);
     }
 
     [TestMethod]
@@ -93,7 +94,7 @@ public class NowDockBandTests
 
         Assert.IsNotNull(_band.CopyCustomFormatCommand);
         Assert.AreEqual("2025-07-01T14:05:32", _band.CopyCustomFormatCommand.GetCurrentText());
-        StringAssert.StartsWith(_band.CopyCustomFormatCommand.Name, "Copy ISO 8601");
+        Assert.StartsWith("Copy ISO 8601", _band.CopyCustomFormatCommand.Name);
     }
 
     [TestMethod]
@@ -168,7 +169,7 @@ public class NowDockBandTests
         Assert.AreEqual(readsAfterStart, clockReads);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("de-DE")]
     [DataRow("fr-FR")]
     [DataRow("ar-SA")]

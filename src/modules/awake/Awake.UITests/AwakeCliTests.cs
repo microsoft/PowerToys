@@ -13,6 +13,7 @@ namespace Microsoft.PowerToys.Awake.UITests;
 [TestClass]
 [TestCategory("Awake")]
 [TestCategory("AwakeCLI")]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class AwakeCliTests : UITestBase
 {
     private static readonly string[] HelpOptions = ["--use-pt-config", "--display-on", "--time-limit", "--pid", "--expire-at", "--use-parent-pid"];
@@ -37,7 +38,7 @@ public sealed class AwakeCliTests : UITestBase
         snapshot = AwakeUi.PreserveSettings();
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup]
     public static void RestoreSettings() => AwakeUi.RestoreSettings(snapshot);
 
     [TestInitialize]
@@ -130,7 +131,7 @@ public sealed class AwakeCliTests : UITestBase
             }
             else
             {
-                CollectionAssert.Contains(Forms.Clipboard.GetFileDropList(), path, "The terminal fixture did not restore copied files.");
+                Assert.Contains(path, Forms.Clipboard.GetFileDropList(), "The terminal fixture did not restore copied files.");
             }
 
             return true;
@@ -165,7 +166,7 @@ public sealed class AwakeCliTests : UITestBase
         AwakeUi.WaitForPowerState(true, true);
         var activeTime = Stopwatch.StartNew();
         Assert.IsTrue(terminal.AwakeProcess.WaitForExit(40_000), "The 20-second CLI timer did not exit.");
-        Assert.IsTrue(activeTime.Elapsed >= TimeSpan.FromSeconds(15), $"The 20-second CLI timer exited prematurely after {activeTime.Elapsed}.");
+        Assert.IsGreaterThanOrEqualTo(TimeSpan.FromSeconds(15), activeTime.Elapsed, $"The 20-second CLI timer exited prematurely after {activeTime.Elapsed}.");
         Assert.AreEqual(0, terminal.WaitForExit(40_000));
         ui.WaitForProcess(false);
         AwakeUi.WaitForPowerState(false, false);
@@ -179,7 +180,7 @@ public sealed class AwakeCliTests : UITestBase
         AwakeUi.WaitForPowerState(true, false);
         var activeTime = Stopwatch.StartNew();
         Assert.IsTrue(terminal.AwakeProcess.WaitForExit(50_000), "The 30-second CLI expiration did not exit.");
-        Assert.IsTrue(activeTime.Elapsed >= TimeSpan.FromSeconds(20), $"The 30-second CLI expiration exited prematurely after {activeTime.Elapsed}.");
+        Assert.IsGreaterThanOrEqualTo(TimeSpan.FromSeconds(20), activeTime.Elapsed, $"The 30-second CLI expiration exited prematurely after {activeTime.Elapsed}.");
         Assert.AreEqual(0, terminal.WaitForExit(50_000), "The absolute expiration must take precedence over the longer time limit.");
         ui.WaitForProcess(false);
         AwakeUi.WaitForPowerState(false, false);

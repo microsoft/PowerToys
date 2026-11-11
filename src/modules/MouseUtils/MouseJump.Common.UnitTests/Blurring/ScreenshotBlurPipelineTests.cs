@@ -12,6 +12,7 @@ using MouseJump.Models.Drawing;
 
 namespace MouseJump.Common.UnitTests.Blurring;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class ScreenshotBlurPipelineTests
 {
@@ -132,7 +133,7 @@ public sealed class ScreenshotBlurPipelineTests
             pipeline.SetScreenshot(screen, screenshot);
         }
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             queued.Select(ScreenshotBlurPipelineTests.IsDisposed).ToList(),
             queued.Select(screenshot => screenshot != queued[^1]).ToList(),
             "every superseded \"todo\" should be disposed, and only the latest kept");
@@ -142,7 +143,7 @@ public sealed class ScreenshotBlurPipelineTests
         await ScreenshotBlurPipelineTests.WaitForCompletionAsync(completions);
 
         // only two blurs ever ran - the one already in progress, then the latest "todo"
-        CollectionAssert.AreEqual(new[] { new Size(1, 1), new Size(10, 10) }, blur.Inputs.ToList());
+        Assert.AreSequenceEqual(new[] { new Size(1, 1), new Size(10, 10) }, blur.Inputs.ToList());
 
         Size? blurredSize = null;
         Assert.IsTrue(pipeline.TryBorrow(screen, blurred => blurredSize = blurred.Size));
@@ -192,7 +193,7 @@ public sealed class ScreenshotBlurPipelineTests
         blur.ReleaseAll();
         await ScreenshotBlurPipelineTests.WaitForCompletionAsync(completions);
         Assert.IsTrue(ScreenshotBlurPipelineTests.IsDisposed(blur.Outputs.Single()));
-        CollectionAssert.AreEqual(new[] { new Size(1, 1) }, blur.Inputs.ToList());
+        Assert.AreSequenceEqual(new[] { new Size(1, 1) }, blur.Inputs.ToList());
 
         pipeline.SetActiveScreens([screen]);
         Assert.IsFalse(pipeline.TryBorrow(screen, _ => Assert.Fail("a removed screen's result should have been discarded")));
@@ -226,13 +227,13 @@ public sealed class ScreenshotBlurPipelineTests
         Assert.IsTrue(ScreenshotBlurPipelineTests.IsDisposed(blur.Outputs.Single()));
         Assert.IsFalse(pipeline.TryBorrow(screen, _ => Assert.Fail("an old blur's result should not reach the replacement state")));
         Assert.IsFalse(ScreenshotBlurPipelineTests.IsDisposed(queued));
-        Assert.AreEqual(2, blur.Inputs.Count, "the queued screenshot should still be waiting for the replacement state's own blur");
+        Assert.HasCount(2, blur.Inputs, "the queued screenshot should still be waiting for the replacement state's own blur");
 
         // the replacement state then carries on exactly as normal
         blur.ReleaseAll();
         await ScreenshotBlurPipelineTests.WaitForCompletionAsync(completions);
         await ScreenshotBlurPipelineTests.WaitForCompletionAsync(completions);
-        CollectionAssert.AreEqual(new[] { new Size(1, 1), new Size(2, 2), new Size(3, 3) }, blur.Inputs.ToList());
+        Assert.AreSequenceEqual(new[] { new Size(1, 1), new Size(2, 2), new Size(3, 3) }, blur.Inputs.ToList());
 
         Size? blurredSize = null;
         Assert.IsTrue(pipeline.TryBorrow(screen, blurred => blurredSize = blurred.Size));

@@ -16,6 +16,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class ContextMenuViewModelTests
 {
@@ -77,14 +78,14 @@ public sealed class ContextMenuViewModelTests
         try
         {
             Assert.AreEqual(ContextKeybindingResult.Hide, contextMenu.InvokeCommand(command));
-            Assert.AreEqual(0, recipient.Messages.Count);
+            Assert.IsEmpty(recipient.Messages);
             Assert.AreEqual(1, invokedCount);
             Assert.IsNotNull(invoking);
             Assert.AreSame(command, invoking.Command);
 
             contextMenu.CommandInvoking -= takeOver;
             Assert.AreEqual(ContextKeybindingResult.Hide, contextMenu.InvokeCommand(command));
-            Assert.AreEqual(1, recipient.Messages.Count);
+            Assert.HasCount(1, recipient.Messages);
             Assert.AreEqual(2, invokedCount);
             var message = recipient.Messages[0];
             Assert.AreEqual(page.DockRoute, message.DockRoute);

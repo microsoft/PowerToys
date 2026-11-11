@@ -28,6 +28,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 ///      at the FallbackFloor tier, so they can never leapfrog deterministic matches, and a
 ///      superseding query's snapshot replaces any stale one.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed partial class FastFirstPaintTests
 {
@@ -106,7 +107,7 @@ public sealed partial class FastFirstPaintTests
             _fallbacksSeparator,
             appResultLimit: 10);
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new IListItem[] { _resultsSeparator, command.Item.Safe, app.Item.Safe },
             result,
             "First paint must render the deterministic command/app results without any fallback contribution.");
@@ -140,7 +141,7 @@ public sealed partial class FastFirstPaintTests
         var after = MainListPage.ScoreDeferredFallbacks(sources, default, scorer);
 
         Assert.IsNotNull(after);
-        Assert.AreEqual(1, after!.Count);
+        Assert.HasCount(1, after);
         Assert.AreSame(fallback, after[0].Item.Safe);
         Assert.AreEqual(RankTier.FallbackFloor, MainListRanker.TierOf(after[0].Score));
     }
@@ -162,7 +163,7 @@ public sealed partial class FastFirstPaintTests
         var strong = MainListPage.ScoreDeferredFallbacks(sources, default, scorer);
 
         Assert.IsNotNull(strong);
-        Assert.IsTrue(strong![0].Score > weakScore, "Re-scoring must reflect the freshly resolved title, not a frozen value.");
+        Assert.IsGreaterThan(weakScore, strong![0].Score, "Re-scoring must reflect the freshly resolved title, not a frozen value.");
     }
 
     [TestMethod]
@@ -186,7 +187,7 @@ public sealed partial class FastFirstPaintTests
         var b = MainListPage.ScoreDeferredFallbacks(sources, default, FloorScorerFor("zzz"));
 
         Assert.IsNotNull(b);
-        Assert.IsTrue(b![0].Score < strongScore, "A superseding query must not inherit the prior query's stale score.");
+        Assert.IsLessThan(strongScore, b![0].Score, "A superseding query must not inherit the prior query's stale score.");
     }
 
     [TestMethod]

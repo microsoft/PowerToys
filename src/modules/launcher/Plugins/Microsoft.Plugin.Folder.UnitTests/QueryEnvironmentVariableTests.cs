@@ -12,6 +12,7 @@ using Moq;
 
 namespace Microsoft.Plugin.Folder.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class QueryEnvironmentVariableTests
     {
@@ -43,17 +44,17 @@ namespace Microsoft.Plugin.Folder.UnitTests
             _queryEnvironmentVariable = new QueryEnvironmentVariable(_fileSystem.Directory, environmentHelperMock.Object);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(@"%OS%")] // Not a directory
         [DataRow(@"%CUSTOM%")] // Directory doesn't exist
         [DataRow(@"WINDIR")] // Not an environment variable
         public void QueryWithEmptyResults(string search)
         {
             var results = _queryEnvironmentVariable.Query(search);
-            Assert.AreEqual(results.Count(), 0);
+            Assert.IsEmpty(results);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(@"", 3)]
         [DataRow(@"%", 3)]
         [DataRow(@"%WIN", 1)]

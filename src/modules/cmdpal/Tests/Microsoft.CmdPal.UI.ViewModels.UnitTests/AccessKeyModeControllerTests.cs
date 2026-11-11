@@ -10,6 +10,7 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class AccessKeyModeControllerTests
 {

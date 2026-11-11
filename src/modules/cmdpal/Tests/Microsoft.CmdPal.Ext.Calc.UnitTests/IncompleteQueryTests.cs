@@ -7,10 +7,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Calc.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class IncompleteQueryTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("2+2+", "2+2")]
     [DataRow("2+2*", "2+2")]
     [DataRow("sin(30", "sin(30)")]
@@ -26,7 +27,7 @@ public class IncompleteQueryTests
         Assert.AreEqual(expected, newQuery);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("")]
     [DataRow("   ")]
     public void TestTryGetIncompleteQueryFail(string input)
