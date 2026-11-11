@@ -531,7 +531,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             AddIfSupported(a is IDetails2, nameof(IDetails2));
             AddIfSupported(a is IFallbackCommandItem2, nameof(IFallbackCommandItem2));
             AddIfSupported(a is IFallbackCommandItem3, nameof(IFallbackCommandItem3));
-            AddIfSupported(a is IFallbackHandler2, nameof(IFallbackHandler2));
+            AddIfSupported(a is IFallbackQueryHandler, nameof(IFallbackQueryHandler));
             AddIfSupported(a is IFallbackCommandResult, nameof(IFallbackCommandResult));
             AddIfSupported(a is ICommandItem[], "ICommandItem[]");
         }

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Reflection;
@@ -112,6 +113,37 @@ public partial class ProviderFallbackSettingsTests
         var fallback = new FallbackSettingsViewModel(first.FallbackItems[0], new FallbackSettings(), provider);
         Assert.AreEqual(first.FallbackItems[0].FallbackKey, fallback.RankId);
         Assert.AreEqual(FallbackId, fallback.Id);
+    }
+
+    [TestMethod]
+    public async Task CoupledFallbackSettings_NotifyBothProperties()
+    {
+        var settingsService = new FakeSettingsService();
+        await using var services = CreateServices(settingsService);
+        var wrapper = new CommandProviderWrapper(new TestCommandProvider(), TaskScheduler.Default);
+        await wrapper.LoadTopLevelCommands(services);
+        using var provider = new ProviderSettingsViewModel(wrapper, new ProviderSettings(), settingsService);
+        var fallback = new FallbackSettingsViewModel(
+            wrapper.FallbackItems[0],
+            new FallbackSettings { IsEnabled = false },
+            provider);
+        List<string?> notifications = [];
+        fallback.PropertyChanged += (_, args) => notifications.Add(args.PropertyName);
+
+        fallback.IncludeInGlobalResults = true;
+
+        CollectionAssert.Contains(notifications, nameof(FallbackSettingsViewModel.IncludeInGlobalResults));
+        CollectionAssert.Contains(notifications, nameof(FallbackSettingsViewModel.IsEnabled));
+        Assert.IsTrue(fallback.IncludeInGlobalResults);
+        Assert.IsTrue(fallback.IsEnabled);
+
+        notifications.Clear();
+        fallback.IsEnabled = false;
+
+        CollectionAssert.Contains(notifications, nameof(FallbackSettingsViewModel.IsEnabled));
+        CollectionAssert.Contains(notifications, nameof(FallbackSettingsViewModel.IncludeInGlobalResults));
+        Assert.IsFalse(fallback.IsEnabled);
+        Assert.IsFalse(fallback.IncludeInGlobalResults);
     }
 
     [TestMethod]
