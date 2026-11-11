@@ -80,14 +80,19 @@ jobs:
         ${{ if ne(parameters.platform, 'ARM64') }}:
           name: SHINE-INT-Testing-x64
           ${{ if eq(parameters.platform, 'x64Win11') }}:
-            demands: ImageOverride -equals SHINE-W11-Testing
+            # Image 30 fails the pending-reboot gate; retain the last verified clean image.
+            demands:
+              - ImageOverride -equals SHINE-W11-Testing
+              - ImageVersionOverride -equals 29.0.0
         ${{ else }}:
           name: SHINE-INT-Testing-arm64
       ${{ else }}:
         ${{ if ne(parameters.platform, 'ARM64') }}:
           name: SHINE-OSS-Testing-x64
           ${{ if eq(parameters.platform, 'x64Win11') }}:
-            demands: ImageOverride -equals SHINE-W11-Testing
+            demands:
+              - ImageOverride -equals SHINE-W11-Testing
+              - ImageVersionOverride -equals 29.0.0
         ${{ else }}:
           name: SHINE-OSS-Testing-arm64
   steps:
