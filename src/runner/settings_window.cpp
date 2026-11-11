@@ -47,12 +47,18 @@ namespace
 
 json::JsonObject get_power_toys_settings()
 {
+    std::lock_guard lock(modules_mutex());
     json::JsonObject result;
-    for (const auto& [name, powertoy] : modules())
+    for (const auto& [name, registration] : registered_modules())
     {
+        auto* powertoy = load_registered_module(name);
+        if (!powertoy)
+        {
+            continue;
+        }
         try
         {
-            result.SetNamedValue(name, powertoy.json_config());
+            result.SetNamedValue(name, powertoy->json_config());
         }
         catch (...)
         {
@@ -73,6 +79,7 @@ json::JsonObject get_all_settings()
 
 std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
 {
+    std::lock_guard lock(modules_mutex());
     std::optional<std::wstring> result;
     for (const auto& powertoy_element : powertoys_configs)
     {
@@ -145,10 +152,10 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
             {
             }
         }
-        else if (modules().find(name) != modules().end())
+        else if (auto* powertoy = load_registered_module(name))
         {
             const auto element = powertoy_element.Value().Stringify();
-            modules().at(name)->call_custom_action(element.c_str());
+            (*powertoy)->call_custom_action(element.c_str());
         }
     }
 
@@ -157,16 +164,16 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
 
 void send_json_config_to_module(const std::wstring& module_key, const std::wstring& settings, bool hotkeyUpdated)
 {
-    auto moduleIt = modules().find(module_key);
-    if (moduleIt != modules().end())
+    std::lock_guard lock(modules_mutex());
+    if (auto* powertoy = load_registered_module(module_key))
     {
-        moduleIt->second->set_config(settings.c_str());
+        (*powertoy)->set_config(settings.c_str());
 
         if (hotkeyUpdated)
         {
-            moduleIt->second.remove_hotkey_records();
-            moduleIt->second.update_hotkeys();
-            moduleIt->second.UpdateHotkeyEx();
+            powertoy->remove_hotkey_records();
+            powertoy->update_hotkeys();
+            powertoy->UpdateHotkeyEx();
         }
     }
 }

@@ -40,6 +40,7 @@ void update_last_send_time(time_t time)
 
 void send()
 {
+    std::lock_guard lock(modules_mutex());
     for (auto& [name, powertoy] : modules())
     {
         if (powertoy->is_enabled())

@@ -203,6 +203,7 @@ GeneralSettings get_general_settings()
 
     // Initialize module enabled map from durable settings.json so all modules, including
     // those which are missing or which failed to load, are represented.
+    json::JsonObject saved_settings;
     try
     {
         auto loaded_opt = load_general_settings_checked();
@@ -213,6 +214,7 @@ GeneralSettings get_general_settings()
         else
         {
             const json::JsonObject& loaded = *loaded_opt;
+            saved_settings = loaded;
 
             if (json::has(loaded, L"enabled", json::JsonValueType::Object))
             {
@@ -232,6 +234,13 @@ GeneralSettings get_general_settings()
         settings.isDataLoadedSuccessfully = false;
     }
 
+    // Include defaults and policy states for modules whose DLLs have not been needed.
+    std::lock_guard lock(modules_mutex());
+    for (const auto& [name, registration] : registered_modules())
+    {
+        settings.isModulesEnabledMap[name] = registration.is_enabled(saved_settings);
+    }
+
     // Overlay the active runtime states from loaded modules.
     for (auto& [name, powertoy] : modules())
     {
@@ -243,6 +252,7 @@ GeneralSettings get_general_settings()
 
 void apply_module_status_update(const json::JsonObject& module_config, bool save)
 {
+    std::lock_guard lock(modules_mutex());
     Logger::info(L"apply_module_status_update: {}", std::wstring{ module_config.ToString() });
 
     // Expected format: {"ModuleName": true/false} - only one module per update
@@ -264,18 +274,10 @@ void apply_module_status_update(const json::JsonObject& module_config, bool save
     const std::wstring name{ element.Key().c_str() };
     bool target_enabled = value.GetBoolean();
 
-    auto module_it = modules().find(name);
-    if (module_it != modules().end())
+    if (auto* loaded = get_module_for_enabled_state(name, target_enabled))
     {
-        PowertoyModule& powertoy = module_it->second;
+        PowertoyModule& powertoy = *loaded;
         const bool module_inst_enabled = powertoy->is_enabled();
-
-        auto gpo_rule = powertoy->gpo_policy_enabled_configuration();
-        if (gpo_rule == powertoys_gpo::gpo_rule_configured_enabled || gpo_rule == powertoys_gpo::gpo_rule_configured_disabled)
-        {
-            // Apply the GPO Rule.
-            target_enabled = gpo_rule == powertoys_gpo::gpo_rule_configured_enabled;
-        }
 
         if (module_inst_enabled != target_enabled)
         {
@@ -457,6 +459,7 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
         }
     }
 
+    std::lock_guard lock(modules_mutex());
     if (json::has(general_configs, L"enabled"))
     {
         for (const auto& enabled_element : general_configs.GetNamedObject(L"enabled"))
@@ -467,21 +470,14 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
                 continue;
             }
             const std::wstring name{ enabled_element.Key().c_str() };
-            const bool found = modules().find(name) != modules().end();
-            if (!found)
+            bool target_enabled = value.GetBoolean();
+            auto* loaded = get_module_for_enabled_state(name, target_enabled);
+            if (!loaded)
             {
                 continue;
             }
-            PowertoyModule& powertoy = modules().at(name);
+            PowertoyModule& powertoy = *loaded;
             const bool module_inst_enabled = powertoy->is_enabled();
-            bool target_enabled = value.GetBoolean();
-
-            auto gpo_rule = powertoy->gpo_policy_enabled_configuration();
-            if (gpo_rule == powertoys_gpo::gpo_rule_configured_enabled || gpo_rule == powertoys_gpo::gpo_rule_configured_disabled)
-            {
-                // Apply the GPO Rule.
-                target_enabled = gpo_rule == powertoys_gpo::gpo_rule_configured_enabled;
-            }
 
             if (module_inst_enabled == target_enabled)
             {
@@ -575,7 +571,8 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
 
                 if (modules().find(name) == modules().end())
                 {
-                    const bool target_enabled = value.GetBoolean();
+                    const auto registration = registered_modules().find(name);
+                    const bool target_enabled = registration != registered_modules().end() ? registration->second.apply_policy(value.GetBoolean()) : value.GetBoolean();
                     const auto saved_state = save_settings.isModulesEnabledMap.find(name);
                     if (saved_state == save_settings.isModulesEnabledMap.end() || saved_state->second != target_enabled)
                     {
@@ -597,82 +594,17 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
 
 void start_enabled_powertoys()
 {
-    std::unordered_set<std::wstring> powertoys_to_disable;
-    std::unordered_map<std::wstring, powertoys_gpo::gpo_rule_configured_t> powertoys_gpo_configuration;
-    // Take into account default values supplied by modules themselves and gpo configurations
-    for (auto& [name, powertoy] : modules())
+    std::lock_guard lock(modules_mutex());
+    const auto general_settings = load_general_settings();
+    for (const auto& [name, registration] : registered_modules())
     {
-        auto gpo_rule = powertoy->gpo_policy_enabled_configuration();
-        powertoys_gpo_configuration[name] = gpo_rule;
-        if (gpo_rule == powertoys_gpo::gpo_rule_configured_unavailable)
+        if (!registration.is_enabled(general_settings))
         {
-            Logger::warn(L"start_enabled_powertoys: couldn't read the gpo rule for Powertoy {}", name);
+            continue;
         }
-        if (gpo_rule == powertoys_gpo::gpo_rule_configured_wrong_value)
+        if (auto* loaded = load_registered_module(name))
         {
-            Logger::warn(L"start_enabled_powertoys: gpo rule for Powertoy {} is set to an unknown value", name);
-        }
-
-        if (!powertoy->is_enabled_by_default())
-            powertoys_to_disable.emplace(name);
-    }
-
-    json::JsonObject general_settings;
-    try
-    {
-        general_settings = load_general_settings();
-        if (general_settings.HasKey(L"enabled"))
-        {
-            json::JsonObject enabled = general_settings.GetNamedObject(L"enabled");
-            for (const auto& disabled_element : enabled)
-            {
-                std::wstring disable_module_name{ static_cast<std::wstring_view>(disabled_element.Key()) };
-
-                if (powertoys_gpo_configuration.find(disable_module_name) != powertoys_gpo_configuration.end() && (powertoys_gpo_configuration[disable_module_name] == powertoys_gpo::gpo_rule_configured_enabled || powertoys_gpo_configuration[disable_module_name] == powertoys_gpo::gpo_rule_configured_disabled))
-                {
-                    // If gpo forces the enabled setting, no need to check the setting for this PowerToy. It will be applied later on this function.
-                    continue;
-                }
-
-                // Disable explicitly disabled modules
-                if (!disabled_element.Value().GetBoolean())
-                {
-                    Logger::info(L"start_enabled_powertoys: Powertoy {} explicitly disabled", disable_module_name);
-                    powertoys_to_disable.emplace(std::move(disable_module_name));
-                }
-                // If module was scheduled for disable, but it's enabled in the settings - override default value
-                else if (auto it = powertoys_to_disable.find(disable_module_name); it != end(powertoys_to_disable))
-                {
-                    Logger::info(L"start_enabled_powertoys: Overriding default enabled value for {} powertoy", disable_module_name);
-                    powertoys_to_disable.erase(it);
-                }
-            }
-        }
-    }
-    catch (...)
-    {
-    }
-
-    for (auto& [name, powertoy] : modules())
-    {
-        bool should_powertoy_be_enabled = true;
-
-        auto gpo_rule = powertoys_gpo_configuration.find(name) != powertoys_gpo_configuration.end() ? powertoys_gpo_configuration[name] : powertoys_gpo::gpo_rule_configured_not_configured;
-
-        if (gpo_rule == powertoys_gpo::gpo_rule_configured_enabled || gpo_rule == powertoys_gpo::gpo_rule_configured_disabled)
-        {
-            // Apply the GPO Rule.
-            should_powertoy_be_enabled = gpo_rule == powertoys_gpo::gpo_rule_configured_enabled;
-            Logger::info(L"start_enabled_powertoys: GPO sets the enabled state for {} powertoy as {}", name, should_powertoy_be_enabled);
-        }
-        else if (powertoys_to_disable.contains(name))
-        {
-            // Apply the settings or default information provided by the PowerToy on first run.
-            should_powertoy_be_enabled = false;
-        }
-
-        if (should_powertoy_be_enabled)
-        {
+            auto& powertoy = *loaded;
             Logger::info(L"start_enabled_powertoys: Enabling powertoy {}", name);
             powertoy->enable();
             auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();

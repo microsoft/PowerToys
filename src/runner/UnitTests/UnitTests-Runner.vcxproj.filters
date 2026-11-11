@@ -23,6 +23,12 @@
     <ClCompile Include="GeneralSettingsReaderTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ModuleLoadingTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\powertoy_module.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\hotkey_conflict_detector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -38,6 +44,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\general_settings_reader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module_registration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\powertoy_module.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

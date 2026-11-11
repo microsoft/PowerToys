@@ -99,6 +99,7 @@
     <ClInclude Include="settings_telemetry.h" />
     <ClInclude Include="UpdateUtils.h" />
     <ClInclude Include="powertoy_module.h" />
+    <ClInclude Include="module_registration.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="restart_elevated.h" />
     <ClInclude Include="settings_window.h" />

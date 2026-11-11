@@ -64,7 +64,6 @@
 namespace
 {
     const wchar_t PT_URI_PROTOCOL_SCHEME[] = L"powertoys://";
-    const wchar_t POWER_TOYS_MODULE_LOAD_FAIL[] = L"Failed to load "; // Module name will be appended on this message and it is not localized.
 
     // "Local Settings" is the non-roaming part of HKCU, so the marker stays with the machine whose registrations were removed.
     const wchar_t VIDEO_CONFERENCE_CLEANUP_MARKER_KEY[] = L"Software\\Classes\\Local Settings\\Software\\Microsoft\\PowerToys";
@@ -300,74 +299,48 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             }
         }
 
-        // Load PowerToys DLLs
-
-        std::vector<std::wstring_view> knownModules = {
-            L"PowerToys.FancyZonesModuleInterface.dll",
-            L"PowerToys.powerpreview.dll",
-            L"WinUI3Apps/PowerToys.ImageResizerExt.dll",
-            L"PowerToys.KeyboardManager.dll",
-            L"PowerToys.Launcher.dll",
-            L"WinUI3Apps/PowerToys.PowerRenameExt.dll",
-            L"WinUI3Apps/PowerToys.ShortcutGuideModuleInterface.dll",
-            L"PowerToys.ColorPicker.dll",
-            L"PowerToys.AwakeModuleInterface.dll",
-            L"PowerToys.FindMyMouse.dll",
-            L"PowerToys.MouseHighlighter.dll",
-            L"WinUI3Apps/PowerToys.MouseJump.dll",
-            L"PowerToys.AlwaysOnTopModuleInterface.dll",
-            L"PowerToys.MousePointerCrosshairs.dll",
-            L"PowerToys.AutoHideCursor.dll",
-            L"PowerToys.CursorWrap.dll",
-            L"PowerToys.MouseButtonLock.dll",
-            L"PowerToys.PowerAccentModuleInterface.dll",
-            L"PowerToys.PowerOCRModuleInterface.dll",
-            L"PowerToys.AdvancedPasteModuleInterface.dll",
-            L"WinUI3Apps/PowerToys.FileLocksmithExt.dll",
-            L"WinUI3Apps/PowerToys.RegistryPreviewExt.dll",
-            L"WinUI3Apps/PowerToys.MeasureToolModuleInterface.dll",
-            L"WinUI3Apps/PowerToys.NewPlus.ShellExtension.dll",
-            L"WinUI3Apps/PowerToys.HostsModuleInterface.dll",
-            L"WinUI3Apps/PowerToys.Peek.dll",
-            L"WinUI3Apps/PowerToys.EnvironmentVariablesModuleInterface.dll",
-            L"PowerToys.MouseWithoutBordersModuleInterface.dll",
-            L"PowerToys.CropAndLockModuleInterface.dll",
-            L"PowerToys.CmdNotFoundModuleInterface.dll",
-            L"PowerToys.WorkspacesModuleInterface.dll",
-            L"PowerToys.CmdPalModuleInterface.dll",
-            L"PowerToys.ZoomItModuleInterface.dll",
-            L"PowerToys.LightSwitchModuleInterface.dll",
-            L"PowerToys.PowerDisplayModuleInterface.dll",
-            L"PowerToys.GrabAndMoveModuleInterface.dll",
-            L"PowerToys.AltWindowCycle.dll",
+        // Keep keys, defaults and policy callbacks in sync with the module interfaces.
+        static const ModuleRegistration knownModules[] = {
+            { L"FancyZones", L"PowerToys.FancyZonesModuleInterface.dll", true, powertoys_gpo::getConfiguredFancyZonesEnabledValue },
+            { L"File Explorer", L"PowerToys.powerpreview.dll", true },
+            { L"Image Resizer", L"WinUI3Apps\\PowerToys.ImageResizerExt.dll", true, powertoys_gpo::getConfiguredImageResizerEnabledValue },
+            { L"Keyboard Manager", L"PowerToys.KeyboardManager.dll", false, powertoys_gpo::getConfiguredKeyboardManagerEnabledValue },
+            { L"PowerToys Run", L"PowerToys.Launcher.dll", false, powertoys_gpo::getConfiguredPowerLauncherEnabledValue },
+            { L"PowerRename", L"WinUI3Apps\\PowerToys.PowerRenameExt.dll", true, powertoys_gpo::getConfiguredPowerRenameEnabledValue },
+            { L"Shortcut Guide", L"WinUI3Apps\\PowerToys.ShortcutGuideModuleInterface.dll", true, powertoys_gpo::getConfiguredShortcutGuideEnabledValue },
+            { L"ColorPicker", L"PowerToys.ColorPicker.dll", true, powertoys_gpo::getConfiguredColorPickerEnabledValue },
+            { L"Awake", L"PowerToys.AwakeModuleInterface.dll", true, powertoys_gpo::getConfiguredAwakeEnabledValue },
+            { L"FindMyMouse", L"PowerToys.FindMyMouse.dll", true, powertoys_gpo::getConfiguredFindMyMouseEnabledValue },
+            { L"MouseHighlighter", L"PowerToys.MouseHighlighter.dll", true, powertoys_gpo::getConfiguredMouseHighlighterEnabledValue },
+            { L"MouseJump", L"WinUI3Apps\\PowerToys.MouseJump.dll", false, powertoys_gpo::getConfiguredMouseJumpEnabledValue },
+            { L"AlwaysOnTop", L"PowerToys.AlwaysOnTopModuleInterface.dll", true, powertoys_gpo::getConfiguredAlwaysOnTopEnabledValue },
+            { L"MousePointerCrosshairs", L"PowerToys.MousePointerCrosshairs.dll", false, powertoys_gpo::getConfiguredMousePointerCrosshairsEnabledValue },
+            { L"AutoHideCursor", L"PowerToys.AutoHideCursor.dll", false, powertoys_gpo::getConfiguredAutoHideCursorEnabledValue },
+            { L"CursorWrap", L"PowerToys.CursorWrap.dll", false, powertoys_gpo::getConfiguredCursorWrapEnabledValue },
+            { L"MouseButtonLock", L"PowerToys.MouseButtonLock.dll", false, powertoys_gpo::getConfiguredMouseButtonLockEnabledValue },
+            { L"QuickAccent", L"PowerToys.PowerAccentModuleInterface.dll", false, powertoys_gpo::getConfiguredQuickAccentEnabledValue },
+            { L"TextExtractor", L"PowerToys.PowerOCRModuleInterface.dll", !package::IsWin11OrGreater(), powertoys_gpo::getConfiguredTextExtractorEnabledValue },
+            { L"AdvancedPaste", L"PowerToys.AdvancedPasteModuleInterface.dll", false, powertoys_gpo::getConfiguredAdvancedPasteEnabledValue },
+            { L"File Locksmith", L"WinUI3Apps\\PowerToys.FileLocksmithExt.dll", true, powertoys_gpo::getConfiguredFileLocksmithEnabledValue },
+            { L"RegistryPreview", L"WinUI3Apps\\PowerToys.RegistryPreviewExt.dll", false, powertoys_gpo::getConfiguredRegistryPreviewEnabledValue },
+            { L"Measure Tool", L"WinUI3Apps\\PowerToys.MeasureToolModuleInterface.dll", true, powertoys_gpo::getConfiguredScreenRulerEnabledValue },
+            { L"NewPlus", L"WinUI3Apps\\PowerToys.NewPlus.ShellExtension.dll", false, powertoys_gpo::getConfiguredNewPlusEnabledValue },
+            { L"Hosts", L"WinUI3Apps\\PowerToys.HostsModuleInterface.dll", false, powertoys_gpo::getConfiguredHostsFileEditorEnabledValue },
+            { L"Peek", L"WinUI3Apps\\PowerToys.Peek.dll", true, powertoys_gpo::getConfiguredPeekEnabledValue },
+            { L"EnvironmentVariables", L"WinUI3Apps\\PowerToys.EnvironmentVariablesModuleInterface.dll", false, powertoys_gpo::getConfiguredEnvironmentVariablesEnabledValue },
+            { L"MouseWithoutBorders", L"PowerToys.MouseWithoutBordersModuleInterface.dll", false, powertoys_gpo::getConfiguredMouseWithoutBordersEnabledValue },
+            { L"CropAndLock", L"PowerToys.CropAndLockModuleInterface.dll", false, powertoys_gpo::getConfiguredCropAndLockEnabledValue },
+            { L"CmdNotFound", L"PowerToys.CmdNotFoundModuleInterface.dll", true, powertoys_gpo::getConfiguredCmdNotFoundEnabledValue },
+            { L"Workspaces", L"PowerToys.WorkspacesModuleInterface.dll", false, powertoys_gpo::getConfiguredWorkspacesEnabledValue },
+            { L"CmdPal", L"PowerToys.CmdPalModuleInterface.dll", true, powertoys_gpo::getConfiguredCmdPalEnabledValue },
+            { L"ZoomIt", L"PowerToys.ZoomItModuleInterface.dll", false, powertoys_gpo::getConfiguredZoomItEnabledValue },
+            { L"LightSwitch", L"PowerToys.LightSwitchModuleInterface.dll", false, powertoys_gpo::getConfiguredLightSwitchEnabledValue },
+            { L"PowerDisplay", L"PowerToys.PowerDisplayModuleInterface.dll", false, powertoys_gpo::getConfiguredPowerDisplayEnabledValue },
+            { L"GrabAndMove", L"PowerToys.GrabAndMoveModuleInterface.dll", false, powertoys_gpo::getConfiguredGrabAndMoveEnabledValue },
+            { L"AltWindowCycle", L"PowerToys.AltWindowCycle.dll", false, powertoys_gpo::getConfiguredAltWindowCycleEnabledValue },
         };
 
-        for (auto moduleSubdir : knownModules)
-        {
-            try
-            {
-                auto pt_module = load_powertoy(moduleSubdir);
-                modules().emplace(pt_module->get_key(), std::move(pt_module));
-            }
-            catch (...)
-            {
-                std::wstring errorMessage = POWER_TOYS_MODULE_LOAD_FAIL;
-                errorMessage += moduleSubdir;
-                
-#ifdef _DEBUG
-                // In debug mode, simply log the warning and continue execution.
-                // This contrasts with the past approach where developers had to build all modules
-                // without errors before debugging—slowing down quick clone-and-fix iterations.
-                Logger::warn(L"Debug mode: {}", errorMessage);
-#else
-                // In release mode, show error dialog as before
-                MessageBoxW(NULL,
-                            errorMessage.c_str(),
-                            L"PowerToys",
-                            MB_OK | MB_ICONERROR);
-#endif
-            }
-        }
+        register_modules(knownModules);
         // Start initial powertoys
         start_enabled_powertoys();
         std::wstring product_version = get_product_version();
@@ -626,6 +599,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         auto shutdown_modules = wil::scope_exit([] {
             cancel_settings_window_startup();
             CentralizedKeyboardHook::Stop();
+            std::lock_guard lock(modules_mutex());
             for (const auto& module : modules())
             {
                 CentralizedKeyboardHook::ClearModuleHotkeys(module.first);

@@ -5,10 +5,93 @@
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
 
+namespace
+{
+    std::map<std::wstring, ModuleRegistration>& registrations()
+    {
+        static std::map<std::wstring, ModuleRegistration> value;
+        return value;
+    }
+}
+
+std::recursive_mutex& modules_mutex()
+{
+    static std::recursive_mutex mutex;
+    return mutex;
+}
+
 std::map<std::wstring, PowertoyModule>& modules()
 {
     static std::map<std::wstring, PowertoyModule> modules;
     return modules;
+}
+
+const std::map<std::wstring, ModuleRegistration>& registered_modules()
+{
+    return registrations();
+}
+
+void register_modules(std::span<const ModuleRegistration> knownModules)
+{
+    std::lock_guard lock(modules_mutex());
+    registrations().clear();
+    for (const auto& registration : knownModules)
+    {
+        registrations().emplace(registration.key, registration);
+    }
+}
+
+PowertoyModule* load_registered_module(const std::wstring& key)
+{
+    std::lock_guard lock(modules_mutex());
+    if (const auto loaded = modules().find(key); loaded != modules().end())
+    {
+        return &loaded->second;
+    }
+    const auto registration = registered_modules().find(key);
+    if (registration == registered_modules().end())
+    {
+        // The catalog is deliberately empty during pre-elevation settings initialization.
+        return nullptr;
+    }
+
+    const auto path = registration->second.dllPath;
+    try
+    {
+        auto module = load_powertoy(path);
+        const auto loaded = modules().emplace(key, std::move(module));
+        return &loaded.first->second;
+    }
+    catch (const winrt::hresult_error& error)
+    {
+        Logger::error(L"Failed to load {}: {}", path, error.message());
+    }
+    catch (const std::exception& error)
+    {
+        Logger::error("Failed to load {}: {}", winrt::to_string(path), error.what());
+    }
+
+#ifndef _DEBUG
+    const std::wstring message = L"Failed to load " + std::wstring(path);
+    MessageBoxW(nullptr, message.c_str(), L"PowerToys", MB_OK | MB_ICONERROR);
+#endif
+    return nullptr;
+}
+
+PowertoyModule* get_module_for_enabled_state(const std::wstring& key, bool& enabled)
+{
+    std::lock_guard lock(modules_mutex());
+    const auto registration = registered_modules().find(key);
+    if (registration == registered_modules().end())
+    {
+        return nullptr;
+    }
+    enabled = registration->second.apply_policy(enabled);
+    if (const auto loaded = modules().find(key); loaded != modules().end())
+    {
+        return &loaded->second;
+    }
+    return enabled ? load_registered_module(key) : nullptr;
 }
 
 PowertoyModule load_powertoy(const std::wstring_view filename)
