@@ -20,7 +20,7 @@ namespace PowerDisplay.Helpers;
 /// press, even when the built-in panel is turned off, so observing it is the reliable
 /// way to let those keys drive external monitors.
 /// </remarks>
-internal sealed class BuiltInBrightnessWatcher : IDisposable
+internal sealed partial class BuiltInBrightnessWatcher : IDisposable
 {
     private readonly DispatcherQueue _dispatcherQueue;
 
