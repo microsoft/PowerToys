@@ -1092,7 +1092,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>My scripts</value>
   </data>
   <data name="PowerScripts_ConsumerModulesTab.Content" xml:space="preserve">
-    <value>Connections</value>
+    <value>Modules</value>
   </data>
   <data name="PowerScripts_ActivityTab.Content" xml:space="preserve">
     <value>Activity</value>
@@ -1101,7 +1101,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>Activity</value>
   </data>
   <data name="PowerScripts_ConsumerModulesPage.ModuleTitle" xml:space="preserve">
-    <value>Connections</value>
+    <value>Modules</value>
   </data>
   <data name="PowerScripts_ConsumerModulesPage.ModuleDescription" xml:space="preserve">
     <value>Choose which PowerToys modules can use PowerScripts. Turning an integration off prevents new executions without deleting saved bindings. Organizational policies take precedence.</value>
