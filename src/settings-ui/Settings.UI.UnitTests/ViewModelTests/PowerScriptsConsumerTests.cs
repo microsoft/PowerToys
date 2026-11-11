@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerScripts.UI.ViewModels;
 
@@ -57,12 +58,111 @@ public class PowerScriptsConsumerTests
 
         Assert.IsFalse(consumer.IsEnabled);
         Assert.IsFalse(consumer.CanChange);
-        CollectionAssert.AreEquivalent(new[] { nameof(consumer.IsEnabled), nameof(consumer.CanChange), nameof(consumer.Status) }, changed);
+        CollectionAssert.IsSubsetOf(
+            new[] { nameof(consumer.IsEnabled), nameof(consumer.CanChange), nameof(consumer.Status), nameof(consumer.Description), nameof(consumer.CatalogueStatus) },
+            changed);
 
         consumer.Update(new("command-palette", true, true, true, false, string.Empty));
 
         Assert.IsTrue(consumer.IsEnabled, "Removing policy must expose the saved integration preference.");
         Assert.IsTrue(consumer.CanChange);
+    }
+
+    [DataTestMethod]
+    [DataRow("advanced-paste", "text-text,files-text,image-text,audio-text,text-files,text-image,text-audio")]
+    [DataRow("keyboard-manager", "none-none,none-text,none-files,none-image,none-audio")]
+    [DataRow("command-palette", "none-none,none-text")]
+    public void ModulesListOnlyCompatibleScriptContracts(string consumerId, string expectedIds)
+    {
+        var consumer = new PowerScriptsViewModel.PowerScriptConsumerItem(consumerId);
+        consumer.Update(new(consumerId, true, true, true, false, string.Empty));
+        var contracts = new[]
+        {
+            "text-text", "files-text", "image-text", "audio-text",
+            "text-files", "text-image", "text-audio", "text-none",
+            "none-none", "none-text", "none-files", "none-image", "none-audio",
+            "unknown-text", "none-unknown",
+        };
+        var scripts = contracts.Select(contract =>
+        {
+            var io = contract.Split('-');
+            return new PowerScriptListItem
+            {
+                Id = contract,
+                Name = contract,
+                Io = new() { Input = io[0], Output = io[1] },
+            };
+        }).Append(new PowerScriptListItem { Id = "missing-io", Io = null });
+
+        consumer.UpdateApplicableScripts(scripts);
+
+        CollectionAssert.AreEquivalent(expectedIds.Split(','), consumer.ApplicableScripts.Select(script => script.Id).ToArray());
+        Assert.IsFalse(consumer.HasCatalogueStatus);
+    }
+
+    [TestMethod]
+    public void ModulesSortScriptsByNameThenStableIdentity()
+    {
+        var consumer = new PowerScriptsViewModel.PowerScriptConsumerItem("command-palette");
+        consumer.Update(new(consumer.Id, true, true, true, false, string.Empty));
+        consumer.UpdateApplicableScripts(
+        [
+            new() { Id = "z", Name = "Alpha", Io = new() { Input = "NONE", Output = "TEXT" } },
+            new() { Id = "b", Name = "Beta", Io = new() { Input = "none", Output = "none" } },
+            new() { Id = "a", Name = "Alpha", Io = new() { Input = "none", Output = "text" } },
+        ]);
+
+        Assert.AreEqual("a,z,b", string.Join(",", consumer.ApplicableScripts.Select(script => script.Id)));
+    }
+
+    [DataTestMethod]
+    [DataRow(false, "")]
+    [DataRow(true, "module-disabled")]
+    [DataRow(true, "parent-policy-disabled")]
+    public void DisablingIntegrationClearsScriptsAndCollapsesTheModule(bool userEnabled, string reason)
+    {
+        var consumer = new PowerScriptsViewModel.PowerScriptConsumerItem("keyboard-manager");
+        consumer.Update(new(consumer.Id, true, true, true, false, string.Empty));
+        PowerScriptListItem[] scripts = [new() { Id = "action", Io = new() { Input = "none", Output = "none" } }];
+        consumer.UpdateApplicableScripts(scripts);
+        consumer.IsExpanded = true;
+        Assert.AreEqual(1, consumer.ApplicableScripts.Count);
+
+        consumer.Update(new(consumer.Id, userEnabled, false, false, reason.Length > 0, reason));
+        consumer.UpdateApplicableScripts(scripts);
+
+        Assert.AreEqual(0, consumer.ApplicableScripts.Count);
+        Assert.IsFalse(consumer.IsExpanded);
+        Assert.IsTrue(consumer.HasCatalogueStatus);
+        Assert.AreEqual(PowerScriptsViewModel.GetResourceString("PowerScripts_ModuleScriptsEnable"), consumer.CatalogueStatus);
+    }
+
+    [TestMethod]
+    public void EnabledModuleWithNoCompatibleScriptsShowsEmptyState()
+    {
+        var consumer = new PowerScriptsViewModel.PowerScriptConsumerItem("command-palette");
+        consumer.Update(new(consumer.Id, true, true, true, false, string.Empty));
+        consumer.UpdateApplicableScripts([new() { Io = new() { Input = "text", Output = "text" } }]);
+
+        Assert.IsTrue(consumer.HasCatalogueStatus);
+        Assert.AreEqual(PowerScriptsViewModel.GetResourceString("PowerScripts_ModuleScriptsEmpty"), consumer.CatalogueStatus);
+    }
+
+    [TestMethod]
+    public void RefreshingModuleCatalogueReplacesTheSnapshotWithoutMutatingNavigatedViews()
+    {
+        var consumer = new PowerScriptsViewModel.PowerScriptConsumerItem("command-palette");
+        consumer.Update(new(consumer.Id, true, true, true, false, string.Empty));
+        consumer.UpdateApplicableScripts([new() { Id = "first", Io = new() { Input = "none", Output = "none" } }]);
+        var previous = consumer.ApplicableScripts;
+
+        consumer.UpdateApplicableScripts([new() { Id = "second", Io = new() { Input = "none", Output = "text" } }]);
+
+        Assert.AreEqual("first", previous.Single().Id);
+        Assert.AreEqual("second", consumer.ApplicableScripts.Single().Id);
+        consumer.Update(new(consumer.Id, false, false, true, false, string.Empty));
+        Assert.AreEqual("first", previous.Single().Id);
+        Assert.AreEqual(0, consumer.ApplicableScripts.Count);
     }
 
     [DataTestMethod]

@@ -1040,6 +1040,33 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_ConsumerDescription" xml:space="preserve">
     <value>Allow this module to discover and run scripts. Turning this off keeps existing bindings.</value>
   </data>
+  <data name="PowerScripts_AdvancedPasteScriptsDescription" xml:space="preserve">
+    <value>Input and output: clipboard text, files, images or audio. Available actions depend on the clipboard contents.</value>
+  </data>
+  <data name="PowerScripts_KeyboardManagerScriptsDescription" xml:space="preserve">
+    <value>Input: none. Assign scripts to keyboard shortcuts. Required parameters need defaults or saved values.</value>
+  </data>
+  <data name="PowerScripts_CommandPaletteScriptsDescription" xml:space="preserve">
+    <value>Input: none. Output: text or none. Command Palette can prompt for script parameters.</value>
+  </data>
+  <data name="PowerScripts_ModuleScriptsLoading" xml:space="preserve">
+    <value>Loading applicable scripts…</value>
+  </data>
+  <data name="PowerScripts_ModuleScriptsProgress.AutomationProperties.Name" xml:space="preserve">
+    <value>Loading applicable scripts</value>
+  </data>
+  <data name="PowerScripts_ModuleScriptsEnable" xml:space="preserve">
+    <value>Enable this integration to see applicable scripts.</value>
+  </data>
+  <data name="PowerScripts_ModuleScriptsEmpty" xml:space="preserve">
+    <value>No configured scripts match this module. Check the script input/output types and enabled runtimes in Settings.</value>
+  </data>
+  <data name="PowerScripts_ModuleScriptsUnavailable" xml:space="preserve">
+    <value>Unable to load applicable scripts. Return to Modules to try again.</value>
+  </data>
+  <data name="PowerScripts_ModuleScriptsRootChanged" xml:space="preserve">
+    <value>The scripts folder changed while loading. Return to Modules to reload the current folder.</value>
+  </data>
   <data name="PowerScripts_ConsumerModuleDisabled" xml:space="preserve">
     <value>Enable PowerScripts first. Your integration preference is kept.</value>
   </data>
