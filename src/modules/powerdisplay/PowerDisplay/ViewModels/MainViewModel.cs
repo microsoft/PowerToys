@@ -47,6 +47,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly SettingsUtils _settingsUtils;
     private readonly MonitorStateManager _stateManager;
     private readonly DisplayChangeWatcher _displayChangeWatcher;
+    private readonly BuiltInBrightnessWatcher _builtInBrightnessWatcher;
     private readonly ISystemClock _clock;
     private readonly SemaphoreSlim _profileOperationGate = new(1, 1);
 
@@ -117,6 +118,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _displayChangeWatcher = new DisplayChangeWatcher(_dispatcherQueue, TimeSpan.FromSeconds(delaySeconds));
         _displayChangeWatcher.DisplayChanged += OnDisplayChanged;
         _displayChangeWatcher.DisplayChanging += OnDisplayChanging;
+
+        // Always subscribed (cheap, event-driven); FollowBuiltInDisplayBrightness gates the handler
+        // so toggling the setting from Settings UI takes effect without re-registering.
+        _builtInBrightnessWatcher = new BuiltInBrightnessWatcher(_dispatcherQueue);
+        _builtInBrightnessWatcher.BrightnessChanged += OnBuiltInBrightnessChanged;
 
         // Start initial discovery
         _ = InitializeAsync(_cancellationTokenSource.Token);
@@ -404,6 +410,19 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // Dispose each resource independently to ensure all get cleaned up
         try
         {
+            _followBrightnessCommitTimer?.Stop();
+            if (_builtInBrightnessWatcher is not null)
+            {
+                _builtInBrightnessWatcher.BrightnessChanged -= OnBuiltInBrightnessChanged;
+                _builtInBrightnessWatcher.Dispose();
+            }
+        }
+        catch
+        {
+        }
+
+        try
+        {
             if (_displayChangeWatcher is not null)
             {
                 _displayChangeWatcher.DisplayChanging -= OnDisplayChanging;
@@ -544,6 +563,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             LoadExcludedMonitorIds(settings.Properties.ExcludedFromSyncMonitorIds);
 
             LinkedLevelsActive = settings.Properties.LinkedLevelsActive;
+            FollowBuiltInDisplayBrightness = settings.Properties.FollowBuiltInDisplayBrightness;
 
             // Load custom VCP mappings (now using shared type from PowerDisplay.Common.Models)
             CustomVcpMappings = settings.Properties.CustomVcpMappings?.ToList() ?? new List<CustomVcpValueMapping>();
@@ -566,6 +586,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void OnDisplayChanging(object? sender, EventArgs e)
     {
         CancelPendingLinkedBrightnessCommit();
+        _followBrightnessCommitTimer?.Stop();
 
         if (!IsScanning)
         {

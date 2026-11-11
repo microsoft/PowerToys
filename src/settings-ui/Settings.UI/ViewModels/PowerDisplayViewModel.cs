@@ -356,6 +356,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool FollowBuiltInDisplayBrightness
+        {
+            get => _settings.Properties.FollowBuiltInDisplayBrightness;
+            set
+            {
+                if (SetSettingsProperty(_settings.Properties.FollowBuiltInDisplayBrightness, value, v => _settings.Properties.FollowBuiltInDisplayBrightness = v))
+                {
+                    // PowerDisplay reloads this flag in ApplySettingsFromUI.
+                    SignalSettingsUpdated();
+                    Logger.LogInfo($"FollowBuiltInDisplayBrightness changed to {value}");
+                }
+            }
+        }
+
         public bool ShowProfileSwitcher
         {
             get => _settings.Properties.ShowProfileSwitcher;
