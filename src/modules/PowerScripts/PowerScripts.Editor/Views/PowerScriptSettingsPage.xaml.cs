@@ -43,6 +43,7 @@ public sealed partial class PowerScriptSettingsPage : Page
             throw new ArgumentException("Script settings navigation requires a script and its view model.", nameof(e));
         DataContext = _context.Script;
         _context.Script.PropertyChanged += Script_PropertyChanged;
+        UpdateHeaderIcon();
         UpdateBreadcrumb();
     }
 
@@ -76,6 +77,7 @@ public sealed partial class PowerScriptSettingsPage : Page
                 _context = _context with { Script = current };
                 DataContext = current;
                 current.PropertyChanged += Script_PropertyChanged;
+                UpdateHeaderIcon();
                 UpdateBreadcrumb();
             }
 
@@ -147,6 +149,20 @@ public sealed partial class PowerScriptSettingsPage : Page
         {
             UpdateBreadcrumb();
         }
+
+        if (e.PropertyName == nameof(PowerScriptListItem.HasIcon))
+        {
+            UpdateHeaderIcon();
+        }
+    }
+
+    private void UpdateHeaderIcon() =>
+        HeaderDefaultIcon.Visibility = _context.Script.HasIcon ? Visibility.Collapsed : Visibility.Visible;
+
+    private void HeaderIcon_ImageFailed(object sender, ExceptionRoutedEventArgs args)
+    {
+        Logger.LogWarning($"Unable to display PowerScript icon '{_context.Script.IconPath}': {args.ErrorMessage}");
+        _context.Script.MarkIconUnavailable();
     }
 
     private void UpdateBreadcrumb() =>

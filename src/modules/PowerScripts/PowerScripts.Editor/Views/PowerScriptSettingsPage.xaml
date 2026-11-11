@@ -46,10 +46,20 @@
                         VerticalAlignment="Top"
                         Background="{ThemeResource AccentFillColorDefaultBrush}"
                         CornerRadius="{ThemeResource OverlayCornerRadius}">
-                        <FontIcon
-                            FontSize="32"
-                            Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
-                            Glyph="{Binding DefaultIconGlyph, Mode=OneWay}" />
+                        <Grid>
+                            <FontIcon
+                                x:Name="HeaderDefaultIcon"
+                                FontSize="32"
+                                Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                                Glyph="{Binding DefaultIconGlyph, Mode=OneWay}" />
+                            <Image
+                                Width="48"
+                                Height="48"
+                                AutomationProperties.AutomationId="PowerScriptsHeroIcon"
+                                ImageFailed="HeaderIcon_ImageFailed"
+                                Source="{Binding IconSourcePath, Mode=OneWay}"
+                                Visibility="{Binding HasIcon, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </Grid>
                     </Border>
                     <StackPanel Grid.Column="1" Spacing="8">
                         <TextBlock

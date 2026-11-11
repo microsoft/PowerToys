@@ -729,7 +729,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>The script was created, but its folder could not be opened.</value>
   </data>
   <data name="PowerScripts_TemplateParameters.Text" xml:space="preserve">
-    <value>Parameters</value>
+    <value>3  Parameters</value>
   </data>
   <data name="PowerScripts_TemplateParametersHelp.Text" xml:space="preserve">
     <value>Add named options for consumers to collect when running your script. Choose a type, optional choices and defaults. Names must start with a letter and use only letters, digits or underscores.</value>
@@ -1154,7 +1154,18 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_CreationSafety.Text" xml:space="preserve"><value>Creating a script does not run code, approve it or change sandbox protection.</value></data>
   <data name="PowerScripts_CreationInput.Header" xml:space="preserve"><value>1  What does it start with?</value></data>
   <data name="PowerScripts_CreationOutput.Header" xml:space="preserve"><value>2  What does it give back?</value></data>
-  <data name="PowerScripts_CreationName.Text" xml:space="preserve"><value>3  Name it and make it yours</value></data>
+  <data name="PowerScripts_CreationName.Text" xml:space="preserve"><value>4  Name it and make it yours</value></data>
+  <data name="PowerScripts_TemplateIcons.Text" xml:space="preserve"><value>Icon</value></data>
+  <data name="PowerScripts_TemplateIconsHelp.Text" xml:space="preserve"><value>Choose a preset or your own .ico file (up to 1 MiB). The icon is copied into the script package. Keep Default to use the runtime icon.</value></data>
+  <data name="PowerScripts_TemplateCustomIcon.Content" xml:space="preserve"><value>Choose custom icon...</value></data>
+  <data name="PowerScripts_TemplateCustomIconInvalid" xml:space="preserve"><value>Choose a valid .ico file no larger than 1 MiB.</value></data>
+  <data name="PowerScripts_TemplateIconPicker.AutomationProperties.Name" xml:space="preserve"><value>Script icon</value></data>
+  <data name="PowerScripts_TemplateIcon_default" xml:space="preserve"><value>Default</value></data>
+  <data name="PowerScripts_TemplateIcon_bolt" xml:space="preserve"><value>Action</value></data>
+  <data name="PowerScripts_TemplateIcon_text" xml:space="preserve"><value>Text</value></data>
+  <data name="PowerScripts_TemplateIcon_files" xml:space="preserve"><value>Files</value></data>
+  <data name="PowerScripts_TemplateIcon_image" xml:space="preserve"><value>Image</value></data>
+  <data name="PowerScripts_TemplateIcon_audio" xml:space="preserve"><value>Audio</value></data>
   <data name="PowerScripts_DetailsOverview.Text" xml:space="preserve"><value>Overview</value></data>
   <data name="PowerScripts_DetailsCode.Text" xml:space="preserve"><value>Code</value></data>
   <data name="PowerScripts_OverviewInput.Text" xml:space="preserve"><value>It takes</value></data>

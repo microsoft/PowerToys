@@ -21,6 +21,119 @@ namespace PowerScripts.Core.Tests;
 public class ScriptTemplateTests
 {
     [TestMethod]
+    public void CustomIconIsCopiedAndRemainsDiscoverableAfterTheSourceIsDeleted()
+    {
+        var workspace = Path.Combine(Path.GetTempPath(), "ps-custom-icon-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var seed = ScriptTemplates.Create(Path.Combine(workspace, "source"), new("Source", IconPreset: "image"));
+            var source = Path.Combine(Path.GetDirectoryName(seed.EntryPath)!, "icon.ico");
+            var expected = File.ReadAllBytes(source);
+            var root = Path.Combine(workspace, "packages");
+            var created = ScriptTemplates.Create(root, new("Custom icon", IconSource: source));
+            File.Delete(source);
+            var icon = Path.Combine(Path.GetDirectoryName(created.EntryPath)!, "icon.ico");
+            CollectionAssert.AreEqual(expected, File.ReadAllBytes(icon));
+            var descriptor = File.ReadAllText(created.EntryPath + ".tool.json");
+            Assert.AreEqual("icon.ico", JsonNode.Parse(descriptor)!["x-powerscript"]!["icon"]!.GetValue<string>());
+            Assert.IsFalse(descriptor.Contains(source, StringComparison.Ordinal));
+            var registry = new ScriptRegistry(root);
+            registry.Load();
+            Assert.AreEqual(0, registry.Errors.Count);
+            Assert.AreEqual(icon, registry.Scripts.Single().IconPath);
+        }
+        finally
+        {
+            if (Directory.Exists(workspace))
+            {
+                Directory.Delete(workspace, recursive: true);
+            }
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void InvalidOrOversizedCustomIconsCreateNoPackage(bool oversized)
+    {
+        var workspace = Path.Combine(Path.GetTempPath(), "ps-custom-icon-invalid-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(workspace);
+        try
+        {
+            var source = Path.Combine(workspace, "source.ico");
+            File.WriteAllBytes(source, new byte[oversized ? (1024 * 1024) + 1 : 6]);
+            var root = Path.Combine(workspace, "packages");
+            Assert.ThrowsException<InvalidDataException>(() => ScriptTemplates.Create(root, new("Invalid", IconSource: source)));
+            Assert.IsFalse(Directory.Exists(root));
+        }
+        finally
+        {
+            Directory.Delete(workspace, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ConflictingOrUnsupportedIconSourcesCreateNoPackage()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "ps-custom-icon-conflict-" + Guid.NewGuid().ToString("N"));
+        Assert.ThrowsException<ArgumentException>(() => ScriptTemplates.Create(root, new("Conflict", IconPreset: "image", IconSource: Path.Combine(Path.GetTempPath(), "source.ico"))));
+        Assert.ThrowsException<ArgumentException>(() => ScriptTemplates.Create(root, new("Relative", IconSource: "source.ico")));
+        Assert.ThrowsException<ArgumentException>(() => ScriptTemplates.Create(root, new("Not an icon", IconSource: Path.Combine(Path.GetTempPath(), "source.png"))));
+        Assert.IsFalse(Directory.Exists(root));
+    }
+
+    [DataTestMethod]
+    [DataRow("bolt")]
+    [DataRow("text")]
+    [DataRow("files")]
+    [DataRow("image")]
+    [DataRow("audio")]
+    public void PresetIconsArePackageLocalAndSurviveDiscovery(string preset)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "ps-template-icon-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var options = new ScriptTemplateOptions("Icon package", IconPreset: preset);
+            foreach (var created in new[] { ScriptTemplates.Create(root, options), ScriptTemplates.Create("greeting", root, options) })
+            {
+                var descriptor = JsonNode.Parse(File.ReadAllText(created.EntryPath + ".tool.json"))!;
+                Assert.AreEqual("icon.ico", descriptor["x-powerscript"]!["icon"]!.GetValue<string>());
+                Assert.IsTrue(File.Exists(Path.Combine(Path.GetDirectoryName(created.EntryPath)!, "icon.ico")));
+                Assert.IsFalse(File.Exists(Path.Combine(Path.GetDirectoryName(created.EntryPath)!, "local-policy.json")));
+            }
+
+            var registry = new ScriptRegistry(root);
+            registry.Load();
+            Assert.AreEqual(0, registry.Errors.Count);
+            Assert.AreEqual(2, registry.Scripts.Count);
+            foreach (var script in registry.Scripts)
+            {
+                Assert.AreEqual(Path.Combine(script.FolderPath, "icon.ico"), script.IconPath);
+                Assert.IsNull(script.IconWarning);
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow("")]
+    [DataRow("../image")]
+    [DataRow("C:\\custom.ico")]
+    [DataRow("unknown")]
+    public void InvalidPresetIconsCreateNoFiles(string preset)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "ps-template-icon-rejected-" + Guid.NewGuid().ToString("N"));
+        Assert.ThrowsException<ArgumentException>(() => ScriptTemplates.Create(root, new("Icon package", IconPreset: preset)));
+        Assert.IsFalse(Directory.Exists(root));
+    }
+
+    [TestMethod]
     public void TemplatesCreateValidIndependentPackagesWithoutLocalPolicyOrApproval()
     {
         var root = Path.Combine(Path.GetTempPath(), "ps-templates-" + Guid.NewGuid().ToString("N"));
@@ -119,6 +232,8 @@ public class ScriptTemplateTests
             Assert.AreEqual(0, ManifestValidator.Validate(manifest, string.Empty).Count);
             Assert.AreEqual("My script", manifest.Name);
             Assert.AreEqual(options.Description, manifest.Description);
+            Assert.IsNull(manifest.Icon);
+            Assert.IsFalse(File.Exists(Path.Combine(Path.GetDirectoryName(created.EntryPath)!, "icon.ico")));
             Assert.AreEqual(runtime == "python" ? ScriptRuntime.Python : ScriptRuntime.PowerShell, manifest.Runtime);
             Assert.AreEqual(input, ScriptIo.ToToken(manifest.InputFormat));
             Assert.AreEqual(output, ScriptIo.ToToken(manifest.OutputFormat));

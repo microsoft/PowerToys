@@ -192,6 +192,12 @@ public sealed class ScriptRegistry
         }
 
         using var stream = File.OpenRead(path);
+        ValidateIcon(stream);
+        return path;
+    }
+
+    internal static void ValidateIcon(Stream stream)
+    {
         if (stream.Length > 1024 * 1024)
         {
             throw new InvalidDataException("Script icons must not exceed 1 MiB.");
@@ -204,8 +210,6 @@ public sealed class ScriptRegistry
         {
             throw new InvalidDataException("The file does not contain an ICO header.");
         }
-
-        return path;
     }
 
     /// <summary>Scripts with no file input (resolved input shape is not Files) — candidates for Keyboard Manager / Command Palette.</summary>
