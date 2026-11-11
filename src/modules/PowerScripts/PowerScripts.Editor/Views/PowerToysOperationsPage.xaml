@@ -1,0 +1,340 @@
+<Page
+    x:Class="PowerScripts.Editor.Views.PowerToysOperationsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:layout="using:PowerScripts.Editor.Controls"
+    xmlns:viewModels="using:PowerScripts.UI.ViewModels"
+    xmlns:views="using:PowerScripts.Editor.Views"
+    AutomationProperties.AutomationId="PowerScriptsOperationsPage"
+    AutomationProperties.LandmarkType="Main">
+    <Page.KeyboardAccelerators>
+        <KeyboardAccelerator
+            Key="Left"
+            Invoked="BackKeyboardAccelerator_Invoked"
+            Modifiers="Menu" />
+    </Page.KeyboardAccelerators>
+    <Grid RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Margin="20,0,20,0" ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button
+                x:Uid="PowerScripts_SettingsBack"
+                AutomationProperties.AutomationId="PowerScriptsOperationsBack"
+                Click="BackButton_Click"
+                Style="{StaticResource SubtleButtonStyle}">
+                <SymbolIcon Symbol="Back" />
+            </Button>
+            <BreadcrumbBar
+                x:Name="OperationsBreadcrumb"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                AutomationProperties.AutomationId="PowerScriptsOperationsBreadcrumb"
+                ItemClicked="OperationsBreadcrumb_ItemClicked" />
+        </Grid>
+        <layout:ManagementPage x:Uid="PowerScripts_OperationsPage" Grid.Row="1">
+            <layout:ManagementPage.ModuleContent>
+                <StackPanel Spacing="16">
+                    <InfoBar
+                        x:Name="CatalogueStatus"
+                        x:Uid="PowerScripts_OperationTemplateCatalogueError"
+                        AutomationProperties.AutomationId="PowerScriptsOperationsCatalogueStatus"
+                        IsClosable="False"
+                        Severity="Error">
+                        <InfoBar.ActionButton>
+                            <Button
+                                x:Uid="PowerScripts_OperationTemplateRetry"
+                                Click="RetryButton_Click" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+                    <TextBox
+                        x:Name="ProjectNameTextBox"
+                        x:Uid="PowerScripts_OperationsName"
+                        AutomationProperties.AutomationId="PowerScriptsOperationName"
+                        MaxLength="80"
+                        TextChanged="ProjectName_TextChanged" />
+                    <Border
+                        Padding="16"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8">
+                        <StackPanel Spacing="12">
+                            <Grid ColumnSpacing="12" RowSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="2*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup>
+                                        <VisualState x:Name="WideOperationSelectors">
+                                            <VisualState.StateTriggers>
+                                                <AdaptiveTrigger MinWindowWidth="720" />
+                                            </VisualState.StateTriggers>
+                                            <VisualState.Setters>
+                                                <Setter Target="ModuleSelectorPanel.(Grid.ColumnSpan)" Value="1" />
+                                                <Setter Target="OperationSelectorPanel.(Grid.Row)" Value="0" />
+                                                <Setter Target="OperationSelectorPanel.(Grid.Column)" Value="1" />
+                                                <Setter Target="OperationSelectorPanel.(Grid.ColumnSpan)" Value="1" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="StackedOperationSelectors">
+                                            <VisualState.StateTriggers>
+                                                <AdaptiveTrigger MinWindowWidth="0" />
+                                            </VisualState.StateTriggers>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                                <StackPanel x:Name="ModuleSelectorPanel" Grid.ColumnSpan="2" Spacing="6">
+                                    <TextBlock
+                                        x:Name="ModuleLabel"
+                                        x:Uid="PowerScripts_OperationsModule"
+                                        Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                    <ComboBox
+                                        x:Name="ModuleComboBox"
+                                        x:Uid="PowerScripts_OperationsModuleSelector"
+                                        HorizontalAlignment="Stretch"
+                                        AutomationProperties.AutomationId="PowerScriptsOperationModuleSelector"
+                                        AutomationProperties.LabeledBy="{Binding ElementName=ModuleLabel}"
+                                        DisplayMemberPath="Name"
+                                        SelectionChanged="Module_SelectionChanged" />
+                                </StackPanel>
+                                <StackPanel x:Name="OperationSelectorPanel" Grid.Row="1" Grid.ColumnSpan="2" Spacing="6">
+                                    <TextBlock
+                                        x:Name="OperationLabel"
+                                        x:Uid="PowerScripts_OperationsOperation"
+                                        Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                    <ComboBox
+                                        x:Name="OperationComboBox"
+                                        x:Uid="PowerScripts_OperationsSelector"
+                                        HorizontalAlignment="Stretch"
+                                        AutomationProperties.AutomationId="PowerScriptsOperationSelector"
+                                        AutomationProperties.LabeledBy="{Binding ElementName=OperationLabel}"
+                                        DisplayMemberPath="Name"
+                                        SelectionChanged="Operation_SelectionChanged" />
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock
+                                x:Name="OperationDescription"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                IsTextSelectionEnabled="True"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                TextWrapping="Wrap" />
+                            <ContentControl x:Name="ParametersForm" Margin="0,8,0,0" HorizontalContentAlignment="Stretch">
+                                <StackPanel Spacing="12">
+                                    <TextBlock
+                                        x:Name="NoParametersText"
+                                        x:Uid="PowerScripts_OperationsNoParameters"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap"
+                                        Visibility="Collapsed" />
+                                    <ItemsRepeater x:Name="ParametersRepeater">
+                                        <ItemsRepeater.Layout>
+                                            <StackLayout Spacing="16" />
+                                        </ItemsRepeater.Layout>
+                                        <ItemsRepeater.ItemTemplate>
+                                            <DataTemplate x:DataType="viewModels:PowerScriptOperationParameter">
+                                                <StackPanel Spacing="6">
+                                                    <Grid ColumnSpacing="8">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                                            <TextBlock
+                                                                VerticalAlignment="Center"
+                                                                Text="{x:Bind DisplayLabel}"
+                                                                TextWrapping="Wrap" />
+                                                            <Button
+                                                                Width="24"
+                                                                Height="24"
+                                                                MinWidth="24"
+                                                                MinHeight="24"
+                                                                Padding="0"
+                                                                VerticalAlignment="Center"
+                                                                AutomationProperties.AutomationId="{x:Bind ControlId('Help')}"
+                                                                AutomationProperties.Name="{x:Bind HelpLabel}"
+                                                                Style="{StaticResource SubtleButtonStyle}"
+                                                                ToolTipService.ToolTip="{x:Bind HelpLabel}"
+                                                                Visibility="{x:Bind views:PowerToysOperationsPage.BoolToVisibility(HasDescription)}">
+                                                                <FontIcon FontSize="14" Glyph="&#xE946;" />
+                                                                <Button.Flyout>
+                                                                    <Flyout>
+                                                                        <TextBlock
+                                                                            MaxWidth="280"
+                                                                            IsTextSelectionEnabled="True"
+                                                                            Text="{x:Bind Description}"
+                                                                            TextWrapping="Wrap" />
+                                                                    </Flyout>
+                                                                </Button.Flyout>
+                                                            </Button>
+                                                        </StackPanel>
+                                                        <CheckBox
+                                                            Grid.Column="1"
+                                                            MinHeight="24"
+                                                            VerticalAlignment="Center"
+                                                            AutomationProperties.AutomationId="{x:Bind ControlId('Provide')}"
+                                                            Content="{x:Bind OptionalValueLabel}"
+                                                            IsChecked="{x:Bind IsValueProvided, Mode=TwoWay}"
+                                                            Visibility="{x:Bind views:PowerToysOperationsPage.BoolToVisibility(CanOmit)}" />
+                                                    </Grid>
+                                                    <ContentControl HorizontalContentAlignment="Stretch" IsEnabled="{x:Bind IsValueProvided, Mode=OneWay}">
+                                                        <Grid>
+                                                            <TextBox
+                                                                AutomationProperties.AutomationId="{x:Bind ControlId('Text')}"
+                                                                AutomationProperties.Name="{x:Bind DisplayLabel}"
+                                                                PlaceholderText="{x:Bind ValuePlaceholder, Mode=OneWay}"
+                                                                Text="{x:Bind TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                Visibility="{x:Bind views:PowerToysOperationsPage.BoolToVisibility(IsText)}" />
+                                                            <TextBox
+                                                                AutomationProperties.AutomationId="{x:Bind ControlId('Integer')}"
+                                                                AutomationProperties.Name="{x:Bind DisplayLabel}"
+                                                                InputScope="Number"
+                                                                PlaceholderText="{x:Bind ValuePlaceholder, Mode=OneWay}"
+                                                                Text="{x:Bind TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                Visibility="{x:Bind views:PowerToysOperationsPage.BoolToVisibility(IsInteger)}" />
+                                                            <ToggleSwitch
+                                                                x:Uid="PowerScripts_OperationsBoolean"
+                                                                MinHeight="32"
+                                                                AutomationProperties.AutomationId="{x:Bind ControlId('Boolean')}"
+                                                                AutomationProperties.Name="{x:Bind DisplayLabel}"
+                                                                IsOn="{x:Bind BooleanValue, Mode=TwoWay}"
+                                                                Visibility="{x:Bind views:PowerToysOperationsPage.BoolToVisibility(IsBooleanToggle)}" />
+                                                            <ComboBox
+                                                                Width="220"
+                                                                HorizontalAlignment="Left"
+                                                                AutomationProperties.AutomationId="{x:Bind ControlId('BooleanChoice')}"
+                                                                AutomationProperties.Name="{x:Bind DisplayLabel}"
+                                                                ItemsSource="{x:Bind BooleanChoices}"
+                                                                SelectedItem="{x:Bind SelectedBooleanChoice, Mode=TwoWay}"
+                                                                Visibility="{x:Bind views:PowerToysOperationsPage.BoolToVisibility(IsBooleanChoice)}" />
+                                                            <ComboBox
+                                                                HorizontalAlignment="Stretch"
+                                                                AutomationProperties.AutomationId="{x:Bind ControlId('Choice')}"
+                                                                AutomationProperties.Name="{x:Bind DisplayLabel}"
+                                                                ItemsSource="{x:Bind Choices}"
+                                                                PlaceholderText="{x:Bind ValuePlaceholder, Mode=OneWay}"
+                                                                SelectedItem="{x:Bind TextValue, Mode=TwoWay}"
+                                                                Visibility="{x:Bind views:PowerToysOperationsPage.BoolToVisibility(IsChoice)}" />
+                                                            <Grid
+                                                                ColumnSpacing="8"
+                                                                Visibility="{x:Bind views:PowerToysOperationsPage.BoolToVisibility(IsFile)}">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBox
+                                                                    AutomationProperties.AutomationId="{x:Bind ControlId('File')}"
+                                                                    AutomationProperties.Name="{x:Bind DisplayLabel}"
+                                                                    PlaceholderText="{x:Bind ValuePlaceholder, Mode=OneWay}"
+                                                                    Text="{x:Bind TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                                <Button
+                                                                    x:Uid="PowerScripts_RunBrowse"
+                                                                    Grid.Column="1"
+                                                                    AutomationProperties.AutomationId="{x:Bind ControlId('Browse')}"
+                                                                    AutomationProperties.Name="{x:Bind BrowseLabel}"
+                                                                    Click="BrowseFileButton_Click"
+                                                                    Tag="{x:Bind}" />
+                                                            </Grid>
+                                                        </Grid>
+                                                    </ContentControl>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsRepeater.ItemTemplate>
+                                    </ItemsRepeater>
+                                </StackPanel>
+                            </ContentControl>
+                            <TextBlock
+                                x:Name="ValidationMessage"
+                                AutomationProperties.AutomationId="PowerScriptsOperationValidation"
+                                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                TextWrapping="Wrap"
+                                Visibility="Collapsed" />
+                            <TextBlock
+                                x:Name="TestStatus"
+                                AutomationProperties.AutomationId="PowerScriptsOperationTestStatus"
+                                AutomationProperties.LiveSetting="Polite"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                TextWrapping="Wrap"
+                                Visibility="Collapsed" />
+                        </StackPanel>
+                    </Border>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button
+                            x:Name="CreateButton"
+                            x:Uid="PowerScripts_OperationsCreate"
+                            AutomationProperties.AutomationId="PowerScriptsOperationCreate"
+                            Click="CreateButton_Click"
+                            IsEnabled="False"
+                            Style="{StaticResource AccentButtonStyle}" />
+                        <Border
+                            x:Name="TestRunButtonHost"
+                            HorizontalAlignment="Left"
+                            Background="Transparent">
+                            <ToolTipService.ToolTip>
+                                <ToolTip x:Name="TestRunUnavailableToolTip" Placement="Top">
+                                    <TextBlock
+                                        x:Name="TestRunDisabledReasonText"
+                                        MaxWidth="420"
+                                        TextWrapping="Wrap" />
+                                </ToolTip>
+                            </ToolTipService.ToolTip>
+                            <Button
+                                x:Name="TestRunButton"
+                                Padding="10,5"
+                                AutomationProperties.AutomationId="PowerScriptsOperationTestRun"
+                                Click="TestRunButton_Click"
+                                IsEnabled="False">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon
+                                        x:Name="TestRunIcon"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        FontSize="14"
+                                        Glyph="&#xE768;" />
+                                    <TextBlock x:Name="TestRunLabel" x:Uid="PowerScripts_OperationsTest" />
+                                </StackPanel>
+                                <FlyoutBase.AttachedFlyout>
+                                    <Flyout x:Name="TestResultFlyout" Placement="BottomEdgeAlignedRight">
+                                        <StackPanel MaxWidth="440" Spacing="12">
+                                            <TextBlock
+                                                x:Name="TestResultTitle"
+                                                AutomationProperties.AutomationId="PowerScriptsOperationTestResult"
+                                                AutomationProperties.LiveSetting="Polite"
+                                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                TextWrapping="Wrap" />
+                                            <TextBox
+                                                x:Name="TestOutputTextBox"
+                                                x:Uid="PowerScripts_RunOutput"
+                                                MinWidth="280"
+                                                MaxHeight="280"
+                                                AcceptsReturn="True"
+                                                AutomationProperties.AutomationId="PowerScriptsOperationTestOutput"
+                                                IsReadOnly="True"
+                                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Flyout>
+                                </FlyoutBase.AttachedFlyout>
+                            </Button>
+                        </Border>
+                    </StackPanel>
+                    <InfoBar
+                        x:Name="CreationStatus"
+                        AutomationProperties.AutomationId="PowerScriptsOperationCreationStatus"
+                        IsClosable="False" />
+                </StackPanel>
+            </layout:ManagementPage.ModuleContent>
+        </layout:ManagementPage>
+    </Grid>
+</Page>

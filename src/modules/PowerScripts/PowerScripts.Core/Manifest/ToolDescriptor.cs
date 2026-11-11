@@ -102,6 +102,9 @@ public sealed class JsonSchemaProperty : JsonSchemaObject
 {
     public const string FilePathFormat = "file-path";
 
+    [JsonPropertyName("x-ui")]
+    public ParameterUiHints? Ui { get; set; }
+
     [JsonPropertyName("title")]
     public string? Title { get; set; }
 
@@ -175,6 +178,10 @@ public sealed class FileSchemaHints
 /// </summary>
 public sealed class ScriptExecute
 {
+    /// <summary>A closed built-in execution provider, mutually exclusive with a process recipe.</summary>
+    [JsonPropertyName("provider")]
+    public string? Provider { get; set; }
+
     /// <summary>
     /// The command and its fixed leading arguments, e.g. <c>["python3", "narrate_image.py"]</c>. The
     /// first token is the interpreter; a token that names the sibling script is resolved to its full
@@ -200,6 +207,10 @@ public sealed class ScriptExecute
     /// <summary>Optional human meaning of non-zero exit codes, surfaced in errors.</summary>
     [JsonPropertyName("exitCodes")]
     public Dictionary<string, string>? ExitCodes { get; set; }
+
+    /// <summary>Retains unknown recipe fields so providers can reject them without changing legacy recipes.</summary>
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? AdditionalProperties { get; set; }
 
     /// <summary>True when the structured input should be delivered on stdin as JSON.</summary>
     [JsonIgnore]

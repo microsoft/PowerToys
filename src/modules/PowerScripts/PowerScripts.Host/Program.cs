@@ -76,7 +76,7 @@ internal static class Program
             {
                 if (positional.Count == 1 && positional[0] == "list" && options.Count == 0)
                 {
-                    Console.WriteLine(JsonSerializer.Serialize(ScriptTemplates.All, ToolDescriptorParser.JsonOptions));
+                    Console.WriteLine(JsonSerializer.Serialize(ScriptTemplates.Available, ToolDescriptorParser.JsonOptions));
                     return 0;
                 }
 
@@ -89,15 +89,14 @@ internal static class Program
                     if (options.ContainsKey("configure"))
                     {
                         using var reader = new StreamReader(Console.OpenStandardInput(), Encoding.UTF8);
-                        var buffer = new char[16_385];
+                        var buffer = new char[TemplateConfiguration.MaximumLength + 1];
                         var length = reader.ReadBlock(buffer, 0, buffer.Length);
                         if (length == buffer.Length)
                         {
                             throw new InvalidDataException("Template configuration is too large.");
                         }
 
-                        templateOptions = JsonSerializer.Deserialize<ScriptTemplateOptions>(new string(buffer, 0, length), ToolDescriptorParser.JsonOptions)
-                            ?? throw new InvalidDataException("Template configuration must be a JSON object.");
+                        templateOptions = TemplateConfiguration.Parse(new string(buffer, 0, length));
                     }
 
                     Console.WriteLine(JsonSerializer.Serialize(
@@ -108,7 +107,7 @@ internal static class Program
                     return 0;
                 }
 
-                Console.Error.WriteLine("template: use list, create <template-id> [--configure] [--root <dir>], or create --configure [--root <dir>]. Without a template ID, configuration includes projectName, description, runtime, input, output, fileExtensions, minFiles and maxFiles.");
+                Console.Error.WriteLine("template: use list, create <template-id> [--configure] [--root <dir>], or create --configure [--root <dir>]. Configuration includes projectName, description, runtime, input, output, fileExtensions, minFiles, maxFiles and parameters. PowerToys operation templates use operation.commandId and optional operation.bindings.");
                 return 1;
             }
 
@@ -902,9 +901,10 @@ internal static class Program
         Console.WriteLine("  linux-container-setup              (explicitly download/cache the managed Python image)");
         Console.WriteLine("  trust list | approve <id> | revoke <id>   (manage which scripts are allowed to run)");
         Console.WriteLine("  template list | template create <template-id> [--configure] [--root <dir>]");
-        Console.WriteLine("  template create --configure [--root <dir>] (generate from projectName, description, runtime, input, output, fileExtensions, minFiles and maxFiles JSON on stdin)");
+        Console.WriteLine("  template create --configure [--root <dir>] (generate from projectName, description, runtime, input, output, fileExtensions, minFiles, maxFiles and parameters JSON on stdin)");
         Console.WriteLine("       --configure reads {\"projectName\":\"My script\",\"description\":\"...\",\"fileExtensions\":\".txt, .md\"} from stdin. Extensions apply only to file-input templates.");
-        Console.WriteLine("       Per-script MXC security settings only; save reads {\"mxc\":{...}} from stdin. Metadata belongs in .tool.json.");
+        Console.WriteLine("       PowerToys templates use operation.commandId and optional operation.bindings, or create powertoys:<command-id>.");
+        Console.WriteLine("       Creation does not run code, approve trust or change global MXC settings. Metadata belongs in .tool.json.");
         return 0;
     }
 }

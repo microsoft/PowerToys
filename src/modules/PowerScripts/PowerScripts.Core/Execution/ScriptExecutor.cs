@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using PowerScripts.Core.Cli;
 using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Security;
 
@@ -68,6 +69,11 @@ public sealed class ScriptExecutor
             Params = parameters?.ToDictionary(pair => pair.Key, pair => pair.Value ?? string.Empty),
         };
         var request = input.CreateRequest(manifest);
+        if (manifest.Runtime == ScriptRuntime.PowerToysOperation || manifest.Execute?.Provider is not null)
+        {
+            return ValidateOutput(manifest, CliActionProvider.Run(manifest, files, parameters, _mxcSettings));
+        }
+
         // A descriptor-authored script (explicit .tool.json) carries its own launch recipe and is run
         // through the language-agnostic descriptor executor, regardless of runtime.
         if (manifest.Execute is not null)

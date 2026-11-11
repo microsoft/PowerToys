@@ -11,6 +11,7 @@ public static class PowerScriptConsumer
     public const string KeyboardManager = "keyboard-manager";
     public const string CommandPalette = "command-palette";
     public const string CommandLine = "command-line";
+    public const string Editor = "powerscripts-editor";
 
     public static bool IsValid(string? id) =>
         id is { Length: > 0 and <= 64 } &&

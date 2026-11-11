@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
 using Microsoft.UI.Xaml;
@@ -35,6 +37,12 @@ namespace KeyboardManagerEditorUI.Controls
         private readonly ObservableCollection<string> _actionKeys = new();
 
         private readonly ObservableCollection<Helpers.PowerScriptInfo> _powerScripts = new();
+        private CancellationTokenSource? _powerScriptRefresh;
+        private PowerScriptsCatalogSnapshot? _powerScriptSnapshot;
+        private string? _pendingPowerScriptId;
+        private IReadOnlyDictionary<string, string?>? _pendingPowerScriptValues;
+        private bool _refreshingPowerScripts;
+        private int _powerScriptDraftGeneration;
 
         private bool _disposed;
         private bool _internalUpdate;
@@ -155,13 +163,13 @@ namespace KeyboardManagerEditorUI.Controls
             TriggerKeys.ItemsSource = _triggerKeys;
             ActionKeys.ItemsSource = _actionKeys;
 
-            // Populate the PowerScripts picker (system scripts). Empty when PowerScripts isn't installed.
-            foreach (var script in Helpers.PowerScriptsCatalog.GetSystemScripts())
-            {
-                _powerScripts.Add(script);
-            }
-
             PowerScriptComboBox.ItemsSource = _powerScripts;
+            PowerScriptParameters.ValuesChanged += (_, _) => RaiseValidationStateChanged();
+            PowerScriptParameters.GotFocus += (_, _) =>
+            {
+                CleanupKeyboardHook();
+                UncheckAllToggleButtons();
+            };
 
             _triggerKeys.CollectionChanged += (_, _) =>
             {
@@ -182,7 +190,7 @@ namespace KeyboardManagerEditorUI.Controls
 
         #region Lifecycle Events
 
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             // Set up event handlers for app-specific checkbox
             AppSpecificCheckBox.Checked += AppSpecificCheckBox_Changed;
@@ -194,10 +202,13 @@ namespace KeyboardManagerEditorUI.Controls
                 _currentInputMode = KeyInputMode.OriginalKeys;
                 KeyboardHookHelper.Instance.ActivateHook(this);
             }
+
+            await RefreshPowerScriptsAsync();
         }
 
         private void UnifiedMappingControl_Unloaded(object sender, RoutedEventArgs e)
         {
+            _powerScriptRefresh?.Cancel();
             Reset();
             CleanupKeyboardHook();
         }
@@ -281,6 +292,13 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void PowerScriptComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            var selected = GetSelectedPowerScript();
+            PowerScriptParameters.SetScript(selected?.Script);
+            if (selected is not null)
+            {
+                _pendingPowerScriptId = selected.Id;
+            }
+
             if (PowerScriptEmptyHint != null)
             {
                 PowerScriptEmptyHint.Visibility = _powerScripts.Count == 0
@@ -289,6 +307,72 @@ namespace KeyboardManagerEditorUI.Controls
             }
 
             RaiseValidationStateChanged();
+        }
+
+        private async void RefreshPowerScripts_Click(object sender, RoutedEventArgs e) => await RefreshPowerScriptsAsync();
+
+        private void ResetPowerScriptParameters_Click(object sender, RoutedEventArgs e) =>
+            PowerScriptParameters.SetScript(GetSelectedPowerScript()?.Script);
+
+        /// <summary>Refreshes standard script discovery while retaining the current binding draft.</summary>
+        public async Task<bool> RefreshPowerScriptsAsync(CancellationToken cancellationToken = default)
+        {
+            string? selectedId = GetSelectedPowerScript()?.Id ?? _pendingPowerScriptId;
+            var values = GetSelectedPowerScript() is not null ? PowerScriptParameters.GetValues() : _pendingPowerScriptValues;
+            int draftGeneration = _powerScriptDraftGeneration;
+            _powerScriptRefresh?.Cancel();
+            using var refresh = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            _powerScriptRefresh = refresh;
+            _refreshingPowerScripts = true;
+            PowerScriptComboBox.IsEnabled = false;
+            PowerScriptEmptyHint.Visibility = Visibility.Collapsed;
+            RaiseValidationStateChanged();
+            try
+            {
+                var snapshot = await PowerScriptsCatalog.GetSystemScriptsAsync(refresh.Token);
+                refresh.Token.ThrowIfCancellationRequested();
+                _powerScriptSnapshot = snapshot;
+                PowerScriptStatus.IsOpen = !snapshot.Succeeded;
+                PowerScriptStatus.Message = snapshot.ErrorMessage ?? string.Empty;
+                if (!snapshot.Succeeded)
+                {
+                    return false;
+                }
+
+                if (draftGeneration != _powerScriptDraftGeneration)
+                {
+                    selectedId = _pendingPowerScriptId;
+                    values = _pendingPowerScriptValues;
+                }
+
+                _powerScripts.Clear();
+                foreach (var script in snapshot.Scripts)
+                {
+                    _powerScripts.Add(script);
+                }
+
+                var selected = _powerScripts.FirstOrDefault(script => string.Equals(script.Id, selectedId, StringComparison.Ordinal));
+                PowerScriptComboBox.SelectedItem = selected;
+                PowerScriptParameters.SetScript(selected?.Script, values);
+                _pendingPowerScriptId = selectedId;
+                _pendingPowerScriptValues = values;
+                PowerScriptEmptyHint.Visibility = _powerScripts.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+                return true;
+            }
+            catch (OperationCanceledException)
+            {
+                return false;
+            }
+            finally
+            {
+                if (ReferenceEquals(_powerScriptRefresh, refresh))
+                {
+                    _powerScriptRefresh = null;
+                    _refreshingPowerScripts = false;
+                    PowerScriptComboBox.IsEnabled = true;
+                    RaiseValidationStateChanged();
+                }
+            }
         }
 
         private void ActionKeyToggleBtn_Checked(object sender, RoutedEventArgs e)
@@ -784,17 +868,27 @@ namespace KeyboardManagerEditorUI.Controls
         /// <summary>
         /// Selects the PowerScript with the given id in the picker, if present.
         /// </summary>
-        public void SelectPowerScript(string id)
+        public void SelectPowerScript(string id, IReadOnlyDictionary<string, string?>? values = null)
         {
+            _powerScriptDraftGeneration++;
+            _pendingPowerScriptId = id;
+            _pendingPowerScriptValues = values;
             foreach (var script in _powerScripts)
             {
                 if (string.Equals(script.Id, id, StringComparison.OrdinalIgnoreCase))
                 {
                     PowerScriptComboBox.SelectedItem = script;
+                    PowerScriptParameters.SetScript(script.Script, values);
                     return;
                 }
             }
         }
+
+        public string? GetPowerScriptsHostPath() => _powerScriptSnapshot?.Succeeded == true ? _powerScriptSnapshot.HostPath : null;
+
+        public IReadOnlyDictionary<string, string?> GetPowerScriptParameters() => PowerScriptParameters.GetValues();
+
+        public bool ValidatePowerScriptParameters(out string? error) => PowerScriptParameters.TryValidate(out error);
 
         /// <summary>
         /// Gets the program path (for OpenApp action type).
@@ -863,7 +957,8 @@ namespace KeyboardManagerEditorUI.Controls
                 ActionType.Text => !string.IsNullOrEmpty(TextContentBox?.Text),
                 ActionType.OpenUrl => !string.IsNullOrWhiteSpace(UrlPathInput?.Text),
                 ActionType.OpenApp => !string.IsNullOrWhiteSpace(ProgramPathInput?.Text),
-                ActionType.PowerScript => GetSelectedPowerScript() != null,
+                ActionType.PowerScript => !_refreshingPowerScripts && _powerScriptSnapshot?.Succeeded == true &&
+                    GetSelectedPowerScript() != null && PowerScriptParameters.TryValidate(out _),
                 ActionType.Disable => true,
                 _ => false,
             };
@@ -1146,6 +1241,11 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public void Reset()
         {
+            _powerScriptDraftGeneration++;
+            _pendingPowerScriptId = null;
+            _pendingPowerScriptValues = null;
+            PowerScriptComboBox.SelectedItem = null;
+            PowerScriptParameters.SetScript(null);
             _triggerKeys.Clear();
             _actionKeys.Clear();
 

@@ -71,6 +71,19 @@ grant trust, or assign a shortcut.
 Creation options support `runtime` (`powershell`/`python`), `input` and `output`
 (`none`/`text`/`files`/`image`/`audio`), `fileExtensions`, `minFiles`, `maxFiles`,
 and `parameters`. Creation's `maxFiles: 0` means unlimited.
+
+For a known PowerToys operation, inspect the operation entries returned by `template list`
+instead of generating a wrapper script or selecting an executable yourself. For example,
+`{"projectName":"Find file usage","input":"none","output":"text","operation":{"commandId":"filelocksmith.query"}}`
+uses the same `template create --configure` command to create an editable `action.json`,
+its standard descriptor and README. It exposes arguments without defaults and fixes the
+catalogue's defaults. Explicit `operation.bindings` can choose typed constants or named
+parameter references; exposed names must have matching standard `parameters` declarations.
+Creation does not run or approve the operation. Native module deployment and the effective
+global sandbox settings still determine whether it can run; never relax them automatically.
+Keyboard Manager consumes the resulting ordinary script and needs its required values
+configured before a hotkey can run silently.
+
 A parameter entry has `name`, `schema`, and `required`, for example:
 
 ```json

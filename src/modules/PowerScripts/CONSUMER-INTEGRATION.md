@@ -187,6 +187,12 @@ parameter values, file paths, stdout, stderr, or error messages. It is local ope
 not telemetry, a tamper-resistant security audit, or an authorization source. Caller identity is
 self-reported and can be spoofed; never use it to grant trust or relax isolation.
 
+The standalone PowerScripts editor uses `powerscripts-editor` for its transient Run panel.
+Its parameter values and detailed results remain in that view rather than Activity. PowerToys
+operation templates are ordinary scripts using the same discovery and execution contracts;
+consumers do not need a second CLI catalogue or a special action type. See
+[operation templates](CLI-TEMPLATES.md) for the creation format and compatibility limits.
+
 An invocation starts before enabled/trust/input checks, so refused runs also appear as failures.
 Missing/unknown script IDs and invalid consumer IDs are usage errors, not runs. Completed invocations
 have an exit code and duration; nonzero exits include runtime failures and refused requests.

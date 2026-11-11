@@ -5,11 +5,21 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using PowerScripts.Core.Cli;
 using PowerScripts.Core.Manifest;
 
 namespace PowerScripts.Core.Templates;
 
-public sealed record ScriptTemplate(string Id, string Name, string Description, bool AcceptsFiles = false);
+public sealed record ScriptTemplate(
+    string Id,
+    string Name,
+    string Description,
+    bool AcceptsFiles = false,
+    string? Group = null,
+    string? CommandId = null,
+    IReadOnlyList<ScriptTemplateParameter>? Parameters = null,
+    string? UnavailableReason = null,
+    string? ModuleId = null);
 
 public sealed record ScriptTemplateOptions(
     string ProjectName,
@@ -20,7 +30,8 @@ public sealed record ScriptTemplateOptions(
     string Output = "text",
     int MinFiles = 1,
     int MaxFiles = 0,
-    IReadOnlyList<ScriptTemplateParameter>? Parameters = null);
+    IReadOnlyList<ScriptTemplateParameter>? Parameters = null,
+    PowerToysOperationTemplateOptions? Operation = null);
 
 public sealed record ScriptTemplateParameter(
     string Name,
@@ -45,6 +56,29 @@ public static partial class ScriptTemplates
 
     public static CreatedScriptTemplate Create(string id, string scriptsRoot, ScriptTemplateOptions? options = null)
     {
+        if (id.StartsWith(OperationTemplatePrefix, StringComparison.Ordinal))
+        {
+            var commandId = id[OperationTemplatePrefix.Length..];
+            var command = BuiltinCliCatalog.Load().Get(commandId)
+                ?? throw new ArgumentException("Unknown PowerToys operation template.", nameof(id));
+            if (options?.Operation is { } operation &&
+                !string.Equals(operation.CommandId, commandId, StringComparison.Ordinal))
+            {
+                throw new ArgumentException("The selected template and operation must name the same command.", nameof(options));
+            }
+
+            var configured = options ?? new ScriptTemplateOptions(command.Name, command.Description);
+            return Create(scriptsRoot, configured with
+            {
+                Operation = configured.Operation ?? new PowerToysOperationTemplateOptions(commandId),
+            });
+        }
+
+        if (options?.Operation is not null)
+        {
+            throw new ArgumentException("PowerToys operation configuration requires its matching operation template.", nameof(options));
+        }
+
         var template = All.SingleOrDefault(item => string.Equals(item.Id, id, StringComparison.Ordinal))
             ?? throw new ArgumentException("Unknown script template.", nameof(id));
         if (id is "image-echo" or "audio-echo" or "video-info")

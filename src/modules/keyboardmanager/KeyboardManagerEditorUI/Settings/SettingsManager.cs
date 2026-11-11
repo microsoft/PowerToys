@@ -209,10 +209,14 @@ namespace KeyboardManagerEditorUI.Settings
             }
         }
 
-        public static void AddShortcutKeyMappingToSettings(ShortcutKeyMapping shortcutKeyMapping)
+        public static bool AddShortcutKeyMappingToSettings(
+            ShortcutKeyMapping shortcutKeyMapping,
+            string? id = null,
+            bool isActive = true,
+            IReadOnlyList<string>? profiles = null)
         {
-            AddShortcutMapping(EditorSettings, shortcutKeyMapping);
-            WriteSettings();
+            AddShortcutMapping(EditorSettings, shortcutKeyMapping, id, isActive, profiles);
+            return WriteSettings();
         }
 
         public static void RemoveShortcutKeyMappingFromSettings(string guid)
@@ -237,14 +241,20 @@ namespace KeyboardManagerEditorUI.Settings
             }
         }
 
-        private static void AddShortcutMapping(EditorSettings settings, ShortcutKeyMapping mapping)
+        private static void AddShortcutMapping(
+            EditorSettings settings,
+            ShortcutKeyMapping mapping,
+            string? id = null,
+            bool isActive = true,
+            IReadOnlyList<string>? profiles = null)
         {
-            string guid = Guid.NewGuid().ToString();
+            string guid = id ?? Guid.NewGuid().ToString();
             var shortcutSettings = new ShortcutSettings
             {
                 Id = guid,
                 Shortcut = mapping,
-                IsActive = true,
+                IsActive = isActive,
+                Profiles = profiles?.ToList() ?? new List<string>(),
             };
 
             settings.ShortcutSettingsDictionary[guid] = shortcutSettings;

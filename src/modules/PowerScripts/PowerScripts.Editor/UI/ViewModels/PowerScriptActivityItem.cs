@@ -44,6 +44,7 @@ public sealed class PowerScriptActivityItem : Observable
         "keyboard-manager" => PowerScriptsViewModel.GetResourceString("PowerScripts_ActivityKeyboardManager"),
         "command-palette" => PowerScriptsViewModel.GetResourceString("PowerScripts_ActivityCommandPalette"),
         "command-line" => PowerScriptsViewModel.GetResourceString("PowerScripts_ActivityCommandLine"),
+        "powerscripts-editor" => PowerScriptsViewModel.GetResourceString("PowerScripts_ActivityEditor"),
         _ => ConsumerId,
     };
 

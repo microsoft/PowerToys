@@ -72,8 +72,19 @@
                                 Grid.Column="1"
                                 VerticalAlignment="Bottom"
                                 AutomationProperties.AutomationId="PowerScriptsCreateScript"
-                                Click="CreateScriptButton_Click"
                                 Style="{StaticResource AccentButtonStyle}">
+                                <Button.Flyout>
+                                    <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                        <MenuFlyoutItem
+                                            x:Uid="PowerScripts_CreateCustomScript"
+                                            AutomationProperties.AutomationId="PowerScriptsCreateCustomScript"
+                                            Click="CreateCustomScript_Click" />
+                                        <MenuFlyoutItem
+                                            x:Uid="PowerScripts_CreatePowerToysOperations"
+                                            AutomationProperties.AutomationId="PowerScriptsCreatePowerToysOperations"
+                                            Click="CreatePowerToysOperations_Click" />
+                                    </MenuFlyout>
+                                </Button.Flyout>
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <SymbolIcon Symbol="Add" />
                                     <TextBlock x:Uid="PowerScripts_CreateScriptButton" />

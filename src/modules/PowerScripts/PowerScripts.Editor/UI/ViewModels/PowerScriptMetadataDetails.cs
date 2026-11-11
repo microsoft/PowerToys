@@ -175,12 +175,15 @@ public static class PowerScriptMetadataDetails
         }
 
         var execute = descriptor["x-execute"] as JsonObject;
+        var powerToysOperation = string.Equals(Token(execute?["provider"]), "powertoys-cli", StringComparison.Ordinal);
+        var runtime = powerToysOperation ? Text("PowerToysOperation")
+            : entryExtension?.ToLowerInvariant() switch { ".ps1" => "PowerShell", ".py" => "Python", _ => Text("NotSpecified") };
         var execution = new List<PowerScriptMetadataRow>
         {
-            Row("Runtime", "Runtime", entryExtension?.ToLowerInvariant() switch { ".ps1" => "PowerShell", ".py" => "Python", _ => Text("NotSpecified") }),
-            Row("ExecutionMode", "ExecutionMode", Text(execute is null ? "BuiltIn" : "Custom")),
+            Row("Runtime", "Runtime", runtime),
+            Row("ExecutionMode", "ExecutionMode", Text(powerToysOperation ? "PowerToysOperationMode" : execute is null ? "BuiltIn" : "Custom")),
         };
-        if (execute is not null)
+        if (execute is not null && !powerToysOperation)
         {
             foreach (var (field, label) in new[]
             {

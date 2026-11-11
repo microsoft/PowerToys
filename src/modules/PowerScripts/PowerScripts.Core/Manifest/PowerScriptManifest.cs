@@ -8,8 +8,7 @@ using PowerScripts.Core.Execution;
 namespace PowerScripts.Core.Manifest;
 
 /// <summary>
-/// The runtime used to execute a PowerScript. PowerShell and Python are supported; the enum exists
-/// so further runtimes (e.g. Node) can be added without a schema break.
+/// The execution source used by a PowerScript, including language runtimes and installed operations.
 /// </summary>
 public enum ScriptRuntime
 {
@@ -20,6 +19,9 @@ public enum ScriptRuntime
     /// inside WSL depending on the user's PowerScripts Python settings.
     /// </summary>
     Python,
+
+    /// <summary>A known installed PowerToys operation described by a trusted JSON data entry.</summary>
+    PowerToysOperation,
 }
 
 /// <summary>

@@ -7,6 +7,7 @@
     xmlns:local="using:PowerScripts.Editor.Helpers"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:viewModels="using:PowerScripts.UI.ViewModels"
+    xmlns:views="using:PowerScripts.Editor.Views"
     AutomationProperties.AutomationId="PowerScriptsScriptSettingsPage"
     AutomationProperties.LandmarkType="Main">
     <Page.KeyboardAccelerators>
@@ -53,6 +54,13 @@
                         Visibility="{Binding HasConfigurationErrors, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                     <CommandBar x:Name="MetadataCommands" DefaultLabelPosition="Right">
                         <AppBarButton
+                            x:Name="RunCommandButton"
+                            x:Uid="PowerScripts_RunAction"
+                            AutomationProperties.AutomationId="PowerScriptsRunAction"
+                            Click="RunCommandButton_Click"
+                            Icon="Play" />
+                        <AppBarSeparator />
+                        <AppBarButton
                             x:Uid="PowerScripts_ShowInExplorer"
                             AutomationProperties.AutomationId="PowerScriptsShowInExplorer"
                             Click="OpenScriptFolderButton_Click"
@@ -73,6 +81,163 @@
                             Click="RefreshMetadataButton_Click"
                             Icon="Refresh" />
                     </CommandBar>
+                    <Expander
+                        x:Name="RunExpander"
+                        x:Uid="PowerScripts_RunPanel"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        AutomationProperties.AutomationId="PowerScriptsRunPanel"
+                        IsExpanded="True"
+                        Visibility="Collapsed">
+                        <StackPanel Padding="16" Spacing="12">
+                            <TextBlock
+                                Text="{x:Bind RunModel.UnsupportedReason, Mode=OneWay}"
+                                TextWrapping="Wrap"
+                                Visibility="{x:Bind RunModel.HasUnsupportedReason, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <ContentControl HorizontalContentAlignment="Stretch" IsEnabled="{x:Bind RunModel.CanEdit, Mode=OneWay}">
+                                <StackPanel Spacing="12">
+                                    <TextBox
+                                        x:Uid="PowerScripts_RunTextInput"
+                                        MinHeight="72"
+                                        AcceptsReturn="True"
+                                        AutomationProperties.AutomationId="PowerScriptsRunTextInput"
+                                        Text="{x:Bind RunModel.PrimaryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        TextWrapping="Wrap"
+                                        Visibility="{x:Bind RunModel.HasTextInput, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                    <StackPanel
+                                        Spacing="8"
+                                        Visibility="{x:Bind RunModel.HasFileInput, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <TextBox
+                                            x:Uid="PowerScripts_RunFileInput"
+                                            MinHeight="72"
+                                            AcceptsReturn="True"
+                                            AutomationProperties.AutomationId="PowerScriptsRunFileInput"
+                                            Text="{x:Bind RunModel.PrimaryFilesText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            TextWrapping="Wrap" />
+                                        <Button
+                                            x:Uid="PowerScripts_RunAddFile"
+                                            AutomationProperties.AutomationId="PowerScriptsRunAddFile"
+                                            Click="AddInputFileButton_Click" />
+                                    </StackPanel>
+                                    <TextBlock
+                                        x:Uid="PowerScripts_RunNoParameters"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap"
+                                        Visibility="{x:Bind RunModel.HasNoParameters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                    <ItemsRepeater ItemsSource="{x:Bind RunModel.Parameters, Mode=OneWay}">
+                                        <ItemsRepeater.Layout>
+                                            <StackLayout Spacing="12" />
+                                        </ItemsRepeater.Layout>
+                                        <ItemsRepeater.ItemTemplate>
+                                            <DataTemplate x:DataType="viewModels:PowerScriptRunParameter">
+                                                <StackPanel Spacing="8">
+                                                    <CheckBox
+                                                        x:Uid="PowerScripts_RunProvideValue"
+                                                        AutomationProperties.AutomationId="{x:Bind ControlId('Provide')}"
+                                                        IsChecked="{x:Bind IsProvided, Mode=TwoWay}"
+                                                        Visibility="{x:Bind views:PowerScriptSettingsPage.BoolToVisibility(CanOmit), Mode=OneWay}" />
+                                                    <ContentControl HorizontalContentAlignment="Stretch" IsEnabled="{x:Bind IsProvided, Mode=OneWay}">
+                                                        <StackPanel Spacing="8">
+                                                            <TextBox
+                                                                Header="{x:Bind DisplayLabel}"
+                                                                AutomationProperties.AutomationId="{x:Bind ControlId('Text')}"
+                                                                Text="{x:Bind TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                Visibility="{x:Bind views:PowerScriptSettingsPage.BoolToVisibility(IsText), Mode=OneWay}" />
+                                                            <ToggleSwitch
+                                                                Header="{x:Bind DisplayLabel}"
+                                                                AutomationProperties.AutomationId="{x:Bind ControlId('Boolean')}"
+                                                                IsOn="{x:Bind BooleanValue, Mode=TwoWay}"
+                                                                Visibility="{x:Bind views:PowerScriptSettingsPage.BoolToVisibility(IsBoolean), Mode=OneWay}" />
+                                                            <ComboBox
+                                                                HorizontalAlignment="Stretch"
+                                                                Header="{x:Bind DisplayLabel}"
+                                                                AutomationProperties.AutomationId="{x:Bind ControlId('Choice')}"
+                                                                ItemsSource="{x:Bind Options}"
+                                                                SelectedItem="{x:Bind TextValue, Mode=TwoWay}"
+                                                                Visibility="{x:Bind views:PowerScriptSettingsPage.BoolToVisibility(IsChoice), Mode=OneWay}" />
+                                                            <StackPanel
+                                                                Spacing="4"
+                                                                Visibility="{x:Bind views:PowerScriptSettingsPage.BoolToVisibility(IsFile), Mode=OneWay}">
+                                                                <TextBlock Text="{x:Bind DisplayLabel}" />
+                                                                <Grid ColumnSpacing="8">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*" />
+                                                                        <ColumnDefinition Width="Auto" />
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBox
+                                                                        AutomationProperties.AutomationId="{x:Bind ControlId('File')}"
+                                                                        Text="{x:Bind TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                                    <Button
+                                                                        x:Uid="PowerScripts_RunBrowse"
+                                                                        Grid.Column="1"
+                                                                        AutomationProperties.AutomationId="{x:Bind ControlId('Browse')}"
+                                                                        Click="BrowseParameterFileButton_Click"
+                                                                        Tag="{x:Bind}" />
+                                                                </Grid>
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </ContentControl>
+                                                    <TextBlock
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                                        Text="{x:Bind Description}"
+                                                        TextWrapping="Wrap"
+                                                        Visibility="{x:Bind views:PowerScriptSettingsPage.BoolToVisibility(HasDescription), Mode=OneWay}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsRepeater.ItemTemplate>
+                                    </ItemsRepeater>
+                                </StackPanel>
+                            </ContentControl>
+                            <TextBlock
+                                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                Text="{x:Bind RunModel.ValidationError, Mode=OneWay}"
+                                TextWrapping="Wrap"
+                                Visibility="{x:Bind RunModel.HasValidationError, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button
+                                    x:Uid="PowerScripts_RunNow"
+                                    AutomationProperties.AutomationId="PowerScriptsRunNow"
+                                    Click="RunNowButton_Click"
+                                    IsEnabled="{x:Bind RunModel.CanRun, Mode=OneWay}"
+                                    Style="{StaticResource AccentButtonStyle}" />
+                                <Button
+                                    x:Uid="PowerScripts_RunCancel"
+                                    AutomationProperties.AutomationId="PowerScriptsRunCancel"
+                                    Click="CancelRunButton_Click"
+                                    IsEnabled="{x:Bind RunModel.IsRunning, Mode=OneWay}" />
+                                <ProgressRing Width="20" Height="20" IsActive="{x:Bind RunModel.IsRunning, Mode=OneWay}" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.AutomationId="PowerScriptsRunStatus"
+                                    Text="{x:Bind RunModel.Status, Mode=OneWay}" />
+                            </StackPanel>
+                            <TextBlock
+                                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                Text="{x:Bind RunModel.FailureMessage, Mode=OneWay}"
+                                TextWrapping="Wrap"
+                                Visibility="{x:Bind RunModel.HasFailure, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <TextBlock Text="{x:Bind RunModel.ExitCode, Mode=OneWay}" />
+                            <TextBox
+                                x:Uid="PowerScripts_RunOutput"
+                                MaxHeight="280"
+                                AcceptsReturn="True"
+                                AutomationProperties.AutomationId="PowerScriptsRunOutput"
+                                IsReadOnly="True"
+                                Text="{x:Bind RunModel.Output, Mode=OneWay}"
+                                TextWrapping="Wrap"
+                                Visibility="{x:Bind RunModel.HasOutput, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <TextBox
+                                x:Uid="PowerScripts_RunDiagnostics"
+                                MaxHeight="200"
+                                AcceptsReturn="True"
+                                AutomationProperties.AutomationId="PowerScriptsRunDiagnostics"
+                                IsReadOnly="True"
+                                Text="{x:Bind RunModel.Diagnostics, Mode=OneWay}"
+                                TextWrapping="Wrap"
+                                Visibility="{x:Bind RunModel.HasDiagnostics, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </StackPanel>
+                    </Expander>
                     <InfoBar
                         x:Name="EditorStatus"
                         x:Uid="PowerScripts_EditorFallback"
