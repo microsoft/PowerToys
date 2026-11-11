@@ -1,12 +1,51 @@
-<Page
+﻿<Page
     x:Class="PowerScripts.Editor.Views.ConsumerModulesPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:layout="using:PowerScripts.Editor.Controls"
-    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls">
+    xmlns:local="using:PowerScripts.Editor.Views"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:vm="using:PowerScripts.UI.ViewModels">
+    <Page.Resources>
+        <!--  Script rows use native buttons; expanders must not apply their SettingsCard item styles.  -->
+        <DataTemplate x:Key="ModuleScriptTemplate" x:DataType="vm:PowerScriptListItem">
+            <Button
+                MinHeight="56"
+                Padding="48,8,16,8"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                AutomationProperties.AutomationId="{x:Bind CardAutomationId}"
+                AutomationProperties.HelpText="{x:Bind CatalogueSummary, Mode=OneWay}"
+                AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
+                Background="Transparent"
+                BorderThickness="0"
+                Click="OpenScript_Click"
+                Tag="{x:Bind}">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{x:Bind Name, Mode=OneWay}" TextWrapping="Wrap" />
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind CatalogueSummary, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                    <FontIcon Grid.Column="1" Glyph="&#xE76C;" />
+                </Grid>
+            </Button>
+        </DataTemplate>
+    </Page.Resources>
     <layout:ManagementPage x:Uid="PowerScripts_ConsumerModulesPage">
         <layout:ManagementPage.ModuleContent>
-            <StackPanel Spacing="8">
+            <StackPanel Spacing="20">
+                <TextBlock
+                    x:Uid="PowerScripts_ConnectionHelp"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    TextWrapping="Wrap" />
                 <InfoBar
                     x:Uid="PowerScripts_ManagedPolicy"
                     IsClosable="False"
@@ -17,10 +56,30 @@
                     AutomationProperties.AutomationId="PowerScriptsConsumerError"
                     IsClosable="False"
                     Severity="Error" />
-                <tkcontrols:SettingsCard
+                <ProgressBar
+                    x:Uid="PowerScripts_ModuleScriptsProgress"
+                    IsIndeterminate="True"
+                    Visibility="{x:Bind local:ConsumerModulesPage.BoolToVisibility(ViewModel.IsModuleCatalogueLoading), Mode=OneWay}" />
+                <tkcontrols:SettingsExpander
                     x:Uid="PowerScripts_AdvancedPasteConsumer"
-                    Description="{x:Bind ViewModel.AdvancedPasteConsumer.Status, Mode=OneWay}"
-                    IsEnabled="{x:Bind ViewModel.AreConsumerSettingsReady, Mode=OneWay}">
+                    AutomationProperties.AutomationId="PowerScriptsAdvancedPasteScripts"
+                    Description="{x:Bind ViewModel.AdvancedPasteConsumer.Description, Mode=OneWay}"
+                    IsEnabled="{x:Bind ViewModel.AreModuleCataloguesReady, Mode=OneWay}"
+                    IsExpanded="{x:Bind ViewModel.AdvancedPasteConsumer.IsExpanded, Mode=TwoWay}"
+                    ItemContainerStyleSelector="{x:Null}"
+                    ItemTemplate="{StaticResource ModuleScriptTemplate}"
+                    ItemsSource="{x:Bind ViewModel.AdvancedPasteConsumer.ApplicableScripts, Mode=OneWay}">
+                    <tkcontrols:SettingsExpander.HeaderIcon>
+                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/Settings/Icons/AdvancedPaste.png" />
+                    </tkcontrols:SettingsExpander.HeaderIcon>
+                    <tkcontrols:SettingsExpander.ItemsFooter>
+                        <TextBlock
+                            Margin="48,12,16,12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{x:Bind ViewModel.AdvancedPasteConsumer.CatalogueStatus, Mode=OneWay}"
+                            TextWrapping="Wrap"
+                            Visibility="{x:Bind local:ConsumerModulesPage.BoolToVisibility(ViewModel.AdvancedPasteConsumer.HasCatalogueStatus), Mode=OneWay}" />
+                    </tkcontrols:SettingsExpander.ItemsFooter>
                     <ToggleSwitch
                         AutomationProperties.AutomationId="PowerScriptsAdvancedPasteEnabled"
                         AutomationProperties.Name="Advanced Paste"
@@ -28,11 +87,27 @@
                         IsOn="{x:Bind ViewModel.AdvancedPasteConsumer.IsEnabled, Mode=OneWay}"
                         Tag="advanced-paste"
                         Toggled="ConsumerEnabledToggle_Toggled" />
-                </tkcontrols:SettingsCard>
-                <tkcontrols:SettingsCard
+                </tkcontrols:SettingsExpander>
+                <tkcontrols:SettingsExpander
                     x:Uid="PowerScripts_KeyboardManagerConsumer"
-                    Description="{x:Bind ViewModel.KeyboardManagerConsumer.Status, Mode=OneWay}"
-                    IsEnabled="{x:Bind ViewModel.AreConsumerSettingsReady, Mode=OneWay}">
+                    AutomationProperties.AutomationId="PowerScriptsKeyboardManagerScripts"
+                    Description="{x:Bind ViewModel.KeyboardManagerConsumer.Description, Mode=OneWay}"
+                    IsEnabled="{x:Bind ViewModel.AreModuleCataloguesReady, Mode=OneWay}"
+                    IsExpanded="{x:Bind ViewModel.KeyboardManagerConsumer.IsExpanded, Mode=TwoWay}"
+                    ItemContainerStyleSelector="{x:Null}"
+                    ItemTemplate="{StaticResource ModuleScriptTemplate}"
+                    ItemsSource="{x:Bind ViewModel.KeyboardManagerConsumer.ApplicableScripts, Mode=OneWay}">
+                    <tkcontrols:SettingsExpander.HeaderIcon>
+                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/Settings/Icons/KeyboardManager.png" />
+                    </tkcontrols:SettingsExpander.HeaderIcon>
+                    <tkcontrols:SettingsExpander.ItemsFooter>
+                        <TextBlock
+                            Margin="48,12,16,12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{x:Bind ViewModel.KeyboardManagerConsumer.CatalogueStatus, Mode=OneWay}"
+                            TextWrapping="Wrap"
+                            Visibility="{x:Bind local:ConsumerModulesPage.BoolToVisibility(ViewModel.KeyboardManagerConsumer.HasCatalogueStatus), Mode=OneWay}" />
+                    </tkcontrols:SettingsExpander.ItemsFooter>
                     <ToggleSwitch
                         AutomationProperties.AutomationId="PowerScriptsKeyboardManagerEnabled"
                         AutomationProperties.Name="Keyboard Manager"
@@ -40,11 +115,27 @@
                         IsOn="{x:Bind ViewModel.KeyboardManagerConsumer.IsEnabled, Mode=OneWay}"
                         Tag="keyboard-manager"
                         Toggled="ConsumerEnabledToggle_Toggled" />
-                </tkcontrols:SettingsCard>
-                <tkcontrols:SettingsCard
+                </tkcontrols:SettingsExpander>
+                <tkcontrols:SettingsExpander
                     x:Uid="PowerScripts_CommandPaletteConsumer"
-                    Description="{x:Bind ViewModel.CommandPaletteConsumer.Status, Mode=OneWay}"
-                    IsEnabled="{x:Bind ViewModel.AreConsumerSettingsReady, Mode=OneWay}">
+                    AutomationProperties.AutomationId="PowerScriptsCommandPaletteScripts"
+                    Description="{x:Bind ViewModel.CommandPaletteConsumer.Description, Mode=OneWay}"
+                    IsEnabled="{x:Bind ViewModel.AreModuleCataloguesReady, Mode=OneWay}"
+                    IsExpanded="{x:Bind ViewModel.CommandPaletteConsumer.IsExpanded, Mode=TwoWay}"
+                    ItemContainerStyleSelector="{x:Null}"
+                    ItemTemplate="{StaticResource ModuleScriptTemplate}"
+                    ItemsSource="{x:Bind ViewModel.CommandPaletteConsumer.ApplicableScripts, Mode=OneWay}">
+                    <tkcontrols:SettingsExpander.HeaderIcon>
+                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/Settings/Icons/CmdPal.png" />
+                    </tkcontrols:SettingsExpander.HeaderIcon>
+                    <tkcontrols:SettingsExpander.ItemsFooter>
+                        <TextBlock
+                            Margin="48,12,16,12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{x:Bind ViewModel.CommandPaletteConsumer.CatalogueStatus, Mode=OneWay}"
+                            TextWrapping="Wrap"
+                            Visibility="{x:Bind local:ConsumerModulesPage.BoolToVisibility(ViewModel.CommandPaletteConsumer.HasCatalogueStatus), Mode=OneWay}" />
+                    </tkcontrols:SettingsExpander.ItemsFooter>
                     <ToggleSwitch
                         AutomationProperties.AutomationId="PowerScriptsCommandPaletteEnabled"
                         AutomationProperties.Name="Command Palette"
@@ -52,6 +143,11 @@
                         IsOn="{x:Bind ViewModel.CommandPaletteConsumer.IsEnabled, Mode=OneWay}"
                         Tag="command-palette"
                         Toggled="ConsumerEnabledToggle_Toggled" />
+                </tkcontrols:SettingsExpander>
+                <tkcontrols:SettingsCard x:Uid="PowerScripts_TerminalConnection">
+                    <tkcontrols:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE756;" />
+                    </tkcontrols:SettingsCard.HeaderIcon>
                 </tkcontrols:SettingsCard>
             </StackPanel>
         </layout:ManagementPage.ModuleContent>

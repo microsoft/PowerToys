@@ -12,6 +12,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using PowerScripts.Editor.Helpers;
 using PowerScripts.UI.Helpers;
 using PowerScripts.UI.ViewModels;
 
@@ -77,22 +78,11 @@ namespace PowerScripts.Editor.Views
         {
             try
             {
-                var runner = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "PowerToys.exe"));
-                using var process = Process.Start(new ProcessStartInfo(runner, "--open-settings=PowerScripts") { UseShellExecute = false })
-                    ?? throw new InvalidOperationException("Unable to open PowerToys Settings.");
+                EditorNavigation.OpenGlobalSettings();
             }
             catch (Exception exception)
             {
                 ShowScriptSettingsError(exception);
-            }
-        }
-
-        private void ScriptIcon_ImageFailed(object sender, ExceptionRoutedEventArgs e)
-        {
-            if (sender is FrameworkElement { DataContext: PowerScriptListItem script })
-            {
-                Logger.LogWarning($"Unable to display PowerScript icon '{script.IconPath}': {e.ErrorMessage}");
-                script.MarkIconUnavailable();
             }
         }
 
@@ -150,17 +140,25 @@ namespace PowerScripts.Editor.Views
             _preserveCatalogueOnLoad = e.NavigationMode is NavigationMode.Back or NavigationMode.Forward;
         }
 
-        private void ScriptSettingsButton_Click(object sender, RoutedEventArgs e)
+        private void ScriptCard_ItemClick(object sender, ItemClickEventArgs e) => OpenScript((PowerScriptListItem)e.ClickedItem);
+
+        private void ScriptGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (sender is FrameworkElement { DataContext: PowerScriptListItem script })
+            if (ScriptGrid.ItemsPanelRoot is ItemsWrapGrid panel)
             {
-                if (!Frame.Navigate(
+                var columns = Math.Max(1, (int)(e.NewSize.Width / 240));
+                panel.ItemWidth = Math.Max(180, (e.NewSize.Width - 16) / columns);
+            }
+        }
+
+        private void OpenScript(PowerScriptListItem script)
+        {
+            if (!Frame.Navigate(
                     typeof(PowerScriptSettingsPage),
                     new PowerScriptSettingsPage.NavigationContext(ViewModel, script)))
-                {
-                    ShowScriptSettingsError(new InvalidOperationException(
-                        ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_SettingsNavigationFailed")));
-                }
+            {
+                ShowScriptSettingsError(new InvalidOperationException(
+                    ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_SettingsNavigationFailed")));
             }
         }
 

@@ -10,8 +10,10 @@ using System.Linq;
 using System.Text.Json.Nodes;
 using ManagedCommon;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using PowerScripts.Editor.Helpers;
 using PowerScripts.UI.Helpers;
@@ -23,8 +25,11 @@ public sealed partial class PowerScriptTemplatesPage : Page
 {
     private bool _isCreating;
     private int _nextParameterId;
+    private string _customIconPath;
 
     private PowerScriptsViewModel ViewModel { get; set; }
+
+    internal bool IsCreating => _isCreating;
 
     public ObservableCollection<PowerScriptTemplateParameter> Parameters { get; } = new();
 
@@ -37,9 +42,14 @@ public sealed partial class PowerScriptTemplatesPage : Page
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
-        ViewModel = e.Parameter as PowerScriptsViewModel ??
-            throw new ArgumentException("Creation navigation requires the PowerScripts view model.", nameof(e));
+        ViewModel = e.Parameter as PowerScriptsViewModel
+            ?? throw new ArgumentException("Creation navigation requires the PowerScripts view model.", nameof(e));
+        RuntimeComboBox.SelectedIndex = 0;
+        InputComboBox.SelectedIndex = 0;
+        OutputComboBox.SelectedIndex = 1;
+        IconGrid.SelectedIndex = 0;
         TemplateBreadcrumb.ItemsSource = new[] { "PowerScripts", ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_CreateScriptTitle") };
+        UpdatePreview();
     }
 
     private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -61,7 +71,11 @@ public sealed partial class PowerScriptTemplatesPage : Page
         }
     }
 
-    private void ProjectName_TextChanged(object sender, TextChangedEventArgs e) => UpdateCreateButton();
+    private void ProjectName_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        UpdateCreateButton();
+        UpdatePreview();
+    }
 
     private void UpdateCreateButton()
     {
@@ -69,18 +83,78 @@ public sealed partial class PowerScriptTemplatesPage : Page
         {
             var hasOptions = RuntimeComboBox.SelectedItem is not null &&
                 InputComboBox.SelectedItem is not null && OutputComboBox.SelectedItem is not null;
-            var hasFileCounts = (InputComboBox.SelectedItem as ComboBoxItem)?.Tag as string != "files" ||
+            var hasFileCounts = (InputComboBox.SelectedItem as GridViewItem)?.Tag as string != "files" ||
                 (!double.IsNaN(MinimumFilesNumberBox.Value) && !double.IsNaN(MaximumFilesNumberBox.Value));
             CreateButton.IsEnabled = !_isCreating && !string.IsNullOrWhiteSpace(ProjectNameTextBox.Text) &&
                 hasOptions && hasFileCounts;
         }
     }
 
-    private void Options_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateOptions();
+    private void Options_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, IconGrid) && IconGrid.SelectedItem is not null)
+        {
+            _customIconPath = null;
+        }
+
+        UpdateOptions();
+    }
+
+    private async void CustomIconButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isCreating)
+        {
+            return;
+        }
+
+        _isCreating = true;
+        App.MainWindow.UpdateBackButton();
+        UpdateCreateButton();
+        CustomIconButton.IsEnabled = false;
+        try
+        {
+            var picker = new Microsoft.Windows.Storage.Pickers.FileOpenPicker(XamlRoot.ContentIslandEnvironment.AppWindowId);
+            picker.FileTypeFilter.Add(".ico");
+            var result = await picker.PickSingleFileAsync();
+            if (result is null)
+            {
+                return;
+            }
+
+            using var stream = File.OpenRead(result.Path);
+            if (stream.Length > 1024 * 1024 || !string.Equals(Path.GetExtension(result.Path), ".ico", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException(ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_TemplateCustomIconInvalid"));
+            }
+
+            var image = new BitmapImage();
+            await image.SetSourceAsync(stream.AsRandomAccessStream());
+            _customIconPath = result.Path;
+            IconGrid.SelectedItem = null;
+            TemplateStatus.IsOpen = false;
+            UpdateOptions();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Unable to choose a custom PowerScript icon.", ex);
+            TemplateStatus.Severity = InfoBarSeverity.Error;
+            TemplateStatus.Message = ex.Message;
+            TemplateStatus.IsOpen = true;
+        }
+        finally
+        {
+            _isCreating = false;
+            CustomIconButton.IsEnabled = true;
+            App.MainWindow.UpdateBackButton();
+            UpdateCreateButton();
+        }
+    }
 
     private void FileCount_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args) => UpdateCreateButton();
 
     public static Visibility BoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
+
+    public static Visibility InvertBoolToVisibility(bool value) => BoolToVisibility(!value);
 
     public static string ParameterHeader(string name) =>
         string.IsNullOrWhiteSpace(name) ? ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_TemplateParameterHeader") : name;
@@ -104,14 +178,56 @@ public sealed partial class PowerScriptTemplatesPage : Page
             return;
         }
 
-        FileInputOptions.Visibility = (InputComboBox.SelectedItem as ComboBoxItem)?.Tag as string == "files" ? Visibility.Visible : Visibility.Collapsed;
+        FileInputOptions.Visibility = (InputComboBox.SelectedItem as GridViewItem)?.Tag as string == "files" ? Visibility.Visible : Visibility.Collapsed;
         PythonHelp.Visibility = (RuntimeComboBox.SelectedItem as ComboBoxItem)?.Tag as string == "python" ? Visibility.Visible : Visibility.Collapsed;
+        if (CustomIconName is not null)
+        {
+            CustomIconName.Text = _customIconPath is null ? string.Empty : Path.GetFileName(_customIconPath);
+            CustomIconName.Visibility = BoolToVisibility(_customIconPath is not null);
+        }
+
         UpdateCreateButton();
+        UpdatePreview();
     }
 
-    private static string SelectedToken(ComboBox comboBox) =>
-        (comboBox.SelectedItem as ComboBoxItem)?.Tag as string ??
-        throw new InvalidOperationException("Select a script runtime and input/output types.");
+    private void UpdatePreview()
+    {
+        if (PreviewCard is null || RuntimeComboBox?.SelectedItem is not ComboBoxItem runtime)
+        {
+            return;
+        }
+
+        PreviewCard.Script = new PowerScriptListItem
+        {
+            Name = string.IsNullOrWhiteSpace(ProjectNameTextBox.Text)
+                ? ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_CreationUntitled") : ProjectNameTextBox.Text,
+            Runtime = (string)runtime.Content,
+            IconPath = _customIconPath ?? (IconGrid?.SelectedItem as PowerScriptTemplateIcon)?.IconPath,
+            Io = new PowerScriptIo
+            {
+                Input = (InputComboBox.SelectedItem as GridViewItem)?.Tag as string ?? "none",
+                Output = (OutputComboBox.SelectedItem as GridViewItem)?.Tag as string ?? "text",
+            },
+        };
+        var entry = (string)runtime.Tag == "python" ? "script.py" : "script.ps1";
+        PreviewFiles.Text = entry + Environment.NewLine + entry + ".tool.json" + Environment.NewLine + "README.md";
+        if (PreviewCard.Script.HasIcon)
+        {
+            PreviewFiles.Text += Environment.NewLine + "icon.ico";
+        }
+    }
+
+    private static string SelectedToken(Control control)
+    {
+        var selected = control switch
+        {
+            ComboBox comboBox => comboBox.SelectedItem,
+            ListViewBase list => list.SelectedItem,
+            _ => null,
+        };
+        return (selected as FrameworkElement)?.Tag as string ??
+            throw new InvalidOperationException("Select a script runtime and input/output types.");
+    }
 
     private static int FileCount(NumberBox numberBox)
     {
@@ -124,6 +240,28 @@ public sealed partial class PowerScriptTemplatesPage : Page
         return (int)value;
     }
 
+    private void ChoiceGrid_Loaded(object sender, RoutedEventArgs e) => ResizeChoices((GridView)sender);
+
+    private void IconGrid_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        if (!args.InRecycleQueue && args.Item is PowerScriptTemplateIcon icon)
+        {
+            AutomationProperties.SetAutomationId(args.ItemContainer, icon.AutomationId);
+            AutomationProperties.SetName(args.ItemContainer, icon.Name);
+        }
+    }
+
+    private void ChoiceGrid_SizeChanged(object sender, SizeChangedEventArgs e) => ResizeChoices((GridView)sender);
+
+    private static void ResizeChoices(GridView grid)
+    {
+        if (grid.ItemsPanelRoot is ItemsWrapGrid panel)
+        {
+            var columns = Math.Clamp((int)(grid.ActualWidth / 160), 1, 3);
+            panel.ItemWidth = Math.Max(120, (grid.ActualWidth - 8) / columns);
+        }
+    }
+
     private async void CreateButton_Click(object sender, RoutedEventArgs e)
     {
         if (_isCreating)
@@ -132,6 +270,8 @@ public sealed partial class PowerScriptTemplatesPage : Page
         }
 
         _isCreating = true;
+        App.MainWindow.UpdateBackButton();
+        CreateButton.IsEnabled = false;
         CreationForm.IsEnabled = false;
         TemplateStatus.IsOpen = false;
         string entry = null;
@@ -147,7 +287,9 @@ public sealed partial class PowerScriptTemplatesPage : Page
                 input == "files" ? ExtensionsTextBox.Text : null,
                 input == "files" ? FileCount(MinimumFilesNumberBox) : 1,
                 input == "files" ? FileCount(MaximumFilesNumberBox) : 0,
-                new JsonArray(Parameters.Select(parameter => (JsonNode)parameter.ToTemplateParameter()).ToArray()));
+                new JsonArray(Parameters.Select(parameter => (JsonNode)parameter.ToTemplateParameter()).ToArray()),
+                IconGrid.SelectedItem is PowerScriptTemplateIcon { HasIcon: true } icon ? icon.Id : null,
+                _customIconPath);
             TemplateStatus.Severity = InfoBarSeverity.Success;
             TemplateStatus.Message = ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_TemplateCreated") +
                 Environment.NewLine + Path.GetDirectoryName(entry);
@@ -163,6 +305,7 @@ public sealed partial class PowerScriptTemplatesPage : Page
         finally
         {
             _isCreating = false;
+            App.MainWindow.UpdateBackButton();
             CreationForm.IsEnabled = true;
             UpdateCreateButton();
         }

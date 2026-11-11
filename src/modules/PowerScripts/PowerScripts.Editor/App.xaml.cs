@@ -13,9 +13,9 @@ public partial class App : Application
 {
     public App()
     {
-        InitializeComponent();
         Logger.InitializeLogger("\\PowerScripts\\Editor\\Logs");
         UnhandledException += (_, e) => Logger.LogError("Unhandled PowerScripts editor exception.", e.Exception);
+        InitializeComponent();
     }
 
     public static MainWindow MainWindow { get; private set; }

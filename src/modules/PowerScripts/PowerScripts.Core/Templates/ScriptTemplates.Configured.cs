@@ -64,7 +64,7 @@ public static partial class ScriptTemplates
         };
         return CreatePackage(scriptsRoot, options.ProjectName, options.Description ?? string.Empty,
             entryName, descriptor, options.Runtime == "python" ? CreatePython(options) : CreatePowerShell(options),
-            CreateGuide(options, entryName));
+            CreateGuide(options, entryName), iconPreset: options.IconPreset, iconSource: options.IconSource);
     }
 
     private static void AddParameters(JsonObject inputSchema, IReadOnlyList<ScriptTemplateParameter>? parameters)

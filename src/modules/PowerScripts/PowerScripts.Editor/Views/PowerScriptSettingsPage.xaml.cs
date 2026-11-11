@@ -43,6 +43,7 @@ public sealed partial class PowerScriptSettingsPage : Page
             throw new ArgumentException("Script settings navigation requires a script and its view model.", nameof(e));
         DataContext = _context.Script;
         _context.Script.PropertyChanged += Script_PropertyChanged;
+        UpdateHeaderIcon();
         UpdateBreadcrumb();
     }
 
@@ -76,6 +77,7 @@ public sealed partial class PowerScriptSettingsPage : Page
                 _context = _context with { Script = current };
                 DataContext = current;
                 current.PropertyChanged += Script_PropertyChanged;
+                UpdateHeaderIcon();
                 UpdateBreadcrumb();
             }
 
@@ -83,6 +85,15 @@ public sealed partial class PowerScriptSettingsPage : Page
                 ?? throw new InvalidDataException("Metadata must be a JSON object.");
             MetadataSections.ItemsSource = PowerScriptMetadataDetails.Create(descriptor, ResourceLoaderInstance.ResourceLoader.GetString, Path.GetExtension(entryPath));
             MetadataText.Text = descriptor.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            using (var reader = new StreamReader(entryPath))
+            {
+                var preview = new char[(256 * 1024) + 1];
+                var count = await reader.ReadBlockAsync(preview.AsMemory());
+                SourceText.Text = count == preview.Length
+                    ? ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_DetailsSourceUnavailable")
+                    : new string(preview, 0, count);
+            }
+
             if (_context.Script.HasConfigurationErrors)
             {
                 ShowError(new InvalidDataException(_context.Script.ConfigurationErrorDisplay));
@@ -96,6 +107,7 @@ public sealed partial class PowerScriptSettingsPage : Page
         {
             MetadataSections.ItemsSource = Array.Empty<PowerScriptMetadataSection>();
             MetadataText.Text = string.Empty;
+            SourceText.Text = string.Empty;
             ShowError(ex);
         }
         finally
@@ -106,6 +118,15 @@ public sealed partial class PowerScriptSettingsPage : Page
     }
 
     private void EditMetadataButton_Click(object sender, RoutedEventArgs e) => OpenEditor(_context.Script.EntryFullPath + ".tool.json", isMetadata: true);
+
+    private void DetailsTabs_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+    {
+        if (OverviewPanel is not null)
+        {
+            OverviewPanel.Visibility = sender.SelectedItem == OverviewTab ? Visibility.Visible : Visibility.Collapsed;
+            CodePanel.Visibility = sender.SelectedItem == CodeTab ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
 
     private void EditScriptButton_Click(object sender, RoutedEventArgs e) => OpenEditor(_context.Script.EntryFullPath, isMetadata: false);
 
@@ -128,6 +149,20 @@ public sealed partial class PowerScriptSettingsPage : Page
         {
             UpdateBreadcrumb();
         }
+
+        if (e.PropertyName == nameof(PowerScriptListItem.HasIcon))
+        {
+            UpdateHeaderIcon();
+        }
+    }
+
+    private void UpdateHeaderIcon() =>
+        HeaderDefaultIcon.Visibility = _context.Script.HasIcon ? Visibility.Collapsed : Visibility.Visible;
+
+    private void HeaderIcon_ImageFailed(object sender, ExceptionRoutedEventArgs args)
+    {
+        Logger.LogWarning($"Unable to display PowerScript icon '{_context.Script.IconPath}': {args.ErrorMessage}");
+        _context.Script.MarkIconUnavailable();
     }
 
     private void UpdateBreadcrumb() =>
