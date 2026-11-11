@@ -1,6 +1,6 @@
 # Workspaces Protected Storage 验收台账
 
-最后更新：2026-11-10（UTC+08:00；E66修正计划动作读取时机，11个完整Plan→Execute场景及4,230安装器检查通过；5fc28726f4已push，private6014/163468842已排队；6013外部重试已转绿但其卸载缺陷仍在，现场未清理；REM-11仍FAIL、REM-02仍BLOCKED）
+最后更新：2026-11-11（UTC+08:00；E72先做隔离SCM/profile实验，再实现生产profile删除、身份受限的残留目录清理及受保护的重启/延时重试。x64构建、6,254条contract checks及真实SYSTEM任务小范围测试通过；签名安装包的外层卸载/重启验收仍待补，REM-06保持PARTIAL）
 
 **这是验收状态的唯一维护入口。每执行完一项，就更新本文件；不能只在聊天里报告通过。**
 
@@ -11,7 +11,7 @@
 
 ## 1. 当前基线与结论
 
-### 2026-11-10统计快照（E66候选修复不代替签名包卸载验收，统计不变）
+### 2026-11-11统计快照（E68关闭普通x64外层卸载回调，保留重装与profile缺口）
 
 保留126个唯一历史ID，其中125项为有效要求，DATA-17因用户未提出显式文件
 Import/Export需求而撤回为N/A。N/A不算通过或未完成；不重复计入子项、风险、
@@ -19,20 +19,21 @@ Import/Export需求而撤回为N/A。N/A不算通过或未完成；不重复计�
 
 | 状态 | 条数 |
 |---|---:|
-| PASS | 26 |
-| PARTIAL | 25 |
-| FAIL | 1 |
+| PASS | 27 |
+| PARTIAL | 27 |
+| FAIL | 0 |
 | RETEST | 2 |
-| BLOCKED | 2 |
-| NOT RUN | 69 |
+| BLOCKED | 1 |
+| NOT RUN | 68 |
 | N/A（已撤回） | 1 |
 | 合计 | 126 |
 
-26条PASS由AUTO 12条、UNIT 6条、LOCAL-01、PERF-02/03、E37关闭的
-CLI-01、E55关闭的DATA-01、CLI-03/07及E59关闭的INST-01组成；
+27条PASS由AUTO 12条、UNIT 6条、LOCAL-01、PERF-02/03、E37关闭的
+CLI-01、E55关闭的DATA-01、CLI-03/07、E59关闭的INST-01及E68关闭的REM-11组成；
 仍不代表核心架构和正式安装验收已完成。
-显式标P0的45条中，整项PASS 7条、PARTIAL 18条、FAIL 1条、RETEST 0条、BLOCKED 2条、
-NOT RUN 17条。当前正式BLOCKED为REL-01（PM决策）及REM-02（受REM-11缺陷阻塞）；
+显式标P0的45条中，整项PASS 8条、PARTIAL 19条、FAIL 0条、RETEST 0条、BLOCKED 1条、
+NOT RUN 17条。当前正式BLOCKED仅为REL-01（PM决策）；REM-02已完成卸载保留一半，
+转PARTIAL，尚待重装恢复验证；
 E40将DATA-14补到PARTIAL，
 E40/E41分别记录CLI-03/CLI-07的历史FAIL，E55补记修复后的人工PASS；
 不要与E33的三个BLOCKED子项混淆。
@@ -65,12 +66,17 @@ E66将意图判断移到成功的OnPlanComplete，并补实际生产回调类的
 序列回归；最小验证先红后绿，不调用系统清理。6014已排队但未部署，
 因此仍不关闭REM-11/REM-02。另查6013已在同提交ARM64 attempt2后整体转绿，
 E63的初次CI失败作为历史保留，不与已确认的6013卸载逻辑缺陷混淆。
+E68首次取得6014真实外层卸载的正向结果：主MSI成功后owner清理被启用，
+经用户授权完成carrier、SCM及运行Code移除，Data进入retained/keep状态。
+REM-11在P-XU普通owner范围转PASS，REM-02转PARTIAL待重装；
+REM-06从NOT RUN转PARTIAL，仅确认profile pending的实际记录，未验证删除/重试。
+E61/E65的失败历史保留，不把这些变化扩充为所有scope、零残留或完整生命周期通过。
 
 ### 分类总览：125项有效要求，另保留1个N/A历史项
 
-目前有99条尚未整项关闭，但其中只有69条记为NOT RUN；另有25条已部分覆盖、
-1条FAIL、2条RETEST、2条受阻，不能全部当作“从零开始”。历史结果保留，
-DATA-17不再计入有效范围；26/125不是工作量完成百分比。
+目前有98条尚未整项关闭，但其中只有68条记为NOT RUN；另有27条已部分覆盖、
+2条RETEST、1条受阻，不能全部当作“从零开始”。历史失败记录保留，
+DATA-17不再计入有效范围；27/125不是工作量完成百分比。
 
 下面按**主要验证目标**将有效ID归入一个类别；E56明确撤回DATA-17，不以此增加通过数。
 “未关闭”包含PARTIAL/FAIL/RETEST/BLOCKED/NOT RUN；“未跑”仅指NOT RUN。
@@ -82,9 +88,9 @@ DATA-17不再计入有效范围；26/125不是工作量完成百分比。
 | 跨权限执行与运行上下文 | 7 | 2 | 5 | 4 |
 | 写保护、授权和用户隔离 | 9 | 0 | 9 | 5 |
 | 数据迁移、一致性与恢复 | 17 | 1 | 16 | 13 |
-| 安装、升级、卸载与生命周期 | 36 | 2 | 34 | 29 |
+| 安装、升级、卸载与生命周期 | 36 | 3 | 33 | 28 |
 | 生产信任、环境与发布门槛 | 11 | 0 | 11 | 9 |
-| 合计（有效项） | 125 | 26 | 99 | 69 |
+| 合计（有效项） | 125 | 27 | 98 | 68 |
 
 | 类别 | 唯一归属的正式ID |
 |---|---|
@@ -113,19 +119,19 @@ PERF-02/03）；跨权限2条（CLI-03/07）；数据一致性1条（DATA-01）�
 
 | 项目 | 当前记录 |
 |---|---|
-| 待验收代码 | `feature/workspaces-protected-storage-main-20261028`；E66计划时序修复`5fc28726f4`已push至origin/fork，11个完整回调序列场景及4,230 installer checks通过。生产清理权限、KeepData及Setup/Broker分工不变；E62的回调签名修复保留 |
-| 正式签名构建 | E66：6014 [163468842](https://dev.azure.com/microsoft/Dart/_build/results?buildId=163468842)于11-10 18:13 +08:00排队，源码`5fc28726f4`，Release x64/ARM64，查询状态inProgress。6013/163342432于17:04已整体转绿（ARM64 attempt2、x64 attempt1，源码仍b64732533a）；本代理未发起该重试，E63初次失败保留 |
+| 待验收代码 | `feature/workspaces-protected-storage-main-20261028`；E72 profile清理提交`daf418c10611c8ba10fad30e055081ba714176ac`已push至origin/fork，6,254条contract checks及SYSTEM小范围任务测试通过。保留E62/E66卸载回调修复、KeepData及Setup/Broker分工 |
+| 正式签名构建 | E72已queue 6015 [163595010](https://dev.azure.com/microsoft/Dart/_build/results?buildId=163595010)，源码`daf418c106`、版本0.101.6015.0、Release x64/ARM64已独立核对，当前inProgress，未宣称绿色或产物可用。6014 [163468842](https://dev.azure.com/microsoft/Dart/_build/results?buildId=163468842)绿色作为历史基线；构建绿色不等于安装/卸载验收 |
 | 主线基线 | `8056ba09721708bceee6176291b24af7ebabb0b3`；包含 PR #51114，合并提交 `06e6ae43e225cac51c2f282b0eebc42c6f995c97` |
 | 集成 worktree | `D:\PowerToys-Workspaces-Integration` |
-| 待测本地包 | 完整x64 Debug **`0.101.6011.0`**已构建，E57确认runtime匹配及CLI读取成功。E58停止调试应用但保留LocalTest service/data；正式首装测试不能使用此包或Local E2E快捷方式代替 |
+| 待测本地包 | 完整x64 Debug **`0.101.6011.0`**文件及E57历史验证保留。E69按用户指定手动删除LocalTest服务，Code/Data未删，当前不再是已运行的LocalTest实例；后续需显式重新预配，不能拿历史状态冒充当前可用 |
 | 正式首装前基线 | E58 11-08 23:54：当前owner正式主程序/ARP bundle/carrier/service不存在，owner Code/Data/Policy/Installer及legacy源已清空或移出；自动下载更新关闭，普通启动配置保留。LocalTest与两个demo保留。旧正式VA profile loaded/native32，不能称全新机器 |
-| 正式安装现状 | E65：6013主程序目录、主MSI及Burn注册已移除；carrier `{6C2D8CEA-1996-58E7-B9FD-4F235686E9B3}`仍为原owner/context2、0.101.6013。正式服务Running/AutoStart，Code目录及active/service-created标记仍在 |
+| 正式安装现状 | E68：6014主程序、主MSI/用户bundle、owner carrier、正式SCM服务及Code目录已移除；SCM返回1060、carrier6014/6013均返回1605。Data/Policy/Installer保留，状态为retained/keep |
 | 原代码备份 | `backup/workspaces-protected-storage-20261028`，提交 `c576e95f70d4247efeb68afe1c50bc5f7e57f4e2`；含原 worktree 全部已跟踪/未跟踪源码改动 |
 | 原 worktree | `D:\PowerToys-Workspaces-E2E`；原 HEAD `146518e3a3c3120257799b89e061b304f81fdab7`、索引和源码保留 |
-| 最近确认的运行环境 | E65卸载后16:44–17:01：Bootstrap43528/Runtime37908仍存活，精确出生时间与E64卸载前相同，映像仍指向正式Code；不是重启出的另一代进程。VA profile仍Loaded |
-| 新包部署状态 | 用户已执行6013普通外层/uninstall；主MSI和外层均exit0，但owner carrier/service/Code未移除。代理只做静态/进程/日志检查，没有补跑remove/repair、停止服务或清理文件来掩盖结果 |
-| 数据保护结果 | E65离线只读校验storage.index/live blob的frame、hash、revision及receipt一致，2条工作区、sequence=13；epoch/init ID与E61相同，owner/Admins仍FR。没有卸载前最后一刻全量快照，不声称逐字节前后无变化，也不把活动store冒充KeepData已卸载 |
-| 当前验收结论 | E65的6013真实卸载失败保留；E66候选已修正门控并完成隔离回归，但6014尚未真实卸载。REM-11继续FAIL，REM-02继续BLOCKED；26 PASS、1 FAIL、1 N/A不变 |
+| 最近确认的运行环境 | E71正式及5个旧实验服务/profile已移除，正式Data index/blob hash在E72仍未变；旧profile-review标记和历史事务未手动清理。E72另有一个独立SCM probe profile仍Loaded，已安排仅限该probe的测试清理任务；不是正式产品服务或数据 |
+| 新包部署状态 | 用户已完成6014普通外层卸载，E68当时仅只读观察；E71另经授权人工删除profile。6015尚在构建，未安装新包、未运行新产品卸载流程，E72仅运行隔离fixture |
+| 数据保护结果 | E68在正式服务已移除后验证2条工作区可读、sequence15，frame/hash/revision/receipt一致，epoch/init ID未重置，owner/Admins仍FR。未做卸载前最后一刻逐字段对照，重装恢复仍待验证 |
+| 当前验收结论 | REM-11/P-XU普通owner外层清理PASS；REM-02/REM-06 PARTIAL。保留profile-review/3010及历史事务备份，不宣称零残留；27 PASS、27 PARTIAL、0当前FAIL、1 BLOCKED、1 N/A |
 
 `6003`、`6004`、`6005`、`6006`、`6008`、`6009` 都是合入 main 后的**本地 E2E 测试构建**，使用
 `ProtectedStorage.LocalLifecycle.exe` 和本地测试 bundle，不是正式 carrier MSI 部署。
@@ -188,7 +194,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 | B06（E33缺口保留；E36新一轮已补足） | E33未保留完整事前字节，旧结果不能追溯改PASS；E36在任何变更前保存完整blob和逐记录详情 | E36清理后原记录全字段及2225字节业务payload一致；blob整体变化来自revision/operationId/requestDigest信封元数据。此证据仅证明E36相对其自身起点的保真 |
 | B07 | E33 canonical resource receipt保留4个未解析launch记录及旧PID31508查询拒绝 | 已实测当前5个自有fixture退出、无剩余fixture进程、借用UI恢复；不手改旧receipt消除hold，不终止无法确认身份的PID |
 | B08（E57已解除） | E56的维护UAC取消曾使磁盘6011/service6009不匹配；E57已只读确认运行service6011及真实CLI可用 | 取消历史不删除；不再将匹配部署列为当前阻塞，也不据此关闭尚未执行的业务case |
-| B09 | E65的6013过早读取动作导致owner cleanup未启用；E66已修正成功PlanComplete时机并补全序列回归，6014候选未部署，6013 carrier/service/Code仍在 | 仍需6014签名包真实外层卸载。隔离回调测试不代替实际owner helper/UAC/MSI/SCM移除，不补删现场掩盖结果 |
+| B09（E68已解除） | 6014真实外层卸载已启用owner cleanup，carrier/正式服务/运行Code实际移除，E65时序缺陷的修复取得P-XU实机证据 | 不扩充为重装恢复、其他scope或profile完全清理；REM-02/REM-06仍PARTIAL |
 | R01（6003 失败；6004 已完成实机会话） | 6003 的额外握手失败保留 E16；6004 两次 shared session 正常完成（E22），没有再卡在 protected-plan | 不把未采集 token 的已退出 Arranger 当作 High 证明；目标应用的 elevation 复用缺陷见 R05 |
 | R02 | 通用 “protected storage unavailable” 曾掩盖启动会话错误；授权不匹配还曾提供无效 Retry | 后一问题已修复并实测（E11/E12）；UX-01 的其他错误分类仍需逐项验证，不能根据弹窗直接诊断服务坏了 |
 | R03（已绕开慢路径，快慢差异尚未闭环） | 6005清单47.152秒；独立x64诊断定位到AppsFolder首次Next等待。10-29 23:10最新main仍使用相同枚举循环（E32），不是已找到main的另一套快速实现 | E29/E32：新路径分别697/2924ms，旧路径36958/37383ms；没有改服务timeout。未对原版main二进制做同机同权限A/B，不能据源码相同断言原版必慢，也不能把6006优化说成已证明的分支回归根因修复 |
@@ -355,19 +361,26 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 ## 11. 正式卸载、保留数据与清理
 
+完整卸载是方案要求，不能把写入pending标记或返回3010当作清理闭环。
+KeepData仅允许保留约定的业务数据及必要的保留/安全元数据，不默认豁免VA profile、
+服务/运行Code、临时helper或已确认不再需要恢复的历史事务/旧可执行副本。
+受占用项可以准确报告延期，但应有实际删除重试、结果复核及完成后清理自身的路径；
+未解除的占用或未知事务仍按pending/residual报告，不能伪称零残留。
+E71手工删除证明当前profile可删，不代表这些产品流程已实现。
+
 | ID / 优先级 | 操作与通过标准 | 当前状态 | 前置 / 注意事项 |
 |---|---|---|---|
 | REM-01 / P0 | 正常卸载 B；B 的注册/服务按 scope 移除，A 的服务/版本/数据不变 | NOT RUN | B02；两个真实交互 owner |
-| REM-02 / P0 | KeepData 卸载重装；原集合、epoch/初始化状态恢复，不从旧明文覆盖或重置为空 | BLOCKED | E65确认6013的owner实例移除仍未完成，store仍active；Data完整可读不是成功KeepData卸载。先解决REM-11，再验证正常移除与重装；重新预配可需授权 |
+| REM-02 / P0 | KeepData 卸载重装；原集合、epoch/初始化状态恢复，不从旧明文覆盖或重置为空 | PARTIAL | E68/P-XU：6014正常移除后retained/keep、Data可读且epoch/init ID保留；尚未重装验证恢复，不整项PASS。minimum-reinstall-release为0.101.6014，后续用6014或更新版本，重新预配可需授权 |
 | REM-03 / P2 | 显式 PurgeData 仅删授权 owner 的业务数据并记录 import suppression | NOT RUN | B02；破坏性，只用可丢弃数据；不删真实用户账号/profile |
 | REM-04 / P0 | 正常机器版卸载实际触发全 owner 清理；新 report 覆盖 A/B，默认 KeepData | NOT RUN | B02；检查新 operation/time，不能拿旧 report 或退出 0 代表零残留 |
 | REM-05 / P1 | owner 离线导致 carrier 注册无法清理时，准确报告 residual，不手删 MSI 内部注册、不冒充用户嵌套安装 | NOT RUN | B02；允许设计内 best-effort 残留，不等于全量清理 PASS |
-| REM-06 / P1 | VA profile loaded 时报告 pending/原生码，解除占用后可重试；不强制 hive unload | NOT RUN | B02；service 删除不代表 profile 删除 |
+| REM-06 / P1 | VA profile loaded 时报告 pending/原生码，解除占用后实际删除并复核目录/注册记录消失，清除已完成标记；不强制 hive unload | PARTIAL | E72已实现直接删除、受保护任务重试、重装取消及自清理；SYSTEM隔离任务实际覆盖占用失败保留worker、释放后重试成功、过期请求不删profile和外部链接安全。真实签名安装包的卸载/重启链路未验证，不因共享代码fixture通过而整项PASS |
 | REM-07 / P1 | 仅清除已验证、当前 owner、terminal 的 helper stage；其他 stage 和未知结果证据保留 | NOT RUN | B02 |
 | REM-08 / P1 | 授权取消、访问拒绝或未知移除结果不误报成功/不存在；保留准确残留及恢复入口 | NOT RUN | B02 |
 | REM-09 / P1 | 已移除后重复清理幂等，不重建资源，不误删别的实例 | NOT RUN | B02 |
 | REM-10 / P2 | remove/rollback 失败仍有可恢复 Code/Data，不使成功的 peer 安装失效 | NOT RUN | B02；快照环境 |
-| REM-11 / P0 | per-user 正常外层 EXE/“已安装应用”卸载触发 owner 回调，或明确报告保留的服务/carrier | FAIL | E65/P-XU/6013：回调到达但owner removal未启用，carrier/service/Code残留。E66以5fc28726f4修正时机，完整Plan→Execute隔离回归通过、6014已排队；未进行新签名包卸载，E61/E65失败历史与整项FAIL保留 |
+| REM-11 / P0 | per-user 正常外层 EXE/“已安装应用”卸载触发 owner 回调，或明确报告保留的服务/carrier | PASS | E68/P-XU/6014：普通外层/uninstall，perUser1/action4/related0/armed1，主MSI成功后ownerCleanup1，SYSTEM prepare/commit-remove执行；carrier/服务/运行Code实际移除。profile-review/3010另计REM-06，重装另计REM-02；E61/E65失败保留 |
 
 ## 12. 环境矩阵、发布门槛和推荐顺序
 
@@ -382,7 +395,7 @@ SID 等本机身份信息保留在受控本地证据中，公开文档用 A/B �
 
 | 正式矩阵 | 当前状态 | 版本/OS/账号证据 |
 |---|---|---|
-| P-XU | PARTIAL | E59首装/E60升级后置状态及E61用户测试1/3通过；E61正常卸载出现REM-11实机FAIL，KeepData重装受阻。其他数据/授权/重启及异常组合另计 |
+| P-XU | PARTIAL | E59首装/E60升级及人工业务结果保留；E68的6014普通外层卸载关闭REM-11。KeepData重装、profile清理以及其他数据/授权/重启/异常组合仍待补，不关闭整环境矩阵 |
 | P-XM | NOT RUN | 同上 |
 | P-AU | NOT RUN | 同上；必须 ARM64 实际执行 |
 | P-AM | NOT RUN | 同上；必须 ARM64 实际执行 |
@@ -2013,6 +2026,305 @@ definition76541，Release x64/ARM64；沿用private-validation参数。
 `production-preserved.json`、`bundle-payload-check.json`、
 `6013-now-green.json`、`6013-green-timeline.json`、
 `queued-6014.json`、`verified-6014.json`。
+
+**后续状态确认（2026-11-11）：** Build API返回6014/163468842已于
+11-10 20:25:47（UTC+08:00）整体succeeded，source仍为完整5fc28726f4提交；
+artifact API列出正常`build-x64-Release`和`build-arm64-Release`。
+这足以选择对应架构候选做人工测试，不表示回调回归已在private pipeline执行，
+也不关闭REM-11。针对当前卸载修复可直接安装6014再验证功能及正常外层卸载；
+仅当另测完整主程序6013→6014升级时，才需要先恢复6013主程序基线。
+原服务残留场景不能标作干净首装或完整主程序升级。本轮未执行安装操作。
+
+### E67：2026-11-11，核实之前CI与本地验证为何漏掉外层卸载缺陷
+
+用户询问private build及本地安装/运行/卸载为何没有提前发现问题。
+本轮按实际源码核对覆盖范围，不把“构建绿色”“底层helper清理成功”
+解释成正式外层卸载已验收：
+
+| 层次 | 实际覆盖 | 漏掉的路径 |
+|---|---|---|
+| Private release | `.pipelines\v2\release.yml:110–111`明确为runTests=false、buildTests=false；主任务为Build而非Build;Test，并执行签名/打包/ICE等检查 | 不执行产品安装后的生命周期验收；E66新增回调序列也只有本地执行证据，没有自动成为private pipeline门禁 |
+| 编译后的卸载hook检查 | `steps-build-installer-vnext.yml`调用Test-ProtectedStorageMsiTables.ps1读取MSI表/嵌入payload。per-user分支检查不存在SYSTEM all-owner清理CA；machine分支检查其类型/条件/顺序及字节 | 不执行per-user Burn的Plan/Execute回调，不验证owner carrier/service/Code实际移除 |
+| Local E2E清理 | Build-PowerToysLocalE2E.ps1的Reset/Clean直接调用LocalLifecycle clean/clean-backup；E52有此类真实服务清理记录，local-e2e.json明确productionInstaller=false | 绕过正式UserSetup EXE的BA回调和原用户carrier卸载衔接；不能把这条路径的成功继承给正式外层卸载 |
+| E62第一次回归 | 真实BA DLL和SDK分派器验证ExecuteComplete入口，明确不派发PlanBegin以避免清理真实实例 | 没有覆盖WixBundleAction由0到本次动作的发布时间，也没有验证何时启用owner清理 |
+| UI/主MSI结果 | E61/E65的主MSI及外层均exit0，主程序消失 | owner清理未被启用时没有失败返回，单看UI/exit0不能发现仍运行的服务和注册中的carrier |
+
+因此两个缺陷都能逃过旧检查：错误重载在没有override时是合法C++；
+提前读取动作变量则是运行时序逻辑错误。安装、正常运行以及升级的非卸载
+路径也不要求触发owner移除，不能拿这些正常路径代替卸载正向场景。
+最近真正走正式外层卸载并检查系统后置状态的E61/E65都记录为FAIL，
+没有完整通过的该路径证据。
+
+**本轮发现并修正的检查维护遗漏：** E66把回调类放到头文件后，
+Test-ProtectedStorageMainInstaller.ps1仍只扫描旧cpp，原样运行在第63行失败。
+现同步读取头文件中的门控和cpp中的实际移除调用，再运行非Compile模式
+通过。只修正这处直接引入的静态检查路径；没有改产品逻辑、CI开关或
+重新排队构建。该静态PASS仍不是已安装产品的卸载PASS。
+
+验证缺口仍需明确保留：定向回调序列应成为自动执行的门禁，完整生命周期
+需要隔离环境中的真实UserSetup安装/卸载，并核对MSI注册、SCM、进程、
+Code及KeepData后置状态。仅添加测试源文件或看到private build绿色，
+不意味着这些检查已经在CI执行。本轮未实施上述CI/E2E扩展，
+正式验收计数以及REM-11/REM-02状态不变。
+
+### E68：2026-11-11，6014外层卸载完成核心清理，Data保留，profile仍待处理
+
+用户报告刚卸载6014并询问UAC是否预期。13:48–13:55（UTC+08:00）仅
+查询SCM、MSI、进程、注册表与文件，读取原始卸载日志并保存证据；
+没有执行remove/repair、停止进程、删除目录、强制卸载hive或代替用户重装。
+
+**本次确实走到了之前缺失的清理链：**
+
+- 实际外层为PowerToysUserSetup-0.101.6014.0-x64.exe `/uninstall`，
+  perUser=1、WixBundleElevated=0。
+- PlanComplete记录perUser=1、action=4、related=0、armed=1；
+  主MSI成功后ExecuteComplete记录ownerCleanup=1、attempted=0。
+- 13:43:58记录owner移除返回restartRequired/native3010；maintenance operation
+  为`CF0F51D676634BD2AA21124F0BE608B4`。生命周期日志新增SYSTEM的
+  prepare-remove、commit-remove，不是仅凭bundle exit0判断成功。
+
+| 对象 | 只读结果 |
+|---|---|
+| 主程序/主MSI/bundle | 用户安装目录native2，主MSI `{45B83A9B-BE34-482B-B537-721326ABCD6D}`卸载exit0，bundle `{76F931F1-2E5F-4331-B334-5CB8A49A34DC}`ARP已移除 |
+| Carrier | 本次`{F1A89873-6967-5842-B15C-8848DDD2D7CA}`及旧6013均查询返回1605；原owner的carrier marker已移除 |
+| SCM/正式进程 | OpenService返回1060，服务注册键不存在；原6014 Bootstrap1264/Runtime25232均不存在，未发现运行中的临时ProvisionBroker/Setup |
+| 运行Code | Code目录及固定Bootstrap.exe/Runtime.exe路径均为native3，不是AccessDenied伪装的不存在 |
+| Installer | active/service-created/pending-remove/drain消失，retained内容为mode=keep；最低重装版本0.101.6014 |
+| Data | 2条工作区、sequence15，PTPS frame、contentHash、revision及receipt一致；epoch/init ID与历史相同，owner/Admins仍只读 |
+| 残留 | Data/Policy/Installer按KeepData保留；原VA profile存在且Loaded，cleanup-pending=va-profile-review；Data内还保留4个历史事务目录、15份EXE备份，共约5.49MiB事务文件 |
+
+这里确认的是**正式服务、carrier和运行Code已移除，业务Data已进入卸载保留状态**，
+不是零残留。Data中的ready.txt是历史就绪记录，不能据此说服务仍在运行；
+transactions中的Bootstrap/Runtime/Updater副本也是历史备份，不是仍在运行的Code。
+本轮没有即时卸载前的完整业务快照，不声称全部字段逐字节一致；后续重装恢复仍待验证。
+
+**UAC属于现有per-user设计的预期行为：** 普通用户可以卸载自己的主程序，
+但SCM服务和受保护Code的移除仍需特权。外层以原owner执行主MSI和carrier操作，
+通过签名Setup `--authorize remove`的一次授权启动临时SYSTEM清理组件；
+默认KeepData不取消这项权限需求。初次预配和卸载各自需要授权，不等于每次
+正常版本升级都重新预配。此前未触发owner清理的失败不能作为“卸载应无UAC”的基线。
+
+**3010/profile边界：** 当前Lifecycle::erase_owner只检查ProfileList并写
+va-profile-review标记，没有执行DeleteProfile或安排自动重启删除。
+因此3010不能被解释成“重启后一定零残留”；仍需单独处理profile清理/重试。
+正式进程已退出但profile仍Loaded，没有为追求干净状态强卸hive。
+
+REM-11在P-XU普通owner路径由FAIL转PASS，保留E61/E65失败历史；
+REM-02由BLOCKED转PARTIAL（卸载保留已验证，重装未验证）；
+REM-06由NOT RUN转PARTIAL（pending报告已观察，删除/重试缺口仍在）。
+正式统计更新为27 PASS、27 PARTIAL、0 FAIL、2 RETEST、1 BLOCKED、
+68 NOT RUN、1 N/A。不外推ARM64、per-machine、OTS或完整生命周期矩阵。
+
+证据在会话files的`nov11-production-6014-uninstall`：外层/主MSI/
+bundle-removal日志、remove receipt、SCM/MSI注册查询、原PID查询、
+路径native错误码、retained/cleanup-pending/最低版本及lifecycle日志、
+Data离线校验、profile和历史事务文件清单。业务数据与本机身份副本不提交仓库。
+
+### E69：2026-11-11，指定5个旧实验服务/profile清理及授权重试
+
+用户明确要求删除Services截图第一行和最后四行，以及各自运行账户的profile：
+PowerToysProtectedStorageLocalTest_<owner>、PtAliasProtoSvc_5356246d、
+PtAliasProtoSvc_d2864683、PtMsiCarrierDemo_<owner>、PtPerUserVaDemo_<owner>。
+先核对了服务精确名称、运行账户SID和ProfileList路径；没有把两个Alias的
+服务账号profile误认成原交互用户profile，也没有包含正式6014卸载后保留的数据/
+VA profile。清理前四个目标profile为Loaded，PerUserVaDemo的profile未Loaded。
+
+准备的清理仅停止/删除上述服务，并通过支持的DeleteProfile API删除对应
+profile；不删除SAM本地账户、MSI/AppX注册或Code/Data，不强制卸载hive。
+提升入口拟以短生命周期SYSTEM任务执行，结果写入临时受保护目录；这只是
+管理员手动维护工具，不是产品卸载行为或REM-06通过证据。
+
+首次ShellExecute提升返回ERROR_CANCELLED（1223），授权入口没有启动。
+14:41再次只读确认五个服务仍为原状态/PID，五个profile仍存在，正式Data
+index hash未改变；没有创建临时SYSTEM任务或Program Files结果目录。
+没有利用其他管理员窗口绕过取消，也没有自动重试；该次尝试处于授权受阻，
+不把“脚本已准备”记作服务或profile已删除。
+
+**用户明确要求“再试试”后，重新取得UAC授权：**
+14:47（UTC+08:00）由一次性SYSTEM任务执行精确白名单清理，先验证运行账户SID
+和ProfileList路径，再停止并删除服务，最后调用DeleteProfile。没有强杀未知进程
+或强卸hive。原生删除及14:51独立复核结果：
+
+| 目标 | Service | 对应profile |
+|---|---|---|
+| PowerToysProtectedStorageLocalTest_<owner> | 已删除，SCM1060、服务注册键无 | 仍Loaded，DeleteProfile返回32 |
+| PtAliasProtoSvc_5356246d | 已删除，SCM1060、服务注册键无 | PtAliasProto5356246d.000仍Loaded，native32 |
+| PtAliasProtoSvc_d2864683 | 已删除，SCM1060、服务注册键无 | PtAliasProtod2864683仍Loaded，native32 |
+| PtMsiCarrierDemo_<owner> | 已删除，SCM1060、服务注册键无 | 仍Loaded，native32 |
+| PtPerUserVaDemo_<owner> | 已删除，SCM1060、服务注册键无 | 删除成功，ProfileList记录不存在、目录native2 |
+
+原Launcher/Worker/Bootstrap/Runtime的6个PID均不再存在。其余4个profile因
+共享占用仍无法删除，通常需重启释放后再尝试；没有承诺重启本身会自动删除，
+也没有注册延迟删除任务或擅自重启。
+两个Alias本地账号仍保留；MSI/AppX注册和Code/Data不在这次删除范围。
+正式Workspaces的index hash与操作前一致，未选中的正式VA profile也保留。
+临时SYSTEM任务、受保护结果目录及提升进程已结束/清理，只保留会话诊断文件。
+这次手工维护不作为产品卸载、profile自动清理或REM-06整项通过证据。
+
+证据在会话files的`nov11-selected-service-cleanup`：
+`before.json`、`preflight.json`、清理脚本、`cancelled-verification.json`、
+SYSTEM执行的`result.json`及独立只读复核`after.json`。
+正式验收状态与E68统计保持不变。
+
+### E70：2026-11-11，重启后profile残留、占用及权限只读诊断
+
+用户确认已重启，要求判断profile是否残留、是否仍被占用或权限不足。
+本机LastBootUpTime为15:00:50，15:21查询确认：
+
+- 正式PowerToysProtectedStorage VA profile及E69删除受阻的4个旧实验profile
+  仍有目录和ProfileList记录，但全部Loaded=false、Status=0、State=0。
+- 上述5个SID及各自SID_Classes均不在HKEY_USERS，主hive和Classes hive已卸载。
+  正式及5个旧实验服务均未恢复；E69已删除的PerUserVaDemo profile仍不存在。
+- 当前诊断进程是已提升管理员。5个profile根目录ACL均授予SYSTEM/
+  Administrators FullControl；只打开DELETE权限再关闭，根目录和ProfileList
+  注册键均成功，未调用删除API或修改ACL。
+- 每个profile的NTUSER.DAT、UsrClass.dat及各自LOG1/LOG2共30个文件，
+  使用OPEN_EXISTING、GENERIC_READ、零共享打开后立即关闭，全部native0；
+  随后仅请求DELETE权限并关闭也全部native0。未使用DELETE_ON_CLOSE。
+  这些探测证明采样时核心hive无阻止独占读取的占用，所检对象删除访问权正常，
+  不等于已递归检查全部子项或实际DeleteProfile一定成功。
+
+E69在SYSTEM下失败的原生码是32（共享占用），而非5（拒绝访问）。
+重启前Loaded状态现已解除，但不能从重启后快照反推之前持有句柄的具体进程。
+限定14:35之后的User Profiles Service Application/Operational日志未找到
+这些SID的匹配事件；未将ProfSvc、AppXSvc或其他系统组件臆断为已证实的占用者。
+
+正式卸载残留的确定代码原因仍是Lifecycle.cpp的erase_owner仅检查ProfileList
+并写入va-profile-review，没有调用DeleteProfile或安排释放占用后的自动重试。
+commit-remove只因cleanup-pending存在就返回3010，并非Windows确认已安排
+重启删除。因此重启释放hive不等于profile目录和注册记录会自动消失。
+未再次删除任何profile、卸载hive、变更服务/账户或修改权限；
+正式Data index hash与E68/E69一致，保留现场供后续明确授权的删除验证。
+
+证据位于会话files的`nov11-selected-service-cleanup`：
+`post-reboot-inventory.json`、`post-reboot-access-probes.json`、
+`post-reboot-profile-events.json`。本次不提升REM-06或其他正式验收状态。
+
+### E71：2026-11-11，授权删除5个剩余profile及产品清理边界
+
+用户要求先尝试删除，并提出完整卸载artifacts应为方案要求。16:31在现有已提升
+管理员上下文下，精确核对正式VA及4个剩余旧实验profile的SID、ProfileList路径、
+Loaded=false/Special=false、服务不存在、hive不存在及目录祖先非reparse后，
+使用DeleteProfileW删除这5个profile。没有改Loaded/State/RefCount，
+没有强卸hive、接管权限或手工递归删目录；没有删除任何SAM账户。
+
+5个调用全部成功（native0）。即时原生路径查询均为2，ProfileList/CIM记录不存在；
+16:32独立进程再次核对目录、ProfileList、Win32_UserProfile、HKEY_USERS/
+SID_Classes和对应服务均不存在。与E69先前删除的PerUserVaDemo profile合计，
+本轮范围内正式VA及5个旧实验服务profile已全部清除。
+正式Data的storage.index和blob内容hash前后相同，真实交互用户profile仍Loaded，
+两个Alias SAM账号仍保留。未创建新的后台任务/清理stage；
+Installer里的旧va-profile-review标记及Data历史事务仍保留，没有声称整机零残留。
+
+这次结果结合E69的SYSTEM/native32与E70的重启后Unloaded，支持此前共享占用
+已释放、当前权限足够且支持的删除API能够成功；不能确定重启前具体占用进程，
+也不能推广成任何Loaded profile都需要重启才能删除。
+
+**产品讨论结论（未实施架构改造）：**
+Win32_UserProfile.Loaded是只读观测值，不是“禁用profile”的开关。
+正确顺序是阻止实例再次启动、让本实例进程退出并释放句柄/加载引用，
+再由授权维护流程调用DeleteProfile并复核。Bootstrap的Worker析构已有
+stop事件/等待及专属job兜底，ServiceMain在Worker析构后才继续退出；
+这不保证系统中其他组件持有的profile引用也释放。
+若产品自己调用LoadUserProfile，应由相应所有者持有token/hProfile并配对
+UnloadUserProfile；该API要求先关闭已打开的hive键，不是对任意SID的强制卸载接口。
+不能只写注册表State/RefCount、临时再Load/Unload一次或强卸hive来假装清理完成。
+
+未解除的占用应有限等待、保留准确原生码，并提供真正可恢复的特权重试路径；
+如果采用重启后重试，其可信执行组件必须能在主产品移除后继续完成操作，
+重试时校验实例/代次、防止误删随后重装的新profile，完成后清除pending及自身。
+KeepData和必要安全元数据的保留应与可删除运行artifact明确分开。
+本次只完成手工profile删除及要求澄清，未实现上述重试机制、未queue新build，
+REM-06及统计不因手工成功而提升为PASS。
+
+API依据：
+[Win32_UserProfile.Loaded/refCount只读](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/userprofileprov/win32-userprofile)、
+[UnloadUserProfile](https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-unloaduserprofile)、
+[DeleteProfileW](https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-deleteprofilew)。
+本机证据在会话files的`nov11-selected-service-cleanup`：
+`post-reboot-delete.json`、`post-reboot-delete-verification.json`。
+
+### E72：2026-11-11，profile清理小范围测试及生产实现
+
+用户要求先做小范围测试，再更新产品代码、commit并queue private build。
+此前E70/E71确认：删除profile不改变同名服务SID，保留Data的ACL不需要在同owner
+普通重装时做跨SID迁移；`keepdata-identity-check.json`还核对了服务/profile删除后
+`sc showsid`与原VA SID、Data/index/blob的写入ACE完全一致。KeepData完整重装仍待验收。
+
+**先做实际SCM实验：**
+创建独立`PowerToysProfileCleanupProbe_*` VA服务，停止/删除后profile仍Loaded。
+SYSTEM持有并释放自己配对的LoadUserProfile/UnloadUserProfile引用后，
+DeleteProfile仍返回32，说明其他加载引用不会被这一次配对卸载清掉。
+未写Loaded/RefCount、强卸hive、停止全局ProfSvc或重启机器。
+测试使用独立服务名、SID和profile，不在正式PowerToys命名空间中创建服务。
+
+**产品实现：**
+
+- `Lifecycle.cpp`在移除服务/Code后实际调用DeleteProfile，短时共享占用有5秒上限；
+  检查精确VA SID、ServiceProfiles路径及原目录的volume/file identity。
+- 实验还复现：DeleteProfile遇到锁定文件时可能已删除ProfileList但留下目录，
+  下一次调用返回2。仅在注册记录及两个hive均不存在、目录身份仍匹配时，
+  使用原先的句柄式树删除机制清理该已授权的孤立目录；不跟随reparse子项。
+- 未完成时保存SYSTEM写入的operation/SID/目录身份及原生码，复制并再次验证
+  当前签名Lifecycle作为独立worker，登记SYSTEM任务。30秒后及重启后尝试，
+  注册触发重复间隔5分钟/持续1天，失败还有有限的1分钟重试；
+  不创建永久SYSTEM服务，不执行用户配置提供的路径或命令。
+- 任务的收尾使用由签名Lifecycle生成、放在SYSTEM写入目录中的固定ASCII批处理，
+  只等待签名worker、检查完成回执、删除自身操作的worker/request/script和任务。
+  动态内容仅为经过校验的owner SID/operation；元数据内容不作为命令执行。
+  使用相对自身的路径及显式等待，覆盖Unicode根路径和Windows-subsystem worker。
+- 重新安装与profile worker共用SYSTEM lifecycle lease。同SID重建服务时，
+  在新实例加载profile前取消旧cleanup operation；旧任务只能退出并回收自己的stage。
+  目录被替换、目标SID不符或新实例仍活动时不能删除profile。
+- 保留Data、初始化状态、现有Setup/Broker/Bootstrap分工和签名要求；
+  没有增加生产测试开关或签名豁免。旧历史transactions/非profile清理不在本轮擅自删除。
+
+**本地证据及其边界：**
+
+Release x64 Lifecycle及InstallerTests构建无error/warning；6,254条installer checks通过，
+包括新增scope/目录身份/有限重试/命令参数检查和profile名称fuzz。
+主安装器静态检查、C++新文件格式及diff检查通过。
+
+额外的显式opt-in live测试运行于SYSTEM，使用独立虚拟SID及临时profile。
+CreateProfile生成的未加载fixture被移至ServiceProfiles测试布局；它不是实际外层
+安装器创建的正式实例。worker使用同一份产品清理代码，测试副本调整为Windows
+子系统以匹配Lifecycle；生产签名入口没有被绕过或加测试分支。
+两个真实Task Scheduler case通过：
+
+- 文件保持占用期间实际任务失败（LastTaskResult=1），保留worker/request且无完成回执；
+  释放占用后通过同一个任务重试，profile/注册记录、task、stage及批处理消失。
+- 换成新的cleanup operation后，旧任务不删profile，只回收自己的临时材料；
+  指向profile外的链接不导致外部sentinel被删除。
+
+中间的fixture/命令编排失败均在发布前修复。特别是单行cmd条件链可能错误报告成功，
+不能用控制台worker或只测成功分支代替验证；最终改成受保护的固定批处理并实际
+验证GUI worker的失败保留和成功自清理。相关原始失败日志保留，不冒充产品卸载结果。
+失败fixture和其测试任务已逐项清理；实际SCM probe的Loaded状态尚未解除，
+仅该probe保留待重启清理的测试任务。正式Data的index/blob hash与E71一致。
+
+这些证据不等于签名6015安装包已完成外层卸载或重启验收。REM-06/P-XU保持PARTIAL，
+KeepData重装的REM-02也不因此通过；仍需新包实机安装/卸载及重启后的资源复核。
+private release pipeline仍关闭buildTests/runTests，本地通过不能表述成ADO执行了这些测试。
+
+原始证据在会话files：
+`nov11-profile-cleanup-probe-system.log`、`nov11-profile-live-fixed-batch.log`、
+`nov11-profile-final-unit.log`、`nov11-profile-final-lifecycle-build.log`、
+`nov11-profile-batch-fixture-cleanup.log`及本轮机器状态快照。
+
+19:03最终复核仅剩一个隔离probe清理任务：
+`PowerToys-ProtectedStorage-ProfileCleanup-4BFFFCE8436F4AF9ABDFE5137E436C51`。
+它以SYSTEM运行，有boot/registration触发；实际失败返回1、pending原生码32，
+worker/request/script完整保留且没有done回执。其他试验任务/失败fixture和
+Program Files里的临时探针stage已清理；该probe不会触及正式Data。
+实际重启后的完成状态仍需复核，不把任务登记成功当成重启删除已通过。
+
+产品提交`daf418c10611c8ba10fad30e055081ba714176ac`已push至origin/fork。
+随后通过definition76541按该commit明确queue版本`0.101.6015.0`：
+[build163595010](https://dev.azure.com/microsoft/Dart/_build/results?buildId=163595010)。
+独立build show确认sourceVersion、feature branch、Release x64/ARM64及版本参数；
+状态inProgress，未等待或声称构建成功。队列与核对原始JSON：
+`nov11-profile-private6015-queue.json`、`nov11-profile-private6015-verified.json`。
+本台账随后单独提交；ADO固定使用上述产品commit，不因台账后续提交漂移。
 
 ### 本次证据
 
