@@ -14,7 +14,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 /// need to use the FallbackResultsItem class and implement QueryAsync. That
 /// method is called by the host to retrieve results for a given query. The
 /// extension should return one of these FallbackQueryResults to encapsulate all
-/// the results into one object. 
+/// the results into one object.
 ///
 /// This also allows an extension to provide additional results to the host,
 /// should the host want to load more. You can indicate that by setting
@@ -25,6 +25,7 @@ public sealed partial class FallbackQueryResult : IFallbackCommandResult, IDispo
     private Continuation? _continuation;
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="FallbackQueryResult"/> class.
     /// Creates a single <b>set</b> of results for a query. If this query might
     /// have more results that the host can retrieve, your extension should set
     /// <paramref name="hasMoreItems"/> to true, and use the <paramref

@@ -535,7 +535,7 @@ namespace Microsoft.CommandPalette.Extensions
     };
 
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IFallbackQueryHandler requires IFallbackHandler
+    interface IFallbackQueryHandler
     {
         Windows.Foundation.IAsyncOperationWithProgress<
             IFallbackCommandResult,
