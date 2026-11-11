@@ -3808,6 +3808,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_EnableAISettingsCardDescription.Text" xml:space="preserve">
     <value>Transform your clipboard content with the power of AI. A cloud or local endpoint is required.</value>
   </data>
+  <data name="AdvancedPaste_AIComplianceInfoBar.Message" xml:space="preserve">
+    <value>The choice of agent and model is entirely yours. Please validate your choice is fully compliant with all AI regulations in your region before proceeding.</value>
+  </data>
   <data name="AdvancedPaste_EnableAISettingsCardDescriptionLearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
   </data>

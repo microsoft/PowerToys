@@ -160,6 +160,13 @@
                                 </DataTemplate>
                             </tkcontrols:SettingsExpander.ItemTemplate>
                         </tkcontrols:SettingsExpander>
+                        <InfoBar
+                            x:Uid="AdvancedPaste_AIComplianceInfoBar"
+                            Margin="0,8,0,0"
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}"
+                            IsTabStop="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}"
+                            Severity="Informational" />
                     </controls:SettingsGroup>
 
                     <!--  Activation and behavior  -->
