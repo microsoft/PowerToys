@@ -2,13 +2,84 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:PowerScripts.Editor.Controls">
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+            <StaticResource x:Key="ScriptCardBlueBrush" ResourceKey="ScriptArtworkBlueBrush" />
+            <StaticResource x:Key="ScriptCardPurpleBrush" ResourceKey="ScriptArtworkPurpleBrush" />
+            <StaticResource x:Key="ScriptCardGreenBrush" ResourceKey="ScriptArtworkGreenBrush" />
+            <StaticResource x:Key="ScriptCardOrangeBrush" ResourceKey="ScriptArtworkOrangeBrush" />
+            <StaticResource x:Key="ScriptCardTealBrush" ResourceKey="ScriptArtworkTealBrush" />
+            <StaticResource x:Key="ScriptCardMagentaBrush" ResourceKey="ScriptArtworkMagentaBrush" />
+            <StaticResource x:Key="ScriptCardSlateBrush" ResourceKey="ScriptArtworkSlateBrush" />
+            <StaticResource x:Key="ScriptCardForegroundBrush" ResourceKey="ScriptArtworkForegroundBrush" />
+            <StaticResource x:Key="ScriptCardBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+            <StaticResource x:Key="ScriptCardBlueBrush" ResourceKey="ScriptArtworkBlueBrush" />
+            <StaticResource x:Key="ScriptCardPurpleBrush" ResourceKey="ScriptArtworkPurpleBrush" />
+            <StaticResource x:Key="ScriptCardGreenBrush" ResourceKey="ScriptArtworkGreenBrush" />
+            <StaticResource x:Key="ScriptCardOrangeBrush" ResourceKey="ScriptArtworkOrangeBrush" />
+            <StaticResource x:Key="ScriptCardTealBrush" ResourceKey="ScriptArtworkTealBrush" />
+            <StaticResource x:Key="ScriptCardMagentaBrush" ResourceKey="ScriptArtworkMagentaBrush" />
+            <StaticResource x:Key="ScriptCardSlateBrush" ResourceKey="ScriptArtworkSlateBrush" />
+            <StaticResource x:Key="ScriptCardForegroundBrush" ResourceKey="ScriptArtworkForegroundBrush" />
+            <StaticResource x:Key="ScriptCardBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <StaticResource x:Key="ScriptCardBlueBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="ScriptCardPurpleBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="ScriptCardGreenBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="ScriptCardOrangeBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="ScriptCardTealBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="ScriptCardMagentaBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="ScriptCardSlateBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="ScriptCardForegroundBrush" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="ScriptCardBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+    <SolidColorBrush x:Key="ScriptArtworkForegroundBrush" Color="White" />
+    <LinearGradientBrush x:Key="ScriptArtworkBlueBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#1375AD" />
+        <GradientStop Offset="1" Color="#00548B" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ScriptArtworkPurpleBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#7750BF" />
+        <GradientStop Offset="1" Color="#4B278B" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ScriptArtworkGreenBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#367D36" />
+        <GradientStop Offset="1" Color="#155519" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ScriptArtworkOrangeBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#B45328" />
+        <GradientStop Offset="1" Color="#85310F" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ScriptArtworkTealBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#287A87" />
+        <GradientStop Offset="1" Color="#16505D" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ScriptArtworkMagentaBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#A134A7" />
+        <GradientStop Offset="1" Color="#6E1777" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ScriptArtworkSlateBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#606975" />
+        <GradientStop Offset="1" Color="#3C4350" />
+    </LinearGradientBrush>
+    <Style x:Key="EditorSurfaceStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+        <Setter Property="Padding" Value="20" />
+    </Style>
     <Style TargetType="local:ManagementPage">
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:ManagementPage">
                     <ScrollViewer AutomationProperties.AutomationId="PageScrollViewer">
-                        <StackPanel Margin="24,16,24,32" Spacing="16">
+                        <StackPanel Margin="32,24,32,32" Spacing="20">
                             <TextBlock
                                 AutomationProperties.HeadingLevel="Level1"
                                 Style="{StaticResource TitleTextBlockStyle}"

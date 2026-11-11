@@ -26,7 +26,7 @@ namespace PowerScripts.UI.ViewModels
             nameof(Runtime), nameof(HasExplicitExecution), nameof(DefaultIconGlyph),
             nameof(IconPath), nameof(IconWarning), nameof(HasIcon), nameof(HasIconWarning), nameof(IconSourcePath),
             nameof(Io), nameof(Input), nameof(Capabilities), nameof(Trusted), nameof(FolderPath), nameof(EntryFullPath),
-            nameof(InputDisplay), nameof(CatalogueSummary), nameof(CardAutomationId),
+            nameof(InputDisplay), nameof(OutputDisplay), nameof(CatalogueSummary), nameof(CardAutomationId),
             nameof(RuntimeDisplay), nameof(TrustDisplay), nameof(HasFolderPath), nameof(OpenFolderAutomationId),
         };
 
@@ -83,6 +83,8 @@ namespace PowerScripts.UI.ViewModels
                     .Distinct(StringComparer.OrdinalIgnoreCase));
 
         public string CatalogueSummary => $"{RuntimeDisplay} \u00b7 {InputDisplay} \u2192 {DisplayIoValue(Io?.Output)}";
+
+        public string OutputDisplay => DisplayIoValue(Io?.Output);
 
         public string CardAutomationId => $"PowerScripts_{Id}_Card";
 

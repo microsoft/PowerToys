@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using PowerScripts.Core.Manifest;
+using PowerScripts.Core.Registry;
 
 namespace PowerScripts.Core.Templates;
 
@@ -20,7 +21,9 @@ public sealed record ScriptTemplateOptions(
     string Output = "text",
     int MinFiles = 1,
     int MaxFiles = 0,
-    IReadOnlyList<ScriptTemplateParameter>? Parameters = null);
+    IReadOnlyList<ScriptTemplateParameter>? Parameters = null,
+    string? IconPreset = null,
+    string? IconSource = null);
 
 public sealed record ScriptTemplateParameter(
     string Name,
@@ -56,7 +59,9 @@ public static partial class ScriptTemplates
                 id == "video-info" ? options?.FileExtensions ?? ".mp4,.webm,.mov,.mkv" : options?.FileExtensions,
                 Input: shape,
                 Output: id == "video-info" ? "text" : shape,
-                Parameters: options?.Parameters));
+                Parameters: options?.Parameters,
+                IconPreset: options?.IconPreset,
+                IconSource: options?.IconSource));
         }
 
         if (options?.Parameters is { Count: > 0 })
@@ -83,7 +88,9 @@ public static partial class ScriptTemplates
             descriptor,
             ReadAsset(template.Id, "script.ps1"),
             ReadAsset(template.Id, "README.md"),
-            template.Id);
+            template.Id,
+            options?.IconPreset,
+            options?.IconSource);
     }
 
     private static CreatedScriptTemplate CreatePackage(
@@ -94,7 +101,9 @@ public static partial class ScriptTemplates
         JsonObject descriptor,
         string script,
         string guideContent,
-        string fallbackName = "script")
+        string fallbackName = "script",
+        string? iconPreset = null,
+        string? iconSource = null)
     {
         var projectName = name?.Trim();
         if (string.IsNullOrWhiteSpace(projectName) || projectName.Length > 80 || projectName.Any(char.IsControl))
@@ -105,6 +114,17 @@ public static partial class ScriptTemplates
         if (description.Length > 500 || description.Contains('\0'))
         {
             throw new ArgumentException("The description must be at most 500 characters and cannot contain null characters.", nameof(description));
+        }
+
+        if (iconPreset is not null && iconSource is not null)
+        {
+            throw new ArgumentException("Choose either a preset icon or a custom icon, not both.");
+        }
+
+        var icon = iconSource is not null ? ReadCustomIcon(iconSource) : iconPreset is null ? null : ReadIcon(iconPreset);
+        if (icon is not null)
+        {
+            descriptor["x-powerscript"]!["icon"] = "icon.ico";
         }
 
         var slug = new string(projectName.ToLowerInvariant().Select(c => char.IsAsciiLetterOrDigit(c) ? c : '-').ToArray()).Trim('-');
@@ -126,6 +146,12 @@ public static partial class ScriptTemplates
         var guide = Path.Combine(folder, "README.md");
         WriteNew(entry, script);
         WriteNew(guide, guideContent);
+        if (icon is not null)
+        {
+            using var iconStream = new FileStream(Path.Combine(folder, "icon.ico"), FileMode.CreateNew, FileAccess.Write, FileShare.None);
+            iconStream.Write(icon);
+        }
+
         // Publish the descriptor last so incomplete packages are not discovered as runnable scripts.
         WriteNew(entry + ToolDescriptorParser.DescriptorSuffix, descriptor.ToJsonString(new() { WriteIndented = true }));
         return new CreatedScriptTemplate(entry, guide);
@@ -168,6 +194,35 @@ public static partial class ScriptTemplates
             ?? throw new InvalidDataException($"Missing script template asset: {id}/{file}.");
         using var reader = new StreamReader(stream, Encoding.UTF8);
         return reader.ReadToEnd();
+    }
+
+    private static byte[] ReadIcon(string preset)
+    {
+        if (preset is not ("bolt" or "text" or "files" or "image" or "audio"))
+        {
+            throw new ArgumentException("Choose a supported preset icon.", nameof(preset));
+        }
+
+        using var stream = typeof(ScriptTemplates).Assembly.GetManifestResourceStream($"PowerScripts.Core.Templates.Icons.{preset}.ico")
+            ?? throw new InvalidDataException($"Missing preset icon: {preset}.");
+        using var buffer = new MemoryStream();
+        stream.CopyTo(buffer);
+        return buffer.ToArray();
+    }
+
+    private static byte[] ReadCustomIcon(string path)
+    {
+        if (!Path.IsPathFullyQualified(path) || !string.Equals(Path.GetExtension(path), ".ico", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Choose a local .ico file using its full path.", nameof(path));
+        }
+
+        using var stream = File.OpenRead(path);
+        ScriptRegistry.ValidateIcon(stream);
+        stream.Position = 0;
+        using var buffer = new MemoryStream();
+        stream.CopyTo(buffer);
+        return buffer.ToArray();
     }
 
     private static void WriteNew(string path, string content)

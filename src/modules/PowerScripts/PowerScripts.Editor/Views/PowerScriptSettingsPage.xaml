@@ -2,9 +2,6 @@
     x:Class="PowerScripts.Editor.Views.PowerScriptSettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:layout="using:PowerScripts.Editor.Controls"
-    xmlns:local="using:PowerScripts.Editor.Helpers"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:viewModels="using:PowerScripts.UI.ViewModels"
     AutomationProperties.AutomationId="PowerScriptsScriptSettingsPage"
@@ -15,169 +12,236 @@
             Invoked="BackKeyboardAccelerator_Invoked"
             Modifiers="Menu" />
     </Page.KeyboardAccelerators>
-    <Grid RowSpacing="16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <Grid Margin="20,0,20,0" ColumnSpacing="8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Button
-                x:Uid="PowerScripts_SettingsBack"
-                AutomationProperties.AutomationId="PowerScriptsSettingsBack"
-                Click="BackButton_Click"
-                Style="{StaticResource SubtleButtonStyle}">
-                <SymbolIcon Symbol="Back" />
-            </Button>
-            <BreadcrumbBar
-                x:Name="ScriptBreadcrumb"
-                Grid.Column="1"
-                VerticalAlignment="Center"
-                AutomationProperties.AutomationId="PowerScriptsSettingsBreadcrumb"
-                ItemClicked="ScriptBreadcrumb_ItemClicked" />
-        </Grid>
-        <layout:ManagementPage x:Uid="PowerScripts_SettingsSubpage" Grid.Row="1">
-            <layout:ManagementPage.ModuleContent>
-                <StackPanel Spacing="16">
-                    <InfoBar
-                        x:Name="ScriptSettingsError"
-                        AutomationProperties.AutomationId="PowerScriptsSettingsPageError"
-                        IsClosable="False"
-                        Severity="Error" />
-                    <tkcontrols:SettingsCard
-                        x:Uid="PowerScripts_SettingsConfigurationErrors"
-                        Description="{Binding ConfigurationErrorDisplay, Mode=OneWay}"
-                        Visibility="{Binding HasConfigurationErrors, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                    <CommandBar x:Name="MetadataCommands" DefaultLabelPosition="Right">
-                        <AppBarButton
-                            x:Uid="PowerScripts_ShowInExplorer"
-                            AutomationProperties.AutomationId="PowerScriptsShowInExplorer"
-                            Click="OpenScriptFolderButton_Click"
-                            Icon="OpenLocal" />
-                        <AppBarButton
-                            x:Uid="PowerScripts_EditMetadata"
-                            AutomationProperties.AutomationId="PowerScriptsEditMetadata"
-                            Click="EditMetadataButton_Click"
-                            Icon="Edit" />
-                        <AppBarButton
-                            x:Uid="PowerScripts_EditScript"
-                            AutomationProperties.AutomationId="PowerScriptsEditScript"
-                            Click="EditScriptButton_Click"
-                            Icon="Edit" />
-                        <AppBarButton
-                            x:Uid="PowerScripts_RefreshMetadata"
-                            AutomationProperties.AutomationId="PowerScriptsRefreshMetadata"
-                            Click="RefreshMetadataButton_Click"
-                            Icon="Refresh" />
-                    </CommandBar>
-                    <InfoBar
-                        x:Name="EditorStatus"
-                        x:Uid="PowerScripts_EditorFallback"
-                        AutomationProperties.AutomationId="PowerScriptsEditorStatus"
-                        IsClosable="True"
-                        Severity="Informational" />
-                    <tkcontrols:SettingsCard x:Uid="PowerScripts_ExecutionEnvironment" ContentAlignment="Vertical">
+    <ScrollViewer>
+        <StackPanel Margin="32,24,32,32" Spacing="20">
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button
+                    x:Uid="PowerScripts_SettingsBack"
+                    AutomationProperties.AutomationId="PowerScriptsSettingsBack"
+                    Click="BackButton_Click"
+                    Style="{StaticResource SubtleButtonStyle}">
+                    <SymbolIcon Symbol="Back" />
+                </Button>
+                <BreadcrumbBar
+                    x:Name="ScriptBreadcrumb"
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AutomationId="PowerScriptsSettingsBreadcrumb"
+                    ItemClicked="ScriptBreadcrumb_ItemClicked" />
+            </Grid>
+            <Border Padding="24" Style="{StaticResource EditorSurfaceStyle}">
+                <Grid ColumnSpacing="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border
+                        Width="64"
+                        Height="64"
+                        VerticalAlignment="Top"
+                        Background="{ThemeResource AccentFillColorDefaultBrush}"
+                        CornerRadius="{ThemeResource OverlayCornerRadius}">
+                        <Grid>
+                            <FontIcon
+                                x:Name="HeaderDefaultIcon"
+                                FontSize="32"
+                                Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                                Glyph="{Binding DefaultIconGlyph, Mode=OneWay}" />
+                            <Image
+                                Width="48"
+                                Height="48"
+                                AutomationProperties.AutomationId="PowerScriptsHeroIcon"
+                                ImageFailed="HeaderIcon_ImageFailed"
+                                Source="{Binding IconSourcePath, Mode=OneWay}"
+                                Visibility="{Binding HasIcon, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </Grid>
+                    </Border>
+                    <StackPanel Grid.Column="1" Spacing="8">
                         <TextBlock
-                            AutomationProperties.AutomationId="PowerScriptsExecutionSummary"
-                            Text="{Binding ExecutionSummary, Mode=OneWay}"
+                            AutomationProperties.HeadingLevel="Level1"
+                            Style="{StaticResource TitleTextBlockStyle}"
+                            Text="{Binding Name, Mode=OneWay}"
                             TextWrapping="Wrap" />
-                    </tkcontrols:SettingsCard>
-                    <InfoBar
-                        AutomationProperties.AutomationId="PowerScriptsExecutionBlocked"
-                        IsClosable="False"
-                        IsOpen="{Binding HasExecutionBlock, Mode=OneWay}"
-                        Message="{Binding ExecutionBlockedReason, Mode=OneWay}"
-                        Severity="Warning" />
-                    <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcEffective" ContentAlignment="Right">
                         <TextBlock
-                            MaxWidth="360"
-                            VerticalAlignment="Center"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="{Binding ExecutionPolicyDisplay, Mode=OneWay}"
+                            Text="{Binding Description, Mode=OneWay}"
                             TextWrapping="Wrap" />
-                    </tkcontrols:SettingsCard>
-                    <TextBlock x:Uid="PowerScripts_MetadataHelp" TextWrapping="Wrap" />
-                    <ItemsControl x:Name="MetadataSections">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="viewModels:PowerScriptMetadataSection">
-                                <controls:SettingsGroup Margin="0,0,0,16" Header="{x:Bind Title, Mode=OneTime}">
+                        <TextBlock
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{Binding CatalogueSummary, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Button
+                        x:Uid="PowerScripts_EditScriptAction"
+                        Grid.Column="2"
+                        VerticalAlignment="Top"
+                        AutomationProperties.AutomationId="PowerScriptsHeroEditScript"
+                        Click="EditScriptButton_Click" />
+                </Grid>
+            </Border>
+            <InfoBar
+                x:Name="ScriptSettingsError"
+                AutomationProperties.AutomationId="PowerScriptsSettingsPageError"
+                IsClosable="False"
+                Severity="Error" />
+            <InfoBar
+                x:Name="EditorStatus"
+                x:Uid="PowerScripts_EditorFallback"
+                AutomationProperties.AutomationId="PowerScriptsEditorStatus"
+                IsClosable="True"
+                Severity="Informational" />
+            <SelectorBar
+                x:Name="DetailsTabs"
+                AutomationProperties.AutomationId="PowerScriptsDetailsTabs"
+                SelectionChanged="DetailsTabs_SelectionChanged">
+                <SelectorBarItem
+                    x:Name="OverviewTab"
+                    x:Uid="PowerScripts_DetailsOverview"
+                    AutomationProperties.AutomationId="PowerScriptsDetailsOverview"
+                    Icon="Home"
+                    IsSelected="True" />
+                <SelectorBarItem
+                    x:Name="CodeTab"
+                    x:Uid="PowerScripts_DetailsCode"
+                    AutomationProperties.AutomationId="PowerScriptsDetailsCode"
+                    Icon="Document" />
+            </SelectorBar>
+            <StackPanel x:Name="OverviewPanel" Spacing="20">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Style="{StaticResource EditorSurfaceStyle}">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Uid="PowerScripts_OverviewInput" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                Text="{Binding InputDisplay, Mode=OneWay}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="1" Style="{StaticResource EditorSurfaceStyle}">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Uid="PowerScripts_OverviewOutput" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                Text="{Binding OutputDisplay, Mode=OneWay}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="2" Style="{StaticResource EditorSurfaceStyle}">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Uid="PowerScripts_DetailsLanguage" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                Text="{Binding RuntimeDisplay, Mode=OneWay}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+                <ItemsControl x:Name="MetadataSections">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:PowerScriptMetadataSection">
+                            <Border Margin="0,0,0,16" Style="{StaticResource EditorSurfaceStyle}">
+                                <StackPanel Spacing="16">
+                                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Title, Mode=OneTime}" />
                                     <ItemsControl ItemsSource="{x:Bind Rows, Mode=OneTime}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate x:DataType="viewModels:PowerScriptMetadataRow">
-                                                <tkcontrols:SettingsCard
-                                                    Margin="0,0,0,4"
-                                                    ContentAlignment="Right"
-                                                    Header="{x:Bind Label, Mode=OneTime}">
+                                                <Grid Padding="0,4" ColumnSpacing="20">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="180" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
                                                     <TextBlock
-                                                        MaxWidth="480"
-                                                        VerticalAlignment="Center"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Text="{x:Bind Label, Mode=OneTime}"
+                                                        TextWrapping="Wrap" />
+                                                    <TextBlock
+                                                        Grid.Column="1"
                                                         AutomationProperties.AutomationId="{x:Bind AutomationId, Mode=OneTime}"
                                                         IsTextSelectionEnabled="True"
                                                         Text="{x:Bind Value, Mode=OneTime}"
                                                         TextWrapping="Wrap" />
-                                                </tkcontrols:SettingsCard>
+                                                </Grid>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
-                                </controls:SettingsGroup>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <Expander
-                        x:Uid="PowerScripts_RawMetadata"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Stretch">
-                        <TextBox
-                            x:Name="MetadataText"
-                            AcceptsReturn="True"
-                            AutomationProperties.AutomationId="PowerScriptsMetadata"
-                            IsReadOnly="True"
-                            TextWrapping="Wrap" />
-                    </Expander>
-                    <Expander
-                        x:Uid="PowerScripts_SettingsDetails"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Stretch"
-                        AutomationProperties.AutomationId="PowerScriptsSecurityDetails">
-                        <StackPanel Spacing="8">
-                            <tkcontrols:SettingsCard
-                                x:Uid="PowerScripts_IconWarning"
-                                Description="{Binding IconWarning, Mode=OneWay}"
-                                Visibility="{Binding HasIconWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                            <tkcontrols:SettingsCard ContentAlignment="Right" Header="Trust">
-                                <TextBlock
-                                    VerticalAlignment="Center"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Text="{Binding TrustDisplay, Mode=OneWay}" />
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard Header="Location" Visibility="{Binding HasFolderPath, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <StackPanel
-                                    HorizontalAlignment="Right"
-                                    Orientation="Horizontal"
-                                    Spacing="8">
-                                    <TextBlock
-                                        VerticalAlignment="Center"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        IsTextSelectionEnabled="True"
-                                        Text="{Binding FolderPath, Mode=OneWay}"
-                                        TextTrimming="CharacterEllipsis"
-                                        ToolTipService.ToolTip="{Binding FolderPath, Mode=OneWay}" />
-                                    <Button
-                                        AutomationProperties.AutomationId="{Binding OpenFolderAutomationId, Mode=OneWay}"
-                                        AutomationProperties.Name="Open script folder"
-                                        Click="OpenScriptFolderButton_Click"
-                                        ToolTipService.ToolTip="Open script folder">
-                                        <FontIcon FontSize="16" Glyph="&#xE838;" />
-                                    </Button>
                                 </StackPanel>
-                            </tkcontrols:SettingsCard>
-                        </StackPanel>
-                    </Expander>
-                </StackPanel>
-            </layout:ManagementPage.ModuleContent>
-        </layout:ManagementPage>
-    </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <tkcontrols:SettingsCard
+                    x:Uid="PowerScripts_IconWarning"
+                    Description="{Binding IconWarning, Mode=OneWay}"
+                    Visibility="{Binding HasIconWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <TextBlock
+                    IsTextSelectionEnabled="True"
+                    Text="{Binding FolderPath, Mode=OneWay}"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+            <StackPanel
+                x:Name="CodePanel"
+                Spacing="16"
+                Visibility="Collapsed">
+                <CommandBar x:Name="MetadataCommands" DefaultLabelPosition="Right">
+                    <AppBarButton
+                        x:Uid="PowerScripts_ShowInExplorer"
+                        AutomationProperties.AutomationId="PowerScriptsShowInExplorer"
+                        Click="OpenScriptFolderButton_Click"
+                        Icon="OpenLocal" />
+                    <AppBarButton
+                        x:Uid="PowerScripts_EditMetadata"
+                        AutomationProperties.AutomationId="PowerScriptsEditMetadata"
+                        Click="EditMetadataButton_Click"
+                        Icon="Edit" />
+                    <AppBarButton
+                        x:Uid="PowerScripts_EditScript"
+                        AutomationProperties.AutomationId="PowerScriptsEditScript"
+                        Click="EditScriptButton_Click"
+                        Icon="Edit" />
+                    <AppBarButton
+                        x:Uid="PowerScripts_RefreshMetadata"
+                        AutomationProperties.AutomationId="PowerScriptsRefreshMetadata"
+                        Click="RefreshMetadataButton_Click"
+                        Icon="Refresh" />
+                </CommandBar>
+                <TextBox
+                    x:Name="SourceText"
+                    x:Uid="PowerScripts_SourcePreview"
+                    MinHeight="280"
+                    MaxHeight="560"
+                    AcceptsReturn="True"
+                    AutomationProperties.AutomationId="PowerScriptsSourceCode"
+                    FontFamily="Consolas"
+                    IsReadOnly="True"
+                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                    TextWrapping="NoWrap" />
+                <Expander
+                    x:Uid="PowerScripts_RawMetadata"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    IsExpanded="True">
+                    <TextBox
+                        x:Name="MetadataText"
+                        MinHeight="200"
+                        MaxHeight="560"
+                        AcceptsReturn="True"
+                        AutomationProperties.AutomationId="PowerScriptsMetadata"
+                        FontFamily="Consolas"
+                        IsReadOnly="True"
+                        TextWrapping="Wrap" />
+                </Expander>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
 </Page>

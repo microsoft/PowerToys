@@ -14,6 +14,8 @@ namespace PowerScripts.Editor.Views;
 
 public sealed partial class ConsumerModulesPage : Page
 {
+    private bool _refreshing;
+
     private PowerScriptsViewModel ViewModel { get; set; }
 
     public ConsumerModulesPage()
@@ -24,14 +26,25 @@ public sealed partial class ConsumerModulesPage : Page
 
     public async Task RefreshConsumersAsync()
     {
+        if (_refreshing)
+        {
+            return;
+        }
+
+        _refreshing = true;
         try
         {
             await ViewModel.RefreshConsumersAsync();
+            await ViewModel.RefreshModuleScriptsAsync();
             ConsumerError.IsOpen = false;
         }
         catch (Exception exception)
         {
             ShowError(exception);
+        }
+        finally
+        {
+            _refreshing = false;
         }
     }
 
@@ -43,9 +56,15 @@ public sealed partial class ConsumerModulesPage : Page
         Bindings.Update();
     }
 
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    {
+        Bindings.StopTracking();
+        base.OnNavigatedFrom(e);
+    }
+
     private async void ConsumerEnabledToggle_Toggled(object sender, RoutedEventArgs e)
     {
-        if (sender is not ToggleSwitch { Tag: string id } toggle || !ViewModel.AreConsumerSettingsReady)
+        if (sender is not ToggleSwitch { Tag: string id } toggle || _refreshing || !ViewModel.AreModuleCataloguesReady)
         {
             return;
         }
@@ -63,20 +82,46 @@ public sealed partial class ConsumerModulesPage : Page
             return;
         }
 
+        _refreshing = true;
         try
         {
             await ViewModel.SetConsumerEnabledAsync(consumer, toggle.IsOn);
+            await ViewModel.RefreshModuleScriptsAsync();
             ConsumerError.IsOpen = false;
         }
         catch (Exception exception)
         {
             ShowError(exception);
         }
+        finally
+        {
+            _refreshing = false;
+        }
+    }
+
+    public static Visibility BoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
+
+    private void OpenScript_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { Tag: PowerScriptListItem script })
+        {
+            try
+            {
+                if (!Frame.Navigate(typeof(PowerScriptSettingsPage), new PowerScriptSettingsPage.NavigationContext(ViewModel, script)))
+                {
+                    throw new InvalidOperationException(PowerScriptsViewModel.GetResourceString("PowerScripts_SettingsNavigationFailed"));
+                }
+            }
+            catch (Exception exception)
+            {
+                ShowError(exception);
+            }
+        }
     }
 
     private void ShowError(Exception exception)
     {
-        Logger.LogError("Unable to update PowerScripts consumer settings.", exception);
+        Logger.LogError("Unable to manage PowerScripts modules.", exception);
         ConsumerError.Message = exception.Message;
         ConsumerError.IsOpen = true;
     }
