@@ -44,6 +44,10 @@ namespace KeyboardManagerEditorUI.Pages
         private bool _isServiceRunning = true;
         private bool _isUpdatingToggle;
 
+        // Set while an external change is detected but the rows are not yet rebuilt. A failed reconcile may
+        // already have loaded the new metadata, so the on-disk comparison alone would not retry it.
+        private bool _isReloadPending;
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public string MappingState
@@ -554,7 +558,7 @@ namespace KeyboardManagerEditorUI.Pages
             return actionType switch
             {
                 UnifiedMappingControl.ActionType.KeyOrShortcut => ValidationHelper.ValidateKeyMapping(
-                    triggerKeys, UnifiedMappingControl.GetActionKeys(), isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
+                    triggerKeys, UnifiedMappingControl.GetActionKeys(), isAppSpecific, appName, _mappingService!, _isEditMode, editingId, UnifiedMappingControl.GetCondition()),
                 UnifiedMappingControl.ActionType.Text => ValidationHelper.ValidateTextMapping(
                     triggerKeys, UnifiedMappingControl.GetTextContent(), isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
                 UnifiedMappingControl.ActionType.OpenUrl => ValidationHelper.ValidateUrlMapping(
@@ -562,7 +566,7 @@ namespace KeyboardManagerEditorUI.Pages
                 UnifiedMappingControl.ActionType.OpenApp => ValidationHelper.ValidateAppMapping(
                     triggerKeys, UnifiedMappingControl.GetProgramPath(), isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
                 UnifiedMappingControl.ActionType.Disable => ValidationHelper.ValidateDisableMapping(
-                    triggerKeys, isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
+                    triggerKeys, isAppSpecific, appName, _mappingService!, _isEditMode, editingId, UnifiedMappingControl.GetCondition()),
                 _ => ValidationErrorType.NoError,
             };
         }
@@ -807,17 +811,11 @@ namespace KeyboardManagerEditorUI.Pages
         }
 
         private static bool HasDuplicateEditorMapping(ShortcutKeyMapping replacementMapping, string? replacingId) =>
-            SettingsManager.EditorSettings.ShortcutSettingsDictionary.Any(entry =>
-                entry.Value.IsActive &&
-                !entry.Key.Equals(replacingId, StringComparison.OrdinalIgnoreCase) &&
-                KeyboardManagerInterop.AreShortcutsEqual(entry.Value.Shortcut.OriginalKeys, replacementMapping.OriginalKeys) &&
-
-                // An Always and an Alone remap of the same key are distinct (separate engine tables),
-                // so only treat it as a duplicate when the condition matches too.
-                entry.Value.Shortcut.Condition == replacementMapping.Condition &&
-                (string.IsNullOrEmpty(entry.Value.Shortcut.TargetApp) ||
-                 string.IsNullOrEmpty(replacementMapping.TargetApp) ||
-                 entry.Value.Shortcut.TargetApp.Equals(replacementMapping.TargetApp, StringComparison.OrdinalIgnoreCase)));
+            DuplicateMappingHelper.HasDuplicateEditorMapping(
+                SettingsManager.EditorSettings.ShortcutSettingsDictionary,
+                replacementMapping,
+                replacingId,
+                KeyboardManagerInterop.AreShortcutsEqual);
 
         private static void RestoreOriginalMappingSettings(KeyboardMappingService originalService)
         {
@@ -1053,6 +1051,51 @@ namespace KeyboardManagerEditorUI.Pages
         #endregion
 
         #region Load Methods
+
+        /// <summary>
+        /// Settings restore can replace default.json/editorSettings.json while the editor stays open, which
+        /// would leave rows with stale mapping ids. Rebuild from disk the way startup does when either changed.
+        /// </summary>
+        internal void ReloadIfChangedOnDisk()
+        {
+            if (_mappingService == null)
+            {
+                return;
+            }
+
+            try
+            {
+                using var current = new KeyboardMappingService();
+                if (!_isReloadPending && _mappingService.HasSameMappings(current) && !SettingsManager.HasSettingsChangedOnDisk())
+                {
+                    return;
+                }
+
+                _isReloadPending = true;
+
+                // Keep the current view if the files are mid-write or locked; the next activation retries.
+                if (!SettingsManager.CorrelateServiceAndEditorMappings(regenerateUnreadableSettings: false))
+                {
+                    return;
+                }
+
+                // An open edit dialog targets a row id that may no longer exist.
+                if (_isEditMode)
+                {
+                    RemappingDialog.Hide();
+                }
+
+                KeyboardMappingService previousService = _mappingService;
+                _mappingService = new KeyboardMappingService();
+                previousService.Dispose();
+                LoadAllMappings();
+                _isReloadPending = false;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to reload Keyboard Manager mappings after activation: " + ex.Message);
+            }
+        }
 
         private void LoadAllMappings()
         {

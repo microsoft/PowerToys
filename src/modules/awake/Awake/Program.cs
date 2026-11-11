@@ -565,6 +565,8 @@ namespace Awake
 
                 Logger.LogInfo($"Identified custom time shortcuts for the tray: {settings.Properties.CustomTrayTimes.Count}");
 
+                Manager.SetAllowDisplayOffWhileLocked(settings.Properties.AllowDisplayOffWhileLocked);
+
                 switch (settings.Properties.Mode)
                 {
                     case AwakeMode.PASSIVE:

@@ -139,6 +139,9 @@
   <data name="AWAKE_KEEP_SCREEN_ON" xml:space="preserve">
     <value>Keep screen on</value>
   </data>
+  <data name="AWAKE_ALLOW_DISPLAY_OFF_LOCKED" xml:space="preserve">
+    <value>Allow screen to turn off while locked</value>
+  </data>
   <data name="AWAKE_KEEP_UNTIL_EXPIRATION" xml:space="preserve">
     <value>Keep awake until expiration date and time</value>
     <comment>Keep the system awake until expiration date and time</comment>
