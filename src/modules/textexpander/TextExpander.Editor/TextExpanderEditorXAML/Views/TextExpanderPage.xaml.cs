@@ -348,6 +348,25 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 item.Text = TextExpanderDateGuide.Example(format, now);
                 AutomationProperties.SetName(item, TextExpanderDateGuide.PresetName(format, now, ResourceLoaderInstance.ResourceLoader.GetString));
             }
+
+            UpdateCursorVariableMenu(_replacementEditor?.Text ?? string.Empty);
+        }
+
+        private void UpdateCursorVariableMenu(string replacement)
+        {
+            foreach ((MenuFlyoutItem item, TextExpanderVariable variable) in _variableItems)
+            {
+                if (variable.Token != Variables.CursorMarker)
+                {
+                    continue;
+                }
+
+                bool available = TextExpanderTokenText.CanInsertVariable(replacement, variable.Token);
+                item.IsEnabled = available;
+                item.Style = available ? null : (Style)Resources["UnavailableCursorItemStyle"];
+                AutomationProperties.SetName(item, variable.Name);
+                AutomationProperties.SetHelpText(item, available ? string.Empty : ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_Variable_Cursor_OnlyOne.Text"));
+            }
         }
 
         /// <summary>
@@ -1654,6 +1673,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             string trigger = TriggerBox.Text ?? string.Empty;
             string replacement = _replacementEditor.Text;
 
+            UpdateCursorVariableMenu(replacement);
             ShowPreview(replacement);
             ShowNearMiss(replacement);
             ShowHistoryNote(replacement);

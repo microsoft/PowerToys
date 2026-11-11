@@ -87,6 +87,7 @@ namespace ViewModelTests
             "TextExpander_SnippetFolder_SettingsStateUncertain",
             "TextExpander_Variable_Prompt",
             "TextExpander_Variable_Prompt_Help",
+            "TextExpander_Variable_Cursor_OnlyOne.Text",
             "TextExpander_PromptFlyout.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name",
             "TextExpander_PromptFlyout_Question.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name",
             "TextExpander_PromptFlyout_Preview.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name",
@@ -385,6 +386,30 @@ namespace ViewModelTests
             {
                 StringAssert.Contains(Member(code, handler), "SnippetFolderFlyout.Hide();", handler);
             }
+        }
+
+        [TestMethod]
+        public void CursorMenuExplainsItsDisabledStateAndTracksTheReplacement()
+        {
+            XDocument page = Xml(EditorPage);
+            XElement style = page.Descendants().Single(element => (string)element.Attribute(XName.Get("Key", Name.NamespaceName)) == "UnavailableCursorItemStyle");
+            Assert.AreEqual("MenuFlyoutItem", (string)style.Attribute("TargetType"));
+            XElement label = style.Descendants().Single(element => (string)element.Attribute("Text") == "{TemplateBinding Text}");
+            Assert.AreEqual("{ThemeResource TextFillColorDisabledBrush}", (string)label.Attribute("Foreground"));
+            WithUid(style, "TextExpander_Variable_Cursor_OnlyOne");
+
+            string code = Text(EditorPage + ".cs");
+            string update = Member(code, "private void UpdateCursorVariableMenu(");
+            StringAssert.Contains(update, "TextExpanderTokenText.CanInsertVariable(replacement, variable.Token)");
+            StringAssert.Contains(update, "item.IsEnabled = available;");
+            StringAssert.Contains(update, "AutomationProperties.SetName(item, variable.Name);");
+            StringAssert.Contains(update, "AutomationProperties.SetHelpText(item,");
+            StringAssert.Contains(Member(code, "private void Validate("), "UpdateCursorVariableMenu(replacement);");
+            StringAssert.Contains(Member(code, "private void RefreshVariableMenu("), "UpdateCursorVariableMenu(");
+
+            string insert = Member(Text(ReplacementEditor), "public void InsertVariableAt(");
+            Assert.IsTrue(insert.IndexOf("OnContentChanged();", StringComparison.Ordinal) < insert.IndexOf("TextExpanderTokenText.PlanInsert(", StringComparison.Ordinal), "Insertion checks the latest text, even after the menu opened.");
+            StringAssert.Contains(insert, "is { } insertion", "An unavailable insertion plan cannot replace any user text.");
         }
 
         [TestMethod]

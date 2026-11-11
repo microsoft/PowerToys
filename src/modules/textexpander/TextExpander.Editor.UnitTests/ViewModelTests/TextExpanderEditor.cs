@@ -215,6 +215,55 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void CursorInsertionIsAvailableOnceAndRejectsRepeatedActivation()
+        {
+            const string text = "Before  after";
+            const string cursor = "$|$";
+            Assert.IsTrue(TextExpanderTokenText.CanInsertVariable(text, cursor));
+            (int start, int end, int selectionStart, int selectionEnd) = TextExpanderTokenText.PlanInsert(text, 7, 7, cursor, selectEditablePart: true).Value;
+            string replacement = text[..start] + cursor + text[end..];
+            Assert.AreEqual("Before $|$ after", replacement);
+            Assert.AreEqual(10, selectionStart);
+            Assert.AreEqual(selectionStart, selectionEnd);
+
+            Assert.IsFalse(TextExpanderTokenText.CanInsertVariable(replacement, cursor));
+            Assert.IsNull(TextExpanderTokenText.PlanInsert(replacement, selectionStart, selectionEnd, cursor, selectEditablePart: true));
+            Assert.IsNull(TextExpanderTokenText.PlanInsert(replacement, 7, 7, cursor, selectEditablePart: false), "A stale captured selection cannot insert a second marker.");
+            Assert.IsNull(TextExpanderTokenText.PlanInsert(replacement, 0, replacement.Length, cursor, selectEditablePart: true), "Even selecting existing text must not bypass the unavailable menu item.");
+        }
+
+        [TestMethod]
+        [DataRow("$|$")]
+        [DataRow("Existing $|$ snippet")]
+        [DataRow("Pasted $|$ and $|$")]
+        [DataRow("{{prompt:Label $|$}}")]
+        public void CursorAvailabilityReadsTheCurrentReplacement(string replacement)
+        {
+            Assert.IsFalse(TextExpanderTokenText.CanInsertVariable(replacement, "$|$"));
+            Assert.IsNull(TextExpanderTokenText.PlanInsert(replacement, 0, 0, "$|$", selectEditablePart: true));
+
+            foreach (string variable in new[] { "{{date}}", "{{time}}", "{{datetime}}", "{{isodate}}", "{{date:dddd}}", "{{clipboard}}", "{{prompt:Label}}" })
+            {
+                Assert.IsTrue(TextExpanderTokenText.CanInsertVariable(replacement, variable));
+                Assert.IsNotNull(TextExpanderTokenText.PlanInsert(replacement, 0, 0, variable, selectEditablePart: true));
+            }
+        }
+
+        [TestMethod]
+        public void CursorAvailabilityFollowsTypingPastingRemovalAndUndo()
+        {
+            string replacement = "Text $|";
+            Assert.IsTrue(TextExpanderTokenText.CanInsertVariable(replacement, "$|$"));
+            replacement += "$";
+            Assert.IsFalse(TextExpanderTokenText.CanInsertVariable(replacement, "$|$"));
+            replacement = replacement[..^3];
+            Assert.IsTrue(TextExpanderTokenText.CanInsertVariable(replacement, "$|$"));
+            Assert.IsNotNull(TextExpanderTokenText.PlanInsert(replacement, 0, 0, "$|$", selectEditablePart: true));
+            replacement += "$|$";
+            Assert.IsFalse(TextExpanderTokenText.CanInsertVariable(replacement, "$|$"), "Pasting or undoing removal makes the item unavailable again.");
+        }
+
+        [TestMethod]
         public void PromptTokensBuildAndParseExactly()
         {
             Assert.AreEqual("{{prompt:Question}}", TextExpanderPromptToken.Build(" Question ", requireAnswer: true));

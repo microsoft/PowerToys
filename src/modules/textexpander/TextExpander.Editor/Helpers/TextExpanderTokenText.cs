@@ -23,6 +23,10 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         public static IReadOnlyList<(int Start, int End)> FindVariables(string text)
             => SnippetTemplate.FindVariables(text ?? string.Empty);
 
+        /// <summary>Whether the menu can insert a variable without adding a second cursor marker.</summary>
+        public static bool CanInsertVariable(string text, string variable)
+            => variable != Variables.CursorMarker || !(text?.Contains(Variables.CursorMarker, StringComparison.Ordinal) ?? false);
+
         /// <summary>Gets the variable that <paramref name="position"/> falls strictly inside, if any.</summary>
         public static (int Start, int End)? VariableAround(string text, int position)
         {
@@ -93,10 +97,15 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         /// <summary>
         /// Gets where Insert variable puts <paramref name="variable"/> (see <see cref="InsertionRange"/>) and what
         /// it selects then (see <see cref="SelectionAfterInsert"/>); with <paramref name="selectEditablePart"/>
-        /// false, the caret goes after it.
+        /// false, the caret goes after it. Returns null when a cursor marker is already present.
         /// </summary>
-        public static (int Start, int End, int SelectionStart, int SelectionEnd) PlanInsert(string text, int selectionStart, int selectionEnd, string variable, bool selectEditablePart)
+        public static (int Start, int End, int SelectionStart, int SelectionEnd)? PlanInsert(string text, int selectionStart, int selectionEnd, string variable, bool selectEditablePart)
         {
+            if (!CanInsertVariable(text, variable))
+            {
+                return null;
+            }
+
             (int start, int end) = InsertionRange(text, selectionStart, selectionEnd);
             (int selectStart, int selectLength) = selectEditablePart ? SelectionAfterInsert(variable, start) : (start + variable.Length, 0);
             return (start, end, selectStart, selectStart + selectLength);

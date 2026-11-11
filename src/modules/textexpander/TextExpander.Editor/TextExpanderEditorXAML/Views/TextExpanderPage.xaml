@@ -95,6 +95,20 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="UnavailableCursorItemStyle" TargetType="MenuFlyoutItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuFlyoutItem">
+                        <StackPanel Margin="11,7" Spacing="2">
+                            <TextBlock Foreground="{ThemeResource TextFillColorDisabledBrush}" Text="{TemplateBinding Text}" />
+                            <TextBlock
+                                x:Uid="TextExpander_Variable_Cursor_OnlyOne"
+                                Style="{StaticResource FlyoutCaptionStyle}" />
+                        </StackPanel>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <!--  The date format guide's chips, built in code: the code as the editor shows variables, then what it gives, in secondary caption text.  -->
         <Style x:Key="TextExpanderDateCodeStyle" TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />

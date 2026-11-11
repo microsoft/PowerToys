@@ -48,7 +48,7 @@ namespace ViewModelTests
                 Assert.AreEqual("{{date:" + format + "}}", token);
 
                 // At the caret, with the caret after it: a ready-made format is finished.
-                (int start, int end, int selectionStart, int selectionEnd) = TextExpanderTokenText.PlanInsert(text, 4, 4, token, selectEditablePart: false);
+                (int start, int end, int selectionStart, int selectionEnd) = TextExpanderTokenText.PlanInsert(text, 4, 4, token, selectEditablePart: false).Value;
                 string result = text[..start] + token + text[end..];
                 Assert.AreEqual("Due " + token + " please", result);
                 Assert.AreEqual(4 + token.Length, selectionStart);
@@ -117,7 +117,7 @@ namespace ViewModelTests
         public void CustomFormatSelectsTheFormatSoTheGuideOpens()
         {
             const string token = "{{date:dddd}}";
-            (int start, int end, int selectionStart, int selectionEnd) = TextExpanderTokenText.PlanInsert("Hi ", 3, 3, token, selectEditablePart: true);
+            (int start, int end, int selectionStart, int selectionEnd) = TextExpanderTokenText.PlanInsert("Hi ", 3, 3, token, selectEditablePart: true).Value;
             string text = "Hi "[..start] + token + "Hi "[end..];
 
             Assert.AreEqual("dddd", text[selectionStart..selectionEnd]);

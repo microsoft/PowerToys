@@ -188,8 +188,10 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         public void InsertVariableAt(string variable, int selectionStart, int selectionEnd, bool selectEditablePart = true)
         {
             OnContentChanged();
-            (int start, int end, int selectStart, int selectEnd) = TextExpanderTokenText.PlanInsert(_text, selectionStart, selectionEnd, variable, selectEditablePart);
-            Replace(start, end, variable, selectStart, selectEnd);
+            if (TextExpanderTokenText.PlanInsert(_text, selectionStart, selectionEnd, variable, selectEditablePart) is { } insertion)
+            {
+                Replace(insertion.Start, insertion.End, variable, insertion.SelectionStart, insertion.SelectionEnd);
+            }
         }
 
         /// <summary>
