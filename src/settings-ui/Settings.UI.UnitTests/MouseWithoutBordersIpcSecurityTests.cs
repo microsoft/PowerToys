@@ -817,6 +817,11 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 {
                     var shutdown = (Task)helper.GetType().GetMethod("ShutdownAsync")!.Invoke(helper, null)!;
                     await shutdown.WaitAsync(TimeSpan.FromSeconds(5));
+
+                    // ShutdownAsync completes once the notification is queued in the RPC pipe writer. Disposing
+                    // the helper immediately can close the pipe before that writer has flushed the notification,
+                    // so keep the helper open until the server has received it.
+                    await target.ShutdownReceived.Task.WaitAsync(TimeSpan.FromSeconds(5));
                 }
 
                 await serverTask;
