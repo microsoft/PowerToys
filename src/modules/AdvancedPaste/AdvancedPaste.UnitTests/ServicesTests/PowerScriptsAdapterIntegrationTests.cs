@@ -23,7 +23,7 @@ namespace AdvancedPaste.UnitTests.ServicesTests;
 
 [TestClass]
 [TestCategory("PowerScriptsIntegration")]
-public sealed class PowerScriptsAdapterIntegrationTests
+public sealed class PowerScriptsAdapterIntegrationTests : IDisposable
 {
     private const string TextSchema = """{"type":"object","additionalProperties":false,"properties":{"text":{"type":"string"}},"required":["text"]}""";
     private const string FilesSchema = """{"type":"object","additionalProperties":false,"properties":{"files":{"type":"array","minItems":1,"items":{"type":"string"}}},"required":["files"]}""";
@@ -62,6 +62,8 @@ public sealed class PowerScriptsAdapterIntegrationTests
             Directory.Delete(_root);
         }
     }
+
+    public void Dispose() => _client?.Dispose();
 
     [TestMethod]
     public async Task TextAndTypedParametersReachTheRealHost()
