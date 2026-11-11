@@ -869,6 +869,11 @@ Describe 'MWB provisioning progress diagnostics' {
         @{ Phase = 'Inspecting public test trust'; Elapsed = '1.2'; Expected = 1.2 }
         @{ Phase = 'Hashing Sandbox runtime archive'; Elapsed = '112.3'; Expected = 112.3 }
         @{ Phase = 'Writing provisioning marker'; Elapsed = '1,234.5'; Expected = 1234.5 }
+        @{ Phase = 'Checking staged Sandbox preview path'; Elapsed = '2.0'; Expected = 2.0 }
+        @{ Phase = 'Hashing Sandbox preview CLI'; Elapsed = '2.1'; Expected = 2.1 }
+        @{ Phase = 'Checking pending image reboot'; Elapsed = '2.2'; Expected = 2.2 }
+        @{ Phase = 'Resolving interactive test identity'; Elapsed = '2.3'; Expected = 2.3 }
+        @{ Phase = 'Checking prior provisioning ownership'; Elapsed = '2.4'; Expected = 2.4 }
     ) {
         param($Phase, $Elapsed, $Expected)
         $progress = ConvertTo-MwbProvisioningProgress "MWB provisioning: $Phase (${Elapsed}s)"

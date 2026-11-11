@@ -586,7 +586,9 @@ function ConvertTo-MwbProvisioningProgress {
     param([string] $Line)
 
     $phases = @('Validating staged payload', 'Checking staged process inventory',
-        'Checking Sandbox feature', 'Validating Sandbox preview', 'Checking firewall conflicts',
+        'Checking Sandbox feature', 'Validating Sandbox preview', 'Checking staged Sandbox preview path',
+        'Hashing Sandbox preview CLI', 'Checking pending image reboot', 'Resolving interactive test identity',
+        'Checking prior provisioning ownership', 'Checking firewall conflicts',
         'Fingerprinting payload', 'Inspecting public test trust', 'Hashing MWB executable',
         'Hashing MWB assembly', 'Hashing Sandbox runtime archive', 'Recording provisioning ownership',
         'Writing provisioning marker', 'Waiting for Sandbox network', 'Importing owned public test trust')
