@@ -45,7 +45,7 @@ namespace PowerDisplay.Common.Services
 
                     if (mode.DmPelsWidth == currentMode.DmPelsWidth &&
                         mode.DmPelsHeight == currentMode.DmPelsHeight &&
-                        mode.DmDisplayFrequency > 0)
+                        IsSelectableRefreshRate(mode.DmDisplayFrequency))
                     {
                         rates.Add(mode.DmDisplayFrequency);
                     }
@@ -100,8 +100,10 @@ namespace PowerDisplay.Common.Services
                     return MonitorOperationResult.Success();
                 }
 
+                // Keep the current orientation in the field mask: DEVMODE requires members
+                // without a DM_* flag to be zero, and this change must not alter rotation.
                 mode.DmDisplayFrequency = refreshRate;
-                mode.DmFields = DmPelsWidth | DmPelsHeight | DmDisplayFrequency;
+                mode.DmFields = DmPelsWidth | DmPelsHeight | DmDisplayFrequency | DmDisplayOrientation;
 
                 var testResult = ChangeDisplaySettingsEx(
                     monitor.GdiDeviceName,
@@ -130,6 +132,12 @@ namespace PowerDisplay.Common.Services
                 return MonitorOperationResult.Failure($"Exception while setting refresh rate: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// EnumDisplaySettings reports 0 or 1 for the hardware-default rate. That is not a
+        /// numeric rate, so it is left out of the choices.
+        /// </summary>
+        internal static bool IsSelectableRefreshRate(int frequency) => frequency > 1;
 
         private static unsafe bool TryGetCurrentMode(string gdiDeviceName, out DevMode mode)
         {

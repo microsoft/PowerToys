@@ -105,8 +105,9 @@ public class PowerDisplay
         var operationOrder = new List<string>();
         using var viewModel = CreateViewModel(out _, out var settingsUtils, out var ipcMessages, monitor, namedEvents: namedEvents, operationOrder: operationOrder);
         var property = typeof(MonitorInfo).GetProperty(propertyName);
+        var newValue = !(bool)property.GetValue(monitor);
 
-        property.SetValue(monitor, true);
+        property.SetValue(monitor, newValue);
 
         settingsUtils.Verify(
             utils => utils.SaveSettings(It.IsAny<string>(), PowerDisplaySettings.ModuleName, SettingsUtils.DefaultFileName),
@@ -114,7 +115,7 @@ public class PowerDisplay
         Assert.AreEqual(1, ipcMessages.Count);
         Assert.AreEqual(1, namedEvents.Count);
         Assert.AreEqual("save,ipc,signal", string.Join(',', operationOrder));
-        Assert.IsTrue((bool)property.GetValue(GetSavedSettings(settingsUtils).Properties.Monitors.Single()));
+        Assert.AreEqual(newValue, (bool)property.GetValue(GetSavedSettings(settingsUtils).Properties.Monitors.Single()));
     }
 
     [TestMethod]

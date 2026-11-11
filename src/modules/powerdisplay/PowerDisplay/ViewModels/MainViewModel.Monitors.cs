@@ -194,7 +194,17 @@ public partial class MainViewModel
             return;
         }
 
+        var supportedBefore = Monitors.Select(vm => vm.SupportsRefreshRate).ToList();
+
         _monitorManager.RefreshDisplayModes();
+
+        // A resolution change can add or remove refresh-rate options. Publish the new
+        // capability so Settings enables or disables the checkbox; user flags are preserved.
+        if (!Monitors.Select(vm => vm.SupportsRefreshRate).SequenceEqual(supportedBefore))
+        {
+            SaveMonitorsToSettings();
+        }
+
         UIRefreshRequested?.Invoke(this, EventArgs.Empty);
     }
 

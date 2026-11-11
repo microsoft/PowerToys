@@ -259,7 +259,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         ShowContrast = monitor.SupportsContrast;
         ShowVolume = monitor.SupportsVolume;
         ShowInputSource = false;
-        IsRefreshRateEnabled = monitor.SupportsRefreshRate;
+        IsRefreshRateEnabled = true;
         UpdateRefreshRateOptions();
         _showPowerState = false;
         _showColorTemperature = false;

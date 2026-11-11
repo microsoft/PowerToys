@@ -591,13 +591,15 @@ public partial class MainViewModel
             // - InputSource / ColorTemperature / PowerState: always disabled by default. These can leave
             //   the monitor in a state recoverable only via physical buttons; users opt-in via the
             //   Settings UI checkbox, which raises a confirmation dialog (HandleDangerousFeatureClickAsync).
+            // - RefreshRate: always enabled. The flyout hides it unless the current mode offers more
+            //   than one rate, so the preference survives resolution changes.
             // ApplyPreservedUserSettings will override these with saved user preferences if they exist.
             EnableContrast = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x12) ?? false,
             EnableVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
             EnableInputSource = false,
             EnableColorTemperature = false,
             EnablePowerState = false,
-            EnableRefreshRate = vm.SupportsRefreshRate,
+            EnableRefreshRate = true,
 
             // Monitor number for display name formatting
             MonitorNumber = vm.MonitorNumber,

@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _enableRotation;
         private bool _enableColorTemperature;
         private bool _enablePowerState;
-        private bool _enableRefreshRate;
+        private bool _enableRefreshRate = true;
         private System.DateTime? _lastSeenUtc;
         private string _capabilitiesRaw = string.Empty;
         private List<VcpCodeDisplayInfo> _vcpCodesFormatted = new List<VcpCodeDisplayInfo>();
