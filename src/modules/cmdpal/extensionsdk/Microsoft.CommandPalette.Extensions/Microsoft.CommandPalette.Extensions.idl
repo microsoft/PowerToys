@@ -535,7 +535,7 @@ namespace Microsoft.CommandPalette.Extensions
     };
 
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IFallbackHandler2 requires IFallbackHandler
+    interface IFallbackQueryHandler requires IFallbackHandler
     {
         Windows.Foundation.IAsyncOperationWithProgress<
             IFallbackCommandResult,
@@ -553,7 +553,7 @@ namespace Microsoft.CommandPalette.Extensions
         HostMatchKind MatchKind { get; };
         String MatchValue { get; };
 
-        IFallbackHandler2 QueryHandler { get; };
+        IFallbackQueryHandler QueryHandler { get; };
 
         ICommand CreateCommand(IFallbackCommandInvocationArgs args);
     };

@@ -76,9 +76,9 @@ public partial class FallbackPassiveItem : FallbackCommandItem, IFallbackCommand
         set => SetProperty(ref _matchValue, value);
     }
 
-    public IFallbackHandler2? QueryHandler => null;
+    public IFallbackQueryHandler? QueryHandler => null;
 
-    IFallbackHandler2 IFallbackCommandItem3.QueryHandler => QueryHandler!;
+    IFallbackQueryHandler IFallbackCommandItem3.QueryHandler => QueryHandler!;
 
     public override void UpdateQuery(string query)
     {

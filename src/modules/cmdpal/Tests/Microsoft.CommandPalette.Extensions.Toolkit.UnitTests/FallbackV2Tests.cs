@@ -25,7 +25,7 @@ public class FallbackV2Tests
 
         Assert.IsTrue(stubs.Any(stub => stub is IFallbackCommandItem2 and not IFallbackCommandItem3));
         Assert.IsTrue(stubs.Any(stub => stub is IFallbackCommandItem3));
-        Assert.IsTrue(stubs.Any(stub => stub is IFallbackHandler2));
+        Assert.IsTrue(stubs.Any(stub => stub is IFallbackQueryHandler));
         Assert.IsTrue(stubs.Any(stub => stub is IFallbackCommandResult));
     }
 

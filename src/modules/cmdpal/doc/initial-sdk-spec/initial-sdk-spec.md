@@ -2691,7 +2691,7 @@ interface IFallbackCommandResult
         IFallbackCommandResult> LoadMoreItemsAsync(UInt32 requestedItemCount);
 };
 
-interface IFallbackHandler2 requires IFallbackHandler
+interface IFallbackQueryHandler requires IFallbackHandler
 {
     Windows.Foundation.IAsyncOperationWithProgress<
         IFallbackCommandResult,
@@ -2708,7 +2708,7 @@ interface IFallbackCommandItem3 requires IFallbackCommandItem2
     HostMatchKind MatchKind { get; };
     String MatchValue { get; };
 
-    IFallbackHandler2 QueryHandler { get; };
+    IFallbackQueryHandler QueryHandler { get; };
 
     ICommand CreateCommand(IFallbackCommandInvocationArgs args);
 };
@@ -2722,7 +2722,7 @@ already uses to discover `IFallbackCommandItem2`.
 The host creates `IFallbackQueryArgs` for each accepted top-level query.
 `IFallbackCommandInvocationArgs` extends this context for passive command activation.
 `IFallbackCommandResult` describes a complete snapshot and owns its continuation.
-`IFallbackHandler2` retains its linear inheritance from `IFallbackHandler` for marshalling.
+`IFallbackQueryHandler` retains its linear inheritance from `IFallbackHandler` for marshalling.
 This inheritance does not cause the host to call `UpdateQuery` for v2 fallbacks.
 
 `IFallbackQueryArgs.GetProperties()` is reserved for optional host context that
@@ -2759,7 +2759,7 @@ interface IFallbackHandler {
 };
 
 // for IFallbackCommandItem3
-interface IFallbackHandler2 requires IFallbackHandler
+interface IFallbackQueryHandler
 {
     IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args);
 };
@@ -2778,7 +2778,7 @@ public interface IFallbackCommandItem3
 
     // If this is set, then this is treated as a result source.
     // If it is null, then this is treated as a passive fallback.
-    IFallbackHandler2 QueryHandler { get; };
+    IFallbackQueryHandler QueryHandler { get; };
 
     // Passive fallbacks use these:
     String TitleTemplate { get; };
@@ -2797,7 +2797,7 @@ public interface IFallbackCommandItem3
 
 Passive fallbacks implement `IFallbackCommandItem3` and return null from `QueryHandler`.
 The host must not call either `IFallbackHandler.UpdateQuery` or
-`IFallbackHandler2.QueryAsync` for a passive fallback.
+`IFallbackQueryHandler.QueryAsync` for a passive fallback.
 
 For each query, the host creates the display title and subtitle by replacing
 every literal `{query}` token in `TitleTemplate` and `SubtitleTemplate`. The

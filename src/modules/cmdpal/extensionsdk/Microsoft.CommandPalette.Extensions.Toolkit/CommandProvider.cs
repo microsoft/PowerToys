@@ -160,7 +160,7 @@ public abstract partial class CommandProvider :
 
         public string MatchValue => string.Empty;
 
-        public IFallbackHandler2 QueryHandler => null!;
+        public IFallbackQueryHandler QueryHandler => null!;
 
         public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged
         {
@@ -172,10 +172,10 @@ public abstract partial class CommandProvider :
     }
 
     /// <summary>
-    /// A stub class which implements IFallbackHandler2, so that CmdPal can read the
+    /// A stub class which implements IFallbackQueryHandler, so that CmdPal can read the
     /// QueryHandler of a fallback that returns results.
     /// </summary>
-    private sealed partial class SupportFallbackResultQueries : IFallbackHandler2
+    private sealed partial class SupportFallbackResultQueries : IFallbackQueryHandler
     {
         public void UpdateQuery(string query)
         {
