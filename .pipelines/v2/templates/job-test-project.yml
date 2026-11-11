@@ -80,19 +80,14 @@ jobs:
         ${{ if ne(parameters.platform, 'ARM64') }}:
           name: SHINE-INT-Testing-x64
           ${{ if eq(parameters.platform, 'x64Win11') }}:
-            # Image 30 fails the pending-reboot gate; retain the last verified clean image.
-            demands:
-              - ImageOverride -equals SHINE-W11-Testing
-              - ImageVersionOverride -equals 29.0.0
+            demands: ImageOverride -equals SHINE-W11-Testing
         ${{ else }}:
           name: SHINE-INT-Testing-arm64
       ${{ else }}:
         ${{ if ne(parameters.platform, 'ARM64') }}:
           name: SHINE-OSS-Testing-x64
           ${{ if eq(parameters.platform, 'x64Win11') }}:
-            demands:
-              - ImageOverride -equals SHINE-W11-Testing
-              - ImageVersionOverride -equals 29.0.0
+            demands: ImageOverride -equals SHINE-W11-Testing
         ${{ else }}:
           name: SHINE-OSS-Testing-arm64
   steps:
@@ -156,6 +151,10 @@ jobs:
         Write-Host "##vso[task.logissue type=warning]Skipping implicit MWB selection: its Sandbox suite requires buildNow or buildNowSlim. Other suites will run against the selected official build."
       }
       if ($selection.Run) {
+        $imageDirectory = Get-MwbPrerequisiteDirectory "$(Common.TestResultsDirectory)" "$(System.JobId)"
+        $null = New-Item -ItemType Directory -Path $imageDirectory -Force
+        Get-MwbImageServicingReport | ConvertTo-Json -Depth 8 |
+          Set-Content -LiteralPath (Join-Path $imageDirectory 'image-servicing-job-start.json') -Encoding utf8
         $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
         try {
           if (-not ([Security.Principal.WindowsPrincipal]::new($identity)).IsInRole(

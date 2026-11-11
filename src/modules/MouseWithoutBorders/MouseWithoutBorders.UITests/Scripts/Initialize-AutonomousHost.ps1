@@ -99,6 +99,7 @@ elseif (-not [string]::IsNullOrWhiteSpace($SandboxWinAppPath)) {
 Write-ProvisioningPhase 'Checking pending image reboot'
 if ((Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending') -or
     (Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired')) {
+    Write-ProvisioningPhase 'Pending image reboot confirmed'
     throw 'BLOCKED_INFRASTRUCTURE: complete the pending image reboot before provisioning the test.'
 }
 Write-ProvisioningPhase 'Resolving interactive test identity'
