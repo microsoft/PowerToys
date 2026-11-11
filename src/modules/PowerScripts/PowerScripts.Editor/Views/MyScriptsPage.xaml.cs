@@ -108,12 +108,21 @@ namespace PowerScripts.Editor.Views
             }
         }
 
-        private void CreateScriptButton_Click(object sender, RoutedEventArgs e)
+        private void CreateCustomScript_Click(object sender, RoutedEventArgs e)
         {
             if (!Frame.Navigate(typeof(PowerScriptTemplatesPage), ViewModel))
             {
                 ShowScriptSettingsError(new InvalidOperationException(
                     ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_TemplateNavigationFailed")));
+            }
+        }
+
+        private void CreatePowerToysOperations_Click(object sender, RoutedEventArgs e)
+        {
+            if (!Frame.Navigate(typeof(PowerToysOperationsPage), ViewModel))
+            {
+                ShowScriptSettingsError(new InvalidOperationException(
+                    ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_OperationNavigationFailed")));
             }
         }
 

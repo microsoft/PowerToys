@@ -1200,4 +1200,94 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_ChoiceOutputImage.AutomationProperties.Name" xml:space="preserve"><value>Return an image</value></data>
   <data name="PowerScripts_ChoiceOutputAudio.AutomationProperties.Name" xml:space="preserve"><value>Return audio</value></data>
   <data name="PowerScripts_EditScriptAction.Content" xml:space="preserve"><value>Edit script</value></data>
+  <data name="PowerScripts_RuntimeOperation" xml:space="preserve"><value>PowerToys operation</value></data>
+  <data name="PowerScripts_ExecutionOperation" xml:space="preserve"><value>Runs the selected PowerToys module command. Availability and sandbox restrictions are checked when the operation runs.</value></data>
+  <data name="PowerScripts_DetailsPowerToysOperation" xml:space="preserve"><value>PowerToys operation</value></data>
+  <data name="PowerScripts_DetailsPowerToysOperationMode" xml:space="preserve"><value>Built-in module command</value></data>
+  <data name="PowerScripts_TemplateSelector.Header" xml:space="preserve"><value>Template</value></data>
+  <data name="PowerScripts_TemplateCustom.Content" xml:space="preserve"><value>Custom script</value></data>
+  <data name="PowerScripts_TemplateNativeRuntime.Content" xml:space="preserve"><value>PowerToys operation</value></data>
+  <data name="PowerScripts_OperationTemplatesDescription" xml:space="preserve"><value>Choose a template and configure its fixed values and runtime parameters.</value></data>
+  <data name="PowerScripts_OperationTemplatesHelp" xml:space="preserve"><value>Create an editable action configuration, .tool.json descriptor and README guide in your scripts folder. Creation does not run the operation, approve trust or change isolation.</value></data>
+  <data name="PowerScripts_OperationParametersHelp" xml:space="preserve"><value>Choose which options are fixed in the script and which consumers collect when running it. Parameter names and types come from the selected operation.</value></data>
+  <data name="PowerScripts_OperationTemplateSetupHelp" xml:space="preserve"><value>Fixed values are saved with this script. Consumers only collect the parameters set to Ask when running. Keyboard Manager requires these values to be configured before a hotkey can run silently. Creation does not run code, approve trust or change sandbox protection.</value></data>
+  <data name="PowerScripts_OperationNoParameters.Text" xml:space="preserve"><value>This operation has no runtime parameters.</value></data>
+  <data name="PowerScripts_OperationTemplateCatalogueError.Title" xml:space="preserve"><value>Operation templates could not be loaded.</value></data>
+  <data name="PowerScripts_OperationTemplateRetry.Content" xml:space="preserve"><value>Retry</value></data>
+  <data name="PowerScripts_OperationTemplateCatalogueEmpty" xml:space="preserve"><value>This Host deployment does not provide any PowerToys operation templates. Deploy the matching PowerScripts Host, then retry. Custom script creation is still available.</value></data>
+  <data name="PowerScripts_OperationTemplateUnavailable" xml:space="preserve"><value>The selected operation is no longer available. Choose another template or retry with the matching PowerScripts Host. Your draft values are kept.</value></data>
+  <data name="PowerScripts_OperationTemplateCreated" xml:space="preserve"><value>Created. Review the action configuration and trust before running this script.</value></data>
+  <data name="PowerScripts_TemplateParameterValueSource.Header" xml:space="preserve"><value>Value source</value></data>
+  <data name="PowerScripts_TemplateParameterFixed.Content" xml:space="preserve"><value>Fixed value</value></data>
+  <data name="PowerScripts_TemplateParameterAsk.Content" xml:space="preserve"><value>Ask when running</value></data>
+  <data name="PowerScripts_TemplateParameterFixedValue.Header" xml:space="preserve"><value>Fixed value</value></data>
+  <data name="PowerScripts_TemplateParameterBooleanFixed.Header" xml:space="preserve"><value>Fixed value</value></data>
+  <data name="PowerScripts_TemplateParameterBooleanFixed.OnContent" xml:space="preserve"><value>True</value></data>
+  <data name="PowerScripts_TemplateParameterBooleanFixed.OffContent" xml:space="preserve"><value>False</value></data>
+  <data name="PowerScripts_TemplateParameterDefaultChoice.Header" xml:space="preserve"><value>Default value</value></data>
+  <data name="PowerScripts_TemplateParameterBrowse.Content" xml:space="preserve"><value>Browse...</value></data>
+  <data name="PowerScripts_TemplateParameterValueRequired" xml:space="preserve"><value>Enter a value for parameter &apos;{0}&apos;.</value></data>
+  <data name="PowerScripts_TemplateParameterInvalidChoice" xml:space="preserve"><value>Choose an allowed value for parameter &apos;{0}&apos;.</value></data>
+  <data name="PowerScripts_TemplateParameterOutsideRange" xml:space="preserve"><value>The value for parameter &apos;{0}&apos; is outside its allowed range.</value></data>
+  <data name="PowerScripts_RunAction.Label" xml:space="preserve"><value>Run</value></data>
+  <data name="PowerScripts_RunAction.ToolTipService.ToolTip" xml:space="preserve"><value>Collect inputs and run this script through PowerScripts.</value></data>
+  <data name="PowerScripts_RunPanel.Header" xml:space="preserve"><value>Run script</value></data>
+  <data name="PowerScripts_RunTextInput.Header" xml:space="preserve"><value>Text input</value></data>
+  <data name="PowerScripts_RunFileInput.Header" xml:space="preserve"><value>Input files (one path per line)</value></data>
+  <data name="PowerScripts_RunAddFile.Content" xml:space="preserve"><value>Add file</value></data>
+  <data name="PowerScripts_RunNoParameters.Text" xml:space="preserve"><value>This script has no named parameters.</value></data>
+  <data name="PowerScripts_RunProvideValue.Content" xml:space="preserve"><value>Provide a value</value></data>
+  <data name="PowerScripts_RunBrowse.Content" xml:space="preserve"><value>Browse...</value></data>
+  <data name="PowerScripts_RunNow.Content" xml:space="preserve"><value>Run</value></data>
+  <data name="PowerScripts_RunCancel.Content" xml:space="preserve"><value>Cancel</value></data>
+  <data name="PowerScripts_RunOutput.Header" xml:space="preserve"><value>Output</value></data>
+  <data name="PowerScripts_RunDiagnostics.Header" xml:space="preserve"><value>Diagnostics</value></data>
+  <data name="PowerScripts_RunRequiredLabel" xml:space="preserve"><value>{0} (required)</value></data>
+  <data name="PowerScripts_RunReady" xml:space="preserve"><value>Ready</value></data>
+  <data name="PowerScripts_RunLoading" xml:space="preserve"><value>Loading parameters…</value></data>
+  <data name="PowerScripts_RunRunning" xml:space="preserve"><value>Running…</value></data>
+  <data name="PowerScripts_RunCancelRequested" xml:space="preserve"><value>Cancellation requested…</value></data>
+  <data name="PowerScripts_RunSucceeded" xml:space="preserve"><value>Succeeded</value></data>
+  <data name="PowerScripts_RunFailed" xml:space="preserve"><value>Failed or refused</value></data>
+  <data name="PowerScripts_RunTimedOut" xml:space="preserve"><value>Timed out</value></data>
+  <data name="PowerScripts_RunCancelled" xml:space="preserve"><value>Canceled</value></data>
+  <data name="PowerScripts_RunExecutionUnknown" xml:space="preserve"><value>The run request ended before completion was confirmed. Execution may have already changed files or other state.</value></data>
+  <data name="PowerScripts_RunExitCode" xml:space="preserve"><value>Exit code {0}</value></data>
+  <data name="PowerScripts_RunInvalidFiles" xml:space="preserve"><value>Input files do not match the script&apos;s allowed file types or file count.</value></data>
+  <data name="PowerScripts_RunUnsupported" xml:space="preserve"><value>Use a compatible PowerToys consumer to run scripts with image or audio input or output.</value></data>
+  <data name="PowerScripts_RunUnavailable" xml:space="preserve"><value>This script is unavailable or disabled. Refresh its details and check PowerScripts settings.</value></data>
+  <data name="PowerScripts_RunDiscoveryTimeout" xml:space="preserve"><value>Script discovery timed out. Select Run again to retry.</value></data>
+  <data name="PowerScripts_RunContractChanged" xml:space="preserve"><value>The script&apos;s input contract changed. Review the refreshed fields before running again.</value></data>
+  <data name="PowerScripts_ActivityEditor" xml:space="preserve"><value>PowerScripts Editor</value></data>
+  <data name="PowerScripts_OperationTemplateExecutionRestricted.Title" xml:space="preserve"><value>Running this operation is restricted</value></data>
+  <data name="PowerScripts_OperationTemplateCreationStillAvailable" xml:space="preserve"><value>You can still create and edit this script. Current restrictions will also apply when it runs.</value></data>
+  <data name="PowerScripts_CreateCustomScript.Text" xml:space="preserve"><value>Custom script</value></data>
+  <data name="PowerScripts_CreatePowerToysOperations.Text" xml:space="preserve"><value>PowerToys operations</value></data>
+  <data name="PowerScripts_OperationNavigationFailed" xml:space="preserve"><value>Could not open PowerToys operations. Try again.</value></data>
+  <data name="PowerScripts_OperationsTitle" xml:space="preserve"><value>PowerToys operations</value></data>
+  <data name="PowerScripts_OperationsPage.ModuleTitle" xml:space="preserve"><value>PowerToys operations</value></data>
+  <data name="PowerScripts_OperationsPage.ModuleDescription" xml:space="preserve"><value>Create a script using a PowerToys operation.</value></data>
+  <data name="PowerScripts_OperationsName.Header" xml:space="preserve"><value>Script name</value></data>
+  <data name="PowerScripts_OperationsName.PlaceholderText" xml:space="preserve"><value>Name this script</value></data>
+  <data name="PowerScripts_OperationsModule.Text" xml:space="preserve"><value>Module</value></data>
+  <data name="PowerScripts_OperationsModuleSelector.PlaceholderText" xml:space="preserve"><value>Choose a module</value></data>
+  <data name="PowerScripts_OperationsOperation.Text" xml:space="preserve"><value>Operation</value></data>
+  <data name="PowerScripts_OperationsAbout" xml:space="preserve"><value>About {0}</value></data>
+  <data name="PowerScripts_OperationsProvideValue" xml:space="preserve"><value>Provide a value for {0}</value></data>
+  <data name="PowerScripts_OperationsBrowseFor" xml:space="preserve"><value>Browse for {0}</value></data>
+  <data name="PowerScripts_OperationsSelector.PlaceholderText" xml:space="preserve"><value>Choose an operation</value></data>
+  <data name="PowerScripts_OperationsLoading" xml:space="preserve"><value>Loading operations…</value></data>
+  <data name="PowerScripts_OperationsEmpty" xml:space="preserve"><value>No PowerToys operations are available in this Host deployment.</value></data>
+  <data name="PowerScripts_OperationsNoParameters.Text" xml:space="preserve"><value>No parameters needed.</value></data>
+  <data name="PowerScripts_OperationsFixedValue" xml:space="preserve"><value>Enter a value</value></data>
+  <data name="PowerScripts_OperationsBoolean.OnContent" xml:space="preserve"><value>On</value></data>
+  <data name="PowerScripts_OperationsBoolean.OffContent" xml:space="preserve"><value>Off</value></data>
+  <data name="PowerScripts_OperationsRequiredValue" xml:space="preserve"><value>Enter a value for {0}.</value></data>
+  <data name="PowerScripts_OperationsTest.Text" xml:space="preserve"><value>Test run</value></data>
+  <data name="PowerScripts_OperationsCancelTest" xml:space="preserve"><value>Cancel test</value></data>
+  <data name="PowerScripts_OperationsNoOutput" xml:space="preserve"><value>The operation returned no output.</value></data>
+  <data name="PowerScripts_OperationsCreate.Content" xml:space="preserve"><value>Create script</value></data>
+  <data name="PowerScripts_OperationsTestWhileSaving" xml:space="preserve"><value>Wait for the script to finish saving.</value></data>
+  <data name="PowerScripts_OperationsTestChooseOperation" xml:space="preserve"><value>Choose an operation before testing.</value></data>
+  <data name="PowerScripts_OperationsTestCompleteParameters" xml:space="preserve"><value>Complete the required parameter values before testing.</value></data>
 </root>

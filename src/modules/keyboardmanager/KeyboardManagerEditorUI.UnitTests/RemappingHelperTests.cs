@@ -202,6 +202,92 @@ namespace KeyboardManagerEditorUI.UnitTests
         }
 
         [TestMethod]
+        [DataRow(null)]
+        [DataRow("profile-one")]
+        public void TryApplyShortcutKeyMapping_ShouldKeepEditedPowerScriptInactive(string profileName)
+        {
+            const string mappingId = "powerscript-id";
+            var settings = CreateEditorSettings(mappingId, CreatePowerScriptMapping("true"));
+            if (profileName is not null)
+            {
+                settings.ShortcutSettingsDictionary[mappingId].Profiles.Add(profileName);
+                settings.ProfileDictionary[profileName] = new List<string> { mappingId };
+            }
+
+            var replacement = CreatePowerScriptMapping("false");
+
+            Assert.IsTrue(SettingsManager.TryApplyShortcutKeyMapping(settings, replacement, mappingId, profileName, isActive: false));
+            Assert.AreEqual(1, settings.ShortcutSettingsDictionary.Count);
+            ShortcutSettings saved = settings.ShortcutSettingsDictionary[mappingId];
+            Assert.AreEqual(mappingId, saved.Id);
+            Assert.AreSame(replacement, saved.Shortcut);
+            Assert.IsFalse(saved.IsActive);
+            Assert.AreEqual(replacement.ProgramArgs, saved.Shortcut.ProgramArgs);
+            Assert.AreEqual(1, settings.ShortcutsByOperationType[ShortcutOperationType.RunProgram].Count);
+            Assert.AreEqual(mappingId, settings.ShortcutsByOperationType[ShortcutOperationType.RunProgram][0]);
+            if (profileName is not null)
+            {
+                Assert.AreEqual(1, saved.Profiles.Count);
+                Assert.AreEqual(profileName, saved.Profiles[0]);
+                Assert.AreEqual(mappingId, settings.ProfileDictionary[profileName].Single());
+            }
+        }
+
+        [TestMethod]
+        public void TryApplyShortcutKeyMapping_ShouldKeepNewPowerScriptInactive()
+        {
+            var settings = new EditorSettings();
+            var replacement = CreatePowerScriptMapping("false");
+
+            Assert.IsTrue(SettingsManager.TryApplyShortcutKeyMapping(settings, replacement, replacingId: null, profileName: "profile-one", isActive: false));
+            ShortcutSettings saved = settings.ShortcutSettingsDictionary.Values.Single();
+            Assert.AreSame(replacement, saved.Shortcut);
+            Assert.IsFalse(saved.IsActive);
+            Assert.AreEqual("profile-one", saved.Profiles.Single());
+            Assert.AreEqual(saved.Id, settings.ProfileDictionary["profile-one"].Single());
+            Assert.AreEqual(saved.Id, settings.ShortcutsByOperationType[ShortcutOperationType.RunProgram].Single());
+        }
+
+        [TestMethod]
+        public void TryApplyShortcutKeyMapping_ShouldKeepSharedPowerScriptReplacementInactive()
+        {
+            const string mappingId = "powerscript-id";
+            var original = CreatePowerScriptMapping("true");
+            var settings = CreateEditorSettings(mappingId, original);
+            settings.ShortcutSettingsDictionary[mappingId].Profiles.AddRange(new List<string> { "profile-one", "profile-two" });
+            settings.ProfileDictionary["profile-one"] = new List<string> { mappingId };
+            settings.ProfileDictionary["profile-two"] = new List<string> { mappingId };
+            var replacement = CreatePowerScriptMapping("false");
+
+            Assert.IsTrue(SettingsManager.TryApplyShortcutKeyMapping(settings, replacement, mappingId, "profile-two", isActive: false));
+            Assert.AreEqual(2, settings.ShortcutSettingsDictionary.Count);
+            Assert.AreSame(original, settings.ShortcutSettingsDictionary[mappingId].Shortcut);
+            Assert.IsFalse(settings.ShortcutSettingsDictionary[mappingId].IsActive);
+            Assert.AreEqual("profile-one", settings.ShortcutSettingsDictionary[mappingId].Profiles.Single());
+            ShortcutSettings saved = settings.ShortcutSettingsDictionary.Values.Single(entry => entry.Id != mappingId);
+            Assert.AreSame(replacement, saved.Shortcut);
+            Assert.IsFalse(saved.IsActive);
+            Assert.AreEqual("profile-two", saved.Profiles.Single());
+            Assert.AreEqual(mappingId, settings.ProfileDictionary["profile-one"].Single());
+            Assert.AreEqual(saved.Id, settings.ProfileDictionary["profile-two"].Single());
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void TryApplyShortcutKeyMapping_ShouldKeepPowerScriptsActiveByDefault(bool replaceExisting)
+        {
+            const string mappingId = "powerscript-id";
+            var settings = replaceExisting ? CreateEditorSettings(mappingId, CreatePowerScriptMapping("true")) : new EditorSettings();
+            var replacement = CreatePowerScriptMapping("false");
+
+            Assert.IsTrue(SettingsManager.TryApplyShortcutKeyMapping(settings, replacement, replaceExisting ? mappingId : null));
+            ShortcutSettings saved = settings.ShortcutSettingsDictionary.Values.Single();
+            Assert.AreSame(replacement, saved.Shortcut);
+            Assert.IsTrue(saved.IsActive);
+        }
+
+        [TestMethod]
         public void TryApplyShortcutKeyMapping_ShouldMoveIdToReplacementOperationType()
         {
             const string mappingId = "mapping-id";
@@ -746,6 +832,14 @@ namespace KeyboardManagerEditorUI.UnitTests
                 TargetKeys = targetKeys,
                 TargetText = operationType == ShortcutOperationType.RemapText ? targetKeys : string.Empty,
             };
+
+        private static ShortcutKeyMapping CreatePowerScriptMapping(string jsonValue)
+        {
+            var mapping = CreateMapping(ShortcutOperationType.RunProgram, IssueTrigger, string.Empty);
+            mapping.ProgramPath = @"C:\PowerToys\PowerScripts\PowerToys.PowerScripts.Host.exe";
+            mapping.ProgramArgs = PowerScriptInvocation.BuildArguments("sample-script", new Dictionary<string, string> { ["json"] = jsonValue });
+            return mapping;
+        }
 
         // Stand-in for the native KeyboardManagerInterop.AreShortcutsEqual; the fixtures use canonical key strings.
         private static bool AreKeysEqual(string first, string second) => first == second;

@@ -446,12 +446,32 @@
                             DisplayMemberPath="Name"
                             PlaceholderText="Select a PowerScript"
                             SelectionChanged="PowerScriptComboBox_SelectionChanged" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button
+                                x:Uid="PowerScript_RefreshButton"
+                                Click="RefreshPowerScripts_Click" />
+                            <Button
+                                x:Uid="PowerScript_ResetParameters"
+                                Click="ResetPowerScriptParameters_Click" />
+                        </StackPanel>
+                        <InfoBar
+                            x:Name="PowerScriptStatus"
+                            IsClosable="False"
+                            IsOpen="False"
+                            Severity="Error" />
                         <TextBlock
                             x:Name="PowerScriptEmptyHint"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="No PowerScripts found. Enable the PowerScripts module and add a system script."
+                            x:Uid="PowerScript_EmptyHint"
                             TextWrapping="Wrap"
                             Visibility="Collapsed" />
+                        <ScrollViewer
+                            MaxHeight="288"
+                            HorizontalContentAlignment="Stretch"
+                            HorizontalScrollBarVisibility="Disabled"
+                            VerticalScrollBarVisibility="Auto">
+                            <local:PowerScriptParametersControl x:Name="PowerScriptParameters" />
+                        </ScrollViewer>
                     </StackPanel>
                 </tkcontrols:Case>
             </tkcontrols:SwitchPresenter>

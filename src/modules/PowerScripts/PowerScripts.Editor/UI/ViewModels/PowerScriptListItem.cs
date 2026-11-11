@@ -23,7 +23,7 @@ namespace PowerScripts.UI.ViewModels
         {
             nameof(Id), nameof(Name), nameof(Description), nameof(HasDescriptor),
             nameof(ConfigurationErrors), nameof(HasConfigurationErrors), nameof(ConfigurationErrorDisplay),
-            nameof(Runtime), nameof(HasExplicitExecution), nameof(DefaultIconGlyph),
+            nameof(Runtime), nameof(HasExplicitExecution), nameof(IsPowerToysOperation), nameof(DefaultIconGlyph),
             nameof(IconPath), nameof(IconWarning), nameof(HasIcon), nameof(HasIconWarning), nameof(IconSourcePath),
             nameof(Io), nameof(Input), nameof(Capabilities), nameof(Trusted), nameof(FolderPath), nameof(EntryFullPath),
             nameof(InputDisplay), nameof(OutputDisplay), nameof(CatalogueSummary), nameof(CardAutomationId),
@@ -49,6 +49,8 @@ namespace PowerScripts.UI.ViewModels
         public string ConfigurationErrorDisplay => string.Join(Environment.NewLine, ConfigurationErrors ?? new());
 
         public string Runtime { get; set; } = string.Empty;
+
+        public bool IsPowerToysOperation => string.Equals(Runtime, "PowerToysOperation", StringComparison.OrdinalIgnoreCase);
 
         public string DefaultIconGlyph => string.Equals(Runtime, "Python", StringComparison.OrdinalIgnoreCase) ? "\uE943" : "\uE756";
 
@@ -88,7 +90,9 @@ namespace PowerScripts.UI.ViewModels
 
         public string CardAutomationId => $"PowerScripts_{Id}_Card";
 
-        public string RuntimeDisplay => string.IsNullOrEmpty(Runtime) ? "—" : Runtime;
+        public string RuntimeDisplay => IsPowerToysOperation
+            ? GetResourceString("PowerScripts_RuntimeOperation")
+            : string.IsNullOrEmpty(Runtime) ? "—" : Runtime;
 
         public string TrustDisplay => Trusted ? "Trusted" : "Not yet trusted — you'll be asked to allow it the first time it runs";
 

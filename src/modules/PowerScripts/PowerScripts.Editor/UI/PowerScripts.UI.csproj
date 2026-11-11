@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <ProjectReference Include="$(RepoRoot)src\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="$(RepoRoot)src\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\..\PowerScripts.Client\PowerScripts.Client.csproj" />
     <InternalsVisibleTo Include="Settings.UI.UnitTests" />
   </ItemGroup>
 </Project>

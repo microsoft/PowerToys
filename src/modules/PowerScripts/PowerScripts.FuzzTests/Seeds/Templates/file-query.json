@@ -1,0 +1,1 @@
+{"projectName":"Find file usage","runtime":"powershell","input":"none","output":"text","parameters":[{"name":"path","schema":{"type":"string","format":"file-path"},"required":true}],"operation":{"commandId":"filelocksmith.query","bindings":{"path":{"parameter":"path"},"json":{"constant":true}}}}

@@ -6,5 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Templates\**\*.ps1;Templates\**\*.json;Templates\**\*.md;Templates\Icons\*.ico" />
+    <EmbeddedResource Include="Cli\catalog.json" LogicalName="PowerScripts.Core.Cli.catalog.json" />
   </ItemGroup>
 </Project>
