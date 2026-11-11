@@ -175,7 +175,13 @@ public partial class ContextMenuViewModel : ObservableObject
             items = InternalListHelpers.FilterList(commands, in query, ScoreFunction);
         }
 
-        ListHelpers.InPlaceUpdateList(FilteredItems, IsSubmenu ? [_backItem, .. items] : items);
+        if (IsSubmenu)
+        {
+            IContextItemViewModel[] withBackItem = [_backItem, .. items];
+            items = withBackItem;
+        }
+
+        ListHelpers.InPlaceUpdateList(FilteredItems, items);
         foreach (var command in FilteredItems.OfType<CommandContextItemViewModel>())
         {
             command.PropertyChanged += MenuItem_PropertyChanged;
