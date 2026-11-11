@@ -113,6 +113,10 @@ public class QuickAccessShelfItemActionsTests
     [DataRow(VirtualKey.K, VirtualKeyModifiers.Control, true)]
     [DataRow(VirtualKey.Enter, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift, false)]
     [DataRow(VirtualKey.Enter, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift, true)]
+    [DataRow(VirtualKey.Left, VirtualKeyModifiers.Control, false)]
+    [DataRow(VirtualKey.Down, VirtualKeyModifiers.Shift, false)]
+    [DataRow(VirtualKey.PageUp, VirtualKeyModifiers.None, false)]
+    [DataRow(VirtualKey.PageDown, VirtualKeyModifiers.None, false)]
     public void RequestedShortcut_UsesCurrentCommandOrSubmenu(VirtualKey key, VirtualKeyModifiers modifiers, bool hasSubmenu)
     {
         var chord = new KeyChord(modifiers, (int)key, 0);

@@ -23,7 +23,15 @@ internal interface IContextMenuOwner
     /// Opens a menu for <paramref name="context"/> after the triggering key finishes routing,
     /// unless the request is superseded, closed, or the context is no longer current.
     /// </summary>
-    void ShowContextMenuAfterKeyEvent(ICommandBarContext context, CommandContextItemViewModel? initialSubmenu = null);
+    /// <param name="context">The menu to open, such as the selected item's menu or the current page menu.</param>
+    /// <param name="initialSubmenu">A root command whose submenu opens first; the open is cancelled if <paramref name="context"/> no longer contains it.</param>
+    /// <param name="anchor">The placement override, or null to use the owner's default anchor.</param>
+    /// <param name="isContextCurrent">Revalidates <paramref name="context"/> when the open is dispatched, or null to require the live selection.</param>
+    void ShowContextMenuAfterKeyEvent(
+        IContextMenuContext context,
+        CommandContextItemViewModel? initialSubmenu = null,
+        ContextMenuAnchor? anchor = null,
+        Func<bool>? isContextCurrent = null);
 
     /// <summary>
     /// Closes the owner's menu and cancels its pending opens.

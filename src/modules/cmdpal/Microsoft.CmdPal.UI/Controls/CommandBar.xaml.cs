@@ -9,12 +9,10 @@ using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Views;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Windows.Foundation;
-using Windows.System;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
@@ -110,30 +108,24 @@ public sealed partial class CommandBar : UserControl, ICurrentPageAware, IComman
 
     public void CloseContextMenu() => ContextMenuOwner?.CloseContextMenu();
 
-    public bool TryCommandKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
+    public void InvokeContextCommand(IContextMenuContext context, CommandContextItemViewModel command, Func<bool> isContextCurrent)
     {
-        var context = CommandContext;
-        if (context?.CanOpenContextMenu != true)
+        CommandBarViewModel.InvokeContextCommand(command, submenu =>
         {
-            return false;
-        }
+            var anchor = context is PageMenuViewModel ? PageMenuAnchor : (ContextMenuAnchor?)null;
+            ContextMenuOwner?.ShowContextMenuAfterKeyEvent(context, submenu, anchor, isContextCurrent);
+        });
+    }
 
-        var chord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
-        if (context.FindKeybinding(chord) is not { } command)
-        {
-            return false;
-        }
+    private ContextMenuAnchor PageMenuAnchor =>
+        new(PageMenuButton, null, FlyoutPlacementMode.TopEdgeAlignedLeft, ContextMenuFilterLocation.Bottom);
 
-        if (command.HasSubmenu)
+    private void PageMenuButton_Clicked(object sender, RoutedEventArgs e)
+    {
+        if (CurrentPageViewModel?.PageMenu is { CanOpenContextMenu: true } menu)
         {
-            ContextMenuOwner?.ShowContextMenuAfterKeyEvent(context, command);
+            ContextMenuOwner?.ShowContextMenu(new ContextMenuRequest(menu) { Anchor = PageMenuAnchor });
         }
-        else
-        {
-            ViewModel.InvokeContextCommand(command);
-        }
-
-        return true;
     }
 
     private static void CommandContextChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)

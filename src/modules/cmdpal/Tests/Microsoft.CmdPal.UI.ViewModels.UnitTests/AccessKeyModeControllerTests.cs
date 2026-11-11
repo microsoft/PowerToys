@@ -40,16 +40,19 @@ public class AccessKeyModeControllerTests
     }
 
     [TestMethod]
-    public void AltTapTogglesMode()
+    [DataRow(VirtualKey.Menu)]
+    [DataRow(VirtualKey.LeftMenu)]
+    [DataRow(VirtualKey.RightMenu)]
+    public void AltTapTogglesMode(VirtualKey altKey)
     {
         var controller = new AccessKeyModeController();
         var nativeExitRequests = 0;
         controller.ExitRequested += (_, _) => nativeExitRequests++;
 
-        AltTap(controller);
+        AltTap(controller, altKey);
         Assert.IsTrue(controller.IsActive);
 
-        AltTap(controller);
+        AltTap(controller, altKey);
         Assert.IsFalse(controller.IsActive);
         Assert.AreEqual(0, nativeExitRequests);
     }
@@ -283,10 +286,32 @@ public class AccessKeyModeControllerTests
         Assert.IsTrue(controller.IsActive);
     }
 
-    private static void AltTap(AccessKeyModeController controller)
+    [TestMethod]
+    [DataRow(VirtualKey.Shift)]
+    [DataRow(VirtualKey.LeftShift)]
+    [DataRow(VirtualKey.RightShift)]
+    [DataRow(VirtualKey.Control)]
+    [DataRow(VirtualKey.LeftControl)]
+    [DataRow(VirtualKey.RightControl)]
+    [DataRow(VirtualKey.Menu)]
+    [DataRow(VirtualKey.LeftMenu)]
+    [DataRow(VirtualKey.RightMenu)]
+    [DataRow(VirtualKey.LeftWindows)]
+    [DataRow(VirtualKey.RightWindows)]
+    public void ModifierKeysDoNotScheduleDismissal(VirtualKey key)
     {
-        controller.HandleKeyDown(Chord(VirtualKey.Menu, VirtualKeyModifiers.Menu));
-        controller.HandleKeyUp(VirtualKey.Menu);
+        var controller = new AccessKeyModeController();
+        AltTap(controller);
+
+        Assert.IsTrue(key.IsModifierKey());
+        Assert.IsNull(controller.HandleKeyDown(Chord(key)));
+        Assert.IsTrue(controller.IsActive);
+    }
+
+    private static void AltTap(AccessKeyModeController controller, VirtualKey altKey = VirtualKey.Menu)
+    {
+        controller.HandleKeyDown(Chord(altKey, VirtualKeyModifiers.Menu));
+        controller.HandleKeyUp(altKey);
     }
 
     private static KeyChord Chord(

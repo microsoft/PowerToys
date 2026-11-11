@@ -10,6 +10,12 @@ public static class WellKnownExtensionAttributes
 
     public const string DockCommandId = "Microsoft.CommandPalette.DockCommandId";
 
+    /// <summary>
+    /// Optional page menu containing <see cref="IContextItem"/> entries.
+    /// Set <see cref="Page.MenuCommands"/>, or after direct edits raise <c>PropChanged</c> with this key.
+    /// </summary>
+    public const string PageMenuCommands = "Microsoft.CommandPalette.PageMenuCommands";
+
     public const string FontFamily = "FontFamily";
 
     /// <summary>

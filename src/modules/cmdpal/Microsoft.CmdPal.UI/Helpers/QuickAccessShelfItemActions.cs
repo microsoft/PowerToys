@@ -14,19 +14,13 @@ internal static class QuickAccessShelfItemActions
     public static bool ShouldHandleKey(KeyChord chord)
     {
         var key = (VirtualKey)chord.Vkey;
-        if (key is VirtualKey.Tab or VirtualKey.Escape or VirtualKey.Application)
+        if (key is VirtualKey.Tab or VirtualKey.Escape || key.IsContextMenuRequest(chord.Modifiers))
         {
             return false;
         }
 
-        if (chord.Modifiers == VirtualKeyModifiers.None && key is (VirtualKey.Enter or VirtualKey.Space or
-            VirtualKey.Left or VirtualKey.Right or VirtualKey.Up or VirtualKey.Down or
-            VirtualKey.Home or VirtualKey.End))
-        {
-            return false;
-        }
-
-        if (key == VirtualKey.F10 && chord.Modifiers == VirtualKeyModifiers.Shift)
+        if (chord.Modifiers == VirtualKeyModifiers.None
+            && (key.IsArrowKey() || key is VirtualKey.Enter or VirtualKey.Space or VirtualKey.Home or VirtualKey.End))
         {
             return false;
         }

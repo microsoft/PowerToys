@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 
 namespace SamplePagesExtension.Pages;
 
@@ -48,6 +47,7 @@ internal sealed partial class SampleSuggestionsPage : DynamicListPage, IExtended
         Title = "Sample prefixed search";
         PlaceholderText = "Type a query, and use '@' to add a person";
         Icon = new("\uE779");
+        GetProperties()["TokenSearch"] = true;
 
         _queryItem = new ListItem(new NoOpCommand())
         {
@@ -238,14 +238,6 @@ internal sealed partial class SampleSuggestionsPage : DynamicListPage, IExtended
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
         // from DynamicListPage, not used
-    }
-
-    public IDictionary<string, object> GetProperties()
-    {
-        return new ValueSet()
-        {
-            { "TokenSearch", true },
-        };
     }
 }
 

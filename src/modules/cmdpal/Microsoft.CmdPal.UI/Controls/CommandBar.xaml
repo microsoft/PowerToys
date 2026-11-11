@@ -124,14 +124,36 @@
                     Style="{StaticResource CaptionTextBlockStyle}" />
             </StackPanel>
         </Button>
-        <TextBlock
+        <Grid
             Grid.Column="1"
             VerticalAlignment="Center"
-            Style="{StaticResource CaptionTextBlockStyle}"
-            Text="{x:Bind CurrentPageViewModel.Title, Mode=OneWay}"
-            TextTrimming="CharacterEllipsis"
-            TextWrapping="NoWrap"
-            Visibility="{x:Bind CurrentPageViewModel.IsRootPage, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+            Visibility="{x:Bind CurrentPageViewModel.IsRootPage, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+            <TextBlock
+                Padding="7,0,0,0"
+                VerticalAlignment="Center"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="{x:Bind CurrentPageViewModel.Title, Mode=OneWay}"
+                TextTrimming="CharacterEllipsis"
+                TextWrapping="NoWrap"
+                Visibility="{x:Bind CurrentPageViewModel.PageMenu.CanOpenContextMenu, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}, FallbackValue=Collapsed}" />
+            <Button
+                x:Name="PageMenuButton"
+                x:Uid="PageMenuButton"
+                Padding="6,4"
+                HorizontalAlignment="Left"
+                AutomationProperties.AutomationId="PageMenuButton"
+                AutomationProperties.Name="{x:Bind CurrentPageViewModel.Title, Mode=OneWay}"
+                Click="PageMenuButton_Clicked"
+                Style="{StaticResource SubtleButtonStyle}"
+                Visibility="{x:Bind CurrentPageViewModel.PageMenu.CanOpenContextMenu, Mode=OneWay, FallbackValue=Collapsed}">
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind CurrentPageViewModel.Title, Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="NoWrap" />
+            </Button>
+        </Grid>
         <StackPanel
             Grid.Column="2"
             Padding="0,0,4,0"
