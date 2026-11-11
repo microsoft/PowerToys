@@ -209,12 +209,14 @@ Describe 'MWB owned Settings readiness' {
         $wrapper | Should Match 'Start-LocalVm.ps1[\s\S]*-ResourceProfile \$ResourceProfile -Wait'
     }
 
-    It 'awaits the guest cleanup and abort-test viewer independently without relaxing fault assertions' {
+    It 'preserves guest cleanup and aborts at owned creation without relaxing fault assertions' {
         $root = Split-Path $payloadRoot
         $fixture = Get-Content -LiteralPath (Join-Path $root 'TwoEndpointFixture.cs') -Raw
         $fixture | Should Match 'guest.Request\("StopPeers", timeoutSeconds: SandboxTimeouts.GuestStopRequestSeconds\)'
         $recovery = Get-Content -LiteralPath (Join-Path $root 'RecoveryTests.cs') -Raw
-        $recovery | Should Match 'SandboxTimeouts.LegacyViewerStart'
+        $recovery | Should Match 'legacy.Discover\(\);'
+        $recovery | Should Match 'identity.Any\(record => record.IsCurrent\(\)\)'
+        $recovery | Should Not Match 'SandboxTimeouts.LegacyViewerStart'
         $recovery | Should Match 'Assert.ThrowsExactly<RecoveryBoundaryException>'
         $recovery | Should Match 'Assert.IsTrue\(refusalObserved && ownedIdentityPreserved\)'
         $recovery | Should Match 'Assert.IsFalse\(owned.GuestAcknowledged'
