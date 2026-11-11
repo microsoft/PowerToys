@@ -31,6 +31,7 @@ public sealed class PasteFormatsTests
         [PasteFormats.KernelQuery] = 10,
         [PasteFormats.CustomTextTransformation] = 11,
         [PasteFormats.PasteAsJpgFile] = 12,
+        [PasteFormats.PowerScript] = 13,
     };
 
     [TestMethod]
