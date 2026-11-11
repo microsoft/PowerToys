@@ -18,19 +18,19 @@ Describe 'Release Runner native module-load closure' {
     }
 
     It 'normalizes source path separators without dropping disabled modules' {
-        Set-Content -LiteralPath $runnerFixturePath -Value 'std::vector<std::wstring_view> knownModules = { L"PowerToys.First.dll", L"WinUI3Apps/PowerToys.Second.dll", };'
-        (Get-MwbRunnerModules $runnerFixturePath).Modules | Should Be @('PowerToys.First.dll', 'WinUI3Apps\PowerToys.Second.dll')
+        Set-Content -LiteralPath $runnerFixturePath -Value 'static const ModuleRegistration knownModules[] = { { L"First", L"PowerToys.First.dll", true, powertoys_gpo::getConfiguredFirstEnabledValue }, { L"Second", L"WinUI3Apps\\PowerToys.Second.dll", false }, { L"Third", L"WinUI3Apps/PowerToys.Third.dll", !package::IsWin11OrGreater() }, };'
+        (Get-MwbRunnerModules $runnerFixturePath).Modules | Should Be @('PowerToys.First.dll', 'WinUI3Apps\PowerToys.Second.dll', 'WinUI3Apps\PowerToys.Third.dll')
     }
 
     It 'rejects missing, duplicate, conditional, malformed or escaped module declarations' -TestCases @(
         @{ Declaration = 'no declaration' }
-        @{ Declaration = 'std::vector<std::wstring_view> knownModules = {};' }
-        @{ Declaration = 'std::vector<std::wstring_view> knownModules = { L"PowerToys.A.dll", L"PowerToys.A.dll" };' }
-        @{ Declaration = 'std::vector<std::wstring_view> knownModules = { L"..\\PowerToys.A.dll" };' }
-        @{ Declaration = 'std::vector<std::wstring_view> knownModules = { L"C:\\PowerToys.A.dll" };' }
-        @{ Declaration = 'std::vector<std::wstring_view> knownModules = { L"PowerToys.A.exe" };' }
-        @{ Declaration = 'std::vector<std::wstring_view> knownModules = { L"PowerToys.A.dll", unknownFunction() };' }
-        @{ Declaration = 'std::vector<std::wstring_view> knownModules = { L"PowerToys.A.dll" }; std::vector<std::wstring_view> knownModules = { L"PowerToys.B.dll" };' }
+        @{ Declaration = 'static const ModuleRegistration knownModules[] = {};' }
+        @{ Declaration = 'static const ModuleRegistration knownModules[] = { { L"A", L"PowerToys.A.dll", true }, { L"B", L"PowerToys.A.dll", true } };' }
+        @{ Declaration = 'static const ModuleRegistration knownModules[] = { { L"A", L"..\\PowerToys.A.dll", true } };' }
+        @{ Declaration = 'static const ModuleRegistration knownModules[] = { { L"A", L"C:\\PowerToys.A.dll", true } };' }
+        @{ Declaration = 'static const ModuleRegistration knownModules[] = { { L"A", L"PowerToys.A.exe", true } };' }
+        @{ Declaration = 'static const ModuleRegistration knownModules[] = { { L"A", L"PowerToys.A.dll", true }, unknownFunction() };' }
+        @{ Declaration = 'static const ModuleRegistration knownModules[] = { { L"A", L"PowerToys.A.dll", true } }; static const ModuleRegistration knownModules[] = { { L"B", L"PowerToys.B.dll", true } };' }
     ) {
         param($Declaration)
         Set-Content -LiteralPath $runnerFixturePath -Value $Declaration
