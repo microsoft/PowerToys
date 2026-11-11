@@ -10,6 +10,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace EnvironmentVariablesUILib.Models
 {
+    [WinRT.GeneratedBindableCustomProperty]
     public partial class VariablesSet : ObservableObject
     {
         public static readonly Guid UserGuid = new Guid("92F7AA9A-AE31-49CD-83C8-80A71E432AA5");
@@ -23,7 +24,7 @@ namespace EnvironmentVariablesUILib.Models
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Valid))]
-        private string _name;
+        public partial string Name { get; set; }
 
         [JsonIgnore]
         public VariablesSetType Type { get; set; }
@@ -32,7 +33,7 @@ namespace EnvironmentVariablesUILib.Models
         public string IconPath { get; set; }
 
         [ObservableProperty]
-        private ObservableCollection<Variable> _variables;
+        public partial ObservableCollection<Variable> Variables { get; set; }
 
         public bool Valid => Validate();
 

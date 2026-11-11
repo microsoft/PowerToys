@@ -13,18 +13,13 @@ using EnvironmentVariablesUILib.Models;
 
 namespace EnvironmentVariablesUILib.Helpers
 {
-    public sealed class EnvironmentVariablesService : IEnvironmentVariablesService
+    public sealed partial class EnvironmentVariablesService : IEnvironmentVariablesService
     {
         private const string ProfilesJsonFileSubPath = "Microsoft\\PowerToys\\EnvironmentVariables\\";
 
         private readonly string _profilesJsonFilePath;
 
         private readonly IFileSystem _fileSystem;
-
-        private readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-        };
 
         public string ProfilesJsonFilePath => _profilesJsonFilePath;
 
@@ -47,14 +42,14 @@ namespace EnvironmentVariablesUILib.Helpers
             }
 
             var fileContent = _fileSystem.File.ReadAllText(ProfilesJsonFilePath);
-            var profiles = JsonSerializer.Deserialize<List<ProfileVariablesSet>>(fileContent);
+            var profiles = JsonSerializer.Deserialize(fileContent, EnvironmentVariablesJsonContext.Default.ListProfileVariablesSet);
 
             return profiles;
         }
 
         public async Task WriteAsync(IEnumerable<ProfileVariablesSet> profiles)
         {
-            string jsonData = JsonSerializer.Serialize(profiles, _serializerOptions);
+            string jsonData = JsonSerializer.Serialize(profiles, EnvironmentVariablesJsonContext.Default.IEnumerableProfileVariablesSet);
             await _fileSystem.File.WriteAllTextAsync(ProfilesJsonFilePath, jsonData);
         }
     }
