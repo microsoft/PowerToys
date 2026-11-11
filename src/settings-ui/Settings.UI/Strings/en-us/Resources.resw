@@ -3808,8 +3808,31 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_EnableAISettingsCardDescription.Text" xml:space="preserve">
     <value>Transform your clipboard content with the power of AI. A cloud or local endpoint is required.</value>
   </data>
-  <data name="AdvancedPaste_AIComplianceInfoBar.Message" xml:space="preserve">
-    <value>The choice of agent and model is entirely yours. Please validate your choice is fully compliant with all AI regulations in your region before proceeding.</value>
+  <data name="AdvancedPaste_AIComplianceNotice.Text" xml:space="preserve">
+    <value>The choice of agent and model is entirely yours. You are responsible for validating that your choice is appropriate for use in your region.</value>
+  </data>
+  <data name="AdvancedPaste_AIComplianceLearnMore.Text" xml:space="preserve">
+    <value>Learn more.</value>
+  </data>
+  <data name="AdvancedPaste_AIComplianceDialog.Title" xml:space="preserve">
+    <value>AI agents and models</value>
+  </data>
+  <data name="AdvancedPaste_AIComplianceDialog.CloseButtonText" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="AdvancedPaste_AIComplianceModelNotice" xml:space="preserve">
+    <value>AI agents and models that you host and choose to connect to is your choice. If you choose a third party agent or model, Microsoft may not provide, host, operate, or monitor them. If you use {0} to interact with an agent or model you host, you do so at your own risk.</value>
+    <comment>{0} is the selected default model's name, or the localized word "any" when no model is selected.</comment>
+  </data>
+  <data name="AdvancedPaste_AIComplianceAnyModel" xml:space="preserve">
+    <value>any</value>
+    <comment>Used in place of a model name in AdvancedPaste_AIComplianceModelNotice when no model is selected.</comment>
+  </data>
+  <data name="AdvancedPaste_AIComplianceModelResponsibilities.Text" xml:space="preserve">
+    <value>If you choose a third-party model, Microsoft does not filter, moderate, or validate model responses. You are responsible for implementing your own content provenance solutions, responsible AI mitigations, such as system prompts, content filters or other safety systems, and for reviewing output before you use it; or determining that your selected model implements these solutions on your behalf.</value>
+  </data>
+  <data name="AdvancedPaste_AIComplianceRegionalResponsibilities.Text" xml:space="preserve">
+    <value>You are also responsible for ensuring that your use complies with any applicable AI regulations, data handling requirements and/or data residency commitments.</value>
   </data>
   <data name="AdvancedPaste_EnableAISettingsCardDescriptionLearnMore.Content" xml:space="preserve">
     <value>Learn more</value>

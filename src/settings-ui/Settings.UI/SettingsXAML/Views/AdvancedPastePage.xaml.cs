@@ -93,6 +93,23 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void EnableAdvancedPasteAI() => ViewModel.EnableAI();
 
+        private async void AIComplianceLearnMore_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            var modelName = ViewModel.PasteAIConfiguration.ActiveProvider?.ModelName;
+            if (string.IsNullOrWhiteSpace(modelName))
+            {
+                modelName = resourceLoader.GetString("AdvancedPaste_AIComplianceAnyModel");
+            }
+
+            AIComplianceModelNotice.Text = string.Format(
+                System.Globalization.CultureInfo.CurrentCulture,
+                resourceLoader.GetString("AdvancedPaste_AIComplianceModelNotice"),
+                modelName);
+            AIComplianceDialog.XamlRoot = RootPage.XamlRoot;
+            await AIComplianceDialog.ShowAsync();
+        }
+
         private void AdvancedPaste_EnableAIToggle_Toggled(object sender, RoutedEventArgs e)
         {
             if (ViewModel is null)
