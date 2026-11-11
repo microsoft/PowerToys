@@ -39,11 +39,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public Func<string, int> SendConfigMSG { get; }
 
-        public ObservableCollection<DashboardListItem> AllModules { get; set; } = new ObservableCollection<DashboardListItem>();
+        public ObservableCollection<DashboardListItem> AllModules { get; } = new ObservableCollection<DashboardListItem>();
 
-        public ObservableCollection<DashboardListItem> ShortcutModules { get; set; } = new ObservableCollection<DashboardListItem>();
+        public ObservableCollection<DashboardListItem> ShortcutModules { get; } = new ObservableCollection<DashboardListItem>();
 
-        public ObservableCollection<DashboardListItem> ActionModules { get; set; } = new ObservableCollection<DashboardListItem>();
+        public ObservableCollection<DashboardListItem> ActionModules { get; } = new ObservableCollection<DashboardListItem>();
 
         public ObservableCollection<QuickAccessItem> QuickAccessItems => _quickAccessViewModel.Items;
 

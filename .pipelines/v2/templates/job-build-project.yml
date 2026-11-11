@@ -69,6 +69,12 @@ parameters:
   - name: prepareUmdfHid
     type: boolean
     default: false
+  - name: prepareUmdfDisplay
+    type: boolean
+    default: false
+  - name: umdfDisplayCondition
+    type: string
+    default: succeeded()
   - name: umdfHidCondition
     type: string
     default: succeeded()
@@ -198,6 +204,21 @@ jobs:
   - pwsh: |-
       & '.pipelines/verifyCommonProps.ps1' -sourceDir '$(build.sourcesdirectory)\src'
     displayName: Audit shared common props for CSharp projects in src sub-folder
+
+  - ${{ if or(eq(parameters.runTests, true), eq(parameters.codeSign, true)) }}:
+    - powershell: |-
+        # Use the inbox Pester version without installing modules on the build agent.
+        Import-Module Pester -MinimumVersion 3.4 -MaximumVersion 4.99
+        $result = Invoke-Pester -Script @(
+            '.pipelines/tests/versionAndSignCheck.Tests.ps1',
+            '.pipelines/tests/winmdSigningPolicy.Tests.ps1'
+        ) -PassThru
+        if ($result.FailedCount -gt 0 -or $result.TotalCount -eq 0) {
+            throw 'Release signing regression tests failed.'
+        }
+        # Negative script tests set LASTEXITCODE; report the Pester result instead.
+        exit 0
+      displayName: Test release signing checks
 
   - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
     - pwsh: |-
@@ -536,6 +557,10 @@ jobs:
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
     - pwsh: |-
+        & .pipelines/versionAndSignCheck.ps1 -targetDir '$(JobOutputDirectory)/CmdPalPackageContents' -WinmdOnly
+      displayName: Verify CmdPal metadata signatures
+
+    - pwsh: |-
         $outDir = New-Item -Type Directory "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
         $PackageFilename = Join-Path $outDir.FullName (Split-Path -Leaf "$(CmdPalPackagePath)")
         & "$(MakeAppxPath)" pack /h SHA256 /o /p $PackageFilename /d "$(JobOutputDirectory)/CmdPalPackageContents"
@@ -712,6 +737,11 @@ jobs:
     - template: steps-build-umdf-hid.yml
       parameters:
         condition: ${{ parameters.umdfHidCondition }}
+
+  - ${{ if eq(parameters.prepareUmdfDisplay, true) }}:
+    - template: steps-build-umdf-display.yml
+      parameters:
+        condition: ${{ parameters.umdfDisplayCondition }}
 
   - ${{ if eq(parameters.publishArtifacts, true) }}:
     - publish: $(JobOutputDirectory)

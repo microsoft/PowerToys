@@ -186,6 +186,18 @@ namespace KeyboardManagerEditorUI.Settings
             }
         }
 
+        internal static bool HasSettingsChangedOnDisk() =>
+            !File.Exists(_settingsFilePath) || DiffersFromLoadedSettings(File.ReadAllText(_settingsFilePath));
+
+        internal static bool DiffersFromLoadedSettings(string json)
+        {
+            EditorSettings settings = JsonSerializer.Deserialize<EditorSettings>(json, _jsonOptions) ?? new EditorSettings();
+            NormalizeSettings(settings);
+
+            // Normalize both sides: the editor's own edits can leave index order that normalization rewrites.
+            return JsonSerializer.Serialize(settings, _jsonOptions) != JsonSerializer.Serialize(CloneSettings(), _jsonOptions);
+        }
+
         private static bool IsFileLockContention(IOException exception)
         {
             int errorCode = exception.HResult & 0xFFFF;
@@ -363,18 +375,26 @@ namespace KeyboardManagerEditorUI.Settings
             return settings;
         }
 
-        public static void CorrelateServiceAndEditorMappings()
+        /// <summary>
+        /// Reconciles the editor metadata with the native mappings.
+        /// </summary>
+        /// <param name="regenerateUnreadableSettings">
+        /// Whether to rebuild unreadable metadata from the active native mappings. Pass false when the file
+        /// may be mid-write (e.g. during a Settings restore) so a failed read does not drop disabled rows.
+        /// </param>
+        /// <returns>Whether the loaded metadata is now current.</returns>
+        public static bool CorrelateServiceAndEditorMappings(bool regenerateUnreadableSettings = true)
         {
             if (_mappingService is null)
             {
-                return;
+                return false;
             }
 
             using FileStream? transactionLock = TryAcquireMappingTransactionLock();
             if (transactionLock == null)
             {
                 ManagedCommon.Logger.LogError("Could not acquire the Keyboard Manager editor transaction lock during reconciliation.");
-                return;
+                return false;
             }
 
             try
@@ -382,13 +402,19 @@ namespace KeyboardManagerEditorUI.Settings
                 using var service = new KeyboardMappingService();
                 if (!TryReloadSettings())
                 {
-                    EditorSettings createdSettings = CreateSettingsFromKeyboardManagerService(service);
-                    if (WriteSettings(createdSettings))
+                    if (!regenerateUnreadableSettings)
                     {
-                        EditorSettings = createdSettings;
+                        return false;
                     }
 
-                    return;
+                    EditorSettings createdSettings = CreateSettingsFromKeyboardManagerService(service);
+                    if (!WriteSettings(createdSettings))
+                    {
+                        return false;
+                    }
+
+                    EditorSettings = createdSettings;
+                    return true;
                 }
 
                 var activeMappings = service.GetShortcutMappings();
@@ -407,15 +433,23 @@ namespace KeyboardManagerEditorUI.Settings
                 }));
 
                 EditorSettings updatedSettings = CloneSettings(EditorSettings);
-                if (ReconcileMappings(updatedSettings, activeMappings, service.ConfigurationName) &&
-                    WriteSettings(updatedSettings))
+                if (!ReconcileMappings(updatedSettings, activeMappings, service.ConfigurationName))
                 {
-                    EditorSettings = updatedSettings;
+                    return true;
                 }
+
+                if (!WriteSettings(updatedSettings))
+                {
+                    return false;
+                }
+
+                EditorSettings = updatedSettings;
+                return true;
             }
             catch (Exception exception)
             {
                 ManagedCommon.Logger.LogError("Failed to reconcile Keyboard Manager editor settings: " + exception.Message);
+                return false;
             }
         }
 

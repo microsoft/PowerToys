@@ -20,9 +20,14 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
     /// </summary>
     public class SvgThumbnailProvider : IDisposable
     {
-        public SvgThumbnailProvider(string? filePath)
+        public SvgThumbnailProvider(string? filePath, string? webView2UserDataFolder = null)
         {
             FilePath = filePath;
+            if (webView2UserDataFolder != null)
+            {
+                _webView2UserDataFolder = webView2UserDataFolder;
+            }
+
             if (FilePath != null && File.Exists(FilePath))
             {
                 Stream = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
