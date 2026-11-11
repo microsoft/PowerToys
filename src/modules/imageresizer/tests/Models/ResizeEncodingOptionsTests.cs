@@ -119,6 +119,12 @@ namespace ImageResizer.Models
         [DataRow(TiffCompressOption.Zip, 8, true)]
         public async Task ExecuteAppliesTiffCompressionWithOrWithoutMetadata(TiffCompressOption compression, int expectedTag, bool removeMetadata)
         {
+            var isCcitt = compression is TiffCompressOption.Ccitt3 or TiffCompressOption.Ccitt4;
+            if (isCcitt && !await WicPreservesCcittPolarityAsync(compression))
+            {
+                Assert.Inconclusive("The WIC TIFF encoder on this OS build writes CCITT data with inverted black/white polarity, so the output cannot be verified.");
+            }
+
             using var inputDirectory = new TestDirectory();
             using var outputDirectory = new TestDirectory();
             var source = Path.Combine(inputDirectory, "source.tif");
@@ -297,6 +303,47 @@ namespace ImageResizer.Models
             }
 
             return pixels;
+        }
+
+        // Some OS builds ship a WIC TIFF encoder that writes CCITT (Group 3/4) data with inverted black/white
+        // polarity, which Image Resizer cannot influence. Round-trip a black/white image through WIC alone
+        // (no Image Resizer code) to tell that apart from an Image Resizer regression.
+        private static async Task<bool> WicPreservesCcittPolarityAsync(TiffCompressOption compression)
+        {
+            const int width = 32;
+            const int height = 16;
+            const int blackSample = (((2 * width) + 2) * 4) + 2;
+            const int whiteSample = (((2 * width) + (width - 3)) * 4) + 2;
+
+            var pixels = new byte[width * height * 4];
+            for (var offset = 0; offset < pixels.Length; offset += 4)
+            {
+                var value = (offset / 4) % width < width / 2 ? (byte)0 : (byte)255;
+                pixels[offset] = value;
+                pixels[offset + 1] = value;
+                pixels[offset + 2] = value;
+                pixels[offset + 3] = 255;
+            }
+
+            using var stream = new MemoryStream();
+            var properties = new BitmapPropertySet
+            {
+                { "TiffCompressionMethod", new BitmapTypedValue((byte)(compression == TiffCompressOption.Ccitt3 ? 2 : 3), PropertyType.UInt8) },
+            };
+            var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.TiffEncoderId, stream.AsRandomAccessStream(), properties);
+            encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, width, height, 96, 96, pixels);
+            await encoder.FlushAsync();
+
+            stream.Position = 0;
+            var decoder = await BitmapDecoder.CreateAsync(stream.AsRandomAccessStream());
+            var pixelData = await (await decoder.GetFrameAsync(0)).GetPixelDataAsync(
+                BitmapPixelFormat.Bgra8,
+                BitmapAlphaMode.Ignore,
+                new BitmapTransform(),
+                ExifOrientationMode.IgnoreExifOrientation,
+                ColorManagementMode.DoNotColorManage);
+            var decoded = pixelData.DetachPixelData();
+            return decoded[blackSample] == 0 && decoded[whiteSample] == 255;
         }
 
         private static async Task AssertFrameAsync(BitmapFrame frame, uint width, uint height, byte red, byte green, byte blue)

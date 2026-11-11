@@ -179,7 +179,8 @@ namespace ImageResizer.Models
             using var directory = new TestDirectory();
             if (!TryEnableCaseSensitivity(directory, out var errorCode))
             {
-                if (errorCode is 1 or 50 or 87)
+                // ReFS (including a Dev Drive) rejects the request with ERROR_ACCESS_DENIED.
+                if (errorCode is 1 or 5 or 50 or 87)
                 {
                     Assert.Inconclusive($"The test filesystem does not support per-directory case sensitivity (Win32 error {errorCode}).");
                 }
