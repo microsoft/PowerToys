@@ -593,6 +593,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int PasteAsJpgQuality
+        {
+            get => _advancedPasteSettings.Properties.PasteAsJpgQuality.Value;
+            set
+            {
+                if (value != _advancedPasteSettings.Properties.PasteAsJpgQuality.Value)
+                {
+                    _advancedPasteSettings.Properties.PasteAsJpgQuality.Value = value;
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool AutoCopySelectionForCustomActionHotkey
         {
             get => _advancedPasteSettings.Properties.AutoCopySelectionForCustomActionHotkey;
@@ -1314,6 +1327,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (target.PowerScriptsEnabled != source.PowerScriptsEnabled)
             {
                 target.PowerScriptsEnabled = source.PowerScriptsEnabled;
+            }
+
+            var sourcePasteAsJpgQuality = source.PasteAsJpgQuality?.Value ?? AdvancedPasteProperties.DefaultPasteAsJpgQuality;
+            if (target.PasteAsJpgQuality.Value != sourcePasteAsJpgQuality)
+            {
+                target.PasteAsJpgQuality.Value = sourcePasteAsJpgQuality;
+                OnPropertyChanged(nameof(PasteAsJpgQuality));
             }
 
             if (target.AutoCopySelectionForCustomActionHotkey != source.AutoCopySelectionForCustomActionHotkey)

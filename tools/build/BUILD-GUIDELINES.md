@@ -21,6 +21,7 @@ Tip: Add `D:\PowerToys\tools\build` to your PATH to use the wrappers anywhere.
 2) `build.ps1` (from any folder)
    - Builds any `.sln/.csproj/.vcxproj` in the current directory.
    - Auto-detects Platform; initializes VS Dev environment automatically.
+   - For a `.csproj`/`.vcxproj`, passes `/p:SolutionDir=` set to the folder of the solution that lists the project (`PowerToys.slnx`, so the repo/worktree root, for most projects; `installer\` for installer projects), so `$(SolutionDir)`-based `IntDir`/`OutDir` match a solution build. A `/p:SolutionDir=` in the extra args overrides it.
    - Accepts extra MSBuild args (forwarded to msbuild):
      - `./tools/build/build.ps1 '/p:CIBuild=true' '/p:SomeProp=Value'`
    - Restore only:
