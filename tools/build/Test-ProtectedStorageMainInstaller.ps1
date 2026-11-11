@@ -58,8 +58,9 @@ if (!$bundle.Contains('<Payload Name="PowerToys.ProtectedStorageSetup.exe" Sourc
     throw 'The per-user outer bundle lacks its verified cleanup payload or scope marker.'
 }
 $callback = Get-Content -LiteralPath (Join-Path $installer 'SilentFilesInUseBA\SilentFilesInUseBAFunctions.cpp') -Raw
-if (!$callback.Contains('ShouldRemoveOwnerCarrier') -or !$callback.Contains('RemoveProtectedStorageForOwner') -or
-    !$callback.Contains('m_removeOwner && SUCCEEDED(hrStatus) && !m_removeAttempted')) {
+$callbackClass = Get-Content -LiteralPath (Join-Path $installer 'SilentFilesInUseBA\SilentFilesInUseBAFunctions.h') -Raw
+if (!$callbackClass.Contains('ShouldRemoveOwnerCarrier') -or !$callback.Contains('RemoveProtectedStorageForOwner') -or
+    !$callbackClass.Contains('m_removeOwner && SUCCEEDED(hrStatus) && !m_removeAttempted')) {
     throw 'Owner removal must run once after successful outer MSI execution and never during upgrade removal.'
 }
 $solution = [xml](Get-Content -LiteralPath (Join-Path $repo 'PowerToys.slnx') -Raw)

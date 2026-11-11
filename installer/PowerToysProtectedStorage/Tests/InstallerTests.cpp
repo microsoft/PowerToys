@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 #include "MaintenanceContract.h"
 #include "..\..\..\src\common\ProtectedStorage\ProtectedStorage.Lifecycle\StorageInitialization.h"
+#include "..\..\..\src\common\ProtectedStorage\ProtectedStorage.Lifecycle\ProfileCleanup.h"
 #include "..\..\..\src\common\ProtectedStorage\ProtectedStorage.MsiAction\PayloadCleanup.h"
 #include <commctrl.h>
 #include <IBootstrapperApplication.h>
@@ -13,6 +14,8 @@
 #include <cstddef>
 #include <iterator>
 #include <random>
+
+std::optional<int> RunProfileCleanupLiveTests(int argc, wchar_t** argv);
 
 namespace
 {
@@ -430,6 +433,55 @@ namespace
         Expect(!std::filesystem::exists(stage), "completed cleanup is idempotent");
     }
 
+    void ProfileCleanupTests()
+    {
+        namespace profile = PowerToysProtectedStorage::ProfileCleanup;
+        const std::wstring owner = L"S-1-5-21-1-2-3-1001";
+        const auto service = product::service_name(owner);
+        const std::wstring operation(32, L'A'), newer(32, L'B');
+        profile::ValidateLeaf(service, service);
+        profile::ValidateLeaf(service + L".000", service);
+        for (const auto& leaf : { L"..", L"..\\owner", L"Administrator", L"OtherService", L"" })
+            Reject([&] { profile::ValidateLeaf(leaf, service); });
+        Reject([&] { profile::ValidateLeaf(service + L".000\\..", service); });
+        Reject([&] { (void)profile::Inspect(owner, service); });
+        Reject([&] { (void)profile::Inspect(L"S-1-5-18", service); });
+        Reject([&] { (void)profile::Inspect(L"S-1-5-19", service); });
+        const profile::Profile original{ L"S-1-5-80-1-2-3-4-5", service, 17, 42 };
+        auto recreated = original;
+        ++recreated.file;
+        Expect(!profile::SameProfile(original, recreated), "same SID must not authorize a recreated profile directory");
+        recreated = original;
+        ++recreated.volume;
+        Expect(!profile::SameProfile(original, recreated), "different volume refuses profile cleanup");
+        recreated = original;
+        recreated.leaf += L".000";
+        Expect(!profile::SameProfile(original, recreated), "changed registered profile path refuses cleanup");
+        Expect(profile::OwnsRequest(operation, operation, false, false, false), "current removed instance authorizes cleanup");
+        Expect(!profile::OwnsRequest(operation, newer, false, false, false), "superseded cleanup operation cannot delete a profile");
+        Expect(!profile::OwnsRequest(operation, operation, true, false, false), "active instance blocks cleanup");
+        Expect(!profile::OwnsRequest(operation, operation, false, true, false), "pending installation blocks cleanup");
+        Expect(!profile::OwnsRequest(operation, operation, false, false, true), "existing service blocks cleanup");
+        ULONGLONG now = 0;
+        unsigned attempts = 0;
+        const auto freed = profile::Retry([&] { return ++attempts < 3 ? ERROR_SHARING_VIOLATION : ERROR_SUCCESS; },
+            [&] { return now; }, [&](DWORD delay) { now += delay; }, 1000);
+        Expect(freed == ERROR_SUCCESS && attempts == 3 && now == 500, "profile cleanup retries a released sharing violation");
+        now = 0;
+        attempts = 0;
+        const auto busy = profile::Retry([&] { ++attempts; return ERROR_BUSY; },
+            [&] { return now; }, [&](DWORD delay) { now += delay; }, 500);
+        Expect(busy == ERROR_BUSY && now == 500 && attempts == 3, "loaded-profile retries have a bounded deadline");
+        now = 0;
+        const auto denied = profile::Retry([] { return ERROR_ACCESS_DENIED; },
+            [&] { return now; }, [&](DWORD delay) { now += delay; }, 500);
+        Expect(denied == ERROR_ACCESS_DENIED && !now, "access denial retains its real code without busy-looping");
+        Reject([&] { (void)profile::TaskCommand(L"C:\\unsafe%PATH%\\stage", owner, operation); });
+        Reject([&] { (void)profile::TaskCommand(L"C:\\unsafe&command\\stage", owner, operation); });
+        Reject([&] { (void)profile::TaskCommand(L"C:\\safe\\stage", owner + L" & whoami", operation); });
+        Reject([&] { (void)profile::TaskCommand(L"C:\\safe\\stage", owner, operation + L"&"); });
+    }
+
     void ParserFuzzTests()
     {
         std::mt19937 random(0x50545053);
@@ -441,6 +493,8 @@ namespace
             try { (void)Parse({ L"retry", value }); }
             catch (const failure&) { ++checks; }
             try { (void)canonical_owner(value); }
+            catch (const failure&) { ++checks; }
+            try { ProfileCleanup::ValidateLeaf(value, L"PowerToysProtectedStorage_S-1-5-21-1-2-3-1001"); }
             catch (const failure&) { ++checks; }
         }
     }
@@ -520,10 +574,12 @@ namespace
     }
 }
 
-int wmain()
+int wmain(int argc, wchar_t** argv)
 {
     try
     {
+        if (const auto live = RunProfileCleanupLiveTests(argc, argv)) return *live;
+        if (argc != 1) throw failure("unsupported installer test arguments", ERROR_BAD_ARGUMENTS);
         BootstrapperPlanTests();
         BootstrapperCallbackTests();
         ParserTests();
@@ -532,6 +588,7 @@ int wmain()
         FileTests();
         LoaderPolicyTests();
         PayloadCleanupTests();
+        ProfileCleanupTests();
         ParserFuzzTests();
         StorageIndexTests();
         std::cout << "PASS " << checks << " installer contract checks; no services, profiles, accounts or MSI registrations changed.\n";
@@ -540,6 +597,7 @@ int wmain()
     catch (const std::exception& error)
     {
         std::cerr << "FAIL after " << checks << " checks: " << error.what() << "\n";
+        if (const auto* native = dynamic_cast<const failure*>(&error)) std::cerr << "nativeError=" << native->code << "\n";
         return 1;
     }
 }

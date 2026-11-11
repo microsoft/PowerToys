@@ -3,6 +3,7 @@
 #include "SetupSupport.h"
 #include "MaintenanceContract.h"
 #include "StorageInitialization.h"
+#include "ProfileCleanup.h"
 
 namespace
 {
@@ -218,36 +219,9 @@ namespace
         if (!DeleteFileW(path.c_str()) && GetLastError() != ERROR_FILE_NOT_FOUND)
             throw PowerToysProtectedStorage::failure("DeleteFile", GetLastError());
     }
-    void delete_tree(const std::filesystem::path& path, unsigned depth = 0)
+    void delete_tree(const std::filesystem::path& path)
     {
-        if (!path_exists(path)) return;
-        if (depth > 32) throw PowerToysProtectedStorage::failure("unexpected private tree depth", ERROR_DIRECTORY);
-        PowerToysProtectedStorage::handle object(CreateFileW(path.c_str(), DELETE | FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE,
-            nullptr, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr));
-        PowerToysProtectedStorage::check(object.value != INVALID_HANDLE_VALUE, "open exact removal object");
-        FILE_ATTRIBUTE_TAG_INFO attributes{};
-        PowerToysProtectedStorage::check(GetFileInformationByHandleEx(object.value, FileAttributeTagInfo, &attributes, sizeof(attributes)) != FALSE, "removal attributes");
-        if ((attributes.FileAttributes & FILE_ATTRIBUTE_DIRECTORY) && !(attributes.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT))
-        {
-            WIN32_FIND_DATAW found{};
-            HANDLE find = FindFirstFileW((path / L"*").c_str(), &found);
-            if (find == INVALID_HANDLE_VALUE)
-            {
-                if (GetLastError() != ERROR_FILE_NOT_FOUND) throw PowerToysProtectedStorage::failure("enumerate exact removal directory", GetLastError());
-            }
-            else
-            {
-                struct close_find { HANDLE value; ~close_find() { FindClose(value); } } close{ find };
-                do
-                {
-                    if (wcscmp(found.cFileName, L".") && wcscmp(found.cFileName, L".."))
-                        delete_tree(path / found.cFileName, depth + 1);
-                } while (FindNextFileW(find, &found));
-                if (GetLastError() != ERROR_NO_MORE_FILES) throw PowerToysProtectedStorage::failure("FindNextFile", GetLastError());
-            }
-        }
-        FILE_DISPOSITION_INFO disposition{ TRUE };
-        PowerToysProtectedStorage::check(SetFileInformationByHandle(object.value, FileDispositionInfo, &disposition, sizeof(disposition)) != FALSE, "delete exact object by handle");
+        PowerToysProtectedStorage::ProfileCleanup::RemoveTree(path);
     }
     void remove_empty(const std::filesystem::path& path)
     {
@@ -258,12 +232,16 @@ namespace
                 throw PowerToysProtectedStorage::failure("remove empty shared directory", error);
         }
     }
-    void erase_owner(const paths& p, PowerToysProtectedStorage::handle* heldLock = nullptr, bool purge = false)
+    void erase_owner(const paths& p, bool purge = false)
     {
+        const PowerToysProtectedStorage::ProfileCleanup::Context profileContext{ p.record, p.owner, product::service_name(p.owner) };
+        PowerToysProtectedStorage::handle profileLock;
+        PowerToysProtectedStorage::ProfileCleanup::Lock(profileContext, profileLock);
         delete_file(p.record / L"purge-recreation.ticket");
         const auto plan = PowerToysProtectedStorage::Maintenance::PlanRemoval(purge ?
             PowerToysProtectedStorage::Maintenance::RemovalMode::PurgeData : PowerToysProtectedStorage::Maintenance::RemovalMode::KeepData);
         const auto virtualSid = p.va.empty() ? PowerToysProtectedStorage::account_sid(product::service_account(p.owner)) : p.va;
+        const auto profile = PowerToysProtectedStorage::ProfileCleanup::Inspect(virtualSid, profileContext.service);
         PowerToysProtectedStorage::service scm(OpenSCManagerW(nullptr, nullptr, SC_MANAGER_CONNECT));
         PowerToysProtectedStorage::check(scm.value != nullptr, "SCM connect");
         {
@@ -282,11 +260,6 @@ namespace
         delete_tree(p.code);
         remove_empty(p.code.parent_path());
         if (plan.removeData) delete_tree(p.data);
-        if (heldLock && heldLock->value && heldLock->value != INVALID_HANDLE_VALUE)
-        {
-            CloseHandle(heldLock->value);
-            heldLock->value = nullptr;
-        }
         for (const auto* leaf : { L"active", L"pending-install", L"pending-remove", L"pending-repair", L"drain", L"service-created" })
             delete_file(p.record / leaf);
         const auto tombstone = p.record / (purge ? L"purged" : L"retained");
@@ -310,15 +283,14 @@ namespace
             delete_file(p.record / L"retained");
             product::write_new_text(p.record / L"purge-recreation.ticket", L"format=1\nowner=" + p.owner + L"\nmode=purge\n");
         }
-        // VA profiles may still have loaded hives/worker handles. Never delete a
-        // real user's profile or force-unload any hive to make cleanup look done.
-        HKEY profile = nullptr;
-        const auto profileKey = L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList\\" +
-            virtualSid;
-        const LSTATUS profileStatus = RegOpenKeyExW(HKEY_LOCAL_MACHINE, profileKey.c_str(), 0, KEY_READ | KEY_WOW64_64KEY, &profile);
-        if (profile) RegCloseKey(profile);
-        if (profileStatus != ERROR_FILE_NOT_FOUND && !path_exists(p.record / L"cleanup-pending"))
-            product::write_new_text(p.record / L"cleanup-pending", L"va-profile-review\n");
+        const auto profileResult = profile ? PowerToysProtectedStorage::ProfileCleanup::Remove(*profile, profileContext.service) : ERROR_SUCCESS;
+        if (profileResult == ERROR_SUCCESS)
+            PowerToysProtectedStorage::ProfileCleanup::Cancel(profileContext);
+        else
+        {
+            PowerToysProtectedStorage::ProfileCleanup::Queue(profileContext, *profile, profileResult);
+            std::wcout << L"profileCleanupPending owner=" << p.owner << L" nativeError=" << profileResult << L" retryTaskRegistered=1\n";
+        }
         remove_empty(product::code_root() / L"Owners");
         remove_empty(product::code_root());
         for (const auto* child : { L"Data", L"Policy", L"Installer" }) remove_empty(product::state_root() / child);
@@ -362,6 +334,9 @@ namespace
         ancestors(owner);
         const auto record = product::state_root() / L"Installer" / owner;
         paths absent(owner, false);
+        const PowerToysProtectedStorage::ProfileCleanup::Context profileContext{ record, owner, product::service_name(owner) };
+        PowerToysProtectedStorage::handle profileLock;
+        if (path_exists(record)) PowerToysProtectedStorage::ProfileCleanup::Lock(profileContext, profileLock);
         const bool retained = path_exists(record / L"retained") || path_exists(record / L"purged");
         const bool dataExisted = path_exists(absent.data);
         if (retained)
@@ -395,7 +370,11 @@ namespace
             if (existing.value) throw PowerToysProtectedStorage::failure("service already exists without product record", ERROR_SERVICE_EXISTS);
             if (GetLastError() != ERROR_SERVICE_DOES_NOT_EXIST) throw PowerToysProtectedStorage::failure("preflight service absence", GetLastError());
         }
-        if (!retained) setup::new_directory(record, PowerToysProtectedStorage::system_acl());
+        if (!retained)
+        {
+            setup::new_directory(record, PowerToysProtectedStorage::system_acl());
+            PowerToysProtectedStorage::ProfileCleanup::Lock(profileContext, profileLock);
+        }
         else
         {
             delete_file(record / L"provisioning-id");
@@ -410,7 +389,13 @@ namespace
             SERVICE_ALL_ACCESS, SERVICE_WIN32_OWN_PROCESS, SERVICE_DEMAND_START, SERVICE_ERROR_NORMAL,
             product::image_path(owner).c_str(), nullptr, nullptr, nullptr, product::service_account(owner).c_str(), nullptr));
         PowerToysProtectedStorage::check(service.value != nullptr, "CreateService");
-        try { product::write_new(record / L"service-created", {}); }
+        try
+        {
+            product::write_new(record / L"service-created", {});
+            // The same SID is reused: cancel the old cleanup before the new
+            // instance loads its profile, under the lease shared with the worker.
+            PowerToysProtectedStorage::ProfileCleanup::Cancel(profileContext);
+        }
         catch (...)
         {
             if (!DeleteService(service.value)) std::cerr << "new service cleanup nativeError=" << GetLastError() << "\n";
@@ -472,7 +457,7 @@ namespace
                 }
                 PowerToysProtectedStorage::handle lock;
                 if (path_exists(p.record / L"maintenance.lock")) acquire_lock(p, lock);
-                erase_owner(p, &lock);
+                erase_owner(p);
             }
         }
         else if (operation == L"commit-install")
@@ -582,7 +567,7 @@ namespace
                 PowerToysProtectedStorage::Maintenance::RemovalMode::KeepData, removalId, mode);
             pending.close();
             append_log(p, L"commit-remove");
-            erase_owner(p, &lock, purge);
+            erase_owner(p, purge);
         }
         else throw PowerToysProtectedStorage::failure("unsupported product lifecycle verb", ERROR_BAD_ARGUMENTS);
     }
@@ -642,7 +627,7 @@ namespace
                         PowerToysProtectedStorage::handle lock;
                         acquire_lock(p, lock);
                         if (!path_exists(p.record / L"drain")) product::write_new(p.record / L"drain", {});
-                        erase_owner(p, &lock);
+                        erase_owner(p);
                     }
                 }
                 catch (const PowerToysProtectedStorage::failure& failure)
@@ -734,6 +719,13 @@ int wmain(int argc, wchar_t** argv)
         PowerToysProtectedStorage::initialize_process_security();
         PowerToysProtectedStorage::require_system();
         PowerToysProtectedStorage::Maintenance::VerifySignedFile(product::module_path());
+        if (argc == 4 && std::wstring(argv[1]) == L"retry-profile")
+        {
+            const auto owner = PowerToysProtectedStorage::canonical_owner(argv[2]);
+            const PowerToysProtectedStorage::ProfileCleanup::Context context{
+                product::state_root() / L"Installer" / owner, owner, product::service_name(owner) };
+            return static_cast<int>(PowerToysProtectedStorage::ProfileCleanup::Run(context, argv[3]));
+        }
         if (argc >= 2 && std::wstring(argv[1]) == L"machine-remove")
         {
             PowerToysProtectedStorage::Maintenance::RequireMachineKeepData(std::vector<std::wstring>(argv + 1, argv + argc));

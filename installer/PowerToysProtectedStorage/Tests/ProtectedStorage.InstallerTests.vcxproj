@@ -17,9 +17,9 @@
   </ItemGroup>
   <ItemDefinitionGroup>
     <ClCompile><AdditionalIncludeDirectories>$(RepoRoot)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories></ClCompile>
-    <Link><SubSystem>Console</SubSystem><AdditionalDependencies>version.lib;%(AdditionalDependencies)</AdditionalDependencies></Link>
+    <Link><SubSystem>Console</SubSystem><AdditionalDependencies>version.lib;taskschd.lib;oleaut32.lib;%(AdditionalDependencies)</AdditionalDependencies></Link>
   </ItemDefinitionGroup>
-  <ItemGroup><ClCompile Include="InstallerTests.cpp" /></ItemGroup>
+  <ItemGroup><ClCompile Include="InstallerTests.cpp" /><ClCompile Include="ProfileCleanupLiveTests.cpp" /></ItemGroup>
   <ItemGroup><ProjectReference Include="..\..\..\src\common\ProtectedStorage\ProtectedStorage.Common\ProtectedStorage.Common.vcxproj"><Project>{918F71A9-BC92-481E-9501-769353CE45EB}</Project></ProjectReference></ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\PowerToysSetupVNext\SilentFilesInUseBA\SilentFilesInUseBAFunction.vcxproj">
