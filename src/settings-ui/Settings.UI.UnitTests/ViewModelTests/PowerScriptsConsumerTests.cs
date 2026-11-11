@@ -72,6 +72,7 @@ public class PowerScriptsConsumerTests
     [DataRow("advanced-paste", "text-text,files-text,image-text,audio-text,text-files,text-image,text-audio")]
     [DataRow("keyboard-manager", "none-none,none-text,none-files,none-image,none-audio")]
     [DataRow("command-palette", "none-none,none-text")]
+    [DataRow("file-explorer", "files-text,image-text,audio-text")]
     public void ModulesListOnlyCompatibleScriptContracts(string consumerId, string expectedIds)
     {
         var consumer = new PowerScriptsViewModel.PowerScriptConsumerItem(consumerId);
@@ -100,6 +101,24 @@ public class PowerScriptsConsumerTests
         Assert.IsFalse(consumer.HasCatalogueStatus);
     }
 
+    [DataTestMethod]
+    [DataRow("files")]
+    [DataRow("image")]
+    [DataRow("audio")]
+    public void FileExplorerListsEverySupportedOutputForSelectedFileInputs(string input)
+    {
+        var consumer = new PowerScriptsViewModel.PowerScriptConsumerItem("file-explorer");
+        consumer.Update(new(consumer.Id, true, true, true, false, string.Empty));
+        var outputs = new[] { "none", "text", "files", "image", "audio" };
+        consumer.UpdateApplicableScripts(outputs.Append("unknown").Select(output => new PowerScriptListItem
+        {
+            Id = output,
+            Io = new() { Input = input, Output = output },
+        }));
+
+        CollectionAssert.AreEquivalent(outputs, consumer.ApplicableScripts.Select(script => script.Id).ToArray());
+    }
+
     [TestMethod]
     public void ModulesSortScriptsByNameThenStableIdentity()
     {
@@ -116,14 +135,16 @@ public class PowerScriptsConsumerTests
     }
 
     [DataTestMethod]
-    [DataRow(false, "")]
-    [DataRow(true, "module-disabled")]
-    [DataRow(true, "parent-policy-disabled")]
-    public void DisablingIntegrationClearsScriptsAndCollapsesTheModule(bool userEnabled, string reason)
+    [DataRow("keyboard-manager", "none", false, "")]
+    [DataRow("keyboard-manager", "none", true, "module-disabled")]
+    [DataRow("keyboard-manager", "none", true, "parent-policy-disabled")]
+    [DataRow("file-explorer", "files", false, "")]
+    [DataRow("file-explorer", "files", true, "module-disabled")]
+    public void DisablingIntegrationClearsScriptsAndCollapsesTheModule(string consumerId, string input, bool userEnabled, string reason)
     {
-        var consumer = new PowerScriptsViewModel.PowerScriptConsumerItem("keyboard-manager");
+        var consumer = new PowerScriptsViewModel.PowerScriptConsumerItem(consumerId);
         consumer.Update(new(consumer.Id, true, true, true, false, string.Empty));
-        PowerScriptListItem[] scripts = [new() { Id = "action", Io = new() { Input = "none", Output = "none" } }];
+        PowerScriptListItem[] scripts = [new() { Id = "action", Io = new() { Input = input, Output = "none" } }];
         consumer.UpdateApplicableScripts(scripts);
         consumer.IsExpanded = true;
         Assert.AreEqual(1, consumer.ApplicableScripts.Count);
@@ -148,15 +169,17 @@ public class PowerScriptsConsumerTests
         Assert.AreEqual(PowerScriptsViewModel.GetResourceString("PowerScripts_ModuleScriptsEmpty"), consumer.CatalogueStatus);
     }
 
-    [TestMethod]
-    public void RefreshingModuleCatalogueReplacesTheSnapshotWithoutMutatingNavigatedViews()
+    [DataTestMethod]
+    [DataRow("command-palette", "none")]
+    [DataRow("file-explorer", "files")]
+    public void RefreshingModuleCatalogueReplacesTheSnapshotWithoutMutatingNavigatedViews(string consumerId, string input)
     {
-        var consumer = new PowerScriptsViewModel.PowerScriptConsumerItem("command-palette");
+        var consumer = new PowerScriptsViewModel.PowerScriptConsumerItem(consumerId);
         consumer.Update(new(consumer.Id, true, true, true, false, string.Empty));
-        consumer.UpdateApplicableScripts([new() { Id = "first", Io = new() { Input = "none", Output = "none" } }]);
+        consumer.UpdateApplicableScripts([new() { Id = "first", Io = new() { Input = input, Output = "none" } }]);
         var previous = consumer.ApplicableScripts;
 
-        consumer.UpdateApplicableScripts([new() { Id = "second", Io = new() { Input = "none", Output = "text" } }]);
+        consumer.UpdateApplicableScripts([new() { Id = "second", Io = new() { Input = input, Output = "text" } }]);
 
         Assert.AreEqual("first", previous.Single().Id);
         Assert.AreEqual("second", consumer.ApplicableScripts.Single().Id);
@@ -169,6 +192,7 @@ public class PowerScriptsConsumerTests
     [DataRow("advanced-paste", "PowerScripts_ActivityAdvancedPaste")]
     [DataRow("keyboard-manager", "PowerScripts_ActivityKeyboardManager")]
     [DataRow("command-palette", "PowerScripts_ActivityCommandPalette")]
+    [DataRow("file-explorer", "PowerScripts_ActivityFileExplorer")]
     [DataRow("command-line", "PowerScripts_ActivityCommandLine")]
     public void ScriptActivityUsesLocalizedConsumerName(string consumerId, string resource)
     {

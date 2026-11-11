@@ -47,7 +47,7 @@ public partial class PowerScriptsViewModel
     public async Task RefreshModuleScriptsAsync()
     {
         var generation = ++_moduleCatalogueGeneration;
-        PowerScriptConsumerItem[] consumers = [AdvancedPasteConsumer, KeyboardManagerConsumer, CommandPaletteConsumer];
+        PowerScriptConsumerItem[] consumers = [AdvancedPasteConsumer, KeyboardManagerConsumer, CommandPaletteConsumer, FileExplorerConsumer];
         foreach (var consumer in consumers)
         {
             consumer.ClearApplicableScripts("PowerScripts_ModuleScriptsLoading");
@@ -148,6 +148,7 @@ public partial class PowerScriptsViewModel
             AdvancedPasteConsumer.ClearApplicableScripts("PowerScripts_ModuleScriptsUnavailable");
             KeyboardManagerConsumer.ClearApplicableScripts("PowerScripts_ModuleScriptsUnavailable");
             CommandPaletteConsumer.ClearApplicableScripts("PowerScripts_ModuleScriptsUnavailable");
+            FileExplorerConsumer.ClearApplicableScripts("PowerScripts_ModuleScriptsUnavailable");
             throw;
         }
         finally
@@ -219,6 +220,7 @@ public partial class PowerScriptsViewModel
                     "advanced-paste" => "PowerScripts_AdvancedPasteScriptsDescription",
                     "keyboard-manager" => "PowerScripts_KeyboardManagerScriptsDescription",
                     "command-palette" => "PowerScripts_CommandPaletteScriptsDescription",
+                    "file-explorer" => "PowerScripts_FileExplorerScriptsDescription",
                     _ => throw new InvalidOperationException("Unknown PowerScripts consumer."),
                 });
                 return !string.IsNullOrEmpty(_state?.DisabledReason) || _state?.IsPolicyControlled == true
@@ -291,6 +293,7 @@ public partial class PowerScriptsViewModel
                 "advanced-paste" => input != "none" && output != "none",
                 "keyboard-manager" => input == "none",
                 "command-palette" => input == "none" && output is "none" or "text",
+                "file-explorer" => input is "files" or "image" or "audio",
                 _ => throw new InvalidOperationException("Unknown PowerScripts consumer."),
             };
         }

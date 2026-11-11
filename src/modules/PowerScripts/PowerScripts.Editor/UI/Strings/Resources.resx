@@ -998,6 +998,9 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_ActivityCommandPalette" xml:space="preserve">
     <value>Command Palette</value>
   </data>
+  <data name="PowerScripts_ActivityFileExplorer" xml:space="preserve">
+    <value>File Explorer</value>
+  </data>
   <data name="PowerScripts_ActivityCommandLine" xml:space="preserve">
     <value>Command line</value>
   </data>
@@ -1048,6 +1051,9 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   </data>
   <data name="PowerScripts_CommandPaletteScriptsDescription" xml:space="preserve">
     <value>Input: none. Output: text or none. Command Palette can prompt for script parameters.</value>
+  </data>
+  <data name="PowerScripts_FileExplorerScriptsDescription" xml:space="preserve">
+    <value>Run from a file's context menu. Input: files, or one image or audio file. Output: none, text, files, image or audio. Matching also depends on the selected files' types and count.</value>
   </data>
   <data name="PowerScripts_ModuleScriptsLoading" xml:space="preserve">
     <value>Loading applicable scripts…</value>
