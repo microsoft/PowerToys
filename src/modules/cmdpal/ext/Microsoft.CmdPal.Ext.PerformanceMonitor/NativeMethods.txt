@@ -15,3 +15,7 @@ GetSystemFirmwareTable
 GetPhysicallyInstalledSystemMemory
 NtQuerySystemInformation
 SYSTEM_PROCESS_INFORMATION
+D3DKMTOpenAdapterFromLuid
+D3DKMTQueryAdapterInfo
+D3DKMTCloseAdapter
+D3DKMT_ADAPTER_PERFDATA
