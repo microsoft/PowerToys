@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -32,6 +34,8 @@ public partial class TrayPaletteViewModelTests
 
         public bool IncludeTopLevelCommand { get; init; }
 
+        public Func<string, ICommandItem?>? Lookup { get; init; }
+
         public int LookupCount { get; private set; }
 
         public override ICommandItem[] TopLevelCommands() => IncludeTopLevelCommand ? [Item] : [];
@@ -39,7 +43,7 @@ public partial class TrayPaletteViewModelTests
         public override ICommandItem? GetCommandItem(string id)
         {
             LookupCount++;
-            return id == "command" ? Item : null;
+            return Lookup is { } lookup ? lookup(id) : id == "command" ? Item : null;
         }
     }
 
@@ -88,8 +92,13 @@ public partial class TrayPaletteViewModelTests
         Assert.AreEqual(0, changes, "Reopening must not reset the grid or recreate its tiles.");
 
         manager.TopLevelCommands.Clear();
+        changes = 0;
+        NotifyCollectionChangedAction? action = null;
+        model.Items.CollectionChanged += (_, e) => action = e.Action;
         await model.RefreshAsync();
         Assert.AreNotSame(original, model.Items[0], "Provider command changes must invalidate cached tiles.");
+        Assert.AreEqual(1, changes, "Replacing the tiles must raise only one collection notification.");
+        Assert.AreEqual(NotifyCollectionChangedAction.Reset, action);
 
         model.Items.Move(1, 0);
         model.SaveOrder();
@@ -255,6 +264,197 @@ public partial class TrayPaletteViewModelTests
         Assert.IsEmpty(model.Items);
         Assert.AreEqual(1, provider.LookupCount, "A disabled provider must not be queried again.");
         Assert.IsFalse(model.HasLoadError);
+    }
+
+    [TestMethod]
+    public async Task ReplacesItemsWithOneResetAndStandardPropertyNotifications()
+    {
+        var provider = new TestProvider("provider");
+        var settings = new SettingsModel { TrayPalette = new() { Commands = [new("provider", "command")] } };
+        var service = new Mock<ISettingsService>();
+        service.SetupGet(s => s.Settings).Returns(() => settings);
+        using var services = CreateServices(service.Object);
+        using var manager = new TopLevelCommandManager(services, [new BuiltInExtensionService([provider], TaskScheduler.Default)]);
+        await manager.LoadBuiltInProvidersAsync();
+        using var model = new TrayPaletteViewModel(service.Object, manager, DefaultContextMenuFactory.Instance);
+        var resets = 0;
+        var countChanges = 0;
+        var indexerChanges = 0;
+        ((INotifyPropertyChanged)model.Items).PropertyChanged += (_, e) =>
+        {
+            countChanges += e.PropertyName == "Count" ? 1 : 0;
+            indexerChanges += e.PropertyName == "Item[]" ? 1 : 0;
+        };
+        model.Items.CollectionChanged += (_, e) =>
+        {
+            Assert.AreEqual(NotifyCollectionChangedAction.Reset, e.Action);
+            resets++;
+            Assert.AreEqual(settings.TrayPalette.Commands.Count, model.Items.Count);
+        };
+
+        await model.RefreshAsync();
+        settings = settings with { TrayPalette = new() { Commands = [] } };
+        await model.RefreshAsync();
+
+        Assert.AreEqual(2, resets);
+        Assert.AreEqual(2, countChanges);
+        Assert.AreEqual(2, indexerChanges);
+        Assert.IsTrue(model.IsEmpty);
+    }
+
+    [TestMethod]
+    public async Task RefreshDoesNotWaitForExtensionCleanup()
+    {
+        using var releaseCleanup = new ManualResetEventSlim();
+        var cleanupStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cleanupFinished = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var item = new Mock<ICommandItem>();
+        item.SetupGet(i => i.Command).Returns(new NoOpCommand { Id = "command", Name = "Quick action" });
+        item.SetupRemove(i => i.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>())
+            .Callback<TypedEventHandler<object, IPropChangedEventArgs>>(_ =>
+            {
+                cleanupStarted.TrySetResult();
+                releaseCleanup.Wait(TimeSpan.FromSeconds(10));
+                cleanupFinished.TrySetResult();
+            });
+        var provider = new TestProvider("provider") { Item = item.Object, IncludeTopLevelCommand = true };
+        var settings = new SettingsModel { TrayPalette = new() { Commands = [new("provider", "command")] } };
+        var service = new Mock<ISettingsService>();
+        service.SetupGet(s => s.Settings).Returns(() => settings);
+        using var services = CreateServices(service.Object);
+        using var manager = new TopLevelCommandManager(services, [new BuiltInExtensionService([provider], TaskScheduler.Default)]);
+        await manager.LoadBuiltInProvidersAsync();
+        using var model = new TrayPaletteViewModel(service.Object, manager, DefaultContextMenuFactory.Instance);
+        await model.RefreshAsync();
+        var trayItem = model.Items[0];
+
+        try
+        {
+            settings = settings with { TrayPalette = new() { Commands = [] } };
+            await model.RefreshAsync().WaitAsync(TimeSpan.FromSeconds(5));
+            await cleanupStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.IsFalse(cleanupFinished.Task.IsCompleted, "Extension cleanup must still be blocked.");
+            Assert.IsFalse(model.IsLoading, "The grid must finish refreshing without waiting for an extension RPC.");
+            Assert.IsEmpty(model.Items);
+            trayItem.Dispose();
+        }
+        finally
+        {
+            releaseCleanup.Set();
+            await cleanupFinished.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+
+        item.VerifyRemove(i => i.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>(), Times.Once);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task SlowExtensionDoesNotBlockOtherPinsAndLateItemsAreCleanedUp(bool includeTopLevelCommand)
+    {
+        using var releaseLoad = new ManualResetEventSlim();
+        using var cleanupFinished = new SemaphoreSlim(0);
+        var loadStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var blockTitle = false;
+        var item = new Mock<ICommandItem>();
+        item.SetupGet(i => i.Command).Returns(new NoOpCommand { Id = "command", Name = "Slow action" });
+        item.SetupGet(i => i.Title).Returns(() =>
+        {
+            if (Volatile.Read(ref blockTitle))
+            {
+                loadStarted.TrySetResult();
+                releaseLoad.Wait(TimeSpan.FromSeconds(10));
+            }
+
+            return "Slow action";
+        });
+        item.SetupRemove(i => i.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>())
+            .Callback<TypedEventHandler<object, IPropChangedEventArgs>>(_ => cleanupFinished.Release());
+        var slow = new TestProvider("slow")
+        {
+            Item = item.Object,
+            IncludeTopLevelCommand = includeTopLevelCommand,
+            Lookup = _ =>
+            {
+                loadStarted.TrySetResult();
+                releaseLoad.Wait(TimeSpan.FromSeconds(10));
+                return item.Object;
+            },
+        };
+        var healthy = new TestProvider("healthy");
+        var settings = new SettingsModel { TrayPalette = new() { Commands = [new("slow", "command"), new("healthy", "command")] } };
+        var service = new Mock<ISettingsService>();
+        service.SetupGet(s => s.Settings).Returns(settings);
+        using var services = CreateServices(service.Object);
+        using var manager = new TopLevelCommandManager(services, [new BuiltInExtensionService([slow, healthy], TaskScheduler.Default)]);
+        await manager.LoadBuiltInProvidersAsync();
+        using var model = new TrayPaletteViewModel(service.Object, manager, DefaultContextMenuFactory.Instance);
+        Volatile.Write(ref blockTitle, includeTopLevelCommand);
+
+        try
+        {
+            var refresh = model.RefreshAsync(TimeSpan.FromMilliseconds(250));
+            await loadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await refresh.WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.HasCount(1, model.Items);
+            Assert.AreEqual("healthy", model.Items[0].Pin.ProviderId);
+            Assert.IsTrue(model.HasLoadError);
+            Assert.IsFalse(model.IsLoading);
+            Assert.HasCount(2, settings.TrayPalette.Commands, "A timeout must not remove the saved pin.");
+        }
+        finally
+        {
+            releaseLoad.Set();
+            Assert.IsTrue(await cleanupFinished.WaitAsync(TimeSpan.FromSeconds(5)), "A late result must release its extension subscriptions.");
+        }
+
+        item.VerifyRemove(i => i.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>(), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task OlderRefreshCannotReplaceNewerItems()
+    {
+        using var releaseLoad = new ManualResetEventSlim();
+        var loadStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var slow = new TestProvider("slow")
+        {
+            Lookup = _ =>
+            {
+                loadStarted.TrySetResult();
+                releaseLoad.Wait(TimeSpan.FromSeconds(10));
+                return new CommandItem(new NoOpCommand { Id = "command", Name = "Old action" });
+            },
+        };
+        var healthy = new TestProvider("healthy");
+        var settings = new SettingsModel { TrayPalette = new() { Commands = [new("slow", "command")] } };
+        var service = new Mock<ISettingsService>();
+        service.SetupGet(s => s.Settings).Returns(() => settings);
+        using var services = CreateServices(service.Object);
+        using var manager = new TopLevelCommandManager(services, [new BuiltInExtensionService([slow, healthy], TaskScheduler.Default)]);
+        await manager.LoadBuiltInProvidersAsync();
+        using var model = new TrayPaletteViewModel(service.Object, manager, DefaultContextMenuFactory.Instance);
+        var olderRefresh = model.RefreshAsync();
+        try
+        {
+            await loadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            settings = settings with { TrayPalette = new() { Commands = [new("healthy", "command")] } };
+            await model.RefreshAsync().WaitAsync(TimeSpan.FromSeconds(5));
+            var currentItem = model.Items[0];
+            releaseLoad.Set();
+            await olderRefresh.WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.HasCount(1, model.Items);
+            Assert.AreSame(currentItem, model.Items[0]);
+            Assert.AreEqual("healthy", model.Items[0].Pin.ProviderId);
+            Assert.IsFalse(model.IsLoading);
+        }
+        finally
+        {
+            releaseLoad.Set();
+            await olderRefresh.WaitAsync(TimeSpan.FromSeconds(5));
+        }
     }
 
     private static ServiceProvider CreateServices(ISettingsService settingsService) => new ServiceCollection()

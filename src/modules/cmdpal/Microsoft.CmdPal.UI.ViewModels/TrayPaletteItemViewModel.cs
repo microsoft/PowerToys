@@ -9,6 +9,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public sealed partial class TrayPaletteItemViewModel : IDisposable
 {
     private readonly CommandResolution _resolution;
+    private int _disposed;
 
     public TrayPaletteItemPageContext PageContext { get; }
 
@@ -55,7 +56,23 @@ public sealed partial class TrayPaletteItemViewModel : IDisposable
 
     public void Dispose()
     {
-        Item.SafeCleanup();
-        _resolution.Dispose();
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
+        _ = CleanupThreadPool.Queue(
+            () =>
+            {
+                try
+                {
+                    Item.SafeCleanup();
+                }
+                finally
+                {
+                    _resolution.Dispose();
+                }
+            },
+            $"Tray command '{Pin.CommandId}' from provider '{Pin.ProviderId}'");
     }
 }

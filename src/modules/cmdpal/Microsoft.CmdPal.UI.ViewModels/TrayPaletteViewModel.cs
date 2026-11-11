@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -12,6 +13,9 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public sealed partial class TrayPaletteViewModel : ObservableObject, IDisposable
 {
+    private static readonly TimeSpan CommandLoadTimeout = TimeSpan.FromSeconds(10);
+
+    private readonly TrayItemsCollection _items = [];
     private readonly ISettingsService _settingsService;
     private readonly TopLevelCommandManager _commandManager;
     private readonly IContextMenuFactory _contextMenuFactory;
@@ -36,7 +40,7 @@ public sealed partial class TrayPaletteViewModel : ObservableObject, IDisposable
     private void CommandsChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
         Interlocked.Increment(ref _contentVersion);
 
-    public ObservableCollection<TrayPaletteItemViewModel> Items { get; } = [];
+    public ObservableCollection<TrayPaletteItemViewModel> Items => _items;
 
     [ObservableProperty]
     public partial bool IsLoading { get; private set; }
@@ -63,7 +67,9 @@ public sealed partial class TrayPaletteViewModel : ObservableObject, IDisposable
         }
     }
 
-    public async Task RefreshAsync()
+    public Task RefreshAsync() => RefreshAsync(CommandLoadTimeout);
+
+    internal async Task RefreshAsync(TimeSpan commandLoadTimeout)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         var pins = _settingsService.Settings.TrayPalette.Commands;
@@ -92,27 +98,40 @@ public sealed partial class TrayPaletteViewModel : ObservableObject, IDisposable
             var failed = false;
             foreach (var pin in pins.Distinct())
             {
-                CommandResolution? resolution = null;
+                using var timeout = new CancellationTokenSource(commandLoadTimeout);
+                var cancellationToken = timeout.Token;
+                var loadTask = Task.Run(() => LoadItemAsync(pin, cancellationToken));
                 try
                 {
-                    resolution = await _commandManager.ResolveCommandAsync(pin.ProviderId, pin.CommandId);
-                    if (resolution is null ||
-                        !(resolution.Command.CommandViewModel.IsInvokableCommand || resolution.Command.CommandViewModel.IsPage))
+                    if (await loadTask.WaitAsync(timeout.Token) is { } item)
                     {
-                        continue;
+                        items.Add(item);
                     }
-
-                    items.Add(TrayPaletteItemViewModel.CreateAndInitialize(pin, resolution, _contextMenuFactory));
-                    resolution = null;
+                }
+                catch (OperationCanceledException) when (timeout.IsCancellationRequested)
+                {
+                    failed = true;
+                    Logger.LogError($"Timed out loading tray command '{pin.ProviderId}/{pin.CommandId}'.");
+                    _ = loadTask.ContinueWith(
+                        task =>
+                        {
+                            if (task.Status == TaskStatus.RanToCompletion)
+                            {
+                                task.Result?.Dispose();
+                            }
+                            else if (task.Exception is { } exception)
+                            {
+                                Logger.LogError($"Failed to finish loading timed-out tray command '{pin.ProviderId}/{pin.CommandId}'.", exception);
+                            }
+                        },
+                        CancellationToken.None,
+                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskScheduler.Default);
                 }
                 catch (Exception ex)
                 {
                     failed = true;
                     Logger.LogError($"Failed to load tray command '{pin.ProviderId}/{pin.CommandId}'.", ex);
-                }
-                finally
-                {
-                    resolution?.Dispose();
                 }
             }
 
@@ -125,12 +144,9 @@ public sealed partial class TrayPaletteViewModel : ObservableObject, IDisposable
             return;
         }
 
-        Cleanup(Items);
-        Items.Clear();
-        foreach (var item in loaded.Items)
-        {
-            Items.Add(item);
-        }
+        var previousItems = Items.ToArray();
+        _items.ReplaceWith(loaded.Items);
+        Cleanup(previousItems);
 
         HasLoadError = loaded.Failed;
         _loadedPins = pins.ToArray();
@@ -138,6 +154,27 @@ public sealed partial class TrayPaletteViewModel : ObservableObject, IDisposable
         _loadedContentVersion = contentVersion;
         IsLoading = false;
         OnPropertyChanged(nameof(IsEmpty));
+    }
+
+    private async Task<TrayPaletteItemViewModel?> LoadItemAsync(PinnedCommandSettings pin, CancellationToken cancellationToken)
+    {
+        var resolution = await _commandManager.ResolveCommandAsync(pin.ProviderId, pin.CommandId, cancellationToken);
+        try
+        {
+            if (resolution is null ||
+                !(resolution.Command.CommandViewModel.IsInvokableCommand || resolution.Command.CommandViewModel.IsPage))
+            {
+                return null;
+            }
+
+            var item = TrayPaletteItemViewModel.CreateAndInitialize(pin, resolution, _contextMenuFactory);
+            resolution = null;
+            return item;
+        }
+        finally
+        {
+            resolution?.Dispose();
+        }
     }
 
     private static void Cleanup(IEnumerable<TrayPaletteItemViewModel> items)
@@ -150,10 +187,32 @@ public sealed partial class TrayPaletteViewModel : ObservableObject, IDisposable
 
     public void Dispose()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         _disposed = true;
         _commandManager.TopLevelCommands.CollectionChanged -= CommandsChanged;
         ++_refreshVersion;
         Cleanup(Items);
         Items.Clear();
+    }
+
+    private sealed partial class TrayItemsCollection : ObservableCollection<TrayPaletteItemViewModel>
+    {
+        internal void ReplaceWith(IList<TrayPaletteItemViewModel> items)
+        {
+            CheckReentrancy();
+            Items.Clear();
+            foreach (var item in items)
+            {
+                Items.Add(item);
+            }
+
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
+            OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
     }
 }

@@ -2133,10 +2133,10 @@ Home: highest position. End: lowest position.</value>
     <value>Tray icon click action</value>
   </data>
   <data name="Settings_GeneralPage_TrayIconClickAction.Description" xml:space="preserve">
-    <value>Choose what opens when you click the Command Palette tray icon.</value>
+    <value>Choose what opens when you click the Command Palette tray icon</value>
   </data>
   <data name="Settings_GeneralPage_TrayIconClickAction_QuickActions.Content" xml:space="preserve">
-    <value>Open quick actions</value>
+    <value>Open tray menu</value>
   </data>
   <data name="Settings_GeneralPage_TrayIconClickAction_CommandPalette.Content" xml:space="preserve">
     <value>Open command palette</value>
@@ -2157,7 +2157,7 @@ Home: highest position. End: lowest position.</value>
     <value>Unpin from tray menu</value>
   </data>
   <data name="TrayPalette_Title" xml:space="preserve">
-    <value>Tray Palette</value>
+    <value>Tray menu</value>
   </data>
   <data name="TrayPalette_Empty.Text" xml:space="preserve">
     <value>Pin commands from Command Palette to add quick actions here.</value>

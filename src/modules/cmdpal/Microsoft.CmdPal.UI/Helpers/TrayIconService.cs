@@ -23,7 +23,7 @@ namespace Microsoft.CmdPal.UI.Helpers;
 
 [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_*")]
 [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_*")]
-internal sealed partial class TrayIconService
+internal sealed partial class TrayIconService : IDisposable
 {
     private const uint MY_NOTIFY_ID = 1000;
     private const uint WM_TRAY_ICON = PInvoke.WM_USER + 1;
@@ -137,6 +137,12 @@ internal sealed partial class TrayIconService
         }
     }
 
+    public void Dispose()
+    {
+        Destroy();
+        GC.SuppressFinalize(this);
+    }
+
     private DestroyIconSafeHandle GetAppIconHandle()
     {
         var exePath = Path.Combine(AppContext.BaseDirectory, "Microsoft.CmdPal.UI.exe");
@@ -229,7 +235,12 @@ internal sealed partial class TrayIconService
                                     rect = new RECT { left = cursor.X, right = cursor.X, top = cursor.Y, bottom = cursor.Y };
                                 }
 
-                                _trayPalette ??= new TrayPaletteWindow();
+                                if (_trayPalette is null)
+                                {
+                                    _trayPalette = new TrayPaletteWindow();
+                                    _trayPalette.Closed += TrayPalette_Closed;
+                                }
+
                                 _trayPalette.Toggle(rect);
                             }
 
@@ -244,5 +255,17 @@ internal sealed partial class TrayIconService
         }
 
         return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, lParam);
+    }
+
+    private void TrayPalette_Closed(object sender, WindowEventArgs args)
+    {
+        if (sender is TrayPaletteWindow palette)
+        {
+            palette.Closed -= TrayPalette_Closed;
+            if (ReferenceEquals(_trayPalette, palette))
+            {
+                _trayPalette = null;
+            }
+        }
     }
 }

@@ -4,6 +4,7 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
@@ -31,7 +32,11 @@ using WinUIEx;
 
 namespace Microsoft.CmdPal.UI.Tray;
 
-public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShowPaletteAtMessage>, IDisposable
+public sealed partial class TrayPaletteWindow : WindowEx,
+    IRecipient<RequestShowPaletteAtMessage>,
+    IRecipient<HideWindowMessage>,
+    IRecipient<DismissMessage>,
+    IDisposable
 {
     // Tile rows + content padding (12 top/bottom) + divider + footer; must match TrayPaletteWindow.xaml.
     private const int TileRowHeight = 100;
@@ -43,6 +48,7 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
     private readonly TrayDockPageHost _pageHost;
     private readonly DockPageFlyoutController _pageController;
     private RECT _anchor;
+    private HWND _windowBeforeActivation;
     private bool _closed;
     private bool _visible;
     private bool _isDragging;
@@ -77,6 +83,8 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
         _pageHost.Opened += PageHost_Opened;
         _pageController.Closed += PageController_Closed;
         WeakReferenceMessenger.Default.Register<RequestShowPaletteAtMessage>(this);
+        WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
+        WeakReferenceMessenger.Default.Register<DismissMessage>(this);
         Title = ResourceLoaderInstance.GetString("TrayPalette_Title");
         SystemBackdrop = new DesktopAcrylicBackdrop();
         _hiddenOwner.ShowInTaskbar(this, false);
@@ -95,6 +103,7 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
         Root.RequestedTheme = _themeService.Current.Theme;
         Root.KeyDown += Root_KeyDown;
         Activated += Window_Activated;
+        AppWindow.Closing += AppWindow_Closing;
         Closed += Window_Closed;
         _themeService.ThemeChanged += ThemeChanged;
         _settingsService.SettingsChanged += SettingsChanged;
@@ -109,6 +118,7 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
         }
 
         _anchor = anchor;
+        _windowBeforeActivation = PInvoke.GetForegroundWindow();
         _visible = true;
         QuickActions.Visibility = Visibility.Visible;
         _pageController.Activate();
@@ -324,11 +334,39 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
 
     private void Dismiss()
     {
+        if (_closed || !_visible)
+        {
+            return;
+        }
+
+        var restoreFocus = PInvoke.GetForegroundWindow() == new HWND((nint)this.GetWindowHwnd());
+        var previous = _windowBeforeActivation;
+        _windowBeforeActivation = HWND.Null;
         ++_contextRequestVersion;
         _visible = false;
         ItemContextMenu.Hide();
         _pageController.Deactivate();
         AppWindow.Hide();
+        if (restoreFocus && previous != HWND.Null && PInvoke.IsWindow(previous))
+        {
+            PInvoke.SetForegroundWindow(previous);
+        }
+    }
+
+    void IRecipient<HideWindowMessage>.Receive(HideWindowMessage message) => DismissOnUiThread();
+
+    void IRecipient<DismissMessage>.Receive(DismissMessage message) => DismissOnUiThread();
+
+    private void DismissOnUiThread()
+    {
+        if (DispatcherQueue.HasThreadAccess)
+        {
+            Dismiss();
+        }
+        else
+        {
+            DispatcherQueue.TryEnqueue(Dismiss);
+        }
     }
 
     private void PageHost_Opened(object? sender, EventArgs e)
@@ -361,13 +399,24 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
 
         DispatcherQueue.TryEnqueue(() =>
         {
+            if (_closed)
+            {
+                return;
+            }
+
             Dismiss();
             WeakReferenceMessenger.Default.Send(new ShowPaletteAtMessage(new(_anchor.right, _anchor.top), AnchorPoint.BottomRight));
         });
     }
 
     private void ThemeChanged(object? sender, ThemeChangedEventArgs e) =>
-        DispatcherQueue.TryEnqueue(() => Root.RequestedTheme = _themeService.Current.Theme);
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (!_closed)
+            {
+                Root.RequestedTheme = _themeService.Current.Theme;
+            }
+        });
 
     private void SettingsChanged(ISettingsService sender, SettingsModel settings) =>
         DispatcherQueue.TryEnqueue(() =>
@@ -385,6 +434,8 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
             }
         });
 
+    private static void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args) => args.Cancel = true;
+
     private void Window_Closed(object sender, WindowEventArgs args) => Dispose();
 
     public void Dispose()
@@ -396,6 +447,7 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
 
         _closed = true;
         _visible = false;
+        AppWindow.Closing -= AppWindow_Closing;
         _themeService.ThemeChanged -= ThemeChanged;
         _settingsService.SettingsChanged -= SettingsChanged;
         WeakReferenceMessenger.Default.UnregisterAll(this);
