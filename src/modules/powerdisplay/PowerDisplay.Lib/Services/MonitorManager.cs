@@ -400,6 +400,12 @@ namespace PowerDisplay.Common.Services
                 return Task.FromResult(MonitorOperationResult.Failure("Refresh rate can't be changed while displays are duplicated"));
             }
 
+            // Not sharing is only known after a complete topology read; refuse until then.
+            if (!monitor.IsDisplaySourceVerified)
+            {
+                return Task.FromResult(MonitorOperationResult.Failure("Refresh rate can't be changed until the display topology has been read"));
+            }
+
             var result = _refreshRateService.SetRefreshRate(monitor, refreshRate);
             if (result.IsSuccess)
             {
@@ -424,7 +430,13 @@ namespace PowerDisplay.Common.Services
         /// </summary>
         public void RefreshDisplayModes()
         {
-            if (ApplyDisplaySources(_monitors, DisplayConfigInventory.GetAllMonitorDisplayInfo().Values))
+            var complete = DisplayConfigInventory.TryGetAllMonitorDisplayInfo(out var inventory);
+            if (!complete)
+            {
+                Logger.LogWarning("[MonitorManager] Display topology read failed or was incomplete; refresh-rate changes are blocked until it succeeds");
+            }
+
+            if (ApplyDisplaySources(_monitors, complete ? inventory.Values : null))
             {
                 // Orientation is also read per display source.
                 RefreshAllOrientations();
@@ -439,11 +451,23 @@ namespace PowerDisplay.Common.Services
         /// mode several targets share one source. Re-map by monitor Id so display-settings calls
         /// go to the source that is actually active, and flag monitors whose source is shared.
         /// Every active display counts toward sharing, including ones PowerDisplay doesn't
-        /// control. Monitors missing from <paramref name="displays"/> keep their current values.
+        /// control. Monitors missing from <paramref name="displays"/> keep their current source
+        /// and sharing flag but become unverified; a null <paramref name="displays"/> (the
+        /// topology could not be read completely) does that to every monitor.
         /// </summary>
         /// <returns>True if any monitor's display source changed.</returns>
-        internal static bool ApplyDisplaySources(IEnumerable<Monitor> monitors, IEnumerable<MonitorDisplayInfo> displays)
+        internal static bool ApplyDisplaySources(IEnumerable<Monitor> monitors, IEnumerable<MonitorDisplayInfo>? displays)
         {
+            if (displays == null)
+            {
+                foreach (var monitor in monitors)
+                {
+                    monitor.IsDisplaySourceVerified = false;
+                }
+
+                return false;
+            }
+
             var sourceById = new Dictionary<string, string>(MonitorIdComparer.Instance);
             var targetsPerSource = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             foreach (var display in displays)
@@ -468,6 +492,7 @@ namespace PowerDisplay.Common.Services
             {
                 if (!sourceById.TryGetValue(monitor.Id, out var gdiDeviceName))
                 {
+                    monitor.IsDisplaySourceVerified = false;
                     continue;
                 }
 
@@ -479,6 +504,7 @@ namespace PowerDisplay.Common.Services
                 }
 
                 monitor.SharesDisplaySource = targetsPerSource[gdiDeviceName] > 1;
+                monitor.IsDisplaySourceVerified = true;
             }
 
             return changed;
@@ -498,11 +524,11 @@ namespace PowerDisplay.Common.Services
                     continue;
                 }
 
-                // Mode enumeration can briefly return nothing mid-transition; keep the last known
-                // list rather than clearing the options. Skip unchanged lists so the bound ComboBox
-                // isn't rebuilt needlessly.
+                // A failed read (null) can happen mid-transition; keep the last known list then.
+                // An empty list is a real result and clears the options. Skip unchanged lists so
+                // the bound ComboBox isn't rebuilt needlessly.
                 var rates = _refreshRateService.GetAvailableRefreshRates(monitor.GdiDeviceName);
-                if (rates.Count > 0 && !rates.SequenceEqual(monitor.AvailableRefreshRates))
+                if (rates != null && !rates.SequenceEqual(monitor.AvailableRefreshRates))
                 {
                     monitor.AvailableRefreshRates = rates;
                 }

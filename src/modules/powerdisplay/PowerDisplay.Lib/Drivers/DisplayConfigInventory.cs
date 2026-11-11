@@ -19,38 +19,65 @@ namespace PowerDisplay.Common.Drivers
     /// </summary>
     public static class DisplayConfigInventory
     {
+        private const int MaxQueryAttempts = 3;
+
         /// <summary>
         /// Gets complete information for all monitors, keyed by device path.
         /// The device path is unique per target and supports mirror mode.
         /// </summary>
         /// <returns>Dictionary keyed by device path containing monitor information</returns>
-        public static unsafe Dictionary<string, MonitorDisplayInfo> GetAllMonitorDisplayInfo()
+        public static Dictionary<string, MonitorDisplayInfo> GetAllMonitorDisplayInfo()
         {
-            var monitorInfo = new Dictionary<string, MonitorDisplayInfo>(StringComparer.OrdinalIgnoreCase);
+            TryGetAllMonitorDisplayInfo(out var monitorInfo);
+            return monitorInfo;
+        }
+
+        /// <summary>
+        /// Same as <see cref="GetAllMonitorDisplayInfo"/>, but returns false if the topology read
+        /// failed or any active path could not be resolved, i.e. a display may be missing.
+        /// </summary>
+        public static unsafe bool TryGetAllMonitorDisplayInfo(out Dictionary<string, MonitorDisplayInfo> monitorInfo)
+        {
+            monitorInfo = new Dictionary<string, MonitorDisplayInfo>(StringComparer.OrdinalIgnoreCase);
+            var complete = true;
 
             try
             {
-                // Get buffer sizes
-                var result = GetDisplayConfigBufferSizes(QdcOnlyActivePaths, out uint pathCount, out uint modeCount);
-                if (result != 0)
-                {
-                    return monitorInfo;
-                }
+                DisplayConfigPathInfo[] paths;
+                uint pathCount;
 
-                // Allocate buffers
-                var paths = new DisplayConfigPathInfo[pathCount];
-                var modes = new DisplayConfigModeInfo[modeCount];
-
-                // Query display configuration using fixed pointer
-                fixed (DisplayConfigPathInfo* pathsPtr = paths)
+                // The topology can change between sizing the buffers and querying them, which
+                // fails with ERROR_INSUFFICIENT_BUFFER; re-size and retry.
+                for (var attempt = 1; ; attempt++)
                 {
-                    fixed (DisplayConfigModeInfo* modesPtr = modes)
+                    // Get buffer sizes
+                    var result = GetDisplayConfigBufferSizes(QdcOnlyActivePaths, out pathCount, out uint modeCount);
+                    if (result != 0)
                     {
-                        result = QueryDisplayConfig(QdcOnlyActivePaths, ref pathCount, pathsPtr, ref modeCount, modesPtr, IntPtr.Zero);
-                        if (result != 0)
+                        return false;
+                    }
+
+                    // Allocate buffers
+                    paths = new DisplayConfigPathInfo[pathCount];
+                    var modes = new DisplayConfigModeInfo[modeCount];
+
+                    // Query display configuration using fixed pointer
+                    fixed (DisplayConfigPathInfo* pathsPtr = paths)
+                    {
+                        fixed (DisplayConfigModeInfo* modesPtr = modes)
                         {
-                            return monitorInfo;
+                            result = QueryDisplayConfig(QdcOnlyActivePaths, ref pathCount, pathsPtr, ref modeCount, modesPtr, IntPtr.Zero);
                         }
+                    }
+
+                    if (result == 0)
+                    {
+                        break;
+                    }
+
+                    if (result != ErrorInsufficientBuffer || attempt >= MaxQueryAttempts)
+                    {
+                        return false;
                     }
                 }
 
@@ -64,6 +91,7 @@ namespace PowerDisplay.Common.Drivers
                     var gdiDeviceName = GetSourceGdiDeviceName(path.SourceInfo.AdapterId, path.SourceInfo.Id);
                     if (string.IsNullOrEmpty(gdiDeviceName))
                     {
+                        complete = false;
                         continue;
                     }
 
@@ -73,6 +101,7 @@ namespace PowerDisplay.Common.Drivers
                     // Device path is the dictionary key; skip targets that don't have one.
                     if (string.IsNullOrEmpty(devicePath))
                     {
+                        complete = false;
                         continue;
                     }
 
@@ -88,9 +117,10 @@ namespace PowerDisplay.Common.Drivers
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
                 Logger.LogError($"DisplayConfigInventory: GetAllMonitorDisplayInfo exception: {ex.Message}");
+                return false;
             }
 
-            return monitorInfo;
+            return complete;
         }
 
         /// <summary>

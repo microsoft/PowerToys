@@ -84,7 +84,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// must be more than one rate, and the monitor must have its own display source (in Duplicate
     /// mode the rate can't be set per display).
     /// </summary>
-    public bool ShowRefreshRate => IsRefreshRateEnabled && SupportsRefreshRate && !_monitor.SharesDisplaySource;
+    public bool ShowRefreshRate => IsRefreshRateEnabled && SupportsRefreshRate && _monitor.IsDisplaySourceVerified && !_monitor.SharesDisplaySource;
 
     private bool _showPowerState;
 
@@ -486,7 +486,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             if (!result.IsSuccess)
             {
                 Logger.LogWarning($"[{Id}] Failed to set refresh rate: {result.ErrorMessage}");
-                OnPropertyChanged(nameof(SelectedRefreshRate));
+                QueueSelectedRefreshRateRollback();
             }
             else
             {
@@ -496,6 +496,18 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             Logger.LogError($"[{Id}] Exception setting refresh rate: {ex.Message}");
+            QueueSelectedRefreshRateRollback();
+        }
+    }
+
+    // The manager completes synchronously, so a failure surfaces inside the ComboBox's own
+    // selection change; notifying there restores SelectedValue but not SelectedItem/SelectedIndex.
+    // Queue the rollback to run after that change unwinds.
+    private void QueueSelectedRefreshRateRollback()
+    {
+        var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        if (dispatcherQueue == null || !dispatcherQueue.TryEnqueue(() => OnPropertyChanged(nameof(SelectedRefreshRate))))
+        {
             OnPropertyChanged(nameof(SelectedRefreshRate));
         }
     }
@@ -1002,7 +1014,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(SupportsRefreshRate));
             OnPropertyChanged(nameof(ShowRefreshRate));
         }
-        else if (e.PropertyName == nameof(Monitor.SharesDisplaySource))
+        else if (e.PropertyName is nameof(Monitor.SharesDisplaySource) or nameof(Monitor.IsDisplaySourceVerified))
         {
             OnPropertyChanged(nameof(ShowRefreshRate));
         }

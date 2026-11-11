@@ -19,18 +19,22 @@ namespace PowerDisplay.Common.Services
     /// </summary>
     public sealed class DisplayRefreshRateService
     {
-        public unsafe IReadOnlyList<int> GetAvailableRefreshRates(string gdiDeviceName)
+        /// <returns>
+        /// The rates in ascending order, or null if they could not be read. Empty is a valid
+        /// result: the current resolution offers only the hardware-default rate.
+        /// </returns>
+        public unsafe IReadOnlyList<int>? GetAvailableRefreshRates(string gdiDeviceName)
         {
             if (string.IsNullOrEmpty(gdiDeviceName))
             {
-                return Array.Empty<int>();
+                return null;
             }
 
             try
             {
                 if (!TryGetCurrentMode(gdiDeviceName, out var currentMode))
                 {
-                    return Array.Empty<int>();
+                    return null;
                 }
 
                 var rates = new HashSet<int>();
@@ -56,7 +60,7 @@ namespace PowerDisplay.Common.Services
             catch (Exception ex)
             {
                 Logger.LogWarning($"GetAvailableRefreshRates: Exception for {gdiDeviceName}: {ex.Message}");
-                return Array.Empty<int>();
+                return null;
             }
         }
 
@@ -83,7 +87,7 @@ namespace PowerDisplay.Common.Services
             }
 
             var availableRates = GetAvailableRefreshRates(monitor.GdiDeviceName);
-            if (!availableRates.Contains(refreshRate))
+            if (availableRates == null || !availableRates.Contains(refreshRate))
             {
                 return MonitorOperationResult.Failure($"Refresh rate {refreshRate} Hz is not supported");
             }
@@ -102,8 +106,13 @@ namespace PowerDisplay.Common.Services
 
                 // Keep the current orientation in the field mask: DEVMODE requires members
                 // without a DM_* flag to be zero, and this change must not alter rotation.
+                // The same goes for a non-default fixed-output (centered/stretched) scaling.
                 mode.DmDisplayFrequency = refreshRate;
                 mode.DmFields = DmPelsWidth | DmPelsHeight | DmDisplayFrequency | DmDisplayOrientation;
+                if (mode.DmDisplayFixedOutput != 0)
+                {
+                    mode.DmFields |= DmDisplayFixedOutput;
+                }
 
                 var testResult = ChangeDisplaySettingsEx(
                     monitor.GdiDeviceName,

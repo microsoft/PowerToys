@@ -89,6 +89,35 @@ public sealed class MonitorDisplaySourceTests
         Assert.IsFalse(changed);
         Assert.AreEqual(@"\\.\DISPLAY3", monitor.GdiDeviceName);
         Assert.IsTrue(monitor.SharesDisplaySource);
+        Assert.IsFalse(monitor.IsDisplaySourceVerified);
+    }
+
+    [TestMethod]
+    public void ApplyDisplaySources_NewMonitor_IsUnverifiedUntilTopologyIsRead()
+    {
+        var monitor = CreateMonitor(ExternalPath, @"\\.\DISPLAY3");
+        Assert.IsFalse(monitor.IsDisplaySourceVerified);
+
+        MonitorManager.ApplyDisplaySources(new[] { monitor }, new[] { CreateDisplay(ExternalPath, @"\\.\DISPLAY3") });
+
+        Assert.IsTrue(monitor.IsDisplaySourceVerified);
+        Assert.IsFalse(monitor.SharesDisplaySource);
+    }
+
+    [TestMethod]
+    public void ApplyDisplaySources_TopologyReadFailed_MarksEveryMonitorUnverified()
+    {
+        var builtIn = CreateMonitor(InternalPath, @"\\.\DISPLAY1");
+        var external = CreateMonitor(ExternalPath, @"\\.\DISPLAY3");
+        builtIn.IsDisplaySourceVerified = true;
+        external.IsDisplaySourceVerified = true;
+
+        var changed = MonitorManager.ApplyDisplaySources(new[] { builtIn, external }, null);
+
+        Assert.IsFalse(changed);
+        Assert.AreEqual(@"\\.\DISPLAY3", external.GdiDeviceName);
+        Assert.IsFalse(builtIn.IsDisplaySourceVerified);
+        Assert.IsFalse(external.IsDisplaySourceVerified);
     }
 
     private static Monitor CreateMonitor(string id, string gdiDeviceName) =>

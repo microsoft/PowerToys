@@ -34,6 +34,7 @@ namespace PowerDisplay.Common.Models
         private int _currentRefreshRate = -1;
         private IReadOnlyList<int> _availableRefreshRates = Array.Empty<int>();
         private bool _sharesDisplaySource;
+        private bool _isDisplaySourceVerified;
 
         /// <summary>
         /// Gets or sets unique identifier for all purposes: UI lookups, IPC, persistent storage, and handle management.
@@ -382,6 +383,23 @@ namespace PowerDisplay.Common.Models
                 if (_sharesDisplaySource != value)
                 {
                     _sharesDisplaySource = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether <see cref="SharesDisplaySource"/> comes from a
+        /// complete topology read. Until then the refresh rate must not be changed.
+        /// </summary>
+        public bool IsDisplaySourceVerified
+        {
+            get => _isDisplaySourceVerified;
+            set
+            {
+                if (_isDisplaySourceVerified != value)
+                {
+                    _isDisplaySourceVerified = value;
                     OnPropertyChanged();
                 }
             }
