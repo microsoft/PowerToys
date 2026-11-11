@@ -285,6 +285,47 @@ public class HostCliTests
     }
 
     [TestMethod]
+    public void TemplateDiscoveryIncludesOperationSchemasWithoutASeparateCliCatalogueCommand()
+    {
+        using var document = JsonDocument.Parse(RunHostOk("template", "list"));
+        var operation = document.RootElement.EnumerateArray().Single(item =>
+            item.TryGetProperty("commandId", out var id) && id.GetString() == "filelocksmith.query");
+        Assert.AreEqual("powertoys:filelocksmith.query", operation.GetProperty("id").GetString());
+        Assert.AreEqual("File Locksmith", operation.GetProperty("group").GetString());
+        var path = operation.GetProperty("parameters").EnumerateArray().Single(parameter => parameter.GetProperty("name").GetString() == "path");
+        Assert.IsTrue(path.GetProperty("required").GetBoolean());
+        Assert.AreEqual("file-path", path.GetProperty("schema").GetProperty("format").GetString());
+        Assert.IsTrue(document.RootElement.EnumerateArray().Any(item => item.GetProperty("id").GetString() == "greeting"));
+    }
+
+    [TestMethod]
+    public void ConfiguredOperationsAreDiscoveredAsOrdinaryUntrustedScriptsWithTheirActualRuntime()
+    {
+        var (exit, stdout, error) = RunHostWithInput(
+            """{"projectName":"Inspect from template","runtime":"powertoys-cli","operation":{"commandId":"filelocksmith.query"}}""",
+            "template", "create", "--configure", "--root", _root);
+        Assert.AreEqual(0, exit, error);
+        using var created = JsonDocument.Parse(stdout);
+        var entry = created.RootElement.GetProperty("entryPath").GetString()!;
+        Assert.AreEqual("action.json", Path.GetFileName(entry));
+        using var catalogue = JsonDocument.Parse(RunHostOk("list", "--json", "--include-disabled", "--root", _root));
+        var operation = catalogue.RootElement.EnumerateArray().Single(item => item.GetProperty("entryFullPath").GetString() == entry);
+        Assert.AreEqual("PowerToysOperation", operation.GetProperty("runtime").GetString());
+        Assert.IsFalse(operation.GetProperty("trusted").GetBoolean());
+        Assert.AreEqual("none", operation.GetProperty("io").GetProperty("input").GetString());
+        Assert.AreEqual("text", operation.GetProperty("io").GetProperty("output").GetString());
+        Assert.AreEqual("path", operation.GetProperty("parameters").EnumerateArray().Single().GetProperty("name").GetString());
+
+        var before = Directory.GetDirectories(_root);
+        (exit, _, error) = RunHostWithInput(
+            """{"projectName":"first","projectName":"second","operation":{"commandId":"filelocksmith.query"}}""",
+            "template", "create", "--configure", "--root", _root);
+        Assert.AreNotEqual(0, exit);
+        StringAssert.Contains(error, "duplicate");
+        CollectionAssert.AreEquivalent(before, Directory.GetDirectories(_root));
+    }
+
+    [TestMethod]
     public void SharedCatalogueRetainsIoFilteringWithoutModuleAudience()
     {
         var all = RunHostOk("list", "--json", "--include-disabled", "--root", _root);

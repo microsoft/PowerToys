@@ -39,6 +39,10 @@ namespace KeyboardManagerEditorUI.Pages
         private KeyboardMappingService? _mappingService;
         private bool _disposed;
         private bool _isEditMode;
+        private bool _savingMapping;
+        private string? _preparedPowerScriptArguments;
+        private string? _preparedPowerScriptHostPath;
+        private ShortcutSettings? _previousPowerScriptSettings;
         private EditingItem? _editingItem;
         private string _mappingState = "Empty";
         private bool _isServiceRunning = true;
@@ -468,7 +472,8 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.Reset();
             UnifiedMappingControl.SetTriggerKeys(powerScriptShortcut.Shortcut.ToList());
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.PowerScript);
-            UnifiedMappingControl.SelectPowerScript(powerScriptShortcut.ScriptId);
+            UnifiedMappingControl.SelectPowerScript(powerScriptShortcut.ScriptId, powerScriptShortcut.ParameterValues);
+            UnifiedMappingControl.SetAppSpecific(!string.IsNullOrEmpty(powerScriptShortcut.AppName), powerScriptShortcut.AppName);
             RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
             await ShowRemappingDialog();
         }
@@ -490,6 +495,12 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void UnifiedMappingControl_ValidationStateChanged(object? sender, EventArgs e)
         {
+            if (_savingMapping)
+            {
+                RemappingDialog.IsPrimaryButtonEnabled = false;
+                return;
+            }
+
             if (!UnifiedMappingControl.IsInputComplete())
             {
                 RemappingDialog.IsPrimaryButtonEnabled = false;
@@ -519,8 +530,14 @@ namespace KeyboardManagerEditorUI.Pages
 
         #region Save Logic
 
-        private void RemappingDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private async void RemappingDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
+            if (_savingMapping)
+            {
+                args.Cancel = true;
+                return;
+            }
+
             UnifiedMappingControl.HideValidationMessage();
 
             if (_mappingService == null)
@@ -531,6 +548,11 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
+            var deferral = args.GetDeferral();
+            bool wasEnabled = UnifiedMappingControl.IsEnabled;
+            _savingMapping = true;
+            UnifiedMappingControl.IsEnabled = false;
+            sender.IsPrimaryButtonEnabled = false;
             try
             {
                 List<string> triggerKeys = UnifiedMappingControl.GetTriggerKeys();
@@ -546,6 +568,13 @@ namespace KeyboardManagerEditorUI.Pages
                 if (validationError != ValidationErrorType.NoError)
                 {
                     UnifiedMappingControl.ShowValidationErrorFromType(validationError);
+                    args.Cancel = true;
+                    return;
+                }
+
+                if (UnifiedMappingControl.CurrentActionType == UnifiedMappingControl.ActionType.PowerScript &&
+                    !await PreparePowerScriptMappingAsync())
+                {
                     args.Cancel = true;
                     return;
                 }
@@ -573,6 +602,63 @@ namespace KeyboardManagerEditorUI.Pages
                 UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_Generic_Title"), ResourceHelper.GetString("Error_Generic_Message") + ex.Message);
                 args.Cancel = true;
             }
+            finally
+            {
+                _preparedPowerScriptArguments = null;
+                _preparedPowerScriptHostPath = null;
+                _previousPowerScriptSettings = null;
+                _savingMapping = false;
+                UnifiedMappingControl.IsEnabled = wasEnabled;
+                sender.IsPrimaryButtonEnabled = UnifiedMappingControl.IsInputComplete();
+                deferral.Complete();
+            }
+        }
+
+        private async System.Threading.Tasks.Task<bool> PreparePowerScriptMappingAsync()
+        {
+            var previous = UnifiedMappingControl.GetSelectedPowerScript();
+            if (previous is null || !await UnifiedMappingControl.RefreshPowerScriptsAsync())
+            {
+                UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("PowerScript_ValidationTitle"), ResourceHelper.GetString("PowerScript_RefreshRequired"));
+                return false;
+            }
+
+            var current = UnifiedMappingControl.GetSelectedPowerScript();
+            if (current is null)
+            {
+                UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("PowerScript_ValidationTitle"), ResourceHelper.GetString("PowerScript_NoLongerAvailable"));
+                return false;
+            }
+
+            if (!PowerScripts.Client.PowerScriptParameterValues.HasSameInputContract(previous.Script, current.Script))
+            {
+                UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("PowerScript_ValidationTitle"), ResourceHelper.GetString("PowerScript_ContractChanged"));
+                return false;
+            }
+
+            if (!UnifiedMappingControl.ValidatePowerScriptParameters(out string? error))
+            {
+                UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("PowerScript_ValidationTitle"), error ?? string.Empty);
+                return false;
+            }
+
+            _previousPowerScriptSettings = _isEditMode && _editingItem?.Item is PowerScriptShortcut shortcut &&
+                SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(shortcut.Id, out var settings) ? settings : null;
+            if ((_previousPowerScriptSettings?.IsActive ?? true) && !current.Trusted)
+            {
+                UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("PowerScript_ValidationTitle"), ResourceHelper.GetString("PowerScript_ReviewTrust"));
+                return false;
+            }
+
+            _preparedPowerScriptHostPath = UnifiedMappingControl.GetPowerScriptsHostPath();
+            _preparedPowerScriptArguments = PowerScriptInvocation.BuildArguments(current.Id, UnifiedMappingControl.GetPowerScriptParameters());
+            if (!PowerScriptInvocation.TryValidateLength(_preparedPowerScriptHostPath ?? string.Empty, _preparedPowerScriptArguments, out error))
+            {
+                UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("PowerScript_ValidationTitle"), error ?? string.Empty);
+                return false;
+            }
+
+            return true;
         }
 
         private ValidationErrorType ValidateMapping(UnifiedMappingControl.ActionType actionType, List<string> triggerKeys)
@@ -599,7 +685,7 @@ namespace KeyboardManagerEditorUI.Pages
                 UnifiedMappingControl.ActionType.PowerScript => UnifiedMappingControl.GetSelectedPowerScript() is null
                     ? ValidationErrorType.EmptyProgramPath
                     : ValidationHelper.ValidateAppMapping(
-                        triggerKeys, PowerScriptsCatalog.ResolveHostPath() ?? string.Empty, isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
+                        triggerKeys, UnifiedMappingControl.GetPowerScriptsHostPath() ?? string.Empty, isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
                 _ => ValidationErrorType.NoError,
             };
         }
@@ -632,6 +718,7 @@ namespace KeyboardManagerEditorUI.Pages
 
                 string? replacingId = null;
                 bool exactMatch = false;
+                bool isActive = true;
 
                 if (_isEditMode)
                 {
@@ -644,6 +731,12 @@ namespace KeyboardManagerEditorUI.Pages
 
                     replacingId = existingMapping.Id;
                     exactMatch = existingSettings.Shortcut.ExactMatch;
+                    if (UnifiedMappingControl.CurrentActionType == UnifiedMappingControl.ActionType.PowerScript &&
+                        _editingItem.Item is PowerScriptShortcut)
+                    {
+                        isActive = existingSettings.IsActive;
+                    }
+
                     if (existingSettings.IsActive && !DeleteMapping(candidateService, existingSettings.Shortcut))
                     {
                         return false;
@@ -653,7 +746,7 @@ namespace KeyboardManagerEditorUI.Pages
                 ShortcutKeyMapping? replacementMapping = CreateShortcutKeyMapping(candidateService, triggerKeys, exactMatch);
                 if (replacementMapping == null ||
                     HasDuplicateEditorMapping(replacementMapping, replacingId) ||
-                    !AddMapping(candidateService, replacementMapping))
+                    (isActive && !AddMapping(candidateService, replacementMapping)))
                 {
                     return false;
                 }
@@ -665,15 +758,10 @@ namespace KeyboardManagerEditorUI.Pages
                     return false;
                 }
 
-                if (!SettingsManager.TryCommitShortcutKeyMapping(replacementMapping, replacingId))
+                if (!SettingsManager.TryCommitShortcutKeyMapping(replacementMapping, replacingId, isActive))
                 {
                     RestoreOriginalMappingSettings(originalService);
                     return false;
-                }
-
-                if (UnifiedMappingControl.CurrentActionType == UnifiedMappingControl.ActionType.PowerScript)
-                {
-                    PowerScriptsCatalog.ApproveTrust(PowerScriptsCatalog.ParseScriptId(replacementMapping.ProgramArgs)!);
                 }
 
                 KeyboardMappingService previousService = _mappingService;
@@ -747,20 +835,20 @@ namespace KeyboardManagerEditorUI.Pages
 
                 case UnifiedMappingControl.ActionType.PowerScript:
                     var script = UnifiedMappingControl.GetSelectedPowerScript();
-                    var hostPath = PowerScriptsCatalog.ResolveHostPath();
-                    if (script is null || string.IsNullOrEmpty(hostPath))
+                    var hostPath = _preparedPowerScriptHostPath;
+                    var arguments = _preparedPowerScriptArguments;
+                    if (script is null || string.IsNullOrEmpty(hostPath) || string.IsNullOrEmpty(arguments))
                     {
                         return null;
                     }
 
                     mapping.OperationType = ShortcutOperationType.RunProgram;
                     mapping.ProgramPath = hostPath;
-                    mapping.ProgramArgs = $"run {script.Id} --consumer keyboard-manager --no-consent";
+                    mapping.ProgramArgs = arguments;
                     mapping.StartInDirectory = string.Empty;
                     mapping.IfRunningAction = ProgramAlreadyRunningAction.StartAnother;
                     mapping.Visibility = StartWindowType.Hidden;
                     mapping.Elevation = ElevationLevel.NonElevated;
-                    mapping.TargetApp = string.Empty;
                     break;
 
                 case UnifiedMappingControl.ActionType.Disable:
@@ -949,7 +1037,7 @@ namespace KeyboardManagerEditorUI.Pages
 
         #region Toggle Switch Handlers
 
-        private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        private async void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
             if (_isUpdatingToggle ||
                 sender is not ToggleSwitch toggleSwitch ||
@@ -973,6 +1061,20 @@ namespace KeyboardManagerEditorUI.Pages
             try
             {
                 bool desiredState = toggleSwitch.IsOn;
+                if (desiredState && shortcut is PowerScriptShortcut scriptShortcut)
+                {
+                    toggleSwitch.IsEnabled = false;
+                    string? error = await ValidatePowerScriptActivationAsync(scriptShortcut);
+                    if (error is not null)
+                    {
+                        PowerScriptOperationError.Title = ResourceHelper.GetString("PowerScript_ValidationTitle");
+                        PowerScriptOperationError.Message = error;
+                        PowerScriptOperationError.IsOpen = true;
+                        RestoreToggleState(toggleSwitch, shortcut.IsActive);
+                        return;
+                    }
+                }
+
                 if (!SetMappingActiveStateTransaction(shortcut.Id, desiredState))
                 {
                     RestoreToggleState(toggleSwitch, shortcut.IsActive);
@@ -987,6 +1089,47 @@ namespace KeyboardManagerEditorUI.Pages
                 RestoreToggleState(toggleSwitch, shortcut.IsActive);
                 Logger.LogError("Error toggling shortcut active state: " + ex.Message);
             }
+            finally
+            {
+                if (shortcut is PowerScriptShortcut)
+                {
+                    RestoreToggleState(toggleSwitch, shortcut.IsActive);
+                    toggleSwitch.IsEnabled = true;
+                }
+            }
+        }
+
+        private async System.Threading.Tasks.Task<string?> ValidatePowerScriptActivationAsync(PowerScriptShortcut shortcut)
+        {
+            var snapshot = await PowerScriptsCatalog.GetSystemScriptsAsync();
+            if (!snapshot.Succeeded)
+            {
+                return snapshot.ErrorMessage;
+            }
+
+            var script = snapshot.Scripts.FirstOrDefault(script => string.Equals(script.Id, shortcut.ScriptId, StringComparison.Ordinal));
+            if (script is null)
+            {
+                return ResourceHelper.GetString("PowerScript_NoLongerAvailable");
+            }
+
+            if (!script.Trusted)
+            {
+                return ResourceHelper.GetString("PowerScript_ReviewTrust");
+            }
+
+            if (!PowerScripts.Client.PowerScriptParameterValues.TryCreate(script.Script, shortcut.ParameterValues, out _, out string? error))
+            {
+                return error;
+            }
+
+            if (!SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(shortcut.Id, out var settings) ||
+                !PowerScriptInvocation.TryValidateLength(settings.Shortcut.ProgramPath, settings.Shortcut.ProgramArgs, out error))
+            {
+                return error ?? ResourceHelper.GetString("PowerScript_NoLongerAvailable");
+            }
+
+            return null;
         }
 
         private void RestoreToggleState(ToggleSwitch toggleSwitch, bool isActive)
@@ -1284,7 +1427,8 @@ namespace KeyboardManagerEditorUI.Pages
 
                 // PowerScript hotkeys are stored as Run-Program mappings but shown in their own
                 // dedicated section, so skip them here.
-                if (PowerScriptsCatalog.IsPowerScriptProgramPath(mapping.ProgramPath))
+                if (PowerScriptsCatalog.IsPowerScriptProgramPath(mapping.ProgramPath) &&
+                    PowerScriptInvocation.TryParseArguments(mapping.ProgramArgs, out _, out _))
                 {
                     continue;
                 }
@@ -1336,8 +1480,7 @@ namespace KeyboardManagerEditorUI.Pages
                     continue;
                 }
 
-                var scriptId = PowerScriptsCatalog.ParseScriptId(mapping.ProgramArgs);
-                if (string.IsNullOrEmpty(scriptId))
+                if (!PowerScriptInvocation.TryParseArguments(mapping.ProgramArgs, out string scriptId, out var parameterValues))
                 {
                     continue;
                 }
@@ -1350,6 +1493,7 @@ namespace KeyboardManagerEditorUI.Pages
                     Shortcut = originalKeyNames,
                     ScriptId = scriptId,
                     ScriptName = scriptName,
+                    ParameterValues = parameterValues,
                     IsActive = shortcutSettings.IsActive,
                     Id = shortcutSettings.Id,
                     AppName = mapping.TargetApp ?? string.Empty,

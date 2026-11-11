@@ -414,13 +414,13 @@ namespace KeyboardManagerEditorUI.Settings
             return shortcutSettingsChanged;
         }
 
-        public static bool TryCommitShortcutKeyMapping(ShortcutKeyMapping shortcutKeyMapping, string? replacingId)
+        public static bool TryCommitShortcutKeyMapping(ShortcutKeyMapping shortcutKeyMapping, string? replacingId, bool isActive = true)
         {
             try
             {
                 EditorSettings updatedSettings = CloneSettings();
 
-                if (!TryApplyShortcutKeyMapping(updatedSettings, shortcutKeyMapping, replacingId, _mappingService?.ConfigurationName))
+                if (!TryApplyShortcutKeyMapping(updatedSettings, shortcutKeyMapping, replacingId, _mappingService?.ConfigurationName, isActive))
                 {
                     return false;
                 }
@@ -443,11 +443,12 @@ namespace KeyboardManagerEditorUI.Settings
             EditorSettings settings,
             ShortcutKeyMapping shortcutKeyMapping,
             string? replacingId,
-            string? profileName = null)
+            string? profileName = null,
+            bool isActive = true)
         {
             if (string.IsNullOrEmpty(replacingId))
             {
-                AddShortcutMapping(settings, shortcutKeyMapping, profileName);
+                AddShortcutMapping(settings, shortcutKeyMapping, profileName, isActive);
                 return true;
             }
 
@@ -468,7 +469,7 @@ namespace KeyboardManagerEditorUI.Settings
                 {
                     RemoveProfile(existingSettings, profileName);
                     existingSettings.IsActive = false;
-                    AddShortcutMapping(settings, shortcutKeyMapping, profileName);
+                    AddShortcutMapping(settings, shortcutKeyMapping, profileName, isActive);
                     settings.ProfileDictionary = BuildProfileIndex(settings);
                     return true;
                 }
@@ -484,7 +485,7 @@ namespace KeyboardManagerEditorUI.Settings
             }
 
             existingSettings.Shortcut = shortcutKeyMapping;
-            existingSettings.IsActive = true;
+            existingSettings.IsActive = isActive;
 
             if (!settings.ShortcutsByOperationType.TryGetValue(shortcutKeyMapping.OperationType, out List<string>? replacementIds))
             {
@@ -747,14 +748,14 @@ namespace KeyboardManagerEditorUI.Settings
             return true;
         }
 
-        private static string AddShortcutMapping(EditorSettings settings, ShortcutKeyMapping mapping, string? profileName = null)
+        private static string AddShortcutMapping(EditorSettings settings, ShortcutKeyMapping mapping, string? profileName = null, bool isActive = true)
         {
             string guid = Guid.NewGuid().ToString();
             var shortcutSettings = new ShortcutSettings
             {
                 Id = guid,
                 Shortcut = mapping,
-                IsActive = true,
+                IsActive = isActive,
             };
 
             if (!string.IsNullOrWhiteSpace(profileName))

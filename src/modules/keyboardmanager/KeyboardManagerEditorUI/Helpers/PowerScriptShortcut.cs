@@ -22,6 +22,9 @@ namespace KeyboardManagerEditorUI.Helpers
         /// <summary>The PowerScript's friendly name, for display.</summary>
         public string ScriptName { get; set; } = string.Empty;
 
+        /// <summary>Values decoded from the ordinary Host invocation, not a separate settings record.</summary>
+        public IReadOnlyDictionary<string, string?> ParameterValues { get; set; } = new Dictionary<string, string?>();
+
         public bool IsActive { get; set; } = true;
 
         public string Id { get; set; } = string.Empty;

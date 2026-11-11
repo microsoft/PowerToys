@@ -77,6 +77,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
+        <StackPanel Grid.Row="0">
         <!--  Service Down Banner  -->
         <InfoBar
             x:Name="ServiceDownBanner"
@@ -87,6 +88,13 @@
             IsOpen="True"
             Severity="Error"
             Visibility="Collapsed" />
+        <InfoBar
+            x:Name="PowerScriptOperationError"
+            Margin="16,16,16,0"
+            IsClosable="True"
+            IsOpen="False"
+            Severity="Error" />
+        </StackPanel>
 
         <ContentControl
             x:Name="MainContentControl"

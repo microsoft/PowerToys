@@ -285,7 +285,14 @@ Python environment selection, not shared trust or isolation.
 
 ## Settings and templates
 
-**Create Script** generates editable packages for all 50 runtime/input/output
+In **My scripts**, **Create Script** opens a small menu: **Custom script** keeps the
+original authoring form, while **PowerToys operations** opens a compact, JSON-driven
+[operation form](CLI-TEMPLATES.md). Choose a module and operation, enter fixed values
+prefilled from catalogue defaults, and use **Test run** on that same configuration
+before creation. The Script details command bar also includes **Run** for an installed
+script.
+
+**Custom script** generates editable packages for all 50 runtime/input/output
 combinations. Creation never runs code, grants trust, or changes isolation.
 Add named parameters with string, integer, boolean, or file-path types, display
 names/descriptions, required flags and typed defaults. Strings optionally declare
@@ -298,13 +305,12 @@ ignoring case, and avoid PowerShell automatic variables and the active primary n
 For CLI creation, add `parameters` entries such as
 `{"name":"count","schema":{"type":"integer","minimum":1,"default":2},"required":true}`
 to the configuration request. File-path entries can also specify `fileExtensions`.
-The creation page starts blank, without metadata presets or prefilled parameters.
-Enter your own details and explicitly choose the runtime, input/output types,
-and each parameter's name and type. For file input, also enter the minimum and
-maximum file counts. The same generator is ready for a future sentence-based
+Choose **Custom script** to start with a blank contract. Enter your own details and
+explicitly choose the runtime, input/output types, and each parameter's name and type.
+For file input, also enter the minimum and maximum file counts. The same generator is ready for a future sentence-based
 creation UI: input maps to `input`, questions to the `parameters` list (empty
 means "ask nothing"), result to `output`, and runtime to `runtime`.
-The UI itself is unchanged.
+The form keeps the existing single-column layout and parameter expanders.
 Defaults are optional: a required parameter without a default must be supplied
 at invocation, while an optional parameter without a default may be omitted.
 An explicit default can be an empty string, zero, or false; it is not the same
@@ -314,9 +320,10 @@ The form's maximum-file value 0 means unlimited and generates an *omitted*
 `maxItems`; it is not serialized as `maxItems: 0`.
 The CLI equivalent is `template create --configure`, reading creation options
 such as `{"projectName":"My script","runtime":"python","input":"files","output":"text"}`.
-`template list` and `template create <id>` expose six educational templates,
-including image/audio round trips and file-backed video inspection.
-Every selection generates a runnable example and a README explaining its task:
+`template list` includes six educational templates, including image/audio round trips
+and file-backed video inspection, together with the built-in PowerToys operation templates.
+`template create <id>` instantiates either kind.
+Each educational selection generates a runnable example and a README explaining its task:
 
 | Input | No result | Text result | File result | Image result | Audio result |
 |---|---|---|---|---|---|

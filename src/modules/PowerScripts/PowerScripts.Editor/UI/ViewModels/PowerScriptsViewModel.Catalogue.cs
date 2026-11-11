@@ -12,11 +12,13 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using PowerScripts.Client;
 
 namespace PowerScripts.UI.ViewModels;
 
 public partial class PowerScriptsViewModel
 {
+    private static readonly string[] OperationTemplateListArguments = new[] { "template", "list" };
     private int _catalogueGeneration;
     private string _loadedScriptsRoot;
 
@@ -31,7 +33,8 @@ public partial class PowerScriptsViewModel
         int maxFiles,
         JsonArray parameters = null,
         string iconPreset = null,
-        string iconSource = null)
+        string iconSource = null,
+        JsonObject operation = null)
     {
         var request = new JsonObject
         {
@@ -47,6 +50,11 @@ public partial class PowerScriptsViewModel
             ["iconPreset"] = iconPreset,
             ["iconSource"] = iconSource,
         };
+        if (operation is not null)
+        {
+            request["operation"] = operation;
+        }
+
         var result = JsonNode.Parse(await InvokeHostAsync(new[] { "template", "create", "--configure", "--root", ScriptsFolder }, request));
         var entry = result?["entryPath"]?.GetValue<string>();
         if (string.IsNullOrWhiteSpace(entry) || !File.Exists(entry) || !File.Exists(entry + ".tool.json"))
@@ -56,6 +64,23 @@ public partial class PowerScriptsViewModel
 
         await ReloadScriptsAsync();
         return entry;
+    }
+
+    public async Task<IReadOnlyList<PowerScriptOperationTemplate>> LoadOperationTemplatesAsync()
+    {
+        var json = await InvokeHostAsync(OperationTemplateListArguments);
+        var templates = JsonSerializer.Deserialize<List<PowerScriptOperationTemplate>>(json, JsonOptions)
+            ?? throw new InvalidDataException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
+        var operations = templates.Where(template => !string.IsNullOrWhiteSpace(template.CommandId)).ToArray();
+        if (operations.Any(template => string.IsNullOrWhiteSpace(template.Id) || string.IsNullOrWhiteSpace(template.Name) ||
+                template.Parameters is null || template.Parameters.Any(parameter => parameter is null ||
+                    string.IsNullOrWhiteSpace(parameter.Name) || parameter.Schema is null)) ||
+            operations.Select(template => template.Id).Distinct(StringComparer.Ordinal).Count() != operations.Length)
+        {
+            throw new InvalidDataException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
+        }
+
+        return operations;
     }
 
     public async Task ReloadScriptsAsync(bool preserveEditorOrder = false)
@@ -101,8 +126,30 @@ public partial class PowerScriptsViewModel
 
     private static async Task<string> InvokeHostAsync(IEnumerable<string> arguments, JsonObject request = null, TimeSpan? commandTimeout = null)
     {
+        var result = await InvokeHostCommandAsync(arguments, request, commandTimeout);
+        if (result.ExitCode != 0)
+        {
+            throw new InvalidOperationException(string.IsNullOrWhiteSpace(result.StdErr)
+                ? GetResourceString("PowerScripts_SettingsHostFailed")
+                : result.StdErr.Trim());
+        }
+
+        if (!string.IsNullOrWhiteSpace(result.StdErr))
+        {
+            ManagedCommon.Logger.LogWarning($"PowerScripts Host diagnostics: {result.StdErr.Trim()}");
+        }
+
+        return result.StdOut;
+    }
+
+    private static async Task<PowerScriptRunResult> InvokeHostCommandAsync(
+        IEnumerable<string> arguments,
+        JsonObject request = null,
+        TimeSpan? commandTimeout = null,
+        CancellationToken cancellationToken = default)
+    {
         // Discovery can traverse development output folders, so keep it off the UI thread as well.
-        var hostPath = await Task.Run(ResolveHostPath);
+        var hostPath = await Task.Run(ResolveHostPath, cancellationToken);
         if (string.IsNullOrEmpty(hostPath))
         {
             throw new FileNotFoundException(GetResourceString("PowerScripts_MxcSupportHostMissing"));
@@ -124,9 +171,11 @@ public partial class PowerScriptsViewModel
             startInfo.ArgumentList.Add(argument);
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
         using var process = Process.Start(startInfo)
             ?? throw new InvalidOperationException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
-        using var timeout = new CancellationTokenSource(commandTimeout ?? TimeSpan.FromSeconds(30));
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(commandTimeout ?? TimeSpan.FromSeconds(30));
 
         // Drain both pipes concurrently: stderr must never block stdout or stdin.
         var outputTask = process.StandardOutput.ReadToEndAsync(timeout.Token);
@@ -142,27 +191,31 @@ public partial class PowerScriptsViewModel
             await process.WaitForExitAsync(timeout.Token);
             var output = await outputTask;
             var error = await errorTask;
-            if (process.ExitCode != 0)
+            return new PowerScriptRunResult
             {
-                throw new InvalidOperationException(string.IsNullOrWhiteSpace(error)
-                    ? GetResourceString("PowerScripts_SettingsHostFailed")
-                    : error.Trim());
-            }
-
-            if (!string.IsNullOrWhiteSpace(error))
-            {
-                ManagedCommon.Logger.LogWarning($"PowerScripts Host diagnostics: {error.Trim()}");
-            }
-
-            return output;
+                ExitCode = process.ExitCode,
+                StdOut = output,
+                StdErr = error,
+            };
         }
         catch (OperationCanceledException ex)
         {
-            if (!process.HasExited)
+            try
             {
-                process.Kill(entireProcessTree: true);
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+
+                using var shutdown = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                await process.WaitForExitAsync(shutdown.Token);
+            }
+            catch (Exception shutdownError) when (shutdownError is InvalidOperationException or System.ComponentModel.Win32Exception or OperationCanceledException)
+            {
+                ManagedCommon.Logger.LogError("Unable to confirm that a cancelled PowerScripts Host command exited.", shutdownError);
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
             throw new TimeoutException(GetResourceString("PowerScripts_SettingsTimeout"), ex);
         }
     }

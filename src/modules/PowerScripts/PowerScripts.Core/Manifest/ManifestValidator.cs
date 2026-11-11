@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
+using PowerScripts.Core.Cli;
 
 namespace PowerScripts.Core.Manifest;
 
@@ -78,17 +79,26 @@ public static class ManifestValidator
 
         if (manifest.Execute is { } execute)
         {
-            if (execute.Command is not { Count: > 0 } command ||
+            if (execute.Provider is not null)
+            {
+                errors.AddRange(CliActionProvider.Validate(manifest));
+            }
+            else if (execute.Command is not { Count: > 0 } command ||
                 command.Any(token => token is null || token.Contains('\0')) ||
                 string.IsNullOrWhiteSpace(command[0]))
             {
                 errors.Add("'x-execute.command' must contain an executable and valid argument tokens.");
             }
 
-            if (execute.Stdin is not null && !execute.UsesJsonStdin)
+            if (execute.Provider is null && execute.Stdin is not null && !execute.UsesJsonStdin)
             {
                 errors.Add("'x-execute.stdin' must be 'json' or omitted.");
             }
+        }
+
+        if (manifest.Runtime == ScriptRuntime.PowerToysOperation && manifest.Execute?.Provider is null)
+        {
+            errors.Add("PowerToys operation entries require their execution provider.");
         }
 
         ValidateParameters(manifest, errors);

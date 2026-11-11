@@ -16,6 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PowerScripts.Core\PowerScripts.Core.csproj" />
     <ProjectReference Include="..\PowerScripts.Client\PowerScripts.Client.csproj" />
+    <ProjectReference Include="..\PowerScripts.FuzzTests\PowerScripts.FuzzTests.csproj" />
 
     <!-- Build-order only: guarantees PowerScripts.Host.exe exists before the CLI tests run, so the
          host integration/CLI tests act as a real guard instead of silently skipping. The host is a
@@ -25,5 +26,18 @@
                       ReferenceOutputAssembly="false"
                       SkipGetTargetFrameworkProperties="true"
                       Private="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\PowerScripts.Editor\UI\ViewModels\PowerScriptMetadataDetails.cs"
+             Link="EditorMetadata\PowerScriptMetadataDetails.cs" />
+    <Compile Include="..\PowerScripts.Editor\UI\ViewModels\PowerScriptMetadataRow.cs"
+             Link="EditorMetadata\PowerScriptMetadataRow.cs" />
+    <Compile Include="..\PowerScripts.Editor\UI\ViewModels\PowerScriptMetadataSection.cs"
+             Link="EditorMetadata\PowerScriptMetadataSection.cs" />
+    <Compile Include="..\..\keyboardmanager\KeyboardManagerEditorUI\Helpers\PowerScriptInvocation.cs"
+             Link="KbmHelpers\PowerScriptInvocation.cs" />
+    <None Include="..\PowerScripts.FuzzTests\Seeds\**\*"
+          Link="FuzzSeeds\%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

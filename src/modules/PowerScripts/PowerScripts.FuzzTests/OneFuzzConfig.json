@@ -1,0 +1,31 @@
+{
+  "configVersion": 3,
+  "entries": [
+    {
+      "fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "dll": "PowerScripts.FuzzTests.dll",
+        "class": "PowerScripts.FuzzTests.CliActionFuzzer",
+        "method": "FuzzAction",
+        "FuzzingTargetBinaries": ["PowerScripts.Core.dll", "PowerScripts.FuzzTests.dll"]
+      },
+      "skip": true,
+      "rebootAfterSetup": false,
+      "oneFuzzJobs": [{"projectName": "PowerToys", "targetName": "PowerScripts-cli-action"}],
+      "jobDependencies": ["*.dll", "*.pdb", "*.deps.json", "*.runtimeconfig.json", "Seeds\\Actions\\**"]
+    },
+    {
+      "fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "dll": "PowerScripts.FuzzTests.dll",
+        "class": "PowerScripts.FuzzTests.CliActionFuzzer",
+        "method": "FuzzTemplateConfiguration",
+        "FuzzingTargetBinaries": ["PowerScripts.Core.dll", "PowerScripts.FuzzTests.dll"]
+      },
+      "skip": true,
+      "rebootAfterSetup": false,
+      "oneFuzzJobs": [{"projectName": "PowerToys", "targetName": "PowerScripts-template-configuration"}],
+      "jobDependencies": ["*.dll", "*.pdb", "*.deps.json", "*.runtimeconfig.json", "Seeds\\Templates\\**"]
+    }
+  ]
+}

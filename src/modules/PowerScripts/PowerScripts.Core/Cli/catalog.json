@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 2,
+  "modules": [
+    {
+      "id": "filelocksmith",
+      "title": "File Locksmith",
+      "operations": [
+        {
+          "id": "filelocksmith.query",
+          "title": "Find processes using a file",
+          "description": "Query processes using the selected file without terminating them. Requires visibility of processes on the Windows host.",
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "format": "file-path",
+                "title": "File",
+                "description": "An existing file to inspect."
+              },
+              "json": {
+                "type": "boolean",
+                "title": "Output format",
+                "description": "Choose structured JSON or plain text process information.",
+                "default": true,
+                "x-ui": {
+                  "control": "choice",
+                  "trueLabel": "JSON",
+                  "falseLabel": "Text"
+                }
+              }
+            },
+            "required": [
+              "path"
+            ]
+          },
+          "x-execute": {
+            "command": [
+              "FileLocksmithCLI.exe"
+            ],
+            "arguments": [
+              {
+                "parameter": "json",
+                "kind": "switch",
+                "flag": "--json"
+              },
+              {
+                "parameter": "path",
+                "kind": "positional"
+              }
+            ]
+          },
+          "requiredCapabilities": [
+            "fileRead"
+          ],
+          "requiresHostProcessVisibility": true,
+          "requiresHostDesktop": false
+        }
+      ]
+    },
+    {
+      "id": "fancyzones",
+      "title": "FancyZones",
+      "operations": [
+        {
+          "id": "fancyzones.get-layouts",
+          "title": "List saved layouts",
+          "description": "List saved template and custom layouts. FancyZones must be running and accessible from the host desktop.",
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "x-execute": {
+            "command": [
+              "FancyZonesCLI.exe",
+              "get-layouts"
+            ],
+            "arguments": []
+          },
+          "requiredCapabilities": [
+            "fileRead"
+          ],
+          "requiresHostProcessVisibility": false,
+          "requiresHostDesktop": true
+        },
+        {
+          "id": "fancyzones.get-monitors",
+          "title": "List displays",
+          "description": "List displays known to FancyZones. FancyZones must be running and accessible from the host desktop.",
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "x-execute": {
+            "command": [
+              "FancyZonesCLI.exe",
+              "get-monitors"
+            ],
+            "arguments": []
+          },
+          "requiredCapabilities": [
+            "fileRead"
+          ],
+          "requiresHostProcessVisibility": false,
+          "requiresHostDesktop": true
+        }
+      ]
+    }
+  ]
+}

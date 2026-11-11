@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
+using PowerScripts.Core.Cli;
 using PowerScripts.Core.Execution;
 
 namespace PowerScripts.Core.Manifest;
@@ -30,8 +31,20 @@ public static class ToolDescriptorParser
             return null;
         }
 
+        var json = File.ReadAllText(descriptorPath);
+        using (var document = JsonDocument.Parse(json, new JsonDocumentOptions { MaxDepth = JsonOptions.MaxDepth }))
+        {
+            if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                document.RootElement.EnumerateObject().Any(property => property.Name == "x-execute" &&
+                    property.Value.ValueKind == JsonValueKind.Object &&
+                    property.Value.EnumerateObject().Any(member => member.Name == "provider")))
+            {
+                CliActionProvider.CheckDuplicateProperties(document.RootElement);
+            }
+        }
+
         return Parse(
-            JsonSerializer.Deserialize<ToolDescriptor>(File.ReadAllText(descriptorPath), JsonOptions),
+            JsonSerializer.Deserialize<ToolDescriptor>(json, JsonOptions),
             Path.GetFileName(descriptorPath[..^DescriptorSuffix.Length]));
     }
 
@@ -42,7 +55,7 @@ public static class ToolDescriptorParser
             throw new InvalidDataException("The descriptor requires a non-empty 'name'.");
         }
 
-        var runtime = Path.GetExtension(entry).ToLowerInvariant() switch
+        var runtime = descriptor.Execute?.Provider is not null ? ScriptRuntime.PowerToysOperation : Path.GetExtension(entry).ToLowerInvariant() switch
         {
             ".py" => ScriptRuntime.Python,
             ".ps1" => ScriptRuntime.PowerShell,

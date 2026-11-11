@@ -619,4 +619,46 @@
   <data name="NoResultsClearBtn.Content" xml:space="preserve">
     <value>Clear filters</value>
   </data>
+  <data name="PowerScript_RefreshButton.Content" xml:space="preserve">
+    <value>Refresh scripts</value>
+  </data>
+  <data name="PowerScript_ResetParameters.Content" xml:space="preserve">
+    <value>Reset to script defaults</value>
+  </data>
+  <data name="PowerScript_EmptyHint.Text" xml:space="preserve">
+    <value>No compatible PowerScripts found. Enable PowerScripts and its Keyboard Manager integration, then create a script with no primary input.</value>
+  </data>
+  <data name="PowerScript_HostUnavailable" xml:space="preserve">
+    <value>The PowerScripts Host could not be found. Check the installation, then refresh scripts.</value>
+  </data>
+  <data name="PowerScript_DiscoveryTimeout" xml:space="preserve">
+    <value>PowerScripts discovery did not finish within 5 seconds. Refresh scripts to try again.</value>
+  </data>
+  <data name="PowerScript_Browse" xml:space="preserve">
+    <value>Browse...</value>
+  </data>
+  <data name="PowerScript_FilePickerFailed" xml:space="preserve">
+    <value>The file picker could not be opened. Enter the file path instead.</value>
+  </data>
+  <data name="PowerScript_ProvideValue" xml:space="preserve">
+    <value>Provide a value</value>
+  </data>
+  <data name="PowerScript_OverrideDefault" xml:space="preserve">
+    <value>Override the script default</value>
+  </data>
+  <data name="PowerScript_ValidationTitle" xml:space="preserve">
+    <value>Check the PowerScript binding</value>
+  </data>
+  <data name="PowerScript_RefreshRequired" xml:space="preserve">
+    <value>The current script contract could not be refreshed. Refresh scripts before saving.</value>
+  </data>
+  <data name="PowerScript_NoLongerAvailable" xml:space="preserve">
+    <value>This script is no longer available for a hotkey. Check it in PowerScripts, then refresh scripts.</value>
+  </data>
+  <data name="PowerScript_ContractChanged" xml:space="preserve">
+    <value>The script input contract changed. Review the refreshed parameters before saving again.</value>
+  </data>
+  <data name="PowerScript_ReviewTrust" xml:space="preserve">
+    <value>Review and approve this script version in PowerScripts before enabling a hotkey. Creating or saving a binding does not approve the script.</value>
+  </data>
 </root>

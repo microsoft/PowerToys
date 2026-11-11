@@ -152,6 +152,16 @@ public partial class PowerScriptsViewModel
 
     private void ApplyExecutionSummary(PowerScriptListItem script)
     {
+        if (script.IsPowerToysOperation)
+        {
+            script.SetExecutionSummary(
+                GetResourceString("PowerScripts_ExecutionOperation"),
+                script.MxcEffectiveDisplay,
+                string.Empty,
+                managedLinux: false);
+            return;
+        }
+
         if (script.HasExplicitExecution)
         {
             script.SetExecutionSummary(

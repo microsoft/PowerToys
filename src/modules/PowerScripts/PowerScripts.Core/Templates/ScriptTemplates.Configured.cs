@@ -22,6 +22,11 @@ public static partial class ScriptTemplates
     public static CreatedScriptTemplate Create(string scriptsRoot, ScriptTemplateOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
+        if (options.Operation is not null)
+        {
+            return CreateOperation(scriptsRoot, options);
+        }
+
         if (options.Runtime is not ("powershell" or "python") ||
             options.Input is not ("none" or "text" or "files" or "image" or "audio") ||
             options.Output is not ("none" or "text" or "files" or "image" or "audio"))
