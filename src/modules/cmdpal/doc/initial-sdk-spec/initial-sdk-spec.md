@@ -2691,7 +2691,7 @@ interface IFallbackCommandResult
         IFallbackCommandResult> LoadMoreItemsAsync(UInt32 requestedItemCount);
 };
 
-interface IFallbackQueryHandler requires IFallbackHandler
+interface IFallbackQueryHandler
 {
     Windows.Foundation.IAsyncOperationWithProgress<
         IFallbackCommandResult,
