@@ -15,13 +15,17 @@ namespace Microsoft.CmdPal.Ext.TextExpander.Insertion;
 /// </summary>
 internal sealed partial class SavedClipboard : IDisposable
 {
-    public SavedClipboard(IReadOnlyList<ClipboardEntry> entries)
+    public SavedClipboard(IReadOnlyList<ClipboardEntry> entries, uint sequenceNumber)
     {
         ArgumentNullException.ThrowIfNull(entries);
         Entries = entries;
+        SequenceNumber = sequenceNumber;
     }
 
     public IReadOnlyList<ClipboardEntry> Entries { get; }
+
+    /// <summary>Gets the change counter captured with these contents while the clipboard was still open.</summary>
+    public uint SequenceNumber { get; }
 
     public bool IsEmpty => Entries.Count == 0;
 

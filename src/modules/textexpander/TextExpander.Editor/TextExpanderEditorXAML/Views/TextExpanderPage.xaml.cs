@@ -966,7 +966,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         private void ReloadSnippets_Click(object sender, RoutedEventArgs e)
         {
             SnippetFolderFlyout.Hide();
-            bool hadError = ViewModel.HasSnippetError;
+            bool hadMessage = ViewModel.HasSnippetMessage;
             ViewModel.LoadSnippets();
             if (ViewModel.IsWaitingForSnippetsFile)
             {
@@ -980,7 +980,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                     ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SnippetFolder_Reloaded"),
                     "textExpanderSnippetFileReloaded");
             }
-            else if (hadError)
+            else if (hadMessage)
             {
                 // The error bar announces itself only as it opens, and a failed Retry leaves it open.
                 Announce(SnippetErrorBar, ViewModel.SnippetError, "textExpanderSnippetError");

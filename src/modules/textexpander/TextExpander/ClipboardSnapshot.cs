@@ -8,9 +8,12 @@ namespace Microsoft.PowerToys.TextExpander;
 /// An off-clipboard copy of the user's clipboard, taken before an expansion pastes over it. An empty snapshot
 /// means the clipboard was genuinely empty, so restoring it clears the clipboard.
 /// </summary>
-internal sealed class ClipboardSnapshot(IReadOnlyList<ClipboardEntry> entries) : IDisposable
+internal sealed class ClipboardSnapshot(IReadOnlyList<ClipboardEntry> entries, uint sequenceNumber) : IDisposable
 {
     public IReadOnlyList<ClipboardEntry> Entries { get; } = entries;
+
+    /// <summary>Gets the change counter captured with these contents while the clipboard was still open.</summary>
+    public uint SequenceNumber { get; } = sequenceNumber;
 
     public bool IsEmpty => Entries.Count == 0;
 

@@ -616,7 +616,7 @@ internal static class Injector
             return PasteOutcome.RefusedBeforeErase;
         }
 
-        ClipboardWrite write = Clipboard.SetText(text);
+        ClipboardWrite write = Clipboard.SetText(text, saved);
         if (write == ClipboardWrite.Refused)
         {
             return PasteOutcome.RefusedBeforeErase; // clipboard untouched; nothing to put back

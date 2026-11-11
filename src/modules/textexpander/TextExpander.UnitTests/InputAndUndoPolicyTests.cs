@@ -334,7 +334,7 @@ public sealed class InputAndUndoPolicyTests
     public void ClipboardSnapshotZeroesCopiedBytesWhenDisposed()
     {
         byte[] data = [1, 2, 3, 4];
-        using (var snapshot = new ClipboardSnapshot([new ClipboardEntry(ClipboardFormats.CF_UNICODETEXT, data)]))
+        using (var snapshot = new ClipboardSnapshot([new ClipboardEntry(ClipboardFormats.CF_UNICODETEXT, data)], 0))
         {
             Assert.IsFalse(snapshot.IsEmpty);
         }

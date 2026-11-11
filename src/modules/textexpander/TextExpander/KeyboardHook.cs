@@ -46,7 +46,6 @@ internal sealed class KeyboardHook : IDisposable
     private readonly object _undoLock = new();
     private readonly SnippetStore _store;
     private TargetAuthorization _targetAuthorization = new(IntPtr.Zero, 0, false);
-    private long _authorizationGeneration;
 
     // The window the hook last asked to have checked, so it asks once per window rather than per key.
     private IntPtr _requestedAuthorizationWindow;
@@ -247,21 +246,31 @@ internal sealed class KeyboardHook : IDisposable
     // ── Hook callback ────────────────────────────────────────
     private unsafe IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
     {
+        if (nCode != Native.HC_ACTION)
+        {
+            return Native.CallNextHookEx(_hookHandle, nCode, wParam, lParam);
+        }
+
         // Copied, not marshalled, which would allocate on every key event on the machine.
-        return nCode == Native.HC_ACTION && OnKeyEvent(*(Native.KBDLLHOOKSTRUCT*)lParam, wParam.ToInt32())
-            ? new IntPtr(1)
-            : Native.CallNextHookEx(_hookHandle, nCode, wParam, lParam);
+        Native.KBDLLHOOKSTRUCT key = *(Native.KBDLLHOOKSTRUCT*)lParam;
+        if (OnKeyEvent(key, wParam.ToInt32(), observePassed: false))
+        {
+            return new IntPtr(1);
+        }
+
+        IntPtr next = Native.CallNextHookEx(_hookHandle, nCode, wParam, lParam);
+        return next != IntPtr.Zero || Guard.Passed(key) ? next : new IntPtr(1);
     }
 
     /// <summary>Handles a key event, and returns whether it's swallowed. Every one, key-ups too, goes to the guard first.</summary>
-    internal bool OnKeyEvent(Native.KBDLLHOOKSTRUCT data, int message)
+    internal bool OnKeyEvent(Native.KBDLLHOOKSTRUCT data, int message, bool observePassed = true)
     {
-        if (Guard.Swallows(data))
+        if (Guard.Swallows(data, observePassed))
         {
             return true;
         }
 
-        if (message != Native.WM_KEYDOWN && message != Native.WM_SYSKEYDOWN)
+        if (_disposed || (message != Native.WM_KEYDOWN && message != Native.WM_SYSKEYDOWN))
         {
             return false;
         }
@@ -497,7 +506,13 @@ internal sealed class KeyboardHook : IDisposable
             {
                 // Overwritten, not just uncounted: the character the user deleted is exactly the kind
                 // they most often meant to take back.
+                // A valid surrogate pair is one recorded scalar; other text-element deletion rules are unchanged.
+                bool pair = _count > 1 && char.IsLowSurrogate(_buffer[_count - 1]) && char.IsHighSurrogate(_buffer[_count - 2]);
                 _buffer[--_count] = '\0';
+                if (pair)
+                {
+                    _buffer[--_count] = '\0';
+                }
             }
 
             return false;
@@ -938,18 +953,27 @@ internal sealed class KeyboardHook : IDisposable
         return CaptureFor(foreground, foregroundProcessId, authorization, Volatile.Read(ref _requestedAuthorizationWindow));
     }
 
-    private void RefreshTargetAuthorization(IntPtr window, bool asynchronous)
+    internal void RefreshTargetAuthorization(
+        IntPtr window,
+        bool asynchronous,
+        Func<IntPtr, uint>? processIdFor = null,
+        Func<IntPtr, uint, bool>? canDriveWindow = null,
+        Func<IntPtr>? getForegroundWindow = null)
     {
-        long generation = Interlocked.Increment(ref _authorizationGeneration);
-        Volatile.Write(ref _targetAuthorization, new TargetAuthorization(IntPtr.Zero, 0, false));
+        processIdFor ??= static window => Native.GetWindowThreadProcessId(window, out uint processId) == 0 ? 0 : processId;
+        canDriveWindow ??= static (window, processId) => InputTarget.CanDrive(window) && !InputTarget.IsPowerToysSettings(processId);
+        getForegroundWindow ??= Native.GetForegroundWindow;
+
+        var pending = new TargetAuthorization(IntPtr.Zero, 0, false);
+        Volatile.Write(ref _targetAuthorization, pending);
 
         if (window == IntPtr.Zero)
         {
             return;
         }
 
-        uint thread = Native.GetWindowThreadProcessId(window, out uint processId);
-        if (thread == 0 || processId == 0)
+        uint processId = processIdFor(window);
+        if (processId == 0)
         {
             return;
         }
@@ -957,23 +981,24 @@ internal sealed class KeyboardHook : IDisposable
         void CheckAuthorization()
         {
             // Off the hook's path: this runs once per foreground change, on the thread pool.
-            bool canDrive = InputTarget.CanDrive(window) && !InputTarget.IsPowerToysSettings(processId);
-            if (generation != Volatile.Read(ref _authorizationGeneration))
+            bool canDrive = canDriveWindow(window, processId);
+            if (!ReferenceEquals(pending, Volatile.Read(ref _targetAuthorization)))
             {
                 return;
             }
 
-            if (Native.GetForegroundWindow() != window)
+            if (getForegroundWindow() != window)
             {
                 // Left while it was checked. Should it come back without a foreground event, a key there asks again.
                 _ = Interlocked.CompareExchange(ref _requestedAuthorizationWindow, IntPtr.Zero, window);
                 return;
             }
 
-            uint currentThread = Native.GetWindowThreadProcessId(window, out uint currentProcessId);
-            if (currentThread != 0 && currentProcessId == processId)
+            if (processIdFor(window) == processId)
             {
-                Volatile.Write(ref _targetAuthorization, new TargetAuthorization(window, processId, canDrive));
+                // A new request can begin after the check above. Only this request's own pending state may be
+                // replaced, so an older result cannot overwrite a newer check, even for the same window and process.
+                _ = Interlocked.CompareExchange(ref _targetAuthorization, new TargetAuthorization(window, processId, canDrive), pending);
             }
         }
 
@@ -1029,6 +1054,21 @@ internal sealed class KeyboardHook : IDisposable
 
     public void Dispose()
     {
+        lock (_bufferLock)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            Pending.CompleteAdding();
+            ClearBufferLocked();
+        }
+
+        // Release-only cleanup runs on workers. Keep this hook installed and pump sent messages until those calls
+        // return, so a newer physical modifier event can still invalidate a stale release before it reaches Windows.
+        Guard.Dispose(_hookHandle != IntPtr.Zero ? PumpSentMessages : null);
         if (_hookHandle != IntPtr.Zero)
         {
             Native.UnhookWindowsHookEx(_hookHandle);
@@ -1046,18 +1086,7 @@ internal sealed class KeyboardHook : IDisposable
             Native.UnhookWinEvent(_winEventHandle);
             _winEventHandle = IntPtr.Zero;
         }
-
-        Guard.Dispose();
-        lock (_bufferLock)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _disposed = true;
-            Pending.CompleteAdding();
-            ClearBufferLocked();
-        }
     }
+
+    private static void PumpSentMessages() => _ = Native.PeekMessageW(out _, IntPtr.Zero, 0, 0, Native.PM_QS_SENDMESSAGE);
 }

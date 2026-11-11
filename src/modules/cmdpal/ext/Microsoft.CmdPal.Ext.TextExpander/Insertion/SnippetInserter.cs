@@ -121,7 +121,7 @@ internal sealed class SnippetInserter
 
         // With CR LF line breaks, as the clipboard has text: the console runs pasted lines with a lone LF as one.
         text = ClipboardFormats.WithClipboardLineBreaks(text);
-        var write = _clipboard.WriteText(text, keepOutOfHistory: true);
+        var write = _clipboard.WriteText(text, keepOutOfHistory: true, saved);
         if (write == ClipboardWrite.Refused)
         {
             return (null, false);

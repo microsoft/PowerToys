@@ -114,14 +114,24 @@ internal static class Clipboard
     }
 
     /// <summary>
-    /// Places Unicode text on the clipboard, refusing without emptying anything when it can't be written to.
+    /// Places Unicode text on the clipboard, refusing without emptying anything when it can't be written to or changed
+    /// since <paramref name="snapshot"/> was captured.
     /// The text is published with the clipboard-history and cloud-clipboard exclusion formats so expansions
     /// don't become history entries or sync to other devices (see <see cref="ClipboardPrivacy"/>).
     /// </summary>
-    public static ClipboardWrite SetText(string text)
+    public static ClipboardWrite SetText(string text, ClipboardSnapshot snapshot)
+        => SetText(snapshot, TryOpen, () => SequenceNumber, () => WriteOpenedText(text), () => Native.CloseClipboard());
+
+    /// <summary>
+    /// Opens before checking the captured version, since another app can copy while the open waits. The write and its
+    /// EmptyClipboard run only with the clipboard still held; the callbacks allow that ordering to be tested.
+    /// </summary>
+    internal static ClipboardWrite SetText(ClipboardSnapshot snapshot, Func<ClipboardOpen> open, Func<uint> sequence, Func<ClipboardWrite> write, Action close)
     {
-        ClipboardOpen open = TryOpen();
-        if (open == ClipboardOpen.Failed)
+        ArgumentNullException.ThrowIfNull(snapshot);
+
+        ClipboardOpen opened = open();
+        if (opened == ClipboardOpen.Failed)
         {
             return ClipboardWrite.Refused;
         }
@@ -129,35 +139,40 @@ internal static class Clipboard
         try
         {
             // Checked before EmptyClipboard: an unowned handle can empty the clipboard and then fail every write.
-            if (open != ClipboardOpen.Owned)
+            if (opened != ClipboardOpen.Owned || snapshot.SequenceNumber != sequence())
             {
                 return ClipboardWrite.Refused;
             }
 
-            if (!Native.EmptyClipboard())
-            {
-                return ClipboardWrite.Refused;
-            }
-
-            // Published before the text, so there is no window in which the content is on the
-            // clipboard without the markings that say not to keep it.
-            PublishPrivacyExclusions();
-
-            byte[] bytes = Encoding.Unicode.GetBytes(text + '\0');
-            try
-            {
-                return Publish(ClipboardFormats.CF_UNICODETEXT, bytes)
-                    ? ClipboardWrite.Written
-                    : ClipboardWrite.Failed;
-            }
-            finally
-            {
-                System.Security.Cryptography.CryptographicOperations.ZeroMemory(bytes);
-            }
+            return write();
         }
         finally
         {
-            Native.CloseClipboard();
+            close();
+        }
+    }
+
+    private static ClipboardWrite WriteOpenedText(string text)
+    {
+        if (!Native.EmptyClipboard())
+        {
+            return ClipboardWrite.Refused;
+        }
+
+        // Published before the text, so there is no window in which the content is on the
+        // clipboard without the markings that say not to keep it.
+        PublishPrivacyExclusions();
+
+        byte[] bytes = Encoding.Unicode.GetBytes(text + '\0');
+        try
+        {
+            return Publish(ClipboardFormats.CF_UNICODETEXT, bytes)
+                ? ClipboardWrite.Written
+                : ClipboardWrite.Failed;
+        }
+        finally
+        {
+            System.Security.Cryptography.CryptographicOperations.ZeroMemory(bytes);
         }
     }
 
@@ -245,7 +260,7 @@ internal static class Clipboard
         try
         {
             IReadOnlyList<uint>? plan = PlanCapture();
-            return plan is null ? null : Capture(plan, ReadFormat);
+            return plan is null ? null : Capture(plan, ReadFormat, () => SequenceNumber);
         }
         finally
         {
@@ -256,9 +271,10 @@ internal static class Clipboard
     /// <summary>
     /// Copies each of <paramref name="plan"/>'s formats with <paramref name="read"/>, which is told how many bytes may
     /// still be copied, up to 32 MB in all. Null when one can't be, with what was copied before it zeroed, as when a
-    /// snapshot is dropped: it's the user's clipboard.
+    /// snapshot is dropped: it's the user's clipboard. The version is taken after all reads, which may render delayed
+    /// formats, while the caller still holds the clipboard open.
     /// </summary>
-    internal static ClipboardSnapshot? Capture(IReadOnlyList<uint> plan, Func<uint, long, byte[]?> read)
+    internal static ClipboardSnapshot? Capture(IReadOnlyList<uint> plan, Func<uint, long, byte[]?> read, Func<uint> sequence)
     {
         var entries = new List<ClipboardEntry>(plan.Count);
         long remaining = MaxSnapshotBytes;
@@ -267,7 +283,7 @@ internal static class Clipboard
             byte[]? bytes = read(format, remaining);
             if (bytes is null)
             {
-                new ClipboardSnapshot(entries).Dispose();
+                new ClipboardSnapshot(entries, 0).Dispose();
                 return null;
             }
 
@@ -275,7 +291,7 @@ internal static class Clipboard
             entries.Add(new ClipboardEntry(format, bytes));
         }
 
-        return new ClipboardSnapshot(entries);
+        return new ClipboardSnapshot(entries, sequence());
     }
 
     /// <summary>

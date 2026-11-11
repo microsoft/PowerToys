@@ -25,6 +25,8 @@ public static class ClipboardParts
     private const int MinPhoneDigits = 7;
     private const int MaxPhoneDigits = 15;
 
+    private const string LinkTrailingPunctuation = ".,;:!?'\"*\u3001\u3002\uFF0C\uFF0E";
+
     // Without backtracking, so text built to make a pattern work hard still takes linear time. A control character ends a
     // link, so one hidden in a copied link, such as Ctrl+O, isn't taken along.
     private static readonly Regex LinkPattern = new(
@@ -32,7 +34,7 @@ public static class ClipboardParts
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
 
     private static readonly Regex EmailPattern = new(
-        @"[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.[A-Za-z]{2,}",
+        @"[A-Za-z0-9.'_%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.(?:[xX][nN]--[A-Za-z0-9\-]+|[A-Za-z]{2,})",
         RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
 
     // IP addresses, dates written with digits and a year of two or four digits (2026-11-02, 11/2/2026, 02.11.26, 02-11-26)
@@ -129,11 +131,126 @@ public static class ClipboardParts
         return spans;
     }
 
+    private static int TrimLocalLinkWrappers(string text, int start, int end, bool includeBrackets)
+    {
+        // Only a complete, adjacent pair can remove URL data. An unrelated marker elsewhere in the copy is not one.
+        int opening = start;
+        bool hasMarker = false;
+        int bracketKinds = 0;
+        while (opening > 0)
+        {
+            char previous = text[opening - 1];
+            if (previous == '~')
+            {
+                int runEnd = opening;
+                while (opening > 0 && text[opening - 1] == '~')
+                {
+                    opening--;
+                }
+
+                if (runEnd - opening < 2)
+                {
+                    return end;
+                }
+
+                hasMarker = true;
+            }
+            else if (previous == '_')
+            {
+                opening--;
+                hasMarker = true;
+            }
+            else if (includeBrackets && (previous is '(' or '[' or '{' or '\uFF08'))
+            {
+                bracketKinds |= 1 << BracketKind(previous);
+                opening--;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if (!hasMarker || ((text[opening] is '_' or '~') && opening > 0 && WordBoundaryRules.IsWordCharacter(text[opening - 1])))
+        {
+            return end;
+        }
+
+        int innerEnd = end;
+        while (innerEnd > start && LinkTrailingPunctuation.Contains(text[innerEnd - 1], StringComparison.Ordinal))
+        {
+            innerEnd--;
+        }
+
+        for (int index = opening; index < start; index++)
+        {
+            char expected = text[index] switch
+            {
+                '(' => ')',
+                '[' => ']',
+                '{' => '}',
+                '\uFF08' => '\uFF09',
+                _ => text[index],
+            };
+            if (innerEnd <= start || text[--innerEnd] != expected)
+            {
+                return end;
+            }
+        }
+
+        if (bracketKinds != 0)
+        {
+            // A proposed wrapper closing must not finish an opening inside the URL, as in Foo_(bar)_.
+            Span<int> unclosed = stackalloc int[4];
+            unclosed.Clear();
+            foreach (char character in text.AsSpan(start, innerEnd - start))
+            {
+                int kind = BracketKind(character);
+                if (kind >= 0)
+                {
+                    if (Opening(character) == '\0')
+                    {
+                        unclosed[kind]++;
+                    }
+                    else if (unclosed[kind] != 0)
+                    {
+                        unclosed[kind]--;
+                    }
+                }
+            }
+
+            for (int kind = 0; kind < unclosed.Length; kind++)
+            {
+                if ((bracketKinds & (1 << kind)) != 0 && unclosed[kind] != 0)
+                {
+                    return end;
+                }
+            }
+        }
+
+        return innerEnd;
+    }
+
     /// <summary>
     /// Gets where a link ends without what ends the sentence around it, and without closing brackets it didn't open, as
-    /// when it's written in parentheses. Brackets are counted once, so a link of thousands of them is trimmed in linear time.
+    /// when it's written in parentheses. A fixed number of passes keeps even a link of thousands of brackets linear.
     /// </summary>
     private static int TrimLink(string text, int start, int end)
+    {
+        int unwrapped = TrimLocalLinkWrappers(text, start, end, includeBrackets: true);
+        int trimmed = TrimLinkEnd(text, start, unwrapped);
+        if (unwrapped != end)
+        {
+            return trimmed;
+        }
+
+        // Sentence punctuation or an unrelated closing bracket can follow the wrapper. After trimming those, retry
+        // only adjacent markers: consuming a prefix bracket now could mistake part of the URL for its closing pair.
+        int retried = TrimLocalLinkWrappers(text, start, trimmed, includeBrackets: false);
+        return retried == trimmed ? trimmed : TrimLinkEnd(text, start, retried);
+    }
+
+    private static int TrimLinkEnd(string text, int start, int end)
     {
         // Counted by kind: (), [], {} and full-width parentheses.
         Span<int> opened = stackalloc int[4];
@@ -161,7 +278,7 @@ public static class ClipboardParts
         {
             char last = text[end - 1];
             int kind = Opening(last) != '\0' ? BracketKind(last) : -1;
-            if (".,;:!?'\"*_~\u3001\u3002\uFF0C\uFF0E".Contains(last, StringComparison.Ordinal))
+            if (LinkTrailingPunctuation.Contains(last, StringComparison.Ordinal))
             {
                 end--;
             }
@@ -202,14 +319,32 @@ public static class ClipboardParts
         var spans = new List<(int Start, int End)>();
         foreach ((int matchStart, int end) in Matches(EmailPattern, text))
         {
-            // Dots ending a sentence before it aren't part of its name.
+            // Dots ending a sentence and paired quotes around it aren't part of its name. An apostrophe within the
+            // name is, as in o'connor@example.com.
             int start = matchStart;
-            while (text[start] == '.')
+            int quoteEnd = end;
+            while (quoteEnd < text.Length && ".,;:!?\u3001\u3002\uFF0C\uFF0E".Contains(text[quoteEnd], StringComparison.Ordinal))
             {
+                quoteEnd++;
+            }
+
+            while (text[start] == '.' || (text[start] == '\'' && quoteEnd < text.Length && text[quoteEnd] == '\''))
+            {
+                if (text[start] == '\'')
+                {
+                    quoteEnd++;
+                }
+
                 start++;
             }
 
-            if (text[start] != '@')
+            // A match must not start inside an unsupported name or stop inside a domain label, including an unsupported
+            // ending after a dot. Check its original start, before removing sentence dots and paired quotes.
+            bool startsInsideName = matchStart > 0 && IsEmailNameCharacter(text[matchStart - 1])
+                && !HasPairedEmailWrapper(text, matchStart, quoteEnd);
+            bool continuesDomain = end < text.Length && (IsEmailDomainCharacter(text[end])
+                || (text[end] == '.' && end + 1 < text.Length && IsEmailDomainCharacter(text[end + 1])));
+            if (text[start] != '@' && !startsInsideName && !continuesDomain)
             {
                 spans.Add((start, end));
             }
@@ -217,6 +352,34 @@ public static class ClipboardParts
 
         return spans;
     }
+
+    private static bool HasPairedEmailWrapper(string text, int start, int end)
+    {
+        if (start == 0 || text[start - 1] is not ('*' or '`'))
+        {
+            return false;
+        }
+
+        char marker = text[start - 1];
+        int opening = start - 1;
+        while (opening > 0 && text[opening - 1] == marker)
+        {
+            opening--;
+        }
+
+        int count = start - opening;
+        return (opening == 0 || !IsEmailNameCharacter(text[opening - 1]))
+            && end <= text.Length - count
+            && text.AsSpan(end, count).SequenceEqual(text.AsSpan(opening, count));
+    }
+
+    // Both sides use the shared Unicode continuation rule, including marks and surrogate halves. An equals sign
+    // still separates an assignment such as list=you@example.com; these punctuation checks add no new email syntax.
+    private static bool IsEmailNameCharacter(char character)
+        => WordBoundaryRules.IsWordCharacter(character) || ".!#$%&'*+-/?^`{|}~".Contains(character, StringComparison.Ordinal);
+
+    private static bool IsEmailDomainCharacter(char character)
+        => WordBoundaryRules.IsWordCharacter(character) || character == '-';
 
     /// <summary>
     /// Finds phone numbers: 7 to 15 digits written in groups with spaces, dashes, dots, slashes or brackets between them,

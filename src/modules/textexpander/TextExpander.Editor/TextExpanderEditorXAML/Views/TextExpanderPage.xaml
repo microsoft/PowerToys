@@ -159,10 +159,10 @@
                 Title="{x:Bind ViewModel.SnippetErrorTitle, Mode=OneWay}"
                 Margin="16,16,16,0"
                 IsClosable="False"
-                IsOpen="{x:Bind ViewModel.HasSnippetError, Mode=OneWay}"
+                IsOpen="{x:Bind ViewModel.HasSnippetMessage, Mode=OneWay}"
                 Message="{x:Bind ViewModel.SnippetError, Mode=OneWay}"
                 Severity="Error"
-                Visibility="{x:Bind ViewModel.HasSnippetError, Mode=OneWay}">
+                Visibility="{x:Bind ViewModel.HasSnippetMessage, Mode=OneWay}">
                 <StackPanel Margin="0,0,0,16">
                     <TextBlock
                         Margin="0,0,0,8"

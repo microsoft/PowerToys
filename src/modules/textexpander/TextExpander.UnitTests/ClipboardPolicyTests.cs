@@ -351,17 +351,20 @@ public sealed class ClipboardPolicyTests
         // left in memory.
         byte[] text = [104, 0, 105, 0, 0, 0];
         uint[] plan = [ClipboardFormats.CF_UNICODETEXT, 0xC123];
-        Assert.IsNull(Clipboard.Capture(plan, (format, _) => format == ClipboardFormats.CF_UNICODETEXT ? text : null));
+        Assert.IsNull(Clipboard.Capture(plan, (format, _) => format == ClipboardFormats.CF_UNICODETEXT ? text : null, () => 0));
         Assert.IsTrue(text.All(b => b == 0));
 
         // No more than 32 MB in all: each format is told how much may still be copied.
         var budgets = new List<long>();
         uint[] two = [ClipboardFormats.CF_UNICODETEXT, ClipboardFormats.CF_LOCALE];
-        using (ClipboardSnapshot? taken = Clipboard.Capture(two, (_, budget) =>
-        {
-            budgets.Add(budget);
-            return new byte[1024];
-        }))
+        using (ClipboardSnapshot? taken = Clipboard.Capture(
+            two,
+            (_, budget) =>
+            {
+                budgets.Add(budget);
+                return new byte[1024];
+            },
+            () => 0))
         {
             Assert.AreEqual(2, taken?.Entries.Count);
         }

@@ -84,7 +84,7 @@ internal sealed partial class InsertSnippetCommand : InvokableCommand
             {
                 Message = MessageFor(outcome),
                 Result = CommandResult.KeepOpen(),
-                Command = new CopySnippetCommand(() => text, _inserter.Clipboard),
+                Command = new CopySnippetCommand(() => text, _inserter.Clipboard, _inserted),
             }),
         };
     }

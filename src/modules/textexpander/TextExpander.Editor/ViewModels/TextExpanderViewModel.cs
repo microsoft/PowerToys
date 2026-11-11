@@ -35,13 +35,14 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         private TextExpanderVariable[] _variables;
         private SnippetFile _file;
         private string _snippetError;
+        private string _snippetSaveReview;
         private string _unavailableFolder;
         private bool _snippetsFileMissing;
         private string _loadedPath;
         private byte[] _loadedBytes;
 
-        // Whether a save writes the loaded file back exactly, so it needs no backup. Worked out at the first save after a
-        // load, not at every save, since SavesAsIs reads and writes the whole file.
+        // Whether a save writes the loaded file back exactly, so its verified backup can be removed. Worked out at the
+        // first save after a load, not at every save, since SavesAsIs reads and writes the whole file.
         private bool? _loadedSavesAsIs;
         private string _searchText = string.Empty;
         private Action<Action> _dispatch;
@@ -269,7 +270,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 }
 
                 string target = Path.GetFullPath(path);
-                backedUp = PublishSnippetsFile(target, bytes);
+                backedUp = PublishSnippetsFile(target, bytes) != null;
                 string error = UseSnippetsPath(target);
                 if (error != null)
                 {
@@ -407,6 +408,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         /// <summary>Gets a value indicating whether the snippet file could not be read or written.</summary>
         public bool HasSnippetError => CanEditSnippets && !string.IsNullOrEmpty(_snippetError);
 
+        /// <summary>Gets a value indicating whether a file error or recovery advice needs to be shown.</summary>
+        public bool HasSnippetMessage => HasSnippetError || (CanEditSnippets && _snippetSaveReview != null);
+
         /// <summary>
         /// Gets a value indicating whether the last read found this PC's own snippets file, read before, missing, and so
         /// left the list as it was until the file is back (see <see cref="IsReadDefaultFileMissing"/>).
@@ -416,8 +420,12 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         /// <summary>Gets a value indicating whether a snippet can be added: editing is allowed and the file could be read.</summary>
         public bool CanAddSnippets => CanEditSnippets && !HasSnippetError;
 
-        /// <summary>Gets the reason the snippet file could not be read or written.</summary>
-        public string SnippetError => _isElevated ? ElevatedSnippetAccessDeniedMessage() : _snippetError ?? string.Empty;
+        /// <summary>Gets file errors and any advice about saved recovery copies.</summary>
+        public string SnippetError => _isElevated
+            ? ElevatedSnippetAccessDeniedMessage()
+            : _snippetSaveReview == null
+                ? _snippetError ?? string.Empty
+                : string.IsNullOrEmpty(_snippetError) ? _snippetSaveReview : _snippetSaveReview + " " + _snippetError;
 
         /// <summary>
         /// Gets a value indicating whether the error is that the chosen snippets file is missing or can't be reached: moved,
@@ -432,15 +440,17 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         /// </summary>
         public bool IsSnippetsFileMissing => IsSnippetsFileUnavailable && _snippetsFileMissing;
 
-        /// <summary>Gets the error's title: that the chosen file can't be found or reached, or that the snippets can't be opened.</summary>
-        public string SnippetErrorTitle => !IsSnippetsFileUnavailable
-            ? _getResourceString("TextExpander_SnippetError_CantOpen")
-            : _snippetsFileMissing
-                ? _getResourceString("TextExpander_SnippetError_CantFind")
-                : string.Format(
-                    CultureInfo.CurrentCulture,
-                    _getResourceString("TextExpander_SnippetError_CantReach" + PlaceKey(_unavailableFolder)),
-                    TextExpanderFolderText.FolderName(_unavailableFolder));
+        /// <summary>Gets the error's title: that a save needs review, or that the snippets can't be found, reached or opened.</summary>
+        public string SnippetErrorTitle => _snippetSaveReview != null
+            ? _getResourceString("TextExpander_SnippetFile_SaveNeedsReview")
+            : !IsSnippetsFileUnavailable
+                ? _getResourceString("TextExpander_SnippetError_CantOpen")
+                : _snippetsFileMissing
+                    ? _getResourceString("TextExpander_SnippetError_CantFind")
+                    : string.Format(
+                        CultureInfo.CurrentCulture,
+                        _getResourceString("TextExpander_SnippetError_CantReach" + PlaceKey(_unavailableFolder)),
+                        TextExpanderFolderText.FolderName(_unavailableFolder));
 
         /// <summary>Gets a value indicating whether there are no snippets to show.</summary>
         public bool HasNoSnippets => CanEditSnippets && Snippets.Count == 0 && !HasSnippetError;
@@ -540,7 +550,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         }
 
         /// <summary>Reads the snippet file into <see cref="Snippets"/>.</summary>
-        public void LoadSnippets()
+        public void LoadSnippets() => LoadSnippets(clearSaveReview: true);
+
+        private void LoadSnippets(bool clearSaveReview)
         {
             IsWaitingForSnippetsFile = IsReadDefaultFileMissing();
             if (IsWaitingForSnippetsFile)
@@ -552,6 +564,10 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
 
             AdvanceSnippetRevision(notifyEditor: true);
             _loadedSavesAsIs = null;
+            if (clearSaveReview)
+            {
+                _snippetSaveReview = null;
+            }
 
             if (!CanEditSnippets)
             {
@@ -574,6 +590,10 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 resolution = ResolveSnippetsFileInfo();
                 string path = resolution.FilePath;
                 bool starting = !string.Equals(_loadedPath, path, StringComparison.OrdinalIgnoreCase);
+                if (starting)
+                {
+                    _snippetSaveReview = null;
+                }
 
                 // Until it loads, the file being tried is the one the label, path and any error describe.
                 _loadedPath = path;
@@ -591,9 +611,11 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                     }
                 }
 
-                // The bytes are kept to tell, before a save, whether the file changed since it was read.
+                // The bytes are kept to detect changes before and during a save.
                 _loadedBytes = ReadAllBytesShared(path);
                 _file = SnippetFile.Read(_loadedBytes);
+                _unavailableFolder = null;
+                _snippetsFileMissing = false;
 
                 foreach (SnippetFile.Entry entry in _file.Snippets)
                 {
@@ -738,20 +760,22 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
 
             try
             {
+                // Automatic reloads keep a save's recovery advice. Explicit reloads, database changes and successful
+                // saves clear it; a sync service writing again immediately after a conflict must not hide the warning.
                 SnippetPathResolution resolution = ResolveSnippetsFileInfo();
                 string preferred = resolution.FilePath;
                 if (!_storageEnvironment.FileExists(preferred)
                     || !string.Equals(preferred, _loadedPath, StringComparison.OrdinalIgnoreCase)
                     || _loadedBytes == null)
                 {
-                    LoadSnippets();
+                    LoadSnippets(clearSaveReview: false);
                     return;
                 }
 
                 byte[] current = ReadAllBytesShared(preferred);
                 if (!current.AsSpan().SequenceEqual(_loadedBytes))
                 {
-                    LoadSnippets();
+                    LoadSnippets(clearSaveReview: false);
                 }
                 else
                 {
@@ -1112,15 +1136,45 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
 
                 byte[] payload = _file.ToBytes();
 
-                // Saving drops comments and a layout of the file's own, so the first save keeps the file as it was.
+                // Every replace keeps the version it actually displaced: another writer can arrive after the check
+                // above. Only a verified copy of the loaded bytes can be discarded after a canonical save.
                 _loadedSavesAsIs ??= SavesAsIs(_loadedBytes);
-                PublishSnippetsFile(path, payload, backUp: !_loadedSavesAsIs.Value);
+                string backup = PublishSnippetsFile(path, payload);
+                if (backup != null)
+                {
+                    bool matchesLoaded;
+                    try
+                    {
+                        matchesLoaded = ReadAllBytesShared(backup).AsSpan().SequenceEqual(_loadedBytes);
+                    }
+                    catch (Exception ex) when (IsFileError(ex))
+                    {
+                        Logger.LogWarning($"Could not verify the replaced Text Expander snippets in '{backup}': {ex.Message}");
+                        return ReportSnippetSaveConflict(path, payload, backup, "TextExpander_SnippetFile_SaveUnverified");
+                    }
 
-                // The file now holds exactly what was written, so there is nothing to read back.
+                    if (!matchesLoaded)
+                    {
+                        return ReportSnippetSaveConflict(path, payload, backup, "TextExpander_SnippetFile_SaveConflict");
+                    }
+
+                    // Saving drops comments and a layout of the file's own, so the first save still keeps those.
+                    if (_loadedSavesAsIs.Value)
+                    {
+                        HandleBoundFileDeletionResult cleanup = _storageEnvironment.DeleteOwnedFile(backup, _loadedBytes ?? Array.Empty<byte>());
+                        if (!cleanup.Succeeded)
+                        {
+                            Logger.LogWarning($"Kept the Text Expander snippets backup '{backup}': {cleanup.Error?.Message}");
+                        }
+                    }
+                }
+
+                // Remember the published bytes so the watcher ignores our own save and reloads any later external edit.
                 _loadedPath = path;
                 _loadedBytes = payload;
                 _loadedSavesAsIs = true;
                 _snippetError = null;
+                _snippetSaveReview = null;
                 IsWaitingForSnippetsFile = false;
                 SyncRows();
                 return null;
@@ -1139,6 +1193,42 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 RaiseSnippetListChanged();
                 return error;
             }
+        }
+
+        private string ReportSnippetSaveConflict(string path, byte[] payload, string backup, string resourceKey)
+        {
+            // A third writer may already have replaced our published bytes. Keep our version separately, and never
+            // roll the backup onto the active path: that would discard that writer's changes in another race.
+            string recovery = path + ".recovery-" + Guid.NewGuid().ToString("N");
+            string recoveryPaths = backup;
+            string recoveryError = null;
+            try
+            {
+                _storageEnvironment.WriteNewFile(recovery, payload);
+                recoveryPaths += "; " + recovery;
+            }
+            catch (Exception ex) when (IsFileError(ex))
+            {
+                Logger.LogWarning($"Could not keep the edited Text Expander snippets in '{recovery}': {ex.Message}");
+                recoveryError = string.Format(
+                    CultureInfo.CurrentCulture,
+                    _getResourceString("TextExpander_SnippetFile_SaveRecoveryFailed"),
+                    recovery,
+                    ex.Message);
+            }
+
+            LoadSnippets();
+            string error = string.Format(CultureInfo.CurrentCulture, _getResourceString(resourceKey), path, recoveryPaths);
+            if (recoveryError != null)
+            {
+                error += " " + recoveryError;
+            }
+
+            // Reloading can invalidate the open editor or make its new trigger a duplicate. Keep the recovery advice
+            // in the page's error bar too, so that dialog validation cannot replace the only conflict notification.
+            _snippetSaveReview = error;
+            RaiseSnippetListChanged();
+            return error;
         }
 
         /// <summary>Reads with permissive sharing so the engine's watcher does not block the page.</summary>
@@ -1252,16 +1342,10 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             LoadSnippets();
         }
 
-        private string BackupPath(string path)
+        private static string BackupPath(string path)
         {
             string stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
-            string candidate = $"{path}.backup-{stamp}";
-            for (int suffix = 2; _storageEnvironment.FileExists(candidate); suffix++)
-            {
-                candidate = $"{path}.backup-{stamp}-{suffix}";
-            }
-
-            return candidate;
+            return $"{path}.backup-{stamp}-{Guid.NewGuid():N}";
         }
 
         private static bool IsFileError(Exception ex)
@@ -1360,11 +1444,10 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
 
         /// <summary>
         /// Writes <paramref name="bytes"/> to <paramref name="target"/> in one step, through a temporary file beside it, so
-        /// nothing reads it half-written. A file already there is backed up beside itself as it's replaced, unless
-        /// <paramref name="backUp"/> is false.
+        /// nothing reads it half-written. A file already there is backed up beside itself as it's replaced.
         /// </summary>
-        /// <returns>Whether a file was replaced.</returns>
-        private bool PublishSnippetsFile(string target, byte[] bytes, bool backUp = true)
+        /// <returns>The replaced file's backup path, or null when a new file was created.</returns>
+        private string PublishSnippetsFile(string target, byte[] bytes)
         {
             string temp = target + ".tmp-" + Guid.NewGuid().ToString("N");
             _storageEnvironment.WriteNewFile(temp, bytes);
@@ -1372,12 +1455,13 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             {
                 if (_storageEnvironment.FileExists(target))
                 {
-                    _storageEnvironment.ReplaceFile(temp, target, backUp ? BackupPath(target) : null);
-                    return true;
+                    string backup = BackupPath(target);
+                    _storageEnvironment.ReplaceFile(temp, target, backup);
+                    return backup;
                 }
 
                 _storageEnvironment.MoveFile(temp, target);
-                return false;
+                return null;
             }
             catch
             {
@@ -1392,9 +1476,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 }
                 else
                 {
-                    // A replace that fails part way can leave nothing at the target (ERROR_UNABLE_TO_MOVE_REPLACEMENT
-                    // without a backup, or ERROR_UNABLE_TO_MOVE_REPLACEMENT_2), so the temporary file may be the only
-                    // copy: it goes into place, or stays where it is.
+                    // A replace that fails part way can leave nothing at the target, so the temporary file may be the
+                    // only copy of the edited snippets: it goes into place, or stays where it is.
                     try
                     {
                         _storageEnvironment.MoveFile(temp, target);
@@ -1502,6 +1585,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             OnPropertyChanged(nameof(HasNoSnippets));
             OnPropertyChanged(nameof(ShowsSnippetCount));
             OnPropertyChanged(nameof(HasSnippetError));
+            OnPropertyChanged(nameof(HasSnippetMessage));
             OnPropertyChanged(nameof(CanAddSnippets));
             OnPropertyChanged(nameof(SnippetError));
             OnPropertyChanged(nameof(SnippetErrorTitle));

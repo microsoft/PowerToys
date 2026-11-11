@@ -348,9 +348,60 @@ public sealed class ClipboardVariableTests
     [DataRow("<first.last+tag@sub.example.co.uk>", "first.last+tag@sub.example.co.uk")]
     [DataRow("mailto:you@example.com?subject=hi", "you@example.com")]
     [DataRow("...you@example.com", "you@example.com")]
+    [DataRow("'you@example.com'", "you@example.com")]
+    [DataRow("Mail 'you@example.com.'", "you@example.com")]
+    [DataRow("\"you@example.com\"", "you@example.com")]
+    [DataRow("o'connor@example.com", "o'connor@example.com")]
+    [DataRow("Mail 'o'connor@example.com'.", "o'connor@example.com")]
+    [DataRow("Mail 'o'connor@example.com,'", "o'connor@example.com")]
+    [DataRow("mailto:o'connor@example.com?subject=hi", "o'connor@example.com")]
+    [DataRow("user@example.xn--p1ai", "user@example.xn--p1ai")]
+    [DataRow("<User@Example.XN--P1AI>", "User@Example.XN--P1AI")]
+    [DataRow("list=tag@example.com", "tag@example.com")]
+    [DataRow("*you@example.com*", "you@example.com")]
+    [DataRow("**you@example.com**", "you@example.com")]
+    [DataRow("`you@example.com`", "you@example.com")]
+    [DataRow("``you@example.com``", "you@example.com")]
+    [DataRow("Mail *o'connor@example.com*.", "o'connor@example.com")]
+    [DataRow("*you@example.com.*", "you@example.com")]
+    [DataRow("`user@example.xn--p1ai`", "user@example.xn--p1ai")]
+    [DataRow("list=*you@example.com*", "you@example.com")]
+    [DataRow("o!connor@example.com", "")]
+    [DataRow("\u03b4\u03bf\u03ba\u03b9\u03bc\u03aetest@example.com", "")]
+    [DataRow("e\u0301test@example.com", "")]
+    [DataRow("\U0001D49Ctest@example.com", "")]
+    [DataRow("a*user@example.com*", "")]
+    [DataRow("a+*user@example.com*", "")]
+    [DataRow("a`user@example.com`", "")]
+    [DataRow("**you@example.com*", "")]
+    [DataRow("*you@example.com", "")]
+    [DataRow("`you@example.com", "")]
+    [DataRow("o!connor@example.com, then you@example.com.", "you@example.com")]
+    [DataRow("\u03b4\u03bf\u03ba\u03b9\u03bc\u03aetest@example.com, then you@example.com.", "you@example.com")]
+    [DataRow("\U0001D49Ctest@example.com, then you@example.com.", "you@example.com")]
+    [DataRow("a*user@example.com*, then you@example.com.", "you@example.com")]
+    [DataRow("user@example.com1", "")]
+    [DataRow("user@example.com-suffix", "")]
+    [DataRow("user@example.com.123", "")]
+    [DataRow("user@example.com\U0001D49C", "")]
+    [DataRow("user@example.com\u0301", "")]
+    [DataRow("user@example.com.\u0301", "")]
+    [DataRow("user@example.com1, then you@example.com.", "you@example.com")]
+    [DataRow("user@example.com\u0301, then you@example.com.", "you@example.com")]
     [DataRow("not@an address, nor @example.com, nor you@example", "")]
     public void EmailAddresses(string text, string expected)
         => Assert.AreEqual(expected, string.Join("|", ClipboardParts.Find(text, ClipboardPart.Email, EnglishUS)));
+
+    [TestMethod]
+    [DataRow("555-0123@example.xn--p1ai")]
+    [DataRow("o'555-0123@example.com")]
+    [DataRow("o'4471@example.com")]
+    public void EmailNamesAndDomainsKeepTheirDigitsOutOfOtherParts(string email)
+    {
+        Assert.AreEqual(email, ClipboardParts.Find(email, ClipboardPart.Email, EnglishUS).Single());
+        Assert.AreEqual(0, ClipboardParts.Find(email, ClipboardPart.Phone, EnglishUS).Count);
+        Assert.AreEqual(0, ClipboardParts.Find(email, ClipboardPart.Number, EnglishUS).Count);
+    }
 
     [TestMethod]
     [DataRow("See https://example.com/a.", "https://example.com/a")]
@@ -360,10 +411,64 @@ public sealed class ClipboardVariableTests
     [DataRow("Go to www.example.com!", "www.example.com")]
     [DataRow("HTTP://EXAMPLE.COM/X?y=1&z=2#top", "HTTP://EXAMPLE.COM/X?y=1&z=2#top")]
     [DataRow("\"https://example.com/q\"", "https://example.com/q")]
+    [DataRow("https://example.com/reset?token=abc_", "https://example.com/reset?token=abc_")]
+    [DataRow("https://example.com/foo~", "https://example.com/foo~")]
+    [DataRow("See (https://example.com/a_).", "https://example.com/a_")]
+    [DataRow("[docs](https://example.com/a_)", "https://example.com/a_")]
+    [DataRow("_https://example.com/a_", "https://example.com/a")]
+    [DataRow("__https://example.com/a__", "https://example.com/a")]
+    [DataRow("~~https://example.com/a~~", "https://example.com/a")]
+    [DataRow("_https://example.com/a__", "https://example.com/a_")]
+    [DataRow("~~https://example.com/a~~~", "https://example.com/a~")]
+    [DataRow("_~~https://example.com/a~~_", "https://example.com/a")]
+    [DataRow("_(https://example.com/a)_", "https://example.com/a")]
+    [DataRow("(_https://example.com/a_)", "https://example.com/a")]
+    [DataRow("See(_https://example.com/a_)", "https://example.com/a")]
+    [DataRow("_https://example.com/a_.", "https://example.com/a")]
+    [DataRow("See _https://example.com/a_).", "https://example.com/a")]
+    [DataRow("(see __https://example.com/a__).", "https://example.com/a")]
+    [DataRow("See ~~https://example.com/a~~).", "https://example.com/a")]
+    [DataRow("_(https://example.com/a_)_", "https://example.com/a_")]
+    [DataRow("_(https://example.com/Foo_(bar))_", "https://example.com/Foo_(bar)")]
+    [DataRow("_(https://example.com/Foo_(bar)_)_", "https://example.com/Foo_(bar)_")]
+    [DataRow("_https://example.com/a(_", "https://example.com/a(")]
+    [DataRow("_(https://example.com/a[)_", "https://example.com/a[")]
     [DataRow("https:// nothing, www. nothing", "")]
     [DataRow("ftp://example.com/file", "")]
     public void WebLinks(string text, string expected)
         => Assert.AreEqual(expected, string.Join("|", ClipboardParts.Find(text, ClipboardPart.Link, EnglishUS)));
+
+    [TestMethod]
+    [DataRow("~home https://example.com/foo~", "https://example.com/foo~")]
+    [DataRow(@"C:\~temp https://example.com/foo~", "https://example.com/foo~")]
+    [DataRow("_https://example.com/a_ https://example.com/b_", "https://example.com/a|https://example.com/b_")]
+    [DataRow("https://example.com/a_ _https://example.com/b_", "https://example.com/a_|https://example.com/b")]
+    [DataRow("_see https://example.com/a and https://example.com/b_", "https://example.com/a|https://example.com/b_")]
+    [DataRow("_(https://example.com/a_)", "https://example.com/a_")]
+    [DataRow("_(https://example.com/Foo_(bar)_", "https://example.com/Foo_(bar)_")]
+    [DataRow("_(https://example.com/Foo_(bar)_)", "https://example.com/Foo_(bar)_")]
+    [DataRow("__https://example.com/a_", "https://example.com/a_")]
+    [DataRow("~~https://example.com/a~", "https://example.com/a~")]
+    [DataRow("See _https://example.com/a__).", "https://example.com/a_")]
+    [DataRow("See ~~https://example.com/a~~~).", "https://example.com/a~")]
+    [DataRow("~https://example.com/a~", "https://example.com/a~")]
+    [DataRow("word_https://example.com/a_", "https://example.com/a_")]
+    [DataRow("_note_ https://example.com/a_", "https://example.com/a_")]
+    [DataRow("variable_name: https://example.com/a_", "https://example.com/a_")]
+    public void LinkWrappersAreLocalAndMustBeComplete(string text, string expected)
+        => Assert.AreEqual(expected, string.Join("|", ClipboardParts.Find(text, ClipboardPart.Link, EnglishUS)));
+
+    [TestMethod]
+    [DataRow("email", "o'connor@example.com")]
+    [DataRow("email", "user@example.xn--p1ai")]
+    [DataRow("link", "https://example.com/reset?token=abc_")]
+    [DataRow("link", "https://example.com/foo~")]
+    public void ClipboardAndHistoryVariablesKeepCompleteAddresses(string part, string copied)
+    {
+        var history = new ClipboardHistory(ClipboardHistoryState.Read, [copied]);
+        Assert.AreEqual(copied, Variables.Expand("{{clipboard:" + part + "}}", _ => null, () => copied));
+        Assert.AreEqual(copied, Variables.Expand("{{clipboard:pick:" + part + "}}", _ => null, history: () => history));
+    }
 
     [TestMethod]
     [DataRow("en-US", "Call 555-0123.", "555-0123")]

@@ -134,7 +134,8 @@ internal sealed class Win32Clipboard : IClipboardAccess
                 }
             }
 
-            return new SavedClipboard(entries);
+            // Delayed formats have rendered, and no other app can publish between these bytes and their version.
+            return new SavedClipboard(entries, SequenceNumber);
         }
         finally
         {
@@ -142,11 +143,30 @@ internal sealed class Win32Clipboard : IClipboardAccess
         }
     }
 
-    public ClipboardWrite WriteText(string text, bool keepOutOfHistory)
+    public ClipboardWrite WriteText(string text, bool keepOutOfHistory, SavedClipboard? saved = null)
     {
         ArgumentNullException.ThrowIfNull(text);
 
-        if (!TryOpen(out var owned))
+        return WriteText(
+            saved,
+            () =>
+            {
+                var opened = TryOpen(out var owned);
+                return (opened, owned);
+            },
+            () => SequenceNumber,
+            () => WriteOpenedText(text, keepOutOfHistory),
+            () => NativeMethods.CloseClipboard());
+    }
+
+    /// <summary>
+    /// Opens before checking a saved copy's version: another app can copy while the open waits. The write and its
+    /// EmptyClipboard run only with the clipboard still held; the callbacks allow that ordering to be tested.
+    /// </summary>
+    internal static ClipboardWrite WriteText(SavedClipboard? saved, Func<(bool Opened, bool Owned)> open, Func<uint> sequence, Func<ClipboardWrite> write, Action close)
+    {
+        var (opened, owned) = open();
+        if (!opened)
         {
             return ClipboardWrite.Refused;
         }
@@ -154,30 +174,40 @@ internal sealed class Win32Clipboard : IClipboardAccess
         try
         {
             // Without an owner, EmptyClipboard succeeds and every write after it fails: the clipboard would be wiped.
-            if (!owned || !NativeMethods.EmptyClipboard())
+            if (!owned || (saved is not null && saved.SequenceNumber != sequence()))
             {
                 return ClipboardWrite.Refused;
             }
 
-            // Marked before the text goes on, so the text is never on the clipboard without the marks.
-            if (keepOutOfHistory)
-            {
-                PublishPrivacyFormats();
-            }
-
-            var bytes = Encoding.Unicode.GetBytes(text + '\0');
-            try
-            {
-                return Publish(ClipboardFormats.CF_UNICODETEXT, bytes) ? ClipboardWrite.Written : ClipboardWrite.Failed;
-            }
-            finally
-            {
-                CryptographicOperations.ZeroMemory(bytes);
-            }
+            return write();
         }
         finally
         {
-            NativeMethods.CloseClipboard();
+            close();
+        }
+    }
+
+    private static ClipboardWrite WriteOpenedText(string text, bool keepOutOfHistory)
+    {
+        if (!NativeMethods.EmptyClipboard())
+        {
+            return ClipboardWrite.Refused;
+        }
+
+        // Marked before the text goes on, so the text is never on the clipboard without the marks.
+        if (keepOutOfHistory)
+        {
+            PublishPrivacyFormats();
+        }
+
+        var bytes = Encoding.Unicode.GetBytes(text + '\0');
+        try
+        {
+            return Publish(ClipboardFormats.CF_UNICODETEXT, bytes) ? ClipboardWrite.Written : ClipboardWrite.Failed;
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(bytes);
         }
     }
 
@@ -269,7 +299,7 @@ internal sealed class Win32Clipboard : IClipboardAccess
 
     private static SavedClipboard? Discard(List<ClipboardEntry> entries)
     {
-        new SavedClipboard(entries).Dispose();
+        new SavedClipboard(entries, 0).Dispose();
         return null;
     }
 

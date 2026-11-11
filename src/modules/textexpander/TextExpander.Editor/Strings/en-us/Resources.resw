@@ -1032,6 +1032,22 @@ Your name</value>
     <value>Your snippets database was changed somewhere else, so this change wasn't saved. The list has been updated. Try again.</value>
     <comment>Shown instead of saving when the snippets database changed after Text Expander read it, for example on another PC. "Snippets database" means the user's JSON file of snippets.</comment>
   </data>
+  <data name="TextExpander_SnippetFile_SaveNeedsReview" xml:space="preserve">
+    <value>Review your saved snippets</value>
+    <comment>Title of a warning after a snippets save encounters a concurrent edit or cannot verify the version it replaced.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SaveConflict" xml:space="preserve">
+    <value>Your snippets database changed somewhere else while it was being saved. Review the current database at {0} and keep these recovery files before making more changes: {1}.</value>
+    <comment>{0} is the full path to the snippets database. {1} is a semicolon-separated list of recovery files containing the replaced version and, when successfully written, the editor's version. The current database may already have changed again. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SaveUnverified" xml:space="preserve">
+    <value>PowerToys saved the snippets database but couldn't verify the version it replaced. Review the database at {0} and keep these recovery files before making more changes: {1}.</value>
+    <comment>{0} is the full path to the snippets database. {1} is a semicolon-separated list of recovery file paths. The replaced version could not be read, so its contents are uncertain. "Snippets database" means the user's JSON file of snippets.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SaveRecoveryFailed" xml:space="preserve">
+    <value>A recovery copy of your edited version couldn't be saved at {0}: {1}</value>
+    <comment>Appended to the save-conflict warning when the editor cannot preserve its own version separately. {0} is the attempted recovery file path. {1} is the system error. The replaced file's recovery copy is left intact.</comment>
+  </data>
   <data name="TextExpander_SnippetFile_NewerVersion" xml:space="preserve">
     <value>Your snippets database was saved by a newer version of PowerToys, so this version can't change it. Update PowerToys on this PC, then try again.</value>
     <comment>Shown instead of saving a change when the snippets database comes from a newer version of PowerToys, for example one on another PC, because saving could lose what that version keeps. Nothing was changed. "Snippets database" means the user's JSON file of snippets.</comment>

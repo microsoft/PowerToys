@@ -493,6 +493,8 @@ namespace ViewModelTests
             XElement errorBar = WithName(page, "SnippetErrorBar");
             Assert.AreEqual("{x:Bind ViewModel.SnippetErrorTitle, Mode=OneWay}", (string)errorBar.Attribute("Title"));
             Assert.AreEqual("{x:Bind ViewModel.SnippetError, Mode=OneWay}", (string)errorBar.Attribute("Message"));
+            Assert.AreEqual("{x:Bind ViewModel.HasSnippetMessage, Mode=OneWay}", (string)errorBar.Attribute("IsOpen"));
+            Assert.AreEqual("{x:Bind ViewModel.HasSnippetMessage, Mode=OneWay}", (string)errorBar.Attribute("Visibility"));
 
             // Retry, and for a snippets file that's missing or can't be reached, another file without waiting.
             XElement[] actions = errorBar.Descendants().Where(element => element.Name.LocalName == "Button").ToArray();
@@ -506,7 +508,9 @@ namespace ViewModelTests
             StringAssert.Contains(code, "FrameworkElementAutomationPeer.CreatePeerForElement(SnippetProblemBar);");
             StringAssert.Contains(code, "FrameworkElementAutomationPeer.CreatePeerForElement(SnippetErrorBar);");
             StringAssert.Contains(Member(code, "public string SnippetProblem"), "Announce(SnippetProblemBar, value,");
-            StringAssert.Contains(Member(code, "private void ReloadSnippets_Click("), "Announce(SnippetErrorBar, ViewModel.SnippetError,");
+            string reload = Member(code, "private void ReloadSnippets_Click(");
+            StringAssert.Contains(reload, "ViewModel.HasSnippetMessage");
+            StringAssert.Contains(reload, "Announce(SnippetErrorBar, ViewModel.SnippetError,");
         }
 
         [TestMethod]

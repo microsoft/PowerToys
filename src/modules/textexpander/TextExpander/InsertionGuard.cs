@@ -21,7 +21,8 @@ namespace Microsoft.PowerToys.TextExpander;
 /// another marker after them; then what was held meanwhile, until a round brings nothing. While they go back, only they
 /// pass, in order, and what Keyboard Manager sends in place of one. Anything else, typed or injected, waits for the next
 /// round, so a key-up never overtakes its own key-down.</item>
-/// <item>Held keys only go back to the window they were typed for: with another one in front, they're dropped.</item>
+/// <item>Held text and presses only go back to the window they were typed for. On discard, a held modifier release whose
+/// down already passed is finished by a worker. The hook rejects that cleanup if newer modifier input has arrived.</item>
 /// </list>
 /// The hook only holds keys and takes markers. SendInput returns once every low-level hook has seen each event, so sent
 /// from the hook it nested, and a slow hook elsewhere could make Windows remove ours. The guard never keeps the keyboard
@@ -51,6 +52,9 @@ internal sealed class InsertionGuard : IDisposable
     /// <summary>The flag on injected input, <c>LLKHF_INJECTED</c>.</summary>
     private const uint Injected = 0x10;
 
+    // Distinct from our normal tag and the host's small tags, with Keyboard Manager's injected bit preserved.
+    private const int CleanupTagBits = HostInputTags.KeyboardManagerInjected | 0x2;
+
     /// <summary>The deadline of a hold since a match with no key pressed since it: there's none.</summary>
     private const long NoDeadline = long.MaxValue;
 
@@ -58,6 +62,43 @@ internal sealed class InsertionGuard : IDisposable
     private readonly Func<long> _inputGeneration;
     private readonly Func<long> _clicks;
     private readonly Timer _timer;
+
+    // Under _lock. Only a modifier down that passed this hook can need a release after held input is discarded.
+    // The event generation invalidates a queued release when newer input arrives. The external generation keeps
+    // the original release's identity as held input is replayed or taken over by another match.
+    private readonly bool[] _passedModifierDown = new bool[256];
+    private readonly long[] _modifierGeneration = new long[256];
+    private readonly long[] _externalModifierGeneration = new long[256];
+    private readonly List<HeldModifierRelease> _modifierReleases = [];
+    private readonly Dictionary<IntPtr, ModifierCleanup> _cleanup = [];
+    private readonly List<ReplayBatch> _replays = [];
+    private int _pendingCleanup;
+    private int _resending;
+    private bool _disposed;
+
+    private sealed class HeldModifierRelease(List<Native.KBDLLHOOKSTRUCT> owner, int index, Native.KBDLLHOOKSTRUCT key, long generation)
+    {
+        public List<Native.KBDLLHOOKSTRUCT> Owner { get; set; } = owner;
+
+        public int Index { get; set; } = index;
+
+        public bool Discarded { get; set; }
+
+        public Native.KBDLLHOOKSTRUCT Key { get; } = key;
+
+        public long Generation { get; } = generation;
+    }
+
+    private sealed record ModifierCleanup(Native.KBDLLHOOKSTRUCT Key, long Generation);
+
+    private sealed class ReplayBatch(Native.INPUT[] keys)
+    {
+        public Native.INPUT[] Keys { get; } = keys;
+
+        public Dictionary<int, HeldModifierRelease> Releases { get; } = [];
+
+        public int Next { get; set; }
+    }
 
     // Under _lock. The insertion being sent: the id its markers carry, the input generation of its trigger, its window,
     // and how many of its markers the hook has taken; over once it's done, or while none is being sent.
@@ -126,6 +167,9 @@ internal sealed class InsertionGuard : IDisposable
     /// </summary>
     internal Func<Native.INPUT[], uint> Resend { get; set; } = static _ => 0;
 
+    /// <summary>Gets or sets the worker's final check that a modifier is still down in Windows before releasing it.</summary>
+    internal Func<int, bool> ModifierIsDown { get; set; } = static vk => (Native.GetAsyncKeyState(vk) & 0x8000) != 0;
+
     /// <summary>Gets or sets whether a window is in front and may be driven: held keys go back only to their own.</summary>
     internal Func<IntPtr, bool> TargetInFront { get; set; }
 
@@ -186,6 +230,11 @@ internal sealed class InsertionGuard : IDisposable
     {
         lock (_lock)
         {
+            if (_disposed)
+            {
+                return false;
+            }
+
             _deadline = Clock() + TimeoutMs;
             return _markers == 0 || !_over;
         }
@@ -199,6 +248,11 @@ internal sealed class InsertionGuard : IDisposable
     {
         lock (_lock)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             _target = target;
             StartHoldingLocked();
         }
@@ -217,7 +271,7 @@ internal sealed class InsertionGuard : IDisposable
     {
         lock (_lock)
         {
-            if (_holdingAfterMatch)
+            if (_disposed || _holdingAfterMatch)
             {
                 return false;
             }
@@ -298,8 +352,7 @@ internal sealed class InsertionGuard : IDisposable
 
             target = _afterMatchTarget;
             keys = TakeAfterMatchLocked();
-            keys[0] = default;
-            keys.RemoveAt(0);
+            RemoveSwallowedLocked(keys);
         }
 
         SendBackAsTheyCame(keys, target);
@@ -315,6 +368,21 @@ internal sealed class InsertionGuard : IDisposable
     {
         lock (_lock)
         {
+            // Only the insertion worker calls Begin. Finish an older discarded release before it samples modifiers:
+            // otherwise its temporary key-up could cancel cleanup and its later pressAgain leave that key down again.
+            // A detached replay is included until it has either returned the up or decided to discard it.
+            while (!_disposed && (_pendingCleanup != 0 || _modifierReleases.Any(release => release.Discarded
+                || (!ReferenceEquals(release.Owner, _held) && !ReferenceEquals(release.Owner, _expected) && !ReferenceEquals(release.Owner, _afterMatch)))))
+            {
+                Monitor.Wait(_lock);
+            }
+
+            if (_disposed)
+            {
+                _unguarded = false;
+                return _id;
+            }
+
             // A fresh id, so a marker of an earlier insertion arriving late is told apart. A scan code carries one byte.
             _id = (byte)((_id % 255) + 1);
             _generation = generation;
@@ -344,6 +412,15 @@ internal sealed class InsertionGuard : IDisposable
                 }
 
                 List<Native.KBDLLHOOKSTRUCT> keys = TakeAfterMatchLocked();
+                foreach (HeldModifierRelease release in _modifierReleases)
+                {
+                    if (ReferenceEquals(release.Owner, _held))
+                    {
+                        release.Owner = keys;
+                        release.Index += keys.Count;
+                    }
+                }
+
                 keys.AddRange(_held);
                 Zero(_held);
                 _held = keys;
@@ -392,6 +469,7 @@ internal sealed class InsertionGuard : IDisposable
         while (true)
         {
             Native.INPUT[] batch;
+            ReplayBatch replay;
             IntPtr target;
             lock (_lock)
             {
@@ -407,30 +485,38 @@ internal sealed class InsertionGuard : IDisposable
 
                 if (_held.Count == 0 && pressAgain.Length == 0)
                 {
-                    Zero(EndLocked());
+                    DiscardLocked(EndLocked());
                     return;
                 }
 
                 // Kept, so the hook knows them coming back: zeroed once the next round or the end replaces them.
                 _mode = Mode.Draining;
-                Zero(_expected);
+                DiscardLocked(_expected);
                 _expected = _held;
                 _held = [];
                 _next = 0;
                 batch = [.. pressAgain, .. _expected.Select(ToInput), Marker(_id)];
+                replay = BeginResendLocked(batch, _expected);
                 target = _target;
                 awaited = _markers + 1;
             }
 
-            if (!TargetInFront(target))
+            try
             {
+                if (!TargetInFront(target))
+                {
+                    Drop();
+                    return;
+                }
+
+                markerSent = Resend(batch) == (uint)batch.Length;
+            }
+            finally
+            {
+                EndResend(replay);
                 Array.Clear(batch);
-                Drop();
-                return;
             }
 
-            markerSent = Resend(batch) == (uint)batch.Length;
-            Array.Clear(batch);
             pressAgain = [];
         }
 
@@ -443,7 +529,7 @@ internal sealed class InsertionGuard : IDisposable
         lock (_lock)
         {
             _cancelled = true;
-            Zero(EndLocked());
+            DiscardLocked(EndLocked());
         }
     }
 
@@ -477,12 +563,12 @@ internal sealed class InsertionGuard : IDisposable
             if (!_over && _markers > 0 && window != _target)
             {
                 _cancelled = true;
-                Zero(EndLocked());
+                DiscardLocked(EndLocked());
             }
 
             if (_holdingAfterMatch && window != _afterMatchTarget)
             {
-                Zero(TakeAfterMatchLocked());
+                DiscardLocked(TakeAfterMatchLocked());
             }
         }
     }
@@ -493,7 +579,108 @@ internal sealed class InsertionGuard : IDisposable
     /// coming back. Since a match the worker hasn't taken, so is every one that gets past that. It never sends anything or
     /// asks about a window: the worker and the timer do.
     /// </summary>
-    public bool Swallows(Native.KBDLLHOOKSTRUCT key)
+    public bool Swallows(Native.KBDLLHOOKSTRUCT key) => Swallows(key, observePassed: true);
+
+    internal bool Swallows(Native.KBDLLHOOKSTRUCT key, bool observePassed)
+    {
+        if ((key.DwExtraInfo.ToInt64() & 0xFFF) == CleanupTagBits)
+        {
+            lock (_lock)
+            {
+                if (_cleanup.TryGetValue(key.DwExtraInfo, out ModifierCleanup? cleanup))
+                {
+                    // Checked here, at the same place as physical input, rather than only before SendInput: a newer
+                    // modifier press can arrive while that call is waiting for this hook.
+                    if (!CanReleaseLocked(key, cleanup))
+                    {
+                        return true;
+                    }
+
+                    if (observePassed)
+                    {
+                        PassedLocked(key);
+                    }
+
+                    return false;
+                }
+            }
+        }
+
+        bool replayed = false;
+        HeldModifierRelease? release = null;
+        if (Volatile.Read(ref _resending) != 0 && (key.Flags & (Injected | Native.LLKHF_LOWER_IL_INJECTED)) == Injected)
+        {
+            lock (_lock)
+            {
+                foreach (ReplayBatch replay in _replays)
+                {
+                    if (replay.Next < replay.Keys.Length && SameInput(replay.Keys[replay.Next], key))
+                    {
+                        replayed = true;
+                        replay.Releases.TryGetValue(replay.Next++, out release);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!KeyboardHook.IsModifierKey(key.VkCode) || key.DwExtraInfo == HostInputTags.KeyboardManagerSuppressed)
+        {
+            return SwallowsCore(key);
+        }
+
+        lock (_lock)
+        {
+            int vk = ModifierKey(key);
+            _modifierGeneration[vk]++;
+            if (key.DwExtraInfo != KeyboardHook.InjectionSignature && !replayed)
+            {
+                _externalModifierGeneration[vk]++;
+            }
+
+            bool swallowed = SwallowsCore(key, release);
+            if (!swallowed)
+            {
+                if (observePassed)
+                {
+                    PassedLocked(key);
+                }
+
+                if (release is not null)
+                {
+                    _modifierReleases.Remove(release);
+                }
+            }
+
+            return swallowed;
+        }
+    }
+
+    /// <summary>
+    /// Records a key only after the remaining hooks let it through. A remapped original may have passed our guard but
+    /// been swallowed by Keyboard Manager. Tests that call <see cref="Swallows(Native.KBDLLHOOKSTRUCT)"/> directly model an unblocked next hook.
+    /// </summary>
+    internal bool Passed(Native.KBDLLHOOKSTRUCT key)
+    {
+        if (!KeyboardHook.IsModifierKey(key.VkCode) || key.DwExtraInfo == HostInputTags.KeyboardManagerSuppressed)
+        {
+            return true;
+        }
+
+        lock (_lock)
+        {
+            // Another hook can inject input reentrantly. A cleanup must still be current after CallNextHookEx returns.
+            if (_cleanup.TryGetValue(key.DwExtraInfo, out ModifierCleanup? cleanup) && !CanReleaseLocked(key, cleanup))
+            {
+                return false;
+            }
+
+            PassedLocked(key);
+            return true;
+        }
+    }
+
+    private bool SwallowsCore(Native.KBDLLHOOKSTRUCT key, HeldModifierRelease? replayedRelease = null)
     {
         bool ours = key.DwExtraInfo == KeyboardHook.InjectionSignature;
         if (ours && key.VkCode == MarkerVk)
@@ -540,7 +727,7 @@ internal sealed class InsertionGuard : IDisposable
             // Anything else, typed or injected, waits: let through, a key-up overtook its own key-down going back.
             if (!passes)
             {
-                HoldLocked(_held, key);
+                HoldLocked(_held, key, replayedRelease);
                 return true;
             }
 
@@ -548,7 +735,7 @@ internal sealed class InsertionGuard : IDisposable
             // since the match starts its time limit, as the user is now waiting for it.
             if (_holdingAfterMatch)
             {
-                HoldLocked(_afterMatch, key);
+                HoldLocked(_afterMatch, key, replayedRelease);
                 if (_afterMatchDeadline == NoDeadline && (key.Flags & Native.LLKHF_UP) == 0)
                 {
                     _afterMatchDeadline = Clock() + TimeoutMs;
@@ -562,15 +749,51 @@ internal sealed class InsertionGuard : IDisposable
         }
     }
 
-    public void Dispose()
+    public void Dispose() => Dispose(pump: null);
+
+    /// <summary>
+    /// Stops holding input and finishes release-only cleanup before the hook is removed. Its installing thread supplies
+    /// a sent-message pump, so SendInput remains on the worker and its hook callbacks can finish while this waits.
+    /// </summary>
+    internal void Dispose(Action? pump)
     {
         lock (_lock)
         {
-            Zero(EndLocked());
-            Zero(TakeAfterMatchLocked());
+            if (!_disposed)
+            {
+                _cancelled = true;
+                DiscardLocked(EndLocked());
+                DiscardLocked(TakeAfterMatchLocked());
+
+                // A timer or worker may have detached a replay list and be checking its target. Its release records
+                // stay here until that operation finishes; disposal takes them over before closing the send gate.
+                foreach (HeldModifierRelease release in _modifierReleases)
+                {
+                    release.Discarded = true;
+                }
+
+                QueueDiscardedReleasesLocked();
+                _disposed = true;
+            }
         }
 
         _timer.Dispose();
+        while (true)
+        {
+            lock (_lock)
+            {
+                QueueDiscardedReleasesLocked();
+                if (_pendingCleanup == 0 && _resending == 0)
+                {
+                    Array.Clear(_passedModifierDown);
+                    return;
+                }
+
+                Monitor.Wait(_lock, pump is null ? Timeout.Infinite : 1);
+            }
+
+            pump?.Invoke();
+        }
     }
 
     /// <summary>The marker of the insertion with id <paramref name="id"/>.</summary>
@@ -741,8 +964,7 @@ internal sealed class InsertionGuard : IDisposable
                     _swallowedFirst = false;
                     if (_committed && _held.Count > 0)
                     {
-                        _held[0] = default;
-                        _held.RemoveAt(0);
+                        RemoveSwallowedLocked(_held);
                     }
                 }
             }
@@ -768,7 +990,7 @@ internal sealed class InsertionGuard : IDisposable
         _over = true;
         _swallowedFirst = false;
         _awaitingStart = false;
-        Zero(_expected);
+        DiscardLocked(_expected);
         List<Native.KBDLLHOOKSTRUCT> held = _held;
         _held = [];
         Monitor.PulseAll(_lock);
@@ -792,8 +1014,7 @@ internal sealed class InsertionGuard : IDisposable
 
         if (unguarded && first == 1 && _held.Count > 0)
         {
-            _held[0] = default;
-            _held.RemoveAt(0);
+            RemoveSwallowedLocked(_held);
         }
 
         _unguarded = unguarded;
@@ -810,9 +1031,25 @@ internal sealed class InsertionGuard : IDisposable
     }
 
     /// <summary>Called under <c>_lock</c>: holds <paramref name="key"/> in <paramref name="keys"/>; with too many, the timer ends that hold at once.</summary>
-    private void HoldLocked(List<Native.KBDLLHOOKSTRUCT> keys, Native.KBDLLHOOKSTRUCT key)
+    private void HoldLocked(List<Native.KBDLLHOOKSTRUCT> keys, Native.KBDLLHOOKSTRUCT key, HeldModifierRelease? replayedRelease = null)
     {
+        int index = keys.Count;
         keys.Add(key);
+        if (KeyboardHook.IsModifierKey(key.VkCode) && (key.Flags & Native.LLKHF_UP) != 0 && key.DwExtraInfo != HostInputTags.KeyboardManagerSuppressed)
+        {
+            if (replayedRelease is not null)
+            {
+                // A trigger among replayed keys takes this exact release over; the old insertion no longer owns it.
+                replayedRelease.Owner = keys;
+                replayedRelease.Index = index;
+                replayedRelease.Discarded = false;
+            }
+            else
+            {
+                _modifierReleases.Add(new HeldModifierRelease(keys, index, key, _externalModifierGeneration[ModifierKey(key)]));
+            }
+        }
+
         if (keys.Count == MaxHeld)
         {
             _timer.Change(0, Timeout.Infinite);
@@ -843,14 +1080,23 @@ internal sealed class InsertionGuard : IDisposable
     /// <summary>Sends <paramref name="held"/> back as <see cref="ToResend"/> does if <paramref name="target"/> is in front, and zeroes it.</summary>
     private void SendBack(List<Native.KBDLLHOOKSTRUCT> held, IntPtr target)
     {
-        if (held.Count > 0 && TargetInFront(target))
+        Native.INPUT[] resend = [];
+        try
         {
-            Native.INPUT[] resend = ToResend(held);
-            _ = Resend(resend);
-            Array.Clear(resend);
+            if (held.Count > 0 && TargetInFront(target))
+            {
+                resend = ToResend(held);
+                _ = ResendWhileAlive(resend, held);
+            }
         }
-
-        Zero(held);
+        finally
+        {
+            Array.Clear(resend);
+            lock (_lock)
+            {
+                DiscardLocked(held);
+            }
+        }
     }
 
     /// <summary>
@@ -860,19 +1106,243 @@ internal sealed class InsertionGuard : IDisposable
     /// </summary>
     private void SendBackAsTheyCame(List<Native.KBDLLHOOKSTRUCT> keys, IntPtr target)
     {
-        if (keys.Count > 0 && TargetInFront(target))
+        Native.INPUT[] resend = [];
+        try
         {
-            var resend = new Native.INPUT[keys.Count];
-            for (int i = 0; i < keys.Count; i++)
+            if (keys.Count > 0 && TargetInFront(target))
             {
-                resend[i] = ToInput(keys[i]);
-            }
+                resend = new Native.INPUT[keys.Count];
+                for (int i = 0; i < keys.Count; i++)
+                {
+                    resend[i] = ToInput(keys[i]);
+                }
 
-            _ = Resend(resend);
+                _ = ResendWhileAlive(resend, keys);
+            }
+        }
+        finally
+        {
             Array.Clear(resend);
+            lock (_lock)
+            {
+                DiscardLocked(keys);
+            }
+        }
+    }
+
+    private static int ModifierKey(Native.KBDLLHOOKSTRUCT key) => key.VkCode switch
+    {
+        Native.VK_SHIFT => key.ScanCode == 0x36 ? Native.VK_RSHIFT : Native.VK_LSHIFT,
+        Native.VK_CONTROL => (key.Flags & Native.LLKHF_EXTENDED) != 0 ? Native.VK_RCONTROL : Native.VK_LCONTROL,
+        Native.VK_MENU => (key.Flags & Native.LLKHF_EXTENDED) != 0 ? Native.VK_RMENU : Native.VK_LMENU,
+        _ => (int)(key.VkCode & 0xFF),
+    };
+
+    private void PassedLocked(Native.KBDLLHOOKSTRUCT key)
+    {
+        int vk = ModifierKey(key);
+        _modifierGeneration[vk]++;
+        _passedModifierDown[vk] = (key.Flags & (Native.LLKHF_UP | Native.LLKHF_LOWER_IL_INJECTED)) == 0;
+    }
+
+    private bool CanReleaseLocked(Native.KBDLLHOOKSTRUCT key, ModifierCleanup cleanup)
+    {
+        int vk = ModifierKey(cleanup.Key);
+        return KeyboardHook.IsModifierKey(key.VkCode)
+            && (key.Flags & Native.LLKHF_UP) != 0
+            && ModifierKey(key) == vk
+            && _passedModifierDown[vk]
+            && _modifierGeneration[vk] == cleanup.Generation;
+    }
+
+    /// <summary>Removes the swallowed trigger key while keeping the held releases' positions with their own events.</summary>
+    private void RemoveSwallowedLocked(List<Native.KBDLLHOOKSTRUCT> keys)
+    {
+        keys[0] = default;
+        keys.RemoveAt(0);
+        for (int i = _modifierReleases.Count - 1; i >= 0; i--)
+        {
+            HeldModifierRelease release = _modifierReleases[i];
+            if (ReferenceEquals(release.Owner, keys))
+            {
+                if (release.Index == 0)
+                {
+                    _modifierReleases.RemoveAt(i);
+                }
+                else
+                {
+                    release.Index--;
+                }
+            }
+        }
+    }
+
+    /// <summary>Drops text and unsent presses; only a release paired with a down Windows already received can go back.</summary>
+    private void DiscardLocked(List<Native.KBDLLHOOKSTRUCT> keys)
+    {
+        foreach (HeldModifierRelease release in _modifierReleases)
+        {
+            if (ReferenceEquals(release.Owner, keys))
+            {
+                release.Discarded = true;
+            }
         }
 
+        QueueDiscardedReleasesLocked();
         Zero(keys);
+        Monitor.PulseAll(_lock);
+    }
+
+    private void QueueDiscardedReleasesLocked()
+    {
+        // An in-flight replay still owns its modifier context, even if a timeout ended the guard. Its held text must
+        // reach the app before any cleanup. A short send may restore a modifier without reaching its up; check after it.
+        if (_resending != 0)
+        {
+            return;
+        }
+
+        for (int i = _modifierReleases.Count - 1; i >= 0; i--)
+        {
+            HeldModifierRelease release = _modifierReleases[i];
+            if (release.Discarded)
+            {
+                QueueReleaseLocked(release);
+                _modifierReleases.RemoveAt(i);
+            }
+        }
+    }
+
+    private void QueueReleaseLocked(HeldModifierRelease release)
+    {
+        int vk = ModifierKey(release.Key);
+        if (!_passedModifierDown[vk] || release.Generation != _externalModifierGeneration[vk] || (release.Key.Flags & Native.LLKHF_LOWER_IL_INJECTED) != 0)
+        {
+            return;
+        }
+
+        // Counted before the worker is queued: disposal must not unhook in the gap before that worker starts.
+        var cleanup = new ModifierCleanup(release.Key with { VkCode = (uint)vk }, _modifierGeneration[vk]);
+        _pendingCleanup++;
+        ThreadPool.QueueUserWorkItem(_ => ReleaseModifier(cleanup));
+    }
+
+    private void ReleaseModifier(ModifierCleanup cleanup)
+    {
+        IntPtr signature = IntPtr.Zero;
+        Native.INPUT[] input = [];
+        try
+        {
+            while (true)
+            {
+                IntPtr candidate = new((System.Security.Cryptography.RandomNumberGenerator.GetInt32(0x0100_0000, int.MaxValue) & ~0xFFF) | CleanupTagBits);
+                lock (_lock)
+                {
+                    while (_resending != 0)
+                    {
+                        Monitor.Wait(_lock);
+                    }
+
+                    if (!CanReleaseLocked(cleanup.Key, cleanup))
+                    {
+                        return;
+                    }
+
+                    if (_cleanup.TryAdd(candidate, cleanup))
+                    {
+                        signature = candidate;
+                        break;
+                    }
+                }
+            }
+
+            // Only the paired key-up, never text or a down, may reach a different foreground window. Its original
+            // integrity was not lower than ours. Keyboard Manager leaves this tagged release alone.
+            if (!ModifierIsDown(ModifierKey(cleanup.Key)))
+            {
+                return;
+            }
+
+            input = [ToInput(cleanup.Key with { DwExtraInfo = signature })];
+            _ = Resend(input);
+        }
+        finally
+        {
+            Array.Clear(input);
+            lock (_lock)
+            {
+                // SendInput has finished traversing hooks. Until then even a cancelled token must stay recognizable.
+                _cleanup.Remove(signature);
+                _pendingCleanup--;
+                Monitor.PulseAll(_lock);
+            }
+        }
+    }
+
+    private static bool SameInput(Native.INPUT input, Native.KBDLLHOOKSTRUCT key)
+    {
+        Native.KEYBDINPUT sent = input.U.Ki;
+        bool unicode = (sent.DwFlags & Native.KEYEVENTF_UNICODE) != 0;
+        return key.DwExtraInfo == sent.DwExtraInfo
+            && key.VkCode == (unicode ? Native.VK_PACKET : sent.WVk)
+            && (sent.WScan == 0 || sent.WScan == key.ScanCode)
+            && ((sent.DwFlags & Native.KEYEVENTF_KEYUP) != 0) == ((key.Flags & Native.LLKHF_UP) != 0)
+            && ((sent.DwFlags & Native.KEYEVENTF_EXTENDEDKEY) != 0) == ((key.Flags & Native.LLKHF_EXTENDED) != 0);
+    }
+
+    private ReplayBatch BeginResendLocked(Native.INPUT[] keys, List<Native.KBDLLHOOKSTRUCT> source)
+    {
+        var replay = new ReplayBatch(keys);
+        int next = 0;
+        foreach (HeldModifierRelease release in _modifierReleases.Where(release => ReferenceEquals(release.Owner, source)).OrderBy(release => release.Index))
+        {
+            for (; next < keys.Length; next++)
+            {
+                if (SameInput(keys[next], release.Key))
+                {
+                    replay.Releases.Add(next++, release);
+                    break;
+                }
+            }
+        }
+
+        _replays.Add(replay);
+        _resending++;
+        return replay;
+    }
+
+    private void EndResend(ReplayBatch replay)
+    {
+        lock (_lock)
+        {
+            _replays.Remove(replay);
+            _resending--;
+            QueueDiscardedReleasesLocked();
+            Monitor.PulseAll(_lock);
+        }
+    }
+
+    private uint ResendWhileAlive(Native.INPUT[] keys, List<Native.KBDLLHOOKSTRUCT> source)
+    {
+        ReplayBatch replay;
+        lock (_lock)
+        {
+            if (_disposed)
+            {
+                return 0;
+            }
+
+            replay = BeginResendLocked(keys, source);
+        }
+
+        try
+        {
+            return Resend(keys);
+        }
+        finally
+        {
+            EndResend(replay);
+        }
     }
 
     /// <summary>Called under <c>_lock</c>: waits up to <paramref name="timeoutMs"/> for <paramref name="done"/>.</summary>

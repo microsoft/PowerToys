@@ -15,7 +15,7 @@ internal enum ClipboardWrite
     /// <summary>The clipboard was emptied but the text didn't go on, so the user's copy has to be put back.</summary>
     Failed,
 
-    /// <summary>Nothing was touched: the clipboard couldn't be opened for writing.</summary>
+    /// <summary>Nothing was touched: the clipboard couldn't be opened for writing, or the saved copy was superseded.</summary>
     Refused,
 }
 
@@ -35,16 +35,19 @@ internal interface IClipboardAccess
     string? ReadText();
 
     /// <summary>
-    /// Copies everything on the clipboard. Returns null when it can't be put back exactly (a format that isn't plain
-    /// memory, one that won't render, or more than Text Expander's limit), so the clipboard isn't borrowed at all.
+    /// Copies everything on the clipboard, including its change counter before closing it. Returns null when it can't
+    /// be put back exactly (a format that isn't plain memory, one that won't render, or more than Text Expander's limit),
+    /// so the clipboard isn't borrowed at all.
     /// </summary>
     SavedClipboard? Save();
 
     /// <summary>
     /// Puts <paramref name="text"/> on the clipboard. With <paramref name="keepOutOfHistory"/>, it carries the formats
     /// that keep it out of Clipboard History, Cloud Clipboard and clipboard managers, as Text Expander's pastes do.
+    /// When borrowing, <paramref name="saved"/> must be supplied: its change counter is checked after opening the
+    /// clipboard and before emptying it, refusing a newer copy. A persistent Copy doesn't need a saved copy.
     /// </summary>
-    ClipboardWrite WriteText(string text, bool keepOutOfHistory);
+    ClipboardWrite WriteText(string text, bool keepOutOfHistory, SavedClipboard? saved = null);
 
     /// <summary>True when the clipboard holds exactly <paramref name="text"/>.</summary>
     bool HoldsText(string text);

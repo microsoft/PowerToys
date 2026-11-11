@@ -28,6 +28,12 @@ internal sealed class FakeClipboard : IClipboardAccess
     /// <summary>Gets or sets what happens while the next restore waits to open the clipboard, such as another app copying.</summary>
     public Action? WhileOpening { get; set; }
 
+    /// <summary>Gets or sets what happens after a complete snapshot has been taken and the clipboard closed.</summary>
+    public Action? AfterSave { get; set; }
+
+    /// <summary>Gets or sets what happens while the next write waits to open the clipboard.</summary>
+    public Action? WhileOpeningForWrite { get; set; }
+
     /// <summary>Gets or sets what happens right after a write, such as another window coming to the front.</summary>
     public Action? AfterWrite { get; set; }
 
@@ -61,22 +67,28 @@ internal sealed class FakeClipboard : IClipboardAccess
             return null;
         }
 
-        return new SavedClipboard(Text is null ? [] : [new ClipboardEntry(ClipboardFormats.CF_UNICODETEXT, Encoding.Unicode.GetBytes(Text + '\0'))]);
+        var saved = new SavedClipboard(Text is null ? [] : [new ClipboardEntry(ClipboardFormats.CF_UNICODETEXT, Encoding.Unicode.GetBytes(Text + '\0'))], SequenceNumber);
+        AfterSave?.Invoke();
+        return saved;
     }
 
-    public ClipboardWrite WriteText(string text, bool keepOutOfHistory)
+    public ClipboardWrite WriteText(string text, bool keepOutOfHistory, SavedClipboard? saved = null)
     {
         Writes.Add((text, keepOutOfHistory));
-        if (NextWrite == ClipboardWrite.Refused)
+        var whileOpening = WhileOpeningForWrite;
+        WhileOpeningForWrite = null;
+        whileOpening?.Invoke();
+        var result = NextWrite;
+        if (result == ClipboardWrite.Refused || (saved is not null && saved.SequenceNumber != SequenceNumber))
         {
             return ClipboardWrite.Refused;
         }
 
         SequenceNumber++;
         IsOurs = true;
-        Text = NextWrite == ClipboardWrite.Written ? text : null;
+        Text = result == ClipboardWrite.Written ? text : null;
         AfterWrite?.Invoke();
-        return NextWrite;
+        return result;
     }
 
     public bool HoldsText(string text) => string.Equals(Text, text, StringComparison.Ordinal);
