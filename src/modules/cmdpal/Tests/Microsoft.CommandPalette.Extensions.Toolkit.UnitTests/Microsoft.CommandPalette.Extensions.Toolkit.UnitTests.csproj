@@ -3,6 +3,7 @@
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <RepoRoot>$(MSBuildThisFileDirectory)..\..\..\..\..\</RepoRoot>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>

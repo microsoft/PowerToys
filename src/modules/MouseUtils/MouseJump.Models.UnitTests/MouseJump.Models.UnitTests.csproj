@@ -3,6 +3,7 @@
     <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
     <PropertyGroup>
+        <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
         <ProjectGuid>{AB6305DB-CA33-4EF4-BA40-B0CFC10E7B9F}</ProjectGuid>
         <AssemblyName>PowerToys.MouseJump.Models.UnitTests</AssemblyName>
         <AssemblyTitle>PowerToys.MouseJump.Models.UnitTests</AssemblyTitle>

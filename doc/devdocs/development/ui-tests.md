@@ -54,6 +54,10 @@ selector and value. Keep this boundary when adding wrappers: application argumen
 PowerToys centrally pins MSTest 4.5.2 in `Directory.Packages.props`. Rebuild shared test libraries
 alongside their consumers when upgrading: MSTest v3 and v4 are not binary compatible.
 
+Declare assembly parallelization in each test project's `.csproj` using `MSTestParallelizeScope`.
+Use `None` for tests that share desktop or process state, and `MethodLevel` only for isolated tests.
+MSTest generates the assembly attribute; do not also declare it in `MSTestSettings.cs`.
+
 For an incremental v3-to-v4 upgrade, an obsolete
 `Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll` can remain in a test output directory
 and interfere with VSTest discovery or execution. Remove that obsolete v3 adapter from the affected

@@ -13,8 +13,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WorkspacesLauncherUI.Models;
 using WorkspacesLauncherUI.Properties;
 
-[assembly: DoNotParallelize]
-
 namespace WorkspacesLauncherUI.UnitTests
 {
     [OSCondition(OperatingSystems.Windows)]

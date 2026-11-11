@@ -5,6 +5,7 @@
   <Import Project="..\..\..\Common.SelfContained.props" />
 
   <PropertyGroup>
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <RootNamespace>PowerDisplay.Cli.UnitTests</RootNamespace>

@@ -2,6 +2,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
   <PropertyGroup>
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>

@@ -4,6 +4,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
   <PropertyGroup>
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <RootNamespace>LightSwitch.Cli.UnitTests</RootNamespace>

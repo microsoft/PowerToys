@@ -4,6 +4,7 @@
   <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
 
   <PropertyGroup>
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>

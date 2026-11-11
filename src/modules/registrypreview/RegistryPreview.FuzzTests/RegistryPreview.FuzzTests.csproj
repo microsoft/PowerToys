@@ -4,6 +4,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.FuzzTest.props" />
 
   <PropertyGroup>
+    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
     <Platforms>x64;ARM64</Platforms>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
