@@ -93,7 +93,7 @@ public static class MonitorDtoProjector
             return (null, new CliErrorResult { Command = CliCommandNames.Get, Monitor = mRef, Error = settingError });
         }
 
-        return (new CliGetResult { Monitors = [entry!] }, null);
+        return (new CliGetResult { Monitors = new[] { entry! } }, null);
     }
 
     /// <summary>

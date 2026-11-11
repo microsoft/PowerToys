@@ -13,6 +13,7 @@ internal static class ProductStrings
     internal const string ImageToText = "Image to text";
     internal const string PasteAsTxtFile = "Paste as .txt file";
     internal const string PasteAsPngFile = "Paste as .png file";
+    internal const string PasteAsJpgFile = "Paste as .jpg file";
     internal const string PasteAsHtmlFile = "Paste as .html file";
     internal const string TranscodeToMp3 = "Transcode to .mp3";
     internal const string TranscodeToMp4 = "Transcode to .mp4 (H.264/AAC)";

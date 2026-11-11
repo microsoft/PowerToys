@@ -144,7 +144,7 @@ internal static class CliInputReader
     {
         var storageFile = await StorageFile.GetFileFromPathAsync(inputFile.FullName);
         var package = new DataPackage();
-        package.SetStorageItems([storageFile]);
+        package.SetStorageItems(new IStorageItem[] { storageFile });
         return package.GetView();
     }
 

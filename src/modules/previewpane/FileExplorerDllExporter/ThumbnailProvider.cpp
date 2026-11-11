@@ -2,22 +2,21 @@
 #include "ThumbnailProvider.h"
 
 #include <filesystem>
-#include <fstream>
-#include <shellapi.h>
 #include <Shlwapi.h>
 #include <string>
 
 #include <wil/com.h>
 
-#include <common/utils/process_path.h>
 #include <common/logger/logger.h>
 #include <common/SettingsAPI/settings_helpers.h>
+#include <common/utils/process_path.h>
+#include <common/utils/thumbnail_provider.h>
 
 extern HINSTANCE g_hInst;
 extern long g_cDllRef;
 
 ThumbnailProvider::ThumbnailProvider(std::string name, std::wstring logFilePath, std::wstring exeName, std::wstring tempFolderName, std::wstring extension) :
-    m_cRef(1), m_pStream(NULL), m_process(NULL), m_exeName(exeName), m_tempFolderName(tempFolderName), m_extension(extension)
+    m_cRef(1), m_pStream(NULL), m_exeName(exeName), m_tempFolderName(tempFolderName), m_extension(extension)
 {
     Logger::init(name, logFilePath, PTSettingsHelper::get_log_settings_file_location());
 
@@ -26,9 +25,9 @@ ThumbnailProvider::ThumbnailProvider(std::string name, std::wstring logFilePath,
 
 ThumbnailProvider::~ThumbnailProvider()
 {
+    thumbnail_provider::release_stream(m_pStream);
     InterlockedDecrement(&g_cDllRef);
 }
-
 
 IFACEMETHODIMP ThumbnailProvider::QueryInterface(REFIID riid, void** ppv)
 {
@@ -64,11 +63,7 @@ IFACEMETHODIMP ThumbnailProvider::Initialize(IStream* pStream, DWORD grfMode)
     {
         // Initialize can be called more than once, so release existing valid
         // m_pStream.
-        if (m_pStream)
-        {
-            m_pStream->Release();
-            m_pStream = NULL;
-        }
+        thumbnail_provider::release_stream(m_pStream);
 
         m_pStream = pStream;
         m_pStream->AddRef();
@@ -77,108 +72,112 @@ IFACEMETHODIMP ThumbnailProvider::Initialize(IStream* pStream, DWORD grfMode)
     return hr;
 }
 
-
 IFACEMETHODIMP ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP* phbmp, WTS_ALPHATYPE* pdwAlpha)
 {
-    // Read stream into the buffer
-    char buffer[4096];
-    ULONG cbRead;
-
-    Logger::trace(L"Begin");
-
-    GUID guid;
-    if (CoCreateGuid(&guid) == S_OK)
+    auto releaseStream = wil::scope_exit([&] { thumbnail_provider::release_stream(m_pStream); });
+    if (!phbmp || !pdwAlpha)
     {
-        wil::unique_cotaskmem_string guidString;
-        if (SUCCEEDED(StringFromCLSID(guid, &guidString)))
+        return E_POINTER;
+    }
+
+    *phbmp = nullptr;
+    *pdwAlpha = WTSAT_UNKNOWN;
+    if (!m_pStream || cx == 0 || cx > 10000)
+    {
+        return E_INVALIDARG;
+    }
+
+    try
+    {
+        GUID guid;
+        auto result = CoCreateGuid(&guid);
+        if (FAILED(result))
         {
-            Logger::info(L"Read stream and save to tmp file.");
-
-            // {CLSID} -> CLSID
-            std::wstring guid = std::wstring(guidString.get()).substr(1, std::wstring(guidString.get()).size() - 2);
-            std::wstring filePath = PTSettingsHelper::get_local_low_folder_location() + L"\\" + m_tempFolderName + L"\\";
-            if (!std::filesystem::exists(filePath))
-            {
-                std::filesystem::create_directories(filePath);
-            }
-
-            std::wstring fileName = filePath + guid + m_extension;
-            
-            // Write data to tmp file
-            std::fstream file;
-            file.open(fileName, std::ios_base::out | std::ios_base::binary);
-
-            if (!file.is_open())
-            {
-                return 0;
-            }
-
-            while (true)
-            {
-                auto result = m_pStream->Read(buffer, 4096, &cbRead);
-
-                file.write(buffer, cbRead);
-                if (result == S_FALSE)
-                {               
-                    break;
-                }
-            }
-            file.close();
-
-            m_pStream->Release();
-            m_pStream = NULL;
-
-            try
-            {
-                Logger::info(L"Start " + m_exeName);
-
-                STARTUPINFO info = { sizeof(info) };
-                std::wstring cmdLine{ L"\"" + fileName + L"\"" };
-                cmdLine += L" ";
-                cmdLine += std::to_wstring(cx);
-
-                std::wstring appPath = get_module_folderpath(g_hInst) + L"\\" + m_exeName;
-
-                SHELLEXECUTEINFO sei{ sizeof(sei) };
-                sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-                sei.lpFile = appPath.c_str();
-                sei.lpParameters = cmdLine.c_str();
-                sei.nShow = SW_SHOWDEFAULT;
-                ShellExecuteEx(&sei);
-                m_process = sei.hProcess;
-                WaitForSingleObject(m_process, INFINITE);
-                std::filesystem::remove(fileName);
-
-
-                std::wstring fileNameBmp = filePath + guid + L".bmp";
-                if (std::filesystem::exists(fileNameBmp))
-                {
-                    *phbmp = static_cast<HBITMAP>(LoadImage(NULL, fileNameBmp.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE));
-                    *pdwAlpha = WTS_ALPHATYPE::WTSAT_ARGB;
-                    std::filesystem::remove(fileNameBmp);
-                }
-                else
-                {
-                    Logger::info(L"Bmp file not generated.");
-                    return E_FAIL;
-                }
-            }
-            catch (std::exception& e)
-            {
-                std::wstring errorMessage = std::wstring{ winrt::to_hstring(e.what()) };
-                Logger::error(L"Failed to start {}. Error: {}", m_exeName, errorMessage);
-            }
+            return result;
         }
-    }
 
-    // ensure releasing the stream (not all if branches contain it)
-    if (m_pStream)
+        wil::unique_cotaskmem_string guidString;
+        result = StringFromCLSID(guid, &guidString);
+        if (FAILED(result))
+        {
+            return result;
+        }
+
+        const auto directory = std::filesystem::path{ PTSettingsHelper::get_local_low_folder_location() } / m_tempFolderName;
+        std::filesystem::create_directories(directory);
+        const auto fileName = directory / (std::wstring{ guidString.get() } + m_extension);
+        const auto bitmapName = directory / (std::wstring{ guidString.get() } + L".bmp");
+        const auto svgProfile = directory / (std::wstring{ guidString.get() } + L".WebView2");
+        auto removeFiles = wil::scope_exit([&] {
+            for (const auto& path : { fileName, bitmapName })
+            {
+                std::error_code error;
+                std::filesystem::remove(path, error);
+                if (error)
+                {
+                    Logger::error(L"Failed to remove thumbnail temporary file. Error: {}", error.value());
+                }
+            }
+
+            if (m_extension == L".svg")
+            {
+                // Browser descendants may still be releasing files after the job is closed.
+                std::error_code error;
+                for (int attempt = 0; attempt < 20; ++attempt)
+                {
+                    std::filesystem::remove_all(svgProfile, error);
+                    if (!error)
+                    {
+                        break;
+                    }
+
+                    Sleep(50);
+                }
+
+                if (error)
+                {
+                    Logger::error(L"Failed to remove thumbnail browser data. Error: {}", error.value());
+                }
+            }
+        });
+
+        result = thumbnail_provider::copy_stream_to_file(m_pStream, fileName);
+        thumbnail_provider::release_stream(m_pStream);
+        if (FAILED(result))
+        {
+            Logger::error(L"Failed to copy thumbnail input. Error: {}", result);
+            return result;
+        }
+
+        const auto application = std::filesystem::path{ get_module_folderpath(g_hInst) } / m_exeName;
+        const auto arguments = L"\"" + fileName.wstring() + L"\" " + std::to_wstring(cx);
+        const auto launch = thumbnail_provider::launch_in_job(application, arguments);
+        if (launch.status != thumbnail_provider::launch_status::completed)
+        {
+            Logger::error(L"Thumbnail provider {} did not complete. Error: {}", m_exeName, launch.error);
+            return HRESULT_FROM_WIN32(launch.error == ERROR_SUCCESS ? ERROR_PROCESS_ABORTED : launch.error);
+        }
+
+        if (launch.exit_code != 0)
+        {
+            Logger::error(L"Thumbnail provider {} exited with code {}.", m_exeName, launch.exit_code);
+            return E_FAIL;
+        }
+
+        *phbmp = static_cast<HBITMAP>(LoadImageW(nullptr, bitmapName.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE));
+        if (!*phbmp)
+        {
+            Logger::info(L"Thumbnail bitmap was not generated or could not be loaded.");
+            return E_FAIL;
+        }
+
+        *pdwAlpha = WTSAT_ARGB;
+        return S_OK;
+    }
+    catch (const std::exception& error)
     {
-        m_pStream->Release();
-        m_pStream = NULL;
+        const std::wstring errorMessage{ winrt::to_hstring(error.what()) };
+        Logger::error(L"Thumbnail provider {} failed. Error: {}", m_exeName, errorMessage);
+        return E_FAIL;
     }
-
-    return S_OK;
 }
-
-

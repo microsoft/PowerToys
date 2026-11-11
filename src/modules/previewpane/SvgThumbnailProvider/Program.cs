@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                     string filePath = args[0];
                     uint cx = Convert.ToUInt32(args[1], 10);
 
-                    _thumbnailProvider = new SvgThumbnailProvider(filePath);
+                    _thumbnailProvider = new SvgThumbnailProvider(filePath, Path.ChangeExtension(filePath, ".WebView2"));
                     Bitmap? thumbnail = _thumbnailProvider.GetThumbnail(cx);
                     if (thumbnail != null )
                     {
