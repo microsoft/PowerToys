@@ -354,19 +354,11 @@ public class FileExplorerAddonsTests : UITestBase
 
         var providerLog = WaitForProviderLog(
             providerLogDirectory,
-            $"Start PowerToys.{providerName}.exe",
+            $"{providerName} logger is initialized",
             ExplorerTimeoutMS);
         Assert.IsNotNull(
             providerLog,
             $"Windows Shell did not invoke the PowerToys {providerName} shim for the cold {extension} thumbnail.");
-        var providerLogText = ReadAllTextWithRetry(providerLog!);
-        Assert.IsFalse(
-            providerLogText.Contains("Bmp file not generated", StringComparison.OrdinalIgnoreCase) ||
-            providerLogText.Contains("Failed to start", StringComparison.OrdinalIgnoreCase),
-            $"The PowerToys {providerName} shim reported a generation failure.{Environment.NewLine}{providerLogText}");
-        var persistedLogPath = ArtifactPath($"{scenario}-provider", ".log");
-        File.WriteAllText(persistedLogPath, providerLogText);
-        TestContext.AddResultFile(persistedLogPath);
 
         var extraLarge = CaptureStableFileItem(explorer, assetName, $"{scenario}-extra-large");
 
@@ -386,6 +378,14 @@ public class FileExplorerAddonsTests : UITestBase
             minimumItemHeight: large.Height / 2,
             maximumItemHeight: large.Height * 9 / 10);
         var medium = CaptureStableFileItem(explorer, assetName, $"{scenario}-medium");
+
+        var providerLogText = ReadAllTextWithRetry(providerLog!);
+        var persistedLogPath = ArtifactPath($"{scenario}-provider", ".log");
+        File.WriteAllText(persistedLogPath, providerLogText);
+        TestContext.AddResultFile(persistedLogPath);
+        Assert.IsFalse(
+            ThumbnailProviderLog.HasGenerationFailure(providerLogText, providerName),
+            $"The PowerToys {providerName} shim reported a generation failure.{Environment.NewLine}{providerLogText}");
 
         AssertThumbnailSizes(extraLarge, large, medium, extension);
 
