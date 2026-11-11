@@ -31,6 +31,28 @@ namespace
         }
     };
 
+    // A scanner or an image that is still being released can keep a temporary file locked
+    // for a moment after its process exits, so wait that out instead of failing the test.
+    template<typename Remove>
+    bool RemoveWhenUnlocked(Remove remove, DWORD& error)
+    {
+        const auto deadline = GetTickCount64() + 10000;
+        while (!remove())
+        {
+            error = GetLastError();
+            if (error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND)
+            {
+                return true;
+            }
+            if (GetTickCount64() >= deadline)
+            {
+                return false;
+            }
+            Sleep(50);
+        }
+        return true;
+    }
+
     LRESULT CALLBACK TargetWindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
     {
         if (message == WM_CLOSE)
@@ -246,9 +268,12 @@ namespace RemappingLogicTests
             closeNotifications.clear();
             if (!executable.empty())
             {
-                Assert::IsTrue(DeleteFileW(executable.c_str()) != FALSE);
-                Assert::IsTrue(DeleteFileW(frameworkCopy.c_str()) != FALSE);
-                Assert::IsTrue(RemoveDirectoryW(executable.parent_path().c_str()) != FALSE);
+                const auto directory = executable.parent_path();
+                DWORD error = ERROR_SUCCESS;
+                const bool removed = RemoveWhenUnlocked([&] { return DeleteFileW(executable.c_str()); }, error) &&
+                                     RemoveWhenUnlocked([&] { return DeleteFileW(frameworkCopy.c_str()); }, error) &&
+                                     RemoveWhenUnlocked([&] { return RemoveDirectoryW(directory.c_str()); }, error);
+                Assert::IsTrue(removed, (L"Could not remove " + directory.wstring() + L" (error " + std::to_wstring(error) + L")").c_str());
             }
         }
 
