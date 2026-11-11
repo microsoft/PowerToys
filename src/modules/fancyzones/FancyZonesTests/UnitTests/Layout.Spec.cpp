@@ -6,6 +6,7 @@
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/ZoneIndexSetBitmask.h>
 #include <FancyZonesLib/Layout.h>
+#include <FancyZonesLib/LayoutConfigurator.h>
 #include <FancyZonesLib/Settings.h>
 
 #include "Util.h"
@@ -82,6 +83,44 @@ namespace FancyZonesUnitTests
         }
 
     public:
+        TEST_METHOD (PriorityGridElevenZonesUsesPredefinedLayout)
+        {
+            const auto zones = LayoutConfigurator::PriorityGrid(RECT{ 0, 0, 10000, 10000 }, 11, 0);
+            const std::array<RECT, 11> expected{
+                RECT{ 0, 0, 2500, 3333 },
+                RECT{ 2500, 0, 5000, 6667 },
+                RECT{ 5000, 0, 7500, 3333 },
+                RECT{ 7500, 0, 10000, 3333 },
+                RECT{ 0, 3333, 2500, 6667 },
+                RECT{ 5000, 3333, 7500, 6667 },
+                RECT{ 7500, 3333, 10000, 6667 },
+                RECT{ 0, 6667, 2500, 10000 },
+                RECT{ 2500, 6667, 5000, 10000 },
+                RECT{ 5000, 6667, 7500, 10000 },
+                RECT{ 7500, 6667, 10000, 10000 }
+            };
+
+            Assert::AreEqual(expected.size(), zones.size());
+            for (ZoneIndex i = 0; i < static_cast<ZoneIndex>(expected.size()); i++)
+            {
+                compareZones(Zone(expected[i], i), zones.at(i));
+            }
+        }
+
+        TEST_METHOD (PriorityGridTwelveZonesFallsBackToGrid)
+        {
+            const RECT workArea{ 0, 0, 1920, 1080 };
+            const auto expected = LayoutConfigurator::Grid(workArea, 12, 17);
+            const auto actual = LayoutConfigurator::PriorityGrid(workArea, 12, 17);
+
+            Assert::AreEqual(static_cast<size_t>(12), actual.size());
+            Assert::AreEqual(expected.size(), actual.size());
+            for (const auto& [id, zone] : expected)
+            {
+                compareZones(zone, actual.at(id));
+            }
+        }
+
         TEST_METHOD (TestCreateLayout)
         {
             CustomAssert::AreEqual(m_layout->Id(), m_data.uuid);

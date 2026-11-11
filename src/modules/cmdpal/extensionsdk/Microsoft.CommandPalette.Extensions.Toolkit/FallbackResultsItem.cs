@@ -10,14 +10,14 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 /// <summary>
 /// Defines a fallback that returns a set of query results.
 /// </summary>
-public abstract partial class FallbackResultsItem : FallbackCommandItem, IFallbackCommandItem3, IFallbackHandler2
+public abstract partial class FallbackResultsItem : FallbackCommandItem, IFallbackCommandItem3, IFallbackQueryHandler
 {
     protected FallbackResultsItem(string displayTitle, string id)
         : base(displayTitle, id)
     {
     }
 
-    public IFallbackHandler2 QueryHandler => this;
+    public IFallbackQueryHandler QueryHandler => this;
 
     string IFallbackCommandItem3.Name => string.Empty;
 
@@ -38,7 +38,13 @@ public abstract partial class FallbackResultsItem : FallbackCommandItem, IFallba
     {
     }
 
-    public virtual IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args)
+    /// <summary>
+    /// Starts a query and returns an asynchronous operation with progress.
+    /// This is the method called by the command palette host. You should implement
+    /// the overload that accepts FallbackQueryArgs, CancellationToken, and
+    /// IProgress&lt;IFallbackCommandResult&gt; instead.
+    /// </summary>
+    IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> IFallbackQueryHandler.QueryAsync(IFallbackQueryArgs args)
     {
         try
         {

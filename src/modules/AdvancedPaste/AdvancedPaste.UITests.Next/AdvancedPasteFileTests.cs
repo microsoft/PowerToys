@@ -85,6 +85,49 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
     }
 
     [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    public async Task ImageIsPastedAsJpgFile(bool fileInput, bool directShortcut)
+    {
+        var source = Path.Combine(TestDirectory, "source.png");
+        ClipboardFixtures.CreateImage(source);
+        if (fileInput)
+        {
+            SetFileClipboard(source);
+        }
+        else
+        {
+            await SetBitmapClipboard(source);
+        }
+
+        var output = await PasteFile(ProductStrings.PasteAsJpgFile, Key.K, ".jpg", directShortcut, source);
+        var header = new byte[3];
+        using (var stream = File.OpenRead(output))
+        {
+            stream.ReadExactly(header);
+        }
+
+        CollectionAssert.AreEqual(new byte[] { 0xFF, 0xD8, 0xFF }, header, "Pasted file is not JPEG encoded.");
+
+        using var bitmap = new Bitmap(output);
+        Assert.AreEqual(ClipboardFixtures.ImageWidth, bitmap.Width);
+        Assert.AreEqual(ClipboardFixtures.ImageHeight, bitmap.Height);
+
+        // JPEG is lossy, so compare colors with a tolerance instead of exactly.
+        AssertColorClose(Color.CornflowerBlue, bitmap.GetPixel(10, 10), "JPG conversion changed the left fixture color.");
+        AssertColorClose(Color.Gold, bitmap.GetPixel(bitmap.Width - 10, 10), "JPG conversion changed the right fixture color.");
+    }
+
+    private static void AssertColorClose(Color expected, Color actual, string message)
+    {
+        const int tolerance = 16;
+        Assert.IsTrue(
+            Math.Abs(expected.R - actual.R) <= tolerance && Math.Abs(expected.G - actual.G) <= tolerance && Math.Abs(expected.B - actual.B) <= tolerance,
+            $"{message} Expected {expected}, got {actual}.");
+    }
+
+    [TestMethod]
     public async Task AudioIsTranscodedAndPastedAsMp3()
     {
         var source = Path.Combine(TestDirectory, "offline-audio.wav");

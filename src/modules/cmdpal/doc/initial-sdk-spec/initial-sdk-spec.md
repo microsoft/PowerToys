@@ -2691,7 +2691,7 @@ interface IFallbackCommandResult
         IFallbackCommandResult> LoadMoreItemsAsync(UInt32 requestedItemCount);
 };
 
-interface IFallbackHandler2 requires IFallbackHandler
+interface IFallbackQueryHandler requires IFallbackHandler
 {
     Windows.Foundation.IAsyncOperationWithProgress<
         IFallbackCommandResult,
@@ -2708,7 +2708,7 @@ interface IFallbackCommandItem3 requires IFallbackCommandItem2
     HostMatchKind MatchKind { get; };
     String MatchValue { get; };
 
-    IFallbackHandler2 QueryHandler { get; };
+    IFallbackQueryHandler QueryHandler { get; };
 
     ICommand CreateCommand(IFallbackCommandInvocationArgs args);
 };
@@ -2722,7 +2722,7 @@ already uses to discover `IFallbackCommandItem2`.
 The host creates `IFallbackQueryArgs` for each accepted top-level query.
 `IFallbackCommandInvocationArgs` extends this context for passive command activation.
 `IFallbackCommandResult` describes a complete snapshot and owns its continuation.
-`IFallbackHandler2` retains its linear inheritance from `IFallbackHandler` for marshalling.
+`IFallbackQueryHandler` retains its linear inheritance from `IFallbackHandler` for marshalling.
 This inheritance does not cause the host to call `UpdateQuery` for v2 fallbacks.
 
 `IFallbackQueryArgs.GetProperties()` is reserved for optional host context that
@@ -2759,9 +2759,9 @@ interface IFallbackHandler {
 };
 
 // for IFallbackCommandItem3
-interface IFallbackHandler2 requires IFallbackHandler
+interface IFallbackQueryHandler
 {
-	IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args);
+    IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args);
 };
 
 public interface IFallbackCommandItem3
@@ -2774,21 +2774,21 @@ public interface IFallbackCommandItem3
     String Id { get; };
 
     // ---- IFallbackCommandItem3 ----
-	String Name { get; };
+    String Name { get; };
 
     // If this is set, then this is treated as a result source.
     // If it is null, then this is treated as a passive fallback.
-	IFallbackHandler2 QueryHandler { get; };
+    IFallbackQueryHandler QueryHandler { get; };
 
-	// Passive fallbacks use these:
-	String TitleTemplate { get; };
-	String SubtitleTemplate { get; };
-	HostMatchKind MatchKind { get; };
-	String MatchValue { get; };
+    // Passive fallbacks use these:
+    String TitleTemplate { get; };
+    String SubtitleTemplate { get; };
+    HostMatchKind MatchKind { get; };
+    String MatchValue { get; };
 
-	// Called only after the user activates a passive fallback. This supports both
-	// invokable commands and pages.
-	ICommand CreateCommand(IFallbackCommandInvocationArgs args);
+    // Called only after the user activates a passive fallback. This supports both
+    // invokable commands and pages.
+    ICommand CreateCommand(IFallbackCommandInvocationArgs args);
 }
 ```
 
@@ -2797,7 +2797,7 @@ public interface IFallbackCommandItem3
 
 Passive fallbacks implement `IFallbackCommandItem3` and return null from `QueryHandler`.
 The host must not call either `IFallbackHandler.UpdateQuery` or
-`IFallbackHandler2.QueryAsync` for a passive fallback.
+`IFallbackQueryHandler.QueryAsync` for a passive fallback.
 
 For each query, the host creates the display title and subtitle by replacing
 every literal `{query}` token in `TitleTemplate` and `SubtitleTemplate`. The
@@ -2900,24 +2900,24 @@ source, and a failure in one source must not remove results from another.
 
 ```mermaid
 sequenceDiagram
-	autonumber
-	participant U as User
-	participant H as DevPal host
-	participant F as File result source
-	participant S as Settings result source
+    autonumber
+    participant U as User
+    participant H as DevPal host
+    participant F as File result source
+    participant S as Settings result source
 
-	U->>H: Type "display"
-	par Query enabled sources
-		H->>F: QueryAsync(query, query ID 42)
-		H->>S: QueryAsync(query, query ID 42)
-	end
-	S-->>H: Progress snapshot: 2 settings
-	H-->>U: Show settings results
-	F-->>H: Progress snapshot: 3 files
-	H-->>U: Add file results
-	S-->>H: Final snapshot
-	F-->>H: Final snapshot: 5 files, HasMoreItems=true
-	H-->>U: Replace the file source snapshot
+    U->>H: Type "display"
+    par Query enabled sources
+        H->>F: QueryAsync(query, query ID 42)
+        H->>S: QueryAsync(query, query ID 42)
+    end
+    S-->>H: Progress snapshot: 2 settings
+    H-->>U: Show settings results
+    F-->>H: Progress snapshot: 3 files
+    H-->>U: Add file results
+    S-->>H: Final snapshot
+    F-->>H: Final snapshot: 5 files, HasMoreItems=true
+    H-->>U: Replace the file source snapshot
 ```
 
 #### Snapshots and progress
@@ -3102,24 +3102,24 @@ it does the extension create a command containing the query.
 ```cs
 internal sealed partial class WebSearchFallback : FallbackPassiveItem
 {
-	public WebSearchFallback()
-		: base("Search the web", "com.contoso.web.search")
-	{
-		Name = "Search the web";
-		Title = "Search the web"; // Degraded title for older hosts
-		TitleTemplate = "Search the web for \"{query}\"";
-		SubtitleTemplate = "Open results in the default browser";
-		Icon = new IconInfo("\uE721");
-	}
+    public WebSearchFallback()
+        : base("Search the web", "com.contoso.web.search")
+    {
+        Name = "Search the web";
+        Title = "Search the web"; // Degraded title for older hosts
+        TitleTemplate = "Search the web for \"{query}\"";
+        SubtitleTemplate = "Open results in the default browser";
+        Icon = new IconInfo("\uE721");
+    }
 
-	public override ICommand CreateCommand(IFallbackCommandInvocationArgs args)
-	{
-		var escapedQuery = Uri.EscapeDataString(args.Query);
-		return new OpenUrlCommand($"https://www.example.com/search?q={escapedQuery}")
-		{
-			Name = "Search the web",
-		};
-	}
+    public override ICommand CreateCommand(IFallbackCommandInvocationArgs args)
+    {
+        var escapedQuery = Uri.EscapeDataString(args.Query);
+        return new OpenUrlCommand($"https://www.example.com/search?q={escapedQuery}")
+        {
+            Name = "Search the web",
+        };
+    }
 }
 ```
 
@@ -3129,17 +3129,17 @@ extension for queries that cannot be command lines:
 ```cs
 internal sealed partial class ShellFallback : FallbackPassiveItem
 {
-	public ShellFallback()
-		: base("Run command", "com.contoso.shell.run")
-	{
-		Name = "Run command";
-		TitleTemplate = "Run \"{query}\"";
-		MatchKind = HostMatchKind.Regex;
-		MatchValue = @"[^\r\n]+";
-	}
+    public ShellFallback()
+        : base("Run command", "com.contoso.shell.run")
+    {
+        Name = "Run command";
+        TitleTemplate = "Run \"{query}\"";
+        MatchKind = HostMatchKind.Regex;
+        MatchValue = @"[^\r\n]+";
+    }
 
-	public override ICommand CreateCommand(IFallbackCommandInvocationArgs args)
-		=> new RunShellCommand(args.Query);
+    public override ICommand CreateCommand(IFallbackCommandInvocationArgs args)
+        => new RunShellCommand(args.Query);
 }
 ```
 
@@ -3154,19 +3154,19 @@ the top-level query already applied:
 ```cs
 internal sealed partial class WinGetFallback : FallbackPassiveItem
 {
-	public WinGetFallback()
-		: base("Search WinGet", "com.contoso.winget.search")
-	{
-		Name = "Search WinGet";
-		TitleTemplate = "Search WinGet for \"{query}\"";
-		Icon = new IconInfo("\uE719");
-	}
+    public WinGetFallback()
+        : base("Search WinGet", "com.contoso.winget.search")
+    {
+        Name = "Search WinGet";
+        TitleTemplate = "Search WinGet for \"{query}\"";
+        Icon = new IconInfo("\uE719");
+    }
 
-	public override ICommand CreateCommand(IFallbackCommandInvocationArgs args)
-		=> new WinGetSearchPage()
-		{
-			SearchText = args.Query,
-		};
+    public override ICommand CreateCommand(IFallbackCommandInvocationArgs args)
+        => new WinGetSearchPage()
+        {
+            SearchText = args.Query,
+        };
 }
 ```
 
@@ -3182,67 +3182,65 @@ snapshots, stable commands, and preservation of the query ID.
 ```cs
 internal sealed partial class FileSearchFallback : FallbackResultsItem
 {
-	private readonly FileIndex _index;
+    private readonly FileIndex _index;
 
-	public FileSearchFallback(FileIndex index)
-		: base("Files", "com.contoso.files.search")
-	{
-		_index = index;
-		Icon = new IconInfo("\uE8B7");
-	}
+    public FileSearchFallback(FileIndex index)
+        : base("Files", "com.contoso.files.search")
+    {
+        _index = index;
+        Icon = new IconInfo("\uE8B7");
+    }
 
-	public override IAsyncOperationWithProgress<
-		IFallbackCommandResult,
-		IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args)
-	{
-		return AsyncInfo.Run<IFallbackCommandResult, IFallbackCommandResult>(
-			async (cancellation, progress) =>
-			{
-				var cursor = _index.Search(args.Query);
-				var items = new List<IListItem>();
-				while (items.Count < args.RequestedItemCount &&
-					   await cursor.MoveNextAsync(cancellation))
-				{
-					items.Add(CreateFileItem(cursor.Current));
+    // or, with the toolkit
+    protected override async Task<IFallbackCommandResult> QueryAsync(
+        FallbackQueryArgs args,
+        CancellationToken cancellationToken,
+        IProgress<IFallbackCommandResult> progress)
+    {
+        var cursor = _index.Search(args.Query);
+        var items = new List<IListItem>();
+        while (items.Count < args.RequestedItemCount &&
+               await cursor.MoveNextAsync(cancellationToken))
+        {
+            items.Add(CreateFileItem(cursor.Current));
 
-					if (items.Count % 5 == 0)
-					{
-						progress.Report(new FallbackQueryResult(
-							args.Query,
-							args.QueryId,
-							items.ToArray(),
-							cursor.HasMoreItems));
-					}
-				}
+            if (items.Count % 5 == 0)
+            {
+                progress.Report(new FallbackQueryResult(
+                    args.Query,
+                    args.QueryId,
+                    items.ToArray(),
+                    cursor.HasMoreItems));
+            }
+        }
 
-				return new FallbackQueryResult(
-					args.Query,
-					args.QueryId,
-					items.ToArray(),
-					cursor.HasMoreItems,
-					(requestedItemCount, loadMoreCancellation, loadMoreProgress) =>
-						LoadMoreFromCursorAsync(
-							args,
-							cursor,
-							items,
-							requestedItemCount,
-							loadMoreCancellation,
-							loadMoreProgress));
-			});
-	}
+        return new FallbackQueryResult(
+            args.Query,
+            args.QueryId,
+            items.ToArray(),
+            cursor.HasMoreItems,
+            (requestedItemCount, loadMoreCancellation, loadMoreProgress) =>
+                LoadMoreFromCursorAsync(
+                    args,
+                    cursor,
+                    items,
+                    requestedItemCount,
+                    loadMoreCancellation,
+                    loadMoreProgress));
+    }
 
-	private static IListItem CreateFileItem(FileHit hit)
-	{
-		return new ListItem(new OpenFileCommand(hit.Path)
-		{
-			Id = $"com.contoso.files.open:{hit.StableId}",
-		})
-		{
-			Title = hit.Name,
-			Subtitle = hit.Path,
-			Icon = new IconInfo(hit.Path),
-		};
-	}
+    private static IListItem CreateFileItem(FileHit hit)
+    {
+        return new ListItem(new OpenFileCommand(hit.Path)
+        {
+            Id = $"com.contoso.files.open:{hit.StableId}",
+        })
+        {
+            Title = hit.Name,
+            Subtitle = hit.Path,
+            Icon = new IconInfo(hit.Path),
+        };
+    }
 }
 ```
 
@@ -3260,12 +3258,12 @@ An extension can mix passive commands and result sources in one provider:
 ```cs
 internal sealed partial class ContosoCommandProvider : CommandProvider
 {
-	private readonly WebSearchFallback _webSearch = new();
-	private readonly WinGetFallback _winGet = new();
-	private readonly FileSearchFallback _files = new(FileIndex.Default);
+    private readonly WebSearchFallback _webSearch = new();
+    private readonly WinGetFallback _winGet = new();
+    private readonly FileSearchFallback _files = new(FileIndex.Default);
 
-	public override IFallbackCommandItem[] FallbackCommands()
-		=> [_webSearch, _winGet, _files];
+    public override IFallbackCommandItem[] FallbackCommands()
+        => [_webSearch, _winGet, _files];
 }
 ```
 
