@@ -33,7 +33,7 @@ public static class CharacterMappings
     /// Declaration order here does not affect the popup or settings display order;
     /// see <see cref="DisplayOrder"/> and <see cref="GroupDisplayOrder"/> for that.
     /// </summary>
-    public static readonly IReadOnlyList<LanguageInfo> All =
+    public static readonly IReadOnlyList<LanguageInfo> All = Array.AsReadOnly<LanguageInfo>(
     [
         new(Language.SPECIAL, "Special", LanguageGroup.Special,  new Dictionary<LetterKey, string[]>
         {
@@ -708,7 +708,7 @@ public static class CharacterMappings
             [LetterKey.VK_U] = ["ù", "ủ", "ũ", "ú", "ụ", "ư", "ừ", "ử", "ữ", "ứ", "ự"],
             [LetterKey.VK_Y] = ["ỳ", "ỷ", "ỹ", "ý", "ỵ"],
         }),
-    ];
+    ]);
 
     /// <summary>
     /// O(1) lookup from <see cref="Language"/> to its <see cref="LanguageInfo"/>.
@@ -722,12 +722,12 @@ public static class CharacterMappings
     /// Groups listed first have their characters shown first.
     /// This is intentionally separate from the <see cref="LanguageGroup"/> enum order.
     /// </summary>
-    public static readonly IReadOnlyList<LanguageGroup> GroupDisplayOrder =
+    public static readonly IReadOnlyList<LanguageGroup> GroupDisplayOrder = Array.AsReadOnly<LanguageGroup>(
     [
         LanguageGroup.UserDefined,
         LanguageGroup.Language,
         LanguageGroup.Special,
-    ];
+    ]);
 
     /// <summary>
     /// The order in which individual languages appear within their group in the Quick
@@ -736,7 +736,7 @@ public static class CharacterMappings
     /// Entries are sorted alphabetically by <see cref="Language"/> enum name.
     /// When adding a new language, insert it in alphabetical order.
     /// </summary>
-    public static readonly IReadOnlyList<Language> DisplayOrder =
+    public static readonly IReadOnlyList<Language> DisplayOrder = Array.AsReadOnly<Language>(
     [
 
         // Spoken languages.
@@ -789,7 +789,7 @@ public static class CharacterMappings
         Language.PIE,
         Language.ROM,
         Language.SPECIAL,
-    ];
+    ]);
 
     // O(1) sort-key lookups derived from the display order lists above.
     private static readonly Dictionary<LanguageGroup, int> _groupOrder =

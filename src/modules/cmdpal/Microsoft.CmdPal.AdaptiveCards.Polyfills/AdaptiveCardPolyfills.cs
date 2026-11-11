@@ -9,7 +9,7 @@ using Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
 namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>
-/// Adds the schema features that the WinUI 3 renderer doesn't support yet: the <c>Chart.Line</c>, <c>ProgressBar</c>,
+/// Adds the schema features that the WinUI 3 renderer doesn't support yet: the chart, <c>ProgressBar</c>,
 /// <c>Badge</c>, and <c>Icon</c> elements, and <c>roundedCorners</c> and <c>showBorder</c> on containers.
 /// </summary>
 public static class AdaptiveCardPolyfills
@@ -17,6 +17,9 @@ public static class AdaptiveCardPolyfills
     private static readonly AdaptiveVisualElementType[] Types =
     [
         new("Chart.Line", (json, warnings) => LineChartModel.Parse(json, warnings), model => new LineChartControl((LineChartModel)model)),
+        new("Chart.HorizontalBar.Stacked", (json, warnings) => StackedBarChartModel.Parse(json, warnings), model => new StackedBarChartControl((StackedBarChartModel)model)),
+        new("Chart.VerticalBar", (json, warnings) => BarChartModel.Parse(json, BarOrientation.Vertical, warnings), model => new BarChartControl((BarChartModel)model)),
+        new("Chart.HorizontalBar", (json, warnings) => BarChartModel.Parse(json, BarOrientation.Horizontal, warnings), model => new BarChartControl((BarChartModel)model)),
         new("ProgressBar", (json, warnings) => ProgressBarModel.Parse(json, warnings), model => new ProgressBarControl((ProgressBarModel)model)),
         new("Badge", (json, warnings) => BadgeModel.Parse(json, warnings), model => new BadgeControl((BadgeModel)model)),
         new("Icon", (json, warnings) => IconModel.Parse(json, warnings), model => new IconControl((IconModel)model), IconModel.HasGlyph),

@@ -32,6 +32,14 @@ public class AwakeStateCalculatorTests
     }
 
     [TestMethod]
+    public void ComputeAwakeState_WhenLockedAndDisplayOffNotAllowed_IncludesDisplayRequiredFlag()
+    {
+        ExecutionState state = AwakeStateCalculator.ComputeAwakeState(keepDisplayOn: true, isScreenLocked: true, allowDisplayOffWhileLocked: false);
+
+        Assert.IsTrue(state.HasFlag(ExecutionState.ES_DISPLAY_REQUIRED));
+    }
+
+    [TestMethod]
     public void ComputeAwakeState_WhenDisplayOff_DoesNotIncludeDisplayRequiredFlag()
     {
         ExecutionState state = AwakeStateCalculator.ComputeAwakeState(keepDisplayOn: false, isScreenLocked: false);

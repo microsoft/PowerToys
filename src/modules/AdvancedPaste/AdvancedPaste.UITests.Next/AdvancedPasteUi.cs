@@ -15,7 +15,7 @@ internal static class AdvancedPasteUi
     {
         string[] excludedSubtreeIds = cardId switch
         {
-            "PasteAsFile" => ["PasteAsTxtFile", "PasteAsPngFile", "PasteAsHtmlFile"],
+            "PasteAsFile" => ["PasteAsTxtFile", "PasteAsPngFile", "PasteAsJpgFile", "PasteAsJpgQuality", "PasteAsHtmlFile"],
             "Transcode" => ["TranscodeToMp3", "TranscodeToMp4"],
             _ => [],
         };
