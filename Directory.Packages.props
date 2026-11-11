@@ -93,7 +93,8 @@
     <PackageVersion Include="NLog" Version="5.2.8" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
     <PackageVersion Include="NLog.Schema" Version="5.2.8" />
-    <PackageVersion Include="OpenAI" Version="2.7.0" />
+    <!-- Must be at least the OpenAI version required by Microsoft.Extensions.AI.OpenAI (which tracks DotNetRuntimePackageVersion); transitive pinning turns a lower pin into an NU1109 restore error. -->
+    <PackageVersion Include="OpenAI" Version="2.14.0" />
     <PackageVersion Include="ReverseMarkdown" Version="4.1.0" />
     <PackageVersion Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
     <PackageVersion Include="ScreenRecorderLib" Version="6.6.0" />
@@ -112,7 +113,8 @@
     <PackageVersion Include="System.Diagnostics.EventLog" Version="$(DotNetRuntimePackageVersion)" />
     <!-- Kept at the .NET runtime version to match the shared framework copy; some projects use ExcludeAssets=runtime. -->
     <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="$(DotNetRuntimePackageVersion)" />
-    <PackageVersion Include="System.ClientModel" Version="1.8.1" />
+    <!-- Must be at least the System.ClientModel version required by the pinned OpenAI package. -->
+    <PackageVersion Include="System.ClientModel" Version="1.15.0" />
     <PackageVersion Include="System.Drawing.Common" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.IO.Abstractions" Version="22.0.13" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="22.0.13" />
