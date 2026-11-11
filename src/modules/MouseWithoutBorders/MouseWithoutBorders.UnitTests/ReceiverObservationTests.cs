@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ReceiverObservationTests
 {
@@ -54,7 +55,7 @@ public class ReceiverObservationTests
     public void BlockedClickProbesVaryInsideTheSameSafeReceiverSurface()
     {
         var probes = Enumerable.Range(0, 4).Select(index => ReceiverObservation.ClickProbePosition(0, 173, 1520, 775, index)).ToArray();
-        Assert.AreEqual(4, probes.Distinct().Count());
+        Assert.HasCount(4, probes.Distinct());
         Assert.IsTrue(probes.All(point => point.X > 30 && point.X < 1490 && point.Y > 203 && point.Y < 745));
         Assert.AreEqual(probes[0], ReceiverObservation.ClickProbePosition(0, 173, 1520, 775, 4));
         Assert.ThrowsExactly<ArgumentException>(() => ReceiverObservation.ClickProbePosition(0, 0, 62, 100, 0));

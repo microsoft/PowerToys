@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FancyZonesEditor.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class LayoutHotkeysTests : FancyZonesEditorTestBase
 {
@@ -45,7 +46,7 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
         EditorTestData.WriteForLayoutHotkeysTests(Files);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.HotKey_Initialize")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.HotKey_Initialize")]
     [TestCategory("FancyZones Editor #11")]
     public void Initialize()
     {
@@ -73,7 +74,7 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
         }
     }
 
-    [TestMethod("FancyZonesEditor.Basic.HotKey_Assign_Save")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.HotKey_Assign_Save")]
     [TestCategory("FancyZones Editor #11")]
     public void Assign_Save()
     {
@@ -97,7 +98,7 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
         CloseEditDialog(cancel: true);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.HotKey_Assign_Cancel")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.HotKey_Assign_Cancel")]
     [TestCategory("FancyZones Editor #11")]
     public void Assign_Cancel()
     {
@@ -125,7 +126,7 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
         CloseEditDialog(cancel: true);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.HotKey_Assign_AllPossibleValues")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.HotKey_Assign_AllPossibleValues")]
     [TestCategory("FancyZones Editor #11")]
     public void Assign_AllPossibleValues()
     {
@@ -152,7 +153,7 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
         }
     }
 
-    [TestMethod("FancyZonesEditor.Basic.HotKey_Reset_Save")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.HotKey_Reset_Save")]
     [TestCategory("FancyZones Editor #11")]
     public void Reset_Save()
     {
@@ -167,7 +168,7 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
 
         EditorUiTestHelper.Step(this, "Saving layout shortcut reset");
         var data = SaveHotkeyAndWait(target.Uuid, null);
-        Assert.IsFalse(data.LayoutHotkeys.Any(x => x.LayoutId == target.Uuid && x.Key == assignedKey));
+        Assert.DoesNotContain(x => x.LayoutId == target.Uuid && x.Key == assignedKey, data.LayoutHotkeys);
 
         var checkLayout = Layouts[3];
         EditorUiTestHelper.OpenEditLayoutDialog(this, Session, checkLayout.Name);
@@ -177,7 +178,7 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
         CloseEditDialog(cancel: true);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.HotKey_Reset_Cancel")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.HotKey_Reset_Cancel")]
     [TestCategory("FancyZones Editor #11")]
     public void Reset_Cancel()
     {
@@ -194,7 +195,7 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
         Session.Find<Button>(EditorUiTestHelper.ElementName.Cancel).Click();
 
         var data = EditorUiTestHelper.ReadLayoutHotkeys();
-        Assert.IsTrue(data.LayoutHotkeys.Any(x => x.LayoutId == target.Uuid && x.Key == assignedKey));
+        Assert.Contains(x => x.LayoutId == target.Uuid && x.Key == assignedKey, data.LayoutHotkeys);
 
         var checkLayout = Layouts[3];
         EditorUiTestHelper.OpenEditLayoutDialog(this, Session, checkLayout.Name);

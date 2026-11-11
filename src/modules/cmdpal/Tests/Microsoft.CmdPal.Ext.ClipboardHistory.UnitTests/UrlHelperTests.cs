@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class UrlHelperTests
 {
@@ -243,7 +244,7 @@ public class UrlHelperTests
 
         // Assert
         Assert.IsTrue(result.StartsWith("file:///", StringComparison.OrdinalIgnoreCase));
-        Assert.IsTrue(result.Contains(path.Replace('\\', '/')));
+        Assert.Contains(path.Replace('\\', '/'), result);
     }
 
     [TestMethod]
@@ -257,7 +258,7 @@ public class UrlHelperTests
 
         // Assert
         Assert.IsTrue(result.StartsWith("file://", StringComparison.OrdinalIgnoreCase));
-        Assert.IsTrue(result.Contains(path.Replace('\\', '/')));
+        Assert.Contains(path.Replace('\\', '/'), result);
     }
 
     [TestMethod]

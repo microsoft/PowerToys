@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CommonLibTest
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class BasePTModuleSettingsSerializationTests
     {
@@ -29,7 +30,7 @@ namespace CommonLibTest
                 .OrderBy(t => t.Name)
                 .ToList();
 
-            Assert.IsTrue(settingsClasses.Count > 0, "No BasePTModuleSettings derived classes found. This test may be broken.");
+            Assert.IsNotEmpty(settingsClasses, "No BasePTModuleSettings derived classes found. This test may be broken.");
 
             var jsonSerializerOptions = new JsonSerializerOptions
             {
@@ -67,7 +68,6 @@ namespace CommonLibTest
         /// with a helpful error message.
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void ToJsonString_UnregisteredType_ShouldThrowInvalidOperationException()
         {
             // Arrange
@@ -77,11 +77,7 @@ namespace CommonLibTest
                 Version = "1.0.0",
             };
 
-            // Act - This should throw InvalidOperationException
-            var jsonString = unregisteredSettings.ToJsonString();
-
-            // Assert - Exception should be thrown, so this line should never be reached
-            Assert.Fail("Expected InvalidOperationException was not thrown.");
+            Assert.ThrowsExactly<InvalidOperationException>(() => unregisteredSettings.ToJsonString());
         }
 
         /// <summary>
@@ -98,21 +94,12 @@ namespace CommonLibTest
                 Version = "1.0.0",
             };
 
-            // Act & Assert
-            try
-            {
-                var jsonString = unregisteredSettings.ToJsonString();
-                Assert.Fail("Expected InvalidOperationException was not thrown.");
-            }
-            catch (InvalidOperationException ex)
-            {
-                // Verify the error message contains helpful information
-                Assert.IsTrue(ex.Message.Contains("UnregisteredTestSettings"), "Error message should contain the type name.");
-                Assert.IsTrue(ex.Message.Contains("SettingsSerializationContext"), "Error message should mention SettingsSerializationContext.");
-                Assert.IsTrue(ex.Message.Contains("JsonSerializable"), "Error message should mention JsonSerializable attribute.");
+            var exception = Assert.Throws<InvalidOperationException>(() => unregisteredSettings.ToJsonString());
+            Assert.Contains("UnregisteredTestSettings", exception.Message, "Error message should contain the type name.");
+            Assert.Contains("SettingsSerializationContext", exception.Message, "Error message should mention SettingsSerializationContext.");
+            Assert.Contains("JsonSerializable", exception.Message, "Error message should mention JsonSerializable attribute.");
 
-                Console.WriteLine($"✓ Error message is helpful: {ex.Message}");
-            }
+            Console.WriteLine($"✓ Error message is helpful: {exception.Message}");
         }
 
         /// <summary>

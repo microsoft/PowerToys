@@ -9,6 +9,7 @@ using PowerDisplay.Models;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class MouseWheelControlModeSettingsTests
 {
@@ -67,7 +68,7 @@ public class MouseWheelControlModeSettingsTests
 
         var json = JsonSerializer.Serialize(properties);
 
-        StringAssert.Contains(json, "\"mouse_wheel_control_mode\":2");
+        Assert.Contains("\"mouse_wheel_control_mode\":2", json);
     }
 
     [TestMethod]

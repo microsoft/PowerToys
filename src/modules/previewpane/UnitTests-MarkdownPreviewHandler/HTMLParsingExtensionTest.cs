@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace PreviewPaneUnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class HTMLParsingExtensionTest
     {
@@ -104,7 +105,7 @@ namespace PreviewPaneUnitTests
             Assert.AreEqual(expected, html);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("images/test.png", @"C:\docs", @"C:\docs", "https://localmdimages/images/test.png")]
         [DataRow(@"C:\docs\images\test.png", @"C:\docs", @"C:\docs", "https://localmdimages/images/test.png")]
         [DataRow("images/test.png", @"\\server\share\sub\dir", @"\\server\share", "https://localmdimages/sub/dir/images/test.png")]
@@ -117,7 +118,7 @@ namespace PreviewPaneUnitTests
             Assert.AreEqual(expectedVirtualUrl, virtualUrl);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("http://example.com/a.png", @"C:\docs", @"C:\docs")]
         [DataRow("https://example.com/a.png", @"C:\docs", @"C:\docs")]
         [DataRow("data:image/png;base64,iVBORw0KGgo=", @"C:\docs", @"C:\docs")]
@@ -139,7 +140,7 @@ namespace PreviewPaneUnitTests
 
         // Resolving checks each path component for reparse points, so these cases operate on real
         // files rather than notional paths.
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("images/test.png", "https://localmdimages/images/test.png")]
         [DataRow("sub/dir/images/test.png", "https://localmdimages/sub/dir/images/test.png")]
         [DataRow("my image.png", "https://localmdimages/my%20image.png")]
@@ -195,7 +196,7 @@ namespace PreviewPaneUnitTests
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("https://localmdimages/.." + "%2F" + "secret.png", @"C:\docs")]
         [DataRow("https://localmdimages/.." + "%5C" + "secret.png", @"C:\docs")]
         [DataRow("https://localmdimages/C" + "%3A%5C" + "other" + "%5C" + "secret.png", @"C:\docs")]
@@ -211,7 +212,7 @@ namespace PreviewPaneUnitTests
             Assert.IsNull(resolvedPath);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("<img src=\"images/test.png\" />")]
         [DataRow("<img src='images/test.png' />")]
         [DataRow("<img src=images/test.png />")]
@@ -221,10 +222,10 @@ namespace PreviewPaneUnitTests
             string html = Microsoft.PowerToys.FilePreviewCommon.MarkdownHelper.MarkdownHtml(
                 mdString, "light", @"C:\docs\doc.md", () => { }, true, @"C:\docs");
 
-            StringAssert.Contains(html, "https://localmdimages/images/test.png");
+            Assert.Contains("https://localmdimages/images/test.png", html);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("<img src=\"https://example.com/track.png\" />")]
         [DataRow("<img src='https://example.com/track.png' />")]
         [DataRow("<img src=https://example.com/track.png />")]
@@ -237,13 +238,13 @@ namespace PreviewPaneUnitTests
                 mdString, "light", @"C:\docs\doc.md", () => { blockedCount++; }, true, @"C:\docs");
 
             Assert.AreNotEqual(0, blockedCount, "the blocked-images callback should fire so the info bar is shown");
-            StringAssert.Contains(html, "src=");
-            Assert.IsFalse(html.Contains("example.com"), "remote source must not survive the rewrite");
-            Assert.IsFalse(html.Contains("secret.png"), "traversal source must not survive the rewrite");
-            Assert.IsFalse(html.Contains("base64"), "data URI must not survive the rewrite");
+            Assert.Contains("src=", html);
+            Assert.DoesNotContain("example.com", html, "remote source must not survive the rewrite");
+            Assert.DoesNotContain("secret.png", html, "traversal source must not survive the rewrite");
+            Assert.DoesNotContain("base64", html, "data URI must not survive the rewrite");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public void RawHtmlSrcsetIsRemovedInBothSettingStates(bool allowLocalImages)
@@ -254,12 +255,12 @@ namespace PreviewPaneUnitTests
             string html = Microsoft.PowerToys.FilePreviewCommon.MarkdownHelper.MarkdownHtml(
                 mdString, "light", @"C:\docs\doc.md", () => { blockedCount++; }, allowLocalImages, @"C:\docs");
 
-            Assert.IsFalse(html.Contains("srcset"), "srcset must be removed so its candidates cannot bypass the src sanitizer");
-            Assert.IsFalse(html.Contains("base64"), "the srcset data URI must not survive");
+            Assert.DoesNotContain("srcset", html, "srcset must be removed so its candidates cannot bypass the src sanitizer");
+            Assert.DoesNotContain("base64", html, "the srcset data URI must not survive");
             Assert.AreNotEqual(0, blockedCount);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("<img src=\"data:image/png;base64,iVBORw0KGgo=\" />", "base64")]
         [DataRow("<img src=\"https://example.com/track.png\" />", "example.com")]
         [DataRow("<img src=\"images/test.png\" />", "images/test.png")]
@@ -270,8 +271,8 @@ namespace PreviewPaneUnitTests
             string html = Microsoft.PowerToys.FilePreviewCommon.MarkdownHelper.MarkdownHtml(
                 mdString, "light", @"C:\docs\doc.md", () => { blockedCount++; }, false, @"C:\docs");
 
-            Assert.IsFalse(html.Contains(forbidden), "raw HTML img sources must be blocked while the setting is off");
-            StringAssert.Contains(html, "src=\"#\"");
+            Assert.DoesNotContain(forbidden, html, "raw HTML img sources must be blocked while the setting is off");
+            Assert.Contains("src=\"#\"", html);
             Assert.AreNotEqual(0, blockedCount);
         }
 
@@ -318,7 +319,7 @@ namespace PreviewPaneUnitTests
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true, "img-src https://localmdimages")]
         [DataRow(false, "img-src 'none'")]
         public void ContentSecurityPolicyMatchesTheSettingState(bool allowLocalImages, string expectedImgSrc)
@@ -326,15 +327,16 @@ namespace PreviewPaneUnitTests
             string html = Microsoft.PowerToys.FilePreviewCommon.MarkdownHelper.MarkdownHtml(
                 "# heading", "light", @"C:\docs\doc.md", () => { }, allowLocalImages, @"C:\docs");
 
-            StringAssert.Contains(html, "http-equiv=\"Content-Security-Policy\"");
-            StringAssert.Contains(html, expectedImgSrc);
-            StringAssert.Contains(html, "default-src 'none'");
-            StringAssert.Contains(html, "object-src 'none'");
-            StringAssert.Contains(html, "frame-src 'none'");
+            Assert.Contains("http-equiv=\"Content-Security-Policy\"", html);
+            Assert.Contains(expectedImgSrc, html);
+            Assert.Contains("default-src 'none'", html);
+            Assert.Contains("object-src 'none'", html);
+            Assert.Contains("frame-src 'none'", html);
 
             // The policy has to precede the content it governs.
-            Assert.IsTrue(
-                html.IndexOf("Content-Security-Policy", StringComparison.Ordinal) < html.IndexOf("<body", StringComparison.Ordinal),
+            Assert.IsLessThan(
+                html.IndexOf("<body", StringComparison.Ordinal),
+                html.IndexOf("Content-Security-Policy", StringComparison.Ordinal),
                 "the policy must appear before the body so the parser places it in the head");
         }
 
@@ -347,12 +349,12 @@ namespace PreviewPaneUnitTests
             string html = Microsoft.PowerToys.FilePreviewCommon.MarkdownHelper.MarkdownHtml(
                 "![text](images/test.png)", "light", @"C:\docs\doc.md", () => { blockedCount++; });
 
-            StringAssert.Contains(html, "src=\"#\"");
-            StringAssert.Contains(html, "img-src 'none'");
+            Assert.Contains("src=\"#\"", html);
+            Assert.Contains("img-src 'none'", html);
             Assert.AreNotEqual(0, blockedCount);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("images/a#b.png")]
         [DataRow("images/a%20b.png")]
         [DataRow("images/a b.png")]

@@ -16,6 +16,7 @@ namespace PowerDisplay.Ipc.UnitTests;
 /// these pin the registry's shape so a new command cannot be added without a handler, and unknown
 /// names cannot silently resolve.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CliCommandHandlersTests
 {
@@ -30,7 +31,7 @@ public class CliCommandHandlersTests
             .Select(f => (string)f.GetRawConstantValue()!)
             .ToArray();
 
-        Assert.AreNotEqual(0, commandNames.Length, "expected CliCommandNames to expose command constants");
+        Assert.IsNotEmpty(commandNames, "expected CliCommandNames to expose command constants");
 
         foreach (var command in commandNames)
         {

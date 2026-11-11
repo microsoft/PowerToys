@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public class SettingsConfigHelperTests
 {
     private static readonly string[] ExpectedModuleNames =
@@ -57,7 +58,7 @@ public class SettingsConfigHelperTests
         SettingsConfigHelper.ConfigureGlobalModuleSettings(root, "Image Resizer");
 
         var enabled = root["enabled"]!.AsObject();
-        CollectionAssert.AreEquivalent(ExpectedModuleNames, enabled.Select(property => property.Key).ToArray());
+        Assert.AreSequenceEqual(ExpectedModuleNames, enabled.Select(property => property.Key).ToArray(), SequenceOrder.InAnyOrder);
         foreach (var moduleName in ExpectedModuleNames)
         {
             Assert.AreEqual(moduleName == "Image Resizer", enabled[moduleName]!.GetValue<bool>(), moduleName);
@@ -99,7 +100,7 @@ public class SettingsConfigHelperTests
                 File.WriteAllText(path, "changed");
             }
 
-            CollectionAssert.AreEqual(original, File.ReadAllBytes(path));
+            Assert.AreSequenceEqual(original, File.ReadAllBytes(path));
         }
         finally
         {
@@ -179,8 +180,8 @@ public class SettingsConfigHelperTests
                 File.WriteAllText(oobePath, "changed oobe");
             }
 
-            CollectionAssert.AreEqual(originalSettings, File.ReadAllBytes(settingsPath));
-            CollectionAssert.AreEqual(originalOobe, File.ReadAllBytes(oobePath));
+            Assert.AreSequenceEqual(originalSettings, File.ReadAllBytes(settingsPath));
+            Assert.AreSequenceEqual(originalOobe, File.ReadAllBytes(oobePath));
         }
         finally
         {
@@ -227,7 +228,7 @@ public class SettingsConfigHelperTests
 
             using var lockedOobe = new FileStream(oobePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
             Assert.ThrowsExactly<IOException>(() => SettingsConfigHelper.PreserveFirstRunSettings(root));
-            CollectionAssert.AreEqual(originalSettings, File.ReadAllBytes(settingsPath));
+            Assert.AreSequenceEqual(originalSettings, File.ReadAllBytes(settingsPath));
         }
         finally
         {

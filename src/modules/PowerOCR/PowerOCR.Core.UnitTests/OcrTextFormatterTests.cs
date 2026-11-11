@@ -8,6 +8,7 @@ using PowerOCR.Core.Models;
 
 namespace PowerOCR.Core.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class OcrTextFormatterTests
 {

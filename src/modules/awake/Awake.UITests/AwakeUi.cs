@@ -162,7 +162,7 @@ internal sealed class AwakeUi(TestContext context)
         var target = Nodes(choices).FirstOrDefault(node =>
             node.TryGetProperty("className", out var className) && className.GetString() == "LoopingSelectorItem" &&
             node.TryGetProperty("name", out var name) && new string(name.GetString()!.Where(char.IsDigit).ToArray()) == expectedValue);
-        Assert.IsTrue(target.ValueKind == JsonValueKind.Object, $"{partId} did not expose {expectedValue}. Tree: {choices}");
+        Assert.AreEqual(JsonValueKind.Object, target.ValueKind, $"{partId} did not expose {expectedValue}. Tree: {choices}");
         var item = settings.Find<Element>(By.Slug(target.GetProperty("selector").GetString()!));
         item.Invoke(msPostAction: 0);
         Assert.IsTrue(item.WaitForProperty("IsSelected", "True", 10_000), $"{partId} did not select {expectedValue}.");

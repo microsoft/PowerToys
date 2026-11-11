@@ -15,6 +15,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 /// only by having freshly-rebuilt band lists — e.g. after loading from disk — must compare
 /// equal, otherwise the reload fires needlessly.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class DockSettingsEqualityTests
 {

@@ -11,6 +11,7 @@ using ShortcutGuide.IndexYmlGenerator;
 
 namespace ShortcutGuide.UnitTests.IndexGeneratorTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class IndexGeneratorTests
 {
@@ -68,8 +69,8 @@ Shortcuts:
         Assert.IsTrue(File.Exists(indexPath), "index.yml should have been generated.");
 
         string indexContent = File.ReadAllText(indexPath);
-        StringAssert.Contains(indexContent, "- WindowFilter: 'TestApp.exe'");
-        StringAssert.Contains(indexContent, "- 'Test.App'");
+        Assert.Contains("- WindowFilter: 'TestApp.exe'", indexContent);
+        Assert.Contains("- 'Test.App'", indexContent);
     }
 
     [TestMethod]
@@ -95,7 +96,7 @@ BackgroundProcess: false
         Assert.IsTrue(File.Exists(indexPath), "index.yml should still be generated despite malformed files.");
 
         string indexContent = File.ReadAllText(indexPath);
-        StringAssert.Contains(indexContent, "- 'Valid.App'");
+        Assert.Contains("- 'Valid.App'", indexContent);
     }
 
     [TestMethod]
@@ -126,10 +127,10 @@ BackgroundProcess: false
         Assert.IsTrue(File.Exists(indexPath));
 
         string indexContent = File.ReadAllText(indexPath);
-        StringAssert.Contains(indexContent, "- 'Valid.App'");
+        Assert.Contains("- 'Valid.App'", indexContent);
         Assert.IsFalse(indexContent.Contains("NoFilter.App", StringComparison.Ordinal));
         Assert.IsFalse(indexContent.Contains("NoPackage.exe", StringComparison.Ordinal));
-        Assert.AreEqual(4, result.Warnings.Count, "All four invalid files should produce warnings.");
+        Assert.HasCount(4, result.Warnings, "All four invalid files should produce warnings.");
     }
 
     [TestMethod]
@@ -157,7 +158,7 @@ Index:
         ManifestIndexGenerator.CreateIndexYmlFile(_tempDirectory);
 
         string updatedIndexContent = File.ReadAllText(indexPath);
-        StringAssert.Contains(updatedIndexContent, "- 'Valid.App'");
+        Assert.Contains("- 'Valid.App'", updatedIndexContent);
         Assert.IsFalse(updatedIndexContent.Contains("Stale.App", StringComparison.Ordinal));
     }
 
@@ -193,8 +194,8 @@ BackgroundProcess: false
         string indexPath = Path.Combine(_tempDirectory, "index.yml");
         string indexContent = File.ReadAllText(indexPath);
 
-        StringAssert.Contains(indexContent, "Shared.App1");
-        StringAssert.Contains(indexContent, "Shared.App2");
+        Assert.Contains("Shared.App1", indexContent);
+        Assert.Contains("Shared.App2", indexContent);
 
         // Verify Shared.App1 is not duplicated in the output.
         int firstIndex = indexContent.IndexOf("Shared.App1", StringComparison.Ordinal);
@@ -225,8 +226,8 @@ BackgroundProcess: true
         string indexPath = Path.Combine(_tempDirectory, "index.yml");
         string indexContent = File.ReadAllText(indexPath);
 
-        StringAssert.Contains(indexContent, "BackgroundProcess: true");
-        StringAssert.Contains(indexContent, "Background.App");
+        Assert.Contains("BackgroundProcess: true", indexContent);
+        Assert.Contains("Background.App", indexContent);
     }
 
     [TestMethod]
@@ -279,18 +280,18 @@ BackgroundProcess: false
         string indexContent = File.ReadAllText(indexPath);
 
         // Verify single-quoted format and doubled quote escaping
-        StringAssert.Contains(indexContent, "- WindowFilter: 'no'");
-        StringAssert.Contains(indexContent, "- WindowFilter: 'null'");
-        StringAssert.Contains(indexContent, "- WindowFilter: '1:30'");
-        StringAssert.Contains(indexContent, "- WindowFilter: '*'");
-        StringAssert.Contains(indexContent, "- '007'");
-        StringAssert.Contains(indexContent, "- 'Contoso.App''s.Editor'");
+        Assert.Contains("- WindowFilter: 'no'", indexContent);
+        Assert.Contains("- WindowFilter: 'null'", indexContent);
+        Assert.Contains("- WindowFilter: '1:30'", indexContent);
+        Assert.Contains("- WindowFilter: '*'", indexContent);
+        Assert.Contains("- '007'", indexContent);
+        Assert.Contains("- 'Contoso.App''s.Editor'", indexContent);
 
         // Verify that YamlDotNet (as used by ShortcutGuide.Ui) parses the emitted index.yml accurately
         var deserializer = new YamlDotNet.Serialization.Deserializer();
         var deserialized = deserializer.Deserialize<ShortcutGuide.Models.IndexFile>(indexContent);
 
-        Assert.AreEqual(4, deserialized.Index.Length);
+        Assert.HasCount(4, deserialized.Index);
 
         // Check '1:30' (sexagesimal).
         var item130 = Array.Find(deserialized.Index, i => i.WindowFilter == "1:30");
@@ -338,15 +339,15 @@ BackgroundProcess: false
         string indexPath = Path.Combine(_tempDirectory, "index.yml");
         string indexContent = File.ReadAllText(indexPath);
 
-        StringAssert.Contains(indexContent, "- WindowFilter: '7z.exe'");
-        StringAssert.Contains(indexContent, "- '7zip.7zip'");
-        StringAssert.Contains(indexContent, "- WindowFilter: '1password.exe'");
-        StringAssert.Contains(indexContent, "- 'AgileBits.1Password'");
+        Assert.Contains("- WindowFilter: '7z.exe'", indexContent);
+        Assert.Contains("- '7zip.7zip'", indexContent);
+        Assert.Contains("- WindowFilter: '1password.exe'", indexContent);
+        Assert.Contains("- 'AgileBits.1Password'", indexContent);
 
         var deserializer = new YamlDotNet.Serialization.Deserializer();
         var deserialized = deserializer.Deserialize<ShortcutGuide.Models.IndexFile>(indexContent);
 
-        Assert.AreEqual(2, deserialized.Index.Length);
+        Assert.HasCount(2, deserialized.Index);
         Assert.IsTrue(Array.Exists(deserialized.Index, i => i.WindowFilter == "7z.exe" && i.Apps[0] == "7zip.7zip"));
         Assert.IsTrue(Array.Exists(deserialized.Index, i => i.WindowFilter == "1password.exe" && i.Apps[0] == "AgileBits.1Password"));
     }
@@ -368,14 +369,14 @@ BackgroundProcess: false # trailing comment on bool
         string indexPath = Path.Combine(_tempDirectory, "index.yml");
         string indexContent = File.ReadAllText(indexPath);
 
-        StringAssert.Contains(indexContent, "- WindowFilter: 'Commented.exe'");
-        StringAssert.Contains(indexContent, "- 'Quoted.Double.App'");
+        Assert.Contains("- WindowFilter: 'Commented.exe'", indexContent);
+        Assert.Contains("- 'Quoted.Double.App'", indexContent);
         Assert.IsFalse(indexContent.Contains('#'), "Trailing comments should not leak into index.yml.");
 
         var deserializer = new YamlDotNet.Serialization.Deserializer();
         var deserialized = deserializer.Deserialize<ShortcutGuide.Models.IndexFile>(indexContent);
 
-        Assert.AreEqual(1, deserialized.Index.Length);
+        Assert.HasCount(1, deserialized.Index);
         Assert.AreEqual("Commented.exe", deserialized.Index[0].WindowFilter);
         Assert.AreEqual("Quoted.Double.App", deserialized.Index[0].Apps[0]);
     }
@@ -397,9 +398,9 @@ backgroundprocess: true
         string indexPath = Path.Combine(_tempDirectory, "index.yml");
         string indexContent = File.ReadAllText(indexPath);
 
-        StringAssert.Contains(indexContent, "- WindowFilter: 'CaseApp.exe'");
-        StringAssert.Contains(indexContent, "BackgroundProcess: true");
-        StringAssert.Contains(indexContent, "- 'Case.Insensitive.App'");
+        Assert.Contains("- WindowFilter: 'CaseApp.exe'", indexContent);
+        Assert.Contains("BackgroundProcess: true", indexContent);
+        Assert.Contains("- 'Case.Insensitive.App'", indexContent);
     }
 
     [TestMethod]
@@ -437,13 +438,13 @@ BackgroundProcess: false
         int alphaFilterPos = indexContent.IndexOf("WindowFilter: 'Alpha.exe'", StringComparison.Ordinal);
         int zebraFilterPos = indexContent.IndexOf("WindowFilter: 'Zebra.exe'", StringComparison.Ordinal);
         Assert.IsTrue(alphaFilterPos >= 0 && zebraFilterPos >= 0, "Both filters should be in the index.");
-        Assert.IsTrue(alphaFilterPos < zebraFilterPos, "WindowFilter 'Alpha.exe' must be sorted before 'Zebra.exe'.");
+        Assert.IsLessThan(zebraFilterPos, alphaFilterPos, "WindowFilter 'Alpha.exe' must be sorted before 'Zebra.exe'.");
 
         // Under Alpha.exe, 'Alpha.App' must be sorted before 'Zed.App'.
         int alphaAppPos = indexContent.IndexOf("- 'Alpha.App'", StringComparison.Ordinal);
         int zedAppPos = indexContent.IndexOf("- 'Zed.App'", StringComparison.Ordinal);
         Assert.IsTrue(alphaAppPos >= 0 && zedAppPos >= 0, "Both apps should be in the index.");
-        Assert.IsTrue(alphaAppPos < zedAppPos, "'Alpha.App' must be sorted before 'Zed.App'.");
+        Assert.IsLessThan(zedAppPos, alphaAppPos, "'Alpha.App' must be sorted before 'Zed.App'.");
     }
 
     [TestMethod]

@@ -10,6 +10,7 @@ using Settings.UI.Library;
 
 namespace Peek.FilePreviewer.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class PreviewSettingsTests
     {

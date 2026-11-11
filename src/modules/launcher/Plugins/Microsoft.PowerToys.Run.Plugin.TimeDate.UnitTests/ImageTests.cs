@@ -12,6 +12,7 @@ using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ImageTests
     {
@@ -30,7 +31,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             CultureInfo.CurrentUICulture = new CultureInfo("en-us", false);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("time", "Time -", "Images\\time.dark.png")]
         [DataRow("time u", "Time UTC -", "Images\\time.dark.png")]
         [DataRow("date", "Date -", "Images\\calendar.dark.png")]
@@ -77,7 +78,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(expectedResult, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("time", "Time -", "Images\\time.light.png")]
         [DataRow("time u", "Time UTC -", "Images\\time.light.png")]
         [DataRow("date", "Date -", "Images\\calendar.light.png")]

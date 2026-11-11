@@ -97,7 +97,7 @@ namespace ImageResizer.Test
             testCode();
             detach(handler);
 
-            Assert.IsTrue(events.Count > 0, "Expected at least one PropertyChanged event.");
+            Assert.IsNotEmpty(events, "Expected at least one PropertyChanged event.");
 
             return events;
         }

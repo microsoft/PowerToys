@@ -37,7 +37,7 @@ public sealed partial class NewPlusTests : UITestBase
     {
         var templates = ChooseNewTemplateFolder();
         Assert.IsTrue(Directory.Exists(templates), "The folder picker did not create the new template folder.");
-        Assert.AreEqual(0, Directory.GetFileSystemEntries(templates).Length, "Changing location unexpectedly populated the folder.");
+        Assert.IsEmpty(Directory.GetFileSystemEntries(templates), "Changing location unexpectedly populated the folder.");
         AssertTemplateMenu(OpenExplorer(), []);
     }
 
@@ -86,9 +86,9 @@ public sealed partial class NewPlusTests : UITestBase
         File.Delete(file);
         Directory.Delete(folder, recursive: true);
 
-        Assert.AreEqual(0, Directory.GetFileSystemEntries(templates).Length);
+        Assert.IsEmpty(Directory.GetFileSystemEntries(templates));
         AssertTemplateMenu(explorer, []);
-        Assert.AreEqual(0, Directory.GetFileSystemEntries(outputFolder).Length, "Inspecting the menu created an item.");
+        Assert.IsEmpty(Directory.GetFileSystemEntries(outputFolder), "Inspecting the menu created an item.");
     }
 
     [TestMethod]
@@ -105,7 +105,7 @@ public sealed partial class NewPlusTests : UITestBase
             "Templates");
         Assert.IsTrue(Directory.Exists(examples), $"The product payload is missing its default templates: {examples}");
         var expectedNames = Directory.GetFileSystemEntries(examples).Select(Path.GetFileName).Cast<string>().ToArray();
-        Assert.IsTrue(expectedNames.Length > 0, "The product payload has no default template examples.");
+        Assert.IsNotEmpty(expectedNames, "The product payload has no default template examples.");
 
         SetModuleEnabled(false);
         AssertRootMenu(explorer, expected: false);

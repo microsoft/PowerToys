@@ -15,6 +15,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class DockMonitorDisplayNameTests
 {
@@ -51,7 +52,7 @@ public class DockMonitorDisplayNameTests
         var reconnected = MonitorConfigReconciler.Reconcile(reloaded.MonitorConfigs, [reconnectedMonitor], Now);
         var viewModel = CreateViewModel(reconnected[0], reconnectedMonitor);
 
-        Assert.AreEqual(1, reconnected.Count);
+        Assert.HasCount(1, reconnected);
         Assert.AreEqual("Display A", originalName);
         Assert.AreEqual(originalName, viewModel.DisplayName);
         Assert.AreEqual(@"\\.\DISPLAY15", viewModel.DeviceId);
@@ -71,13 +72,13 @@ public class DockMonitorDisplayNameTests
         };
         var result = MonitorConfigReconciler.Reconcile(ImmutableList.Create(config), [WirelessMonitor], Now);
 
-        Assert.AreEqual(1, result.Count);
+        Assert.HasCount(1, result);
         Assert.AreEqual(WirelessMonitor.StableId, result[0].MonitorDeviceId);
         Assert.AreEqual("Display A", CreateViewModel(result[0], WirelessMonitor).DisplayName);
         Assert.IsTrue(result[0].Enabled);
         Assert.IsTrue(result[0].IsCustomized);
         Assert.AreEqual(DockSide.Left, result[0].Side);
-        Assert.AreEqual(config.CenterBands, result[0].CenterBands);
+        Assert.AreSame(config.CenterBands, result[0].CenterBands);
         Assert.AreSame(result, MonitorConfigReconciler.Reconcile(result, [WirelessMonitor], Now));
     }
 
@@ -88,14 +89,14 @@ public class DockMonitorDisplayNameTests
         var initial = MonitorConfigReconciler.Reconcile(null, [WirelessMonitor, otherMonitor], Now);
         var reordered = MonitorConfigReconciler.Reconcile(initial, [otherMonitor, WirelessMonitor], Now);
 
-        Assert.AreEqual(2, reordered.Count);
+        Assert.HasCount(2, reordered);
         foreach (var config in initial)
         {
             var current = reordered.Single(c => c.MonitorDeviceId == config.MonitorDeviceId);
             Assert.AreEqual(config.FallbackDisplayNumber, current.FallbackDisplayNumber);
         }
 
-        Assert.AreEqual(2, reordered.Select(c => c.FallbackDisplayNumber).Distinct().Count());
+        Assert.HasCount(2, reordered.Select(c => c.FallbackDisplayNumber).Distinct());
     }
 
     [TestMethod]
@@ -106,7 +107,7 @@ public class DockMonitorDisplayNameTests
         var initial = MonitorConfigReconciler.Reconcile(null, [primaryMonitor, WirelessMonitor], Now);
         var replaced = MonitorConfigReconciler.Reconcile(initial, [primaryMonitor, newMonitor], Now);
 
-        Assert.AreEqual(3, replaced.Count, "The disconnected monitor must retain its configuration and name.");
+        Assert.HasCount(3, replaced, "The disconnected monitor must retain its configuration and name.");
         var wirelessConfig = replaced.Single(c => c.MonitorDeviceId == WirelessMonitor.StableId);
         var newConfig = replaced.Single(c => c.MonitorDeviceId == newMonitor.StableId);
         Assert.AreEqual("Display B", DockMonitorDisplayName.Resolve(WirelessMonitor, wirelessConfig));

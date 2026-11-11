@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LightSwitch.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class TestShortcut : UITestBase
     {
@@ -20,7 +21,7 @@ namespace LightSwitch.UITests
         {
         }
 
-        [TestMethod("LightSwitch.TestShortcut")]
+        [TestMethod(DisplayName = "LightSwitch.TestShortcut")]
         [TestCategory("Shortcut")]
         public void TestLightSwitchShortcut()
         {

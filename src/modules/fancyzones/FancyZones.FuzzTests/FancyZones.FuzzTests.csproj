@@ -5,6 +5,7 @@
 	<Import Project="$(RepoRoot)src\Common.Dotnet.FuzzTest.props" />
 	
 	<PropertyGroup>
+		<MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
 		<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\FancyZones.FuzzTests\</OutputPath>
 	</PropertyGroup>
 

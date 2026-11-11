@@ -20,6 +20,7 @@ namespace Microsoft.CmdPal.Ext.Shell.UnitTests;
 /// </summary>
 public static class IntegratedCommandExecutionTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ParseAndQualifyWorkflow
     {
@@ -149,7 +150,7 @@ public static class IntegratedCommandExecutionTests
             Assert.AreEqual(0, parseResult.Result, "Parse should succeed for relative path");
             Assert.IsFalse(parseResult.IsUri);
             Assert.IsNotNull(parseResult.FilePath);
-            Assert.IsTrue(parseResult.FilePath.Length > 0);
+            Assert.IsGreaterThan(0, parseResult.FilePath.Length);
 
             var qualifiedDirectory = RunHistory.QualifyCommandLineDirectory(
                 commandLine,
@@ -157,7 +158,7 @@ public static class IntegratedCommandExecutionTests
                 defaultDirectory);
 
             Assert.IsNotNull(qualifiedDirectory);
-            Assert.IsTrue(qualifiedDirectory.Length > 0);
+            Assert.IsGreaterThan(0, qualifiedDirectory.Length);
         }
 
         [TestMethod]
@@ -178,13 +179,14 @@ public static class IntegratedCommandExecutionTests
                 defaultDirectory);
 
             Assert.IsNotNull(qualifiedDirectory);
-            Assert.IsTrue(qualifiedDirectory.Length > 0);
+            Assert.IsGreaterThan(0, qualifiedDirectory.Length);
         }
     }
 
     /// <summary>
     /// Tests edge cases and error conditions in the integrated workflow.
     /// </summary>
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ParseAndQualifyEdgeCases
     {
@@ -217,7 +219,7 @@ public static class IntegratedCommandExecutionTests
                 defaultDirectory);
 
             Assert.IsNotNull(qualifiedDirectory);
-            Assert.IsTrue(qualifiedDirectory.Length > 0);
+            Assert.IsGreaterThan(0, qualifiedDirectory.Length);
         }
 
         [TestMethod]
@@ -239,6 +241,7 @@ public static class IntegratedCommandExecutionTests
     /// <summary>
     /// Tests that verify the behavior matches what ShellExecCmdLineWithSite expects.
     /// </summary>
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ShellExecCompatibility
     {
@@ -318,8 +321,8 @@ public static class IntegratedCommandExecutionTests
             // Assert
             Assert.AreEqual(0, parseResult.Result);
             Assert.IsFalse(parseResult.IsUri);
-            StringAssert.Contains(parseResult.FilePath, "notepad", StringComparison.OrdinalIgnoreCase);
-            StringAssert.Contains(parseResult.Arguments, "C:\\Temp\\test.txt");
+            Assert.Contains("notepad", parseResult.FilePath, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("C:\\Temp\\test.txt", parseResult.Arguments);
 
             var expectedWorkingDir = System.IO.Path.GetDirectoryName(parseResult.FilePath);
             Assert.AreEqual(expectedWorkingDir, finalWorkingDir, true, CultureInfo.InvariantCulture);

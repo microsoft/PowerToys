@@ -9,6 +9,7 @@ using PowerDisplay.Models;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ProfileMigrationTests
 {
@@ -45,7 +46,7 @@ public class ProfileMigrationTests
 
         Assert.IsTrue(changed);
         Assert.AreEqual(1, profile.Id);
-        Assert.AreEqual(1, profile.MonitorSettings.Count);
+        Assert.HasCount(1, profile.MonitorSettings);
         Assert.AreEqual(NewMonitorId, profile.MonitorSettings[0].MonitorId);
     }
 
@@ -67,7 +68,7 @@ public class ProfileMigrationTests
             new[] { (NewMonitorId, 1) });
 
         Assert.IsTrue(changed);
-        Assert.AreEqual(1, profile.MonitorSettings.Count);
+        Assert.HasCount(1, profile.MonitorSettings);
         Assert.AreEqual(NewMonitorId, profile.MonitorSettings[0].MonitorId);
     }
 

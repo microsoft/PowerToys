@@ -17,6 +17,7 @@ using Moq;
 
 namespace Hosts.Tests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class HostsServiceTest
     {
@@ -224,7 +225,7 @@ namespace Hosts.Tests
             elevationHelper.Setup(m => m.IsElevated).Returns(false);
 
             var service = new HostsService(fileSystem, _userSettings.Object, elevationHelper.Object, _backupManager.Object);
-            await Assert.ThrowsExceptionAsync<NotRunningElevatedException>(async () => await service.WriteAsync("# Empty hosts file", Enumerable.Empty<Entry>()));
+            await Assert.ThrowsExactlyAsync<NotRunningElevatedException>(async () => await service.WriteAsync("# Empty hosts file", Enumerable.Empty<Entry>()));
         }
 
         [TestMethod]
@@ -240,7 +241,7 @@ namespace Hosts.Tests
 
             fileSystem.AddFile(service.HostsFilePath, hostsFile);
 
-            await Assert.ThrowsExceptionAsync<ReadOnlyHostsException>(async () => await service.WriteAsync("# Empty hosts file", Enumerable.Empty<Entry>()));
+            await Assert.ThrowsExactlyAsync<ReadOnlyHostsException>(async () => await service.WriteAsync("# Empty hosts file", Enumerable.Empty<Entry>()));
         }
 
         [TestMethod]
@@ -332,7 +333,7 @@ namespace Hosts.Tests
             entries.Add(new Entry(0, "10.1.1.30", "host30 host30.local", "new entry", false));
             await service.WriteAsync(data.AdditionalLines, data.Entries);
 
-            Assert.AreEqual(0, fileSystem.Directory.GetFiles(BackupPath).Length);
+            Assert.IsEmpty(fileSystem.Directory.GetFiles(BackupPath));
         }
 
         [TestMethod]
@@ -357,7 +358,7 @@ namespace Hosts.Tests
             await service.WriteAsync(data.AdditionalLines, data.Entries);
             await service.WriteAsync(data.AdditionalLines, data.Entries);
 
-            Assert.AreEqual(1, fileSystem.Directory.GetFiles(BackupPath).Length);
+            Assert.HasCount(1, fileSystem.Directory.GetFiles(BackupPath));
             var backupContent = fileSystem.File.ReadAllText(fileSystem.Directory.GetFiles(BackupPath)[0]);
             Assert.AreEqual(content, backupContent);
         }

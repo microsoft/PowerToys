@@ -9,6 +9,7 @@ using PowerDisplay.Contracts;
 
 namespace PowerDisplay.Contracts.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class RoundTripTests
 {
@@ -80,7 +81,7 @@ public class RoundTripTests
         Assert.AreEqual(CliExitCodes.ProviderUnavailable, back!.Error!.ExitCode);
         Assert.AreEqual("PROVIDER_UNAVAILABLE", back.Error.Code);
         Assert.IsNotNull(back.Error.Supported);
-        Assert.AreEqual(2, back.Error.Supported!.Count);
+        Assert.HasCount(2, back.Error.Supported);
         Assert.AreEqual("DVI", back.Error.Supported[0].Name);
         Assert.AreEqual("60", back.Error.Supported[0].Vcp);
         Assert.AreEqual("HDMI-1", back.Error.Supported[1].Name);
@@ -94,7 +95,7 @@ public class RoundTripTests
 
         // Wire-format compatibility: ExitCode is now a derived (computed) property, but it MUST
         // still be serialized for external JSON consumers that read error.exitCode.
-        StringAssert.Contains(json, "\"exitCode\":10");
+        Assert.Contains("\"exitCode\":10", json);
     }
 
     [TestMethod]
@@ -138,7 +139,7 @@ public class RoundTripTests
 
         Assert.IsNotNull(back);
         Assert.AreEqual("list", back!.Command);
-        Assert.AreEqual(1, back.Monitors.Count);
+        Assert.HasCount(1, back.Monitors);
         Assert.AreEqual("Dell U2722D", back.Monitors[0].Name);
         Assert.AreEqual("DDC/CI", back.Monitors[0].Method);
         Assert.IsFalse(back.IsError, "success DTOs carry isError=false");
@@ -170,9 +171,9 @@ public class RoundTripTests
 
         Assert.IsNotNull(back);
         Assert.AreEqual("get", back!.Command);
-        Assert.AreEqual(1, back.Monitors.Count);
+        Assert.HasCount(1, back.Monitors);
         Assert.AreEqual("MON1", back.Monitors[0].Monitor.Id);
-        Assert.AreEqual(3, back.Monitors[0].Settings.Count);
+        Assert.HasCount(3, back.Monitors[0].Settings);
         Assert.AreEqual("75%", back.Monitors[0].Settings[0].Display);
         Assert.IsFalse(back.Monitors[0].Settings[2].Supported);
     }
@@ -225,12 +226,13 @@ public class RoundTripTests
         Assert.AreEqual(result.RawCapabilities, back.RawCapabilities);
         Assert.AreEqual("U2722D", back.Model);
         Assert.AreEqual("2.1", back.MccsVersion);
-        Assert.AreEqual(2, back.VcpCodes.Count);
+        Assert.HasCount(2, back.VcpCodes);
         Assert.IsTrue(back.VcpCodes[0].Continuous);
         Assert.IsFalse(back.VcpCodes[1].Continuous);
-        Assert.IsNotNull(back.VcpCodes[1].DiscreteValues);
-        Assert.AreEqual(2, back.VcpCodes[1].DiscreteValues!.Count);
-        Assert.AreEqual("DP1", back.VcpCodes[1].DiscreteValues![0]);
+        var discreteValues = back.VcpCodes[1].DiscreteValues;
+        Assert.IsNotNull(discreteValues);
+        Assert.HasCount(2, discreteValues);
+        Assert.AreEqual("DP1", discreteValues[0]);
     }
 
     [TestMethod]
@@ -250,7 +252,7 @@ public class RoundTripTests
 
         Assert.IsNotNull(back);
         Assert.AreEqual("profiles", back!.Command);
-        Assert.AreEqual(2, back.Profiles.Count);
+        Assert.HasCount(2, back.Profiles);
         Assert.AreEqual("Gaming", back.Profiles[0].Name);
         Assert.AreEqual(2, back.Profiles[0].MonitorCount);
         Assert.AreEqual("2024-01-15T10:30:00Z", back.Profiles[0].LastModified);
@@ -354,7 +356,7 @@ public class RoundTripTests
 
         var info = new CliProfileInfo { Id = 3, Name = "Gaming", MonitorCount = 2 };
         var infoJson = JsonSerializer.Serialize(info, ContractsJsonContext.Default.CliProfileInfo);
-        Assert.IsTrue(infoJson.Contains("\"id\":3"));
+        Assert.Contains("\"id\":3", infoJson);
 
         var applied = new CliApplyProfileResult { ProfileId = 3, Profile = "Gaming" };
         var appliedBack = JsonSerializer.Deserialize(

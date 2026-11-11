@@ -16,6 +16,7 @@ using PowerDisplay.Contracts;
 
 namespace PowerDisplay.Cli.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ProgramTokenTests
 {
@@ -75,7 +76,7 @@ public class ProgramTokenTests
     public void ApplyProfileWithId_IsNotVersion()
         => Assert.IsFalse(Program.IsVersionRequest(Parse("apply-profile", "5")));
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("[suggest]", new[] { "set", "-n", "bad", "--brightness", "50" })]
     [DataRow("[suggest:32]", new[] { "set", "-n", "bad", "--brightness", "50" })]
     [DataRow("[suggest]", new[] { "set", "--brightness", "invalid" })]
@@ -90,10 +91,10 @@ public class ProgramTokenTests
     {
         var parsed = Parse([directive, .. arguments]);
 
-        Assert.IsTrue(parsed.Errors.Count > 0, "Completion directives must not hide errors before manual command dispatch.");
+        Assert.IsNotEmpty(parsed.Errors, "Completion directives must not hide errors before manual command dispatch.");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("[suggest]")]
     [DataRow("[suggest:32]")]
     public void SuggestDirective_MissingResponseFile_PreservesParseError(string directive)
@@ -101,7 +102,7 @@ public class ProgramTokenTests
         var missingPath = Path.Combine(Path.GetTempPath(), $"PowerDisplay-{Guid.NewGuid():N}.rsp");
         var parsed = Parse(directive, "set", "--brightness", "50", "@" + missingPath);
 
-        Assert.IsTrue(parsed.Errors.Count > 0, "A missing response file must prevent dispatch of a partial command.");
+        Assert.IsNotEmpty(parsed.Errors, "A missing response file must prevent dispatch of a partial command.");
     }
 
     [TestMethod]
@@ -115,8 +116,8 @@ public class ProgramTokenTests
         Assert.AreEqual("set", result.Command);
         Assert.AreEqual(CliErrorCodes.ArgumentError, result.Error.Code);
         Assert.AreEqual(CliExitCodes.ArgumentError, result.Error.ExitCode);
-        StringAssert.Contains(result.Error.Message, "first problem");
-        StringAssert.Contains(result.Error.Message, "second problem");
+        Assert.Contains("first problem", result.Error.Message);
+        Assert.Contains("second problem", result.Error.Message);
     }
 
     [TestMethod]
@@ -131,21 +132,21 @@ public class ProgramTokenTests
     public void Step_Negative_ProducesParseError()
     {
         var parsed = Parse("up", "--brightness", "--step", "-5");
-        Assert.IsTrue(parsed.Errors.Count > 0, "a negative --step must be a parse error");
+        Assert.IsNotEmpty(parsed.Errors, "a negative --step must be a parse error");
     }
 
     [TestMethod]
     public void Step_Zero_IsAccepted()
     {
         var parsed = Parse("up", "--brightness", "--step", "0");
-        Assert.AreEqual(0, parsed.Errors.Count, "--step 0 is a valid no-op and must not error");
+        Assert.IsEmpty(parsed.Errors, "--step 0 is a valid no-op and must not error");
     }
 
     [TestMethod]
     public void Up_BrightnessFlag_ParsesWithoutValue()
     {
         var parsed = Parse("up", "--brightness");
-        Assert.AreEqual(0, parsed.Errors.Count);
+        Assert.IsEmpty(parsed.Errors);
         Assert.IsTrue(parsed.GetValue(CliOptions.BrightnessFlag));
     }
 
@@ -156,7 +157,7 @@ public class ProgramTokenTests
         // bareword like "false" must NOT be swallowed as the flag's value (which would silently make
         // the flag false and yield a misleading "no setting specified"); it is an unrecognized token.
         var parsed = Parse("up", "--brightness", "false");
-        Assert.IsTrue(parsed.Errors.Count > 0, "an attached value on a no-value flag must be a parse error");
+        Assert.IsNotEmpty(parsed.Errors, "an attached value on a no-value flag must be a parse error");
     }
 
     [TestMethod]
@@ -167,12 +168,12 @@ public class ProgramTokenTests
         // profile id (not as --quiet's value, which would leave apply-profile with no argument).
         var parsed = Parse("apply-profile", "--quiet", "1");
 
-        Assert.AreEqual(0, parsed.Errors.Count, "--quiet must not consume the profile id");
+        Assert.IsEmpty(parsed.Errors, "--quiet must not consume the profile id");
         Assert.AreEqual(1, parsed.GetValue(CliOptions.ProfileId));
         Assert.IsTrue(parsed.GetValue(CliOptions.Quiet), "a bare --quiet resolves to true");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("--json", "apply-profile", "17")]
     [DataRow("apply-profile", "--json", "17")]
     [DataRow("apply-profile", "17", "--json")]
@@ -180,20 +181,20 @@ public class ProgramTokenTests
     {
         var parsed = Parse(first, second, third);
 
-        Assert.AreEqual(0, parsed.Errors.Count);
+        Assert.IsEmpty(parsed.Errors);
         Assert.IsTrue(parsed.GetValue(CliOptions.Json));
         Assert.AreEqual(17, parsed.GetValue(CliOptions.ProfileId));
         Assert.AreEqual(ArgumentArity.Zero, CliOptions.Json.Arity);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("--json", "profiles")]
     [DataRow("profiles", "--json")]
     public void Json_ParsesBeforeOrAfterProfilesCommand(string first, string second)
     {
         var parsed = Parse(first, second);
 
-        Assert.AreEqual(0, parsed.Errors.Count);
+        Assert.IsEmpty(parsed.Errors);
         Assert.IsTrue(parsed.GetValue(CliOptions.Json));
     }
 
@@ -201,7 +202,7 @@ public class ProgramTokenTests
     public void Json_ParseError_SelectsJsonErrorRenderer()
     {
         var parsed = Parse("--json", "apply-profile", "not-an-id");
-        Assert.IsTrue(parsed.Errors.Count > 0);
+        Assert.IsNotEmpty(parsed.Errors);
 
         var stdout = new System.IO.StringWriter();
         var stderr = new System.IO.StringWriter();
@@ -235,7 +236,7 @@ public class ProgramTokenTests
         // does not swallow the following power-state value.
         var parsed = Parse("set", "--power-state", "0x04", "--confirm-power-off");
 
-        Assert.AreEqual(0, parsed.Errors.Count);
+        Assert.IsEmpty(parsed.Errors);
         Assert.IsTrue(parsed.GetValue(CliOptions.ConfirmPowerOff));
         Assert.AreEqual("0x04", parsed.GetValue(CliOptions.PowerState));
     }
@@ -246,8 +247,9 @@ public class ProgramTokenTests
         // Guards the connect-timeout fix: the pipe-connect bound must stay strictly below the overall
         // deadline, or a not-running app is misreported as TIMEOUT (exit 8) after the full deadline
         // instead of a fast PROVIDER_UNAVAILABLE (exit 10). See Program.ConnectTimeout / OperationTimeout.
-        Assert.IsTrue(
-            Program.ConnectTimeout < Program.OperationTimeout,
+        Assert.IsLessThan(
+            Program.OperationTimeout,
+            Program.ConnectTimeout,
             $"ConnectTimeout ({Program.ConnectTimeout}) must be < OperationTimeout ({Program.OperationTimeout})");
     }
 
@@ -256,7 +258,7 @@ public class ProgramTokenTests
     {
         var parse = Parse("apply-profile", "5");
 
-        Assert.AreEqual(0, parse.Errors.Count);
+        Assert.IsEmpty(parse.Errors);
         Assert.AreEqual(5, parse.GetValue(CliOptions.ProfileId));
     }
 
@@ -265,7 +267,7 @@ public class ProgramTokenTests
     {
         var parse = Parse("apply-profile", "Gaming");
 
-        Assert.IsTrue(parse.Errors.Count > 0);
+        Assert.IsNotEmpty(parse.Errors);
     }
 
     [TestMethod]

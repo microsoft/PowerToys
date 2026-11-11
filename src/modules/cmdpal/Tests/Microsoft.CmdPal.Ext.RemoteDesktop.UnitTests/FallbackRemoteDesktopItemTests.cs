@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class FallbackRemoteDesktopItemTests
 {

@@ -4,10 +4,9 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-[assembly: DoNotParallelize]
-
 namespace Microsoft.MouseWithoutBorders.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class AutonomousSandboxTests
 {

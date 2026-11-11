@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class DetailsMarkdownHelperTests
 {
@@ -43,7 +44,7 @@ public class DetailsMarkdownHelperTests
 
         var body = DetailsMarkdownHelper.BuildImageBody(path, "Clipboard image");
 
-        StringAssert.StartsWith(body, "![Clipboard image](file:///");
+        Assert.StartsWith("![Clipboard image](file:///", body);
     }
 
     [TestMethod]

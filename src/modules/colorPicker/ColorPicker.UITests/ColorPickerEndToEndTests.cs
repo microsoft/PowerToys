@@ -29,6 +29,7 @@ namespace Microsoft.ColorPicker.UITests;
 /// accessible name is the exact HEX value shown to the user. Reading that real accessibility
 /// surface also catches regressions where the displayed color is no longer exposed to UIA.
 /// </remarks>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ColorPickerEndToEndTests : UITestBase
 {
@@ -123,7 +124,7 @@ public class ColorPickerEndToEndTests : UITestBase
         }
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup]
     public static void RestoreColorPickerState()
     {
         if (!snapshotsCaptured)
@@ -262,8 +263,8 @@ public class ColorPickerEndToEndTests : UITestBase
                 "Could not read activation shortcut HelpText from the ShortcutControl EditButton.");
 
             var keys = ParseShortcutText(shortcutText);
-            Assert.IsTrue(
-                keys.Length > 0,
+            Assert.IsNotEmpty(
+                keys,
                 $"Could not parse any keys from shortcut text '{shortcutText}'.");
             TestContext.WriteLine($"Parsed key chord: [{string.Join(", ", keys)}]");
 
@@ -371,7 +372,7 @@ public class ColorPickerEndToEndTests : UITestBase
                 $"Zoom window UIA root must expose the window name '{zoomWindow.WindowTitle}'.");
             long zoomWindowHandle = zoomWindow!.WindowHandle;
             var (zoomLeft, _, zoomRight, _) = WindowHelper.GetWindowBounds(new IntPtr(zoomWindowHandle));
-            Assert.IsTrue(zoomRight > zoomLeft, "Could not resolve the zoom window bounds.");
+            Assert.IsGreaterThan(zoomLeft, zoomRight, "Could not resolve the zoom window bounds.");
             double zoomDpiScale = (zoomRight - zoomLeft) / ZoomWindowSizeInDips;
             (int zoomAnchorX, int zoomAnchorY) = MouseHelper.GetMousePosition();
 
@@ -498,10 +499,11 @@ public class ColorPickerEndToEndTests : UITestBase
                 TestContext.WriteLine($"  [{v.Type,-12}] name='{v.Name}' value='{v.Value}'");
             }
 
-            Assert.IsTrue(values.Count > 0, "Editor reported no readable elements via inspect --json.");
-            Assert.IsTrue(
-                values.Any(v => string.Equals(v.Type, "Window", StringComparison.OrdinalIgnoreCase) &&
-                                string.Equals(v.Name, editor.WindowTitle, StringComparison.Ordinal)),
+            Assert.IsNotEmpty(values, "Editor reported no readable elements via inspect --json.");
+            Assert.Contains(
+                v => string.Equals(v.Type, "Window", StringComparison.OrdinalIgnoreCase) &&
+                                string.Equals(v.Name, editor.WindowTitle, StringComparison.Ordinal),
+                values,
                 $"Editor UIA root name must match its native window name '{editor.WindowTitle}'.");
 
             // Match the clipboard text through UIA Name, ignoring an optional leading '#'.

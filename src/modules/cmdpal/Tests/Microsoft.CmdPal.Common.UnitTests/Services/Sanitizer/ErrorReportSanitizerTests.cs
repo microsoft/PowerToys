@@ -6,6 +6,7 @@ using Microsoft.CmdPal.Common.Services.Sanitizer;
 
 namespace Microsoft.CmdPal.Common.UnitTests.Services.Sanitizer;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public partial class ErrorReportSanitizerTests
 {

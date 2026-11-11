@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FancyZonesEditor.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class DefaultLayoutsTest : FancyZonesEditorTestBase
 {
@@ -41,7 +42,7 @@ public class DefaultLayoutsTest : FancyZonesEditorTestBase
         EditorTestData.WriteForDefaultLayoutsTests(Files);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.Default_Initialize")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.Default_Initialize")]
     [TestCategory("FancyZones Editor #12")]
     public void Initialize()
     {
@@ -52,7 +53,7 @@ public class DefaultLayoutsTest : FancyZonesEditorTestBase
         AssertDefaultLayoutsFile(horizontalType: GridType, verticalType: CustomType, verticalUuid: Layout0Uuid);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.Default_Assign_Cancel")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.Default_Assign_Cancel")]
     [TestCategory("FancyZones Editor #12")]
     public void Assign_Cancel()
     {
@@ -70,7 +71,7 @@ public class DefaultLayoutsTest : FancyZonesEditorTestBase
         AssertDefaultLayoutsFile(horizontalType: GridType, verticalType: CustomType, verticalUuid: Layout0Uuid);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.Default_Assign_Save")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.Default_Assign_Save")]
     [TestCategory("FancyZones Editor #12")]
     public void Assign_Save()
     {
@@ -139,7 +140,7 @@ public class DefaultLayoutsTest : FancyZonesEditorTestBase
     private static void AssertDefaultLayoutsFile(string horizontalType, string verticalType, string verticalUuid)
     {
         var data = EditorUiTestHelper.ReadDefaultLayouts();
-        Assert.AreEqual(2, data.DefaultLayouts.Count);
+        Assert.HasCount(2, data.DefaultLayouts);
 
         var horizontal = data.DefaultLayouts.Find(x => x.MonitorConfiguration == HorizontalConfiguration);
         var vertical = data.DefaultLayouts.Find(x => x.MonitorConfiguration == VerticalConfiguration);

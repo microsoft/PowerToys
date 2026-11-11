@@ -84,8 +84,9 @@ For complete details, see [Build Guidelines](tools/build/BUILD-GUIDELINES.md).
 ### Running tests
 
 1. **Build the test project first**, wait for exit code 0
-2. Run via VS Test Explorer (`Ctrl+E, T`) or `vstest.console.exe` with filters
-3. **Avoid `dotnet test`** in this repo – use VS Test Explorer or vstest.console.exe
+2. Managed unit tests: use the pinned .NET 10 SDK and `dotnet test --test-modules <built-test.dll> --report-trx`, or VS Test Explorer (`Ctrl+E, T`)
+3. Native C++ tests: use `vstest.console.exe`; their adapters do not support MTP
+4. Do not pass the mixed managed/native `PowerToys.slnx` to MTP. See [managed and native test commands](doc/devdocs/development/guidelines.md#managed-and-native-test-commands)
 
 ### Test types
 

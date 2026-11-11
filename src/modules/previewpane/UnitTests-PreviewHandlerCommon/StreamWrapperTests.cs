@@ -14,6 +14,7 @@ using Moq;
 
 namespace PreviewHandlerCommonUnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class StreamWrapperTests
     {
@@ -51,7 +52,7 @@ namespace PreviewHandlerCommonUnitTests
             using (var streamWrapper = new ReadonlyStream(streamMock.Object))
             {
                 // Assert
-                Assert.AreEqual(true, streamWrapper.CanRead);
+                Assert.IsTrue(streamWrapper.CanRead);
             }
         }
 
@@ -65,7 +66,7 @@ namespace PreviewHandlerCommonUnitTests
             using (var streamWrapper = new ReadonlyStream(streamMock.Object))
             {
                 // Assert
-                Assert.AreEqual(true, streamWrapper.CanSeek);
+                Assert.IsTrue(streamWrapper.CanSeek);
             }
         }
 
@@ -79,7 +80,7 @@ namespace PreviewHandlerCommonUnitTests
             using (var streamWrapper = new ReadonlyStream(streamMock.Object))
             {
                 // Assert
-                Assert.AreEqual(false, streamWrapper.CanWrite);
+                Assert.IsFalse(streamWrapper.CanWrite);
             }
         }
 
@@ -151,7 +152,7 @@ namespace PreviewHandlerCommonUnitTests
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(0L, SeekOrigin.Begin)]
         [DataRow(5L, SeekOrigin.Begin)]
         [DataRow(0L, SeekOrigin.Current)]
@@ -212,7 +213,7 @@ namespace PreviewHandlerCommonUnitTests
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(10, -1, 5)]
         [DataRow(10, 0, -5)]
         [DataRow(10, 0, 11)]
@@ -241,7 +242,7 @@ namespace PreviewHandlerCommonUnitTests
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(5, 0)]
         [DataRow(5, 5)]
         [DataRow(0, 5)]
@@ -271,7 +272,7 @@ namespace PreviewHandlerCommonUnitTests
                 var bytesRead = streamWrapper.Read(inputBuffer, offset, count);
 
                 // Assert
-                CollectionAssert.AreEqual(streamBytes, inputBuffer.Skip(offset).Take(count).ToArray());
+                Assert.AreSequenceEqual(streamBytes, inputBuffer.Skip(offset).Take(count).ToArray());
                 Assert.AreEqual(count, bytesRead);
             }
         }

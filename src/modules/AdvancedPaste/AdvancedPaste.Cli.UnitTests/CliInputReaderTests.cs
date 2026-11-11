@@ -17,13 +17,14 @@ using Windows.Storage.Streams;
 namespace AdvancedPaste.Cli.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public class CliInputReaderTests
 {
     [TestMethod]
     public async Task TextFileLimit_IsMeasuredInCharactersLikeOtherTextInputs()
     {
         var inputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.txt");
-        await File.WriteAllTextAsync(inputPath, "ééé");
+        await File.WriteAllTextAsync(inputPath, "ééé", TestContext.CancellationToken);
         try
         {
             var input = await CliInputReader.ReadAsync(
@@ -48,7 +49,7 @@ public class CliInputReaderTests
         foreach (var extension in new[] { ".cs", string.Empty })
         {
             var inputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}{extension}");
-            await File.WriteAllTextAsync(inputPath, "var answer = 42;");
+            await File.WriteAllTextAsync(inputPath, "var answer = 42;", TestContext.CancellationToken);
             try
             {
                 var input = await CliInputReader.ReadAsync(
@@ -73,7 +74,7 @@ public class CliInputReaderTests
     public async Task BinaryFile_IsNotExposedAsText()
     {
         var inputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.bin");
-        await File.WriteAllBytesAsync(inputPath, [0, 1, 2, 0, 255]);
+        await File.WriteAllBytesAsync(inputPath, [0, 1, 2, 0, 255], TestContext.CancellationToken);
         try
         {
             var input = await CliInputReader.ReadAsync(
@@ -93,7 +94,7 @@ public class CliInputReaderTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public async Task ValidReplacementCharacter_IsTextWithOrWithoutUtf8Bom(bool bom)
@@ -101,7 +102,7 @@ public class CliInputReaderTests
         var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.txt");
         try
         {
-            await File.WriteAllTextAsync(path, "valid \uFFFD text", new UTF8Encoding(bom, throwOnInvalidBytes: true));
+            await File.WriteAllTextAsync(path, "valid \uFFFD text", new UTF8Encoding(bom, throwOnInvalidBytes: true), TestContext.CancellationToken);
             var input = await ReadFileAsync(path);
 
             Assert.AreEqual("valid \uFFFD text", await input.GetTextAsync());
@@ -113,7 +114,7 @@ public class CliInputReaderTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(0, false)]
     [DataRow(0, true)]
     [DataRow(10000, false)]
@@ -127,13 +128,13 @@ public class CliInputReaderTests
         bytes.Add(0xff);
         try
         {
-            await File.WriteAllBytesAsync(path, bytes.ToArray());
+            await File.WriteAllBytesAsync(path, bytes.ToArray(), TestContext.CancellationToken);
             var input = await ReadFileAsync(path);
 
             Assert.IsFalse(input.Contains(StandardDataFormats.Text));
             Assert.IsFalse(input.Contains(StandardDataFormats.Html));
             Assert.AreEqual(path, (await input.GetStorageItemsAsync())[0].Path);
-            CollectionAssert.AreEqual(bytes.ToArray(), await File.ReadAllBytesAsync(path));
+            Assert.AreSequenceEqual(bytes.ToArray(), await File.ReadAllBytesAsync(path, TestContext.CancellationToken));
         }
         finally
         {
@@ -147,7 +148,7 @@ public class CliInputReaderTests
         var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.dat");
         try
         {
-            await File.WriteAllTextAsync(path, new string('x', 10000) + '\0');
+            await File.WriteAllTextAsync(path, new string('x', 10000) + '\0', TestContext.CancellationToken);
             var input = await ReadFileAsync(path);
 
             Assert.IsFalse(input.Contains(StandardDataFormats.Text));
@@ -165,7 +166,7 @@ public class CliInputReaderTests
         var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.html");
         try
         {
-            await File.WriteAllTextAsync(path, "<p>text</p>");
+            await File.WriteAllTextAsync(path, "<p>text</p>", TestContext.CancellationToken);
             var input = await ReadFileAsync(path);
 
             Assert.IsTrue(input.Contains(StandardDataFormats.Text));
@@ -178,7 +179,7 @@ public class CliInputReaderTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(".csv", "name,age\r\nAda,37", false)]
     [DataRow(".html", "<p>Hello <strong>world</strong></p>", true)]
     public async Task ClipboardFile_UsesSameTextAndHtmlClassification(string extension, string text, bool html)
@@ -186,7 +187,7 @@ public class CliInputReaderTests
         var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}{extension}");
         try
         {
-            await File.WriteAllTextAsync(path, text);
+            await File.WriteAllTextAsync(path, text, TestContext.CancellationToken);
             var package = new DataPackage();
             package.SetStorageItems([await StorageFile.GetFileFromPathAsync(path)]);
 
@@ -196,7 +197,7 @@ public class CliInputReaderTests
             Assert.AreEqual(html, input.Contains(StandardDataFormats.Html));
             Assert.IsFalse(input.Contains(StandardDataFormats.StorageItems));
             Assert.AreEqual(path, (await package.GetView().GetStorageItemsAsync())[0].Path);
-            Assert.AreEqual(text, await File.ReadAllTextAsync(path));
+            Assert.AreEqual(text, await File.ReadAllTextAsync(path, TestContext.CancellationToken));
         }
         finally
         {
@@ -204,7 +205,7 @@ public class CliInputReaderTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public async Task ClipboardBinaryOrMalformedFile_PreservesOriginalFile(bool malformed)
@@ -213,7 +214,7 @@ public class CliInputReaderTests
         byte[] bytes = malformed ? [0xff] : [0, 1, 2, 3];
         try
         {
-            await File.WriteAllBytesAsync(path, bytes);
+            await File.WriteAllBytesAsync(path, bytes, TestContext.CancellationToken);
             var package = new DataPackage();
             package.SetStorageItems([await StorageFile.GetFileFromPathAsync(path)]);
 
@@ -221,7 +222,7 @@ public class CliInputReaderTests
 
             Assert.IsFalse(input.Contains(StandardDataFormats.Text));
             Assert.AreEqual(path, (await input.GetStorageItemsAsync())[0].Path);
-            CollectionAssert.AreEqual(bytes, await File.ReadAllBytesAsync(path));
+            Assert.AreSequenceEqual(bytes, await File.ReadAllBytesAsync(path, TestContext.CancellationToken));
         }
         finally
         {
@@ -229,7 +230,7 @@ public class CliInputReaderTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Text")]
     [DataRow("HTML Format")]
     [DataRow("Bitmap")]
@@ -272,7 +273,7 @@ public class CliInputReaderTests
         var path = Path.GetTempFileName();
         try
         {
-            await File.WriteAllTextAsync(path, "do not choose one file");
+            await File.WriteAllTextAsync(path, "do not choose one file", TestContext.CancellationToken);
             var file = await StorageFile.GetFileFromPathAsync(path);
             var folder = await StorageFolder.GetFolderFromPathAsync(Path.GetDirectoryName(path)!);
             foreach (var items in new IStorageItem[][] { [file, file], [folder] })
@@ -299,7 +300,7 @@ public class CliInputReaderTests
         var path = Path.GetTempFileName();
         try
         {
-            await File.WriteAllTextAsync(path, "ééé");
+            await File.WriteAllTextAsync(path, "ééé", TestContext.CancellationToken);
             var package = new DataPackage();
             package.SetStorageItems([await StorageFile.GetFileFromPathAsync(path)]);
 
@@ -327,4 +328,6 @@ public class CliInputReaderTests
 
         public void Write(DataPackage content) => throw new NotSupportedException();
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

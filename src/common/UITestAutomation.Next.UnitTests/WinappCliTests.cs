@@ -9,6 +9,7 @@ namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 
 [TestClass]
 [DoNotParallelize]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class WinappCliTests
 {
     private static readonly string[] SetValueWindowOptions = ["ui", "set-value", "-w", "1234"];
@@ -171,10 +172,10 @@ public sealed class WinappCliTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
-    public void PipeCleanupRequiresTheOwnedImageAndNeverReturnsTruncatedSuccess(bool sameImage)
+    public async Task PipeCleanupRequiresTheOwnedImageAndNeverReturnsTruncatedSuccess(bool sameImage)
     {
         var root = Path.Combine(Path.GetTempPath(), "winapp-pipe-owner-test-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -237,8 +238,8 @@ public sealed class WinappCliTests
             }
             else
             {
-                var error = Assert.ThrowsExactly<TimeoutException>(() => invocation.GetAwaiter().GetResult());
-                StringAssert.Contains(error.Message, "output pipes remained open");
+                var error = await Assert.ThrowsExactlyAsync<TimeoutException>(() => invocation);
+                Assert.Contains("output pipes remained open", error.Message);
                 Assert.IsFalse(child.HasExited, "A different image must not be terminated merely to recover pipe output.");
             }
         }
@@ -257,7 +258,7 @@ public sealed class WinappCliTests
 
             if (invocation is { IsCompleted: false })
             {
-                Assert.IsTrue(invocation.Wait(TimeSpan.FromSeconds(25)), "The bounded invocation must finish before fixture cleanup.");
+                Assert.IsTrue(invocation.Wait(TimeSpan.FromSeconds(25), CancellationToken.None), "The bounded invocation must finish before fixture cleanup.");
             }
 
             Directory.Delete(root, recursive: true);
@@ -323,12 +324,12 @@ public sealed class WinappCliTests
         var arguments = textBox.BuildSetValueArguments(value);
         var separator = Array.IndexOf(arguments, "--");
 
-        Assert.IsTrue(separator > 0, "Literal values must follow an end-of-options separator.");
-        CollectionAssert.AreEqual(
+        Assert.IsGreaterThan(0, separator, "Literal values must follow an end-of-options separator.");
+        Assert.AreSequenceEqual(
             SetValueWindowOptions,
             arguments[..separator],
             "The window scope must remain an option, not become part of the textbox value.");
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[] { textBox.Selector, value },
             arguments[(separator + 1)..],
             "The selector and exact value must remain separate literal arguments.");

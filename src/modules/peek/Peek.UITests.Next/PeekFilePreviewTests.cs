@@ -12,6 +12,7 @@ using Microsoft.Win32;
 
 namespace Peek.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class PeekFilePreviewTests : UITestBase
 {
@@ -146,7 +147,7 @@ public class PeekFilePreviewTests : UITestBase
         }
     }
 
-    [TestMethod("Peek.FilePreview.Folder")]
+    [TestMethod(DisplayName = "Peek.FilePreview.Folder")]
     [TestCategory("Preview files")]
     public void PeekFolderFilePreview()
     {
@@ -156,49 +157,49 @@ public class PeekFilePreviewTests : UITestBase
         peekWindow.Find<TextBlock>(By.Name("File Type: File folder"), 5_000);
     }
 
-    [TestMethod("Peek.FilePreview.JPEGImage")]
+    [TestMethod(DisplayName = "Peek.FilePreview.JPEGImage")]
     [TestCategory("Preview files")]
     public void PeekJPEGImagePreview()
     {
         TestSingleFilePreview(Path.GetFullPath(@".\TestAssets\2.jpg"), "2");
     }
 
-    [TestMethod("Peek.FilePreview.QOIImage")]
+    [TestMethod(DisplayName = "Peek.FilePreview.QOIImage")]
     [TestCategory("Preview files")]
     public void PeekQOIImagePreview()
     {
         TestSingleFilePreview(Path.GetFullPath(@".\TestAssets\4.qoi"), "4");
     }
 
-    [TestMethod("Peek.FilePreview.CPPSourceCode")]
+    [TestMethod(DisplayName = "Peek.FilePreview.CPPSourceCode")]
     [TestCategory("Preview files")]
     public void PeekCPPSourceCodePreview()
     {
         TestSingleFilePreview(Path.GetFullPath(@".\TestAssets\5.cpp"), "5");
     }
 
-    [TestMethod("Peek.FilePreview.MarkdownDocument")]
+    [TestMethod(DisplayName = "Peek.FilePreview.MarkdownDocument")]
     [TestCategory("Preview files")]
     public void PeekMarkdownDocumentPreview()
     {
         TestSingleFilePreview(Path.GetFullPath(@".\TestAssets\6.md"), "6");
     }
 
-    [TestMethod("Peek.FilePreview.ZIPArchive")]
+    [TestMethod(DisplayName = "Peek.FilePreview.ZIPArchive")]
     [TestCategory("Preview files")]
     public void PeekZIPArchivePreview()
     {
         TestSingleFilePreview(Path.GetFullPath(@".\TestAssets\7.zip"), "7");
     }
 
-    [TestMethod("Peek.FilePreview.PNGImage")]
+    [TestMethod(DisplayName = "Peek.FilePreview.PNGImage")]
     [TestCategory("Preview files")]
     public void PeekPNGImagePreview()
     {
         TestSingleFilePreview(Path.GetFullPath(@".\TestAssets\8.png"), "8");
     }
 
-    [TestMethod("Peek.WindowPinning.PinAndSwitchImages")]
+    [TestMethod(DisplayName = "Peek.WindowPinning.PinAndSwitchImages")]
     [TestCategory("Window Pinning")]
     public void TestPinWindowAndSwitchImages()
     {
@@ -214,7 +215,7 @@ public class PeekFilePreviewTests : UITestBase
         AssertBoundsEqual(movedBounds, GetWindowBounds(secondWindow), "when switching images while pinned");
     }
 
-    [TestMethod("Peek.WindowPinning.PinAndReopen")]
+    [TestMethod(DisplayName = "Peek.WindowPinning.PinAndReopen")]
     [TestCategory("Window Pinning")]
     public void TestPinWindowAndReopen()
     {
@@ -229,7 +230,7 @@ public class PeekFilePreviewTests : UITestBase
         AssertBoundsEqual(movedBounds, GetWindowBounds(reopenedWindow), "after reopening while pinned");
     }
 
-    [TestMethod("Peek.WindowPinning.UnpinAndSwitchFiles")]
+    [TestMethod(DisplayName = "Peek.WindowPinning.UnpinAndSwitchFiles")]
     [TestCategory("Window Pinning")]
     public void TestUnpinWindowAndSwitchFiles()
     {
@@ -256,7 +257,7 @@ public class PeekFilePreviewTests : UITestBase
         Assert.IsTrue(centerChanged, "Window center should move to its default position when unpinned.");
     }
 
-    [TestMethod("Peek.WindowPinning.UnpinAndReopen")]
+    [TestMethod(DisplayName = "Peek.WindowPinning.UnpinAndReopen")]
     [TestCategory("Window Pinning")]
     public void TestUnpinWindowAndReopen()
     {
@@ -276,7 +277,7 @@ public class PeekFilePreviewTests : UITestBase
         Assert.IsTrue(openedAtDefault, "Unpinned window should open at its default position.");
     }
 
-    [TestMethod("Peek.OpenWithDefaultProgram.ClickButton")]
+    [TestMethod(DisplayName = "Peek.OpenWithDefaultProgram.ClickButton")]
     [TestCategory("Open with default program")]
     public void TestOpenWithDefaultProgramByButton()
     {
@@ -290,7 +291,7 @@ public class PeekFilePreviewTests : UITestBase
             "The default program did not open the ZIP archive after clicking the launch button.");
     }
 
-    [TestMethod("Peek.OpenWithDefaultProgram.PressEnter")]
+    [TestMethod(DisplayName = "Peek.OpenWithDefaultProgram.PressEnter")]
     [TestCategory("Open with default program")]
     public void TestOpenWithDefaultProgramByEnter()
     {
@@ -305,7 +306,7 @@ public class PeekFilePreviewTests : UITestBase
             "The default program did not open the ZIP archive after pressing Enter.");
     }
 
-    [TestMethod("Peek.FileNavigation.SwitchFilesWithArrowKeys")]
+    [TestMethod(DisplayName = "Peek.FileNavigation.SwitchFilesWithArrowKeys")]
     [TestCategory("File Navigation")]
     public void TestSwitchFilesWithArrowKeys()
     {
@@ -323,7 +324,7 @@ public class PeekFilePreviewTests : UITestBase
         }
     }
 
-    [TestMethod("Peek.FileNavigation.SwitchBetweenSelectedFiles")]
+    [TestMethod(DisplayName = "Peek.FileNavigation.SwitchBetweenSelectedFiles")]
     [TestCategory("File Navigation")]
     public void TestSwitchBetweenSelectedFiles()
     {
@@ -358,9 +359,10 @@ public class PeekFilePreviewTests : UITestBase
             visitedNames.Add(FileNameFromTitle(peekWindow.WindowTitle, expectedNames));
         }
 
-        CollectionAssert.AreEquivalent(
+        Assert.AreSequenceEqual(
             expectedNames.ToList(),
             visitedNames.ToList(),
+            SequenceOrder.InAnyOrder,
             $"Peek should visit every selected file and no unselected files. Visited: {string.Join(", ", visitedNames)}.");
     }
 
@@ -382,8 +384,9 @@ public class PeekFilePreviewTests : UITestBase
                     $"Peek activation/readiness attempt {attempt}/{PreviewOpenAttempts} failed for " +
                     $"'{Path.GetFileName(filePath)}': {ex.Message}. Restarting Peek before retrying activation.");
                 WindowControl.TryCloseByApp(PeekProcessName, timeoutMS: 10_000);
-                Assert.IsTrue(StopPeekProcess(), "Peek did not stop before the next activation attempt.");
             }
+
+            Assert.IsTrue(StopPeekProcess(), "Peek did not stop before the next activation attempt.");
         }
 
         Assert.Fail($"Peek did not become ready for '{Path.GetFileName(filePath)}'.");

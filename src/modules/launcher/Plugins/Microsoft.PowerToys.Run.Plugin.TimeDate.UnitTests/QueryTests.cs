@@ -13,6 +13,7 @@ using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class QueryTests
     {
@@ -31,7 +32,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             CultureInfo.CurrentUICulture = new CultureInfo("en-us", false);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("time", 2)] // Setting 'Only Date, Time, Now on global results' is default on
         [DataRow("date", 2)] // Setting 'Only Date, Time, Now on global results' is default on
         [DataRow("now", 3)] // Setting 'Only Date, Time, Now on global results' is default on
@@ -52,7 +53,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(expectedResultCount, result, "Result depends on default plugin settings!");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("(time", 18)]
         [DataRow("(date", 28)]
         [DataRow("(year", 8)]
@@ -71,10 +72,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             var result = main.Object.Query(expectedQuery);
 
             // Assert
-            Assert.AreEqual(expectedResultCount, result.Count, result.ToString());
+            Assert.HasCount(expectedResultCount, result, result.ToString());
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("time", 2)] // Match if first word is a full word match
         [DataRow("ime", 0)] // Don't match if first word is not a full match
         [DataRow("and", 0)] // Don't match for only conjunctions
@@ -95,10 +96,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             var result = main.Object.Query(expectedQuery);
 
             // Assert
-            Assert.AreEqual(expectedResultCount, result.Count, result.ToString());
+            Assert.HasCount(expectedResultCount, result, result.ToString());
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("(time", "Time -")]
         [DataRow("(time u", "Time UTC -")]
         [DataRow("(date", "Date -")]
@@ -156,7 +157,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.IsTrue(result?.Score >= 1, $"Score: {result?.Score}");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("(12:30", "Time -")]
         [DataRow("(10.10.2022", "Date -")]
         [DataRow("(u1646408119", "Date and time -")]
@@ -182,7 +183,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         // [DataRow("(::")] -> Behaves different to PT Run user interface
         // [DataRow("(time::")] -> Behaves different to PT Run user interface
         // [DataRow("(::time")] -> Behaves different to PT Run user interface
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("(abcdefg")]
         [DataRow("(timmmmeeee")]
         [DataRow("(timtaaaetetaae::u1646408119")]
@@ -202,7 +203,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.IsNull(result, result?.ToString());
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("(ug1646408119")] // Invalid prefix
         [DataRow("(u9999999999999")] // Unix number + prefix is longer than 12 characters
         [DataRow("(ums999999999999999")] // Unix number in milliseconds + prefix is longer than 17 characters
@@ -235,7 +236,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.IsTrue(result.StartsWith("Error:", StringComparison.CurrentCulture));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("(ft1 2..548")] // Input contains space
         [DataRow("(ft12..54 //8")] // Input contains space
         [DataRow("(time::ft12..54 //8")] // Input contains space

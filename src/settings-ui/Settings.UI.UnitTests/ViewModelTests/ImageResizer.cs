@@ -16,6 +16,7 @@ using Moq;
 
 namespace ViewModelTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ImageResizer
     {
@@ -65,7 +66,7 @@ namespace ViewModelTests
             Assert.AreEqual(originalSettings.Properties.ImageresizerJpegQualityLevel.Value, viewModel.JPEGQualityLevel);
             Assert.AreEqual(originalSettings.Properties.ImageresizerKeepDateModified.Value, viewModel.KeepDateModified);
             Assert.AreEqual(originalSettings.Properties.ImageresizerPngInterlaceOption.Value, viewModel.PngInterlaceOption);
-            Assert.AreEqual(originalSettings.Properties.ImageresizerSizes.Value.Count, viewModel.Sizes.Count);
+            Assert.HasCount(originalSettings.Properties.ImageresizerSizes.Value.Count, viewModel.Sizes);
             Assert.AreEqual(originalSettings.Properties.ImageresizerTiffCompressOption.Value, viewModel.TiffCompressOption);
 
             // Verify that the stub file was used
@@ -217,7 +218,7 @@ namespace ViewModelTests
             viewModel.AddImageSize();
 
             // Assert
-            Assert.AreEqual(sizeOfOriginalArray + 1, viewModel.Sizes.Count);
+            Assert.HasCount(sizeOfOriginalArray + 1, viewModel.Sizes);
         }
 
         [TestMethod]
@@ -255,7 +256,7 @@ namespace ViewModelTests
             // Assert - the working copy is populated but not committed to the collection
             Assert.IsNotNull(workingCopy);
             Assert.AreEqual("New size 1", workingCopy.Name);
-            Assert.AreEqual(sizeOfOriginalArray, viewModel.Sizes.Count);
+            Assert.HasCount(sizeOfOriginalArray, viewModel.Sizes);
         }
 
         [TestMethod]
@@ -272,8 +273,8 @@ namespace ViewModelTests
             viewModel.AddImageSize(workingCopy);
 
             // Assert
-            Assert.AreEqual(sizeOfOriginalArray + 1, viewModel.Sizes.Count);
-            Assert.IsTrue(viewModel.Sizes.Contains(workingCopy));
+            Assert.HasCount(sizeOfOriginalArray + 1, viewModel.Sizes);
+            Assert.Contains(workingCopy, viewModel.Sizes);
         }
 
         [TestMethod]
@@ -320,8 +321,8 @@ namespace ViewModelTests
             viewModel.DeleteImageSize(0);
 
             // Assert
-            Assert.AreEqual(sizeOfOriginalArray - 1, viewModel.Sizes.Count);
-            Assert.IsFalse(viewModel.Sizes.Contains(deleteCandidate));
+            Assert.HasCount(sizeOfOriginalArray - 1, viewModel.Sizes);
+            Assert.DoesNotContain(deleteCandidate, viewModel.Sizes);
         }
 
         [TestMethod]

@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ColorPicker.UnitTests.Helpers
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class NativeEventWaiterTests
     {
@@ -26,7 +27,9 @@ namespace ColorPicker.UnitTests.Helpers
             using var signal = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
             signal.Set();
 
-            Assert.IsFalse(fired.Wait(300), "callback must not fire when there is no DispatcherQueue to marshal onto");
+            Assert.IsFalse(fired.Wait(300, TestContext.CancellationToken), "callback must not fire when there is no DispatcherQueue to marshal onto");
         }
+
+        public TestContext TestContext { get; set; } = null!;
     }
 }

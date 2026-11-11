@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FancyZonesEditor.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class EditLayoutTests : FancyZonesEditorTestBase
 {
@@ -108,7 +109,7 @@ public class EditLayoutTests : FancyZonesEditorTestBase
         EditorTestData.WriteForEditLayoutTests(Files);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.OpenEditMode")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.OpenEditMode")]
     [TestCategory("FancyZones Editor #7")]
     public void OpenEditMode()
     {
@@ -122,7 +123,7 @@ public class EditLayoutTests : FancyZonesEditorTestBase
         gridEditor.Find<Button>(EditorUiTestHelper.ElementName.Cancel).Invoke();
     }
 
-    [TestMethod("FancyZonesEditor.Basic.OpenEditModeFromContextMenu")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.OpenEditModeFromContextMenu")]
     [TestCategory("FancyZones Editor #7")]
     public void OpenEditModeFromContextMenu()
     {
@@ -135,7 +136,7 @@ public class EditLayoutTests : FancyZonesEditorTestBase
         gridEditor.Find<Button>(EditorUiTestHelper.ElementName.Cancel).Invoke();
     }
 
-    [TestMethod("FancyZonesEditor.Basic.Canvas_AddZone_Save")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.Canvas_AddZone_Save")]
     [TestCategory("FancyZones Editor #7")]
     public void Canvas_AddZone_Save()
     {
@@ -152,10 +153,10 @@ public class EditLayoutTests : FancyZonesEditorTestBase
 
         var actualLayout = ReadLayoutByUuid(CanvasLayoutUuid);
         var actual = new CustomLayouts().CanvasFromJsonElement(actualLayout.Info.GetRawText());
-        Assert.AreEqual(expected.Zones.Count + 1, actual.Zones.Count);
+        Assert.HasCount(expected.Zones.Count + 1, actual.Zones);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.Canvas_AddZone_Cancel")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.Canvas_AddZone_Cancel")]
     [TestCategory("FancyZones Editor #7")]
     public void Canvas_AddZone_Cancel()
     {
@@ -169,7 +170,7 @@ public class EditLayoutTests : FancyZonesEditorTestBase
         AssertLayoutJsonUnchanged(CanvasLayoutUuid, GetSeedLayout(CanvasLayoutUuid).Info.GetRawText());
     }
 
-    [TestMethod("FancyZonesEditor.Basic.Canvas_DeleteZone_Save")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.Canvas_DeleteZone_Save")]
     [TestCategory("FancyZones Editor #7")]
     public void Canvas_DeleteZone_Save()
     {
@@ -185,10 +186,10 @@ public class EditLayoutTests : FancyZonesEditorTestBase
 
         var actualLayout = ReadLayoutByUuid(CanvasLayoutUuid);
         var actual = new CustomLayouts().CanvasFromJsonElement(actualLayout.Info.GetRawText());
-        Assert.AreEqual(expected.Zones.Count - 1, actual.Zones.Count);
+        Assert.HasCount(expected.Zones.Count - 1, actual.Zones);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.Canvas_DeleteZone_Cancel")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.Canvas_DeleteZone_Cancel")]
     [TestCategory("FancyZones Editor #7")]
     public void Canvas_DeleteZone_Cancel()
     {
@@ -203,7 +204,7 @@ public class EditLayoutTests : FancyZonesEditorTestBase
         AssertLayoutJsonUnchanged(CanvasLayoutUuid, GetSeedLayout(CanvasLayoutUuid).Info.GetRawText());
     }
 
-    [TestMethod("FancyZonesEditor.Basic.Canvas_MoveZone_Save")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.Canvas_MoveZone_Save")]
     [TestCategory("FancyZones Editor #7")]
     public void Canvas_MoveZone_Save()
     {
@@ -230,8 +231,8 @@ public class EditLayoutTests : FancyZonesEditorTestBase
 
         var actual = new CustomLayouts().CanvasFromJsonElement(ReadLayoutByUuid(CanvasLayoutUuid).Info.GetRawText());
 
-        Assert.IsTrue(expected.Zones[zoneNumber - 1].X < actual.Zones[zoneNumber - 1].X, $"Expected moved zone X to increase. Expected={expected.Zones[zoneNumber - 1].X}, Actual={actual.Zones[zoneNumber - 1].X}");
-        Assert.IsTrue(expected.Zones[zoneNumber - 1].Y < actual.Zones[zoneNumber - 1].Y, $"Expected moved zone Y to increase. Expected={expected.Zones[zoneNumber - 1].Y}, Actual={actual.Zones[zoneNumber - 1].Y}");
+        Assert.IsLessThan(actual.Zones[zoneNumber - 1].X, expected.Zones[zoneNumber - 1].X, $"Expected moved zone X to increase. Expected={expected.Zones[zoneNumber - 1].X}, Actual={actual.Zones[zoneNumber - 1].X}");
+        Assert.IsLessThan(actual.Zones[zoneNumber - 1].Y, expected.Zones[zoneNumber - 1].Y, $"Expected moved zone Y to increase. Expected={expected.Zones[zoneNumber - 1].Y}, Actual={actual.Zones[zoneNumber - 1].Y}");
         Assert.AreEqual(expected.Zones[zoneNumber - 1].Width, actual.Zones[zoneNumber - 1].Width);
         Assert.AreEqual(expected.Zones[zoneNumber - 1].Height, actual.Zones[zoneNumber - 1].Height);
 
@@ -249,7 +250,7 @@ public class EditLayoutTests : FancyZonesEditorTestBase
         }
     }
 
-    [TestMethod("FancyZonesEditor.Basic.Canvas_MoveZone_Cancel")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.Canvas_MoveZone_Cancel")]
     [TestCategory("FancyZones Editor #7")]
     public void Canvas_MoveZone_Cancel()
     {
@@ -272,7 +273,7 @@ public class EditLayoutTests : FancyZonesEditorTestBase
         AssertLayoutJsonUnchanged(CanvasLayoutUuid, GetSeedLayout(CanvasLayoutUuid).Info.GetRawText());
     }
 
-    [TestMethod("FancyZonesEditor.Basic.Canvas_ResizeZone_Save")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.Canvas_ResizeZone_Save")]
     [TestCategory("FancyZones Editor #7")]
     public void Canvas_ResizeZone_Save()
     {
@@ -305,9 +306,9 @@ public class EditLayoutTests : FancyZonesEditorTestBase
         var actual = new CustomLayouts().CanvasFromJsonElement(ReadLayoutByUuid(CanvasLayoutUuid).Info.GetRawText());
 
         Assert.AreEqual(expected.Zones[zoneNumber - 1].X, actual.Zones[zoneNumber - 1].X);
-        Assert.IsTrue(expected.Zones[zoneNumber - 1].Y < actual.Zones[zoneNumber - 1].Y, $"Expected resized zone Y to increase. Expected={expected.Zones[zoneNumber - 1].Y}, Actual={actual.Zones[zoneNumber - 1].Y}");
-        Assert.IsTrue(expected.Zones[zoneNumber - 1].Width < actual.Zones[zoneNumber - 1].Width, $"Expected resized zone Width to increase. Expected={expected.Zones[zoneNumber - 1].Width}, Actual={actual.Zones[zoneNumber - 1].Width}");
-        Assert.IsTrue(expected.Zones[zoneNumber - 1].Height > actual.Zones[zoneNumber - 1].Height, $"Expected resized zone Height to decrease. Expected={expected.Zones[zoneNumber - 1].Height}, Actual={actual.Zones[zoneNumber - 1].Height}");
+        Assert.IsLessThan(actual.Zones[zoneNumber - 1].Y, expected.Zones[zoneNumber - 1].Y, $"Expected resized zone Y to increase. Expected={expected.Zones[zoneNumber - 1].Y}, Actual={actual.Zones[zoneNumber - 1].Y}");
+        Assert.IsLessThan(actual.Zones[zoneNumber - 1].Width, expected.Zones[zoneNumber - 1].Width, $"Expected resized zone Width to increase. Expected={expected.Zones[zoneNumber - 1].Width}, Actual={actual.Zones[zoneNumber - 1].Width}");
+        Assert.IsGreaterThan(actual.Zones[zoneNumber - 1].Height, expected.Zones[zoneNumber - 1].Height, $"Expected resized zone Height to decrease. Expected={expected.Zones[zoneNumber - 1].Height}, Actual={actual.Zones[zoneNumber - 1].Height}");
 
         for (var index = 0; index < expected.Zones.Count; index++)
         {
@@ -323,7 +324,7 @@ public class EditLayoutTests : FancyZonesEditorTestBase
         }
     }
 
-    [TestMethod("FancyZonesEditor.Basic.Canvas_ResizeZone_Cancel")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.Canvas_ResizeZone_Cancel")]
     [TestCategory("FancyZones Editor #7")]
     public void Canvas_ResizeZone_Cancel()
     {
@@ -351,7 +352,7 @@ public class EditLayoutTests : FancyZonesEditorTestBase
         AssertLayoutJsonUnchanged(CanvasLayoutUuid, GetSeedLayout(CanvasLayoutUuid).Info.GetRawText());
     }
 
-    [TestMethod("FancyZonesEditor.Basic.Grid_SplitZone_Save")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.Grid_SplitZone_Save")]
     [TestCategory("FancyZones Editor #8")]
     public void Grid_SplitZone_Save()
     {
@@ -381,7 +382,7 @@ public class EditLayoutTests : FancyZonesEditorTestBase
         }
     }
 
-    [TestMethod("FancyZonesEditor.Basic.Grid_SplitZone_Cancel")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.Grid_SplitZone_Cancel")]
     [TestCategory("FancyZones Editor #8")]
     public void Grid_SplitZone_Cancel()
     {
@@ -398,7 +399,7 @@ public class EditLayoutTests : FancyZonesEditorTestBase
         AssertLayoutJsonUnchanged(GridLayoutUuid, GetSeedLayout(GridLayoutUuid).Info.GetRawText());
     }
 
-    [TestMethod("FancyZonesEditor.Basic.Grid_MergeZones_Save")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.Grid_MergeZones_Save")]
     [TestCategory("FancyZones Editor #8")]
     public void Grid_MergeZones_Save()
     {
@@ -440,7 +441,7 @@ public class EditLayoutTests : FancyZonesEditorTestBase
         Assert.IsTrue(actual.CellChildMap[1].SequenceEqual([1, 2]), "Expected merged second row to map to [1,2].");
     }
 
-    [TestMethod("FancyZonesEditor.Basic.Grid_MergeZones_Cancel")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.Grid_MergeZones_Cancel")]
     [TestCategory("FancyZones Editor #8")]
     public void Grid_MergeZones_Cancel()
     {
@@ -465,7 +466,7 @@ public class EditLayoutTests : FancyZonesEditorTestBase
         AssertLayoutJsonUnchanged(GridLayoutUuid, GetSeedLayout(GridLayoutUuid).Info.GetRawText());
     }
 
-    [TestMethod("FancyZonesEditor.Basic.Grid_MoveSplitter_Save")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.Grid_MoveSplitter_Save")]
     [TestCategory("FancyZones Editor #8")]
     public void Grid_MoveSplitter_Save()
     {
@@ -495,8 +496,8 @@ public class EditLayoutTests : FancyZonesEditorTestBase
         }
 
         Assert.AreEqual(expected.Columns, actual.Columns);
-        Assert.IsTrue(expected.ColumnsPercentage[0] > actual.ColumnsPercentage[0], $"Expected first column to shrink. Expected={expected.ColumnsPercentage[0]}, Actual={actual.ColumnsPercentage[0]}");
-        Assert.IsTrue(expected.ColumnsPercentage[1] < actual.ColumnsPercentage[1], $"Expected second column to grow. Expected={expected.ColumnsPercentage[1]}, Actual={actual.ColumnsPercentage[1]}");
+        Assert.IsGreaterThan(actual.ColumnsPercentage[0], expected.ColumnsPercentage[0], $"Expected first column to shrink. Expected={expected.ColumnsPercentage[0]}, Actual={actual.ColumnsPercentage[0]}");
+        Assert.IsLessThan(actual.ColumnsPercentage[1], expected.ColumnsPercentage[1], $"Expected second column to grow. Expected={expected.ColumnsPercentage[1]}, Actual={actual.ColumnsPercentage[1]}");
         Assert.AreEqual(expected.ColumnsPercentage[2], actual.ColumnsPercentage[2]);
 
         for (var index = 0; index < expected.CellChildMap.Length; index++)
@@ -505,7 +506,7 @@ public class EditLayoutTests : FancyZonesEditorTestBase
         }
     }
 
-    [TestMethod("FancyZonesEditor.Basic.Grid_MoveSplitter_Cancel")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.Grid_MoveSplitter_Cancel")]
     [TestCategory("FancyZones Editor #8")]
     public void Grid_MoveSplitter_Cancel()
     {
@@ -684,8 +685,9 @@ public class EditLayoutTests : FancyZonesEditorTestBase
             .Where(element => element.Width > 0 && element.Height > 0)
             .ToList();
 
-        Assert.IsTrue(
-            splitters.Count > index,
+        Assert.IsGreaterThan(
+            index,
+            splitters.Count,
             $"Expected at least {index + 1} splitter thumbs, but found {splitters.Count}. Splitter bounds: {DescribeBounds(splitters)}");
 
         return splitters[index];

@@ -14,6 +14,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed partial class AppExtensionHostTests
@@ -54,7 +55,7 @@ public sealed partial class AppExtensionHostTests
         var result = new TestHost().LogMessage(new LogMessage("Extension diagnostic") { State = state });
 
         Assert.AreEqual(AsyncStatus.Completed, result.Status);
-        Assert.AreEqual(1, _logger.Invocations.Count);
+        Assert.HasCount(1, _logger.Invocations);
         Assert.AreEqual(loggerMethod, _logger.Invocations[0].Method.Name);
         Assert.AreEqual("Extension diagnostic", _logger.Invocations[0].Arguments[0]);
     }
@@ -65,7 +66,7 @@ public sealed partial class AppExtensionHostTests
         var result = new TestHost().LogMessage(null);
 
         Assert.AreEqual(AsyncStatus.Completed, result.Status);
-        Assert.AreEqual(0, _logger.Invocations.Count);
+        Assert.IsEmpty(_logger.Invocations);
     }
 
     [TestMethod]

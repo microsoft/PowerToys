@@ -20,6 +20,7 @@ using Windows.Data.Json;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed partial class DockPageNavigationViewModelTests
 {
@@ -150,27 +151,27 @@ public sealed partial class DockPageNavigationViewModelTests
         var providerContext = new TestProviderContext("provider");
         using var navigation = CreateNavigation(route);
 
-        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage { Name = "List" }, route, host, providerContext)));
+        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage { Name = "List" }, route, host, providerContext), TestContext.CancellationToken));
         Assert.IsInstanceOfType<ListViewModel>(navigation.CurrentPage);
         Assert.IsTrue(navigation.CurrentPage.IsRootPage);
         Assert.IsFalse(navigation.CurrentPage.HasBackButton);
         Assert.AreEqual(route, navigation.CurrentPage.DockRoute);
 
-        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestContentPage { Name = "Content" }, navigation)));
+        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestContentPage { Name = "Content" }, navigation), TestContext.CancellationToken));
         Assert.IsInstanceOfType<ContentPageViewModel>(navigation.CurrentPage);
         Assert.IsTrue(navigation.CanGoBack);
         Assert.IsTrue(navigation.CurrentPage.HasBackButton);
 
-        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestParametersPage { Name = "Parameters" }, navigation)));
+        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestParametersPage { Name = "Parameters" }, navigation), TestContext.CancellationToken));
         Assert.IsInstanceOfType<ParametersPageViewModel>(navigation.CurrentPage);
         Assert.AreEqual(2, navigation.BackStackDepth);
 
-        Assert.IsTrue(await navigation.GoBackAsync());
+        Assert.IsTrue(await navigation.GoBackAsync(TestContext.CancellationToken));
         Assert.IsInstanceOfType<ContentPageViewModel>(navigation.CurrentPage);
-        Assert.IsTrue(await navigation.GoBackAsync());
+        Assert.IsTrue(await navigation.GoBackAsync(TestContext.CancellationToken));
         Assert.IsInstanceOfType<ListViewModel>(navigation.CurrentPage);
         Assert.IsFalse(navigation.CanGoBack);
-        Assert.IsFalse(await navigation.GoBackAsync());
+        Assert.IsFalse(await navigation.GoBackAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -181,11 +182,11 @@ public sealed partial class DockPageNavigationViewModelTests
         var ownerProvider = new TestProviderContext("owner");
         using var navigation = CreateNavigation(route);
 
-        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, ownerHost, ownerProvider)));
+        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, ownerHost, ownerProvider), TestContext.CancellationToken));
         Assert.AreSame(ownerHost, navigation.CurrentPage!.ExtensionHost);
         Assert.AreSame(ownerProvider, navigation.CurrentPage.ProviderContext);
 
-        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation)));
+        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation), TestContext.CancellationToken));
         Assert.AreSame(ownerHost, navigation.CurrentPage!.ExtensionHost);
         Assert.AreSame(ownerProvider, navigation.CurrentPage.ProviderContext);
     }
@@ -199,7 +200,7 @@ public sealed partial class DockPageNavigationViewModelTests
         message.ListPageOptions = new(Query: "Result");
         using var navigation = CreateNavigation(route);
 
-        Assert.IsTrue(await navigation.NavigateAsync(message));
+        Assert.IsTrue(await navigation.NavigateAsync(message, TestContext.CancellationToken));
         Assert.AreEqual("Result", page.SearchAtFirstGetItems);
         Assert.AreEqual("Result", navigation.CurrentPage!.SearchTextBox);
     }
@@ -209,16 +210,16 @@ public sealed partial class DockPageNavigationViewModelTests
     {
         var route = NewRoute();
         using var navigation = CreateNavigation(route);
-        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty)));
+        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty), TestContext.CancellationToken));
         var currentPage = navigation.CurrentPage;
         var message = CreatePageMessage(new TestContentPage(), navigation);
         message.ListPageOptions = new(Query: "query");
 
-        await Assert.ThrowsExactlyAsync<NotSupportedException>(() => navigation.NavigateAsync(message));
+        await Assert.ThrowsExactlyAsync<NotSupportedException>(() => navigation.NavigateAsync(message, TestContext.CancellationToken));
 
         Assert.AreSame(currentPage, navigation.CurrentPage);
         Assert.AreEqual(0, navigation.BackStackDepth);
-        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new ListPage(), navigation)));
+        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new ListPage(), navigation), TestContext.CancellationToken));
         Assert.AreEqual(1, navigation.BackStackDepth);
     }
 
@@ -230,7 +231,8 @@ public sealed partial class DockPageNavigationViewModelTests
         var otherRoute = new DockCommandRoute((nint)43, Guid.NewGuid());
 
         var navigated = await navigation.NavigateAsync(
-            CreateOwnerMessage(new ListPage { Name = "List" }, otherRoute, new TestAppExtensionHost(), CommandProviderContext.Empty));
+            CreateOwnerMessage(new ListPage { Name = "List" }, otherRoute, new TestAppExtensionHost(), CommandProviderContext.Empty),
+            TestContext.CancellationToken);
 
         Assert.IsFalse(navigated);
         Assert.IsNull(navigation.CurrentPage);
@@ -242,13 +244,13 @@ public sealed partial class DockPageNavigationViewModelTests
         var route = NewRoute();
         var host = new TestAppExtensionHost();
         using var navigation = CreateNavigation(route);
-        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, host, CommandProviderContext.Empty)));
+        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, host, CommandProviderContext.Empty), TestContext.CancellationToken));
         var root = navigation.CurrentPage!;
-        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation)));
+        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation), TestContext.CancellationToken));
         var current = navigation.CurrentPage;
 
-        Assert.IsFalse(await navigation.NavigateAsync(new PerformCommandMessage(CreateCommandViewModel(new ListPage(), root), root)));
-        Assert.IsFalse(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, host, CommandProviderContext.Empty)));
+        Assert.IsFalse(await navigation.NavigateAsync(new PerformCommandMessage(CreateCommandViewModel(new ListPage(), root), root), TestContext.CancellationToken));
+        Assert.IsFalse(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, host, CommandProviderContext.Empty), TestContext.CancellationToken));
 
         Assert.AreSame(current, navigation.CurrentPage);
         Assert.AreEqual(1, navigation.BackStackDepth);
@@ -261,9 +263,9 @@ public sealed partial class DockPageNavigationViewModelTests
         var navigation = CreateNavigation(route);
         navigation.Dispose();
 
-        Assert.IsFalse(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty)));
-        Assert.IsFalse(await navigation.GoBackAsync());
-        Assert.IsFalse(await navigation.GoHomeAsync());
+        Assert.IsFalse(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty), TestContext.CancellationToken));
+        Assert.IsFalse(await navigation.GoBackAsync(TestContext.CancellationToken));
+        Assert.IsFalse(await navigation.GoHomeAsync(TestContext.CancellationToken));
         Assert.IsNull(navigation.CurrentPage);
     }
 
@@ -280,16 +282,16 @@ public sealed partial class DockPageNavigationViewModelTests
 
         try
         {
-            var navigate = navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty));
-            await page.Started.Task.WaitAsync(WaitTimeout);
+            var navigate = navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty), TestContext.CancellationToken);
+            await page.Started.Task.WaitAsync(WaitTimeout, TestContext.CancellationToken);
 
             navigation.Dispose();
 
             Assert.IsNull(navigation.CurrentPage);
             Assert.IsFalse(page.CleanedUp.Task.IsCompleted);
             page.Release.Set();
-            await page.CleanedUp.Task.WaitAsync(WaitTimeout);
-            await navigate.WaitAsync(WaitTimeout);
+            await page.CleanedUp.Task.WaitAsync(WaitTimeout, TestContext.CancellationToken);
+            await navigate.WaitAsync(WaitTimeout, TestContext.CancellationToken);
         }
         finally
         {
@@ -306,16 +308,16 @@ public sealed partial class DockPageNavigationViewModelTests
         var navigation = CreateNavigation(route, scheduler);
         Assert.IsTrue(await DrainUntilCompleteAsync(
             scheduler,
-            navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty))));
-        Assert.IsTrue(await DrainUntilCompleteAsync(scheduler, navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation))));
+            navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty), TestContext.CancellationToken)));
+        Assert.IsTrue(await DrainUntilCompleteAsync(scheduler, navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation), TestContext.CancellationToken)));
         var popped = navigation.CurrentPage!;
 
-        Assert.IsTrue(await DrainUntilCompleteAsync(scheduler, navigation.GoBackAsync()));
+        Assert.IsTrue(await DrainUntilCompleteAsync(scheduler, navigation.GoBackAsync(TestContext.CancellationToken)));
 
         Assert.IsTrue(popped.IsDiscarded);
 
         // CleanupAsync returns the shared cleanup task; it must finish without the UI scheduler running.
-        await popped.CleanupAsync().WaitAsync(WaitTimeout);
+        await popped.CleanupAsync().WaitAsync(WaitTimeout, TestContext.CancellationToken);
         navigation.Dispose();
     }
 
@@ -330,7 +332,7 @@ public sealed partial class DockPageNavigationViewModelTests
         };
         using var navigation = CreateNavigation(route);
 
-        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(page, route, new TestAppExtensionHost(), CommandProviderContext.Empty)));
+        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(page, route, new TestAppExtensionHost(), CommandProviderContext.Empty), TestContext.CancellationToken));
 
         var list = (ListViewModel)navigation.CurrentPage!;
         var itemsUpdated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -344,8 +346,8 @@ public sealed partial class DockPageNavigationViewModelTests
 
         list.SearchTextBox = "Result";
 
-        Assert.AreEqual("Result", await page.SearchUpdated.Task.WaitAsync(TimeSpan.FromSeconds(2)));
-        await itemsUpdated.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        Assert.AreEqual("Result", await page.SearchUpdated.Task.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
+        await itemsUpdated.Task.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
         Assert.AreEqual("Find an item", list.PlaceholderText);
         Assert.AreEqual("Result", list.FilteredItems.Single().Title);
     }
@@ -356,11 +358,11 @@ public sealed partial class DockPageNavigationViewModelTests
         var route = NewRoute();
         using var navigation = CreateNavigation(route);
 
-        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty)));
-        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation)));
-        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestParametersPage(), navigation)));
+        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty), TestContext.CancellationToken));
+        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation), TestContext.CancellationToken));
+        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestParametersPage(), navigation), TestContext.CancellationToken));
 
-        Assert.IsTrue(await navigation.GoHomeAsync());
+        Assert.IsTrue(await navigation.GoHomeAsync(TestContext.CancellationToken));
         Assert.IsInstanceOfType<ListViewModel>(navigation.CurrentPage);
         Assert.AreEqual(0, navigation.BackStackDepth);
         Assert.IsFalse(navigation.CanGoBack);
@@ -373,7 +375,7 @@ public sealed partial class DockPageNavigationViewModelTests
         var host = new TestAppExtensionHost();
         var providerContext = new TestProviderContext("provider");
         using var navigation = CreateNavigation(route);
-        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new TestContentPage(), route, host, providerContext)));
+        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new TestContentPage(), route, host, providerContext), TestContext.CancellationToken));
         var sourcePage = navigation.CurrentPage!;
 
         var result = new HandleCommandResultMessage(new(CommandResult.KeepOpen()), sourcePage);
@@ -406,7 +408,7 @@ public sealed partial class DockPageNavigationViewModelTests
         try
         {
             form.HandleSubmit(new AdaptiveExecuteAction(), new JsonObject());
-            var message = await recipient.MessageReceived.Task.WaitAsync(TimeSpan.FromSeconds(2));
+            var message = await recipient.MessageReceived.Task.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
 
             Assert.AreEqual(CommandResultKind.GoBack, message.Result.Unsafe!.Kind);
             Assert.AreEqual(route, message.DockRoute);
@@ -428,7 +430,8 @@ public sealed partial class DockPageNavigationViewModelTests
         var route = NewRoute();
         using var navigation = CreateNavigation(route);
         Assert.IsTrue(await navigation.NavigateAsync(
-            CreateOwnerMessage(new TestListParameterPage(), route, new TestAppExtensionHost(), new TestProviderContext("provider"))));
+            CreateOwnerMessage(new TestListParameterPage(), route, new TestAppExtensionHost(), new TestProviderContext("provider")),
+            TestContext.CancellationToken));
 
         var parameters = (ParametersPageViewModel)navigation.CurrentPage!;
         await WaitUntilAsync(() => parameters.Items.OfType<CommandParameterRunViewModel>().Any());
@@ -444,7 +447,7 @@ public sealed partial class DockPageNavigationViewModelTests
         Assert.IsFalse(navigation.OwnsSourcePage(activeList));
 
         parameters.SetActiveListParameter(run);
-        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation)));
+        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation), TestContext.CancellationToken));
         Assert.IsFalse(navigation.OwnsSourcePage(activeList));
     }
 
@@ -453,7 +456,7 @@ public sealed partial class DockPageNavigationViewModelTests
     {
         var route = NewRoute();
         var navigation = CreateNavigation(route);
-        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty)));
+        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty), TestContext.CancellationToken));
         var page = navigation.CurrentPage!;
         ICommandResult[] results =
         [
@@ -482,8 +485,8 @@ public sealed partial class DockPageNavigationViewModelTests
         using var navigation = CreateNavigation(route, scheduler);
         Assert.IsTrue(await DrainUntilCompleteAsync(
             scheduler,
-            navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty))));
-        Assert.IsTrue(await DrainUntilCompleteAsync(scheduler, navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation))));
+            navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty), TestContext.CancellationToken)));
+        Assert.IsTrue(await DrainUntilCompleteAsync(scheduler, navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation), TestContext.CancellationToken)));
         var source = navigation.CurrentPage!;
 
         Assert.IsTrue(navigation.HandleCommandResult(source, CommandResult.GoBack()));
@@ -502,13 +505,13 @@ public sealed partial class DockPageNavigationViewModelTests
     {
         var route = NewRoute();
         using var navigation = CreateNavigation(route);
-        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty)));
+        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty), TestContext.CancellationToken));
         var closeRequested = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         navigation.CloseRequested += (_, _) => closeRequested.TrySetResult();
 
         Assert.IsTrue(navigation.HandleCommandResult(navigation.CurrentPage!, CreateResult(kind)));
 
-        await closeRequested.Task.WaitAsync(WaitTimeout);
+        await closeRequested.Task.WaitAsync(WaitTimeout, TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -516,9 +519,9 @@ public sealed partial class DockPageNavigationViewModelTests
     {
         var route = NewRoute();
         using var navigation = CreateNavigation(route);
-        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty)));
-        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation)));
-        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestParametersPage(), navigation)));
+        Assert.IsTrue(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty), TestContext.CancellationToken));
+        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation), TestContext.CancellationToken));
+        Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestParametersPage(), navigation), TestContext.CancellationToken));
 
         Assert.IsTrue(navigation.HandleCommandResult(navigation.CurrentPage!, CommandResult.GoHome()));
 
@@ -534,9 +537,9 @@ public sealed partial class DockPageNavigationViewModelTests
         var navigation = CreateNavigation(route, scheduler);
         Assert.IsTrue(await DrainUntilCompleteAsync(
             scheduler,
-            navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty))));
+            navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty), TestContext.CancellationToken)));
         var root = navigation.CurrentPage!;
-        Assert.IsTrue(await DrainUntilCompleteAsync(scheduler, navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation))));
+        Assert.IsTrue(await DrainUntilCompleteAsync(scheduler, navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation), TestContext.CancellationToken)));
         var current = navigation.CurrentPage!;
         var closeRequests = 0;
         navigation.CloseRequested += (_, _) => closeRequests++;
@@ -633,4 +636,6 @@ public sealed partial class DockPageNavigationViewModelTests
         await DrainUntilAsync(scheduler, () => task.IsCompleted);
         return await task;
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

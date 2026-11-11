@@ -4,6 +4,7 @@
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <RootNamespace>PowerDisplay.Ipc.UnitTests</RootNamespace>

@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ListSettingTests
 {
@@ -52,7 +53,7 @@ public class ListSettingTests
 
         settings.Update("""{"items":["alpha","beta"]}""");
 
-        CollectionAssert.AreEqual(_loadedItems, setting.Value!.ToArray());
+        Assert.AreSequenceEqual(_loadedItems, setting.Value!.ToArray());
     }
 
     [TestMethod]
@@ -64,7 +65,7 @@ public class ListSettingTests
 
         settings.UpdateFromForm(new JsonObject { ["items"] = CardValue("items", _submittedItems, static (k, v) => new StringListSetting(k, v)) }.ToJsonString());
 
-        CollectionAssert.AreEqual(_submittedItems, setting.Value!.ToArray());
+        Assert.AreSequenceEqual(_submittedItems, setting.Value!.ToArray());
     }
 
     [TestMethod]
@@ -79,7 +80,7 @@ public class ListSettingTests
             ["items"] = """[{"value":"alpha","enabled":false},{"value":"beta"}]""",
         }.ToJsonString());
 
-        CollectionAssert.AreEqual(_loadedItems, setting.Value!.ToArray());
+        Assert.AreSequenceEqual(_loadedItems, setting.Value!.ToArray());
     }
 
     [TestMethod]
@@ -91,7 +92,7 @@ public class ListSettingTests
 
         settings.UpdateFromForm(new JsonObject { ["items"] = "not an array" }.ToJsonString());
 
-        CollectionAssert.AreEqual(_loadedItems, setting.Value!.ToArray());
+        Assert.AreSequenceEqual(_loadedItems, setting.Value!.ToArray());
     }
 
     [TestMethod]
@@ -103,7 +104,7 @@ public class ListSettingTests
 
         settings.UpdateFromForm(new JsonObject { ["pairs"] = "{not an array}" }.ToJsonString());
 
-        CollectionAssert.AreEqual(_loadedKeyValueItems, setting.Value!.ToArray());
+        Assert.AreSequenceEqual(_loadedKeyValueItems, setting.Value!.ToArray());
     }
 
     [TestMethod]
@@ -116,7 +117,7 @@ public class ListSettingTests
 
         settings.Update($"{{{setting.ToState()}}}");
 
-        CollectionAssert.AreEqual(setting.Value!.ToArray(), reloaded.Value!.ToArray());
+        Assert.AreSequenceEqual(setting.Value!.ToArray(), reloaded.Value!.ToArray());
     }
 
     [TestMethod]
@@ -134,7 +135,7 @@ public class ListSettingTests
 
         Assert.AreEqual("^[a-z]+$", dictionary["itemValidationPattern"]);
         Assert.AreEqual("Use lowercase letters.", dictionary["itemValidationErrorMessage"]);
-        Assert.AreEqual(true, dictionary["preventDuplicates"]);
+        Assert.IsTrue((bool?)dictionary["preventDuplicates"]);
         Assert.AreEqual("Use unique items.", dictionary["duplicateItemErrorMessage"]);
     }
 
@@ -143,8 +144,8 @@ public class ListSettingTests
     {
         var setting = new StringListSetting("items", ["alpha", "alpha"]);
 
-        Assert.AreEqual(false, setting.PreventDuplicates);
-        Assert.AreEqual(false, setting.ToDictionary()["preventDuplicates"]);
+        Assert.IsFalse(setting.PreventDuplicates);
+        Assert.IsFalse((bool?)setting.ToDictionary()["preventDuplicates"]);
     }
 
     [TestMethod]
@@ -152,7 +153,7 @@ public class ListSettingTests
     {
         var setting = new StringListSetting("items", []);
 
-        Assert.ThrowsException<ArgumentException>(() => setting.ItemValidationPattern = "[");
+        Assert.ThrowsExactly<ArgumentException>(() => setting.ItemValidationPattern = "[");
     }
 
     [TestMethod]
@@ -171,9 +172,9 @@ public class ListSettingTests
         var dictionary = setting.ToDictionary();
 
         Assert.AreEqual("Input.CommandPalette.FilePathList", dictionary["type"]);
-        Assert.AreEqual(false, dictionary["allowFiles"]);
-        Assert.AreEqual(true, dictionary["allowFolders"]);
-        CollectionAssert.AreEqual(
+        Assert.IsFalse((bool?)dictionary["allowFiles"]);
+        Assert.IsTrue((bool?)dictionary["allowFolders"]);
+        Assert.AreSequenceEqual(
             _fileTypeFilters,
             ((List<string>)dictionary["fileTypeFilter"]).ToArray());
     }
@@ -181,7 +182,7 @@ public class ListSettingTests
     [TestMethod]
     public void FilePathListSetting_NoAllowedItemTypes_Throws()
     {
-        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
             new FilePathListSetting("paths", [], (FilePathListItemType)0));
     }
 
@@ -209,8 +210,8 @@ public class ListSettingTests
         var fallback = form["body"]!.AsArray()[0]!["fallback"]!.AsObject();
 
         Assert.AreEqual("TextBlock", fallback["type"]!.GetValue<string>());
-        Assert.AreEqual(true, fallback["wrap"]!.GetValue<bool>());
-        StringAssert.Contains(fallback["text"]!.GetValue<string>(), "Search paths");
+        Assert.IsTrue(fallback["wrap"]!.GetValue<bool>());
+        Assert.Contains("Search paths", fallback["text"]!.GetValue<string>());
     }
 
     [TestMethod]
@@ -223,7 +224,7 @@ public class ListSettingTests
 
         settings.Update($"{{{setting.ToState()}}}");
 
-        CollectionAssert.AreEqual(setting.Value!.ToArray(), reloaded.Value!.ToArray());
+        Assert.AreSequenceEqual(setting.Value!.ToArray(), reloaded.Value!.ToArray());
     }
 
     [TestMethod]
@@ -259,9 +260,9 @@ public class ListSettingTests
 
         reloadedSettings.Update(settings.ToJson());
 
-        CollectionAssert.AreEqual(_submittedItems, reloadedStringList.Value!.ToArray());
-        CollectionAssert.AreEqual(_pathItems, reloadedPathList.Value!.ToArray());
-        CollectionAssert.AreEqual(_keyValueItems, reloadedKeyValueList.Value!.ToArray());
+        Assert.AreSequenceEqual(_submittedItems, reloadedStringList.Value!.ToArray());
+        Assert.AreSequenceEqual(_pathItems, reloadedPathList.Value!.ToArray());
+        Assert.AreSequenceEqual(_keyValueItems, reloadedKeyValueList.Value!.ToArray());
         Assert.AreEqual(@"C:\Tools\app.exe", reloadedSinglePath.Value);
     }
 
@@ -289,7 +290,7 @@ public class ListSettingTests
 
         settings.Update("""{"pairs":[{"key":"alpha","value":"one"},{"key":"beta","value":"two=three"}]}""");
 
-        CollectionAssert.AreEqual(_loadedKeyValueItems, setting.Value!.ToArray());
+        Assert.AreSequenceEqual(_loadedKeyValueItems, setting.Value!.ToArray());
     }
 
     [TestMethod]
@@ -302,7 +303,7 @@ public class ListSettingTests
         settings.UpdateFromForm(
             new JsonObject { ["pairs"] = CardValue("pairs", _loadedKeyValueItems, static (k, v) => new KeyValueListSetting(k, v)) }.ToJsonString());
 
-        CollectionAssert.AreEqual(_loadedKeyValueItems, setting.Value!.ToArray());
+        Assert.AreSequenceEqual(_loadedKeyValueItems, setting.Value!.ToArray());
     }
 
     [TestMethod]
@@ -315,7 +316,7 @@ public class ListSettingTests
 
         settings.Update($"{{{setting.ToState()}}}");
 
-        CollectionAssert.AreEqual(_keyValueItems, reloaded.Value!.ToArray());
+        Assert.AreSequenceEqual(_keyValueItems, reloaded.Value!.ToArray());
     }
 
     [TestMethod]
@@ -336,7 +337,7 @@ public class ListSettingTests
         Assert.AreEqual("Input.CommandPalette.KeyValueList", dictionary["type"]);
         Assert.AreEqual("^[a-z]+$", dictionary["keyValidationPattern"]);
         Assert.AreEqual("^.+$", dictionary["valueValidationPattern"]);
-        Assert.AreEqual(true, dictionary["preventDuplicateKeys"]);
+        Assert.IsTrue((bool?)dictionary["preventDuplicateKeys"]);
         Assert.AreEqual("Use unique keys.", dictionary["duplicateKeyErrorMessage"]);
     }
 
@@ -345,8 +346,8 @@ public class ListSettingTests
     {
         var setting = new KeyValueListSetting("pairs", [new("key", "one"), new("key", "two")]);
 
-        Assert.AreEqual(false, setting.PreventDuplicateKeys);
-        Assert.AreEqual(false, setting.ToDictionary()["preventDuplicateKeys"]);
+        Assert.IsFalse(setting.PreventDuplicateKeys);
+        Assert.IsFalse((bool?)setting.ToDictionary()["preventDuplicateKeys"]);
     }
 
     [TestMethod]
@@ -354,8 +355,8 @@ public class ListSettingTests
     {
         var setting = new KeyValueListSetting("pairs", []);
 
-        Assert.ThrowsException<ArgumentException>(() => setting.KeyValidationPattern = "[");
-        Assert.ThrowsException<ArgumentException>(() => setting.ValueValidationPattern = "(");
+        Assert.ThrowsExactly<ArgumentException>(() => setting.KeyValidationPattern = "[");
+        Assert.ThrowsExactly<ArgumentException>(() => setting.ValueValidationPattern = "(");
     }
 
     // Builds a submission the way the setting itself renders one, so the tests never carry a
@@ -378,6 +379,6 @@ public class ListSettingTests
             .Select(input => input!["type"]!.GetValue<string>())
             .ToArray();
 
-        CollectionAssert.AreEqual(_listInputTypes, inputTypes);
+        Assert.AreSequenceEqual(_listInputTypes, inputTypes);
     }
 }

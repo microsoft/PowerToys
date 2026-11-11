@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ViewModelTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class OobeShellViewModelTests
     {
@@ -22,7 +23,7 @@ namespace ViewModelTests
             int altWindowCycleIndex = moduleNames.IndexOf(PowerToysModules.AltWindowCycle.ToString());
             int workspacesIndex = moduleNames.IndexOf(PowerToysModules.Workspaces.ToString());
 
-            Assert.IsTrue(altWindowCycleIndex >= 0);
+            Assert.IsGreaterThanOrEqualTo(0, altWindowCycleIndex);
             Assert.AreEqual(altWindowCycleIndex + 1, workspacesIndex);
         }
     }

@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ImageResizer.Tests.Models
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class CliOptionsTests
     {
@@ -61,7 +62,7 @@ namespace ImageResizer.Tests.Models
             Assert.AreEqual(longForm.Height, shortForm.Height);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("--unit", "Centimeter", ResizeUnit.Centimeter)]
         [DataRow("--unit", "Inch", ResizeUnit.Inch)]
         [DataRow("--unit", "Percent", ResizeUnit.Percent)]
@@ -76,11 +77,11 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli([option, value, "test.jpg"]);
 
-            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.IsEmpty(options.ParseErrors);
             Assert.AreEqual(expected, options.Unit);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("--fit", "Fill", ResizeFit.Fill)]
         [DataRow("--fit", "Fit", ResizeFit.Fit)]
         [DataRow("--fit", "Stretch", ResizeFit.Stretch)]
@@ -93,7 +94,7 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli([option, value, "test.jpg"]);
 
-            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.IsEmpty(options.ParseErrors);
             Assert.AreEqual(expected, options.Fit);
         }
 
@@ -112,7 +113,7 @@ namespace ImageResizer.Tests.Models
             var args = new[] { "--shrink-only", "test.jpg" };
             var options = CliOptions.Parse(args);
 
-            Assert.AreEqual(true, options.ShrinkOnly);
+            Assert.IsTrue(options.ShrinkOnly);
         }
 
         [TestMethod]
@@ -121,7 +122,7 @@ namespace ImageResizer.Tests.Models
             var args = new[] { "--replace", "test.jpg" };
             var options = CliOptions.Parse(args);
 
-            Assert.AreEqual(true, options.Replace);
+            Assert.IsTrue(options.Replace);
         }
 
         [TestMethod]
@@ -130,7 +131,7 @@ namespace ImageResizer.Tests.Models
             var args = new[] { "--ignore-orientation", "test.jpg" };
             var options = CliOptions.Parse(args);
 
-            Assert.AreEqual(true, options.IgnoreOrientation);
+            Assert.IsTrue(options.IgnoreOrientation);
         }
 
         [TestMethod]
@@ -139,7 +140,7 @@ namespace ImageResizer.Tests.Models
             var args = new[] { "--remove-metadata", "test.jpg" };
             var options = CliOptions.Parse(args);
 
-            Assert.AreEqual(true, options.RemoveMetadata);
+            Assert.IsTrue(options.RemoveMetadata);
         }
 
         [TestMethod]
@@ -157,7 +158,7 @@ namespace ImageResizer.Tests.Models
             var args = new[] { "--keep-date-modified", "test.jpg" };
             var options = CliOptions.Parse(args);
 
-            Assert.AreEqual(true, options.KeepDateModified);
+            Assert.IsTrue(options.KeepDateModified);
         }
 
         [TestMethod]
@@ -195,7 +196,7 @@ namespace ImageResizer.Tests.Models
             var args = new[] { "--progress-lines", "test.jpg" };
             var options = CliOptions.Parse(args);
 
-            Assert.AreEqual(true, options.ProgressLines);
+            Assert.IsTrue(options.ProgressLines);
         }
 
         [TestMethod]
@@ -204,7 +205,7 @@ namespace ImageResizer.Tests.Models
             var args = new[] { "--accessible", "test.jpg" };
             var options = CliOptions.Parse(args);
 
-            Assert.AreEqual(true, options.ProgressLines);
+            Assert.IsTrue(options.ProgressLines);
         }
 
         [TestMethod]
@@ -213,10 +214,10 @@ namespace ImageResizer.Tests.Models
             var args = _multiFileArgs;
             var options = CliOptions.Parse(args);
 
-            Assert.AreEqual(3, options.Files.Count);
-            CollectionAssert.Contains(options.Files.ToList(), "test1.jpg");
-            CollectionAssert.Contains(options.Files.ToList(), "test2.jpg");
-            CollectionAssert.Contains(options.Files.ToList(), "test3.jpg");
+            Assert.HasCount(3, options.Files);
+            Assert.Contains("test1.jpg", options.Files.ToList());
+            Assert.Contains("test2.jpg", options.Files.ToList());
+            Assert.Contains("test3.jpg", options.Files.ToList());
         }
 
         [TestMethod]
@@ -227,7 +228,7 @@ namespace ImageResizer.Tests.Models
 
             Assert.AreEqual(800.0, options.Width);
             Assert.AreEqual(600.0, options.Height);
-            Assert.AreEqual(2, options.Files.Count);
+            Assert.HasCount(2, options.Files);
         }
 
         [TestMethod]
@@ -255,7 +256,7 @@ namespace ImageResizer.Tests.Models
             var options = CliOptions.Parse(args);
 
             Assert.IsNotNull(options);
-            Assert.AreEqual(0, options.Files.Count);
+            Assert.IsEmpty(options.Files);
             Assert.IsNull(options.Unit);
             Assert.IsNull(options.Fit);
         }
@@ -290,7 +291,7 @@ namespace ImageResizer.Tests.Models
             Assert.AreEqual(ResizeFit.Fit, options.Fit);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("--unit", "Bogus")]
         [DataRow("--fit", "Bogus")]
         [DataRow("--unit", "99")]
@@ -311,21 +312,21 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli([option, value, "test.jpg"]);
 
-            Assert.AreEqual(1, options.ParseErrors.Count);
-            StringAssert.Contains(options.ParseErrors[0], option);
-            StringAssert.Contains(options.ParseErrors[0], value);
+            Assert.HasCount(1, options.ParseErrors);
+            Assert.Contains(option, options.ParseErrors[0]);
+            Assert.Contains(value, options.ParseErrors[0]);
             Assert.IsNull(options.Unit);
             Assert.IsNull(options.Fit);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("-u", "--unit")]
         [DataRow("-f", "--fit")]
         public void Parse_WithUndefinedEnumAndShortAlias_ReturnsLocalizedError(string alias, string option)
         {
             var options = CliOptions.ParseForCli([alias, "99", "test.jpg"]);
 
-            Assert.AreEqual(1, options.ParseErrors.Count);
+            Assert.HasCount(1, options.ParseErrors);
             Assert.AreEqual(
                 string.Format(CultureInfo.InvariantCulture, _invalidEnumValueFormat.Value, "99", option),
                 options.ParseErrors[0]);
@@ -338,7 +339,7 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli(["-u3", "-f2", "test.jpg"]);
 
-            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.IsEmpty(options.ParseErrors);
             Assert.AreEqual(ResizeUnit.Pixel, options.Unit);
             Assert.AreEqual(ResizeFit.Stretch, options.Fit);
         }
@@ -348,10 +349,10 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli(["--unit", "99", "--fit", "Stretch", "test.jpg"]);
 
-            Assert.AreEqual(1, options.ParseErrors.Count);
+            Assert.HasCount(1, options.ParseErrors);
             Assert.IsNull(options.Unit);
             Assert.AreEqual(ResizeFit.Stretch, options.Fit);
-            CollectionAssert.Contains(options.Files.ToList(), "test.jpg");
+            Assert.Contains("test.jpg", options.Files.ToList());
         }
 
         [TestMethod]
@@ -359,12 +360,12 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli(["--unit", "99", "--fit", "99", "test.jpg"]);
 
-            Assert.AreEqual(2, options.ParseErrors.Count);
+            Assert.HasCount(2, options.ParseErrors);
             Assert.IsNull(options.Unit);
             Assert.IsNull(options.Fit);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("--size", "abc")]
         [DataRow("--quality", "abc")]
         [DataRow("-q", "abc")]
@@ -373,13 +374,13 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli([option, value, "test.jpg"]);
 
-            Assert.AreEqual(1, options.ParseErrors.Count);
-            StringAssert.Contains(options.ParseErrors[0], value);
+            Assert.HasCount(1, options.ParseErrors);
+            Assert.Contains(value, options.ParseErrors[0]);
             Assert.IsNull(options.SizeIndex);
             Assert.IsNull(options.JpegQualityLevel);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("--size", "-1")]
         [DataRow("--quality", "0")]
         [DataRow("--quality", "101")]
@@ -387,12 +388,12 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli([option, value, "test.jpg"]);
 
-            Assert.AreEqual(1, options.ParseErrors.Count);
+            Assert.HasCount(1, options.ParseErrors);
             Assert.IsNull(options.SizeIndex);
             Assert.IsNull(options.JpegQualityLevel);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("[suggest]", "abc")]
         [DataRow("[suggest:30]", "abc")]
         [DataRow("[suggest]", "-1")]
@@ -401,11 +402,11 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli([directive, "--width", width, "--replace", "test.jpg"]);
 
-            Assert.AreEqual(1, options.ParseErrors.Count);
+            Assert.HasCount(1, options.ParseErrors);
             Assert.IsNull(options.Width);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("[suggest]")]
         [DataRow("[suggest:30]")]
         public void Parse_WithCompletionDirectiveAndMissingResponseFile_ReturnsError(string directive)
@@ -415,8 +416,8 @@ namespace ImageResizer.Tests.Models
 
             var options = CliOptions.ParseForCli([directive, "@" + responseFile, "--replace", "test.jpg"]);
 
-            Assert.AreEqual(1, options.ParseErrors.Count);
-            StringAssert.Contains(options.ParseErrors[0], "missing.rsp");
+            Assert.HasCount(1, options.ParseErrors);
+            Assert.Contains("missing.rsp", options.ParseErrors[0]);
         }
 
         [TestMethod]
@@ -424,8 +425,8 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli(["--bogus", "test.jpg"]);
 
-            Assert.AreEqual(1, options.ParseErrors.Count);
-            StringAssert.Contains(options.ParseErrors[0], "--bogus");
+            Assert.HasCount(1, options.ParseErrors);
+            Assert.Contains("--bogus", options.ParseErrors[0]);
         }
 
         [TestMethod]
@@ -433,8 +434,8 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli(["test.jpg", "--bogus"]);
 
-            Assert.AreEqual(1, options.ParseErrors.Count);
-            StringAssert.Contains(options.ParseErrors[0], "--bogus");
+            Assert.HasCount(1, options.ParseErrors);
+            Assert.Contains("--bogus", options.ParseErrors[0]);
         }
 
         [TestMethod]
@@ -442,8 +443,8 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli(["/bogus", "test.jpg"]);
 
-            Assert.AreEqual(0, options.ParseErrors.Count);
-            CollectionAssert.Contains(options.Files.ToList(), "/bogus");
+            Assert.IsEmpty(options.ParseErrors);
+            Assert.Contains("/bogus", options.Files.ToList());
         }
 
         [TestMethod]
@@ -451,8 +452,8 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli([@".\-photo.jpg"]);
 
-            Assert.AreEqual(0, options.ParseErrors.Count);
-            CollectionAssert.Contains(options.Files.ToList(), @".\-photo.jpg");
+            Assert.IsEmpty(options.ParseErrors);
+            Assert.Contains(@".\-photo.jpg", options.Files.ToList());
         }
 
         [TestMethod]
@@ -460,8 +461,8 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli(["--", "--photo.jpg"]);
 
-            Assert.AreEqual(0, options.ParseErrors.Count);
-            CollectionAssert.Contains(options.Files.ToList(), "--photo.jpg");
+            Assert.IsEmpty(options.ParseErrors);
+            Assert.Contains("--photo.jpg", options.Files.ToList());
         }
 
         [TestMethod]
@@ -469,8 +470,8 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.Parse(["--photo.jpg"]);
 
-            Assert.AreEqual(0, options.ParseErrors.Count);
-            CollectionAssert.Contains(options.Files.ToList(), "--photo.jpg");
+            Assert.IsEmpty(options.ParseErrors);
+            Assert.Contains("--photo.jpg", options.Files.ToList());
         }
 
         [TestMethod]
@@ -478,8 +479,8 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli(["-replace", "test.jpg"]);
 
-            Assert.AreEqual(1, options.ParseErrors.Count);
-            StringAssert.Contains(options.ParseErrors[0], "-replace");
+            Assert.HasCount(1, options.ParseErrors);
+            Assert.Contains("-replace", options.ParseErrors[0]);
         }
 
         [TestMethod]
@@ -487,7 +488,7 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli(["-w100", "test.jpg"]);
 
-            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.IsEmpty(options.ParseErrors);
             Assert.AreEqual(100.0, options.Width);
         }
 
@@ -496,8 +497,8 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli(["-rq85", "test.jpg"]);
 
-            Assert.AreEqual(0, options.ParseErrors.Count);
-            Assert.AreEqual(true, options.Replace);
+            Assert.IsEmpty(options.ParseErrors);
+            Assert.IsTrue(options.Replace);
             Assert.AreEqual(85, options.JpegQualityLevel);
         }
 
@@ -511,8 +512,8 @@ namespace ImageResizer.Tests.Models
 
                 var options = CliOptions.ParseForCli(["@" + responseFile]);
 
-                Assert.AreEqual(1, options.ParseErrors.Count);
-                StringAssert.Contains(options.ParseErrors[0], "-rphoto.jpg");
+                Assert.HasCount(1, options.ParseErrors);
+                Assert.Contains("-rphoto.jpg", options.ParseErrors[0]);
             }
             finally
             {
@@ -530,9 +531,9 @@ namespace ImageResizer.Tests.Models
 
                 var options = CliOptions.ParseForCli(["@" + responseFile, "-rphoto.jpg", "photo.jpg"]);
 
-                Assert.AreEqual(0, options.ParseErrors.Count);
-                CollectionAssert.Contains(options.Files.ToList(), "-rphoto.jpg");
-                CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
+                Assert.IsEmpty(options.ParseErrors);
+                Assert.Contains("-rphoto.jpg", options.Files.ToList());
+                Assert.Contains("photo.jpg", options.Files.ToList());
             }
             finally
             {
@@ -545,8 +546,8 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.Parse(["--width", "abc", "good.jpg", @"\\.\pipe\ImageResizerTest"]);
 
-            Assert.IsTrue(options.ParseErrors.Count > 0);
-            CollectionAssert.Contains(options.Files.ToList(), "good.jpg");
+            Assert.IsNotEmpty(options.ParseErrors);
+            Assert.Contains("good.jpg", options.Files.ToList());
             Assert.AreEqual("ImageResizerTest", options.PipeName);
         }
 
@@ -555,9 +556,9 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.Parse(["/d", @"C:\Output", "--width", "bad", "good.jpg"]);
 
-            Assert.IsTrue(options.ParseErrors.Count > 0);
+            Assert.IsNotEmpty(options.ParseErrors);
             Assert.AreEqual(@"C:\Output", options.DestinationDirectory);
-            CollectionAssert.Contains(options.Files.ToList(), "good.jpg");
+            Assert.Contains("good.jpg", options.Files.ToList());
         }
 
         [TestMethod]
@@ -565,7 +566,7 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli(["--filename", "-rphoto.jpg", "photo.jpg"]);
 
-            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.IsEmpty(options.ParseErrors);
             Assert.AreEqual("-rphoto.jpg", options.FileName);
         }
 
@@ -574,9 +575,9 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli(["--filename=", "-rphoto.jpg", "photo.jpg"]);
 
-            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.IsEmpty(options.ParseErrors);
             Assert.AreEqual("-rphoto.jpg", options.FileName);
-            CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
+            Assert.Contains("photo.jpg", options.Files.ToList());
         }
 
         [TestMethod]
@@ -584,9 +585,9 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli(["-n=", "-rphoto.jpg", "photo.jpg"]);
 
-            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.IsEmpty(options.ParseErrors);
             Assert.AreEqual("-rphoto.jpg", options.FileName);
-            CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
+            Assert.Contains("photo.jpg", options.Files.ToList());
         }
 
         [TestMethod]
@@ -594,22 +595,22 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli(["-r=false", "photo.jpg"]);
 
-            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.IsEmpty(options.ParseErrors);
             Assert.IsNull(options.Replace);
-            CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
+            Assert.Contains("photo.jpg", options.Files.ToList());
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("-rtrue")]
         [DataRow("-rTRUE")]
         public void Parse_WithAttachedTrueBooleanValue_PreservesCompatibility(string argument)
         {
             var options = CliOptions.ParseForCli([argument, "-q85", "photo.jpg"]);
 
-            Assert.AreEqual(0, options.ParseErrors.Count);
-            Assert.AreEqual(true, options.Replace);
+            Assert.IsEmpty(options.ParseErrors);
+            Assert.IsTrue(options.Replace);
             Assert.AreEqual(85, options.JpegQualityLevel);
-            CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
+            Assert.Contains("photo.jpg", options.Files.ToList());
         }
 
         [TestMethod]
@@ -617,8 +618,8 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.ParseForCli(["-rn=", "-rphoto.jpg", "photo.jpg"]);
 
-            Assert.AreEqual(1, options.ParseErrors.Count);
-            StringAssert.Contains(options.ParseErrors[0], "-rphoto.jpg");
+            Assert.HasCount(1, options.ParseErrors);
+            Assert.Contains("-rphoto.jpg", options.ParseErrors[0]);
         }
 
         [TestMethod]
@@ -626,10 +627,10 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.Parse(["--width", "-100", "--height", "100", "test.jpg"]);
 
-            Assert.AreEqual(1, options.ParseErrors.Count);
+            Assert.HasCount(1, options.ParseErrors);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("NaN")]
         [DataRow("Infinity")]
         [DataRow("-Infinity")]
@@ -637,7 +638,7 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.Parse(["--width", value, "--height", "100", "test.jpg"]);
 
-            Assert.IsTrue(options.ParseErrors.Count > 0);
+            Assert.IsNotEmpty(options.ParseErrors);
         }
 
         [TestMethod]
@@ -645,7 +646,7 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.Parse(["--width", "0", "--height", "0", "test.jpg"]);
 
-            Assert.AreEqual(1, options.ParseErrors.Count);
+            Assert.HasCount(1, options.ParseErrors);
         }
 
         [TestMethod]
@@ -653,7 +654,7 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.Parse(["--width", "0", "test.jpg"]);
 
-            Assert.AreEqual(1, options.ParseErrors.Count);
+            Assert.HasCount(1, options.ParseErrors);
         }
 
         [TestMethod]
@@ -661,10 +662,10 @@ namespace ImageResizer.Tests.Models
         {
             var options = CliOptions.Parse(["--width", "2147483648", "--height", "100", "test.jpg"]);
 
-            Assert.AreEqual(1, options.ParseErrors.Count);
+            Assert.HasCount(1, options.ParseErrors);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("en-US")]
         [DataRow("en-HK")]
         public void Parse_WithGroupedDimensionAboveInt32Range_ReturnsError(string cultureName)
@@ -676,7 +677,7 @@ namespace ImageResizer.Tests.Models
 
                 var options = CliOptions.Parse(["--width", "2,147,483,648", "--height", "100", "test.jpg"]);
 
-                Assert.AreEqual(1, options.ParseErrors.Count);
+                Assert.HasCount(1, options.ParseErrors);
             }
             finally
             {

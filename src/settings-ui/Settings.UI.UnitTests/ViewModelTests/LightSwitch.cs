@@ -19,6 +19,7 @@ using Settings.UI.Library.Helpers;
 
 namespace ViewModelTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class LightSwitch
 {
@@ -65,7 +66,7 @@ public class LightSwitch
         Assert.AreSame(city, viewModel.SelectedCity);
         Assert.AreEqual(city.City, viewModel.SyncButtonInformation);
         AssertTimeBindingsNotified(notifications);
-        Assert.IsTrue(notifications.Contains(nameof(viewModel.SyncButtonInformation)));
+        Assert.Contains(nameof(viewModel.SyncButtonInformation), notifications);
 
         notifications.Clear();
         var nextSettings = (LightSwitchSettings)sunSettings.Clone();
@@ -84,7 +85,7 @@ public class LightSwitch
         Assert.IsNull(viewModel.SunriseTimeSpan);
         Assert.IsNull(viewModel.SunsetTimeSpan);
         AssertTimeBindingsNotified(notifications);
-        Assert.AreEqual(0, messages.Count);
+        Assert.IsEmpty(messages);
     }
 
     [TestMethod]
@@ -124,7 +125,7 @@ public class LightSwitch
         Assert.AreEqual(TimeSpan.FromMinutes(503), viewModel.LightTimePickerValue);
         Assert.AreEqual(TimeSpan.FromMinutes(1259), viewModel.DarkTimePickerValue);
         Assert.AreEqual("Hong Kong", viewModel.SyncButtonInformation);
-        Assert.AreEqual(0, messages.Count);
+        Assert.IsEmpty(messages);
 
         var fixedSettings = (LightSwitchSettings)settings.Clone();
         fixedSettings.Properties.ScheduleMode.Value = "FixedHours";
@@ -137,7 +138,7 @@ public class LightSwitch
         Assert.AreEqual(TimeSpan.FromMinutes(1259), viewModel.DarkTimeTimeSpan);
         Assert.IsNull(viewModel.SunriseTimeSpan);
         Assert.IsNull(viewModel.SunsetTimeSpan);
-        Assert.AreEqual(0, messages.Count);
+        Assert.IsEmpty(messages);
     }
 
     [TestMethod]
@@ -196,7 +197,7 @@ public class LightSwitch
 
         Assert.AreEqual(savedSettings, settings.ToJsonString());
         Assert.AreSame(profile, viewModel.SelectedDarkModeProfile);
-        Assert.AreEqual(0, messages.Count);
+        Assert.IsEmpty(messages);
 
         replayControlValues = false;
         viewModel.SunriseOffset = 16;
@@ -247,7 +248,7 @@ public class LightSwitch
         Assert.AreEqual(sunsetOffset, controls.SunsetValue);
         Assert.AreEqual(savedSettings, nextSettings.ToJsonString());
         Assert.AreEqual(0, pageSaves);
-        Assert.AreEqual(0, messages.Count);
+        Assert.IsEmpty(messages);
     }
 
     [TestMethod]
@@ -272,7 +273,7 @@ public class LightSwitch
         Assert.AreEqual(1000, controls.SunriseValue);
         Assert.AreEqual(-1000, controls.SunsetValue);
         Assert.AreEqual(savedSettings, settings.ToJsonString());
-        Assert.AreEqual(0, messages.Count);
+        Assert.IsEmpty(messages);
     }
 
     [TestMethod]
@@ -311,7 +312,7 @@ public class LightSwitch
         Assert.AreEqual(sunsetOffset, viewModel.SunsetOffset);
         Assert.AreEqual(savedSettings, settings.ToJsonString());
         Assert.AreEqual(0, pageSaves);
-        Assert.AreEqual(0, messages.Count);
+        Assert.IsEmpty(messages);
     }
 
     [TestMethod]
@@ -352,7 +353,7 @@ public class LightSwitch
         Assert.AreEqual<TimeSpan?>(TimeSpan.FromMinutes(darkMinutes), viewModel.SunsetTimeSpan);
         Assert.AreEqual(savedSettings, settings.ToJsonString());
         Assert.AreEqual(0, pageSaves);
-        Assert.AreEqual(0, messages.Count);
+        Assert.IsEmpty(messages);
     }
 
     [TestMethod]
@@ -416,10 +417,10 @@ public class LightSwitch
 
         viewModel.ModuleSettings = settings;
 
-        Assert.IsTrue(notifications.Contains(nameof(viewModel.LightTimePickerValue)));
-        Assert.IsTrue(notifications.Contains(nameof(viewModel.DarkTimePickerValue)));
+        Assert.Contains(nameof(viewModel.LightTimePickerValue), notifications);
+        Assert.Contains(nameof(viewModel.DarkTimePickerValue), notifications);
         Assert.AreEqual(original, settings.ToJsonString());
-        Assert.AreEqual(0, messages.Count);
+        Assert.IsEmpty(messages);
     }
 
     [TestMethod]
@@ -502,8 +503,8 @@ public class LightSwitch
         Assert.AreEqual(darkMinutes, settings.Properties.DarkTime.Value);
         Assert.AreEqual(TimeSpan.FromMinutes(lightMinutes), viewModel.LightTimePickerValue);
         Assert.AreEqual(TimeSpan.FromMinutes(darkMinutes), viewModel.DarkTimePickerValue);
-        Assert.IsTrue(notifications.Contains(nameof(viewModel.LightTime)));
-        Assert.IsTrue(notifications.Contains(nameof(viewModel.DarkTime)));
+        Assert.Contains(nameof(viewModel.LightTime), notifications);
+        Assert.Contains(nameof(viewModel.DarkTime), notifications);
     }
 
     [TestMethod]
@@ -541,7 +542,7 @@ public class LightSwitch
 
         viewModel.ApplyLocation(22.3, 114.2, 480, 1080);
 
-        Assert.IsTrue(notifications > 0);
+        Assert.IsGreaterThan(0, notifications);
         Assert.AreEqual(0, pageSaves);
         Assert.AreEqual(30, viewModel.SunriseOffset);
         Assert.AreEqual(30, controls.SunriseValue);
@@ -549,7 +550,7 @@ public class LightSwitch
         AssertCompleteSavedSettings(viewModel, messages);
 
         viewModel.ApplyLocation(22.3, 114.2, 480, 1080);
-        Assert.AreEqual(1, messages.Count, "An unchanged location must not send another settings save.");
+        Assert.HasCount(1, messages, "An unchanged location must not send another settings save.");
     }
 
     [TestMethod]
@@ -659,7 +660,7 @@ public class LightSwitch
         viewModel.SelectedDarkModeProfile = null;
 
         Assert.AreEqual(7, settings.Properties.DarkModeProfileId.Value);
-        Assert.AreEqual(0, messages.Count);
+        Assert.IsEmpty(messages);
     }
 
     private static LightSwitchSettings CreateSunSettings(int lightMinutes, int darkMinutes, int sunriseOffset, int sunsetOffset)
@@ -675,7 +676,7 @@ public class LightSwitch
 
     private static void AssertCompleteSavedSettings(LightSwitchViewModel viewModel, List<string> messages)
     {
-        Assert.AreEqual(1, messages.Count);
+        Assert.HasCount(1, messages);
         using var document = JsonDocument.Parse(messages[0]);
         var saved = JsonSerializer.Deserialize<LightSwitchSettings>(document.RootElement.GetProperty("powertoys").GetProperty("LightSwitch"));
         Assert.IsNotNull(saved);
@@ -795,7 +796,7 @@ public class LightSwitch
         ];
         foreach (string property in boundProperties)
         {
-            Assert.IsTrue(notifications.Contains(property), $"Missing change notification for {property}.");
+            Assert.Contains(property, notifications, $"Missing change notification for {property}.");
         }
     }
 

@@ -28,7 +28,7 @@ public abstract class UIInitializeTestBase : FancyZonesEditorTestBase
                 string.Equals(x.ControlType, "ListItem", StringComparison.OrdinalIgnoreCase))
             .ToList();
 
-        Assert.AreEqual(1, candidates.Count, $"Expected one exact layout named '{layoutName}', but found {candidates.Count}.");
+        Assert.HasCount(1, candidates, $"Expected one exact layout named '{layoutName}', but found {candidates.Count}.");
         return candidates[0];
     }
 
@@ -40,7 +40,7 @@ public abstract class UIInitializeTestBase : FancyZonesEditorTestBase
                 string.Equals(x.ControlType, "ListItem", StringComparison.OrdinalIgnoreCase))
             .ToList();
 
-        Assert.AreEqual(1, candidates.Count, $"Expected one exact monitor named '{monitorName}', but found {candidates.Count}.");
+        Assert.HasCount(1, candidates, $"Expected one exact monitor named '{monitorName}', but found {candidates.Count}.");
         return candidates[0];
     }
 

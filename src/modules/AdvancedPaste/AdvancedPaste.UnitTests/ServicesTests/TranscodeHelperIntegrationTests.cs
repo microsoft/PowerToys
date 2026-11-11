@@ -19,6 +19,7 @@ using Windows.Storage.FileProperties;
 namespace AdvancedPaste.UnitTests.ServicesTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class TranscodeHelperIntegrationTests
 {
     private sealed record class MediaProperties(BasicProperties Basic, MusicProperties Music, VideoProperties Video);
@@ -61,7 +62,7 @@ public sealed class TranscodeHelperIntegrationTests
         var outputPackage = await TransformHelpers.TransformAsync(format, inputPackage.GetView(), CancellationToken.None, new NoOpProgress());
 
         var outputItems = await outputPackage.GetView().GetStorageItemsAsync();
-        Assert.AreEqual(1, outputItems.Count);
+        Assert.HasCount(1, outputItems);
         var outputFile = outputItems.Single() as StorageFile;
         Assert.IsNotNull(outputFile);
         var outputProperties = await GetPropertiesAsync(outputFile);
@@ -73,7 +74,7 @@ public sealed class TranscodeHelperIntegrationTests
 
     private static void AssertPropertiesMatch(PasteFormats format, MediaProperties inputProperties, MediaProperties outputProperties)
     {
-        Assert.IsTrue(outputProperties.Basic.Size > 0);
+        Assert.IsGreaterThan(0UL, outputProperties.Basic.Size);
 
         Assert.AreEqual(inputProperties.Music.Title, outputProperties.Music.Title);
         Assert.AreEqual(inputProperties.Music.Album, outputProperties.Music.Album);

@@ -13,6 +13,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 /// Tests for <see cref="ExtensionObject{T}"/> equality, which is the identity of the wrapped
 /// reference and must never call into the wrapped (extension-provided) object.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class ExtensionObjectTests
 {
@@ -91,8 +92,8 @@ public sealed class ExtensionObjectTests
         Assert.AreEqual(a.GetHashCode(), b.GetHashCode());
 
         var set = new HashSet<ExtensionObject<object>> { a };
-        Assert.IsTrue(set.Contains(b));
-        Assert.IsFalse(set.Contains(other));
+        Assert.Contains(b, set);
+        Assert.DoesNotContain(other, set);
     }
 
     [TestMethod]

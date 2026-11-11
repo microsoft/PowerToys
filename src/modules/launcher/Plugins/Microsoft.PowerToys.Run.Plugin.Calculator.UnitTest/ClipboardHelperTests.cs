@@ -12,13 +12,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     [DoNotParallelize]
     public class ClipboardHelperTests
     {
         private const int ErrorAccessDenied = 5;
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("")]
         [DataRow("2")]
         [DataRow("1.5")]
@@ -39,7 +40,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             WithPrivateClipboard(() =>
             {
                 ClipboardHelper.SetText("previous");
-                WithClipboardLocked(() => Assert.ThrowsException<Win32Exception>(() => ClipboardHelper.SetText("replacement")));
+                WithClipboardLocked(() => Assert.ThrowsExactly<Win32Exception>(() => ClipboardHelper.SetText("replacement")));
                 Assert.AreEqual("previous", System.Windows.Clipboard.GetText());
             });
         }

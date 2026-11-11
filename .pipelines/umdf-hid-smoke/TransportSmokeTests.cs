@@ -13,6 +13,7 @@ namespace Microsoft.GrabAndMove.UITests;
 
 [TestClass]
 [DoNotParallelize]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class TransportSmokeTests : IDisposable
 {
     private TestWindow? fixture;

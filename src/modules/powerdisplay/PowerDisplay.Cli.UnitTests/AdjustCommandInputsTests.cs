@@ -7,6 +7,7 @@ using PowerDisplay.Cli.Commands;
 
 namespace PowerDisplay.Cli.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class AdjustCommandInputsTests
 {

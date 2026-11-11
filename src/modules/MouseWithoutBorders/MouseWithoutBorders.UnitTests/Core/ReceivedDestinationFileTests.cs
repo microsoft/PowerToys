@@ -10,6 +10,7 @@ using MouseWithoutBorders.Core;
 
 namespace MouseWithoutBorders.UnitTests.Core;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class ReceivedDestinationFileTests
@@ -19,7 +20,7 @@ public sealed class ReceivedDestinationFileTests
     {
         var reverted = false;
 
-        Assert.ThrowsException<InvalidOperationException>(() => Launch.ExecuteImpersonatedAction(
+        Assert.ThrowsExactly<InvalidOperationException>(() => Launch.ExecuteImpersonatedAction(
             () => throw new InvalidOperationException(),
             () => reverted = true));
 
@@ -32,7 +33,7 @@ public sealed class ReceivedDestinationFileTests
         var reversionAttempts = 0;
         var failFastCalled = false;
 
-        _ = Assert.ThrowsException<Win32Exception>(() => Launch.ExecuteImpersonatedAction(
+        _ = Assert.ThrowsExactly<Win32Exception>(() => Launch.ExecuteImpersonatedAction(
             () => { },
             () => ++reversionAttempts == 2,
             () => 5,
@@ -48,7 +49,7 @@ public sealed class ReceivedDestinationFileTests
         var reversionAttempts = 0;
         Exception? failFastException = null;
 
-        _ = Assert.ThrowsException<Win32Exception>(() => Launch.ExecuteImpersonatedAction(
+        _ = Assert.ThrowsExactly<Win32Exception>(() => Launch.ExecuteImpersonatedAction(
             () => { },
             () =>
             {
@@ -79,7 +80,7 @@ public sealed class ReceivedDestinationFileTests
         Assert.AreEqual(paddedPayload.Length, receivedCount);
         Assert.AreEqual(4, writtenCount);
         Assert.IsTrue(Clipboard.HasExpectedReceivedDataLength(destination, expectedLength: 4));
-        CollectionAssert.AreEqual(new byte[] { 1, 2, 3, 4 }, destination.ToArray());
+        Assert.AreSequenceEqual(new byte[] { 1, 2, 3, 4 }, destination.ToArray());
     }
 
     [TestMethod]
@@ -91,11 +92,11 @@ public sealed class ReceivedDestinationFileTests
         {
             var accepted = Clipboard.ExecuteClipboardReceive(() => { }, waitMilliseconds: 1000);
             firstTransferCompleted.Set();
-            allowFirstWorkerToFinish.Wait();
+            allowFirstWorkerToFinish.Wait(TestContext.CancellationToken);
             return accepted;
         });
 
-        Assert.IsTrue(firstTransferCompleted.Wait(millisecondsTimeout: 1000));
+        Assert.IsTrue(firstTransferCompleted.Wait(millisecondsTimeout: 1000, TestContext.CancellationToken));
 
         try
         {
@@ -122,11 +123,11 @@ public sealed class ReceivedDestinationFileTests
                 () =>
                 {
                     firstReceiveStarted.Set();
-                    allowFirstReceiveToFinish.Wait();
+                    allowFirstReceiveToFinish.Wait(TestContext.CancellationToken);
                 },
                 waitMilliseconds: 1000));
 
-        Assert.IsTrue(firstReceiveStarted.Wait(millisecondsTimeout: 1000));
+        Assert.IsTrue(firstReceiveStarted.Wait(millisecondsTimeout: 1000, TestContext.CancellationToken));
 
         try
         {
@@ -148,7 +149,7 @@ public sealed class ReceivedDestinationFileTests
     [TestMethod]
     public void ClipboardReceiveGateIsReleasedAfterCallbackException()
     {
-        _ = Assert.ThrowsException<InvalidOperationException>(() => Clipboard.ExecuteClipboardReceive(
+        _ = Assert.ThrowsExactly<InvalidOperationException>(() => Clipboard.ExecuteClipboardReceive(
             () => throw new InvalidOperationException(),
             waitMilliseconds: 1000));
 
@@ -186,7 +187,7 @@ public sealed class ReceivedDestinationFileTests
             }
 
             Assert.IsFalse(File.Exists(path));
-            Assert.AreEqual(0, Directory.GetFiles(directory).Length);
+            Assert.IsEmpty(Directory.GetFiles(directory));
         }
         finally
         {
@@ -215,7 +216,7 @@ public sealed class ReceivedDestinationFileTests
 
             Assert.IsTrue(File.Exists(path));
             Assert.AreEqual("existing", File.ReadAllText(path));
-            Assert.AreEqual(1, Directory.GetFiles(directory).Length);
+            Assert.HasCount(1, Directory.GetFiles(directory));
         }
         finally
         {
@@ -238,8 +239,8 @@ public sealed class ReceivedDestinationFileTests
                 destination.Complete();
             }
 
-            CollectionAssert.AreEqual(new byte[] { 1 }, File.ReadAllBytes(path));
-            Assert.AreEqual(1, Directory.GetFiles(directory).Length);
+            Assert.AreSequenceEqual(new byte[] { 1 }, File.ReadAllBytes(path));
+            Assert.HasCount(1, Directory.GetFiles(directory));
         }
         finally
         {
@@ -261,7 +262,7 @@ public sealed class ReceivedDestinationFileTests
                 destination.Complete();
             }
 
-            CollectionAssert.AreEqual(new byte[] { 1 }, File.ReadAllBytes(path));
+            Assert.AreSequenceEqual(new byte[] { 1 }, File.ReadAllBytes(path));
         }
         finally
         {
@@ -280,4 +281,6 @@ public sealed class ReceivedDestinationFileTests
         _ = Directory.CreateDirectory(directory);
         return directory;
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

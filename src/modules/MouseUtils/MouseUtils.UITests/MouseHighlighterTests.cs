@@ -12,10 +12,11 @@ using Windows.Devices.Printers;
 
 namespace MouseUtils.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class MouseHighlighterTests : UITestBase
     {
-        [TestMethod("MouseUtils.MouseHighlighter.EnableMouseHighlighter")]
+        [TestMethod(DisplayName = "MouseUtils.MouseHighlighter.EnableMouseHighlighter")]
         [TestCategory("Mouse Utils #17")]
         [TestCategory("Mouse Utils #18")]
         [TestCategory("Mouse Utils #19")]
@@ -62,7 +63,7 @@ namespace MouseUtils.UITests
                 Assert.IsNotNull(activationShortcutButton);
 
                 activationShortcutButton.Click();
-                Task.Delay(500).Wait();
+                Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
                 var activationShortcutWindow = Session.Find<Window>("Activation shortcut");
                 Assert.IsNotNull(activationShortcutWindow);
 
@@ -91,7 +92,7 @@ namespace MouseUtils.UITests
                 Session.SendKeys(Key.Win, Key.Shift, Key.H);
 
                 // IOUtil.SimulateShortcut(0x5B, 0x10, 0x45);
-                Task.Delay(1000).Wait();
+                Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
                 // MouseSimulator.LeftClick();
                 // [Test Case] Press the activation shortcut and press left and right click somewhere, verifying the highlights are applied.
@@ -101,7 +102,7 @@ namespace MouseUtils.UITests
 
                 // Disable mouse highlighter
                 Session.SendKeys(Key.Win, Key.Shift, Key.H);
-                Task.Delay(1000).Wait();
+                Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
                 VerifyMouseHighlighterNotAppears(ref settings, "leftClick");
                 VerifyMouseHighlighterNotAppears(ref settings, "rightClick");
@@ -112,7 +113,7 @@ namespace MouseUtils.UITests
                 Session.MoveMouseTo(xy.Item1 - 100, xy.Item2);
 
                 Session.SendKeys(Key.Win, Key.Shift, Key.H);
-                Task.Delay(1000).Wait();
+                Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
                 VerifyMouseHighlighterNotAppears(ref settings, "leftClick");
                 VerifyMouseHighlighterNotAppears(ref settings, "rightClick");
@@ -124,7 +125,7 @@ namespace MouseUtils.UITests
                 Session.MoveMouseTo(xy.Item1 - 100, xy.Item2);
 
                 Session.SendKeys(Key.Win, Key.Shift, Key.H);
-                Task.Delay(1000).Wait();
+                Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
                 VerifyMouseHighlighterDrag(ref settings, "leftClick");
                 VerifyMouseHighlighterDrag(ref settings, "rightClick");
             }
@@ -133,10 +134,10 @@ namespace MouseUtils.UITests
                 Assert.Fail("Mouse Highlighter Custom not found.");
             }
 
-            Task.Delay(500).Wait();
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
         }
 
-        [TestMethod("MouseUtils.MouseHighlighter.MouseHighlighterDifferentSettings")]
+        [TestMethod(DisplayName = "MouseUtils.MouseHighlighter.MouseHighlighterDifferentSettings")]
         [TestCategory("Mouse Utils #22")]
         [TestCategory("Mouse Utils #23")]
         [TestCategory("Mouse Utils #24")]
@@ -184,7 +185,7 @@ namespace MouseUtils.UITests
                 Assert.IsNotNull(activationShortcutButton);
 
                 activationShortcutButton.Click();
-                Task.Delay(500).Wait();
+                Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
                 var activationShortcutWindow = Session.Find<Window>("Activation shortcut");
                 Assert.IsNotNull(activationShortcutWindow);
 
@@ -212,7 +213,7 @@ namespace MouseUtils.UITests
                 // Check the mouse highlighter is enabled
                 Session.SendKeys(Key.Win, Key.Shift, Key.O);
 
-                Task.Delay(1000).Wait();
+                Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
                 VerifyMouseHighlighterAppears(ref settings, "leftClick");
                 VerifyMouseHighlighterAppears(ref settings, "rightClick");
@@ -222,7 +223,7 @@ namespace MouseUtils.UITests
                 Assert.Fail("Mouse Highlighter Custom not found.");
             }
 
-            Task.Delay(500).Wait();
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
         }
 
         private void VerifyMouseHighlighterDrag(ref MouseHighlighterSettings settings, string action = "leftClick")

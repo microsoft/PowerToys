@@ -7,10 +7,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Plugin.Folder.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class EnvironmentHelperTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(@"%", true)]
         [DataRow(@"%P", true)]
         [DataRow(@"%PROGRAMDATA%", true)]

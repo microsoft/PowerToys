@@ -9,6 +9,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class PowerToysRootPageServiceTests
 {
@@ -28,7 +29,7 @@ public class PowerToysRootPageServiceTests
         service.OnPerformCommand(null, topLevel, host);
 
         bool[] expectedGrantRequests = [true, false, false];
-        CollectionAssert.AreEqual(expectedGrantRequests, grantRequests);
+        Assert.AreSequenceEqual(expectedGrantRequests, grantRequests);
     }
 
     [TestMethod]
@@ -48,8 +49,8 @@ public class PowerToysRootPageServiceTests
 
         bool[] expectedFirstGrantRequests = [true, false, true];
         bool[] expectedSecondGrantRequests = [true, false];
-        CollectionAssert.AreEqual(expectedFirstGrantRequests, firstGrantRequests);
-        CollectionAssert.AreEqual(expectedSecondGrantRequests, secondGrantRequests);
+        Assert.AreSequenceEqual(expectedFirstGrantRequests, firstGrantRequests);
+        Assert.AreSequenceEqual(expectedSecondGrantRequests, secondGrantRequests);
     }
 
     [TestMethod]
@@ -75,12 +76,12 @@ public class PowerToysRootPageServiceTests
         }
 
         bool[] expectedBeforeReturning = [true];
-        CollectionAssert.AreEqual(expectedBeforeReturning, grantRequests);
+        Assert.AreSequenceEqual(expectedBeforeReturning, grantRequests);
 
         service.OnPerformCommand(null, false, host);
 
         bool[] expectedAfterReturning = [true, true];
-        CollectionAssert.AreEqual(expectedAfterReturning, grantRequests);
+        Assert.AreSequenceEqual(expectedAfterReturning, grantRequests);
     }
 
     private static IExtensionWrapper CreateExtension(List<bool> grantRequests, bool grantSucceeds = true)

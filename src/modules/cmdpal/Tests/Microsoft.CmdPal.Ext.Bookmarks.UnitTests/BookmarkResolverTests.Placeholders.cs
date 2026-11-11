@@ -13,11 +13,11 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 
 public partial class BookmarkResolverTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(nameof(PlaceholderClassificationData.PlaceholderCases), typeof(PlaceholderClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Placeholders_ValidatePlaceholderClassification(PlaceholderClassificationCase c) => await RunShared(c);
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(nameof(PlaceholderClassificationData.EdgeCases), typeof(PlaceholderClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Placeholders_ValidatePlaceholderEdgeCases(PlaceholderClassificationCase c)
     {
@@ -27,7 +27,6 @@ public partial class BookmarkResolverTests
         // Act & Assert - Should not throw exceptions
         var classification = await resolver.TryClassifyAsync(c.Input, CancellationToken.None);
 
-        Assert.IsNotNull(classification);
         Assert.AreEqual(c.ExpectSuccess, classification.Success);
 
         if (c.ExpectSuccess && classification.Result != null)

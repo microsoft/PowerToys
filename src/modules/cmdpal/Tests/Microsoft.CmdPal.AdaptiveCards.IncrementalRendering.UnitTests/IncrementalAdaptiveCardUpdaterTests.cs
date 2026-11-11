@@ -7,6 +7,7 @@ using System.Text.Json;
 
 namespace Microsoft.CmdPal.AdaptiveCards.IncrementalRendering.UnitTests;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public sealed class IncrementalAdaptiveCardUpdaterTests
 {

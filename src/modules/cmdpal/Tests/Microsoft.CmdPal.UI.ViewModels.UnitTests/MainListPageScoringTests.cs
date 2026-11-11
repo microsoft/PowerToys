@@ -19,6 +19,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class MainListPageScoringTests
 {
@@ -50,7 +51,7 @@ public sealed class MainListPageScoringTests
         var expected = MainListPage.ScoreTopLevelItem(query, new InProcObject<IListItem>(itemWithoutExtension), history, matcher);
         var actual = MainListPage.ScoreTopLevelItem(query, new InProcObject<IListItem>(command), history, matcher);
 
-        Assert.IsTrue(expected > 0, "The title or subtitle must match independently of the extension name.");
+        Assert.IsGreaterThan(0, expected, "The title or subtitle must match independently of the extension name.");
         Assert.AreEqual(expected, actual, "A matching extension name must not boost an existing title or subtitle match.");
     }
 
@@ -98,7 +99,7 @@ public sealed class MainListPageScoringTests
 
         Assert.AreEqual(RankTier.Prefix, MainListRanker.TierOf(appScore));
         Assert.AreEqual(RankTier.Prefix, MainListRanker.TierOf(commandScore));
-        Assert.IsTrue(appScore > commandScore, "App usage must break the title-prefix tie without an additive extension-name bonus.");
+        Assert.IsGreaterThan(commandScore, appScore, "App usage must break the title-prefix tie without an additive extension-name bonus.");
     }
 
     private TopLevelViewModel CreateCommand(string title, string subtitle, string extensionName)

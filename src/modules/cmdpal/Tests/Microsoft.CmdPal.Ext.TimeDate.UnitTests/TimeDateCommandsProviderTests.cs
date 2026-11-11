@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class TimeDateCommandsProviderTests
     {
@@ -64,7 +65,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
 
             // Assert
             Assert.IsNotNull(commands);
-            Assert.AreEqual(2, commands.Length);
+            Assert.HasCount(2, commands);
             Assert.IsNotNull(commands[0]);
             Assert.IsNotNull(commands[0].Title);
             Assert.IsNotNull(commands[0].Icon);
@@ -83,7 +84,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
 
             // Assert
             Assert.IsNotNull(fallbackCommands);
-            Assert.AreEqual(1, fallbackCommands.Length);
+            Assert.HasCount(1, fallbackCommands);
             Assert.IsNotNull(fallbackCommands[0]);
         }
 
@@ -107,7 +108,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
 
             var bands = provider.GetDockBands();
 
-            Assert.IsTrue(bands.Length > 0, "GetDockBands should return at least one item");
+            Assert.IsNotEmpty(bands, "GetDockBands should return at least one item");
             Assert.IsNotNull(bands[0], "First dock band should not be null");
         }
 
@@ -131,12 +132,13 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
 
             // The band shares the top-level command's ID so that pinning that
             // command resolves to this band rather than a generic wrapper.
-            Assert.AreEqual(
-                1,
-                bands.Count(band => band.Command?.Id == CustomClockListPage.PageId),
+            Assert.ContainsSingle(
+                band => band.Command?.Id == CustomClockListPage.PageId,
+                bands,
                 "Expected exactly one all-clocks band offered under the top-level command ID");
-            Assert.IsTrue(
-                provider.TopLevelCommands().Any(command => command.Command?.Id == CustomClockListPage.PageId),
+            Assert.Contains(
+                command => command.Command?.Id == CustomClockListPage.PageId,
+                provider.TopLevelCommands(),
                 "The all-clocks band must share the top-level command's ID");
         }
 
@@ -168,22 +170,26 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
                 using var start = new ManualResetEventSlim();
                 var detailPageId = CustomClockIds.GetDetailPage(clock.Id);
 
-                var writer = Task.Run(() =>
+                var writer = Task.Run(
+                    () =>
                 {
-                    start.Wait();
+                    start.Wait(TestContext.CancellationToken);
                     for (var index = 0; index < 100; index++)
                     {
                         clockManager.Save(new CustomClock { Id = clock.Id, Title = index.ToString(CultureInfo.InvariantCulture) });
                     }
-                });
-                var reader = Task.Run(() =>
+                },
+                    TestContext.CancellationToken);
+                var reader = Task.Run(
+                    () =>
                 {
-                    start.Wait();
+                    start.Wait(TestContext.CancellationToken);
                     for (var index = 0; index < 1_000; index++)
                     {
                         _ = provider.GetCommandItem(detailPageId);
                     }
-                });
+                },
+                    TestContext.CancellationToken);
 
                 start.Set();
                 await Task.WhenAll(writer, reader);
@@ -229,5 +235,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
                 File.Delete(settingsFilePath);
             }
         }
+
+        public TestContext TestContext { get; set; } = null!;
     }
 }

@@ -9,6 +9,7 @@ namespace MouseJump.Models.UnitTests.Drawing;
 
 public static class RectangleInfoTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class CenterTests
     {
@@ -60,6 +61,7 @@ public static class RectangleInfoTests
         }
     }
 
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class MoveInsideTests
     {

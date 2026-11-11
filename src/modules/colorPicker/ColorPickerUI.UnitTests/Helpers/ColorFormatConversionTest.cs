@@ -17,6 +17,7 @@ namespace ColorPicker.UnitTests.Helpers
     /// by the existing <see cref="ColorConverterTest"/> (which tests HSL and HSV).
     /// Covers: CMYK, HSB, HSI, HWB, CIE LAB, CIE XYZ, Oklab, Oklch, sRGB-to-linear, NCol.
     /// </summary>
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ColorFormatConversionTest
     {
@@ -224,7 +225,7 @@ namespace ColorPicker.UnitTests.Helpers
         {
             // Red is in the +a* direction
             var result = ColorFormatHelper.ConvertToCIELABColor(Color.FromArgb(255, 255, 0, 0));
-            Assert.IsTrue(result.ChromaticityA > 0, "Red should have positive a* in CIE LAB");
+            Assert.IsGreaterThan(0, result.ChromaticityA, "Red should have positive a* in CIE LAB");
         }
 
         [TestMethod]
@@ -232,7 +233,7 @@ namespace ColorPicker.UnitTests.Helpers
         {
             // Blue is in the -b* direction
             var result = ColorFormatHelper.ConvertToCIELABColor(Color.FromArgb(255, 0, 0, 255));
-            Assert.IsTrue(result.ChromaticityB < 0, "Blue should have negative b* in CIE LAB");
+            Assert.IsLessThan(0, result.ChromaticityB, "Blue should have negative b* in CIE LAB");
         }
 
         [TestMethod]
@@ -279,7 +280,7 @@ namespace ColorPicker.UnitTests.Helpers
             foreach (var color in colors)
             {
                 var result = ColorFormatHelper.ConvertToOklchColor(color);
-                Assert.IsTrue(result.Chroma >= 0, $"Chroma should be non-negative for {color.Name}");
+                Assert.IsGreaterThanOrEqualTo(0, result.Chroma, $"Chroma should be non-negative for {color.Name}");
             }
         }
 

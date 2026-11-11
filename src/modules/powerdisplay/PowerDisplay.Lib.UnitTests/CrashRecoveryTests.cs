@@ -9,6 +9,7 @@ using PowerDisplay.Common.Services;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CrashRecoveryTests
 {
@@ -81,7 +82,7 @@ public class CrashRecoveryTests
         // Strip whitespace so the assertion is stable whether the writer uses indented or
         // compact JSON.
         var settingsCompact = settingsJson.Replace(" ", string.Empty).Replace("\r", string.Empty).Replace("\n", string.Empty);
-        StringAssert.Contains(settingsCompact, "\"PowerDisplay\":false");
+        Assert.Contains("\"PowerDisplay\":false", settingsCompact);
     }
 
     [TestMethod]

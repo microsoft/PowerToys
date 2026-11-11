@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ExtensionTemplateServiceTests
 {
@@ -70,10 +71,10 @@ public class ExtensionTemplateServiceTests
         Assert.IsTrue(File.Exists(programFile));
         Assert.IsTrue(File.Exists(imageFile));
         Assert.IsTrue(File.Exists(vsConfigFile));
-        StringAssert.Contains(File.ReadAllText(programFile), "MyExtension");
-        StringAssert.Contains(File.ReadAllText(programFile), "My Display Name");
+        Assert.Contains("MyExtension", File.ReadAllText(programFile));
+        Assert.Contains("My Display Name", File.ReadAllText(programFile));
         Assert.IsFalse(File.ReadAllText(programFile).Contains("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", StringComparison.Ordinal));
-        CollectionAssert.AreEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, File.ReadAllBytes(imageFile));
+        Assert.AreSequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, File.ReadAllBytes(imageFile));
         Assert.AreEqual("vsconfig contents", File.ReadAllText(vsConfigFile));
     }
 
@@ -114,7 +115,7 @@ public class ExtensionTemplateServiceTests
         // Assert
         var outputFile = Path.Combine(_outputRoot, "MyExtension", "Properties", "launchSettings.json");
         Assert.IsTrue(File.Exists(outputFile));
-        CollectionAssert.AreEqual(sourceBytes, File.ReadAllBytes(outputFile));
+        Assert.AreSequenceEqual(sourceBytes, File.ReadAllBytes(outputFile));
     }
 
     [TestMethod]
@@ -137,15 +138,15 @@ public class ExtensionTemplateServiceTests
         // Assert
         var outputFile = Path.Combine(_outputRoot, "MyExtension", "Assets", "Logo.png");
         Assert.IsTrue(File.Exists(outputFile));
-        CollectionAssert.AreEqual(File.ReadAllBytes(sourceFile), File.ReadAllBytes(outputFile));
+        Assert.AreSequenceEqual(File.ReadAllBytes(sourceFile), File.ReadAllBytes(outputFile));
     }
 
     [TestMethod]
     public void TemplateFileHandling_ThrowsForUnknownExtension()
     {
-        var ex = Assert.ThrowsException<InvalidOperationException>(() => ExtensionTemplateService.GetTemplateFileHandling("template.svg"));
+        var ex = Assert.ThrowsExactly<InvalidOperationException>(() => ExtensionTemplateService.GetTemplateFileHandling("template.svg"));
 
-        StringAssert.Contains(ex.Message, ".svg");
+        Assert.Contains(".svg", ex.Message);
     }
 
     [TestMethod]
@@ -156,8 +157,8 @@ public class ExtensionTemplateServiceTests
         var allAccountedFor = replaceTokens.Concat(copyAsIs).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var templateZipExtensions = GetTemplateZipExtensions();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), replaceTokens.Intersect(copyAsIs, StringComparer.OrdinalIgnoreCase).ToArray());
-        CollectionAssert.AreEquivalent(templateZipExtensions.OrderBy(x => x).ToArray(), allAccountedFor.OrderBy(x => x).ToArray());
+        Assert.AreSequenceEqual(Array.Empty<string>(), replaceTokens.Intersect(copyAsIs, StringComparer.OrdinalIgnoreCase).ToArray());
+        Assert.AreSequenceEqual(templateZipExtensions.OrderBy(x => x).ToArray(), allAccountedFor.OrderBy(x => x).ToArray(), SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]

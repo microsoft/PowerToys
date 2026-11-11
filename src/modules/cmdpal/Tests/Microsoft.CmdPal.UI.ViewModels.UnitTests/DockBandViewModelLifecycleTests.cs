@@ -15,6 +15,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class DockBandViewModelLifecycleTests
 {
@@ -102,13 +103,13 @@ public partial class DockBandViewModelLifecycleTests
         try
         {
             page.BlockNextGetItems();
-            var initialization = Task.Run(band.InitializeProperties);
+            var initialization = Task.Run(band.InitializeProperties, TestContext.CancellationToken);
 
             Assert.IsTrue(page.WaitForGetItems(), "Dock band initialization did not reach GetItems().");
             band.SafeCleanup();
             page.ReleaseGetItems();
 
-            var completed = await Task.WhenAny(initialization, Task.Delay(TimeSpan.FromSeconds(5)));
+            var completed = await Task.WhenAny(initialization, Task.Delay(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
             Assert.AreSame(initialization, completed, "Dock band initialization did not finish.");
             await initialization;
 
@@ -126,4 +127,6 @@ public partial class DockBandViewModelLifecycleTests
             GC.KeepAlive(context);
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

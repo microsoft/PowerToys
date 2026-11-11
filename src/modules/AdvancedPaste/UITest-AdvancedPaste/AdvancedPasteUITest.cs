@@ -26,6 +26,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.ToolTip;
 namespace Microsoft.AdvancedPaste.UITests
 {
     [TestClass]
+    [OSCondition(OperatingSystems.Windows)]
     public class AdvancedPasteUITest : UITestBase
     {
         private readonly string testFilesFolderPath;

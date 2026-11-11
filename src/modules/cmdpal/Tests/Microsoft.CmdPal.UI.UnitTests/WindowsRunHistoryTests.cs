@@ -8,6 +8,7 @@ using Microsoft.Win32;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class WindowsRunHistoryTests
 {
@@ -42,7 +43,7 @@ public sealed class WindowsRunHistoryTests
     [TestMethod]
     public void ReadMissingKeyReturnsEmptyHistory()
     {
-        Assert.AreEqual(0, WindowsRunHistory.Read(null).Count);
+        Assert.IsEmpty(WindowsRunHistory.Read(null));
     }
 
     [TestMethod]
@@ -50,7 +51,7 @@ public sealed class WindowsRunHistoryTests
     {
         _key.SetValue("a", @"notepad\1");
 
-        Assert.AreEqual(0, WindowsRunHistory.Read(_key).Count);
+        Assert.IsEmpty(WindowsRunHistory.Read(_key));
     }
 
     [TestMethod]
@@ -59,7 +60,7 @@ public sealed class WindowsRunHistoryTests
         _key.SetValue("MRUList", 1);
         _key.SetValue("a", @"notepad\1");
 
-        Assert.AreEqual(0, WindowsRunHistory.Read(_key).Count);
+        Assert.IsEmpty(WindowsRunHistory.Read(_key));
     }
 
     [TestMethod]
@@ -115,6 +116,6 @@ public sealed class WindowsRunHistoryTests
 
     private void AssertHistory(params string[] expected)
     {
-        CollectionAssert.AreEqual(expected, WindowsRunHistory.Read(_key).ToArray());
+        Assert.AreSequenceEqual(expected, WindowsRunHistory.Read(_key).ToArray());
     }
 }

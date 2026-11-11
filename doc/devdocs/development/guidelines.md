@@ -87,6 +87,53 @@
 
 ## Testing Requirements
 
+### Managed and Native Test Commands
+
+Build test projects with the [build scripts](../../../tools/build/BUILD-GUIDELINES.md) first.
+Managed tests already run on Microsoft.Testing.Platform (MTP) through the MSBuild `Test`
+target. The pinned .NET 10 SDK also selects MTP for `dotnet test` via `global.json`.
+Run a specific built managed test assembly without rebuilding or restoring:
+
+```powershell
+dotnet test --test-modules .\x64\Debug\tests\MouseJump.Models.UnitTests\PowerToys.MouseJump.Models.UnitTests.dll --report-trx --results-directory .\artifacts\test-results\MouseJump.Models
+```
+
+When a test application has an apphost (`.exe`), prefer selecting that executable.
+For example, Advanced Paste's tests load WinUI resources relative to the application
+executable; selecting its DLL instead runs inside `dotnet.exe` and cannot find those resources:
+
+```powershell
+dotnet test --test-modules .\x64\Debug\tests\AdvancedPaste.UnitTests\AdvancedPaste.UnitTests.exe --report-trx
+```
+
+Preserve the original build layout. Suites that locate test data relative to their
+working directory must be launched from their output directory. IPC identity tests
+also require the original executable paths, not directory-junction aliases.
+
+For a restored test project, the project form uses `--project` instead of a positional path:
+
+```powershell
+dotnet test --project .\src\modules\MouseUtils\MouseJump.Models.UnitTests\MouseJump.Models.UnitTests.csproj --configuration Debug -p:Platform=x64 --no-build --report-trx
+```
+
+MTP arguments are passed directly, without the legacy `--` separator. Use `--filter`
+for MSTest filtering and `--report-trx` instead of `--logger trx`. The `MSTest` package
+already includes `Microsoft.Testing.Extensions.TrxReport`; no additional package is needed.
+Do not suppress empty-selection exit code 8 globally.
+
+Native C++ test adapters still require a separate `vstest.console.exe` invocation:
+
+```powershell
+& $vstest .\x64\Debug\tests\MouseButtonLock\MouseButtonLock.UnitTests.dll /Platform:x64 /Logger:trx
+```
+
+Here `$vstest` is the installed Visual Studio `vstest.console.exe` path.
+Do not pass the mixed managed/native solution, or a glob containing native DLLs or
+test-helper libraries, to MTP. CI keeps managed execution in MSBuild and selects
+only the native test containers in its subsequent VSTest task, avoiding a second
+execution of managed unit tests. Unit tests for the UI-test harness still run in
+the managed pass. UI and fuzz tests retain their dedicated execution paths.
+
 ### Multiple Computers
 - **Mouse Without Borders**: Requires multiple physical computers for proper testing
   - Testing with VMs is not recommended as it may cause confusion between host and guest mouse input

@@ -7,6 +7,7 @@ using PowerDisplay.Common.Models;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class VcpFeatureValueTests
 {
@@ -96,8 +97,9 @@ public class VcpFeatureValueTests
         {
             var pct = new VcpFeatureValue(raw, 0, max).ToPercentage();
             var roundTripped = VcpFeatureValue.FromPercentage(pct, max);
-            Assert.IsTrue(
-                System.Math.Abs(roundTripped - raw) <= 1,
+            Assert.IsLessThanOrEqualTo(
+                1,
+                System.Math.Abs(roundTripped - raw),
                 $"raw={raw} → pct={pct} → roundTripped={roundTripped} (drift > 1)");
         }
     }

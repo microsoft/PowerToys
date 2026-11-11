@@ -17,6 +17,7 @@ namespace ColorPicker.UnitTests.Mouse
     /// These tests exercise the delegate-testable capture helper directly — no mock framework,
     /// no UI construction required.
     /// </summary>
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class MouseInfoProviderTests
     {
@@ -68,12 +69,11 @@ namespace ColorPicker.UnitTests.Mouse
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void TryGetPixelColor_unexpected_exception_propagates()
         {
-            _ = MouseInfoProvider.TryGetPixelColor(
+            Assert.ThrowsExactly<InvalidOperationException>(() => MouseInfoProvider.TryGetPixelColor(
                 () => throw new InvalidOperationException("unexpected – must not be caught"),
-                out _);
+                out _));
         }
     }
 }

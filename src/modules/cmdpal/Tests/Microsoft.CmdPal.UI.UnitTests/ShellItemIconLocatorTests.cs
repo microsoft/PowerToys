@@ -9,6 +9,7 @@ using Windows.Graphics.Imaging;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ShellItemIconLocatorTests
 {
@@ -64,8 +65,8 @@ public class ShellItemIconLocatorTests
             Assert.IsTrue(extraction.HasContent);
             Assert.AreEqual(ShellImageListSize.Large, extraction.ImageListSize);
             Assert.AreEqual(20, extraction.RequestedPixelSize);
-            Assert.IsTrue(extraction.SourceWidth > 0);
-            Assert.IsTrue(extraction.SourceHeight > 0);
+            Assert.IsGreaterThan(0, extraction.SourceWidth);
+            Assert.IsGreaterThan(0, extraction.SourceHeight);
             Assert.IsNull(extraction.BitmapStream);
             Assert.IsNotNull(extraction.SoftwareBitmap);
             Assert.AreEqual(BitmapPixelFormat.Bgra8, extraction.SoftwareBitmap.BitmapPixelFormat);

@@ -7,10 +7,11 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class StringParameterEnterRoutingTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true, StringParameterEnterAction.Submit)]
     [DataRow(false, StringParameterEnterAction.FocusNext)]
     public void SingleLineEnter_HasOneOwnerAction(bool showCommand, StringParameterEnterAction expected)
@@ -18,7 +19,7 @@ public sealed class StringParameterEnterRoutingTests
         Assert.AreEqual(expected, StringParameterEnterRouting.GetAction(VirtualKey.Enter, acceptsReturn: false, showCommand: showCommand));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
     public void MultilineEnter_RemainsAvailableToTheTextBox(bool showCommand)

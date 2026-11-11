@@ -17,6 +17,7 @@ namespace PowerDisplay.Cli.UnitTests;
 /// padding) and must render as a delimiter-separated line, since this is human output rather than a
 /// machine (JSON) contract.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class TextCliOutputTests
 {
@@ -42,7 +43,7 @@ public class TextCliOutputTests
 
         // The row must contain the full, untruncated name — no "…" ellipsis marker.
         var row = lines.Single(l => l.Contains("MON-1"));
-        StringAssert.Contains(row, NonBmpName);
+        Assert.Contains(NonBmpName, row);
         Assert.IsFalse(row.Contains('…'), "the row must not contain a truncation ellipsis");
 
         // Delimiter-separated, not fixed-width padded columns.
@@ -66,7 +67,7 @@ public class TextCliOutputTests
 
         var lines = stdout.ToString().Split('\n').Select(l => l.TrimEnd('\r')).ToList();
         var row = lines.Single(l => l.Contains("2025-01-01T00:00:00Z"));
-        StringAssert.Contains(row, NonBmpName);
+        Assert.Contains(NonBmpName, row);
         Assert.IsFalse(row.Contains('…'), "the row must not contain a truncation ellipsis");
 
         var expectedRow = $"7 | {NonBmpName} | 2 | 2025-01-01T00:00:00Z";

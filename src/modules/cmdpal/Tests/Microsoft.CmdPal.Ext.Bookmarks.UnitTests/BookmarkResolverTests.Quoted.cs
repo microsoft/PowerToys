@@ -13,59 +13,59 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 
 public partial class BookmarkResolverTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(dynamicDataSourceName: nameof(QuotedClassificationData.MixedQuotesScenarios), dynamicDataDeclaringType: typeof(QuotedClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Quoted_ValidateMixedQuotesScenarios(PlaceholderClassificationCase c) => await RunShared(c: c);
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(dynamicDataSourceName: nameof(QuotedClassificationData.EscapedQuotes), dynamicDataDeclaringType: typeof(QuotedClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Quoted_ValidateEscapedQuotes(PlaceholderClassificationCase c) => await RunShared(c: c);
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(dynamicDataSourceName: nameof(QuotedClassificationData.PartialMalformedQuotes), dynamicDataDeclaringType: typeof(QuotedClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Quoted_ValidatePartialMalformedQuotes(PlaceholderClassificationCase c) => await RunShared(c: c);
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(dynamicDataSourceName: nameof(QuotedClassificationData.EnvironmentVariablesWithQuotes), dynamicDataDeclaringType: typeof(QuotedClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Quoted_ValidateEnvironmentVariablesWithQuotes(PlaceholderClassificationCase c) => await RunShared(c: c);
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(dynamicDataSourceName: nameof(QuotedClassificationData.ShellProtocolPathsWithQuotes), dynamicDataDeclaringType: typeof(QuotedClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Quoted_ValidateShellProtocolPathsWithQuotes(PlaceholderClassificationCase c) => await RunShared(c: c);
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(dynamicDataSourceName: nameof(QuotedClassificationData.CommandFlagsAndOptions), dynamicDataDeclaringType: typeof(QuotedClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Quoted_ValidateCommandFlagsAndOptions(PlaceholderClassificationCase c) => await RunShared(c: c);
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(dynamicDataSourceName: nameof(QuotedClassificationData.NetworkPathsUnc), dynamicDataDeclaringType: typeof(QuotedClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Quoted_ValidateNetworkPathsUnc(PlaceholderClassificationCase c) => await RunShared(c: c);
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(dynamicDataSourceName: nameof(QuotedClassificationData.RelativePathsWithQuotes), dynamicDataDeclaringType: typeof(QuotedClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Quoted_ValidateRelativePathsWithQuotes(PlaceholderClassificationCase c) => await RunShared(c: c);
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(dynamicDataSourceName: nameof(QuotedClassificationData.EmptyAndWhitespaceCases), dynamicDataDeclaringType: typeof(QuotedClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Quoted_ValidateEmptyAndWhitespaceCases(PlaceholderClassificationCase c) => await RunShared(c: c);
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(dynamicDataSourceName: nameof(QuotedClassificationData.RealWorldCommandScenarios), dynamicDataDeclaringType: typeof(QuotedClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Quoted_ValidateRealWorldCommandScenarios(PlaceholderClassificationCase c) => await RunShared(c: c);
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(dynamicDataSourceName: nameof(QuotedClassificationData.SpecialCharactersInPaths), dynamicDataDeclaringType: typeof(QuotedClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Quoted_ValidateSpecialCharactersInPaths(PlaceholderClassificationCase c) => await RunShared(c: c);
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(dynamicDataSourceName: nameof(QuotedClassificationData.QuotedPathsCurrentlyBroken), dynamicDataDeclaringType: typeof(QuotedClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Quoted_ValidateQuotedPathsCurrentlyBroken(PlaceholderClassificationCase c) => await RunShared(c: c);
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(dynamicDataSourceName: nameof(QuotedClassificationData.QuotedPathsInCommands), dynamicDataDeclaringType: typeof(QuotedClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Quoted_ValidateQuotedPathsInCommands(PlaceholderClassificationCase c) => await RunShared(c: c);
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(dynamicDataSourceName: nameof(QuotedClassificationData.QuotedAumid), dynamicDataDeclaringType: typeof(QuotedClassificationData), DynamicDataDisplayName = nameof(FromCase))]
     public async Task Quoted_ValidateQuotedUwpAppAumidCommands(PlaceholderClassificationCase c) => await RunShared(c: c);
 

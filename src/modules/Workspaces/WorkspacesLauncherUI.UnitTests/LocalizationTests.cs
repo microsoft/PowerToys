@@ -13,10 +13,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WorkspacesLauncherUI.Models;
 using WorkspacesLauncherUI.Properties;
 
-[assembly: DoNotParallelize]
-
 namespace WorkspacesLauncherUI.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class LocalizationTests
     {
@@ -29,8 +28,8 @@ namespace WorkspacesLauncherUI.UnitTests
                 .Where(property => property.PropertyType == typeof(string))
                 .ToArray();
 
-            Assert.IsTrue(source.Count > 0);
-            CollectionAssert.AreEquivalent(source.Keys.ToArray(), getters.Select(property => property.Name).ToArray());
+            Assert.IsNotEmpty(source);
+            Assert.AreSequenceEqual(source.Keys.ToArray(), getters.Select(property => property.Name).ToArray(), SequenceOrder.InAnyOrder);
             foreach (var getter in getters)
             {
                 Assert.IsFalse(string.IsNullOrWhiteSpace(source[getter.Name]), getter.Name);
@@ -38,7 +37,7 @@ namespace WorkspacesLauncherUI.UnitTests
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("unsigned", nameof(Resources.SignatureWarningUnsigned))]
         [DataRow("invalid-signature", nameof(Resources.SignatureWarningInvalid))]
         [DataRow("certificate-untrusted", nameof(Resources.SignatureWarningCertificate))]
@@ -60,7 +59,7 @@ namespace WorkspacesLauncherUI.UnitTests
             Assert.AreEqual(ReadNeutralResources()[resourceKey], request.ReasonText);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(nameof(SignatureWarningRequest.Title), nameof(Resources.SignatureWarningTitle))]
         [DataRow(nameof(SignatureWarningRequest.Explanation), nameof(Resources.SignatureWarningExplanation))]
         [DataRow(nameof(SignatureWarningRequest.TrustLimits), nameof(Resources.SignatureWarningTrustLimits))]
@@ -88,14 +87,14 @@ namespace WorkspacesLauncherUI.UnitTests
             Assert.AreEqual(ReadNeutralResources()[resourceKey], value);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("fr-FR", "[TEST fr-FR] Warning title")]
         [DataRow("ar-SA", "[TEST ar-SA] Warning title")]
         public void SatelliteUsesExactMarkerAndOmittedKeysFallBackToEnglish(string cultureName, string expectedTitle)
         {
             using var culture = new CultureScope(cultureName);
             var satellite = typeof(Resources).Assembly.GetSatelliteAssembly(CultureInfo.CurrentUICulture);
-            CollectionAssert.Contains(satellite.GetManifestResourceNames(), $"WorkspacesLauncherUI.Properties.Resources.{cultureName}.resources");
+            Assert.Contains($"WorkspacesLauncherUI.Properties.Resources.{cultureName}.resources", satellite.GetManifestResourceNames());
             var request = new SignatureWarningRequest { Reason = "unsigned" };
             var neutral = ReadNeutralResources();
 
@@ -120,7 +119,7 @@ namespace WorkspacesLauncherUI.UnitTests
             Assert.AreEqual(neutral[nameof(Resources.SignatureWarningTitle)], new SignatureWarningRequest().Title);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("fr-FR", "ar-SA", "[TEST ar-SA] Warning title")]
         [DataRow("ar-SA", "fr-FR", "[TEST fr-FR] Warning title")]
         [DataRow("fr-FR", "de-DE", "Run this app as administrator?")]
@@ -137,7 +136,7 @@ namespace WorkspacesLauncherUI.UnitTests
             Assert.AreEqual($"[TEST {uiCulture}] Warning title", new SignatureWarningRequest().Title);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("en-US")]
         [DataRow("fr-FR")]
         [DataRow("ar-SA")]
@@ -153,7 +152,7 @@ namespace WorkspacesLauncherUI.UnitTests
                 Reason = "unsigned",
             };
 
-            CollectionAssert.AreEqual(
+            Assert.AreSequenceEqual(
                 new[]
                 {
                     request.AppLabel, request.AppName, string.Empty,

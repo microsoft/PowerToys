@@ -17,6 +17,7 @@ using Settings.UI.Library;
 
 namespace ViewModelTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ShellCollectionTests
 {
@@ -35,7 +36,7 @@ public class ShellCollectionTests
 
         Assert.IsNotNull(setter);
         Assert.IsTrue(setter.IsPublic);
-        CollectionAssert.DoesNotContain(setter.ReturnParameter.GetRequiredCustomModifiers(), typeof(IsExternalInit));
+        Assert.DoesNotContain(typeof(IsExternalInit), setter.ReturnParameter.GetRequiredCustomModifiers());
     }
 
     [TestMethod]
@@ -63,25 +64,25 @@ public class ShellCollectionTests
         var first = new SettingEntry(EntryType.SettingsCard, "First", "TestPage", "FirstCard", null);
         viewModel.SetSearchResults("first", new List<SettingEntry> { module, first });
 
-        CollectionAssert.AreEqual(new List<SettingEntry> { module }, modules);
-        CollectionAssert.AreEqual(new List<SettingEntry> { first }, groups.Single().Settings);
+        Assert.AreSequenceEqual(new List<SettingEntry> { module }, modules);
+        Assert.AreSequenceEqual(new List<SettingEntry> { first }, groups.Single().Settings);
         Assert.IsFalse(viewModel.HasNoResults);
 
         var second = new SettingEntry(EntryType.SettingsCard, "Second", "TestPage", "SecondCard", null);
         viewModel.SetSearchResults("second", new List<SettingEntry> { second });
 
-        Assert.AreEqual(0, modules.Count);
-        CollectionAssert.AreEqual(new List<SettingEntry> { second }, groups.Single().Settings);
+        Assert.IsEmpty(modules);
+        Assert.AreSequenceEqual(new List<SettingEntry> { second }, groups.Single().Settings);
 
         viewModel.SetSearchResults("empty", useNull ? null : new List<SettingEntry>());
 
         Assert.AreSame(modules, viewModel.ModuleResults);
         Assert.AreSame(groups, viewModel.GroupedSettingsResults);
-        Assert.AreEqual(0, modules.Count);
-        Assert.AreEqual(0, groups.Count);
+        Assert.IsEmpty(modules);
+        Assert.IsEmpty(groups);
         Assert.IsTrue(viewModel.HasNoResults);
-        Assert.IsTrue(moduleNotifications > 0);
-        Assert.IsTrue(groupNotifications > 0);
+        Assert.IsGreaterThan(0, moduleNotifications);
+        Assert.IsGreaterThan(0, groupNotifications);
         Assert.AreEqual(3, noResultsNotifications);
     }
 
@@ -102,9 +103,9 @@ public class ShellCollectionTests
         Assert.AreSame(items, item.DashboardModuleItems);
         Assert.AreSame(other, item.DashboardModuleItems[0]);
         Assert.AreSame(keys, shortcut.Shortcut);
-        Assert.AreEqual(3, shortcut.Shortcut.Count);
+        Assert.HasCount(3, shortcut.Shortcut);
         Assert.AreEqual(1, changes);
-        Assert.AreEqual(0, new DashboardListItem().DashboardModuleItems.Count);
+        Assert.IsEmpty(new DashboardListItem().DashboardModuleItems);
     }
 
     [TestMethod]
@@ -119,9 +120,9 @@ public class ShellCollectionTests
         conflicts.Add(new ModuleHotkeyData { ModuleName = "Test" });
 
         Assert.AreSame(results, navigation.Results);
-        Assert.AreEqual(1, navigation.Results.Count);
+        Assert.HasCount(1, navigation.Results);
         Assert.AreSame(conflicts, response.AllConflicts);
-        Assert.AreEqual(1, response.AllConflicts.Count);
-        Assert.AreEqual(0, new HotkeyConflictResponse().AllConflicts.Count);
+        Assert.HasCount(1, response.AllConflicts);
+        Assert.IsEmpty(new HotkeyConflictResponse().AllConflicts);
     }
 }

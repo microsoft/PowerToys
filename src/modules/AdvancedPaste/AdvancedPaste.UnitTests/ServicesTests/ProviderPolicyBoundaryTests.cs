@@ -17,6 +17,7 @@ using Moq;
 namespace AdvancedPaste.UnitTests.ServicesTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class ProviderPolicyBoundaryTests
 {
     [TestMethod]
@@ -33,7 +34,7 @@ public sealed class ProviderPolicyBoundaryTests
             return false;
         });
 
-        var exception = await Assert.ThrowsExceptionAsync<ProviderPolicyDisabledException>(() =>
+        var exception = await Assert.ThrowsExactlyAsync<ProviderPolicyDisabledException>(() =>
             service.TransformAsync("prompt", "input", null, CancellationToken.None, null, providerIdOverride: requestedProvider));
 
         Assert.AreEqual("The selected AI provider is disabled by policy.", exception.Message);
@@ -62,7 +63,7 @@ public sealed class ProviderPolicyBoundaryTests
                 return false;
             });
 
-        var exception = await Assert.ThrowsExceptionAsync<ProviderPolicyDisabledException>(() =>
+        var exception = await Assert.ThrowsExactlyAsync<ProviderPolicyDisabledException>(() =>
             service.TransformClipboardAsync("query", DataPackageHelpers.CreateFromText("input").GetView(), false, CancellationToken.None, null, requestedProvider));
 
         Assert.AreEqual("The selected AI provider is disabled by policy.", exception.Message);
@@ -106,7 +107,13 @@ public sealed class ProviderPolicyBoundaryTests
             .Returns(provider.Object);
 
         var result = await fixture.CreateCustomService(candidate => candidate.Id == "B")
-            .TransformAsync("prompt", "input", null, CancellationToken.None, null, providerIdOverride: "B");
+            .TransformAsync(
+            "prompt",
+            "input",
+            null,
+            CancellationToken.None,
+            null,
+            providerIdOverride: "B");
 
         Assert.AreEqual("local result", result.Content);
         fixture.Credentials.VerifyNoOtherCalls();
@@ -122,7 +129,7 @@ public sealed class ProviderPolicyBoundaryTests
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
 
-        await Assert.ThrowsExceptionAsync<OperationCanceledException>(() =>
+        await Assert.ThrowsExactlyAsync<OperationCanceledException>(() =>
             service.TransformAsync("prompt", "input", null, cancellation.Token, null, providerIdOverride: "B"));
 
         fixture.VerifyNoProviderAccess();
@@ -143,7 +150,7 @@ public sealed class ProviderPolicyBoundaryTests
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
 
-        await Assert.ThrowsExceptionAsync<OperationCanceledException>(() =>
+        await Assert.ThrowsExactlyAsync<OperationCanceledException>(() =>
             service.TransformClipboardAsync("query", DataPackageHelpers.CreateFromText("input").GetView(), false, cancellation.Token, null, "B"));
 
         fixture.VerifyNoProviderAccess();

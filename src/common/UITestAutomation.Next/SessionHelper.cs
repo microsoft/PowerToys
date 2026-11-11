@@ -342,6 +342,7 @@ public sealed class SessionHelper
     {
         Assert.IsTrue(File.Exists(exe), $"Executable not found: {exe}");
 
+        Exception launchFailure;
         try
         {
             using (Process.Start(new ProcessStartInfo
@@ -354,11 +355,15 @@ public sealed class SessionHelper
             {
                 // Fire and forget — see EnsureRunning <remarks>.
             }
+
+            return;
         }
         catch (Exception ex)
         {
-            Assert.Fail($"Failed to launch '{exe} {arguments}': {ex.Message}");
+            launchFailure = ex;
         }
+
+        throw new AssertFailedException($"Failed to launch '{exe} {arguments}': {launchFailure.Message}", launchFailure);
     }
 
     /// <summary>

@@ -8,6 +8,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.Ext.Shell.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ShellCommandProviderTests
 {
@@ -20,7 +21,7 @@ public class ShellCommandProviderTests
 
         // Assert
         Assert.IsNotNull(provider.DisplayName);
-        Assert.IsTrue(provider.DisplayName.Length > 0);
+        Assert.IsGreaterThan(0, provider.DisplayName.Length);
     }
 
     [TestMethod]
@@ -46,6 +47,6 @@ public class ShellCommandProviderTests
 
         // Assert
         Assert.IsNotNull(commands);
-        Assert.IsTrue(commands.Length > 0);
+        Assert.IsNotEmpty(commands);
     }
 }

@@ -19,6 +19,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class BookmarkListItemAdministratorTests
 {
@@ -63,7 +64,7 @@ public sealed class BookmarkListItemAdministratorTests
                 .ReturnsAsync(new IconInfo("\uE737"));
             using var item = new BookmarkListItem(bookmark, new MockBookmarkManager(bookmark), new FixedBookmarkResolver(classification), iconLocator.Object, new PlaceholderParser());
 
-            await item.IsInitialized.WaitAsync(TimeSpan.FromSeconds(5));
+            await item.IsInitialized.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
             var adminCommands = item.MoreCommands.OfType<CommandContextItem>().Where(command => command.Command is RunAsAdministratorCommand).ToArray();
             Assert.HasCount(expected ? 1 : 0, adminCommands);
@@ -85,4 +86,6 @@ public sealed class BookmarkListItemAdministratorTests
 
         public Classification ClassifyOrUnknown(string input) => classification;
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

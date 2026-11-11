@@ -18,6 +18,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CustomClockIdTests
 {
@@ -129,10 +130,10 @@ public class CustomClockIdTests
         Assert.AreEqual(item.CopyTitleCommand.Text, CustomClockDisplay.Format(CustomClockDisplay.GetCurrentTime(TimeZoneInfo.Local), "t", new Settings()));
         Assert.AreEqual(item.CopySubtitleCommand.Text, CustomClockDisplay.Format(CustomClockDisplay.GetCurrentTime(TimeZoneInfo.Local), "d", new Settings()));
         Assert.IsNotNull(item.CopyCustomFormatCommand);
-        Assert.AreEqual(5, item.MoreCommands.Length);
+        Assert.HasCount(5, item.MoreCommands);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("en-US")]
     [DataRow("de-DE")]
     public void CustomClockFormatOptions_AppendExampleUsingCurrentCulture(string cultureName)
@@ -146,7 +147,7 @@ public class CustomClockIdTests
             var exampleDateTime = new DateTimeOffset(2000, 1, 2, 15, 4, 5, TimeSpan.FromHours(2));
             var expected = CustomClockDisplay.Format(exampleDateTime, "d", new Settings());
 
-            StringAssert.EndsWith(option.Title, $"({expected})");
+            Assert.EndsWith($"({expected})", option.Title);
         }
         finally
         {
@@ -180,7 +181,7 @@ public class CustomClockIdTests
 
         var commandName = CustomClockFormatOptions.GetCopyCommandName(settings, "yyyy-MM-dd");
 
-        StringAssert.StartsWith(commandName, "Copy Sortable (");
+        Assert.StartsWith("Copy Sortable (", commandName);
     }
 
     [TestMethod]
@@ -190,7 +191,7 @@ public class CustomClockIdTests
 
         var commandName = CustomClockFormatOptions.GetCopyCommandName(settings, "HH:mm");
 
-        StringAssert.StartsWith(commandName, "Copy PowerToys time (");
+        Assert.StartsWith("Copy PowerToys time (", commandName);
     }
 
     [TestMethod]
@@ -213,7 +214,7 @@ public class CustomClockIdTests
         Assert.AreEqual(text, DateTimeOffset.UnixEpoch.ToString(format, CultureInfo.InvariantCulture));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("en-US")]
     [DataRow("de-DE")]
     [DataRow("it-IT")]
@@ -268,7 +269,7 @@ public class CustomClockIdTests
         Assert.AreEqual(time.UtcDateTime.ToString(format, CultureInfo.CurrentCulture), rendered);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(-7, "14:05 -07:00")]
     [DataRow(9, "06:05 +09:00")]
     public void CustomClockDisplay_PreservesSelectedOffset(int offsetHours, string expected)
@@ -283,7 +284,7 @@ public class CustomClockIdTests
         Assert.AreEqual(time.UtcDateTime.ToString("F", CultureInfo.CurrentCulture), CustomClockDisplay.Format(time, "U", settings));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(25, "+25h")]
     [DataRow(-26, "−26h")]
     public void CustomClockDisplay_OffsetDifferenceDoesNotWrapAt24Hours(int hours, string expected)
@@ -291,7 +292,7 @@ public class CustomClockIdTests
         Assert.AreEqual(expected, CustomClockDisplay.FormatOffsetDifference(TimeSpan.FromHours(hours)));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(-8)]
     [DataRow(0)]
     [DataRow(9)]
@@ -336,7 +337,7 @@ public class CustomClockIdTests
         Assert.AreEqual(TimeSpan.FromHours(-7), summer.Offset);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("T")]
     [DataRow("s")]
     [DataRow("R")]
@@ -357,7 +358,7 @@ public class CustomClockIdTests
         Assert.IsTrue(CustomClockDisplay.RequiresSecondUpdates(clock));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("yyyy-MM-dd HH:mm")]
     [DataRow("HH:mm 'seconds'")]
     [DataRow("HH:mm \"seconds\"")]
@@ -368,7 +369,7 @@ public class CustomClockIdTests
         Assert.IsFalse(CustomClockDisplay.RequiresSecondUpdates(clock));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("%")]
     [DataRow("UTC:%")]
     [DataRow("WOY %")]
@@ -378,7 +379,7 @@ public class CustomClockIdTests
         var manager = new CustomClockManager(statePath);
         var clock = new CustomClock { TitleFormat = format };
 
-        Assert.ThrowsException<ArgumentException>(() => manager.Save(clock));
+        Assert.ThrowsExactly<ArgumentException>(() => manager.Save(clock));
     }
 
     [TestMethod]
@@ -387,7 +388,7 @@ public class CustomClockIdTests
         var statePath = Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json");
         var manager = new CustomClockManager(statePath);
 
-        Assert.ThrowsException<ArgumentException>(() => manager.Save(new CustomClock { CopyFormat = "UTC:%" }));
+        Assert.ThrowsExactly<ArgumentException>(() => manager.Save(new CustomClock { CopyFormat = "UTC:%" }));
     }
 
     [TestMethod]
@@ -401,12 +402,12 @@ public class CustomClockIdTests
 
         Assert.AreEqual(band.Title, band.CopyTitleCommand.Text);
         Assert.AreEqual(band.Subtitle, band.CopySubtitleCommand.Text);
-        StringAssert.StartsWith(band.CopyTitleCommand.Name, "Copy time (");
-        StringAssert.StartsWith(band.CopySubtitleCommand.Name, "Copy date (");
+        Assert.StartsWith("Copy time (", band.CopyTitleCommand.Name);
+        Assert.StartsWith("Copy date (", band.CopySubtitleCommand.Name);
         Assert.IsNotNull(band.CopyCustomFormatCommand);
         var localTime = CustomClockDisplay.GetCurrentTime(TimeZoneInfo.Local, new DateTimeOffset(utcNow));
         Assert.AreEqual(CustomClockDisplay.Format(localTime, "s", new Settings()), band.CopyCustomFormatCommand.GetCurrentText());
-        StringAssert.StartsWith(band.CopyCustomFormatCommand.Name, "Copy ISO 8601");
+        Assert.StartsWith("Copy ISO 8601", band.CopyCustomFormatCommand.Name);
     }
 
     [TestMethod]
@@ -460,7 +461,7 @@ public class CustomClockIdTests
         {
             var manager = new CustomClockManager(statePath);
 
-            Assert.AreEqual(1, manager.Clocks.Count);
+            Assert.HasCount(1, manager.Clocks);
             Assert.AreEqual(validClock.Id, manager.Clocks[0].Id);
         }
         finally
@@ -484,7 +485,7 @@ public class CustomClockIdTests
 
             Assert.AreEqual(CommandResultKind.KeepOpen, malformedResult.Kind);
             Assert.AreEqual(CommandResultKind.KeepOpen, invalidTimeZoneResult.Kind);
-            Assert.AreEqual(0, manager.Clocks.Count);
+            Assert.IsEmpty(manager.Clocks);
             Assert.IsFalse(File.Exists(statePath));
         }
         finally

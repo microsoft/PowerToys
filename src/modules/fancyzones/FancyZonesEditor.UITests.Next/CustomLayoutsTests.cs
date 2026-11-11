@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FancyZonesEditor.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CustomLayoutsTests : FancyZonesEditorTestBase
 {
@@ -47,7 +48,7 @@ public class CustomLayoutsTests : FancyZonesEditorTestBase
         Session.Find<Button>(EditorUiTestHelper.ElementName.Save).Click();
 
         var data = EditorUiTestHelper.ReadCustomLayouts();
-        Assert.AreEqual(3, data.CustomLayouts.Count);
+        Assert.HasCount(3, data.CustomLayouts);
         Assert.IsFalse(data.CustomLayouts.Exists(layout => layout.Name == FirstLayoutName));
         Assert.IsTrue(data.CustomLayouts.Exists(layout => layout.Name == newName));
         Assert.AreEqual(newName, data.CustomLayouts.First(layout => layout.Uuid == FirstLayoutUuid).Name);
@@ -66,7 +67,7 @@ public class CustomLayoutsTests : FancyZonesEditorTestBase
         Session.Find<Button>(EditorUiTestHelper.ElementName.Cancel).Click();
 
         var data = EditorUiTestHelper.ReadCustomLayouts();
-        Assert.AreEqual(3, data.CustomLayouts.Count);
+        Assert.HasCount(3, data.CustomLayouts);
         Assert.IsTrue(data.CustomLayouts.Exists(layout => layout.Name == FirstLayoutName));
         Assert.IsFalse(data.CustomLayouts.Exists(layout => layout.Name == newName));
         Assert.AreEqual(FirstLayoutName, data.CustomLayouts.First(layout => layout.Uuid == FirstLayoutUuid).Name);

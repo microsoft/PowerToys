@@ -10,6 +10,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ContextMenuHostTests
 {
@@ -57,7 +58,7 @@ public class ContextMenuHostTests
 
         if (action is "deferred" or "immediate")
         {
-            CollectionAssert.AreEqual(new[] { current }, opened);
+            Assert.AreSequenceEqual(new[] { current }, opened);
         }
         else
         {

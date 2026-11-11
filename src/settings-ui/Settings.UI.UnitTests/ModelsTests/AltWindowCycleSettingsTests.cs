@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CommonLibTest
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class AltWindowCycleSettingsTests
     {
@@ -38,10 +39,10 @@ namespace CommonLibTest
 
             var json = settings.ToJsonString();
 
-            StringAssert.Contains(json, AltWindowCycleSettings.ModuleName);
-            StringAssert.Contains(json, "\"properties\"");
-            StringAssert.Contains(json, "next_window_shortcut");
-            StringAssert.Contains(json, "previous_window_shortcut");
+            Assert.Contains(AltWindowCycleSettings.ModuleName, json);
+            Assert.Contains("\"properties\"", json);
+            Assert.Contains("next_window_shortcut", json);
+            Assert.Contains("previous_window_shortcut", json);
         }
 
         [TestMethod]

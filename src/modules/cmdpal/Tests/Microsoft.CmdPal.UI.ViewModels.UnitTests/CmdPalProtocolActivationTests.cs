@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CmdPalProtocolActivationTests
 {
@@ -27,7 +28,7 @@ public class CmdPalProtocolActivationTests
         Assert.IsNull(message.ExtensionProviderId);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("general", SettingsLinkIds.General.Page)]
     [DataRow("appearance", SettingsLinkIds.Appearance.Page)]
     [DataRow("extensions", SettingsLinkIds.Extensions.Page)]
@@ -175,7 +176,7 @@ public class CmdPalProtocolActivationTests
         Assert.IsTrue(((CmdPalProtocolRoute.ExecuteCommand)result).ListPageOptions!.RequiresOneTimeConsent);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("provider.id", "command-id")]
     [DataRow("provider with spaces", "command with spaces")]
     [DataRow("provider:id", "command:id")]
@@ -281,7 +282,7 @@ public class CmdPalProtocolActivationTests
         var route = new CmdPalProtocolRoute.OpenSettings(new OpenSettingsMessage(
             SettingsLinkId: "External-Command-Links"));
 
-        Assert.ThrowsException<ArgumentException>(() => _protocolActivation.CreateUri(route));
+        Assert.ThrowsExactly<ArgumentException>(() => _protocolActivation.CreateUri(route));
     }
 
     [TestMethod]
@@ -289,10 +290,10 @@ public class CmdPalProtocolActivationTests
     {
         var route = new CmdPalProtocolRoute.OpenSettings(new OpenSettingsMessage(SettingsLinkId: "unknown"));
 
-        Assert.ThrowsException<ArgumentException>(() => _protocolActivation.CreateUri(route));
+        Assert.ThrowsExactly<ArgumentException>(() => _protocolActivation.CreateUri(route));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("x-cmdpal://settings/unknown", "unknown")]
     [DataRow("x-cmdpal://settings/extension", "extension")]
     [DataRow("x-cmdpal://settings/EXTERNAL-COMMAND-LINKS", "external-command-links")]
@@ -317,7 +318,7 @@ public class CmdPalProtocolActivationTests
             result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("x-cmdpal://settings/-background")]
     [DataRow("x-cmdpal://settings/background-")]
     [DataRow("x-cmdpal://settings/bad_target")]
@@ -330,7 +331,7 @@ public class CmdPalProtocolActivationTests
         Assert.IsNull(result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("x-cmdpal://settings/extension/%20provider")]
     [DataRow("x-cmdpal://settings/extension/provider%2Fchild")]
     [DataRow("x-cmdpal://settings/extension/provider/bad_target")]
@@ -358,7 +359,7 @@ public class CmdPalProtocolActivationTests
             SettingsLinkId: SettingsLinkIds.General.Page,
             ExtensionProviderId: "provider"));
 
-        Assert.ThrowsException<ArgumentException>(() => _protocolActivation.CreateUri(route));
+        Assert.ThrowsExactly<ArgumentException>(() => _protocolActivation.CreateUri(route));
     }
 
     [TestMethod]
@@ -367,7 +368,7 @@ public class CmdPalProtocolActivationTests
         var route = new CmdPalProtocolRoute.OpenSettings(new OpenSettingsMessage(
             SettingsLinkId: SettingsLinkIds.Extensions.Extension.Page));
 
-        Assert.ThrowsException<ArgumentException>(() => _protocolActivation.CreateUri(route));
+        Assert.ThrowsExactly<ArgumentException>(() => _protocolActivation.CreateUri(route));
     }
 
     [TestMethod]
@@ -379,7 +380,7 @@ public class CmdPalProtocolActivationTests
         Assert.IsNull(result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("x-cmdpal://commands/provider")]
     [DataRow("x-cmdpal://commands/provider/command/extra")]
     [DataRow("x-cmdpal://commands/provider/sample%2Fcommand")]
@@ -393,7 +394,7 @@ public class CmdPalProtocolActivationTests
         Assert.IsNull(result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("x-cmdpal://commands/provider/command?unknown=value")]
     [DataRow("x-cmdpal://commands/provider/command?Query=ssh")]
     [DataRow("x-cmdpal://commands/provider/command?query=one&query=two")]
@@ -424,7 +425,7 @@ public class CmdPalProtocolActivationTests
     {
         var route = new CmdPalProtocolRoute.ExecuteCommand("provider", "nested/command");
 
-        Assert.ThrowsException<ArgumentException>(() => _protocolActivation.CreateUri(route));
+        Assert.ThrowsExactly<ArgumentException>(() => _protocolActivation.CreateUri(route));
     }
 
     [TestMethod]
@@ -432,7 +433,7 @@ public class CmdPalProtocolActivationTests
     {
         var route = new CmdPalProtocolRoute.ExecuteCommand("provider", "command", new ListPageLaunchOptions());
 
-        Assert.ThrowsException<ArgumentException>(() => _protocolActivation.CreateUri(route));
+        Assert.ThrowsExactly<ArgumentException>(() => _protocolActivation.CreateUri(route));
     }
 
     [TestMethod]
@@ -457,7 +458,7 @@ public class CmdPalProtocolActivationTests
         Assert.AreSame(execute, ((CmdPalProtocolAction.RequestConsent)commandConsent).Route);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("https://extensions/gallery/sample")]
     [DataRow("x-cmdpal://settings-extra")]
     [DataRow("x-cmdpal://background-task")]

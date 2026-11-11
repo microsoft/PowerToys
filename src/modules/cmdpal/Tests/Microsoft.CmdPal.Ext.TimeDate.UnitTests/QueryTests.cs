@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("IDisposable", "CA1001:Types that own disposable fields should be disposable", Justification = "Disposed in TestCleanup")]
 public class QueryTests : CommandPaletteUnitTestBase
@@ -52,7 +53,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         CultureInfo.CurrentUICulture = originalUiCulture;
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("time", 1)] // Common time queries should return results
     [DataRow("date", 1)] // Common date queries should return results
     [DataRow("now", 1)] // Now should return multiple results
@@ -69,17 +70,17 @@ public class QueryTests : CommandPaletteUnitTestBase
         var results = TimeDateCalculator.ExecuteSearch(settings, query);
 
         // Assert
-        Assert.IsTrue(
-            results.Count >= expectedMinResultCount,
+        Assert.IsGreaterThanOrEqualTo(
+            expectedMinResultCount,
+            results.Count,
             $"Expected at least {expectedMinResultCount} results for query '{query}', but got {results.Count}");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("time", "time")]
     [DataRow("date", "date")]
     [DataRow("year", "year")]
     [DataRow("now", "now")]
-    [DataRow("year", "year")]
     public void BasicQueryTest(string input, string expectedMatchTerm)
     {
         var settings = new Settings();
@@ -90,7 +91,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         var result = Query(input, resultLists);
 
         Assert.IsNotNull(result);
-        Assert.IsTrue(result.Length > 0, "No items matched the query.");
+        Assert.IsNotEmpty(result, "No items matched the query.");
 
         var firstItem = result.FirstOrDefault();
         Assert.IsNotNull(firstItem, "No items matched the query.");
@@ -100,7 +101,7 @@ public class QueryTests : CommandPaletteUnitTestBase
             $"Expected to match '{expectedMatchTerm}' in title or subtitle but got '{firstItem.Title}' - '{firstItem.Subtitle}'");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("unix", "Unix epoch time")]
     [DataRow("unix epoch time in milli", "Unix epoch time in milliseconds")]
     [DataRow("file", "Windows file time (Int64 number)")]
@@ -144,7 +145,7 @@ public class QueryTests : CommandPaletteUnitTestBase
             $"Expected to match '{expectedMatchTerm}' in title or subtitle but got '{firstItem.Title}' - '{firstItem.Subtitle}'");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("abcdefg")]
     [DataRow("timmmmeeee")]
     [DataRow("timtaaaetetaae::u1646408119")]
@@ -179,13 +180,13 @@ public class QueryTests : CommandPaletteUnitTestBase
 
         // Assert
         Assert.IsNotNull(results, $"Results should not be null for query '{query}'");
-        Assert.IsTrue(results.Length > 0, $"Query '{query}' should return at least one result");
+        Assert.IsNotEmpty(results, $"Query '{query}' should return at least one result");
 
         var firstItem = results.FirstOrDefault();
         Assert.IsTrue(firstItem!.Title.StartsWith("Error: Invalid input", StringComparison.CurrentCulture), $"Query '{query}' should return an error result for invalid input");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("")]
     [DataRow(null)]
     public void EmptyQueryReturnsAllResults(string input)
@@ -197,10 +198,10 @@ public class QueryTests : CommandPaletteUnitTestBase
         var results = page.GetItems();
 
         // Assert
-        Assert.IsTrue(results.Length > 0, $"Empty query should return results");
+        Assert.IsNotEmpty(results, $"Empty query should return results");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("time u", "Time UTC")]
     [DataRow("now u", "Now UTC")]
     [DataRow("iso utc", "ISO 8601 UTC")]
@@ -220,7 +221,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         Assert.IsTrue(firstResult!.Subtitle.StartsWith(expectedSubtitle, StringComparison.CurrentCulture), $"Could not find result with subtitle starting with '{expectedSubtitle}' for query '{query}'");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("time::12:30:45", "12:30 PM")]
     [DataRow("date::2023-12-25", "12/25/2023")]
     [DataRow("now::u1646408119", "132908817190000000")]
@@ -251,7 +252,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         var setterResults = pageUsingSetter.GetItems();
         var methodResults = pageUsingMethod.GetItems();
 
-        Assert.AreEqual(setterResults.Length, methodResults.Length, "UpdateSearchText should produce the same number of results as setting SearchText.");
+        Assert.HasCount(setterResults.Length, methodResults, "UpdateSearchText should produce the same number of results as setting SearchText.");
 
         var setterFirstItem = setterResults.FirstOrDefault();
         var methodFirstItem = methodResults.FirstOrDefault();

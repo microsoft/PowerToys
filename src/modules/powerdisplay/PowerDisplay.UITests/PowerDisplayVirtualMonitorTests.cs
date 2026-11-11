@@ -37,12 +37,12 @@ public sealed partial class PowerDisplayEndToEndTests
 
             var reads = fixture.Snapshot();
             flyout = Refresh(flyout);
-            CollectionAssert.AreEquivalent(ids, AssertFixtureInventory(ref flyout, 2), "Refresh changed stable monitor identities.");
+            Assert.AreSequenceEqual(ids, AssertFixtureInventory(ref flyout, 2), SequenceOrder.InAnyOrder, "Refresh changed stable monitor identities.");
             foreach (var id in ids)
             {
                 var connector = VirtualMonitorFixture.ConnectorForId(id);
                 Assert.AreEqual((double)targets[connector], ReadBrightness(flyout, FindMonitorBrightnessSlider(flyout, id)));
-                Assert.IsTrue(fixture.Snapshot().Monitors[connector].Gets > reads.Monitors[connector].Gets, "Rediscovery did not read brightness through native DDC/CI.");
+                Assert.IsGreaterThan(reads.Monitors[connector].Gets, fixture.Snapshot().Monitors[connector].Gets, "Rediscovery did not read brightness through native DDC/CI.");
             }
         }
         finally
@@ -75,14 +75,14 @@ public sealed partial class PowerDisplayEndToEndTests
             flyout = Refresh(flyout);
             AssertFixtureInventory(ref flyout, 1);
             Assert.AreEqual(before.Monitors[0].Brightness, fixture.Snapshot().Monitors[0].Brightness);
-            Assert.IsTrue(fixture.Snapshot().Monitors[1].Departures > before.Monitors[1].Departures, "The driver did not observe departure.");
+            Assert.IsGreaterThan(before.Monitors[1].Departures, fixture.Snapshot().Monitors[1].Departures, "The driver did not observe departure.");
             Step("Reconnecting the same virtual monitor");
             fixture.SetConnected(1, true);
             var returned = AssertFixtureInventory(ref flyout, 2);
-            CollectionAssert.AreEquivalent(ids, returned, "Hot-plug changed monitor identity.");
+            Assert.AreSequenceEqual(ids, returned, SequenceOrder.InAnyOrder, "Hot-plug changed monitor identity.");
             var id = returned.Single(value => VirtualMonitorFixture.ConnectorForId(value) == 1);
             Assert.AreEqual((double)before.Monitors[1].Brightness, ReadBrightness(flyout, FindMonitorBrightnessSlider(flyout, id)), "Arrival lost independent brightness state.");
-            Assert.IsTrue(fixture.Snapshot().Monitors[1].Arrivals > before.Monitors[1].Arrivals, "The driver did not observe arrival.");
+            Assert.IsGreaterThan(before.Monitors[1].Arrivals, fixture.Snapshot().Monitors[1].Arrivals, "The driver did not observe arrival.");
         }
         finally
         {
@@ -106,7 +106,7 @@ public sealed partial class PowerDisplayEndToEndTests
             fixture.SetConnected(1, false);
             AssertFixtureInventory(ref flyout, 0);
             flyout = Refresh(flyout);
-            Assert.AreEqual(0, BrightnessSliders(flyout).Length, "The isolated guest should have no other DDC/CI-capable displays.");
+            Assert.IsEmpty(BrightnessSliders(flyout), "The isolated guest should have no other DDC/CI-capable displays.");
             Assert.IsTrue(flyout.Has(By.AccessibilityId("NoMonitorsInfoBar")), "The empty inventory is not explained to the user.");
         }
         finally
@@ -114,7 +114,7 @@ public sealed partial class PowerDisplayEndToEndTests
             fixture.Reset();
         }
 
-        CollectionAssert.AreEquivalent(ids, AssertFixtureInventory(ref flyout, 2));
+        Assert.AreSequenceEqual(ids, AssertFixtureInventory(ref flyout, 2), SequenceOrder.InAnyOrder);
         SaveFixtureEvidence(fixture, "empty-and-recovered.json");
     }
 
@@ -133,8 +133,8 @@ public sealed partial class PowerDisplayEndToEndTests
             fixture.SetMode(1, 1);
             flyout = Refresh(flyout);
             var supported = ids.Where(id => !string.Equals(id, unsupportedId, StringComparison.OrdinalIgnoreCase)).ToArray();
-            CollectionAssert.AreEquivalent(supported, AssertFixtureInventory(ref flyout, 1), "Unsupported brightness discovery must retain the healthy monitor.");
-            Assert.IsTrue(fixture.Snapshot().Monitors[1].Capabilities > before.Monitors[1].Capabilities, "Refresh did not read the changed capabilities from the unsupported monitor.");
+            Assert.AreSequenceEqual(supported, AssertFixtureInventory(ref flyout, 1), SequenceOrder.InAnyOrder, "Unsupported brightness discovery must retain the healthy monitor.");
+            Assert.IsGreaterThan(before.Monitors[1].Capabilities, fixture.Snapshot().Monitors[1].Capabilities, "Refresh did not read the changed capabilities from the unsupported monitor.");
             Assert.AreEqual(before.Monitors[1].Brightness, fixture.Snapshot().Monitors[1].Brightness, "Capability discovery changed brightness.");
             Assert.AreEqual(before.Monitors[1].Sets, fixture.Snapshot().Monitors[1].Sets, "Unsupported discovery wrote brightness.");
         }
@@ -178,7 +178,7 @@ public sealed partial class PowerDisplayEndToEndTests
                 WaitHelper.WaitForStable(
                     () =>
                     {
-                        Assert.IsTrue(ReadSavedBrightness(id) != target, "A rejected hardware write was persisted as a successful brightness change.");
+                        Assert.AreNotEqual(target, ReadSavedBrightness(id), "A rejected hardware write was persisted as a successful brightness change.");
                         return true;
                     },
                     observed => observed,
@@ -195,7 +195,7 @@ public sealed partial class PowerDisplayEndToEndTests
 
         flyout = Refresh(flyout);
         Assert.AreEqual((double)before.Monitors[0].Brightness, ReadBrightness(flyout, FindMonitorBrightnessSlider(flyout, id)), "Refresh reported the failed write as hardware success.");
-        Assert.IsTrue(ReadSavedBrightness(id) != target, "A rejected hardware write was persisted as a successful brightness change.");
+        Assert.AreNotEqual(target, ReadSavedBrightness(id), "A rejected hardware write was persisted as a successful brightness change.");
         SaveFixtureEvidence(fixture, "communication-failure.json");
     }
 

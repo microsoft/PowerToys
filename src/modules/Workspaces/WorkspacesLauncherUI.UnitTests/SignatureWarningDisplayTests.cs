@@ -10,12 +10,13 @@ using WorkspacesLauncherUI.Models;
 
 namespace WorkspacesLauncherUI.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class SignatureWarningDisplayTests
     {
         private static readonly int[] DirectionalMarks = { 0x061C, 0x200E, 0x200F };
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("Example\r\nPublisher: Microsoft", "Example\\r\\nPublisher: Microsoft")]
         [DataRow("file\u202Etxt.exe", "file\\u202Etxt.exe")]
         [DataRow("--name\tvalue\u2028Run anyway\u2029", "--name\\tvalue\\u2028Run anyway\\u2029")]
@@ -40,7 +41,7 @@ namespace WorkspacesLauncherUI.UnitTests
             Assert.AreEqual(raw, request.Path);
             Assert.AreEqual(raw, request.Arguments);
             Assert.AreEqual(raw, request.Status);
-            StringAssert.Contains(request.DetailsText, raw);
+            Assert.Contains(raw, request.DetailsText);
         }
 
         [TestMethod]
@@ -68,7 +69,7 @@ namespace WorkspacesLauncherUI.UnitTests
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("")]
         [DataRow(@"C:\Apps with spaces\tool.exe")]
         [DataRow(@"--name ""value"" --literal=\n --literal=\u202E")]

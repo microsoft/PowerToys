@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.Run.Plugin.Registry.UnitTest.Helper
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class RegistryHelperTest
     {
@@ -24,7 +25,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.UnitTest.Helper
         {
             var (baseKeyList, _) = RegistryHelper.GetRegistryBaseKey(query);
             Assert.IsNotNull(baseKeyList);
-            Assert.IsTrue(baseKeyList.Count() == 1);
+            Assert.HasCount(1, baseKeyList);
             Assert.AreEqual(expectedBaseKey, baseKeyList.First().Name);
         }
 
@@ -34,12 +35,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.UnitTest.Helper
             var (baseKeyList, _) = RegistryHelper.GetRegistryBaseKey("HKC\\Control Panel\\Accessibility");
 
             Assert.IsNotNull(baseKeyList);
-            Assert.IsTrue(baseKeyList.Count() > 1);
+            Assert.IsGreaterThan(1, baseKeyList.Count());
 
             var list = baseKeyList.Select(found => found.Name);
-            Assert.IsTrue(list.Contains("HKEY_CLASSES_ROOT"));
-            Assert.IsTrue(list.Contains("HKEY_CURRENT_CONFIG"));
-            Assert.IsTrue(list.Contains("HKEY_CURRENT_USER"));
+            Assert.Contains("HKEY_CLASSES_ROOT", list);
+            Assert.Contains("HKEY_CURRENT_CONFIG", list);
+            Assert.Contains("HKEY_CURRENT_USER", list);
         }
 
         [TestMethod]
@@ -60,17 +61,17 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.UnitTest.Helper
         {
             var list = RegistryHelper.GetAllBaseKeys();
 
-            CollectionAssert.AllItemsAreNotNull((ICollection)list);
-            CollectionAssert.AllItemsAreUnique((ICollection)list);
+            Assert.AreAllNotNull((ICollection)list);
+            Assert.AreAllDistinct((ICollection)list);
 
-            var keys = list.Select(found => found.Key).ToList() as ICollection;
+            var keys = list.Select(found => found.Key).ToList();
 
-            CollectionAssert.Contains(keys, Win32.Registry.ClassesRoot);
-            CollectionAssert.Contains(keys, Win32.Registry.CurrentConfig);
-            CollectionAssert.Contains(keys, Win32.Registry.CurrentUser);
-            CollectionAssert.Contains(keys, Win32.Registry.LocalMachine);
-            CollectionAssert.Contains(keys, Win32.Registry.PerformanceData);
-            CollectionAssert.Contains(keys, Win32.Registry.Users);
+            Assert.Contains(Win32.Registry.ClassesRoot, keys);
+            Assert.Contains(Win32.Registry.CurrentConfig, keys);
+            Assert.Contains(Win32.Registry.CurrentUser, keys);
+            Assert.Contains(Win32.Registry.LocalMachine, keys);
+            Assert.Contains(Win32.Registry.PerformanceData, keys);
+            Assert.Contains(Win32.Registry.Users, keys);
         }
     }
 }

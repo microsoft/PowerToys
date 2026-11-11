@@ -111,7 +111,7 @@ namespace Microsoft.Workspaces.UITests
             }
         }
 
-        [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+        [ClassCleanup]
         public static void RestoreWorkspaceState()
         {
             if (state is null)
@@ -313,7 +313,7 @@ namespace Microsoft.Workspaces.UITests
         {
             var (left, top, right, bottom) = WindowHelper.GetWindowBounds(handle);
             var dpi = NativeMethods.GetDpiForWindow(handle);
-            Assert.IsTrue(dpi > 0, $"Could not read DPI for fixture HWND {handle}.");
+            Assert.IsGreaterThan(0U, dpi, $"Could not read DPI for fixture HWND {handle}.");
 
             var scale = 96f / dpi;
             var originX = left * scale;

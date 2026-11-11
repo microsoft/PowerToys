@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class PersistenceServiceTests
 {
@@ -109,8 +110,8 @@ public partial class PersistenceServiceTests
         // Assert
         Assert.IsTrue(File.Exists(_testFilePath));
         var content = File.ReadAllText(_testFilePath);
-        Assert.IsTrue(content.Contains("NewFile"));
-        Assert.IsTrue(content.Contains("123"));
+        Assert.Contains("NewFile", content);
+        Assert.Contains("123", content);
     }
 
     [TestMethod]
@@ -154,11 +155,11 @@ public partial class PersistenceServiceTests
         }
 
         var log = output.ToString();
-        StringAssert.Contains(log, $"Failed to save to {_testFilePath}:");
-        StringAssert.Contains(log, "System.IO.IOException");
-        StringAssert.Contains(log, "Stack trace:");
-        StringAssert.Contains(log, "Save caller stack:");
-        StringAssert.Contains(log, nameof(Save_WhenFileIsLocked_LogsCallerAndOriginalException));
+        Assert.Contains($"Failed to save to {_testFilePath}:", log);
+        Assert.Contains("System.IO.IOException", log);
+        Assert.Contains("Stack trace:", log);
+        Assert.Contains("Save caller stack:", log);
+        Assert.Contains(nameof(Save_WhenFileIsLocked_LogsCallerAndOriginalException), log);
     }
 #endif
 }

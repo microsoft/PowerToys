@@ -12,10 +12,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Plugin.WindowsTerminal.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class TerminalHelperTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("Windows PowerShell", true, true, "--window _quake --profile \"Windows PowerShell\"")]
         [DataRow("Windows PowerShell", false, true, "--window _quake --profile \"Windows PowerShell\"")]
         [DataRow("Windows PowerShell", true, false, "--window 0 nt --profile \"Windows PowerShell\"")]
@@ -26,7 +27,7 @@ namespace Microsoft.Plugin.WindowsTerminal.UnitTests
             Assert.AreEqual(expectedArguments, arguments);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("settings 1.11.2421.0.json")]
         [DataRow("settings 1.11.2421.0_2.json")]
         public void ParseSettingsTest(string file)
@@ -37,10 +38,10 @@ namespace Microsoft.Plugin.WindowsTerminal.UnitTests
             var settings = File.ReadAllText(settingsPath);
             var profiles = TerminalHelper.ParseSettings(terminal, settings);
 
-            Assert.AreEqual(4, profiles.Count);
+            Assert.HasCount(4, profiles);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(
             @"{""guid"":""{61c54bbd-c2c6-5271-96e7-009a87ff44bf}"",""name"":""Windows PowerShell"",""commandline"":""powershell.exe"",""hidden"":true}",
             "61c54bbd-c2c6-5271-96e7-009a87ff44bf",

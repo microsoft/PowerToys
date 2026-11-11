@@ -28,6 +28,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 /// Focused, per-tier unit tests for the <see cref="MainListRanker"/> primitives live alongside
 /// this harness in <see cref="MainListRankerTests"/>.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
 {
@@ -112,7 +113,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
         Func<InProcObject<IListItem>, ProviderSearchWeight>? providerWeightLookup = null)
     {
         var ranked = Rank(query, Fixture(), history, providerWeightLookup);
-        Assert.IsTrue(ranked.Count > 0, $"Query '{query}' should return at least one match");
+        Assert.IsNotEmpty(ranked, $"Query '{query}' should return at least one match");
         Assert.AreEqual(
             expectedTitle,
             ranked[0],
@@ -130,10 +131,11 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
         var higherIndex = ranked.IndexOf(higher);
         var lowerIndex = ranked.IndexOf(lower);
 
-        Assert.IsTrue(higherIndex >= 0, $"Query '{query}' should match '{higher}'. Actual order: [{string.Join(", ", ranked)}]");
-        Assert.IsTrue(lowerIndex >= 0, $"Query '{query}' should match '{lower}'. Actual order: [{string.Join(", ", ranked)}]");
-        Assert.IsTrue(
-            higherIndex < lowerIndex,
+        Assert.IsGreaterThanOrEqualTo(0, higherIndex, $"Query '{query}' should match '{higher}'. Actual order: [{string.Join(", ", ranked)}]");
+        Assert.IsGreaterThanOrEqualTo(0, lowerIndex, $"Query '{query}' should match '{lower}'. Actual order: [{string.Join(", ", ranked)}]");
+        Assert.IsLessThan(
+            lowerIndex,
+            higherIndex,
             $"Query '{query}' should rank '{higher}' above '{lower}'. Actual order: [{string.Join(", ", ranked)}]");
     }
 

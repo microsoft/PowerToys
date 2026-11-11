@@ -23,6 +23,7 @@ namespace PowerDisplay.UnitTests;
 /// short-circuits on it without issuing a native call, so the capabilities string is deterministically
 /// unusable and every remaining decision comes from the injected reader and store.
 /// </remarks>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class DdcCiControllerCompatibilityGateTests
 {
@@ -34,7 +35,9 @@ public sealed class DdcCiControllerCompatibilityGateTests
         using var controller = NewController(store, reader, maxCompatibility: false);
 
         var evidence = await controller.FetchCapabilitiesWithFallbackAsync(
-            IntPtr.Zero, MonitorId, CancellationToken.None);
+            IntPtr.Zero,
+            MonitorId,
+            CancellationToken.None);
 
         Assert.AreEqual(0, reader.CallCount, "Normal mode must not probe VCP features.");
         Assert.AreEqual(0, store.GetCallCount, "Normal mode must not consult the known-good cache.");
@@ -56,7 +59,9 @@ public sealed class DdcCiControllerCompatibilityGateTests
         using var controller = NewController(store, reader, maxCompatibility: true);
 
         var evidence = await controller.FetchCapabilitiesWithFallbackAsync(
-            IntPtr.Zero, MonitorId, CancellationToken.None);
+            IntPtr.Zero,
+            MonitorId,
+            CancellationToken.None);
 
         Assert.AreEqual(1, store.GetCallCount, "Maximum compatibility mode must consult the cache.");
         Assert.AreEqual(1, store.UpsertCount, "Only the successful probe may be persisted.");
@@ -85,7 +90,9 @@ public sealed class DdcCiControllerCompatibilityGateTests
         using var controller = NewController(store, reader, maxCompatibility: true);
 
         var evidence = await controller.FetchCapabilitiesWithFallbackAsync(
-            IntPtr.Zero, MonitorId, CancellationToken.None);
+            IntPtr.Zero,
+            MonitorId,
+            CancellationToken.None);
 
         Assert.AreEqual(0, store.UpsertCount, "A failed probe must not be persisted.");
         Assert.IsTrue(evidence.Capabilities!.SupportsVcpCode(0x10));
@@ -111,11 +118,13 @@ public sealed class DdcCiControllerCompatibilityGateTests
         using var controller = NewController(store, reader, maxCompatibility: true);
 
         var evidence = await controller.FetchCapabilitiesWithFallbackAsync(
-            IntPtr.Zero, MonitorId, CancellationToken.None);
+            IntPtr.Zero,
+            MonitorId,
+            CancellationToken.None);
 
         Assert.IsTrue(evidence.IsPhysicalMonitorUnavailable);
         Assert.IsNull(evidence.Capabilities, "The pass itself is discarded...");
-        Assert.AreEqual(0, evidence.InitialValues.Count);
+        Assert.IsEmpty(evidence.InitialValues);
 
         Assert.AreEqual(1, store.UpsertCount, "...but the reading that preceded the death is not.");
         Assert.AreEqual((byte)0x10, store.Upserts[0].Code);

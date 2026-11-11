@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace AdvancedPaste.UnitTests.HelpersTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class ClipboardItemHelperTests
 {
     [TestMethod]

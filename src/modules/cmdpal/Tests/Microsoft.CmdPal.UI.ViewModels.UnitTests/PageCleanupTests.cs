@@ -17,6 +17,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed partial class PageCleanupTests
@@ -37,23 +38,23 @@ public sealed partial class PageCleanupTests
         var cleanup = viewModel.CleanupAsync();
         try
         {
-            await entered.Task.WaitAsync(TestTimeout);
+            await entered.Task.WaitAsync(TestTimeout, TestContext.CancellationToken);
             Assert.IsTrue(viewModel.IsDiscarded);
             Assert.IsFalse(cleanup.IsCompleted);
             Assert.AreSame(cleanup, viewModel.CleanupAsync());
-            await viewModel.ResumeAfterNavigation().WaitAsync(TestTimeout);
+            await viewModel.ResumeAfterNavigation().WaitAsync(TestTimeout, TestContext.CancellationToken);
             page.Verify(p => p.GetItems(), Times.Once);
         }
         finally
         {
             release.Set();
-            await cleanup.WaitAsync(TestTimeout);
+            await cleanup.WaitAsync(TestTimeout, System.Threading.CancellationToken.None);
         }
 
         page.VerifyRemove(p => p.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>(), Times.Once);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Id")]
     [DataRow("GetItems")]
     [DataRow("ItemsChanged")]
@@ -85,11 +86,11 @@ public sealed partial class PageCleanupTests
         }
 
         var viewModel = CreateListViewModel(page.Object);
-        var initialization = Task.Run(viewModel.InitializeProperties);
+        var initialization = Task.Run(viewModel.InitializeProperties, TestContext.CancellationToken);
         Task? cleanup = null;
         try
         {
-            await entered.Task.WaitAsync(TestTimeout);
+            await entered.Task.WaitAsync(TestTimeout, TestContext.CancellationToken);
             cleanup = viewModel.CleanupAsync();
             Assert.IsTrue(viewModel.IsDiscarded);
             Assert.IsFalse(cleanup.IsCompleted);
@@ -98,8 +99,8 @@ public sealed partial class PageCleanupTests
         finally
         {
             release.Set();
-            await initialization.WaitAsync(TestTimeout);
-            await (cleanup ?? viewModel.CleanupAsync()).WaitAsync(TestTimeout);
+            await initialization.WaitAsync(TestTimeout, System.Threading.CancellationToken.None);
+            await (cleanup ?? viewModel.CleanupAsync()).WaitAsync(TestTimeout, System.Threading.CancellationToken.None);
         }
 
         page.VerifyAdd(p => p.PropChanged += It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>(), Times.Once);
@@ -118,7 +119,7 @@ public sealed partial class PageCleanupTests
             .Callback<TypedEventHandler<object, IPropChangedEventArgs>>(handler => queuedNotification = handler);
         var viewModel = new PageViewModel(page.Object, scheduler, new TestHost(), CommandProviderContext.Empty);
         await viewModel.InitializeAsync();
-        await viewModel.CleanupAsync().WaitAsync(TestTimeout);
+        await viewModel.CleanupAsync().WaitAsync(TestTimeout, TestContext.CancellationToken);
 
         Assert.IsNotNull(queuedNotification);
         queuedNotification(page.Object, new PropChangedEventArgs(nameof(IPage.Title)));
@@ -140,13 +141,13 @@ public sealed partial class PageCleanupTests
         viewModel.InitializeProperties();
         var content = viewModel.CreatedContent;
         Assert.IsNotNull(content);
-        Assert.AreEqual(0, viewModel.Content.Count);
+        Assert.IsEmpty(viewModel.Content);
 
-        await viewModel.CleanupAsync().WaitAsync(TestTimeout);
+        await viewModel.CleanupAsync().WaitAsync(TestTimeout, TestContext.CancellationToken);
         scheduler.Drain();
-        await content.Cleaned.Task.WaitAsync(TestTimeout);
+        await content.Cleaned.Task.WaitAsync(TestTimeout, TestContext.CancellationToken);
 
-        Assert.AreEqual(0, viewModel.Content.Count);
+        Assert.IsEmpty(viewModel.Content);
         page.VerifyRemove(p => p.ItemsChanged -= It.IsAny<TypedEventHandler<object, IItemsChangedEventArgs>>(), Times.Once);
     }
 
@@ -163,11 +164,11 @@ public sealed partial class PageCleanupTests
         var ownedList = ((CommandParameterRunViewModel)viewModel.Items[0]).ListViewModel;
         Assert.IsNotNull(ownedList);
 
-        await viewModel.CleanupAsync().WaitAsync(TestTimeout);
+        await viewModel.CleanupAsync().WaitAsync(TestTimeout, TestContext.CancellationToken);
         Assert.IsTrue(ownedList.IsDiscarded);
-        await ownedList.CleanupAsync().WaitAsync(TestTimeout);
+        await ownedList.CleanupAsync().WaitAsync(TestTimeout, TestContext.CancellationToken);
 
-        Assert.AreEqual(0, viewModel.Items.Count);
+        Assert.IsEmpty(viewModel.Items);
         list.VerifyRemove(p => p.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>(), Times.Once);
         list.VerifyRemove(p => p.ItemsChanged -= It.IsAny<TypedEventHandler<object, IItemsChangedEventArgs>>(), Times.Once);
     }
@@ -208,7 +209,7 @@ public sealed partial class PageCleanupTests
         finally
         {
             WeakReferenceMessenger.Default.UnregisterAll(recipient);
-            await viewModel.CleanupAsync().WaitAsync(TestTimeout);
+            await viewModel.CleanupAsync().WaitAsync(TestTimeout, System.Threading.CancellationToken.None);
         }
     }
 
@@ -272,4 +273,6 @@ public sealed partial class PageCleanupTests
             }
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

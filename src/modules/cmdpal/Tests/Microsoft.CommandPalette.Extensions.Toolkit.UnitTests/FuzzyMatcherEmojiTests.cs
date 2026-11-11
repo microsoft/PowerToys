@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class FuzzyMatcherEmojiTests
 {
@@ -17,10 +18,10 @@ public sealed class FuzzyMatcherEmojiTests
 
         var result = FuzzyStringMatcher.ScoreFuzzyWithPositions(needle, haystack, allowNonContiguousMatches: true);
 
-        Assert.IsTrue(result.Score > 0, "Expected match for simple emoji");
+        Assert.IsGreaterThan(0, result.Score, "Expected match for simple emoji");
 
         // 🚀 is 2 chars (surrogates)
-        Assert.AreEqual(2, result.Positions.Count, "Expected 2 matched characters positions for the emoji");
+        Assert.HasCount(2, result.Positions, "Expected 2 matched characters positions for the emoji");
     }
 
     [TestMethod]
@@ -31,10 +32,10 @@ public sealed class FuzzyMatcherEmojiTests
 
         var result = FuzzyStringMatcher.ScoreFuzzyWithPositions(needle, haystack, allowNonContiguousMatches: true);
 
-        Assert.IsTrue(result.Score > 0, "Expected match for emoji with skin tone");
+        Assert.IsGreaterThan(0, result.Score, "Expected match for emoji with skin tone");
 
         // 👍🏽 is 4 chars: U+1F44D (2 chars) + U+1F3FD (2 chars)
-        Assert.AreEqual(4, result.Positions.Count, "Expected 4 matched characters positions for the emoji with modifier");
+        Assert.HasCount(4, result.Positions, "Expected 4 matched characters positions for the emoji with modifier");
     }
 
     [TestMethod]
@@ -45,12 +46,12 @@ public sealed class FuzzyMatcherEmojiTests
 
         var result = FuzzyStringMatcher.ScoreFuzzyWithPositions(needle, haystack, allowNonContiguousMatches: true);
 
-        Assert.IsTrue(result.Score > 0, "Expected match for ZWJ sequence");
+        Assert.IsGreaterThan(0, result.Score, "Expected match for ZWJ sequence");
 
         // This emoji is 11 code points? No.
         // Man (2) + ZWJ (1) + Woman (2) + ZWJ (1) + Girl (2) + ZWJ (1) + Boy (2) = 11 chars?
         // Let's just check score > 0.
-        Assert.IsTrue(result.Positions.Count > 0);
+        Assert.IsNotEmpty(result.Positions);
     }
 
     [TestMethod]
@@ -61,13 +62,13 @@ public sealed class FuzzyMatcherEmojiTests
 
         var result = FuzzyStringMatcher.ScoreFuzzyWithPositions(needle, haystack, allowNonContiguousMatches: true);
 
-        Assert.IsTrue(result.Score > 0, "Expected match for flag emoji");
+        Assert.IsGreaterThan(0, result.Score, "Expected match for flag emoji");
 
         // 2 code points, each is surrogate pair?
         // U+1F1FA (REGIONAL INDICATOR SYMBOL LETTER U) -> 2 chars
         // U+1F1F8 (REGIONAL INDICATOR SYMBOL LETTER S) -> 2 chars
         // Total 4 chars.
-        Assert.AreEqual(4, result.Positions.Count);
+        Assert.HasCount(4, result.Positions);
     }
 
     [TestMethod]
@@ -78,6 +79,6 @@ public sealed class FuzzyMatcherEmojiTests
 
         var result = FuzzyStringMatcher.ScoreFuzzyWithPositions(needle, haystack, allowNonContiguousMatches: true);
 
-        Assert.IsTrue(result.Score > 0);
+        Assert.IsGreaterThan(0, result.Score);
     }
 }

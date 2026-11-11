@@ -13,6 +13,7 @@ using TextBox = Microsoft.PowerToys.UITest.Next.TextBox;
 
 namespace Microsoft.GrabAndMove.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 [TestCategory("GrabAndMove")]

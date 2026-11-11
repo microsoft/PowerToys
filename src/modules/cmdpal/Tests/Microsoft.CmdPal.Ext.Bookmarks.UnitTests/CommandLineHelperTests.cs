@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CommandLineHelperTests
 {
@@ -203,7 +204,7 @@ public class CommandLineHelperTests
         Assert.IsFalse(result || Path.Exists(full), "Should return false or path should not exist");
     }
 
-    [DataTestMethod]
+    [TestMethod]
 
     // basic
     [DataRow("cmd ping", "cmd", "ping")]
@@ -252,7 +253,7 @@ public class CommandLineHelperTests
         Assert.AreEqual(expectedTail, result.Tail);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(@"C:\program files\myapp\app.exe -param ""1"" -param 2", @"C:\program files\myapp\app.exe -param", @"""1"" -param 2")]
     [DataRow(@"git commit -m test", "git commit -m test", "")]
     [DataRow(@"""C:\Program Files\App\app.exe"" -v", "", @"""C:\Program Files\App\app.exe"" -v")]

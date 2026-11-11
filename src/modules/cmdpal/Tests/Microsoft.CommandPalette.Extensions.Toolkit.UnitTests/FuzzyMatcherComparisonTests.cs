@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class FuzzyMatcherComparisonTests
 {
@@ -151,7 +152,7 @@ public class FuzzyMatcherComparisonTests
         var legacyPosStr = string.Join(',', legacyPos);
         var newPosStr = string.Join(',', newPos);
 
-        Assert.AreEqual(legacyPos.Count, newPos.Count, $"Position count mismatch: Legacy=[{legacyPosStr}], New=[{newPosStr}]");
+        Assert.HasCount(legacyPos.Count, newPos, $"Position count mismatch: Legacy=[{legacyPosStr}], New=[{newPosStr}]");
 
         for (var i = 0; i < legacyPos.Count; i++)
         {
@@ -223,7 +224,7 @@ public class FuzzyMatcherComparisonTests
             var legacyPosStr = string.Join(',', legacyPos);
             var newPosStr = string.Join(',', newPos);
 
-            Assert.AreEqual(legacyPos.Count, newPos.Count, $"Position count mismatch: Legacy=[{legacyPosStr}], New=[{newPosStr}]");
+            Assert.HasCount(legacyPos.Count, newPos, $"Position count mismatch: Legacy=[{legacyPosStr}], New=[{newPosStr}]");
 
             for (var i = 0; i < legacyPos.Count; i++)
             {

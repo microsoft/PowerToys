@@ -14,6 +14,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.Calc.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class PrimaryActionTests
 {
@@ -52,7 +53,7 @@ public class PrimaryActionTests
         Assert.IsInstanceOfType(historyItem.Command, typeof(CalculatorPasteCommand));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void FallbackItemsUseCalculatorCommandsForCopyAndPaste(bool saveFallbackResultsToHistory)
@@ -67,7 +68,7 @@ public class PrimaryActionTests
         Assert.IsInstanceOfType(GetFallbackSecondaryCommand(item), typeof(CalculatorPasteCommand));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void FallbackItemsRespectPrimaryActionWhenHistorySavingToggles(bool saveFallbackResultsToHistory)

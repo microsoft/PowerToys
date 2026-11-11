@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ImageResizer.Tests.Cli
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class CliSettingsApplierTests
     {

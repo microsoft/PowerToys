@@ -22,6 +22,7 @@ using Moq.Protected;
 
 namespace ImageResizer.Models
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ResizeBatchTests
     {
@@ -50,7 +51,7 @@ namespace ImageResizer.Models
                 args);
 
             var files = result.Files.Select(Path.GetFileName).ToArray();
-            CollectionAssert.AreEquivalent(new List<string> { "Test.jpg", "Test.png", "Test.gif" }, files);
+            Assert.AreSequenceEqual(new List<string> { "Test.jpg", "Test.png", "Test.gif" }, files, SequenceOrder.InAnyOrder);
 
             Assert.AreEqual("OutputDir", result.DestinationDirectory);
         }
@@ -64,7 +65,7 @@ namespace ImageResizer.Models
 
             var errors = (await batch.ProcessAsync((_, __) => { }, CancellationToken.None)).ToList();
 
-            Assert.AreEqual(2, errors.Count);
+            Assert.HasCount(2, errors);
 
             var errorFiles = new List<string>();
 
@@ -76,7 +77,7 @@ namespace ImageResizer.Models
 
             foreach (var file in batch.Files)
             {
-                CollectionAssert.Contains(errorFiles, file);
+                Assert.Contains(file, errorFiles);
             }
         }
 
@@ -92,7 +93,7 @@ namespace ImageResizer.Models
                 (i, count) => calls.Add((i, count)),
                 CancellationToken.None);
 
-            Assert.AreEqual(2, calls.Count);
+            Assert.HasCount(2, calls);
         }
 
         [TestMethod]
@@ -106,11 +107,12 @@ namespace ImageResizer.Models
 
             var batch = ResizeBatch.FromCliOptionsWithDiagnostics(null, options);
 
-            Assert.AreEqual(0, batch.Files.Count);
-            Assert.AreEqual(2, batch.InputErrors.Count);
-            CollectionAssert.AreEquivalent(
+            Assert.IsEmpty(batch.Files);
+            Assert.HasCount(2, batch.InputErrors);
+            Assert.AreSequenceEqual(
                 new[] { unsupported, missing },
-                batch.InputErrors.Select(error => error.File).ToArray());
+                batch.InputErrors.Select(error => error.File).ToArray(),
+                SequenceOrder.InAnyOrder);
         }
 
         [TestMethod]
@@ -123,8 +125,8 @@ namespace ImageResizer.Models
 
             var batch = ResizeBatch.FromCliOptionsWithDiagnostics(null, options);
 
-            Assert.AreEqual(0, batch.InputErrors.Count);
-            CollectionAssert.AreEquivalent(new[] { first, second }, batch.Files.ToArray());
+            Assert.IsEmpty(batch.InputErrors);
+            Assert.AreSequenceEqual(new[] { first, second }, batch.Files.ToArray(), SequenceOrder.InAnyOrder);
         }
 
         [TestMethod]
@@ -136,8 +138,8 @@ namespace ImageResizer.Models
 
             var batch = ResizeBatch.FromCliOptionsWithDiagnostics(null, options);
 
-            Assert.AreEqual(0, batch.InputErrors.Count);
-            CollectionAssert.AreEqual(new[] { file }, batch.Files.ToArray());
+            Assert.IsEmpty(batch.InputErrors);
+            Assert.AreSequenceEqual(new[] { file }, batch.Files.ToArray());
         }
 
         [TestMethod]
@@ -149,8 +151,8 @@ namespace ImageResizer.Models
 
             var batch = ResizeBatch.FromCliOptionsWithDiagnostics(null, options);
 
-            Assert.AreEqual(0, batch.InputErrors.Count);
-            CollectionAssert.AreEqual(new[] { file }, batch.Files.ToArray());
+            Assert.IsEmpty(batch.InputErrors);
+            Assert.AreSequenceEqual(new[] { file }, batch.Files.ToArray());
         }
 
         [TestMethod]
@@ -162,15 +164,15 @@ namespace ImageResizer.Models
             var sourceDirectory = Path.GetDirectoryName(typeof(ResizeBatchTests).Assembly.Location);
             var file = Path.Combine(longDirectory, "long-path.jpg");
             File.Copy(Path.Combine(sourceDirectory, "Test.jpg"), file);
-            Assert.IsTrue(file.Length > 260);
+            Assert.IsGreaterThan(260, file.Length);
             var normalAlias = file.ToUpperInvariant();
 
             var batch = ResizeBatch.FromCliOptionsWithDiagnostics(
                 null,
                 Options(normalAlias, ToExtendedPath(file)));
 
-            Assert.AreEqual(0, batch.InputErrors.Count);
-            CollectionAssert.AreEqual(new[] { normalAlias }, batch.Files.ToArray());
+            Assert.IsEmpty(batch.InputErrors);
+            Assert.AreSequenceEqual(new[] { normalAlias }, batch.Files.ToArray());
         }
 
         [TestMethod]
@@ -192,12 +194,12 @@ namespace ImageResizer.Models
 
             var batch = ResizeBatch.FromCliOptionsWithDiagnostics(null, Options(first, second));
 
-            Assert.AreEqual(0, batch.InputErrors.Count);
-            CollectionAssert.AreEquivalent(new[] { first, second }, batch.Files.ToArray());
+            Assert.IsEmpty(batch.InputErrors);
+            Assert.AreSequenceEqual(new[] { first, second }, batch.Files.ToArray(), SequenceOrder.InAnyOrder);
         }
 
         [TestMethod]
-        [Timeout(10000)]
+        [Timeout(10000, CooperativeCancellation = true)]
         public async Task FromCliOptionsWithDiagnostics_NamedPipeReportsInvalidInputsAndDeduplicatesValidFiles()
         {
             using var directory = new TestDirectory();
@@ -214,14 +216,15 @@ namespace ImageResizer.Models
             var batch = ResizeBatch.FromCliOptionsWithDiagnostics(null, options);
             await writeTask;
 
-            CollectionAssert.AreEqual(new[] { valid }, batch.Files.ToArray());
-            CollectionAssert.AreEquivalent(
+            Assert.AreSequenceEqual(new[] { valid }, batch.Files.ToArray());
+            Assert.AreSequenceEqual(
                 new[] { unsupported, missing },
-                batch.InputErrors.Select(error => error.File).ToArray());
+                batch.InputErrors.Select(error => error.File).ToArray(),
+                SequenceOrder.InAnyOrder);
         }
 
         [TestMethod]
-        [Timeout(10000)]
+        [Timeout(10000, CooperativeCancellation = true)]
         public async Task FromCliOptions_NamedPipeRemainsLenient()
         {
             using var directory = new TestDirectory();
@@ -236,8 +239,8 @@ namespace ImageResizer.Models
             var batch = ResizeBatch.FromCliOptions(null, options);
             await writeTask;
 
-            CollectionAssert.AreEqual(new[] { valid }, batch.Files.ToArray());
-            Assert.AreEqual(0, batch.InputErrors.Count);
+            Assert.AreSequenceEqual(new[] { valid }, batch.Files.ToArray());
+            Assert.IsEmpty(batch.InputErrors);
         }
 
         [TestMethod]
@@ -249,8 +252,8 @@ namespace ImageResizer.Models
 
             var batch = ResizeBatch.FromCliOptionsWithDiagnostics(null, options);
 
-            Assert.AreEqual(0, batch.Files.Count);
-            Assert.AreEqual(1, batch.InputErrors.Count);
+            Assert.IsEmpty(batch.Files);
+            Assert.HasCount(1, batch.InputErrors);
             Assert.AreEqual(pattern, batch.InputErrors[0].File);
         }
 
@@ -264,8 +267,8 @@ namespace ImageResizer.Models
 
             var batch = ResizeBatch.FromCliOptionsWithDiagnostics(null, options);
 
-            CollectionAssert.AreEqual(new[] { valid }, batch.Files.ToArray());
-            Assert.AreEqual(1, batch.InputErrors.Count);
+            Assert.AreSequenceEqual(new[] { valid }, batch.Files.ToArray());
+            Assert.HasCount(1, batch.InputErrors);
             Assert.AreEqual(missing, batch.InputErrors[0].File);
         }
 
@@ -277,8 +280,8 @@ namespace ImageResizer.Models
 
             var batch = ResizeBatch.FromCliOptions(null, options);
 
-            Assert.AreEqual(0, batch.Files.Count);
-            Assert.AreEqual(0, batch.InputErrors.Count);
+            Assert.IsEmpty(batch.Files);
+            Assert.IsEmpty(batch.InputErrors);
         }
 
         [TestMethod]
@@ -291,8 +294,8 @@ namespace ImageResizer.Models
 
             var errors = (await batch.ProcessAsync((_, __) => { }, CancellationToken.None)).ToList();
 
-            Assert.AreEqual(2, errors.Count);
-            CollectionAssert.AreEqual(new[] { firstMissing, secondMissing }, errors.Select(error => error.File).ToArray());
+            Assert.HasCount(2, errors);
+            Assert.AreSequenceEqual(new[] { firstMissing, secondMissing }, errors.Select(error => error.File).ToArray());
         }
 
         [TestMethod]
@@ -310,8 +313,8 @@ namespace ImageResizer.Models
         {
             var result = ResizeBatch.FormatErrorMessage(new EmptyMessageException());
 
-            StringAssert.Contains(result, nameof(EmptyMessageException));
-            StringAssert.Contains(result, "0x88982F60");
+            Assert.Contains(nameof(EmptyMessageException), result);
+            Assert.Contains("0x88982F60", result);
         }
 
         private static ResizeBatch CreateBatch(Action<string> executeAction)

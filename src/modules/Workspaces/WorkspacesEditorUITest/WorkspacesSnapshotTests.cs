@@ -8,6 +8,7 @@ using WorkspacesEditor.Utils;
 
 namespace WorkspacesEditorUITest;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
 {
@@ -16,7 +17,7 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
     {
     }
 
-    [TestMethod("WorkspacesSnapshot.CancelCapture")]
+    [TestMethod(DisplayName = "WorkspacesSnapshot.CancelCapture")]
     [TestCategory("Workspaces Snapshot UI")]
     public void TestCaptureCancel()
     {
@@ -25,7 +26,7 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
         var createButton = Find<Button>("Create Workspace");
         createButton.Click();
 
-        Task.Delay(1000).Wait();
+        Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
         AttachSnapshotWindow();
 
@@ -36,24 +37,24 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
         cancelButton.Click();
     }
 
-    [TestMethod("WorkspacesSnapshot.CapturePackagedApps")]
+    [TestMethod(DisplayName = "WorkspacesSnapshot.CapturePackagedApps")]
     [TestCategory("Workspaces Snapshot UI")]
     public void TestCapturePackagedApplications()
     {
         OpenCalculator();
 
         // OpenWindowsSettings();
-        Task.Delay(2000).Wait();
+        Task.Delay(2000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
         AttachWorkspacesEditor();
         var createButton = Find<Button>("Create Workspace");
         createButton.Click();
-        Task.Delay(1000).Wait();
+        Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
         AttachSnapshotWindow();
         var captureButton = Find<Button>("Capture");
         captureButton.Click();
-        Task.Delay(3000).Wait();
+        Task.Delay(3000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
         // Verify captured windows by reading the temporary workspaces file as the ground truth.
         var editorIO = new WorkspacesEditorIO();
@@ -72,7 +73,7 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
         // Cancel to clean up
         AttachWorkspacesEditor();
         Find<Button>("Cancel").Click();
-        Task.Delay(1000).Wait();
+        Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
         // Close test applications
         CloseCalculator();

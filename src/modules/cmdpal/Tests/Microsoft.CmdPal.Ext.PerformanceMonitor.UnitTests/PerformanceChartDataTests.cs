@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class PerformanceChartDataTests
 {
@@ -99,8 +100,8 @@ public class PerformanceChartDataTests
         };
         var partial = new Dictionary<string, CounterSample> { ["0,0"] = ProcessorTimeSample(idle: 0, time: 0) };
 
-        Assert.AreEqual(0, CoreWidgetProvider.Helpers.CPUStats.ComputeCoreUsage(new Dictionary<string, CounterSample>(), current).Length);
-        Assert.AreEqual(0, CoreWidgetProvider.Helpers.CPUStats.ComputeCoreUsage(partial, current).Length);
+        Assert.IsEmpty(CoreWidgetProvider.Helpers.CPUStats.ComputeCoreUsage(new Dictionary<string, CounterSample>(), current));
+        Assert.IsEmpty(CoreWidgetProvider.Helpers.CPUStats.ComputeCoreUsage(partial, current));
     }
 
     [TestMethod]
@@ -123,7 +124,7 @@ public class PerformanceChartDataTests
 
         var usage = CoreWidgetProvider.Helpers.CPUStats.ComputeCoreUsage(previous, current);
 
-        Assert.AreEqual(3, usage.Length);
+        Assert.HasCount(3, usage);
         Assert.AreEqual(50f, usage[0], 0.5f);
         Assert.AreEqual(75f, usage[1], 0.5f);
         Assert.AreEqual(0f, usage[2], 0.5f);

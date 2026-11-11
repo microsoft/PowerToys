@@ -9,6 +9,7 @@ using static MouseUtils.UITests.MouseUtilsTestHelper;
 
 namespace MouseUtils.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class MouseHighlighterTests : UITestBase
 {
@@ -219,8 +220,9 @@ public class MouseHighlighterTests : UITestBase
 
         MouseHelper.MoveBy(160, 80, steps: 20, delayMs: 20);
         var moved = MouseHelper.GetMousePosition();
-        Assert.IsTrue(
-            Distance(moved.X, moved.Y, centerX, centerY) > 50,
+        Assert.IsGreaterThan(
+            50,
+            Distance(moved.X, moved.Y, centerX, centerY),
             $"Relative input did not move the cursor far enough: ({centerX},{centerY}) -> ({moved.X},{moved.Y}).");
 
         var movedInside = (X: moved.X + 30, Y: moved.Y);

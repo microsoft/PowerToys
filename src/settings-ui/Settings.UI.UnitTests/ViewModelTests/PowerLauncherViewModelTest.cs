@@ -12,6 +12,7 @@ using Moq;
 
 namespace ViewModelTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class PowerLauncherViewModelTest : IDisposable
     {
@@ -126,8 +127,8 @@ namespace ViewModelTests
             viewModel.SearchTypePreference = "SearchOptionsAreNotValidated";
 
             Assert.AreEqual(2, sendCallbackMock.TimesSent);
-            Assert.IsTrue(mockSettings.Properties.SearchResultPreference == "SearchOptionsAreNotValidated");
-            Assert.IsTrue(mockSettings.Properties.SearchTypePreference == "SearchOptionsAreNotValidated");
+            Assert.AreEqual("SearchOptionsAreNotValidated", mockSettings.Properties.SearchResultPreference);
+            Assert.AreEqual("SearchOptionsAreNotValidated", mockSettings.Properties.SearchTypePreference);
         }
 
         public static void AssertHotkeySettings(HotkeySettings setting, bool win, bool ctrl, bool alt, bool shift, int code)

@@ -17,7 +17,7 @@ public sealed partial class ZoomItTests
         PrepareDemoScript(expected + "[end]");
         ui.SetSlider("ZoomItDemoTypeSpeedSlider", 10, "DemoTypeSpeedSlider", 10);
         var shortcut = ui.Shortcut("ZoomItDemoTypeShortcut");
-        Assert.IsFalse(shortcut.Any(key => key is Key.Space or Key.Backspace), "The activation shortcut must not contain either probe key.");
+        Assert.DoesNotContain(key => key is Key.Space or Key.Backspace, shortcut, "The activation shortcut must not contain either probe key.");
         OpenNotepad();
         Assert.IsNotNull(notepad);
 
@@ -87,7 +87,7 @@ public sealed partial class ZoomItTests
         var emitted = observer.Snapshot().Skip(activationEventIndex).ToArray();
         var expectedPackets = expected.SelectMany(character => new[] { ((uint)character, true), ((uint)character, false) }).ToArray();
         var actualPackets = emitted.Where(input => input.IsUnicodePacket).Select(input => (input.ScanCode, input.IsKeyDown)).ToArray();
-        CollectionAssert.AreEqual(expectedPackets, actualPackets, "Every scripted Unicode down/up pair must be observed in order; an inactive hook must not pass.");
+        Assert.AreSequenceEqual(expectedPackets, actualPackets, "Every scripted Unicode down/up pair must be observed in order; an inactive hook must not pass.");
         SaveDesktop("demo-type-notepad-no-indentation-probe");
 
         // The old probe leaves identical final text, so assert its input events independently of spelling/autocorrect.

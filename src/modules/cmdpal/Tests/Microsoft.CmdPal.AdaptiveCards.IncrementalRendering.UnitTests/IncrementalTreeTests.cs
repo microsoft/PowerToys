@@ -4,6 +4,7 @@
 
 namespace Microsoft.CmdPal.AdaptiveCards.IncrementalRendering.UnitTests;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public sealed class IncrementalTreeTests
 {
@@ -15,7 +16,7 @@ public sealed class IncrementalTreeTests
         var plan = IncrementalTreeDiffer.CreatePlan(tree, tree);
 
         Assert.AreEqual(IncrementalPlanDisposition.NoChanges, plan.Disposition);
-        Assert.AreEqual(0, plan.PropertyUpdates.Count);
+        Assert.IsEmpty(plan.PropertyUpdates);
     }
 
     [TestMethod]
@@ -24,7 +25,7 @@ public sealed class IncrementalTreeTests
         var plan = IncrementalTreeDiffer.CreatePlan(TextTree("old"), TextTree("new"));
 
         Assert.AreEqual(IncrementalPlanDisposition.PatchInPlace, plan.Disposition);
-        Assert.AreEqual(1, plan.PropertyUpdates.Count);
+        Assert.HasCount(1, plan.PropertyUpdates);
         var update = plan.PropertyUpdates[0];
         Assert.AreEqual(1, update.NodeIndex);
         Assert.AreEqual("TextBlock", update.ExpectedNodeType);
@@ -40,7 +41,7 @@ public sealed class IncrementalTreeTests
             ImageTree("data:image/svg+xml;utf8,<svg id='new'/>"));
 
         Assert.AreEqual(IncrementalPlanDisposition.PatchInPlace, plan.Disposition);
-        Assert.AreEqual(1, plan.PropertyUpdates.Count);
+        Assert.HasCount(1, plan.PropertyUpdates);
         var update = plan.PropertyUpdates[0];
         Assert.AreEqual(1, update.NodeIndex);
         Assert.AreEqual("ImageSource", update.PropertyName);
@@ -96,7 +97,7 @@ public sealed class IncrementalTreeTests
             CustomTree("""{"data":[2]}"""));
 
         Assert.AreEqual(IncrementalPlanDisposition.PatchInPlace, plan.Disposition);
-        Assert.AreEqual(1, plan.PropertyUpdates.Count);
+        Assert.HasCount(1, plan.PropertyUpdates);
         var update = plan.PropertyUpdates[0];
         Assert.AreEqual(1, update.NodeIndex);
         Assert.AreEqual("CustomState", update.PropertyName);

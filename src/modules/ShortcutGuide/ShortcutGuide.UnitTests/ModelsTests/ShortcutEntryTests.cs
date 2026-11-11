@@ -9,6 +9,7 @@ using ShortcutGuide.Models;
 
 namespace ShortcutGuide.UnitTests.ModelsTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class ShortcutEntryTests
 {

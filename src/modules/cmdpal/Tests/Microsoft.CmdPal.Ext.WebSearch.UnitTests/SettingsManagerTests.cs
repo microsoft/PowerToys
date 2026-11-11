@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.WebSearch.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class SettingsManagerTests : CommandPaletteUnitTestBase
 {
@@ -32,7 +33,7 @@ public class SettingsManagerTests : CommandPaletteUnitTestBase
 
             // Act
             settings.AddHistoryItem(new HistoryItem("test event", DateTime.UtcNow));
-            await Task.Delay(50);
+            await Task.Delay(50, TestContext.CancellationToken);
 
             // Assert
             Assert.IsTrue(eventRaised, "Expected HistoryChanged to be raised when saving history.");
@@ -47,4 +48,6 @@ public class SettingsManagerTests : CommandPaletteUnitTestBase
 
         void Handler(object s, EventArgs e) => eventRaised = true;
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

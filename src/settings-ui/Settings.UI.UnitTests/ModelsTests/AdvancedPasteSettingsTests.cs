@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CommonLibTest
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class AdvancedPasteSettingsTests
     {
@@ -74,7 +75,7 @@ namespace CommonLibTest
 
             var accessors = settings.GetAllHotkeyAccessors();
 
-            CollectionAssert.AreEqual(ExpectedHotkeySlots, accessors.Select(accessor => accessor.LocalizationHeaderKey).ToArray());
+            Assert.AreSequenceEqual(ExpectedHotkeySlots, accessors.Select(accessor => accessor.LocalizationHeaderKey).ToArray());
 
             // The native module reserves an empty slot for the missing JPEG action, so the HTML shortcut
             // must still be found right after it.
@@ -102,7 +103,7 @@ namespace CommonLibTest
             var pasteAsFile = document.RootElement.GetProperty("properties").GetProperty("additional-actions").GetProperty("paste-as-file");
             var children = pasteAsFile.EnumerateObject().Select(property => property.Name).Where(name => name != "isShown").ToArray();
 
-            CollectionAssert.AreEqual(ExpectedPasteAsFileChildren, children);
+            Assert.AreSequenceEqual(ExpectedPasteAsFileChildren, children);
         }
     }
 }

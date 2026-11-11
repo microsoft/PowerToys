@@ -166,13 +166,15 @@ internal sealed class EndpointRecoveryFixture : IDisposable
         var endpoint = RunFiles.Read(Path.Combine(host.OutputRoot, "endpoint-journal.json"));
         Assert.AreEqual(3, endpoint["Settings"]!.AsArray().Count);
         Assert.IsFalse(endpoint["SettingsRestored"]!.GetValue<bool>());
-        Assert.IsTrue(settings.Any(snapshot => !snapshot.Matches()), "The real startup must alter the scoped settings before recovery.");
+        Assert.Contains(snapshot => !snapshot.Matches(), settings, "The real startup must alter the scoped settings before recovery.");
         var owned = endpoint["Processes"]!.AsArray().Select(node => ReadIdentity(node!)).ToArray();
-        Assert.IsTrue(
-            owned.Any(record => record.Id == started["MwbProcessId"]!.GetValue<int>() && record.IsCurrent()),
+        Assert.Contains(
+            record => record.Id == started["MwbProcessId"]!.GetValue<int>() && record.IsCurrent(),
+            owned,
             "The real MWB process must still match its full recorded birth identity before injection.");
-        Assert.IsTrue(
-            owned.Any(record => record.Id == started["SettingsProcessId"]!.GetValue<int>() && record.IsCurrent()),
+        Assert.Contains(
+            record => record.Id == started["SettingsProcessId"]!.GetValue<int>() && record.IsCurrent(),
+            owned,
             "The real Settings process must still match its full recorded birth identity before injection.");
         recordings.StartDesktop();
         RunFiles.Write(Path.Combine(RunRoot, "fault-boundary.json"), new
@@ -195,12 +197,13 @@ internal sealed class EndpointRecoveryFixture : IDisposable
         var failurePath = Path.Combine(host.OutputRoot, "failed.json");
         var failure = RunFiles.Read(failurePath);
         Assert.AreEqual(RunId, failure[nameof(RunId)]!.GetValue<string>());
-        StringAssert.StartsWith(failure["Error"]!.GetValue<string>(), "Host lease expired;");
-        Assert.IsTrue(
-            (File.GetLastWriteTimeUtc(failurePath) - lastPublished).TotalSeconds >= 45,
+        Assert.StartsWith("Host lease expired;", failure["Error"]!.GetValue<string>());
+        Assert.IsGreaterThanOrEqualTo(
+            45,
+            (File.GetLastWriteTimeUtc(failurePath) - lastPublished).TotalSeconds,
             "The recovery test must exercise the real 45-second watchdog, not back-date a lease.");
         var error = Assert.ThrowsExactly<InvalidOperationException>(() => host.Request("Observe", timeoutSeconds: 5));
-        StringAssert.Contains(error.Message, "Host lease expired;");
+        Assert.Contains("Host lease expired;", error.Message);
         var exited = RunFiles.Read(Path.Combine(host.OutputRoot, "worker-exited.json"));
         Assert.AreEqual(RunId, exited[nameof(RunId)]!.GetValue<string>());
         Assert.IsFalse(exited["Cleaned"]!.GetValue<bool>(), "An aborted controller must not masquerade as normal Finish cleanup.");
@@ -275,7 +278,7 @@ internal sealed class EndpointRecoveryFixture : IDisposable
                 var endpoint = RunFiles.Read(Path.Combine(host.OutputRoot, "endpoint-journal.json"));
                 var expected = endpoint["Settings"]!.AsArray().Where(node => node!["Existed"]!.GetValue<bool>())
                     .Select(node => Path.GetFullPath(node!["Backup"]!.GetValue<string>())).ToArray();
-                CollectionAssert.AreEquivalent(expected, WinAppSandboxPayload.PlainFiles(BackupRoot).ToArray());
+                Assert.AreSequenceEqual(expected, WinAppSandboxPayload.PlainFiles(BackupRoot).ToArray(), SequenceOrder.InAnyOrder);
                 RunFiles.RemoveOwnedDirectory(BackupRoot, TimeSpan.FromSeconds(45));
             }
 

@@ -13,6 +13,7 @@ using Peek.FilePreviewer.Previewers;
 
 namespace Peek.FilePreviewer.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ReadHelperTests
     {
@@ -38,7 +39,7 @@ namespace Peek.FilePreviewer.UnitTests
         {
             File.WriteAllText(_tempFilePath, "Hello, world!", Encoding.UTF8);
 
-            string content = await ReadHelper.Read(_tempFilePath);
+            string content = await ReadHelper.Read(_tempFilePath, cancellationToken: TestContext.CancellationToken);
 
             Assert.AreEqual("Hello, world!", content);
         }
@@ -49,7 +50,7 @@ namespace Peek.FilePreviewer.UnitTests
             byte[] buffer = new byte[ReadHelper.MaxReadableFileSizeBytes + 1];
             File.WriteAllBytes(_tempFilePath, buffer);
 
-            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => ReadHelper.Read(_tempFilePath));
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => ReadHelper.Read(_tempFilePath, cancellationToken: TestContext.CancellationToken));
         }
 
         [TestMethod]
@@ -57,7 +58,7 @@ namespace Peek.FilePreviewer.UnitTests
         {
             File.WriteAllText(_tempFilePath, new string('a', 4096), Encoding.UTF8);
 
-            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => ReadHelper.Read(_tempFilePath, maxReadableFileSizeBytes: 1024));
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => ReadHelper.Read(_tempFilePath, maxReadableFileSizeBytes: 1024, TestContext.CancellationToken));
         }
 
         [TestMethod]
@@ -65,7 +66,7 @@ namespace Peek.FilePreviewer.UnitTests
         {
             File.WriteAllText(_tempFilePath, "small enough", Encoding.UTF8);
 
-            string content = await ReadHelper.Read(_tempFilePath, maxReadableFileSizeBytes: 1024);
+            string content = await ReadHelper.Read(_tempFilePath, maxReadableFileSizeBytes: 1024, TestContext.CancellationToken);
 
             Assert.AreEqual("small enough", content);
         }
@@ -75,7 +76,7 @@ namespace Peek.FilePreviewer.UnitTests
         {
             File.WriteAllText(_tempFilePath, "Unicode café", Encoding.Unicode);
 
-            string content = await ReadHelper.Read(_tempFilePath);
+            string content = await ReadHelper.Read(_tempFilePath, cancellationToken: TestContext.CancellationToken);
 
             Assert.AreEqual("Unicode café", content);
         }
@@ -85,7 +86,7 @@ namespace Peek.FilePreviewer.UnitTests
         {
             File.WriteAllText(_tempFilePath, "text with bom", new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
 
-            string content = await ReadHelper.Read(_tempFilePath);
+            string content = await ReadHelper.Read(_tempFilePath, cancellationToken: TestContext.CancellationToken);
 
             Assert.AreEqual("text with bom", content);
         }
@@ -97,7 +98,7 @@ namespace Peek.FilePreviewer.UnitTests
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 
-            await Assert.ThrowsExceptionAsync<OperationCanceledException>(
+            await Assert.ThrowsExactlyAsync<OperationCanceledException>(
                 () => ReadHelper.Read(_tempFilePath, ReadHelper.MaxReadableFileSizeBytes, cts.Token));
         }
 
@@ -108,7 +109,7 @@ namespace Peek.FilePreviewer.UnitTests
             string expected = new string('a', 200_000);
             File.WriteAllText(_tempFilePath, expected, Encoding.UTF8);
 
-            string content = await ReadHelper.Read(_tempFilePath);
+            string content = await ReadHelper.Read(_tempFilePath, cancellationToken: TestContext.CancellationToken);
 
             Assert.AreEqual(expected, content);
         }
@@ -121,7 +122,7 @@ namespace Peek.FilePreviewer.UnitTests
             string expected = "café résumé " + new string('x', 200_000);
             File.WriteAllText(_tempFilePath, expected, Encoding.Unicode);
 
-            string content = await ReadHelper.Read(_tempFilePath);
+            string content = await ReadHelper.Read(_tempFilePath, cancellationToken: TestContext.CancellationToken);
 
             Assert.AreEqual(expected, content);
         }
@@ -135,7 +136,7 @@ namespace Peek.FilePreviewer.UnitTests
             string expected = prefix + new string('x', 200_000);
             File.WriteAllText(_tempFilePath, expected, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
-            string content = await ReadHelper.Read(_tempFilePath);
+            string content = await ReadHelper.Read(_tempFilePath, cancellationToken: TestContext.CancellationToken);
 
             Assert.AreEqual(expected, content);
         }
@@ -148,7 +149,7 @@ namespace Peek.FilePreviewer.UnitTests
             string expected = new string('a', 65_536) + "\n你好，世界。 café résumé naïve piñata";
             File.WriteAllText(_tempFilePath, expected, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
-            string content = await ReadHelper.Read(_tempFilePath);
+            string content = await ReadHelper.Read(_tempFilePath, cancellationToken: TestContext.CancellationToken);
 
             Assert.AreEqual(expected, content);
         }
@@ -161,9 +162,11 @@ namespace Peek.FilePreviewer.UnitTests
             string expected = new string('a', 65_535) + "你好，世界。 café résumé naïve piñata";
             File.WriteAllText(_tempFilePath, expected, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
-            string content = await ReadHelper.Read(_tempFilePath);
+            string content = await ReadHelper.Read(_tempFilePath, cancellationToken: TestContext.CancellationToken);
 
             Assert.AreEqual(expected, content);
         }
+
+        public TestContext TestContext { get; set; } = null!;
     }
 }

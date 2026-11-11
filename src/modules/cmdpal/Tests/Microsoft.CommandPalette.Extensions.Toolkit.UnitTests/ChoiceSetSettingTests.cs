@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ChoiceSetSettingTests
 {
@@ -19,6 +20,6 @@ public class ChoiceSetSettingTests
         choices.Add(new("Second", "second"));
 
         Assert.AreSame(choices, setting.Choices);
-        CollectionAssert.AreEqual(choices, (List<ChoiceSetSetting.Choice>)setting.ToDictionary()["choices"]);
+        Assert.AreSequenceEqual(choices, (List<ChoiceSetSetting.Choice>)setting.ToDictionary()["choices"]);
     }
 }

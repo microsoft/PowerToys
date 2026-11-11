@@ -11,6 +11,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class GlobalKeyboardListenerTests
 {
@@ -38,16 +39,16 @@ public partial class GlobalKeyboardListenerTests
 
         Assert.AreEqual(42, harness.Hook.Key((uint)key, message: (uint)down));
         Assert.AreEqual(42, harness.Hook.Key((uint)key, message: (uint)down));
-        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.IsEmpty(harness.Commands);
         Assert.AreEqual(1, harness.Hook.Key((uint)key, message: (uint)up));
-        CollectionAssert.AreEqual(new[] { string.Empty }, harness.Commands);
-        CollectionAssert.AreEqual(new[] { (VIRTUAL_KEY)key }, harness.Hook.WindowsKeyReleases);
+        Assert.AreSequenceEqual(new[] { string.Empty }, harness.Commands);
+        Assert.AreSequenceEqual(new[] { (VIRTUAL_KEY)key }, harness.Hook.WindowsKeyReleases);
         Assert.IsFalse(harness.Hook.IsKeyDown((VIRTUAL_KEY)key));
 
         // A second press must work after the injected release re-enters the hook.
         Assert.AreEqual(42, harness.Hook.Key((uint)key));
         Assert.AreEqual(1, harness.Hook.Key((uint)key, message: (uint)up));
-        Assert.AreEqual(2, harness.Commands.Count);
+        Assert.HasCount(2, harness.Commands);
     }
 
     [TestMethod]
@@ -58,8 +59,8 @@ public partial class GlobalKeyboardListenerTests
         using var harness = new Harness();
         Assert.AreEqual(42, harness.Hook.Key((uint)key));
         Assert.AreEqual(42, harness.Hook.Key((uint)key, message: 0x0101));
-        Assert.AreEqual(0, harness.Commands.Count);
-        Assert.AreEqual(0, harness.Hook.WindowsKeyReleases.Count);
+        Assert.IsEmpty(harness.Commands);
+        Assert.IsEmpty(harness.Hook.WindowsKeyReleases);
     }
 
     [TestMethod]
@@ -82,8 +83,8 @@ public partial class GlobalKeyboardListenerTests
         var second = releaseWindowsFirst ? (uint)otherKey : 0x5BU;
         Assert.AreEqual(42, harness.Hook.Key(first, message: 0x0101));
         Assert.AreEqual(42, harness.Hook.Key(second, message: 0x0101));
-        Assert.AreEqual(0, harness.Commands.Count);
-        Assert.AreEqual(0, harness.Hook.WindowsKeyReleases.Count);
+        Assert.IsEmpty(harness.Commands);
+        Assert.IsEmpty(harness.Hook.WindowsKeyReleases);
     }
 
     [TestMethod]
@@ -100,8 +101,8 @@ public partial class GlobalKeyboardListenerTests
         harness.Hook.Key((uint)otherKey, message: 0x0101);
         harness.Hook.Key(0x5B, message: 0x0101);
 
-        Assert.AreEqual(0, harness.Commands.Count);
-        Assert.AreEqual(0, harness.Hook.WindowsKeyReleases.Count);
+        Assert.IsEmpty(harness.Commands);
+        Assert.IsEmpty(harness.Hook.WindowsKeyReleases);
     }
 
     [TestMethod]
@@ -115,7 +116,7 @@ public partial class GlobalKeyboardListenerTests
         harness.Hook.Key(0x5C); // Auto-repeat must not re-arm activation.
         harness.Hook.Key(0x5C, message: 0x0101);
 
-        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.IsEmpty(harness.Commands);
     }
 
     [TestMethod]
@@ -125,8 +126,8 @@ public partial class GlobalKeyboardListenerTests
         harness.Listener.SetWindowsKeyAction(string.Empty);
         Assert.AreEqual(42, harness.Hook.Key(0x5B, injected: true));
         Assert.AreEqual(1, harness.Hook.Key(0x5B, message: 0x0101, injected: true));
-        Assert.AreEqual(1, harness.Commands.Count);
-        Assert.AreEqual(1, harness.Hook.WindowsKeyReleases.Count);
+        Assert.HasCount(1, harness.Commands);
+        Assert.HasCount(1, harness.Hook.WindowsKeyReleases);
     }
 
     [TestMethod]
@@ -138,7 +139,7 @@ public partial class GlobalKeyboardListenerTests
         harness.Hook.Key(0x45, injected: true);
         harness.Hook.Key(0x45, message: 0x0101, injected: true);
         Assert.AreEqual(42, harness.Hook.Key(0x5B, message: 0x0101));
-        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.IsEmpty(harness.Commands);
     }
 
     [TestMethod]
@@ -151,9 +152,9 @@ public partial class GlobalKeyboardListenerTests
         Assert.AreEqual(1, harness.Hook.Key(0x4B));
         harness.Hook.Key(0x4B, message: 0x0101);
         Assert.AreEqual(42, harness.Hook.Key(0x5B, message: 0x0101));
-        Assert.AreEqual(1, harness.Commands.Count);
+        Assert.HasCount(1, harness.Commands);
         Assert.AreEqual("command", harness.Commands[0]);
-        Assert.AreEqual(0, harness.Hook.WindowsKeyReleases.Count);
+        Assert.IsEmpty(harness.Hook.WindowsKeyReleases);
     }
 
     [TestMethod]
@@ -176,7 +177,7 @@ public partial class GlobalKeyboardListenerTests
         }
 
         Assert.AreEqual(42, harness.Hook.Key(0x5B, message: 0x0101));
-        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.IsEmpty(harness.Commands);
     }
 
     [TestMethod]
@@ -188,8 +189,8 @@ public partial class GlobalKeyboardListenerTests
         harness.Hook.ThrowOnDummyKey = true;
 
         Assert.AreEqual(42, harness.Hook.Key(0x5B, message: 0x0101));
-        Assert.AreEqual(0, harness.Commands.Count);
-        Assert.IsInstanceOfType<InvalidOperationException>(await harness.ReportedError.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.IsEmpty(harness.Commands);
+        Assert.IsInstanceOfType<InvalidOperationException>(await harness.ReportedError.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -201,8 +202,8 @@ public partial class GlobalKeyboardListenerTests
 
         Assert.AreEqual(1, harness.Hook.Key(0x5B, message: 0x0101));
         Assert.IsFalse(harness.Hook.IsKeyDown(VIRTUAL_KEY.VK_LWIN));
-        Assert.AreEqual(1, harness.Hook.WindowsKeyReleases.Count);
-        Assert.IsInstanceOfType<InvalidOperationException>(await harness.ReportedError.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.HasCount(1, harness.Hook.WindowsKeyReleases);
+        Assert.IsInstanceOfType<InvalidOperationException>(await harness.ReportedError.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -219,7 +220,7 @@ public partial class GlobalKeyboardListenerTests
         harness.Hook.SetModifiers(win, ctrl, shift, alt);
 
         Assert.AreEqual(expected ? 1 : 42, harness.Hook.Key((uint)key));
-        Assert.AreEqual(expected ? 1 : 0, harness.Commands.Count);
+        Assert.HasCount(expected ? 1 : 0, harness.Commands);
         Assert.AreEqual(expected ? 1 : 0, harness.Hook.DummyKeys);
         Assert.AreEqual(expected ? 0 : 1, harness.Hook.Forwarded);
         if (expected)
@@ -239,7 +240,7 @@ public partial class GlobalKeyboardListenerTests
         harness.Hook.SetModifiers(win: true, alt: true);
 
         Assert.AreEqual(1, harness.Hook.Key(0x20));
-        CollectionAssert.AreEqual(new[] { commandId }, harness.Commands);
+        Assert.AreSequenceEqual(new[] { commandId }, harness.Commands);
     }
 
     [TestMethod]
@@ -251,7 +252,7 @@ public partial class GlobalKeyboardListenerTests
 
         Assert.AreEqual(1, harness.Hook.Key(0x20));
         Assert.AreEqual(1, harness.Hook.Key(0x20));
-        Assert.AreEqual(2, harness.Commands.Count);
+        Assert.HasCount(2, harness.Commands);
         Assert.AreEqual(2, harness.Hook.DummyKeys);
     }
 
@@ -264,7 +265,7 @@ public partial class GlobalKeyboardListenerTests
         harness.Hook.SetModifiers(win: true, alt: true);
 
         Assert.AreEqual(1, harness.Hook.Key(0x20));
-        Assert.AreEqual(1, harness.Commands.Count);
+        Assert.HasCount(1, harness.Commands);
         Assert.AreEqual("first", harness.Commands[0]);
     }
 
@@ -280,12 +281,12 @@ public partial class GlobalKeyboardListenerTests
         Assert.AreEqual(42, harness.Hook.Key(0x20));
         harness.Hook.SetModifiers(ctrl: true);
         Assert.AreEqual(42, harness.Hook.Key(0x4B));
-        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.IsEmpty(harness.Commands);
 
         harness.Listener.SetHotkeyAction(true, false, false, true, 0x20, "replacement");
         harness.Hook.SetModifiers(win: true, alt: true);
         Assert.AreEqual(1, harness.Hook.Key(0x20));
-        Assert.AreEqual(1, harness.Commands.Count);
+        Assert.HasCount(1, harness.Commands);
         Assert.AreEqual("replacement", harness.Commands[0]);
     }
 
@@ -296,7 +297,7 @@ public partial class GlobalKeyboardListenerTests
         harness.Listener.SetHotkeyAction(false, false, false, false, 0, "empty");
 
         Assert.AreEqual(42, harness.Hook.Key(0));
-        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.IsEmpty(harness.Commands);
     }
 
     [TestMethod]
@@ -317,7 +318,7 @@ public partial class GlobalKeyboardListenerTests
             Assert.AreEqual(1, harness.Hook.Key(0x4B));
             Assert.AreEqual(42, harness.Hook.Key(0x4B));
             Assert.AreEqual(1, harness.Hook.Key(0x4C));
-            Assert.AreEqual(2, commands.Count);
+            Assert.HasCount(2, commands);
             Assert.AreEqual("original", commands[0]);
             Assert.AreEqual("replacement", commands[1]);
         }
@@ -336,7 +337,7 @@ public partial class GlobalKeyboardListenerTests
         Assert.AreEqual(42, harness.Hook.Key(0x20, code, (uint)message));
         Assert.AreEqual(0, harness.Hook.ModifierReads);
         Assert.AreEqual(0, harness.Hook.DummyKeys);
-        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.IsEmpty(harness.Commands);
     }
 
     [TestMethod]
@@ -381,7 +382,7 @@ public partial class GlobalKeyboardListenerTests
         Assert.AreEqual(1, harness.Hook.Key(0x20));
         Assert.AreEqual(0, harness.Hook.Forwarded);
         Assert.AreEqual(1, harness.Hook.DummyKeys);
-        Assert.AreSame(failure, await harness.ReportedError.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.AreSame(failure, await harness.ReportedError.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -395,7 +396,7 @@ public partial class GlobalKeyboardListenerTests
             _ =>
             {
                 reporterStarted.SetResult();
-                releaseReporter.Wait();
+                releaseReporter.Wait(TestContext.CancellationToken);
                 reporterFinished.SetResult();
             });
         harness.Listener.SetHotkeyAction(false, true, false, false, 0x4B, string.Empty);
@@ -404,15 +405,15 @@ public partial class GlobalKeyboardListenerTests
         try
         {
             var callback = Task.Run(() => harness.Hook.Key(0x4B));
-            await reporterStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-            Assert.AreEqual(1, await callback.WaitAsync(TimeSpan.FromSeconds(5)));
+            await reporterStarted.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+            Assert.AreEqual(1, await callback.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
             Assert.AreEqual(0, harness.Hook.Forwarded);
             Assert.AreEqual(1, harness.Hook.DummyKeys);
         }
         finally
         {
             releaseReporter.Set();
-            await reporterFinished.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await reporterFinished.Task.WaitAsync(TimeSpan.FromSeconds(5), System.Threading.CancellationToken.None);
         }
     }
 
@@ -425,9 +426,9 @@ public partial class GlobalKeyboardListenerTests
         harness.Hook.ThrowOnDummyKey = true;
 
         Assert.AreEqual(1, harness.Hook.Key(0x4B));
-        Assert.AreEqual(1, harness.Commands.Count);
+        Assert.HasCount(1, harness.Commands);
         Assert.AreEqual(0, harness.Hook.Forwarded);
-        Assert.IsInstanceOfType<InvalidOperationException>(await harness.ReportedError.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.IsInstanceOfType<InvalidOperationException>(await harness.ReportedError.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -473,7 +474,7 @@ public partial class GlobalKeyboardListenerTests
         harness.Listener.Dispose();
 
         Assert.AreEqual(42, harness.Hook.Key(0x4B));
-        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.IsEmpty(harness.Commands);
         Assert.AreEqual(1, harness.Hook.UninstallCount);
         Assert.ThrowsExactly<ObjectDisposedException>(() => harness.Listener.Start(out _));
         Assert.ThrowsExactly<ObjectDisposedException>(() => harness.Listener.SetHotkeyAction(false, true, false, false, 0x4B, "command"));
@@ -608,4 +609,6 @@ public partial class GlobalKeyboardListenerTests
             public void Dispose() => dispose();
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

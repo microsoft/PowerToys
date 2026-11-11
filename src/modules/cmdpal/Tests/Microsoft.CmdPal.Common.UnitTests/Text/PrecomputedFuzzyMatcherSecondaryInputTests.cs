@@ -6,6 +6,7 @@ using Microsoft.CmdPal.Common.Text;
 
 namespace Microsoft.CmdPal.Common.UnitTests.Text;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public sealed class PrecomputedFuzzyMatcherSecondaryInputTests
 {
@@ -22,7 +23,7 @@ public sealed class PrecomputedFuzzyMatcherSecondaryInputTests
 
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected primary query to match secondary target");
+        Assert.IsGreaterThan(0, score, "Expected primary query to match secondary target");
     }
 
     [TestMethod]
@@ -34,7 +35,7 @@ public sealed class PrecomputedFuzzyMatcherSecondaryInputTests
 
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected secondary query to match primary target");
+        Assert.IsGreaterThan(0, score, "Expected secondary query to match primary target");
     }
 
     [TestMethod]
@@ -46,7 +47,7 @@ public sealed class PrecomputedFuzzyMatcherSecondaryInputTests
 
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected secondary query to match secondary target");
+        Assert.IsGreaterThan(0, score, "Expected secondary query to match secondary target");
     }
 
     [TestMethod]
@@ -58,7 +59,7 @@ public sealed class PrecomputedFuzzyMatcherSecondaryInputTests
 
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected query to match when it appears in both primary and secondary");
+        Assert.IsGreaterThan(0, score, "Expected query to match when it appears in both primary and secondary");
     }
 
     [TestMethod]
@@ -70,7 +71,7 @@ public sealed class PrecomputedFuzzyMatcherSecondaryInputTests
 
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected primary query to match secondary target");
+        Assert.IsGreaterThan(0, score, "Expected primary query to match secondary target");
     }
 
     [TestMethod]
@@ -83,7 +84,7 @@ public sealed class PrecomputedFuzzyMatcherSecondaryInputTests
         var score = _matcher.Score(query, target);
 
         // Primary should still match, secondary query just doesn't contribute
-        Assert.IsTrue(score > 0, "Expected primary query to match primary target");
+        Assert.IsGreaterThan(0, score, "Expected primary query to match primary target");
     }
 
     [TestMethod]
@@ -95,7 +96,7 @@ public sealed class PrecomputedFuzzyMatcherSecondaryInputTests
 
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected primary query to match even when secondary doesn't");
+        Assert.IsGreaterThan(0, score, "Expected primary query to match even when secondary doesn't");
     }
 
     [TestMethod]
@@ -107,7 +108,7 @@ public sealed class PrecomputedFuzzyMatcherSecondaryInputTests
 
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected match when only secondary parts match");
+        Assert.IsGreaterThan(0, score, "Expected match when only secondary parts match");
     }
 
     [TestMethod]
@@ -119,7 +120,7 @@ public sealed class PrecomputedFuzzyMatcherSecondaryInputTests
 
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected match when queries cross-match with targets");
+        Assert.IsGreaterThan(0, score, "Expected match when queries cross-match with targets");
     }
 
     [TestMethod]
@@ -141,7 +142,7 @@ public sealed class PrecomputedFuzzyMatcherSecondaryInputTests
 
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected match on primary when secondaries are empty");
+        Assert.IsGreaterThan(0, score, "Expected match on primary when secondaries are empty");
     }
 
     [TestMethod]
@@ -153,7 +154,7 @@ public sealed class PrecomputedFuzzyMatcherSecondaryInputTests
 
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected 'power' + 'point' to match 'PowerPoint'");
+        Assert.IsGreaterThan(0, score, "Expected 'power' + 'point' to match 'PowerPoint'");
     }
 
     private FuzzyQuery CreateQuery(string primary, string? secondary = null)

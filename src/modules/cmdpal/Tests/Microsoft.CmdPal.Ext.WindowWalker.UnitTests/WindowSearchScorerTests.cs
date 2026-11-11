@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class WindowSearchScorerTests
 {
@@ -25,7 +26,7 @@ public class WindowSearchScorerTests
             FuzzyStringMatcher.ScoreFuzzy(query, title),
             FuzzyStringMatcher.ScoreFuzzy(query, processName ?? string.Empty));
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("word budget")]
     [DataRow("budget word")]
     [DataRow("winword budget")]
@@ -34,7 +35,7 @@ public class WindowSearchScorerTests
     {
         var score = WindowSearchScorer.Score(query, WordTitle, WordProcess);
 
-        Assert.IsTrue(score > 0, $"Expected '{query}' to match the Word window, but scored {score}.");
+        Assert.IsGreaterThan(0, score, $"Expected '{query}' to match the Word window, but scored {score}.");
     }
 
     [TestMethod]
@@ -43,7 +44,7 @@ public class WindowSearchScorerTests
         var budget = WindowSearchScorer.Score("word budget", WordTitle, WordProcess);
         var resume = WindowSearchScorer.Score("word budget", "resume.docx - Word", WordProcess);
 
-        Assert.IsTrue(budget > 0, "The budget document should match.");
+        Assert.IsGreaterThan(0, budget, "The budget document should match.");
         Assert.AreEqual(0, resume, "A different document of the same process should not match.");
     }
 
@@ -54,9 +55,9 @@ public class WindowSearchScorerTests
         const string powerToysTab = "microsoft/PowerToys: Windows system utilities - Google Chrome";
         const string gmailTab = "Inbox (12) - Gmail - Google Chrome";
 
-        Assert.IsTrue(WindowSearchScorer.Score("chrome powertoys", powerToysTab, process) > 0);
+        Assert.IsGreaterThan(0, WindowSearchScorer.Score("chrome powertoys", powerToysTab, process));
         Assert.AreEqual(0, WindowSearchScorer.Score("chrome powertoys", gmailTab, process));
-        Assert.IsTrue(WindowSearchScorer.Score("chrome gmail", gmailTab, process) > 0);
+        Assert.IsGreaterThan(0, WindowSearchScorer.Score("chrome gmail", gmailTab, process));
     }
 
     [TestMethod]
@@ -64,7 +65,7 @@ public class WindowSearchScorerTests
     {
         var score = WindowSearchScorer.Score("chrome inbox gmail", "Inbox (12) - Gmail - Google Chrome", "chrome");
 
-        Assert.IsTrue(score > 0, $"Expected a three-word query to match, but scored {score}.");
+        Assert.IsGreaterThan(0, score, $"Expected a three-word query to match, but scored {score}.");
     }
 
     [TestMethod]
@@ -72,11 +73,11 @@ public class WindowSearchScorerTests
     {
         // Explorer windows are titled with just the folder name, so the process name is the
         // only way to say "the Explorer window showing Downloads".
-        Assert.IsTrue(WindowSearchScorer.Score("explorer downloads", "Downloads", "explorer") > 0);
+        Assert.IsGreaterThan(0, WindowSearchScorer.Score("explorer downloads", "Downloads", "explorer"));
         Assert.AreEqual(0, WindowSearchScorer.Score("explorer documents", "Downloads", "explorer"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("word spreadsheet")]
     [DataRow("budget excel")]
     [DataRow("word budget nonexistentword")]
@@ -87,7 +88,7 @@ public class WindowSearchScorerTests
         Assert.AreEqual(0, score, $"Expected '{query}' not to match, but scored {score}.");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("word")]
     [DataRow("budget")]
     [DataRow("winword")]
@@ -100,7 +101,7 @@ public class WindowSearchScorerTests
         Assert.AreEqual(LegacyScore(query, WordTitle, WordProcess), score);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("budget review", "Quarterly budget review - Word", DisplayName = "Single spaces in both")]
     [DataRow("budget   review", "Quarterly budget   review - Word", DisplayName = "Repeated spaces in both")]
     [DataRow("budget\treview", "Quarterly budget\treview - Word", DisplayName = "Tab in both")]
@@ -112,12 +113,13 @@ public class WindowSearchScorerTests
         // whole-query path, so normalizing the query must not cost them their score.
         var score = WindowSearchScorer.Score(query, title, WordProcess);
 
-        Assert.IsTrue(
-            score >= LegacyScore(query, title, WordProcess),
+        Assert.IsGreaterThanOrEqualTo(
+            LegacyScore(query, title, WordProcess),
+            score,
             $"'{query}' scored {score}, below the previous whole-query score of {LegacyScore(query, title, WordProcess)}.");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("  word   budget  ", DisplayName = "Surrounding and repeated spaces")]
     [DataRow("word\tbudget", DisplayName = "Tab")]
     [DataRow("word\u00A0budget", DisplayName = "Non-breaking space")]
@@ -129,11 +131,11 @@ public class WindowSearchScorerTests
         // Whatever separates the words, the query has to behave like "word budget".
         var expected = WindowSearchScorer.Score("word budget", WordTitle, WordProcess);
 
-        Assert.IsTrue(expected > 0, "Precondition: the plain-space query matches.");
+        Assert.IsGreaterThan(0, expected, "Precondition: the plain-space query matches.");
         Assert.AreEqual(expected, WindowSearchScorer.Score(query, WordTitle, WordProcess));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("budget\u00A0review", DisplayName = "Non-breaking space")]
     [DataRow("  budget   review ", DisplayName = "Surrounding and repeated spaces")]
     public void Score_WholeQueryMatch_SurvivesWhitespaceNormalization(string query)
@@ -148,7 +150,7 @@ public class WindowSearchScorerTests
             WindowSearchScorer.Score(query, title, WordProcess));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow("   ")]
@@ -165,6 +167,6 @@ public class WindowSearchScorerTests
         Assert.AreEqual(0, WindowSearchScorer.Score("word budget", string.Empty, string.Empty));
 
         // A window with no title can still be found by its process name alone.
-        Assert.IsTrue(WindowSearchScorer.Score("winword", null, WordProcess) > 0);
+        Assert.IsGreaterThan(0, WindowSearchScorer.Score("winword", null, WordProcess));
     }
 }

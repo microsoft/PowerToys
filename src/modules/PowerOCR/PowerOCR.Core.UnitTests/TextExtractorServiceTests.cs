@@ -14,6 +14,7 @@ using Windows.Media.Ocr;
 
 namespace PowerOCR.Core.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class TextExtractorServiceTests
 {
@@ -75,8 +76,8 @@ public sealed class TextExtractorServiceTests
         string result = await service.ExtractAsync(request, CancellationToken.None);
 
         Assert.IsTrue(result.Contains('\n') || result.Contains("\r\n"), "Expected multiline text");
-        StringAssert.Contains(result, "Hello world");
-        StringAssert.Contains(result, "Foo bar");
+        Assert.Contains("Hello world", result);
+        Assert.Contains("Foo bar", result);
     }
 
     [TestMethod]
@@ -91,8 +92,8 @@ public sealed class TextExtractorServiceTests
 
         Assert.IsFalse(result.Contains('\n'), "Expected single line");
         Assert.IsFalse(result.Contains('\r'), "Expected single line");
-        StringAssert.Contains(result, "Hello");
-        StringAssert.Contains(result, "Foo");
+        Assert.Contains("Hello", result);
+        Assert.Contains("Foo", result);
     }
 
     [TestMethod]
@@ -196,8 +197,8 @@ public sealed class TextExtractorServiceTests
 
         Assert.AreEqual(widthNearLimit, recognizer.ReceivedBitmapWidth);
         Assert.AreEqual(80, recognizer.ReceivedBitmapHeight);
-        Assert.IsTrue(recognizer.ReceivedBitmapWidth <= OcrEngine.MaxImageDimension);
-        Assert.IsTrue(recognizer.ReceivedBitmapHeight <= OcrEngine.MaxImageDimension);
+        Assert.IsLessThanOrEqualTo<long>(OcrEngine.MaxImageDimension, recognizer.ReceivedBitmapWidth);
+        Assert.IsLessThanOrEqualTo<long>(OcrEngine.MaxImageDimension, recognizer.ReceivedBitmapHeight);
     }
 
     [TestMethod]
@@ -233,8 +234,8 @@ public sealed class TextExtractorServiceTests
         string result = await service.ExtractAsync(request, CancellationToken.None);
 
         Assert.AreEqual("Target", result);
-        Assert.IsTrue(recognizer.ReceivedBitmapWidth <= maximumDimension);
-        Assert.IsTrue(recognizer.ReceivedBitmapHeight <= maximumDimension);
+        Assert.IsLessThanOrEqualTo(maximumDimension, recognizer.ReceivedBitmapWidth);
+        Assert.IsLessThanOrEqualTo(maximumDimension, recognizer.ReceivedBitmapHeight);
     }
 
     [TestMethod]

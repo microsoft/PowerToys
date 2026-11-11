@@ -16,6 +16,7 @@ using Win32Program = Microsoft.Plugin.Program.Programs.Win32Program;
 
 namespace Microsoft.Plugin.Program.UnitTests.Programs
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class Win32Tests
     {
@@ -268,7 +269,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<Win32Program> apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(1, apps.Count);
+            Assert.HasCount(1, apps);
         }
 
         [TestMethod]
@@ -285,7 +286,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<Win32Program> apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(1, apps.Count);
+            Assert.HasCount(1, apps);
         }
 
         [TestMethod]
@@ -301,7 +302,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<Win32Program> apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(1, apps.Count);
+            Assert.HasCount(1, apps);
         }
 
         [TestMethod]
@@ -318,8 +319,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<Win32Program> apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(1, apps.Count);
-            Assert.IsTrue(!string.IsNullOrEmpty(apps[0].LnkFilePath));
+            Assert.HasCount(1, apps);
+            Assert.IsFalse(string.IsNullOrEmpty(apps[0].LnkFilePath));
         }
 
         [TestMethod]
@@ -337,7 +338,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<Win32Program> apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(3, apps.Count);
+            Assert.HasCount(3, apps);
         }
 
         [TestMethod]
@@ -352,7 +353,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Assert.IsFalse(_dummyProxyApp.IsWebApplication());
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("ignore")]
         public void FunctionFilterWebApplicationShouldReturnFalseWhenSearchingForTheMainApp(string query)
         {
@@ -361,7 +362,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Assert.IsFalse(_chrome.FilterWebApplication(query));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("edge", true)]
         [DataRow("EDGE", true)]
         [DataRow("msedge", true)]
@@ -374,7 +375,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Assert.AreEqual(_pinnedWebpage.FilterWebApplication(query), result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("chrome", true)]
         [DataRow("CHROME", true)]
         [DataRow("Google", true)]
@@ -385,7 +386,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Assert.AreEqual(_twitterChromePwa.FilterWebApplication(query), result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("twitter", 0, false)]
         [DataRow("Twit", 0, false)]
         [DataRow("TWITTER", 0, false)]
@@ -418,7 +419,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("Command Prompt")]
         [DataRow("cmd")]
         [DataRow("cmd.exe")]
@@ -429,7 +430,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Assert.IsTrue(_commandPrompt.QueryEqualsNameForRunCommands(query));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("explorer")]
         [DataRow("explorer.exe")]
         public void Win32ApplicationsShouldNotFilterWhenExecutingNameOrNameIsUsed(string query)
@@ -438,7 +439,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Assert.IsTrue(_fileExplorer.QueryEqualsNameForRunCommands(query));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("cmd")]
         [DataRow("Cmd")]
         [DataRow("CMD")]
@@ -451,7 +452,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Assert.IsTrue(_cmdRunCommand.QueryEqualsNameForRunCommands(query));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("ımaging")]
         public void Win32ApplicationsShouldNotHaveIncorrectPathWhenExecuting(string query)
         {
@@ -468,7 +469,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<ContextMenuResult> contextMenuResults = _pinnedWebpage.ContextMenus(string.Empty, mock.Object);
 
             // Assert
-            Assert.AreEqual(4, contextMenuResults.Count);
+            Assert.HasCount(4, contextMenuResults);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_run_as_administrator, contextMenuResults[0].Title);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_run_as_user, contextMenuResults[1].Title);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_open_containing_folder, contextMenuResults[2].Title);
@@ -485,7 +486,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<ContextMenuResult> contextMenuResults = _dummyInternetShortcutApp.ContextMenus(string.Empty, mock.Object);
 
             // Assert
-            Assert.AreEqual(2, contextMenuResults.Count);
+            Assert.HasCount(2, contextMenuResults);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_open_containing_folder, contextMenuResults[0].Title);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_open_in_console, contextMenuResults[1].Title);
         }
@@ -500,7 +501,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<ContextMenuResult> contextMenuResults = _chrome.ContextMenus(string.Empty, mock.Object);
 
             // Assert
-            Assert.AreEqual(4, contextMenuResults.Count);
+            Assert.HasCount(4, contextMenuResults);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_run_as_administrator, contextMenuResults[0].Title);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_run_as_user, contextMenuResults[1].Title);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_open_containing_folder, contextMenuResults[2].Title);
@@ -517,7 +518,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<ContextMenuResult> contextMenuResults = _cmdRunCommand.ContextMenus(string.Empty, mock.Object);
 
             // Assert
-            Assert.AreEqual(4, contextMenuResults.Count);
+            Assert.HasCount(4, contextMenuResults);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_run_as_administrator, contextMenuResults[0].Title);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_run_as_user, contextMenuResults[1].Title);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_open_containing_folder, contextMenuResults[2].Title);
@@ -534,7 +535,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<ContextMenuResult> contextMenuResults = _dummyAppRefApp.ContextMenus(string.Empty, mock.Object);
 
             // Assert
-            Assert.AreEqual(4, contextMenuResults.Count);
+            Assert.HasCount(4, contextMenuResults);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_run_as_administrator, contextMenuResults[0].Title);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_run_as_user, contextMenuResults[1].Title);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_open_containing_folder, contextMenuResults[2].Title);
@@ -551,7 +552,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<ContextMenuResult> contextMenuResults = _dummyShortcutApp.ContextMenus(string.Empty, mock.Object);
 
             // Assert
-            Assert.AreEqual(4, contextMenuResults.Count);
+            Assert.HasCount(4, contextMenuResults);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_run_as_administrator, contextMenuResults[0].Title);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_run_as_user, contextMenuResults[1].Title);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_open_containing_folder, contextMenuResults[2].Title);
@@ -568,7 +569,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<ContextMenuResult> contextMenuResults = _dummyFolderApp.ContextMenus(string.Empty, mock.Object);
 
             // Assert
-            Assert.AreEqual(2, contextMenuResults.Count);
+            Assert.HasCount(2, contextMenuResults);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_open_containing_folder, contextMenuResults[0].Title);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_open_in_console, contextMenuResults[1].Title);
         }
@@ -583,7 +584,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<ContextMenuResult> contextMenuResults = _dummyGenericFileApp.ContextMenus(string.Empty, mock.Object);
 
             // Assert
-            Assert.AreEqual(2, contextMenuResults.Count);
+            Assert.HasCount(2, contextMenuResults);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_open_containing_folder, contextMenuResults[0].Title);
             Assert.AreEqual(Properties.Resources.wox_plugin_program_open_in_console, contextMenuResults[1].Title);
         }
@@ -618,7 +619,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Assert.IsFalse(result.Title.Equals(_cmderRunCommand.Description, StringComparison.Ordinal));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("C:\\Program Files\\dummy.exe", Win32Program.ApplicationType.Win32Application)]
         [DataRow("C:\\Program Files\\dummy.msc", Win32Program.ApplicationType.Win32Application)]
         [DataRow("C:\\Program Files\\dummy.lnk", Win32Program.ApplicationType.ShortcutApplication)]
@@ -635,7 +636,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Assert.AreEqual(Win32Program.GetAppTypeFromPath(path), result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(null)]
         [DataRow("")]
         [DataRow("ping 1.1.1.1")]
@@ -647,8 +648,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             // Act
             List<ContextMenuResult> contextMenuResults = _dummyInternetShortcutApp.ContextMenus(argument, mock.Object);
 
-            // Assert (Should always return if the above does not throw any exception)
-            Assert.IsTrue(true);
+            Assert.IsNotNull(contextMenuResults);
         }
     }
 }

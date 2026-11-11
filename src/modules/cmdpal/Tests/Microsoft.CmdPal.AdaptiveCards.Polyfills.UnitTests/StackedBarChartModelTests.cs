@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class StackedBarChartModelTests
 {
@@ -27,16 +28,16 @@ public class StackedBarChartModelTests
             """,
             warnings);
 
-        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+        Assert.IsEmpty(warnings, string.Join(", ", warnings));
         Assert.AreEqual("Memory", model.Title);
         Assert.IsFalse(model.ShowLegend);
-        Assert.AreEqual(2, model.Groups.Count);
+        Assert.HasCount(2, model.Groups);
         Assert.AreEqual("Peak", model.Groups[1].Title);
         Assert.AreEqual(16d, model.Groups[0].Total);
         Assert.AreEqual(19d, model.MaxTotal);
 
         var legend = model.GetLegend();
-        Assert.AreEqual(3, legend.Count);
+        Assert.HasCount(3, legend);
         Assert.AreEqual(("In use", "accent", 0), legend[0]);
         Assert.AreEqual(("Free", (string?)null, 1), legend[1]);
         Assert.AreEqual(("Standby", (string?)null, 2), legend[2]);
@@ -48,8 +49,8 @@ public class StackedBarChartModelTests
         var warnings = new List<string>();
         var model = StackedBarChartModel.Parse("""{ "type": "Chart.HorizontalBar.Stacked", "data": [1, { "data": [] }] }""", warnings);
 
-        Assert.AreEqual(1, warnings.Count);
-        Assert.AreEqual(1, model.Groups.Count);
+        Assert.HasCount(1, warnings);
+        Assert.HasCount(1, model.Groups);
     }
 
     [TestMethod]
@@ -58,7 +59,7 @@ public class StackedBarChartModelTests
         var warnings = new List<string>();
         StackedBarChartModel.Parse("""{ "type": "Chart.HorizontalBar.Stacked" }""", warnings);
 
-        Assert.AreEqual(1, warnings.Count);
+        Assert.HasCount(1, warnings);
     }
 
     [TestMethod]
@@ -82,7 +83,7 @@ public class StackedBarChartModelTests
                 $$"""{ "data": [{ "title": "Signed", "data": [{ "legend": "A", "value": {{first}} }, { "legend": "B", "value": {{second}} }] }] }"""),
             warnings);
 
-        Assert.AreEqual(1, warnings.Count);
+        Assert.HasCount(1, warnings);
         Assert.AreEqual("Chart.HorizontalBar.Stacked does not support negative values; negative segments are not drawn.", warnings[0]);
         Assert.AreEqual(first, model.Groups[0].Data[0].Value);
         Assert.AreEqual(second, model.Groups[0].Data[1].Value);
@@ -98,7 +99,7 @@ public class StackedBarChartModelTests
             """{ "data": [{ "data": [{ "legend": "A", "value": 0 }, { "legend": "B", "value": 5 }] }, { "data": [] }] }""",
             warnings);
 
-        Assert.AreEqual(0, warnings.Count);
+        Assert.IsEmpty(warnings);
         Assert.AreEqual(5d, model.Groups[0].Total);
         Assert.AreEqual(0d, model.Groups[1].Total);
         Assert.AreEqual(5d, model.MaxTotal);

@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Wox.Test.Plugins
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class PluginInitTest
     {

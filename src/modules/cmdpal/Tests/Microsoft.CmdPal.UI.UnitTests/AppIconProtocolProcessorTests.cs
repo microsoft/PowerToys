@@ -12,6 +12,7 @@ using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class AppIconProtocolProcessorTests
 {
@@ -38,7 +39,7 @@ public class AppIconProtocolProcessorTests
             32,
             ElementTheme.Default);
 
-        CollectionAssert.AreEqual(new[] { primary }, attempts);
+        Assert.AreSequenceEqual(new[] { primary }, attempts);
         Assert.AreEqual(IconProtocolProcessingResult.ResultKind.BitmapStream, result.Kind);
         var decoder = await BitmapDecoder.CreateAsync(result.BitmapStream!);
         Assert.AreEqual(jumbo ? 256u : 32u, decoder.PixelWidth);
@@ -52,7 +53,7 @@ public class AppIconProtocolProcessorTests
         var actualPixels = new byte[expectedPixels.Length];
         expected.SoftwareBitmap.CopyToBuffer(expectedPixels.AsBuffer());
         actual.CopyToBuffer(actualPixels.AsBuffer());
-        CollectionAssert.AreEqual(expectedPixels, actualPixels);
+        Assert.AreSequenceEqual(expectedPixels, actualPixels);
     }
 
     [TestMethod]
@@ -170,10 +171,10 @@ public class AppIconProtocolProcessorTests
                 64,
                 ElementTheme.Default);
 
-            CollectionAssert.AreEqual(new[] { candidate }, thumbnailAttempts);
-            CollectionAssert.AreEqual(jumbo ? new[] { candidate } : Array.Empty<string>(), jumboAttempts);
+            Assert.AreSequenceEqual(new[] { candidate }, thumbnailAttempts);
+            Assert.AreSequenceEqual(jumbo ? new[] { candidate } : Array.Empty<string>(), jumboAttempts);
             Assert.AreEqual(IconProtocolProcessingResult.ResultKind.FallbackIconStrings, result.Kind);
-            CollectionAssert.AreEqual(new[] { candidate }, result.FallbackIconStrings);
+            Assert.AreSequenceEqual(new[] { candidate }, result.FallbackIconStrings);
         }
     }
 
@@ -205,10 +206,10 @@ public class AppIconProtocolProcessorTests
             ElementTheme.Default);
 
         var expected = new[] { normalized, fallback };
-        CollectionAssert.AreEqual(expected, thumbnailAttempts);
-        CollectionAssert.AreEqual(jumbo ? expected : Array.Empty<string>(), jumboAttempts);
+        Assert.AreSequenceEqual(expected, thumbnailAttempts);
+        Assert.AreSequenceEqual(jumbo ? expected : Array.Empty<string>(), jumboAttempts);
         Assert.AreEqual(IconProtocolProcessingResult.ResultKind.FallbackIconStrings, result.Kind);
-        CollectionAssert.AreEqual(expected, result.FallbackIconStrings);
+        Assert.AreSequenceEqual(expected, result.FallbackIconStrings);
     }
 
     [TestMethod]
@@ -249,14 +250,14 @@ public class AppIconProtocolProcessorTests
             64,
             ElementTheme.Default);
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[] { (primary, true), (fallback, true) },
             attempts);
         Assert.AreEqual(IconProtocolProcessingResult.ResultKind.BitmapStream, result.Kind);
         Assert.AreSame(stream, result.BitmapStream);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public async Task PreservesFallbackCandidatesAfterEveryThumbnailMisses(bool jumbo)
@@ -273,15 +274,15 @@ public class AppIconProtocolProcessorTests
         using var result = await processor.PrepareAsync(iconDescription, 20, ElementTheme.Default);
 
         Assert.AreEqual(IconProtocolProcessingResult.ResultKind.FallbackIconStrings, result.Kind);
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             jumbo ? new[] { primary, fallback, finalFallback } : new[] { primary, fallback },
             result.FallbackIconStrings);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task MissingExecutableUsesIndexedFallbackAfterThumbnailMisses(bool jumbo)
     {
         var primary = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.exe");
@@ -299,8 +300,8 @@ public class AppIconProtocolProcessorTests
 
         Assert.AreEqual(IconPathConverter.PreparedIconKind.Binary, prepared.Kind);
         Assert.IsNotNull(prepared.SoftwareBitmap);
-        Assert.IsTrue(prepared.SoftwareBitmap.PixelWidth > 0);
-        Assert.IsTrue(prepared.SoftwareBitmap.PixelHeight > 0);
+        Assert.IsGreaterThan(0, prepared.SoftwareBitmap.PixelWidth);
+        Assert.IsGreaterThan(0, prepared.SoftwareBitmap.PixelHeight);
     }
 
     [TestMethod]
@@ -336,13 +337,13 @@ public class AppIconProtocolProcessorTests
             32,
             ElementTheme.Default);
 
-        CollectionAssert.AreEqual(jumbo ? Array.Empty<string>() : new[] { path }, shortcutAttempts);
-        CollectionAssert.AreEqual(new[] { (path, jumbo) }, thumbnailAttempts);
+        Assert.AreSequenceEqual(jumbo ? Array.Empty<string>() : new[] { path }, shortcutAttempts);
+        Assert.AreSequenceEqual(new[] { (path, jumbo) }, thumbnailAttempts);
         Assert.AreEqual(IconProtocolProcessingResult.ResultKind.BitmapStream, result.Kind);
         Assert.AreSame(stream, result.BitmapStream);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public async Task MissingShortcutUsesConfiguredIconFallback(bool jumbo)
@@ -373,7 +374,7 @@ public class AppIconProtocolProcessorTests
         var actualPixels = new byte[expectedPixels.Length];
         expected.CopyToBuffer(expectedPixels.AsBuffer());
         actual.CopyToBuffer(actualPixels.AsBuffer());
-        CollectionAssert.AreEqual(expectedPixels, actualPixels);
+        Assert.AreSequenceEqual(expectedPixels, actualPixels);
     }
 
     private static string GetShell32DllPath()

@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ProgressAndBadgeModelTests
 {
@@ -15,7 +16,7 @@ public class ProgressAndBadgeModelTests
         var warnings = new List<string>();
         var model = ProgressBarModel.Parse("""{ "type": "ProgressBar", "value": 30, "max": 60, "color": "warning" }""", warnings);
 
-        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+        Assert.IsEmpty(warnings, string.Join(", ", warnings));
         Assert.IsFalse(model.IsIndeterminate);
         Assert.AreEqual(30d, model.Value);
         Assert.AreEqual(60d, model.Max);
@@ -45,7 +46,7 @@ public class ProgressAndBadgeModelTests
         var warnings = new List<string>();
         var model = ProgressBarModel.Parse("""{ "type": "ProgressBar", "value": 1, "max": 0 }""", warnings);
 
-        Assert.AreEqual(1, warnings.Count);
+        Assert.HasCount(1, warnings);
         Assert.AreEqual(100d, model.Max);
     }
 
@@ -57,7 +58,7 @@ public class ProgressAndBadgeModelTests
             """{ "type": "Badge", "text": "Charging", "style": "good", "appearance": "tint", "shape": "circular", "size": "extraLarge", "tooltip": "Plugged in" }""",
             warnings);
 
-        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+        Assert.IsEmpty(warnings, string.Join(", ", warnings));
         Assert.AreEqual("Charging", model.Text);
         Assert.AreEqual("good", model.Style);
         Assert.AreEqual(BadgeAppearance.Tint, model.Appearance);
@@ -72,7 +73,7 @@ public class ProgressAndBadgeModelTests
         var warnings = new List<string>();
         var model = BadgeModel.Parse("""{ "type": "Badge", "appearance": "glow", "shape": "hexagon", "size": "tiny" }""", warnings);
 
-        Assert.AreEqual(3, warnings.Count);
+        Assert.HasCount(3, warnings);
         Assert.AreEqual(string.Empty, model.Text);
         Assert.AreEqual(BadgeAppearance.Filled, model.Appearance);
         Assert.AreEqual(BadgeShape.Circular, model.Shape);
@@ -85,7 +86,7 @@ public class ProgressAndBadgeModelTests
         var warnings = new List<string>();
         var model = BadgeModel.Parse("""{ "type": "Badge", "text": "Done", "icon": "CheckmarkCircle,filled", "iconPosition": "After" }""", warnings);
 
-        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+        Assert.IsEmpty(warnings, string.Join(", ", warnings));
         Assert.AreEqual("\uEC61", model.IconGlyph);
         Assert.AreEqual(BadgeIconPosition.After, model.IconPosition);
     }
@@ -96,7 +97,7 @@ public class ProgressAndBadgeModelTests
         var warnings = new List<string>();
         var model = BadgeModel.Parse("""{ "type": "Badge", "text": "Wi-Fi", "icon": "Wifi1" }""", warnings);
 
-        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+        Assert.IsEmpty(warnings, string.Join(", ", warnings));
         Assert.AreEqual("\uE701", model.IconGlyph);
         Assert.AreEqual(BadgeIconPosition.Before, model.IconPosition);
     }
@@ -107,7 +108,7 @@ public class ProgressAndBadgeModelTests
         var warnings = new List<string>();
         var model = BadgeModel.Parse("""{ "type": "Badge", "text": "New", "icon": "NotAnIcon" }""", warnings);
 
-        Assert.AreEqual(1, warnings.Count);
+        Assert.HasCount(1, warnings);
         Assert.IsNull(model.IconGlyph);
         Assert.AreEqual("New", model.Text);
     }

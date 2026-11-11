@@ -14,6 +14,7 @@ using Wox.Plugin;
 
 namespace Wox.Test
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class FuzzyMatcherTest
     {
@@ -75,13 +76,13 @@ namespace Wox.Test
 
             results = results.Where(x => x.Score > 0).OrderByDescending(x => x.Score).ToList();
 
-            Assert.IsTrue(results.Count == 3);
-            Assert.IsTrue(results[0].Title == "Inste");
-            Assert.IsTrue(results[1].Title == "Install Package");
-            Assert.IsTrue(results[2].Title == "file open in browser-test");
+            Assert.HasCount(3, results);
+            Assert.AreEqual("Inste", results[0].Title);
+            Assert.AreEqual("Install Package", results[1].Title);
+            Assert.AreEqual("file open in browser-test", results[2].Title);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("Chrome")]
         public void WhenGivenNotAllCharactersFoundInSearchStringThenShouldReturnZeroScore(string searchString)
         {
@@ -89,10 +90,10 @@ namespace Wox.Test
             var matcher = new StringMatcher();
             var scoreResult = matcher.FuzzyMatch(searchString, compareString).RawScore;
 
-            Assert.IsTrue(scoreResult == 0);
+            Assert.AreEqual(0, scoreResult);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("chr")]
         [DataRow("chrom")]
         [DataRow("chrome")]
@@ -128,11 +129,11 @@ namespace Wox.Test
                 Debug.WriteLine("###############################################");
                 Debug.WriteLine(string.Empty);
 
-                Assert.IsFalse(filteredResult.Any(x => x.Score < precisionScore));
+                Assert.DoesNotContain(x => x.Score < precisionScore, filteredResult);
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("vim", "Vim", "ignoreDescription", "ignore.exe", "Vim Diff", "ignoreDescription", "ignore.exe")]
         public void WhenMultipleResultsExactMatchingResultShouldHaveGreatestScore(string queryString, string firstName, string firstDescription, string firstExecutableName, string secondName, string secondDescription, string secondExecutableName)
         {
@@ -150,10 +151,10 @@ namespace Wox.Test
             var secondScore = new[] { secondNameMatch, secondDescriptionMatch, secondExecutableNameMatch }.Max();
 
             // Assert
-            Assert.IsTrue(firstScore > secondScore);
+            Assert.IsGreaterThan(secondScore, firstScore);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("goo", "Google Chrome", StringMatcher.SearchPrecisionScore.Regular, true)]
         [DataRow("chr", "Google Chrome", StringMatcher.SearchPrecisionScore.Low, true)]
         [DataRow("chr", "Chrome", StringMatcher.SearchPrecisionScore.Regular, true)]
@@ -190,7 +191,7 @@ namespace Wox.Test
                 $"{$"Query:{queryString}{Environment.NewLine} "}{$"Compare:{compareString}{Environment.NewLine}"}{$"Raw Score: {matchResult.RawScore}{Environment.NewLine}"}{$"Precision Score: {(int)expectedPrecisionScore}"}");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("exce", "OverLeaf-Latex: An online LaTeX editor", StringMatcher.SearchPrecisionScore.Regular, false)]
         [DataRow("term", "Windows Terminal (Preview)", StringMatcher.SearchPrecisionScore.Regular, true)]
         [DataRow("sql s managa", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
@@ -234,7 +235,7 @@ namespace Wox.Test
                 $"{$"Query:{queryString}{Environment.NewLine} "}{$"Compare:{compareString}{Environment.NewLine}"}{$"Raw Score: {matchResult.RawScore}{Environment.NewLine}"}{$"Precision Score: {(int)expectedPrecisionScore}"}");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("Windows Terminal", "Windows_Terminal", "term")]
         [DataRow("Windows Terminal", "WindowsTerminal", "term")]
         public void FuzzyMatchingScoreShouldBeHigherWhenPreceedingCharacterIsSpace(string firstCompareStr, string secondCompareStr, string query)
@@ -247,7 +248,7 @@ namespace Wox.Test
             var secondScore = matcher.FuzzyMatch(query, secondCompareStr).Score;
 
             // Assert
-            Assert.IsTrue(firstScore > secondScore);
+            Assert.IsGreaterThan(secondScore, firstScore);
         }
     }
 }

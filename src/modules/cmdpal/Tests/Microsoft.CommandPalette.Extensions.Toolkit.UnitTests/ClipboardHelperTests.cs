@@ -9,6 +9,7 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public class ClipboardHelperTests
@@ -42,12 +43,12 @@ public class ClipboardHelperTests
     [TestMethod]
     public void SetImage_RejectsNullReference()
     {
-        Assert.ThrowsException<ArgumentNullException>(() => ClipboardHelper.SetImage(null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => ClipboardHelper.SetImage(null!));
     }
 
     [TestMethod]
     public void SetContent_RejectsNullPackage()
     {
-        Assert.ThrowsException<ArgumentNullException>(() => ClipboardHelper.SetContent(null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => ClipboardHelper.SetContent(null!));
     }
 }

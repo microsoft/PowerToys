@@ -12,6 +12,7 @@ using UiTextBox = Microsoft.PowerToys.UITest.Next.TextBox;
 
 namespace Microsoft.MouseWithoutBorders.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class RecordingInfrastructureTests
 {
@@ -82,7 +83,7 @@ public sealed class RecordingInfrastructureTests
             Assert.AreEqual(960, recording["FrameWidth"]!.GetValue<int>());
             Assert.AreEqual(540, recording["FrameHeight"]!.GetValue<int>());
             var path = Path.Combine(directory, recording["File"]!.GetValue<string>());
-            Assert.IsTrue(new FileInfo(path).Length > 0, "A finalized video must persist outside MSTest's deployment tree.");
+            Assert.IsGreaterThan(0, new FileInfo(path).Length, "A finalized video must persist outside MSTest's deployment tree.");
         }
     }
 }

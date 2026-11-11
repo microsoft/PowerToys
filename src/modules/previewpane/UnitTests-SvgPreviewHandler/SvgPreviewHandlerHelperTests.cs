@@ -9,53 +9,57 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SvgPreviewHandlerUnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [STATestClass]
     public class SvgPreviewHandlerHelperTests
     {
-        [DataTestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
+        [TestMethod]
         [DataRow("<svg?>")]
         [DataRow("<svg?>?>")]
         [DataRow("<svg")]
-        [Timeout(5000)]
+        [Timeout(5000, CooperativeCancellation = false)]
         public void AddStyleSvgWithoutClosingTagShouldReturnOriginalInput(string svgData)
         {
             Assert.AreEqual(svgData, SvgPreviewHandlerHelper.AddStyleSVG(svgData));
         }
 
-        [DataTestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
+        [TestMethod]
         [DataRow("")]
         [DataRow(" \r\n")]
         [DataRow("\uFEFF<?xml version=\"1.0\"?>\r\n<!-- illustration -->\r\n")]
-        [Timeout(5000)]
+        [Timeout(5000, CooperativeCancellation = false)]
         public void AddStyleSvgShouldPreserveSupportedPrefixes(string prefix)
         {
             const string svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 50\" width=\"100\" height=\"50\"><path d=\"M0 0 L100 50\"/><rect x=\"10\" y=\"10\" width=\"40\" height=\"20\" fill=\"blue\"/></svg>";
             var actual = SvgPreviewHandlerHelper.AddStyleSVG(prefix + svg);
             var expectedPrefix = prefix.Replace("<?xml version=\"1.0\"?>", string.Empty);
 
-            StringAssert.StartsWith(actual, expectedPrefix + "<svg ");
-            StringAssert.Contains(actual, "xmlns=\"http://www.w3.org/2000/svg\"");
-            StringAssert.Contains(actual, "viewBox=\"0 0 100 50\"");
-            StringAssert.Contains(actual, "style=\"");
-            StringAssert.Contains(actual, "max-width: 100px");
-            StringAssert.Contains(actual, "max-height: 50px");
-            StringAssert.EndsWith(actual, "<path d=\"M0 0 L100 50\"/><rect x=\"10\" y=\"10\" width=\"40\" height=\"20\" fill=\"blue\"/></svg>");
-            Assert.IsFalse(actual.Contains("width=\"100\""));
-            Assert.IsFalse(actual.Contains("height=\"50\""));
-            Assert.IsFalse(actual.Contains("<?xml"));
+            Assert.StartsWith(expectedPrefix + "<svg ", actual);
+            Assert.Contains("xmlns=\"http://www.w3.org/2000/svg\"", actual);
+            Assert.Contains("viewBox=\"0 0 100 50\"", actual);
+            Assert.Contains("style=\"", actual);
+            Assert.Contains("max-width: 100px", actual);
+            Assert.Contains("max-height: 50px", actual);
+            Assert.EndsWith("<path d=\"M0 0 L100 50\"/><rect x=\"10\" y=\"10\" width=\"40\" height=\"20\" fill=\"blue\"/></svg>", actual);
+            Assert.DoesNotContain("width=\"100\"", actual);
+            Assert.DoesNotContain("height=\"50\"", actual);
+            Assert.DoesNotContain("<?xml", actual);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
         [TestMethod]
-        [Timeout(5000)]
+        [Timeout(5000, CooperativeCancellation = false)]
         public void AddStyleSvgShouldAdvancePastProcessingInstructionTerminatorInsideAttribute()
         {
             const string svg = "<svg data-note=\"?>\" viewBox=\"0 0 100 50\"><path d=\"M0 0 L100 50\"/></svg>";
 
             var actual = SvgPreviewHandlerHelper.AddStyleSVG(svg);
 
-            StringAssert.StartsWith(actual, "<svg data-note=\"?>\" viewBox=\"0 0 100 50\" style=\"");
-            StringAssert.Contains(actual, "position: absolute; top: 50%; left: 50%;");
-            StringAssert.EndsWith(actual, "<path d=\"M0 0 L100 50\"/></svg>");
+            Assert.StartsWith("<svg data-note=\"?>\" viewBox=\"0 0 100 50\" style=\"", actual);
+            Assert.Contains("position: absolute; top: 50%; left: 50%;", actual);
+            Assert.EndsWith("<path d=\"M0 0 L100 50\"/></svg>", actual);
         }
 
         [TestMethod]
@@ -130,7 +134,7 @@ namespace SvgPreviewHandlerUnitTests
             Assert.IsFalse(foundFilteredElement);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("")]
         [DataRow("  ")]
         [DataRow(null)]

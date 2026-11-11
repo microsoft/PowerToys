@@ -14,6 +14,7 @@ using PowerDisplay.Models;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ProfileStoreTests
 {
@@ -69,7 +70,7 @@ public class ProfileStoreTests
     {
         File.WriteAllText(_profilesPath, json);
         var store = CreateStore();
-        Assert.AreEqual(0, store.LoadProfiles().GetAssignedProfiles().Count());
+        Assert.IsEmpty(store.LoadProfiles().GetAssignedProfiles());
         store.AddOrUpdateProfile(MakeProfile("New"));
 
         var reloaded = CreateStore().LoadProfiles();
@@ -123,7 +124,7 @@ public class ProfileStoreTests
         Assert.AreEqual(originalJson, File.ReadAllText(_profilesPath));
         var persisted = JsonSerializer.Deserialize(File.ReadAllText(_profilesPath), ProfileSerializationContext.Default.PowerDisplayProfiles);
         Assert.AreEqual(0, persisted!.Profiles[0].Id);
-        Assert.IsFalse(Directory.EnumerateFiles(_tempDir, "*.tmp").Any());
+        Assert.IsEmpty(Directory.EnumerateFiles(_tempDir, "*.tmp"));
     }
 
     [TestMethod]
@@ -134,9 +135,9 @@ public class ProfileStoreTests
         store.AddOrUpdateProfile(MakeProfile("Gaming"));
 
         var loaded = store.LoadProfiles();
-        Assert.AreEqual(1, loaded.Profiles.Count);
+        Assert.HasCount(1, loaded.Profiles);
         Assert.AreEqual(1, loaded.Profiles[0].Id);
-        Assert.IsFalse(Directory.EnumerateFiles(_tempDir, "*.tmp").Any());
+        Assert.IsEmpty(Directory.EnumerateFiles(_tempDir, "*.tmp"));
     }
 
     [TestMethod]
@@ -167,7 +168,7 @@ public class ProfileStoreTests
         Assert.AreEqual(incomingId, incoming.Id);
         Assert.AreEqual(DateTime.UnixEpoch, incoming.LastModified);
         Assert.AreEqual(originalJson, File.ReadAllText(_profilesPath));
-        Assert.IsFalse(Directory.EnumerateFiles(_tempDir, "*.tmp").Any());
+        Assert.IsEmpty(Directory.EnumerateFiles(_tempDir, "*.tmp"));
     }
 
     [TestMethod]
@@ -199,26 +200,31 @@ public class ProfileStoreTests
         var secondStore = CreateStore();
         using var start = new ManualResetEventSlim();
 
-        var first = Task.Run(() =>
+        var first = Task.Run(
+            () =>
         {
-            start.Wait();
+            start.Wait(TestContext.CancellationToken);
             firstStore.AddOrUpdateProfile(MakeProfile("First"));
-        });
-        var second = Task.Run(() =>
+        },
+            TestContext.CancellationToken);
+        var second = Task.Run(
+            () =>
         {
-            start.Wait();
+            start.Wait(TestContext.CancellationToken);
             secondStore.AddOrUpdateProfile(MakeProfile("Second"));
-        });
+        },
+            TestContext.CancellationToken);
 
         start.Set();
         Task.WaitAll(first, second);
 
         var loaded = firstStore.LoadProfiles();
-        Assert.AreEqual(2, loaded.Profiles.Count);
-        Assert.AreEqual(2, loaded.Profiles.Select(profile => profile.Id).Distinct().Count());
-        CollectionAssert.AreEquivalent(
+        Assert.HasCount(2, loaded.Profiles);
+        Assert.HasCount(2, loaded.Profiles.Select(profile => profile.Id).Distinct());
+        Assert.AreSequenceEqual(
             ExpectedConcurrentProfileNames,
-            loaded.Profiles.Select(profile => profile.Name).ToArray());
+            loaded.Profiles.Select(profile => profile.Name).ToArray(),
+            SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -233,13 +239,13 @@ public class ProfileStoreTests
             firstStore.UpdateProfiles(profiles =>
             {
                 updateLoaded.Set();
-                continueUpdate.Wait();
+                continueUpdate.Wait(TestContext.CancellationToken);
                 return false;
             }));
 
-        Assert.IsTrue(updateLoaded.Wait(TimeSpan.FromSeconds(5)));
+        Assert.IsTrue(updateLoaded.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
 
-        var waitingUpdate = secondStore.UpdateProfilesAsync(_ => false);
+        var waitingUpdate = secondStore.UpdateProfilesAsync(_ => false, TestContext.CancellationToken);
         Assert.IsFalse(waitingUpdate.IsCompleted);
 
         continueUpdate.Set();
@@ -254,23 +260,27 @@ public class ProfileStoreTests
         var secondStore = CreateStore();
         using var start = new ManualResetEventSlim();
 
-        var first = Task.Run(async () =>
+        var first = Task.Run(
+            async () =>
         {
-            start.Wait();
-            await firstStore.AddOrUpdateProfileAsync(MakeProfile("First"));
-        });
-        var second = Task.Run(async () =>
+            start.Wait(TestContext.CancellationToken);
+            await firstStore.AddOrUpdateProfileAsync(MakeProfile("First"), TestContext.CancellationToken);
+        },
+            TestContext.CancellationToken);
+        var second = Task.Run(
+            async () =>
         {
-            start.Wait();
-            await secondStore.AddOrUpdateProfileAsync(MakeProfile("Second"));
-        });
+            start.Wait(TestContext.CancellationToken);
+            await secondStore.AddOrUpdateProfileAsync(MakeProfile("Second"), TestContext.CancellationToken);
+        },
+            TestContext.CancellationToken);
 
         start.Set();
         await Task.WhenAll(first, second);
 
-        var loaded = await firstStore.LoadProfilesAsync();
-        Assert.AreEqual(2, loaded.Profiles.Count);
-        Assert.AreEqual(2, loaded.Profiles.Select(profile => profile.Id).Distinct().Count());
+        var loaded = await firstStore.LoadProfilesAsync(TestContext.CancellationToken);
+        Assert.HasCount(2, loaded.Profiles);
+        Assert.HasCount(2, loaded.Profiles.Select(profile => profile.Id).Distinct());
     }
 
     [TestMethod]
@@ -285,21 +295,22 @@ public class ProfileStoreTests
             firstStore.UpdateProfiles(profiles =>
             {
                 updateLoaded.Set();
-                continueUpdate.Wait();
+                continueUpdate.Wait(TestContext.CancellationToken);
                 profiles.SetProfile(MakeProfile("First"));
                 return true;
             }));
 
-        Assert.IsTrue(updateLoaded.Wait(TimeSpan.FromSeconds(5)));
-        var second = Task.Run(() => secondStore.AddOrUpdateProfile(MakeProfile("Second")));
+        Assert.IsTrue(updateLoaded.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
+        var second = Task.Run(() => secondStore.AddOrUpdateProfile(MakeProfile("Second")), TestContext.CancellationToken);
         continueUpdate.Set();
         Task.WaitAll(first, second);
 
         var loaded = firstStore.LoadProfiles();
-        Assert.AreEqual(2, loaded.Profiles.Count);
-        CollectionAssert.AreEquivalent(
+        Assert.HasCount(2, loaded.Profiles);
+        Assert.AreSequenceEqual(
             ExpectedConcurrentProfileNames,
-            loaded.Profiles.Select(profile => profile.Name).ToArray());
+            loaded.Profiles.Select(profile => profile.Name).ToArray(),
+            SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -312,7 +323,7 @@ public class ProfileStoreTests
 
         var loaded = store.LoadProfiles();
 
-        Assert.AreEqual(3, loaded.Profiles.Count);
+        Assert.HasCount(3, loaded.Profiles);
         Assert.AreEqual(originalJson, File.ReadAllText(_profilesPath));
     }
 
@@ -324,19 +335,19 @@ public class ProfileStoreTests
         var originalContents = original.Profiles.ToDictionary(profile => profile.Id, SerializeContents);
         var originalNextId = original.NextId;
 
-        Assert.IsTrue(await store.UpdateProfilesAsync(profiles => profiles.MoveProfileBefore(3, 1)));
+        Assert.IsTrue(await store.UpdateProfilesAsync(profiles => profiles.MoveProfileBefore(3, 1), TestContext.CancellationToken));
 
-        var loaded = await CreateStore().LoadProfilesAsync();
+        var loaded = await CreateStore().LoadProfilesAsync(TestContext.CancellationToken);
         Assert.AreEqual("3,1,2", DisplayOrder(loaded));
         Assert.AreEqual("3,1,2", string.Join(",", loaded.Profiles.Select(profile => profile.Id)));
-        Assert.AreEqual(originalContents.Count, loaded.Profiles.Count);
+        Assert.HasCount(originalContents.Count, loaded.Profiles);
         Assert.AreEqual(originalNextId, loaded.NextId);
         foreach (var profile in loaded.Profiles)
         {
             Assert.AreEqual(originalContents[profile.Id], SerializeContents(profile));
         }
 
-        Assert.IsFalse(Directory.EnumerateFiles(_tempDir, "*.tmp").Any());
+        Assert.IsEmpty(Directory.EnumerateFiles(_tempDir, "*.tmp"));
     }
 
     [TestMethod]
@@ -375,7 +386,7 @@ public class ProfileStoreTests
         Assert.IsFalse(store.UpdateProfiles(profiles => profiles.MoveProfileBefore(profileId, beforeProfileId)));
 
         Assert.AreEqual(originalJson, File.ReadAllText(_profilesPath));
-        Assert.IsFalse(Directory.EnumerateFiles(_tempDir, "*.tmp").Any());
+        Assert.IsEmpty(Directory.EnumerateFiles(_tempDir, "*.tmp"));
     }
 
     [TestMethod]
@@ -399,7 +410,7 @@ public class ProfileStoreTests
         Assert.IsNotNull(exception);
         Assert.AreEqual(originalJson, File.ReadAllText(_profilesPath));
         Assert.AreEqual("1,2,3", DisplayOrder(store.LoadProfiles()));
-        Assert.IsFalse(Directory.EnumerateFiles(_tempDir, "*.tmp").Any());
+        Assert.IsEmpty(Directory.EnumerateFiles(_tempDir, "*.tmp"));
     }
 
     [TestMethod]
@@ -413,7 +424,7 @@ public class ProfileStoreTests
         var writer = Task.Run(() => secondStore.UpdateProfiles(profiles =>
         {
             writerLoaded.Set();
-            if (!continueWriter.Wait(TimeSpan.FromSeconds(5)))
+            if (!continueWriter.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken))
             {
                 throw new TimeoutException("The concurrent profile writer was not released.");
             }
@@ -427,8 +438,8 @@ public class ProfileStoreTests
 
         try
         {
-            Assert.IsTrue(writerLoaded.Wait(TimeSpan.FromSeconds(5)));
-            var move = firstStore.UpdateProfilesAsync(profiles => profiles.MoveProfileBefore(3, 1));
+            Assert.IsTrue(writerLoaded.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
+            var move = firstStore.UpdateProfilesAsync(profiles => profiles.MoveProfileBefore(3, 1), TestContext.CancellationToken);
             Assert.IsFalse(move.IsCompleted);
             continueWriter.Set();
             Assert.IsTrue(await writer);
@@ -440,10 +451,10 @@ public class ProfileStoreTests
             await writer;
         }
 
-        var loaded = await firstStore.LoadProfilesAsync();
+        var loaded = await firstStore.LoadProfilesAsync(TestContext.CancellationToken);
         Assert.AreEqual("Edited,Profile 1,Profile 2,Added", string.Join(",", loaded.GetAssignedProfiles().Select(profile => profile.Name)));
         Assert.AreEqual(60, loaded.GetById(3)!.MonitorSettings[0].Brightness);
-        Assert.AreEqual(4, loaded.Profiles.Select(profile => profile.Id).Distinct().Count());
+        Assert.HasCount(4, loaded.Profiles.Select(profile => profile.Id).Distinct());
         Assert.AreEqual("3,1,2,4", DisplayOrder(loaded));
     }
 
@@ -461,12 +472,12 @@ public class ProfileStoreTests
         var jsonAfterDeletion = File.ReadAllText(_profilesPath);
         Assert.AreEqual(
             expectedChanged,
-            await firstStore.UpdateProfilesAsync(profiles => profiles.MoveProfileBefore(3, 1)));
+            await firstStore.UpdateProfilesAsync(profiles => profiles.MoveProfileBefore(3, 1), TestContext.CancellationToken));
 
         var loaded = firstStore.LoadProfiles();
         Assert.AreEqual(expectedOrder, DisplayOrder(loaded));
         Assert.IsNull(loaded.GetById(deletedId));
-        Assert.AreEqual(2, loaded.Profiles.Count);
+        Assert.HasCount(2, loaded.Profiles);
         if (!expectedChanged)
         {
             Assert.AreEqual(jsonAfterDeletion, File.ReadAllText(_profilesPath));
@@ -488,7 +499,7 @@ public class ProfileStoreTests
 
         var loaded = store.LoadProfiles();
 
-        Assert.AreEqual(2, loaded.Profiles.Count);
+        Assert.HasCount(2, loaded.Profiles);
         Assert.AreEqual(7, loaded.Profiles[0].Id);
         Assert.AreEqual(0, loaded.Profiles[1].Id);
         Assert.AreEqual(8, loaded.NextId);
@@ -499,7 +510,7 @@ public class ProfileStoreTests
         Assert.AreEqual(0, reloaded.Profiles[1].Id);
         Assert.AreEqual(8, reloaded.NextId);
         Assert.AreEqual(LegacyJson, File.ReadAllText(_profilesPath));
-        Assert.IsFalse(Directory.EnumerateFiles(_tempDir, "*.tmp").Any());
+        Assert.IsEmpty(Directory.EnumerateFiles(_tempDir, "*.tmp"));
     }
 
     private static PowerDisplayProfiles SaveInitialProfiles(ProfileStore store)
@@ -540,4 +551,6 @@ public class ProfileStoreTests
             Id = id,
         };
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

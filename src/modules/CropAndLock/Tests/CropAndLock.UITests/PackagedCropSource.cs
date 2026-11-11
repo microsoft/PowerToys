@@ -37,7 +37,7 @@ namespace Microsoft.CropAndLock.UITests
             ownsRegistration = true;
             installationOperation = packageManager.AddPackageAsync(new Uri(packagePath), [], DeploymentOptions.None);
             installation = installationOperation.AsTask();
-            var deployment = installation.WaitAsync(TimeSpan.FromSeconds(90)).GetAwaiter().GetResult();
+            var deployment = installation.WaitAsync(TimeSpan.FromSeconds(90), context.CancellationToken).GetAwaiter().GetResult();
             Assert.IsNull(deployment.ExtendedErrorCode, $"Fixture installation failed: {deployment.ErrorText}. Activity: {deployment.ActivityId}.");
             var packages = RegisteredPackages();
             Assert.HasCount(1, packages, "Expected exactly one current-user fixture registration.");
@@ -48,11 +48,11 @@ namespace Microsoft.CropAndLock.UITests
                 RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant(),
                 package.Id.Architecture.ToString().ToLowerInvariant(),
                 "The fixture package architecture must match the test executable.");
-            var applications = package.GetAppListEntriesAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(15)).GetAwaiter().GetResult();
+            var applications = package.GetAppListEntriesAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(15), context.CancellationToken).GetAwaiter().GetResult();
             var application = applications.Single(entry => entry.AppUserModelId == $"{package.Id.FamilyName}!App");
             context.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Activating packaged fixture: {application.AppUserModelId}");
             Assert.IsTrue(
-                application.LaunchAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(20)).GetAwaiter().GetResult(),
+                application.LaunchAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(20), context.CancellationToken).GetAwaiter().GetResult(),
                 "Windows did not activate the installed fixture application.");
 
             var started = WaitHelper.WaitForStable(
@@ -199,7 +199,7 @@ namespace Microsoft.CropAndLock.UITests
                 Assert.IsNull(removal.ExtendedErrorCode, $"Fixture removal failed: {removal.ErrorText}. Activity: {removal.ActivityId}.");
             }
 
-            Assert.HasCount(0, RegisteredPackages(), "The fixture package remained registered after cleanup.");
+            Assert.IsEmpty(RegisteredPackages(), "The fixture package remained registered after cleanup.");
         }
 
         private Package[] RegisteredPackages() =>

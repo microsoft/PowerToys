@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.MouseWithoutBorders.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class SandboxDiscoveryTests
 {

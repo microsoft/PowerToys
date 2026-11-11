@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.WindowsSettings.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ControlPanelTasksHelperTest
 {
@@ -44,7 +45,7 @@ public class ControlPanelTasksHelperTest
         var added = ControlPanelTasksHelper.MergeIntoSettings(settings, tasks);
 
         Assert.AreEqual(2, added);
-        Assert.AreEqual(3, settings.Settings.Count());
+        Assert.HasCount(3, settings.Settings);
     }
 
     [TestMethod]
@@ -60,7 +61,7 @@ public class ControlPanelTasksHelperTest
         var added = ControlPanelTasksHelper.MergeIntoSettings(settings, tasks);
 
         Assert.AreEqual(0, added);
-        Assert.AreEqual(1, settings.Settings.Count());
+        Assert.HasCount(1, settings.Settings);
     }
 
     [TestMethod]
@@ -78,7 +79,7 @@ public class ControlPanelTasksHelperTest
         var added = ControlPanelTasksHelper.MergeIntoSettings(settings, tasks);
 
         Assert.AreEqual(0, added);
-        Assert.AreEqual(1, settings.Settings.Count());
+        Assert.HasCount(1, settings.Settings);
     }
 
     [TestMethod]
@@ -106,7 +107,7 @@ public class ControlPanelTasksHelperTest
         var added = ControlPanelTasksHelper.MergeIntoSettings(settings, new List<WindowsSetting>());
 
         Assert.AreEqual(0, added);
-        Assert.AreEqual(1, settings.Settings.Count());
+        Assert.HasCount(1, settings.Settings);
     }
 
     [TestMethod]
@@ -122,7 +123,7 @@ public class ControlPanelTasksHelperTest
         var added = ControlPanelTasksHelper.MergeIntoSettings(settings, tasks);
 
         Assert.AreEqual(1, added);
-        Assert.AreEqual(1, settings.Settings.Count());
+        Assert.HasCount(1, settings.Settings);
     }
 
     [TestMethod]
@@ -149,7 +150,7 @@ public class ControlPanelTasksHelperTest
         var added = ControlPanelTasksHelper.MergeIntoSettings(settings, new List<WindowsSetting>() { CreateTask("New task") });
 
         Assert.AreEqual(1, added);
-        Assert.AreEqual(1, published.Count());
+        Assert.HasCount(1, published);
         Assert.AreNotSame(published, settings.Settings);
     }
 
@@ -159,7 +160,7 @@ public class ControlPanelTasksHelperTest
         var result = ControlPanelTasksHelper.ParseKeywords("adjust; joystick;controllers ; devices;");
 
         Assert.IsNotNull(result);
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new List<string>() { "adjust", "joystick", "controllers", "devices" },
             result.ToList());
     }
@@ -170,7 +171,7 @@ public class ControlPanelTasksHelperTest
         var result = ControlPanelTasksHelper.ParseKeywords("back;Back;BACK;restore");
 
         Assert.IsNotNull(result);
-        CollectionAssert.AreEqual(new List<string>() { "back", "restore" }, result.ToList());
+        Assert.AreSequenceEqual(new List<string>() { "back", "restore" }, result.ToList());
     }
 
     [TestMethod]

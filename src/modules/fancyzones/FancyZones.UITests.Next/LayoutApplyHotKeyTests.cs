@@ -16,6 +16,7 @@ namespace FancyZones.UITests;
 /// zone flashing, virtual-desktop layout persistence, custom-layout deletion and the editor's
 /// reaction to a monitor change.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class LayoutApplyHotKeyTests : UITestBase
 {
@@ -341,7 +342,7 @@ public class LayoutApplyHotKeyTests : UITestBase
 
             editor = FancyZonesTestHelper.OpenLayoutEditor(this);
             var resolutionTexts = editor.FindAll<Element>(By.AccessibilityId(Id.ResolutionText), FancyZonesTestHelper.FindTimeoutMs);
-            Assert.IsTrue(resolutionTexts.Count > 0, "The editor did not render a resolution label for any monitor.");
+            Assert.IsNotEmpty(resolutionTexts, "The editor did not render a resolution label for any monitor.");
             Assert.AreEqual(
                 $"{currentWidth} × {currentHeight}",
                 resolutionTexts[0].GetValue(),

@@ -13,6 +13,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public class LanguageServiceTests
@@ -99,7 +100,7 @@ public class LanguageServiceTests
 
             Assert.AreEqual(string.Empty, service.ApplyLanguageOverride("de-DE"));
             string[] expectedOverrides = ["de-DE", "en-US"];
-            CollectionAssert.AreEqual(expectedOverrides, attemptedOverrides);
+            Assert.AreSequenceEqual(expectedOverrides, attemptedOverrides);
             Assert.AreEqual("en-US", service.CurrentLanguageTag);
             Assert.AreEqual("en-US", CultureInfo.CurrentUICulture.Name);
             Assert.AreEqual("en-US", CultureInfo.DefaultThreadCurrentUICulture?.Name);
@@ -189,7 +190,7 @@ public class LanguageServiceTests
         var service = new LanguageService(["en-US"], ["en-US", "QPS-PLOC", "qps-ploca", "qps-plocm"], isCiBuild: true);
 
         string[] expected = ["en-US"];
-        CollectionAssert.AreEqual(expected, service.AvailableLanguages.ToArray());
+        Assert.AreSequenceEqual(expected, service.AvailableLanguages.ToArray());
     }
 
     [TestMethod]
@@ -198,7 +199,7 @@ public class LanguageServiceTests
         var service = new LanguageService(["en-US"], ["EN-US", "QPS-PLOC", "qps-ploc"], isCiBuild: false);
 
         string[] expected = ["EN-US", "QPS-PLOC"];
-        CollectionAssert.AreEqual(expected, service.AvailableLanguages.ToArray());
+        Assert.AreSequenceEqual(expected, service.AvailableLanguages.ToArray());
     }
 
     [TestMethod]
@@ -207,7 +208,7 @@ public class LanguageServiceTests
         var service = new LanguageService(["en-US"], ["en-US"], isCiBuild: false);
 
         string[] expected = ["en-US", "qps-PLOC"];
-        CollectionAssert.AreEqual(expected, service.AvailableLanguages.ToArray());
+        Assert.AreSequenceEqual(expected, service.AvailableLanguages.ToArray());
     }
 
     [TestMethod]
@@ -400,9 +401,9 @@ public class LanguageServiceTests
             var service = new LanguageService(["en-US"], ["en-US", "de-DE", "cs-CZ"], isCiBuild: true);
             var page = CreateLanguageSettings(settingsService.Object, service);
 
-            CollectionAssert.AreEqual(new[] { string.Empty, "cs-CZ", "de-DE", "en-US" }, page.Languages.Select(language => language.Tag).ToArray());
-            StringAssert.StartsWith(page.Languages[2].DisplayName, "Deutsch");
-            StringAssert.StartsWith(page.Languages[3].DisplayName, "English");
+            Assert.AreSequenceEqual(new[] { string.Empty, "cs-CZ", "de-DE", "en-US" }, page.Languages.Select(language => language.Tag).ToArray());
+            Assert.StartsWith("Deutsch", page.Languages[2].DisplayName);
+            Assert.StartsWith("English", page.Languages[3].DisplayName);
         }
         finally
         {

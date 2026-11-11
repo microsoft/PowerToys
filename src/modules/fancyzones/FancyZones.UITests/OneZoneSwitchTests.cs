@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace UITests_FancyZones
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class OneZoneSwitchTests : UITestBase
     {
@@ -83,7 +84,7 @@ namespace UITests_FancyZones
         /// <description>Verifies that a window remains correctly snapped after switching desktops and can be switched using Win+PageDown.</description>
         /// </item>
         /// </summary>
-        [TestMethod("FancyZones.Settings.TestSwitchAfterDesktopChange")]
+        [TestMethod(DisplayName = "FancyZones.Settings.TestSwitchAfterDesktopChange")]
         [TestCategory("FancyZones #Switch between windows in the current zone #2")]
         public void TestSwitchAfterDesktopChange()
         {
@@ -97,7 +98,7 @@ namespace UITests_FancyZones
 
             // return back
             SendKeys(Key.Ctrl, Key.Win, Key.Left);
-            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken); // Optional: Wait for a moment to ensure window switch
             string? returnWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
             Assert.AreEqual(postWindow, returnWindowTitle);
 
@@ -108,9 +109,9 @@ namespace UITests_FancyZones
 
             // close the virtual desktop
             SendKeys(Key.Ctrl, Key.Win, Key.Right);
-            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken); // Optional: Wait for a moment to ensure window switch
             SendKeys(Key.Ctrl, Key.Win, Key.F4);
-            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken); // Optional: Wait for a moment to ensure window switch
 
             Clean(); // close the windows
         }
@@ -123,7 +124,7 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("FancyZones.Settings.TestSwitchShortCutDisable")]
+        [TestMethod(DisplayName = "FancyZones.Settings.TestSwitchShortCutDisable")]
         [TestCategory("FancyZones #Switch between windows in the current zone #3")]
         public void TestSwitchShortCutDisable()
         {
@@ -134,7 +135,7 @@ namespace UITests_FancyZones
 
             // switch to the previous window by shortcut win+page down
             SendKeys(Key.Win, Key.PageDown);
-            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken); // Optional: Wait for a moment to ensure window switch
 
             activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
             Assert.AreEqual(postWindow, activeWindowTitle);

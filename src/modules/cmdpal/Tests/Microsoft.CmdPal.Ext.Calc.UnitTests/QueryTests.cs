@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Calc.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class QueryTests : CommandPaletteUnitTestBase
 {
@@ -34,7 +35,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         CultureInfo.CurrentUICulture = originalUiCulture;
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("2+2", "4")]
     [DataRow("5*3", "15")]
     [DataRow("10/2", "5")]
@@ -64,13 +65,14 @@ public class QueryTests : CommandPaletteUnitTestBase
         page.UpdateSearchText(string.Empty, input);
         var result = page.GetItems();
 
-        Assert.IsTrue(result.Length == 1, "Valid input should always return result");
+        Assert.HasCount(1, result, "Valid input should always return result");
 
         var firstResult = result.FirstOrDefault();
 
         Assert.IsNotNull(result);
-        Assert.IsTrue(
-            firstResult.Title.Contains(expectedResult),
+        Assert.Contains(
+            expectedResult,
+            firstResult.Title,
             $"Expected result to contain '{expectedResult}' but got '{firstResult.Title}'");
     }
 
@@ -101,7 +103,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         Assert.AreEqual("Type an equation...", result.Title);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("sin(60)", "-0.30481", CalculateEngine.TrigMode.Radians)]
     [DataRow("sin(60)", "0.866025", CalculateEngine.TrigMode.Degrees)]
     [DataRow("sin(60)", "0.809016", CalculateEngine.TrigMode.Gradians)]
@@ -123,7 +125,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         Assert.IsTrue(result.Title.Contains(expected, System.StringComparison.Ordinal), $"Calc trigMode convert result isn't correct. Current result: {result.Title}");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("sin(60)", "-0.30481", CalculateEngine.TrigMode.Radians, "de-DE")]
     [DataRow("sin(60)", "0.866025", CalculateEngine.TrigMode.Degrees, "de-DE")]
     [DataRow("sin(60)", "0.809016", CalculateEngine.TrigMode.Gradians, "de-DE")]
@@ -157,7 +159,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("2^64", "18446744073709551616", "0x10000000000000000")]
     [DataRow("0-(2^64)", "-18446744073709551616", "-0x10000000000000000")]
     public void TopLevelPageQuery_ReturnsResult_WhenIntegerExceedsInt64Bounds(string input, string expectedTitle, string expectedHexContext)
@@ -169,11 +171,12 @@ public class QueryTests : CommandPaletteUnitTestBase
         var results = page.GetItems();
         var result = results.FirstOrDefault();
 
-        Assert.AreEqual(1, results.Length, "Large integer results should still produce the main result item.");
+        Assert.HasCount(1, results, "Large integer results should still produce the main result item.");
         Assert.IsNotNull(result);
         Assert.AreEqual(expectedTitle, result!.Title);
-        Assert.IsTrue(
-            result.MoreCommands.OfType<CommandContextItem>().Any(item => item.Title == expectedHexContext),
+        Assert.Contains(
+            item => item.Title == expectedHexContext,
+            result.MoreCommands.OfType<CommandContextItem>(),
             "Large integer results should still include integer conversion context items.");
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ColorPicker.UnitTests.Mouse
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class DisplayRefreshRateTest
     {

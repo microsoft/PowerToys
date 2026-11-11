@@ -16,6 +16,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ExtensionGalleryItemViewModelTests
 {
@@ -93,7 +94,7 @@ public class ExtensionGalleryItemViewModelTests
         Assert.IsTrue(viewModel.HasStoreSource);
         Assert.IsTrue(viewModel.HasGitHubSource);
         Assert.IsTrue(viewModel.HasUnknownSource);
-        Assert.IsTrue(viewModel.Sources.Count >= 4);
+        Assert.IsGreaterThanOrEqualTo(4, viewModel.Sources.Count);
     }
 
     [TestMethod]
@@ -124,9 +125,11 @@ public class ExtensionGalleryItemViewModelTests
         Assert.IsFalse(viewModel.HasUrlSource);
         Assert.IsFalse(viewModel.HasActionableSourceDetails);
         Assert.IsNull(viewModel.InstallUrl);
-        Assert.IsFalse(viewModel.Sources.Any(source =>
+        Assert.DoesNotContain(
+            source =>
             string.Equals(source.Kind, "github", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(source.Kind, "website", StringComparison.OrdinalIgnoreCase)));
+            || string.Equals(source.Kind, "website", StringComparison.OrdinalIgnoreCase),
+            viewModel.Sources);
         Assert.IsFalse(viewModel.OpenHomepageCommand.CanExecute(null));
         Assert.IsFalse(viewModel.OpenAuthorPageCommand.CanExecute(null));
         Assert.IsFalse(viewModel.OpenInstallUrlCommand.CanExecute(null));
@@ -245,7 +248,7 @@ public class ExtensionGalleryItemViewModelTests
         var viewModel = CreateViewModel(entry);
 
         Assert.IsTrue(viewModel.HasScreenshots);
-        Assert.AreEqual(2, viewModel.Screenshots.Count);
+        Assert.HasCount(2, viewModel.Screenshots);
         Assert.AreEqual(new Uri(firstScreenshotUri), viewModel.Screenshots[0].Uri);
         Assert.AreEqual("Screenshot 1", viewModel.Screenshots[0].DisplayName);
         Assert.AreEqual(new Uri(secondScreenshotUri), viewModel.Screenshots[1].Uri);
@@ -274,7 +277,7 @@ public class ExtensionGalleryItemViewModelTests
         var viewModel = CreateViewModel(entry);
 
         Assert.IsTrue(viewModel.HasScreenshots);
-        Assert.AreEqual(1, viewModel.Screenshots.Count);
+        Assert.HasCount(1, viewModel.Screenshots);
         Assert.AreEqual(new Uri("https://example.com/screenshots/valid.png"), viewModel.Screenshots[0].Uri);
     }
 
@@ -403,10 +406,10 @@ public class ExtensionGalleryItemViewModelTests
 
         Assert.IsNotNull(wingetSource);
         var sourceDetails = wingetSource!.Details;
-        Assert.IsTrue(sourceDetails.Count > 0);
-        CollectionAssert.Contains(sourceDetails.Select(item => item.Value).ToList(), "Summary");
-        CollectionAssert.Contains(sourceDetails.Select(item => item.Value).ToList(), "1.2.3");
-        CollectionAssert.Contains(sourceDetails.Select(item => item.Value).ToList(), "utility, productivity");
+        Assert.IsNotEmpty(sourceDetails);
+        Assert.Contains("Summary", sourceDetails.Select(item => item.Value).ToList());
+        Assert.Contains("1.2.3", sourceDetails.Select(item => item.Value).ToList());
+        Assert.Contains("utility, productivity", sourceDetails.Select(item => item.Value).ToList());
     }
 
     [TestMethod]
@@ -463,12 +466,12 @@ public class ExtensionGalleryItemViewModelTests
         var wingetSource = viewModel.Sources.First(source => string.Equals(source.Kind, "winget", StringComparison.OrdinalIgnoreCase));
         var sourceDetails = wingetSource.Details;
 
-        Assert.IsTrue(sourceDetails.Any(item => string.Equals(item.LinkUri?.AbsoluteUri, "https://contoso.example/license", StringComparison.OrdinalIgnoreCase)));
-        Assert.IsTrue(sourceDetails.Any(item => string.Equals(item.LinkUri?.AbsoluteUri, "https://contoso.example/package", StringComparison.OrdinalIgnoreCase)));
-        Assert.IsTrue(sourceDetails.Any(item => string.Equals(item.LinkUri?.AbsoluteUri, "https://contoso.example/docs", StringComparison.OrdinalIgnoreCase)));
-        Assert.IsFalse(sourceDetails.Any(item => item.LinkUri is not null && !string.Equals(item.LinkUri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) && !string.Equals(item.LinkUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)));
-        Assert.IsFalse(sourceDetails.Any(item => string.Equals(item.Value, "ms-settings:appsfeatures", StringComparison.OrdinalIgnoreCase)));
-        Assert.IsFalse(sourceDetails.Any(item => string.Equals(item.Value, "search-ms:query=contoso", StringComparison.OrdinalIgnoreCase)));
+        Assert.Contains(item => string.Equals(item.LinkUri?.AbsoluteUri, "https://contoso.example/license", StringComparison.OrdinalIgnoreCase), sourceDetails);
+        Assert.Contains(item => string.Equals(item.LinkUri?.AbsoluteUri, "https://contoso.example/package", StringComparison.OrdinalIgnoreCase), sourceDetails);
+        Assert.Contains(item => string.Equals(item.LinkUri?.AbsoluteUri, "https://contoso.example/docs", StringComparison.OrdinalIgnoreCase), sourceDetails);
+        Assert.DoesNotContain(item => item.LinkUri is not null && !string.Equals(item.LinkUri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) && !string.Equals(item.LinkUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase), sourceDetails);
+        Assert.DoesNotContain(item => string.Equals(item.Value, "ms-settings:appsfeatures", StringComparison.OrdinalIgnoreCase), sourceDetails);
+        Assert.DoesNotContain(item => string.Equals(item.Value, "search-ms:query=contoso", StringComparison.OrdinalIgnoreCase), sourceDetails);
     }
 
     [TestMethod]
@@ -506,7 +509,7 @@ public class ExtensionGalleryItemViewModelTests
                     IsUpdateStateKnown: true),
                 CreatePackageDetails()));
 
-        CollectionAssert.Contains(propertyNames, nameof(GallerySourceViewModel.HasDetails));
+        Assert.Contains(nameof(GallerySourceViewModel.HasDetails), propertyNames);
     }
 
     [TestMethod]
@@ -548,7 +551,7 @@ public class ExtensionGalleryItemViewModelTests
         Assert.IsTrue(viewModel.ShowCancelWinGetActionButton);
         Assert.IsFalse(viewModel.IsWinGetActionIndeterminate);
         Assert.AreEqual(42d, viewModel.WinGetActionProgressValue);
-        StringAssert.Contains(viewModel.WinGetActionMessage!, "42%");
+        Assert.Contains("42%", viewModel.WinGetActionMessage!);
     }
 
     [TestMethod]

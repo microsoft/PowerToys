@@ -16,6 +16,7 @@ namespace PowerDisplay.UnitTests;
 /// pre-write value and maximum compatibility mode republishes that stale value on a later
 /// discovery whose probe touched the code but could not read it.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class DdcCiControllerKnownGoodRefreshTests
 {
@@ -61,7 +62,7 @@ public sealed class DdcCiControllerKnownGoodRefreshTests
 
         controller.RefreshKnownGoodAfterWrite(ScaledMonitor(brightnessVcpMax: 50), 0x10, 20);
 
-        Assert.AreEqual(0, store.GetKnownGoodFeatures(MonitorId).Count);
+        Assert.IsEmpty(store.GetKnownGoodFeatures(MonitorId));
         Assert.AreEqual(0, store.UpsertCount);
     }
 

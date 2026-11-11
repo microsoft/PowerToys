@@ -35,6 +35,7 @@ namespace AdvancedPaste.UnitTests.ServicesTests;
 /// 3. Ensure the %USERPROFILE% folder contains the required input files (paths are below).
 /// These tests are idempotent and resumable, allowing for partial runs and restarts. It's ok to use existing output files as input files - output-related fields will simply be ignored.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 public sealed class AIServiceBatchIntegrationTests
 {
     private record class BatchTestInput
@@ -73,16 +74,16 @@ public sealed class AIServiceBatchIntegrationTests
         // Load input data.
         var fullInputFilePath = Environment.ExpandEnvironmentVariables(inputFilePath);
         var inputs = await GetDataListAsync<BatchTestInput>(fullInputFilePath);
-        Assert.IsTrue(inputs.Count > 0);
+        Assert.IsNotEmpty(inputs);
 
         // Load existing results; allow a partial run to be resumed.
         var resultsFile = Path.Combine(Path.GetDirectoryName(fullInputFilePath), $"{Path.GetFileNameWithoutExtension(fullInputFilePath)}-output-{format}.json");
         var results = await GetDataListAsync<BatchTestResult>(resultsFile);
-        Assert.IsTrue(results.Count <= inputs.Count);
-        CollectionAssert.AreEqual(results.Select(result => result.ToInput()).ToList(), inputs.Take(results.Count).ToList());
+        Assert.IsLessThanOrEqualTo(inputs.Count, results.Count);
+        Assert.AreSequenceEqual(results.Select(result => result.ToInput()).ToList(), inputs.Take(results.Count).ToList());
 
         #pragma warning disable IL2026, IL3050 // The tests rely on runtime JSON serialization for ad-hoc data files.
-        async Task WriteResultsAsync() => await File.WriteAllTextAsync(resultsFile, JsonSerializer.Serialize(results, SerializerOptions));
+        async Task WriteResultsAsync() => await File.WriteAllTextAsync(resultsFile, JsonSerializer.Serialize(results, SerializerOptions), TestContext.CancellationToken);
         #pragma warning restore IL2026, IL3050
 
         Logger.LogInfo($"Starting {nameof(TestGenerateBatchResults)}; Count={inputs.Count}, InCache={results.Count}");
@@ -169,4 +170,6 @@ public sealed class AIServiceBatchIntegrationTests
     }
 
     private readonly record struct IntegrationTestServices(ICustomActionTransformService CustomActionTransformService, IKernelService KernelService);
+
+    public TestContext TestContext { get; set; } = null!;
 }

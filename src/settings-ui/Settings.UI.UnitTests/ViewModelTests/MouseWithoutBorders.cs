@@ -15,6 +15,7 @@ using Moq;
 
 namespace ViewModelTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class MouseWithoutBorders
     {
@@ -46,7 +47,7 @@ namespace ViewModelTests
                 machines.ToEnumerable(),
                 static machine => machine.Name);
 
-            CollectionAssert.AreEqual(expected, settings.Properties.MachineMatrixString);
+            Assert.AreSequenceEqual(expected, settings.Properties.MachineMatrixString);
             settingsUtils.Verify(
                 utils => utils.SaveSettings(
                     It.Is<string>(json => MatrixMatches(json, expected)),
@@ -71,8 +72,8 @@ namespace ViewModelTests
                 static name => name);
 
             Assert.AreNotSame(previous, settings.Properties.MachineMatrixString);
-            CollectionAssert.AreEqual(new List<string> { "existing" }, previous);
-            CollectionAssert.AreEqual(expected, settings.Properties.MachineMatrixString);
+            Assert.AreSequenceEqual(new List<string> { "existing" }, previous);
+            Assert.AreSequenceEqual(expected, settings.Properties.MachineMatrixString);
             settingsUtils.Verify(
                 utils => utils.SaveSettings(
                     It.Is<string>(json => MatrixMatches(json, expected)),
@@ -97,8 +98,8 @@ namespace ViewModelTests
                 static name => name);
 
             Assert.AreNotSame(previous, settings.Properties.MachineMatrixString);
-            CollectionAssert.AreEqual(expected, previous);
-            CollectionAssert.AreEqual(expected, settings.Properties.MachineMatrixString);
+            Assert.AreSequenceEqual(expected, previous);
+            Assert.AreSequenceEqual(expected, settings.Properties.MachineMatrixString);
             settingsUtils.Verify(
                 utils => utils.SaveSettings(
                     It.Is<string>(json => MatrixMatches(json, expected)),
@@ -115,14 +116,14 @@ namespace ViewModelTests
             var settingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
             var machines = new List<TestMachine> { new TestMachine { Name = "first" } };
 
-            Assert.ThrowsException<InvalidOperationException>(() =>
+            Assert.ThrowsExactly<InvalidOperationException>(() =>
                 MouseWithoutBordersMachineMatrixPersistence.Save(
                     settingsUtils.Object,
                     settings,
                     machines,
                     static _ => throw new InvalidOperationException()));
 
-            CollectionAssert.AreEqual(new List<string> { "existing" }, settings.Properties.MachineMatrixString);
+            Assert.AreSequenceEqual(new List<string> { "existing" }, settings.Properties.MachineMatrixString);
             settingsUtils.Verify(
                 utils => utils.SaveSettings(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
                 Times.Never);
@@ -131,7 +132,7 @@ namespace ViewModelTests
         private static bool MatrixMatches(string json, List<string> expected)
         {
             var persisted = JsonSerializer.Deserialize<MouseWithoutBordersSettings>(json);
-            CollectionAssert.AreEqual(expected, persisted.Properties.MachineMatrixString);
+            Assert.AreSequenceEqual(expected, persisted.Properties.MachineMatrixString);
             return true;
         }
     }

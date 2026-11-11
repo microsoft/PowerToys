@@ -13,6 +13,7 @@ using PowerDisplay.Models;
 
 namespace ViewModelTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ProfileEditorViewModelTests
     {
@@ -108,7 +109,7 @@ namespace ViewModelTests
 
             monitor.ReplaceVcpCodesFormatted(CreateColorCapabilities("Renamed preset"));
 
-            Assert.IsTrue(presetChanges > 0);
+            Assert.IsGreaterThan(0, presetChanges);
             Assert.AreEqual((int?)0x08, item.ColorTemperature);
             Assert.IsTrue(item.HasValidColorTemperature);
             Assert.AreEqual(includeColorTemperature, item.IncludeColorTemperature);
@@ -278,7 +279,7 @@ namespace ViewModelTests
             var savedSettings = viewModel.CreateProfile().MonitorSettings.Single();
             Assert.AreEqual(settingName == nameof(ProfileMonitorSetting.Contrast) ? (int?)63 : null, savedSettings.Contrast);
             Assert.AreEqual(settingName == nameof(ProfileMonitorSetting.Volume) ? (int?)41 : null, savedSettings.Volume);
-            Assert.IsTrue(canSaveChanges > 0);
+            Assert.IsGreaterThan(0, canSaveChanges);
             canSaveChanges = 0;
 
             if (settingName == nameof(ProfileMonitorSetting.Contrast))
@@ -292,7 +293,7 @@ namespace ViewModelTests
 
             Assert.IsTrue(viewModel.CanSave);
             Assert.IsFalse(viewModel.Monitors.Single().HasPreservedSettings);
-            Assert.IsTrue(canSaveChanges > 0);
+            Assert.IsGreaterThan(0, canSaveChanges);
         }
 
         [TestMethod]
@@ -387,7 +388,7 @@ namespace ViewModelTests
             Assert.IsTrue(viewModel.CanSave);
             var saved = viewModel.CreateProfile();
             Assert.AreEqual("Renamed profile", saved.Name);
-            Assert.AreEqual(2, saved.MonitorSettings.Count);
+            Assert.HasCount(2, saved.MonitorSettings);
             var connectedSettings = saved.MonitorSettings.Single(setting => setting.MonitorId == monitor.Id);
             Assert.AreEqual((int?)25, connectedSettings.Brightness);
             Assert.IsNull(connectedSettings.ColorTemperatureVcp);
@@ -419,15 +420,15 @@ namespace ViewModelTests
 
             Assert.AreEqual(includeMissingMonitor, viewModel.CanSave);
             var saved = viewModel.CreateProfile();
-            Assert.AreEqual(includeMissingMonitor ? 1 : 0, saved.MonitorSettings.Count);
-            Assert.IsFalse(saved.MonitorSettings.Any(setting => MonitorIdComparer.Equal(setting.MonitorId, monitor.Id)));
+            Assert.HasCount(includeMissingMonitor ? 1 : 0, saved.MonitorSettings);
+            Assert.DoesNotContain(setting => MonitorIdComparer.Equal(setting.MonitorId, monitor.Id), saved.MonitorSettings);
             if (includeMissingMonitor)
             {
                 Assert.AreEqual(missingMonitorId, saved.MonitorSettings.Single().MonitorId);
                 Assert.AreEqual((int?)50, saved.MonitorSettings.Single().Brightness);
             }
 
-            Assert.IsFalse(viewModel.CreateProfile().MonitorSettings.Any(setting => MonitorIdComparer.Equal(setting.MonitorId, monitor.Id)));
+            Assert.DoesNotContain(setting => MonitorIdComparer.Equal(setting.MonitorId, monitor.Id), viewModel.CreateProfile().MonitorSettings);
         }
 
         [TestMethod]
@@ -611,7 +612,7 @@ namespace ViewModelTests
             Assert.IsTrue(item.IncludeColorTemperature);
             Assert.IsTrue(item.HasPreservedSettings);
             Assert.IsTrue(viewModel.HasPreservedSettings);
-            Assert.IsTrue(preservationChanges > 0);
+            Assert.IsGreaterThan(0, preservationChanges);
             Assert.AreEqual((int?)0x05, viewModel.CreateProfile().MonitorSettings.Single().ColorTemperatureVcp);
             preservationChanges = 0;
 
@@ -630,7 +631,7 @@ namespace ViewModelTests
             Assert.IsTrue(item.HasValidColorTemperature);
             Assert.IsFalse(item.HasPreservedSettings);
             Assert.IsFalse(viewModel.HasPreservedSettings);
-            Assert.IsTrue(preservationChanges > 0);
+            Assert.IsGreaterThan(0, preservationChanges);
             Assert.IsTrue(viewModel.CanSave);
             Assert.AreEqual((int?)0x05, viewModel.CreateProfile().MonitorSettings.Single().ColorTemperatureVcp);
         }

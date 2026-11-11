@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ListHelpersInPlaceUpdateTests
 {
@@ -32,7 +33,7 @@ public class ListHelpersInPlaceUpdateTests
     private static void AssertSequence(IList<Item> actual, params string[] expected)
     {
         var actualNames = actual.Select(i => i.Name).ToArray();
-        CollectionAssert.AreEqual(expected, actualNames, $"Expected [{string.Join(", ", expected)}] but got [{string.Join(", ", actualNames)}]");
+        Assert.AreSequenceEqual(expected, actualNames, $"Expected [{string.Join(", ", expected)}] but got [{string.Join(", ", actualNames)}]");
     }
 
     private static void AssertRemovedContainsExactly(List<Item> removedItems, IList<Item> originalItems, IList<Item> newItems)
@@ -42,12 +43,12 @@ public class ListHelpersInPlaceUpdateTests
         var expectedRemoved = originalItems.Where(i => !newSet.Contains(i)).ToList();
 
         // Same count
-        Assert.AreEqual(expectedRemoved.Count, removedItems.Count, $"Expected {expectedRemoved.Count} removed items but got {removedItems.Count}");
+        Assert.HasCount(expectedRemoved.Count, removedItems, $"Expected {expectedRemoved.Count} removed items but got {removedItems.Count}");
 
         // Same instances (by reference, since we're checking cleanup correctness)
         foreach (var expected in expectedRemoved)
         {
-            Assert.IsTrue(removedItems.Contains(expected), $"Expected '{expected.Name}' in removedItems but it was missing");
+            Assert.Contains(expected, removedItems, $"Expected '{expected.Name}' in removedItems but it was missing");
         }
     }
 
@@ -61,7 +62,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, newContents, out var removed);
 
         AssertSequence(original, "A", "B", "C");
-        Assert.AreEqual(0, removed.Count);
+        Assert.IsEmpty(removed);
     }
 
     [TestMethod]
@@ -73,7 +74,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, newItems, out var removed);
 
         AssertSequence(original, "A", "B", "C");
-        Assert.AreEqual(0, removed.Count);
+        Assert.IsEmpty(removed);
     }
 
     [TestMethod]
@@ -84,8 +85,8 @@ public class ListHelpersInPlaceUpdateTests
 
         ListHelpers.InPlaceUpdateList(original, [], out var removed);
 
-        Assert.AreEqual(0, original.Count);
-        Assert.AreEqual(3, removed.Count);
+        Assert.IsEmpty(original);
+        Assert.HasCount(3, removed);
     }
 
     [TestMethod]
@@ -98,7 +99,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, [b], out var removed);
 
         AssertSequence(original, "B");
-        Assert.AreEqual(1, removed.Count);
+        Assert.HasCount(1, removed);
         Assert.AreSame(a, removed[0]);
     }
 
@@ -112,7 +113,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, filtered, out var removed);
 
         AssertSequence(original, "A", "C", "E");
-        Assert.AreEqual(2, removed.Count); // B, D removed
+        Assert.HasCount(2, removed); // B, D removed
         AssertRemovedContainsExactly(removed, items, filtered);
     }
 
@@ -126,7 +127,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, filtered, out var removed);
 
         AssertSequence(original, "B", "D", "F", "H");
-        Assert.AreEqual(4, removed.Count);
+        Assert.HasCount(4, removed);
         AssertRemovedContainsExactly(removed, items, filtered);
     }
 
@@ -142,7 +143,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, expanded, out var removed);
 
         AssertSequence(original, "A", "B", "C", "D", "E");
-        Assert.AreEqual(0, removed.Count);
+        Assert.IsEmpty(removed);
     }
 
     [TestMethod]
@@ -155,7 +156,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, reversed, out var removed);
 
         AssertSequence(original, "E", "D", "C", "B", "A");
-        Assert.AreEqual(0, removed.Count);
+        Assert.IsEmpty(removed);
     }
 
     [TestMethod]
@@ -168,7 +169,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, reordered, out var removed);
 
         AssertSequence(original, "B", "C", "D", "A");
-        Assert.AreEqual(0, removed.Count);
+        Assert.IsEmpty(removed);
     }
 
     [TestMethod]
@@ -181,7 +182,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, reordered, out var removed);
 
         AssertSequence(original, "D", "A", "B", "C");
-        Assert.AreEqual(0, removed.Count);
+        Assert.IsEmpty(removed);
     }
 
     [TestMethod]
@@ -194,7 +195,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, newItems, out var removed);
 
         AssertSequence(original, "X", "Y", "Z");
-        Assert.AreEqual(3, removed.Count);
+        Assert.HasCount(3, removed);
         AssertRemovedContainsExactly(removed, oldItems, newItems);
     }
 
@@ -208,7 +209,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, newItems, out var removed);
 
         AssertSequence(original, "X", "Y");
-        Assert.AreEqual(5, removed.Count);
+        Assert.HasCount(5, removed);
     }
 
     [TestMethod]
@@ -221,7 +222,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, newItems, out var removed);
 
         AssertSequence(original, "X", "Y", "Z", "W");
-        Assert.AreEqual(2, removed.Count);
+        Assert.HasCount(2, removed);
     }
 
     [TestMethod]
@@ -236,7 +237,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, newList, out var removed);
 
         AssertSequence(original, "A", "B", "C");
-        Assert.AreEqual(2, removed.Count);
+        Assert.HasCount(2, removed);
         AssertRemovedContainsExactly(removed, items, newList);
     }
 
@@ -253,7 +254,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, newList, out var removed);
 
         AssertSequence(original, "C", "A", "E");
-        Assert.AreEqual(2, removed.Count); // B, D
+        Assert.HasCount(2, removed); // B, D
         AssertRemovedContainsExactly(removed, items, newList);
     }
 
@@ -273,12 +274,12 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, reversed, out var removed);
 
         AssertSequence(original, "E", "D", "C", "B", "A");
-        Assert.AreEqual(0, removed.Count, "No items should be removed when all items are reused");
+        Assert.IsEmpty(removed, "No items should be removed when all items are reused");
 
         // Verify all original instances are still in the collection (not cleaned up)
         foreach (var item in items)
         {
-            Assert.IsTrue(original.Contains(item), $"Item '{item.Name}' should still be in the collection (same instance)");
+            Assert.Contains(item, original, $"Item '{item.Name}' should still be in the collection (same instance)");
         }
     }
 
@@ -301,14 +302,14 @@ public class ListHelpersInPlaceUpdateTests
         AssertSequence(original, "E", "C", "A");
 
         // Critical: removed should only contain b and d
-        Assert.AreEqual(2, removed.Count);
-        Assert.IsTrue(removed.Contains(b), "B should be in removedItems");
-        Assert.IsTrue(removed.Contains(d), "D should be in removedItems");
+        Assert.HasCount(2, removed);
+        Assert.Contains(b, removed, "B should be in removedItems");
+        Assert.Contains(d, removed, "D should be in removedItems");
 
         // Critical: removed must NOT contain items still in the list
-        Assert.IsFalse(removed.Contains(a), "A is still in use — must not be in removedItems");
-        Assert.IsFalse(removed.Contains(c), "C is still in use — must not be in removedItems");
-        Assert.IsFalse(removed.Contains(e), "E is still in use — must not be in removedItems");
+        Assert.DoesNotContain(a, removed, "A is still in use — must not be in removedItems");
+        Assert.DoesNotContain(c, removed, "C is still in use — must not be in removedItems");
+        Assert.DoesNotContain(e, removed, "E is still in use — must not be in removedItems");
     }
 
     [TestMethod]
@@ -321,7 +322,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, newList, out var removed);
 
         AssertSequence(original, "C", "A");
-        Assert.AreEqual(2, removed.Count);
+        Assert.HasCount(2, removed);
     }
 
     [TestMethod]
@@ -348,7 +349,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, lazy, out var removed);
 
         AssertSequence(original, "C", "B", "A");
-        Assert.AreEqual(0, removed.Count);
+        Assert.IsEmpty(removed);
     }
 
     [TestMethod]
@@ -362,18 +363,18 @@ public class ListHelpersInPlaceUpdateTests
         var filtered1 = new[] { all[0], all[2], all[4] }; // Apple, Avocado, Apricot
         ListHelpers.InPlaceUpdateList(original, filtered1, out var removed1);
         AssertSequence(original, "Apple", "Avocado", "Apricot");
-        Assert.AreEqual(2, removed1.Count);
+        Assert.HasCount(2, removed1);
 
         // Second keystroke "Ap" — filter further
         var filtered2 = new[] { all[0], all[4] }; // Apple, Apricot
         ListHelpers.InPlaceUpdateList(original, filtered2, out var removed2);
         AssertSequence(original, "Apple", "Apricot");
-        Assert.AreEqual(1, removed2.Count);
+        Assert.HasCount(1, removed2);
 
         // Clear search — back to all
         ListHelpers.InPlaceUpdateList(original, all, out var removed3);
         AssertSequence(original, "Apple", "Banana", "Avocado", "Blueberry", "Apricot");
-        Assert.AreEqual(0, removed3.Count);
+        Assert.IsEmpty(removed3);
     }
 
     [TestMethod]
@@ -386,12 +387,12 @@ public class ListHelpersInPlaceUpdateTests
 
         ListHelpers.InPlaceUpdateList(original, page2, out var removed1);
         AssertSequence(original, "P2A", "P2B", "P2C");
-        Assert.AreEqual(4, removed1.Count);
+        Assert.HasCount(4, removed1);
 
         // Navigate back
         ListHelpers.InPlaceUpdateList(original, page1, out var removed2);
         AssertSequence(original, "P1A", "P1B", "P1C", "P1D");
-        Assert.AreEqual(3, removed2.Count);
+        Assert.HasCount(3, removed2);
     }
 
     [TestMethod]
@@ -423,7 +424,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, newItems, out var removed);
 
         AssertSequence(original, "X", "Y", "Z");
-        Assert.AreEqual(3, removed.Count);
+        Assert.HasCount(3, removed);
 
         // All notifications should be Replace (not Add/Remove pairs)
         Assert.IsTrue(
@@ -444,7 +445,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, newItems, out var removed);
 
         AssertSequence(original, "X", "Y");
-        Assert.AreEqual(5, removed.Count);
+        Assert.HasCount(5, removed);
 
         // 2 Replace + 3 Remove
         var replaces = notifications.Count(a => a == System.Collections.Specialized.NotifyCollectionChangedAction.Replace);
@@ -466,7 +467,7 @@ public class ListHelpersInPlaceUpdateTests
         ListHelpers.InPlaceUpdateList(original, newItems, out var removed);
 
         AssertSequence(original, "X", "Y", "Z", "W");
-        Assert.AreEqual(2, removed.Count);
+        Assert.HasCount(2, removed);
 
         // 2 Replace + 2 Add
         var replaces = notifications.Count(a => a == System.Collections.Specialized.NotifyCollectionChangedAction.Replace);
@@ -503,7 +504,7 @@ public class ListHelpersInPlaceUpdateTests
 
         ListHelpers.InPlaceUpdateList(original, Array.Empty<Item>());
 
-        Assert.AreEqual(0, original.Count);
+        Assert.IsEmpty(original);
     }
 
     [TestMethod]
@@ -707,7 +708,7 @@ public class ListHelpersInPlaceUpdateTests
 
         var names1 = original1.Select(i => i.Name).ToArray();
         var names2 = original2.Select(i => i.Name).ToArray();
-        CollectionAssert.AreEqual(names1, names2, "Both overloads should produce identical results");
+        Assert.AreSequenceEqual(names1, names2, "Both overloads should produce identical results");
     }
 
     [TestMethod]
@@ -724,7 +725,7 @@ public class ListHelpersInPlaceUpdateTests
 
         var names1 = original1.Select(i => i.Name).ToArray();
         var names2 = original2.Select(i => i.Name).ToArray();
-        CollectionAssert.AreEqual(names1, names2, "Both overloads should produce identical results");
+        Assert.AreSequenceEqual(names1, names2, "Both overloads should produce identical results");
     }
 
     [TestMethod]
@@ -741,6 +742,6 @@ public class ListHelpersInPlaceUpdateTests
 
         var names1 = original1.Select(i => i.Name).ToArray();
         var names2 = original2.Select(i => i.Name).ToArray();
-        CollectionAssert.AreEqual(names1, names2, "Both overloads should produce identical results");
+        Assert.AreSequenceEqual(names1, names2, "Both overloads should produce identical results");
     }
 }

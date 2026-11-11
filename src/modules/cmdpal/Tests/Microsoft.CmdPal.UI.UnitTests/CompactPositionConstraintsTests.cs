@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class CompactPositionConstraintsTests
 {
@@ -14,7 +15,7 @@ public sealed class CompactPositionConstraintsTests
     [DataRow(75.0, 1080.0, 75.0)]
     [DataRow(0.0, 360.0, 100.0)]
     [DataRow(120.0, 1080.0, 100.0)]
-    [DataTestMethod]
+    [TestMethod]
     public void ClampPercentageFromBottom_ReservesExpansionSpace(
         double percentage,
         double workAreaHeightDip,

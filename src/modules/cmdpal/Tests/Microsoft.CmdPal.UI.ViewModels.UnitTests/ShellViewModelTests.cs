@@ -20,6 +20,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public partial class ShellViewModelTests
@@ -192,7 +193,7 @@ public partial class ShellViewModelTests
         {
             shell.Receive(new PerformCommandMessage(CreateCommandViewModel(page, shell.CurrentPage)));
 
-            Assert.AreSame(scheduler, await activated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+            Assert.AreSame(scheduler, await activated.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
             Assert.AreSame(viewModel, shell.CurrentPage);
             Assert.IsTrue(viewModel.InitializeCommand.ExecutionTask!.IsCompletedSuccessfully);
         }
@@ -445,7 +446,7 @@ public partial class ShellViewModelTests
             };
             viewModel.Receive(new PerformCommandMessage(CreateCommandViewModel(command, viewModel.CurrentPage)));
 
-            await finished.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await finished.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
             var expected = new List<string> { "started" };
             if (hideDuringInvoke)
             {
@@ -458,7 +459,7 @@ public partial class ShellViewModelTests
                 expected.Add("dismiss");
             }
 
-            CollectionAssert.AreEqual(expected, events);
+            Assert.AreSequenceEqual(expected, events);
             Assert.IsNotNull(invocation);
             Assert.AreEqual(!throwDuringInvoke, invocation.Success);
             Assert.AreEqual(command.Id, invocation.CommandId);
@@ -516,7 +517,7 @@ public partial class ShellViewModelTests
         var healthy = new TestCommand(CommandResult.KeepOpen(), () => invoked.TrySetResult());
         shell.Receive(new PerformCommandMessage(CreateCommandViewModel(healthy, shell.CurrentPage)));
 
-        await invoked.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await invoked.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         await WaitForInvocationAsync();
         command.Verify(model => model.Invoke(It.IsAny<object?>()), Times.Exactly(2));
 
@@ -527,7 +528,7 @@ public partial class ShellViewModelTests
                 .GetValue(shell);
             if (invocation is not null)
             {
-                await invocation.WaitAsync(TimeSpan.FromSeconds(5));
+                await invocation.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
             }
         }
     }
@@ -549,14 +550,14 @@ public partial class ShellViewModelTests
             var command = new TestCommand(CommandResult.KeepOpen(), () =>
             {
                 entered.TrySetResult();
-                if (!release.Wait(TimeSpan.FromSeconds(10)))
+                if (!release.Wait(TimeSpan.FromSeconds(10), TestContext.CancellationToken))
                 {
                     throw new TimeoutException("Test did not release the invocation");
                 }
             });
             var message = new PerformCommandMessage(CreateCommandViewModel(command, viewModel.CurrentPage));
             viewModel.Receive(message);
-            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
             viewModel.Receive(message);
 
@@ -567,7 +568,7 @@ public partial class ShellViewModelTests
             release.Set();
             try
             {
-                await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+                await completed.Task.WaitAsync(TimeSpan.FromSeconds(10), System.Threading.CancellationToken.None);
             }
             finally
             {
@@ -619,7 +620,7 @@ public partial class ShellViewModelTests
             viewModel.Receive(new PerformCommandMessage(CreateCommandViewModel(new TestPage(), viewModel.CurrentPage)) { ShowWindowIfPage = true });
 
             string[] expected = ["show", "started", "completed", "navigate"];
-            CollectionAssert.AreEqual(expected, events);
+            Assert.AreSequenceEqual(expected, events);
         }
         finally
         {
@@ -661,13 +662,13 @@ public partial class ShellViewModelTests
             var command = new TestCommand(CommandResult.KeepOpen(), () => throw exception);
             shell.Receive(new PerformCommandMessage(CreateCommandViewModel(command, shell.CurrentPage)));
 
-            await logged.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await logged.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
             var invocation = (Task?)typeof(ShellViewModel)
                 .GetField("_handleInvokeTask", BindingFlags.Instance | BindingFlags.NonPublic)!
                 .GetValue(shell);
             if (invocation is not null)
             {
-                await invocation.WaitAsync(TimeSpan.FromSeconds(5));
+                await invocation.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
             }
 
             var expectedMessage = throwDuringInvoke ? "Failed to invoke command" : "Failed to perform command";
@@ -706,4 +707,6 @@ public partial class ShellViewModelTests
             pageFactory.Object,
             appHostService.Object);
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

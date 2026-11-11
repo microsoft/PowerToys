@@ -11,6 +11,7 @@ using PowerDisplay.Common.Services;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CrashDetectionScopeTests
 {
@@ -77,7 +78,7 @@ public class CrashDetectionScopeTests
 
         using var scope = CrashDetectionScope.Begin(_lockPath, hook);
 
-        Assert.AreEqual(1, hook.Handlers.Count, "Begin should subscribe exactly one ProcessExit handler");
+        Assert.HasCount(1, hook.Handlers, "Begin should subscribe exactly one ProcessExit handler");
     }
 
     [TestMethod]
@@ -88,7 +89,7 @@ public class CrashDetectionScopeTests
 
         scope.Dispose();
 
-        Assert.AreEqual(0, hook.Handlers.Count, "Dispose should unsubscribe the ProcessExit handler");
+        Assert.IsEmpty(hook.Handlers, "Dispose should unsubscribe the ProcessExit handler");
     }
 
     [TestMethod]
@@ -171,7 +172,7 @@ public class CrashDetectionScopeTests
         scope.Dispose();
         scope.Dispose();
 
-        Assert.AreEqual(0, hook.Handlers.Count);
+        Assert.IsEmpty(hook.Handlers);
     }
 
     [TestMethod]
@@ -187,8 +188,8 @@ public class CrashDetectionScopeTests
         var hook2 = new FakeProcessExitHook();
         using var scope2 = CrashDetectionScope.Begin(path2, hook2);
 
-        Assert.AreEqual(0, hook1.Handlers.Count, "first scope's handler should be unsubscribed");
-        Assert.AreEqual(1, hook2.Handlers.Count, "second scope should subscribe on its own hook");
+        Assert.IsEmpty(hook1.Handlers, "first scope's handler should be unsubscribed");
+        Assert.HasCount(1, hook2.Handlers, "second scope should subscribe on its own hook");
         Assert.IsFalse(File.Exists(path1));
         Assert.IsTrue(File.Exists(path2));
     }

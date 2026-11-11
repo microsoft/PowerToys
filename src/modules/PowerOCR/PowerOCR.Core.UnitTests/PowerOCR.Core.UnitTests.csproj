@@ -2,6 +2,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <AssemblyName>PowerToys.PowerOCR.Core.UnitTests</AssemblyName>
     <RootNamespace>PowerOCR.Core.UnitTests</RootNamespace>
     <OutputType>Exe</OutputType>

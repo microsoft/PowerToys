@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace WorkspacesEditorUITest;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [Ignore("NOT STABLE")]
 public class WorkspacesLauncherTest : WorkspacesUiAutomationBase
@@ -16,7 +17,7 @@ public class WorkspacesLauncherTest : WorkspacesUiAutomationBase
     {
     }
 
-    [TestMethod("WorkspacesEditor.Launcher.LaunchFromEditor")]
+    [TestMethod(DisplayName = "WorkspacesEditor.Launcher.LaunchFromEditor")]
     [TestCategory("Workspaces UI")]
     public void TestLaunchWorkspaceFromEditor()
     {
@@ -29,14 +30,14 @@ public class WorkspacesLauncherTest : WorkspacesUiAutomationBase
         var launchButton = Find<Button>(By.Name("Launch"));
         launchButton.Click();
 
-        Task.Delay(2000).Wait();
+        Task.Delay(2000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
         var processes = System.Diagnostics.Process.GetProcessesByName("notepad");
 
         Assert.IsTrue(processes?.Length > 0);
     }
 
-    [TestMethod("WorkspacesEditor.Launcher.CancelLaunch")]
+    [TestMethod(DisplayName = "WorkspacesEditor.Launcher.CancelLaunch")]
     [TestCategory("Workspaces UI")]
     public void TestCancelLaunch()
     {
@@ -64,7 +65,7 @@ public class WorkspacesLauncherTest : WorkspacesUiAutomationBase
         CloseTestApplications();
     }
 
-    [TestMethod("WorkspacesEditor.Launcher.DismissKeepsLaunching")]
+    [TestMethod(DisplayName = "WorkspacesEditor.Launcher.DismissKeepsLaunching")]
     [TestCategory("Workspaces UI")]
     public void TestDismissKeepsAppsLaunching()
     {

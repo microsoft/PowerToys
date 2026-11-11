@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.WebSearch.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class WebSearchCommandProviderTests
 {
@@ -27,7 +28,7 @@ public class WebSearchCommandProviderTests
 
         // Assert
         Assert.IsNotNull(provider.DisplayName);
-        Assert.IsTrue(provider.DisplayName.Length > 0);
+        Assert.IsGreaterThan(0, provider.DisplayName.Length);
     }
 
     [TestMethod]
@@ -51,6 +52,6 @@ public class WebSearchCommandProviderTests
 
         // Assert
         Assert.IsNotNull(commands);
-        Assert.IsTrue(commands.Length > 0);
+        Assert.IsNotEmpty(commands);
     }
 }

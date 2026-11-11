@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class PowerDisplayInventoryTests
 {
     private static readonly string[] LiveMonitorIds = ["live-a", "live-b"];
@@ -27,9 +28,10 @@ public sealed class PowerDisplayInventoryTests
 
         var current = PowerDisplayInventory.CurrentBatch(settings.RootElement.EnumerateArray().ToArray());
 
-        CollectionAssert.AreEquivalent(
+        Assert.AreSequenceEqual(
             LiveMonitorIds,
-            current.Select(monitor => monitor.GetProperty("id").GetString()).ToArray());
+            current.Select(monitor => monitor.GetProperty("id").GetString()).ToArray(),
+            SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]

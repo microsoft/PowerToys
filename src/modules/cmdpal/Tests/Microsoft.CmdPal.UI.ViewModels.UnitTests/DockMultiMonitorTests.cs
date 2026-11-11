@@ -16,6 +16,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class DockMultiMonitorTests
 {
@@ -278,7 +279,7 @@ public class DockMultiMonitorTests
         var globalBands = ImmutableList.Create(new DockBandSettings { ProviderId = "global", CommandId = "g1" });
         var resolved = config.ResolveStartBands(globalBands);
 
-        Assert.AreEqual(1, resolved.Count);
+        Assert.HasCount(1, resolved);
         Assert.AreEqual("cmd1", resolved[0].CommandId);
     }
 
@@ -294,7 +295,7 @@ public class DockMultiMonitorTests
         var globalBands = ImmutableList.Create(new DockBandSettings { ProviderId = "global", CommandId = "g1" });
         var resolved = config.ResolveStartBands(globalBands);
 
-        Assert.AreEqual(1, resolved.Count);
+        Assert.HasCount(1, resolved);
         Assert.AreEqual("g1", resolved[0].CommandId);
     }
 
@@ -318,13 +319,13 @@ public class DockMultiMonitorTests
 
         Assert.IsTrue(forked.IsCustomized);
         Assert.IsNotNull(forked.StartBands);
-        Assert.AreEqual(1, forked.StartBands!.Count);
+        Assert.HasCount(1, forked.StartBands);
         Assert.AreEqual("c1", forked.StartBands![0].CommandId);
         Assert.IsNotNull(forked.CenterBands);
-        Assert.AreEqual(1, forked.CenterBands!.Count);
+        Assert.HasCount(1, forked.CenterBands);
         Assert.AreEqual("c2", forked.CenterBands![0].CommandId);
         Assert.IsNotNull(forked.EndBands);
-        Assert.AreEqual(0, forked.EndBands!.Count);
+        Assert.IsEmpty(forked.EndBands);
     }
 
     [TestMethod]
@@ -342,8 +343,8 @@ public class DockMultiMonitorTests
         // Modify forked bands — global should be unaffected
         var newForked = forked with { StartBands = forked.StartBands!.Add(new DockBandSettings { ProviderId = "p2", CommandId = "c2" }) };
 
-        Assert.AreEqual(1, globalSettings.StartBands.Count);
-        Assert.AreEqual(2, newForked.StartBands.Count);
+        Assert.HasCount(1, globalSettings.StartBands);
+        Assert.HasCount(2, newForked.StartBands);
     }
 
     // --- MonitorConfigReconciler tests ---
@@ -365,7 +366,7 @@ public class DockMultiMonitorTests
 
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
-        Assert.AreEqual(2, result.Count);
+        Assert.HasCount(2, result);
         Assert.AreEqual(existingBand, result[1].StartBands![0]);
     }
 
@@ -379,7 +380,7 @@ public class DockMultiMonitorTests
 
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
-        Assert.AreEqual(2, result.Count);
+        Assert.HasCount(2, result);
         var newConfig = result[1];
         Assert.AreEqual(SecondaryMonitor.StableId, newConfig.MonitorDeviceId);
         Assert.IsFalse(newConfig.Enabled, "New secondary monitor should be disabled by default");
@@ -396,7 +397,7 @@ public class DockMultiMonitorTests
 
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
-        Assert.AreEqual(2, result.Count);
+        Assert.HasCount(2, result);
         Assert.AreEqual(PrimaryMonitor.StableId, result[0].MonitorDeviceId);
         Assert.AreEqual(@"\\?\DISPLAY#GONE#4&ccc&0&UID999#{guid99}", result[1].MonitorDeviceId);
         Assert.IsTrue(result[1].IsCustomized, "Disconnected monitor should preserve its customizations.");
@@ -410,7 +411,7 @@ public class DockMultiMonitorTests
 
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
-        Assert.AreEqual(2, result.Count);
+        Assert.HasCount(2, result);
     }
 
     [TestMethod]
@@ -422,7 +423,7 @@ public class DockMultiMonitorTests
 
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
-        Assert.AreEqual(1, result.Count);
+        Assert.HasCount(1, result);
         Assert.IsFalse(result[0].IsCustomized, "Primary monitor should inherit global bands (IsCustomized = false).");
     }
 
@@ -469,9 +470,9 @@ public class DockMultiMonitorTests
 
         Assert.IsTrue(enabled.Enabled);
         Assert.IsTrue(enabled.IsCustomized, "Secondary monitor should have an independent band layout.");
-        CollectionAssert.AreEqual(primaryStart.ToArray(), enabled.StartBands!.ToArray());
-        CollectionAssert.AreEqual(primaryCenter.ToArray(), enabled.CenterBands!.ToArray());
-        CollectionAssert.AreEqual(primaryEnd.ToArray(), enabled.EndBands!.ToArray());
+        Assert.AreSequenceEqual(primaryStart.ToArray(), enabled.StartBands!.ToArray());
+        Assert.AreSequenceEqual(primaryCenter.ToArray(), enabled.CenterBands!.ToArray());
+        Assert.AreSequenceEqual(primaryEnd.ToArray(), enabled.EndBands!.ToArray());
     }
 
     [TestMethod]
@@ -490,9 +491,9 @@ public class DockMultiMonitorTests
 
         var enabled = dockSettings.EnableMonitor(secondary);
 
-        CollectionAssert.AreEqual(globalStart.ToArray(), enabled.StartBands!.ToArray());
-        CollectionAssert.AreEqual(globalCenter.ToArray(), enabled.CenterBands!.ToArray());
-        CollectionAssert.AreEqual(globalEnd.ToArray(), enabled.EndBands!.ToArray());
+        Assert.AreSequenceEqual(globalStart.ToArray(), enabled.StartBands!.ToArray());
+        Assert.AreSequenceEqual(globalCenter.ToArray(), enabled.CenterBands!.ToArray());
+        Assert.AreSequenceEqual(globalEnd.ToArray(), enabled.EndBands!.ToArray());
     }
 
     [TestMethod]
@@ -533,7 +534,7 @@ public class DockMultiMonitorTests
 
         var enabled = dockSettings.EnableMonitor(secondary);
 
-        CollectionAssert.AreEqual(globalStart.ToArray(), enabled.StartBands!.ToArray());
+        Assert.AreSequenceEqual(globalStart.ToArray(), enabled.StartBands!.ToArray());
     }
 
     [TestMethod]
@@ -560,7 +561,7 @@ public class DockMultiMonitorTests
         var secondary = mockSettings.Object.Settings.DockSettings.MonitorConfigs[1];
         Assert.IsTrue(secondary.Enabled);
         Assert.IsTrue(vm.IsCustomized);
-        CollectionAssert.AreEqual(primaryBands.ToArray(), secondary.StartBands!.ToArray());
+        Assert.AreSequenceEqual(primaryBands.ToArray(), secondary.StartBands!.ToArray());
     }
 
     [TestMethod]
@@ -574,7 +575,7 @@ public class DockMultiMonitorTests
 
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
-        Assert.AreEqual(1, result.Count);
+        Assert.HasCount(1, result);
         Assert.AreEqual(PrimaryMonitor.StableId, result[0].MonitorDeviceId);
         Assert.IsTrue(result[0].IsPrimary);
     }
@@ -601,7 +602,7 @@ public class DockMultiMonitorTests
 
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
-        Assert.AreEqual(3, result.Count);
+        Assert.HasCount(3, result);
         var newConfig = result.FirstOrDefault(c => c.MonitorDeviceId == SecondaryMonitor.StableId);
         var retainedConfig = result.FirstOrDefault(c => c.MonitorDeviceId.Contains("STALE", StringComparison.OrdinalIgnoreCase));
         Assert.IsNotNull(newConfig);
@@ -638,10 +639,10 @@ public class DockMultiMonitorTests
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
         // Both new secondary monitors get fresh configs; the stale one is retained for reconnection.
-        Assert.AreEqual(4, result.Count);
-        Assert.IsTrue(result.Any(c => c.MonitorDeviceId == SecondaryMonitor.StableId));
-        Assert.IsTrue(result.Any(c => c.MonitorDeviceId == thirdMonitor.StableId));
-        Assert.IsTrue(result.Any(c => c.MonitorDeviceId == @"\\?\DISPLAY#STALE#4&eee&0&UID333#{guidStale}"));
+        Assert.HasCount(4, result);
+        Assert.Contains(c => c.MonitorDeviceId == SecondaryMonitor.StableId, result);
+        Assert.Contains(c => c.MonitorDeviceId == thirdMonitor.StableId, result);
+        Assert.Contains(c => c.MonitorDeviceId == @"\\?\DISPLAY#STALE#4&eee&0&UID333#{guidStale}", result);
     }
 
     [TestMethod]
@@ -668,7 +669,7 @@ public class DockMultiMonitorTests
 
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
-        Assert.AreEqual(3, result.Count);
+        Assert.HasCount(3, result);
         var retainedConfig = result.FirstOrDefault(c => c.MonitorDeviceId == SecondaryMonitor.StableId);
         var fallbackConfig = result.FirstOrDefault(c => c.MonitorDeviceId == degradedSecondary.StableId);
         Assert.IsNotNull(retainedConfig, "The existing stable-ID config should remain available.");
@@ -705,7 +706,7 @@ public class DockMultiMonitorTests
         Assert.AreEqual(config.IsPrimary, deserialized.IsPrimary);
         Assert.AreEqual(config.IsCustomized, deserialized.IsCustomized);
         Assert.IsNotNull(deserialized.StartBands);
-        Assert.AreEqual(1, deserialized.StartBands!.Count);
+        Assert.HasCount(1, deserialized.StartBands);
         Assert.AreEqual("c1", deserialized.StartBands![0].CommandId);
     }
 
@@ -733,7 +734,7 @@ public class DockMultiMonitorTests
 
         Assert.IsNotNull(deserialized);
         Assert.IsTrue(deserialized!.AutoHide);
-        Assert.AreEqual(2, deserialized.MonitorConfigs.Count);
+        Assert.HasCount(2, deserialized.MonitorConfigs);
     }
 
     [TestMethod]
@@ -770,7 +771,7 @@ public class DockMultiMonitorTests
         var deserialized = JsonSerializer.Deserialize(json, JsonSerializationContext.Default.DockSettings);
 
         Assert.IsNotNull(deserialized);
-        Assert.AreEqual(2, deserialized.MonitorConfigs.Count);
+        Assert.HasCount(2, deserialized.MonitorConfigs);
         Assert.AreEqual(@"\\.\DISPLAY1", deserialized.MonitorConfigs[0].MonitorDeviceId);
         Assert.IsTrue(deserialized.MonitorConfigs[0].Enabled);
         Assert.AreEqual(@"\\.\DISPLAY2", deserialized.MonitorConfigs[1].MonitorDeviceId);
@@ -998,7 +999,7 @@ public class DockMultiMonitorTests
 
         var reconciled = MonitorConfigReconciler.Reconcile(emptyConfigs, monitors);
 
-        Assert.AreEqual(3, reconciled.Count, "Should create configs for all 3 monitors");
+        Assert.HasCount(3, reconciled, "Should create configs for all 3 monitors");
 
         // Only the primary monitor should be enabled by default
         foreach (var config in reconciled)
@@ -1045,7 +1046,7 @@ public class DockMultiMonitorTests
 
         var reconciled = MonitorConfigReconciler.Reconcile(null, monitors);
 
-        Assert.AreEqual(2, reconciled.Count, "Should create configs for all monitors even when existing configs is null");
+        Assert.HasCount(2, reconciled, "Should create configs for all monitors even when existing configs is null");
 
         var primaryConfig = reconciled.Find(c => c.IsPrimary);
         Assert.IsNotNull(primaryConfig, "Primary config should be created");
@@ -1083,14 +1084,14 @@ public class DockMultiMonitorTests
         var onlyPrimary = new List<MonitorInfo> { PrimaryMonitor };
         var afterDisconnect = MonitorConfigReconciler.Reconcile(configs, onlyPrimary, now);
 
-        Assert.AreEqual(2, afterDisconnect.Count, "Disconnected monitor config should be retained");
+        Assert.HasCount(2, afterDisconnect, "Disconnected monitor config should be retained");
 
         // Step 3: Reconnect the same secondary monitor under a new GDI name.
         var reconnectedSecondary = SecondaryMonitor with { DeviceId = @"\\.\DISPLAY3" };
         var bothMonitors = new List<MonitorInfo> { PrimaryMonitor, reconnectedSecondary };
         var afterReconnect = MonitorConfigReconciler.Reconcile(afterDisconnect, bothMonitors, now);
 
-        Assert.AreEqual(2, afterReconnect.Count, "A new GDI name should not create another monitor config");
+        Assert.HasCount(2, afterReconnect, "A new GDI name should not create another monitor config");
 
         // Verify customizations survived the round-trip
         var secondaryConfig = afterReconnect.Find(c =>
@@ -1120,7 +1121,7 @@ public class DockMultiMonitorTests
         var result = MonitorConfigReconciler.Reconcile(configs, monitors, now);
 
         // Primary is matched, RECENT is retained (< 6 months), STALE is pruned (> 6 months)
-        Assert.AreEqual(2, result.Count, "Should have matched primary + recently-seen disconnected config");
+        Assert.HasCount(2, result, "Should have matched primary + recently-seen disconnected config");
         Assert.AreEqual(PrimaryMonitor.StableId, result[0].MonitorDeviceId);
         Assert.AreEqual(@"\\?\DISPLAY#RECENT#4&rrr&0&UID555#{guidRecent}", result[1].MonitorDeviceId, "Recently-seen config should be retained");
     }
@@ -1138,7 +1139,7 @@ public class DockMultiMonitorTests
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
         // Legacy config (null LastSeen) should be treated as fresh and retained
-        Assert.AreEqual(2, result.Count, "Legacy config without LastSeen should be retained");
+        Assert.HasCount(2, result, "Legacy config without LastSeen should be retained");
         Assert.AreEqual(@"\\?\DISPLAY#LEGACY#4&lll&0&UID666#{guidLegacy}", result[1].MonitorDeviceId);
     }
 
@@ -1155,7 +1156,7 @@ public class DockMultiMonitorTests
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
         // Legacy migration should detect GDI-style names and rewrite to stable IDs
-        Assert.AreEqual(2, result.Count);
+        Assert.HasCount(2, result);
         Assert.AreEqual(PrimaryMonitor.StableId, result[0].MonitorDeviceId, "Primary should be migrated to stable ID");
         Assert.AreEqual(SecondaryMonitor.StableId, result[1].MonitorDeviceId, "Secondary should be migrated to stable ID");
         Assert.AreEqual(DockSide.Left, result[0].Side, "Side override should survive migration");
@@ -1190,12 +1191,12 @@ public class DockMultiMonitorTests
 
         // Direct read through getter should be non-null
         Assert.IsNotNull(deserialized.MonitorConfigs, "MonitorConfigs should never be null after deserialization");
-        Assert.AreEqual(0, deserialized.MonitorConfigs.Count);
+        Assert.IsEmpty(deserialized.MonitorConfigs);
 
         // Crucially: a `with` clone must also have non-null MonitorConfigs
         var clone = deserialized with { ShowLabels = false };
         Assert.IsNotNull(clone.MonitorConfigs, "MonitorConfigs should survive record 'with' expression");
-        Assert.AreEqual(0, clone.MonitorConfigs.Count);
+        Assert.IsEmpty(clone.MonitorConfigs);
 
         // Double-clone to be thorough
         var clone2 = clone with { Side = DockSide.Left };

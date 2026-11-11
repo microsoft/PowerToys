@@ -11,6 +11,7 @@ namespace PowerDisplay.UnitTests;
 /// <summary>
 /// Unit tests for MccsCapabilitiesParser class.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class MccsCapabilitiesParserTests
 {
@@ -42,7 +43,7 @@ public class MccsCapabilitiesParserTests
         // Assert
         Assert.IsNotNull(result);
         Assert.IsNotNull(result.Capabilities);
-        Assert.AreEqual(0, result.Capabilities.SupportedVcpCodes.Count);
+        Assert.IsEmpty(result.Capabilities.SupportedVcpCodes);
         Assert.IsFalse(result.HasErrors);
     }
 
@@ -54,7 +55,7 @@ public class MccsCapabilitiesParserTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(0, result.Capabilities.SupportedVcpCodes.Count);
+        Assert.IsEmpty(result.Capabilities.SupportedVcpCodes);
     }
 
     [TestMethod]
@@ -65,7 +66,7 @@ public class MccsCapabilitiesParserTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(0, result.Capabilities.SupportedVcpCodes.Count);
+        Assert.IsEmpty(result.Capabilities.SupportedVcpCodes);
     }
 
     [TestMethod]
@@ -117,14 +118,14 @@ public class MccsCapabilitiesParserTests
         // Assert
         var cmds = result.Capabilities.SupportedCommands;
         Assert.IsNotNull(cmds);
-        Assert.AreEqual(7, cmds.Count);
-        CollectionAssert.Contains(cmds, (byte)0x01);
-        CollectionAssert.Contains(cmds, (byte)0x02);
-        CollectionAssert.Contains(cmds, (byte)0x03);
-        CollectionAssert.Contains(cmds, (byte)0x07);
-        CollectionAssert.Contains(cmds, (byte)0x0C);
-        CollectionAssert.Contains(cmds, (byte)0xE3);
-        CollectionAssert.Contains(cmds, (byte)0xF3);
+        Assert.HasCount(7, cmds);
+        Assert.Contains((byte)0x01, cmds);
+        Assert.Contains((byte)0x02, cmds);
+        Assert.Contains((byte)0x03, cmds);
+        Assert.Contains((byte)0x07, cmds);
+        Assert.Contains((byte)0x0C, cmds);
+        Assert.Contains((byte)0xE3, cmds);
+        Assert.Contains((byte)0xF3, cmds);
     }
 
     [TestMethod]
@@ -165,14 +166,14 @@ public class MccsCapabilitiesParserTests
 
         // Should have values: 01 03 04 0C 0F 11 12
         var values = inputSourceInfo.Value.SupportedValues;
-        Assert.AreEqual(7, values.Count);
-        Assert.IsTrue(values.Contains(0x01));
-        Assert.IsTrue(values.Contains(0x03));
-        Assert.IsTrue(values.Contains(0x04));
-        Assert.IsTrue(values.Contains(0x0C));
-        Assert.IsTrue(values.Contains(0x0F));
-        Assert.IsTrue(values.Contains(0x11));
-        Assert.IsTrue(values.Contains(0x12));
+        Assert.HasCount(7, values);
+        Assert.Contains(0x01, values);
+        Assert.Contains(0x03, values);
+        Assert.Contains(0x04, values);
+        Assert.Contains(0x0C, values);
+        Assert.Contains(0x0F, values);
+        Assert.Contains(0x11, values);
+        Assert.Contains(0x12, values);
     }
 
     [TestMethod]
@@ -189,12 +190,12 @@ public class MccsCapabilitiesParserTests
 
         // Should have values: 01 05 08 0B 0C
         var values = colorPresetInfo.Value.SupportedValues;
-        Assert.AreEqual(5, values.Count);
-        Assert.IsTrue(values.Contains(0x01));
-        Assert.IsTrue(values.Contains(0x05));
-        Assert.IsTrue(values.Contains(0x08));
-        Assert.IsTrue(values.Contains(0x0B));
-        Assert.IsTrue(values.Contains(0x0C));
+        Assert.HasCount(5, values);
+        Assert.Contains(0x01, values);
+        Assert.Contains(0x05, values);
+        Assert.Contains(0x08, values);
+        Assert.Contains(0x0B, values);
+        Assert.Contains(0x0C, values);
     }
 
     [TestMethod]
@@ -211,10 +212,10 @@ public class MccsCapabilitiesParserTests
 
         // Should have values: 01 04 05
         var values = powerModeInfo.Value.SupportedValues;
-        Assert.AreEqual(3, values.Count);
-        Assert.IsTrue(values.Contains(0x01));
-        Assert.IsTrue(values.Contains(0x04));
-        Assert.IsTrue(values.Contains(0x05));
+        Assert.HasCount(3, values);
+        Assert.Contains(0x01, values);
+        Assert.Contains(0x04, values);
+        Assert.Contains(0x05, values);
     }
 
     [TestMethod]
@@ -224,7 +225,7 @@ public class MccsCapabilitiesParserTests
         var result = MccsCapabilitiesParser.Parse(DellU3011Capabilities);
 
         // Assert - VCP codes: 02 04 05 06 08 10 12 14 16 18 1A 52 60 AC AE B2 B6 C6 C8 C9 D6 DC DF FD
-        Assert.AreEqual(24, result.Capabilities.SupportedVcpCodes.Count);
+        Assert.HasCount(24, result.Capabilities.SupportedVcpCodes);
     }
 
     [TestMethod]
@@ -269,10 +270,10 @@ public class MccsCapabilitiesParserTests
         Assert.IsNotNull(inputSourceInfo);
 
         var values = inputSourceInfo.Value.SupportedValues;
-        Assert.AreEqual(3, values.Count);
-        Assert.IsTrue(values.Contains(0x01));
-        Assert.IsTrue(values.Contains(0x11));
-        Assert.IsTrue(values.Contains(0x0F));
+        Assert.HasCount(3, values);
+        Assert.Contains(0x01, values);
+        Assert.Contains(0x11, values);
+        Assert.Contains(0x0F, values);
     }
 
     [TestMethod]
@@ -287,7 +288,7 @@ public class MccsCapabilitiesParserTests
         Assert.IsNotNull(e2Info);
 
         var values = e2Info.Value.SupportedValues;
-        Assert.AreEqual(8, values.Count);
+        Assert.HasCount(8, values);
     }
 
     [TestMethod]
@@ -313,11 +314,11 @@ public class MccsCapabilitiesParserTests
 
         // Assert
         var cmds = result.Capabilities.SupportedCommands;
-        Assert.AreEqual(4, cmds.Count);
-        CollectionAssert.Contains(cmds, (byte)0x01);
-        CollectionAssert.Contains(cmds, (byte)0x02);
-        CollectionAssert.Contains(cmds, (byte)0x03);
-        CollectionAssert.Contains(cmds, (byte)0x07);
+        Assert.HasCount(4, cmds);
+        Assert.Contains((byte)0x01, cmds);
+        Assert.Contains((byte)0x02, cmds);
+        Assert.Contains((byte)0x03, cmds);
+        Assert.Contains((byte)0x07, cmds);
 
         // VCP codes without spaces
         Assert.IsTrue(result.Capabilities.SupportsVcpCode(0x10));
@@ -338,7 +339,7 @@ public class MccsCapabilitiesParserTests
         Assert.IsTrue(result.Capabilities.SupportsVcpCode(0x14));
         var vcpInfo = result.Capabilities.GetVcpCodeInfo(0x14);
         Assert.IsNotNull(vcpInfo);
-        Assert.AreEqual(3, vcpInfo.Value.SupportedValues.Count);
+        Assert.HasCount(3, vcpInfo.Value.SupportedValues);
     }
 
     [TestMethod]
@@ -351,7 +352,7 @@ public class MccsCapabilitiesParserTests
         var result = MccsCapabilitiesParser.Parse(input);
 
         // Assert
-        Assert.AreEqual(5, result.Capabilities.SupportedVcpCodes.Count);
+        Assert.HasCount(5, result.Capabilities.SupportedVcpCodes);
 
         // Continuous codes (no discrete values)
         var brightness = result.Capabilities.GetVcpCodeInfo(0x10);
@@ -397,7 +398,7 @@ public class MccsCapabilitiesParserTests
         // Assert
         Assert.AreEqual("monitor", result.Capabilities.Protocol);
         Assert.AreEqual("lcd", result.Capabilities.Type);
-        Assert.AreEqual(3, result.Capabilities.SupportedVcpCodes.Count);
+        Assert.HasCount(3, result.Capabilities.SupportedVcpCodes);
     }
 
     [TestMethod]
@@ -410,8 +411,8 @@ public class MccsCapabilitiesParserTests
         var result = MccsCapabilitiesParser.Parse(input);
 
         // Assert
-        CollectionAssert.Contains(result.Capabilities.SupportedCommands, (byte)0xE3);
-        CollectionAssert.Contains(result.Capabilities.SupportedCommands, (byte)0xF3);
+        Assert.Contains((byte)0xE3, result.Capabilities.SupportedCommands);
+        Assert.Contains((byte)0xF3, result.Capabilities.SupportedCommands);
         Assert.IsTrue(result.Capabilities.SupportsVcpCode(0xAC));
         Assert.IsTrue(result.Capabilities.SupportsVcpCode(0xAE));
     }
@@ -462,7 +463,7 @@ public class MccsCapabilitiesParserTests
         Assert.IsTrue(result.Capabilities.SupportsVcpCode(0x10));
         Assert.IsTrue(result.Capabilities.SupportsVcpCode(0x12));
         Assert.IsTrue(result.Capabilities.SupportsVcpCode(0x14));
-        Assert.AreEqual(3, result.Capabilities.SupportedVcpCodes.Count);
+        Assert.HasCount(3, result.Capabilities.SupportedVcpCodes);
     }
 
     [TestMethod]
@@ -475,7 +476,7 @@ public class MccsCapabilitiesParserTests
         var result = MccsCapabilitiesParser.Parse(input);
 
         // Assert - Should only have 10 and 12
-        Assert.AreEqual(2, result.Capabilities.SupportedVcpCodes.Count);
+        Assert.HasCount(2, result.Capabilities.SupportedVcpCodes);
         Assert.IsTrue(result.Capabilities.SupportsVcpCode(0x10));
         Assert.IsTrue(result.Capabilities.SupportsVcpCode(0x12));
     }
@@ -490,7 +491,7 @@ public class MccsCapabilitiesParserTests
         var hexStrings = result.Capabilities.GetVcpCodesAsHexStrings();
 
         // Assert - Should be sorted
-        Assert.AreEqual(4, hexStrings.Count);
+        Assert.HasCount(4, hexStrings);
         Assert.AreEqual("0x10", hexStrings[0]);
         Assert.AreEqual("0x12", hexStrings[1]);
         Assert.AreEqual("0x14", hexStrings[2]);
@@ -544,10 +545,10 @@ public class MccsCapabilitiesParserTests
 
         // Assert
         Assert.IsNotNull(values);
-        Assert.AreEqual(3, values.Count);
-        Assert.IsTrue(values.Contains(0x01));
-        Assert.IsTrue(values.Contains(0x11));
-        Assert.IsTrue(values.Contains(0x0F));
+        Assert.HasCount(3, values);
+        Assert.Contains(0x01, values);
+        Assert.Contains(0x11, values);
+        Assert.Contains(0x0F, values);
     }
 
     [TestMethod]
@@ -592,7 +593,7 @@ public class MccsCapabilitiesParserTests
 
         // Assert
         Assert.IsTrue(result.Capabilities.HasWindowSupport);
-        Assert.AreEqual(1, result.Capabilities.Windows.Count);
+        Assert.HasCount(1, result.Capabilities.Windows);
 
         var window = result.Capabilities.Windows[0];
         Assert.AreEqual(1, window.WindowNumber);
@@ -619,7 +620,7 @@ public class MccsCapabilitiesParserTests
 
         // Assert
         Assert.IsTrue(result.Capabilities.HasWindowSupport);
-        Assert.AreEqual(2, result.Capabilities.Windows.Count);
+        Assert.HasCount(2, result.Capabilities.Windows);
 
         var window1 = result.Capabilities.Windows[0];
         Assert.AreEqual(1, window1.WindowNumber);
@@ -645,7 +646,7 @@ public class MccsCapabilitiesParserTests
 
         // Assert
         Assert.IsTrue(result.Capabilities.HasWindowSupport);
-        Assert.AreEqual(1, result.Capabilities.Windows.Count);
+        Assert.HasCount(1, result.Capabilities.Windows);
 
         var window = result.Capabilities.Windows[0];
         Assert.AreEqual(1, window.WindowNumber);
@@ -670,7 +671,7 @@ public class MccsCapabilitiesParserTests
 
         // Assert
         Assert.IsTrue(result.Capabilities.HasWindowSupport);
-        Assert.AreEqual(1, result.Capabilities.Windows.Count);
+        Assert.HasCount(1, result.Capabilities.Windows);
         Assert.AreEqual("PBP", result.Capabilities.Windows[0].Type);
     }
 
@@ -685,7 +686,7 @@ public class MccsCapabilitiesParserTests
 
         // Assert
         Assert.IsFalse(result.Capabilities.HasWindowSupport);
-        Assert.AreEqual(0, result.Capabilities.Windows.Count);
+        Assert.IsEmpty(result.Capabilities.Windows);
     }
 
     [TestMethod]

@@ -61,6 +61,7 @@ namespace AdvancedPaste.UITests;
 [DoNotParallelize]
 [TestCategory("AdvancedPaste")]
 [TestCategory("DestructiveClipboardHistory")]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
 {
     private const string HistoryQuarantineReason = "Temporary CI quarantine: Windows 11 history capture stays empty despite an enabled, running broker. See the class comment for Win+V evidence and re-enable criteria.";
@@ -110,14 +111,15 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
                     items => items.Select(item => item.Id).Order(StringComparer.Ordinal).SequenceEqual(expectedIds.Order(StringComparer.Ordinal)),
                     "Selecting an existing entry did not preserve the exact Windows clipboard-history IDs.");
 
-                CollectionAssert.AreEquivalent(
+                Assert.AreSequenceEqual(
                     expectedIds,
                     after.Select(item => item.Id).ToArray(),
+                    SequenceOrder.InAnyOrder,
                     "Selecting an existing history entry created or removed a Windows history item.");
                 var selected = after.Single(item => item.Id == second.Id);
                 Assert.AreEqual(
                     second.Content,
-                    await selected.Content.GetTextAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(10)),
+                    await selected.Content.GetTextAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken),
                     "The selected Windows history ID no longer refers to its original test content.");
                 FindHistoryItem(history, second.Content);
                 Assert.AreEqual(second.Content, ReadClipboardText(), "The selected history item did not remain the current clipboard content.");
@@ -160,9 +162,10 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
                 var after = await WaitForHistoryAsync(
                     items => items.All(item => item.Id != victim.Id),
                     "The entry disappeared from Advanced Paste but its exact ID remained in Windows clipboard history.");
-                CollectionAssert.AreEquivalent(
+                Assert.AreSequenceEqual(
                     expectedIds,
                     after.Select(item => item.Id).ToArray(),
+                    SequenceOrder.InAnyOrder,
                     "Deleting one Advanced Paste history item also removed or created another Windows history item.");
                 WaitUntil(
                     () => HistoryItems(history, victim.Content).Length == 0,
@@ -246,8 +249,9 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
                 var after = await WaitForHistoryAsync(
                     items => items.Count == 1 && items[0].Id == fresh.Id,
                     "The new fixture did not become the only item after clearing full history.");
-                Assert.IsFalse(
-                    after.Any(item => previousIds.Contains(item.Id)),
+                Assert.DoesNotContain(
+                    item => previousIds.Contains(item.Id),
+                    after,
                     "An entry from the cleared history reappeared in the new baseline.");
             });
     }
@@ -265,7 +269,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
                 {
                     var fixture = await CopyHistoryFixtureAsync($"enable-cycle-{cycle}");
                     var items = await ReadHistoryAsync();
-                    Assert.IsTrue(items.Any(item => item.Id == fixture.Id), "The enabled Windows history did not retain the copied fixture.");
+                    Assert.Contains(item => item.Id == fixture.Id, items, "The enabled Windows history did not retain the copied fixture.");
                     SetWindowsHistoryEnabled(false);
                     Assert.IsFalse(WinClipboard.IsHistoryEnabled(), "Windows history remained enabled after the OS Settings toggle was disabled.");
                     SetWindowsHistoryEnabled(true);
@@ -412,7 +416,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
                 var close = AdvancedPasteUi.Nodes(tree).Where(node =>
                     AdvancedPasteUi.Property(node, "type") == "Button" &&
                     AdvancedPasteUi.Property(node, "automationId") is "TEMPLATE_PART_CloseButton" or "CloseButton").ToArray();
-                Assert.IsTrue(close.Length <= 1, "The native Win+V panel exposed ambiguous Close buttons.");
+                Assert.IsLessThanOrEqualTo(1, close.Length, "The native Win+V panel exposed ambiguous Close buttons.");
                 if (close.Length == 1)
                 {
                     var width = close[0].GetProperty("width").GetInt32();
@@ -834,7 +838,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
                 var restoredValue = restored.GetValue(ClipboardRegistryValue, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
                 if (Value is Array expected && restoredValue is Array actual)
                 {
-                    CollectionAssert.AreEqual(expected, actual, "The original clipboard-history registry value was not restored.");
+                    Assert.AreSequenceEqual(expected, actual, "The original clipboard-history registry value was not restored.");
                 }
                 else
                 {

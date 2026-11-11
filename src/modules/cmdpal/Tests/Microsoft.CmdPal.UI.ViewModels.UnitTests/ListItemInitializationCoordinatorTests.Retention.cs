@@ -15,10 +15,11 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 public sealed partial class ListItemInitializationCoordinatorTests
 {
-    [DataTestMethod]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = false)]
     public void CompletedCoordinatorReleasesItemSnapshot(bool stopBeforeRun)
     {
         var order = new ConcurrentQueue<int>();
@@ -33,15 +34,15 @@ public sealed partial class ListItemInitializationCoordinatorTests
         coordinator.Run(CancellationToken.None);
 
         Assert.IsTrue(coordinator.Completion.IsCompletedSuccessfully);
-        Assert.AreEqual(stopBeforeRun ? 0 : 4, order.Count);
+        Assert.HasCount(stopBeforeRun ? 0 : 4, order);
         Assert.IsFalse(IsSnapshotAliveAfterCollection(snapshot), "A completed coordinator must release its item snapshot.");
         GC.KeepAlive(coordinator);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task InterruptedWorkerReleasesItemSnapshotAfterReturning(bool cancel)
     {
         using var firstStarted = new ManualResetEventSlim();
@@ -49,11 +50,11 @@ public sealed partial class ListItemInitializationCoordinatorTests
         using var cancellation = new CancellationTokenSource();
         var order = new ConcurrentQueue<int>();
         var coordinator = CreateCoordinatorWithSnapshot(order, out var snapshot, firstStarted, continueFirst);
-        var worker = Task.Run(() => coordinator.Run(cancellation.Token));
+        var worker = Task.Run(() => coordinator.Run(cancellation.Token), TestContext.CancellationToken);
 
         try
         {
-            Assert.IsTrue(firstStarted.Wait(TimeSpan.FromSeconds(2)));
+            Assert.IsTrue(firstStarted.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
             if (cancel)
             {
                 cancellation.Cancel();
@@ -67,26 +68,27 @@ public sealed partial class ListItemInitializationCoordinatorTests
             Assert.IsTrue(IsSnapshotAliveAfterCollection(snapshot), "The running worker still owns its snapshot.");
 
             continueFirst.Set();
-            await worker.WaitAsync(TimeSpan.FromSeconds(2));
+            await worker.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
 
             Assert.IsTrue(coordinator.Completion.IsCompletedSuccessfully);
-            Assert.AreEqual(1, order.Count);
+            Assert.HasCount(1, order);
             Assert.IsFalse(IsSnapshotAliveAfterCollection(snapshot), "The snapshot must be released after the worker returns.");
         }
         finally
         {
             continueFirst.Set();
             coordinator.Stop();
-            await worker.WaitAsync(TimeSpan.FromSeconds(2));
+            await worker.WaitAsync(TimeSpan.FromSeconds(2), System.Threading.CancellationToken.None);
         }
 
         GC.KeepAlive(coordinator);
     }
 
-    [DataTestMethod]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = false)]
     public void ReleasedDemandStorageStaysBoundedWithoutWorkerProgress(bool stopped)
     {
         var (_, items) = CreateItems(4, new ConcurrentQueue<int>());
@@ -99,8 +101,8 @@ public sealed partial class ListItemInitializationCoordinatorTests
         try
         {
             AddReleasedRealizations(items[3], 5000);
-            Assert.IsTrue(GetRetainedDemandNodes(items[3]).Length <= 1, "An idle item must not retain its realization history.");
-            Assert.IsTrue(GetIncomingDemandNodes(coordinator).Length <= 1, "An idle coordinator must not retain released requests.");
+            Assert.IsLessThanOrEqualTo(1, GetRetainedDemandNodes(items[3]).Length, "An idle item must not retain its realization history.");
+            Assert.IsLessThanOrEqualTo(1, GetIncomingDemandNodes(coordinator).Length, "An idle coordinator must not retain released requests.");
         }
         finally
         {
@@ -112,8 +114,9 @@ public sealed partial class ListItemInitializationCoordinatorTests
         }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = false)]
     public void PruningReleasedDemandsPreservesLiveRequestsAndFifoOrder()
     {
         var order = new ConcurrentQueue<int>();
@@ -127,14 +130,14 @@ public sealed partial class ListItemInitializationCoordinatorTests
 
         try
         {
-            Assert.IsTrue(GetRetainedDemandNodes(items[3]).Length <= 2);
-            Assert.AreEqual(3, GetIncomingDemandNodes(coordinator).Length, "Only the three live requests should remain queued.");
+            Assert.IsLessThanOrEqualTo(2, GetRetainedDemandNodes(items[3]).Length);
+            Assert.HasCount(3, GetIncomingDemandNodes(coordinator), "Only the three live requests should remain queued.");
             Assert.IsTrue(first.IsValid);
             Assert.IsTrue(second.IsValid);
             Assert.IsTrue(third.IsValid);
 
             coordinator.Run(CancellationToken.None);
-            CollectionAssert.AreEqual(BatchedPriorityOrder, order.ToArray());
+            Assert.AreSequenceEqual(BatchedPriorityOrder, order.ToArray());
         }
         finally
         {
@@ -146,7 +149,7 @@ public sealed partial class ListItemInitializationCoordinatorTests
     }
 
     [TestMethod]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task ReleasedDemandStorageStaysBoundedWhileExtensionGetterIsBlocked()
     {
         using var firstStarted = new ManualResetEventSlim();
@@ -154,32 +157,32 @@ public sealed partial class ListItemInitializationCoordinatorTests
         var order = new ConcurrentQueue<int>();
         var (_, items) = CreateItems(4, order, firstStarted, continueFirst);
         var coordinator = new ListItemInitializationCoordinator(items);
-        var worker = Task.Run(() => coordinator.Run(CancellationToken.None));
+        var worker = Task.Run(() => coordinator.Run(CancellationToken.None), TestContext.CancellationToken);
         ListItemRealizationRegistration visible = default;
 
         try
         {
-            Assert.IsTrue(firstStarted.Wait(TimeSpan.FromSeconds(2)));
+            Assert.IsTrue(firstStarted.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
             visible = items[3].BeginRealization();
             AddReleasedRealizations(items[3], 5000);
-            Assert.IsTrue(GetRetainedDemandNodes(items[3]).Length <= 2);
-            Assert.IsTrue(GetIncomingDemandNodes(coordinator).Length <= 2);
+            Assert.IsLessThanOrEqualTo(2, GetRetainedDemandNodes(items[3]).Length);
+            Assert.IsLessThanOrEqualTo(2, GetIncomingDemandNodes(coordinator).Length);
 
             continueFirst.Set();
-            await worker.WaitAsync(TimeSpan.FromSeconds(2));
-            CollectionAssert.AreEqual(RealizedPriorityOrder, order.ToArray());
+            await worker.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
+            Assert.AreSequenceEqual(RealizedPriorityOrder, order.ToArray());
         }
         finally
         {
             visible.Release();
             continueFirst.Set();
             coordinator.Stop();
-            await worker.WaitAsync(TimeSpan.FromSeconds(2));
+            await worker.WaitAsync(TimeSpan.FromSeconds(2), System.Threading.CancellationToken.None);
         }
     }
 
     [TestMethod]
-    [Timeout(30000)]
+    [Timeout(30000, CooperativeCancellation = true)]
     public async Task ConcurrentPruningAndDequeuePreservePublishedOrder()
     {
         const int liveCount = 128;
@@ -196,25 +199,29 @@ public sealed partial class ListItemInitializationCoordinatorTests
             }
 
             using var start = new Barrier(2);
-            var producer = Task.Run(() =>
+            var producer = Task.Run(
+                () =>
             {
-                Assert.IsTrue(start.SignalAndWait(TimeSpan.FromSeconds(5)));
+                Assert.IsTrue(start.SignalAndWait(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
                 AddReleasedRealizations(items[liveCount + 1], 5000);
-            });
-            var worker = Task.Run(() =>
+            },
+                TestContext.CancellationToken);
+            var worker = Task.Run(
+                () =>
             {
-                Assert.IsTrue(start.SignalAndWait(TimeSpan.FromSeconds(5)));
+                Assert.IsTrue(start.SignalAndWait(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
                 coordinator.Run(CancellationToken.None);
-            });
+            },
+                TestContext.CancellationToken);
 
             try
             {
-                await Task.WhenAll(producer, worker).WaitAsync(TimeSpan.FromSeconds(10));
+                await Task.WhenAll(producer, worker).WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
                 // The churned item may be claimed before its registration is released.
                 // All earlier live requests must still precede speculation, in order.
                 var actual = order.Where(static index => index != liveCount + 1).ToArray();
-                CollectionAssert.AreEqual(expected, actual);
+                Assert.AreSequenceEqual(expected, actual);
             }
             finally
             {
@@ -224,7 +231,7 @@ public sealed partial class ListItemInitializationCoordinatorTests
                     registration.Release();
                 }
 
-                await Task.WhenAll(producer, worker).WaitAsync(TimeSpan.FromSeconds(10));
+                await Task.WhenAll(producer, worker).WaitAsync(TimeSpan.FromSeconds(10), System.Threading.CancellationToken.None);
             }
         }
     }

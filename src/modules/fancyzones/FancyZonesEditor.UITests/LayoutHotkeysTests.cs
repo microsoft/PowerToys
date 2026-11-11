@@ -19,6 +19,7 @@ using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class LayoutHotkeysTests : UITestBase
     {
@@ -207,7 +208,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             this.RestartScopeExe();
         }
 
-        [TestMethod("FancyZonesEditor.Basic.HotKey_Initialize")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.HotKey_Initialize")]
         [TestCategory("FancyZones Editor #11")]
         public void Initialize()
         {
@@ -233,26 +234,19 @@ namespace Microsoft.FancyZonesEditor.UITests
                 var popup = Session.Find<Element>(By.ClassName(ClassName.Popup));
                 Assert.IsNotNull(popup, "Hotkey combo box wasn't opened");
 
-                try
-                {
-                    popup.Find<Element>(expected); // the current value should be available
+                Assert.IsNotNull(popup.Find<Element>(expected), "The current hotkey should be available.");
 
-                    // 0 and 1 are assigned, all others should be available
-                    for (int i = 2; i < 10; i++)
-                    {
-                        popup.Find<Element>($"{i}");
-                    }
-                }
-                catch
+                // 0 and 1 are assigned, all others should be available
+                for (int i = 2; i < 10; i++)
                 {
-                    Assert.Fail("Hotkey is missed");
+                    Assert.IsNotNull(popup.Find<Element>($"{i}"), $"Hotkey {i} is missing.");
                 }
 
                 Session.Find<Button>(ElementName.Cancel).DoubleClick();
             }
         }
 
-        [TestMethod("FancyZonesEditor.Basic.HotKey_Assign_Save")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.HotKey_Assign_Save")]
         [TestCategory("FancyZones Editor #11")]
         public void Assign_Save()
         {
@@ -275,7 +269,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.Find<Button>(ElementName.Save).Click();
             var hotkeys = new LayoutHotkeys();
             var actualData = hotkeys.Read(hotkeys.File);
-            Assert.IsTrue(actualData.LayoutHotkeys.Contains(new LayoutHotkeyWrapper { Key = int.Parse(key, CultureInfo.InvariantCulture), LayoutId = layout.Uuid }));
+            Assert.Contains(new LayoutHotkeyWrapper { Key = int.Parse(key, CultureInfo.InvariantCulture), LayoutId = layout.Uuid }, actualData.LayoutHotkeys);
 
             // verify the availability
             Session.Find<Element>(CustomLayouts.CustomLayouts[3].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
@@ -296,7 +290,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod("FancyZonesEditor.Basic.HotKey_Assign_Cancel")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.HotKey_Assign_Cancel")]
         [TestCategory("FancyZones Editor #11")]
         public void Assign_Cancel()
         {
@@ -326,17 +320,10 @@ namespace Microsoft.FancyZonesEditor.UITests
             hotkeyComboBox.Click();
             popup = Session.Find<Element>(By.ClassName(ClassName.Popup));
             Assert.IsNotNull(popup);
-            try
-            {
-                popup.Find<Element>($"{key}"); // verify the key is available
-            }
-            catch
-            {
-                Assert.Fail("The key is not available for other layouts.");
-            }
+            Assert.IsNotNull(popup.Find<Element>($"{key}"), "The key is not available for other layouts.");
         }
 
-        [TestMethod("FancyZonesEditor.Basic.HotKey_Assign_AllPossibleValues")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.HotKey_Assign_AllPossibleValues")]
         [TestCategory("FancyZones Editor #11")]
         public void Assign_AllPossibleValues()
         {
@@ -383,7 +370,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod("FancyZonesEditor.Basic.HotKey_Reset_Save")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.HotKey_Reset_Save")]
         [TestCategory("FancyZones Editor #11")]
         public void Reset_Save()
         {
@@ -405,7 +392,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.Find<Button>(ElementName.Save).Click();
             var hotkeys = new LayoutHotkeys();
             var actualData = hotkeys.Read(hotkeys.File);
-            Assert.IsFalse(actualData.LayoutHotkeys.Contains(new LayoutHotkeyWrapper { Key = assignedKey, LayoutId = layout.Uuid }));
+            Assert.DoesNotContain(new LayoutHotkeyWrapper { Key = assignedKey, LayoutId = layout.Uuid }, actualData.LayoutHotkeys);
 
             // verify the previously assigned key is available
             Session.Find<Element>(CustomLayouts.CustomLayouts[3].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
@@ -414,17 +401,10 @@ namespace Microsoft.FancyZonesEditor.UITests
             hotkeyComboBox.Click();
             popup = Session.Find<Element>(By.ClassName(ClassName.Popup));
             Assert.IsNotNull(popup);
-            try
-            {
-                popup.Find<Element>($"{assignedKey}"); // verify the key is available
-            }
-            catch
-            {
-                Assert.Fail("The key is not available for other layouts.");
-            }
+            Assert.IsNotNull(popup.Find<Element>($"{assignedKey}"), "The key is not available for other layouts.");
         }
 
-        [TestMethod("FancyZonesEditor.Basic.HotKey_Reset_Cancel")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.HotKey_Reset_Cancel")]
         [TestCategory("FancyZones Editor #11")]
         public void Reset_Cancel()
         {
@@ -446,7 +426,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.Find<Button>(ElementName.Cancel).Click();
             var hotkeys = new LayoutHotkeys();
             var actualData = hotkeys.Read(hotkeys.File);
-            Assert.IsTrue(actualData.LayoutHotkeys.Contains(new LayoutHotkeyWrapper { Key = assignedKey, LayoutId = layout.Uuid }));
+            Assert.Contains(new LayoutHotkeyWrapper { Key = assignedKey, LayoutId = layout.Uuid }, actualData.LayoutHotkeys);
 
             // verify the previously assigned key is not available
             Session.Find<Element>(CustomLayouts.CustomLayouts[3].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();

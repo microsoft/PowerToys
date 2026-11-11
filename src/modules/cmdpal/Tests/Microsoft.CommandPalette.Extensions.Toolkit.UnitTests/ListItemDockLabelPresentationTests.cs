@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class ListItemDockLabelPresentationTests
 {
@@ -32,8 +33,8 @@ public partial class ListItemDockLabelPresentationTests
         Assert.IsFalse(properties.ContainsKey(WellKnownExtensionAttributes.DockLabelTabularDigits));
         Assert.IsTrue((bool)properties[WellKnownExtensionAttributes.DockLabelTrailingAlignment]);
 
-        Assert.AreEqual(3, notifications.Count);
-        CollectionAssert.AreEqual(
+        Assert.HasCount(3, notifications);
+        Assert.AreSequenceEqual(
             new[]
             {
                 WellKnownExtensionAttributes.DockLabelTabularDigitsPropertyName,
@@ -59,14 +60,14 @@ public partial class ListItemDockLabelPresentationTests
         item.SetDockLabelTabularDigits(false);
         item.SetDockLabelTrailingAlignment(false);
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[]
             {
                 WellKnownExtensionAttributes.DockLabelTabularDigitsPropertyName,
                 WellKnownExtensionAttributes.DockLabelTrailingAlignmentPropertyName,
             },
             notifications);
-        Assert.AreEqual(0, item.GetProperties().Count);
+        Assert.IsEmpty(item.GetProperties());
     }
 
     [TestMethod]
@@ -76,10 +77,10 @@ public partial class ListItemDockLabelPresentationTests
         var notifications = 0;
         item.PropChanged += (_, _) => notifications++;
 
-        Assert.ThrowsException<InvalidOperationException>(() => item.SetDockLabelTabularDigits());
-        Assert.ThrowsException<InvalidOperationException>(() => item.SetDockLabelTabularDigits(false));
-        Assert.ThrowsException<InvalidOperationException>(() => item.SetDockLabelTrailingAlignment());
-        Assert.ThrowsException<InvalidOperationException>(() => item.SetDockLabelTrailingAlignment(false));
+        Assert.ThrowsExactly<InvalidOperationException>(() => item.SetDockLabelTabularDigits());
+        Assert.ThrowsExactly<InvalidOperationException>(() => item.SetDockLabelTabularDigits(false));
+        Assert.ThrowsExactly<InvalidOperationException>(() => item.SetDockLabelTrailingAlignment());
+        Assert.ThrowsExactly<InvalidOperationException>(() => item.SetDockLabelTrailingAlignment(false));
 
         Assert.AreEqual(0, notifications);
     }

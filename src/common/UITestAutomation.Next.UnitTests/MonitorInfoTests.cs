@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class MonitorInfoTests
 {
     private const uint MonitorDefaultToNearest = 0x2;
@@ -86,8 +87,8 @@ public sealed class MonitorInfoTests
                 _ => throw new AssertFailedException("Monitor details should not be queried.")));
 
         Assert.IsFalse(monitorLookupCalled);
-        StringAssert.Contains(exception.Message, "invalid or destroyed");
-        StringAssert.Contains(exception.Message, "0x1234");
+        Assert.Contains("invalid or destroyed", exception.Message);
+        Assert.Contains("0x1234", exception.Message);
     }
 
     [TestMethod]
@@ -116,9 +117,9 @@ public sealed class MonitorInfoTests
                     1040,
                     true)));
 
-        Assert.AreEqual(0, windowChecks.Count);
-        StringAssert.Contains(exception.Message, "destroyed during");
-        StringAssert.Contains(exception.Message, "0x1234");
+        Assert.IsEmpty(windowChecks);
+        Assert.Contains("destroyed during", exception.Message);
+        Assert.Contains("0x1234", exception.Message);
     }
 
     [TestMethod]
@@ -131,7 +132,7 @@ public sealed class MonitorInfoTests
                 (_, _) => IntPtr.Zero,
                 _ => throw new AssertFailedException("Monitor details should not be queried.")));
 
-        StringAssert.Contains(exception.Message, "MonitorFromWindow failed");
-        StringAssert.Contains(exception.Message, "0x1234");
+        Assert.Contains("MonitorFromWindow failed", exception.Message);
+        Assert.Contains("0x1234", exception.Message);
     }
 }

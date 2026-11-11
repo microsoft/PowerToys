@@ -15,8 +15,7 @@ namespace Microsoft.PowerToys.UITest
     /// <summary>
     /// Base class that should be inherited by all Test Classes.
     /// </summary>
-    [TestClass]
-    public class UITestBase : IDisposable
+    public abstract class UITestBase : IDisposable
     {
         public required TestContext TestContext { get; set; }
 
@@ -40,7 +39,7 @@ namespace Microsoft.PowerToys.UITest
         private System.Threading.Timer? screenshotTimer;
         private ScreenRecording? screenRecording;
 
-        public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified, string[]? commandLineArgs = null)
+        protected UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified, string[]? commandLineArgs = null)
         {
             this.IsInPipeline = EnvironmentConfig.IsInPipeline;
             Console.WriteLine($"Running tests on platform: {EnvironmentConfig.Platform}");
@@ -132,7 +131,7 @@ namespace Microsoft.PowerToys.UITest
                     or UnitTestOutcome.Error
                     or UnitTestOutcome.Unknown)
                 {
-                    Task.Delay(1000).Wait();
+                    Task.Delay(1000, System.Threading.CancellationToken.None).Wait(System.Threading.CancellationToken.None);
                     AddScreenShotsToTestResultsDirectory();
                     AddRecordingsToTestResultsDirectory();
                     AddLogFilesToTestResultsDirectory();

@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace WorkspacesEditorUITest;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class WorkspacesEditorTests : WorkspacesUiAutomationBase
 {
@@ -15,7 +16,7 @@ public class WorkspacesEditorTests : WorkspacesUiAutomationBase
     {
     }
 
-    [TestMethod("WorkspacesEditor.Items.Present")]
+    [TestMethod(DisplayName = "WorkspacesEditor.Items.Present")]
     [TestCategory("Workspaces UI")]
     public void TestItemsPresents()
     {
@@ -23,7 +24,7 @@ public class WorkspacesEditorTests : WorkspacesUiAutomationBase
     }
 
     /*
-    [TestMethod("WorkspacesEditor.Editor.NewWorkspaceAppearsInList")]
+    [TestMethod(DisplayName = "WorkspacesEditor.Editor.NewWorkspaceAppearsInList")]
     [TestCategory("Workspaces UI")]
     public void TestNewWorkspaceAppearsInListAfterCapture()
     {
@@ -54,7 +55,7 @@ public class WorkspacesEditorTests : WorkspacesUiAutomationBase
         CloseNotepad();
     }
 
-    [TestMethod("WorkspacesEditor.Editor.CancelCaptureDoesNotAddWorkspace")]
+    [TestMethod(DisplayName = "WorkspacesEditor.Editor.CancelCaptureDoesNotAddWorkspace")]
     [TestCategory("Workspaces UI")]
     public void TestCancelCaptureDoesNotAddWorkspace()
     {
@@ -77,7 +78,7 @@ public class WorkspacesEditorTests : WorkspacesUiAutomationBase
         Assert.AreEqual(initialCount, finalCount, "Workspace count should not change after canceling");
     }
 
-    [TestMethod("WorkspacesEditor.Editor.SearchFiltersWorkspaces")]
+    [TestMethod(DisplayName = "WorkspacesEditor.Editor.SearchFiltersWorkspaces")]
     [TestCategory("Workspaces UI")]
     public void TestSearchFiltersWorkspaces()
     {
@@ -103,7 +104,7 @@ public class WorkspacesEditorTests : WorkspacesUiAutomationBase
         Thread.Sleep(500);
     }
 
-    [TestMethod("WorkspacesEditor.Editor.SortByWorks")]
+    [TestMethod(DisplayName = "WorkspacesEditor.Editor.SortByWorks")]
     [TestCategory("Workspaces UI")]
     public void TestSortByFunctionality()
     {
@@ -125,7 +126,7 @@ public class WorkspacesEditorTests : WorkspacesUiAutomationBase
         }
     }
 
-    [TestMethod("WorkspacesEditor.Editor.SortByPersists")]
+    [TestMethod(DisplayName = "WorkspacesEditor.Editor.SortByPersists")]
     [TestCategory("Workspaces UI")]
     public void TestSortByPersistsAfterRestart()
     {
@@ -152,7 +153,7 @@ public class WorkspacesEditorTests : WorkspacesUiAutomationBase
         Assert.AreEqual(selectedOption, sortDropdown.Text, "Sort option should persist after restart");
     }
 
-    [TestMethod("WorkspacesEditor.Editor.RemoveWorkspace")]
+    [TestMethod(DisplayName = "WorkspacesEditor.Editor.RemoveWorkspace")]
     [TestCategory("Workspaces UI")]
     public void TestRemoveWorkspace()
     {
@@ -179,7 +180,7 @@ public class WorkspacesEditorTests : WorkspacesUiAutomationBase
         Assert.IsFalse(Has(By.Name("WorkspaceToRemove")), "Workspace should be removed from list");
     }
 
-    [TestMethod("WorkspacesEditor.Editor.EditOpensEditingPage")]
+    [TestMethod(DisplayName = "WorkspacesEditor.Editor.EditOpensEditingPage")]
     [TestCategory("Workspaces UI")]
     public void TestEditOpensEditingPage()
     {
@@ -207,7 +208,7 @@ public class WorkspacesEditorTests : WorkspacesUiAutomationBase
         Thread.Sleep(1000);
     }
 
-    [TestMethod("WorkspacesEditor.Editor.ClickWorkspaceOpensEditingPage")]
+    [TestMethod(DisplayName = "WorkspacesEditor.Editor.ClickWorkspaceOpensEditingPage")]
     [TestCategory("Workspaces UI")]
     public void TestClickWorkspaceOpensEditingPage()
     {

@@ -8,6 +8,7 @@ using Microsoft.CmdPal.Common.UnitTests.TestUtils;
 
 namespace Microsoft.CmdPal.Common.UnitTests.Services.Sanitizer;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class ConnectionStringRuleProviderTests
 {
@@ -22,11 +23,11 @@ public class ConnectionStringRuleProviderTests
 
         // Assert
         var ruleList = new List<SanitizationRule>(rules);
-        Assert.AreEqual(1, ruleList.Count);
+        Assert.HasCount(1, ruleList);
         Assert.AreEqual("Connection string parameters", ruleList[0].Description);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Server=localhost;Database=mydb;User ID=admin;Password=secret123", "Server=[REDACTED];Database=[REDACTED];User ID=[REDACTED];Password=[REDACTED]")]
     [DataRow("Data Source=server.example.com;Initial Catalog=testdb;Uid=user;Pwd=pass", "Data Source=[REDACTED];Initial Catalog=[REDACTED];Uid=[REDACTED];Pwd=[REDACTED]")]
     [DataRow("Server=localhost;Password=my_secret", "Server=[REDACTED];Password=[REDACTED]")]
@@ -43,7 +44,7 @@ public class ConnectionStringRuleProviderTests
         Assert.AreEqual(expected, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Password=\"complexPassword123!\"", "Password=[REDACTED]")]
     [DataRow("Password='myPassword'", "Password=[REDACTED]")]
     [DataRow("Password=unquotedSecret", "Password=[REDACTED]")]
@@ -59,7 +60,7 @@ public class ConnectionStringRuleProviderTests
         Assert.AreEqual(expected, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("SERVER=server1;PASSWORD=pass1", "SERVER=[REDACTED];PASSWORD=[REDACTED]")]
     [DataRow("server=server1;password=pass1", "server=[REDACTED];password=[REDACTED]")]
     [DataRow("Server=server1;Password=pass1", "Server=[REDACTED];Password=[REDACTED]")]
@@ -75,7 +76,7 @@ public class ConnectionStringRuleProviderTests
         Assert.AreEqual(expected, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("User ID=admin;Username=john;Password=secret", "User ID=[REDACTED];Username=[REDACTED];Password=[REDACTED]")]
     [DataRow("Database=mydb;Uid=user1;Pwd=pass1;Server=localhost", "Database=[REDACTED];Uid=[REDACTED];Pwd=[REDACTED];Server=[REDACTED]")]
     public void ConnectionStringRules_ShouldHandleMultipleParameters(string input, string expected)
@@ -90,7 +91,7 @@ public class ConnectionStringRuleProviderTests
         Assert.AreEqual(expected, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Server = localhost ; Password = secret123", "Server=[REDACTED] ; Password=[REDACTED]")]
     [DataRow("Initial Catalog=db;  User ID=admin;  Password=pass", "Initial Catalog=[REDACTED];  User ID=[REDACTED];  Password=[REDACTED]")]
     public void ConnectionStringRules_ShouldHandleWhitespace(string input, string expected)

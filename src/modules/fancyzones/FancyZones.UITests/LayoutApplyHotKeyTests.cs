@@ -18,6 +18,7 @@ using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
 namespace UITests_FancyZones
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class LayoutApplyHotKeyTests : UITestBase
     {
@@ -274,7 +275,7 @@ namespace UITests_FancyZones
             RestartScopeExe("Hosts");
         }
 
-        [TestMethod("FancyZones.Settings.TestApplyHotKey")]
+        [TestMethod(DisplayName = "FancyZones.Settings.TestApplyHotKey")]
         [TestCategory("FancyZones #1")]
         public void TestApplyHotKey()
         {
@@ -292,11 +293,11 @@ namespace UITests_FancyZones
             Assert.IsNotNull(popup);
             popup.Find<Element>($"{key}").Click(); // assign a free hotkey
 
-            Task.Delay(3000).Wait();
+            Task.Delay(3000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
-            Task.Delay(3000).Wait();
+            Task.Delay(3000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
             this.AttachFancyZonesEditor();
             var element = this.Find<Element>(By.AccessibilityId(AccessibilityId.GridCustomLayoutCard));
             Assert.IsTrue(element.Selected, $"{element.Selected} Grid custom layout is not visible");
@@ -304,7 +305,7 @@ namespace UITests_FancyZones
             this.AttachPowertoySetting();
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num1);
-            Task.Delay(3000).Wait();
+            Task.Delay(3000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
             this.AttachFancyZonesEditor();
             element = this.Find<Element>(By.AccessibilityId(AccessibilityId.Grid9LayoutCard));
             Assert.IsTrue(element.Selected, $"{element.Selected} Grid-9 is not visible");
@@ -312,7 +313,7 @@ namespace UITests_FancyZones
             this.AttachPowertoySetting();
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num2);
-            Task.Delay(3000).Wait();
+            Task.Delay(3000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
             this.AttachFancyZonesEditor();
             element = this.Find<Element>(By.AccessibilityId(AccessibilityId.CanvasCustomLayoutCard));
             Assert.IsTrue(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
@@ -375,7 +376,7 @@ namespace UITests_FancyZones
         }
         */
 
-        [TestMethod("FancyZones.Settings.HotKeyWindowFlashTest")]
+        [TestMethod(DisplayName = "FancyZones.Settings.HotKeyWindowFlashTest")]
         [TestCategory("FancyZones #3")]
         public void HotKeyWindowFlashTest()
         {
@@ -414,7 +415,7 @@ namespace UITests_FancyZones
             Clean();
         }
 
-        [TestMethod("FancyZones.Settings.TestDisableApplyHotKey")]
+        [TestMethod(DisplayName = "FancyZones.Settings.TestDisableApplyHotKey")]
         [TestCategory("FancyZones #4")]
         public void TestDisableApplyHotKey()
         {
@@ -445,7 +446,7 @@ namespace UITests_FancyZones
             Clean();
         }
 
-        [TestMethod("FancyZones.Settings.TestVirtualDesktopLayout")]
+        [TestMethod(DisplayName = "FancyZones.Settings.TestVirtualDesktopLayout")]
         [TestCategory("FancyZones #6")]
         public void TestVirtualDesktopLayout()
         {
@@ -468,14 +469,14 @@ namespace UITests_FancyZones
 
             // close the virtual desktop
             SendKeys(Key.Ctrl, Key.Win, Key.Right);
-            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken); // Optional: Wait for a moment to ensure window switch
             SendKeys(Key.Ctrl, Key.Win, Key.F4);
-            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken); // Optional: Wait for a moment to ensure window switch
 
             Clean();
         }
 
-        [TestMethod("FancyZones.Settings.TestVirtualDesktopLayoutExt")]
+        [TestMethod(DisplayName = "FancyZones.Settings.TestVirtualDesktopLayoutExt")]
         [TestCategory("FancyZones #7")]
         public void TestVirtualDesktopLayoutExt()
         {
@@ -508,14 +509,14 @@ namespace UITests_FancyZones
 
             // close the virtual desktop
             SendKeys(Key.Ctrl, Key.Win, Key.Right);
-            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken); // Optional: Wait for a moment to ensure window switch
             SendKeys(Key.Ctrl, Key.Win, Key.F4);
-            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
+            Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken); // Optional: Wait for a moment to ensure window switch
 
             Clean();
         }
 
-        [TestMethod("FancyZones.Settings.TestDeleteCustomLayoutBehavior")]
+        [TestMethod(DisplayName = "FancyZones.Settings.TestDeleteCustomLayoutBehavior")]
         [TestCategory("FancyZones #8")]
         public void TestDeleteCustomLayoutBehavior()
         {
@@ -533,7 +534,7 @@ namespace UITests_FancyZones
             Clean();
         }
 
-        [TestMethod("FancyZones.Settings.TestCreateGridLayoutChangeMonitorSetting")]
+        [TestMethod(DisplayName = "FancyZones.Settings.TestCreateGridLayoutChangeMonitorSetting")]
         [TestCategory("FancyZones #9")]
         public void TestCreateGridLayoutChangeMonitorSetting()
         {

@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.EnvironmentVariables.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [TestCategory("EnvironmentVariables")]
 [DoNotParallelize]
@@ -32,7 +33,7 @@ public sealed class EnvironmentVariablesTests : UITestBase
         state = new TestState();
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup]
     public static void RestoreState()
     {
         try

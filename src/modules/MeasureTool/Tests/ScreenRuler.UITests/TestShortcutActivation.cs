@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ScreenRuler.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class TestShortcutActivation : UITestBase
     {
@@ -16,7 +17,7 @@ namespace ScreenRuler.UITests
         {
         }
 
-        [TestMethod("ScreenRuler.ShortcutActivation")]
+        [TestMethod(DisplayName = "ScreenRuler.ShortcutActivation")]
         [TestCategory("Activation")]
         public void TestScreenRulerShortcutActivation()
         {
@@ -43,7 +44,7 @@ namespace ScreenRuler.UITests
 
             // Try to activate with shortcut while disabled
             SendKeys(activationKeys);
-            Task.Delay(1000).Wait();
+            Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
             Assert.IsFalse(
                 TestHelper.IsScreenRulerUIOpen(this),
                 "ScreenRulerUI should not appear when Screen Ruler is disabled");

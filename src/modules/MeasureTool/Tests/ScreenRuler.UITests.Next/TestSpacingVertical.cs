@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ScreenRuler.UITests.Next;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class TestSpacingVertical : UITestBase
 {

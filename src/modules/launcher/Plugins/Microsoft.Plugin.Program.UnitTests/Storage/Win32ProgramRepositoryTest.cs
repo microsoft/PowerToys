@@ -20,6 +20,7 @@ using Win32Program = Microsoft.Plugin.Program.Programs.Win32Program;
 
 namespace Microsoft.Plugin.Program.UnitTests.Storage
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class Win32ProgramRepositoryTest
     {
@@ -52,11 +53,11 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             foreach (var watcher in _fileSystemWatchers)
             {
-                CollectionAssert.AreEqual(ExpectedFilters, watcher.Filters);
+                Assert.AreSequenceEqual(ExpectedFilters, watcher.Filters);
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("Name", "ExecutableName", "FullPath", "description1", "description2")]
         public void Win32RepositoryMustNotStoreDuplicatesWhileAddingItemsWithSameHashCode(string name, string exename, string fullPath, string description1, string description2)
         {
@@ -91,7 +92,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(1, win32ProgramRepository.Count());
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("path.appref-ms")]
         public void Win32ProgramRepositoryMustCallOnAppCreatedForApprefAppsWhenCreatedEventIsRaised(string path)
         {
@@ -107,7 +108,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(Win32Program.ApplicationType.ApprefApplication, win32ProgramRepository.ElementAt(0).AppType);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("directory", "path.appref-ms")]
         public void Win32ProgramRepositoryMustCallOnAppDeletedForApprefAppsWhenDeletedEventIsRaised(string directory, string path)
         {
@@ -126,7 +127,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("directory", "oldpath.appref-ms", "newpath.appref-ms")]
         public async Task Win32ProgramRepositoryMustCallOnAppRenamedForApprefAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
         {
@@ -145,7 +146,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Renamed += null, e);
 
             // We need to wait more than one second to make sure our test can pass
-            await Task.Delay(2 * Win32ProgramRepository.OnRenamedEventWaitTime).ConfigureAwait(false);
+            await Task.Delay(2 * Win32ProgramRepository.OnRenamedEventWaitTime, TestContext.CancellationToken).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(1, win32ProgramRepository.Count());
@@ -153,7 +154,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.IsFalse(win32ProgramRepository.Contains(olditem));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("path.exe")]
         public void Win32ProgramRepositoryMustCallOnAppCreatedForExeAppsWhenCreatedEventIsRaised(string path)
         {
@@ -174,7 +175,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(Win32Program.ApplicationType.Win32Application, win32ProgramRepository.ElementAt(0).AppType);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("directory", "path.exe")]
         public void Win32ProgramRepositoryMustCallOnAppDeletedForExeAppsWhenDeletedEventIsRaised(string directory, string path)
         {
@@ -198,7 +199,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("directory", "oldpath.appref-ms", "newpath.appref-ms")]
         public async Task Win32ProgramRepositoryMustCallOnAppRenamedForExeAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
         {
@@ -222,7 +223,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Renamed += null, e);
 
             // We need to wait more than one second to make sure our test can pass
-            await Task.Delay(2 * Win32ProgramRepository.OnRenamedEventWaitTime).ConfigureAwait(false);
+            await Task.Delay(2 * Win32ProgramRepository.OnRenamedEventWaitTime, TestContext.CancellationToken).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(1, win32ProgramRepository.Count());
@@ -230,7 +231,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.IsFalse(win32ProgramRepository.Contains(olditem));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("path.url")]
         public void Win32ProgramRepositoryMustNotCreateUrlAppWhenCreatedEventIsRaised(string path)
         {
@@ -252,7 +253,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("path.exe")]
         [DataRow("path.lnk")]
         [DataRow("path.appref-ms")]
@@ -281,7 +282,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("directory", "path.url")]
         public void Win32ProgramRepositoryMustCallOnAppDeletedForUrlAppsWhenDeletedEventIsRaised(string directory, string path)
         {
@@ -305,7 +306,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("directory", "oldpath.url", "newpath.url")]
         public async Task Win32ProgramRepositoryMustCallOnAppRenamedForUrlAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
         {
@@ -329,7 +330,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Renamed += null, e);
 
             // We need to wait more than one second to make sure our test can pass
-            await Task.Delay(2 * Win32ProgramRepository.OnRenamedEventWaitTime).ConfigureAwait(false);
+            await Task.Delay(2 * Win32ProgramRepository.OnRenamedEventWaitTime, TestContext.CancellationToken).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(1, win32ProgramRepository.Count());
@@ -337,7 +338,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.IsFalse(win32ProgramRepository.Contains(olditem));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("directory", "path.lnk")]
         public void Win32ProgramRepositoryMustCallOnAppDeletedForLnkAppsWhenDeletedEventIsRaised(string directory, string path)
         {
@@ -368,7 +369,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("directory", "oldpath.lnk", "path.lnk")]
         public async Task Win32ProgramRepositoryMustCallOnAppRenamedForLnkAppsWhenRenamedEventIsRaised(string directory, string oldpath, string path)
         {
@@ -395,12 +396,14 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Renamed += null, e);
 
             // We need to wait more than one second to make sure our test can pass
-            await Task.Delay(2 * Win32ProgramRepository.OnRenamedEventWaitTime).ConfigureAwait(false);
+            await Task.Delay(2 * Win32ProgramRepository.OnRenamedEventWaitTime, TestContext.CancellationToken).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(1, win32ProgramRepository.Count());
             Assert.IsTrue(win32ProgramRepository.Contains(newitem));
             Assert.IsFalse(win32ProgramRepository.Contains(olditem));
         }
+
+        public TestContext TestContext { get; set; } = null!;
     }
 }

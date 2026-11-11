@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class ShellMenuTests
 {
     private static readonly string[] ExpectedCaptions = ["Cafe\u0301-\u6f22-\U0001F680", "R&D", "R&D"];
@@ -38,7 +39,7 @@ public sealed class ShellMenuTests
             observations.Dequeue, "Open templates", 1_000, StringComparison.Ordinal, pollIntervalMS: 1);
 
         Assert.AreSame(ready, result);
-        Assert.HasCount(0, observations);
+        Assert.IsEmpty(observations);
     }
 
     [TestMethod]
@@ -150,7 +151,7 @@ public sealed class ShellMenuTests
 
         Assert.IsNotNull(result);
         Assert.AreEqual(4L, result.WindowHandle);
-        CollectionAssert.AreEqual(new long[] { 3, 4, 3, 4 }, searched);
+        Assert.AreSequenceEqual(new long[] { 3, 4, 3, 4 }, searched);
     }
 
     [TestMethod]
@@ -191,7 +192,7 @@ public sealed class ShellMenuTests
             ]}]}
             """);
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             ExpectedCaptions,
             ShellMenu.ParseMenuNames(document.RootElement).ToArray());
     }

@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class IconRequestDemandTests
 {
@@ -22,8 +23,9 @@ public class IconRequestDemandTests
         Assert.IsFalse(load.IsDemanded);
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = false)]
     public void ConcurrentAttachAndReleaseNeverLeaksDemand()
     {
         for (var i = 0; i < 1_000; i++)
@@ -39,8 +41,9 @@ public class IconRequestDemandTests
         }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = false)]
     public void DelayedNotificationObservesCurrentDemand()
     {
         var load = new IconLoadDemand();
@@ -50,10 +53,10 @@ public class IconRequestDemandTests
         load.Subscribe(observer);
         Assert.IsFalse(load.IsDemanded);
 
-        var addRequester = Task.Run(load.AddRequester);
+        var addRequester = Task.Run(load.AddRequester, TestContext.CancellationToken);
         try
         {
-            Assert.IsTrue(firstNotificationStarted.Wait(TimeSpan.FromSeconds(2)));
+            Assert.IsTrue(firstNotificationStarted.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
             load.RemoveRequester();
         }
         finally
@@ -87,4 +90,6 @@ public class IconRequestDemandTests
             Volatile.Write(ref _lastObservedDemand, demand.IsDemanded ? 1 : 0);
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

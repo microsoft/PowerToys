@@ -17,11 +17,12 @@ using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class CachedIconSourceProviderTests
 {
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task ConcurrentRequestsShareOneInFlightLoad()
     {
         var loader = new ControllableIconLoader();
@@ -44,7 +45,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task SuccessfulLoadIsCachedBeforeInFlightEntryIsRemoved()
     {
         var loader = new ControllableIconLoader();
@@ -66,7 +67,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task SharedInFlightLoadTracksEveryLiveRequest()
     {
         var loader = new ControllableIconLoader();
@@ -101,7 +102,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task SuccessfulDirectGlyphLoadIsCachedWithoutQueueing()
     {
         var glyph = CreateTestIconSource();
@@ -129,7 +130,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task CachedProviderFallsBackWhenLoaderViolatesDirectGlyphContract()
     {
         var loader = new ControllableIconLoader { ReturnDirectGlyph = true };
@@ -144,7 +145,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task GlyphAndOtherEntriesUseIndependentCacheCapacities()
     {
         var glyphResult = CreateTestIconSource();
@@ -179,7 +180,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task DistinctStreamReferencesWithCollidingRuntimeHashesDoNotShareLoad()
     {
         var collision = FindRuntimeHashCollision();
@@ -210,7 +211,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task CanonicallyEquivalentInitialsShareCacheEntry()
     {
         var loader = new ControllableIconLoader();
@@ -230,7 +231,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task ThemedSvgProtocolUsesDistinctCacheEntriesAcrossThemes()
     {
         var loader = new ControllableIconLoader();
@@ -257,7 +258,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task PlainSvgProtocolSharesCacheEntryAcrossThemes()
     {
         var loader = new ControllableIconLoader();
@@ -274,7 +275,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task DifferentLegacyPathsWithSameShellIdentityShareCanonicalLoad()
     {
         var loader = new ControllableIconLoader();
@@ -315,7 +316,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task ProgressiveShellRequestPublishesTypeIconBeforeSameIdentityCompletes()
     {
         var loader = new ControllableIconLoader();
@@ -344,7 +345,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task ProgressiveShellRequestReplacesTypeIconWhenExactIdentityDiffers()
     {
         var loader = new ControllableIconLoader();
@@ -374,7 +375,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task ProgressiveShellRequestKeepsTypeIconWhenExactRefinementFails()
     {
         var loader = new ControllableIconLoader();
@@ -401,7 +402,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task ProgressiveShellRequestContinuesWhenIntermediatePresentationFails()
     {
         var loader = new ControllableIconLoader();
@@ -428,7 +429,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task ReleasedProgressiveRequestDoesNotDemandItsDelayedExactLoad()
     {
         var loader = new ControllableIconLoader();
@@ -456,7 +457,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task ColdTypeMissMovesCacheArbitrationOffCallingThread()
     {
         var loader = new ControllableIconLoader();
@@ -486,7 +487,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task CachedTypeHitMovesExactArbitrationOffCallingSynchronizationContext()
     {
         var loader = new ControllableIconLoader();
@@ -537,7 +538,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task CanonicalJoinPinsExistingLoadDemanded()
     {
         var loader = new ControllableIconLoader();
@@ -569,7 +570,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task NullCanonicalShellResultIsNotCached()
     {
         var loader = new ControllableIconLoader();
@@ -592,7 +593,7 @@ public partial class CachedIconSourceProviderTests
 
     [TestMethod]
     [DoNotParallelize]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task SharedShellFallbackIsNotCachedAsCanonicalResult()
     {
         var fallback = CreateTestIconSource();
@@ -626,11 +627,11 @@ public partial class CachedIconSourceProviderTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("C:\\Files\\image.avif")]
     [DataRow("C:\\Files\\image.heic")]
     [DataRow("C:\\Files\\image.jfif")]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task LegacyImagePathsPreserveOrdinaryImageLoading(string imagePath)
     {
         var loader = new ControllableIconLoader();
@@ -645,7 +646,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task ExplicitAndLegacyShellRequestsShareCanonicalLoad()
     {
         var loader = new ControllableIconLoader();
@@ -668,7 +669,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task ExplicitShellProtocolOverridesCompanionStream()
     {
         var loader = new ControllableIconLoader();
@@ -687,7 +688,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task DistinctShellIdentitiesDoNotShareMaterialization()
     {
         var loader = new ControllableIconLoader();
@@ -712,7 +713,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task FailedCanonicalShellLoadCanRetryWithoutRelocatingRawPath()
     {
         var loader = new ControllableIconLoader();
@@ -735,7 +736,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task ShellLocationAliasIsSharedAcrossSizeProviders()
     {
         var loader = new ControllableIconLoader();
@@ -764,7 +765,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task ShellLocationInvalidationSeparatesReusedImageListIndex()
     {
         var loader = new ControllableIconLoader();
@@ -791,7 +792,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task FailedLoadIsRemovedAndCanBeRetried()
     {
         var loader = new ControllableIconLoader();
@@ -816,7 +817,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task RejectedLoadFaultsAndCanBeRetried()
     {
         var loader = new ControllableIconLoader { AcceptLoads = false };
@@ -841,7 +842,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task UncachedProviderFaultsRejectedLoad()
     {
         var loader = new ControllableIconLoader { AcceptLoads = false };
@@ -854,7 +855,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task UncachedProviderLoadsGlyphDirectlyWithoutQueueing()
     {
         var glyph = CreateTestIconSource();
@@ -873,7 +874,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task UncachedProviderRoutesLegacyPathsThroughShellLoading()
     {
         var loader = new ControllableIconLoader();
@@ -893,7 +894,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task UncachedProviderLetsExplicitShellProtocolOverrideCompanionStream()
     {
         var loader = new ControllableIconLoader();
@@ -939,7 +940,7 @@ public partial class CachedIconSourceProviderTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task UncachedProviderFallsBackWhenLoaderViolatesDirectGlyphContract()
     {
         var loader = new ControllableIconLoader { ReturnDirectGlyph = true };

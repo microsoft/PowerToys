@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Plugin.Folder.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class InternalQueryFolderTests
     {
@@ -43,16 +44,16 @@ namespace Microsoft.Plugin.Folder.UnitTests
             var queryInternalDirectory = new QueryInternalDirectory(new FolderSettings(), _queryFileSystemInfoMock, _fileSystem.Directory);
 
             // Act & Assert
-            Assert.ThrowsException<ArgumentNullException>(() => queryInternalDirectory.Query(null).ToArray());
+            Assert.ThrowsExactly<ArgumentNullException>(() => queryInternalDirectory.Query(null).ToArray());
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(@"c", 0, 0, false, DisplayName = "String empty is nothing")]
         [DataRow(@"c:", 2, 1, false, DisplayName = "Root without \\")]
         [DataRow(@"c:\", 2, 1, false, DisplayName = "Normal root")]
         [DataRow(@"c:\Test", 2, 2, false, DisplayName = "Select yourself")]
         [DataRow(@"c:\not-exist", 2, 0, false, DisplayName = "Folder not exist, return root")]
-        [DataRow(@"c:\not-exist\not-exist2", 0, 0, false, DisplayName = "Folder not exist, return root")]
+        [DataRow(@"c:\not-exist\not-exist2", 0, 0, false, DisplayName = "Nested folder not exist, return root")]
         [DataRow(@"c:\bla.t", 2, 1, false, DisplayName = "Partial match file")]
         [DataRow(@"c:/bla.t", 2, 1, false, DisplayName = "Partial match file with /")]
         public void Query_WhenCalled(string search, int folders, int files, bool truncated)
@@ -73,24 +74,24 @@ namespace Microsoft.Plugin.Folder.UnitTests
                 .ToLookup(r => r.GetType());
 
             // Assert
-            Assert.AreEqual(files, isDriveOrSharedFolder[typeof(FileItemResult)].Count(), "File count doesn't match");
-            Assert.AreEqual(folders, isDriveOrSharedFolder[typeof(FolderItemResult)].Count(), "folder count doesn't match");
+            Assert.HasCount(files, isDriveOrSharedFolder[typeof(FileItemResult)], "File count doesn't match");
+            Assert.HasCount(folders, isDriveOrSharedFolder[typeof(FolderItemResult)], "folder count doesn't match");
 
             // Always check if there is less than max folders
-            Assert.IsTrue(isDriveOrSharedFolder[typeof(FileItemResult)].Count() <= maxFolderSetting, "Files are not limited");
-            Assert.IsTrue(isDriveOrSharedFolder[typeof(FolderItemResult)].Count() <= maxFolderSetting, "Folders are not limited");
+            Assert.IsLessThanOrEqualTo(maxFolderSetting, isDriveOrSharedFolder[typeof(FileItemResult)].Count(), "Files are not limited");
+            Assert.IsLessThanOrEqualTo(maxFolderSetting, isDriveOrSharedFolder[typeof(FolderItemResult)].Count(), "Folders are not limited");
 
             // Checks if CreateOpenCurrentFolder is displayed
-            Assert.AreEqual(Math.Min(folders + files, 1), isDriveOrSharedFolder[typeof(CreateOpenCurrentFolderResult)].Count(), "CreateOpenCurrentFolder displaying is incorrect");
+            Assert.HasCount(Math.Min(folders + files, 1), isDriveOrSharedFolder[typeof(CreateOpenCurrentFolderResult)], "CreateOpenCurrentFolder displaying is incorrect");
 
             Assert.AreEqual(truncated, isDriveOrSharedFolder[typeof(TruncatedItemResult)].Count() == 1, "CreateOpenCurrentFolder displaying is incorrect");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(@"c:\>", 3, 3, true, DisplayName = "Max Folder test recursive")]
         [DataRow(@"c:\Test>", 3, 0, true, DisplayName = "2 Folders recursive")]
         [DataRow(@"c:\not-exist>", 3, 0, true, DisplayName = "Folder not exist, return root recursive")]
-        [DataRow(@"c:\not-exist\not-exist2>", 0, 0, false, DisplayName = "Folder not exist, return root recursive")]
+        [DataRow(@"c:\not-exist\not-exist2>", 0, 0, false, DisplayName = "Nested folder not exist, return root recursive")]
         public void Query_Recursive_WhenCalled(string search, int folders, int files, bool truncated)
         {
             const int maxFolderSetting = 3;
@@ -109,15 +110,15 @@ namespace Microsoft.Plugin.Folder.UnitTests
                 .ToLookup(r => r.GetType());
 
             // Assert
-            Assert.AreEqual(files, isDriveOrSharedFolder[typeof(FileItemResult)].Count(), "File count doesn't match");
-            Assert.AreEqual(folders, isDriveOrSharedFolder[typeof(FolderItemResult)].Count(), "folder count doesn't match");
+            Assert.HasCount(files, isDriveOrSharedFolder[typeof(FileItemResult)], "File count doesn't match");
+            Assert.HasCount(folders, isDriveOrSharedFolder[typeof(FolderItemResult)], "folder count doesn't match");
 
             // Always check if there is less than max folders
-            Assert.IsTrue(isDriveOrSharedFolder[typeof(FileItemResult)].Count() <= maxFolderSetting, "Files are not limited");
-            Assert.IsTrue(isDriveOrSharedFolder[typeof(FolderItemResult)].Count() <= maxFolderSetting, "Folders are not limited");
+            Assert.IsLessThanOrEqualTo(maxFolderSetting, isDriveOrSharedFolder[typeof(FileItemResult)].Count(), "Files are not limited");
+            Assert.IsLessThanOrEqualTo(maxFolderSetting, isDriveOrSharedFolder[typeof(FolderItemResult)].Count(), "Folders are not limited");
 
             // Checks if CreateOpenCurrentFolder is displayed
-            Assert.AreEqual(Math.Min(folders + files, 1), isDriveOrSharedFolder[typeof(CreateOpenCurrentFolderResult)].Count(), "CreateOpenCurrentFolder displaying is incorrect");
+            Assert.HasCount(Math.Min(folders + files, 1), isDriveOrSharedFolder[typeof(CreateOpenCurrentFolderResult)], "CreateOpenCurrentFolder displaying is incorrect");
 
             Assert.AreEqual(truncated, isDriveOrSharedFolder[typeof(TruncatedItemResult)].Count() == 1, "CreateOpenCurrentFolder displaying is incorrect");
         }

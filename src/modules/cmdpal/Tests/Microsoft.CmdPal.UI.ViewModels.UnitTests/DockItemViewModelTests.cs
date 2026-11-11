@@ -211,7 +211,7 @@ public partial class DockItemViewModelTests
             fixture.Scheduler.ExecuteAllAvailable();
 
             Assert.AreEqual(initialCalls + 2, fixture.Page.GetItemsCallCount);
-            Assert.AreEqual(1, fixture.Band.Items.Count);
+            Assert.HasCount(1, fixture.Band.Items);
         }
         finally
         {
@@ -232,7 +232,7 @@ public partial class DockItemViewModelTests
             fixture.Band.SafeCleanup();
             fixture.Scheduler.ExecuteAllAvailable();
 
-            Assert.AreEqual(0, fixture.Band.Items.Count);
+            Assert.IsEmpty(fixture.Band.Items);
             Assert.IsTrue(
                 SpinWait.SpinUntil(
                     () => original.Initialized.HasFlag(InitializedState.CleanedUp),

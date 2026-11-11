@@ -23,7 +23,7 @@ public sealed partial class PowerRenameTests
     private const string ShowOnlyRenamedAutomationId = "button_showRenamed";
     private const string SelectAllCheckBoxAutomationId = "checkBox_selectAll";
 
-    [TestMethod("PowerRename.FileList.UncheckExcludesItem")]
+    [TestMethod(DisplayName = "PowerRename.FileList.UncheckExcludesItem")]
     [TestCategory("PowerRename")]
     public void UncheckedItemsAreExcludedFromTheRename()
     {
@@ -46,7 +46,7 @@ public sealed partial class PowerRenameTests
         ApplyRenameAndAssertEntries(window, folder, "0ne.txt", "two.txt");
     }
 
-    [TestMethod("PowerRename.FileList.FilterRenamedOnly")]
+    [TestMethod(DisplayName = "PowerRename.FileList.FilterRenamedOnly")]
     [TestCategory("PowerRename")]
     public void FilterCanShowOnlyItemsThatWillBeRenamed()
     {
@@ -80,7 +80,7 @@ public sealed partial class PowerRenameTests
             "Switching back to 'Show all files' did not restore the unmatched item.");
     }
 
-    [TestMethod("PowerRename.FileList.SelectDeselectAll")]
+    [TestMethod(DisplayName = "PowerRename.FileList.SelectDeselectAll")]
     [TestCategory("PowerRename")]
     public void HeaderCheckBoxSelectsAndDeselectsEveryItem()
     {

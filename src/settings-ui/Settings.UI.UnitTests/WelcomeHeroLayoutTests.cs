@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Settings.UI.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class WelcomeHeroLayoutTests
     {
@@ -33,7 +34,7 @@ namespace Settings.UI.UnitTests
 
                 if (i > 0 && (slots[i - 1].Opacity < WelcomeHeroLayout.VisibleOpacityThreshold) == faded)
                 {
-                    Assert.IsTrue(slots[i].Distance >= slots[i - 1].Distance - 0.01f, $"Slot {i} is closer to the logo than slot {i - 1}.");
+                    Assert.IsGreaterThanOrEqualTo(slots[i - 1].Distance - 0.01f, slots[i].Distance, $"Slot {i} is closer to the logo than slot {i - 1}.");
                 }
             }
         }
@@ -66,7 +67,7 @@ namespace Settings.UI.UnitTests
         {
             var visible = Layout.Slots.Count(s => s.Opacity >= WelcomeHeroLayout.VisibleOpacityThreshold);
 
-            Assert.IsTrue(visible >= WelcomeHeroModules.All.Count, $"Only {visible} visible slots for {WelcomeHeroModules.All.Count} modules.");
+            Assert.IsGreaterThanOrEqualTo(WelcomeHeroModules.All.Count, visible, $"Only {visible} visible slots for {WelcomeHeroModules.All.Count} modules.");
         }
 
         [TestMethod]
@@ -74,11 +75,12 @@ namespace Settings.UI.UnitTests
         {
             foreach (var slot in Layout.Slots)
             {
-                Assert.IsTrue(slot.Offset.Y < 0f, "Tiles must sit above the logo.");
+                Assert.IsLessThan(0f, slot.Offset.Y, "Tiles must sit above the logo.");
                 Assert.IsTrue(slot.Opacity > 0.05f && slot.Opacity <= 1f);
-                Assert.IsTrue(Layout.ApexY + slot.Offset.Y + (WelcomeHeroLayout.TileSize / 2f) <= Layout.HeroHeight);
-                Assert.IsTrue(
-                    Layout.Slots.Any(s => s.Column == -slot.Column && s.Row == slot.Row),
+                Assert.IsLessThanOrEqualTo(Layout.HeroHeight, Layout.ApexY + slot.Offset.Y + (WelcomeHeroLayout.TileSize / 2f));
+                Assert.Contains(
+                    s => s.Column == -slot.Column && s.Row == slot.Row,
+                    Layout.Slots,
                     $"Slot ({slot.Column}, {slot.Row}) has no mirror.");
             }
         }
@@ -88,7 +90,7 @@ namespace Settings.UI.UnitTests
         {
             var other = new WelcomeHeroLayout(WelcomeHeroLayout.DefaultHeroHeight);
 
-            CollectionAssert.AreEqual(Layout.Slots.ToList(), other.Slots.ToList());
+            Assert.AreSequenceEqual(Layout.Slots.ToList(), other.Slots.ToList());
         }
 
         [TestMethod]
@@ -97,7 +99,7 @@ namespace Settings.UI.UnitTests
             var layout = new WelcomeHeroLayout(10f);
 
             Assert.AreEqual(WelcomeHeroLayout.LogoSize + WelcomeHeroLayout.ApexBottomInset, layout.HeroHeight);
-            Assert.IsTrue(layout.ApexY - (WelcomeHeroLayout.LogoSize / 2f) >= 0f);
+            Assert.IsGreaterThanOrEqualTo(0f, layout.ApexY - (WelcomeHeroLayout.LogoSize / 2f));
         }
 
         [TestMethod]
@@ -168,7 +170,7 @@ namespace Settings.UI.UnitTests
             var flat = Layout.Slots[outer].Offset;
             var drawn = Layout.GetSlotCenter(outer, flat, live);
 
-            Assert.IsTrue(Vector2.Distance(flat, drawn) > 4f, $"Expected the tilt to move the tile, it is drawn at {drawn} instead of {flat}.");
+            Assert.IsGreaterThan(4f, Vector2.Distance(flat, drawn), $"Expected the tilt to move the tile, it is drawn at {drawn} instead of {flat}.");
 
             // Probe just inside the drawn tile, on the side the tilt moved it to: only the tilt-aware test finds it.
             var shift = Vector2.Normalize(drawn - flat);
@@ -269,7 +271,7 @@ namespace Settings.UI.UnitTests
             for (var y = -WelcomeHeroLayout.TileSize; y <= WelcomeHeroLayout.TileSize; y += 2f)
             {
                 var opacity = WelcomeHeroLayout.EdgeOpacity(y);
-                Assert.IsTrue(opacity >= previous);
+                Assert.IsGreaterThanOrEqualTo(previous, opacity);
                 previous = opacity;
             }
         }
@@ -279,7 +281,7 @@ namespace Settings.UI.UnitTests
         {
             var modules = WelcomeHeroModules.All;
 
-            Assert.AreEqual(modules.Count, modules.Select(m => m.AssetName).Distinct(StringComparer.OrdinalIgnoreCase).Count());
+            Assert.HasCount(modules.Count, modules.Select(m => m.AssetName).Distinct(StringComparer.OrdinalIgnoreCase));
 
             foreach (var module in modules)
             {

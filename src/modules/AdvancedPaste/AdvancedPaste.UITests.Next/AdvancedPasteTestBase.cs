@@ -17,7 +17,6 @@ using WinClipboard = Windows.ApplicationModel.DataTransfer.Clipboard;
 
 namespace AdvancedPaste.UITests;
 
-[TestClass]
 public abstract class AdvancedPasteTestBase : UITestBase
 {
     protected const string ProcessName = "PowerToys.AdvancedPaste";
@@ -81,7 +80,7 @@ public abstract class AdvancedPasteTestBase : UITestBase
             using var process = Process.GetCurrentProcess();
             Step($"Verifying the clipboard fixture's desktop context: user={identity.Name}, session={process.SessionId}, elevated={elevated}");
             Assert.IsFalse(elevated, "Advanced Paste UI tests require a non-elevated interactive desktop. CI must dispatch AdvancedPaste.UITests.Next through runUiTestAsUser.ps1.");
-            Assert.IsTrue(process.SessionId > 0, "Advanced Paste UI tests cannot access the interactive clipboard from session 0.");
+            Assert.IsGreaterThan(0, process.SessionId, "Advanced Paste UI tests cannot access the interactive clipboard from session 0.");
 
             Step("Waiting for the Settings navigation tree before preparing the paste destination");
             SettingsSession = Microsoft.PowerToys.UITest.Next.Session.FromProcess("PowerToys.Settings", PowerToysModule.PowerToysSettings);
@@ -158,7 +157,7 @@ public abstract class AdvancedPasteTestBase : UITestBase
         }
     }
 
-    [ClassCleanup(InheritanceBehavior.BeforeEachDerivedClass, ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup(InheritanceBehavior.BeforeEachDerivedClass)]
     public static void RestoreAdvancedPasteSettings()
     {
         StopSharedScope();
@@ -357,7 +356,7 @@ public abstract class AdvancedPasteTestBase : UITestBase
             System.Windows.Forms.Clipboard.SetFileDropList(files);
             return true;
         });
-        CollectionAssert.AreEqual(paths, ReadClipboardFilePaths(), "The file clipboard fixture was not established.");
+        Assert.AreSequenceEqual(paths, ReadClipboardFilePaths(), "The file clipboard fixture was not established.");
     }
 
     protected string[] ReadClipboardFilePaths() => AccessClipboard(() =>

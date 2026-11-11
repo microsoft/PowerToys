@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.Run.Plugin.Registry.UnitTest.Helper
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class QueryHelperTest
     {

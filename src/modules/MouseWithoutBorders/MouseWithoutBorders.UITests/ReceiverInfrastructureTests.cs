@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.MouseWithoutBorders.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class ReceiverInfrastructureTests
 {
@@ -31,7 +32,7 @@ public sealed class ReceiverInfrastructureTests
         Assert.AreEqual(0, receiver.Clicks);
         Assert.IsTrue(receiver.InputFocused);
         Assert.AreEqual(receiver.Handle, NativeSupport.GetForegroundWindow());
-        Assert.IsTrue(Process.GetCurrentProcess().SessionId > 0);
+        Assert.IsGreaterThan(0, Process.GetCurrentProcess().SessionId);
 
         try
         {

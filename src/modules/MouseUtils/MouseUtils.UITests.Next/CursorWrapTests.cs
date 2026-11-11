@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MouseUtils.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CursorWrapTests : UITestBase
 {

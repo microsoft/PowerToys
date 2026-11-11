@@ -12,6 +12,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.Calc.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CloseOnEnterTests
 {

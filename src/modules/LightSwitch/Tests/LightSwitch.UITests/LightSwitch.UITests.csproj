@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <PropertyGroup>
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <RootNamespace>PowerToys.LightSwitch.UITests</RootNamespace>
     <AssemblyName>LightSwitch.UITests</AssemblyName>
     <IsPackable>false</IsPackable>

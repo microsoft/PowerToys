@@ -12,6 +12,7 @@ using Wox.Plugin;
 
 namespace Wox.Test
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class QueryBuilderTest
     {
@@ -162,7 +163,7 @@ namespace Wox.Test
             var pluginQueryPairs = QueryBuilder.Build(searchQuery);
 
             // Assert
-            Assert.AreEqual(2, pluginQueryPairs.Count);
+            Assert.HasCount(2, pluginQueryPairs);
         }
     }
 }

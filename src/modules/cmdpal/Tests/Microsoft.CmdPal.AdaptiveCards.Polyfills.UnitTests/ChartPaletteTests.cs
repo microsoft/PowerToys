@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ChartPaletteTests
 {
@@ -122,10 +123,10 @@ public class ChartPaletteTests
     [TestMethod]
     public void HighContrastLinesTakeDashPatternsInTurn()
     {
-        Assert.AreEqual(0, ChartPalette.GetHighContrastDashPattern(0).Count);
-        CollectionAssert.AreEqual(DashedPattern, ChartPalette.GetHighContrastDashPattern(1).ToArray());
-        CollectionAssert.AreEqual(DottedPattern, ChartPalette.GetHighContrastDashPattern(2).ToArray());
-        CollectionAssert.AreEqual(DashDotPattern, ChartPalette.GetHighContrastDashPattern(3).ToArray());
+        Assert.IsEmpty(ChartPalette.GetHighContrastDashPattern(0));
+        Assert.AreSequenceEqual(DashedPattern, ChartPalette.GetHighContrastDashPattern(1).ToArray());
+        Assert.AreSequenceEqual(DottedPattern, ChartPalette.GetHighContrastDashPattern(2).ToArray());
+        Assert.AreSequenceEqual(DashDotPattern, ChartPalette.GetHighContrastDashPattern(3).ToArray());
         Assert.AreSame(ChartPalette.GetHighContrastDashPattern(1), ChartPalette.GetHighContrastDashPattern(5));
     }
 

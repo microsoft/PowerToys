@@ -15,6 +15,7 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class ContentPageViewModelTests
 {
@@ -79,8 +80,8 @@ public partial class ContentPageViewModelTests
             viewModel.ApplyPendingUpdates();
 
             Assert.AreEqual(hasUpdatedDetails, viewModel.HasDetails);
-            CollectionAssert.Contains(notifications, nameof(viewModel.Details));
-            CollectionAssert.Contains(notifications, nameof(viewModel.HasDetails));
+            Assert.Contains(nameof(viewModel.Details), notifications);
+            Assert.Contains(nameof(viewModel.HasDetails), notifications);
             Assert.AreEqual(1, detailsUpdates);
             if (hasUpdatedDetails)
             {
@@ -89,7 +90,7 @@ public partial class ContentPageViewModelTests
                 Assert.AreNotSame(previousDetails, replacement);
                 Assert.AreEqual("Updated title", replacement.Title);
                 Assert.AreEqual("Updated body", replacement.Body);
-                Assert.AreEqual(1, replacement.Metadata.Count);
+                Assert.HasCount(1, replacement.Metadata);
                 Assert.AreSame(replacement, publishedDetails);
 
                 updatedDetails.Body = "Live update";
@@ -139,7 +140,7 @@ public partial class ContentPageViewModelTests
         var allCommands = viewModel.AllCommands;
 
         Assert.AreSame(allCommands, viewModel.AllCommands);
-        Assert.AreEqual(2, allCommands.Count);
+        Assert.HasCount(2, allCommands);
         Assert.AreEqual("Primary", viewModel.PrimaryCommand?.Name);
         Assert.AreEqual("Secondary", viewModel.SecondaryCommand?.Name);
     }
@@ -257,9 +258,9 @@ public partial class ContentPageViewModelTests
             Command("Updated Secondary"),
         ];
 
-        Assert.AreEqual(2, oldAllCommands.Count);
+        Assert.HasCount(2, oldAllCommands);
 
-        Assert.AreEqual(3, viewModel.AllCommands.Count);
+        Assert.HasCount(3, viewModel.AllCommands);
         Assert.IsTrue(viewModel.HasCommands);
         Assert.IsFalse(viewModel.HasOverflowCommands);
         Assert.AreEqual("Updated Primary", viewModel.PrimaryCommand?.Name);
@@ -333,7 +334,7 @@ public partial class ContentPageViewModelTests
         Assert.AreEqual(visibleCommands > 1 ? "Visible 1" : null, viewModel.SecondaryCommand?.Name);
         Assert.AreEqual(visibleCommands > 2, viewModel.HasOverflowCommands);
         Assert.AreEqual(visibleCommands > 0, viewModel.CanOpenContextMenu);
-        Assert.AreEqual(entries.Count, viewModel.AllCommands.Count);
+        Assert.HasCount(entries.Count, viewModel.AllCommands);
         viewModel.SafeCleanup();
     }
 
@@ -349,7 +350,7 @@ public partial class ContentPageViewModelTests
         viewModel.InitializeProperties();
         var commands = viewModel.AllCommands.OfType<CommandContextItemViewModel>().ToArray();
         var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
-        await uiTasks.StartNew(() => menu.PrepareForOpen(viewModel));
+        await uiTasks.StartNew(() => menu.PrepareForOpen(viewModel), TestContext.CancellationToken);
         var hidden = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var restored = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         viewModel.PropertyChanged += (_, args) =>
@@ -379,22 +380,22 @@ public partial class ContentPageViewModelTests
             ((NoOpCommand)first.Command!).Name = string.Empty;
             ((NoOpCommand)second.Command!).Name = string.Empty;
             ((NoOpCommand)third.Command!).Name = string.Empty;
-            await hidden.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await hidden.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
             Assert.IsNull(viewModel.PrimaryCommand);
             Assert.IsNull(viewModel.SecondaryCommand);
             Assert.IsTrue(commands.All(command => command.DisplayShortcut is null));
 
             ((NoOpCommand)first.Command!).Name = "Restored";
-            await restored.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await restored.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
             Assert.IsTrue(viewModel.HasCommands);
             Assert.IsTrue(viewModel.CanOpenContextMenu);
-            Assert.AreEqual(3, viewModel.AllCommands.Count);
+            Assert.HasCount(3, viewModel.AllCommands);
             Assert.AreEqual(new KeyChord(0, (int)VirtualKey.Enter, 0), commands[0].DisplayShortcut);
             Assert.IsNull(commands[1].DisplayShortcut);
         }
         finally
         {
-            await uiTasks.StartNew(menu.Close);
+            await uiTasks.StartNew(menu.Close, System.Threading.CancellationToken.None);
             viewModel.SafeCleanup();
         }
     }
@@ -420,7 +421,7 @@ public partial class ContentPageViewModelTests
             }
 
             viewModel.ApplyPendingUpdates();
-            await uiTasks.StartNew(() => { });
+            await uiTasks.StartNew(() => { }, TestContext.CancellationToken);
             var allCommands = viewModel.AllCommands;
             List<string> menuNotifications = [];
             viewModel.PropertyChanged += (_, args) =>
@@ -437,16 +438,16 @@ public partial class ContentPageViewModelTests
                 children[i].Command.ApplyPendingUpdates();
             }
 
-            await uiTasks.StartNew(() => { });
+            await uiTasks.StartNew(() => { }, TestContext.CancellationToken);
             foreach (var child in children)
             {
                 child.ApplyPendingUpdates();
             }
 
             viewModel.ApplyPendingUpdates();
-            await uiTasks.StartNew(() => { });
+            await uiTasks.StartNew(() => { }, TestContext.CancellationToken);
 
-            Assert.AreEqual(0, menuNotifications.Count, "Name changes must not republish unchanged menu entries or action roles.");
+            Assert.IsEmpty(menuNotifications, "Name changes must not republish unchanged menu entries or action roles.");
             Assert.AreSame(allCommands, viewModel.AllCommands);
             Assert.AreEqual("Renamed 1", viewModel.SecondaryCommandName);
         }
@@ -455,4 +456,6 @@ public partial class ContentPageViewModelTests
             viewModel.SafeCleanup();
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

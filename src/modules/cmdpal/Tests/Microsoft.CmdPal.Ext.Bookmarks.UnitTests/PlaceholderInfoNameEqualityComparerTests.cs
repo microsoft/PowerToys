@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class PlaceholderInfoNameEqualityComparerTests
 {
@@ -77,7 +78,7 @@ public class PlaceholderInfoNameEqualityComparerTests
     public void GetHashCode_Null_ThrowsArgumentNullException()
     {
         var comparer = PlaceholderInfoNameEqualityComparer.Instance;
-        Assert.ThrowsException<ArgumentNullException>(() => comparer.GetHashCode(null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => comparer.GetHashCode(null!));
     }
 
     [TestMethod]
@@ -100,9 +101,9 @@ public class PlaceholderInfoNameEqualityComparerTests
             new("unique", 0),
         };
 
-        Assert.AreEqual(2, set.Count);
-        Assert.IsTrue(set.Contains(new PlaceholderInfo("dup", 123)));
-        Assert.IsTrue(set.Contains(new PlaceholderInfo("UNIQUE", 999)));
-        Assert.IsFalse(set.Contains(new PlaceholderInfo("missing", 0)));
+        Assert.HasCount(2, set);
+        Assert.Contains(new PlaceholderInfo("dup", 123), set);
+        Assert.Contains(new PlaceholderInfo("UNIQUE", 999), set);
+        Assert.DoesNotContain(new PlaceholderInfo("missing", 0), set);
     }
 }

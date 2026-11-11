@@ -9,6 +9,7 @@ using static MouseUtils.UITests.MouseUtilsTestHelper;
 
 namespace MouseUtils.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class MousePointerCrosshairsTests : UITestBase
 {

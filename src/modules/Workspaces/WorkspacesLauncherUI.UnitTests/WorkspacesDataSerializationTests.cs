@@ -7,6 +7,7 @@ using WorkspacesCsharpLibrary.Data;
 
 namespace WorkspacesLauncherUI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class WorkspacesDataSerializationTests
 {

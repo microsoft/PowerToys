@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace KeyboardManagerEditorUI.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     [DoNotParallelize]
     public class EditorSettingsReloadTests

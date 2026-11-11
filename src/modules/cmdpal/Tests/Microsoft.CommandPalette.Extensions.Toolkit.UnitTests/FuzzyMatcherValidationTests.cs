@@ -6,10 +6,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class FuzzyMatcherValidationTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null, "haystack")]
     [DataRow("", "haystack")]
     [DataRow("needle", null)]
@@ -22,7 +23,7 @@ public class FuzzyMatcherValidationTests
         Assert.AreEqual(0, FuzzyStringMatcher.ScoreFuzzy(needle!, haystack!, allowNonContiguousMatches: false, removeDiacritics: false));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null, "haystack")]
     [DataRow("", "haystack")]
     [DataRow("needle", null)]
@@ -33,11 +34,11 @@ public class FuzzyMatcherValidationTests
         var (score1, pos1) = FuzzyStringMatcher.ScoreFuzzyWithPositions(needle!, haystack!, true);
         Assert.AreEqual(0, score1);
         Assert.IsNotNull(pos1);
-        Assert.AreEqual(0, pos1.Count);
+        Assert.IsEmpty(pos1);
 
         var (score2, pos2) = FuzzyStringMatcher.ScoreFuzzyWithPositions(needle!, haystack!, allowNonContiguousMatches: true, removeDiacritics: true);
         Assert.AreEqual(0, score2);
         Assert.IsNotNull(pos2);
-        Assert.AreEqual(0, pos2.Count);
+        Assert.IsEmpty(pos2);
     }
 }

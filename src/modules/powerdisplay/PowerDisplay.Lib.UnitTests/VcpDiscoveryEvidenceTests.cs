@@ -10,6 +10,7 @@ using PowerDisplay.Common.Models;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class VcpDiscoveryEvidenceTests
 {
@@ -38,7 +39,7 @@ public sealed class VcpDiscoveryEvidenceTests
         Assert.IsTrue(result.InitialValues[0x10].IsLive);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(DdcErrorClassifier.ErrorGraphicsInvalidPhysicalMonitorHandle)]
     [DataRow(DdcErrorClassifier.ErrorGraphicsMonitorNoLongerExists)]
     public void Reconcile_PhysicalMonitorUnavailableRejectsAllCapabilitiesAndCache(int errorCode)
@@ -63,7 +64,7 @@ public sealed class VcpDiscoveryEvidenceTests
 
         Assert.IsTrue(result.IsPhysicalMonitorUnavailable);
         Assert.IsNull(result.Capabilities);
-        Assert.AreEqual(0, result.InitialValues.Count);
+        Assert.IsEmpty(result.InitialValues);
     }
 
     [TestMethod]
@@ -103,7 +104,7 @@ public sealed class VcpDiscoveryEvidenceTests
 
         Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x10));
         Assert.IsTrue(result.Capabilities.SupportsVcpCode(0x12));
-        Assert.AreEqual(1, result.InitialValues.Count);
+        Assert.HasCount(1, result.InitialValues);
         Assert.AreEqual(25, result.InitialValues[0x10].Value.Current);
         Assert.IsFalse(result.InitialValues[0x10].IsLive);
 
@@ -130,7 +131,7 @@ public sealed class VcpDiscoveryEvidenceTests
         var codeInfo = result.Capabilities!.GetVcpCodeInfo(0x62)!.Value;
         Assert.AreEqual("Audio: Speaker Volume", codeInfo.Name);
         Assert.IsTrue(codeInfo.HasDiscreteValues);
-        CollectionAssert.AreEqual(VolumePresets, codeInfo.SupportedValues.ToArray());
+        Assert.AreSequenceEqual(VolumePresets, codeInfo.SupportedValues.ToArray());
     }
 
     [TestMethod]
@@ -151,7 +152,7 @@ public sealed class VcpDiscoveryEvidenceTests
             cached: new Dictionary<byte, KnownGoodVcpFeature>());
 
         Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x10));
-        Assert.AreEqual(0, result.InitialValues.Count);
+        Assert.IsEmpty(result.InitialValues);
     }
 
     [TestMethod]
@@ -204,7 +205,7 @@ public sealed class VcpDiscoveryEvidenceTests
             cached: new Dictionary<byte, KnownGoodVcpFeature>());
 
         Assert.AreSame(parsed, result.Capabilities);
-        Assert.AreEqual(0, result.InitialValues.Count);
+        Assert.IsEmpty(result.InitialValues);
         Assert.AreEqual("caps", result.CapabilitiesRaw);
     }
 
@@ -221,7 +222,7 @@ public sealed class VcpDiscoveryEvidenceTests
             cached: new Dictionary<byte, KnownGoodVcpFeature> { [0x10] = cached });
 
         Assert.IsNull(result.Capabilities);
-        Assert.AreEqual(0, result.InitialValues.Count);
+        Assert.IsEmpty(result.InitialValues);
     }
 
     [TestMethod]
@@ -247,7 +248,7 @@ public sealed class VcpDiscoveryEvidenceTests
                 [0x62] = Cached(0x62, 45),
             });
 
-        CollectionAssert.AreEqual(new byte[] { 0x62 }, result.CacheSupplementedCodes.ToArray());
+        Assert.AreSequenceEqual(new byte[] { 0x62 }, result.CacheSupplementedCodes.ToArray());
         Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x62));
 
         // 0x10 is advertised by the caps string and cached, and no probe touched it, so it is not

@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerDisplay.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 [TestCategory("PowerDisplay")]
@@ -71,7 +72,7 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
         }
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup]
     public static void RestoreState()
     {
         try
@@ -115,7 +116,7 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
                 "ALT" => Key.Alt,
                 _ => Enum.Parse<Key>(part, ignoreCase: true),
             }).ToArray();
-        Assert.IsTrue(activationKeys.Length >= 2, $"Invalid shortcut: '{shortcut}'.");
+        Assert.IsGreaterThanOrEqualTo(2, activationKeys.Length, $"Invalid shortcut: '{shortcut}'.");
     }
 
     [TestCleanup]
@@ -180,7 +181,7 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
         var flyout = OpenFlyout();
         flyout = AssertStableInventory(flyout);
         var displays = MonitorInfo.GetAll();
-        Assert.IsTrue(displays.Count > 0, "Windows must report at least one display.");
+        Assert.IsNotEmpty(displays, "Windows must report at least one display.");
         var existingWindows = WindowsFinder.ListByApp(ProcessName).Select(window => window.Hwnd).ToHashSet();
         OpenDiscoveryMenu(flyout);
         Step($"Identifying all {displays.Count} Windows displays, including displays without DDC/CI");
@@ -240,8 +241,9 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
         var slider = sliders.FirstOrDefault(control => control.IsEnabled);
         Assert.IsNotNull(slider, "Brightness controls must be enabled after discovery with linked levels disabled.");
         var monitorId = slider.AutomationId;
-        Assert.IsTrue(
-            ReadMonitors().Any(monitor => string.Equals(monitor.GetProperty("id").GetString(), monitorId, StringComparison.OrdinalIgnoreCase)),
+        Assert.Contains(
+            monitor => string.Equals(monitor.GetProperty("id").GetString(), monitorId, StringComparison.OrdinalIgnoreCase),
+            ReadMonitors(),
             "The brightness slider did not identify a discovered monitor.");
         slider = FindMonitorBrightnessSlider(flyout, monitorId);
         var original = ReadBrightness(flyout, slider);
@@ -297,7 +299,7 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
         var matches = flyout.FindAll<Slider>(By.AccessibilityId(monitorId))
             .Where(slider => string.Equals(slider.AutomationId, monitorId, StringComparison.OrdinalIgnoreCase))
             .ToArray();
-        Assert.AreEqual(1, matches.Length, $"Expected one brightness slider for exact monitor ID '{monitorId}'.");
+        Assert.HasCount(1, matches, $"Expected one brightness slider for exact monitor ID '{monitorId}'.");
         return matches[0];
     }
 
@@ -586,23 +588,24 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
         {
             foreach (var expected in virtualMonitors.Snapshot().Monitors.Where(monitor => monitor.Connected && monitor.Mode == 0))
             {
-                Assert.IsTrue(
-                    monitors.Any(monitor =>
+                Assert.Contains(
+                    monitor =>
                         VirtualMonitorFixture.IsFixtureId(monitor.GetProperty("id").GetString()!) &&
-                        VirtualMonitorFixture.ConnectorForId(monitor.GetProperty("id").GetString()!) == expected.Connector),
+                        VirtualMonitorFixture.ConnectorForId(monitor.GetProperty("id").GetString()!) == expected.Connector,
+                    monitors,
                     $"Connected brightness-capable fixture connector {expected.Connector} is missing from discovery.");
             }
         }
 
         if (result.LastObservation == "empty")
         {
-            Assert.AreEqual(0, monitors.Length, "The flyout claims an empty inventory despite independently discovered live monitors.");
-            Assert.AreEqual(0, BrightnessSliders(flyout).Length, "The empty flyout still exposes a brightness control.");
+            Assert.IsEmpty(monitors, "The flyout claims an empty inventory despite independently discovered live monitors.");
+            Assert.IsEmpty(BrightnessSliders(flyout), "The empty flyout still exposes a brightness control.");
             Assert.IsTrue(flyout.Has(By.Name("No monitors detected")), "The empty state did not explain that no monitors were detected.");
         }
         else
         {
-            Assert.IsTrue(monitors.Length > 0, "The flyout did not publish its discovered monitor inventory.");
+            Assert.IsNotEmpty(monitors, "The flyout did not publish its discovered monitor inventory.");
             foreach (var monitor in monitors)
             {
                 Assert.IsTrue(flyout.Has(By.Name(monitor.GetProperty("name").GetString()!)), $"A discovered monitor is missing: {monitor}.");

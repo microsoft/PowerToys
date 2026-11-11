@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Settings.UI.UnitTests.Search
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class StringMatcherTests
     {
@@ -38,7 +39,7 @@ namespace Settings.UI.UnitTests.Search
                 Assert.IsFalse(result.Success);
                 Assert.AreEqual(0, result.Score);
                 Assert.AreEqual(0, result.RawScore);
-                Assert.AreEqual(0, result.MatchData.Count);
+                Assert.IsEmpty(result.MatchData);
             }
         }
 
@@ -51,7 +52,7 @@ namespace Settings.UI.UnitTests.Search
 
             Assert.IsFalse(result.Success);
             Assert.AreEqual(0, result.Score);
-            Assert.AreEqual(0, result.MatchData.Count);
+            Assert.IsEmpty(result.MatchData);
         }
 
         [TestMethod]
@@ -66,7 +67,7 @@ namespace Settings.UI.UnitTests.Search
 
             Assert.IsTrue(result.Success);
             Assert.AreEqual(157, result.Score);
-            CollectionAssert.AreEqual(PrefixMatchData, result.MatchData);
+            Assert.AreSequenceEqual(PrefixMatchData, result.MatchData);
         }
 
         [TestMethod]
@@ -78,7 +79,7 @@ namespace Settings.UI.UnitTests.Search
             Assert.IsTrue(exact.Success);
             Assert.IsTrue(prefix.Success);
             Assert.AreEqual(190, exact.Score);
-            Assert.IsTrue(exact.Score > prefix.Score);
+            Assert.IsGreaterThan(prefix.Score, exact.Score);
         }
 
         [TestMethod]
@@ -88,7 +89,7 @@ namespace Settings.UI.UnitTests.Search
 
             Assert.IsTrue(result.Success);
             Assert.AreEqual(154, result.Score);
-            CollectionAssert.AreEqual(MultiwordMatchData, result.MatchData);
+            Assert.AreSequenceEqual(MultiwordMatchData, result.MatchData);
         }
 
         [TestMethod]

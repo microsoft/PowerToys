@@ -9,9 +9,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace AdvancedPaste.Cli.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public class AdvancedPastePolicyTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("unknown-provider")]
     [DataRow("OpenAI")]
     public void OpenAIAndUnknownProvider_RespectOpenAIPolicy(string serviceType)
@@ -29,7 +30,7 @@ public class AdvancedPastePolicyTests
         Assert.AreEqual(AIServiceType.OpenAI, checkedService);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("unknown-provider")]
     [DataRow("AzureOpenAI")]
     public void OnlineProviders_RespectOnlinePolicy(string serviceType)

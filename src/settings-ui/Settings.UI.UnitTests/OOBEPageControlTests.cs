@@ -8,6 +8,7 @@ using Windows.Foundation;
 
 namespace Settings.UI.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class OOBEPageControlTests
     {
@@ -65,7 +66,7 @@ namespace Settings.UI.UnitTests
             Assert.AreEqual(280, bounds.Height, 0.001);
             Assert.AreEqual((711 - bounds.Width) / 2, bounds.X, 0.001);
             Assert.AreEqual(0, bounds.Y, 0.001);
-            Assert.IsTrue(bounds.X < 0);
+            Assert.IsLessThan(0, bounds.X);
         }
 
         [TestMethod]

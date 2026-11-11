@@ -8,6 +8,7 @@ using Windows.Graphics.Imaging;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ShellItemIconExtractorTests
 {
@@ -37,7 +38,7 @@ public class ShellItemIconExtractorTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task SystemImageListIdentityUsesDirectSoftwareBitmapRoute()
     {
         var path = Path.GetTempFileName();
@@ -61,7 +62,7 @@ public class ShellItemIconExtractorTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task ItemPathIdentityUsesBitmapStreamRoute()
     {
         var path = Path.GetTempFileName();

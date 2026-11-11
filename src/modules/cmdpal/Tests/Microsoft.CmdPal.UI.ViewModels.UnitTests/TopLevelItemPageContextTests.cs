@@ -12,6 +12,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class TopLevelItemPageContextTests
@@ -48,7 +49,7 @@ public sealed class TopLevelItemPageContextTests
                     It.Is<int>(line => line > 0)),
                 Times.Once);
             Assert.IsNotNull(exception.StackTrace);
-            StringAssert.Contains(exception.StackTrace, nameof(ThrowingViewModel.InitializeProperties));
+            Assert.Contains(nameof(ThrowingViewModel.InitializeProperties), exception.StackTrace);
         }
         finally
         {

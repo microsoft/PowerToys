@@ -12,6 +12,7 @@ using PowerToys.DSC.Models.KeyboardManager;
 namespace PowerToys.DSC.UnitTests.KeyboardManager;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class KbmProfileConverterTests
 {
     // Profile JSON in the exact shape written by the C++ editor
@@ -60,7 +61,7 @@ public sealed class KbmProfileConverterTests
         var model = KbmProfileConverter.FromProfile(profile);
 
         // Assert: keys sorted by virtual-key code
-        Assert.AreEqual(3, model.Keys.Count);
+        Assert.HasCount(3, model.Keys);
         Assert.AreEqual("CapsLock", model.Keys[0].From);
         Assert.AreEqual("Esc", model.Keys[0].To);
         Assert.AreEqual("Insert", model.Keys[1].From);
@@ -69,7 +70,7 @@ public sealed class KbmProfileConverterTests
         Assert.AreEqual("hello", model.Keys[2].ToText);
 
         // Assert: shortcuts sorted by (targetApp, from); global entries first
-        Assert.AreEqual(5, model.Shortcuts.Count);
+        Assert.HasCount(5, model.Shortcuts);
 
         Assert.AreEqual("Ctrl+Alt+B", model.Shortcuts[0].From);
         Assert.AreEqual("https://example.com", model.Shortcuts[0].OpenUri);
@@ -96,7 +97,7 @@ public sealed class KbmProfileConverterTests
         Assert.AreEqual("Ctrl+Alt+N", model.Shortcuts[4].From);
         Assert.AreEqual("Ctrl+S", model.Shortcuts[4].To);
         Assert.AreEqual("notepad.exe", model.Shortcuts[4].TargetApp);
-        Assert.AreEqual(true, model.Shortcuts[4].ExactMatch);
+        Assert.IsTrue(model.Shortcuts[4].ExactMatch);
     }
 
     [TestMethod]
@@ -130,10 +131,10 @@ public sealed class KbmProfileConverterTests
         Assert.AreEqual("hello", profile.RemapKeysToText.InProcessRemapKeys[0].NewRemapString);
 
         var global = profile.RemapShortcuts.GlobalRemapShortcuts;
-        Assert.AreEqual(3, global.Count);
+        Assert.HasCount(3, global);
         Assert.AreEqual("17;16;65", global[0].OriginalKeys);
         Assert.AreEqual("17;86", global[0].NewRemapKeys);
-        Assert.AreEqual(false, global[0].ExactMatch);
+        Assert.IsFalse(global[0].ExactMatch);
 
         Assert.AreEqual("260;79;75", global[1].OriginalKeys);
         Assert.AreEqual(75u, global[1].SecondKeyOfChord);
@@ -152,14 +153,14 @@ public sealed class KbmProfileConverterTests
         Assert.AreEqual("*Unsupported*", global[2].NewRemapString);
 
         var appSpecific = profile.RemapShortcuts.AppSpecificRemapShortcuts;
-        Assert.AreEqual(1, appSpecific.Count);
+        Assert.HasCount(1, appSpecific);
         Assert.AreEqual("17;18;78", appSpecific[0].OriginalKeys);
         Assert.AreEqual("17;83", appSpecific[0].NewRemapKeys);
         Assert.AreEqual("notepad.exe", appSpecific[0].TargetApp);
-        Assert.AreEqual(true, appSpecific[0].ExactMatch);
+        Assert.IsTrue(appSpecific[0].ExactMatch);
 
         var globalText = profile.RemapShortcutsToText.GlobalRemapShortcuts;
-        Assert.AreEqual(1, globalText.Count);
+        Assert.HasCount(1, globalText);
         Assert.AreEqual("17;18;84", globalText[0].OriginalKeys);
         Assert.AreEqual("typed", globalText[0].NewRemapString);
     }
@@ -240,7 +241,7 @@ public sealed class KbmProfileConverterTests
 
         var errors = KbmProfileConverter.Validate(model);
 
-        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+        Assert.IsEmpty(errors, string.Join("; ", errors));
     }
 
     [TestMethod]
@@ -308,7 +309,7 @@ public sealed class KbmProfileConverterTests
 
         var errors = KbmProfileConverter.Validate(model);
 
-        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+        Assert.IsEmpty(errors, string.Join("; ", errors));
     }
 
     [TestMethod]
@@ -327,15 +328,15 @@ public sealed class KbmProfileConverterTests
         var model = KbmProfileConverter.FromProfile(profile, warnings);
 
         // Assert
-        Assert.AreEqual(1, model.Keys.Count);
-        Assert.AreEqual(0, model.Shortcuts.Count);
-        Assert.AreEqual(2, warnings.Count, string.Join(" | ", warnings));
-        StringAssert.Contains(warnings[0], "'abc'");
-        StringAssert.Contains(warnings[1], "without a program path");
+        Assert.HasCount(1, model.Keys);
+        Assert.IsEmpty(model.Shortcuts);
+        Assert.HasCount(2, warnings, string.Join(" | ", warnings));
+        Assert.Contains("'abc'", warnings[0]);
+        Assert.Contains("without a program path", warnings[1]);
     }
 
     private static void AssertHasError(System.Collections.Generic.IList<string> errors, string expectedFragment)
     {
-        Assert.IsTrue(errors.Any(e => e.Contains(expectedFragment, System.StringComparison.Ordinal)), $"Expected an error containing '{expectedFragment}'; got: {string.Join(" | ", errors)}");
+        Assert.Contains(e => e.Contains(expectedFragment, System.StringComparison.Ordinal), errors, $"Expected an error containing '{expectedFragment}'; got: {string.Join(" | ", errors)}");
     }
 }

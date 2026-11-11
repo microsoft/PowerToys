@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class IconProtocolRegistryTests
 {
@@ -61,7 +62,7 @@ public class IconProtocolRegistryTests
         Assert.AreEqual(IconProtocolProcessingResult.ResultKind.Empty, processingResult.Kind);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("|Swatch|#FF0067C0|", "GeneratedSwatch", true)]
     [DataRow("|Initials|CP|#FF0067C0|circle|", "GeneratedInitials", false)]
     public void BuiltInRegistryFindsGeneratedIconProcessor(
@@ -75,7 +76,9 @@ public class IconProtocolRegistryTests
         Assert.AreSame(GeneratedIconProtocolProcessor.Instance, processor);
         Assert.AreEqual(IconCachePartition.Other, processor.CachePartition);
         Assert.AreEqual(inputKind, processor.ClassifyInput(value).ToString());
-        Assert.AreEqual(preparesSynchronously, processor.TryPrepareSynchronously(
+        Assert.AreEqual(
+            preparesSynchronously,
+            processor.TryPrepareSynchronously(
             value,
             20,
             ElementTheme.Light,
@@ -94,7 +97,7 @@ public class IconProtocolRegistryTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task InitialsPreparationRunsThroughAsyncProcessorPath()
     {
         const string Value = "|Initials|CP|#FF0067C0|circle|";
@@ -114,7 +117,7 @@ public class IconProtocolRegistryTests
         Assert.AreEqual(IconPathConverter.PreparedIconKind.SvgData, preparedIcon.Kind);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("|Svg|<svg/>", "SvgInline")]
     [DataRow("|Svg|C:\\Icons\\sample.svg", "SvgFile")]
     [DataRow("|ThemedSvg|warning|<svg/>", "ThemedSvgInline")]
@@ -147,7 +150,7 @@ public class IconProtocolRegistryTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow("\uE700")]
@@ -194,23 +197,23 @@ public class IconProtocolRegistryTests
             ]);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow("Test|")]
     public void ValidationRejectsMalformedProtocolPrefixes(string? prefix)
     {
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
             IconProtocolRegistry.ValidateProcessors([new TestProcessor([prefix!])]));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("|Test|", "|Test|")]
     [DataRow("|Icon", "|IconX|")]
     [DataRow("|Icon|", "|Icon|Variant|")]
     public void ValidationRejectsDuplicateOrOverlappingProtocolPrefixes(string first, string second)
     {
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
             IconProtocolRegistry.ValidateProcessors(
                 [new TestProcessor(first), new TestProcessor(second)]));
     }
@@ -218,7 +221,7 @@ public class IconProtocolRegistryTests
     [TestMethod]
     public void ValidationRejectsProcessorWithoutProtocolPrefixes()
     {
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
             IconProtocolRegistry.ValidateProcessors([new TestProcessor()]));
     }
 

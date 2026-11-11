@@ -13,22 +13,23 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Calc.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
 {
     private const int IntMax = int.MaxValue;
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow("  ")]
     public void InputValid_ThrowError_WhenCalledNullOrEmpty(string input)
     {
         // Act
-        Assert.IsTrue(!CalculateHelper.InputValid(input));
+        Assert.IsFalse(CalculateHelper.InputValid(input));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("test")]
     [DataRow("[10,10]")] // '[10,10]' is interpreted as array by mages engine
     public void Interpret_NoResult_WhenCalled(string input)
@@ -117,7 +118,7 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
             ["1*10^(-16)", 0M],
         ];
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(nameof(Interpret_NoErrors_WhenCalledWithRounding_Data))]
     public void Interpret_NoErrors_WhenCalledWithRounding(string input, decimal expectedResult)
     {
@@ -128,7 +129,6 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         var result = CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out _);
 
         // Assert
-        Assert.IsNotNull(result);
         Assert.AreEqual(CalculateEngine.FormatMax15Digits(expectedResult, new CultureInfo("en-US")), result.RoundedResult);
     }
 
@@ -139,7 +139,7 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         ];
 
     [DynamicData(nameof(Interpret_GreaterPrecision_WhenCalled_Data))]
-    [DataTestMethod]
+    [TestMethod]
     public void Interpret_GreaterPrecision_WhenCalled(string input, decimal expectedResult)
     {
         // Arrange
@@ -150,7 +150,6 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         var result = CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out _);
 
         // Assert
-        Assert.IsNotNull(result);
         Assert.AreEqual(expectedResult, result.Result);
     }
 
@@ -161,7 +160,7 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
             ["4.5/3", 1.5M, "de-DE"],
         ];
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(nameof(Interpret_DifferentCulture_WhenCalled_Data))]
     public void Interpret_DifferentCulture_WhenCalled(string input, decimal expectedResult, string cultureName)
     {
@@ -173,11 +172,10 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         var result = CalculateEngine.Interpret(settings, input, cultureInfo, out _);
 
         // Assert
-        Assert.IsNotNull(result);
         Assert.AreEqual(CalculateEngine.Round(expectedResult), result.RoundedResult);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("log(3)", true)]
     [DataRow("ln(3)", true)]
     [DataRow("log2(3)", true)]
@@ -238,7 +236,7 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         Assert.AreEqual(valid, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("1-1")]
     [DataRow("sin(0)")]
     [DataRow("sinh(0)")]
@@ -252,7 +250,6 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         var result = CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out _);
 
         // Assert
-        Assert.IsNotNull(result);
         Assert.AreEqual(0.0M, result.Result);
     }
 
@@ -274,7 +271,7 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
             ["0+(1*2)/0.5", 4M], // Validate that division by number with decimal digits is not interpret as division by zero.
         ];
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(nameof(Interpret_MustReturnExpectedResult_WhenCalled_Data))]
     public void Interpret_MustReturnExpectedResult_WhenCalled(string input, decimal expectedResult)
     {
@@ -286,7 +283,6 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         var result = CalculateEngine.Interpret(settings, input, new CultureInfo("en-us", false), out _);
 
         // Assert
-        Assert.IsNotNull(result);
         Assert.AreEqual(expectedResult, result.Result);
     }
 
@@ -299,7 +295,7 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
             ["1E3-1E3/1.5", "en-US", 333.333333333333371M],
         ];
 
-    [DataTestMethod]
+    [TestMethod]
     [DynamicData(nameof(Interpret_TestScientificNotation_WhenCalled_Data))]
     public void Interpret_TestScientificNotation_WhenCalled(string input, string sourceCultureName, decimal expectedResult)
     {
@@ -313,11 +309,10 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         var result = CalculateEngine.Interpret(settings, translatedInput, new CultureInfo("en-US", false), out _);
 
         // Assert
-        Assert.IsNotNull(result);
         Assert.AreEqual(expectedResult, result.Result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("sin(90)", "sin((pi / 180) * (90))")]
     [DataRow("arcsin(0.5)", "(180 / pi) * (arcsin(0.5))")]
     [DataRow("sin(sin(30))", "sin((pi / 180) * (sin((pi / 180) * (30))))")]
@@ -357,7 +352,7 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         Assert.AreEqual(expectedResult, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("sin(90)", "sin((pi / 200) * (90))")]
     [DataRow("arcsin(0.5)", "(200 / pi) * (arcsin(0.5))")]
     [DataRow("sin(sin(30))", "sin((pi / 200) * (sin((pi / 200) * (30))))")]
@@ -397,7 +392,7 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         Assert.AreEqual(expectedResult, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("rad(30)", "(180 / pi) * (30)")]
     [DataRow("rad( 30 )", "(180 / pi) * ( 30 )")]
     [DataRow("deg(30)", "(30)")]
@@ -426,7 +421,7 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         Assert.AreEqual(expectedResult, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("rad(30)", "(30)")]
     [DataRow("rad( 30 )", "( 30 )")]
     [DataRow("deg(30)", "(pi / 180) * (30)")]
@@ -455,7 +450,7 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         Assert.AreEqual(expectedResult, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("rad(30)", "(200 / pi) * (30)")]
     [DataRow("rad( 30 )", "(200 / pi) * ( 30 )")]
     [DataRow("deg(30)", "(10 / 9) * (30)")]
@@ -484,7 +479,7 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         Assert.AreEqual(expectedResult, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("171!")]
     [DataRow("1000!")]
     public void Interpret_ReturnsOutOfBoundsError_WhenValueOverflowsDecimal(string input)
@@ -496,7 +491,7 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         Assert.AreEqual(Properties.Resources.calculator_not_covert_to_decimal, error);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("exp(99999)")]
     [DataRow("-exp(99999)")]
     [DataRow("cot(0)")]
@@ -511,7 +506,7 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         Assert.AreEqual(Properties.Resources.calculator_not_covert_to_decimal, error);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("1 2")]
     public void Interpret_ReturnsExpressionNotCompleteError_WhenExpressionIsInvalid(string input)
     {
@@ -534,7 +529,7 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         Assert.AreEqual(Properties.Resources.calculator_not_a_number, error);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("factorial(-1)")]
     [DataRow("factorial(0.5)")]
     [DataRow("factorial(sqrt(-1))")]
@@ -609,7 +604,7 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         Assert.IsTrue(value >= 0M && value < IntMax, $"randi({IntMax}) result {value} was out of range");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("randi(0)")]
     [DataRow("randi(0.5)")]
     [DataRow("randi(-1)")]

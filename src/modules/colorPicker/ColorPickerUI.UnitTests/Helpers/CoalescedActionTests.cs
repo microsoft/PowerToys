@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ColorPicker.UnitTests.Helpers
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class CoalescedActionTests
     {

@@ -14,6 +14,7 @@ using PowerToys.DSC.Models;
 namespace PowerToys.DSC.UnitTests.SettingsResourceTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class SettingsResourceCommandTest : BaseDscTest
 {
     [TestMethod]
@@ -67,7 +68,7 @@ public sealed class SettingsResourceCommandTest : BaseDscTest
 
         // Assert
         Assert.IsFalse(result.Success);
-        Assert.AreEqual(1, messages.Count);
+        Assert.HasCount(1, messages);
         Assert.AreEqual(DscMessageLevel.Error, messages[0].Level);
         Assert.AreEqual(GetResourceString("InputEmptyOrNullError"), messages[0].Message);
     }
@@ -81,7 +82,7 @@ public sealed class SettingsResourceCommandTest : BaseDscTest
 
         // Assert
         Assert.IsFalse(result.Success);
-        Assert.AreEqual(1, messages.Count);
+        Assert.HasCount(1, messages);
         Assert.AreEqual(DscMessageLevel.Error, messages[0].Level);
         Assert.AreEqual(GetResourceString("InputEmptyOrNullError"), messages[0].Message);
     }

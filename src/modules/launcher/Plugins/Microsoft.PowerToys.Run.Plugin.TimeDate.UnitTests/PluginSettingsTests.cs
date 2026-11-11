@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class PluginSettingsTests
     {
@@ -27,7 +28,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(7, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("CalendarFirstWeekRule")]
         [DataRow("FirstDayOfWeek")]
         [DataRow("OnlyDateTimeNowGlobal")]
@@ -47,7 +48,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.IsNotNull(result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("OnlyDateTimeNowGlobal", true)]
         [DataRow("TimeWithSeconds", false)]
         [DataRow("DateWithWeekday", false)]
@@ -65,7 +66,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(valueExpected, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("CalendarFirstWeekRule", -1)]
         [DataRow("FirstDayOfWeek", -1)]
         public void DefaultEnumValues(string name, int valueExpected)
@@ -81,7 +82,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(valueExpected, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("CustomFormats")]
         public void DefaultEmptyMultilineTextValues(string name)
         {
@@ -93,7 +94,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             List<string> result = (List<string>)propertyInfo?.GetValue(setting);
 
             // Assert
-            Assert.AreEqual(0, result.Count);
+            Assert.IsEmpty(result);
         }
     }
 }

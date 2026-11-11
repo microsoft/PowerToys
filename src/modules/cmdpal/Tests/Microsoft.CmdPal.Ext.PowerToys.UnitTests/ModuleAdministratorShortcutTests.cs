@@ -11,6 +11,7 @@ using static Common.UI.SettingsDeepLink;
 
 namespace Microsoft.CmdPal.Ext.PowerToys.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ModuleAdministratorShortcutTests
 {
@@ -49,7 +50,7 @@ public class ModuleAdministratorShortcutTests
         }
         else
         {
-            Assert.HasCount(0, items[0].MoreCommands);
+            Assert.IsEmpty(items[0].MoreCommands);
         }
     }
 }

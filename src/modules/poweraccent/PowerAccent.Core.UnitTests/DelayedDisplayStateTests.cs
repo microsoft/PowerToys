@@ -7,6 +7,7 @@ using PowerAccent.Core;
 
 namespace PowerAccent.Core.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class DelayedDisplayStateTests
 {

@@ -15,6 +15,7 @@ using Moq;
 
 namespace PdfThumbnailProviderUnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [STATestClass]
     public class PdfThumbnailProviderTests
     {
@@ -28,7 +29,7 @@ namespace PdfThumbnailProviderUnitTests
 
             Bitmap? bitmap = provider.GetThumbnail(256);
 
-            Assert.IsTrue(bitmap != null);
+            Assert.IsNotNull(bitmap);
         }
 
         [TestMethod]
@@ -41,7 +42,7 @@ namespace PdfThumbnailProviderUnitTests
 
             Bitmap? bitmap = provider.GetThumbnail(0);
 
-            Assert.IsTrue(bitmap == null);
+            Assert.IsNull(bitmap);
         }
 
         [TestMethod]
@@ -54,7 +55,7 @@ namespace PdfThumbnailProviderUnitTests
 
             Bitmap? bitmap = provider.GetThumbnail(10001);
 
-            Assert.IsTrue(bitmap == null);
+            Assert.IsNull(bitmap);
         }
     }
 }

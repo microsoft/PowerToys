@@ -6,6 +6,7 @@ using FancyZonesEditor.Models;
 
 namespace UnitTestsFancyZonesEditor;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class GridLayoutModelTests
 {

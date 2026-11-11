@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CommonLibTest
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class CollectionPropertySerializationTests
     {
@@ -304,7 +305,7 @@ namespace CommonLibTest
             Assert.IsNotNull(group);
             Assert.IsEmpty(group.Modules);
             Assert.IsNotNull(info);
-            CollectionAssert.Contains(info.AllConflictingModules, "FancyZones:1");
+            Assert.Contains("FancyZones:1", info.AllConflictingModules);
         }
     }
 }

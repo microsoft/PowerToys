@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.AlwaysOnTop.UITests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class AlwaysOnTopTests : UITestBase
 {
     private const string AlwaysOnTopProcessName = "PowerToys.AlwaysOnTop";
@@ -543,8 +544,8 @@ public sealed class AlwaysOnTopTests : UITestBase
             && rightMargin is > 0 and <= 64
             && bottomMargin is > 0 and <= 64;
         Assert.IsTrue(surroundsFrame, $"The border did not surround the maximized DWM frame. {marginDiagnostics}");
-        Assert.IsTrue(Math.Abs(leftMargin - rightMargin) <= 4, "The maximized border was not horizontally symmetric.");
-        Assert.IsTrue(Math.Abs(topMargin - bottomMargin) <= 4, "The maximized border was not vertically symmetric.");
+        Assert.IsLessThanOrEqualTo(4, Math.Abs(leftMargin - rightMargin), "The maximized border was not horizontally symmetric.");
+        Assert.IsLessThanOrEqualTo(4, Math.Abs(topMargin - bottomMargin), "The maximized border was not vertically symmetric.");
     }
 
     private bool WaitForBorderColor(Color expectedColor, int thickness, int timeoutMs)

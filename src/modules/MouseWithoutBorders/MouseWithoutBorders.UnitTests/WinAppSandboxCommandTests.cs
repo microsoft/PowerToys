@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class WinAppSandboxCommandTests
@@ -137,20 +138,17 @@ public sealed class WinAppSandboxCommandTests
             using var command = PowerShellFixture.StartCommand(script, root, Path.Combine(root, "private"));
             RunFiles.Wait(() => int.TryParse(command.StandardOutput.Trim(), out _), TimeSpan.FromSeconds(15), "The fixture child did not start.");
             child = System.Diagnostics.Process.GetProcessById(int.Parse(command.StandardOutput.Trim(), System.Globalization.CultureInfo.InvariantCulture));
-            try
+            var error = Assert.Throws<Exception>(() => command.CompleteAndDispose(TimeSpan.FromMilliseconds(50)));
+            if (error is AggregateException aggregate)
             {
-                command.CompleteAndDispose(TimeSpan.FromMilliseconds(50));
-                Assert.Fail("The long-running command did not time out.");
-            }
-            catch (AggregateException error)
-            {
-                CollectionAssert.AreEqual(
+                Assert.AreSequenceEqual(
                     TimeoutAndStreamErrors,
-                    error.InnerExceptions.Cast<WinAppSandboxException>().Select(item => item.Code).ToArray());
+                    aggregate.InnerExceptions.Cast<WinAppSandboxException>().Select(item => item.Code).ToArray());
             }
-            catch (WinAppSandboxException error)
+            else
             {
-                Assert.AreEqual("command_timeout", error.Code);
+                var timeout = Assert.IsInstanceOfType<WinAppSandboxException>(error);
+                Assert.AreEqual("command_timeout", timeout.Code);
             }
 
             Assert.IsTrue(command.HasExited);
@@ -185,13 +183,13 @@ public sealed class WinAppSandboxCommandTests
             using var command = PowerShellFixture.StartCommand(script, root, Path.Combine(root, "private"));
             var healthChecks = 0;
             command.WaitForRecordingStart(TimeSpan.FromSeconds(15), () => healthChecks++);
-            Assert.IsTrue(healthChecks > 0, "The attached worker must remain monitored while recording starts.");
+            Assert.IsGreaterThan(0, healthChecks, "The attached worker must remain monitored while recording starts.");
             Assert.AreEqual(string.Empty, command.StandardOutput, "Stdout should remain withheld until recording stops.");
             Assert.IsFalse(command.HasExited);
             command.RequestRecordingStop();
             var result = command.Complete(TimeSpan.FromSeconds(10));
             Assert.AreEqual(0, result.ExitCode);
-            StringAssert.Contains(result.StandardOutput, "\"completed\":true");
+            Assert.Contains("\"completed\":true", result.StandardOutput);
         }
         finally
         {

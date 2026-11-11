@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.LightSwitch.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [TestCategory("LightSwitch")]
 [DoNotParallelize]
@@ -33,7 +34,7 @@ public sealed class LightSwitchTests : UITestBase
         originalState = new TestState();
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup]
     public static void RestoreOriginalState()
     {
         if (originalState is null)

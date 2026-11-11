@@ -6,6 +6,7 @@ using Microsoft.CmdPal.Common.Text;
 
 namespace Microsoft.CmdPal.Common.UnitTests.Text;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public sealed class PrecomputedFuzzyMatcherEmojiTests
 {
@@ -21,7 +22,7 @@ public sealed class PrecomputedFuzzyMatcherEmojiTests
         var target = _matcher.PrecomputeTarget(haystack);
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected match for simple emoji");
+        Assert.IsGreaterThan(0, score, "Expected match for simple emoji");
     }
 
     [TestMethod]
@@ -34,7 +35,7 @@ public sealed class PrecomputedFuzzyMatcherEmojiTests
         var target = _matcher.PrecomputeTarget(haystack);
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected match for emoji with skin tone");
+        Assert.IsGreaterThan(0, score, "Expected match for emoji with skin tone");
     }
 
     [TestMethod]
@@ -47,7 +48,7 @@ public sealed class PrecomputedFuzzyMatcherEmojiTests
         var target = _matcher.PrecomputeTarget(haystack);
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected match for ZWJ sequence");
+        Assert.IsGreaterThan(0, score, "Expected match for ZWJ sequence");
     }
 
     [TestMethod]
@@ -60,7 +61,7 @@ public sealed class PrecomputedFuzzyMatcherEmojiTests
         var target = _matcher.PrecomputeTarget(haystack);
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected match for flag emoji");
+        Assert.IsGreaterThan(0, score, "Expected match for flag emoji");
     }
 
     [TestMethod]
@@ -73,6 +74,6 @@ public sealed class PrecomputedFuzzyMatcherEmojiTests
         var target = _matcher.PrecomputeTarget(haystack);
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected match for emoji mixed with text");
+        Assert.IsGreaterThan(0, score, "Expected match for emoji mixed with text");
     }
 }

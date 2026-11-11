@@ -8,6 +8,7 @@ using Microsoft.CmdPal.Common.UnitTests.TestUtils;
 
 namespace Microsoft.CmdPal.Common.UnitTests.Services.Sanitizer;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class FilenameMaskRuleProviderTests
 {
@@ -22,11 +23,11 @@ public class FilenameMaskRuleProviderTests
 
         // Assert
         var ruleList = new List<SanitizationRule>(rules);
-        Assert.AreEqual(1, ruleList.Count);
+        Assert.HasCount(1, ruleList);
         Assert.AreEqual("Mask filename in any path", ruleList[0].Description);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(@"C:\Users\Alice\Documents\secret.txt", @"C:\Users\Alice\Documents\se****.txt")]
     [DataRow(@"logs\error-report.log", @"logs\er**********.log")]
     [DataRow(@"/var/logs/trace.json", @"/var/logs/tr***.json")]
@@ -42,7 +43,7 @@ public class FilenameMaskRuleProviderTests
         Assert.AreEqual(expected, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("C:\\Users\\Alice\\Documents\\", "C:\\Users\\Alice\\Documents\\")]
     [DataRow(@"C:\Users\Alice\PowerToys\CmdPal\Logs\1.2.3.4", @"C:\Users\Alice\PowerToys\CmdPal\Logs\1.2.3.4")]
     [DataRow(@"C:\Users\Alice\appsettings.json", @"C:\Users\Alice\appsettings.json")]

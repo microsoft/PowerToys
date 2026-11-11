@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class SettingsLinkResolverTests
 {
@@ -36,7 +37,7 @@ public class SettingsLinkResolverTests
         Assert.AreEqual(SettingsLinkFallback.None, result.Fallback);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null, SettingsLinkIds.General.Page)]
     [DataRow("unknown", SettingsLinkIds.General.Page)]
     public void Resolve_UnknownLink_UsesAvailablePage(string? linkId, string pageLinkId)
@@ -75,7 +76,7 @@ public class SettingsLinkResolverTests
         Assert.AreEqual(SettingsLinkFallback.UnknownProvider, result.Fallback);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true, false, SettingsLinkFallback.HiddenTarget)]
     [DataRow(true, true, SettingsLinkFallback.HiddenTarget)]
     [DataRow(false, true, SettingsLinkFallback.DisabledProvider)]

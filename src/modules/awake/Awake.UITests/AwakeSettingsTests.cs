@@ -11,6 +11,7 @@ namespace Microsoft.PowerToys.Awake.UITests;
 
 [TestClass]
 [TestCategory("Awake")]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class AwakeSettingsTests : UITestBase
 {
     private static readonly string[] DefaultTrayIntervals = ["30 minutes", "1 hour", "2 hours"];
@@ -33,7 +34,7 @@ public sealed class AwakeSettingsTests : UITestBase
         snapshot = AwakeUi.PreserveSettings();
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup]
     public static void RestoreSettings() => AwakeUi.RestoreSettings(snapshot);
 
     [TestInitialize]
@@ -123,7 +124,7 @@ public sealed class AwakeSettingsTests : UITestBase
         AwakeUi.WaitForPowerState(true, true);
         var activeTime = Stopwatch.StartNew();
         ui.WaitForSettings(properties => properties["mode"]!.GetValue<int>() == 0, "timer completion returned to passive", 80_000);
-        Assert.IsTrue(activeTime.Elapsed >= TimeSpan.FromSeconds(45), $"The one-minute integrated timer ended prematurely after {activeTime.Elapsed}.");
+        Assert.IsGreaterThanOrEqualTo(TimeSpan.FromSeconds(45), activeTime.Elapsed, $"The one-minute integrated timer ended prematurely after {activeTime.Elapsed}.");
         Assert.IsTrue(ui.ModeCombo().WaitForValue(AwakeUi.Passive, timeoutMS: 15_000), "The Settings mode selector did not reflect timer completion.");
         AwakeUi.WaitForPowerState(false, false);
         ui.WaitForProcess(true);
@@ -169,10 +170,10 @@ public sealed class AwakeSettingsTests : UITestBase
         var names = ShellMenu.ReadMenuNames(menu);
         foreach (var caption in new[] { AwakeUi.TrayTimed, AwakeUi.TrayExpiration, AwakeUi.Indefinite, AwakeUi.TrayPassive, "Keep screen on" })
         {
-            CollectionAssert.Contains(names.ToArray(), caption, $"Awake's integrated tray menu is missing '{caption}'.");
+            Assert.Contains(caption, names.ToArray(), $"Awake's integrated tray menu is missing '{caption}'.");
         }
 
-        CollectionAssert.DoesNotContain(names.ToArray(), "Exit", "Runner-owned Awake must not offer standalone Exit.");
+        Assert.DoesNotContain("Exit", names.ToArray(), "Runner-owned Awake must not offer standalone Exit.");
         var expiration = ShellMenu.FindVisibleMenuItem(menu, AwakeUi.TrayExpiration);
         Assert.IsNotNull(expiration);
         Assert.IsFalse(expiration.IsEnabled, "Expiration must be configured in Settings, not through a disabled tray action.");
@@ -193,7 +194,7 @@ public sealed class AwakeSettingsTests : UITestBase
         AwakeUi.ClickMenuItem(menu, timed);
         var submenu = ShellMenu.WaitForSubmenu(menu, "30 minutes", 10_000);
         Assert.IsNotNull(submenu, "Awake did not open the default interval submenu.");
-        CollectionAssert.AreEquivalent(DefaultTrayIntervals, ShellMenu.ReadMenuNames(submenu).ToArray());
+        Assert.AreSequenceEqual(DefaultTrayIntervals, ShellMenu.ReadMenuNames(submenu).ToArray(), SequenceOrder.InAnyOrder);
         var interval = ShellMenu.FindVisibleMenuItem(submenu, "30 minutes");
         Assert.IsNotNull(interval, "The default interval submenu is missing 30 minutes.");
         AwakeUi.ClickMenuItem(submenu, interval);

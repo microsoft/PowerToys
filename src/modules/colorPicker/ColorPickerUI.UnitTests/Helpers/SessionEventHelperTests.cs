@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ColorPicker.UnitTests.Helpers
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class SessionEventHelperTests
     {
@@ -28,7 +29,7 @@ namespace ColorPicker.UnitTests.Helpers
 
             // End() does not clear Event; it finalizes Duration and writes the telemetry event.
             Assert.IsNotNull(SessionEventHelper.Event);
-            Assert.IsTrue(SessionEventHelper.Event.Duration >= 0);
+            Assert.IsGreaterThanOrEqualTo(0, SessionEventHelper.Event.Duration);
         }
     }
 }

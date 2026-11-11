@@ -11,6 +11,7 @@ using PowerLauncher.ViewModel;
 
 namespace Wox.Test
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class QuerySessionTest
     {
@@ -39,7 +40,7 @@ namespace Wox.Test
             var session = QuerySession.Start(token =>
             {
                 capturedToken = token;
-                return Task.Run(() => releaseQuery.Wait(WaitTimeout));
+                return Task.Run(() => releaseQuery.Wait(WaitTimeout, TestContext.CancellationToken));
             });
 
             session.Cancel();
@@ -52,7 +53,7 @@ namespace Wox.Test
             }
 
             releaseQuery.Set();
-            Assert.IsTrue(disposal.Wait(WaitTimeout));
+            Assert.IsTrue(disposal.Wait(WaitTimeout, TestContext.CancellationToken));
         }
 
         [TestMethod]
@@ -64,7 +65,7 @@ namespace Wox.Test
             var session = QuerySession.Start(token =>
             {
                 capturedToken = token;
-                return Task.Run(() => releaseQuery.Wait(WaitTimeout));
+                return Task.Run(() => releaseQuery.Wait(WaitTimeout, TestContext.CancellationToken));
             });
 
             Assert.IsFalse(session.CancelAndWait(TimeSpan.FromMilliseconds(50)));
@@ -75,7 +76,7 @@ namespace Wox.Test
             }
 
             releaseQuery.Set();
-            Assert.IsTrue(session.Completion.Wait(WaitTimeout));
+            Assert.IsTrue(session.Completion.Wait(WaitTimeout, TestContext.CancellationToken));
         }
 
         [TestMethod]
@@ -100,12 +101,14 @@ namespace Wox.Test
                 return Task.CompletedTask;
             });
 
-            Assert.IsFalse(pipelineStarted.Task.Wait(TimeSpan.FromMilliseconds(50)));
+            Assert.IsFalse(pipelineStarted.Task.Wait(TimeSpan.FromMilliseconds(50), TestContext.CancellationToken));
 
             session.Resume();
 
-            Assert.IsTrue(pipelineStarted.Task.Wait(WaitTimeout));
-            Assert.IsTrue(session.Completion.Wait(WaitTimeout));
+            Assert.IsTrue(pipelineStarted.Task.Wait(WaitTimeout, TestContext.CancellationToken));
+            Assert.IsTrue(session.Completion.Wait(WaitTimeout, TestContext.CancellationToken));
         }
+
+        public TestContext TestContext { get; set; } = null!;
     }
 }

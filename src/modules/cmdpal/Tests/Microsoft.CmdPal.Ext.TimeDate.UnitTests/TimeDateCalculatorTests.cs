@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class TimeDateCalculatorTests
 {
@@ -46,7 +47,7 @@ public class TimeDateCalculatorTests
         var results = TimeDateCalculator.ExecuteSearch(settings, string.Empty);
 
         // Assert
-        Assert.IsTrue(results.Count > 0);
+        Assert.IsNotEmpty(results);
     }
 
     [TestMethod]
@@ -87,7 +88,7 @@ public class TimeDateCalculatorTests
 
         // Assert
         Assert.IsNotNull(results);
-        Assert.IsTrue(results.Count >= 0); // May have 0 results due to invalid format, but shouldn't crash
+        Assert.IsGreaterThanOrEqualTo(0, results.Count); // May have 0 results due to invalid format, but shouldn't crash
     }
 
     [TestMethod]
@@ -102,7 +103,7 @@ public class TimeDateCalculatorTests
 
         // Assert
         Assert.IsNotNull(results);
-        Assert.IsTrue(results.Count >= 0); // May have 0 results due to invalid format, but shouldn't crash
+        Assert.IsGreaterThanOrEqualTo(0, results.Count); // May have 0 results due to invalid format, but shouldn't crash
     }
 
     [TestMethod]

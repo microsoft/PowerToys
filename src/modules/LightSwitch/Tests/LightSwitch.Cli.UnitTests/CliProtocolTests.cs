@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LightSwitch.Cli.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class CliProtocolTests
 {
@@ -28,7 +29,7 @@ public sealed class CliProtocolTests
     [DataRow("{\"version\":1,\"success\":false,\"error\":{\"message\":\"Failed.\"}}")]
     public void InvalidEnvelopesAreProtocolErrors(string json)
     {
-        var error = Assert.ThrowsException<CliException>(() => CliProtocol.ParseResponse(json));
+        var error = Assert.ThrowsExactly<CliException>(() => CliProtocol.ParseResponse(json));
         Assert.AreEqual("PROTOCOL_ERROR", error.Code);
     }
 
@@ -49,7 +50,7 @@ public sealed class CliProtocolTests
         };
         string json = CliApplicationTests.SuccessfulResponse.Replace("\"" + property + "\":" + original, "\"" + property + "\":" + replacement, StringComparison.Ordinal);
 
-        var error = Assert.ThrowsException<CliException>(() => CliProtocol.ParseResponse(json));
+        var error = Assert.ThrowsExactly<CliException>(() => CliProtocol.ParseResponse(json));
         Assert.AreEqual("PROTOCOL_ERROR", error.Code);
     }
 
@@ -57,14 +58,14 @@ public sealed class CliProtocolTests
     public void MissingFalseValuedStateMembersAreNotSilentlyDefaulted()
     {
         string json = CliApplicationTests.SuccessfulResponse.Replace("\"changeApps\":false,", string.Empty, StringComparison.Ordinal);
-        Assert.ThrowsException<CliException>(() => CliProtocol.ParseResponse(json));
+        Assert.ThrowsExactly<CliException>(() => CliProtocol.ParseResponse(json));
     }
 
     [TestMethod]
     public void ContradictorySuccessAndErrorAreRejected()
     {
         string json = CliApplicationTests.SuccessfulResponse.Replace("\"success\":true,", "\"success\":true,\"error\":{\"code\":\"EXECUTION_FAILED\",\"message\":\"Failed.\"},", StringComparison.Ordinal);
-        Assert.ThrowsException<CliException>(() => CliProtocol.ParseResponse(json));
+        Assert.ThrowsExactly<CliException>(() => CliProtocol.ParseResponse(json));
     }
 
     [TestMethod]
@@ -87,13 +88,13 @@ public sealed class CliProtocolTests
     [TestMethod]
     public void OversizedEnvelopeIsRejectedBeforeDeserialization()
     {
-        Assert.ThrowsException<CliException>(() => CliProtocol.ParseResponse(new string(' ', CliProtocol.MaxMessageChars + 1)));
+        Assert.ThrowsExactly<CliException>(() => CliProtocol.ParseResponse(new string(' ', CliProtocol.MaxMessageChars + 1)));
     }
 
     [TestMethod]
     public void PipeEncodingHasNoBomAndUsesLittleEndianUtf16()
     {
-        Assert.AreEqual(0, CliProtocol.Encoding.GetPreamble().Length);
-        CollectionAssert.AreEqual(ExpectedEncodedLine, CliProtocol.Encoding.GetBytes("A\n"));
+        Assert.IsEmpty(CliProtocol.Encoding.GetPreamble());
+        Assert.AreSequenceEqual(ExpectedEncodedLine, CliProtocol.Encoding.GetBytes("A\n"));
     }
 }

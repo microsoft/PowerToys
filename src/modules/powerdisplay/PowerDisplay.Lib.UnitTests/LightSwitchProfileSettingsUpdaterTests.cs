@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class LightSwitchProfileSettingsUpdaterTests
 {
@@ -36,7 +37,7 @@ public class LightSwitchProfileSettingsUpdaterTests
         Assert.AreEqual(0, settings.Properties.LightModeProfileId.Value);
         Assert.AreEqual("Legacy dark", settings.Properties.DarkModeProfile.Value);
         Assert.AreEqual("Legacy light", settings.Properties.LightModeProfile.Value);
-        Assert.AreEqual(1, messages.Count);
+        Assert.HasCount(1, messages);
     }
 
     [TestMethod]

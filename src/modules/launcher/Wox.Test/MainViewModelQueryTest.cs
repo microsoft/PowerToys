@@ -12,6 +12,7 @@ using Wox.Plugin;
 
 namespace Wox.Test
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class MainViewModelQueryTest
     {
@@ -80,7 +81,7 @@ namespace Wox.Test
                 },
                 initialResults =>
                 {
-                    Assert.AreEqual(2, initialResults.Count);
+                    Assert.HasCount(2, initialResults);
                     Interlocked.Increment(ref completedPhaseCount);
                     return true;
                 },
@@ -91,14 +92,14 @@ namespace Wox.Test
                 });
 
             releaseFirstQuery.SetResult(true);
-            await firstQueryCompleted.Task.WaitAsync(WaitTimeout);
-            await Task.Delay(100);
+            await firstQueryCompleted.Task.WaitAsync(WaitTimeout, TestContext.CancellationToken);
+            await Task.Delay(100, TestContext.CancellationToken);
 
             Assert.AreEqual(0, Volatile.Read(ref completedPhaseCount));
             Assert.AreEqual(0, Volatile.Read(ref delayedQueryCount));
 
             releaseSecondQuery.SetResult(true);
-            await queryTask.WaitAsync(WaitTimeout);
+            await queryTask.WaitAsync(WaitTimeout, TestContext.CancellationToken);
 
             Assert.AreEqual(1, Volatile.Read(ref completedPhaseCount));
             Assert.AreEqual(2, Volatile.Read(ref delayedQueryCount));
@@ -139,5 +140,7 @@ namespace Wox.Test
 
             using var resumedLease = await pendingLease;
         }
+
+        public TestContext TestContext { get; set; } = null!;
     }
 }

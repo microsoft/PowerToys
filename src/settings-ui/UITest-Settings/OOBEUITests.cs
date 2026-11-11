@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Settings.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class OOBEUITests : UITestBase
     {
@@ -24,7 +25,7 @@ namespace Microsoft.Settings.UITests
         {
         }
 
-        [TestMethod("OOBE.Basic.FirstStartTest")]
+        [TestMethod(DisplayName = "OOBE.Basic.FirstStartTest")]
         [TestCategory("OOBE test #1")]
         public void TestOOBEFirstStart()
         {
@@ -46,7 +47,7 @@ namespace Microsoft.Settings.UITests
 
         /*
 
-        [TestMethod("OOBE.WhatsNew.Test")]
+        [TestMethod(DisplayName = "OOBE.WhatsNew.Test")]
         [TestCategory("OOBE test #2")]
         public void TestOOBEWhatsNew()
         {
@@ -64,6 +65,7 @@ namespace Microsoft.Settings.UITests
         private void CleanPowerToysData()
         {
             this.ExitScopeExe();
+            Exception failure;
 
             // Exit PowerToys if it's running
             try
@@ -83,15 +85,19 @@ namespace Microsoft.Settings.UITests
 
                 // Wait to ensure deletion is complete
                 Task.Delay(1000).Wait();
+                return;
             }
             catch (Exception ex)
             {
-                Assert.Inconclusive($"Could not clean PowerToys data: {ex.Message}");
+                failure = ex;
             }
+
+            Assert.Inconclusive($"Could not clean PowerToys data: {failure.Message}");
         }
 
         private void StartPowerToysAndVerifyOOBEOpens()
         {
+            Exception failure;
             try
             {
                 // Start PowerToys
@@ -105,11 +111,14 @@ namespace Microsoft.Settings.UITests
 
                 // Verify we're on the Overview page
                 Assert.IsTrue(this.Has("Overview"), "OOBE should start on Overview page");
+                return;
             }
             catch (Exception ex)
             {
-                Assert.Fail($"Failed to start PowerToys and verify OOBE: {ex.Message}");
+                failure = ex;
             }
+
+            Assert.Fail($"Failed to start PowerToys and verify OOBE: {failure.Message}");
         }
 
         private void NavigateThroughOOBESections()
@@ -148,20 +157,25 @@ namespace Microsoft.Settings.UITests
 
         private void CloseOOBE()
         {
+            Exception failure;
             try
             {
                 // Find the close button and click it
                 this.Session.CloseMainWindow();
                 Task.Delay(1000).Wait();
+                return;
             }
             catch (Exception ex)
             {
-                Assert.Fail($"Failed to close OOBE: {ex.Message}");
+                failure = ex;
             }
+
+            Assert.Fail($"Failed to close OOBE: {failure.Message}");
         }
 
         private void OpenOOBEFromSettings()
         {
+            Exception failure;
             try
             {
                 // Open PowerToys Settings
@@ -180,15 +194,19 @@ namespace Microsoft.Settings.UITests
 
                 // Close OOBE
                 this.Session.CloseMainWindow();
+                return;
             }
             catch (Exception ex)
             {
-                Assert.Fail($"Failed to open OOBE from Settings: {ex.Message}");
+                failure = ex;
             }
+
+            Assert.Fail($"Failed to open OOBE from Settings: {failure.Message}");
         }
 
         private void ModifyLastVersionFile()
         {
+            Exception failure;
             try
             {
                 // Create PowerToys folder if it doesn't exist
@@ -204,15 +222,19 @@ namespace Microsoft.Settings.UITests
 
                 // Wait to ensure file is written
                 Task.Delay(1000).Wait();
+                return;
             }
             catch (Exception ex)
             {
-                Assert.Inconclusive($"Could not modify version file: {ex.Message}");
+                failure = ex;
             }
+
+            Assert.Inconclusive($"Could not modify version file: {failure.Message}");
         }
 
         private void StartPowerToysAndVerifyWhatsNewOpens()
         {
+            Exception failure;
             try
             {
                 // Start PowerToys
@@ -226,11 +248,14 @@ namespace Microsoft.Settings.UITests
 
                 // Verify we're on the What's New page
                 Assert.IsTrue(this.Has("What's new"), "OOBE should open on What's New page after version change");
+                return;
             }
             catch (Exception ex)
             {
-                Assert.Fail($"Failed to verify What's New page: {ex.Message}");
+                failure = ex;
             }
+
+            Assert.Fail($"Failed to verify What's New page: {failure.Message}");
         }
     }
 }

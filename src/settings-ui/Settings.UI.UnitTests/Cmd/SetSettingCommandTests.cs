@@ -12,6 +12,7 @@ using static Microsoft.PowerToys.Settings.UI.Library.SetSettingCommandLineComman
 
 namespace Settings.UI.UnitTests.Cmd;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class SetSettingCommandTests
 {

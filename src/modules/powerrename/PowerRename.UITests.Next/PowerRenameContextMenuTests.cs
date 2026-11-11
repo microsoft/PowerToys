@@ -14,6 +14,7 @@ namespace Microsoft.PowerToys.PowerRename.UITests;
 /// the extended-menu-only setting, and the real invoke path into the PowerRename window.
 /// </summary>
 /// <remarks>Covers checklist items 1-3 of microsoft/PowerToys#40663.</remarks>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed partial class PowerRenameTests : PowerRenameTestBase
@@ -41,7 +42,7 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
         ExplorerControl.CloseFileWindows();
     }
 
-    [TestMethod("PowerRename.ContextMenu.EnabledState")]
+    [TestMethod(DisplayName = "PowerRename.ContextMenu.EnabledState")]
     [TestCategory("PowerRename")]
     public void ContextMenuTracksModuleEnabledState()
     {
@@ -84,7 +85,7 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
         }
     }
 
-    [TestMethod("PowerRename.ContextMenu.ShowIcon")]
+    [TestMethod(DisplayName = "PowerRename.ContextMenu.ShowIcon")]
     [TestCategory("PowerRename")]
     public void ContextMenuIconFollowsShowIconSetting()
     {
@@ -104,7 +105,7 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
         }
     }
 
-    [TestMethod("PowerRename.ContextMenu.ExtendedOnly")]
+    [TestMethod(DisplayName = "PowerRename.ContextMenu.ExtendedOnly")]
     [TestCategory("PowerRename")]
     public void ContextMenuHonorsExtendedContextMenuOnlySetting()
     {
@@ -124,7 +125,7 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
         AssertClassicMenuContainsEntry(explorer, new[] { fixture }, expected: true, extendedVerbs: true);
     }
 
-    [TestMethod("PowerRename.ContextMenu.OpensWindowWithSelection")]
+    [TestMethod(DisplayName = "PowerRename.ContextMenu.OpensWindowWithSelection")]
     [TestCategory("PowerRename")]
     public void InvokingTheContextMenuOpensPowerRenameWithTheSelection()
     {
@@ -359,11 +360,13 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
         var plainPixels = CountGutterDetailPixels(withoutIcon);
         Step($"{surface} icon gutter detail pixels: on={iconPixels}, off={plainPixels}");
 
-        Assert.IsTrue(
-            plainPixels < 8,
+        Assert.IsLessThan(
+            8,
+            plainPixels,
             $"The {surface} entry's icon gutter had {plainPixels} non-background pixels while the icon setting was off.");
-        Assert.IsTrue(
-            iconPixels > plainPixels + 20,
+        Assert.IsGreaterThan(
+            plainPixels + 20,
+            iconPixels,
             $"The {surface} entry showed no icon difference (on={iconPixels}, off={plainPixels} non-background pixels).");
     }
 

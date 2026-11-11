@@ -10,6 +10,7 @@ using PowerDisplay.Models;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class LightSwitchProfileReferenceHelperTests
 {

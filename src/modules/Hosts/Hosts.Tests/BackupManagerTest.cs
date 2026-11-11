@@ -11,6 +11,7 @@ using Moq;
 
 namespace Hosts.Tests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class BackupManagerTest
     {
@@ -29,7 +30,7 @@ namespace Hosts.Tests
             var backupManager = new BackupManager(fileSystem, userSettings.Object);
             backupManager.Create(HostsPath);
 
-            Assert.AreEqual(0, fileSystem.Directory.GetFiles(BackupPath, BackupSearchPattern).Length);
+            Assert.IsEmpty(fileSystem.Directory.GetFiles(BackupPath, BackupSearchPattern));
         }
 
         [TestMethod]
@@ -44,13 +45,13 @@ namespace Hosts.Tests
             backupManager.Create(HostsPath);
             backupManager.Create(HostsPath);
 
-            Assert.AreEqual(1, fileSystem.Directory.GetFiles(BackupPath, BackupSearchPattern).Length);
+            Assert.HasCount(1, fileSystem.Directory.GetFiles(BackupPath, BackupSearchPattern));
             var hostsContent = fileSystem.File.ReadAllText(HostsPath);
             var backupContent = fileSystem.File.ReadAllText(fileSystem.Directory.GetFiles(BackupPath, BackupSearchPattern)[0]);
             Assert.AreEqual(hostsContent, backupContent);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(-10, -10)]
         [DataRow(-10, 0)]
         [DataRow(-10, 10)]
@@ -70,11 +71,11 @@ namespace Hosts.Tests
             var backupManager = new BackupManager(fileSystem, userSettings.Object);
             backupManager.Delete();
 
-            Assert.AreEqual(30, fileSystem.Directory.GetFiles(BackupPath, BackupSearchPattern).Length);
-            Assert.AreEqual(31, fileSystem.Directory.GetFiles(BackupPath).Length);
+            Assert.HasCount(30, fileSystem.Directory.GetFiles(BackupPath, BackupSearchPattern));
+            Assert.HasCount(31, fileSystem.Directory.GetFiles(BackupPath));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(-10, 30)]
         [DataRow(0, 30)]
         [DataRow(10, 10)]
@@ -89,11 +90,11 @@ namespace Hosts.Tests
             var backupManager = new BackupManager(fileSystem, userSettings.Object);
             backupManager.Delete();
 
-            Assert.AreEqual(expectedBackups, fileSystem.Directory.GetFiles(BackupPath, BackupSearchPattern).Length);
-            Assert.AreEqual(expectedBackups + 1, fileSystem.Directory.GetFiles(BackupPath).Length);
+            Assert.HasCount(expectedBackups, fileSystem.Directory.GetFiles(BackupPath, BackupSearchPattern));
+            Assert.HasCount(expectedBackups + 1, fileSystem.Directory.GetFiles(BackupPath));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(-10, -10, 30)]
         [DataRow(-10, 0, 30)]
         [DataRow(-10, 10, 5)]
@@ -117,8 +118,8 @@ namespace Hosts.Tests
             var backupManager = new BackupManager(fileSystem, userSettings.Object);
             backupManager.Delete();
 
-            Assert.AreEqual(expectedBackups, fileSystem.Directory.GetFiles(BackupPath, BackupSearchPattern).Length);
-            Assert.AreEqual(expectedBackups + 1, fileSystem.Directory.GetFiles(BackupPath).Length);
+            Assert.HasCount(expectedBackups, fileSystem.Directory.GetFiles(BackupPath, BackupSearchPattern));
+            Assert.HasCount(expectedBackups + 1, fileSystem.Directory.GetFiles(BackupPath));
         }
 
         private void SetupFiles(MockFileSystem fileSystem, bool hostsOnly)

@@ -17,6 +17,7 @@ namespace PowerDisplay.UnitTests;
 /// interrupted write from damaging what is already on disk. These assert the current design; the
 /// original two-writer collision stopped being expressible once there was one write method.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class MonitorStateSaveTests
 {
@@ -76,7 +77,7 @@ public sealed class MonitorStateSaveTests
                 {
                     // Inside the try: a throw here would otherwise be unhandled on a background
                     // thread and take down the test host instead of failing the test.
-                    start.SignalAndWait();
+                    start.SignalAndWait(TestContext.CancellationToken);
 
                     for (var write = 0; write < WritesPerThread; write++)
                     {
@@ -104,9 +105,8 @@ public sealed class MonitorStateSaveTests
             Assert.IsTrue(thread.Join(TimeSpan.FromSeconds(30)), "A writer thread did not finish.");
         }
 
-        Assert.AreEqual(
-            0,
-            failures.Count,
+        Assert.IsEmpty(
+            failures,
             $"Concurrent writes collided on the state file: {(failures.Count > 0 ? failures[0].ToString() : string.Empty)}");
     }
 
@@ -160,4 +160,6 @@ public sealed class MonitorStateSaveTests
             File.ReadAllText(_statePath),
             "A write that could not complete must leave the published file untouched.");
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

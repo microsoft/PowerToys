@@ -21,6 +21,7 @@ using static FancyZonesEditorCommon.Data.CustomLayouts;
 
 namespace UITests_FancyZones
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class DragWindowTests : UITestBase
     {
@@ -78,7 +79,7 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("FancyZones.Settings.TestToggleZonesWithNonPrimaryMouseClick")]
+        [TestMethod(DisplayName = "FancyZones.Settings.TestToggleZonesWithNonPrimaryMouseClick")]
         [TestCategory("FancyZones_Dragging #3")]
         public void TestToggleZonesWithNonPrimaryMouseClick()
         {
@@ -124,7 +125,7 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("FancyZones.Settings.TestShowZonesWhenShiftAndMouseOff")]
+        [TestMethod(DisplayName = "FancyZones.Settings.TestShowZonesWhenShiftAndMouseOff")]
         [TestCategory("FancyZones_Dragging #4")]
         public void TestShowZonesWhenShiftAndMouseOff()
         {
@@ -137,24 +138,24 @@ namespace UITests_FancyZones
             int endY = startY + 300;
 
             var (initialColor, withShiftColor) = RunDragInteractions(
-               preAction: () =>
+                preAction: () =>
                {
                    Session.MoveMouseTo(startX, startY);
                    Session.PerformMouseAction(MouseActionType.LeftDown);
                    Session.MoveMouseTo(endX, endY);
                },
-               postAction: () =>
+                postAction: () =>
                {
                    // press Shift Key to deactivate zones
                    Session.PressKey(Key.Shift);
-                   Task.Delay(1000).Wait();
+                   Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
                },
-               releaseAction: () =>
+                releaseAction: () =>
                {
                    Session.PerformMouseAction(MouseActionType.LeftUp);
                    Session.ReleaseKey(Key.Shift);
                },
-               testCaseName: testCaseName);
+                testCaseName: testCaseName);
 
             Assert.AreEqual(highlightColor, initialColor, $"[{testCaseName}] Zone activation failed.");
             Assert.AreNotEqual(highlightColor, withShiftColor, $"[{testCaseName}] Zone deactivation failed.");
@@ -168,7 +169,7 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("FancyZones.Settings.TestShowZonesWhenShiftAndMouseOn")]
+        [TestMethod(DisplayName = "FancyZones.Settings.TestShowZonesWhenShiftAndMouseOn")]
         [TestCategory("FancyZones_Dragging #5")]
         public void TestShowZonesWhenShiftAndMouseOn()
         {
@@ -215,7 +216,7 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("FancyZones.Settings.TestMakeDraggedWindowTransparentOn")]
+        [TestMethod(DisplayName = "FancyZones.Settings.TestMakeDraggedWindowTransparentOn")]
         [TestCategory("FancyZones_Dragging #8")]
         public void TestMakeDraggedWindowTransparentOn()
         {
@@ -231,7 +232,7 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("FancyZones.Settings.TestMakeDraggedWindowTransparentOff")]
+        [TestMethod(DisplayName = "FancyZones.Settings.TestMakeDraggedWindowTransparentOff")]
         [TestCategory("FancyZones_Dragging #8")]
         public void TestMakeDraggedWindowTransparentOff()
         {
@@ -247,7 +248,7 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("FancyZones.Settings.TestShowZonesOnShiftDuringDrag")]
+        [TestMethod(DisplayName = "FancyZones.Settings.TestShowZonesOnShiftDuringDrag")]
         [TestCategory("FancyZones_Dragging #1")]
         public void TestShowZonesOnShiftDuringDrag()
         {
@@ -260,23 +261,23 @@ namespace UITests_FancyZones
             int endY = startY + 300;
 
             var (initialColor, withShiftColor) = RunDragInteractions(
-              preAction: () =>
+                preAction: () =>
               {
                   Session.MoveMouseTo(startX, startY);
                   Session.PerformMouseAction(MouseActionType.LeftDown);
                   Session.MoveMouseTo(endX, endY);
               },
-              postAction: () =>
+                postAction: () =>
               {
                   Session.PressKey(Key.Shift);
-                  Task.Delay(500).Wait();
+                  Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
               },
-              releaseAction: () =>
+                releaseAction: () =>
               {
                   Session.ReleaseKey(Key.Shift);
-                  Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure window switch
+                  Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken); // Optional: Wait for a moment to ensure window switch
               },
-              testCaseName: testCaseName);
+                testCaseName: testCaseName);
 
             string zoneColorWithoutShift = GetOutWindowPixelColor(30);
 
@@ -294,7 +295,7 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("FancyZones.Settings.TestShowZonesOnDragDuringShift")]
+        [TestMethod(DisplayName = "FancyZones.Settings.TestShowZonesOnDragDuringShift")]
         [TestCategory("FancyZones_Dragging #2")]
         public void TestShowZonesOnDragDuringShift()
         {
@@ -310,20 +311,20 @@ namespace UITests_FancyZones
                 preAction: () =>
                 {
                     Session.PressKey(Key.Shift);
-                    Task.Delay(100).Wait();
+                    Task.Delay(100, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
                 },
                 postAction: () =>
                 {
                     Session.MoveMouseTo(startX, startY);
                     Session.PerformMouseAction(MouseActionType.LeftDown);
                     Session.MoveMouseTo(endX, endY);
-                    Task.Delay(1000).Wait();
+                    Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
                 },
                 releaseAction: () =>
                 {
                     Session.PerformMouseAction(MouseActionType.LeftUp);
                     Session.ReleaseKey(Key.Shift);
-                    Task.Delay(100).Wait();
+                    Task.Delay(100, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
                 },
                 testCaseName: testCaseName);
 

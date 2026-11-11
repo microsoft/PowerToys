@@ -14,6 +14,7 @@ using Forms = System.Windows.Forms;
 
 namespace Microsoft.PowerToys.ZoomIt.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 public sealed partial class ZoomItTests
 {
     private readonly string fixtureDirectory = Path.Combine(Path.GetTempPath(), "PowerToys.ZoomIt.UITests", Guid.NewGuid().ToString("N"));
@@ -140,7 +141,7 @@ public sealed partial class ZoomItTests
         desktop.Show();
         ui.Activate(shortcut);
         var changed = WaitForTimerPixels();
-        Assert.IsTrue(Math.Abs(changed.Width - original.Width) > original.Width * 0.05, $"Changing the font did not change timer glyph geometry: {original} -> {changed}.");
+        Assert.IsGreaterThan(original.Width * 0.05, Math.Abs(changed.Width - original.Width), $"Changing the font did not change timer glyph geometry: {original} -> {changed}.");
         SaveDesktop("timer-courier-new");
         ui.Exit();
     }
@@ -155,7 +156,7 @@ public sealed partial class ZoomItTests
         try
         {
             var dialog = ui.WaitForNativeDialog<ComboBox>(process, "1136");
-            Assert.IsTrue(timer.Elapsed >= TimeSpan.FromSeconds(8), "The regression dialog must appear after the former five-second timeout.");
+            Assert.IsGreaterThanOrEqualTo(TimeSpan.FromSeconds(8), timer.Elapsed, "The regression dialog must appear after the former five-second timeout.");
             Assert.IsTrue(dialog.Find<ComboBox>(By.AccessibilityId("1136")).IsEnabled, "The delayed font selector must be ready for input.");
             SaveDesktop("delayed-font-dialog");
         }
@@ -222,7 +223,7 @@ public sealed partial class ZoomItTests
             durations.Add(timer.Elapsed);
         }
 
-        Assert.IsTrue(durations[0] > durations[1] + TimeSpan.FromSeconds(2), $"The faster speed did not reduce typing time: slow={durations[0]}, fast={durations[1]}.");
+        Assert.IsGreaterThan(durations[1] + TimeSpan.FromSeconds(2), durations[0], $"The faster speed did not reduce typing time: slow={durations[0]}, fast={durations[1]}.");
 
         PrepareDemoScript(new string('b', 2_000) + "[end]");
         desktop.FocusEditor();
@@ -376,7 +377,7 @@ public sealed partial class ZoomItTests
 
                 var editors = window.FindAll<Element>(By.Name("Text Editor"), 0)
                     .Where(element => element.ControlType is "Edit" or "Document").ToArray();
-                Assert.IsTrue(editors.Length <= 1, "More than one text editor was exposed by the test-owned Notepad document.");
+                Assert.IsLessThanOrEqualTo(1, editors.Length, "More than one text editor was exposed by the test-owned Notepad document.");
                 var editor = editors.SingleOrDefault();
                 if (!window.WindowTitle.Contains(Path.GetFileNameWithoutExtension(notepadPath!), StringComparison.OrdinalIgnoreCase) ||
                     editor is not { Width: > 0, Height: > 0 } || !editor.IsEnabled || !editor.Displayed)

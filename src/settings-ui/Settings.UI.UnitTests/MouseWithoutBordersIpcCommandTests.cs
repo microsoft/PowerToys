@@ -13,10 +13,11 @@ using StreamJsonRpc;
 
 namespace Microsoft.PowerToys.Settings.UI.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class MouseWithoutBordersIpcCommandTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(typeof(IOException))]
         [DataRow(typeof(TimeoutException))]
         [DataRow(typeof(ConnectionLostException))]
@@ -54,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             Assert.AreEqual(0, successfulCompletions);
             Assert.AreEqual("fixture-peer", pcName);
             Assert.AreEqual("fixture-value", securityKey);
-            Assert.AreEqual(2, errorNotifications.Count);
+            Assert.HasCount(2, errorNotifications);
             Assert.IsFalse(errorNotifications[0]);
             Assert.IsTrue(errorNotifications[1]);
         }
@@ -110,7 +111,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
 
                 acknowledgement.SetResult();
 
-                Assert.IsTrue(await operation.WaitAsync(TimeSpan.FromSeconds(5)));
+                Assert.IsTrue(await operation.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
                 Assert.AreEqual(string.Empty, pcName);
                 Assert.AreEqual(string.Empty, securityKey);
                 Assert.AreEqual(1, successfulCompletions);
@@ -148,7 +149,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 Assert.IsFalse(operation.IsCompleted);
                 acknowledgement.SetException(new ConnectionLostException("Fixture lost acknowledgement"));
 
-                Assert.IsFalse(await operation.WaitAsync(TimeSpan.FromSeconds(5)));
+                Assert.IsFalse(await operation.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
                 Assert.IsTrue(errorVisible);
                 Assert.AreEqual("fixture-peer", pcName);
                 Assert.AreEqual("fixture-value", securityKey);
@@ -218,7 +219,9 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                             return pending.Task;
                         },
                         TimeSpan.FromMilliseconds(50)),
-                    visible => errorVisible = visible).WaitAsync(TimeSpan.FromSeconds(5)));
+                    visible => errorVisible = visible).WaitAsync(
+                    TimeSpan.FromSeconds(5),
+                    TestContext.CancellationToken));
 
                 Assert.IsTrue(errorVisible);
                 Assert.IsTrue(connection.Disposed);
@@ -229,7 +232,9 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 await MouseWithoutBordersViewModel.SettingsSyncRequests.ExecuteAsync(
                     () => Task.FromResult(nextConnection),
                     _ => Task.CompletedTask,
-                    TimeSpan.FromSeconds(1)).WaitAsync(TimeSpan.FromSeconds(5));
+                    TimeSpan.FromSeconds(1)).WaitAsync(
+                    TimeSpan.FromSeconds(5),
+                    TestContext.CancellationToken);
                 Assert.IsTrue(nextConnection.Disposed, "The next request must acquire the released semaphore and complete.");
             }
             finally
@@ -249,12 +254,14 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         public async Task UiSuccessCallbackFailureIsNotHandledAsIpcFailure()
         {
             var errorVisible = true;
-            await Assert.ThrowsExceptionAsync<IOException>(() => MouseWithoutBordersPage.TryExecuteSettingsCommandAsync(
+            await Assert.ThrowsExactlyAsync<IOException>(() => MouseWithoutBordersPage.TryExecuteSettingsCommandAsync(
                 () => Task.CompletedTask,
                 visible => errorVisible = visible,
                 () => throw new IOException("Fixture UI callback failure")));
 
             Assert.IsFalse(errorVisible);
         }
+
+        public TestContext TestContext { get; set; } = null!;
     }
 }

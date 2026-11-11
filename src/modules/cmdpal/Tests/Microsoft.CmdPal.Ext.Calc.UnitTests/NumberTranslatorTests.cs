@@ -9,10 +9,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Calc.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class NumberTranslatorTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null, "en-US")]
     [DataRow("de-DE", null)]
     public void Create_ThrowError_WhenCalledNullOrEmpty(string sourceCultureName, string targetCultureName)
@@ -22,10 +23,10 @@ public class NumberTranslatorTests
         CultureInfo targetCulture = targetCultureName is not null ? new CultureInfo(targetCultureName) : null;
 
         // Act
-        Assert.ThrowsException<ArgumentNullException>(() => NumberTranslator.Create(sourceCulture, targetCulture));
+        Assert.ThrowsExactly<ArgumentNullException>(() => NumberTranslator.Create(sourceCulture, targetCulture));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("en-US", "en-US")]
     [DataRow("en-EN", "en-US")]
     [DataRow("de-DE", "en-US")]
@@ -42,7 +43,7 @@ public class NumberTranslatorTests
         Assert.IsNotNull(translator);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     public void Translate_ThrowError_WhenCalledNull(string input)
     {
@@ -50,10 +51,10 @@ public class NumberTranslatorTests
         var translator = NumberTranslator.Create(new CultureInfo("de-DE", false), new CultureInfo("en-US", false));
 
         // Act
-        Assert.ThrowsException<ArgumentNullException>(() => translator.Translate(input));
+        Assert.ThrowsExactly<ArgumentNullException>(() => translator.Translate(input));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("")]
     [DataRow(" ")]
     public void Translate_WhenCalledEmpty(string input)
@@ -68,7 +69,7 @@ public class NumberTranslatorTests
         Assert.AreEqual(input, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("2,0 * 2", "2.0 * 2")]
     [DataRow("4 * 3,6 + 9", "4 * 3.6 + 9")]
     [DataRow("5,2+6", "5.2+6")]
@@ -88,7 +89,7 @@ public class NumberTranslatorTests
         Assert.AreEqual(expectedResult, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("ceil(123,456.23)", "ceil(123456.23)")]
     [DataRow("floor(123,456.23)", "floor(123456.23)")]
     [DataRow("round(123,456.23)", "round(123456.23)")]
@@ -106,7 +107,7 @@ public class NumberTranslatorTests
         Assert.AreEqual(expectedResult, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("max(1,2)", "max(1,2)")]
     [DataRow("min(1,2)", "min(1,2)")]
     [DataRow("pow(2,3)", "pow(2,3)")]
@@ -129,7 +130,7 @@ public class NumberTranslatorTests
         Assert.AreEqual(expectedResult, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("2.0 * 2", "2,0 * 2")]
     [DataRow("4 * 3.6 + 9", "4 * 3,6 + 9")]
     [DataRow("5.2+6", "5,2+6")]
@@ -148,7 +149,7 @@ public class NumberTranslatorTests
         Assert.AreEqual(expectedResult, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(".", ",", "2,000,000", "2000000")]
     [DataRow(".", ",", "2,000,000.6", "2000000.6")]
     [DataRow(",", ".", "2.000.000", "2000000")]
@@ -174,7 +175,7 @@ public class NumberTranslatorTests
         Assert.AreEqual(expectedResult, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("de-DE", "12,0004", "12.0004")]
     [DataRow("de-DE", "0xF000", "61440")]
     [DataRow("de-DE", "0", "0")]
@@ -207,7 +208,7 @@ public class NumberTranslatorTests
         Assert.AreEqual(expectedResult, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("en-US", "0xF000", "61440")]
     [DataRow("en-US", "0xf4572220", "4099351072")]
     [DataRow("en-US", "0x12345678", "305419896")]

@@ -11,6 +11,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class OnLoadDynamicListPageTests
 {
@@ -40,7 +41,7 @@ public partial class OnLoadDynamicListPageTests
         page.TriggerItemsChanged(3);
 
         Assert.AreEqual(2, failures);
-        CollectionAssert.AreEqual(_expectedItemCounts, notifications);
+        Assert.AreSequenceEqual(_expectedItemCounts, notifications);
         Assert.AreEqual(1, page.LoadCount);
         Assert.AreEqual(0, page.UnloadCount);
 

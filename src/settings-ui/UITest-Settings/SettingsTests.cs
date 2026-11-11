@@ -15,6 +15,7 @@ using Windows.Devices.PointOfService.Provider;
 
 namespace Microsoft.Settings.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class SettingsTests : UITestBase
     {
@@ -66,17 +67,17 @@ namespace Microsoft.Settings.UITests
         {
         }
 
-        [TestMethod("PowerToys.Settings.ModulesOnAndOffTest")]
+        [TestMethod(DisplayName = "PowerToys.Settings.ModulesOnAndOffTest")]
         [TestCategory("Settings Test #1")]
         public void TestAllmoduleOnAndOff()
         {
             DisableAllModules();
-            Task.Delay(2000).Wait();
+            Task.Delay(2000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
             // module process won't be killed in debug mode settings UI!
             // Assert.IsTrue(CheckModulesDisabled(), "Some modules are not disabled.");
             EnableAllModules();
-            Task.Delay(2000).Wait();
+            Task.Delay(2000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
             // Assert.IsTrue(CheckModulesEnabled(), "Some modules are not Enabled.");
         }

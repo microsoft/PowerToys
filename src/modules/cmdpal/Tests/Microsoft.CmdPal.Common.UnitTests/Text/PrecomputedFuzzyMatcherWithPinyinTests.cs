@@ -7,6 +7,7 @@ using Microsoft.CmdPal.Common.Text;
 
 namespace Microsoft.CmdPal.Common.UnitTests.Text;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class PrecomputedFuzzyMatcherWithPinyinTests
 {
@@ -32,7 +33,7 @@ public class PrecomputedFuzzyMatcherWithPinyinTests
         var target = matcher.PrecomputeTarget(haystack);
         var score = matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, $"Expected positive score for needle='{needle}', haystack='{haystack}'");
+        Assert.IsGreaterThan(0, score, $"Expected positive score for needle='{needle}', haystack='{haystack}'");
     }
 
     [TestMethod]
@@ -60,7 +61,7 @@ public class PrecomputedFuzzyMatcherWithPinyinTests
         var target = matcher.PrecomputeTarget(haystack);
         var score = matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Standard match should still work.");
+        Assert.IsGreaterThan(0, score, "Standard match should still work.");
     }
 
     [TestMethod]
@@ -76,7 +77,7 @@ public class PrecomputedFuzzyMatcherWithPinyinTests
         var target = matcher.PrecomputeTarget(haystack);
         var score = matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected match for 'xi'an' -> '西安' with apostrophe removal.");
+        Assert.IsGreaterThan(0, score, "Expected match for 'xi'an' -> '西安' with apostrophe removal.");
     }
 
     [TestMethod]
@@ -89,7 +90,7 @@ public class PrecomputedFuzzyMatcherWithPinyinTests
             var matcher = CreateMatcher(PinyinMode.AutoSimplifiedChineseUi);
 
             var score = matcher.Score(matcher.PrecomputeQuery("bj"), matcher.PrecomputeTarget("北京"));
-            Assert.IsTrue(score > 0, "Should match when UI culture is zh-CN");
+            Assert.IsGreaterThan(0, score, "Should match when UI culture is zh-CN");
         }
         finally
         {

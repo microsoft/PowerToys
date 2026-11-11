@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class DetailsViewModelTests
 {
@@ -85,13 +86,13 @@ public partial class DetailsViewModelTests
         var context = new TestPageContext();
         var vm = new DetailsViewModel(details, new WeakReference<IPageContext>(context));
         vm.InitializeProperties();
-        Assert.AreEqual(0, vm.Metadata.Count);
+        Assert.IsEmpty(vm.Metadata);
 
         // Act — update metadata with a link element
         details.Metadata = [new DetailsElement { Key = "link", Data = new DetailsLink("http://example.com", "Example") }];
         vm.ApplyPendingUpdates();
 
-        Assert.AreEqual(1, vm.Metadata.Count);
+        Assert.HasCount(1, vm.Metadata);
         GC.KeepAlive(context);
     }
 

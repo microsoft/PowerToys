@@ -7,6 +7,7 @@ using Peek.Common.Helpers;
 
 namespace Peek.Common.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class PathHelperTests
     {

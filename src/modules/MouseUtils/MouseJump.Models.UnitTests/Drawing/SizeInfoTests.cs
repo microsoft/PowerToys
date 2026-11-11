@@ -9,6 +9,7 @@ namespace MouseJump.Models.UnitTests.Drawing;
 
 public static class SizeInfoTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class ScaleToFitTests
     {
@@ -60,6 +61,7 @@ public static class SizeInfoTests
         }
     }
 
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class ScaleToFitRatioTests
     {

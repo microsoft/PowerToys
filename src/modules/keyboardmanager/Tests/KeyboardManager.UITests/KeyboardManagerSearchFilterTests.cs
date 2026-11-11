@@ -15,6 +15,7 @@ namespace Microsoft.PowerToys.KeyboardManager.UITests;
 /// The seeded mappings deliberately use function keys (F13-F17) as their trigger keys so the
 /// Keyboard Manager engine never rewrites the letters this test types into the search box.
 /// </remarks>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class KeyboardManagerSearchFilterTests : KeyboardManagerTestBase
@@ -60,7 +61,7 @@ public sealed class KeyboardManagerSearchFilterTests : KeyboardManagerTestBase
     [TestCleanup]
     public Task CleanupTest() => CleanupKeyboardManagerTestAsync();
 
-    [TestMethod("KeyboardManager.Editor.SearchAndFilter")]
+    [TestMethod(DisplayName = "KeyboardManager.Editor.SearchAndFilter")]
     [TestCategory("Keyboard Manager")]
     public void SearchesFiltersAndRecoversFromNoResults()
     {
@@ -124,7 +125,7 @@ public sealed class KeyboardManagerSearchFilterTests : KeyboardManagerTestBase
             $"Searching and filtering changed the persisted profile. Profile: {KeyboardManagerSettings.ReadProfile().ToJsonString()}");
     }
 
-    [TestMethod("KeyboardManager.Editor.BulkDelete")]
+    [TestMethod(DisplayName = "KeyboardManager.Editor.BulkDelete")]
     [TestCategory("Keyboard Manager")]
     public void BulkDeletesTheSelectedRemappings()
     {

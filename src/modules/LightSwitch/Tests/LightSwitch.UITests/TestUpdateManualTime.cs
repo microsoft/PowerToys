@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LightSwitch.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class TestUpdateManualTime : UITestBase
     {
@@ -20,7 +21,7 @@ namespace LightSwitch.UITests
         {
         }
 
-        [TestMethod("LightSwitch.UpdateManualTime")]
+        [TestMethod(DisplayName = "LightSwitch.UpdateManualTime")]
         [TestCategory("Time")]
         public void TestUpdateTime()
         {

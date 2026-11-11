@@ -14,6 +14,7 @@ namespace ColorPicker.UnitTests.Helpers
     /// <summary>
     /// Test class to test <see cref="ColorConverter"/>
     /// </summary>
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ColorConverterTest
     {
@@ -239,7 +240,7 @@ namespace ColorPicker.UnitTests.Helpers
                 Assert.IsNotNull(hexValue);
             }
 
-            Assert.IsTrue(hexValue.Length >= 6);
+            Assert.IsGreaterThanOrEqualTo(6, hexValue.Length);
 
             var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
@@ -287,7 +288,7 @@ namespace ColorPicker.UnitTests.Helpers
                 Assert.IsNotNull(hexValue);
             }
 
-            Assert.IsTrue(hexValue.Length >= 6);
+            Assert.IsGreaterThanOrEqualTo(6, hexValue.Length);
 
             var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
@@ -335,7 +336,7 @@ namespace ColorPicker.UnitTests.Helpers
                 Assert.IsNotNull(hexValue);
             }
 
-            Assert.IsTrue(hexValue.Length >= 6);
+            Assert.IsGreaterThanOrEqualTo(6, hexValue.Length);
 
             var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
@@ -388,7 +389,7 @@ namespace ColorPicker.UnitTests.Helpers
                 Assert.IsNotNull(hexValue);
             }
 
-            Assert.IsTrue(hexValue.Length >= 6);
+            Assert.IsGreaterThanOrEqualTo(6, hexValue.Length);
 
             var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
@@ -442,7 +443,7 @@ namespace ColorPicker.UnitTests.Helpers
                 Assert.IsNotNull(hexValue);
             }
 
-            Assert.IsTrue(hexValue.Length >= 6);
+            Assert.IsGreaterThanOrEqualTo(6, hexValue.Length);
 
             var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
@@ -496,7 +497,7 @@ namespace ColorPicker.UnitTests.Helpers
                 Assert.IsNotNull(hexValue);
             }
 
-            Assert.IsTrue(hexValue.Length >= 6);
+            Assert.IsGreaterThanOrEqualTo(6, hexValue.Length);
 
             var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
@@ -557,7 +558,7 @@ namespace ColorPicker.UnitTests.Helpers
                 Assert.IsNotNull(hexValue);
             }
 
-            Assert.IsTrue(hexValue.Length >= 6);
+            Assert.IsGreaterThanOrEqualTo(6, hexValue.Length);
 
             var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);

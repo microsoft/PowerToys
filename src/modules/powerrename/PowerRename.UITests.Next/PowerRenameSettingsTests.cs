@@ -17,7 +17,7 @@ public sealed partial class PowerRenameTests
     private const string SeedSearchTerm = "seedterm";
     private const string SeedReplaceTerm = "replaceterm";
 
-    [TestMethod("PowerRename.Settings.AutoComplete")]
+    [TestMethod(DisplayName = "PowerRename.Settings.AutoComplete")]
     [TestCategory("PowerRename")]
     public void AutoCompleteOffersPreviousTermsOnlyWhileEnabled()
     {
@@ -41,7 +41,7 @@ public sealed partial class PowerRenameTests
             $"Autocomplete was disabled but the search box still suggested '{SeedSearchTerm}'.");
     }
 
-    [TestMethod("PowerRename.Settings.RestoreLastUsedValues")]
+    [TestMethod(DisplayName = "PowerRename.Settings.RestoreLastUsedValues")]
     [TestCategory("PowerRename")]
     public void LastUsedValuesAreRestoredOnlyWhileEnabled()
     {

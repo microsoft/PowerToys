@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class SessionTests
 {
     [TestMethod]
@@ -98,6 +99,6 @@ public sealed class SessionTests
     {
         using var document = JsonDocument.Parse(json);
 
-        Assert.HasCount(0, Session.ParseSearchResult(document.RootElement, fromInspection));
+        Assert.IsEmpty(Session.ParseSearchResult(document.RootElement, fromInspection));
     }
 }

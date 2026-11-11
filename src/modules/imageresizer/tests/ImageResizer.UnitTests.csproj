@@ -3,6 +3,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <ProjectGuid>{E0CC7526-D85E-43AC-844F-D5DF0D2F5AB8}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <SelfContained>true</SelfContained>

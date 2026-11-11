@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class BarChartModelTests
 {
@@ -30,7 +31,7 @@ public class BarChartModelTests
             BarOrientation.Vertical,
             warnings);
 
-        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+        Assert.IsEmpty(warnings, string.Join(", ", warnings));
         Assert.AreEqual(BarOrientation.Vertical, model.Orientation);
         Assert.AreEqual("Cores", model.Title);
         Assert.IsFalse(model.ShowTitle);
@@ -40,7 +41,7 @@ public class BarChartModelTests
         Assert.IsTrue(model.ShowBarValues);
         Assert.AreEqual(0d, model.YMin);
         Assert.AreEqual(100d, model.YMax);
-        Assert.AreEqual(3, model.Data.Count);
+        Assert.HasCount(3, model.Data);
         Assert.AreEqual("1", model.Data[1].Label);
         Assert.AreEqual("attention", model.Data[1].Color);
         Assert.AreEqual((12d, 87.5), model.GetValueExtent());
@@ -67,7 +68,7 @@ public class BarChartModelTests
             BarOrientation.Horizontal,
             warnings);
 
-        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+        Assert.IsEmpty(warnings, string.Join(", ", warnings));
         Assert.AreEqual(expected, model.DisplayMode.ToString());
         Assert.IsTrue(model.ShowTitle);
         Assert.AreEqual(4d, model.GetPositiveTotal());
@@ -82,7 +83,7 @@ public class BarChartModelTests
             BarOrientation.Horizontal,
             warnings);
 
-        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+        Assert.IsEmpty(warnings, string.Join(", ", warnings));
         Assert.IsFalse(model.ShowBarValues);
         Assert.IsNull(model.YMin);
         Assert.IsNull(model.YMax);
@@ -95,7 +96,7 @@ public class BarChartModelTests
         var warnings = new List<string>();
         var model = BarChartModel.Parse("""{ "type": "Chart.HorizontalBar", "displayMode": "stacked", "data": [] }""", BarOrientation.Horizontal, warnings);
 
-        Assert.AreEqual(1, warnings.Count);
+        Assert.HasCount(1, warnings);
         Assert.AreEqual(BarDisplayMode.AbsoluteWithAxis, model.DisplayMode);
         Assert.AreEqual(BarOrientation.Horizontal, model.Orientation);
     }
@@ -112,7 +113,7 @@ public class BarChartModelTests
             BarOrientation.Horizontal,
             warnings);
 
-        Assert.AreEqual(1, warnings.Count);
+        Assert.HasCount(1, warnings);
         Assert.AreEqual("Chart.HorizontalBar does not support negative values; negative values are drawn as zero.", warnings[0]);
         Assert.AreEqual(-3d, model.Data[0].Value);
         Assert.AreEqual((-3d, 5d), model.GetValueExtent());
@@ -128,7 +129,7 @@ public class BarChartModelTests
             BarOrientation.Vertical,
             warnings);
 
-        Assert.AreEqual(0, warnings.Count);
+        Assert.IsEmpty(warnings);
         Assert.AreEqual((-3d, 5d), model.GetValueExtent());
     }
 
@@ -182,7 +183,7 @@ public class BarChartModelTests
 
         Assert.AreEqual(0d, range.Min);
         Assert.AreEqual(0d, range.Normalize(0));
-        Assert.IsTrue(range.Max > range.Min);
-        Assert.IsTrue(range.Max >= second);
+        Assert.IsGreaterThan(range.Min, range.Max);
+        Assert.IsGreaterThanOrEqualTo(second, range.Max);
     }
 }
