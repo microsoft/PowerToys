@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <optional>
 #include <string_view>
 #include <common/logger/logger.h>
 #include <common/utils/gpo.h>
@@ -23,15 +24,26 @@ struct ModuleRegistration
         {
             return rule == powertoys_gpo::gpo_rule_configured_enabled;
         }
-        if (rule == powertoys_gpo::gpo_rule_configured_unavailable || rule == powertoys_gpo::gpo_rule_configured_wrong_value)
-        {
-            Logger::warn(L"Module {} has unavailable or invalid GPO configuration; using settings/defaults", key);
-        }
         return preferredState;
+    }
+
+    // An unloaded module is not running. Keep a saved true only to preserve the preference of a module that failed to load.
+    bool unloaded_state(std::optional<bool> savedState) const
+    {
+        return savedState.value_or(false) && apply_policy(true);
     }
 
     bool is_enabled(const json::JsonObject& settings) const
     {
+        if (gpoPolicy)
+        {
+            const auto rule = gpoPolicy();
+            if (rule == powertoys_gpo::gpo_rule_configured_unavailable || rule == powertoys_gpo::gpo_rule_configured_wrong_value)
+            {
+                Logger::warn(L"Module {} has unavailable or invalid GPO configuration; using settings/defaults", key);
+            }
+        }
+
         if (settings.HasKey(L"enabled"))
         {
             if (json::has(settings, L"enabled", json::JsonValueType::Object))

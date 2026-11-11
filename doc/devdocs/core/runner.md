@@ -132,10 +132,10 @@ The flyout window is then activated and brought to the foreground using native W
 1. Register the known module catalog in `main.cpp`, after the startup elevation decision.
 2. Resolve each module's enabled state using its native default, persisted preference and GPO override, without loading its DLL.
 3. Load and create only enabled module interfaces, then enable them and register their active hotkeys.
-4. Load a deferred interface when Settings enables it, sends configuration or a custom action, or requests the full module configuration. Configuration requests do not enable the module.
+4. Load a deferred interface when Settings enables it or sends that module's configuration or custom action. Configuration requests and custom actions do not enable the module.
 5. Keep loaded interfaces until Runner shutdown, even after disabling them. Access to the registries and module calls is serialized with `modules_mutex()`, including background telemetry.
 
-Disabled modules still appear in general settings using the catalog's defaults and policy callbacks. The full Settings configuration request loads all deferred interfaces to preserve the existing JSON contract, so startup savings do not imply that disabled DLLs remain unloaded after opening Settings. Keep catalog keys, defaults and policy callbacks synchronized with the corresponding module interfaces when changing them.
+Unloaded modules still appear in general settings as disabled, unless a saved enabled preference is kept for a module that failed to load, so Settings never falls back to its own defaults. The full configuration Runner sends back after a module settings change includes only loaded modules; Settings does not read module configurations from that response. Keep catalog keys, defaults and policy callbacks synchronized with the corresponding module interfaces when changing them.
 
 ## Finding and Messaging the Tray Icon
 

@@ -261,6 +261,23 @@ namespace RunnerUnitTests
             Assert::IsFalse(registration.is_enabled(json::JsonObject::Parse(L"{\"enabled\":{\"Other\":null,\"Module\":false}}")));
         }
 
+        TEST_METHOD (UnloadedModuleWithoutSavedStateIsReportedDisabled)
+        {
+            // Settings can drop native keys it does not know (e.g. "File Explorer"); a default-on
+            // module that was not loaded must not be reported, and then saved, as enabled.
+            const ModuleRegistration defaultOn{ L"Module", L"unused.dll", true };
+            Assert::IsFalse(defaultOn.unloaded_state(std::nullopt));
+            Assert::IsFalse(defaultOn.unloaded_state(false));
+        }
+
+        TEST_METHOD (UnloadedModuleKeepsSavedEnabledUnlessPolicyDisablesIt)
+        {
+            const ModuleRegistration notConfigured{ L"Module", L"unused.dll", false };
+            const ModuleRegistration forcedOff{ L"Module", L"unused.dll", false, [] { return powertoys_gpo::gpo_rule_configured_disabled; } };
+            Assert::IsTrue(notConfigured.unloaded_state(true));
+            Assert::IsFalse(forcedOff.unloaded_state(true));
+        }
+
     private:
         static powertoys_gpo::gpo_rule_configured_t UnavailablePolicy()
         {

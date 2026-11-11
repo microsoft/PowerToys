@@ -203,7 +203,6 @@ GeneralSettings get_general_settings()
 
     // Initialize module enabled map from durable settings.json so all modules, including
     // those which are missing or which failed to load, are represented.
-    json::JsonObject saved_settings;
     try
     {
         auto loaded_opt = load_general_settings_checked();
@@ -214,7 +213,6 @@ GeneralSettings get_general_settings()
         else
         {
             const json::JsonObject& loaded = *loaded_opt;
-            saved_settings = loaded;
 
             if (json::has(loaded, L"enabled", json::JsonValueType::Object))
             {
@@ -234,11 +232,16 @@ GeneralSettings get_general_settings()
         settings.isDataLoadedSuccessfully = false;
     }
 
-    // Include defaults and policy states for modules whose DLLs have not been needed.
+    // Unloaded known modules are not running, so represent them explicitly instead of letting
+    // Settings fall back to its own defaults.
     std::lock_guard lock(modules_mutex());
     for (const auto& [name, registration] : registered_modules())
     {
-        settings.isModulesEnabledMap[name] = registration.is_enabled(saved_settings);
+        if (!modules().contains(name))
+        {
+            const auto saved = settings.isModulesEnabledMap.find(name);
+            settings.isModulesEnabledMap[name] = registration.unloaded_state(saved != settings.isModulesEnabledMap.end() ? std::optional<bool>{ saved->second } : std::nullopt);
+        }
     }
 
     // Overlay the active runtime states from loaded modules.

@@ -47,18 +47,15 @@ namespace
 
 json::JsonObject get_power_toys_settings()
 {
+    // Only loaded modules are reported. Settings does not read module configs from this response,
+    // so loading deferred DLLs here would undo lazy loading for no consumer.
     std::lock_guard lock(modules_mutex());
     json::JsonObject result;
-    for (const auto& [name, registration] : registered_modules())
+    for (const auto& [name, powertoy] : modules())
     {
-        auto* powertoy = load_registered_module(name);
-        if (!powertoy)
-        {
-            continue;
-        }
         try
         {
-            result.SetNamedValue(name, powertoy->json_config());
+            result.SetNamedValue(name, powertoy.json_config());
         }
         catch (...)
         {
