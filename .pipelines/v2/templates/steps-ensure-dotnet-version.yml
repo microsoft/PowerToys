@@ -32,6 +32,9 @@ steps:
     }
     & ./dotnet-install.ps1 @Params
     Write-Host "##vso[task.setvariable variable=DOTNET_ROOT]${NEW_DOTNET_ROOT}"
+    # With MSBuild -mt, tasks that haven't opted in to multithreading (e.g. ILLink) run in a sidecar
+    # TaskHost, which doesn't receive the DOTNET_HOST_PATH that VS MSBuild's SDK resolver gives in-proc tasks.
+    Write-Host "##vso[task.setvariable variable=DOTNET_HOST_PATH]${NEW_DOTNET_ROOT}\dotnet.exe"
     Write-Host "##vso[task.prependpath]${NEW_DOTNET_ROOT}"
     Remove-Item dotnet-install.ps1 -ErrorAction:Ignore
   ${{ if eq(parameters.version, ' ') }}:
