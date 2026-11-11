@@ -4,8 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="using:HostsUILib.Helpers"
-    xmlns:i="using:Microsoft.Xaml.Interactivity"
-    xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:local="using:Hosts.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:HostsUILib.Models"
@@ -14,11 +12,6 @@
     x:Name="Page"
     Loaded="Page_Loaded"
     mc:Ignorable="d">
-    <i:Interaction.Behaviors>
-        <ic:EventTriggerBehavior EventName="Loaded">
-            <ic:InvokeCommandAction Command="{x:Bind ViewModel.ReadHostsCommand}" />
-        </ic:EventTriggerBehavior>
-    </i:Interaction.Behaviors>
 
     <Page.Resources>
 
@@ -110,33 +103,18 @@
                                     x:Uid="AddressFilter"
                                     PlaceholderText=""
                                     QueryIcon="Find"
-                                    Text="{x:Bind ViewModel.AddressFilter, Mode=TwoWay}">
-                                    <i:Interaction.Behaviors>
-                                        <ic:EventTriggerBehavior EventName="TextChanged">
-                                            <ic:InvokeCommandAction Command="{x:Bind ViewModel.ApplyFiltersCommand}" />
-                                        </ic:EventTriggerBehavior>
-                                    </i:Interaction.Behaviors>
-                                </AutoSuggestBox>
+                                    Text="{x:Bind ViewModel.AddressFilter, Mode=TwoWay}"
+                                    TextChanged="FilterBox_TextChanged" />
                                 <AutoSuggestBox
                                     x:Uid="HostsFilter"
                                     QueryIcon="Find"
-                                    Text="{x:Bind ViewModel.HostsFilter, Mode=TwoWay}">
-                                    <i:Interaction.Behaviors>
-                                        <ic:EventTriggerBehavior EventName="TextChanged">
-                                            <ic:InvokeCommandAction Command="{x:Bind ViewModel.ApplyFiltersCommand}" />
-                                        </ic:EventTriggerBehavior>
-                                    </i:Interaction.Behaviors>
-                                </AutoSuggestBox>
+                                    Text="{x:Bind ViewModel.HostsFilter, Mode=TwoWay}"
+                                    TextChanged="FilterBox_TextChanged" />
                                 <AutoSuggestBox
                                     x:Uid="CommentFilter"
                                     QueryIcon="Find"
-                                    Text="{x:Bind ViewModel.CommentFilter, Mode=TwoWay}">
-                                    <i:Interaction.Behaviors>
-                                        <ic:EventTriggerBehavior EventName="TextChanged">
-                                            <ic:InvokeCommandAction Command="{x:Bind ViewModel.ApplyFiltersCommand}" />
-                                        </ic:EventTriggerBehavior>
-                                    </i:Interaction.Behaviors>
-                                </AutoSuggestBox>
+                                    Text="{x:Bind ViewModel.CommentFilter, Mode=TwoWay}"
+                                    TextChanged="FilterBox_TextChanged" />
                                 <ToggleSwitch x:Uid="ShowOnlyDuplicates" IsOn="{x:Bind ViewModel.ShowOnlyDuplicates, Mode=TwoWay}" />
                                 <Button
                                     x:Uid="ClearFiltersBtn"
@@ -294,57 +272,19 @@
                                 Height="20"
                                 IsActive="{x:Bind Pinging, Mode=OneWay}" />
                             <FontIcon
-                                x:Name="PingIcon"
                                 x:Uid="PingIcon"
                                 Grid.Column="2"
                                 FontSize="16"
-                                Visibility="Collapsed">
-                                <i:Interaction.Behaviors>
-                                    <ic:DataTriggerBehavior
-                                        Binding="{x:Bind Ping, Mode=OneWay}"
-                                        ComparisonCondition="Equal"
-                                        Value="True">
-                                        <ic:ChangePropertyAction
-                                            PropertyName="Glyph"
-                                            TargetObject="{Binding ElementName=PingIcon}"
-                                            Value="&#xe8fb;" />
-                                        <ic:ChangePropertyAction
-                                            PropertyName="Visibility"
-                                            TargetObject="{Binding ElementName=PingIcon}"
-                                            Value="Visible" />
-                                        <ic:ChangePropertyAction
-                                            PropertyName="Foreground"
-                                            TargetObject="{Binding ElementName=PingIcon}"
-                                            Value="{StaticResource SystemFillColorSuccessBrush}" />
-                                    </ic:DataTriggerBehavior>
-                                    <ic:DataTriggerBehavior
-                                        Binding="{x:Bind Ping, Mode=OneWay}"
-                                        ComparisonCondition="Equal"
-                                        Value="False">
-                                        <ic:ChangePropertyAction
-                                            PropertyName="Glyph"
-                                            TargetObject="{Binding ElementName=PingIcon}"
-                                            Value="&#xe894;" />
-                                        <ic:ChangePropertyAction
-                                            PropertyName="Visibility"
-                                            TargetObject="{Binding ElementName=PingIcon}"
-                                            Value="Visible" />
-                                        <ic:ChangePropertyAction
-                                            PropertyName="Foreground"
-                                            TargetObject="{Binding ElementName=PingIcon}"
-                                            Value="{StaticResource SystemFillColorCriticalBrush}" />
-                                    </ic:DataTriggerBehavior>
-                                    <ic:DataTriggerBehavior
-                                        Binding="{x:Bind Ping, Mode=OneWay}"
-                                        ComparisonCondition="Equal"
-                                        Value="{x:Null}">
-                                        <ic:ChangePropertyAction
-                                            PropertyName="Visibility"
-                                            TargetObject="{Binding ElementName=PingIcon}"
-                                            Value="Collapsed" />
-                                    </ic:DataTriggerBehavior>
-                                </i:Interaction.Behaviors>
-                            </FontIcon>
+                                Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                Glyph="&#xe8fb;"
+                                Visibility="{x:Bind helpers:PingStatusHelper.SucceededVisibility(Ping), Mode=OneWay}" />
+                            <FontIcon
+                                x:Uid="PingIcon"
+                                Grid.Column="2"
+                                FontSize="16"
+                                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                Glyph="&#xe894;"
+                                Visibility="{x:Bind helpers:PingStatusHelper.FailedVisibility(Ping), Mode=OneWay}" />
                             <FontIcon
                                 x:Uid="DuplicateEntryIcon"
                                 Grid.Column="3"

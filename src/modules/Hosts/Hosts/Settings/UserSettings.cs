@@ -4,6 +4,8 @@
 
 using System;
 using System.IO.Abstractions;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 
 using HostsUILib.Settings;
@@ -17,6 +19,11 @@ namespace Hosts.Settings
     {
         private const string HostsModuleName = "Hosts";
         private const int MaxNumberOfRetry = 5;
+
+        private static readonly JsonSerializerOptions _indentedSerializerOptions = new(SettingsSerializationContext.Default.Options)
+        {
+            WriteIndented = true,
+        };
 
         private readonly SettingsUtils _settingsUtils;
         private readonly IFileSystemWatcher _watcher;
@@ -97,7 +104,8 @@ namespace Hosts.Settings
                             // Logger needs to be abstracted
                             Logger.LogInfo("Hosts settings.json was missing, creating a new one");
                             var defaultSettings = new HostsSettings();
-                            defaultSettings.Save(_settingsUtils);
+                            var typeInfo = (JsonTypeInfo<HostsSettings>)_indentedSerializerOptions.GetTypeInfo(typeof(HostsSettings));
+                            _settingsUtils.SaveSettings(JsonSerializer.Serialize(defaultSettings, typeInfo), HostsModuleName);
                         }
 
                         var settings = _settingsUtils.GetSettingsOrDefault<HostsSettings>(HostsModuleName);
