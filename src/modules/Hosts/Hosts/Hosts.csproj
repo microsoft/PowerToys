@@ -22,14 +22,6 @@
     <ProjectPriFileName>PowerToys.Hosts.pri</ProjectPriFileName>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <PublishSingleFile>false</PublishSingleFile>
-    <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
-    <PublishAot>true</PublishAot>
-    <TrimmerSingleWarn>false</TrimmerSingleWarn>
-    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
-  </PropertyGroup>
-
   <ItemGroup>
     <None Remove="Assets\Hosts\AppList.scale-100.png" />
     <None Remove="Assets\Hosts\AppList.scale-125.png" />
