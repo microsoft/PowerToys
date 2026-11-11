@@ -24,14 +24,6 @@
     <ProjectPriFileName>PowerToys.EnvironmentVariables.pri</ProjectPriFileName>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <PublishSingleFile>false</PublishSingleFile>
-    <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
-    <PublishAot>true</PublishAot>
-    <TrimmerSingleWarn>false</TrimmerSingleWarn>
-    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
-  </PropertyGroup>
-
   <ItemGroup>
     <Page Remove="EnvironmentVariablesXAML\App.xaml" />
   </ItemGroup>
