@@ -380,7 +380,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
         try
         {
-            var packagesResult = await _winGetPackageManagerService.GetPackagesByIdAsync([WinGetId], includeStoreCatalog: false);
+            var packagesResult = await _winGetPackageManagerService.GetPackagesByIdAsync(new string[] { WinGetId }, includeStoreCatalog: false);
             if (!packagesResult.IsSuccess)
             {
                 WinGetActionMessage = packagesResult.ErrorMessage ?? Resources.gallery_item_winget_action_resolve_failed;
@@ -878,7 +878,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
     {
         if (_winGetPackageStatusService is not null && !string.IsNullOrWhiteSpace(WinGetId))
         {
-            var infos = await _winGetPackageStatusService.TryGetPackageInfosAsync([WinGetId]);
+            var infos = await _winGetPackageStatusService.TryGetPackageInfosAsync(new string[] { WinGetId });
             if (infos is not null && infos.TryGetValue(WinGetId, out var packageInfo))
             {
                 ApplyWinGetPackageInfo(packageInfo);

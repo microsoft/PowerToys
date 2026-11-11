@@ -3,12 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.AI.Actions.Hosting;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Commands;
 
+[SupportedOSPlatform("windows10.0.26100.0")]
 public sealed partial class ExecuteActionCommand : InvokableCommand
 {
     private readonly ActionInstance actionInstance;
