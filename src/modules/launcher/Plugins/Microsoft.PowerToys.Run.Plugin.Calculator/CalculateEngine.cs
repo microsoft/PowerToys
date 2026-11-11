@@ -92,7 +92,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 return default;
             }
 
-            var decimalResult = Convert.ToDecimal(result, cultureInfo);
+            var decimalResult = result is double doubleResult
+                ? ConvertToDecimal(doubleResult)
+                : Convert.ToDecimal(result, cultureInfo);
             var roundedResult = Round(decimalResult);
 
             return new CalculateResult()
@@ -105,6 +107,28 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         public static decimal Round(decimal value)
         {
             return Math.Round(value, RoundingDigits, MidpointRounding.AwayFromZero);
+        }
+
+        // Since .NET 11 a double converts to its exact decimal value (0.1 becomes 0.1000000000000000055511151231).
+        // Rounding to 15 significant digits, which a double reliably holds, restores the previous results.
+        // See https://learn.microsoft.com/dotnet/core/compatibility/core-libraries/11/decimal-biginteger-floating-point-conversions
+        private static decimal ConvertToDecimal(double value)
+        {
+            // 2^96 is the first double that doesn't fit in a decimal.
+            const double decimalLimit = 79228162514264337593543950336D;
+
+            // NaN, infinities and out of range values can't be converted, so keep failing like the decimal conversion does.
+            if (double.IsNaN(value) || Math.Abs(value) >= decimalLimit)
+            {
+                throw new OverflowException();
+            }
+
+            Span<char> text = stackalloc char[32];
+            value.TryFormat(text, out int length, "G15", CultureInfo.InvariantCulture);
+            var result = decimal.Parse(text[..length], NumberStyles.Float, CultureInfo.InvariantCulture);
+
+            // A value too small for a decimal parses to a zero that keeps a scale of 28, which would display as 0.0000000000.
+            return result == decimal.Zero ? decimal.Zero : result;
         }
 
         private static dynamic TransformResult(object result)
