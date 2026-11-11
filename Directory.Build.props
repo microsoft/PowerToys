@@ -26,7 +26,6 @@
     <!-- Enable Microsoft.Testing.Platform -->
     <EnableMSTestRunner>true</EnableMSTestRunner>
     <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
-    <TestingPlatformDotNetTestSupport>true</TestingPlatformDotNetTestSupport>
     <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --report-trx</TestingPlatformCommandLineArguments>
     <!-- No arm64 agents to run the tests. -->
     <TestingPlatformDisableCustomTestTarget Condition="'$(Platform)' == 'ARM64'">true</TestingPlatformDisableCustomTestTarget>
@@ -37,7 +36,7 @@
     In CI, the main build uses `/t:Build;Test` across the full solution, so
     prevent UI test projects from being executed in that pass.
   -->
-  <PropertyGroup Condition="'$(TF_BUILD)' != '' and $(MSBuildProjectName.Contains('UITest'))">
+  <PropertyGroup Condition="'$(TF_BUILD)' != '' and $(MSBuildProjectName.Contains('UITest')) and !$(MSBuildProjectName.EndsWith('UnitTests'))">
     <TestingPlatformDisableCustomTestTarget>true</TestingPlatformDisableCustomTestTarget>
   </PropertyGroup>
 

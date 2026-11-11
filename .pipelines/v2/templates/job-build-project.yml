@@ -502,7 +502,7 @@ jobs:
         testResultsFiles: '**/*.trx'
       condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64'))
 
-    # Native dlls
+    # Managed tests already ran through the MSBuild Test target. Only select native containers here.
     - task: VSTest@2
       condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64')) # No arm64 agents to run the tests.
       displayName: 'Native Tests'
@@ -511,9 +511,22 @@ jobs:
         configuration: '$(BuildConfiguration)'
         testSelector: 'testAssemblies'
         testAssemblyVer2: |
-          **\KeyboardManagerEngineTest.dll
-          **\KeyboardManagerEditorTest.dll
-          **\*UnitTest*.dll
+          **\AltWindowCycle.UnitTests.dll
+          **\AutoHideCursor.UnitTests.dll
+          **\Common.Lib.UnitTests.dll
+          **\Common.Utils.UnitTests.dll
+          **\FancyZones.UnitTests.dll
+          **\FileLocksmithCLI.UnitTests.dll
+          **\KeyboardManager.Editor.UnitTests.dll
+          **\KeyboardManager.Engine.UnitTests.dll
+          **\LightSwitchService.UnitTests.dll
+          **\MeasureToolCore.UnitTests.dll
+          **\MouseButtonLock.UnitTests.dll
+          **\PowerRename.UnitTests.dll
+          **\Runner.UnitTests.dll
+          **\Updating.UnitTests.dll
+          **\Workspaces.Lib.UnitTests.dll
+          **\ZoomItAnimation.UnitTests.dll
           !**\obj\**
 
   - pwsh: |-
