@@ -39,6 +39,9 @@ public partial class FallbackPassiveItem : FallbackCommandItem, IFallbackCommand
             _name = value;
             if (Command is Command command)
             {
+                // possibly not the safest if this command instance is shared
+                // with something else, but there's Prior Art for this pattern
+                // in ConfirmableCommand::Name
                 command.Name = value;
             }
 

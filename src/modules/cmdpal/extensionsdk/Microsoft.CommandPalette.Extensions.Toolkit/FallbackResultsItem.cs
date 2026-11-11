@@ -38,7 +38,13 @@ public abstract partial class FallbackResultsItem : FallbackCommandItem, IFallba
     {
     }
 
-    public virtual IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args)
+    /// <summary>
+    /// Starts a query and returns an asynchronous operation with progress.
+    /// This is the method called by the command palette host. You should implement
+    /// the overload that accepts FallbackQueryArgs, CancellationToken, and
+    /// IProgress&lt;IFallbackCommandResult&gt; instead.
+    /// </summary>
+    IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> IFallbackHandler2.QueryAsync(IFallbackQueryArgs args)
     {
         try
         {
