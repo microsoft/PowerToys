@@ -151,6 +151,10 @@ jobs:
         Write-Host "##vso[task.logissue type=warning]Skipping implicit MWB selection: its Sandbox suite requires buildNow or buildNowSlim. Other suites will run against the selected official build."
       }
       if ($selection.Run) {
+        $imageDirectory = Get-MwbPrerequisiteDirectory "$(Common.TestResultsDirectory)" "$(System.JobId)"
+        $null = New-Item -ItemType Directory -Path $imageDirectory -Force
+        Get-MwbImageServicingReport | ConvertTo-Json -Depth 8 |
+          Set-Content -LiteralPath (Join-Path $imageDirectory 'image-servicing-job-start.json') -Encoding utf8
         $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
         try {
           if (-not ([Security.Principal.WindowsPrincipal]::new($identity)).IsInRole(
@@ -780,7 +784,7 @@ jobs:
 
   - task: PublishPipelineArtifact@1
     displayName: Publish UI-test diagnostics
-    condition: and(always(), eq(variables['RunMwbSandbox'], 'true'), or(failed(), canceled(), ne(variables['MwbUiTestsPassed'], 'true'), ne(variables['UiTestCleanupComplete'], 'true')))
+    condition: and(always(), eq(variables['RunMwbSandbox'], 'true'))
     inputs:
       targetPath: '$(Common.TestResultsDirectory)\mwb-prerequisites-$(System.JobId)'
       artifactName: ui-test-diagnostics-$(TestPlatform)-$(System.JobId)

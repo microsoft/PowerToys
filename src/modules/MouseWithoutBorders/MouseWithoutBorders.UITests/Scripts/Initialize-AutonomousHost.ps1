@@ -75,6 +75,7 @@ if ($SandboxBackend -eq 'WinApp') {
     Write-ProvisioningPhase 'Validating Sandbox preview'
     $windowsBuild = [int](Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').CurrentBuild
     if ($windowsBuild -lt 26100) { throw 'BLOCKED_INFRASTRUCTURE: WinApp Sandbox requires Windows 11 24H2 or newer; use Legacy on Win10.' }
+    Write-ProvisioningPhase 'Checking staged Sandbox preview path'
     if ([string]::IsNullOrWhiteSpace($SandboxWinAppPath) -or
         $SandboxWinAppPath -notmatch '^[A-Za-z]:\\' -or
         [IO.Path]::GetFileName($SandboxWinAppPath) -ine 'winapp.exe' -or
@@ -89,20 +90,25 @@ if ($SandboxBackend -eq 'WinApp') {
         }
         $ancestor = Split-Path -Parent $ancestor
     }
+    Write-ProvisioningPhase 'Hashing Sandbox preview CLI'
     $sandboxWinAppHash = (Get-FileHash -LiteralPath $SandboxWinAppPath -Algorithm SHA256).Hash
 }
 elseif (-not [string]::IsNullOrWhiteSpace($SandboxWinAppPath)) {
     throw 'A Sandbox preview CLI is only accepted for the explicit WinApp backend.'
 }
-if ((Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending') -or
-    (Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired')) {
+Write-ProvisioningPhase 'Checking pending image reboot'
+# Record CBS state diagnostically; the Sandbox feature and actual backend readiness gate this fixture.
+if (Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired') {
+    Write-ProvisioningPhase 'Pending image reboot confirmed'
     throw 'BLOCKED_INFRASTRUCTURE: complete the pending image reboot before provisioning the test.'
 }
+Write-ProvisioningPhase 'Resolving interactive test identity'
 $userSid = (New-Object Security.Principal.NTAccount($TestUser)).Translate(
     [Security.Principal.SecurityIdentifier])
 $stateDirectory = [IO.Path]::GetFullPath($StateRoot).TrimEnd('\')
 $marker = Join-Path $stateDirectory 'host-provisioning.json'
 if ($stateDirectory -notmatch '^[A-Za-z]:\\') { throw 'A local provisioning directory is required.' }
+Write-ProvisioningPhase 'Checking prior provisioning ownership'
 if (Test-Path -LiteralPath $stateDirectory) {
     if ((Get-Item -LiteralPath $stateDirectory).Attributes -band [IO.FileAttributes]::ReparsePoint) {
         throw 'The provisioning directory cannot be a reparse point.'
