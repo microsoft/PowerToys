@@ -813,7 +813,6 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
         try
         {
             ContentData.Clear();
-            ContentJson.Clear();
 
             var timer = Stopwatch.StartNew();
 
@@ -842,11 +841,11 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
             ContentData["cachedMem"] = MemUlongToString(currentData.MemCached);
             ContentData["pagedPoolMem"] = MemUlongToString(currentData.MemPagedPool);
             ContentData["nonPagedPoolMem"] = MemUlongToString(currentData.MemNonPagedPool);
-            ContentJson["memSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
+            ContentData["memSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
                 Resources.GetResource("Memory_Widget_Template/Chart_Y_Axis"),
                 PerformanceChartData.MemoryColor,
                 PerformanceChartData.Snapshot(currentData.MemChartValues)));
-            ContentJson["memComposition"] = CreateComposition(currentData);
+            ContentData["memComposition"] = CreateComposition(currentData);
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -855,7 +854,6 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
         catch (Exception e)
         {
             ContentData.Clear();
-            ContentJson.Clear();
             ContentData["errorMessage"] = e.Message;
             return;
         }
