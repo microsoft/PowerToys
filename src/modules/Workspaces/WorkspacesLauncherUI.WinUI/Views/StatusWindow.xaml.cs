@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 
 using ManagedCommon;
 using Microsoft.UI.Windowing;
@@ -29,7 +30,18 @@ namespace WorkspacesLauncherUI
 
             // Configure window size and behavior
             var appWindow = this.AppWindow;
-            appWindow.Resize(new Windows.Graphics.SizeInt32(360, 360));
+            var dpi = GetDpiForWindow(WinRT.Interop.WindowNative.GetWindowHandle(this));
+            var scale = (dpi == 0 ? 96 : dpi) / 96.0;
+            var width = (int)(360 * scale);
+            var height = (int)(360 * scale);
+            var displayArea = DisplayArea.GetFromWindowId(appWindow.Id, DisplayAreaFallback.Nearest);
+            if (displayArea != null)
+            {
+                width = Math.Min(width, displayArea.WorkArea.Width);
+                height = Math.Min(height, displayArea.WorkArea.Height);
+            }
+
+            appWindow.Resize(new Windows.Graphics.SizeInt32(width, height));
             appWindow.SetIcon("Assets/Workspaces/Workspaces.ico");
 
             if (appWindow.Presenter is OverlappedPresenter presenter)
@@ -68,8 +80,8 @@ namespace WorkspacesLauncherUI
             var displayArea = DisplayArea.GetFromWindowId(appWindow.Id, DisplayAreaFallback.Nearest);
             if (displayArea != null)
             {
-                int centerX = (displayArea.WorkArea.Width - appWindow.Size.Width) / 2;
-                int centerY = (displayArea.WorkArea.Height - appWindow.Size.Height) / 2;
+                int centerX = displayArea.WorkArea.X + ((displayArea.WorkArea.Width - appWindow.Size.Width) / 2);
+                int centerY = displayArea.WorkArea.Y + ((displayArea.WorkArea.Height - appWindow.Size.Height) / 2);
                 appWindow.Move(new Windows.Graphics.PointInt32(centerX, centerY));
             }
         }
@@ -84,5 +96,8 @@ namespace WorkspacesLauncherUI
             StatusPageView.ViewModel?.Dispose();
             (Application.Current as App)?.OnMainWindowClosed();
         }
+
+        [LibraryImport("user32.dll")]
+        private static partial uint GetDpiForWindow(IntPtr window);
     }
 }
