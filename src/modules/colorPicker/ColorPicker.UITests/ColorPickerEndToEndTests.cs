@@ -528,18 +528,18 @@ public class ColorPickerEndToEndTests : UITestBase
             string originalRed = redTextBox.Value;
             string originalHex = hexTextBox.Value;
 
-            redTextBox.Focus();
+            redTextBox.Click();
             redTextBox.SetText(string.Empty);
-            greenTextBox.Focus();
+            greenTextBox.Click();
             Thread.Sleep(300);
             Assert.AreEqual(
                 originalRed,
                 redTextBox.Value,
                 "An empty RGB field must restore the current channel value after losing focus.");
 
-            hexTextBox.Focus();
+            hexTextBox.Click();
             hexTextBox.SetText("zzzzzz");
-            redTextBox.Focus();
+            redTextBox.Click();
             Thread.Sleep(300);
             Assert.AreEqual(
                 originalHex,

@@ -195,7 +195,7 @@ internal sealed class TestHelper
         var minute = ui.Find(By.AccessibilityId("MinuteLoopingSelector"), 10_000);
         Step($"Moving the minute selection in {pickerId}");
         RequireForeground();
-        minute.Focus();
+        minute.Click();
         KeyboardHelper.SendKeys(Key.Up);
         ui.Find<Button>(By.AccessibilityId("AcceptButton"), 10_000).Invoke(msPostAction: 0);
         Assert.IsTrue(minute.WaitForGone(10_000), "The time picker flyout did not close after accepting.");
