@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WorkspacesLauncherUI.Data;
 using WorkspacesLauncherUI.Models;
 using WorkspacesLauncherUI.ViewModels;
+using MainViewModel = WorkspacesLauncherUI.UnitTests.TestMainViewModel;
 
 namespace WorkspacesLauncherUI.UnitTests
 {

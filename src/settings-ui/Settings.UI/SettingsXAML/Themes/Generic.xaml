@@ -3,5 +3,6 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="ms-appx:///SettingsXAML/Controls/SettingsGroup/SettingsGroup.xaml" />
         <ResourceDictionary Source="ms-appx:///SettingsXAML/Controls/GPOInfoControl.xaml" />
+        <ResourceDictionary Source="ms-appx:///SettingsXAML/Controls/CopyButton/CopyButton.xaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

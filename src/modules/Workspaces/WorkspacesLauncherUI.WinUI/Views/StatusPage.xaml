@@ -30,7 +30,8 @@
                             <Grid
                                 Margin="0,4"
                                 Padding="4"
-                                AutomationProperties.Name="{x:Bind Name, Mode=OneWay}">
+                                AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
+                                AutomationProperties.HelpText="{x:Bind StateDescription, Mode=OneWay}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
@@ -64,6 +65,9 @@
                                     </tkcontrols:Case>
                                     <tkcontrols:Case Value="False">
                                         <tkcontrols:SwitchPresenter TargetType="x:Int32" Value="{x:Bind LaunchStateInt, Mode=OneWay}">
+                                            <tkcontrols:Case Value="5">
+                                                <TextBlock Text="{x:Bind StateDescription, Mode=OneWay}" />
+                                            </tkcontrols:Case>
                                             <tkcontrols:Case IsDefault="True" Value="3">
                                                 <FontIcon
                                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
@@ -93,6 +97,7 @@
             Grid.Row="1"
             Margin="0,16,4,0"
             HorizontalAlignment="Stretch"
+            AutomationProperties.AutomationId="DismissButton"
             AutomationProperties.Name="{x:Bind DismissLabel.Text, Mode=OneWay}"
             Click="CloseButton_Click"
             Style="{ThemeResource AccentButtonStyle}"
@@ -110,6 +115,7 @@
             Grid.Column="1"
             Margin="4,16,0,0"
             HorizontalAlignment="Stretch"
+            AutomationProperties.AutomationId="CancelButton"
             AutomationProperties.Name="{x:Bind CancelLabel.Text, Mode=OneWay}"
             Click="CloseButton_Click"
             Command="{x:Bind ViewModel.CancelLaunchCommand}"

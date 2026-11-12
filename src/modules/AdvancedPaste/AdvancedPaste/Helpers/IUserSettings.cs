@@ -27,6 +27,24 @@ namespace AdvancedPaste.Settings
 
         public IReadOnlyList<PasteFormats> AdditionalActions { get; }
 
+        public int PasteAsJpgQuality { get; }
+
+        public string FixSpellingAndGrammarPrompt { get; }
+
+        public string FixSpellingAndGrammarSystemPrompt { get; }
+
+        public string FixSpellingAndGrammarProviderId { get; }
+
+        public bool FixSpellingAndGrammarCoachingEnabled { get; }
+
+        public bool FixSpellingAndGrammarCoachingShortcutSet { get; }
+
+        public string FixSpellingAndGrammarCoachingPrompt { get; }
+
+        public string FixSpellingAndGrammarCoachingSystemPrompt { get; }
+
+        public string FixSpellingAndGrammarCoachingProviderId { get; }
+
         public PasteAIConfiguration PasteAIConfiguration { get; }
 
         public event EventHandler Changed;

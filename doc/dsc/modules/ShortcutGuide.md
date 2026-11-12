@@ -14,8 +14,8 @@ Manages configuration for the Shortcut Guide utility, which displays available k
 ## Description
 
 The `ShortcutGuide` module configures PowerToys Shortcut Guide, a utility that
-displays an overlay showing available Windows keyboard shortcuts when you hold
-the Windows key. It helps users discover and learn keyboard shortcuts.
+displays an overlay showing available Windows and application keyboard shortcuts.
+It can be opened with a configurable shortcut or by holding either Windows key.
 
 ## Properties
 
@@ -35,7 +35,15 @@ Sets the keyboard shortcut or method to open the shortcut guide.
 - `code` (integer) - Virtual key code
 - `key` (string) - Key name
 
-**Default:** Hold Windows key for 900ms
+**Default:** `Win+Shift+/`
+
+### WindowsKeyAction
+
+Sets the action performed after holding either Windows key.
+
+**Type:** integer  
+**Allowed values:** `0` (Off), `1` (Show taskbar indicators), `2` (Open Shortcut Guide)  
+**Default:** `1`
 
 ### OverlayOpacity
 
@@ -58,8 +66,17 @@ Sets the theme for the shortcut guide.
 Sets how long the Windows key must be held before showing the guide (in milliseconds).
 
 **Type:** integer  
-**Range:** `100` to `10000`  
+**Range:** `100` to `5000`  
 **Default:** `900`
+
+### CloseOnWindowsKeyRelease
+
+Controls whether the full Shortcut Guide closes when the Windows key is released.
+This setting applies when `WindowsKeyAction` is `2`; taskbar indicators always
+close on release.
+
+**Type:** boolean  
+**Default:** `true`
 
 ### ExcludedApps
 
@@ -71,13 +88,15 @@ List of applications where Shortcut Guide is disabled.
 
 ### Example 1 - Configure activation time with direct execution
 
-This example sets a faster activation time for the shortcut guide.
+This example opens the full Shortcut Guide after holding a Windows key for 600 milliseconds.
 
 ```powershell
 $config = @{
     settings = @{
         properties = @{
+            WindowsKeyAction = 2
             PressTime = 600
+            CloseOnWindowsKeyRelease = $true
         }
         name = "ShortcutGuide"
         version = "1.0"
@@ -146,7 +165,7 @@ resources:
 
 ### Example 4 - Quick activation
 
-This example configures for quick activation with a short press time.
+This example configures taskbar indicators with a short hold duration.
 
 ```bash
 dsc config set --file shortcutguide-quick.dsc.yaml
@@ -161,6 +180,7 @@ resources:
     properties:
       settings:
         properties:
+          WindowsKeyAction: 1
           PressTime: 400
         name: ShortcutGuide
         version: 1.0

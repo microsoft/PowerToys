@@ -3,12 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using MouseJump.Common.Helpers;
-using MouseJump.Common.Models.Drawing;
+using MouseJump.Models.Drawing;
 
 namespace MouseJump.Common.UnitTests.Helpers;
 
-[TestClass]
 public static class MouseHelperTests
 {
     [TestClass]
@@ -58,7 +58,7 @@ public static class MouseHelperTests
         }
 
         [TestMethod]
-        [DynamicData(nameof(GetTestCases), DynamicDataSourceType.Method)]
+        [DynamicData(nameof(GetTestCases))]
         public void RunTestCases(TestCase data)
         {
             var actual = MouseHelper.GetJumpLocation(

@@ -25,7 +25,14 @@ namespace WorkspacesLauncherUI
                 return;
             }
 
-            const string mutexName = "Local\\PowerToys_Workspaces_LauncherUI_InstanceMutex";
+            if (!LauncherSession.TryParse(args, out var session))
+            {
+                Logger.LogError("Invalid Workspaces confirmation host arguments.");
+                Environment.ExitCode = 1;
+                return;
+            }
+
+            var mutexName = "Local\\PowerToys_Workspaces_LauncherUI_InstanceMutex" + session.OperationId;
             bool createdNew;
             using var mutex = new Mutex(true, mutexName, out createdNew);
 
@@ -39,8 +46,10 @@ namespace WorkspacesLauncherUI
             {
                 var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
                 SynchronizationContext.SetSynchronizationContext(context);
-                _ = new App();
+                _ = new App(session);
             });
+
+            mutex.ReleaseMutex();
         }
     }
 }

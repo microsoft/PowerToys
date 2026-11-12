@@ -23,7 +23,7 @@ public interface ISettingsService
     void Save(bool hotReload = true);
 
     /// <summary>
-    /// Atomically applies a transformation to the current settings, persists the result,
+    /// Atomically applies a transformation to the current settings, persists changed JSON values,
     /// and optionally raises <see cref="SettingsChanged"/>.
     /// </summary>
     void UpdateSettings(Func<SettingsModel, SettingsModel> transform, bool hotReload = true);

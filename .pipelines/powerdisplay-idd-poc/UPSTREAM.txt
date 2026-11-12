@@ -1,0 +1,27 @@
+Test-only CI fixture for microsoft/PowerToys#51800, introduced in PR #51855.
+
+The adapter, EDIDs, mode enumeration and swap-chain processing are built from:
+https://github.com/microsoft/Windows-driver-samples
+Revision: bb68ed5e770bce04dc5395ec9258dafab034184d
+Directory: video/IndirectDisplay/IddSampleDriver
+License: Microsoft Public License (MS-PL), copied into each artifact.
+The source-derived idd-fixture.patch remains under MS-PL; see MS-PL.txt.
+
+idd-fixture.patch adds two monitors, stable container IDs, I2C callbacks and a
+versioned diagnostic/control device interface. Fixture.cpp and Probe.cpp are MIT-licensed
+PowerToys test infrastructure. No shipping module, installer or API is modified.
+
+Native Dxva2 accepts monitor handle value zero for this IDD. Zero-valued native
+handles alone are NOT evidence of a production blocker: the unchanged production
+MonitorManager's normal enumeration/retry path discovers both fixture monitors.
+The separate production probe verifies that path directly. No product filtering
+is bypassed.
+
+The fixture validates native Dxva2 routing, production discovery and real UI tests.
+The sample's Dell/Lenovo EDIDs are not representations of physical hardware.
+FixtureMonitorIdentity.cs is the single managed source for their connector-to-PnP
+identity mapping, shared by the UI suite and production discovery probe. It is
+coupled to the two EDID arrays in this pinned upstream sample. When changing the
+sample revision or EDIDs, update that mapping and revalidate both stable monitor
+identities through native transport, production discovery, hot-plug and UI tests.
+No claim of physical-panel backlight, WMI or mixed-DPI coverage is made.

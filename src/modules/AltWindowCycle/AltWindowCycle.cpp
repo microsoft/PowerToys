@@ -1,0 +1,1876 @@
+// AltWindowCycle.cpp
+// Adapts an Alt+` window-cycling overlay proof-of-concept for the PowerToys in-proc module.
+// All overlay windows and the Switcher state machine live on a dedicated UI thread;
+// the runner's on_hotkey callback only posts a message.
+// Thumbnail previews default to DWM compositor thumbnails for visual fidelity.
+
+#include "pch.h"
+
+#include "AltWindowCycle.h"
+#include "AltWindowCycleLogic.h"
+
+#include <uxtheme.h>
+#include <shellscalingapi.h>
+#include <objidl.h>
+#include <gdiplus.h>
+#include <atomic>
+#include <memory>
+
+// Win11 system backdrop / corner attributes (in case SDK is older).
+#ifndef DWMWA_SYSTEMBACKDROP_TYPE
+#define DWMWA_SYSTEMBACKDROP_TYPE 38
+#endif
+#ifndef DWMSBT_TRANSIENTWINDOW
+#define DWMSBT_TRANSIENTWINDOW 3
+#endif
+#ifndef DWMWA_CLOAKED
+#define DWMWA_CLOAKED 14
+#endif
+#ifndef DWMWA_WINDOW_CORNER_PREFERENCE
+#define DWMWA_WINDOW_CORNER_PREFERENCE 33
+#endif
+#ifndef DWMWCP_ROUND
+#define DWMWCP_ROUND 2
+#endif
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
+#ifndef DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
+#define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((DPI_AWARENESS_CONTEXT)-4)
+#endif
+#ifndef DWMWA_SYSTEMBACKDROP_TYPE
+#define DWMWA_SYSTEMBACKDROP_TYPE 38
+#endif
+#ifndef DWMSBT_TRANSIENTWINDOW
+#define DWMSBT_TRANSIENTWINDOW 3
+#endif
+
+namespace AltTabStyle
+{
+    // Alt-Tab In-App Acrylic Thin tints (ABGR, alpha byte 0 = fully blurred tint).
+    // Dark: TintColor=#545454. Light: a soft #F3F3F3 mica-like tint.
+    constexpr DWORD AcrylicThinGradientDarkABGR = 0x00545454;
+    constexpr DWORD AcrylicThinGradientLightABGR = 0x00F3F3F3;
+
+    // Reads HKCU Personalize\AppsUseLightTheme; defaults to dark when unset.
+    inline bool IsLightTheme()
+    {
+        DWORD value = 0;
+        DWORD size = sizeof(value);
+        HKEY key = nullptr;
+        if (RegOpenKeyExW(HKEY_CURRENT_USER,
+                          L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+                          0, KEY_READ, &key) == ERROR_SUCCESS)
+        {
+            DWORD type = 0;
+            if (RegQueryValueExW(key, L"AppsUseLightTheme", nullptr, &type,
+                                 reinterpret_cast<LPBYTE>(&value), &size) != ERROR_SUCCESS ||
+                type != REG_DWORD)
+            {
+                value = 0;
+            }
+            RegCloseKey(key);
+        }
+        return value != 0;
+    }
+
+    // Opaque approximation of the acrylic tint (alpha dropped), used as the
+    // backdrop fill on OS builds without the public system-backdrop API.
+    constexpr COLORREF AbgrToRef(DWORD abgr)
+    {
+        return RGB(abgr & 0xFF, (abgr >> 8) & 0xFF, (abgr >> 16) & 0xFF);
+    }
+    constexpr COLORREF BackdropSolidRef(bool light)
+    {
+        return AbgrToRef(light ? AcrylicThinGradientLightABGR : AcrylicThinGradientDarkABGR);
+    }
+
+    inline COLORREF AccentFallbackRef() { return RGB(0, 120, 215); }
+    constexpr COLORREF HeaderTextRef(bool selected)
+    {
+        return selected ? RGB(255, 255, 255) : RGB(207, 207, 207);
+    }
+
+    inline Gdiplus::Color Transparent() { return Gdiplus::Color(0, 0, 0, 0); }
+    inline Gdiplus::Color Card(bool selected)
+    {
+        return selected ? Gdiplus::Color(255, 58, 58, 62)
+                        : Gdiplus::Color(255, 43, 43, 46);
+    }
+    constexpr COLORREF CardRef(bool selected)
+    {
+        return selected ? RGB(58, 58, 62) : RGB(43, 43, 46);
+    }
+    inline Gdiplus::Color Accent(COLORREF accent)
+    {
+        return Gdiplus::Color(255, GetRValue(accent), GetGValue(accent), GetBValue(accent));
+    }
+    inline Gdiplus::Color SurfaceStrokeDefault()
+    {
+        return Gdiplus::Color(64, 255, 255, 255);
+    }
+    inline Gdiplus::Color PreviewStroke(bool selected)
+    {
+        return selected ? Gdiplus::Color(90, 255, 255, 255)
+                        : Gdiplus::Color(45, 255, 255, 255);
+    }
+    inline Gdiplus::Color FocusShadow()
+    {
+        return Gdiplus::Color(150, 0, 0, 0);
+    }
+}
+
+// True on Windows 11 22H2+ (build 22621), where DWMWA_SYSTEMBACKDROP_TYPE is a
+// public, documented way to get acrylic. Below that (Windows 10, Windows 11
+// 21H2) we fall back to an opaque solid fill instead of the private composition
+// API. RtlGetVersion is used because GetVersionEx is shimmed by app compat.
+static bool SupportsSystemBackdrop()
+{
+    using RtlGetVersionPtr = LONG(WINAPI*)(PRTL_OSVERSIONINFOW);
+    static const DWORD build = []() -> DWORD {
+        if (HMODULE nt = GetModuleHandleW(L"ntdll.dll"))
+        {
+            auto fn = reinterpret_cast<RtlGetVersionPtr>(GetProcAddress(nt, "RtlGetVersion"));
+            RTL_OSVERSIONINFOW vi{};
+            vi.dwOSVersionInfoSize = sizeof(vi);
+            if (fn && fn(&vi) == 0)
+                return vi.dwBuildNumber;
+        }
+        return 0;
+    }();
+    return build >= 22621;
+}
+
+// thumbHost fallback-fill state. On the acrylic path thumbHost paints nothing so
+// the system backdrop shows through; on the fallback path ThumbHostProc fills it
+// opaque with this tinted brush.
+static HBRUSH g_thumbSolidBrush = nullptr;
+static bool g_thumbSolidMode = false;
+
+// Prototype: preview mode. A live DWM thumbnail is a real-time mirror of the
+// target window, but it's a plain OS-composited rectangle we have no way to
+// clip, so its corners can't be rounded to match the card. As an alternative,
+// a static-snapshot mode captures the window once (via the public PrintWindow
+// API) into a plain GDI+ bitmap that we paint and clip ourselves, at the cost
+// of live updates (the snapshot is drawn as PrintWindow captured it -- no
+// color/theme normalization is applied). Hardcoded on for now to evaluate the
+// approach; intended to become a user-facing setting (a per-user choice
+// between live vs. static previews). Windows PrintWindow can't capture still
+// fall back to a live DWM thumbnail automatically.
+constexpr bool kUseStaticSnapshotPreview = true;
+
+static LRESULT CALLBACK ThumbHostProc(HWND h, UINT msg, WPARAM w, LPARAM l)
+{
+    if (msg == WM_ERASEBKGND)
+    {
+        if (g_thumbSolidMode && g_thumbSolidBrush)
+        {
+            RECT rc{};
+            GetClientRect(h, &rc);
+            FillRect(reinterpret_cast<HDC>(w), &rc, g_thumbSolidBrush);
+        }
+        return 1;
+    }
+    if (msg == WM_NCCALCSIZE && w)
+    {
+        // thumbHost carries WS_CAPTION solely so DWM treats it as a "framed"
+        // top-level window -- DWMWA_SYSTEMBACKDROP_TYPE (Mica/acrylic) is
+        // silently ignored on plain WS_POPUP windows with no frame at all.
+        // Returning 0 here (instead of calling DefWindowProc) collapses the
+        // non-client caption/border to nothing, so the window still looks
+        // like a plain borderless popup while DWM still applies the
+        // backdrop material to it.
+        return 0;
+    }
+    return DefWindowProcW(h, msg, w, l);
+}
+
+// Apply the overlay backdrop to thumbHost. Win11 22H2+ gets public acrylic via
+// DWMWA_SYSTEMBACKDROP_TYPE; older builds get an opaque tinted fill. The card
+// chrome is a fixed dark look regardless of the user's OS theme, so the
+// backdrop is forced dark too (DWMWA_USE_IMMERSIVE_DARK_MODE) -- otherwise
+// DWMSBT_TRANSIENTWINDOW would tint itself light on a light-mode system and
+// clash with the dark cards drawn on top of it.
+static void ApplyBackdrop(HWND hwnd)
+{
+    BOOL dark = TRUE;
+    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &dark, sizeof(dark));
+
+    if (SupportsSystemBackdrop())
+    {
+        g_thumbSolidMode = false;
+        MARGINS glass{ -1, -1, -1, -1 };
+        DwmExtendFrameIntoClientArea(hwnd, &glass);
+        int backdrop = DWMSBT_TRANSIENTWINDOW;
+        DwmSetWindowAttribute(hwnd, DWMWA_SYSTEMBACKDROP_TYPE, &backdrop, sizeof(backdrop));
+
+        // DWM automatically flattens Mica/acrylic backdrop material to a
+        // solid, non-blurred tint on any window it considers "inactive".
+        // thumbHost is WS_EX_NOACTIVATE (it must never steal real
+        // keyboard/foreground focus from whatever app the user is
+        // switching away from), so without this call DWM would always see
+        // it as inactive and always render the flattened/opaque fallback
+        // color -- never live blur, no matter how correctly the backdrop
+        // attribute itself is set. WM_NCACTIVATE with wParam=TRUE tells DWM
+        // to paint this window's frame/backdrop as if it were active,
+        // purely for rendering purposes; it does not change real Win32
+        // input focus or activate the window.
+        SendMessageW(hwnd, WM_NCACTIVATE, TRUE, 0);
+    }
+    else
+    {
+        g_thumbSolidMode = true;
+        if (g_thumbSolidBrush)
+            DeleteObject(g_thumbSolidBrush);
+        g_thumbSolidBrush = CreateSolidBrush(AltTabStyle::BackdropSolidRef(false));
+    }
+}
+
+// =================== Window enumeration / activation ===================
+
+static std::wstring ProcessImagePath(HWND hwnd)
+{
+    DWORD pid = 0;
+    GetWindowThreadProcessId(hwnd, &pid);
+    if (!pid)
+        return std::wstring();
+
+    HANDLE proc = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+    if (!proc)
+        return std::wstring();
+
+    wchar_t buf[MAX_PATH * 2];
+    DWORD len = static_cast<DWORD>(sizeof(buf) / sizeof(buf[0]));
+    std::wstring result;
+    if (QueryFullProcessImageNameW(proc, 0, buf, &len))
+        result.assign(buf, len);
+    CloseHandle(proc);
+    return result;
+}
+
+// True for paths whose filename is ApplicationFrameHost.exe (the shared host that
+// owns every UWP/packaged app's top-level ApplicationFrameWindow).
+static bool IsApplicationFrameHost(const std::wstring& path)
+{
+    size_t slash = path.find_last_of(L"\\/");
+    const wchar_t* name = path.c_str() + (slash == std::wstring::npos ? 0 : slash + 1);
+    return _wcsicmp(name, L"ApplicationFrameHost.exe") == 0;
+}
+
+struct CoreWindowFind
+{
+    DWORD hostPid = 0;
+    HWND found = nullptr;
+};
+
+static BOOL CALLBACK FindCoreWindowProc(HWND child, LPARAM lp)
+{
+    CoreWindowFind* cf = reinterpret_cast<CoreWindowFind*>(lp);
+    wchar_t cls[64];
+    if (GetClassNameW(child, cls, ARRAYSIZE(cls)) &&
+        wcscmp(cls, L"Windows.UI.Core.CoreWindow") == 0)
+    {
+        DWORD pid = 0;
+        GetWindowThreadProcessId(child, &pid);
+        if (pid && pid != cf->hostPid)
+        {
+            cf->found = child;
+            return FALSE; // stop enumerating
+        }
+    }
+    return TRUE;
+}
+
+// Image path that identifies the *real* owning app. For UWP/packaged windows the
+// top-level window belongs to ApplicationFrameHost.exe, so all packaged apps would
+// otherwise group together. Resolve to the hosted CoreWindow's actual process so
+// each packaged app is grouped on its own.
+static std::wstring RealProcessImagePath(HWND hwnd)
+{
+    std::wstring path = ProcessImagePath(hwnd);
+    if (!IsApplicationFrameHost(path))
+        return path;
+
+    DWORD hostPid = 0;
+    GetWindowThreadProcessId(hwnd, &hostPid);
+
+    CoreWindowFind cf;
+    cf.hostPid = hostPid;
+    EnumChildWindows(hwnd, FindCoreWindowProc, reinterpret_cast<LPARAM>(&cf));
+    if (cf.found)
+    {
+        std::wstring real = ProcessImagePath(cf.found);
+        if (!real.empty())
+            return real;
+    }
+    return path;
+}
+
+// Queries the Win32 state that feeds the pure Alt-Tab eligibility predicate. Keeps
+// the original short-circuits so no extra system calls are made for windows that are
+// already disqualified (e.g. the DWM cloak query is skipped for invisible windows).
+static AltWindowCycleLogic::WindowEligibility QueryWindowEligibility(HWND hwnd)
+{
+    AltWindowCycleLogic::WindowEligibility eligibility;
+
+    eligibility.isVisible = IsWindowVisible(hwnd) != FALSE;
+    if (!eligibility.isVisible)
+        return eligibility;
+
+    int cloaked = 0;
+    eligibility.isCloaked = SUCCEEDED(DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &cloaked, sizeof(cloaked))) && cloaked;
+    if (eligibility.isCloaked)
+        return eligibility;
+
+    HWND walk = GetAncestor(hwnd, GA_ROOTOWNER);
+    HWND tryPopup = nullptr;
+    for (;;)
+    {
+        tryPopup = GetLastActivePopup(walk);
+        if (tryPopup == walk)
+            break;
+        if (IsWindowVisible(tryPopup))
+            break;
+        walk = tryPopup;
+    }
+    eligibility.isAltTabRepresentative = (walk == hwnd);
+    if (!eligibility.isAltTabRepresentative)
+        return eligibility;
+
+    LONG_PTR exStyle = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+    eligibility.isToolWindow = (exStyle & WS_EX_TOOLWINDOW) != 0;
+    eligibility.isAppWindow = (exStyle & WS_EX_APPWINDOW) != 0;
+    return eligibility;
+}
+
+struct EnumCtx
+{
+    std::vector<AltWindowCycleLogic::CandidateWindow> candidates;
+};
+
+static BOOL CALLBACK EnumProc(HWND hwnd, LPARAM lp)
+{
+    EnumCtx* ctx = reinterpret_cast<EnumCtx*>(lp);
+
+    AltWindowCycleLogic::CandidateWindow candidate;
+    candidate.id = reinterpret_cast<uintptr_t>(hwnd);
+    candidate.eligibility = QueryWindowEligibility(hwnd);
+
+    // Resolve the owning process only for eligible windows, matching the original
+    // short-circuit (avoids an OpenProcess for windows that are dropped anyway).
+    if (AltWindowCycleLogic::IsAltTabEligible(candidate.eligibility))
+        candidate.processKey = RealProcessImagePath(hwnd);
+
+    ctx->candidates.push_back(std::move(candidate));
+    return TRUE;
+}
+
+// Collect Alt-Tab-eligible windows of the foreground app in Z-order (MRU).
+static bool GetAppWindows(HWND& foreground, std::vector<HWND>& windows)
+{
+    windows.clear();
+    foreground = GetForegroundWindow();
+    if (!foreground)
+        return false;
+
+    const std::wstring foregroundKey = RealProcessImagePath(foreground);
+    if (foregroundKey.empty())
+        return false;
+
+    EnumCtx ctx;
+    EnumWindows(EnumProc, reinterpret_cast<LPARAM>(&ctx));
+
+    const std::vector<unsigned long long> selected =
+        AltWindowCycleLogic::SelectCycleWindows(foregroundKey, ctx.candidates);
+
+    windows.reserve(selected.size());
+    for (const unsigned long long id : selected)
+        windows.push_back(reinterpret_cast<HWND>(static_cast<uintptr_t>(id)));
+
+    return !windows.empty();
+}
+
+static void ForceForeground(HWND hwnd)
+{
+    if (IsIconic(hwnd))
+        ShowWindow(hwnd, SW_RESTORE);
+
+    DWORD fgThread = GetWindowThreadProcessId(GetForegroundWindow(), nullptr);
+    DWORD myThread = GetCurrentThreadId();
+
+    if (fgThread && fgThread != myThread)
+        AttachThreadInput(myThread, fgThread, TRUE);
+
+    BringWindowToTop(hwnd);
+    SetForegroundWindow(hwnd);
+    SetFocus(hwnd);
+
+    if (fgThread && fgThread != myThread)
+        AttachThreadInput(myThread, fgThread, FALSE);
+}
+
+// =================== UI-thread message plumbing ===============================
+
+// Custom thread messages posted to the dedicated UI thread.
+// WM_AWC_HOTKEY: wParam = forward flag (0/1), lParam = held modifier mask.
+static const UINT WM_AWC_HOTKEY = WM_APP + 1;
+static const UINT WM_AWC_CANCEL = WM_APP + 2;
+
+static DWORD g_uiThreadId = 0;
+
+// Escape has to cancel the overlay, but the overlay is WS_EX_NOACTIVATE and never
+// receives keyboard focus. A low-level hook installed only while the overlay is
+// visible keeps Escape out of the runner's global hotkey table, so PowerToys never
+// claims Alt+Escape (a Windows shell shortcut) while the module sits idle.
+static HHOOK g_escapeHook = nullptr;
+
+static LRESULT CALLBACK EscapeHookProc(int code, WPARAM wParam, LPARAM lParam)
+{
+    if (code == HC_ACTION && (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN))
+    {
+        const auto* keyInfo = reinterpret_cast<const KBDLLHOOKSTRUCT*>(lParam);
+
+        // Keep this callback bounded: teardown runs on the UI thread's own message
+        // loop rather than inline, so the OS low-level hook timeout is never at risk.
+        if (keyInfo && keyInfo->vkCode == VK_ESCAPE && g_uiThreadId &&
+            PostThreadMessageW(g_uiThreadId, WM_AWC_CANCEL, 0, 0))
+        {
+            return 1;
+        }
+    }
+
+    return CallNextHookEx(nullptr, code, wParam, lParam);
+}
+
+// =================== Switcher class ===================
+
+class Switcher
+{
+public:
+    bool Init(HINSTANCE instance);
+    void Shutdown();
+    void OnHotkey(bool forward, unsigned int holdModifiers);
+    void OnCancel();
+
+private:
+    enum class St { Idle, Visible };
+
+    static const UINT_PTR TIMER_ID = 1;
+    static const UINT TIMER_MS = 25;
+
+    static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+
+    void OnTick();
+    void Commit();
+    void Cancel();
+    void ShowOverlayWindow();
+    void HideOverlayWindow();
+    void SetSelection(int index);
+    void RenderLayered();
+    void OnThemeChanged();
+    void ComputeLayout(const RECT& work, int& x, int& y, int& panelW, int& panelH);
+    void RegisterThumbnails();
+    void UnregisterThumbnails();
+    void InstallEscapeHook();
+    void RemoveEscapeHook();
+    void EnsureFont();
+
+    RECT TileRect(int index) const;
+    RECT PreviewRect(const RECT& tile) const;
+    RECT HeaderRect(const RECT& tile) const;
+
+    int Scaled(int v) const { return AltWindowCycleLogic::ScaledValue(scale, v); }
+
+    HINSTANCE hinst = nullptr;
+    HWND overlay = nullptr;
+    HWND thumbHost = nullptr;
+    int ovX = 0, ovY = 0, ovW = 0, ovH = 0;
+
+    St state = St::Idle;
+    std::vector<HWND> windows;
+    std::vector<HTHUMBNAIL> thumbs;
+    // Static-snapshot preview mode only (kUseStaticSnapshotPreview): one
+    // captured bitmap per visible slot, already downsampled to that slot's
+    // preview-rect pixel size at capture time (see
+    // CaptureWindowSnapshotForPreview), refreshed on show/page change. A null
+    // entry means capture failed for that slot and a live DWM thumbnail was
+    // registered instead.
+    std::vector<std::unique_ptr<Gdiplus::Bitmap>> snapshots;
+    std::vector<HICON> icons;
+    std::vector<std::wstring> titles;
+    HWND anchorWindow = nullptr;
+    int selected = 0;
+    int pageStart = 0;
+    unsigned int activeHoldModifiers = AltWindowCycleLogic::ModifierAlt;
+
+    double scale = 1.0;
+    AltWindowCycleLogic::OverlayLayout overlayLayout;
+    int cols = 1, rows = 1;
+    int pad = 0, gap = 0, tileW = 0, tileH = 0, previewH = 0, inner = 0, radius = 0;
+    int cardTrimBottom = 0;
+    int headerH = 0, iconSize = 0;
+
+    HFONT font = nullptr;
+    double fontScale = 0.0;
+};
+
+// ---- lifecycle ---------------------------------------------------------------
+
+bool Switcher::Init(HINSTANCE instance)
+{
+    hinst = instance;
+
+    WNDCLASSW hc = {};
+    hc.style = CS_HREDRAW | CS_VREDRAW;
+    hc.lpfnWndProc = &ThumbHostProc;
+    hc.hInstance = hinst;
+    hc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
+    hc.hbrBackground = nullptr;
+    hc.lpszClassName = L"AltWindowCycleThumbHost";
+    RegisterClassW(&hc);
+
+    // WS_DISABLED keeps this display-only host from swallowing mouse input:
+    // WS_EX_NOACTIVATE only stops it from taking keyboard/foreground focus,
+    // it does not make the window click-through, so without WS_DISABLED
+    // clicks over the transparent portions of the layered overlay above it
+    // would land on thumbHost instead of passing through.
+    thumbHost = CreateWindowExW(
+        WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
+        hc.lpszClassName, L"", WS_POPUP | WS_CAPTION | WS_DISABLED,
+        0, 0, 0, 0, nullptr, nullptr, hinst, nullptr);
+    if (!thumbHost)
+        return false;
+
+    WNDCLASSW wc = {};
+    wc.style = CS_HREDRAW | CS_VREDRAW;
+    wc.lpfnWndProc = &Switcher::WndProc;
+    wc.hInstance = hinst;
+    wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
+    wc.hbrBackground = nullptr;
+    wc.lpszClassName = L"AltWindowCycleOverlay";
+    RegisterClassW(&wc);
+
+    overlay = CreateWindowExW(
+        WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_LAYERED,
+        wc.lpszClassName, L"", WS_POPUP,
+        0, 0, 0, 0, nullptr, nullptr, hinst, nullptr);
+    if (!overlay)
+        return false;
+
+    SetWindowLongPtrW(overlay, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+    return true;
+}
+
+void Switcher::Shutdown()
+{
+    RemoveEscapeHook();
+    UnregisterThumbnails();
+    if (thumbHost)
+    {
+        DestroyWindow(thumbHost);
+        thumbHost = nullptr;
+    }
+    if (font)
+    {
+        DeleteObject(font);
+        font = nullptr;
+    }
+    if (overlay)
+    {
+        KillTimer(overlay, TIMER_ID);
+        DestroyWindow(overlay);
+        overlay = nullptr;
+    }
+    UnregisterClassW(L"AltWindowCycleOverlay", hinst);
+    UnregisterClassW(L"AltWindowCycleThumbHost", hinst);
+    if (g_thumbSolidBrush)
+    {
+        DeleteObject(g_thumbSolidBrush);
+        g_thumbSolidBrush = nullptr;
+    }
+    state = St::Idle;
+}
+
+// ---- state machine -----------------------------------------------------------
+
+#pragma warning(suppress : 26497)
+static unsigned int CurrentModifiersDown()
+{
+    unsigned int modifiers = 0;
+    const auto isDown = [](int vk) {
+        return (GetAsyncKeyState(vk) & 0x8000) != 0;
+    };
+
+    if (isDown(VK_MENU))
+    {
+        modifiers |= AltWindowCycleLogic::ModifierAlt;
+    }
+    if (isDown(VK_CONTROL))
+    {
+        modifiers |= AltWindowCycleLogic::ModifierCtrl;
+    }
+    if (isDown(VK_SHIFT))
+    {
+        modifiers |= AltWindowCycleLogic::ModifierShift;
+    }
+    if (isDown(VK_LWIN) || isDown(VK_RWIN))
+    {
+        modifiers |= AltWindowCycleLogic::ModifierWin;
+    }
+
+    return modifiers;
+}
+
+void Switcher::OnHotkey(bool forward, unsigned int holdModifiers)
+{
+    if (state == St::Idle)
+    {
+        HWND fg;
+        if (!GetAppWindows(fg, windows) || windows.size() < 2)
+            return;
+
+        int idx = -1;
+        for (size_t i = 0; i < windows.size(); ++i)
+            if (windows[i] == fg) { idx = static_cast<int>(i); break; }
+        if (idx < 0)
+            idx = 0;
+
+        anchorWindow = fg;
+        activeHoldModifiers = AltWindowCycleLogic::StableHoldModifiers(holdModifiers);
+        const auto firstHotkey = AltWindowCycleLogic::BeginCycle(idx, static_cast<int>(windows.size()), forward);
+        if (firstHotkey.action != AltWindowCycleLogic::FirstHotkeyAction::ShowOverlay)
+            return;
+
+        selected = firstHotkey.selected;
+        ShowOverlayWindow();
+        state = St::Visible;
+        SetTimer(overlay, TIMER_ID, TIMER_MS, nullptr);
+    }
+    else
+    {
+        selected = AltWindowCycleLogic::WrapIndex(forward ? selected + 1 : selected - 1, static_cast<int>(windows.size()));
+        SetSelection(selected);
+    }
+}
+
+void Switcher::OnTick()
+{
+    if (!AltWindowCycleLogic::AreRequiredModifiersDown(activeHoldModifiers, CurrentModifiersDown()))
+    {
+        Commit();
+        return;
+    }
+}
+
+void Switcher::OnCancel()
+{
+    if (state == St::Visible)
+    {
+        Cancel();
+    }
+}
+
+void Switcher::Commit()
+{
+    KillTimer(overlay, TIMER_ID);
+    if (state == St::Visible)
+        HideOverlayWindow();
+    anchorWindow = nullptr;
+
+    if (selected >= 0 && selected < static_cast<int>(windows.size()))
+    {
+        HWND target = windows[selected];
+        if (IsWindow(target))
+            ForceForeground(target);
+    }
+    state = St::Idle;
+}
+
+void Switcher::Cancel()
+{
+    KillTimer(overlay, TIMER_ID);
+    if (state == St::Visible)
+        HideOverlayWindow();
+    anchorWindow = nullptr;
+    state = St::Idle;
+}
+
+// ---- overlay window ----------------------------------------------------------
+
+static HMONITOR GetAnchorMonitor(HWND anchor)
+{
+    return MonitorFromWindow(anchor, MONITOR_DEFAULTTONEAREST);
+}
+
+static UINT GetMonitorEffectiveDpi(HMONITOR mon)
+{
+    UINT dpiX = 96, dpiY = 96;
+    if (mon && SUCCEEDED(GetDpiForMonitor(mon, MDT_EFFECTIVE_DPI, &dpiX, &dpiY)) && dpiX)
+        return dpiX;
+    return 96;
+}
+
+static RECT GetWorkArea(HMONITOR mon)
+{
+    MONITORINFO mi = {};
+    mi.cbSize = sizeof(mi);
+    if (mon && GetMonitorInfoW(mon, &mi))
+        return mi.rcWork;
+    RECT fallback = { 0, 0, 1920, 1080 };
+    return fallback;
+}
+
+static UINT GetDpiForHostOnMonitor(HWND host, HMONITOR mon, const RECT& work)
+{
+    if (host && mon)
+    {
+        SetWindowPos(host, nullptr, work.left, work.top, 1, 1,
+                     SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_HIDEWINDOW);
+        UINT dpi = GetDpiForWindow(host);
+        if (dpi)
+            return dpi;
+    }
+    return GetMonitorEffectiveDpi(mon);
+}
+
+static HICON GetWindowIcon(HWND hwnd)
+{
+    DWORD_PTR res = 0;
+    HICON icon = nullptr;
+    if (SendMessageTimeoutW(hwnd, WM_GETICON, ICON_SMALL2, 0, SMTO_ABORTIFHUNG, 100, &res) && res)
+        icon = reinterpret_cast<HICON>(res);
+    if (!icon && SendMessageTimeoutW(hwnd, WM_GETICON, ICON_BIG, 0, SMTO_ABORTIFHUNG, 100, &res) && res)
+        icon = reinterpret_cast<HICON>(res);
+    if (!icon)
+        icon = reinterpret_cast<HICON>(GetClassLongPtrW(hwnd, GCLP_HICONSM));
+    if (!icon)
+        icon = reinterpret_cast<HICON>(GetClassLongPtrW(hwnd, GCLP_HICON));
+    return icon;
+}
+
+static std::wstring GetTitle(HWND hwnd);
+
+void Switcher::ShowOverlayWindow()
+{
+    if (windows.empty())
+        return;
+
+    int anchorIdx = selected;
+    if (anchorIdx < 0) anchorIdx = 0;
+    if (anchorIdx >= static_cast<int>(windows.size())) anchorIdx = 0;
+    HWND anchor = IsWindow(anchorWindow) ? anchorWindow : windows[anchorIdx];
+
+    HMONITOR mon = GetAnchorMonitor(anchor);
+    RECT work = GetWorkArea(mon);
+    UINT dpi = GetDpiForHostOnMonitor(thumbHost, mon, work);
+    scale = dpi / 96.0;
+
+    int x, y, panelW, panelH;
+    ComputeLayout(work, x, y, panelW, panelH);
+
+    EnsureFont();
+
+    icons.clear();
+    titles.clear();
+    for (HWND w : windows)
+    {
+        icons.push_back(GetWindowIcon(w));
+        titles.push_back(GetTitle(w));
+    }
+
+    ovX = x; ovY = y; ovW = panelW; ovH = panelH;
+
+    SetWindowPos(thumbHost, HWND_TOPMOST, x, y, panelW, panelH,
+                 SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+    ApplyBackdrop(thumbHost);
+    // Let DWM itself round thumbHost's corners instead of cutting a manual
+    // SetWindowRgn. DWM's default elevation shadow is drawn to match whatever
+    // corner shape DWM is applying; a hand-cut region at a slightly different
+    // radius/metric than DWM's own rounding left a sliver of that shadow
+    // peeking out past our rounded corner. Using only DWMWA_WINDOW_CORNER_PREFERENCE
+    // keeps the corner shape and its shadow self-consistent.
+    DWORD cornerPref = DWMWCP_ROUND;
+    DwmSetWindowAttribute(thumbHost, DWMWA_WINDOW_CORNER_PREFERENCE,
+                          &cornerPref, sizeof(cornerPref));
+    SetWindowRgn(thumbHost, nullptr, FALSE);
+    // DWM doesn't always repaint non-client chrome immediately after
+    // DwmSetWindowAttribute calls (backdrop type, corner preference, dark
+    // mode) on a window whose size didn't change. A no-op SWP_FRAMECHANGED
+    // forces DWM to recompute and actually apply them.
+    SetWindowPos(thumbHost, nullptr, 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+    RedrawWindow(thumbHost, nullptr, nullptr,
+                 RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+    RegisterThumbnails();
+
+    // Update the hidden layered bitmap before showing it. Otherwise, monitor/DPI
+    // switches can flash the previous-size overlay for one frame.
+    RenderLayered();
+    SetWindowPos(thumbHost, HWND_TOPMOST, x, y, panelW, panelH,
+                 SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    // Re-assert the fake-active state after showing: some DWM paths reset
+    // a window's WM_NCACTIVATE state to inactive around SWP_SHOWWINDOW,
+    // which would flatten the Mica/acrylic backdrop right after it appears.
+    SendMessageW(thumbHost, WM_NCACTIVATE, TRUE, 0);
+    SetWindowPos(overlay, HWND_TOPMOST, x, y, panelW, panelH,
+                 SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    SetWindowPos(thumbHost, overlay, 0, 0, 0, 0,
+                 SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+    InstallEscapeHook();
+}
+
+void Switcher::HideOverlayWindow()
+{
+    RemoveEscapeHook();
+    ShowWindow(overlay, SW_HIDE);
+    ShowWindow(thumbHost, SW_HIDE);
+    UnregisterThumbnails();
+    icons.clear();
+    titles.clear();
+}
+
+void Switcher::InstallEscapeHook()
+{
+    if (!g_escapeHook)
+    {
+        g_escapeHook = SetWindowsHookExW(WH_KEYBOARD_LL, EscapeHookProc, nullptr, 0);
+    }
+}
+
+void Switcher::RemoveEscapeHook()
+{
+    if (g_escapeHook)
+    {
+        UnhookWindowsHookEx(g_escapeHook);
+        g_escapeHook = nullptr;
+    }
+}
+
+void Switcher::SetSelection(int index)
+{
+    selected = index;
+    const int nextPageStart = AltWindowCycleLogic::PageStartForSelection(
+        selected,
+        static_cast<int>(windows.size()),
+        overlayLayout.pageSize);
+    if (nextPageStart != pageStart)
+    {
+        pageStart = nextPageStart;
+        RegisterThumbnails();
+    }
+    RenderLayered();
+}
+
+// React to a live OS Light/Dark theme switch while the overlay is visible.
+// The backdrop is forced dark regardless of system theme (to match the fixed
+// dark card chrome), so this just re-applies it defensively -- e.g. in case
+// DWM cleared window attributes across a theme transition -- and repaints.
+void Switcher::OnThemeChanged()
+{
+    if (state != St::Visible)
+        return;
+    ApplyBackdrop(thumbHost);
+    RedrawWindow(thumbHost, nullptr, nullptr,
+                 RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+    RenderLayered();
+}
+
+void Switcher::ComputeLayout(const RECT& work, int& x, int& y, int& panelW, int& panelH)
+{
+    overlayLayout = AltWindowCycleLogic::ComputeOverlayLayout(work, static_cast<int>(windows.size()), scale);
+    pad = overlayLayout.pad;
+    gap = overlayLayout.gap;
+    tileW = overlayLayout.tileW;
+    headerH = overlayLayout.headerH;
+    previewH = overlayLayout.previewH;
+    inner = overlayLayout.inner;
+    radius = overlayLayout.radius;
+    cardTrimBottom = overlayLayout.cardTrimBottom;
+    iconSize = overlayLayout.iconSize;
+    tileH = overlayLayout.tileH;
+    cols = overlayLayout.cols;
+    rows = overlayLayout.rows;
+    pageStart = AltWindowCycleLogic::PageStartForSelection(
+        selected,
+        static_cast<int>(windows.size()),
+        overlayLayout.pageSize);
+
+    x = overlayLayout.panelX;
+    y = overlayLayout.panelY;
+    panelW = overlayLayout.panelW;
+    panelH = overlayLayout.panelH;
+}
+
+RECT Switcher::TileRect(int index) const
+{
+    return AltWindowCycleLogic::TileRect(overlayLayout, index);
+}
+
+RECT Switcher::PreviewRect(const RECT& tile) const
+{
+    return AltWindowCycleLogic::PreviewRect(overlayLayout, tile);
+}
+
+RECT Switcher::HeaderRect(const RECT& tile) const
+{
+    return AltWindowCycleLogic::HeaderRect(overlayLayout, tile);
+}
+
+static SIZE QueryThumbSize(HTHUMBNAIL th)
+{
+    SIZE s = { 0, 0 };
+    DwmQueryThumbnailSourceSize(th, &s);
+    return s;
+}
+
+static SIZE ClientSourceSize(HWND hwnd)
+{
+    RECT cr = {};
+    if (GetClientRect(hwnd, &cr))
+    {
+        SIZE s = { cr.right - cr.left, cr.bottom - cr.top };
+        if (s.cx > 0 && s.cy > 0)
+            return s;
+    }
+    return { 0, 0 };
+}
+
+// Prototype (kUseStaticSnapshotPreview): captures a window's client area into
+// a GDI+ bitmap via the public PrintWindow API, at the window's native client
+// resolution. Unlike a live DWM thumbnail this is a one-shot snapshot (no
+// further updates until the caller re-captures), but because we own the
+// resulting pixels we can clip/round them ourselves to match the card,
+// instead of being stuck with DWM's plain rectangular thumbnail. Callers
+// should downsample the result to the preview's actual on-screen size (see
+// CaptureWindowSnapshotForPreview) rather than holding this native-resolution
+// copy, since it can be several megabytes per window (e.g. a 4K client area).
+static std::unique_ptr<Gdiplus::Bitmap> CaptureWindowSnapshot(HWND hwnd, SIZE& outSize)
+{
+    outSize = { 0, 0 };
+    SIZE clientSize = ClientSourceSize(hwnd);
+    if (clientSize.cx <= 0 || clientSize.cy <= 0)
+        return nullptr;
+
+    HDC hdcWindow = GetDC(hwnd);
+    if (!hdcWindow)
+        return nullptr;
+    HDC hdcMem = CreateCompatibleDC(hdcWindow);
+    HBITMAP hbmp = hdcMem ? CreateCompatibleBitmap(hdcWindow, clientSize.cx, clientSize.cy) : nullptr;
+    if (!hdcMem || !hbmp)
+    {
+        if (hdcMem) DeleteDC(hdcMem);
+        if (hbmp) DeleteObject(hbmp);
+        ReleaseDC(hwnd, hdcWindow);
+        return nullptr;
+    }
+
+    HGDIOBJ old = SelectObject(hdcMem, hbmp);
+    // PW_RENDERFULLCONTENT asks the window to render its full (potentially
+    // GPU/DirectComposition-backed) content; without it, many modern XAML/WinUI
+    // apps paint a blank surface into the DC.
+    BOOL ok = PrintWindow(hwnd, hdcMem, PW_CLIENTONLY | PW_RENDERFULLCONTENT);
+    SelectObject(hdcMem, old);
+    ReleaseDC(hwnd, hdcWindow);
+
+    std::unique_ptr<Gdiplus::Bitmap> bmp;
+    if (ok)
+    {
+        // The Gdiplus::Bitmap(HBITMAP, HPALETTE) constructor copies the pixel
+        // data, so hbmp can be safely destroyed once it returns.
+        bmp = std::make_unique<Gdiplus::Bitmap>(hbmp, static_cast<HPALETTE>(nullptr));
+        if (bmp->GetLastStatus() != Gdiplus::Ok)
+        {
+            bmp.reset();
+        }
+        else
+        {
+            outSize = clientSize;
+        }
+    }
+    DeleteObject(hbmp);
+    DeleteDC(hdcMem);
+    return bmp;
+}
+
+// Captures `hwnd` at native resolution (CaptureWindowSnapshot above), then
+// immediately crops/scales that capture down to the exact pixel size of
+// `dest` and discards the native-resolution bitmap. One page can contain
+// several slots, and each native capture can be a full 4K+ window client
+// area, so retaining all of them (rather than just the small on-screen
+// preview each one is downsampled to) for the overlay's lifetime would waste
+// hundreds of MB. Returns null if capture fails or `dest` is empty.
+static std::unique_ptr<Gdiplus::Bitmap> CaptureWindowSnapshotForPreview(HWND hwnd, const RECT& dest, SIZE& outSize)
+{
+    outSize = { 0, 0 };
+    const int dw = dest.right - dest.left;
+    const int dh = dest.bottom - dest.top;
+    if (dw <= 0 || dh <= 0)
+        return nullptr;
+
+    SIZE fullSize = {};
+    auto full = CaptureWindowSnapshot(hwnd, fullSize);
+    if (!full)
+        return nullptr;
+
+    RECT avail = { 0, 0, fullSize.cx, fullSize.cy };
+    RECT rcSrc = AltWindowCycleLogic::CoverSource(dest, avail);
+    Gdiplus::REAL srcLeft = static_cast<Gdiplus::REAL>(rcSrc.left);
+    Gdiplus::REAL srcTop = static_cast<Gdiplus::REAL>(rcSrc.top);
+    Gdiplus::REAL srcW = static_cast<Gdiplus::REAL>(rcSrc.right - rcSrc.left);
+    Gdiplus::REAL srcH = static_cast<Gdiplus::REAL>(rcSrc.bottom - rcSrc.top);
+
+    auto scaled = std::make_unique<Gdiplus::Bitmap>(dw, dh, PixelFormat32bppPARGB);
+    {
+        Gdiplus::Graphics tg(scaled.get());
+        tg.SetInterpolationMode(Gdiplus::InterpolationModeHighQualityBicubic);
+        tg.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHighQuality);
+        tg.DrawImage(full.get(), Gdiplus::RectF(0.0f, 0.0f, static_cast<Gdiplus::REAL>(dw), static_cast<Gdiplus::REAL>(dh)),
+                     srcLeft, srcTop, srcW, srcH, Gdiplus::UnitPixel);
+    }
+    // `full` (the native-resolution capture) is freed here; only the
+    // downsampled `scaled` bitmap is retained by the caller.
+
+    if (scaled->GetLastStatus() != Gdiplus::Ok)
+        return nullptr;
+
+    outSize = { dw, dh };
+    return scaled;
+}
+
+void Switcher::RegisterThumbnails()
+{
+    UnregisterThumbnails();
+
+    const int pageEnd = (std::min)(
+        pageStart + overlayLayout.pageSize,
+        static_cast<int>(windows.size()));
+    for (int windowIndex = pageStart, slot = 0; windowIndex < pageEnd; ++windowIndex, ++slot)
+    {
+        RECT dest = PreviewRect(TileRect(slot));
+
+        if (kUseStaticSnapshotPreview)
+        {
+            SIZE srcSize = {};
+            if (auto snap = CaptureWindowSnapshotForPreview(windows[windowIndex], dest, srcSize))
+            {
+                snapshots.push_back(std::move(snap));
+                thumbs.push_back(nullptr);
+                continue;
+            }
+            // PrintWindow legitimately fails for some windows (e.g. certain
+            // GPU-exclusive or protected-content surfaces); keep the
+            // per-slot vectors aligned with an empty entry and fall through
+            // to registering a live DWM thumbnail instead, so the slot still
+            // shows something rather than an empty acrylic hole.
+            snapshots.push_back(nullptr);
+        }
+
+        HTHUMBNAIL th = nullptr;
+        if (FAILED(DwmRegisterThumbnail(thumbHost, windows[windowIndex], &th)) || !th)
+        {
+            thumbs.push_back(nullptr);
+            continue;
+        }
+        thumbs.push_back(th);
+
+        SIZE clientSize = IsIconic(windows[windowIndex]) ? SIZE{ 0, 0 } : ClientSourceSize(windows[windowIndex]);
+        BOOL clientOnly = TRUE;
+        if (clientSize.cx <= 0 || clientSize.cy <= 0)
+        {
+            clientSize = QueryThumbSize(th);
+            clientOnly = FALSE;
+        }
+        RECT avail = { 0, 0, clientSize.cx, clientSize.cy };
+        if (clientOnly)
+        {
+            int ix = (std::min)(2, (int)(avail.right - avail.left) / 4);
+            int iy = (std::min)(2, (int)(avail.bottom - avail.top) / 4);
+            avail.left += ix; avail.right -= ix;
+            avail.top += iy; avail.bottom -= iy;
+        }
+        RECT rcSrc = AltWindowCycleLogic::CoverSource(dest, avail);
+        DWM_THUMBNAIL_PROPERTIES props = {};
+        props.dwFlags = DWM_TNP_RECTDESTINATION | DWM_TNP_RECTSOURCE |
+                        DWM_TNP_VISIBLE | DWM_TNP_OPACITY | DWM_TNP_SOURCECLIENTAREAONLY;
+        props.rcDestination = dest;
+        props.rcSource = rcSrc;
+        props.opacity = 255;
+        props.fVisible = TRUE;
+        props.fSourceClientAreaOnly = clientOnly;
+        DwmUpdateThumbnailProperties(th, &props);
+    }
+}
+
+void Switcher::UnregisterThumbnails()
+{
+    for (HTHUMBNAIL th : thumbs)
+        if (th)
+            DwmUnregisterThumbnail(th);
+    thumbs.clear();
+    snapshots.clear();
+}
+
+void Switcher::EnsureFont()
+{
+    if (font && fontScale == scale)
+        return;
+    if (font)
+    {
+        DeleteObject(font);
+        font = nullptr;
+    }
+    int height = -Scaled(15);
+    font = CreateFontW(height, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+                       DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+                       CLEARTYPE_NATURAL_QUALITY, DEFAULT_PITCH | FF_DONTCARE, L"Segoe UI");
+    fontScale = scale;
+}
+
+// ---- rendering helpers -------------------------------------------------------
+
+static void BuildRoundRect(Gdiplus::GraphicsPath& path, const Gdiplus::RectF& r, Gdiplus::REAL rad)
+{
+    path.Reset();
+    Gdiplus::REAL d = rad * 2;
+    if (d <= 0 || d > r.Width || d > r.Height)
+    {
+        path.AddRectangle(r);
+        return;
+    }
+    path.AddArc(r.X, r.Y, d, d, 180, 90);
+    path.AddArc(r.GetRight() - d, r.Y, d, d, 270, 90);
+    path.AddArc(r.GetRight() - d, r.GetBottom() - d, d, d, 0, 90);
+    path.AddArc(r.X, r.GetBottom() - d, d, d, 90, 90);
+    path.CloseFigure();
+}
+
+// Same as BuildRoundRect but only rounds the bottom-left/bottom-right corners,
+// leaving the top edge a hard cut. Used for the preview image, which now sits
+// flush under the header row (no gap to round away) but still needs to match
+// the card's rounded bottom corners where it meets the card edge.
+static void BuildBottomRoundRect(Gdiplus::GraphicsPath& path, const Gdiplus::RectF& r, Gdiplus::REAL rad)
+{
+    path.Reset();
+    Gdiplus::REAL d = rad * 2;
+    if (d <= 0 || d > r.Width || d > r.Height)
+    {
+        path.AddRectangle(r);
+        return;
+    }
+    path.AddLine(r.X, r.Y, r.GetRight(), r.Y);
+    path.AddArc(r.GetRight() - d, r.GetBottom() - d, d, d, 0, 90);
+    path.AddArc(r.X, r.GetBottom() - d, d, d, 90, 90);
+    path.CloseFigure();
+}
+
+static Gdiplus::RectF InflateF(const RECT& r, int by)
+{
+    return Gdiplus::RectF(
+        static_cast<Gdiplus::REAL>(r.left - by),
+        static_cast<Gdiplus::REAL>(r.top - by),
+        static_cast<Gdiplus::REAL>((r.right - r.left) + 2 * by),
+        static_cast<Gdiplus::REAL>((r.bottom - r.top) + 2 * by));
+}
+
+static std::wstring GetTitle(HWND hwnd)
+{
+    wchar_t buf[256];
+    int len = GetWindowTextW(hwnd, buf, static_cast<int>(sizeof(buf) / sizeof(buf[0])));
+    return std::wstring(buf, len > 0 ? len : 0);
+}
+
+// Draw HICON into a premultiplied-alpha DIB without disturbing the alpha channel
+// of already-opaque pixels outside the icon shape.
+static void DrawIconOverPARGB(void* destBits, int destW, int destH,
+                              HICON icon, int x, int y, int size)
+{
+    if (!destBits || !icon || destW <= 0 || destH <= 0 || size <= 0)
+        return;
+
+    HDC screen = GetDC(nullptr);
+    HDC iconDC = CreateCompatibleDC(screen);
+    if (!iconDC)
+    {
+        ReleaseDC(nullptr, screen);
+        return;
+    }
+
+    BITMAPINFO bi = {};
+    bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
+    bi.bmiHeader.biWidth = size;
+    bi.bmiHeader.biHeight = -size;
+    bi.bmiHeader.biPlanes = 1;
+    bi.bmiHeader.biBitCount = 32;
+    bi.bmiHeader.biCompression = BI_RGB;
+
+    void* iconBits = nullptr;
+    HBITMAP dib = CreateDIBSection(screen, &bi, DIB_RGB_COLORS, &iconBits, nullptr, 0);
+    if (!dib)
+    {
+        DeleteDC(iconDC);
+        ReleaseDC(nullptr, screen);
+        return;
+    }
+
+    HGDIOBJ oldBmp = SelectObject(iconDC, dib);
+    ZeroMemory(iconBits, static_cast<size_t>(size) * size * 4);
+    DrawIconEx(iconDC, 0, 0, icon, size, size, 0, nullptr, DI_NORMAL);
+
+    BYTE* src = static_cast<BYTE*>(iconBits);
+    BYTE* dst = static_cast<BYTE*>(destBits);
+
+    bool hasAlpha = false;
+    for (int i = 0; i < size * size; ++i)
+    {
+        if (src[i * 4 + 3] != 0)
+        {
+            hasAlpha = true;
+            break;
+        }
+    }
+
+    // Legacy (1-bit mask) icons carry no per-pixel alpha, so DrawIconEx leaves the
+    // alpha channel at 0 and a pure-black opaque pixel is indistinguishable from a
+    // transparent one by color alone. Render the icon over a white background on
+    // a second pass: pixels identical on both backgrounds are opaque (preserving black
+    // detail), pixels that differ by ~full white are transparent.
+    void* whiteBits = nullptr;
+    HBITMAP whiteDib = nullptr;
+    if (!hasAlpha)
+    {
+        whiteDib = CreateDIBSection(screen, &bi, DIB_RGB_COLORS, &whiteBits, nullptr, 0);
+        if (whiteDib)
+        {
+            SelectObject(iconDC, whiteDib);
+            memset(whiteBits, 0xFF, static_cast<size_t>(size) * size * 4);
+            DrawIconEx(iconDC, 0, 0, icon, size, size, 0, nullptr, DI_NORMAL);
+        }
+    }
+    BYTE* white = static_cast<BYTE*>(whiteBits);
+
+    for (int sy = 0; sy < size; ++sy)
+    {
+        int dy = y + sy;
+        if (dy < 0 || dy >= destH)
+            continue;
+        for (int sx = 0; sx < size; ++sx)
+        {
+            int dx = x + sx;
+            if (dx < 0 || dx >= destW)
+                continue;
+
+            size_t srcOff = (static_cast<size_t>(sy) * size + sx) * 4;
+            BYTE* s = src + srcOff;
+            BYTE* d = dst + (static_cast<size_t>(dy) * destW + dx) * 4;
+
+            if (hasAlpha)
+            {
+                int a = s[3];
+                if (a == 0)
+                    continue;
+
+                int sb = s[0], sg = s[1], sr = s[2];
+                if (sb > a || sg > a || sr > a)
+                {
+                    sb = (sb * a + 127) / 255;
+                    sg = (sg * a + 127) / 255;
+                    sr = (sr * a + 127) / 255;
+                }
+                int inv = 255 - a;
+                d[0] = static_cast<BYTE>((std::min)(255, sb + (d[0] * inv + 127) / 255));
+                d[1] = static_cast<BYTE>((std::min)(255, sg + (d[1] * inv + 127) / 255));
+                d[2] = static_cast<BYTE>((std::min)(255, sr + (d[2] * inv + 127) / 255));
+                d[3] = 255;
+            }
+            else
+            {
+                bool opaque;
+                if (white)
+                {
+                    BYTE* whitePx = white + srcOff;
+                    int diff = (whitePx[0] - s[0]) + (whitePx[1] - s[1]) + (whitePx[2] - s[2]);
+                    opaque = diff < 384; // < half of 3*255 → covered on both backgrounds
+                }
+                else
+                {
+                    opaque = (s[0] || s[1] || s[2]);
+                }
+                if (opaque)
+                {
+                    d[0] = s[0]; d[1] = s[1]; d[2] = s[2]; d[3] = 255;
+                }
+            }
+        }
+    }
+
+    SelectObject(iconDC, oldBmp);
+    DeleteObject(dib);
+    if (whiteDib)
+        DeleteObject(whiteDib);
+    DeleteDC(iconDC);
+    ReleaseDC(nullptr, screen);
+}
+
+static void DrawHeaderText(BYTE* destBits, int destW, int destH, HFONT fontHandle,
+                           const RECT& rc, const std::wstring& text,
+                           COLORREF textColor, COLORREF backgroundColor,
+                           UINT alignFlag = DT_LEFT, bool opaqueBackground = true)
+{
+    if (!destBits || destW <= 0 || destH <= 0 || text.empty() || !fontHandle)
+        return;
+
+    int w = rc.right - rc.left;
+    int h = rc.bottom - rc.top;
+    if (w <= 0 || h <= 0)
+        return;
+
+    HDC screen = GetDC(nullptr);
+    HDC textDC = CreateCompatibleDC(screen);
+
+    BITMAPINFO bi = {};
+    bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
+    bi.bmiHeader.biWidth = w;
+    bi.bmiHeader.biHeight = -h;
+    bi.bmiHeader.biPlanes = 1;
+    bi.bmiHeader.biBitCount = 32;
+    bi.bmiHeader.biCompression = BI_RGB;
+
+    void* scratchBits = nullptr;
+    HBITMAP scratch = CreateDIBSection(screen, &bi, DIB_RGB_COLORS, &scratchBits, nullptr, 0);
+    if (!scratch)
+    {
+        DeleteDC(textDC);
+        ReleaseDC(nullptr, screen);
+        return;
+    }
+
+    HGDIOBJ oldBmp = SelectObject(textDC, scratch);
+    HGDIOBJ oldFont = SelectObject(textDC, fontHandle);
+    RECT fill = { 0, 0, w, h };
+
+    // Opaque mode (tile headers, drawn over an opaque card): fill with the
+    // real background color and draw the real text color directly -- the
+    // whole rect is just copied to dest below. Transparent mode (e.g. the
+    // page indicator, drawn over the translucent/acrylic panel background):
+    // render white text on black instead, so the resulting luminance doubles
+    // as a glyph coverage mask that gets alpha-composited onto whatever is
+    // already there, without painting an opaque box behind the glyphs.
+    HBRUSH bg = CreateSolidBrush(opaqueBackground ? backgroundColor : RGB(0, 0, 0));
+    FillRect(textDC, &fill, bg);
+    DeleteObject(bg);
+
+    int oldBk = SetBkMode(textDC, TRANSPARENT);
+    COLORREF oldColor = SetTextColor(textDC, opaqueBackground ? textColor : RGB(255, 255, 255));
+
+    RECT textRc = fill;
+    DrawTextW(textDC, text.c_str(), static_cast<int>(text.size()), &textRc,
+              alignFlag | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS | DT_NOPREFIX);
+
+    SetTextColor(textDC, oldColor);
+    SetBkMode(textDC, oldBk);
+    SelectObject(textDC, oldFont);
+
+    const int tb = GetBValue(textColor);
+    const int tg = GetGValue(textColor);
+    const int tr = GetRValue(textColor);
+
+    const BYTE* src = static_cast<const BYTE*>(scratchBits);
+    for (int y = 0; y < h; ++y)
+    {
+        int dy = rc.top + y;
+        if (dy < 0 || dy >= destH)
+            continue;
+        for (int x = 0; x < w; ++x)
+        {
+            int dx = rc.left + x;
+            if (dx < 0 || dx >= destW)
+                continue;
+
+            const BYTE* s = src + (static_cast<size_t>(y) * w + x) * 4;
+            BYTE* d = destBits + (static_cast<size_t>(dy) * destW + dx) * 4;
+            if (opaqueBackground)
+            {
+                d[0] = s[0];
+                d[1] = s[1];
+                d[2] = s[2];
+                d[3] = 255;
+            }
+            else
+            {
+                // Glyph coverage 0..255 (white-on-black luminance). Source-over
+                // onto premultiplied-alpha dest (BGRA): the text is opaque, so
+                // its premultiplied contribution is textColor * coverage.
+                int a = (s[0] + s[1] + s[2] + 1) / 3;
+                if (a == 0)
+                    continue;
+                int inv = 255 - a;
+                d[0] = static_cast<BYTE>((tb * a + 127) / 255 + (d[0] * inv + 127) / 255);
+                d[1] = static_cast<BYTE>((tg * a + 127) / 255 + (d[1] * inv + 127) / 255);
+                d[2] = static_cast<BYTE>((tr * a + 127) / 255 + (d[2] * inv + 127) / 255);
+                d[3] = static_cast<BYTE>(a + (d[3] * inv + 127) / 255);
+            }
+        }
+    }
+
+    SelectObject(textDC, oldBmp);
+    DeleteObject(scratch);
+    DeleteDC(textDC);
+    ReleaseDC(nullptr, screen);
+}
+
+static COLORREF GetAccentColor()
+{
+    DWORD color = 0, size = sizeof(color), type = 0;
+    HKEY key = nullptr;
+    if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\DWM",
+                      0, KEY_QUERY_VALUE, &key) == ERROR_SUCCESS)
+    {
+        LONG r = RegQueryValueExW(key, L"AccentColor", nullptr, &type,
+                                  reinterpret_cast<BYTE*>(&color), &size);
+        RegCloseKey(key);
+        if (r == ERROR_SUCCESS && type == REG_DWORD)
+            return color & 0x00FFFFFF;
+    }
+    DWORD argb = 0;
+    BOOL opaque = FALSE;
+    if (SUCCEEDED(DwmGetColorizationColor(&argb, &opaque)))
+        return RGB((argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF);
+
+    return AltTabStyle::AccentFallbackRef();
+}
+
+void Switcher::RenderLayered()
+{
+    int w = ovW, h = ovH;
+    if (w <= 0 || h <= 0)
+        return;
+
+    HDC screenDC = GetDC(nullptr);
+    HDC memDC = CreateCompatibleDC(screenDC);
+
+    BITMAPINFO bi = {};
+    bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
+    bi.bmiHeader.biWidth = w;
+    bi.bmiHeader.biHeight = -h;
+    bi.bmiHeader.biPlanes = 1;
+    bi.bmiHeader.biBitCount = 32;
+    bi.bmiHeader.biCompression = BI_RGB;
+
+    void* bits = nullptr;
+    HBITMAP dib = CreateDIBSection(screenDC, &bi, DIB_RGB_COLORS, &bits, nullptr, 0);
+    if (!dib)
+    {
+        DeleteDC(memDC);
+        ReleaseDC(nullptr, screenDC);
+        return;
+    }
+    HGDIOBJ oldBmp = SelectObject(memDC, dib);
+    ZeroMemory(bits, static_cast<size_t>(w) * h * 4);
+
+    {
+        Gdiplus::Bitmap bmp(w, h, w * 4, PixelFormat32bppPARGB,
+                            static_cast<BYTE*>(bits));
+        Gdiplus::Graphics g(&bmp);
+        g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+        g.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAliasGridFit);
+
+        // Leave the panel background transparent; acrylic lives on thumbHost.
+        Gdiplus::REAL panelRadius = static_cast<Gdiplus::REAL>(Scaled(8));
+        RECT panelRect = { 0, 0, w, h };
+        Gdiplus::GraphicsPath panel;
+        BuildRoundRect(panel, InflateF(panelRect, 0), panelRadius);
+        Gdiplus::SolidBrush panelBrush(AltTabStyle::Transparent());
+        g.SetCompositingMode(Gdiplus::CompositingModeSourceCopy);
+        g.FillPath(&panelBrush, &panel);
+        g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
+        Gdiplus::Pen panelStroke(AltTabStyle::SurfaceStrokeDefault(),
+                                 static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
+        g.DrawPath(&panelStroke, &panel);
+
+        COLORREF accent = GetAccentColor();
+        Gdiplus::Color accentClr = AltTabStyle::Accent(accent);
+
+        const int pageEnd = (std::min)(
+            pageStart + overlayLayout.pageSize,
+            static_cast<int>(windows.size()));
+        for (int windowIndex = pageStart, slot = 0; windowIndex < pageEnd; ++windowIndex, ++slot)
+        {
+            RECT tile = TileRect(slot);
+            bool sel = (windowIndex == selected);
+            RECT pv = PreviewRect(tile);
+
+            // Full rounded card chrome. The live DWM preview is a rectangular
+            // viewport inside it, which avoids fighting public DWM's square thumbnail.
+            Gdiplus::GraphicsPath cardPath;
+            BuildRoundRect(cardPath, InflateF(tile, 0), static_cast<Gdiplus::REAL>(radius));
+            Gdiplus::SolidBrush cardBrush(AltTabStyle::Card(sel));
+            g.FillPath(&cardBrush, &cardPath);
+
+            int pw = pv.right - pv.left;
+            int ph = pv.bottom - pv.top;
+            if (pw > 0 && ph > 0)
+            {
+                Gdiplus::Bitmap* snap = (kUseStaticSnapshotPreview && slot < static_cast<int>(snapshots.size()))
+                                             ? snapshots[slot].get()
+                                             : nullptr;
+                if (snap)
+                {
+                    // CaptureWindowSnapshotForPreview already cropped/scaled this
+                    // bitmap down to exactly the preview rect's pixel size at
+                    // capture time (see RegisterThumbnails), so it can be used
+                    // directly as an identity-scale texture brush -- no further
+                    // DrawImage pass or intermediate offscreen bitmap needed here.
+                    Gdiplus::TextureBrush brush(snap, Gdiplus::WrapModeClamp);
+                    Gdiplus::Matrix xform(1.0f, 0.0f, 0.0f, 1.0f,
+                                          static_cast<Gdiplus::REAL>(pv.left),
+                                          static_cast<Gdiplus::REAL>(pv.top));
+                    brush.SetTransform(&xform);
+
+                    Gdiplus::GraphicsPath previewPath;
+                    BuildBottomRoundRect(previewPath, InflateF(pv, 0), static_cast<Gdiplus::REAL>(radius));
+                    g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    g.FillPath(&brush, &previewPath);
+                }
+                else
+                {
+                    Gdiplus::GraphicsPath previewPath;
+                    BuildBottomRoundRect(previewPath, InflateF(pv, 0), static_cast<Gdiplus::REAL>(radius));
+                    g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    g.SetCompositingMode(Gdiplus::CompositingModeSourceCopy);
+                    Gdiplus::SolidBrush previewBrush(AltTabStyle::Transparent());
+                    g.FillPath(&previewBrush, &previewPath);
+                    g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
+                    // The subtle semi-transparent white stroke below is meant to catch
+                    // light against the blurred/transparent DWM punch above; it was
+                    // designed for that see-through case, not for an opaque snapshot
+                    // (where it reads as a harsh white border), so only draw it here.
+                    Gdiplus::Pen previewPen(AltTabStyle::PreviewStroke(sel),
+                                             static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
+                    g.DrawPath(&previewPen, &previewPath);
+                }
+            }
+
+            // Header tab: app icon + window title.
+            RECT hdr = HeaderRect(tile);
+            int textLeft = hdr.left;
+            HICON ic = (windowIndex < static_cast<int>(icons.size())) ? icons[windowIndex] : nullptr;
+            if (ic)
+            {
+                int iy = tile.top + (headerH - iconSize) / 2;
+                g.Flush();
+                DrawIconOverPARGB(bits, w, h, ic, hdr.left, iy, iconSize);
+                textLeft = hdr.left + iconSize + Scaled(8);
+            }
+
+            const std::wstring* text = (windowIndex < static_cast<int>(titles.size())) ? &titles[windowIndex] : nullptr;
+            if (text)
+            {
+                g.Flush();
+                RECT textRc = { textLeft, tile.top, hdr.right, tile.top + headerH };
+                DrawHeaderText(static_cast<BYTE*>(bits), w, h, font, textRc, *text,
+                               AltTabStyle::HeaderTextRef(sel), AltTabStyle::CardRef(sel));
+            }
+
+            // Single accent focus ring hugging the selected tile.
+            if (sel)
+            {
+                int gPad = Scaled(10);
+                Gdiplus::GraphicsPath ring;
+                BuildRoundRect(ring, InflateF(tile, gPad),
+                               static_cast<Gdiplus::REAL>(radius + gPad));
+                Gdiplus::Pen accentPen(accentClr,
+                                       static_cast<Gdiplus::REAL>((std::max)(2, Scaled(3))));
+                g.DrawPath(&accentPen, &ring);
+            }
+        }
+
+        // Pagination affordance: when the cycle set doesn't fit on one screenful,
+        // the panel is otherwise indistinguishable from "these are all my windows".
+        const int totalPages = AltWindowCycleLogic::PageCount(
+            static_cast<int>(windows.size()), overlayLayout.pageSize);
+        if (totalPages > 1)
+        {
+            const int currentPage = (pageStart / (std::max)(1, overlayLayout.pageSize)) + 1;
+            const std::wstring pageText =
+                std::to_wstring(currentPage) + L" / " + std::to_wstring(totalPages);
+            RECT pageRc = { pad, h - pad, w - pad, h };
+            DrawHeaderText(static_cast<BYTE*>(bits), w, h, font, pageRc, pageText,
+                           AltTabStyle::HeaderTextRef(false), AltTabStyle::CardRef(false), DT_CENTER,
+                           /*opaqueBackground=*/false);
+        }
+
+        g.Flush();
+    }
+
+    POINT ptDst = { ovX, ovY };
+    SIZE sz = { w, h };
+    POINT ptSrc = { 0, 0 };
+    BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+    UpdateLayeredWindow(overlay, screenDC, &ptDst, &sz, memDC, &ptSrc, 0, &bf, ULW_ALPHA);
+
+    SelectObject(memDC, oldBmp);
+    DeleteObject(dib);
+    DeleteDC(memDC);
+    ReleaseDC(nullptr, screenDC);
+}
+
+LRESULT CALLBACK Switcher::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    Switcher* self = reinterpret_cast<Switcher*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+    if (self)
+    {
+        switch (msg)
+        {
+        case WM_TIMER:
+            if (wParam == TIMER_ID)
+            {
+                self->OnTick();
+                return 0;
+            }
+            break;
+        case WM_ERASEBKGND:
+            return 1;
+        case WM_SETTINGCHANGE:
+            if (lParam &&
+                lstrcmpiW(reinterpret_cast<LPCWSTR>(lParam), L"ImmersiveColorSet") == 0)
+            {
+                self->OnThemeChanged();
+                return 0;
+            }
+            break;
+        }
+    }
+    return DefWindowProcW(hwnd, msg, wParam, lParam);
+}
+
+// =================== Dedicated UI thread =====================================
+
+static Switcher g_switcher;
+static HANDLE g_uiThread = nullptr;
+static std::atomic<bool> g_initOk{ false };
+static std::atomic<bool> g_shutdownRequested{ false };
+static HINSTANCE g_threadHinst = nullptr;
+static HANDLE g_threadReadyEvent = nullptr;
+
+// The runner calls enable()/disable()/on_hotkey() on the same thread that services
+// the centralized WH_KEYBOARD_LL hook, and Windows silently drops hooks that exceed
+// LowLevelHooksTimeout (300 ms by default). Every wait on that thread stays well
+// under that budget; only destroy(), which is followed by FreeLibrary, joins
+// without a bound.
+static const DWORD UIThreadInitWaitMs = 200;
+static const DWORD UIThreadJoinTimeoutMs = 200;
+static const DWORD UIThreadJoinPollMs = 20;
+
+static void CloseUIThreadHandle()
+{
+    CloseHandle(g_uiThread);
+    g_uiThread = nullptr;
+    g_uiThreadId = 0;
+    g_threadHinst = nullptr;
+    g_initOk.store(false);
+}
+
+static void ClearExitedUIThread()
+{
+    if (g_uiThread && WaitForSingleObject(g_uiThread, 0) == WAIT_OBJECT_0)
+    {
+        CloseUIThreadHandle();
+    }
+}
+
+// Asks the UI thread to quit and waits up to `timeoutMs` for it to exit. Returns
+// true when the thread is gone and the globals have been reset; false means the
+// thread is still winding down and the handle was deliberately left open.
+static bool RequestShutdownAndJoinUIThread(DWORD timeoutMs)
+{
+    if (!g_uiThread)
+    {
+        return true;
+    }
+
+    g_shutdownRequested.store(true);
+
+    const bool bounded = timeoutMs != INFINITE;
+    const ULONGLONG deadline = bounded ? GetTickCount64() + timeoutMs : 0;
+
+    // The queue may not exist yet when initialization times out, so WM_QUIT is
+    // re-posted until the bounded UI-thread work completes and the thread exits.
+    for (;;)
+    {
+        if (g_uiThreadId)
+        {
+            PostThreadMessageW(g_uiThreadId, WM_QUIT, 0, 0);
+        }
+
+        DWORD slice = UIThreadJoinPollMs;
+        if (bounded)
+        {
+            const ULONGLONG now = GetTickCount64();
+            if (now >= deadline)
+            {
+                return false;
+            }
+
+            slice = static_cast<DWORD>((std::min<ULONGLONG>)(UIThreadJoinPollMs, deadline - now));
+        }
+
+        if (WaitForSingleObject(g_uiThread, slice) == WAIT_OBJECT_0)
+        {
+            break;
+        }
+    }
+
+    CloseUIThreadHandle();
+    return true;
+}
+
+static bool PostHotkeyToUIThread(bool forward, unsigned int holdModifiers)
+{
+    return g_uiThreadId &&
+           PostThreadMessageW(g_uiThreadId, WM_AWC_HOTKEY, forward ? 1u : 0u, static_cast<LPARAM>(holdModifiers)) != FALSE;
+}
+
+static DWORD WINAPI UIThreadProc(LPVOID param)
+{
+    UNREFERENCED_PARAMETER(param);
+
+    HINSTANCE hinst = g_threadHinst;
+    HANDLE readyEvent = g_threadReadyEvent;
+    g_threadReadyEvent = nullptr;
+
+    // Set per-monitor v2 DPI awareness on this thread so overlay layout and DWM
+    // thumbnail rects line up on any monitor. Does not affect the host process.
+    SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput = {};
+    ULONG_PTR token = 0;
+    Gdiplus::GdiplusStartup(&token, &gdiplusStartupInput, nullptr);
+
+    const bool initOk = g_switcher.Init(hinst);
+    g_initOk.store(initOk);
+
+    // Signal the caller that initialization is complete (success or failure).
+    if (readyEvent)
+    {
+        SetEvent(readyEvent);
+        CloseHandle(readyEvent);
+    }
+
+    if (!initOk || g_shutdownRequested.load())
+    {
+        g_switcher.Shutdown();
+        if (token)
+            Gdiplus::GdiplusShutdown(token);
+        return initOk ? 0 : 1;
+    }
+
+    MSG msg;
+    while (GetMessageW(&msg, nullptr, 0, 0) > 0)
+    {
+        if (msg.hwnd == nullptr && msg.message == WM_AWC_HOTKEY)
+        {
+            g_switcher.OnHotkey(msg.wParam != 0, static_cast<unsigned int>(msg.lParam));
+        }
+        else if (msg.hwnd == nullptr && msg.message == WM_AWC_CANCEL)
+        {
+            g_switcher.OnCancel();
+        }
+        else
+        {
+            TranslateMessage(&msg);
+            DispatchMessageW(&msg);
+        }
+    }
+
+    // Destroy all overlay resources BEFORE GdiplusShutdown.
+    g_switcher.Shutdown();
+
+    if (token)
+        Gdiplus::GdiplusShutdown(token);
+
+    return 0;
+}
+
+// =================== Public module API =======================================
+
+bool InitializeAltWindowCycle(HINSTANCE hinst)
+{
+    ClearExitedUIThread();
+
+    // A previous disable() may have left a thread winding down. Give it a short,
+    // bounded chance to finish rather than racing a second UI thread onto the
+    // single global Switcher.
+    if (g_uiThread != nullptr && g_shutdownRequested.load())
+    {
+        RequestShutdownAndJoinUIThread(UIThreadJoinTimeoutMs);
+    }
+
+    if (g_uiThread != nullptr)
+    {
+        if (g_shutdownRequested.load())
+        {
+            Logger::error("AltWindowCycle UI thread from a previous session is still running; enable aborted");
+            return false;
+        }
+
+        return true; // already running or still starting
+    }
+
+    g_initOk.store(false);
+    g_shutdownRequested.store(false);
+
+    HANDLE readyEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    if (!readyEvent)
+        return false;
+
+    HANDLE readyEventForThread = nullptr;
+    if (!DuplicateHandle(GetCurrentProcess(), readyEvent, GetCurrentProcess(), &readyEventForThread, 0, FALSE, DUPLICATE_SAME_ACCESS))
+    {
+        CloseHandle(readyEvent);
+        return false;
+    }
+
+    g_threadHinst = hinst;
+    g_threadReadyEvent = readyEventForThread;
+
+    DWORD tid = 0;
+    g_uiThread = CreateThread(nullptr, 0, UIThreadProc, nullptr, 0, &tid);
+    if (!g_uiThread)
+    {
+        g_threadReadyEvent = nullptr;
+        CloseHandle(readyEventForThread);
+        CloseHandle(readyEvent);
+        return false;
+    }
+    g_uiThreadId = tid;
+
+    // Briefly wait for Init() so an outright failure is reported synchronously. A
+    // timeout is not fatal: the thread keeps starting and the first hotkey simply
+    // arrives once its message queue exists.
+    const DWORD waitResult = WaitForSingleObject(readyEvent, UIThreadInitWaitMs);
+    CloseHandle(readyEvent);
+    if (waitResult == WAIT_OBJECT_0 && !g_initOk.load())
+    {
+        RequestShutdownAndJoinUIThread(UIThreadJoinTimeoutMs);
+        return false;
+    }
+
+    return true;
+}
+
+void ShutdownAltWindowCycle(bool blockUntilExit)
+{
+    if (!RequestShutdownAndJoinUIThread(blockUntilExit ? INFINITE : UIThreadJoinTimeoutMs))
+    {
+        Logger::warn("AltWindowCycle UI thread did not exit within the disable() budget; it will finish asynchronously");
+    }
+}
+
+bool HandleAltWindowCycleHotkey(bool forward, unsigned int holdModifiers)
+{
+    ClearExitedUIThread();
+    if (!g_uiThread || g_shutdownRequested.load())
+        return false;
+
+    return PostHotkeyToUIThread(forward, holdModifiers);
+}

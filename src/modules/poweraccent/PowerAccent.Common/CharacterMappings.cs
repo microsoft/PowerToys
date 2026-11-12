@@ -33,7 +33,7 @@ public static class CharacterMappings
     /// Declaration order here does not affect the popup or settings display order;
     /// see <see cref="DisplayOrder"/> and <see cref="GroupDisplayOrder"/> for that.
     /// </summary>
-    public static readonly IReadOnlyList<LanguageInfo> All =
+    public static readonly IReadOnlyList<LanguageInfo> All = Array.AsReadOnly<LanguageInfo>(
     [
         new(Language.SPECIAL, "Special", LanguageGroup.Special,  new Dictionary<LetterKey, string[]>
         {
@@ -83,9 +83,32 @@ public static class CharacterMappings
             [LetterKey.VK_BACKSLASH] = ["`", "~"],
         }),
 
+        // Belarusian Latin
+        new(Language.BE, "Belarusian", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
+        {
+            [LetterKey.VK_C] = ["ć", "č"],
+            [LetterKey.VK_L] = ["ł"],
+            [LetterKey.VK_N] = ["ń"],
+            [LetterKey.VK_S] = ["ś", "š"],
+            [LetterKey.VK_U] = ["ŭ"],
+            [LetterKey.VK_Z] = ["ź", "ž"],
+            [LetterKey.VK_COMMA] = ["„", "“", "«", "»"],
+        }),
+
+        new(Language.BE_CYRL, "Belarusian_Cyrillic", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
+        {
+            [LetterKey.VK_E] = ["ё"],
+            [LetterKey.VK_G] = ["ґ"],
+            [LetterKey.VK_I] = ["і"],
+            [LetterKey.VK_U] = ["ў"],
+            [LetterKey.VK_COMMA] = ["’", "„", "“", "«", "»"],
+        }),
+
         new(Language.BG, "Bulgarian", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
-            [LetterKey.VK_I] = ["й"],
+            [LetterKey.VK_E] = ["€"],
+            [LetterKey.VK_I] = ["ѝ"],
+            [LetterKey.VK_COMMA] = ["„", "“", "«", "»"],
         }),
 
         new(Language.CA, "Catalan", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
@@ -122,15 +145,15 @@ public static class CharacterMappings
         // language, but rather a set of symbols used across languages.
         new(Language.CUR, "Currency", LanguageGroup.Special, new Dictionary<LetterKey, string[]>
         {
-            [LetterKey.VK_B] = ["฿", "в"],
-            [LetterKey.VK_C] = ["¢", "₡", "č"],
+            [LetterKey.VK_B] = ["฿", "в"], // Bulgarian Lev (лв)
+            [LetterKey.VK_C] = ["¢", "₡", "č"], // Czech Koruna (Kč)
             [LetterKey.VK_D] = ["₫"],
             [LetterKey.VK_E] = ["€"],
             [LetterKey.VK_F] = ["ƒ"],
             [LetterKey.VK_H] = ["₴"],
             [LetterKey.VK_K] = ["₭"],
-            [LetterKey.VK_L] = ["ł"],
-            [LetterKey.VK_N] = ["л"],
+            [LetterKey.VK_L] = ["ł"], // Polish Złoty (zł)
+            [LetterKey.VK_N] = ["л"], // Bulgarian Lev (лв)
             [LetterKey.VK_M] = ["₼"],
             [LetterKey.VK_P] = ["£", "₽", "₱"],
             [LetterKey.VK_R] = ["₹", "៛", "﷼"],
@@ -138,7 +161,6 @@ public static class CharacterMappings
             [LetterKey.VK_T] = ["₮", "₺", "₸"],
             [LetterKey.VK_W] = ["₩"],
             [LetterKey.VK_Y] = ["¥"],
-            [LetterKey.VK_Z] = ["z"],
         }),
 
         new(Language.CY, "Welsh", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
@@ -219,7 +241,7 @@ public static class CharacterMappings
             [LetterKey.VK_B] = ["β"],
             [LetterKey.VK_C] = ["χ"],
             [LetterKey.VK_D] = ["δ"],
-            [LetterKey.VK_E] = ["ε", "έ", "η", "ή"],
+            [LetterKey.VK_E] = ["ε", "έ", "η", "ή", "€"],
             [LetterKey.VK_F] = ["φ"],
             [LetterKey.VK_G] = ["γ"],
             [LetterKey.VK_I] = ["ι", "ί"],
@@ -329,6 +351,7 @@ public static class CharacterMappings
             [LetterKey.VK_G] = ["ױ"],
             [LetterKey.VK_H] = ["ײ", "ײַ", "ׯ", "\u05b4"],
             [LetterKey.VK_M] = ["\u05b5"],
+            [LetterKey.VK_N] = ["₪"],
             [LetterKey.VK_P] = ["\u05b7", "\u05b2"],
             [LetterKey.VK_S] = ["\u05bc"],
             [LetterKey.VK_T] = ["ﭏ"],
@@ -678,14 +701,14 @@ public static class CharacterMappings
         new(Language.VI, "Vietnamese", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
             [LetterKey.VK_A] = ["à", "ả", "ã", "á", "ạ", "ă", "ằ", "ẳ", "ẵ", "ắ", "ặ", "â", "ầ", "ẩ", "ẫ", "ấ", "ậ"],
-            [LetterKey.VK_D] = ["đ"],
+            [LetterKey.VK_D] = ["đ", "₫"],
             [LetterKey.VK_E] = ["è", "ẻ", "ẽ", "é", "ẹ", "ê", "ề", "ể", "ễ", "ế", "ệ"],
             [LetterKey.VK_I] = ["ì", "ỉ", "ĩ", "í", "ị"],
             [LetterKey.VK_O] = ["ò", "ỏ", "õ", "ó", "ọ", "ô", "ồ", "ổ", "ỗ", "ố", "ộ", "ơ", "ờ", "ở", "ỡ", "ớ", "ợ"],
             [LetterKey.VK_U] = ["ù", "ủ", "ũ", "ú", "ụ", "ư", "ừ", "ử", "ữ", "ứ", "ự"],
             [LetterKey.VK_Y] = ["ỳ", "ỷ", "ỹ", "ý", "ỵ"],
         }),
-    ];
+    ]);
 
     /// <summary>
     /// O(1) lookup from <see cref="Language"/> to its <see cref="LanguageInfo"/>.
@@ -699,12 +722,12 @@ public static class CharacterMappings
     /// Groups listed first have their characters shown first.
     /// This is intentionally separate from the <see cref="LanguageGroup"/> enum order.
     /// </summary>
-    public static readonly IReadOnlyList<LanguageGroup> GroupDisplayOrder =
+    public static readonly IReadOnlyList<LanguageGroup> GroupDisplayOrder = Array.AsReadOnly<LanguageGroup>(
     [
         LanguageGroup.UserDefined,
         LanguageGroup.Language,
         LanguageGroup.Special,
-    ];
+    ]);
 
     /// <summary>
     /// The order in which individual languages appear within their group in the Quick
@@ -713,10 +736,12 @@ public static class CharacterMappings
     /// Entries are sorted alphabetically by <see cref="Language"/> enum name.
     /// When adding a new language, insert it in alphabetical order.
     /// </summary>
-    public static readonly IReadOnlyList<Language> DisplayOrder =
+    public static readonly IReadOnlyList<Language> DisplayOrder = Array.AsReadOnly<Language>(
     [
 
         // Spoken languages.
+        Language.BE,
+        Language.BE_CYRL,
         Language.BG,
         Language.CA,
         Language.CRH,
@@ -764,7 +789,7 @@ public static class CharacterMappings
         Language.PIE,
         Language.ROM,
         Language.SPECIAL,
-    ];
+    ]);
 
     // O(1) sort-key lookups derived from the display order lists above.
     private static readonly Dictionary<LanguageGroup, int> _groupOrder =

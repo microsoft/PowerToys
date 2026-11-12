@@ -50,7 +50,7 @@ public sealed class PersistenceService : IPersistenceService
     }
 
     /// <inheritdoc/>
-    public void Save<T>(T model, string filePath, JsonTypeInfo<T> typeInfo)
+    public bool Save<T>(T model, string filePath, JsonTypeInfo<T> typeInfo)
     {
         try
         {
@@ -59,7 +59,7 @@ public sealed class PersistenceService : IPersistenceService
             if (JsonNode.Parse(settingsJson) is not JsonObject newSettings)
             {
                 Logger.LogError("Failed to parse serialized model as JsonObject.");
-                return;
+                return false;
             }
 
             var directory = Path.GetDirectoryName(filePath);
@@ -70,10 +70,16 @@ public sealed class PersistenceService : IPersistenceService
 
             var serialized = newSettings.ToJsonString(typeInfo.Options);
             File.WriteAllText(filePath, serialized);
+            return true;
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to save to {filePath}:", ex);
+            var message = $"Failed to save to {filePath}:";
+#if DEBUG
+            message += $"{Environment.NewLine}Save caller stack:{Environment.NewLine}{new System.Diagnostics.StackTrace(skipFrames: 1, fNeedFileInfo: true)}";
+#endif
+            Logger.LogError(message, ex);
+            return false;
         }
     }
 }

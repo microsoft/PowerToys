@@ -151,7 +151,8 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
 
         // Compute DockThemeSnapshot from DockSettings
         var dockSettings = _settingsService.Settings.DockSettings;
-        var dockIntensity = Math.Clamp(dockSettings.CustomThemeColorIntensity, 0, 100);
+        var isMicaDock = dockSettings.Backdrop is DockBackdrop.Mica or DockBackdrop.MicaAlt;
+        var dockIntensity = isMicaDock ? 0 : Math.Clamp(dockSettings.CustomThemeColorIntensity, 0, 100);
         IThemeProvider dockProvider = dockIntensity > 0 && dockSettings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image
                 ? _colorfulThemeProvider
                 : _normalThemeProvider;
@@ -164,7 +165,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
             _ => Colors.Transparent,
         };
         var dockEffectiveTheme = GetElementTheme((ElementTheme)dockSettings.Theme);
-        var dockImageSource = dockSettings.ColorizationMode == ColorizationMode.Image
+        var dockImageSource = !isMicaDock && dockSettings.ColorizationMode == ColorizationMode.Image
             ? LoadImageSafe(dockSettings.BackgroundImagePath)
             : null;
         var dockStretch = dockSettings.BackgroundImageFit switch
@@ -176,6 +177,8 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
 
         var dockContext = new ThemeContext
         {
+            // Mica uses system defaults; keep Acrylic parameters ready for its fallback.
+            BackdropStyle = BackdropStyle.Acrylic,
             Tint = dockTint,
             ColorIntensity = dockIntensity,
             Theme = dockEffectiveTheme,

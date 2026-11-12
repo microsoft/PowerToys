@@ -4,6 +4,7 @@
 
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.CmdPal.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers;
 

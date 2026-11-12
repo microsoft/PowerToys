@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using Microsoft.CmdPal.Common.Commands;
 using Microsoft.CmdPal.Ext.Indexer.Commands;
 using Microsoft.CmdPal.Ext.Indexer.Helpers;
@@ -19,6 +21,11 @@ namespace Microsoft.CmdPal.Ext.Indexer.Data;
 internal sealed partial class IndexerListItem : ListItem
 {
     internal static readonly bool IsActionsFeatureEnabled = GetFeatureFlag();
+
+    // Windows.AI.Actions first shipped in Windows build 26100, so the contract check also guards 26100-only APIs for CA1416.
+    [SupportedOSPlatformGuard("windows10.0.26100.0")]
+    [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Guard bodies are analyzed as cross-platform; ApiInformation exists on every Windows version PowerToys supports.")]
+    internal static bool IsActionsContractPresent => ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4);
 
     private static bool GetFeatureFlag()
     {
@@ -38,6 +45,10 @@ internal sealed partial class IndexerListItem : ListItem
 
         Title = indexerItem.FileName;
         Subtitle = indexerItem.FullPath;
+        if (!string.IsNullOrEmpty(FilePath))
+        {
+            Icon = new IconInfo(ShellItemIconProtocol.Create(FilePath));
+        }
 
         DataPackage = DataPackageHelper.CreateDataPackageForPath(this, FilePath);
 
@@ -93,6 +104,11 @@ internal sealed partial class IndexerListItem : ListItem
         else
         {
             commands.Add(new CommandContextItem(openCommand));
+
+            if (RunAsAdministratorCommand.IsSupportedFileType(fullPath))
+            {
+                commands.Add(new CommandContextItem(new RunAsAdministratorCommand(fullPath)) { RequestedShortcut = KeyChords.RunAsAdministrator });
+            }
         }
 
         commands.Add(new CommandContextItem(new OpenWithCommand(fullPath)));
@@ -108,7 +124,7 @@ internal sealed partial class IndexerListItem : ListItem
         commands.Add(new CommandContextItem(new OpenInConsoleCommand(fullPath)) { RequestedShortcut = KeyChords.OpenInConsole });
         commands.Add(new CommandContextItem(new OpenPropertiesCommand(fullPath)));
 
-        if (IsActionsFeatureEnabled && ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
+        if (IsActionsFeatureEnabled && IsActionsContractPresent)
         {
             var actionsListContextItem = new ActionsListContextItem(fullPath);
             if (actionsListContextItem.AnyActions())

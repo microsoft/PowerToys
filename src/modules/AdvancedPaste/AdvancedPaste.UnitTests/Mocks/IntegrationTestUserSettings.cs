@@ -57,6 +57,24 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
 
     public IReadOnlyList<PasteFormats> AdditionalActions => _additionalActions;
 
+    public int PasteAsJpgQuality => AdvancedPasteProperties.DefaultPasteAsJpgQuality;
+
+    public string FixSpellingAndGrammarPrompt => string.Empty;
+
+    public string FixSpellingAndGrammarSystemPrompt => string.Empty;
+
+    public string FixSpellingAndGrammarProviderId => string.Empty;
+
+    public bool FixSpellingAndGrammarCoachingEnabled => false;
+
+    public bool FixSpellingAndGrammarCoachingShortcutSet => false;
+
+    public string FixSpellingAndGrammarCoachingPrompt => string.Empty;
+
+    public string FixSpellingAndGrammarCoachingSystemPrompt => string.Empty;
+
+    public string FixSpellingAndGrammarCoachingProviderId => string.Empty;
+
     public PasteAIConfiguration PasteAIConfiguration => _configuration;
 
     public event EventHandler Changed;

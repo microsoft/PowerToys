@@ -8,6 +8,9 @@
     <RootNamespace>WorkspacesLauncherUI</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <UseWinUI>true</UseWinUI>
+    <!-- CommunityToolkit.Mvvm 8.4 requires preview for partial observable properties. -->
+    <LangVersion>preview</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Platforms>x64;ARM64</Platforms>
     <EnableMsixTooling>true</EnableMsixTooling>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
@@ -22,6 +25,10 @@
     <ProjectPriFileName>PowerToys.WorkspacesLauncherUI.pri</ProjectPriFileName>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PowerToys.WorkspacesLauncherUI.Tests" />
+  </ItemGroup>
 
   <ItemGroup>
     <Page Remove="Views\App.xaml" />

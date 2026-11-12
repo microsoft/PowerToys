@@ -280,11 +280,13 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [MouseHighlighter][03]
-- [PowerToys Mouse Utilities Documentation][04]
+- [MouseButtonLock][03]
+- [MouseHighlighter][04]
+- [PowerToys Mouse Utilities Documentation][05]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./MouseHighlighter.md
-[04]: https://learn.microsoft.com/windows/powertoys/mouse-utilities
+[03]: ./MouseButtonLock.md
+[04]: ./MouseHighlighter.md
+[05]: https://learn.microsoft.com/windows/powertoys/mouse-utilities

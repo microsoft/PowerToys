@@ -53,17 +53,18 @@ namespace WorkspacesLauncherUI.UnitTests
 
         [TestMethod]
         [TestCategory("DataModel")]
-        public void EnumContract_TotalMemberCount_IsExactlyFiveMatchingCppHeader()
+        public void EnumContract_TotalMemberCount_IncludesSkippedMatchingCppHeader()
         {
             var values = Enum.GetValues(typeof(LaunchingState));
-            Assert.AreEqual(5, values.Length, "LaunchingState must have exactly 5 values to match C++ LaunchingStateEnum.h");
+            Assert.AreEqual(6, values.Length, "LaunchingState must include Skipped to match C++ LaunchingStateEnum.h");
+            Assert.AreEqual(5, (int)LaunchingState.Skipped);
         }
 
         [TestMethod]
         [TestCategory("DataModel")]
         public void EnumContract_IntToEnumCast_RoundTripsForAllValues()
         {
-            for (int i = 0; i <= 4; i++)
+            for (int i = 0; i <= 5; i++)
             {
                 var state = (LaunchingState)i;
                 Assert.AreEqual(i, (int)state);

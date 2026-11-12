@@ -19,7 +19,7 @@ namespace WorkspacesLauncherUI.Views
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA1001:Types that own disposable fields should be disposable", Justification = "WinUI Page does not support IDisposable; ViewModel is disposed by the hosting window on close.")]
     public sealed partial class StatusPage : Page
     {
-        public MainViewModel ViewModel { get; }
+        public MainViewModel ViewModel { get; private set; }
 
         /// <summary>
         /// Raised when the user clicks Cancel or Dismiss and the hosting window should close.
@@ -28,8 +28,13 @@ namespace WorkspacesLauncherUI.Views
 
         public StatusPage()
         {
-            ViewModel = new MainViewModel();
             this.InitializeComponent();
+        }
+
+        internal void Initialize(MainViewModel viewModel)
+        {
+            ViewModel = viewModel;
+            Bindings.Update();
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)

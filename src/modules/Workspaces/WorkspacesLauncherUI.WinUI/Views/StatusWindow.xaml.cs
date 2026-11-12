@@ -8,6 +8,7 @@ using ManagedCommon;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 
+using WorkspacesLauncherUI.ViewModels;
 using WorkspacesLauncherUI.Views;
 
 namespace WorkspacesLauncherUI
@@ -18,9 +19,10 @@ namespace WorkspacesLauncherUI
     /// </summary>
     public sealed partial class StatusWindow : Window
     {
-        public StatusWindow()
+        public StatusWindow(MainViewModel mainViewModel)
         {
             this.InitializeComponent();
+            StatusPageView.Initialize(mainViewModel);
 
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
@@ -80,7 +82,7 @@ namespace WorkspacesLauncherUI
         private void Window_Closed(object sender, WindowEventArgs args)
         {
             StatusPageView.ViewModel?.Dispose();
-            (Application.Current as IDisposable)?.Dispose();
+            (Application.Current as App)?.OnMainWindowClosed();
         }
     }
 }

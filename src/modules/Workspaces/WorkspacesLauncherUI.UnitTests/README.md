@@ -2,6 +2,14 @@
 
 Unit tests for the Workspaces Launcher UI (WinUI 3). These validate the data layer, ViewModel, and display logic that drives the workspace launch progress window.
 
+Elevation-warning tests exercise the production view model with a queued dispatcher
+and a nonvisual warning window. They cover display acknowledgement before approval,
+replays, dismissal, cancellation, owner loss, confirmation-only sessions, and IPC
+failures without starting the launcher or reading user settings. Localization tests
+use synthetic satellites in the test assembly only. XAML contract tests check escaped
+diagnostic bindings and safe defaults; rendered WinUI layout, keyboard focus, and
+copy-error dialogs still require interactive UI validation.
+
 ## Prerequisites
 
 - Visual Studio 2022 17.4+ or Visual Studio 2026

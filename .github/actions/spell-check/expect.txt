@@ -10,6 +10,7 @@ ACCESSDENIED
 ACCESSTOKEN
 acfs
 ACIE
+ACRYLICBLURBEHIND
 acrt
 ACTIVATEAPP
 ACTIVATEOPTIONS
@@ -39,15 +40,18 @@ ALLINPUT
 Allman
 Allmodule
 ALLNOISE
+allowlist
+allowlisted
 ALLOWUNDO
 ALLVIEW
 ALPHATYPE
 altkey
+altwindowcycle
 amr
-ANDSCANS
 animatedvisuals
 Animnate
 AOC
+AOCB
 aocfnapldcnfbofgmbbllojgocaelgdd
 aot
 apicontract
@@ -93,6 +97,7 @@ ASSOCSTR
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
+AWC
 ATRIOX
 aumid
 AUO
@@ -100,6 +105,7 @@ authenticode
 AUTOBUDDY
 AUTOCHECKBOX
 AUTOHIDE
+autohidecursor
 AUTOHSCROLL
 AUTOMATIONPROPERTIES
 autopf
@@ -117,8 +123,11 @@ backticks
 Badflags
 Badmode
 Badparam
+basename
+basenames
 bbwe
 BCIE
+Belarusian
 BESTEFFORT
 bezelled
 bhid
@@ -135,8 +144,8 @@ BITMAPINFO
 BITMAPINFOHEADER
 BITSPERPEL
 BITSPIXEL
-Blackmagic
 bla
+Blackmagic
 BLENDFUNCTION
 blittable
 Blockquotes
@@ -178,6 +187,7 @@ CALG
 callbackptr
 calpwstr
 Cangjie
+canonicalize
 CANRENAME
 Canvascustomlayout
 CAPTUREBLT
@@ -185,6 +195,8 @@ CAPTURECHANGED
 CARETBLINKING
 carlos
 Carlseibert
+cascadia
+caseinsensitive
 caub
 CBN
 cch
@@ -229,9 +241,11 @@ closesocket
 clp
 CLSCTX
 CLSIDs
+CLOSEAPP
 clsids
 Clusion
 cmder
+cmdnotfound
 CMDNOTFOUNDMODULEINTERFACE
 cmdpal
 CMIC
@@ -304,7 +318,6 @@ CREATESCHEDULEDTASK
 CREATESTRUCT
 CREATEWINDOWFAILED
 creativecommons
-CRECT
 CRH
 critsec
 cropandlock
@@ -356,12 +369,14 @@ DCBA
 DCOM
 DCR
 ddc
+DDCCI
 DDEIf
 Deact
 debouncer
 debugbreak
 decryptor
 Dedup
+deduped
 Deduplicator
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
 DEFAULTCOLOR
@@ -379,7 +394,6 @@ DELA
 DELD
 deld
 DELETEDKEYIMAGE
-DELETESCANS
 DEMOTYPE
 DENORMAL
 depersist
@@ -401,8 +415,8 @@ devmgmt
 DEVMODE
 DEVMODEW
 DEVNODES
-devpal
 devpackages
+devpal
 DEVTYP
 dfx
 DIALOGEX
@@ -433,8 +447,10 @@ dotnet
 downsampled
 downsampling
 downscale
+dpapi
 DPICHANGED
 DPIs
+dpm
 DPMS
 DPSAPI
 DQTAT
@@ -446,10 +462,8 @@ dreamsofameaningfullife
 drivedetectionwarning
 DROPFILES
 DSPDLOG
-DSTINVERT
 DString
 dto
-DUMMYUNIONNAME
 dumpbin
 dutil
 DVASPECT
@@ -463,6 +477,7 @@ dwm
 dwmapi
 DWMCOLORIZATIONCOLORCHANGED
 DWMCOMPOSITIONCHANGED
+DWMSBT
 DWMNCRENDERINGCHANGED
 Dwmp
 DWMSENDICONICLIVEPREVIEWBITMAP
@@ -491,8 +506,12 @@ ENABLETAB
 ENABLETEMPLATE
 encodedlaunch
 encryptor
+endfacet
 ENDSESSION
+endsolid
 ENSUREVISIBLE
+ENTERIDLE
+ENTERMENULOOP
 ENTERSIZEMOVE
 ENTRYW
 ENU
@@ -526,6 +545,8 @@ EXECUTEDEFAULT
 executionpolicy
 exename
 exf
+EXITCOMMAND
+EXITMENULOOP
 EXITSIZEMOVE
 exlist
 EXPCMDFLAGS
@@ -540,10 +561,11 @@ extensionsdk
 EXTRALIGHT
 EXTRINSICPROPERTIES
 eyetracker
+Fairlight
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
-Fairlight
 FARPROC
+faststart
 fdw
 fdx
 fesf
@@ -646,6 +668,7 @@ GRABANDMOVEMODULEINTERFACE
 gradians
 GRC
 grctlext
+Greenshot
 GRGX
 Gridcustomlayout
 gridlines
@@ -657,6 +680,7 @@ gwl
 GWLP
 GWLSTYLE
 hangeul
+Hanguel
 Hantai
 Hanzi
 Hardlines
@@ -674,18 +698,22 @@ hbr
 HBRBACKGROUND
 hbrush
 hcblack
+HCCE
 HCRYPTHASH
 HCRYPTPROV
 hcursor
 hcwhite
 hdc
 HDEVNOTIFY
+hdmi
 hdr
 HDROP
 hdwwiz
 Headered
 Helpline
 helptext
+HELPTEXTA
+HELPTEXTW
 hgdiobj
 HGFE
 hglobal
@@ -728,6 +756,7 @@ HORZRES
 HORZSIZE
 Hostbackdropbrush
 hostfxr
+hostpolicy
 hostsfileeditor
 hotfixes
 hotkeycontrol
@@ -737,6 +766,7 @@ hotlight
 hotspot
 HPAINTBUFFER
 HPS
+hqdn
 HRAWINPUT
 HREDRAW
 hres
@@ -796,6 +826,7 @@ imageresizerinput
 imageresizersettings
 imagingdevices
 ime
+IMEAceept
 imgflip
 immersivecontrolpanel
 inapp
@@ -811,6 +842,8 @@ INITCOMMONCONTROLSEX
 INITDIALOG
 INITGUID
 initialfile
+INITMENU
+INITMENUPOPUP
 INITTOLOGFONTSTRUCT
 inkscape
 INLINEPREFIX
@@ -842,6 +875,7 @@ INTRESOURCE
 INVALIDARG
 invalidoperatioexception
 invokecommand
+iOS
 ipcmanager
 ipreviewhandlervisualssetfont
 IPTC
@@ -911,9 +945,11 @@ lcid
 LCIDTo
 lcl
 Lclean
+lctrl
 Ldone
 Ldr
 LEFTALIGN
+LEFTBUTTON
 leftclick
 LEFTSCROLLBAR
 LEFTTEXT
@@ -938,12 +974,14 @@ livezoom
 LLKH
 llkhf
 LLMHF
+lmb
 LMEM
 LMENU
 lng
 LOADFROMFILE
 LOBYTE
 localappdata
+localmdimages
 localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
@@ -965,11 +1003,9 @@ LPCLSID
 lpcmi
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
-LPCRECT
 LPCTSTR
 lpdw
 lpfn
-LPINPUT
 LPITEMIDLIST
 lpmi
 LPMINMAXINFO
@@ -978,6 +1014,7 @@ LPOSVERSIONINFOEXW
 LPQUERY
 lprc
 LPSAFEARRAY
+LPSECURITY
 lpstr
 lpsz
 LPTHREAD
@@ -1018,7 +1055,6 @@ manifestdependency
 MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
 MAPVK
-MARKDOWNPREVIEWHANDLERCPP
 maximizebox
 MAXSHORTCUTSIZE
 maxversiontested
@@ -1038,8 +1074,7 @@ meme
 memicmp
 MENUITEMINFO
 MENUITEMINFOW
-MERGECOPY
-MERGEPAINT
+MENUSELECT
 Metacharacter
 metadatamatters
 Metadatas
@@ -1066,6 +1101,7 @@ minwindef
 Mip
 mkdn
 mlcfg
+mmb
 mmc
 mmcexe
 mmi
@@ -1081,6 +1117,7 @@ MONITORINFOEX
 MONITORINFOEXW
 monitorinfof
 MOUSEACTIVATE
+mousebuttonlock
 mousecrosshairs
 MOUSEDATA
 MOUSEEVENTF
@@ -1089,6 +1126,7 @@ MOUSEHWHEEL
 MOUSEINPUT
 mousejump
 mousepointer
+mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
@@ -1110,6 +1148,7 @@ MSIRESTARTMANAGERCONTROL
 MSIs
 msixbundle
 MSIXCA
+msll
 MSLLHOOKSTRUCT
 Mso
 mspub
@@ -1157,11 +1196,14 @@ NCMOUSEMOVE
 ncpa
 NCPAINT
 NCRENDERING
+ncrypt
+ncryptprotect
 ndp
 NEEDDISPATCH
 netcoreapp
 netcpl
 netframework
+NETSDK
 netsetup
 netsh
 NEWDIALOGSTYLE
@@ -1185,7 +1227,6 @@ NOASYNC
 NOCHANGEDIR
 NOCLIP
 NOCLOSEPROCESS
-NOCOALESCE
 NOCOMM
 NOCONFIRMMKDIR
 NOCOPYBITS
@@ -1202,10 +1243,10 @@ NOLINKINFO
 nologo
 NOMCX
 NOMINMAX
-NOMIRRORBITMAP
 nomove
 NONANTIALIASED
 nonclient
+Nonconvert
 NONCLIENTMETRICSW
 NONELEVATED
 nonspace
@@ -1234,8 +1275,6 @@ NOTIFYICONDATAW
 NOTIMPL
 NOTOPMOST
 NOTRACK
-NOTSRCCOPY
-NOTSRCERASE
 Notupdated
 notwindows
 NOTXORPEN
@@ -1260,7 +1299,10 @@ nwc
 ocr
 Ocrsettings
 odbccp
+Oemcomma
 OEMCONVERT
+Oemplus
+Oemtilde
 officehubintl
 OFN
 ofs
@@ -1285,7 +1327,7 @@ openxmlformats
 OPTIMIZEFORINVOKE
 Optronics
 ORPHANEDDIALOGTITLE
-ORSCANS
+osk
 oss
 OSVERSIONINFO
 OSVERSIONINFOEX
@@ -1315,11 +1357,9 @@ PARENTRELATIVEFORADDRESSBAR
 PARENTRELATIVEFORUI
 PARENTRELATIVEPARSING
 parray
+parseable
 PARTIALCONFIRMATIONDIALOGTITLE
-PATCOPY
 PATHMUSTEXIST
-PATINVERT
-PATPAINT
 pbc
 pbi
 PBP
@@ -1374,6 +1414,7 @@ Pitjantjatjara
 PKBDLLHOOKSTRUCT
 pkgfamily
 PKI
+PKIX
 plib
 ploc
 ploca
@@ -1386,6 +1427,7 @@ pnid
 PNMLINK
 Poc
 Podcasts
+PARGB
 POINTERID
 POINTERUPDATE
 Pokedex
@@ -1461,6 +1503,7 @@ psapi
 pscid
 pscustomobject
 PSECURITY
+pseudolocalizer
 psfgao
 psfi
 PSMODULEPATH
@@ -1514,6 +1557,7 @@ RAWPATH
 rbhid
 Rbuttondown
 rclsid
+rctrl
 RCW
 RCZOOMIT
 rdp
@@ -1547,11 +1591,13 @@ REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
 remotedesktop
+remotehost
 remoteip
 Removelnk
 renamable
 RENAMEONCOLLISION
 RENDERFULLCONTENT
+renumbers
 reparented
 reparenting
 reportfileaccesses
@@ -1565,6 +1611,7 @@ RESIZETOFIT
 resmimetype
 RESOURCEID
 RESTORETOMAXIMIZED
+resx
 RETURNONLYFSDIRS
 Revalidates
 RGBQUAD
@@ -1580,8 +1627,8 @@ RIDEV
 RIGHTBUTTON
 RIGHTSCROLLBAR
 riid
+rmb
 rollups
-rop
 ROUNDSMALL
 rpcrt
 RRF
@@ -1634,6 +1681,7 @@ selfhost
 SENDCHANGE
 sendvirtualinput
 serverside
+SETAUTOHIDEBAREX
 SETBUDDYINT
 SETCONTEXT
 SETCURSEL
@@ -1643,11 +1691,11 @@ SETFOREGROUND
 SETHOTKEY
 SETICON
 SETLOWPOWERACTIVE
+setparams
 SETPOWEROFFACTIVE
 SETRANGE
 SETREDRAW
 SETRULES
-SETAUTOHIDEBAREX
 SETSCREENSAVEACTIVE
 SETSTICKYKEYS
 SETTEXT
@@ -1661,6 +1709,7 @@ SETWORKAREA
 SFBS
 sfgao
 SFGAOF
+SGNR
 SHACF
 SHANDLE
 sharepoint
@@ -1695,6 +1744,7 @@ shortdate
 SHORTPATH
 shortsplit
 showcolorname
+SHOWCONTEXTMENU
 SHOWDEFAULT
 SHOWELEVATIONPROMPT
 SHOWMAGNIFIEDCURSOR
@@ -1735,16 +1785,19 @@ slnx
 SMALLICON
 smartphone
 smileys
+smpte
 SMTO
 SNAPPROCESS
 snk
 snwprintf
 softline
+softpub
 SOURCECLIENTAREAONLY
 sourced
 sourcedoc
 SOURCEHEADER
 sourcesdirectory
+sparkline
 spdisp
 spdlog
 spdo
@@ -1756,12 +1809,8 @@ spsi
 spsia
 spsrm
 spsv
-SRCAND
 SRCCOPY
-SRCERASE
 Srch
-SRCINVERT
-SRCPAINT
 SResize
 srme
 srre
@@ -1850,6 +1899,7 @@ SYSLIB
 sysmenu
 systemai
 SYSTEMAPPS
+SYSTEMBACKDROP
 SYSTEMMODAL
 systemroot
 SYSTEMTIME
@@ -1924,6 +1974,8 @@ tracerpt
 trackbar
 trafficmanager
 transicc
+TRAYICON
+TRANSIENTWINDOW
 transitioning
 TRAYMOUSEMESSAGE
 triaging
@@ -1942,6 +1994,8 @@ TYPEMOUSE
 TYPESHORTCUT
 UAC
 UACUI
+UAHINITMENU
+UAHMEASUREMENUITEM
 UAL
 uap
 UBR
@@ -1954,6 +2008,7 @@ UIA
 UIDs
 UIEx
 uild
+UIPI
 uitests
 UITo
 ULONGLONG
@@ -1962,8 +2017,11 @@ ums
 uncompilable
 UNCPRIORITY
 UNDNAME
+unescaped
+unforgeable
 ungroup
 UNICODETEXT
+UNINITMENUPOPUP
 unins
 uninsdeletekey
 Uninstaller
@@ -1977,6 +2035,7 @@ unparsable
 unremapped
 Unsend
 Unsubscribes
+untampered
 untriaged
 unvirtualized
 unwide
@@ -2001,6 +2060,8 @@ uwp
 uxt
 uxtheme
 vabdq
+VALIDATEA
+VALIDATEW
 validmodulename
 valuegenerator
 VARTYPE
@@ -2016,6 +2077,7 @@ VCRT
 vcruntime
 vcvars
 vdupq
+VERBA
 VERBSONLY
 VERBW
 VERIFYCONTEXT
@@ -2030,7 +2092,6 @@ vgetq
 viewmodels
 virama
 VIRTKEY
-VIRTUALDESK
 VISEGRADRELAY
 visiblecolorformats
 visio
@@ -2065,7 +2126,7 @@ WANTNUKEWARNING
 WANTPALM
 WASDK
 wbem
-Wca
+wca
 WCE
 wcex
 WCRAPI
@@ -2073,6 +2134,7 @@ wcsicmp
 wcsncpy
 wcsnicmp
 WDA
+wdk
 wdm
 wdp
 wdupenv
@@ -2088,9 +2150,12 @@ wifi
 wikimedia
 wikipedia
 winapi
+winapp
+winappcli
 winappsdk
 windir
 WINDOWCREATED
+WINDOWCOMPOSITIONATTRIBDATA
 WINDOWDESTROYED
 windowedge
 WINDOWINFO
@@ -2115,6 +2180,7 @@ wingetpkgs
 Winhook
 WINL
 winlogon
+WINM
 winmd
 winml
 WINNT
@@ -2124,6 +2190,7 @@ winrt
 winsdk
 winsta
 WINTHRESHOLD
+wintrust
 WINVER
 winword
 winxamlmanager
@@ -2166,6 +2233,7 @@ wprp
 wql
 wregex
 WResize
+WRITEFAULT
 WRITEOBJECTS
 Wrk
 wrl
@@ -2181,6 +2249,7 @@ WTSAT
 Wubi
 WUX
 Wwanpp
+Wzhudev
 xap
 Xbuttondown
 xclip
@@ -2188,6 +2257,7 @@ xcopy
 xdf
 xfd
 xhair
+XMN
 xmp
 Xoshiro
 xsi

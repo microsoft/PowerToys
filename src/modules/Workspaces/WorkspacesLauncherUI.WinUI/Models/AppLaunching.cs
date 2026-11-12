@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Media.Imaging;
 
 using WorkspacesLauncherUI.Data;
+using WorkspacesLauncherUI.Properties;
 
 namespace WorkspacesLauncherUI.Models
 {
@@ -18,6 +19,21 @@ namespace WorkspacesLauncherUI.Models
     public partial class AppLaunching : ObservableObject
     {
         public bool Loading => LaunchState == LaunchingState.Waiting || LaunchState == LaunchingState.Launched;
+
+        public bool IsSkipped => LaunchState == LaunchingState.Skipped;
+
+        public bool ShowStateGlyph => !Loading && !IsSkipped;
+
+        public string StateDescription => LaunchState switch
+        {
+            LaunchingState.Waiting => Resources.LaunchStateWaiting,
+            LaunchingState.Launched => Resources.LaunchStateLaunched,
+            LaunchingState.LaunchedAndMoved => Resources.LaunchStateLaunchedAndMoved,
+            LaunchingState.Failed => Resources.LaunchStateFailed,
+            LaunchingState.Canceled => Resources.LaunchStateCanceled,
+            LaunchingState.Skipped => Resources.LaunchStateSkipped,
+            _ => throw new System.InvalidOperationException("Unknown application launch state."),
+        };
 
         public string Name { get; set; }
 
@@ -34,7 +50,10 @@ namespace WorkspacesLauncherUI.Models
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Loading))]
         [NotifyPropertyChangedFor(nameof(LaunchStateInt))]
-        private LaunchingState _launchState;
+        [NotifyPropertyChangedFor(nameof(IsSkipped))]
+        [NotifyPropertyChangedFor(nameof(ShowStateGlyph))]
+        [NotifyPropertyChangedFor(nameof(StateDescription))]
+        public partial LaunchingState LaunchState { get; set; }
 
         public int LaunchStateInt => (int)LaunchState;
     }

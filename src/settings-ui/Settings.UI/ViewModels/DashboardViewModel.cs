@@ -39,11 +39,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public Func<string, int> SendConfigMSG { get; }
 
-        public ObservableCollection<DashboardListItem> AllModules { get; set; } = new ObservableCollection<DashboardListItem>();
+        public ObservableCollection<DashboardListItem> AllModules { get; } = new ObservableCollection<DashboardListItem>();
 
-        public ObservableCollection<DashboardListItem> ShortcutModules { get; set; } = new ObservableCollection<DashboardListItem>();
+        public ObservableCollection<DashboardListItem> ShortcutModules { get; } = new ObservableCollection<DashboardListItem>();
 
-        public ObservableCollection<DashboardListItem> ActionModules { get; set; } = new ObservableCollection<DashboardListItem>();
+        public ObservableCollection<DashboardListItem> ActionModules { get; } = new ObservableCollection<DashboardListItem>();
 
         public ObservableCollection<QuickAccessItem> QuickAccessItems => _quickAccessViewModel.Items;
 
@@ -223,7 +223,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                     IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                     Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
-                    IsNew = moduleType == ModuleType.ShortcutGuide,
+                    IsNew = moduleType == ModuleType.AutoHideCursor,
                     DashboardModuleItems = GetModuleItems(moduleType),
                     ClickCommand = new RelayCommand<object>(DashboardListItemClick),
                 };
@@ -493,6 +493,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.EnvironmentVariables => GetModuleItemsEnvironmentVariables(),
                 ModuleType.FancyZones => GetModuleItemsFancyZones(),
                 ModuleType.FindMyMouse => GetModuleItemsFindMyMouse(),
+                ModuleType.AltWindowCycle => GetModuleItemsAltWindowCycle(),
                 ModuleType.Hosts => GetModuleItemsHosts(),
                 ModuleType.KeyboardManager => GetModuleItemsKeyboardManager(),
                 ModuleType.LightSwitch => GetModuleItemsLightSwitch(),
@@ -626,6 +627,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsAltWindowCycle()
+        {
+            ISettingsRepository<AltWindowCycleSettings> moduleSettingsRepository = SettingsRepository<AltWindowCycleSettings>.GetInstance(SettingsUtils.Default);
+            var settings = moduleSettingsRepository.SettingsConfig;
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AltWindowCycle_NextWindowShortcut/Header"), Shortcut = settings.Properties.NextWindowShortcut.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AltWindowCycle_PreviousWindowShortcut/Header"), Shortcut = settings.Properties.PreviousWindowShortcut.GetKeysList() },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
         private ObservableCollection<DashboardModuleItem> GetModuleItemsHosts()
         {
             var list = new List<DashboardModuleItem>
@@ -748,6 +761,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 case Library.Enumerations.PowerAccentActivationKey.LeftRightArrow: activation = resourceLoader.GetString("QuickAccent_Activation_Key_Arrows/Content"); break;
                 case Library.Enumerations.PowerAccentActivationKey.Space: activation = resourceLoader.GetString("QuickAccent_Activation_Key_Space/Content"); break;
                 case Library.Enumerations.PowerAccentActivationKey.Both: activation = resourceLoader.GetString("QuickAccent_Activation_Key_Either/Content"); break;
+                case Library.Enumerations.PowerAccentActivationKey.PressAndHold: activation = resourceLoader.GetString("QuickAccent_Activation_Key_PressAndHold/Content"); break;
+                default: activation = string.Empty; break;
             }
 
             var list = new List<DashboardModuleItem>
@@ -895,6 +910,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _settingsRepository.SettingsChanged -= OnSettingsChanged;
             }
 
+            _quickAccessViewModel?.Dispose();
             GC.SuppressFinalize(this);
         }
     }

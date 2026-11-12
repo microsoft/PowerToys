@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\WorkspacesLauncherUI.Tests\</OutputPath>
@@ -27,6 +27,20 @@
   <ItemGroup>
     <ProjectReference Include="..\WorkspacesCsharpLibrary\WorkspacesCsharpLibrary.csproj" />
     <ProjectReference Include="..\WorkspacesLauncherUI.WinUI\WorkspacesLauncherUI.WinUI.csproj" />
+    <EmbeddedResource Include="..\WorkspacesLauncherUI.WinUI\Properties\Resources.resx" Link="Properties\Resources.resx">
+      <ManifestResourceName>WorkspacesLauncherUI.Properties.Resources</ManifestResourceName>
+    </EmbeddedResource>
+    <None Include="..\WorkspacesLauncherUI.WinUI\Properties\Resources.resx" Link="TestResources\NeutralResources.xml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\WorkspacesLauncherUI.WinUI\SignatureWarningWindow.xaml" Link="TestResources\SignatureWarningWindow.xaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <!-- Synthetic satellites are test-only fixtures, not product translations. -->
+  <ItemGroup>
+    <EmbeddedResource Update="TestResources\Localization.fr-FR.resx">
+      <ManifestResourceName>WorkspacesLauncherUI.Properties.Resources.fr-FR</ManifestResourceName>
+    </EmbeddedResource>
+    <EmbeddedResource Update="TestResources\Localization.ar-SA.resx">
+      <ManifestResourceName>WorkspacesLauncherUI.Properties.Resources.ar-SA</ManifestResourceName>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

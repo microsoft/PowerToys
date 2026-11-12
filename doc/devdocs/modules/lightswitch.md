@@ -14,6 +14,8 @@ The **Light Switch** module lets users automatically transition between light an
 
 ## Features
 
+* [Query and control the running service from the command line](lightswitch-cli.md).
+
 * Set custom times to start and stop dark mode.
 * Use geolocation to determine local sunrise and sunset times.
 * Apply offsets in sunrise mode (e.g., 15 minutes before sunset).
