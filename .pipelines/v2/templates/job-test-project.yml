@@ -378,6 +378,7 @@ jobs:
         'Hosts.UITests.Next',
         'ImageResizer.UITests',
         'LightSwitch.UITests.Next',
+        'Microsoft.CmdPal.UITests.Next',
         'MouseWithoutBorders.UITests',
         'MouseUtils.UITests',
         'MouseUtils.UITests.Next',
@@ -427,6 +428,10 @@ jobs:
         $requiredAuthenticodeFiles += 'PowerToys.QuickAccess.exe', 'PowerToys.WorkspacesCLI.exe',
           'PowerToys.WorkspacesLauncher.exe', 'PowerToys.WorkspacesWindowArranger.exe',
           'PowerToys.WorkspacesLauncherUI.exe'
+      }
+
+      if ($allModules -or $selectedModules -contains 'Microsoft.CmdPal.UITests.Next') {
+        $requiredPackages += 'SamplePagesExtension.msix'
       }
 
       if ($requiresAuthenticatedSettingsIpc) {
@@ -598,7 +603,7 @@ jobs:
       New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
       . "$(Build.SourcesDirectory)\.pipelines\umdf\UmdfCi.Common.ps1"
 
-      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'PowerDisplay.UITests', 'PowerOCR.UITests.Next', 'TextExpander.UITests', 'Workspaces.UITests.Next')
+      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'PowerDisplay.UITests', 'Microsoft.CmdPal.UITests.Next', 'PowerOCR.UITests.Next', 'TextExpander.UITests', 'Workspaces.UITests.Next')
       . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
       $locationStatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\LightSwitchLocation.json"
       $failed = 0

@@ -889,7 +889,7 @@ namespace MouseWithoutBorders.Class
 
                 Logger.LogDebug("Connecting to: " + machineName);
 
-                if (!string.IsNullOrEmpty(Setting.Values.Name2IP))
+                if (HasName2IpMappingRules(Setting.Values.Name2IpPolicyList, Setting.Values.Name2IP))
                 {
                     string[] name2ip = GetName2IpMappingLines(Setting.Values.Name2IpPolicyList, Setting.Values.Name2IP);
                     string[] nameNip;
@@ -1249,6 +1249,12 @@ namespace MouseWithoutBorders.Class
         {
             string combinedMappings = policyMappings + Separator[0] + userMappings;
             return combinedMappings.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        // Policy-defined rules apply on their own: Name2IP is empty when the user has no rules or a policy disables them.
+        internal static bool HasName2IpMappingRules(string policyMappings, string userMappings)
+        {
+            return !string.IsNullOrEmpty(policyMappings) || !string.IsNullOrEmpty(userMappings);
         }
 
         private void MainTCPRoutine(TcpSk tcp, string machineName, bool isClient)
