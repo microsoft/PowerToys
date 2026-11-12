@@ -8,7 +8,6 @@ using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Windows;
 
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
@@ -455,7 +454,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError("Failed to disable built-in New in the registry.", ex);
-                MessageBox.Show(ResourceLoaderInstance.ResourceLoader.GetString("NewPlus_BuiltInNewRegistryUpdateError"));
+                _ = NativeMethods.MessageBox(NativeMethods.GetActiveWindow(), ResourceLoaderInstance.ResourceLoader.GetString("NewPlus_BuiltInNewRegistryUpdateError"), string.Empty, 0);
             }
 
             return false;
@@ -490,7 +489,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError("Failed to enable built-in New in the registry.", ex);
-                MessageBox.Show(ResourceLoaderInstance.ResourceLoader.GetString("NewPlus_BuiltInNewRegistryUpdateError"));
+                _ = NativeMethods.MessageBox(NativeMethods.GetActiveWindow(), ResourceLoaderInstance.ResourceLoader.GetString("NewPlus_BuiltInNewRegistryUpdateError"), string.Empty, 0);
             }
 
             return false;

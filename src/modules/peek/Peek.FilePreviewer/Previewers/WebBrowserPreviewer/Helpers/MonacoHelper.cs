@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 
-using Common.UI;
 using ManagedCommon;
 
 namespace Peek.FilePreviewer.Previewers
@@ -75,7 +74,7 @@ namespace Peek.FilePreviewer.Previewers
             }
 
             string base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
-            string theme = ThemeManager.GetWindowsBaseColor().ToLowerInvariant();
+            string theme = ThemeHelpers.GetWindowsBaseColor().ToLowerInvariant();
 
             // prepping index html to load in
             string html = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.ReadIndexHtml();

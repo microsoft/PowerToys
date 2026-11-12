@@ -86,7 +86,7 @@ namespace WorkspacesEditor
                         InvalidateVisual();
                     }
                 },
-                Application.Current.Dispatcher,
+                new System.Windows.Threading.DispatcherSynchronizationContext(Application.Current.Dispatcher),
                 cancellationToken.Token);
 
             PowerToysTelemetry.Log.WriteEvent(new WorkspacesEditorStartFinishEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });

@@ -4,28 +4,39 @@
 
 using System;
 using System.Threading;
-using System.Windows.Threading;
+
+using Microsoft.UI.Dispatching;
 
 namespace MouseJump.WinUI3.Helpers;
 
 internal sealed class ThrottledActionInvoker
 {
     private readonly Lock _invokerLock = new();
-    private readonly DispatcherTimer _timer;
+    private readonly DispatcherQueue _dispatcherQueue;
+    private readonly DispatcherQueueTimer _timer;
 
     private Action? _actionToRun;
 
     public ThrottledActionInvoker()
     {
-        _timer = new DispatcherTimer();
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread()
+            ?? throw new InvalidOperationException($"{nameof(ThrottledActionInvoker)} must be created on a thread with a DispatcherQueue.");
+        _timer = _dispatcherQueue.CreateTimer();
         _timer.Tick += Timer_Tick;
     }
 
     public void ScheduleAction(Action action, int milliseconds)
     {
+        // File watcher callbacks run on thread pool threads, but the timer must be used on its own thread.
+        if (!_dispatcherQueue.HasThreadAccess)
+        {
+            _dispatcherQueue.TryEnqueue(() => ScheduleAction(action, milliseconds));
+            return;
+        }
+
         lock (_invokerLock)
         {
-            if (_timer.IsEnabled)
+            if (_timer.IsRunning)
             {
                 _timer.Stop();
             }
@@ -37,7 +48,7 @@ internal sealed class ThrottledActionInvoker
         }
     }
 
-    private void Timer_Tick(object? sender, EventArgs? e)
+    private void Timer_Tick(DispatcherQueueTimer sender, object args)
     {
         lock (_invokerLock)
         {
