@@ -94,14 +94,20 @@ function Get-UmdfFixtureContext {
 function Invoke-UmdfFixtureManager {
     param([Parameter(Mandatory)]$Context, [Parameter(Mandatory)][ValidateSet('Install', 'Cleanup')][string]$Action)
     $arguments = $Context.Arguments.Clone()
-    if ($Action -eq 'Install') { $arguments.ArtifactDirectory = $Context.Artifact }
+    if ($Action -eq 'Install' -or $Context.Fixture.Kind -eq 'Display') { $arguments.ArtifactDirectory = $Context.Artifact }
     & $Context.Manager -Action $Action @arguments | Out-Host
 }
 
 function Start-UmdfFixture {
-    param([Parameter(Mandatory)]$Context)
+    param(
+        [Parameter(Mandatory)]$Context,
+        [switch]$RequireFreshGuest
+    )
     Write-Host "##vso[task.setvariable variable=Umdf$($Context.Fixture.Kind)Requested]true"
     if (Test-Path -LiteralPath $Context.Arguments.StatePath) {
+        if ($RequireFreshGuest) {
+            throw 'The disposable CI guest already has a UMDF ownership journal; refusing to reuse or clean it.'
+        }
         Invoke-UmdfFixtureManager -Context $Context -Action Cleanup
     }
     Invoke-UmdfFixtureManager -Context $Context -Action Install
@@ -111,10 +117,33 @@ function Start-UmdfFixture {
 }
 
 function Stop-UmdfFixture {
-    param([Parameter(Mandatory)]$Context)
+    param(
+        [Parameter(Mandatory)]$Context,
+        [switch]$DeferRemovalToVmDisposal
+    )
     try {
         if (Test-Path -LiteralPath $Context.Arguments.StatePath) {
-            Invoke-UmdfFixtureManager -Context $Context -Action Cleanup
+            if ($DeferRemovalToVmDisposal) {
+                $jobId = [guid]::Empty
+                if ($env:TF_BUILD -ne 'True' -or -not [guid]::TryParse($env:SYSTEM_JOBID, [ref]$jobId)) {
+                    throw 'Deferring UMDF removal requires an explicitly disposable Azure Pipelines job.'
+                }
+                New-Item -ItemType Directory -Path $Context.Arguments.ResultsDirectory -Force | Out-Null
+                [ordered]@{
+                    Disposition = 'DeferredToVmDisposal'
+                    NativeRemovalAttempted = $false
+                    Fixture = $Context.Fixture.Kind
+                    Suite = $Context.Fixture.Suite
+                    JobId = $jobId
+                    OwnershipJournal = $Context.Arguments.StatePath
+                    Ownership = Get-Content -LiteralPath $Context.Arguments.StatePath -Raw | ConvertFrom-Json
+                } | ConvertTo-Json -Depth 8 |
+                    Set-Content (Join-Path $Context.Arguments.ResultsDirectory 'disposal.json')
+                Write-Host "UMDF $($Context.Fixture.Kind) native removal deferred to disposable CI VM destruction; ownership and test trust retained."
+            }
+            else {
+                Invoke-UmdfFixtureManager -Context $Context -Action Cleanup
+            }
         }
     }
     finally {
@@ -130,13 +159,14 @@ function Restore-UmdfFixtures {
         [Parameter(Mandatory)][string]$ArtifactRoot,
         [Parameter(Mandatory)][ValidateSet('x64', 'ARM64')][string]$Platform,
         [Parameter(Mandatory)][string]$StateDirectory,
-        [Parameter(Mandatory)][string]$ResultsDirectory
+        [Parameter(Mandatory)][string]$ResultsDirectory,
+        [switch]$DeferRemovalToVmDisposal
     )
     $errors = [Collections.Generic.List[string]]::new()
     foreach ($fixture in Get-UmdfFixtures) {
         $context = Get-UmdfFixtureContext -Suite $fixture.Suite -RepositoryRoot $RepositoryRoot -ArtifactRoot $ArtifactRoot `
             -Platform $Platform -StateDirectory $StateDirectory -ResultsDirectory $ResultsDirectory
-        try { Stop-UmdfFixture -Context $context }
+        try { Stop-UmdfFixture -Context $context -DeferRemovalToVmDisposal:$DeferRemovalToVmDisposal }
         catch {
             $message = "UMDF $($fixture.Kind) prerequisite cleanup failed: $($_.Exception.Message)"
             Write-Host "##vso[task.logissue type=error]$message"

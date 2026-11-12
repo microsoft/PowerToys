@@ -140,7 +140,8 @@ function Restore-LightSwitchLocation {
         '' | Set-Content "$runner\ColorPicker.UITests.dll"
         $environment = @{}
         foreach ($name in @('POWERTOYS_INSTALL_DIR', 'useInstallerForTest', 'MWB_FLOW_LOG', 'MWB_FLOW_FAILURE',
-            'RUN_GENERIC_UI_TESTS', 'RUN_MWB_SANDBOX', 'MWB_SELECTION_BLOCKED', 'AUTO_UI_TEST_MODULES')) {
+            'RUN_GENERIC_UI_TESTS', 'RUN_MWB_SANDBOX', 'MWB_SELECTION_BLOCKED', 'AUTO_UI_TEST_MODULES',
+            'TF_BUILD', 'SYSTEM_JOBID', 'POWERTOYS_POWERDISPLAY_IDD_PROBE')) {
             $environment[$name] = [Environment]::GetEnvironmentVariable($name)
         }
         $env:POWERTOYS_INSTALL_DIR = 'original-product'
@@ -211,6 +212,70 @@ function dotnet {
         if ($ExitCode) { $result.Output | Should Match 'task.logissue type=error' }
     }
 
+    It 'runs Sandbox before both driver fixtures and preserves <Failure> results without native uninstall' -TestCases @(
+        @{ Failure = ''; ExitCode = 0 }
+        @{ Failure = 'Run'; ExitCode = 1 }
+        @{ Failure = 'PowerDisplay.UITests'; ExitCode = 1 }
+    ) {
+        param($Failure, $ExitCode)
+        $env:TF_BUILD = 'True'
+        $env:SYSTEM_JOBID = [guid]::NewGuid().ToString()
+        $env:MWB_FLOW_FAILURE = $Failure
+        foreach ($suite in @('GrabAndMove.UITests', 'PowerDisplay.UITests')) {
+            $runner = New-Item -ItemType Directory "$fixture\artifact\tests\$suite" -Force
+            '{}' | Set-Content "$runner\$suite.runtimeconfig.json"
+            'not-executable' | Set-Content "$runner\$suite.exe"
+        }
+        @'
+param($TestExecutable, $ResultsDirectory, $Filter)
+$suite = [IO.Path]::GetFileNameWithoutExtension($TestExecutable)
+$suite | Add-Content $env:MWB_FLOW_LOG
+$global:LASTEXITCODE = if ($env:MWB_FLOW_FAILURE -eq $suite) { 23 } else { 0 }
+'@ | Set-Content "$fixture\.pipelines\runUiTestAsUser.ps1"
+        foreach ($manager in @(
+            @{ Path = 'umdf-hid-smoke\Manage-SmokeDriver.ps1'; Kind = 'Hid' },
+            @{ Path = 'powerdisplay-idd-poc\Manage-Poc.ps1'; Kind = 'Display' }
+        )) {
+            $path = Join-Path "$fixture\.pipelines" $manager.Path
+            New-Item -ItemType Directory (Split-Path $path -Parent) -Force | Out-Null
+            @'
+param($Action, $StatePath, $ResultsDirectory, $ArtifactDirectory, [switch]$IsolatedGuest)
+if ($Action -ne 'Install') { throw 'Native uninstall must not run on the disposable CI worker.' }
+New-Item -ItemType Directory (Split-Path $StatePath -Parent) -Force | Out-Null
+'{"ImportedStores":["Root"]}' | Set-Content $StatePath
+'__KIND__:Install' | Add-Content $env:MWB_FLOW_LOG
+'@.Replace('__KIND__', $manager.Kind) | Set-Content $path
+        }
+        $step = (Get-UiTestFlowStep 'Run UI Tests').
+            Replace('$(Pipeline.Workspace)\$(TestArtifactsName)', "$fixture\artifact").
+            Replace('$(Build.SourcesDirectory)', $fixture).Replace('$(build.sourcesdirectory)', $fixture).
+            Replace('$(Common.TestResultsDirectory)', "$fixture\results").Replace('$(Agent.WorkFolder)', $fixture).
+            Replace('$(System.JobId)', $env:SYSTEM_JOBID).Replace('$(TestPlatform)', 'x64Win10').
+            Replace('$(BuildPlatform)', 'x64').Replace('$(Build.SourceVersion)', 'revision').
+            Replace('$(BuildConfiguration)', 'Release').
+            Replace('${{ join('';'', parameters.uiTestModules) }}',
+                'ColorPicker.UITests;GrabAndMove.UITests;PowerDisplay.UITests;MouseWithoutBorders.UITests')
+        $prefix = @'
+function dotnet {
+    'Generic' | Add-Content $env:MWB_FLOW_LOG
+    $global:LASTEXITCODE = 0
+}
+'@
+        $path = Join-Path $fixture 'driver-last-dispatch.ps1'
+        ($prefix + [Environment]::NewLine + $step) | Set-Content $path
+        $result = Invoke-MwbClientCommand (Get-Process -Id $PID).Path @('-NoProfile', '-File', $path) 30
+        $result.TimedOut | Should Be $false
+        $result.ExitCode | Should Be $ExitCode
+        ((Get-Content $env:MWB_FLOW_LOG) -join ',') | Should Be `
+            'Generic,Prepare,Run,Hid:Install,GrabAndMove.UITests,Display:Install,PowerDisplay.UITests'
+        foreach ($kind in @('Hid', 'Display')) {
+            $disposal = Get-Content (Join-Path $fixture "results\umdf-$($kind.ToLowerInvariant())\disposal.json") -Raw |
+                ConvertFrom-Json
+            Test-Path $disposal.OwnershipJournal | Should Be $true
+            $disposal.NativeRemovalAttempted | Should Be $false
+        }
+    }
+
     It 'always attempts all cleanup actions after <Failure>' -TestCases @(
         @{ Failure = ''; ExitCode = 0 }
         @{ Failure = 'Recover'; ExitCode = 1 }
@@ -240,9 +305,9 @@ function dotnet {
     }
 }
 
-Describe 'Failure-only pipeline diagnostic publication' {
+Describe 'Pipeline readiness and failure diagnostic publication' {
     It 'evaluates the actual artifact condition for <Scenario>' -TestCases @(
-        @{ Scenario = 'green'; Selected = 'true'; Passed = 'true'; Cleaned = 'true'; Failed = $false; Canceled = $false; Publish = $false }
+        @{ Scenario = 'green'; Selected = 'true'; Passed = 'true'; Cleaned = 'true'; Failed = $false; Canceled = $false; Publish = $true }
         @{ Scenario = 'unselected failure'; Selected = 'false'; Passed = ''; Cleaned = ''; Failed = $true; Canceled = $false; Publish = $false }
         @{ Scenario = 'missing TRX'; Selected = 'true'; Passed = ''; Cleaned = 'true'; Failed = $false; Canceled = $false; Publish = $true }
         @{ Scenario = 'interrupted cleanup'; Selected = 'true'; Passed = 'true'; Cleaned = ''; Failed = $false; Canceled = $false; Publish = $true }

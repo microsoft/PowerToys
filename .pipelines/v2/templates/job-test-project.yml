@@ -159,6 +159,10 @@ jobs:
         Write-Host "##vso[task.logissue type=warning]Skipping implicit MWB selection: its Sandbox suite requires buildNow or buildNowSlim. Other suites will run against the selected official build."
       }
       if ($selection.Run) {
+        $imageDirectory = Get-MwbPrerequisiteDirectory "$(Common.TestResultsDirectory)" "$(System.JobId)"
+        $null = New-Item -ItemType Directory -Path $imageDirectory -Force
+        Get-MwbImageServicingReport | ConvertTo-Json -Depth 8 |
+          Set-Content -LiteralPath (Join-Path $imageDirectory 'image-servicing-job-start.json') -Encoding utf8
         $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
         try {
           if (-not ([Security.Principal.WindowsPrincipal]::new($identity)).IsInRole(
@@ -386,6 +390,7 @@ jobs:
         'PowerRename.UITests.Next',
         'RegistryPreview.UITests',
         'ScreenRuler.UITests.Next',
+        'Settings.UITests',
         'ShortcutGuide.UITests',
         'Workspaces.UITests.Next',
         'ZoomIt.UITests'
@@ -538,12 +543,40 @@ jobs:
       New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
       . "$(Build.SourcesDirectory)\.pipelines\umdf\UmdfCi.Common.ps1"
 
-      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'PowerDisplay.UITests', 'Workspaces.UITests.Next')
+      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'MouseUtils.UITests.Next', 'PowerDisplay.UITests', 'Settings.UITests', 'Workspaces.UITests.Next')
       . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
       $locationStatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\LightSwitchLocation.json"
       $failed = 0
-      foreach ($rc in ($entries | Sort-Object FullName -Unique)) {
+      $mwbDispatched = $false
+      $runMwb = {
+        $mwbDispatched = $true
+        if ($runMwbSandbox) {
+          Write-Host "##[group]Run UI tests: MouseWithoutBorders.UITests"
+          try {
+            . "$(Build.SourcesDirectory)\.pipelines\mwb\MwbSandboxCi.Common.ps1"
+            Invoke-MwbUiTestSuite -RunId "$(System.JobId)" -ArtifactRoot $artifactRoot `
+              -ResultsDirectory $resultsDir -Platform "$(TestPlatform)" `
+              -SourceRevision "$(Build.SourceVersion)" -Configuration "$(BuildConfiguration)" `
+              -CertificateMarkerPath "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
+            Write-Host "##vso[task.setvariable variable=MwbUiTestsPassed]true"
+          } catch {
+            Write-Host "##vso[task.logissue type=error]UI tests failed for MouseWithoutBorders.UITests: $($_.Exception.Message)"
+            $failed++
+          } finally {
+            Write-Host "##[endgroup]"
+          }
+        }
+      }
+      # Sandbox must finish before installing drivers; display topology is the last mutation.
+      $fixtureSuites = @((Get-UmdfFixtures).Suite)
+      $orderedEntries = $entries | Sort-Object @{
+        Expression = { $fixtureSuites.IndexOf(($_.Name -replace '\.runtimeconfig\.json$', '')) + 1 }
+      }, FullName
+      foreach ($rc in $orderedEntries) {
         $base = $rc.Name -replace '\.runtimeconfig\.json$', ''
+        if (-not $mwbDispatched -and $base -in $fixtureSuites) {
+          . $runMwb
+        }
         $dir = $rc.DirectoryName
         $exe = Join-Path $dir "$base.exe"
         $dll = Join-Path $dir "$base.dll"
@@ -557,7 +590,7 @@ jobs:
             $fixtureContext = Get-UmdfFixtureContext -Suite $base -RepositoryRoot "$(Build.SourcesDirectory)" `
               -ArtifactRoot $artifactRoot -Platform "$(BuildPlatform)" `
               -StateDirectory "$(Agent.WorkFolder)\PowerToysUiTestState" -ResultsDirectory $resultsDir
-            Start-UmdfFixture -Context $fixtureContext
+            Start-UmdfFixture -Context $fixtureContext -RequireFreshGuest
           }
           if ($base -eq 'LightSwitch.UITests.Next') {
             try {
@@ -592,7 +625,7 @@ jobs:
           try {
             if ($null -ne $fixtureContext) {
               try {
-                Stop-UmdfFixture -Context $fixtureContext
+                Stop-UmdfFixture -Context $fixtureContext -DeferRemovalToVmDisposal
               } catch {
                 Write-Host "##vso[task.logissue type=error]UMDF fixture cleanup failed for ${base}: $($_.Exception.Message)"
                 $suiteFailed = $true
@@ -616,22 +649,8 @@ jobs:
         }
       }
 
-      # MWB stays last and uses its bounded, isolated executor, not direct elevated MTP dispatch.
-      if ($runMwbSandbox) {
-        Write-Host "##[group]Run UI tests: MouseWithoutBorders.UITests"
-        try {
-          . "$(Build.SourcesDirectory)\.pipelines\mwb\MwbSandboxCi.Common.ps1"
-          Invoke-MwbUiTestSuite -RunId "$(System.JobId)" -ArtifactRoot $artifactRoot `
-            -ResultsDirectory $resultsDir -Platform "$(TestPlatform)" `
-            -SourceRevision "$(Build.SourceVersion)" -Configuration "$(BuildConfiguration)" `
-            -CertificateMarkerPath "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
-          Write-Host "##vso[task.setvariable variable=MwbUiTestsPassed]true"
-        } catch {
-          Write-Host "##vso[task.logissue type=error]UI tests failed for MouseWithoutBorders.UITests: $($_.Exception.Message)"
-          $failed++
-        } finally {
-          Write-Host "##[endgroup]"
-        }
+      if (-not $mwbDispatched) {
+        . $runMwb
       }
       if ($shardIndex -eq 1 -and $env:MWB_SELECTION_BLOCKED -eq 'true') {
         Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: MWB requires the selected revision's shared Release runtime bundle (buildNow or buildNowSlim). Older official/installed builds are not substituted; other selected suites run independently."
@@ -677,7 +696,8 @@ jobs:
       try {
         Restore-UmdfFixtures -RepositoryRoot "$(Build.SourcesDirectory)" `
           -ArtifactRoot "$(Pipeline.Workspace)\$(TestArtifactsName)" -Platform "$(BuildPlatform)" `
-          -StateDirectory "$(Agent.WorkFolder)\PowerToysUiTestState" -ResultsDirectory "$(Common.TestResultsDirectory)"
+          -StateDirectory "$(Agent.WorkFolder)\PowerToysUiTestState" -ResultsDirectory "$(Common.TestResultsDirectory)" `
+          -DeferRemovalToVmDisposal
       } catch {
         Write-Host "##vso[task.logissue type=error]$($_.Exception.Message)"
         $failures++
@@ -717,7 +737,7 @@ jobs:
 
   - task: PublishPipelineArtifact@1
     displayName: Publish UI-test diagnostics
-    condition: and(always(), eq(variables['RunMwbSandbox'], 'true'), or(failed(), canceled(), ne(variables['MwbUiTestsPassed'], 'true'), ne(variables['UiTestCleanupComplete'], 'true')))
+    condition: and(always(), eq(variables['RunMwbSandbox'], 'true'))
     inputs:
       targetPath: '$(Common.TestResultsDirectory)\mwb-prerequisites-$(System.JobId)'
       artifactName: ui-test-diagnostics-$(TestPlatform)-$(System.JobId)

@@ -33,11 +33,10 @@ public sealed class SandboxTimeoutTests
     }
 
     [TestMethod]
-    public void GuestCleanupAndLegacyViewerHaveIndependentReadinessBudgets()
+    public void GuestCleanupHasAnIndependentRequestBudget()
     {
         Assert.AreEqual(300, SandboxTimeouts.GuestStopRequestSeconds);
-        Assert.AreEqual(TimeSpan.FromMinutes(3), SandboxTimeouts.LegacyViewerStart);
-        Assert.IsTrue(SandboxTimeouts.LegacyViewerStart < SandboxTimeouts.LegacyBootstrap);
+        Assert.IsTrue(SandboxTimeouts.GuestStopRequestSeconds < SandboxTimeouts.EndpointStartRequestSeconds);
     }
 
     [TestMethod]
