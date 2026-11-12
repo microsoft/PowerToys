@@ -25,6 +25,7 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
     private static readonly CompositeFormat OperationCanceled = CompositeFormat.Parse(Properties.Resources.winget_operation_canceled);
 
     private readonly ICommandItem[] _commands;
+    private readonly IFallbackCommandItem[] _fallbacks;
     private readonly WinGetExtensionPage _page;
     private readonly IWinGetOperationTrackerService _operationTracker;
     private readonly TaskScheduler _uiScheduler;
@@ -47,6 +48,10 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
         _commands = [
             new ListItem(_page),
         ];
+        _fallbacks =
+        [
+            new WinGetFallback(winGetPackageManagerService, winGetOperationTrackerService, uiScheduler),
+        ];
 
         _operationTracker.OperationStarted += OnOperationStarted;
         _operationTracker.OperationCompleted += OnOperationCompleted;
@@ -54,6 +59,8 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
     }
 
     public override ICommandItem[] TopLevelCommands() => _commands;
+
+    public override IFallbackCommandItem[] FallbackCommands() => _fallbacks;
 
     public override void InitializeWithHost(IExtensionHost host) => WinGetExtensionHost.Instance.Initialize(host);
 
