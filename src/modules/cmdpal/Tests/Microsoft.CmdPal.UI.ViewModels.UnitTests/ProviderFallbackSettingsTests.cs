@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Reflection;
@@ -100,16 +101,49 @@ public partial class ProviderFallbackSettingsTests
         await first.LoadTopLevelCommands(services);
         await second.LoadTopLevelCommands(services);
         var score = typeof(MainListPage).GetMethod("ScoreFallbackItem", BindingFlags.NonPublic | BindingFlags.Static)!;
+        var firstItem = new InProcObject<IListItem>(first.FallbackItems[0]);
+        var secondItem = new InProcObject<IListItem>(second.FallbackItems[0]);
         string[] ranks = [second.FallbackItems[0].FallbackKey, first.FallbackItems[0].FallbackKey];
 
-        Assert.AreEqual(3, score.Invoke(null, [new InProcObject<IListItem>(second.FallbackItems[0]), ranks]));
-        Assert.AreEqual(2, score.Invoke(null, [new InProcObject<IListItem>(first.FallbackItems[0]), ranks]));
-        Assert.AreEqual(2, score.Invoke(null, [new InProcObject<IListItem>(first.FallbackItems[0]), new[] { FallbackId }]));
+        Assert.AreEqual(3, score.Invoke(null, [secondItem, ranks]));
+        Assert.AreEqual(2, score.Invoke(null, [firstItem, ranks]));
+        Assert.AreEqual(2, score.Invoke(null, [firstItem, new[] { FallbackId }]));
 
         using var provider = new ProviderSettingsViewModel(first, new ProviderSettings(), settingsService);
         var fallback = new FallbackSettingsViewModel(first.FallbackItems[0], new FallbackSettings(), provider);
         Assert.AreEqual(first.FallbackItems[0].FallbackKey, fallback.RankId);
         Assert.AreEqual(FallbackId, fallback.Id);
+    }
+
+    [TestMethod]
+    public async Task CoupledFallbackSettings_NotifyBothProperties()
+    {
+        var settingsService = new FakeSettingsService();
+        await using var services = CreateServices(settingsService);
+        var wrapper = new CommandProviderWrapper(new TestCommandProvider(), TaskScheduler.Default);
+        await wrapper.LoadTopLevelCommands(services);
+        using var provider = new ProviderSettingsViewModel(wrapper, new ProviderSettings(), settingsService);
+        var fallback = new FallbackSettingsViewModel(
+            wrapper.FallbackItems[0],
+            new FallbackSettings { IsEnabled = false },
+            provider);
+        List<string?> notifications = [];
+        fallback.PropertyChanged += (_, args) => notifications.Add(args.PropertyName);
+
+        fallback.IncludeInGlobalResults = true;
+
+        CollectionAssert.Contains(notifications, nameof(FallbackSettingsViewModel.IncludeInGlobalResults));
+        CollectionAssert.Contains(notifications, nameof(FallbackSettingsViewModel.IsEnabled));
+        Assert.IsTrue(fallback.IncludeInGlobalResults);
+        Assert.IsTrue(fallback.IsEnabled);
+
+        notifications.Clear();
+        fallback.IsEnabled = false;
+
+        CollectionAssert.Contains(notifications, nameof(FallbackSettingsViewModel.IsEnabled));
+        CollectionAssert.Contains(notifications, nameof(FallbackSettingsViewModel.IncludeInGlobalResults));
+        Assert.IsFalse(fallback.IsEnabled);
+        Assert.IsFalse(fallback.IncludeInGlobalResults);
     }
 
     [TestMethod]

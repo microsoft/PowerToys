@@ -36,9 +36,11 @@ Describe 'UI test signing selection' {
         'AdvancedPaste-UITests',
         'AdvancedPaste.UITests.Next',
         'AltWindowCycle.UITests',
+        'Awake.UITests',
         'ColorPicker.UITests',
         'CropAndLock.UITests',
         'FileLocksmith.UITests',
+        'GrabAndMove.UITests',
         'HostsEditor.UITests',
         'Hosts.UITests.Next',
         'ImageResizer.UITests',
@@ -49,6 +51,8 @@ Describe 'UI test signing selection' {
         'NewPlus.UITests',
         'NewPlus.UITests.Next',
         'PowerAccent.UITests',
+        'PowerDisplay.UITests',
+        'PowerOCR.UITests.Next',
         'PowerRename.UITests',
         'PowerRename.UITests.Next',
         'RegistryPreview.UITests',
@@ -76,11 +80,15 @@ Describe 'UI test signing selection' {
         'PowerRename.FuzzingTest',
         'AdvancedPaste.UITests.Next.Extra',
         'AltWindowCycle.UITests.Extra',
+        'Awake.UITests.Extra',
         'FancyZones.UITests.Next',
         'FileLocksmith.UITests.Extra',
+        'GrabAndMove.UITests.Extra',
         'ImageResizer.UITests.Extra',
         'LightSwitch.UITests.Next.Extra',
         'MouseWithoutBorders.UITests.Extra',
+        'PowerDisplay.UITests.Extra',
+        'PowerOCR.UITests.Next.Extra',
         'ScreenRuler.UITests.Next.Extra',
         'ShortcutGuide.UITests.Extra',
         'Workspaces.Editor.UITests',
@@ -185,5 +193,106 @@ Describe 'UI test signing selection' {
         $mwb | Should Match "'PowerToys.MouseWithoutBorders.exe'"
         $mwb | Should Match "'PowerToys.Settings.exe'"
         $mwb | Should Not Match '(?i)Export-PfxCertificate'
+    }
+}
+
+Describe 'PowerOCR language prerequisites' {
+    BeforeEach {
+        $yaml = Get-Content -LiteralPath $pipelinePath -Raw
+        $end = $yaml.IndexOf('    displayName: "Provision PowerOCR test languages"')
+        $start = $yaml.LastIndexOf('  - powershell: |', $end)
+        if ($start -lt 0 -or $end -le $start) { throw 'PowerOCR provisioning step was not found.' }
+        $start = $yaml.IndexOf("`n", $start) + 1
+        $source = $yaml.Substring($start, $end - $start) -replace '(?m)^ {6}', ''
+        $source = $source -replace '(?m)^\$modulesRaw = .+\r?\n', ''
+        $setup = [scriptblock]::Create('param($modulesRaw)' + "`n" + $source)
+        $fixture = @{ States = @{}; Messages = [Collections.Generic.List[string]]::new(); FailInstall = $false }
+        foreach ($name in @(
+            'Language.Basic~~~en-US~0.0.1.0', 'Language.Basic~~~en-GB~0.0.1.0',
+            'Language.OCR~~~en-US~0.0.1.0', 'Language.OCR~~~en-GB~0.0.1.0')) {
+            $fixture.States[$name] = 'Installed'
+        }
+        $originalAutoModules = $env:AUTO_UI_TEST_MODULES
+        $originalReady = $env:POWER_OCR_LANGUAGES_READY
+        $env:AUTO_UI_TEST_MODULES = $null
+        Mock Write-Host { param($Object) $fixture.Messages.Add([string]$Object) }
+        Mock Get-WindowsCapability { param($Name) [pscustomobject]@{ State = $fixture.States[$Name] } }
+        Mock Add-WindowsCapability {
+            param($Name)
+            if ($fixture.FailInstall) { throw 'Capability installation failed.' }
+            $fixture.States[$Name] = 'Installed'
+            [pscustomobject]@{ RestartNeeded = $false }
+        }
+    }
+
+    AfterEach {
+        $env:AUTO_UI_TEST_MODULES = $originalAutoModules
+        $env:POWER_OCR_LANGUAGES_READY = $originalReady
+    }
+
+    It 'scopes provisioning to <Case>' -TestCases @(
+        @{ Case = 'PowerOCR'; Modules = 'PowerOCR.UITests.Next'; Auto = ''; Calls = 8 }
+        @{ Case = 'all modules'; Modules = ''; Auto = ''; Calls = 8 }
+        @{ Case = 'an unrelated suite'; Modules = 'ColorPicker.UITests'; Auto = ''; Calls = 0 }
+        @{ Case = 'a similar name'; Modules = 'PowerOCR.UITests.Next.Extra'; Auto = ''; Calls = 0 }
+        @{ Case = 'auto-selected PowerOCR'; Modules = 'ColorPicker.UITests'; Auto = 'PowerOCR.UITests.Next'; Calls = 8 }
+        @{ Case = 'an unrelated auto-selection'; Modules = 'PowerOCR.UITests.Next'; Auto = 'ColorPicker.UITests'; Calls = 0 }
+    ) {
+        param($Case, $Modules, $Auto, $Calls)
+        $env:AUTO_UI_TEST_MODULES = $Auto
+        & $setup $Modules
+
+        Assert-MockCalled Get-WindowsCapability -Times $Calls -Exactly -Scope It
+        Assert-MockCalled Add-WindowsCapability -Times 0 -Exactly -Scope It
+        ($fixture.Messages -contains '##vso[task.setvariable variable=PowerOcrLanguagesReady]true') | Should Be ($Calls -gt 0)
+    }
+
+    It 'installs a missing capability and marks readiness only after verification' {
+        $fixture.States['Language.OCR~~~en-GB~0.0.1.0'] = 'NotPresent'
+        & $setup 'PowerOCR.UITests.Next'
+
+        Assert-MockCalled Add-WindowsCapability -Times 1 -Exactly -Scope It -ParameterFilter { $Name -eq 'Language.OCR~~~en-GB~0.0.1.0' }
+        ($fixture.Messages -contains '##vso[task.setvariable variable=PowerOcrLanguagesReady]true') | Should Be $true
+        $source | Should Not Match '(Get|Set)-WinUserLanguageList'
+    }
+
+    It 'leaves PowerOCR blocked when capability installation fails' {
+        $fixture.States['Language.OCR~~~en-GB~0.0.1.0'] = 'NotPresent'
+        $fixture.FailInstall = $true
+        { & $setup 'PowerOCR.UITests.Next' } | Should Throw 'Capability installation failed.'
+
+        ($fixture.Messages -contains '##vso[task.setvariable variable=PowerOcrLanguagesReady]false') | Should Be $true
+        ($fixture.Messages -contains '##vso[task.setvariable variable=PowerOcrLanguagesReady]true') | Should Be $false
+        $yaml | Should Match '(?s)displayName: "Provision PowerOCR test languages"\s+continueOnError: true'
+    }
+
+    It 'isolates PowerOCR dispatch when readiness is <Ready>' -TestCases @(
+        @{ Ready = 'false'; Failed = 1; Runners = 'Other.UITests' }
+        @{ Ready = 'true'; Failed = 0; Runners = 'PowerOCR.UITests.Next,Other.UITests' }
+    ) {
+        param($Ready, $Failed, $Runners)
+        $env:POWER_OCR_LANGUAGES_READY = $Ready
+        $guard = [regex]::Match(
+            $yaml,
+            '(?ms)^ {10}if \(\$base -eq ''PowerOCR\.UITests\.Next'' -and [^\r\n]*\) \{.*?^ {10}\}').Value
+        $guard | Should Not BeNullOrEmpty
+        $loop = @'
+$failed = 0
+$executed = @()
+foreach ($base in @('PowerOCR.UITests.Next', 'Other.UITests')) {
+    $suiteFailed = $false
+    try {
+'@ + "`n" + $guard + "`n" + @'
+        $executed += $base
+    } finally {
+        if ($suiteFailed) { $failed++ }
+    }
+}
+[pscustomobject]@{ Failed = $failed; Runners = ($executed -join ',') }
+'@
+        $result = & ([scriptblock]::Create($loop))
+        $result.Failed | Should Be $Failed
+        $result.Runners | Should Be $Runners
+        $yaml | Should Match 'POWER_OCR_LANGUAGES_READY: \$\(PowerOcrLanguagesReady\)'
     }
 }

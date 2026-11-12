@@ -340,6 +340,15 @@ actual inner Default Switch appears; MWB starts only after `Ready`. The guest
 address must belong to that subnet and its gateway must exactly match the
 provisioned host address. Network changes fail before product startup.
 
+The trusted provisioning launcher has 90 seconds to acknowledge startup in its
+protected run directory. Payload validation, fingerprinting and trust preparation
+then have a separate, non-renewable 300-second deadline. The startup acknowledgement
+is not an ownership or readiness marker: CI and local VM dispatch still require the
+complete verified provisioning marker before starting the suite. All payload hashes,
+signature checks and exact cleanup remain required. The worker's 22-minute execution
+limit accommodates this preparation plus the unchanged 15-minute inner-network
+deadline; UI-test deadlines are unchanged.
+
 Guest bootstrap preserves its normal elevated `WDAGUtilityAccount` user desktop,
 not service mode. Its firewall rule is exact-program/ports/host-address scoped.
 Sandbox clipboard/audio/video/printer redirection is disabled. Only read-only

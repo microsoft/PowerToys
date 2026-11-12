@@ -17,9 +17,9 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
     private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(50);
     private readonly ExtensionObject<IFallbackCommandItem> _model;
     private ExtensionObject<IFallbackCommandItem3> _fallbackV2 = new(null);
-    private ExtensionObject<IFallbackHandler2> _queryHandler = new(null);
+    private ExtensionObject<IFallbackQueryHandler> _queryHandler = new(null);
     private HostMatchKind _matchKind;
-    private string _matchValue = string.Empty;
+    private Regex? _matchRegex;
     private string _titleTemplate = string.Empty;
     private string _subtitleTemplate = string.Empty;
     private string _fallbackId = string.Empty;
@@ -44,7 +44,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
 
     internal override bool IsFallbackV2 => _isV2;
 
-    internal override ExtensionObject<IFallbackHandler2> FallbackQueryHandler => IsCleanedUp ? base.FallbackQueryHandler : _queryHandler;
+    internal override ExtensionObject<IFallbackQueryHandler> FallbackQueryHandler => IsCleanedUp ? base.FallbackQueryHandler : _queryHandler;
 
     public override string Title => _title ?? base.Title;
 
@@ -97,7 +97,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
             if (IsPassiveFallback)
             {
                 _matchKind = fallbackV2.MatchKind;
-                _matchValue = fallbackV2.MatchValue;
+                _matchRegex = _matchKind == HostMatchKind.Regex ? CreateRegex(fallbackV2.MatchValue) : null;
                 _titleTemplate = fallbackV2.TitleTemplate;
                 _subtitleTemplate = fallbackV2.SubtitleTemplate;
                 _name = fallbackV2.Name;
@@ -139,7 +139,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
             return false;
         }
 
-        var matches = _matchKind != HostMatchKind.Regex || MatchesRegex(query, _matchValue);
+        var matches = _matchKind != HostMatchKind.Regex || MatchesRegex(query);
         var title = matches ? FormatText(_titleTemplate, ItemViewModel.Title, query) : string.Empty;
         var subtitle = matches ? FormatText(_subtitleTemplate, ItemViewModel.Subtitle, query) : string.Empty;
         var changed = !string.Equals(_title, title, StringComparison.Ordinal)
@@ -215,20 +215,31 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
         string.IsNullOrEmpty(template) ? defaultValue : template.Replace("{query}", query, StringComparison.Ordinal);
 
     // Extension patterns must match the whole query and have bounded parsing and matching costs.
-    private static bool MatchesRegex(string query, string pattern)
+    private static Regex? CreateRegex(string pattern)
     {
         if (string.IsNullOrEmpty(pattern) || pattern.Length > MaximumRegexLength)
         {
-            return false;
+            return null;
         }
 
         try
         {
-            return Regex.IsMatch(query, $"\\A(?:{pattern})\\z", RegexOptions.CultureInvariant, RegexTimeout);
+            return new Regex(
+                $"\\A(?:{pattern})\\z",
+                RegexOptions.Compiled | RegexOptions.CultureInvariant,
+                RegexTimeout);
         }
         catch (ArgumentException)
         {
-            return false;
+            return null;
+        }
+    }
+
+    private bool MatchesRegex(string query)
+    {
+        try
+        {
+            return _matchRegex?.IsMatch(query) == true;
         }
         catch (RegexMatchTimeoutException)
         {

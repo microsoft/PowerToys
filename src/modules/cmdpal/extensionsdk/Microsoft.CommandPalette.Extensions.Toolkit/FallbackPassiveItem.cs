@@ -39,6 +39,9 @@ public partial class FallbackPassiveItem : FallbackCommandItem, IFallbackCommand
             _name = value;
             if (Command is Command command)
             {
+                // possibly not the safest if this command instance is shared
+                // with something else, but there's Prior Art for this pattern
+                // in ConfirmableCommand::Name
                 command.Name = value;
             }
 
@@ -73,9 +76,9 @@ public partial class FallbackPassiveItem : FallbackCommandItem, IFallbackCommand
         set => SetProperty(ref _matchValue, value);
     }
 
-    public IFallbackHandler2? QueryHandler => null;
+    public IFallbackQueryHandler? QueryHandler => null;
 
-    IFallbackHandler2 IFallbackCommandItem3.QueryHandler => QueryHandler!;
+    IFallbackQueryHandler IFallbackCommandItem3.QueryHandler => QueryHandler!;
 
     public override void UpdateQuery(string query)
     {

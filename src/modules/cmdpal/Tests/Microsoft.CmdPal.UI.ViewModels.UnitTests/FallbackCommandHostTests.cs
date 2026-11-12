@@ -527,9 +527,9 @@ public sealed partial class FallbackCommandHostTests
 
         public int QueryHandlerReadCount { get; private set; }
 
-        public IFallbackHandler2? QueryHandler { get; init; }
+        public IFallbackQueryHandler? QueryHandler { get; init; }
 
-        IFallbackHandler2 IFallbackCommandItem3.QueryHandler
+        IFallbackQueryHandler IFallbackCommandItem3.QueryHandler
         {
             get
             {
@@ -569,7 +569,7 @@ public sealed partial class FallbackCommandHostTests
         public override void UpdateQuery(string query) => UpdateCount++;
     }
 
-    private sealed partial class RecordingQueryHandler : IFallbackHandler2
+    private sealed partial class RecordingQueryHandler : IFallbackQueryHandler
     {
         public IFallbackQueryArgs? LastArgs { get; private set; }
 

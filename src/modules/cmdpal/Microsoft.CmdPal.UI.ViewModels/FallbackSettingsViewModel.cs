@@ -40,13 +40,41 @@ public partial class FallbackSettingsViewModel : ObservableObject
     public bool IsEnabled
     {
         get => _fallbackSettings.IsEnabled;
-        set => Update(nameof(IsEnabled), _fallbackSettings with { IsEnabled = value });
+        set
+        {
+            var newSettings = _fallbackSettings with { IsEnabled = value };
+            var disableGlobalResults = !value && _fallbackSettings.IncludeInGlobalResults;
+            if (disableGlobalResults)
+            {
+                newSettings = newSettings with { IncludeInGlobalResults = false };
+            }
+
+            Update(nameof(IsEnabled), newSettings);
+            if (disableGlobalResults)
+            {
+                OnPropertyChanged(nameof(IncludeInGlobalResults));
+            }
+        }
     }
 
     public bool IncludeInGlobalResults
     {
         get => _fallbackSettings.IncludeInGlobalResults;
-        set => Update(nameof(IncludeInGlobalResults), _fallbackSettings with { IncludeInGlobalResults = value });
+        set
+        {
+            var newSettings = _fallbackSettings with { IncludeInGlobalResults = value };
+            var enableFallback = value && !_fallbackSettings.IsEnabled;
+            if (enableFallback)
+            {
+                newSettings = newSettings with { IsEnabled = true };
+            }
+
+            Update(nameof(IncludeInGlobalResults), newSettings);
+            if (enableFallback)
+            {
+                OnPropertyChanged(nameof(IsEnabled));
+            }
+        }
     }
 
     public double QueryDelayMilliseconds
@@ -103,15 +131,6 @@ public partial class FallbackSettingsViewModel : ObservableObject
     /// </summary>
     private void Update(string propertyName, FallbackSettings newSettings)
     {
-        // A fallback that shows in the main results must be on. Keep the two flags
-        // agreed, whichever one the user changed.
-        newSettings = newSettings.IncludeInGlobalResults && !newSettings.IsEnabled
-            ? newSettings with { IsEnabled = true }
-            : newSettings;
-        newSettings = newSettings.IsEnabled
-            ? newSettings
-            : newSettings with { IncludeInGlobalResults = false };
-
         if (newSettings == _fallbackSettings)
         {
             return;
