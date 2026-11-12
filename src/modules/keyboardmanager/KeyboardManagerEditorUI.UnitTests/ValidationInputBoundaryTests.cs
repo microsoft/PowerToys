@@ -231,6 +231,79 @@ namespace KeyboardManagerEditorUI.UnitTests
                     mappingService: null!));
         }
 
+
+        [DataTestMethod]
+        [DataRow(-1)]
+        [DataRow(0)]
+        [DataRow(1)]
+        public void WhitespacePayloadsTakePriorityOverInvalidTriggers(int triggerLength)
+        {
+            // Both actions reject the content first, even when the shortcut
+            // and application scope are incomplete. No native lookup is needed.
+            List<string> keys = MakeKeys(triggerLength);
+
+            Assert.AreEqual(
+                ValidationErrorType.EmptyUrl,
+                ValidationHelper.ValidateUrlMapping(
+                    originalKeys: keys,
+                    url: " \t\r\n",
+                    isAppSpecific: true,
+                    appName: string.Empty,
+                    mappingService: null!));
+
+            Assert.AreEqual(
+                ValidationErrorType.EmptyProgramPath,
+                ValidationHelper.ValidateAppMapping(
+                    originalKeys: keys,
+                    programPath: " \t\r\n",
+                    isAppSpecific: true,
+                    appName: string.Empty,
+                    mappingService: null!));
+        }
+
+        [DataTestMethod]
+        [DataRow(-1)]
+        [DataRow(0)]
+        public void MissingTriggerTakesPriorityOverEmptyTextPayload(int triggerLength)
+        {
+            Assert.AreEqual(
+                ValidationErrorType.EmptyOriginalKeys,
+                ValidationHelper.ValidateTextMapping(
+                    keys: MakeKeys(triggerLength),
+                    textContent: string.Empty,
+                    isAppSpecific: true,
+                    appName: string.Empty,
+                    mappingService: null!));
+        }
+
+        [DataTestMethod]
+        [DataRow("")]
+        [DataRow(" \t")]
+        public void SingleKeyProgramAndUrlTriggersRejectBeforeCheckingApplication(string appName)
+        {
+            // The action requires a shortcut with at least two keys.
+            // An invalid app scope must not hide this more immediate error.
+            List<string> keys = MakeKeys(1);
+
+            Assert.AreEqual(
+                ValidationErrorType.OneKeyMapping,
+                ValidationHelper.ValidateUrlMapping(
+                    originalKeys: keys,
+                    url: "https://example.com",
+                    isAppSpecific: true,
+                    appName: appName,
+                    mappingService: null!));
+
+            Assert.AreEqual(
+                ValidationErrorType.OneKeyMapping,
+                ValidationHelper.ValidateAppMapping(
+                    originalKeys: keys,
+                    programPath: "notepad.exe",
+                    isAppSpecific: true,
+                    appName: appName,
+                    mappingService: null!));
+        }
+
         private static List<string> MakeKeys(int count)
         {
             if (count < 0)
