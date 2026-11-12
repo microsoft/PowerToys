@@ -44,4 +44,15 @@ public sealed class SocketMappingTests
     {
         Assert.AreSequenceEqual(Array.Empty<string>(), SocketStuff.GetName2IpMappingLines(string.Empty, string.Empty));
     }
+
+    [TestMethod]
+    [DataRow("POLICY 192.0.2.2", "", true)]
+    [DataRow("", "PEER 192.0.2.1", true)]
+    [DataRow("POLICY 192.0.2.2", "PEER 192.0.2.1", true)]
+    [DataRow(null, "", false)]
+    [DataRow("", "", false)]
+    public void MappingRulesExistWhenEitherListHasRules(string? policyMappings, string userMappings, bool expected)
+    {
+        Assert.AreEqual(expected, SocketStuff.HasName2IpMappingRules(policyMappings!, userMappings));
+    }
 }

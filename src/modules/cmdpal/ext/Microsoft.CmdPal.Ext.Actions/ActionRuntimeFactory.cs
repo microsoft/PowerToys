@@ -5,11 +5,13 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using ManagedCsWin32;
 using WinRT;
 
 namespace Microsoft.CmdPal.Ext.Actions;
 
+[SupportedOSPlatform("windows10.0.26100.0")]
 internal static class ActionRuntimeFactory
 {
     private const string ActionRuntimeClsidStr = "C36FEF7E-35F3-4192-9F2C-AF1FD425FB85";

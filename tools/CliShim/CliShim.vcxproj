@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Label="NuGet">
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-    <NuGetTargetMoniker>native,Version=v0.0</NuGetTargetMoniker>
-    <NuGetTargetPlatformIdentifier>Windows</NuGetTargetPlatformIdentifier>
-    <NuGetTargetPlatformVersion>$(WindowsTargetPlatformVersion)</NuGetTargetPlatformVersion>
-  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.ImplementationLibrary" GeneratePathProperty="true" />
   </ItemGroup>
@@ -18,6 +12,7 @@
     <UsePrecompiledHeaders>false</UsePrecompiledHeaders>
     <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\CliShim\</OutDir>
     <TargetName>PowerToys.CliShim</TargetName>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
