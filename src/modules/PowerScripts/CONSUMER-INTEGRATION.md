@@ -256,6 +256,14 @@ Discovery, filtering, and paging never execute a script. Selecting a script with
 opens its result page and starts the run; a script with any declared parameters first opens its
 parameter form. Cancelling a search does not stop a run that the user has already started.
 
+On Windows 11, the Command Palette package excludes the PowerScripts module data directory
+from AppData write virtualization so the shared Host can use the same catalogue, configuration,
+and exact-content approvals as other consumers. The exclusion is limited to
+`%LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts`; custom script roots elsewhere in AppData are
+outside that scope. Windows 10 keeps its previous virtualization behavior and needs separate
+validation. When setting up development fixtures from an MSIX-packaged tool, check their physical
+location: a logical AppData path can refer to that tool's private copy rather than the shared data.
+
 The adapter accepts only `input: none` and `output: none` or `text`. No primary input does not
 exclude named parameters. It does not supply clipboard content, selected files, or inline media,
 and does not save output files or render markup. It uses `PowerScripts.Client`, not Core, and
