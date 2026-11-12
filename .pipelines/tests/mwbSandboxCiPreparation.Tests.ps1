@@ -869,7 +869,6 @@ Describe 'MWB provisioning progress diagnostics' {
         @{ Phase = 'Inspecting public test trust'; Elapsed = '1.2'; Expected = 1.2 }
         @{ Phase = 'Hashing Sandbox runtime archive'; Elapsed = '112.3'; Expected = 112.3 }
         @{ Phase = 'Writing provisioning marker'; Elapsed = '1,234.5'; Expected = 1234.5 }
-        @{ Phase = 'Continuing with unrelated pending reboot'; Elapsed = '1.8'; Expected = 1.8 }
     ) {
         param($Phase, $Elapsed, $Expected)
         $progress = ConvertTo-MwbProvisioningProgress "MWB provisioning: $Phase (${Elapsed}s)"

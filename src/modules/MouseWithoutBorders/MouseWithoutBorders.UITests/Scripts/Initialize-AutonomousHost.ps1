@@ -94,13 +94,9 @@ if ($SandboxBackend -eq 'WinApp') {
 elseif (-not [string]::IsNullOrWhiteSpace($SandboxWinAppPath)) {
     throw 'A Sandbox preview CLI is only accepted for the explicit WinApp backend.'
 }
-Write-ProvisioningPhase 'Checking pending reboot'
 if ((Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending') -or
     (Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired')) {
-    # The exact Sandbox feature gate above already rejects EnablePending. Any remaining
-    # pending reboot is unrelated servicing (for example, updates baked into a hosted CI
-    # image) that this run cannot complete, so record it without blocking the test.
-    Write-ProvisioningPhase 'Continuing with unrelated pending reboot'
+    throw 'BLOCKED_INFRASTRUCTURE: complete the pending image reboot before provisioning the test.'
 }
 $userSid = (New-Object Security.Principal.NTAccount($TestUser)).Translate(
     [Security.Principal.SecurityIdentifier])
