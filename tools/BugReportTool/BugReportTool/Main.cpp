@@ -8,6 +8,7 @@
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.System.UserProfile.h>
 #include <winrt/Windows.Globalization.h>
+#include <wil/resource.h>
 
 #include "ZipTools/ZipFolder.h"
 #include <common/SettingsAPI/settings_helpers.h>
@@ -21,6 +22,7 @@
 #include "EventViewer.h"
 #include "InstallationFolder.h"
 #include "ReportGPOValues.h"
+#include "DiagnosticPrivacy.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -321,15 +323,18 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     localLowPath += L"\\logs\\";
 
     const auto tempDir = temp_directory_path();
-    auto reportDir = temp_directory_path() / "PowerToys\\";
-    if (!DeleteFolder(reportDir))
-    {
-        printf("Failed to delete temp folder\n");
-    }
+    diagnostic_privacy::report_directory staging;
+    const auto& reportDir = staging.directory;
+    const auto cleanup = wil::scope_exit([&]() {
+        if (!reportDir.empty() && !diagnostic_privacy::remove_report_directory(staging))
+        {
+            printf("Failed to delete report staging folder\n");
+        }
+    });
 
     try
     {
-        create_directory(reportDir, settingsRootPath);
+        staging = diagnostic_privacy::create_report_directory(tempDir, settingsRootPath);
         for (const auto& entry : directory_iterator(settingsRootPath))
         {
             const auto filename = entry.path().filename();
@@ -345,7 +350,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
         // Remove updates folder contents
         DeleteFolder(reportDir / "Updates");
     }
-	
+
     catch (...)
     {
         printf("Failed to copy PowerToys folder\n");
@@ -400,6 +405,16 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     ReportInstalledContextMenuPackages(reportDir);
 
+    try
+    {
+        diagnostic_privacy::sanitize_report(reportDir);
+    }
+    catch (...)
+    {
+        printf("Failed to sanitize the report; no ZIP was created\n");
+        return 1;
+    }
+
     // Zip folder
     auto zipPath = path::path(saveZipPath);
 
@@ -413,6 +428,5 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
         return 1;
     }
 
-    DeleteFolder(reportDir);
     return 0;
 }

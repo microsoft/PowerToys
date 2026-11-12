@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MouseWithoutBorders.Core;
 
@@ -105,8 +106,90 @@ public static class LoggerTests
     }
 
     [TestClass]
+    [DoNotParallelize]
     public sealed class PrivateDumpTests
     {
+        [TestMethod]
+        [DataRow("myKey")]
+        [DataRow("MYKEY")]
+        [DataRow("SecurityKey")]
+        [DataRow("<MyKey>k__BackingField")]
+        [DataRow("<SecurityKey>k__BackingField")]
+        public void SensitiveFieldsAreOmittedBeforeFormattingTheirValues(string fieldName)
+        {
+            var output = new StringBuilder();
+            var method = typeof(Logger).GetMethod("PrivateDump", BindingFlags.NonPublic | BindingFlags.Static)!;
+
+            var included = (bool)method.Invoke(null, new object[] { output, new ThrowingDiagnosticValue(), fieldName, 0, 6, true })!;
+
+            Assert.IsFalse(included);
+            Assert.AreEqual(0, output.Length);
+        }
+
+        [TestMethod]
+        public void StoredKeyIsOmittedWhileOtherSettingsRemain()
+        {
+            var previousBinaryName = Common.BinaryName;
+            try
+            {
+                Common.BinaryName = "DiagnosticTestBinary";
+                var settings = new MouseWithoutBordersProperties
+                {
+                    SecurityKey = new StringProperty("synthetic-stored-key"),
+                    ShareClipboard = true,
+                };
+                var output = new StringBuilder();
+                var method = typeof(Logger).GetMethod("PrivateDump", BindingFlags.NonPublic | BindingFlags.Static)!;
+
+                method.Invoke(null, new object[] { output, settings, "settings", 0, 6, true });
+
+                var log = output.ToString();
+                Assert.IsFalse(log.Contains("SecurityKey", StringComparison.OrdinalIgnoreCase));
+                Assert.IsFalse(log.Contains("synthetic-stored-key", StringComparison.Ordinal));
+                StringAssert.Contains(log, "<ShareClipboard>k__BackingField = True");
+                Assert.AreEqual("synthetic-stored-key", settings.SecurityKey.Value);
+            }
+            finally
+            {
+                Common.BinaryName = previousBinaryName;
+            }
+        }
+
+        [TestMethod]
+        public void RuntimeKeyIsOmittedWhileEncryptionDiagnosticsRemain()
+        {
+            var previousBinaryName = Common.BinaryName;
+            var previousKey = Encryption.MyKey;
+            try
+            {
+                Common.BinaryName = "DiagnosticTestBinary";
+                Encryption.MyKey = "synthetic-runtime-key";
+                var output = new StringBuilder();
+                var method = typeof(Logger).GetMethod("DumpType", BindingFlags.NonPublic | BindingFlags.Static)!;
+
+                method.Invoke(null, new object[] { output, typeof(Encryption), 0, 2 });
+
+                var log = output.ToString();
+                Assert.IsFalse(log.Contains("myKey", StringComparison.OrdinalIgnoreCase));
+                Assert.IsFalse(log.Contains("synthetic-runtime-key", StringComparison.Ordinal));
+                StringAssert.Contains(log, "SymAlBlockSize = ");
+                Assert.AreEqual("synthetic-runtime-key", Encryption.MyKey);
+            }
+            finally
+            {
+                Encryption.MyKey = previousKey;
+                Common.BinaryName = previousBinaryName;
+            }
+        }
+
+        private sealed class ThrowingDiagnosticValue
+        {
+            public override string ToString()
+            {
+                throw new InvalidOperationException("Sensitive diagnostic values must not be formatted.");
+            }
+        }
+
         /*
         [TestMethod]
         public void PrivateDumpShouldGenerateExpectedOutput()
