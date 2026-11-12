@@ -186,8 +186,11 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
     /// bar, about 20 GDI objects and 25 handles, and each window loaded its icon again, so an engine asked often enough
     /// ran out of GDI objects. The first windows of each kind set WinUI and its caches up, so the count starts after two
     /// of each. A closed window's GDI objects can also stay until a later window has come and gone, up to a window's
-    /// worth on Windows 10, so each count is the lowest the engine settled at over five pairs of windows. Objects that
-    /// linger don't raise it; a leak raises it by about 200 over the ten windows between the two.
+    /// worth on Windows 10, so each count is the lowest the engine settled at over five pairs of windows. That lowest
+    /// count still moves on Windows 10, by up to 32 between sets of five pairs with nothing leaked, and back again, while
+    /// the leak raised it by over 250 over the ten windows between the two, so it may rise by 80. USER objects don't
+    /// linger, so their limit stays at 6, which the icon each window loaded again, a USER object apiece, goes over by
+    /// itself.
     /// </summary>
     [TestMethod("TextExpander.Expansion.ClosedWindowsLeaveNothingBehind")]
     [TestCategory("TextExpander")]
@@ -205,7 +208,8 @@ public sealed class TextExpanderExpansionTests : TextExpanderTestBase
         var before = LowestAfterFivePairs(engine);
         var after = LowestAfterFivePairs(engine);
         var counts = $"lowest GDI {before.Gdi} -> {after.Gdi}, USER {before.User} -> {after.User}; GDI/USER/handles after each pair: {before.Seen}, then {after.Seen}";
-        Assert.IsTrue(after.Gdi - before.Gdi <= 25, $"Ten more windows left GDI objects behind: {counts}.");
+        Step($"The engine settled at {counts}");
+        Assert.IsTrue(after.Gdi - before.Gdi <= 80, $"Ten more windows left GDI objects behind: {counts}.");
         Assert.IsTrue(after.User - before.User <= 6, $"Ten more windows left USER objects behind: {counts}.");
     }
 
