@@ -279,10 +279,10 @@ public partial class MainListPageResultFactoryTests
         {
             S("Command fallback", 0),
         };
-        IListItem[] fallbackResults =
+        InProcObject<IListItem>[] fallbackResults =
         [
-            new MockListItem { Title = "Files" },
-            new MockListItem { Title = "File result" },
+            new(new MockListItem { Title = "Files" }),
+            new(new MockListItem { Title = "File result" }),
         ];
 
         var result = MainListPageResultFactory.Create(
@@ -300,6 +300,8 @@ public partial class MainListPageResultFactoryTests
             new[] { "Results", "Direct", "Files", "File result", "Fallbacks", "Command fallback" },
             result.Select(item => item.Title).ToArray());
 #pragma warning restore CA1861 // Avoid constant arrays as arguments
+        Assert.AreSame(fallbackResults[0].Safe, result[2]);
+        Assert.AreSame(fallbackResults[1].Safe, result[3]);
     }
 
     [TestMethod]

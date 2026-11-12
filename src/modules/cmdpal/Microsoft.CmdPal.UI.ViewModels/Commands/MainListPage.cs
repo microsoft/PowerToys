@@ -99,7 +99,7 @@ public sealed partial class MainListPage : DynamicListPage,
     // Common fallbacks use query-independent scores, so freezing them is safe; only their live
     // titles decide whether they render.
     private RoScored<InProcObject<IListItem>>[]? _fallbackItems;
-    private IListItem[]? _fallbackResultItems;
+    private InProcObject<IListItem>[]? _fallbackResultItems;
     private IReadOnlyList<TopLevelViewModel> _fallbackResultSourceOrder = [];
 
     private bool _includeApps;
@@ -1069,12 +1069,12 @@ public sealed partial class MainListPage : DynamicListPage,
         CancellationToken queryToken)
     {
         var snapshotLease = AcquireSnapshotOwner(snapshot);
-        List<IListItem> sourceItems = [];
+        List<InProcObject<IListItem>> sourceItems = [];
         try
         {
             var rawItems = snapshot.Items ?? [];
             var acceptedItemLimit = (int)Math.Min(maximumItemCount, int.MaxValue);
-            sourceItems = new List<IListItem>(Math.Min(rawItems.Length, acceptedItemLimit) + 1);
+            sourceItems = new List<InProcObject<IListItem>>(Math.Min(rawItems.Length, acceptedItemLimit) + 1);
             var stableIds = new HashSet<string>(StringComparer.Ordinal);
             var sourceTitle = string.IsNullOrWhiteSpace(source.DisplayTitle) ? source.ExtensionName : source.DisplayTitle;
             var sourceAttribution = source.IncludeInGlobalResults ? sourceTitle : null;
@@ -1100,7 +1100,7 @@ public sealed partial class MainListPage : DynamicListPage,
                         continue;
                     }
 
-                    sourceItems.Add(new FallbackResultListItem(item, source, snapshotLease, queryToken, sourceAttribution));
+                    sourceItems.Add(new(new FallbackResultListItem(item, source, snapshotLease, queryToken, sourceAttribution)));
                 }
                 catch (Exception ex)
                 {
@@ -1119,7 +1119,7 @@ public sealed partial class MainListPage : DynamicListPage,
                     Title = Properties.Resources.fallback_load_more,
                     Icon = source.Icon,
                 };
-                sourceItems.Add(new FallbackResultListItem(loadMoreItem, source, snapshotLease, queryToken, sourceAttribution));
+                sourceItems.Add(new(new FallbackResultListItem(loadMoreItem, source, snapshotLease, queryToken, sourceAttribution)));
             }
 
             return new FallbackResultState(snapshot, snapshotLease, sourceItems.ToArray(), sourceTitle, source.IncludeInGlobalResults);
@@ -1128,7 +1128,7 @@ public sealed partial class MainListPage : DynamicListPage,
         {
             foreach (var item in sourceItems)
             {
-                (item as FallbackResultListItem)?.ReleaseIfUnpublished();
+                (item.Safe as FallbackResultListItem)?.ReleaseIfUnpublished();
             }
 
             snapshotLease.ReleaseOwner();
@@ -1152,9 +1152,9 @@ public sealed partial class MainListPage : DynamicListPage,
         FallbackSnapshotLease.CloseSnapshot(snapshot);
     }
 
-    private IListItem[] BuildFallbackResultItems()
+    private InProcObject<IListItem>[] BuildFallbackResultItems()
     {
-        var rendered = new List<IListItem>();
+        var rendered = new List<InProcObject<IListItem>>();
         foreach (var source in _fallbackResultSourceOrder)
         {
             if (!_fallbackResultSnapshots.TryGetValue(source.FallbackKey, out var state))
@@ -1169,7 +1169,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
             if (!state.IncludeInGlobalResults)
             {
-                rendered.Add(new Separator(state.SourceTitle));
+                rendered.Add(new(new Separator(state.SourceTitle)));
             }
 
             rendered.AddRange(state.Items);
@@ -1290,7 +1290,7 @@ public sealed partial class MainListPage : DynamicListPage,
     private sealed record FallbackResultState(
         IFallbackCommandResult Snapshot,
         FallbackSnapshotLease Lease,
-        IListItem[] Items,
+        InProcObject<IListItem>[] Items,
         string SourceTitle,
         bool IncludeInGlobalResults);
 
@@ -1352,7 +1352,7 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         foreach (var item in state.Items)
         {
-            (item as FallbackResultListItem)?.ReleaseIfUnpublished();
+            (item.Safe as FallbackResultListItem)?.ReleaseIfUnpublished();
         }
     }
 

@@ -25,7 +25,7 @@ internal static class MainListPageResultFactory
         IListItem resultsSeparator,
         IListItem fallbacksSeparator,
         int appResultLimit,
-        IReadOnlyList<IListItem>? fallbackResultItems = null)
+        IReadOnlyList<InProcObject<IListItem>>? fallbackResultItems = null)
     {
         if (appResultLimit < 0)
         {
@@ -149,7 +149,7 @@ internal static class MainListPageResultFactory
         {
             for (int i = 0; i < fallbackResultItems.Count; i++)
             {
-                result[writePos++] = fallbackResultItems[i];
+                result[writePos++] = fallbackResultItems[i].Safe;
             }
         }
 
