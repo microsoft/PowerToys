@@ -35,7 +35,14 @@ namespace WorkspacesLauncherUI.Models
             _ => throw new System.InvalidOperationException("Unknown application launch state."),
         };
 
-        public string Name { get; set; }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ProgressAutomationId))]
+        [NotifyPropertyChangedFor(nameof(StateAutomationId))]
+        public partial string Name { get; set; }
+
+        public string ProgressAutomationId => $"LaunchProgress_{Name}";
+
+        public string StateAutomationId => $"LaunchState_{Name}";
 
         public string AppPath { get; set; }
 

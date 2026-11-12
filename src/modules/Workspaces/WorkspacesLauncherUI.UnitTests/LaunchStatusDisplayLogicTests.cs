@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WorkspacesLauncherUI.Data;
 using WorkspacesLauncherUI.Models;
@@ -117,6 +118,23 @@ namespace WorkspacesLauncherUI.UnitTests
         {
             var app = new AppLaunching { Name = string.Empty };
             Assert.AreEqual(string.Empty, app.Name);
+        }
+
+        [TestMethod]
+        [TestCategory("Model")]
+        public void AppName_Changed_RefreshesLaunchAutomationIdentifiers()
+        {
+            var app = new AppLaunching { Name = "Original application" };
+            var changed = new List<string>();
+            app.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+
+            app.Name = "Renamed application";
+
+            Assert.AreEqual("LaunchProgress_Renamed application", app.ProgressAutomationId);
+            Assert.AreEqual("LaunchState_Renamed application", app.StateAutomationId);
+            CollectionAssert.Contains(changed, nameof(AppLaunching.Name));
+            CollectionAssert.Contains(changed, nameof(AppLaunching.ProgressAutomationId));
+            CollectionAssert.Contains(changed, nameof(AppLaunching.StateAutomationId));
         }
 
         [TestMethod]

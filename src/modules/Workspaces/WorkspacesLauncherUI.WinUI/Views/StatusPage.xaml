@@ -30,8 +30,8 @@
                             <Grid
                                 Margin="0,4"
                                 Padding="4"
-                                AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
-                                AutomationProperties.HelpText="{x:Bind StateDescription, Mode=OneWay}">
+                                AutomationProperties.HelpText="{x:Bind StateDescription, Mode=OneWay}"
+                                AutomationProperties.Name="{x:Bind Name, Mode=OneWay}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
@@ -60,16 +60,23 @@
                                         <ProgressRing
                                             Width="20"
                                             Height="20"
-                                            AutomationProperties.Name="Loading"
+                                            AutomationProperties.AutomationId="{x:Bind ProgressAutomationId, Mode=OneWay}"
+                                            AutomationProperties.Name="{x:Bind StateDescription, Mode=OneWay}"
                                             IsActive="True" />
                                     </tkcontrols:Case>
                                     <tkcontrols:Case Value="False">
                                         <tkcontrols:SwitchPresenter TargetType="x:Int32" Value="{x:Bind LaunchStateInt, Mode=OneWay}">
                                             <tkcontrols:Case Value="5">
-                                                <TextBlock Text="{x:Bind StateDescription, Mode=OneWay}" />
+                                                <TextBlock
+                                                    AutomationProperties.AutomationId="{x:Bind StateAutomationId, Mode=OneWay}"
+                                                    AutomationProperties.Name="{x:Bind StateDescription, Mode=OneWay}"
+                                                    Text="{x:Bind StateDescription, Mode=OneWay}" />
                                             </tkcontrols:Case>
                                             <tkcontrols:Case IsDefault="True" Value="3">
                                                 <FontIcon
+                                                    AutomationProperties.AccessibilityView="Content"
+                                                    AutomationProperties.AutomationId="{x:Bind StateAutomationId, Mode=OneWay}"
+                                                    AutomationProperties.Name="{x:Bind StateDescription, Mode=OneWay}"
                                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                     FontSize="16"
                                                     Foreground="{ThemeResource SystemFillColorCriticalBrush}"
@@ -77,6 +84,9 @@
                                             </tkcontrols:Case>
                                             <tkcontrols:Case Value="2">
                                                 <FontIcon
+                                                    AutomationProperties.AccessibilityView="Content"
+                                                    AutomationProperties.AutomationId="{x:Bind StateAutomationId, Mode=OneWay}"
+                                                    AutomationProperties.Name="{x:Bind StateDescription, Mode=OneWay}"
                                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                     FontSize="16"
                                                     Foreground="{ThemeResource SystemFillColorSuccessBrush}"
