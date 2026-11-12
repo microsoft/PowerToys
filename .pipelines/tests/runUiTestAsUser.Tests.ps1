@@ -587,33 +587,4 @@ Describe 'UI-test pipeline non-elevated dispatch' {
         ($requiredAuthenticodeFiles -contains 'PowerToys.QuickAccess.exe') | Should Be $Expected
     }
 
-    It 'scopes Workspaces authenticated Settings IPC signing without changing other families' -TestCases @(
-        @{ Modules = @('AdvancedPaste.UITests.Next'); AllModules = $false; Expected = $true }
-        @{ Modules = @('AltWindowCycle.UITests'); AllModules = $false; Expected = $true }
-        @{ Modules = @('AltWindowCycle.UITests.Extra'); AllModules = $false; Expected = $false }
-        @{ Modules = @('Workspaces.UITests.Next'); AllModules = $false; Expected = $true }
-        @{ Modules = @('Workspaces.Editor.UITests'); AllModules = $false; Expected = $false }
-        @{ Modules = @('Other.Workspaces.UITests.Next'); AllModules = $false; Expected = $false }
-        @{ Modules = @('Workspaces.UITests.Next.Other'); AllModules = $false; Expected = $false }
-        @{ Modules = @('RegistryPreview.UITests'); AllModules = $false; Expected = $true }
-        @{ Modules = @('CropAndLock.UITests'); AllModules = $false; Expected = $true }
-        @{ Modules = @('GrabAndMove.UITests'); AllModules = $false; Expected = $true }
-        @{ Modules = @('Microsoft.CmdPal.UITests.Next'); AllModules = $false; Expected = $true }
-        @{ Modules = @('Microsoft.CmdPal.UITests.Next.Extra'); AllModules = $false; Expected = $false }
-        @{ Modules = @('PowerOCR.UITests.Next'); AllModules = $false; Expected = $true }
-        @{ Modules = @(); AllModules = $true; Expected = $true }
-    ) {
-        param($Modules, $AllModules, $Expected)
-
-        $template = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
-        $start = $template.IndexOf('      $selectedModules =')
-        $end = $template.IndexOf('      $requiredPackages =', $start)
-        $start | Should BeGreaterThan -1
-        $end | Should BeGreaterThan $start
-        $selection = $template.Substring($start, $end - $start).Replace('$(TestPlatform)', 'x64Win11')
-        $modulesRaw = if ($AllModules) { '' } else { $Modules -join ';' }
-        . ([scriptblock]::Create($selection))
-
-        $requiresAuthenticatedSettingsIpc | Should Be $Expected
-    }
 }

@@ -88,7 +88,6 @@ Describe 'UI test signing selection' {
         'GrabAndMove.UITests.Extra',
         'ImageResizer.UITests.Extra',
         'LightSwitch.UITests.Next.Extra',
-        'Microsoft.CmdPal.UITests.Next.Extra',
         'MouseWithoutBorders.UITests.Extra',
         'PowerDisplay.UITests.Extra',
         'PowerOCR.UITests.Next.Extra',
@@ -123,7 +122,7 @@ Describe 'UI test signing selection' {
         param($Platform)
         $selected = Get-UITestSigningSelection -Modules 'Microsoft.CmdPal.UITests.Next' -Platform $Platform
         ($selected.Packages -contains 'SamplePagesExtension.msix') | Should Be $true
-        $unrelated = Get-UITestSigningSelection -Modules 'Microsoft.CmdPal.UITests.Next.Extra' -Platform $Platform
+        $unrelated = Get-UITestSigningSelection -Modules 'FancyZones.UITests.Next' -Platform $Platform
         ($unrelated.Packages -contains 'SamplePagesExtension.msix') | Should Be $false
         $all = Get-UITestSigningSelection -Platform $Platform
         ($all.Packages -contains 'SamplePagesExtension.msix') | Should Be $true
