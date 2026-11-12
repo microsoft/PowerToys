@@ -354,8 +354,12 @@ namespace Microsoft.Workspaces.UITests
                 },
                 name => name == expected,
                 15_000,
-                requiredConsecutiveMatches: 2);
-            Assert.IsTrue(result.Succeeded, $"'{application}' did not show the expected launch state. Actual: '{result.LastObservation}'.");
+                requiredConsecutiveMatches: 2,
+                shouldRetryException: error => error is AssertFailedException &&
+                    error.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase));
+            Assert.IsTrue(
+                result.Succeeded,
+                $"'{application}' did not show the expected launch state. Actual: '{result.LastObservation}'. Last error: {result.LastException?.Message}");
         }
 
         private IEnumerable<JsonObject> PendingApplications(int count, string gate, string? firstStarted = null, string? lastStarted = null)
