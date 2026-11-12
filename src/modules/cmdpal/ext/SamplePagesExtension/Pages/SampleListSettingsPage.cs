@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -9,6 +10,9 @@ namespace SamplePagesExtension;
 
 internal sealed partial class SampleListSettingsPage : ContentPage
 {
+    private static readonly string[] DefaultIdentifiers = ["alpha", "beta-item"];
+    private static readonly string[] DefaultSearchPaths = [@"C:\Windows\System32"];
+
     private readonly Settings _settings = new();
 
     public SampleListSettingsPage()
@@ -43,7 +47,7 @@ internal sealed partial class SampleListSettingsPage : ContentPage
             "identifiers",
             "Plain strings",
             "Add identifiers containing letters, numbers, underscores, or hyphens.",
-            ["alpha", "beta-item"])
+            DefaultIdentifiers)
         {
             Placeholder = "New identifier",
             ItemValidationPattern = "^[A-Za-z][A-Za-z0-9_-]*$",
@@ -56,7 +60,7 @@ internal sealed partial class SampleListSettingsPage : ContentPage
             "searchPaths",
             "Custom search paths",
             "Add files or folders to search. The file picker is limited to executables and command files.",
-            [@"C:\Windows\System32"],
+            DefaultSearchPaths,
             FilePathListItemType.FilesAndFolders)
         {
             FileTypeFilter = [".exe", ".cmd", ".bat"],
@@ -66,10 +70,11 @@ internal sealed partial class SampleListSettingsPage : ContentPage
             "variables",
             "Key/value pairs",
             "Pairs are stored as structured entries, so keys and values may contain equals signs.",
-            [
+            new KeyValuePair<string, string>[]
+            {
                 new("environment", "development"),
                 new("connectionString", "Server=localhost;Database=sample"),
-            ])
+            })
         {
             IsRequired = true,
             KeyPlaceholder = "Variable name",

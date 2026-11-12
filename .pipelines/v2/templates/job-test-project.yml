@@ -383,10 +383,12 @@ jobs:
         'Hosts.UITests.Next',
         'ImageResizer.UITests',
         'LightSwitch.UITests.Next',
+        'Microsoft.CmdPal.UITests.Next',
         'MouseWithoutBorders.UITests',
         'MouseUtils.UITests.Next',
         'PowerAccent.UITests',
         'PowerDisplay.UITests',
+        'PowerOCR.UITests.Next',
         'PowerRename.UITests.Next',
         'RegistryPreview.UITests',
         'ScreenRuler.UITests.Next',
@@ -431,6 +433,10 @@ jobs:
           'PowerToys.WorkspacesLauncherUI.exe'
       }
 
+      if ($allModules -or $selectedModules -contains 'Microsoft.CmdPal.UITests.Next') {
+        $requiredPackages += 'SamplePagesExtension.msix'
+      }
+
       if ($requiresAuthenticatedSettingsIpc) {
         $requiredAuthenticodeFiles += 'PowerToys.exe', 'PowerToys.Settings.exe'
       }
@@ -461,6 +467,46 @@ jobs:
         }
       }
     displayName: "Sign sparse MSIX packages (test trust)"
+    condition: and(succeeded(), eq(variables['RunGenericUiTests'], 'true'))
+    ${{ if eq(parameters.autoSelectUiTests, true) }}:
+      env:
+        AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
+
+  - powershell: |
+      $ErrorActionPreference = 'Stop'
+      Write-Host '##vso[task.setvariable variable=PowerOcrLanguagesReady]false'
+      $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
+      if (-not [string]::IsNullOrWhiteSpace($env:AUTO_UI_TEST_MODULES)) {
+        $modulesRaw = $env:AUTO_UI_TEST_MODULES
+      }
+      $modules = @($modulesRaw -split ';' | Where-Object { $_ })
+      if ($modules.Count -gt 0 -and $modules -notcontains 'PowerOCR.UITests.Next') {
+        Write-Host 'The migrated PowerOCR suite is not selected; OCR provisioning is unnecessary.'
+        return
+      }
+      foreach ($name in @(
+        'Language.Basic~~~en-US~0.0.1.0',
+        'Language.Basic~~~en-GB~0.0.1.0',
+        'Language.OCR~~~en-US~0.0.1.0',
+        'Language.OCR~~~en-GB~0.0.1.0')) {
+        $capability = Get-WindowsCapability -Online -Name $name -ErrorAction Stop
+        if ($capability.State -ne 'Installed') {
+          Write-Host "Installing OCR capability: $name"
+          $result = Add-WindowsCapability -Online -Name $name -ErrorAction Stop
+          if ($result.RestartNeeded) {
+            throw "OCR capability $name requires a restart before UI tests can run."
+          }
+        }
+        $capability = Get-WindowsCapability -Online -Name $name -ErrorAction Stop
+        if ($capability.State -ne 'Installed') {
+          throw "Required OCR capability $name is not installed: $($capability.State)"
+        }
+        Write-Host "Verified OCR capability: $name"
+      }
+      Write-Host '##vso[task.setvariable variable=PowerOcrLanguagesReady]true'
+    displayName: "Provision PowerOCR test languages"
+    continueOnError: true
+    timeoutInMinutes: 90
     condition: and(succeeded(), eq(variables['RunGenericUiTests'], 'true'))
     ${{ if eq(parameters.autoSelectUiTests, true) }}:
       env:
@@ -543,7 +589,7 @@ jobs:
       New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
       . "$(Build.SourcesDirectory)\.pipelines\umdf\UmdfCi.Common.ps1"
 
-      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'MouseUtils.UITests.Next', 'PowerDisplay.UITests', 'Settings.UITests', 'Workspaces.UITests.Next')
+      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'Microsoft.CmdPal.UITests.Next', 'MouseUtils.UITests.Next', 'PowerDisplay.UITests', 'PowerOCR.UITests.Next', 'Settings.UITests', 'Workspaces.UITests.Next')
       . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
       $locationStatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\LightSwitchLocation.json"
       $failed = 0
@@ -586,6 +632,11 @@ jobs:
         Write-Host "##[group]Run UI tests: $base"
         Push-Location $dir
         try {
+          if ($base -eq 'PowerOCR.UITests.Next' -and $env:POWER_OCR_LANGUAGES_READY -ne 'true') {
+            Write-Host '##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: PowerOCR language provisioning did not complete; other selected suites run independently.'
+            $suiteFailed = $true
+            continue
+          }
           if ($base -in (Get-UmdfFixtures).Suite -and -not $testFilter) {
             $fixtureContext = Get-UmdfFixtureContext -Suite $base -RepositoryRoot "$(Build.SourcesDirectory)" `
               -ArtifactRoot $artifactRoot -Platform "$(BuildPlatform)" `
@@ -686,6 +737,7 @@ jobs:
       POWERDISPLAY_UI_TEST_FILTER: $(PowerDisplayUiTestFilter)
       SHARD_COUNT: ${{ parameters.uiTestShardCount }}
       SHARD_INDEX: $(System.JobPositionInPhase)
+      POWER_OCR_LANGUAGES_READY: $(PowerOcrLanguagesReady)
       ${{ if eq(parameters.autoSelectUiTests, true) }}:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 

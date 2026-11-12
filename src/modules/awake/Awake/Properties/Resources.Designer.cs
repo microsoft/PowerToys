@@ -223,6 +223,15 @@ namespace Awake.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allow screen to turn off while locked.
+        /// </summary>
+        internal static string AWAKE_ALLOW_DISPLAY_OFF_LOCKED {
+            get {
+                return ResourceManager.GetString("AWAKE_ALLOW_DISPLAY_OFF_LOCKED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Keep awake until expiration date and time.
         /// </summary>
         internal static string AWAKE_KEEP_UNTIL_EXPIRATION {

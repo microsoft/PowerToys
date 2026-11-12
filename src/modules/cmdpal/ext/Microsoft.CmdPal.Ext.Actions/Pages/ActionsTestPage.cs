@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CommandPalette.Extensions;
@@ -20,6 +21,7 @@ namespace Microsoft.CmdPal.Ext.Actions;
 #pragma warning disable SA1402 // File may only contain a single type
 #pragma warning disable SA1649 // File name should match first type name
 
+[SupportedOSPlatform("windows10.0.26100.0")]
 internal sealed partial class ActionsTestPage : ListPage
 {
     private readonly ActionRuntime _actionRuntime;
@@ -105,6 +107,7 @@ internal sealed partial class ActionsTestPage : ListPage
     private static readonly Tag RobotTag = new() { Icon = RobotIcon };
 }
 
+[SupportedOSPlatform("windows10.0.26100.0")]
 public partial class DoActionPage : ParametersPage
 {
     public override IconInfo Icon => _command.Icon;
@@ -165,6 +168,7 @@ public partial class DoActionPage : ParametersPage
     }
 }
 
+[SupportedOSPlatform("windows10.0.26100.0")]
 public partial class DoActionCommand : InvokableCommand
 {
     public override string Name => "Invoke";

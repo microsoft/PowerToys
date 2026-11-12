@@ -541,7 +541,9 @@ Describe 'UI-test pipeline non-elevated dispatch' {
         @{ Suite = 'AltWindowCycle.UITests' }
         @{ Suite = 'CropAndLock.UITests' }
         @{ Suite = 'GrabAndMove.UITests' }
+        @{ Suite = 'Microsoft.CmdPal.UITests.Next' }
         @{ Suite = 'MouseUtils.UITests.Next' }
+        @{ Suite = 'PowerOCR.UITests.Next' }
         @{ Suite = 'Settings.UITests' }
         @{ Suite = 'Workspaces.UITests.Next' }
     ) {
@@ -596,6 +598,9 @@ Describe 'UI-test pipeline non-elevated dispatch' {
         @{ Modules = @('RegistryPreview.UITests'); AllModules = $false; Expected = $true }
         @{ Modules = @('CropAndLock.UITests'); AllModules = $false; Expected = $true }
         @{ Modules = @('GrabAndMove.UITests'); AllModules = $false; Expected = $true }
+        @{ Modules = @('Microsoft.CmdPal.UITests.Next'); AllModules = $false; Expected = $true }
+        @{ Modules = @('Microsoft.CmdPal.UITests.Next.Extra'); AllModules = $false; Expected = $false }
+        @{ Modules = @('PowerOCR.UITests.Next'); AllModules = $false; Expected = $true }
         @{ Modules = @(); AllModules = $true; Expected = $true }
     ) {
         param($Modules, $AllModules, $Expected)
