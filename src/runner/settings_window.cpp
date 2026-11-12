@@ -49,7 +49,7 @@ json::JsonObject get_power_toys_settings()
 {
     // Only loaded modules are reported. Settings does not read module configs from this response,
     // so loading deferred DLLs here would undo lazy loading for no consumer.
-    std::lock_guard lock(modules_mutex());
+    // Main thread (Settings IPC is dispatched there), so reading modules() needs no lock.
     json::JsonObject result;
     for (const auto& [name, powertoy] : modules())
     {
@@ -76,7 +76,6 @@ json::JsonObject get_all_settings()
 
 std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
 {
-    std::lock_guard lock(modules_mutex());
     std::optional<std::wstring> result;
     for (const auto& powertoy_element : powertoys_configs)
     {
@@ -149,7 +148,7 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
             {
             }
         }
-        else if (auto* powertoy = load_registered_module(name))
+        else if (auto* powertoy = load_known_module(name))
         {
             const auto element = powertoy_element.Value().Stringify();
             (*powertoy)->call_custom_action(element.c_str());
@@ -161,8 +160,7 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
 
 void send_json_config_to_module(const std::wstring& module_key, const std::wstring& settings, bool hotkeyUpdated)
 {
-    std::lock_guard lock(modules_mutex());
-    if (auto* powertoy = load_registered_module(module_key))
+    if (auto* powertoy = load_known_module(module_key))
     {
         (*powertoy)->set_config(settings.c_str());
 

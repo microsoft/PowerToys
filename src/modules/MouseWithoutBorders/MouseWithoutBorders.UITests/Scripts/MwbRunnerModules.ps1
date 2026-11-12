@@ -15,8 +15,8 @@ function Get-MwbRunnerModules {
         '(?s)ModuleRegistration\s+knownModules\s*\[\s*\]\s*=\s*\{(?<modules>.*?)\}\s*;')
     if ($lists.Count -ne 1) { throw 'Expected exactly one explicit Runner module-load list.' }
     $block = $lists[0].Groups['modules'].Value
-    # Each entry is { L"key", L"path", enabledByDefault[, gpoCallback] }.
-    $entryPattern = '\{\s*L"(?<key>[^"\r\n]+)"\s*,\s*L"(?<path>[^"\r\n]+)"\s*,\s*(?:true|false|!?[A-Za-z_][\w:]*\(\))\s*(?:,\s*powertoys_gpo::\w+\s*)?\}'
+    # Each entry is { L"key", L"path", DefaultEnabled::Value[, gpoCallback] }.
+    $entryPattern = '\{\s*L"(?<key>[^"\r\n]+)"\s*,\s*L"(?<path>[^"\r\n]+)"\s*,\s*DefaultEnabled::\w+\s*(?:,\s*powertoys_gpo::\w+\s*)?\}'
     $moduleMatches = [regex]::Matches($block, $entryPattern)
     $remainder = [regex]::Replace($block, $entryPattern, '')
     if (-not $moduleMatches.Count -or $remainder -notmatch '^[\s,]*$') {

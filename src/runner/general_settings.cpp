@@ -233,10 +233,11 @@ GeneralSettings get_general_settings()
     }
 
     // Unloaded known modules are not running, so represent them explicitly instead of letting
-    // Settings fall back to its own defaults.
-    std::lock_guard lock(modules_mutex());
-    for (const auto& [name, registration] : registered_modules())
+    // Settings fall back to its own defaults. This may run on update threads, so read under the lock.
+    std::scoped_lock lock(modules_mutex());
+    for (const auto& registration : known_modules())
     {
+        const std::wstring name{ registration.key };
         if (!modules().contains(name))
         {
             const auto saved = settings.isModulesEnabledMap.find(name);
@@ -255,7 +256,6 @@ GeneralSettings get_general_settings()
 
 void apply_module_status_update(const json::JsonObject& module_config, bool save)
 {
-    std::lock_guard lock(modules_mutex());
     Logger::info(L"apply_module_status_update: {}", std::wstring{ module_config.ToString() });
 
     // Expected format: {"ModuleName": true/false} - only one module per update
@@ -462,7 +462,6 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
         }
     }
 
-    std::lock_guard lock(modules_mutex());
     if (json::has(general_configs, L"enabled"))
     {
         for (const auto& enabled_element : general_configs.GetNamedObject(L"enabled"))
@@ -572,10 +571,10 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
 
                 const std::wstring name{ enabled_element.Key().c_str() };
 
-                if (modules().find(name) == modules().end())
+                if (!find_loaded_module(name))
                 {
-                    const auto registration = registered_modules().find(name);
-                    const bool target_enabled = registration != registered_modules().end() ? registration->second.apply_policy(value.GetBoolean()) : value.GetBoolean();
+                    const auto* registration = find_known_module(name);
+                    const bool target_enabled = registration ? registration->apply_policy(value.GetBoolean()) : value.GetBoolean();
                     const auto saved_state = save_settings.isModulesEnabledMap.find(name);
                     if (saved_state == save_settings.isModulesEnabledMap.end() || saved_state->second != target_enabled)
                     {
@@ -597,15 +596,15 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
 
 void start_enabled_powertoys()
 {
-    std::lock_guard lock(modules_mutex());
     const auto general_settings = load_general_settings();
-    for (const auto& [name, registration] : registered_modules())
+    for (const auto& registration : known_modules())
     {
         if (!registration.is_enabled(general_settings))
         {
             continue;
         }
-        if (auto* loaded = load_registered_module(name))
+        const std::wstring name{ registration.key };
+        if (auto* loaded = load_known_module(name))
         {
             auto& powertoy = *loaded;
             Logger::info(L"start_enabled_powertoys: Enabling powertoy {}", name);

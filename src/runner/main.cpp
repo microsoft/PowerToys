@@ -63,6 +63,47 @@
 
 namespace
 {
+    // Every module Runner can load. Keep keys, defaults and policy callbacks in sync with the module interfaces.
+    constexpr ModuleRegistration knownModules[] = {
+        { L"FancyZones", L"PowerToys.FancyZonesModuleInterface.dll", DefaultEnabled::Yes, powertoys_gpo::getConfiguredFancyZonesEnabledValue },
+        { L"File Explorer", L"PowerToys.powerpreview.dll", DefaultEnabled::Yes },
+        { L"Image Resizer", L"WinUI3Apps\\PowerToys.ImageResizerExt.dll", DefaultEnabled::Yes, powertoys_gpo::getConfiguredImageResizerEnabledValue },
+        { L"Keyboard Manager", L"PowerToys.KeyboardManager.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredKeyboardManagerEnabledValue },
+        { L"PowerToys Run", L"PowerToys.Launcher.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredPowerLauncherEnabledValue },
+        { L"PowerRename", L"WinUI3Apps\\PowerToys.PowerRenameExt.dll", DefaultEnabled::Yes, powertoys_gpo::getConfiguredPowerRenameEnabledValue },
+        { L"Shortcut Guide", L"WinUI3Apps\\PowerToys.ShortcutGuideModuleInterface.dll", DefaultEnabled::Yes, powertoys_gpo::getConfiguredShortcutGuideEnabledValue },
+        { L"ColorPicker", L"PowerToys.ColorPicker.dll", DefaultEnabled::Yes, powertoys_gpo::getConfiguredColorPickerEnabledValue },
+        { L"Awake", L"PowerToys.AwakeModuleInterface.dll", DefaultEnabled::Yes, powertoys_gpo::getConfiguredAwakeEnabledValue },
+        { L"FindMyMouse", L"PowerToys.FindMyMouse.dll", DefaultEnabled::Yes, powertoys_gpo::getConfiguredFindMyMouseEnabledValue },
+        { L"MouseHighlighter", L"PowerToys.MouseHighlighter.dll", DefaultEnabled::Yes, powertoys_gpo::getConfiguredMouseHighlighterEnabledValue },
+        { L"MouseJump", L"WinUI3Apps\\PowerToys.MouseJump.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredMouseJumpEnabledValue },
+        { L"AlwaysOnTop", L"PowerToys.AlwaysOnTopModuleInterface.dll", DefaultEnabled::Yes, powertoys_gpo::getConfiguredAlwaysOnTopEnabledValue },
+        { L"MousePointerCrosshairs", L"PowerToys.MousePointerCrosshairs.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredMousePointerCrosshairsEnabledValue },
+        { L"AutoHideCursor", L"PowerToys.AutoHideCursor.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredAutoHideCursorEnabledValue },
+        { L"CursorWrap", L"PowerToys.CursorWrap.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredCursorWrapEnabledValue },
+        { L"MouseButtonLock", L"PowerToys.MouseButtonLock.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredMouseButtonLockEnabledValue },
+        { L"QuickAccent", L"PowerToys.PowerAccentModuleInterface.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredQuickAccentEnabledValue },
+        { L"TextExtractor", L"PowerToys.PowerOCRModuleInterface.dll", DefaultEnabled::BeforeWindows11, powertoys_gpo::getConfiguredTextExtractorEnabledValue },
+        { L"AdvancedPaste", L"PowerToys.AdvancedPasteModuleInterface.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredAdvancedPasteEnabledValue },
+        { L"File Locksmith", L"WinUI3Apps\\PowerToys.FileLocksmithExt.dll", DefaultEnabled::Yes, powertoys_gpo::getConfiguredFileLocksmithEnabledValue },
+        { L"RegistryPreview", L"WinUI3Apps\\PowerToys.RegistryPreviewExt.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredRegistryPreviewEnabledValue },
+        { L"Measure Tool", L"WinUI3Apps\\PowerToys.MeasureToolModuleInterface.dll", DefaultEnabled::Yes, powertoys_gpo::getConfiguredScreenRulerEnabledValue },
+        { L"NewPlus", L"WinUI3Apps\\PowerToys.NewPlus.ShellExtension.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredNewPlusEnabledValue },
+        { L"Hosts", L"WinUI3Apps\\PowerToys.HostsModuleInterface.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredHostsFileEditorEnabledValue },
+        { L"Peek", L"WinUI3Apps\\PowerToys.Peek.dll", DefaultEnabled::Yes, powertoys_gpo::getConfiguredPeekEnabledValue },
+        { L"EnvironmentVariables", L"WinUI3Apps\\PowerToys.EnvironmentVariablesModuleInterface.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredEnvironmentVariablesEnabledValue },
+        { L"MouseWithoutBorders", L"PowerToys.MouseWithoutBordersModuleInterface.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredMouseWithoutBordersEnabledValue },
+        { L"CropAndLock", L"PowerToys.CropAndLockModuleInterface.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredCropAndLockEnabledValue },
+        { L"CmdNotFound", L"PowerToys.CmdNotFoundModuleInterface.dll", DefaultEnabled::Yes, powertoys_gpo::getConfiguredCmdNotFoundEnabledValue },
+        { L"Workspaces", L"PowerToys.WorkspacesModuleInterface.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredWorkspacesEnabledValue },
+        { L"CmdPal", L"PowerToys.CmdPalModuleInterface.dll", DefaultEnabled::Yes, powertoys_gpo::getConfiguredCmdPalEnabledValue },
+        { L"ZoomIt", L"PowerToys.ZoomItModuleInterface.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredZoomItEnabledValue },
+        { L"LightSwitch", L"PowerToys.LightSwitchModuleInterface.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredLightSwitchEnabledValue },
+        { L"PowerDisplay", L"PowerToys.PowerDisplayModuleInterface.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredPowerDisplayEnabledValue },
+        { L"GrabAndMove", L"PowerToys.GrabAndMoveModuleInterface.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredGrabAndMoveEnabledValue },
+        { L"AltWindowCycle", L"PowerToys.AltWindowCycle.dll", DefaultEnabled::No, powertoys_gpo::getConfiguredAltWindowCycleEnabledValue },
+    };
+
     const wchar_t PT_URI_PROTOCOL_SCHEME[] = L"powertoys://";
 
     // "Local Settings" is the non-roaming part of HKCU, so the marker stays with the machine whose registrations were removed.
@@ -85,6 +126,11 @@ namespace
             Logger::warn(L"Failed to record Video Conference Mute cleanup marker, error: {}", result);
         }
     }
+}
+
+std::span<const ModuleRegistration> known_modules()
+{
+    return knownModules;
 }
 
 void chdir_current_executable()
@@ -299,48 +345,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             }
         }
 
-        // Keep keys, defaults and policy callbacks in sync with the module interfaces.
-        static const ModuleRegistration knownModules[] = {
-            { L"FancyZones", L"PowerToys.FancyZonesModuleInterface.dll", true, powertoys_gpo::getConfiguredFancyZonesEnabledValue },
-            { L"File Explorer", L"PowerToys.powerpreview.dll", true },
-            { L"Image Resizer", L"WinUI3Apps\\PowerToys.ImageResizerExt.dll", true, powertoys_gpo::getConfiguredImageResizerEnabledValue },
-            { L"Keyboard Manager", L"PowerToys.KeyboardManager.dll", false, powertoys_gpo::getConfiguredKeyboardManagerEnabledValue },
-            { L"PowerToys Run", L"PowerToys.Launcher.dll", false, powertoys_gpo::getConfiguredPowerLauncherEnabledValue },
-            { L"PowerRename", L"WinUI3Apps\\PowerToys.PowerRenameExt.dll", true, powertoys_gpo::getConfiguredPowerRenameEnabledValue },
-            { L"Shortcut Guide", L"WinUI3Apps\\PowerToys.ShortcutGuideModuleInterface.dll", true, powertoys_gpo::getConfiguredShortcutGuideEnabledValue },
-            { L"ColorPicker", L"PowerToys.ColorPicker.dll", true, powertoys_gpo::getConfiguredColorPickerEnabledValue },
-            { L"Awake", L"PowerToys.AwakeModuleInterface.dll", true, powertoys_gpo::getConfiguredAwakeEnabledValue },
-            { L"FindMyMouse", L"PowerToys.FindMyMouse.dll", true, powertoys_gpo::getConfiguredFindMyMouseEnabledValue },
-            { L"MouseHighlighter", L"PowerToys.MouseHighlighter.dll", true, powertoys_gpo::getConfiguredMouseHighlighterEnabledValue },
-            { L"MouseJump", L"WinUI3Apps\\PowerToys.MouseJump.dll", false, powertoys_gpo::getConfiguredMouseJumpEnabledValue },
-            { L"AlwaysOnTop", L"PowerToys.AlwaysOnTopModuleInterface.dll", true, powertoys_gpo::getConfiguredAlwaysOnTopEnabledValue },
-            { L"MousePointerCrosshairs", L"PowerToys.MousePointerCrosshairs.dll", false, powertoys_gpo::getConfiguredMousePointerCrosshairsEnabledValue },
-            { L"AutoHideCursor", L"PowerToys.AutoHideCursor.dll", false, powertoys_gpo::getConfiguredAutoHideCursorEnabledValue },
-            { L"CursorWrap", L"PowerToys.CursorWrap.dll", false, powertoys_gpo::getConfiguredCursorWrapEnabledValue },
-            { L"MouseButtonLock", L"PowerToys.MouseButtonLock.dll", false, powertoys_gpo::getConfiguredMouseButtonLockEnabledValue },
-            { L"QuickAccent", L"PowerToys.PowerAccentModuleInterface.dll", false, powertoys_gpo::getConfiguredQuickAccentEnabledValue },
-            { L"TextExtractor", L"PowerToys.PowerOCRModuleInterface.dll", !package::IsWin11OrGreater(), powertoys_gpo::getConfiguredTextExtractorEnabledValue },
-            { L"AdvancedPaste", L"PowerToys.AdvancedPasteModuleInterface.dll", false, powertoys_gpo::getConfiguredAdvancedPasteEnabledValue },
-            { L"File Locksmith", L"WinUI3Apps\\PowerToys.FileLocksmithExt.dll", true, powertoys_gpo::getConfiguredFileLocksmithEnabledValue },
-            { L"RegistryPreview", L"WinUI3Apps\\PowerToys.RegistryPreviewExt.dll", false, powertoys_gpo::getConfiguredRegistryPreviewEnabledValue },
-            { L"Measure Tool", L"WinUI3Apps\\PowerToys.MeasureToolModuleInterface.dll", true, powertoys_gpo::getConfiguredScreenRulerEnabledValue },
-            { L"NewPlus", L"WinUI3Apps\\PowerToys.NewPlus.ShellExtension.dll", false, powertoys_gpo::getConfiguredNewPlusEnabledValue },
-            { L"Hosts", L"WinUI3Apps\\PowerToys.HostsModuleInterface.dll", false, powertoys_gpo::getConfiguredHostsFileEditorEnabledValue },
-            { L"Peek", L"WinUI3Apps\\PowerToys.Peek.dll", true, powertoys_gpo::getConfiguredPeekEnabledValue },
-            { L"EnvironmentVariables", L"WinUI3Apps\\PowerToys.EnvironmentVariablesModuleInterface.dll", false, powertoys_gpo::getConfiguredEnvironmentVariablesEnabledValue },
-            { L"MouseWithoutBorders", L"PowerToys.MouseWithoutBordersModuleInterface.dll", false, powertoys_gpo::getConfiguredMouseWithoutBordersEnabledValue },
-            { L"CropAndLock", L"PowerToys.CropAndLockModuleInterface.dll", false, powertoys_gpo::getConfiguredCropAndLockEnabledValue },
-            { L"CmdNotFound", L"PowerToys.CmdNotFoundModuleInterface.dll", true, powertoys_gpo::getConfiguredCmdNotFoundEnabledValue },
-            { L"Workspaces", L"PowerToys.WorkspacesModuleInterface.dll", false, powertoys_gpo::getConfiguredWorkspacesEnabledValue },
-            { L"CmdPal", L"PowerToys.CmdPalModuleInterface.dll", true, powertoys_gpo::getConfiguredCmdPalEnabledValue },
-            { L"ZoomIt", L"PowerToys.ZoomItModuleInterface.dll", false, powertoys_gpo::getConfiguredZoomItEnabledValue },
-            { L"LightSwitch", L"PowerToys.LightSwitchModuleInterface.dll", false, powertoys_gpo::getConfiguredLightSwitchEnabledValue },
-            { L"PowerDisplay", L"PowerToys.PowerDisplayModuleInterface.dll", false, powertoys_gpo::getConfiguredPowerDisplayEnabledValue },
-            { L"GrabAndMove", L"PowerToys.GrabAndMoveModuleInterface.dll", false, powertoys_gpo::getConfiguredGrabAndMoveEnabledValue },
-            { L"AltWindowCycle", L"PowerToys.AltWindowCycle.dll", false, powertoys_gpo::getConfiguredAltWindowCycleEnabledValue },
-        };
-
-        register_modules(knownModules);
+        set_module_loading_allowed(true);
         // Start initial powertoys
         start_enabled_powertoys();
         std::wstring product_version = get_product_version();
@@ -591,7 +596,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         [[maybe_unused]] auto settings_cli_lock = create_settings_cli_lock();
 
         // Singletons initialization order needs to be preserved, first events and
-        // then modules to guarantee the reverse destruction order.
+        // then modules to guarantee the reverse destruction order. The lock must outlive the map.
+        modules_mutex();
         modules();
 
         // Join module workers before CRT exit holds the shared UCRT exit lock.
@@ -599,15 +605,22 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         auto shutdown_modules = wil::scope_exit([] {
             cancel_settings_window_startup();
             CentralizedKeyboardHook::Stop();
-            std::lock_guard lock(modules_mutex());
-            for (const auto& module : modules())
+
+            // Take ownership under the lock, then destroy outside it: module teardown runs module code.
+            set_module_loading_allowed(false);
+            std::map<std::wstring, PowertoyModule> unloading;
+            {
+                std::scoped_lock lock(modules_mutex());
+                unloading.swap(modules());
+            }
+            for (const auto& module : unloading)
             {
                 CentralizedKeyboardHook::ClearModuleHotkeys(module.first);
                 CentralizedHotkeys::UnregisterHotkeysForModule(module.first);
             }
 
-            Logger::info("Unloading {} modules before CRT exit", modules().size());
-            modules().clear();
+            Logger::info("Unloading {} modules before CRT exit", unloading.size());
+            unloading.clear();
             Logger::info("Runner module shutdown completed");
         });
 

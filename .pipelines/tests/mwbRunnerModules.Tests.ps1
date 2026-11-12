@@ -18,19 +18,19 @@ Describe 'Release Runner native module-load closure' {
     }
 
     It 'normalizes source path separators without dropping disabled modules' {
-        Set-Content -LiteralPath $runnerFixturePath -Value 'static const ModuleRegistration knownModules[] = { { L"First", L"PowerToys.First.dll", true, powertoys_gpo::getConfiguredFirstEnabledValue }, { L"Second", L"WinUI3Apps\\PowerToys.Second.dll", false }, { L"Third", L"WinUI3Apps/PowerToys.Third.dll", !package::IsWin11OrGreater() }, };'
+        Set-Content -LiteralPath $runnerFixturePath -Value 'constexpr ModuleRegistration knownModules[] = { { L"First", L"PowerToys.First.dll", DefaultEnabled::Yes, powertoys_gpo::getConfiguredFirstEnabledValue }, { L"Second", L"WinUI3Apps\\PowerToys.Second.dll", DefaultEnabled::No }, { L"Third", L"WinUI3Apps/PowerToys.Third.dll", DefaultEnabled::BeforeWindows11 }, };'
         (Get-MwbRunnerModules $runnerFixturePath).Modules | Should Be @('PowerToys.First.dll', 'WinUI3Apps\PowerToys.Second.dll', 'WinUI3Apps\PowerToys.Third.dll')
     }
 
     It 'rejects missing, duplicate, conditional, malformed or escaped module declarations' -TestCases @(
         @{ Declaration = 'no declaration' }
-        @{ Declaration = 'static const ModuleRegistration knownModules[] = {};' }
-        @{ Declaration = 'static const ModuleRegistration knownModules[] = { { L"A", L"PowerToys.A.dll", true }, { L"B", L"PowerToys.A.dll", true } };' }
-        @{ Declaration = 'static const ModuleRegistration knownModules[] = { { L"A", L"..\\PowerToys.A.dll", true } };' }
-        @{ Declaration = 'static const ModuleRegistration knownModules[] = { { L"A", L"C:\\PowerToys.A.dll", true } };' }
-        @{ Declaration = 'static const ModuleRegistration knownModules[] = { { L"A", L"PowerToys.A.exe", true } };' }
-        @{ Declaration = 'static const ModuleRegistration knownModules[] = { { L"A", L"PowerToys.A.dll", true }, unknownFunction() };' }
-        @{ Declaration = 'static const ModuleRegistration knownModules[] = { { L"A", L"PowerToys.A.dll", true } }; static const ModuleRegistration knownModules[] = { { L"B", L"PowerToys.B.dll", true } };' }
+        @{ Declaration = 'constexpr ModuleRegistration knownModules[] = {};' }
+        @{ Declaration = 'constexpr ModuleRegistration knownModules[] = { { L"A", L"PowerToys.A.dll", DefaultEnabled::Yes }, { L"B", L"PowerToys.A.dll", DefaultEnabled::Yes } };' }
+        @{ Declaration = 'constexpr ModuleRegistration knownModules[] = { { L"A", L"..\\PowerToys.A.dll", DefaultEnabled::Yes } };' }
+        @{ Declaration = 'constexpr ModuleRegistration knownModules[] = { { L"A", L"C:\\PowerToys.A.dll", DefaultEnabled::Yes } };' }
+        @{ Declaration = 'constexpr ModuleRegistration knownModules[] = { { L"A", L"PowerToys.A.exe", DefaultEnabled::Yes } };' }
+        @{ Declaration = 'constexpr ModuleRegistration knownModules[] = { { L"A", L"PowerToys.A.dll", DefaultEnabled::Yes }, unknownFunction() };' }
+        @{ Declaration = 'constexpr ModuleRegistration knownModules[] = { { L"A", L"PowerToys.A.dll", DefaultEnabled::Yes } }; constexpr ModuleRegistration knownModules[] = { { L"B", L"PowerToys.B.dll", DefaultEnabled::Yes } };' }
     ) {
         param($Declaration)
         Set-Content -LiteralPath $runnerFixturePath -Value $Declaration

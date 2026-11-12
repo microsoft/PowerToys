@@ -61,10 +61,22 @@ private:
 };
 
 PowertoyModule load_powertoy(const std::wstring_view filename);
-// Hold this lock while accessing either registry, including calls through its entries.
-std::recursive_mutex& modules_mutex();
+
+// The catalog of every module Runner can load. Defined in main.cpp.
+std::span<const ModuleRegistration> known_modules();
+const ModuleRegistration* find_known_module(std::wstring_view key);
+
+// Loaded modules. Only the main thread modifies the map (insert on load, clear at shutdown), and it
+// holds modules_mutex() while doing so; other threads must hold it to read. The main thread may read
+// without it. Never call a function that takes the lock while holding it. Entries are not removed
+// before shutdown, so returned pointers stay valid.
+std::mutex& modules_mutex();
 std::map<std::wstring, PowertoyModule>& modules();
-const std::map<std::wstring, ModuleRegistration>& registered_modules();
-void register_modules(std::span<const ModuleRegistration> registrations);
-PowertoyModule* load_registered_module(const std::wstring& key);
+
+// Loading stays off until Runner has made its elevation decision.
+void set_module_loading_allowed(bool allowed);
+PowertoyModule* find_loaded_module(const std::wstring& key);
+// Main thread only. Loads (but does not enable) a known module if needed.
+PowertoyModule* load_known_module(const std::wstring& key);
+// Main thread only. Applies GPO to `enabled`; loads the module only if it ends up enabled.
 PowertoyModule* get_module_for_enabled_state(const std::wstring& key, bool& enabled);

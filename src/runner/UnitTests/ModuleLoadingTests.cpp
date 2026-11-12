@@ -66,6 +66,18 @@ namespace CentralizedHotkeys
     void UnregisterHotkeysForModule(std::wstring) {}
 }
 
+// Link-time seam: Runner defines the real catalog in main.cpp; tests supply a one-entry catalog.
+namespace
+{
+    std::wstring testModulePath;
+    ModuleRegistration testCatalog[1];
+}
+
+std::span<const ModuleRegistration> known_modules()
+{
+    return testCatalog;
+}
+
 namespace RunnerUnitTests
 {
     TEST_CLASS (ModuleLoadingTests)
@@ -74,7 +86,6 @@ namespace RunnerUnitTests
         TEST_METHOD_INITIALIZE(RegisterTestModule)
         {
             winrt::init_apartment(winrt::apartment_type::single_threaded);
-            std::lock_guard lock(modules_mutex());
             factoryCalls = 0;
             HMODULE handle = nullptr;
             Assert::IsTrue(GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
@@ -83,76 +94,60 @@ namespace RunnerUnitTests
             wchar_t path[MAX_PATH]{};
             const auto length = GetModuleFileNameW(handle, path, ARRAYSIZE(path));
             Assert::IsTrue(length > 0 && length < ARRAYSIZE(path));
-            modulePath = path;
-            const ModuleRegistration registration{ L"DeferredTestModule", modulePath, false };
-            register_modules(std::span(&registration, 1));
+            testModulePath = path;
+            testCatalog[0] = { L"DeferredTestModule", testModulePath, DefaultEnabled::No };
+            set_module_loading_allowed(true);
         }
 
         TEST_METHOD_CLEANUP(UnloadTestModule)
         {
-            std::lock_guard lock(modules_mutex());
+            set_module_loading_allowed(false);
             modules().clear();
-            register_modules({});
             winrt::uninit_apartment();
         }
 
-        TEST_METHOD (RegistrationDoesNotCreateDisabledModule)
+        TEST_METHOD (CatalogDoesNotCreateDisabledModule)
         {
-            std::lock_guard lock(modules_mutex());
-            Assert::IsFalse(registered_modules().at(L"DeferredTestModule").is_enabled(json::JsonObject{}));
+            Assert::IsFalse(find_known_module(L"DeferredTestModule")->is_enabled(json::JsonObject{}));
             Assert::IsTrue(modules().empty());
             Assert::AreEqual(0, factoryCalls);
         }
 
         TEST_METHOD (OnDemandLoadIsCachedWithoutEnabling)
         {
-            std::lock_guard lock(modules_mutex());
-            auto* first = load_registered_module(L"DeferredTestModule");
+            auto* first = load_known_module(L"DeferredTestModule");
             Assert::IsNotNull(first);
             Assert::IsFalse((*first)->is_enabled());
             Assert::IsTrue(first->json_config().HasKey(L"properties"));
-            auto* second = load_registered_module(L"DeferredTestModule");
-            Assert::IsTrue(first == second);
+            Assert::IsTrue(first == load_known_module(L"DeferredTestModule"));
+            Assert::IsTrue(first == find_loaded_module(L"DeferredTestModule"));
             Assert::AreEqual(1, factoryCalls);
         }
 
         TEST_METHOD (DisablingDoesNotUnloadOrRecreateModule)
         {
-            std::lock_guard lock(modules_mutex());
-            auto* module = load_registered_module(L"DeferredTestModule");
+            auto* module = load_known_module(L"DeferredTestModule");
             Assert::IsNotNull(module);
             (*module)->enable();
             Assert::IsTrue((*module)->is_enabled());
             (*module)->disable();
             Assert::IsFalse((*module)->is_enabled());
-            Assert::IsTrue(module == load_registered_module(L"DeferredTestModule"));
+            Assert::IsTrue(module == load_known_module(L"DeferredTestModule"));
             Assert::AreEqual(1, factoryCalls);
         }
 
         TEST_METHOD (UnknownModuleAndPreInitializationDoNotLoad)
         {
-            Assert::IsNull(load_registered_module(L"UnknownModule"));
-            register_modules({});
-            Assert::IsNull(load_registered_module(L"DeferredTestModule"));
+            Assert::IsNull(load_known_module(L"UnknownModule"));
+            set_module_loading_allowed(false);
+            Assert::IsNull(load_known_module(L"DeferredTestModule"));
+            bool enabled = true;
+            Assert::IsNull(get_module_for_enabled_state(L"DeferredTestModule", enabled));
             Assert::AreEqual(0, factoryCalls);
-        }
-
-        TEST_METHOD (ConcurrentLoadRequestsShareOneInstance)
-        {
-            PowertoyModule* first = nullptr;
-            PowertoyModule* second = nullptr;
-            std::thread firstRequest([&] { first = load_registered_module(L"DeferredTestModule"); });
-            std::thread secondRequest([&] { second = load_registered_module(L"DeferredTestModule"); });
-            firstRequest.join();
-            secondRequest.join();
-            Assert::IsNotNull(first);
-            Assert::IsTrue(first == second);
-            Assert::AreEqual(1, factoryCalls);
         }
 
         TEST_METHOD (DisablingDeferredModuleDoesNotLoadIt)
         {
-            std::lock_guard lock(modules_mutex());
             bool enabled = false;
             Assert::IsNull(get_module_for_enabled_state(L"DeferredTestModule", enabled));
             Assert::IsFalse(enabled);
@@ -172,8 +167,7 @@ namespace RunnerUnitTests
 
         TEST_METHOD (PolicyForcedDisabledDoesNotLoadOnEnableRequest)
         {
-            const ModuleRegistration registration{ L"DeferredTestModule", modulePath, false, [] { return powertoys_gpo::gpo_rule_configured_disabled; } };
-            register_modules(std::span(&registration, 1));
+            testCatalog[0].gpoPolicy = [] { return powertoys_gpo::gpo_rule_configured_disabled; };
             bool enabled = true;
             Assert::IsNull(get_module_for_enabled_state(L"DeferredTestModule", enabled));
             Assert::IsFalse(enabled);
@@ -182,18 +176,13 @@ namespace RunnerUnitTests
 
         TEST_METHOD (PolicyForcedEnabledLoadsOnDisableRequest)
         {
-            const ModuleRegistration registration{ L"DeferredTestModule", modulePath, false, [] { return powertoys_gpo::gpo_rule_configured_enabled; } };
-            register_modules(std::span(&registration, 1));
+            testCatalog[0].gpoPolicy = [] { return powertoys_gpo::gpo_rule_configured_enabled; };
             bool enabled = false;
             Assert::IsNotNull(get_module_for_enabled_state(L"DeferredTestModule", enabled));
             Assert::IsTrue(enabled);
             Assert::AreEqual(1, factoryCalls);
         }
-
-    private:
-        std::wstring modulePath;
     };
-
     TEST_CLASS (ModuleRegistrationTests)
     {
     public:
@@ -209,8 +198,8 @@ namespace RunnerUnitTests
 
         TEST_METHOD (MissingPreferencesUseNativeDefaults)
         {
-            const ModuleRegistration enabled{ L"Module", L"unused.dll", true };
-            const ModuleRegistration disabled{ L"Module", L"unused.dll", false };
+            const ModuleRegistration enabled{ L"Module", L"unused.dll", DefaultEnabled::Yes };
+            const ModuleRegistration disabled{ L"Module", L"unused.dll", DefaultEnabled::No };
             for (const auto* settings : { L"{}", L"{\"enabled\":{}}", L"{\"enabled\":{\"Other\":true}}" })
             {
                 const auto json = json::JsonObject::Parse(settings);
@@ -221,16 +210,16 @@ namespace RunnerUnitTests
 
         TEST_METHOD (SavedPreferencesOverrideDefaults)
         {
-            const ModuleRegistration enabled{ L"Module", L"unused.dll", true };
-            const ModuleRegistration disabled{ L"Module", L"unused.dll", false };
+            const ModuleRegistration enabled{ L"Module", L"unused.dll", DefaultEnabled::Yes };
+            const ModuleRegistration disabled{ L"Module", L"unused.dll", DefaultEnabled::No };
             Assert::IsFalse(enabled.is_enabled(json::JsonObject::Parse(L"{\"enabled\":{\"Module\":false}}")));
             Assert::IsTrue(disabled.is_enabled(json::JsonObject::Parse(L"{\"enabled\":{\"Module\":true}}")));
         }
 
         TEST_METHOD (PolicyOverridesSavedAndDefaultStates)
         {
-            const ModuleRegistration forcedOn{ L"Module", L"unused.dll", false, [] { return powertoys_gpo::gpo_rule_configured_enabled; } };
-            const ModuleRegistration forcedOff{ L"Module", L"unused.dll", true, [] { return powertoys_gpo::gpo_rule_configured_disabled; } };
+            const ModuleRegistration forcedOn{ L"Module", L"unused.dll", DefaultEnabled::No, [] { return powertoys_gpo::gpo_rule_configured_enabled; } };
+            const ModuleRegistration forcedOff{ L"Module", L"unused.dll", DefaultEnabled::Yes, [] { return powertoys_gpo::gpo_rule_configured_disabled; } };
             Assert::IsTrue(forcedOn.is_enabled(json::JsonObject{}));
             Assert::IsTrue(forcedOn.is_enabled(json::JsonObject::Parse(L"{\"enabled\":{\"Module\":false}}")));
             Assert::IsFalse(forcedOff.is_enabled(json::JsonObject{}));
@@ -241,7 +230,7 @@ namespace RunnerUnitTests
         {
             for (auto policy : { UnavailablePolicy, InvalidPolicy, UnconfiguredPolicy })
             {
-                const ModuleRegistration registration{ L"Module", L"unused.dll", false, policy };
+                const ModuleRegistration registration{ L"Module", L"unused.dll", DefaultEnabled::No, policy };
                 Assert::IsFalse(registration.is_enabled(json::JsonObject{}));
                 Assert::IsTrue(registration.is_enabled(json::JsonObject::Parse(L"{\"enabled\":{\"Module\":true}}")));
             }
@@ -251,13 +240,13 @@ namespace RunnerUnitTests
         {
             for (const auto* settings : { L"{\"enabled\":null}", L"{\"enabled\":false}", L"{\"enabled\":{\"Module\":\"false\"}}" })
             {
-                const ModuleRegistration enabled{ L"Module", L"unused.dll", true };
-                const ModuleRegistration disabled{ L"Module", L"unused.dll", false };
+                const ModuleRegistration enabled{ L"Module", L"unused.dll", DefaultEnabled::Yes };
+                const ModuleRegistration disabled{ L"Module", L"unused.dll", DefaultEnabled::No };
                 const auto json = json::JsonObject::Parse(settings);
                 Assert::IsTrue(enabled.is_enabled(json));
                 Assert::IsFalse(disabled.is_enabled(json));
             }
-            const ModuleRegistration registration{ L"Module", L"unused.dll", true };
+            const ModuleRegistration registration{ L"Module", L"unused.dll", DefaultEnabled::Yes };
             Assert::IsFalse(registration.is_enabled(json::JsonObject::Parse(L"{\"enabled\":{\"Other\":null,\"Module\":false}}")));
         }
 
@@ -265,15 +254,15 @@ namespace RunnerUnitTests
         {
             // Settings can drop native keys it does not know (e.g. "File Explorer"); a default-on
             // module that was not loaded must not be reported, and then saved, as enabled.
-            const ModuleRegistration defaultOn{ L"Module", L"unused.dll", true };
+            const ModuleRegistration defaultOn{ L"Module", L"unused.dll", DefaultEnabled::Yes };
             Assert::IsFalse(defaultOn.unloaded_state(std::nullopt));
             Assert::IsFalse(defaultOn.unloaded_state(false));
         }
 
         TEST_METHOD (UnloadedModuleKeepsSavedEnabledUnlessPolicyDisablesIt)
         {
-            const ModuleRegistration notConfigured{ L"Module", L"unused.dll", false };
-            const ModuleRegistration forcedOff{ L"Module", L"unused.dll", false, [] { return powertoys_gpo::gpo_rule_configured_disabled; } };
+            const ModuleRegistration notConfigured{ L"Module", L"unused.dll", DefaultEnabled::No };
+            const ModuleRegistration forcedOff{ L"Module", L"unused.dll", DefaultEnabled::No, [] { return powertoys_gpo::gpo_rule_configured_disabled; } };
             Assert::IsTrue(notConfigured.unloaded_state(true));
             Assert::IsFalse(forcedOff.unloaded_state(true));
         }
