@@ -34,11 +34,25 @@ public sealed class InsertionOutcomeRegressionTests
             Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
             work = work with { TargetWindow = IntPtr.Zero };
             Program.ReplaceText replace = (erase, text, target, left, right, guard, generation, inserted, givenBack, fromClipboard, swallowed) => Injector.ReplaceCore(
-                erase, text, target, left, _ => true, guard, generation,
-                () => new IntPtr(1), box.Paste, box.Dispatch,
-                cursorRightUnits: right, getAsyncKeyState: _ => 0, sleep: _ => { },
-                inserted: inserted, givenBack: givenBack, isWindowsTerminal: _ => true,
-                fromClipboard: fromClipboard, isConsole: _ => false, swallowed: swallowed);
+                erase,
+                text,
+                target,
+                left,
+                _ => true,
+                guard,
+                generation,
+                () => new IntPtr(1),
+                box.Paste,
+                box.Dispatch,
+                cursorRightUnits: right,
+                getAsyncKeyState: _ => 0,
+                sleep: _ => { },
+                inserted: inserted,
+                givenBack: givenBack,
+                isWindowsTerminal: _ => true,
+                fromClipboard: fromClipboard,
+                isConsole: _ => false,
+                swallowed: swallowed);
 
             Assert.IsTrue(Program.Expand(hook, work, () => Program.TryExpand(hook, work, replace)));
             Assert.AreEqual("PREFIX abcd ", box.Text);
@@ -77,11 +91,21 @@ public sealed class InsertionOutcomeRegressionTests
             }
 
             bool completed = Injector.ReplaceCore(
-                2, "SNIPPET", IntPtr.Zero, 0, _ => true, box.Guard, box.Hook.InputGeneration,
+                2,
+                "SNIPPET",
+                IntPtr.Zero,
+                0,
+                _ => true,
+                box.Guard,
+                box.Hook.InputGeneration,
                 () => new IntPtr(1),
                 (text, target, send, keepAlive) => box.Paste(text, target, () => observed = send(), keepAlive),
-                Dispatch, getAsyncKeyState: _ => 0, sleep: _ => { },
-                isOpenByTarget: box.TookPaste, isWindowsTerminal: _ => false, isConsole: _ => false);
+                Dispatch,
+                getAsyncKeyState: _ => 0,
+                sleep: _ => { },
+                isOpenByTarget: box.TookPaste,
+                isWindowsTerminal: _ => false,
+                isConsole: _ => false);
 
             Assert.AreEqual(acceptPaste, completed);
             Assert.IsTrue(observed.SentAny, "Erasing the trigger is input even when no paste was queued.");

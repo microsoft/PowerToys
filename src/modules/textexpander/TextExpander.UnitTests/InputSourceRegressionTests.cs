@@ -9,25 +9,31 @@ namespace Microsoft.PowerToys.TextExpander.UnitTests;
 [TestClass]
 public sealed class InputSourceRegressionTests
 {
+    private static readonly bool[] KeyDownThenUp = [false, true];
+
     [TestMethod]
     [DataRow("ab", "PREFIXexpanded")]
     [DataRow("b", "PREFIXaexpanded")]
     public void OnePhysicalKeysCompleteOutputIsPreservedThroughExpansionAndUndo(string trigger, string expected)
     {
-        With(false, [trigger + "=expanded"], (hook, box) =>
-        {
-            box.UserPresses((0x34, false), (0x34, true));
-            Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
-            Assert.AreEqual("ab", work.SwallowedText);
-            Assert.AreEqual(string.Empty, work.TypedPrefix, "The whole physical event was swallowed.");
-            Assert.IsTrue(Expand(hook, box, work));
-            Assert.AreEqual(expected, box.Text);
+        With(
+            false,
+            [trigger + "=expanded"],
+            (hook, box) =>
+            {
+                box.UserPresses((0x34, false), (0x34, true));
+                Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+                Assert.AreEqual("ab", work.SwallowedText);
+                Assert.AreEqual(string.Empty, work.TypedPrefix, "The whole physical event was swallowed.");
+                Assert.IsTrue(Expand(hook, box, work));
+                Assert.AreEqual(expected, box.Text);
 
-            Assert.IsTrue(hook.ProcessKey(Native.VK_Z, 0, ctrl: true, alt: false, shift: false, win: false));
-            Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion undo));
-            Assert.IsTrue(Expand(hook, box, undo));
-            Assert.AreEqual("PREFIXab", box.Text, "Undo also restores the same key's unmatched literal prefix.");
-        }, decode: TwoCharacters);
+                Assert.IsTrue(hook.ProcessKey(Native.VK_Z, 0, ctrl: true, alt: false, shift: false, win: false));
+                Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion undo));
+                Assert.IsTrue(Expand(hook, box, undo));
+                Assert.AreEqual("PREFIXab", box.Text, "Undo also restores the same key's unmatched literal prefix.");
+            },
+            decode: TwoCharacters);
     }
 
     [TestMethod]
@@ -35,36 +41,44 @@ public sealed class InputSourceRegressionTests
     [DataRow("b")]
     public void CancellingAPromptReturnsTheWholePhysicalKey(string trigger)
     {
-        With(false, [trigger + "={{prompt:Name}}"], (hook, box) =>
-        {
-            box.UserPresses((0x34, false), (0x34, true));
-            Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
-            Assert.IsFalse(Expand(hook, box, work, ask: (_, _, _) => null));
-            Assert.AreEqual("PREFIXab", box.Text);
-            Assert.AreEqual(0, hook.Pending.Count);
-        }, decode: TwoCharacters);
+        With(
+            false,
+            [trigger + "={{prompt:Name}}"],
+            (hook, box) =>
+            {
+                box.UserPresses((0x34, false), (0x34, true));
+                Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+                Assert.IsFalse(Expand(hook, box, work, ask: (_, _, _) => null));
+                Assert.AreEqual("PREFIXab", box.Text);
+                Assert.AreEqual(0, hook.Pending.Count);
+            },
+            decode: TwoCharacters);
     }
 
     [TestMethod]
     public void APhysicalKeyWithMoreThanTwoCharactersCanFormAWordWaitTrigger()
     {
-        With(true, ["abcd=expanded"], (hook, box) =>
-        {
-            box.AfterKey = key =>
+        With(
+            true,
+            ["abcd=expanded"],
+            (hook, box) =>
             {
-                if (key.VkCode == 0x34 && (key.Flags & Native.LLKHF_UP) == 0)
+                box.AfterKey = key =>
                 {
-                    box.Insert("abcd");
-                }
-            };
-            box.UserPresses((0x34, false), (0x34, true));
-            box.UserTypes(" ");
-            Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
-            Assert.AreEqual("abcd", work.TypedPrefix);
-            Assert.AreEqual(" ", work.SwallowedText);
-            Assert.IsTrue(Expand(hook, box, work));
-            Assert.AreEqual("PREFIXexpanded ", box.Text);
-        }, decode: FourCharacters);
+                    if (key.VkCode == 0x34 && (key.Flags & Native.LLKHF_UP) == 0)
+                    {
+                        box.Insert("abcd");
+                    }
+                };
+                box.UserPresses((0x34, false), (0x34, true));
+                box.UserTypes(" ");
+                Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+                Assert.AreEqual("abcd", work.TypedPrefix);
+                Assert.AreEqual(" ", work.SwallowedText);
+                Assert.IsTrue(Expand(hook, box, work));
+                Assert.AreEqual("PREFIXexpanded ", box.Text);
+            },
+            decode: FourCharacters);
     }
 
     [TestMethod]
@@ -84,7 +98,7 @@ public sealed class InputSourceRegressionTests
             };
             void A()
             {
-                foreach (bool up in new[] { false, true })
+                foreach (bool up in KeyDownThenUp)
                 {
                     Native.KBDLLHOOKSTRUCT key = FakeTextBox.UserVk(remapBeforeOurHook ? 0x42 : 0x41, up);
                     box.Take(remapBeforeOurHook ? key with { Flags = key.Flags | 0x10, DwExtraInfo = 0x11 } : key);
@@ -249,7 +263,13 @@ public sealed class InputSourceRegressionTests
     {
         PendingExpansion work = pending with { TargetWindow = IntPtr.Zero };
         Program.ReplaceText replace = (erase, text, target, left, right, guard, generation, inserted, givenBack, fromClipboard, swallowed) => Injector.ReplaceCore(
-            erase, text, target, left, _ => true, guard, generation,
+            erase,
+            text,
+            target,
+            left,
+            _ => true,
+            guard,
+            generation,
             getForegroundWindow: () => new IntPtr(1),
             tryPaste: box.Paste,
             dispatch: box.Dispatch,

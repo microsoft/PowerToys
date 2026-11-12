@@ -832,6 +832,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static string GetExportVersion(JsonNode backupRestoreSettings, string settingFileKey, string settingsFileName)
         {
             var ignoredSettings = GetIgnoredSettings(backupRestoreSettings, settingFileKey);
+
             // The snippet library supports hand-written comments and trailing commas, as its editor and engine do.
             var options = settingFileKey.Equals("\\TextExpander\\PowerToysTextExpanderSnippets.json", StringComparison.OrdinalIgnoreCase)
                 ? new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip }

@@ -18,6 +18,7 @@ internal static class Program
 
     // Session-local, like the runner's instance mutex and the exit event: each signed-in session runs its own engine.
     private const string MutexName = @"Local\PowerToys.TextExpander.SingleInstance";
+
     // Keep in sync with ENGINE_EXIT_TIMEOUT_MS: a paste may settle for five seconds before restoring the clipboard.
     private const int WorkerDrainTimeoutMs = 10_000;
 
