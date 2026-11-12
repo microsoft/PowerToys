@@ -18,8 +18,10 @@
 #include <common/utils/EventWaiter.h>
 
 #include <algorithm>
+#include <array>
 #include <cwctype>
 #include <chrono>
+#include <string_view>
 #include <thread>
 #include <vector>
 
@@ -46,6 +48,7 @@ namespace
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
     const wchar_t JSON_KEY_CUSTOM_ACTIONS[] = L"custom-actions";
     const wchar_t JSON_KEY_ADDITIONAL_ACTIONS[] = L"additional-actions";
+    const wchar_t JSON_KEY_PASTE_AS_FILE_ACTION[] = L"paste-as-file";
     const wchar_t JSON_KEY_SHORTCUT[] = L"shortcut";
     const wchar_t JSON_KEY_IS_SHOWN[] = L"isShown";
     const wchar_t JSON_KEY_ID[] = L"id";
@@ -66,6 +69,8 @@ namespace
     const wchar_t JSON_KEY_PROVIDERS[] = L"providers";
     const wchar_t JSON_KEY_SERVICE_TYPE[] = L"service-type";
     const wchar_t JSON_KEY_ENABLE_ADVANCED_AI[] = L"enable-advanced-ai";
+    const wchar_t JSON_KEY_COACHING_SHORTCUT[] = L"coaching-shortcut";
+    const wchar_t JSON_KEY_COACHING_ENABLED[] = L"coaching-enabled";
     const wchar_t JSON_KEY_VALUE[] = L"value";
 }
 
@@ -255,6 +260,49 @@ private:
             };
 
             m_additional_actions.push_back(additionalAction);
+
+            // Register coaching shortcut as a separate hotkey with a "-coaching" suffix ID
+            if (action.HasKey(JSON_KEY_COACHING_SHORTCUT) && action.GetNamedBoolean(JSON_KEY_COACHING_ENABLED, false))
+            {
+                auto coachingHotkey = parse_single_hotkey(action.GetNamedObject(JSON_KEY_COACHING_SHORTCUT), actionIsShown);
+                if (coachingHotkey.key != 0)
+                {
+                    const AdditionalAction coachingAction
+                    {
+                        std::wstring(actionName.c_str()) + L"-coaching",
+                        coachingHotkey
+                    };
+                    m_additional_actions.push_back(coachingAction);
+                }
+            }
+        }
+        else if (actionName == JSON_KEY_PASTE_AS_FILE_ACTION)
+        {
+            // Hotkey IDs are positional and must match the order of AdvancedPastePasteAsFileAction.SubActions
+            // in Settings, so walk the children in that order instead of the JSON object's iteration order.
+            // Settings files written before the JPEG action existed have no entry for it, while Settings
+            // deserializes a default one; reserve an inactive slot so the following IDs stay aligned.
+            static const std::array<std::wstring_view, 4> pasteAsFileOrder{
+                L"paste-as-txt-file",
+                L"paste-as-png-file",
+                L"paste-as-jpg-file",
+                L"paste-as-html-file"
+            };
+
+            for (const std::wstring_view subActionName : pasteAsFileOrder)
+            {
+                const winrt::hstring subActionKey{ subActionName };
+                if (action.HasKey(subActionKey))
+                {
+                    process_additional_action(subActionKey, action.GetNamedValue(subActionKey), actionIsShown);
+                }
+                else if (subActionName == L"paste-as-jpg-file")
+                {
+                    Hotkey inactiveHotkey{};
+                    inactiveHotkey.isShown = false;
+                    m_additional_actions.push_back({ std::wstring{ subActionName }, inactiveHotkey });
+                }
+            }
         }
         else
         {
@@ -407,6 +455,7 @@ private:
                         // Define the expected order to ensure consistent hotkey ID assignment
                         const std::vector<winrt::hstring> expectedOrder = {
                             L"image-to-text",
+                            L"fix-spelling-and-grammar",
                             L"paste-as-file",
                             L"transcode"
                         };
@@ -982,6 +1031,12 @@ public:
         m_triggerEventWaiter.start(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_EVENT, [this](DWORD) {
             // Same logic as hotkeyId == 1 (m_advanced_paste_ui_hotkey)
             Logger::trace(L"AdvancedPaste ShowUI event triggered");
+
+            if (m_auto_copy_selection_custom_action)
+            {
+                send_copy_selection(); // best-effort; ignore failure
+            }
+
             m_process_manager.start();
             m_process_manager.bring_to_front();
             m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
@@ -1032,13 +1087,11 @@ public:
                 }
             }
 
-            if (is_custom_action_hotkey && m_auto_copy_selection_custom_action)
+            // Try to capture selected text for all hotkey actions when the setting is enabled.
+            // If nothing is selected (clipboard unchanged), fall through to use existing clipboard content.
+            if (m_auto_copy_selection_custom_action)
             {
-                if (!send_copy_selection())
-                {
-                    Logger::warn(L"Auto-copy: failed to copy selection for custom action index {} — aborting action", custom_action_index);
-                    return false;
-                }
+                send_copy_selection(); // best-effort; ignore failure
             }
 
             m_process_manager.start();

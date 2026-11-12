@@ -8,6 +8,7 @@
     <AssemblyDescription>PowerToys Workspaces Csharp Library</AssemblyDescription>
     <Description>PowerToys Workspaces Csharp Library</Description>
     <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
     <UseWindowsForms>true</UseWindowsForms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>

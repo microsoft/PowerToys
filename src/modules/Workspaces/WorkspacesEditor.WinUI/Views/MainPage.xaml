@@ -51,6 +51,7 @@
                 x:Uid="SortByButton"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
+                AutomationProperties.AutomationId="WorkspaceSortComboBox"
                 Style="{StaticResource SubtleButtonStyle}">
                 <ToolTipService.ToolTip>
                     <TextBlock x:Uid="SortByButtonToolTip" />

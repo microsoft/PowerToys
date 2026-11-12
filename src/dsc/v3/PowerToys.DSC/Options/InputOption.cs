@@ -20,9 +20,10 @@ public sealed class InputOption : Option<string>
     private static readonly CompositeFormat InvalidJsonInputError = CompositeFormat.Parse(Resources.InvalidJsonInputError);
 
     public InputOption()
-        : base("--input", Resources.InputOptionDescription)
+        : base("--input")
     {
-        AddValidator(OptionValidator);
+        Description = Resources.InputOptionDescription;
+        Validators.Add(OptionValidator);
     }
 
     /// <summary>
@@ -34,7 +35,7 @@ public sealed class InputOption : Option<string>
         var value = result.GetValueOrDefault<string>() ?? string.Empty;
         if (string.IsNullOrEmpty(value))
         {
-            result.ErrorMessage = Resources.InputEmptyOrNullError;
+            result.AddError(Resources.InputEmptyOrNullError);
         }
         else
         {
@@ -44,7 +45,7 @@ public sealed class InputOption : Option<string>
             }
             catch (Exception e)
             {
-                result.ErrorMessage = string.Format(CultureInfo.InvariantCulture, InvalidJsonInputError, e.Message);
+                result.AddError(string.Format(CultureInfo.InvariantCulture, InvalidJsonInputError, e.Message));
             }
         }
     }

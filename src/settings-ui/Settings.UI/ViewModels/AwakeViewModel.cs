@@ -147,6 +147,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool AllowDisplayOffWhileLocked
+        {
+            get => ModuleSettings.Properties.AllowDisplayOffWhileLocked;
+            set
+            {
+                if (ModuleSettings.Properties.AllowDisplayOffWhileLocked != value)
+                {
+                    ModuleSettings.Properties.AllowDisplayOffWhileLocked = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public uint IntervalHours
         {
             get => ModuleSettings.Properties.IntervalHours;
@@ -216,6 +229,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             OnPropertyChanged(nameof(Mode));
             OnPropertyChanged(nameof(KeepDisplayOn));
+            OnPropertyChanged(nameof(AllowDisplayOffWhileLocked));
             OnPropertyChanged(nameof(IntervalHours));
             OnPropertyChanged(nameof(IntervalMinutes));
             OnPropertyChanged(nameof(ExpirationDateTime));

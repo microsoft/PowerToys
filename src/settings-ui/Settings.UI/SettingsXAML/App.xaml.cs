@@ -38,6 +38,8 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private ShortcutConflictWindow shortcutConflictWindow;
 
+        private PowerAccentReferenceGuideWindow powerAccentReferenceGuideWindow;
+
         private enum Arguments
         {
             PTPipeName = 1,
@@ -110,9 +112,17 @@ namespace Microsoft.PowerToys.Settings.UI
 
         public static void OpenSettingsWindow(Type type = null, bool ensurePageIsSelected = false)
         {
+            bool isNewWindowSession = settingsWindow == null ||
+                                      !NativeMethods.IsWindowVisible(settingsWindow.GetWindowHandle());
+
             if (settingsWindow == null)
             {
                 settingsWindow = new MainWindow();
+            }
+
+            if (isNewWindowSession)
+            {
+                settingsWindow.BeginWindowSession();
             }
 
             settingsWindow.Activate();
@@ -342,7 +352,7 @@ namespace Microsoft.PowerToys.Settings.UI
         public static bool IsSecondaryWindowOpen()
         {
             var app = (App)Current;
-            return app.oobeWindow != null || app.scoobeWindow != null || app.shortcutConflictWindow != null;
+            return app.oobeWindow != null || app.scoobeWindow != null || app.shortcutConflictWindow != null || app.powerAccentReferenceGuideWindow != null;
         }
 
         public void OpenScoobe()
@@ -409,6 +419,26 @@ namespace Microsoft.PowerToys.Settings.UI
             }
         }
 
+        public void OpenPowerAccentReferenceGuideWindow(string[] selectedLanguageCodes)
+        {
+            if (powerAccentReferenceGuideWindow == null)
+            {
+                powerAccentReferenceGuideWindow = new PowerAccentReferenceGuideWindow(selectedLanguageCodes);
+
+                powerAccentReferenceGuideWindow.Closed += (_, _) =>
+                {
+                    powerAccentReferenceGuideWindow = null;
+                    settingsWindow?.CloseHiddenWindow();
+                };
+
+                powerAccentReferenceGuideWindow.Activate();
+            }
+            else
+            {
+                WindowHelpers.BringToForeground(powerAccentReferenceGuideWindow.GetWindowHandle());
+            }
+        }
+
         public static Type GetPage(string settingWindow)
         {
             switch (settingWindow)
@@ -416,6 +446,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "Dashboard": return typeof(DashboardPage);
                 case "Overview": return typeof(GeneralPage);
                 case "AdvancedPaste": return typeof(AdvancedPastePage);
+                case "AltWindowCycle": return typeof(AltWindowCyclePage);
                 case "AlwaysOnTop": return typeof(AlwaysOnTopPage);
                 case "Awake": return typeof(AwakePage);
                 case "CmdNotFound": return typeof(CmdNotFoundPage);

@@ -49,10 +49,10 @@ namespace WorkspacesEditor.ViewModels
         }
 
         [ObservableProperty]
-        private bool _isWorkspacesViewEmpty;
+        public partial bool IsWorkspacesViewEmpty { get; set; }
 
         [ObservableProperty]
-        private string _emptyWorkspacesViewMessage;
+        public partial string EmptyWorkspacesViewMessage { get; set; }
 
         public void RefreshWorkspacesView()
         {
@@ -62,7 +62,7 @@ namespace WorkspacesEditor.ViewModels
 
             if (isEmpty)
             {
-                if (Workspaces != null && Workspaces.Any())
+                if (Workspaces != null && Workspaces.Count > 0)
                 {
                     EmptyWorkspacesViewMessage = GetString("NoWorkspacesMatch");
                 }
@@ -149,10 +149,10 @@ namespace WorkspacesEditor.ViewModels
         }
 
         [ObservableProperty]
-        private int _orderByIndex;
+        public partial int OrderByIndex { get; set; }
 
         [ObservableProperty]
-        private string _searchTerm;
+        public partial string SearchTerm { get; set; }
 
         partial void OnSearchTermChanged(string value)
         {
@@ -167,7 +167,7 @@ namespace WorkspacesEditor.ViewModels
         }
 
         [ObservableProperty]
-        private bool _isLoading;
+        public partial bool IsLoading { get; set; }
 
         public MainViewModel(WorkspacesEditorIO workspacesEditorIO)
         {
@@ -486,10 +486,8 @@ namespace WorkspacesEditor.ViewModels
             }
 
             Process process = new Process();
-            process.StartInfo = new ProcessStartInfo(launcherPath, $"{projectId} {(int)invokePoint}")
-            {
-                CreateNoWindow = true,
-            };
+            process.StartInfo = ModuleProcess.CreateStartInfo(launcherPath, $"{projectId} {(int)invokePoint}");
+            process.StartInfo.WorkingDirectory = Path.GetDirectoryName(launcherPath);
 
             try
             {
@@ -521,11 +519,8 @@ namespace WorkspacesEditor.ViewModels
             }
 
             Process process = new Process();
-            process.StartInfo = new ProcessStartInfo(snapshotUtilsPath)
-            {
-                CreateNoWindow = true,
-                Arguments = isExistingProjectLaunched ? $"{(int)InvokePoint.LaunchAndEdit}" : string.Empty,
-            };
+            process.StartInfo = ModuleProcess.CreateStartInfo(snapshotUtilsPath, isExistingProjectLaunched ? $"{(int)InvokePoint.LaunchAndEdit}" : string.Empty);
+            process.StartInfo.WorkingDirectory = Path.GetDirectoryName(snapshotUtilsPath);
 
             try
             {

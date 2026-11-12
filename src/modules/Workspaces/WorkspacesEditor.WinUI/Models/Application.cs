@@ -114,7 +114,7 @@ namespace WorkspacesEditor.Models
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(AppMainParams))]
         [NotifyPropertyChangedFor(nameof(IsAppMainParamVisible))]
-        private bool _isElevated;
+        public partial bool IsElevated { get; set; }
 
         public bool CanLaunchElevated { get; set; }
 
@@ -174,8 +174,8 @@ namespace WorkspacesEditor.Models
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(RepeatIndexString))]
-        [property: JsonIgnore]
-        private int _repeatIndex;
+        [JsonIgnore]
+        public partial int RepeatIndex { get; set; }
 
         [JsonIgnore]
         public string RepeatIndexString => RepeatIndex <= 1 ? string.Empty : RepeatIndex.ToString(CultureInfo.InvariantCulture);
@@ -244,7 +244,7 @@ namespace WorkspacesEditor.Models
         }
 
         [ObservableProperty]
-        private bool _isExpanded;
+        public partial bool IsExpanded { get; set; }
 
         public string DeleteButtonContent
         {
@@ -261,7 +261,7 @@ namespace WorkspacesEditor.Models
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(DeleteButtonContent))]
         [NotifyPropertyChangedFor(nameof(DeleteButtonAccessibleName))]
-        private bool _isIncluded = true;
+        public partial bool IsIncluded { get; set; } = true;
 
         partial void OnIsIncludedChanged(bool oldValue, bool newValue)
         {

@@ -27,8 +27,8 @@ namespace WorkspacesCsharpLibrary.Models
         public string Aumid { get; set; }
 
         [ObservableProperty]
-        [property: JsonIgnore]
-        private bool _isNotFound;
+        [JsonIgnore]
+        public partial bool IsNotFound { get; set; }
 
         private Icon _icon;
 

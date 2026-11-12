@@ -25,9 +25,12 @@
   - For external DLLs, verify they're safe to sign before including
 
 ### File Signing Requirements
-- All DLLs and executables must be signed
+- All DLLs, executables, and Windows Runtime metadata (`.winmd`) files must be signed
 - New files need to be added to the signing configuration
-- CI checks if all files are signed
+- Add metadata to the appropriate first-party or third-party signing batch before packaging; preserve existing upstream signatures
+- CI checks signatures in the extracted MSI payload, the unpacked Command Palette MSIX metadata, and the SDK metadata before NuGet packing
+- The independent SDK job signs repository-root `x64\Release` and `arm64\Release` outputs using `ESRPSigning_sdk.json`; the outer NuGet signature does not replace the WinMD's Authenticode signature
+- Metadata does not require a `FileVersion` resource, but must still have a valid Authenticode signature
 - Even Microsoft-sourced dependencies are signed if they aren't already
 
 ## Performance Measurement
@@ -71,6 +74,16 @@
   - Clean build
   - Sanity check that all modules still work
   - Open PR with changes
+
+### C/C++ Runtime (Hybrid CRT)
+- `Cpp.Build.props` links the VC++ runtime and STL statically (`/MT`) and the Universal CRT from the in-box `ucrtbase.dll`, so no VC++ redistributable is needed.
+- Every module in a process shares that UCRT, including WinUI 3 and .NET. Don't change process-wide CRT state:
+  - No `setlocale`, `std::locale::global` or named `std::locale` objects; MSVC's STL calls `setlocale` while building them. Use `_wcreate_locale` with the `_l` functions, or NLS APIs such as `LCMapStringEx`.
+  - No `signal` or `_set_invalid_parameter_handler` from a DLL.
+  - Read environment variables with `GetEnvironmentVariableW`; the CRT's copy is a snapshot.
+- If a project sets Link `IgnoreSpecificDefaultLibraries` or `AdditionalOptions`, keep the inherited `%(...)` value.
+- A project that can't follow these rules sets `<EnableHybridCRT>false</EnableHybridCRT>` with a comment that says why. Today: PowerRename.exe and its tests (PowerRenameLib calls `std::locale::global`) and MeasureToolCore (installs a `SIGABRT` handler).
+- Debug builds need `ucrtbased.dll`, which the Windows SDK installs. Use a Release build on machines without the SDK.
 
 ## Testing Requirements
 

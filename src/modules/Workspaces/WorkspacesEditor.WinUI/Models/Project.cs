@@ -28,7 +28,7 @@ namespace WorkspacesEditor.Models
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(CanBeSaved))]
-        private string _name;
+        public partial string Name { get; set; }
 
         public long CreationTime { get; }
 
@@ -110,11 +110,11 @@ namespace WorkspacesEditor.Models
         public bool CanBeSaved => !string.IsNullOrEmpty(Name) && Applications.Count > 0;
 
         [ObservableProperty]
-        private bool _isRevertEnabled;
+        public partial bool IsRevertEnabled { get; set; }
 
         [ObservableProperty]
-        [property: JsonIgnore]
-        private bool _isPopupVisible;
+        [JsonIgnore]
+        public partial bool IsPopupVisible { get; set; }
 
         public List<Application> Applications { get; set; }
 
@@ -182,16 +182,16 @@ namespace WorkspacesEditor.Models
         public bool IsPositionChangedManually { get; set; }
 
         [ObservableProperty]
-        [property: JsonIgnore]
-        private BitmapImage _previewIcons;
+        [JsonIgnore]
+        public partial BitmapImage PreviewIcons { get; set; }
 
         [ObservableProperty]
-        [property: JsonIgnore]
-        private BitmapImage _previewImage;
+        [JsonIgnore]
+        public partial BitmapImage PreviewImage { get; set; }
 
         [ObservableProperty]
-        [property: JsonIgnore]
-        private double _previewImageWidth;
+        [JsonIgnore]
+        public partial double PreviewImageWidth { get; set; }
 
         public Project()
         {

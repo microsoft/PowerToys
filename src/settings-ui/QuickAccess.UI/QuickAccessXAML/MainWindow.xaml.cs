@@ -395,6 +395,7 @@ public sealed partial class MainWindow : WindowEx, IDisposable
 
             RemoveGlobalMouseHook();
 
+            _launcherViewModel.Dispose();
             _coordinator.Dispose();
         }
 

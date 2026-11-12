@@ -8,6 +8,7 @@
     <RootNamespace>WorkspacesEditor</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <UseWinUI>true</UseWinUI>
+    <LangVersion>preview</LangVersion>
     <Platforms>x64;ARM64</Platforms>
     <EnableMsixTooling>true</EnableMsixTooling>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>

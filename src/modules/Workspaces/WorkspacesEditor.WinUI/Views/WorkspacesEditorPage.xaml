@@ -93,6 +93,7 @@
                             <ComboBox
                                 x:Uid="WindowPositionInput"
                                 VerticalAlignment="Center"
+                                AutomationProperties.AutomationId="WindowPositionComboBox"
                                 SelectedIndex="{x:Bind PositionComboboxIndex, Mode=TwoWay}">
                                 <ComboBoxItem x:Uid="CustomItem" />
                                 <ComboBoxItem x:Uid="MaximizedItem" />

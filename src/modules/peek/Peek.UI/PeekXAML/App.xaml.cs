@@ -3,15 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Peek.Common;
+using Peek.Common.Helpers;
 using Peek.FilePreviewer;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers;
@@ -20,6 +21,8 @@ using Peek.UI.Native;
 using Peek.UI.Telemetry.Events;
 using Peek.UI.Views;
 using PowerToys.Interop;
+
+using ClassificationMode = Peek.Common.Helpers.LaunchArgumentsClassifier.ClassificationMode;
 
 namespace Peek.UI
 {
@@ -38,6 +41,9 @@ namespace Peek.UI
         }
 
         private MainWindow? Window { get; set; }
+
+        private const string RunnerProcessName = "PowerToys";
+        private const int CliInvalidArgumentsExitCode = 2;
 
         private bool _disposed;
         private SelectedItem? _selectedItem;
@@ -106,30 +112,27 @@ namespace Peek.UI
             var cmdArgs = Environment.GetCommandLineArgs();
             if (cmdArgs?.Length > 1)
             {
-                // Check if the last argument is a PowerToys Runner PID
-                if (int.TryParse(cmdArgs[^1], out int powerToysRunnerPid))
+                string[] launchArgs = cmdArgs[1..];
+                var classification = LaunchArgumentsClassifier.Classify(launchArgs);
+
+                switch (classification.Mode)
                 {
-                    RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
-                    {
-                        EtwTrace?.Dispose();
-                        Environment.Exit(0);
-                    });
-                }
-                else
-                {
-                    // Command line argument is a file path - activate Peek with that file
-                    string filePath = cmdArgs[^1];
-                    if (File.Exists(filePath) || Directory.Exists(filePath))
-                    {
-                        _selectedItem = new SelectedItemByPath(filePath);
-                        _launchedFromCli = true;
-                        OnShowPeek();
+                    case ClassificationMode.Runner:
+                        TryHandleRunnerLaunch(classification.RunnerPid);
+                        break;
+
+                    case ClassificationMode.Cli:
+                        TryHandleCliLaunch(classification.CliArguments!);
                         return;
-                    }
-                    else
-                    {
-                        Logger.LogError($"Command line argument is not a valid file or directory: {filePath}");
-                    }
+
+                    case ClassificationMode.InvalidRunnerArguments:
+                        Logger.LogError("Peek: invalid runner arguments. Expected '--runner-pid <pid>'.");
+                        Environment.Exit(CliInvalidArgumentsExitCode);
+                        return;
+
+                    case ClassificationMode.None:
+                    default:
+                        break;
                 }
             }
 
@@ -140,6 +143,88 @@ namespace Peek.UI
                 EtwTrace?.Dispose();
                 Environment.Exit(0);
             });
+        }
+
+        private void TryHandleRunnerLaunch(int powerToysRunnerPid)
+        {
+            if (!IsRunnerProcessAlive(powerToysRunnerPid))
+            {
+                Logger.LogError($"Runner launch provided a PID that is not active or is not PowerToys.exe: {powerToysRunnerPid}");
+                Environment.Exit(CliInvalidArgumentsExitCode);
+                return;
+            }
+
+            RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
+            {
+                EtwTrace?.Dispose();
+                Environment.Exit(0);
+            });
+        }
+
+        private void TryHandleCliLaunch(IReadOnlyList<string> launchArgs)
+        {
+            var validPaths = new List<string>(launchArgs.Count);
+            var invalidPaths = new List<string>();
+
+            foreach (string arg in launchArgs)
+            {
+                if (TryResolveExistingPath(arg, out string? resolvedPath))
+                {
+                    validPaths.Add(resolvedPath!);
+                }
+                else
+                {
+                    invalidPaths.Add(arg);
+                    Logger.LogError($"Command line argument is not a valid file or directory: {arg}");
+                }
+            }
+
+            if (validPaths.Count == 0)
+            {
+                Logger.LogError("No valid file or directory paths were provided");
+                Environment.Exit(CliInvalidArgumentsExitCode);
+                return;
+            }
+
+            _selectedItem = validPaths.Count == 1
+                ? new SelectedItemByPath(validPaths[0])
+                : new SelectedItemsByPaths(validPaths);
+            _launchedFromCli = true;
+            OnShowPeek();
+        }
+
+        private static bool TryResolveExistingPath(string path, out string? resolvedPath)
+        {
+            resolvedPath = null;
+
+            try
+            {
+                string fullPath = Path.GetFullPath(path);
+                if (File.Exists(fullPath) || Directory.Exists(fullPath))
+                {
+                    resolvedPath = fullPath;
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Could not resolve command line path argument '{path}'.", ex);
+            }
+
+            return false;
+        }
+
+        private static bool IsRunnerProcessAlive(int pid)
+        {
+            try
+            {
+                using Process process = Process.GetProcessById(pid);
+                return !process.HasExited && string.Equals(process.ProcessName, RunnerProcessName, StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
