@@ -44,6 +44,34 @@ public partial class ContentPageViewModelTests
         new(page, new ImmediateTaskScheduler(), new TestAppExtensionHost(), CommandProviderContext.Empty);
 
     [TestMethod]
+    public void ViewModelFromContent_PreservesFallbackContext()
+    {
+        var page = new CommandPaletteContentPageViewModel(
+            new TestContentPage(),
+            new ImmediateTaskScheduler(),
+            new TestAppExtensionHost(),
+            CommandProviderContext.Empty);
+        var fallbackContext = new FallbackQueryContext(
+            page.ExtensionHost,
+            page.ProviderContext,
+            new object(),
+            System.Threading.CancellationToken.None);
+        page.InheritFallbackContext(fallbackContext);
+        var content = page.ViewModelFromContent(new PlainTextContent("Fallback content"), new(page));
+
+        try
+        {
+            Assert.IsNotNull(content);
+            Assert.AreSame(fallbackContext, content.FallbackContext);
+        }
+        finally
+        {
+            content?.SafeCleanup();
+            page.SafeCleanup();
+        }
+    }
+
+    [TestMethod]
     [DataRow(false, true)]
     [DataRow(true, true)]
     [DataRow(true, false)]

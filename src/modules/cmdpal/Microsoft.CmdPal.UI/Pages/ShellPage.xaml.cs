@@ -380,17 +380,21 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ShowConfirmationMessage message)
     {
-        DispatcherQueue.TryEnqueue(async () =>
+        if (!DispatcherQueue.TryEnqueue(async () =>
         {
+            using var snapshotLease = message.SnapshotLease;
             try
             {
-                await HandleConfirmArgsOnUiThread(message.Args);
+                await HandleConfirmArgsOnUiThread(message.Args, message.FallbackContext);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.ToString());
             }
-        });
+        }))
+        {
+            message.SnapshotLease?.Dispose();
+        }
     }
 
     public void Receive(ExternalCommandLinkRequestedMessage message) => _externalCommandLinks.Enqueue(message.Route);
@@ -410,10 +414,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ShowToastMessage message)
     {
-        DispatcherQueue.TryEnqueue(() =>
+        if (!DispatcherQueue.TryEnqueue(() =>
         {
             _toast.ShowToast(message);
-        });
+        }))
+        {
+            message.SnapshotLease?.Dispose();
+        }
     }
 
     public void Receive(ShowPinToDockDialogMessage message)
@@ -478,14 +485,21 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     }
 
     // This gets called from the UI thread
-    private async Task HandleConfirmArgsOnUiThread(IConfirmationArgs? args)
+    private async Task HandleConfirmArgsOnUiThread(
+        IConfirmationArgs? args,
+        FallbackQueryContext? fallbackContext)
     {
         if (args is null)
         {
             return;
         }
 
-        ConfirmResultViewModel vm = new(args, new(ViewModel.CurrentPage));
+        if (fallbackContext?.CanInvoke == false)
+        {
+            return;
+        }
+
+        ConfirmResultViewModel vm = new(args, new(ViewModel.CurrentPage), fallbackContext);
         var initializeDialogTask = Task.Run(() => { InitializeConfirmationDialog(vm); });
         await initializeDialogTask;
 
