@@ -11,10 +11,10 @@ namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
 /// Finds the parts a clipboard variable can insert from a copy: email addresses, web links, phone numbers and numbers,
-/// each different one once, in order. It reads in linear time, so a huge copy can't stall an expansion, and only the first
-/// <see cref="MaxScannedLength"/> characters. Numbers follow the region's decimal and group separators, and so does telling
-/// a phone number from a number written in groups. Dates, times and IP addresses are neither, and nothing in a link or an
-/// email address is a phone number or a number.
+/// each different one once, in order. It reads in linear time and at most <see cref="MaxScannedLength"/> characters.
+/// A longer copy is read only through the last CR or LF within that limit; without one, no parts are found.
+/// Numbers follow the region's decimal and group separators, and so does telling a phone number from a number written
+/// in groups. Dates, times and IP addresses are neither, and nothing in a link or an email address is either.
 /// </summary>
 public static class ClipboardParts
 {
@@ -65,8 +65,14 @@ public static class ClipboardParts
 
         if (text.Length > MaxScannedLength)
         {
-            // Not between the halves of a character.
-            text = text[..(char.IsHighSurrogate(text[MaxScannedLength - 1]) ? MaxScannedLength - 1 : MaxScannedLength)];
+            // End at a real line boundary, so neither a candidate nor a mask is cut into a different value.
+            int lastLineEnd = text.AsSpan(0, MaxScannedLength).LastIndexOfAny('\r', '\n');
+            if (lastLineEnd < 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            text = text[..(lastLineEnd + 1)];
         }
 
         List<(int Start, int End)> spans;
@@ -402,7 +408,7 @@ public static class ClipboardParts
                 continue;
             }
 
-            if (!StartsPhone(text, index) || (index > 0 && !CanStartPhoneAfter(text[index - 1])))
+            if (!StartsPhone(text, index) || (index > 0 && !CanStartPhoneAfter(text, index)))
             {
                 index++;
                 continue;
@@ -554,8 +560,9 @@ public static class ClipboardParts
         return position;
     }
 
-    private static bool CanStartPhoneAfter(char previous)
-        => !char.IsLetterOrDigit(previous) && previous is not ('_' or '@' or '/' or '.' or ',' or '+' or '-');
+    private static bool CanStartPhoneAfter(string text, int index)
+        => !WordBoundaryRules.EndsInWord(text.AsSpan(0, index))
+            && text[index - 1] is not ('@' or '/' or '.' or ',' or '+' or '-');
 
     private static bool IsPhoneSeparator(char character)
         => character is ' ' or '\u00A0' or '\u202F' or '-' or '\u2010' or '\u2011' or '.' or '/';
@@ -675,7 +682,7 @@ public static class ClipboardParts
     private static bool CanStartNumberAfter(string text, int index, NumberFormat format)
     {
         char previous = text[index - 1];
-        return !char.IsLetterOrDigit(previous) && previous != '_'
+        return !WordBoundaryRules.EndsInWord(text.AsSpan(0, index))
             && !(format.IsSeparator(previous) && index >= 2 && char.IsDigit(text[index - 2]));
     }
 

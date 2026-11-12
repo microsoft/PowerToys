@@ -104,7 +104,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 AppTitleBar.IconSource = new ImageIconSource { ImageSource = new BitmapImage(new Uri(icon)) };
             }
 
-            _replacementEditor = new TextExpanderReplacementEditor(ReplacementBox, GetVariableColors);
+            _replacementEditor = new TextExpanderReplacementEditor(ReplacementBox, GetVariableColors, () => _isSnippetDialogOpen ? _originalSnippet : null);
             _replacementEditor.TextChanged += (_, _) => Validate();
             _replacementEditor.PromptEditRequested += ReplacementEditor_PromptEditRequested;
             _replacementEditor.ClipboardEditRequested += ReplacementEditor_ClipboardEditRequested;
@@ -396,13 +396,14 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         }
 
         /// <summary>
-        /// Shows the date format guide while the caret is in a {{date:…}} variable, with each code's
-        /// example and what the format shows, as of now. Hidden anywhere else.
+        /// Shows the date format guide while the caret is in a {{date:…}} variable using .NET formatting,
+        /// with each code's example and what the format shows, as of now. Hidden for strftime and elsewhere.
         /// </summary>
         private void UpdateDateFormatGuide()
         {
             (int start, int end) = _replacementEditor.Selection;
-            if (TextExpanderDateGuide.TokenAround(_replacementEditor.Text, start, end) is not { } token)
+            if (TextExpanderDateGuide.TokenAround(_replacementEditor.Text, start, end) is not { } token
+                || token.Format.Contains('%', StringComparison.Ordinal))
             {
                 DateFormatGuide.Visibility = Visibility.Collapsed;
                 return;

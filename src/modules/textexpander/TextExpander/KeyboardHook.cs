@@ -101,7 +101,7 @@ internal sealed class KeyboardHook : IDisposable
     internal long InputGeneration => Volatile.Read(ref _inputGeneration);
 
     /// <summary>
-    /// Gets how many clicks have reached apps, but for those while a prompt is open, when no insertion runs. Unlike the
+    /// Gets how many clicks or wheel events have reached apps, but for those while a prompt is open, when no insertion runs. Unlike the
     /// input generation, keys the guard holds and sends back never move it.
     /// </summary>
     internal long Clicks => Volatile.Read(ref _clicks);
@@ -136,13 +136,16 @@ internal sealed class KeyboardHook : IDisposable
     internal Func<bool> InPasswordBox { get; init; } = IsFocusedPasswordEdit;
 
     /// <summary>
-    /// What a key types into <c>typed</c>, as the window in front's layout makes it: the number of characters (one, or
-    /// two when a dead key's accent doesn't combine with the key after it), zero for none, or -1 for a dead key.
+    /// What a key types into <c>typed</c>, as the window in front's layout makes it: the number of UTF-16 units produced
+    /// by the complete key (including ligatures and supplementary characters), zero for none, or -1 for a dead key.
     /// </summary>
     internal delegate int KeyDecoder(uint vk, uint scanCode, Span<char> typed);
 
     /// <summary>Gets what decodes each key. Tests pass their own, to type as a layout with dead keys does.</summary>
     internal KeyDecoder Decode { get; init; } = DecodeWithForegroundLayout;
+
+    /// <summary>Continues the hook chain before ordinary text is committed. Tests supply a downstream remapping hook.</summary>
+    internal Native.HookProc NextHook { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether when false, keystrokes are still observed but never expanded. Turning this off is how a
@@ -200,6 +203,7 @@ internal sealed class KeyboardHook : IDisposable
         Guard = new InsertionGuard(() => InputGeneration, TargetInFront, () => Clicks);
         RequestAuthorization = window => RefreshTargetAuthorization(window, asynchronous: true);
         CaptureForeground = CaptureForForeground;
+        NextHook = (code, message, data) => Native.CallNextHookEx(_hookHandle, code, message, data);
     }
 
     public bool Install()
@@ -244,32 +248,44 @@ internal sealed class KeyboardHook : IDisposable
     }
 
     // ── Hook callback ────────────────────────────────────────
-    private unsafe IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+    internal unsafe IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
     {
         if (nCode != Native.HC_ACTION)
         {
-            return Native.CallNextHookEx(_hookHandle, nCode, wParam, lParam);
+            return NextHook(nCode, wParam, lParam);
         }
 
         // Copied, not marshalled, which would allocate on every key event on the machine.
         Native.KBDLLHOOKSTRUCT key = *(Native.KBDLLHOOKSTRUCT*)lParam;
-        if (OnKeyEvent(key, wParam.ToInt32(), observePassed: false))
+        if (Guard.Swallows(key, observePassed: false, out bool mayMatch))
         {
             return new IntPtr(1);
         }
 
-        IntPtr next = Native.CallNextHookEx(_hookHandle, nCode, wParam, lParam);
-        return next != IntPtr.Zero || Guard.Passed(key) ? next : new IntPtr(1);
+        IntPtr next = NextHook(nCode, wParam, lParam);
+        if (next != IntPtr.Zero)
+        {
+            return next;
+        }
+
+        // A later hook can swallow the original and inject a remapped key instead. Only the event it lets through
+        // belongs in the buffer, or the original and remapped characters would both be counted.
+        return ProcessPassedKeyEvent(key, wParam.ToInt32(), mayMatch) || !Guard.Passed(key) ? new IntPtr(1) : IntPtr.Zero;
     }
 
     /// <summary>Handles a key event, and returns whether it's swallowed. Every one, key-ups too, goes to the guard first.</summary>
     internal bool OnKeyEvent(Native.KBDLLHOOKSTRUCT data, int message, bool observePassed = true)
     {
-        if (Guard.Swallows(data, observePassed))
+        if (Guard.Swallows(data, observePassed, out bool mayMatch))
         {
             return true;
         }
 
+        return ProcessPassedKeyEvent(data, message, mayMatch);
+    }
+
+    private bool ProcessPassedKeyEvent(Native.KBDLLHOOKSTRUCT data, int message, bool mayMatch)
+    {
         if (_disposed || (message != Native.WM_KEYDOWN && message != Native.WM_SYSKEYDOWN))
         {
             return false;
@@ -293,7 +309,7 @@ internal sealed class KeyboardHook : IDisposable
             return false;
         }
 
-        if (kind == HostInputKind.Unmatched)
+        if (kind == HostInputKind.Unmatched || !mayMatch)
         {
             UnmatchedKey(data.VkCode);
             return false;
@@ -326,8 +342,7 @@ internal sealed class KeyboardHook : IDisposable
     /// <summary>Handles a mouse event, given its message and the MSLLHOOKSTRUCT behind <paramref name="data"/>.</summary>
     internal unsafe void OnMouseEvent(int message, IntPtr data)
     {
-        // Only button-down messages reposition the caret. Wheel and WM_MOUSEMOVE do not, and
-        // clearing on every move would be both wrong and far too expensive for this hook.
+        // Moving the mouse alone changes no text. Buttons and the wheel can change the caret or an editable selection.
         switch (message)
         {
             case Native.WM_LBUTTONDOWN:
@@ -337,6 +352,10 @@ internal sealed class KeyboardHook : IDisposable
             case Native.WM_XBUTTONDOWN:
                 // MSLLHOOKSTRUCT starts with the point clicked. Copied, not marshalled, which would allocate on every click.
                 OnButtonDown(*(Native.POINT*)data);
+                break;
+            case Native.WM_MOUSEWHEEL:
+                UserInput();
+                InvalidatePositionInput(*(Native.POINT*)data);
                 break;
         }
     }
@@ -354,6 +373,11 @@ internal sealed class KeyboardHook : IDisposable
             return;
         }
 
+        InvalidatePositionInput(point);
+    }
+
+    private void InvalidatePositionInput(Native.POINT point)
+    {
         if (!Suspended)
         {
             Click();
@@ -365,7 +389,7 @@ internal sealed class KeyboardHook : IDisposable
     }
 
     /// <summary>
-    /// Handles a click with no prompt open. It can move the caret, so what was typed before it can't complete a trigger,
+    /// Invalidates a click or wheel event with no prompt open. It can move the caret, so what was typed before it can't complete a trigger,
     /// undo ends, and an insertion going in stops (see <see cref="Clicks"/>).
     /// </summary>
     internal void Click()
@@ -565,7 +589,7 @@ internal sealed class KeyboardHook : IDisposable
             return false;
         }
 
-        Span<char> typed = stackalloc char[2];
+        Span<char> typed = stackalloc char[8];
         int written = Decode(vk, scanCode, typed);
         if (written < 0)
         {
@@ -646,6 +670,8 @@ internal sealed class KeyboardHook : IDisposable
         // space or punctuation that released the trigger.
         int start = usable - trigger.Length;
         string typedText = new(_buffer, start, _count - start);
+        string typedPrefix = typedText[..Math.Max(0, typedText.Length - written)];
+        string swallowedText = new(typed[..written]);
         ResetBuffer();
 
         // From here on the user's keys are held, after this one, until the insertion takes them over: one typed straight
@@ -661,12 +687,13 @@ internal sealed class KeyboardHook : IDisposable
         // The keystroke that completed the match is swallowed; everything typed before it reached the target.
         Pending.Add(new PendingExpansion(
             trigger,
-            typedText[..^1],
+            typedPrefix,
             replacement,
             target,
             TypedText: typedText,
             InputGeneration: generation,
-            Terminator: wordMode && WordBoundary.KeepTerminator ? ch : null));
+            Terminator: wordMode && WordBoundary.KeepTerminator ? ch : null,
+            SwallowedText: swallowedText));
         return true;
     }
 
@@ -746,14 +773,13 @@ internal sealed class KeyboardHook : IDisposable
             state[Native.VK_CAPITAL] = 0x01;
         }
 
-        Span<char> buffer = stackalloc char[8];
         int written;
         fixed (byte* statePtr = state)
         {
-            fixed (char* bufferPtr = buffer)
-        {
-            written = Native.ToUnicodeEx(vk, scanCode, statePtr, bufferPtr, buffer.Length, Native.TOUNICODE_NO_STATE_CHANGE, layout);
-        }
+            fixed (char* typedPtr = typed)
+            {
+                written = Native.ToUnicodeEx(vk, scanCode, statePtr, typedPtr, typed.Length, Native.TOUNICODE_NO_STATE_CHANGE, layout);
+            }
         }
 
         // written < 0 is a dead key: it types nothing until the next key, whose character the app composes from the two.
@@ -762,13 +788,13 @@ internal sealed class KeyboardHook : IDisposable
             return -1;
         }
 
-        // Two or more characters: a dead key's accent that the key after it doesn't combine with, then that key's own.
+        // A physical key can produce a ligature or a supplementary character, not only a dead-key combination.
         int count = 0;
-        for (int i = Math.Max(0, written - 2); i < written; i++)
+        for (int i = 0; i < written; i++)
         {
-            if (!char.IsControl(buffer[i]))
+            if (!char.IsControl(typed[i]))
             {
-                typed[count++] = buffer[i];
+                typed[count++] = typed[i];
             }
         }
 

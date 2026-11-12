@@ -122,13 +122,13 @@ internal sealed class Win32Desktop : IDesktop
         return written > 0 && InjectionPolicy.IsConsoleClass(new string(name, 0, written));
     }
 
-    public bool Send(IReadOnlyList<KeyStroke> strokes)
+    public uint Send(IReadOnlyList<KeyStroke> strokes)
     {
         ArgumentNullException.ThrowIfNull(strokes);
 
         if (strokes.Count == 0)
         {
-            return true;
+            return 0;
         }
 
         var inputs = new NativeMethods.INPUT[strokes.Count];
@@ -155,7 +155,7 @@ internal sealed class Win32Desktop : IDesktop
         }
 
         // The count says the events went in, not that they arrived: UIPI drops them silently, hence CanDrive.
-        return NativeMethods.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<NativeMethods.INPUT>()) == inputs.Length;
+        return NativeMethods.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<NativeMethods.INPUT>());
     }
 
     public void HideCommandPalette() => WeakReferenceMessenger.Default.Send(new HideWindowMessage());

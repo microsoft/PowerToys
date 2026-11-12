@@ -24,11 +24,11 @@ namespace Microsoft.PowerToys.TextExpander;
 /// <item>Held text and presses only go back to the window they were typed for. On discard, a held modifier release whose
 /// down already passed is finished by a worker. The hook rejects that cleanup if newer modifier input has arrived.</item>
 /// </list>
-/// The hook only holds keys and takes markers. SendInput returns once every low-level hook has seen each event, so sent
-/// from the hook it nested, and a slow hook elsewhere could make Windows remove ours. The guard never keeps the keyboard
+/// The hook only holds keys and takes markers. Sending from the hook can nest its input handling and let a slow hook
+/// elsewhere make Windows remove ours. Markers, not SendInput returning, confirm the drain. The guard never keeps the keyboard
 /// for long. It ends by itself with no event of ours or renewal for <see cref="TimeoutMs"/>, or with <see cref="MaxHeld"/>
-/// key events held, and so does a hold since a match the worker hasn't taken, <see cref="TimeoutMs"/> after the first key
-/// pressed since the match. The worker ends it once typing has held keys for <see cref="HoldCapMs"/>, and renews it while
+/// key events held, and so does a hold since a match the worker hasn't taken, <see cref="TimeoutMs"/> after a key press
+/// or a release paired with a modifier Windows already received. The worker ends it once typing has held keys for <see cref="HoldCapMs"/>, and renews it while
 /// a paste settles, for <see cref="Injector.PasteBusyCapMs"/> at most.
 /// </summary>
 internal sealed class InsertionGuard : IDisposable
@@ -118,6 +118,9 @@ internal sealed class InsertionGuard : IDisposable
     private long _holdStart;
     private long _deadline;
     private volatile Mode _mode;
+
+    // Kept through the drain's final marker: a mid-insertion replay changes the document but cannot start another match.
+    private bool _matchReturnedKeys = true;
 
     // Under _lock. The keys held since a match the worker hasn't taken yet, the key the hook swallowed first; the match's
     // input generation, which the insertion that takes them over begins with; their window; and until when, once a key is
@@ -262,7 +265,7 @@ internal sealed class InsertionGuard : IDisposable
     /// Run in the hook as a trigger matches, before its work is queued: holds the user's keys from now on, after
     /// <paramref name="swallowed"/>, the key the hook swallowed, for the insertion into <paramref name="target"/> the worker
     /// begins with input generation <paramref name="generation"/>, which takes them over (<see cref="Begin"/>). Ends by
-    /// itself <see cref="TimeoutMs"/> after the first key pressed since, or at <see cref="MaxHeld"/> key events, sending them
+    /// itself <see cref="TimeoutMs"/> after the first key press or passed modifier's release since, or at <see cref="MaxHeld"/> key events, sending them
     /// back. With nothing pressed, it delays nobody, so it waits for the insertion, which a busy machine can be slow to
     /// begin. Returns false, holding nothing, while keys are held since another match: none reaches the matcher then but a
     /// lower-integrity app's. Arms no timer: the key that matched must be answered quickly, or Windows passes it on.
@@ -276,7 +279,9 @@ internal sealed class InsertionGuard : IDisposable
                 return false;
             }
 
-            _afterMatch.Add(swallowed);
+            // Matching runs after the downstream hooks, so this event has already been remapped. Returning it must
+            // change the input generation without firing the same trigger again, even if its hook callback arrives late.
+            _afterMatch.Add(swallowed with { DwExtraInfo = HostInputTags.ReturnedTriggerTag(KeyboardHook.InjectionSignature) });
             _afterMatchGeneration = generation;
             _afterMatchTarget = target;
             _afterMatchDeadline = NoDeadline;
@@ -461,35 +466,40 @@ internal sealed class InsertionGuard : IDisposable
     /// Once the hook has the end marker, waited for at most <see cref="MarkerWaitMs"/> if <paramref name="markerSent"/>,
     /// sends back what it held, after <paramref name="pressAgain"/>, the modifiers let go of, with a marker after them;
     /// once that one is in, what was held meanwhile, and so on until nothing is. With another window in front, what's
-    /// held is dropped instead. If a marker doesn't come, the guard ends here.
+    /// held is dropped instead. If a marker doesn't come, the guard ends here. Only a confirmed complete drain returns
+    /// its input generation, captured before fresh input can pass. A mid-insertion drain sets
+    /// <paramref name="matchReturnedKeys"/> false so its keys cannot queue work at a position the remainder of this
+    /// insertion is about to change.
     /// </summary>
-    public void AwaitEnd(bool markerSent, Native.INPUT[] pressAgain)
+    public (bool Completed, long InputGeneration) AwaitEnd(bool markerSent, Native.INPUT[] pressAgain, bool matchReturnedKeys = true)
     {
         int awaited = 2;
-        while (true)
+        while (markerSent)
         {
             Native.INPUT[] batch;
             ReplayBatch replay;
             IntPtr target;
             lock (_lock)
             {
-                if (!Wait(markerSent ? MarkerWaitMs : 0, () => _over || _markers >= awaited))
+                if (!Wait(MarkerWaitMs, () => _over || _markers >= awaited))
                 {
                     break;
                 }
 
                 if (_over)
                 {
-                    return;
+                    return (false, 0);
                 }
 
                 if (_held.Count == 0 && pressAgain.Length == 0)
                 {
+                    long generation = _inputGeneration();
                     DiscardLocked(EndLocked());
-                    return;
+                    return (true, generation);
                 }
 
                 // Kept, so the hook knows them coming back: zeroed once the next round or the end replaces them.
+                _matchReturnedKeys = matchReturnedKeys;
                 _mode = Mode.Draining;
                 DiscardLocked(_expected);
                 _expected = _held;
@@ -506,7 +516,7 @@ internal sealed class InsertionGuard : IDisposable
                 if (!TargetInFront(target))
                 {
                     Drop();
-                    return;
+                    return (false, 0);
                 }
 
                 markerSent = Resend(batch) == (uint)batch.Length;
@@ -521,6 +531,7 @@ internal sealed class InsertionGuard : IDisposable
         }
 
         Abandon();
+        return (false, 0);
     }
 
     /// <summary>Ends the guard and drops what it held, zeroed: its window isn't in front, so it can't go back.</summary>
@@ -582,7 +593,11 @@ internal sealed class InsertionGuard : IDisposable
     public bool Swallows(Native.KBDLLHOOKSTRUCT key) => Swallows(key, observePassed: true);
 
     internal bool Swallows(Native.KBDLLHOOKSTRUCT key, bool observePassed)
+        => Swallows(key, observePassed, out _);
+
+    internal bool Swallows(Native.KBDLLHOOKSTRUCT key, bool observePassed, out bool mayMatch)
     {
+        mayMatch = true;
         if ((key.DwExtraInfo.ToInt64() & 0xFFF) == CleanupTagBits)
         {
             lock (_lock)
@@ -626,7 +641,7 @@ internal sealed class InsertionGuard : IDisposable
 
         if (!KeyboardHook.IsModifierKey(key.VkCode) || key.DwExtraInfo == HostInputTags.KeyboardManagerSuppressed)
         {
-            return SwallowsCore(key);
+            return SwallowsCore(key, out mayMatch);
         }
 
         lock (_lock)
@@ -638,7 +653,7 @@ internal sealed class InsertionGuard : IDisposable
                 _externalModifierGeneration[vk]++;
             }
 
-            bool swallowed = SwallowsCore(key, release);
+            bool swallowed = SwallowsCore(key, out mayMatch, release);
             if (!swallowed)
             {
                 if (observePassed)
@@ -680,8 +695,9 @@ internal sealed class InsertionGuard : IDisposable
         }
     }
 
-    private bool SwallowsCore(Native.KBDLLHOOKSTRUCT key, HeldModifierRelease? replayedRelease = null)
+    private bool SwallowsCore(Native.KBDLLHOOKSTRUCT key, out bool mayMatch, HeldModifierRelease? replayedRelease = null)
     {
+        mayMatch = true;
         bool ours = key.DwExtraInfo == KeyboardHook.InjectionSignature;
         if (ours && key.VkCode == MarkerVk)
         {
@@ -731,12 +747,17 @@ internal sealed class InsertionGuard : IDisposable
                 return true;
             }
 
-            // Held keys going back can set off a trigger: what comes after it waits for that insertion. The first key pressed
-            // since the match starts its time limit, as the user is now waiting for it.
+            mayMatch = _mode != Mode.Draining || _matchReturnedKeys;
+
+            // Held keys going back can set off a trigger: what comes after it waits for that insertion. A key press or
+            // release of a modifier Windows still holds starts its time limit; the swallowed key's own up needn't.
             if (_holdingAfterMatch)
             {
                 HoldLocked(_afterMatch, key, replayedRelease);
-                if (_afterMatchDeadline == NoDeadline && (key.Flags & Native.LLKHF_UP) == 0)
+                bool isUp = (key.Flags & Native.LLKHF_UP) != 0;
+                bool passedModifierUp = isUp && KeyboardHook.IsModifierKey(key.VkCode)
+                    && _passedModifierDown[ModifierKey(key)];
+                if (_afterMatchDeadline == NoDeadline && (!isUp || passedModifierUp))
                 {
                     _afterMatchDeadline = Clock() + TimeoutMs;
                     ArmTimerLocked();
@@ -1271,7 +1292,7 @@ internal sealed class InsertionGuard : IDisposable
             Array.Clear(input);
             lock (_lock)
             {
-                // SendInput has finished traversing hooks. Until then even a cancelled token must stay recognizable.
+                // This cleanup dispatch has returned; remove its local token and wake the waiting worker.
                 _cleanup.Remove(signature);
                 _pendingCleanup--;
                 Monitor.PulseAll(_lock);

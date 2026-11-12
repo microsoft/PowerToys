@@ -27,6 +27,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 
         HandleBoundFileDeletionResult DeleteOwnedFile(string path, byte[] expectedBytes);
 
-        IDisposable WatchForFiles(string folder, IReadOnlyList<string> fileNames, Action changed);
+        IDisposable WatchForFiles(string folder, IReadOnlyList<string> fileNames, Action changed, Func<bool> needsRetry = null);
     }
 }

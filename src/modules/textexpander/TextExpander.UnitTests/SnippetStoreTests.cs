@@ -944,6 +944,65 @@ public sealed class SnippetStoreTests
     }
 
     [TestMethod]
+    public void PublishedWatcherRetriesAnUnreadChangeAfterItsFastAttemptsAndStopsAfterRecovery()
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        string path = Write(scratch, "snippets.json", "!old=before");
+        Action? fileEvent = null;
+        using var slowRetryScheduled = new ManualResetEventSlim(false);
+        using var recovered = new ManualResetEventSlim(false);
+        int obstructed = 0;
+        int useNewContents = 0;
+        int reads = 0;
+        var hooks = new SnippetStore.TestHooks
+        {
+            WatcherFileEventHandlerRegistered = (_, handler) => fileEvent = handler,
+        };
+
+        byte[] ReadBytes(string file)
+        {
+            Interlocked.Increment(ref reads);
+            if (Volatile.Read(ref obstructed) != 0)
+            {
+                throw new IOException("The writer still holds the changed file.");
+            }
+
+            return SnippetJson.Bytes(Volatile.Read(ref useNewContents) == 0 ? "!old=before" : "!new=after");
+        }
+
+        TimeSpan recoveryInterval = TimeSpan.FromMilliseconds(150);
+        using var store = NewStore(
+            path,
+            ReadBytes,
+            hooks,
+            maxReloadAttempts: 4,
+            log: SignalWhenLogged("Retrying in 150 ms.", slowRetryScheduled),
+            recoveryInterval: recoveryInterval);
+        Assert.IsTrue(store.Load().Succeeded);
+        Assert.IsTrue(store.StartWatching().Succeeded);
+        Assert.IsNotNull(fileEvent);
+        int healthyReads = Volatile.Read(ref reads);
+        Thread.Sleep(recoveryInterval * 2);
+        Assert.AreEqual(healthyReads, Volatile.Read(ref reads), "A healthy watched file isn't polled.");
+
+        store.Reloaded += _ => recovered.Set();
+        Volatile.Write(ref useNewContents, 1);
+        Volatile.Write(ref obstructed, 1);
+        fileEvent!();
+        Assert.IsTrue(slowRetryScheduled.Wait(TimeSpan.FromSeconds(5)), "Exhausted fast attempts must keep the unread change pending.");
+        Assert.IsTrue(store.Current.Map.ContainsKey("!old"), "Failed reads keep the previous complete snapshot.");
+
+        // No file event, size change or write-time change accompanies releasing an exclusive writer.
+        Volatile.Write(ref obstructed, 0);
+        Assert.IsTrue(recovered.Wait(TimeSpan.FromSeconds(5)), "The same pending change wasn't read after the writer released it.");
+        Assert.IsTrue(store.Current.Map.ContainsKey("!new"));
+        Assert.IsFalse(store.Current.Map.ContainsKey("!old"));
+        int recoveredReads = Volatile.Read(ref reads);
+        Thread.Sleep(recoveryInterval * 2);
+        Assert.AreEqual(recoveredReads, Volatile.Read(ref reads), "A successful read consumes the pending change and stops retrying.");
+    }
+
+    [TestMethod]
     public void WatcherReloadStopsAfterItsBoundedFailureCount()
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();

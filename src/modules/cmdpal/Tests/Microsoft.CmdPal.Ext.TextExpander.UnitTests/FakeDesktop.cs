@@ -38,12 +38,14 @@ internal sealed class FakeDesktop : IDesktop
     /// <summary>Gets or sets a value indicating whether the user's app is a console window (conhost).</summary>
     public bool AppIsConsole { get; set; }
 
-    public bool SendSucceeds { get; set; } = true;
+    /// <summary>Gets the accepted event counts to return for the next sends. Later sends accept the whole batch.</summary>
+    public Queue<uint> SendCounts { get; } = new();
 
-    /// <summary>Gets or sets how many sends are cut off part way, before they go through again.</summary>
-    public int FailingSends { get; set; }
-
+    /// <summary>Gets every requested batch, including events a partial send didn't accept.</summary>
     public List<IReadOnlyList<KeyStroke>> Sent { get; } = new();
+
+    /// <summary>Gets the prefixes accepted by this fake, separately from the requested batches.</summary>
+    public List<IReadOnlyList<KeyStroke>> Accepted { get; } = new();
 
     public int HideRequests { get; private set; }
 
@@ -65,16 +67,12 @@ internal sealed class FakeDesktop : IDesktop
 
     public bool IsConsole(nint window) => window == AppWindow && AppIsConsole;
 
-    public bool Send(IReadOnlyList<KeyStroke> strokes)
+    public uint Send(IReadOnlyList<KeyStroke> strokes)
     {
         Sent.Add(strokes);
-        if (FailingSends > 0)
-        {
-            FailingSends--;
-            return false;
-        }
-
-        return SendSucceeds;
+        var sent = SendCounts.TryDequeue(out var count) ? count : (uint)strokes.Count;
+        Accepted.Add(strokes.Take((int)sent).ToArray());
+        return sent;
     }
 
     public void HideCommandPalette()
@@ -84,14 +82,14 @@ internal sealed class FakeDesktop : IDesktop
     }
 
     /// <summary>Gets a value indicating whether Ctrl+V was sent.</summary>
-    public bool Pasted => Sent.Any(batch =>
+    public bool Pasted => Accepted.Any(batch =>
         batch.Contains(KeyStroke.KeyDown(KeyStrokes.Control)) && batch.Contains(KeyStroke.KeyDown(KeyStrokes.V)));
 
     /// <summary>Gets the text typed: Unicode characters, Enter as a line break and Tab as a tab.</summary>
     public string Typed()
     {
         var typed = new StringBuilder();
-        foreach (var stroke in Sent.SelectMany(batch => batch).Where(stroke => !stroke.Up))
+        foreach (var stroke in Accepted.SelectMany(batch => batch).Where(stroke => !stroke.Up))
         {
             if (stroke.Character != '\0')
             {

@@ -133,15 +133,6 @@ internal static class ClassicPromptDialog
                 break;
             }
 
-            if (msg.Message == Native.WM_KEYDOWN
-                && msg.WParam.ToInt32() == Native.VK_RETURN
-                && !PromptText.HasRequiredAnswer(_request, ReadEditText()))
-            {
-                Native.ShowWindow(_errorHandle, Native.SW_SHOW);
-                Native.SetFocus(_editHandle);
-                continue;
-            }
-
             if (Native.IsDialogMessageW(hwnd, ref msg))
             {
                 continue;

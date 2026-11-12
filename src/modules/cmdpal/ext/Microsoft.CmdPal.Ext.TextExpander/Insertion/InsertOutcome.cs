@@ -21,9 +21,6 @@ internal enum InsertOutcome
     /// <summary>Another window came to the front before the snippet was all in.</summary>
     TargetChanged,
 
-    /// <summary>The user's clipboard couldn't be put back, so the snippet is still on it.</summary>
-    ClipboardNotRestored,
-
     /// <summary>
     /// A snippet with lines couldn't be pasted into a terminal, and typing them would run each one, so nothing went in.
     /// </summary>

@@ -42,8 +42,8 @@ internal interface IDesktop
     /// </summary>
     bool IsConsole(nint window);
 
-    /// <summary>Sends <paramref name="strokes"/> in one call, so nothing else gets between them. False unless all went.</summary>
-    bool Send(IReadOnlyList<KeyStroke> strokes);
+    /// <summary>Sends <paramref name="strokes"/> in one call and returns how many events Windows accepted.</summary>
+    uint Send(IReadOnlyList<KeyStroke> strokes);
 
     /// <summary>Hides Command Palette, so the app it was opened over comes back to the front.</summary>
     void HideCommandPalette();

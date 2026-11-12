@@ -150,7 +150,7 @@ public static class FuzzTests
         string? longest = null;
         foreach (string trigger in triggers)
         {
-            Check(index.MatchLongestSuffix(trigger) == trigger, "Typing a trigger did not match that trigger.");
+            Check(index.MatchLongestSuffix(trigger) == (trigger.Length == 0 ? null : trigger), "Typing a trigger did not match that trigger.");
 
             if (typed.EndsWith(trigger, StringComparison.Ordinal) && trigger.Length > (longest?.Length ?? 0))
             {

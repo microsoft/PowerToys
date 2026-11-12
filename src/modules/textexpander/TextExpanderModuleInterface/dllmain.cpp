@@ -52,7 +52,8 @@ const static wchar_t* ENGINE_SHUTDOWN_MESSAGE = L"PowerToys.TextExpander.Request
 const static wchar_t* ENGINE_FILE_NAME = L"PowerToys.TextExpander.exe";
 
 // How long an engine asked to exit gets before it's terminated: time to put back a clipboard a paste borrowed.
-const static DWORD ENGINE_EXIT_TIMEOUT_MS = 1500;
+// Match Program.WorkerDrainTimeoutMs so an in-flight paste can settle and restore the clipboard.
+const static DWORD ENGINE_EXIT_TIMEOUT_MS = 10000;
 
 // Where the Settings app writes this module's configuration. Passed explicitly so the
 // dependency is visible on the command line. The engine watches the file, so changes apply live.
@@ -463,7 +464,7 @@ public:
                 else
                 {
                     Logger::trace(L"Signaled exit event for PowerToys TextExpander.");
-                    forceTerminate = WaitForSingleObject(p_info.hProcess, 1500) != WAIT_OBJECT_0;
+                    forceTerminate = WaitForSingleObject(p_info.hProcess, ENGINE_EXIT_TIMEOUT_MS) != WAIT_OBJECT_0;
                     if (forceTerminate)
                     {
                         Logger::warn(L"PowerToys TextExpander did not exit after the exit event; terminating it.");

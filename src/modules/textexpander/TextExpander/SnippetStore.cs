@@ -1262,7 +1262,7 @@ internal sealed class SnippetStore : IDisposable
     private void CompleteReloadRequest(ReloadRequest request, ReloadRetry? retry)
     {
         bool disposed;
-        bool retryScheduled = false;
+        TimeSpan? retryDelay = null;
         int failureAttempt = 0;
         TransitionResult? failure = retry?.Failure;
 
@@ -1282,7 +1282,19 @@ internal sealed class SnippetStore : IDisposable
                             retryValue.Watcher,
                             failureAttempt,
                             _retryDelay);
-                        retryScheduled = true;
+                        retryDelay = _retryDelay;
+                    }
+                    else if (retryValue.Kind == ReloadRequestKind.PublishedWatcher)
+                    {
+                        // The file's final change may have arrived while its writer still held it open. Keep that
+                        // unread change pending at the recovery interval; closing the writer needn't raise another event.
+                        _scheduledReload = CreateReloadRequestLocked(
+                            retryValue.Kind,
+                            retryValue.DesiredGeneration,
+                            retryValue.Watcher,
+                            _maxReloadAttempts - 1,
+                            _recoveryInterval);
+                        retryDelay = _recoveryInterval;
                     }
                     else
                     {
@@ -1312,7 +1324,7 @@ internal sealed class SnippetStore : IDisposable
         }
         else if (failureAttempt > 0 && failure is TransitionResult failed)
         {
-            LogReloadFailure(failed, failureAttempt, retryScheduled);
+            LogReloadFailure(failed, failureAttempt, retryDelay);
         }
     }
 
@@ -1355,14 +1367,14 @@ internal sealed class SnippetStore : IDisposable
         }
         else if (targetIsCurrent)
         {
-            LogReloadFailure(result, attempt: 1, retryScheduled);
+            LogReloadFailure(result, attempt: 1, retryScheduled ? _retryDelay : null);
         }
     }
 
-    private void LogReloadFailure(TransitionResult result, int attempt, bool retryScheduled)
+    private void LogReloadFailure(TransitionResult result, int attempt, TimeSpan? retryDelay)
     {
-        string action = retryScheduled
-            ? $"Retrying in {_retryDelay.TotalMilliseconds:0} ms."
+        string action = retryDelay.HasValue
+            ? $"Retrying in {retryDelay.Value.TotalMilliseconds:0} ms."
             : _published.Watcher is not null
                 ? "Stopped retrying until another file-system event or configuration change."
                 : "Stopped retrying until the configuration changes.";

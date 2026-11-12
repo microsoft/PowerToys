@@ -319,7 +319,7 @@ public sealed class InsertionGuardTests
         };
 
         int recordedAt = -1;
-        Assert.IsTrue(Run(box, 6, "alex@contoso.com ", backend: InjectionBackend.Clipboard, inserted: () => recordedAt = box.Batches.Count));
+        Assert.IsTrue(Run(box, 6, "alex@contoso.com ", backend: InjectionBackend.Clipboard, inserted: (_, _) => recordedAt = box.Batches.Count));
         Assert.AreEqual("Mark | BS | BS | BS | BS | BS | BS | Ctrl-down | V | Ctrl-up | Mark | LCtrl-down V LCtrl-up Mark", Calls(box));
         Assert.AreEqual(10, recordedAt, "Kept before the end marker.");
         Assert.AreEqual("alex@contoso.com the user's|", box.ToString());
@@ -336,12 +336,12 @@ public sealed class InsertionGuardTests
         string? atHandBack = null;
         using var box = new FakeTextBox("!d") { Clipboard = "ORIGINAL" };
         box.Guard.Clock = () => now;
-        PasteOutcome PasteIntoBusyTarget(string text, IntPtr target, Func<(bool Whole, bool SentAny)> send, Action keepAlive) => box.Paste(
+        PasteOutcome PasteIntoBusyTarget(string text, IntPtr target, Func<(bool Whole, bool SentAny, bool PasteQueued)> send, Action keepAlive) => box.Paste(
             text,
             target,
             () =>
             {
-                (bool Whole, bool SentAny) sent = send();
+                (bool Whole, bool SentAny, bool PasteQueued) sent = send();
                 box.UserPresses((Native.VK_LCONTROL, false), (Native.VK_V, false), (Native.VK_V, true), (Native.VK_LCONTROL, true));
 
                 // The guard's timer runs at every poll.
@@ -552,7 +552,7 @@ public sealed class InsertionGuardTests
         InjectionDiagnostics.Reset();
         try
         {
-            bool completed = Run(box, 2, "abc", inserted: () => recorded = true, sleep: _ =>
+            bool completed = Run(box, 2, "abc", inserted: (_, _) => recorded = true, sleep: _ =>
             {
                 if (!clicked && box.Text == "PREFIX a")
                 {
@@ -616,7 +616,7 @@ public sealed class InsertionGuardTests
             downFor = 3;
         }
 
-        (bool Whole, bool SentAny) WhileItSettles((bool Whole, bool SentAny) sent)
+        (bool Whole, bool SentAny, bool PasteQueued) WhileItSettles((bool Whole, bool SentAny, bool PasteQueued) sent)
         {
             TypeAndClick();
             return sent;
@@ -736,7 +736,7 @@ public sealed class InsertionGuardTests
         try
         {
             // The "a" takes the typing to the hold cap.
-            bool completed = Run(box, 0, "abc", inserted: () => recorded = true, sleep: _ => now = InsertionGuard.HoldCapMs);
+            bool completed = Run(box, 0, "abc", inserted: (_, _) => recorded = true, sleep: _ => now = InsertionGuard.HoldCapMs);
             Assert.AreEqual("u|a", box.ToString(), "The held key goes where the click put the caret, and nothing after it.");
             Assert.AreEqual("Mark | a | Mark | u Mark", Calls(box));
             Assert.IsFalse(completed);
@@ -1056,6 +1056,74 @@ public sealed class InsertionGuardTests
     }
 
     [TestMethod]
+    public void AReleaseForAModifierThatAlreadyPassedStartsTheExistingDeadline()
+    {
+        long now = 0;
+        var sent = new List<Native.INPUT[]>();
+        using var guard = Guard(() => 5, sent);
+        guard.Clock = () => now;
+        Assert.IsFalse(guard.Swallows(FakeTextBox.UserVk(Native.VK_LSHIFT, up: false)));
+        Assert.IsTrue(guard.HoldAfterMatch(Target, 5, FakeTextBox.UserKey('x', up: false)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('x', up: true)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserVk(Native.VK_LSHIFT, up: true)));
+
+        now = InsertionGuard.TimeoutMs - 1;
+        guard.Expire();
+        Assert.AreEqual(0, sent.Count);
+        now++;
+        guard.Expire();
+        Assert.AreEqual("x LShift-up", FakeTextBox.Describe(sent.Single()));
+        Assert.IsFalse(guard.Swallows(FakeTextBox.UserKey('y', up: false)));
+    }
+
+    [TestMethod]
+    public void AMidInsertionDrainKeepsItsMatchingRuleUntilTheTailMarkerArrives()
+    {
+        using var queued = new ManualResetEventSlim();
+        long generation = 5;
+        Native.INPUT[]? batch = null;
+        using var guard = new InsertionGuard(() => Volatile.Read(ref generation), _ => true)
+        {
+            Clock = static () => 0,
+            Resend = keys =>
+            {
+                batch = [.. keys];
+                queued.Set();
+                return (uint)keys.Length; // Queued, not synchronously processed by a hook.
+            },
+        };
+        byte id = guard.Begin(5, Target);
+        Assert.IsTrue(guard.Swallows(FakeTextBox.Marker(id)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.UserKey('a', up: false)));
+        Assert.IsTrue(guard.Swallows(FakeTextBox.Marker(id)));
+        (bool Completed, long InputGeneration) drained = default;
+        var worker = new Thread(() => drained = guard.AwaitEnd(markerSent: true, [], matchReturnedKeys: false));
+        worker.Start();
+        try
+        {
+            Assert.IsTrue(queued.Wait(TimeSpan.FromSeconds(5)));
+            Assert.IsTrue(SpinWait.SpinUntil(() => (worker.ThreadState & System.Threading.ThreadState.WaitSleepJoin) != 0, TimeSpan.FromSeconds(1)), "The send has returned; AwaitEnd is waiting for its queued marker.");
+            Assert.IsNotNull(batch);
+            Assert.IsFalse(guard.Swallows(FakeTextBox.ToHookEvent(batch[0]), observePassed: true, out bool mayMatch));
+            Assert.IsFalse(mayMatch);
+            Interlocked.Increment(ref generation); // The admitted replay reaches ordinary input processing.
+            Assert.IsTrue(guard.Swallows(FakeTextBox.ToHookEvent(batch[^1])));
+            Assert.IsTrue(worker.Join(TimeSpan.FromSeconds(5)));
+            Assert.IsTrue(drained.Completed);
+            Assert.AreEqual(6L, drained.InputGeneration);
+            Assert.IsFalse(guard.Swallows(FakeTextBox.UserKey('b', up: false), observePassed: true, out mayMatch));
+            Assert.IsTrue(mayMatch, "Fresh typing after the confirmed drain is no longer suppressed.");
+            Interlocked.Increment(ref generation);
+            Assert.IsFalse(guard.Unchanged(drained.InputGeneration), "The caller must use the captured generation, not adopt typing after the drain.");
+        }
+        finally
+        {
+            guard.Drop();
+            Assert.IsTrue(worker.Join(TimeSpan.FromSeconds(5)));
+        }
+    }
+
+    [TestMethod]
     public void WarmingUpTheHoldTouchesNothingElse()
     {
         // Run as the hook is installed, on a guard of its own.
@@ -1066,7 +1134,7 @@ public sealed class InsertionGuardTests
         Assert.AreEqual(0, sent.Count);
     }
 
-    /// <summary>A guard whose sends come back through it, as through the hook: SendInput returns once every hook has seen them.</summary>
+    /// <summary>A guard with synchronous fake hook delivery; production uses markers to confirm queued delivery.</summary>
     private static InsertionGuard Guard(Func<long> generation, List<Native.INPUT[]> sent, Func<IntPtr, bool>? inFront = null)
     {
         var guard = new InsertionGuard(generation, inFront ?? (_ => true));
@@ -1087,7 +1155,7 @@ public sealed class InsertionGuardTests
 
     private static string Calls(FakeTextBox box) => string.Join(" | ", box.Batches.Select(FakeTextBox.Describe));
 
-    private static bool Run(FakeTextBox box, int erase, string text, int cursorLeft = 0, InjectionBackend backend = InjectionBackend.Typing, Func<int, short>? keys = null, Action? inserted = null, Action<int>? sleep = null, Func<IntPtr>? foreground = null, IntPtr target = default, Func<Native.INPUT[], uint>? dispatch = null, Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, Action, PasteOutcome>? paste = null)
+    private static bool Run(FakeTextBox box, int erase, string text, int cursorLeft = 0, InjectionBackend backend = InjectionBackend.Typing, Func<int, short>? keys = null, Action<string, int>? inserted = null, Action<int>? sleep = null, Func<IntPtr>? foreground = null, IntPtr target = default, Func<Native.INPUT[], uint>? dispatch = null, Func<string, IntPtr, Func<(bool Whole, bool SentAny, bool PasteQueued)>, Action, PasteOutcome>? paste = null)
     {
         InjectionBackend original = Injector.Backend;
         try

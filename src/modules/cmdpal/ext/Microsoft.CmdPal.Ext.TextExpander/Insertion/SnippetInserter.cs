@@ -59,25 +59,26 @@ internal sealed class SnippetInserter
     /// one-line snippets from <paramref name="clipboardThresholdChars"/> characters under Automatic.
     /// <paramref name="fromClipboard"/> says whether part of it came from a copy (<see cref="ExpandedSnippet.HasClipboardText"/>).
     /// </summary>
-    public InsertOutcome Insert(string text, InjectionBackend backend, int clipboardThresholdChars, bool fromClipboard = false)
+    /// <returns>The insertion outcome and a separate flag for a clipboard restore failure.</returns>
+    public (InsertOutcome Outcome, bool ClipboardLost) Insert(string text, InjectionBackend backend, int clipboardThresholdChars, bool fromClipboard = false)
     {
         ArgumentNullException.ThrowIfNull(text);
 
         _desktop.HideCommandPalette();
         if (text.Length == 0)
         {
-            return InsertOutcome.Empty;
+            return (InsertOutcome.Empty, false);
         }
 
         var target = WaitForTarget();
         if (target == 0)
         {
-            return InsertOutcome.NoTarget;
+            return (InsertOutcome.NoTarget, false);
         }
 
         if (!_desktop.CanDrive(target))
         {
-            return InsertOutcome.TargetOutOfReach;
+            return (InsertOutcome.TargetOutOfReach, false);
         }
 
         WaitForModifierRelease();
@@ -99,11 +100,11 @@ internal sealed class SnippetInserter
         // terminal acts on control characters that are typed, so they aren't.
         if (outcome is null && InjectionPolicy.RefusesTypedLines(text, terminal, backend, fromClipboard))
         {
-            return pasting ? InsertOutcome.TerminalNeedsPaste : InsertOutcome.TerminalCopiedLines;
+            return (pasting ? InsertOutcome.TerminalNeedsPaste : InsertOutcome.TerminalCopiedLines, clipboardLost);
         }
 
         outcome ??= Type(terminal ? ControlCharacters.Remove(text) : text, target);
-        return clipboardLost ? InsertOutcome.ClipboardNotRestored : outcome.Value;
+        return (outcome.Value, clipboardLost);
     }
 
     /// <summary>
@@ -148,17 +149,18 @@ internal sealed class SnippetInserter
                 else
                 {
                     var sentAt = _clock.ElapsedMilliseconds;
-                    var sent = _desktop.Send(KeyStrokes.Paste(_desktop.HeldModifiers()));
-                    if (!sent)
+                    var strokes = KeyStrokes.Paste(_desktop.HeldModifiers());
+                    var sent = _desktop.Send(strokes);
+                    if (sent > 0 && sent != (uint)strokes.Count)
                     {
                         // Cut off part way, the Ctrl+V may have left Ctrl down: it's let go of, with one more try.
                         LetGoOf(KeyStrokes.Control);
                     }
 
-                    // An app reads the clipboard after it gets the keys, and a Ctrl+V cut off may have sent its V. One
-                    // that's still busy at the cap has the Ctrl+V queued, so its clipboard stays on the snippet.
-                    handBack = PasteSettle.WaitForRead(() => IsOpenBy(target), () => _desktop.IsTakingMessages(target), _clock, sentAt);
-                    outcome = sent ? InsertOutcome.Inserted : InsertOutcome.Failed;
+                    // No accepted input can leave a paste queued. A nonzero partial batch may have sent V, so it must
+                    // still wait for the app; if the app stays busy at the cap, the snippet stays on the clipboard.
+                    handBack = sent == 0 || PasteSettle.WaitForRead(() => IsOpenBy(target), () => _desktop.IsTakingMessages(target), _clock, sentAt);
+                    outcome = sent == (uint)strokes.Count ? InsertOutcome.Inserted : InsertOutcome.Failed;
                 }
             }
         }
@@ -194,10 +196,11 @@ internal sealed class SnippetInserter
             }
 
             var strokes = character.IsKey ? KeyStrokes.AfterReleasing(_desktop.HeldModifiers(), character.Strokes) : character.Strokes;
-            if (!_desktop.Send(strokes))
+            var sent = _desktop.Send(strokes);
+            if (sent != (uint)strokes.Count)
             {
                 // Cut off part way, a typed Enter or Tab may be left down.
-                if (character.IsKey)
+                if (sent > 0 && character.IsKey)
                 {
                     LetGoOf(character.Strokes[^1].VirtualKey);
                 }
@@ -215,7 +218,7 @@ internal sealed class SnippetInserter
     private void LetGoOf(ushort key)
     {
         var up = new[] { KeyStroke.KeyUp(key) };
-        if (!_desktop.Send(up))
+        if (_desktop.Send(up) != (uint)up.Length)
         {
             _ = _desktop.Send(up);
         }

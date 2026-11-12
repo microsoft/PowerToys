@@ -32,6 +32,10 @@ namespace Microsoft.PowerToys.TextExpander;
 /// In word mode, when it's kept, the space or punctuation that released the trigger: the worker adds it after the
 /// expansion, so the hook doesn't copy the replacement.
 /// </param>
+/// <param name="SwallowedText">
+/// All text produced by the intercepted key, including any part before the matched trigger that must still be inserted.
+/// Empty for an undo, which intercepts a shortcut rather than text.
+/// </param>
 internal readonly record struct PendingExpansion(
     string Trigger,
     string TypedPrefix,
@@ -41,4 +45,5 @@ internal readonly record struct PendingExpansion(
     string? TypedText = null,
     long InputGeneration = 0,
     int CursorLeft = 0,
-    char? Terminator = null);
+    char? Terminator = null,
+    string SwallowedText = "");

@@ -38,6 +38,7 @@ internal sealed class FakeTextBox : IDisposable
         }
 
         Hook = hook;
+        Hook.NextHook = PassDownstream;
         Hook.Guard.Resend = Dispatch;
         Hook.Guard.TargetInFront = _ =>
         {
@@ -191,13 +192,13 @@ internal sealed class FakeTextBox : IDisposable
     /// Pastes as the injector's clipboard path does: the user's clipboard goes back before the end marker. The box takes
     /// the paste at once, so nothing settles and <paramref name="keepAlive"/> isn't needed.
     /// </summary>
-    public PasteOutcome Paste(string value, IntPtr targetWindow, Func<(bool Whole, bool SentAny)> send, Action keepAlive)
+    public PasteOutcome Paste(string value, IntPtr targetWindow, Func<(bool Whole, bool SentAny, bool PasteQueued)> send, Action keepAlive)
     {
         string saved = Clipboard;
         Clipboard = value;
         try
         {
-            (bool whole, bool sentAny) = send();
+            var (whole, sentAny, _) = send();
             return !sentAny ? PasteOutcome.TargetLost : whole ? PasteOutcome.Pasted : PasteOutcome.FailedAfterErase;
         }
         finally
@@ -226,15 +227,15 @@ internal sealed class FakeTextBox : IDisposable
         }
     }
 
-    /// <summary>Takes a key event as the system would: the hook first, then the text box.</summary>
-    public void Take(Native.KBDLLHOOKSTRUCT key)
+    /// <summary>Takes a key event through the real hook callback and its downstream hook, then into the text box.</summary>
+    public unsafe void Take(Native.KBDLLHOOKSTRUCT key)
     {
         bool down = (key.Flags & Native.LLKHF_UP) == 0;
         bool swallowed;
         _inHook++;
         try
         {
-            swallowed = Hook.OnKeyEvent(key, down ? Native.WM_KEYDOWN : 0x0101);
+            swallowed = Hook.HookCallback(Native.HC_ACTION, new IntPtr(down ? Native.WM_KEYDOWN : 0x0101), (IntPtr)(&key)) != IntPtr.Zero;
         }
         finally
         {
@@ -243,12 +244,6 @@ internal sealed class FakeTextBox : IDisposable
 
         if (swallowed)
         {
-            return;
-        }
-
-        if (Remap is (int from, int to) && key.VkCode == from)
-        {
-            Take(key with { VkCode = (uint)to, Flags = key.Flags | 0x10, DwExtraInfo = 0x11 });
             return;
         }
 
@@ -265,6 +260,18 @@ internal sealed class FakeTextBox : IDisposable
         }
 
         Apply(key);
+    }
+
+    private unsafe IntPtr PassDownstream(int code, IntPtr message, IntPtr data)
+    {
+        Native.KBDLLHOOKSTRUCT key = *(Native.KBDLLHOOKSTRUCT*)data;
+        if (Remap is (int from, int to) && key.VkCode == from && (key.DwExtraInfo.ToInt64() & HostInputTags.KeyboardManagerInjected) == 0)
+        {
+            Take(key with { VkCode = (uint)to, Flags = key.Flags | 0x10, DwExtraInfo = 0x11 });
+            return new IntPtr(1);
+        }
+
+        return IntPtr.Zero;
     }
 
     /// <summary>The box takes a key event that got through the hook.</summary>

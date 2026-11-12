@@ -12,7 +12,7 @@ internal enum HostInputKind
 
     /// <summary>
     /// Input that reaches the app and can move the caret, but isn't matched: Command Palette's extension putting a snippet
-    /// in, and input carrying Keyboard Manager's bit, such as a remap, while remaps don't count as typing.
+    /// in, a cancelled trigger's returned key, and a remap while remaps don't count as typing.
     /// </summary>
     Unmatched,
 
@@ -49,8 +49,8 @@ internal static class HostInputTags
     /// <summary>
     /// Gets or sets a value indicating whether a Keyboard Manager remap counts as typing. True by default: the
     /// remapped character is the one the user meant, so ignoring it would stop remapped keys from forming
-    /// triggers (<see cref="InjectionPolicy.IgnoreRemappedVariable"/> flips it). Hooks run LIFO, so if this
-    /// hook runs before Keyboard Manager's it never learns a key was remapped. Volatile: written by the
+    /// triggers (<see cref="InjectionPolicy.IgnoreRemappedVariable"/> flips it). The hook only matches an event after
+    /// downstream hooks have let it through, so a suppressed original isn't counted too. Volatile: written by the
     /// settings watcher, read in the hook.
     /// </summary>
     public static bool AcceptRemappedInput
@@ -60,6 +60,12 @@ internal static class HostInputTags
     }
 
     private static volatile bool _acceptRemappedInput = true;
+
+    /// <summary>
+    /// Tags the original matching key when a cancelled expansion gives it back. It has already passed downstream remaps,
+    /// so Keyboard Manager leaves it alone, but it changes the document and must invalidate matching and undo.
+    /// </summary>
+    internal static IntPtr ReturnedTriggerTag(IntPtr ownSignature) => new(ownSignature.ToInt64() ^ 0x4);
 
     /// <summary>Sorts a keystroke carrying <paramref name="extraInfo"/> into typing, input that isn't matched, and input to ignore.</summary>
     /// <param name="extraInfo">The hook event's <c>dwExtraInfo</c>.</param>
@@ -71,6 +77,11 @@ internal static class HostInputTags
         if (extraInfo == ownSignature)
         {
             return HostInputKind.Ignored;
+        }
+
+        if (extraInfo == ReturnedTriggerTag(ownSignature))
+        {
+            return HostInputKind.Unmatched;
         }
 
         long tag = extraInfo.ToInt64();

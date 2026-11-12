@@ -339,14 +339,8 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
             return 1;
         }
 
-        // Remove updates folder contents first, so the snippet check below doesn't read the installers there
+        // Remove updates folder contents so the final snippet check doesn't read the installers there
         DeleteFolder(reportDir / "Updates");
-
-        if (!TextExpanderPrivacy::ExcludeConfiguredSnippetFile(path(settingsRootPath), reportDir))
-        {
-            printf("Failed to exclude the Text Expander snippet file from the bug report\n");
-            return 1;
-        }
     }
 	
     catch (...)
@@ -408,6 +402,13 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     try
     {
+        // All inputs are now staged, including LocalLow and installer logs.
+        if (!TextExpanderPrivacy::ExcludeConfiguredSnippetFile(path(settingsRootPath), reportDir))
+        {
+            printf("Failed to exclude the Text Expander snippet file from the bug report\n");
+            return 1;
+        }
+
         ZipFolder(zipPath, reportDir);
     }
     catch (...)

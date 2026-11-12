@@ -65,28 +65,24 @@ internal sealed partial class InsertSnippetCommand : InvokableCommand
             ? SnippetText.ExpandWithGaps(_snippet.Replacement, _answers?.Invoke() ?? [], _inserter.Clipboard.ReadText)
             : SnippetText.ExpandWithGaps(_snippet.Replacement, _fill);
         var text = expanded.Text;
-        var outcome = _inserter.Insert(text, state.Settings.Backend, state.Settings.ClipboardThresholdChars, expanded.HasClipboardText);
-        if (outcome is InsertOutcome.Inserted or InsertOutcome.Empty or InsertOutcome.ClipboardNotRestored)
+        var (outcome, clipboardLost) = _inserter.Insert(text, state.Settings.Backend, state.Settings.ClipboardThresholdChars, expanded.HasClipboardText);
+        if (outcome is InsertOutcome.Inserted or InsertOutcome.Empty)
         {
             _inserted?.Invoke();
+
+            // A restore failure is a separate warning; it doesn't say whether the snippet went in.
+            var warning = clipboardLost ? Resources.toast_clipboard_not_restored : ClipboardVariableText.NothingFound(expanded.Gaps);
+            return warning is null ? CommandResult.Dismiss() : CommandResult.ShowToast(warning);
         }
 
-        return outcome switch
+        // The snippet didn't go in: keep the answers and offer Copy, even if its clipboard also couldn't be put back.
+        var message = MessageFor(outcome);
+        return CommandResult.ShowToast(new ToastArgs
         {
-            // A spot the copy had nothing for was left empty: say so, as Text Expander does.
-            InsertOutcome.Inserted or InsertOutcome.Empty => ClipboardVariableText.NothingFound(expanded.Gaps) is { } nothingFound
-                ? CommandResult.ShowToast(nothingFound)
-                : CommandResult.Dismiss(),
-            InsertOutcome.ClipboardNotRestored => CommandResult.ShowToast(Resources.toast_clipboard_not_restored),
-
-            // The snippet didn't go in: the page stays as it was, and the toast offers to copy it instead.
-            _ => CommandResult.ShowToast(new ToastArgs
-            {
-                Message = MessageFor(outcome),
-                Result = CommandResult.KeepOpen(),
-                Command = new CopySnippetCommand(() => text, _inserter.Clipboard, _inserted),
-            }),
-        };
+            Message = clipboardLost ? string.Concat(message, " ", Resources.toast_clipboard_not_restored) : message,
+            Result = CommandResult.KeepOpen(),
+            Command = new CopySnippetCommand(() => text, _inserter.Clipboard, _inserted),
+        });
     }
 
     internal static string MessageFor(InsertOutcome outcome) => outcome switch
@@ -94,7 +90,6 @@ internal sealed partial class InsertSnippetCommand : InvokableCommand
         InsertOutcome.NoTarget => Resources.toast_no_target,
         InsertOutcome.TargetOutOfReach => Resources.toast_out_of_reach,
         InsertOutcome.TargetChanged => Resources.toast_target_changed,
-        InsertOutcome.ClipboardNotRestored => Resources.toast_clipboard_not_restored,
         InsertOutcome.TerminalNeedsPaste => Resources.toast_terminal_lines,
         InsertOutcome.TerminalCopiedLines => Resources.toast_terminal_copied_lines,
         _ => Resources.toast_failed,

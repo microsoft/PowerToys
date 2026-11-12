@@ -612,10 +612,10 @@ public sealed class InputAndUndoPolicyTests
         using SnippetStore store = LoadStore(scratch, "!abc=EXPANDED");
         using var hook = new KeyboardHook(store);
         var calls = new List<string>();
-        Program.ReplaceText replace = (backspaces, text, _, _, right, guard, generation, inserted, givenBack, fromClipboard, swallowed) =>
+        Program.ReplaceText replace = (backspaces, text, _, left, right, guard, generation, inserted, givenBack, fromClipboard, swallowed) =>
         {
             calls.Add($"{backspaces} \"{text}\" {right} {guard == hook.Guard} {generation} {inserted is not null} {givenBack} {fromClipboard} [{swallowed}]");
-            inserted?.Invoke();
+            inserted?.Invoke(text, left);
             return true;
         };
 
@@ -1285,9 +1285,15 @@ public sealed class InputAndUndoPolicyTests
 
         Assert.IsFalse(Type(hook, "!ab"));
         hook.OnMouseEvent(0x0200 /* WM_MOUSEMOVE */, (IntPtr)data);
-        hook.OnMouseEvent(0x020A /* WM_MOUSEWHEEL */, (IntPtr)data);
-        Assert.AreEqual(0, points.Count, "Moves and the wheel aren't clicks.");
+        Assert.AreEqual(0, points.Count, "Moving the mouse does not change text.");
         Assert.IsTrue(Type(hook, "c "), "What was typed still counts.");
+
+        Assert.IsFalse(Type(hook, "!ab"));
+        long generation = hook.InputGeneration;
+        hook.OnMouseEvent(Native.WM_MOUSEWHEEL, (IntPtr)data);
+        Assert.AreEqual(0, points.Count, "The wheel does not use the click-on-notice exception.");
+        Assert.IsTrue(hook.InputGeneration > generation);
+        Assert.IsFalse(Type(hook, "c "), "A wheel can replace text in an editable ComboBox.");
 
         Assert.IsFalse(Type(hook, "!ab"));
         hook.OnMouseEvent(Native.WM_LBUTTONDOWN, (IntPtr)data);
@@ -1587,7 +1593,7 @@ public sealed class InputAndUndoPolicyTests
     /// says so, or a console window when <paramref name="isConsole"/> does, telling <paramref name="refused"/> about a
     /// snippet a terminal didn't get, and whether that was under Always type.
     /// </summary>
-    private static Program.ReplaceText Into(FakeTextBox box, Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, Action, PasteOutcome>? paste = null, Func<IntPtr, bool>? isWindowsTerminal = null, Func<IntPtr, bool>? isConsole = null, Action<IntPtr, bool>? refused = null)
+    private static Program.ReplaceText Into(FakeTextBox box, Func<string, IntPtr, Func<(bool Whole, bool SentAny, bool PasteQueued)>, Action, PasteOutcome>? paste = null, Func<IntPtr, bool>? isWindowsTerminal = null, Func<IntPtr, bool>? isConsole = null, Action<IntPtr, bool>? refused = null)
         => (backspaces, text, target, left, right, guard, generation, inserted, givenBack, fromClipboard, swallowed) => Injector.ReplaceCore(
             backspaces,
             text,

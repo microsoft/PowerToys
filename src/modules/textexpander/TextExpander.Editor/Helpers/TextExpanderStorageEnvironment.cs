@@ -54,28 +54,30 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         public HandleBoundFileDeletionResult DeleteOwnedFile(string path, byte[] expectedBytes)
             => HandleBoundFileDeletion.TryDelete(path, expectedBytes);
 
-        public IDisposable WatchForFiles(string folder, IReadOnlyList<string> fileNames, Action changed)
-            => new FileArrivalWatcher(folder, fileNames, changed, _pollInterval);
+        public IDisposable WatchForFiles(string folder, IReadOnlyList<string> fileNames, Action changed, Func<bool> needsRetry = null)
+            => new FileArrivalWatcher(folder, fileNames, changed, needsRetry, _pollInterval);
 
         /// <summary>
         /// Calls back when a watched file changes. A FileSystemWatcher misses files in a folder that didn't exist
         /// yet, on shares that don't report changes, and after it overflows or fails, so a timer also compares
-        /// each file's size and write time. It does that off the UI thread and calls back only when they differ,
-        /// because the callback reads the files on the UI thread.
+        /// each file's size and write time. It does that off the UI thread and calls back when they differ or the
+        /// consumer still needs to read a changed file. Queuing that callback doesn't mean the UI has read it yet.
         /// </summary>
         private sealed class FileArrivalWatcher : IDisposable
         {
             private readonly FileInfo[] _files;
             private readonly Action _changed;
+            private readonly Func<bool> _needsRetry;
             private readonly Timer _timer;
             private FileStamp[] _observed;
             private int _polling;
             private FileSystemWatcher _watcher;
 
-            public FileArrivalWatcher(string folder, IReadOnlyList<string> fileNames, Action changed, TimeSpan pollInterval)
+            public FileArrivalWatcher(string folder, IReadOnlyList<string> fileNames, Action changed, Func<bool> needsRetry, TimeSpan pollInterval)
             {
                 _files = fileNames.Select(name => new FileInfo(Path.Combine(folder, name))).ToArray();
                 _changed = changed;
+                _needsRetry = needsRetry;
                 _observed = Observe();
                 _timer = new Timer(_ => Poll(), null, pollInterval, pollInterval);
 
@@ -140,7 +142,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
                 try
                 {
                     FileStamp[] observed = Observe();
-                    if (!observed.AsSpan().SequenceEqual(_observed))
+                    if (!observed.AsSpan().SequenceEqual(_observed) || _needsRetry?.Invoke() == true)
                     {
                         _observed = observed;
                         _changed();

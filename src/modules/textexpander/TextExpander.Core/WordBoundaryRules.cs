@@ -35,7 +35,7 @@ internal static class WordBoundaryRules
 
     // Decided by the last character that isn't a combining mark: e followed by U+0301 ends in a letter, and an emoji
     // followed by U+FE0F in a symbol. Half a surrogate pair, or marks with nothing before them, count as a word.
-    private static bool EndsInWord(ReadOnlySpan<char> text)
+    internal static bool EndsInWord(ReadOnlySpan<char> text)
     {
         for (int end = text.Length; end > 0;)
         {

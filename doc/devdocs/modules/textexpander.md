@@ -106,7 +106,10 @@ erases each trigger and pastes or types the snippet. A separate editor manages t
   `:number` insert only that part of it. `{{clipboard:pick}}` and `{{clipboard:pick:<part>}}` take
   from clipboard history instead. Nothing else is a clipboard variable.
 - `ClipboardParts.Find` finds each different part once, in order, in linear time, and reads only the
-  first 1,000,000 characters. Links start with `https://`, `http://` or `www.`. Phone numbers have 7
+  first 1,000,000 characters. If the copy is longer, only complete lines ending in CR or LF within
+  that budget are searched; an oversized single line produces no matches. This avoids treating a
+  truncated address or number as a complete value. `{{clipboard}}` still inserts the whole copy.
+  Links start with `https://`, `http://` or `www.`. Phone numbers have 7
   to 15 digits in groups, or all together after a `+`. Numbers follow the region's separators. Dates,
   times and IP addresses are neither, and nothing inside a link or an email address is either.
 - One match or copy goes straight in. Two or more open the chooser (`ClipboardChoiceWindow`, on the

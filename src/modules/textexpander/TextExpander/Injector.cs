@@ -175,7 +175,7 @@ internal static class Injector
     /// The input generation when the trigger matched. A key pressed or a click since then may have moved the caret, so
     /// nothing is erased or inserted.
     /// </param>
-    /// <param name="inserted">Runs once it's all in, before the keys held meanwhile go back: a Ctrl+Z among them undoes it.</param>
+    /// <param name="inserted">Receives the text and caret offset actually sent, before held keys go back: a Ctrl+Z among them undoes it.</param>
     /// <param name="givenBack">
     /// How many characters at the end of <paramref name="text"/> are the user's own keystrokes given back, such as
     /// the space that released the trigger. They don't count toward <see cref="ClipboardThresholdChars"/>.
@@ -186,7 +186,7 @@ internal static class Injector
     /// If a terminal can't be given <paramref name="text"/>, nothing is erased and it goes back, so what was typed stays
     /// as typed. Empty when nothing was swallowed.
     /// </param>
-    public static bool Replace(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, int cursorRightUnits, InsertionGuard guard, long inputGeneration, Action? inserted, int givenBack, bool fromClipboard, string swallowed)
+    public static bool Replace(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, int cursorRightUnits, InsertionGuard guard, long inputGeneration, Action<string, int>? inserted, int givenBack, bool fromClipboard, string swallowed)
         => ReplaceCore(backspaceCount, text, targetWindow, cursorLeftUnits, InputTarget.CanDrive, guard, inputGeneration, cursorRightUnits: cursorRightUnits, inserted: inserted, givenBack: givenBack, fromClipboard: fromClipboard, swallowed: swallowed);
 
     internal static bool ReplaceCore(
@@ -198,12 +198,12 @@ internal static class Injector
         InsertionGuard guard,
         long inputGeneration,
         Func<IntPtr>? getForegroundWindow = null,
-        Func<string, IntPtr, Func<(bool Whole, bool SentAny)>, Action, PasteOutcome>? tryPaste = null,
+        Func<string, IntPtr, Func<(bool Whole, bool SentAny, bool PasteQueued)>, Action, PasteOutcome>? tryPaste = null,
         Func<Native.INPUT[], uint>? dispatch = null,
         int cursorRightUnits = 0,
         Func<int, short>? getAsyncKeyState = null,
         Action<int>? sleep = null,
-        Action? inserted = null,
+        Action<string, int>? inserted = null,
         int givenBack = 0,
         Func<bool>? isOpenByTarget = null,
         Func<long>? clock = null,
@@ -265,6 +265,7 @@ internal static class Injector
             && InjectionPolicy.ShouldUseClipboard(text, ClipboardThresholdChars, backend, givenBack, windowsTerminal, fromClipboard);
         PasteOutcome outcome = pasting ? PasteOutcome.TargetLost : PasteOutcome.NotAttempted;
         bool sentAny = false;
+        bool pasteQueued = false;
         bool guarded = false;
         bool succeeded = false;
         bool refused = false;
@@ -278,7 +279,7 @@ internal static class Injector
             if (pasting)
             {
                 // With CR LF line breaks, as the clipboard has text: the console runs pasted lines with a lone LF as one.
-                outcome = tryPaste(ClipboardFormats.WithClipboardLineBreaks(text), targetWindow, () => (Insert(paste: true), sentAny), () => guard.Renew());
+                outcome = tryPaste(ClipboardFormats.WithClipboardLineBreaks(text), targetWindow, () => (Insert(paste: true), sentAny, pasteQueued), () => guard.Renew());
             }
 
             // Typing is the fallback, inside the same guard, only when the paste was refused before anything went out. Not
@@ -299,7 +300,7 @@ internal static class Injector
             AwaitButtonsUp();
         }
 
-        EndGuard();
+        _ = EndGuard();
         InjectionDiagnostics.RecordOutcome(outcome);
         if (succeeded && Typing())
         {
@@ -365,7 +366,7 @@ internal static class Injector
                 && SendChunks(Presses(Native.VK_LEFT, cursorLeftUnits));
             if (done)
             {
-                inserted?.Invoke();
+                inserted?.Invoke(paste ? text : typed, cursorLeftUnits);
             }
 
             return done;
@@ -407,13 +408,15 @@ internal static class Injector
         }
 
         // The end marker, after the paste's settle and restore: the keys held meanwhile go back after it all.
-        void EndGuard()
+        (bool Completed, long InputGeneration) EndGuard(bool matchReturnedKeys = true)
         {
             if (guarded)
             {
                 guarded = false;
-                guard.AwaitEnd(DispatchExactly(dispatch, [marker]), pressAgain);
+                return guard.AwaitEnd(DispatchExactly(dispatch, [marker]), pressAgain, matchReturnedKeys);
             }
+
+            return (true, inputGeneration);
         }
 
         // For a second at most, with the guard kept on: keys typed meanwhile are held too.
@@ -441,10 +444,11 @@ internal static class Injector
             return guard.Unchanged(inputGeneration) && guard.Clicks == clicks;
         }
 
-        bool Send(Native.INPUT[] keys)
+        bool Send(Native.INPUT[] keys, bool mayPaste = false)
         {
             bool whole = DispatchExactly(dispatch, keys, out uint count);
             sentAny |= count > 0;
+            pasteQueued |= mayPaste && count > 0;
             return whole;
         }
 
@@ -482,7 +486,7 @@ internal static class Injector
             // Unguarded, nothing holds the user's keys: the chord goes out in one call, as short as it can be.
             if (!guard.Holding)
             {
-                if (Send([KeyDown(Native.VK_CONTROL), KeyDown(Native.VK_V), KeyUp(Native.VK_V), KeyUp(Native.VK_CONTROL)]))
+                if (Send([KeyDown(Native.VK_CONTROL), KeyDown(Native.VK_V), KeyUp(Native.VK_V), KeyUp(Native.VK_CONTROL)], mayPaste: true))
                 {
                     return true;
                 }
@@ -500,7 +504,7 @@ internal static class Injector
                 if (Send([KeyDown(Native.VK_CONTROL)]) && OnTarget())
                 {
                     long sentAt = clock();
-                    if (Send([KeyDown(Native.VK_V), KeyUp(Native.VK_V)]))
+                    if (Send([KeyDown(Native.VK_V), KeyUp(Native.VK_V)], mayPaste: true))
                     {
                         hold = HoldForRead(isOpenByTarget, () => guard.Renew() && guard.Holding && getForegroundWindow() == window, sleep, () => clock() - sentAt);
                         pasted = true;
@@ -576,12 +580,17 @@ internal static class Injector
                 }
 
                 // Keys are held for HoldCapMs at most; the rest of the text goes in unguarded. Going back, they move the
-                // input generation on themselves, so it's taken again after them: a key that reaches the app later stops
-                // the rest, and so does a click at any time, as clicks are counted apart.
+                // input generation on themselves. The confirmed drain returns that generation before fresh input can
+                // pass; a later key stops the rest, and so does a click, as clicks are counted apart.
                 if (guarded && guard.Overdue && guard.Unchanged(inputGeneration))
                 {
-                    EndGuard();
-                    inputGeneration = guard.InputGeneration;
+                    (bool completed, long returnedGeneration) = EndGuard(matchReturnedKeys: false);
+                    if (!completed)
+                    {
+                        return false;
+                    }
+
+                    inputGeneration = returnedGeneration;
                 }
             }
 
@@ -607,7 +616,7 @@ internal static class Injector
     /// goes back before the end marker, so a Ctrl+V among the keys held meanwhile pastes what the user copied too.
     /// <paramref name="hold"/> tells the settle how the paste's Ctrl hold went, once <paramref name="send"/> is done.
     /// </summary>
-    private static PasteOutcome TryPaste(string text, IntPtr targetWindow, Func<(bool Whole, bool SentAny)> send, Action keepAlive, Func<PasteHold> hold)
+    private static PasteOutcome TryPaste(string text, IntPtr targetWindow, Func<(bool Whole, bool SentAny, bool PasteQueued)> send, Action keepAlive, Func<PasteHold> hold)
     {
         // Null when the clipboard can't be read, is too large to copy, or holds something we couldn't put back.
         using ClipboardSnapshot? saved = Clipboard.Snapshot();
@@ -640,11 +649,11 @@ internal static class Injector
                 return PasteOutcome.RefusedBeforeErase;
             }
 
-            (bool pasted, bool sentAny) = send();
+            (bool pasted, bool sentAny, bool pasteQueued) = send();
 
             // The target reads the clipboard asynchronously; restoring at once would paste the previous contents. One
             // still busy at the cap keeps the snippet, since its Ctrl+V may yet come.
-            handBack = !sentAny || WaitForPasteToSettle(targetWindow, keepAlive, hold());
+            handBack = !pasteQueued || WaitForPasteToSettle(targetWindow, keepAlive, hold());
 
             // Not sent at all: focus moved, a click may have moved the caret, or deciding again dropped it. The trigger is intact.
             return !sentAny ? PasteOutcome.TargetLost : pasted ? PasteOutcome.Pasted : PasteOutcome.FailedAfterErase;

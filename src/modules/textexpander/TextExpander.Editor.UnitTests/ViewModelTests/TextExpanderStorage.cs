@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -10,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.TextExpander;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
@@ -558,6 +560,111 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void AQueuedReadFailureIsRetriedWithoutAnotherFileChange(bool invalidJson)
+        {
+            // Start the real watcher while this custom folder is absent, so its polling path is the only notification
+            // source. UI work is queued and executed separately, as DispatcherQueue does in the actual page.
+            string folder = Path.Combine(_root, "arrives-later");
+            string path = Path.Combine(folder, Current);
+            _environment.PollFiles = true;
+            var settings = EditorSettings.Store(EditorSettings.For(path));
+            using var model = new TextExpanderViewModel(settings.Object, false, key => key, _environment);
+            var queued = new ConcurrentQueue<Action>();
+            model.Dispatch = queued.Enqueue;
+            Write(folder, Current, SnippetJson.Of("!old=Old"));
+            Assert.IsTrue(SpinWait.SpinUntil(() => !queued.IsEmpty, TimeSpan.FromSeconds(5)));
+            RunQueuedReads(queued);
+            Assert.AreEqual("!old", model.Snippets.Single().Trigger);
+            Assert.IsFalse(model.HasSnippetError);
+
+            Thread.Sleep(TimeSpan.FromMilliseconds(100));
+            RunQueuedReads(queued);
+            int revision = model.SnippetRevision;
+            string updated = invalidJson ? "{" : SnippetJson.Of("!new=New");
+            using (var writer = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(updated);
+                writer.Write(bytes);
+                writer.Flush(flushToDisk: true);
+                Assert.IsTrue(SpinWait.SpinUntil(() => !queued.IsEmpty, TimeSpan.FromSeconds(5)));
+
+                // Queueing did not read the file. Let the poller observe the final stamp before the UI attempts the read.
+                Thread.Sleep(TimeSpan.FromMilliseconds(100));
+                Assert.IsTrue(queued.TryDequeue(out Action read));
+                read();
+                Assert.AreEqual(revision, model.SnippetRevision);
+                Assert.AreEqual("!old", model.Snippets.Single().Trigger);
+                Assert.IsFalse(model.HasSnippetError, "A temporary read conflict keeps the readable list.");
+            }
+
+            Assert.IsTrue(SpinWait.SpinUntil(() => !queued.IsEmpty, TimeSpan.FromSeconds(5)), "The failed byte read must be retried even though the stamp is unchanged.");
+            RunQueuedReads(queued);
+            Assert.AreEqual(invalidJson, model.HasSnippetError);
+            if (!invalidJson)
+            {
+                Assert.AreEqual("!new", model.Snippets.Single().Trigger);
+                Assert.IsTrue(model.CanAddSnippets);
+            }
+
+            // Bytes that were read successfully consume the pending state, even if they aren't valid JSON. The error
+            // stays visible without repeatedly reparsing it, and an unchanged healthy library stays idle too.
+            Thread.Sleep(TimeSpan.FromMilliseconds(100));
+            RunQueuedReads(queued);
+            int loadedRevision = model.SnippetRevision;
+            Thread.Sleep(TimeSpan.FromMilliseconds(100));
+            Assert.IsTrue(queued.IsEmpty, "Neither healthy content nor a parsed file error needs another byte-read retry.");
+            Assert.AreEqual(loadedRevision, model.SnippetRevision);
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void RecoveredSettingsClearOnlyTheirOwnErrorWithoutReloadingTheLibrary(bool invalidLibrary)
+        {
+            Write(_local, Current, invalidLibrary ? "{" : SnippetJson.Of("!old=Old"));
+            bool failRead = false;
+            using TextExpanderViewModel model = CreateViewModel(latest: () => failRead
+                ? throw new InvalidOperationException("Transient settings read failure.")
+                : EditorSettings.For(string.Empty));
+            int revision = model.SnippetRevision;
+            TextExpanderSnippetViewModel[] rows = model.Snippets.ToArray();
+            string libraryError = model.SnippetError;
+            var notifications = new List<string>();
+            model.PropertyChanged += (_, e) => notifications.Add(e.PropertyName);
+
+            model.RefreshSettings();
+            Assert.AreEqual(0, notifications.Count, "A healthy unchanged settings read doesn't rebuild the list.");
+            failRead = true;
+            model.RefreshSettings();
+            Assert.IsTrue(model.HasSnippetError);
+            Assert.IsFalse(model.CanAddSnippets);
+            if (invalidLibrary)
+            {
+                Assert.AreEqual(libraryError, model.SnippetError, "Settings errors must not overwrite a real library error.");
+            }
+
+            failRead = false;
+            notifications.Clear();
+            model.RefreshSettings();
+            Assert.AreEqual(invalidLibrary, model.HasSnippetError);
+            Assert.AreEqual(!invalidLibrary, model.CanAddSnippets);
+            Assert.AreEqual(libraryError, model.SnippetError);
+            Assert.AreEqual(revision, model.SnippetRevision, "Recovering settings doesn't invalidate an open snippet draft.");
+            CollectionAssert.AreEqual(rows, model.Snippets.ToArray());
+            CollectionAssert.Contains(notifications, nameof(model.CanAddSnippets));
+        }
+
+        private static void RunQueuedReads(ConcurrentQueue<Action> queued)
+        {
+            while (queued.TryDequeue(out Action read))
+            {
+                read();
+            }
+        }
+
+        [TestMethod]
         public void FailedSettingsRefreshIsVisibleAndPreservesTheLoadedLibrary()
         {
             Write(_local, Current, SnippetJson.Of("!old=Old"));
@@ -601,6 +708,8 @@ namespace ViewModelTests
 
             public string DefaultSnippetsFolder { get; }
 
+            public bool PollFiles { get; set; }
+
             public string ExpandEnvironmentVariables(string value) => value;
 
             public bool FileExists(string path) => File.Exists(Guard(path));
@@ -632,8 +741,13 @@ namespace ViewModelTests
             public HandleBoundFileDeletionResult DeleteOwnedFile(string path, byte[] expectedBytes)
                 => HandleBoundFileDeletion.TryDelete(Guard(path), expectedBytes);
 
-            public IDisposable WatchForFiles(string folder, IReadOnlyList<string> fileNames, Action changed)
+            public IDisposable WatchForFiles(string folder, IReadOnlyList<string> fileNames, Action changed, Func<bool> needsRetry = null)
             {
+                if (PollFiles)
+                {
+                    return new TextExpanderStorageEnvironment(TimeSpan.FromMilliseconds(20)).WatchForFiles(Guard(folder), fileNames, changed, needsRetry);
+                }
+
                 Guard(folder);
                 _filesChanged = changed;
                 return new CallbackDisposable(() =>

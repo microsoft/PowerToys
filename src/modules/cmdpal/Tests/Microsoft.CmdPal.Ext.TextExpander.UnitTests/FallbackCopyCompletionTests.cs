@@ -47,6 +47,80 @@ public sealed class FallbackCopyCompletionTests
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
+    public void FallbackCopy_TargetChangedAndClipboardRestoreFailed_KeepsAnswersUntilCopied(bool restoreEmptiesClipboard)
+    {
+        using var environment = new TestEnvironment();
+        environment.UseSnippets(("!greet", "Hi {{prompt:Name}}"));
+        environment.Clipboard.Text = "Something the user copied";
+        environment.Clipboard.AfterWrite = () => environment.Desktop.ForegroundWindow = FakeDesktop.OtherWindow;
+        if (restoreEmptiesClipboard)
+        {
+            environment.Clipboard.FailingRestores = SnippetInserter.RestoreAttempts;
+        }
+        else
+        {
+            environment.Clipboard.UnopenableRestores = SnippetInserter.RestoreAttempts;
+        }
+
+        var page = new SnippetAnswersPage(environment.SnippetFor("!greet"), environment.Actions);
+        var answer = page.Parameters.OfType<AnswerRun>().Single();
+        answer.Text = "Your name";
+
+        var result = ((IInvokableCommand)page.Command.Command!).Invoke(null);
+
+        Assert.AreEqual(CommandResultKind.ShowToast, result.Kind);
+        var toast = (ToastArgs)result.Args!;
+        Assert.AreEqual(CommandResultKind.KeepOpen, toast.Result!.Kind);
+        StringAssert.Contains(toast.Message, Resources.toast_target_changed);
+        StringAssert.Contains(toast.Message, Resources.toast_clipboard_not_restored);
+        Assert.AreEqual(0, environment.Desktop.Sent.Count, "The focus change prevented every snippet input.");
+        Assert.AreEqual("Your name", answer.Text, "A restore failure must not complete the failed insertion.");
+        Assert.AreEqual(SnippetInserter.RestoreAttempts, environment.Clipboard.Restores);
+        if (restoreEmptiesClipboard)
+        {
+            Assert.IsNull(environment.Clipboard.Text, "The failed restore left no recoverable snippet on the clipboard.");
+        }
+        else
+        {
+            Assert.AreEqual("Hi Your name", environment.Clipboard.Text);
+        }
+
+        Assert.IsInstanceOfType<CopySnippetCommand>(toast.Command);
+        var copied = ((CopySnippetCommand)toast.Command!).Invoke();
+
+        Assert.AreEqual(CommandResultKind.ShowToast, copied.Kind);
+        Assert.AreEqual(Resources.copied_toast, ((ToastArgs)copied.Args!).Message);
+        Assert.AreEqual(("Hi Your name", false), environment.Clipboard.Writes.Last());
+        Assert.AreEqual("Hi Your name", environment.Clipboard.Text);
+        Assert.AreEqual(string.Empty, answer.Text);
+    }
+
+    [TestMethod]
+    public void Paste_SucceededWithClipboardRestoreFailure_CompletesAndWarns()
+    {
+        using var environment = new TestEnvironment();
+        environment.UseSnippets(("!greet", "Hi {{prompt:Name}}"));
+        environment.Clipboard.Text = "Something the user copied";
+        environment.Clipboard.FailingRestores = SnippetInserter.RestoreAttempts;
+        var page = new SnippetAnswersPage(environment.SnippetFor("!greet"), environment.Actions);
+        var answer = page.Parameters.OfType<AnswerRun>().Single();
+        answer.Text = "Your name";
+
+        var result = ((IInvokableCommand)page.Command.Command!).Invoke(null);
+
+        Assert.AreEqual(CommandResultKind.ShowToast, result.Kind);
+        var toast = (ToastArgs)result.Args!;
+        Assert.AreEqual(Resources.toast_clipboard_not_restored, toast.Message);
+        Assert.AreEqual(CommandResultKind.Dismiss, toast.Result!.Kind);
+        Assert.IsNull(toast.Command);
+        Assert.IsTrue(environment.Desktop.Pasted);
+        Assert.IsNull(environment.Clipboard.Text);
+        Assert.AreEqual(string.Empty, answer.Text, "A completed paste still clears answers when restoration fails.");
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
     public void FallbackCopy_PickedSnippetCopyFailed_KeepsPromptAnswersForRetry(bool writeRefused)
     {
         using var environment = new TestEnvironment();

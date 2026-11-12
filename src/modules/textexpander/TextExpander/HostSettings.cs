@@ -271,24 +271,34 @@ internal sealed class HostSettings : IDisposable
         }
     }
 
-    private void Reload()
+    internal void Reload()
     {
-        bool read;
-        try
+        // Keep the read and its whole application together: a later callback must not finish before an older one
+        // repoints the snippets store using the settings it already read.
+        lock (_debounceLock)
         {
-            read = _onChanged?.Invoke() ?? true;
-        }
-        catch
-        {
-            // A bad settings file must never take the engine down.
-            return;
-        }
+            if (_disposed)
+            {
+                return;
+            }
 
-        if (!read)
-        {
-            // The engine keeps no log file; a debugger or DebugView shows this.
-            Trace.TraceWarning($"Text Expander couldn't read its settings file '{_path}', so it kept the settings it had. "
-                + (ScheduleReload(retry: true) ? $"Trying again in {DebounceMs} ms." : "It reads the file again when it changes."));
+            bool read;
+            try
+            {
+                read = _onChanged?.Invoke() ?? true;
+            }
+            catch
+            {
+                // A bad settings file must never take the engine down.
+                return;
+            }
+
+            if (!read)
+            {
+                // The engine keeps no log file; a debugger or DebugView shows this.
+                Trace.TraceWarning($"Text Expander couldn't read its settings file '{_path}', so it kept the settings it had. "
+                    + (ScheduleReload(retry: true) ? $"Trying again in {DebounceMs} ms." : "It reads the file again when it changes."));
+            }
         }
     }
 

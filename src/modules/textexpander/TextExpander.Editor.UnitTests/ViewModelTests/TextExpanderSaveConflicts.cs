@@ -386,7 +386,7 @@ namespace ViewModelTests
             public HandleBoundFileDeletionResult DeleteOwnedFile(string path, byte[] expectedBytes)
                 => _files.DeleteOwnedFile(Guard(path), expectedBytes);
 
-            public IDisposable WatchForFiles(string folder, IReadOnlyList<string> fileNames, Action changed)
+            public IDisposable WatchForFiles(string folder, IReadOnlyList<string> fileNames, Action changed, Func<bool> needsRetry = null)
             {
                 Guard(folder);
                 _filesChanged = changed;

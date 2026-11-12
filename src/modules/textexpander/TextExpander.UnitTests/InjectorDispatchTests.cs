@@ -251,7 +251,7 @@ public sealed class InjectorDispatchTests
                 dispatch: inputs => inputs.Length > 1 ? (uint)inputs.Length - 1 : (uint)inputs.Length,
                 getAsyncKeyState: _ => 0,
                 sleep: _ => { },
-                inserted: () => recorded = true));
+                inserted: (_, _) => recorded = true));
             Assert.AreEqual(0, InjectionDiagnostics.Typed);
 
             Injector.Backend = InjectionBackend.Clipboard;
@@ -271,7 +271,7 @@ public sealed class InjectorDispatchTests
                     typedFallback |= inputs[0].U.Ki.WVk != InsertionGuard.MarkerVk;
                     return (uint)inputs.Length;
                 },
-                inserted: () => recorded = true));
+                inserted: (_, _) => recorded = true));
             Assert.IsFalse(typedFallback);
             Assert.AreEqual(0, InjectionDiagnostics.Typed);
             Assert.AreEqual(1, InjectionDiagnostics.Abandoned);

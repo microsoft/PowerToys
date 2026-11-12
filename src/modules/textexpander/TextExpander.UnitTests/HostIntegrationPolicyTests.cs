@@ -75,6 +75,7 @@ public sealed class HostIntegrationPolicyTests
             (HostInputTags.CentralizedHookDontTrigger, HostInputKind.Ignored, HostInputKind.Ignored),
             (InputTags.CommandPalette, HostInputKind.Unmatched, HostInputKind.Unmatched), // Command Palette's extension, with the bit
             (own.ToInt64(), HostInputKind.Ignored, HostInputKind.Ignored),
+            (HostInputTags.ReturnedTriggerTag(own).ToInt64(), HostInputKind.Unmatched, HostInputKind.Unmatched),
             (0, HostInputKind.Typing, HostInputKind.Typing),
         ];
 

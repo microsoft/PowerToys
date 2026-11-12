@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Text.Json;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -207,6 +208,145 @@ public sealed class HostSettingsTests
     }
 
     [TestMethod]
+    [DoNotParallelize]
+    public void OverlappingReloadsApplyTheLatestLibraryAfterTheEarlierCallbackFinishes()
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        string firstLibrary = Path.Combine(scratch.Path, "first.json");
+        string latestLibrary = Path.Combine(scratch.Path, "latest.json");
+        File.WriteAllText(firstLibrary, SnippetJson.Of("!which=first"));
+        File.WriteAllText(latestLibrary, SnippetJson.Of("!which=latest"));
+        string settingsFolder = Path.Combine(scratch.Path, "settings");
+        string settingsFile = Path.Combine(settingsFolder, "settings.json");
+        using HostSettings settings = HostSettings.Create([$"--settings:{settingsFile}"])!;
+        int failNextRead = 0;
+        int firstCallbackThread = 0;
+
+        byte[] ReadBytes(string path)
+        {
+            if (Interlocked.Exchange(ref failNextRead, 0) != 0)
+            {
+                Volatile.Write(ref firstCallbackThread, Environment.CurrentManagedThreadId);
+                throw new IOException("The first comparison read is temporarily unavailable.");
+            }
+
+            return File.ReadAllBytes(path);
+        }
+
+        using var store = new SnippetStore(
+            firstLibrary,
+            isDefault: false,
+            caseSensitive: true,
+            readAllBytes: ReadBytes,
+            debounceDelay: TimeSpan.Zero,
+            retryDelay: TimeSpan.Zero,
+            maxReloadAttempts: 1,
+            log: _ => { });
+        Assert.IsTrue(store.Load().Succeeded);
+        using var firstPaused = new ManualResetEventSlim(false);
+        using var releaseFirst = new ManualResetEventSlim(false);
+        using var secondStarted = new ManualResetEventSlim(false);
+        using var secondEntered = new ManualResetEventSlim(false);
+        int callbacks = 0;
+        int applied = 0;
+
+        // Register the real read/apply callback before the folder exists, so filesystem notifications cannot
+        // introduce extra reloads. The two calls below model overlapping timer callbacks deterministically.
+        settings.StartWatching(() =>
+        {
+            if (Interlocked.Increment(ref callbacks) == 2)
+            {
+                secondEntered.Set();
+            }
+
+            bool read = Program.ApplyChangedSettings(settings, store);
+            if (read)
+            {
+                Interlocked.Increment(ref applied);
+            }
+
+            return read;
+        });
+        Directory.CreateDirectory(settingsFolder);
+
+        void WriteSettings(string library) => File.WriteAllText(settingsFile, JsonSerializer.Serialize(new
+        {
+            properties = new { case_sensitive = false, snippets_path = new { value = library } },
+        }));
+
+        WriteSettings(firstLibrary);
+        using var listener = new ComparisonFailureListener(() => Volatile.Read(ref firstCallbackThread), firstPaused, releaseFirst);
+        var previousOptions = (Injector.Backend, Injector.ClipboardThresholdChars, HostInputTags.AcceptRemappedInput, WordBoundary.Required, WordBoundary.KeepTerminator);
+        Task? first = null;
+        Task? second = null;
+        Trace.Listeners.Add(listener);
+        try
+        {
+            Volatile.Write(ref failNextRead, 1);
+            first = Task.Run(settings.Reload);
+            Assert.IsTrue(firstPaused.Wait(TimeSpan.FromSeconds(5)), "The first callback did not pause between its comparison change and library repoint.");
+
+            WriteSettings(latestLibrary);
+            second = Task.Run(() =>
+            {
+                secondStarted.Set();
+                settings.Reload();
+            });
+            Assert.IsTrue(secondStarted.Wait(TimeSpan.FromSeconds(5)));
+            Assert.IsFalse(secondEntered.Wait(TimeSpan.FromMilliseconds(200)), "The latest settings must wait for the earlier read/apply callback to finish.");
+
+            releaseFirst.Set();
+            Assert.IsTrue(Task.WaitAll([first, second], TimeSpan.FromSeconds(5)));
+            Assert.IsFalse(listener.TimedOut);
+            Assert.AreEqual(2, callbacks);
+            Assert.AreEqual(2, applied);
+            Assert.AreEqual(latestLibrary, settings.Read()?.SnippetsPath);
+            Assert.AreEqual(false, settings.Read()?.CaseSensitive);
+            Assert.AreEqual(latestLibrary, store.FilePath);
+            Assert.AreEqual("latest", store.Current.Map["!WHICH"], "The latest library and its case-insensitive comparison must both be applied.");
+        }
+        finally
+        {
+            releaseFirst.Set();
+            try
+            {
+                first?.Wait(TimeSpan.FromSeconds(5));
+                second?.Wait(TimeSpan.FromSeconds(5));
+            }
+            finally
+            {
+                Trace.Listeners.Remove(listener);
+                Injector.Backend = previousOptions.Backend;
+                Injector.ClipboardThresholdChars = previousOptions.ClipboardThresholdChars;
+                HostInputTags.AcceptRemappedInput = previousOptions.AcceptRemappedInput;
+                WordBoundary.Required = previousOptions.Required;
+                WordBoundary.KeepTerminator = previousOptions.KeepTerminator;
+            }
+        }
+    }
+
+    [TestMethod]
+    public void AQueuedReloadDoesNotCallBackAfterDisposal()
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        string file = Path.Combine(scratch.Path, "not-created", "settings.json");
+        using HostSettings settings = HostSettings.Create([$"--settings:{file}"])!;
+        int calls = 0;
+        settings.StartWatching(() =>
+        {
+            calls++;
+            return true;
+        });
+
+        settings.Reload();
+        Assert.AreEqual(1, calls, "An ordinary reload calls the registered reader.");
+
+        settings.Dispose();
+        settings.Reload();
+        Assert.AreEqual(1, calls, "A callback queued before disposal must not read or apply settings afterwards.");
+    }
+
+    [TestMethod]
     public void WordBoundarySettingsParseIndependently()
     {
         HostSettings.Values keep = Parsed("{\"properties\":{\"word_boundary_keeps_space\":false}}");
@@ -232,4 +372,23 @@ public sealed class HostSettingsTests
 
     private static HostSettings.Values Parsed(string json)
         => HostSettings.Parse(json) ?? throw new AssertFailedException("Not read as settings: " + json);
+
+    private sealed class ComparisonFailureListener(Func<int> firstThread, ManualResetEventSlim paused, ManualResetEventSlim release) : TraceListener
+    {
+        public bool TimedOut { get; private set; }
+
+        public override void Write(string? message)
+        {
+        }
+
+        public override void WriteLine(string? message)
+        {
+            if (Environment.CurrentManagedThreadId == firstThread()
+                && message?.Contains("could not apply the case-sensitive setting", StringComparison.Ordinal) == true)
+            {
+                paused.Set();
+                TimedOut = !release.Wait(TimeSpan.FromSeconds(10));
+            }
+        }
+    }
 }

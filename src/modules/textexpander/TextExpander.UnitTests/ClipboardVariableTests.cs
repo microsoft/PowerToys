@@ -515,6 +515,57 @@ public sealed class ClipboardVariableTests
         => Assert.AreEqual(expected, string.Join("|", ClipboardParts.Find(text, ClipboardPart.Number, CultureInfo.GetCultureInfo(culture))));
 
     [TestMethod]
+    [DataRow("\u00E9", false)]
+    [DataRow("e\u0301", false)]
+    [DataRow("\U0001D49C", false)]
+    [DataRow("\U0001D49C\u0301", false)]
+    [DataRow("\U0001F4DE", true)]
+    [DataRow("\U0001F4DE\uFE0F", true)]
+    public void NumbersAndPhonesUseWholeCharactersAtWordStarts(string prefix, bool found)
+    {
+        Assert.AreEqual(found ? "123" : string.Empty, string.Join("|", ClipboardParts.Find(prefix + "123", ClipboardPart.Number, EnglishUS)));
+        Assert.AreEqual(found ? "555-0123" : string.Empty, string.Join("|", ClipboardParts.Find(prefix + "555-0123", ClipboardPart.Phone, EnglishUS)));
+    }
+
+    [TestMethod]
+    [DataRow(ClipboardPart.Email, "kept@example.com", "user@example.com", 15)]
+    [DataRow(ClipboardPart.Link, "https://example.com/keep", "https://example.com/a.b", 22)]
+    [DataRow(ClipboardPart.Phone, "555-0199", "555-0123 4567", 8)]
+    [DataRow(ClipboardPart.Number, "42", "-1,234.56", 6)]
+    [DataRow(ClipboardPart.Phone, "555-0199", "555-0123@example.com", 8)]
+    [DataRow(ClipboardPart.Number, "42", "123@example.com", 3)]
+    public void AHugeCopyDoesNotCutCandidatesOrTheirMasksIntoNewValues(ClipboardPart part, string kept, string crossing, int unitsBeforeLimit)
+    {
+        foreach (string lineEnd in new[] { "\r", "\n", "\r\n" })
+        {
+            string completeLine = kept + lineEnd;
+            string copy = completeLine + new string(' ', ClipboardParts.MaxScannedLength - completeLine.Length - unitsBeforeLimit) + crossing;
+            Assert.IsTrue(copy.Length > ClipboardParts.MaxScannedLength);
+            Assert.AreEqual(kept, string.Join("|", ClipboardParts.Find(copy, part, EnglishUS)), "Only the terminated line is scanned.");
+        }
+    }
+
+    [TestMethod]
+    [DataRow(ClipboardPart.Email, "you@example.com")]
+    [DataRow(ClipboardPart.Link, "https://example.com/a")]
+    [DataRow(ClipboardPart.Phone, "555-0123")]
+    [DataRow(ClipboardPart.Number, "1,234.56")]
+    public void OnlyCopiesPastTheLimitNeedATerminatedLine(ClipboardPart part, string value)
+    {
+        string atLimit = new string(' ', ClipboardParts.MaxScannedLength - value.Length) + value;
+        Assert.AreEqual(value, ClipboardParts.Find(atLimit[1..], part, EnglishUS).Single(), "Below the limit, no line ending is required.");
+        Assert.AreEqual(value, ClipboardParts.Find(atLimit, part, EnglishUS).Single(), "Nor at the exact limit.");
+
+        string singleLine = atLimit + " ";
+        Assert.AreEqual(0, ClipboardParts.Find(singleLine, part, EnglishUS).Count, "An oversized line is omitted even if it contains a complete value.");
+        Assert.AreSame(singleLine, ClipboardParts.Find(singleLine, ClipboardPart.All, EnglishUS).Single(), "The whole-copy variable is never truncated.");
+
+        // The CR terminates the line even when its LF is just outside the budget.
+        string splitLineEnd = atLimit[1..] + "\r\n" + value;
+        Assert.AreEqual(value, ClipboardParts.Find(splitLineEnd, part, EnglishUS).Single());
+    }
+
+    [TestMethod]
     public void AHugeCopyIsReadInLinearTime()
     {
         // Text built to make patterns work hard: long runs that almost match, and a link full of brackets.
@@ -541,7 +592,7 @@ public sealed class ClipboardVariableTests
 
         Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(20), $"Took {clock.Elapsed}.");
 
-        // Only the start of a huge copy is read for its parts.
+        // An oversized line without a line ending inside the budget is omitted.
         string late = new string(' ', ClipboardParts.MaxScannedLength) + "you@example.com";
         Assert.AreEqual(0, ClipboardParts.Find(late, ClipboardPart.Email, EnglishUS).Count);
         Assert.AreEqual(late, ClipboardParts.Find(late, ClipboardPart.All, EnglishUS).Single(), "All of it is all of it.");

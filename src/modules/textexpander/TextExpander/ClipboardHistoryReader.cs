@@ -22,10 +22,8 @@ internal static class ClipboardHistoryReader
 
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(2);
 
-    private static readonly Lock RunningLock = new();
-
-    // Guarded by RunningLock: the last read started, which may still be running after it timed out.
-    private static Task<ClipboardHistory>? _running;
+    // Set only while a read is running, even after its caller times out; never keeps the result.
+    private static int _reading;
 
     /// <summary>
     /// Gets the text copies in clipboard history, newest first and each different one once; or that history is off, or
@@ -47,17 +45,22 @@ internal static class ClipboardHistoryReader
                 return ClipboardHistory.TurnedOff;
             }
 
-            Task<ClipboardHistory> read;
-            lock (RunningLock)
+            if (Interlocked.CompareExchange(ref _reading, 1, 0) != 0)
             {
-                if (_running is { IsCompleted: false })
-                {
-                    return ClipboardHistory.NotRead;
-                }
-
-                read = _running = Task.Run(readAsync);
+                return ClipboardHistory.NotRead;
             }
 
+            Task<ClipboardHistory> read = Task.Run(async () =>
+            {
+                try
+                {
+                    return await readAsync().ConfigureAwait(false);
+                }
+                finally
+                {
+                    Volatile.Write(ref _reading, 0);
+                }
+            });
             return read.Wait(timeout) ? read.Result : ClipboardHistory.NotRead;
         }
         catch (Exception ex) when (ex is COMException or UnauthorizedAccessException or InvalidOperationException or AggregateException)

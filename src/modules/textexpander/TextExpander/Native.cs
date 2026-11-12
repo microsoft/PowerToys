@@ -21,12 +21,13 @@ internal static class Native
     public const int WM_SYSKEYDOWN = 0x0104;
 
     // Low-level mouse button-downs: a click moves the caret without a foreground change, so the typed-character
-    // buffer must be cleared. Wheel and WM_MOUSEMOVE don't move the caret.
+    // buffer must be cleared. A wheel can also change text/selection in an editable ComboBox.
     public const int WM_LBUTTONDOWN = 0x0201;
     public const int WM_RBUTTONDOWN = 0x0204;
     public const int WM_MBUTTONDOWN = 0x0207;
     public const int WM_NCLBUTTONDOWN = 0x00A1;
     public const int WM_XBUTTONDOWN = 0x020B;
+    public const int WM_MOUSEWHEEL = 0x020A;
 
     [StructLayout(LayoutKind.Sequential)]
     public struct KBDLLHOOKSTRUCT

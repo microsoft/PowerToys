@@ -197,7 +197,7 @@ public sealed class ClipboardBorrowTests
         var inserter = new SnippetInserter(clipboard, desktop, new FakeClock());
         var result = inserter.Insert(snippet, InjectionBackend.Clipboard, InjectionPolicy.DefaultClipboardThresholdChars);
 
-        Assert.AreEqual(terminal ? InsertOutcome.TerminalNeedsPaste : InsertOutcome.Inserted, result);
+        Assert.AreEqual((terminal ? InsertOutcome.TerminalNeedsPaste : InsertOutcome.Inserted, false), result);
         Assert.AreEqual("B", clipboard.Text);
         Assert.AreEqual(1, clipboard.Saves);
         Assert.AreEqual(("first\r\nsecond", true), clipboard.Writes.Single());

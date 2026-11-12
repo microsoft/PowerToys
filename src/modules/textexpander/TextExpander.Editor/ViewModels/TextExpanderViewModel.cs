@@ -35,6 +35,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         private TextExpanderVariable[] _variables;
         private SnippetFile _file;
         private string _snippetError;
+        private string _settingsReadError;
         private string _snippetSaveReview;
         private string _unavailableFolder;
         private bool _snippetsFileMissing;
@@ -50,6 +51,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         private string _snippetFileWatchPath;
         private long _snippetFileWatchGeneration;
         private int _snippetFileCheckQueued;
+        private volatile bool _snippetReadPending;
         private IDisposable _settingsWatch;
 
         private enum PersistedFolderSettingStatus
@@ -405,8 +407,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 HasSearchText ? FilteredSnippets.Count : Snippets.Count,
                 Snippets.Count);
 
-        /// <summary>Gets a value indicating whether the snippet file could not be read or written.</summary>
-        public bool HasSnippetError => CanEditSnippets && !string.IsNullOrEmpty(_snippetError);
+        /// <summary>Gets a value indicating whether the snippet file could not be read or written, or settings could not be read.</summary>
+        public bool HasSnippetError => CanEditSnippets
+            && (!string.IsNullOrEmpty(_snippetError) || !string.IsNullOrEmpty(_settingsReadError));
 
         /// <summary>Gets a value indicating whether a file error or recovery advice needs to be shown.</summary>
         public bool HasSnippetMessage => HasSnippetError || (CanEditSnippets && _snippetSaveReview != null);
@@ -421,11 +424,21 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         public bool CanAddSnippets => CanEditSnippets && !HasSnippetError;
 
         /// <summary>Gets file errors and any advice about saved recovery copies.</summary>
-        public string SnippetError => _isElevated
-            ? ElevatedSnippetAccessDeniedMessage()
-            : _snippetSaveReview == null
-                ? _snippetError ?? string.Empty
-                : string.IsNullOrEmpty(_snippetError) ? _snippetSaveReview : _snippetSaveReview + " " + _snippetError;
+        public string SnippetError
+        {
+            get
+            {
+                if (_isElevated)
+                {
+                    return ElevatedSnippetAccessDeniedMessage();
+                }
+
+                string error = _snippetError ?? _settingsReadError;
+                return _snippetSaveReview == null
+                    ? error ?? string.Empty
+                    : string.IsNullOrEmpty(error) ? _snippetSaveReview : _snippetSaveReview + " " + error;
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether the error is that the chosen snippets file is missing or can't be reached: moved,
@@ -554,6 +567,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
 
         private void LoadSnippets(bool clearSaveReview)
         {
+            _snippetReadPending = false;
             IsWaitingForSnippetsFile = IsReadDefaultFileMissing();
             if (IsWaitingForSnippetsFile)
             {
@@ -612,7 +626,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 }
 
                 // The bytes are kept to detect changes before and during a save.
-                _loadedBytes = ReadAllBytesShared(path);
+                _loadedBytes = ReadCurrentSnippetBytes(path);
                 _file = SnippetFile.Read(_loadedBytes);
                 _unavailableFolder = null;
                 _snippetsFileMissing = false;
@@ -739,7 +753,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                                 SnippetFilesMayHaveChanged();
                             });
                         }
-                    });
+                    },
+                    needsRetry: () => _snippetReadPending);
                 _snippetFileWatch = watch;
 
                 // The file can change after LoadSnippets reads it but before the watcher becomes active, so check once
@@ -772,7 +787,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                     return;
                 }
 
-                byte[] current = ReadAllBytesShared(preferred);
+                byte[] current = ReadCurrentSnippetBytes(preferred);
                 if (!current.AsSpan().SequenceEqual(_loadedBytes))
                 {
                     LoadSnippets(clearSaveReview: false);
@@ -785,9 +800,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             }
             catch (Exception ex) when (IsFileError(ex))
             {
-                // An editor may still hold the file during a non-atomic save. The watch calls back
-                // again when its size or write time next changes, so retry then rather than
-                // showing a false error.
+                // An editor may still hold the file during a non-atomic save. The existing poller retries the pending
+                // byte read even if closing that writer doesn't change the file's size or write time again.
             }
         }
 
@@ -1231,6 +1245,21 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             return error;
         }
 
+        private byte[] ReadCurrentSnippetBytes(string path)
+        {
+            try
+            {
+                byte[] bytes = ReadAllBytesShared(path);
+                _snippetReadPending = false;
+                return bytes;
+            }
+            catch (Exception ex) when (IsFileError(ex))
+            {
+                _snippetReadPending = true;
+                throw;
+            }
+        }
+
         /// <summary>Reads with permissive sharing so the engine's watcher does not block the page.</summary>
         private static byte[] ReadAllBytesShared(string path)
         {
@@ -1624,8 +1653,15 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             try
             {
                 TextExpanderSettings latest = _settingsUtils.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName);
+                bool recoveredSettingsRead = _settingsReadError != null;
+                _settingsReadError = null;
                 if (latest.ToJsonString() == _settings.ToJsonString())
                 {
+                    if (recoveredSettingsRead)
+                    {
+                        RaiseSnippetListChanged();
+                    }
+
                     return;
                 }
 
@@ -1665,8 +1701,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             catch (Exception ex) when (IsFileError(ex) || ex is System.Text.Json.JsonException or InvalidOperationException)
             {
                 Logger.LogError("Could not reload Text Expander editor settings.", ex);
-                _snippetError = ex.Message;
-                _unavailableFolder = null;
+                _settingsReadError = ex.Message;
                 RaiseSnippetListChanged();
             }
         }

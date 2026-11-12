@@ -29,6 +29,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
     {
         private readonly RichEditBox _box;
         private readonly Func<(Color Text, Color Background)?> _variableColors;
+        private readonly Func<object> _currentEdit;
         private readonly TextExpanderEditHistory _history = new();
         private string _text = string.Empty;
         private bool _updating;
@@ -42,10 +43,12 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         /// </summary>
         /// <param name="box">The box to manage.</param>
         /// <param name="variableColors">Supplies the colors for variables, or null to leave them uncolored, as in high contrast.</param>
-        public TextExpanderReplacementEditor(RichEditBox box, Func<(Color Text, Color Background)?> variableColors)
+        /// <param name="currentEdit">Gets the active snippet edit's identity, or null while its dialog is closed.</param>
+        public TextExpanderReplacementEditor(RichEditBox box, Func<(Color Text, Color Background)?> variableColors, Func<object> currentEdit)
         {
             _box = box;
             _variableColors = variableColors;
+            _currentEdit = currentEdit;
 
             box.Document.UndoLimit = 0;
             box.SelectionFlyout = null;
@@ -769,6 +772,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 
         private async Task PastePlainTextAsync()
         {
+            object edit = _currentEdit();
             string text;
             try
             {
@@ -783,6 +787,12 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             catch (Exception ex) when (ex is COMException or UnauthorizedAccessException or InvalidOperationException)
             {
                 // Another app has the clipboard open, or its text went away.
+                return;
+            }
+
+            // This box is reused for other snippets while a clipboard provider can still be preparing the text.
+            if (edit is null || !ReferenceEquals(edit, _currentEdit()))
+            {
                 return;
             }
 

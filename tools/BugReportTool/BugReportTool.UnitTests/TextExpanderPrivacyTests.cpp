@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <iterator>
 #include <string>
 #include <vector>
 
@@ -25,6 +26,12 @@ namespace BugReportToolUnitTests
             std::ofstream file(path, std::ios::binary);
             file << contents;
             return file.good();
+        }
+
+        std::string ReadText(const fs::path& path)
+        {
+            std::ifstream file(path, std::ios::binary);
+            return { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
         }
 
         std::string JsonString(const std::wstring& value)
@@ -65,6 +72,8 @@ namespace BugReportToolUnitTests
         // A snippets database as the editor saves it.
         const char Database[] = "{\n  \"version\": 1,\n  \"snippets\": [\n    {\n      \"trigger\": \"!team\",\n"
                                 "      \"replacement\": \"private team snippet\"\n    }\n  ]\n}";
+
+        const char EscapedDatabase[] = R"({"snip\u0070ets":[{"tri\u0067ger":"!team","replacement":"private team snippet"}]})";
     }
 
     TEST_CLASS(TextExpanderPrivacyTests)
@@ -365,6 +374,110 @@ namespace BugReportToolUnitTests
                            { L"Shared\\work.txt", L"Shared\\work.txt.backup-20261031", L"Shared\\work (LAPTOP).txt", L"Shared\\snippets" },
                            L"An earlier snippets database with a name of its own was in the report",
                            { L"Shared\\notes.txt", L"RunnerLogs\\runner-log_2026-10-31.log", L"FancyZones\\settings.json", L"TextExpander\\settings.json", L"TextExpander\\diagnostics.txt" });
+        }
+
+        TEST_METHOD(EarlierDatabasesWithEscapedKeysAreExcluded)
+        {
+            const std::vector<std::string> databases{
+                EscapedDatabase,
+                R"({"snippets":[{"tri\u0067ger":"!team","replacement":"private"}]})",
+                R"({"snip\u0070ets":[{"trigger":"!team","replacement":"private"}]})",
+                R"({"\u0053\u006E\u0049\u0070\u0050\u0065\u0054\u0073":[{"\u0054\u0072\u0049\u0067\u0047\u0065\u0052":"!team","replacement":"private"}]})",
+                std::string("\xEF\xBB\xBF// A copy from before moving the database\n") +
+                    R"({"snip\u0070ets":[{"tri\u0067ger":"!team","replacement":"private",},],})",
+            };
+            std::vector<fs::path> files;
+            for (size_t index = 0; index < databases.size(); ++index)
+            {
+                fs::path file = fs::path(L"Shared") / (L"old-" + std::to_wstring(index));
+                Assert::IsTrue(WriteText(settings / file, databases[index].c_str()), L"Could not create an escaped-key database");
+                files.push_back(file);
+            }
+
+            const std::vector<SettingsCase> cases{ { L"current database elsewhere", "{\"snippets_path\":{\"value\":" + JsonString((root / L"elsewhere" / L"current.json").wstring()) + "}}" } };
+            AssertExcluded(cases, files, L"An earlier database with escaped keys was in the report", { L"TextExpander\\settings.json" });
+        }
+
+        TEST_METHOD(EscapedMarkersSplitAtEveryByteAreFound)
+        {
+            struct MarkerCase
+            {
+                std::string prefix;
+                std::string marker;
+                std::string suffix;
+            };
+            const std::vector<MarkerCase> cases{
+                { "{", R"("\u0053\u006E\u0049\u0070\u0050\u0065\u0054\u0073")", ":[{\"trigger\":\"!team\",\"replacement\":\"private\"}]}" },
+                { "{\"snippets\":[{", R"("\u0054\u0072\u0049\u0067\u0047\u0065\u0052")", ":\"!team\",\"replacement\":\"private\"}]}" },
+            };
+            const fs::path file = configuredFolder / L"escaped-boundary.json";
+            for (const MarkerCase& testCase : cases)
+            {
+                for (size_t split = 1; split < testCase.marker.size(); ++split)
+                {
+                    std::string contents = testCase.prefix + std::string(64 * 1024 - split - testCase.prefix.size(), ' ') +
+                                           testCase.marker + testCase.suffix;
+                    Assert::IsTrue(WriteText(file, contents.c_str()), L"Could not create the escaped-key boundary fixture");
+                    Assert::IsTrue(TextExpanderPrivacy::HoldsSnippets(file),
+                                   (L"An escaped marker split at byte " + std::to_wstring(split) + L" was missed").c_str());
+                }
+            }
+        }
+
+        TEST_METHOD(UnrelatedEscapedStringsAndInvalidJsonStayInTheReport)
+        {
+            const std::vector<std::string> contents{
+                R"({"snip\\u0070ets":[{"tri\\u0067ger":"not marker names"}]})",
+                R"({"snip\U0070ets":[{"tri\U0067ger":"invalid escape case"}]})",
+                R"(Read "C:\\cache\\logs" and "\u0064ata"; "snippets" is a label, not a database.)",
+                R"({"\u0073nippets_extra":[],"\u0074rigger_extra":"other names"})",
+                std::string("\"\\u0073") + '\xFF' + "\" \"\\u0074\"",
+            };
+            std::vector<fs::path> kept;
+            for (size_t index = 0; index < contents.size(); ++index)
+            {
+                fs::path file = fs::path(L"Shared") / (L"ordinary-" + std::to_wstring(index) + L".log");
+                Assert::IsTrue(WriteText(settings / file, contents[index].c_str()), L"Could not create an unrelated escaped string");
+                kept.push_back(file);
+            }
+
+            // The carry must preserve the invalid uppercase U, rather than decode bytes already folded to lowercase.
+            const std::string prefix = "{\"snippets\":[{";
+            const std::string invalidMarker = R"("tri\U0067ger")";
+            const fs::path splitFile = fs::path(L"Shared") / L"invalid-split.log";
+            for (size_t split = 1; split < invalidMarker.size(); ++split)
+            {
+                const std::string splitContents = prefix + std::string(64 * 1024 - split - prefix.size(), ' ') +
+                                                  invalidMarker + ":\"ordinary log\"}]}";
+                Assert::IsTrue(WriteText(settings / splitFile, splitContents.c_str()), L"Could not create an invalid split escape");
+                Assert::IsFalse(TextExpanderPrivacy::HoldsSnippets(settings / splitFile), L"An invalid split escape was reinterpreted");
+            }
+            kept.push_back(splitFile);
+
+            const std::vector<SettingsCase> cases{ { L"default database", "{}" } };
+            AssertExcluded(cases, {}, L"Could not check the unrelated logs", kept);
+        }
+
+        TEST_METHOD(FinalExclusionCoversLocalLowAndInstallerInputs)
+        {
+            const fs::path localLowLogs = root / L"LocalLow" / L"logs";
+            const fs::path privateCopy = localLowLogs / L"private-snippets.json";
+            const fs::path ordinaryLog = localLowLogs / L"ordinary.log";
+            const fs::path installerCopy = root / L"Temp" / L"PowerToysMSIInstaller_snippets.log";
+            Assert::IsTrue(WriteText(privateCopy, EscapedDatabase) && WriteText(installerCopy, Database) &&
+                               WriteText(ordinaryLog, "ordinary diagnostic data") &&
+                               WriteSettings(settings, "{\"snippets_path\":{\"value\":" + JsonString(privateCopy.wstring()) + "}}") &&
+                               ResetReport(settings, report),
+                           L"Could not create the late report inputs");
+
+            fs::copy(localLowLogs, report, fs::copy_options::recursive);
+            fs::copy_file(installerCopy, report / installerCopy.filename());
+            Assert::IsTrue(TextExpanderPrivacy::ExcludeConfiguredSnippetFile(settings, report), L"Could not filter the completed report staging folder");
+            Assert::IsFalse(fs::exists(report / privateCopy.filename()), L"The LocalLow snippet copy was kept");
+            Assert::IsFalse(fs::exists(report / installerCopy.filename()), L"The installer-log snippet copy was kept");
+            Assert::AreEqual(std::string("ordinary diagnostic data"), ReadText(report / ordinaryLog.filename()));
+            Assert::AreEqual(std::string(EscapedDatabase), ReadText(privateCopy), L"The source library was changed");
+            Assert::AreEqual(std::string(Database), ReadText(installerCopy), L"The source installer-log fixture was changed");
         }
 
         // A key split between two of the 64 KB reads is still found, wherever it's split.

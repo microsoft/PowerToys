@@ -7,7 +7,8 @@
     "*FancyZones\\custom-layouts.json",
     "*FancyZones\\layout-hotkeys.json",
     "*FancyZones\\layout-templates.json",
-    "*Workspaces\\workspaces.json"
+    "*Workspaces\\workspaces.json",
+    "*TextExpander\\PowerToysTextExpanderSnippets.json"
   ],
   "IgnoreFiles": [
     "*PowerToys\\log_settings.json",
@@ -33,6 +34,9 @@
       "overwrite": true
     },
     "\\Keyboard Manager\\editorSettings.json": {
+      "overwrite": true
+    },
+    "\\TextExpander\\PowerToysTextExpanderSnippets.json": {
       "overwrite": true
     }
   },

@@ -493,7 +493,7 @@ namespace Microsoft.CmdPal.Ext.TextExpander.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Your clipboard couldn't be put back, so the snippet is still on it..
+        ///   Looks up a localized string similar to Your clipboard couldn't be put back..
         /// </summary>
         public static string toast_clipboard_not_restored {
             get {
