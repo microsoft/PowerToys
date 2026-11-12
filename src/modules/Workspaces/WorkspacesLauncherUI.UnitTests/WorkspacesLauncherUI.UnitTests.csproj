@@ -14,6 +14,9 @@
     <UseWinUI>true</UseWinUI>
     <Platforms>x64;ARM64</Platforms>
     <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <!-- The referenced application initializes WinAppSDK; its SDK helpers are visible through InternalsVisibleTo. -->
+    <WindowsAppSdkUndockedRegFreeWinRTInitialize>false</WindowsAppSdkUndockedRegFreeWinRTInitialize>
   </PropertyGroup>
 
   <ItemGroup>
